@@ -1,0 +1,13 @@
+#!/usr/bin/python3
+
+# Fedora: dnf install python3-redis
+
+import redis
+import sys
+
+r = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
+
+d = r.hgetall(sys.argv[1])
+
+for k in d:
+    print(k + "=" + d[k])
