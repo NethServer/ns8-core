@@ -13,8 +13,9 @@ Podman running in rootless mode:
 
 Execute as root:
 ```
-dnf install git -y
-git clone https://github.com/DavidePrincipi/ns8-scratchpad.git
+curl -L -o ns8-scratchpad.tar.gz https://github.com/DavidePrincipi/ns8-scratchpad/archive/main.tar.gz
+tar xvzf ns8-scratchpad.tar.gz
+cd ns8-scratchpad-main
 ./setup.sh
 ```
 
