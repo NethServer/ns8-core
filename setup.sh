@@ -21,7 +21,7 @@ dnf -y install podman
 useradd redis
 loginctl enable-linger redis
 REDIS_HOME=$(getent passwd redis | cut -d':' -f6)
-mkdir -p $REDIS_HOME/.config/systemd/user
+mkdir -p $REDIS_HOME/.config/systemd/user/{default.target.wants,multi-user.target.wants}
 cat <<EOF > $REDIS_HOME/.config/systemd/user/redis.service
 [Unit]
 Description=Podman redis.service
@@ -33,7 +33,7 @@ After=network-online.target
 Environment=PODMAN_SYSTEMD_UNIT=%n
 Restart=on-failure
 ExecStartPre=/bin/rm -f %t/redis.pid %t/redis.ctr-id
-ExecStart=/usr/bin/podman run --conmon-pidfile %t/redis.pid --cidfile %t/redis.ctr-id --cgroups=no-conmon --replace --name redis -d --log-driver journald --network=host --volume redis-data:/data:Z docker.io/redis:6-alpine --appendonly yes
+ExecStart=/usr/bin/podman run --conmon-pidfile %t/redis.pid --cidfile %t/redis.ctr-id --cgroups=no-conmon --replace --name redis -d --log-driver journald -p 127.0.0.1:6379:6379 --volume redis-data:/data:Z docker.io/redis:6-alpine --appendonly yes
 ExecStop=/usr/bin/podman stop --ignore --cidfile %t/redis.ctr-id -t 10
 ExecStopPost=/usr/bin/podman rm --ignore -f --cidfile %t/redis.ctr-id
 PIDFile=%t/redis.pid
@@ -47,7 +47,7 @@ EOF
 chown -R redis:redis $REDIS_HOME/.config
 restorecon -R $REDIS_HOME/.config
 grep -q 'XDG_RUNTIME_DIR' $REDIS_HOME/.bashrc || echo "export XDG_RUNTIME_DIR=/run/user/$(id -u redis)" >>  $REDIS_HOME/.bashrc
-XDG_RUNTIME_DIR=/run/user/$(id -u redis) runuser -w XDG_RUNTIME_DIR -u redis -- systemctl --user enable --now redis.service
+runuser -l redis -c "systemctl --user enable --now redis.service"
 
 # Install traefik
 podman run -it --network host  --rm redis redis-cli SET traefik '' # prepare traefik root key
@@ -117,4 +117,4 @@ EOF
 chown -R traefik:traefik $TRAEFIK_HOME/.config
 restorecon -R $TRAEFIK_HOME/.config
 grep -q 'XDG_RUNTIME_DIR' $TRAEFIK_HOME/.bashrc || echo "export XDG_RUNTIME_DIR=/run/user/$(id -u traefik)" >>  $TRAEFIK_HOME/.bashrc
-XDG_RUNTIME_DIR=/run/user/$(id -u traefik) runuser -w XDG_RUNTIME_DIR -u traefik -- systemctl --user enable --now traefik.service
+runuser -l traefik -c "systemctl --user enable --now traefik.service"
