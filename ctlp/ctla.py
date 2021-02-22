@@ -30,8 +30,8 @@ def event_handler(message):
 if os.getuid() == 0:
     event_paths.append('/var/opt/ctla')
 else:
-    event_paths.append(os.environ.get('XDG_CONFIG_HOME') + '/ctla')
-    event_paths.append(os.environ.get('XDG_CONFIG_HOME') + '/ctla-custom')
+    event_paths.append(os.environ.get('XDG_CONFIG_HOME', os.environ.get('HOME') + '/.config') + '/ctla')
+    event_paths.append(os.environ.get('XDG_CONFIG_HOME', os.environ.get('HOME') + '/.config') + '/ctla-custom')
 
 for path in filter(os.path.isdir, event_paths):
     with os.scandir(path) as it:
