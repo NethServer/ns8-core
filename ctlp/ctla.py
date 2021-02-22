@@ -5,7 +5,7 @@ import os
 import sys
 import time
 
-event_paths = ['/opt/ctla/share/events', '/var/opt/ctla/events']
+event_paths = []
 channels = {}
 
 def event_handler(message):
@@ -27,15 +27,22 @@ def event_handler(message):
         except Exception as ex:
             print(f"[ERROR] {ex}")
 
-for path in event_paths:
+if os.getuid() == 0:
+    event_paths.append('/var/opt/ctla')
+else:
+    event_paths.append(os.environ.get('XDG_CONFIG_HOME') + '/ctla')
+    event_paths.append(os.environ.get('XDG_CONFIG_HOME') + '/ctla-custom')
+
+for path in filter(os.path.isdir, event_paths):
     with os.scandir(path) as it:
         for entry in it:
             if entry.is_dir():
+                print("[INFO] configured event {0}".format(entry.name))
                 channels[entry.name] = event_handler
 
 if not channels:
-    print("[INFO] nothing to do: no channel handlers found", file=sys.stderr)
-    exit(0)
+    print("[ERROR] nothing to do: no channel handlers found", file=sys.stderr)
+    exit(1)
 
 r = redis.Redis(host='127.0.0.1', port=6379, db=0, decode_responses=True)
 p = r.pubsub(ignore_subscribe_messages=True)
