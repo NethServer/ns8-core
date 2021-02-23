@@ -1,0 +1,14 @@
+[Unit]
+Description=Service control agent
+
+[Service]
+Type=simple
+ExecStartPre=/usr/bin/mkdir -p %S/service-events %h/service-events
+ExecStart=/usr/local/share/agent/bin/python3 /usr/local/share/agent/service.py %S/service-events %h/service-events
+Restart=always
+StartLimitInterval=60
+StartLimitBurst=12
+RestartSec=5
+
+[Install]
+WantedBy=default.target

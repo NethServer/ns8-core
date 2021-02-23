@@ -1,36 +1,35 @@
 # ns8-scratchpad
 
-NethServer 8 experiments using containers.
+NethServer 8 experiments using containers on Fedora 33
 
-Tested on Fedora 33.
+- Podman running in rootless mode (every container has its own user)
+- Traefik reads the dynamic configuration from Redis (control-plane)
+- Local public services are reachable using the host network
 
-Podman running in rootless mode:
-- every container has its own user
-- traefik reads the dynamic configuration from redis
-- containers talk to each other using host network
+## Initialize the control plane
 
-## Install
+1. Retrieve credentials for DigitalOcean registry and save the `docker-config.json` file
 
-Execute as root:
-```
-curl -L -o ns8-scratchpad.tar.gz https://github.com/DavidePrincipi/ns8-scratchpad/archive/main.tar.gz
-tar xvzf ns8-scratchpad.tar.gz
-cd ns8-scratchpad-main
-./setup.sh
-```
+2. Execute as root:
 
-Access to redis is available from host network:
-```
-podman run -it --network host  --rm redis redis-cli
-```
+       # export REGISTRY_AUTH_FILE=docker-config.json
+       # bash init.sh
 
-### Dokuwiki
+## Control plane components
 
-The script will start a dokuwiki instance with valid SSL certificate, persistence and redirection from HTTP to HTTPs
-Default host for the dokuwiki is ``dokuwiki.<fqdn>``, make sure to have a valid DNS public record for it.
+1. Redis instance running as rootless container of the `cplane` user, TCP port 6379 - host network. Access to redis with:
 
-Execute as root:
-```
-./dokuwiki/init.sh
-```
+       $ podman run -it --network host --rm redis redis-cli
 
+2. `node-agent.service` unit, running as root. The events are defined in `/usr/local/share/agent/node-events` and `/var/lib/agent/node-events` (local sysadmin overrides).
+
+Still missing:
+
+3. VPN
+
+4. ...
+
+
+## Data plane services
+
+...TODO

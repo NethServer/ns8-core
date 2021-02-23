@@ -1,0 +1,15 @@
+[Unit]
+Description=Create the Redis control plane container
+Documentation=https://github.com/DavidePrincipi/ns8-scratchpad
+ConditionPathExists=!%S/redis.cid
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/podman create \
+    --cgroups=disabled \
+    --conmon-pidfile=%t/redis.pid \
+    --cidfile=%S/redis.cid \
+    --replace --name redis \
+    --network=host \
+    --volume=redis-data:/data \
+    docker.io/redis:6-alpine --appendonly yes
