@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 container=$(buildah from scratch)
 
 buildah copy ${container} bin /bin
