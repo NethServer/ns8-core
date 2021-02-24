@@ -1,0 +1,13 @@
+#!/bin/bash
+
+set -e
+
+mid=${1:?missing module identifier argument}
+
+source /usr/local/share/agent/bin/activate
+source <(redis-hgetall "${mid}/module.env")
+
+podman pull ${EVENTS_IMAGE:?missing EVENTS_IMAGE in environment}
+cid=$(podman create ${EVENTS_IMAGE})
+podman copy ${cid}:module-events/ ~/.config/module-events
+podman rm ${cid}
