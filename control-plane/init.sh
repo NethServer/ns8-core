@@ -20,7 +20,7 @@ podman cp ${cid}:/ ${installdir}
 podman rm -f ${cid}
 
 cp -f ${agentdir}/node-agent.service      /etc/systemd/system/node-agent.service
-cp -f ${agentdir}/service-agent.service   /etc/systemd/user/service-agent.service
+cp -f ${agentdir}/module-agent.service    /etc/systemd/user/module-agent.service
 
 python3 -mvenv ${agentdir}
 ${agentdir}/bin/pip3 install redis
