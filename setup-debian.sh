@@ -123,6 +123,10 @@ EOF
 chown -R traefik:traefik $TRAEFIK_HOME/.config
 grep -q 'XDG_RUNTIME_DIR' $TRAEFIK_HOME/.bashrc || echo "export XDG_RUNTIME_DIR=/run/user/$(id -u traefik)" >>  $TRAEFIK_HOME/.bashrc
 
+# Enable access to journalctl --user
+echo "Storage=persistent" >> /etc/systemd/journald.conf
+systemctl restart systemd-journald
+
 
 echo
 echo
