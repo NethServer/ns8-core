@@ -9,15 +9,17 @@ import os
 import sys
 import time
 
-event_paths = sys.argv[1:]
+channel_prefix = sys.argv[1]
+event_paths = sys.argv[2:]
 
 def event_handler(message):
-    global event_paths
+    global event_paths, channel_prefix
 
     handlers = {}
     for base in event_paths:
         try:
-            path = base + '/' + message['channel']
+            event_name = (message['channel'])[len(channel_prefix) + 1:]
+            path = base + '/' + event_name
             with os.scandir(path) as it:
                 for entry in it:
                     handlers[entry.name] = f"{path}/{entry.name}"
@@ -33,15 +35,16 @@ def event_handler(message):
             print(f"[ERROR] {ex}")
 
 def serve():
-    global event_paths
+    global event_paths, channel_prefix
 
     channels = {}
     for path in filter(os.path.isdir, event_paths):
         with os.scandir(path) as it:
             for entry in it:
                 if entry.is_dir():
-                    print("[INFO] configured event {0}".format(entry.name))
-                    channels[entry.name] = event_handler
+                    channel_name = channel_prefix + ':' + entry.name
+                    print(f"[INFO] configured event {entry.name}")
+                    channels[channel_name] = event_handler
 
     if not channels:
         print("[ERROR] nothing to do: no channel handlers found", file=sys.stderr)

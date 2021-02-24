@@ -3,8 +3,9 @@ Description=Module control agent
 
 [Service]
 Type=simple
+Environment=REGISTRY_AUTH_FILE=/usr/local/etc/registry.json
 ExecStartPre=/usr/bin/mkdir -p %S/module-events %h/module-events
-ExecStart=/usr/local/share/agent/bin/python3 /usr/local/share/agent/service.py %S/module-events %h/module-events
+ExecStart=/usr/local/share/agent/bin/python3 /usr/local/share/agent/service.py %u %S/module-events %h/module-events
 Restart=always
 StartLimitInterval=60
 StartLimitBurst=12

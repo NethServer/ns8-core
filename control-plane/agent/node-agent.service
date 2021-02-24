@@ -4,7 +4,8 @@ Description=Node control agent
 [Service]
 Type=simple
 ExecStartPre=/usr/bin/mkdir -p /var/lib/agent/node-events
-ExecStart=/usr/local/share/agent/bin/python3 /usr/local/share/agent/service.py /usr/local/share/agent/node-events /var/lib/agent/node-events
+# XXX: use %m as alternative to the short host name placeholder, %l
+ExecStart=/usr/local/share/agent/bin/python3 /usr/local/share/agent/service.py %l /usr/local/share/agent/node-events /var/lib/agent/node-events
 Restart=always
 StartLimitInterval=60
 StartLimitBurst=12
