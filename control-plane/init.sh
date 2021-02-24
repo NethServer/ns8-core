@@ -2,10 +2,12 @@
 
 set -e
 
-if ! podman pull registry.digitalocean.com/nethserver/control-plane:latest ; then
-    echo "[ERROR] run: export REGISTRY_AUTH_FILE=path-to/docker-config.json"
+if [[ ! -f /usr/local/etc/registry.json ]] ; then
+    echo "[ERROR] missing the registry access configuration. Copy it to /usr/local/etc/registry.json"
     exit 1
 fi
+
+export REGISTRY_AUTH_FILE=/usr/local/etc/registry.json
 
 echo "Set kernel parameters:"
 sysctl -w net.ipv4.ip_unprivileged_port_start=23 -w user.max_user_namespaces=28633 | tee /etc/sysctl.d/80-nethserver.conf
@@ -18,6 +20,7 @@ agentdir="${installdir}/agent"
 cplanedir="${installdir}/cplane"
 
 echo "Extracting control plane sources:"
+podman pull registry.digitalocean.com/nethserver/control-plane:latest
 cid=$(podman create registry.digitalocean.com/nethserver/control-plane:latest)
 podman cp ${cid}:/ ${installdir}
 podman rm -f ${cid}
