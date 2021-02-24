@@ -4,7 +4,12 @@ container=$(buildah from scratch)
 
 buildah copy ${container} agent /agent
 buildah copy ${container} cplane /cplane
+buildah config --entrypoint=/ ${container}
+buildah commit ${container} control-plane
 
-echo "Manually download the DigitalOcean docker-config.json file, then publish the image with:"
 echo
-echo " buildah commit --authfile docker-config.json ${container} docker://registry.digitalocean.com/nethserver/control-plane:latest"
+echo "Access DigitalOcean control panel and download docker-config.json file from Container Registry."
+echo "Then publish the image with:"
+echo
+echo " export REGISTRY_AUTH_FILE=path-to/docker-config.json"
+echo " buildah push control-plane docker://registry.digitalocean.com/nethserver/control-plane:latest"
