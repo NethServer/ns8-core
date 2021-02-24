@@ -9,5 +9,5 @@ source <(redis-hgetall "${mid}/module.env")
 
 podman pull ${EVENTS_IMAGE:?missing EVENTS_IMAGE in environment}
 cid=$(podman create ${EVENTS_IMAGE})
-podman copy ${cid}:module-events/ ~/.config/module-events
+podman cp ${cid}:module-events/ ~/.config/module-events
 podman rm ${cid}
