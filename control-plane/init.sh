@@ -11,20 +11,21 @@ if ! podman pull registry.digitalocean.com/nethserver/control-plane:latest ; the
     exit 1
 fi
 
-agentdir="/usr/local/share/agent"
+installdir="/usr/local/share"
+agentdir="${installdir}/agent"
+cplanedir="${installdir}/cplane"
+
+cid=$(podman create registry.digitalocean.com/nethserver/control-plane:latest)
+podman cp ${cid}:/ ${installdir}
+podman rm -f ${cid}
+
+cp -f ${agentdir}/node-agent.service      /etc/systemd/system/node-agent.service
+cp -f ${agentdir}/service-agent.service   /etc/systemd/user/service-agent.service
 
 python3 -mvenv ${agentdir}
 ${agentdir}/bin/pip3 install redis
 
-cid=$(podman create --entrypoint=/ registry.digitalocean.com/nethserver/control-plane:latest)
-podman cp ${cid}:agent/service.py ${agentdir}/service.py
-podman cp ${cid}:agent/node-events ${agentdir}/node-events
-podman cp ${cid}:agent/node-agent.service /etc/systemd/system/node-agent.service
-podman cp ${cid}:agent/service-agent.service /etc/systemd/user/service-agent.service
-podman cp ${cid}:cplane/skel /etc/opt/cplane/skel
-podman rm -f ${cid}
-
-useradd -m -k /etc/opt/cplane/skel cplane
+useradd -m -k ${cplanedir}/skel cplane
 loginctl enable-linger cplane
 
 systemctl enable --now node-agent.service
