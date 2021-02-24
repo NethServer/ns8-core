@@ -2,7 +2,7 @@
 
 NethServer 8 experiments using containers.
 
-Tested on Fedora 33.
+Tested on Fedora 33 and Debian 10.
 
 Podman running in rootless mode:
 - every container has its own user
@@ -16,7 +16,16 @@ Execute as root:
 curl -L -o ns8-scratchpad.tar.gz https://github.com/DavidePrincipi/ns8-scratchpad/archive/main.tar.gz
 tar xvzf ns8-scratchpad.tar.gz
 cd ns8-scratchpad-main
+```
+
+On Fedora:
+```
 ./setup.sh
+```
+
+On Debian (manual steps are required at the end):
+```
+./setup-debian.sh
 ```
 
 Access to redis is available from host network:
