@@ -4,6 +4,7 @@ container=$(buildah from scratch)
 
 buildah copy ${container} agent /agent
 buildah copy ${container} cplane /cplane
+buildah copy ${container} dplane /dplane
 buildah config --entrypoint=/ ${container}
 buildah commit ${container} control-plane
 
