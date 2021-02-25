@@ -15,4 +15,4 @@ echo "Access DigitalOcean control panel and download docker-config.json file fro
 echo "Then publish the image with:"
 echo
 echo " export REGISTRY_AUTH_FILE=path-to/docker-config.json"
-echo " buildah push control-plane docker://registry.digitalocean.com/nethserver/control-plane:latest"
+echo " buildah push control-plane docker://ghcr.io/nethserver/control-plane:latest"

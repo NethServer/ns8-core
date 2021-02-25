@@ -14,4 +14,4 @@ echo "Access DigitalOcean control panel and download docker-config.json file fro
 echo "Then publish the image with:"
 echo
 echo " export REGISTRY_AUTH_FILE=path-to/docker-config.json"
-echo " buildah push ${image} docker://registry.digitalocean.com/nethserver/${image}:latest"
+echo " buildah push ${image} docker://ghcr.io/nethserver/${image}:latest"

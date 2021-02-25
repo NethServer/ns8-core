@@ -20,9 +20,9 @@ agentdir="${installdir}/agent"
 cplanedir="${installdir}/cplane"
 
 echo "Extracting control plane sources:"
-podman pull registry.digitalocean.com/nethserver/control-plane:latest
-cid=$(podman create registry.digitalocean.com/nethserver/control-plane:latest)
-podman cp ${cid}:/ ${installdir}
+podman pull ghcr.io/nethserver/control-plane:latest
+cid=$(podman create ghcr.io/nethserver/control-plane:latest)
+podman export ${cid} | tar -C ${installdir} xf - 
 podman rm -f ${cid}
 
 cp -f ${agentdir}/node-agent.service      /etc/systemd/system/node-agent.service
