@@ -1,0 +1,43 @@
+#!/bin/sh
+
+mid=$(id -un)
+source <(redis-hgetall "${mid}/module.env")
+
+LE_EMAIL=${LE_EMAIL:-root@$(hostname -f)}
+
+cat <<EOF > ~/traefik.yaml
+defaultEntryPoints:
+  - http
+  - https
+
+file: {}
+
+log:
+  level: DEBUG
+
+accessLog: {}
+
+entryPoints:
+  http:
+   address: ":80"
+  https:
+   address: ":443"
+
+providers:
+  redis:
+    endpoints:
+      - "127.0.0.1:6379"
+
+tls:
+  certResolver: letsencrypt
+  options: {}
+
+certificatesResolvers:
+  letsencrypt:
+    acme:
+      email: ${LE_EMAIL}
+      storage: /etc/traefik/acme/acme.json
+      httpChallenge:
+        entryPoint: http
+      tlsChallenge: false
+EOF

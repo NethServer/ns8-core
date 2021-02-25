@@ -1,0 +1,16 @@
+[Unit]
+Description=Traefik edge proxy
+
+[Service]
+Environment=PODMAN_SYSTEMD_UNIT=%n
+Restart=on-failure
+ExecStartPre=/bin/rm -f %t/traefik.pid %t/traefik.ctr-id
+ExecStart=/usr/bin/podman run --conmon-pidfile %t/traefik.pid --cidfile %t/traefik.ctr-id --cgroups=no-conmon --replace --network=host --log-driver journald --name traefik -d -v traefik-acme:/etc/traefik/acme -v %h/traefik.yaml:/etc/traefik/traefik.yaml docker.io/traefik:v2.4
+ExecStop=/usr/bin/podman stop --ignore --cidfile %t/traefik.ctr-id -t 10
+ExecStopPost=/usr/bin/podman rm --ignore -f --cidfile %t/traefik.ctr-id
+PIDFile=%t/traefik.pid
+KillMode=none
+Type=forking
+
+[Install]
+WantedBy=default.target
