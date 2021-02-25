@@ -39,3 +39,11 @@ useradd -m -k ${cplanedir}/skel cplane
 loginctl enable-linger cplane
 
 systemctl enable --now node-agent.service
+
+if [[ ! -f ~/.ssh/id_rsa.pub ]] ; then
+    ssh-keygen -t rsa -N '' -f ~/.ssh/id_rsa
+fi
+
+echo "Adding id_rsa.pub to data plane home skeleton dir:"
+install -d -m 700 /usr/local/share/dplane/skel/.ssh
+install -m 600 -T ~/.ssh/id_rsa.pub /usr/local/share/dplane/skel/.ssh/authorized_keys

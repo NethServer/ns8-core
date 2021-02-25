@@ -61,6 +61,8 @@ As alternative
 
 - Each module has a public/private key pair to encrypt passwords and other secrets in the Redis database.
 
+### Traefik module
+
 The following Redis commands configure a Traefik module instance, `traefik0`:
 
     HSET traefik0/module.env LE_EMAIL davide.principi@nethesis.it EVENTS_IMAGE ghcr.io/nethserver/dplane-traefik
@@ -68,3 +70,14 @@ The following Redis commands configure a Traefik module instance, `traefik0`:
     PUBLISH traefik0:module.init2 traefik0
 
 The first PUBLISH pulls the module event definitions. The second PUBLISH pulls the service image and runs it.
+
+To inspect and modify the module start a SSH session. SSH is preferred to `su - traefik0` because the latter
+does not properly initialize the Systemd session environment.
+
+    # ssh traefik0@localhost
+    # systemctl --user status
+
+To uninstall the `traefik0` module run
+
+    # loginctl disable-linger traefik0
+    # userdel -r traefik0
