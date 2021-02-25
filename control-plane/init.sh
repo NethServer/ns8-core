@@ -7,7 +7,9 @@ if [[ ! -f /usr/local/etc/registry.json ]] ; then
     exit 1
 fi
 
+echo "Registry auth found."
 export REGISTRY_AUTH_FILE=/usr/local/etc/registry.json
+chmod -c 644 ${REGISTRY_AUTH_FILE}
 
 echo "Set kernel parameters:"
 sysctl -w net.ipv4.ip_unprivileged_port_start=23 -w user.max_user_namespaces=28633 | tee /etc/sysctl.d/80-nethserver.conf

@@ -9,5 +9,5 @@ podman pull ${EVENTS_IMAGE:?missing EVENTS_IMAGE in environment}
 cid=$(podman create ${EVENTS_IMAGE})
 trap "podman rm ${cid}" EXIT
 
-podman extract ${cid} | tar -C ~ -x -f -
+podman export ${cid} | tar -C ~ -x -f -
 systemctl --user restart module-agent
