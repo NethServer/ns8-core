@@ -4,24 +4,40 @@ NethServer 8 experiments using containers on Fedora 33
 
 ## Initialize the control plane
 
-1. Retrieve credentials for DigitalOcean registry and save the `docker-config.json` file
+1. Create a [GitHub PAT](https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token)
+   for the **ghcr.io** registry (private `repo` read-only access should be enough) then run the following command, specifying
+   your GitHub user name and providing the generated PAT as password:
+
+       # podman login --auth-file /usr/local/etc/registry.json
 
 2. Execute as root:
 
-       # export REGISTRY_AUTH_FILE=docker-config.json
        # curl https://raw.githubusercontent.com/DavidePrincipi/ns8-scratchpad/main/control-plane/init.sh | bash init.sh
 
 ## Control plane components
 
 The control plane runs the following components:
 
-1. Redis instance running as rootless container of the `cplane` user, TCP port 6379 - host network. Access to redis with:
-
-       $ podman run -it --network host --rm redis redis-cli
+1. Redis instance running as rootless container of the `cplane` user, TCP port 6379 - host network.
 
 2. `node-agent.service` Systemd unit, running as root. The events are defined in `/usr/local/share/agent/node-events` and `/var/lib/agent/node-events` (for local Sysadmin overrides).
 
 Further components will be added in the future (e.g. API Server, VPN, ...).
+
+Once the control plane has been initialized run this Redis command (replace `fc1` with the output of `hostname -s`) 
+to create a data-plane Traefik module instance:
+
+    PUBLISH fc1:module.init traefik0
+
+Access to redis with:
+
+    $ podman run -it --network host --rm redis redis-cli
+
+As alternative
+
+    # dnf install nc
+    # nc 127.0.0.1 6379 <<<"PUBLISH fc1:module.init traefik0"
+
 
 
 ## Data plane components
@@ -37,8 +53,18 @@ Further components will be added in the future (e.g. API Server, VPN, ...).
 
 - Each module provides a bunch of event handlers. An event is handled by one or more *action* scripts, stored under `$HOME/.config/module-events`. The local Sysadmin can extend and/or override them by putting their action scripts under `$HOME/module-events`.
 
-- The `module-agent.service` Systemd unit executes the event handlers.
+- The `module-agent.service` Systemd unit executes the event handlers. The agent daemon runs in the Python virtual
+  environment installed in `/usr/local/share/agent/`: action scripts inherit the same environment. Additional binaries
+  can be installed under `/usr/local/share/agent/bin/`.
 
 - Each module has granted full read-only access to the Redis database.
 
 - Each module has a public/private key pair to encrypt passwords and other secrets in the Redis database.
+
+The following Redis commands configure a Traefik module instance, `traefik0`:
+
+    HSET traefik0/module.env LE_EMAIL davide.principi@nethesis.it EVENTS_IMAGE ghcr.io/nethserver/dplane-traefik
+    PUBLISH traefik0:module.init traefik0
+    PUBLISH traefik0:module.init2 traefik0
+
+The first PUBLISH pulls the module event definitions. The second PUBLISH pulls the service image and runs it.
