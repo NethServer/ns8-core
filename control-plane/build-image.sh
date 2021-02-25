@@ -4,7 +4,6 @@ set -e
 
 container=$(buildah from scratch)
 
-buildah copy ${container} bin /bin
 buildah copy ${container} agent /agent
 buildah copy ${container} cplane /cplane
 buildah copy ${container} dplane /dplane
