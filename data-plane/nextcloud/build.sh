@@ -25,7 +25,7 @@ podman create -d --pod $N \
   -e REDIS_HOST=127.0.0.1 -e REDIS_HOST_PORT=6379 \
   -e NEXTCLOUD_TRUSTED_DOMAINS="$HOST localhost" \
   -e APACHE_DISABLE_REWRITE_IP=1 -e TRUSTED_PROXIES=10.0.0.0/8 \
-  -v $N-app-data:/var/www/html/data -v $N-source:/var/www/html \
+  -v $N-app-data:/var/www/html/data -v $N-app-source:/var/www/html \
   docker.io/nextcloud:latest
 
 podman generate systemd --new --name --files $N
