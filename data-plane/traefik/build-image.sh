@@ -2,7 +2,7 @@
 
 set -e
 
-image="dplane-traefik"
+image="cplane-traefik"
 container=$(buildah from scratch)
 
 buildah copy "${container}" .config /.config

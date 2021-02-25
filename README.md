@@ -25,8 +25,9 @@ The control plane runs the following components:
 Further components will be added in the future (e.g. API Server, VPN, ...).
 
 Once the control plane has been initialized run this Redis command (replace `fc1` with the output of `hostname -s`) 
-to create a data-plane Traefik module instance:
+to initialize the control plane of the Traefik module instance:
 
+    HSET traefik0/module.env LE_EMAIL davide.principi@nethesis.it EVENTS_IMAGE ghcr.io/nethserver/cplane-traefik:latest
     PUBLISH fc1:module.init traefik0
 
 Access to redis with:
@@ -36,7 +37,10 @@ Access to redis with:
 As alternative
 
     # dnf install nc
-    # nc 127.0.0.1 6379 <<<"PUBLISH fc1:module.init traefik0"
+    # nc 127.0.0.1 6379 <<EOF
+    HSET traefik0/module.env LE_EMAIL davide.principi@nethesis.it EVENTS_IMAGE ghcr.io/nethserver/cplane-traefik:latest
+    PUBLISH fc1:module.init traefik0
+    EOF
 
 
 
@@ -63,11 +67,9 @@ As alternative
 
 ### Traefik module
 
-The following Redis commands configure a Traefik module instance, `traefik0`:
+After initializing the control plane, the following Redis command starts the Traefik module instance `traefik0`:
 
-    HSET traefik0/module.env LE_EMAIL davide.principi@nethesis.it EVENTS_IMAGE ghcr.io/nethserver/dplane-traefik
     PUBLISH traefik0:module.init traefik0
-    PUBLISH traefik0:module.init2 traefik0
 
 The first PUBLISH pulls the module event definitions. The second PUBLISH pulls the service image and runs it.
 

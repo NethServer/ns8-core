@@ -1,5 +1,7 @@
 [Unit]
 Description=Module control agent
+Requires=module-init.service
+After=module-init.service
 
 [Service]
 Type=simple
