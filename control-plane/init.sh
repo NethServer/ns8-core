@@ -27,7 +27,6 @@ podman rm -f ${cid}
 
 cp -f ${agentdir}/node-agent.service      /etc/systemd/system/node-agent.service
 cp -f ${agentdir}/module-agent.service    /etc/systemd/user/module-agent.service
-cp -f ${installdir}/bin/* /usr/local/bin
 
 echo "Setup agent:"
 python3 -mvenv ${agentdir}
