@@ -2,11 +2,12 @@
 
 set -e
 
-mid=${1:?missing module identifier argument}
-
+mid=$(id -un)
 source <(redis-hgetall "${mid}/module.env")
 
 podman pull ${EVENTS_IMAGE:?missing EVENTS_IMAGE in environment}
 cid=$(podman create ${EVENTS_IMAGE})
-podman cp ${cid}:module-events/ ~/.config/module-events
-podman rm ${cid}
+trap "podman rm ${cid}" EXIT
+
+podman extract ${cid} | tar -C ~ -x -f -
+systemctl --user restart module-agent
