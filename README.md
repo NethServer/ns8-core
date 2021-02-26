@@ -12,7 +12,7 @@ NethServer 8 experiments using containers on Fedora 33
 
 2. Execute as root:
 
-       # curl https://raw.githubusercontent.com/DavidePrincipi/ns8-scratchpad/main/control-plane/init.sh | bash init.sh
+       # curl https://raw.githubusercontent.com/DavidePrincipi/ns8-scratchpad/main/control-plane/init.sh | bash
 
 ## Control plane components
 
