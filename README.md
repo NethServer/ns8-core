@@ -27,7 +27,7 @@ Further components will be added in the future (e.g. API Server, VPN, ...).
 Once the control plane has been initialized run this Redis command (replace `fc1` with the output of `hostname -s`) 
 to initialize the control plane of the Traefik module instance:
 
-    HSET traefik0/module.env LE_EMAIL davide.principi@nethesis.it EVENTS_IMAGE ghcr.io/nethserver/cplane-traefik:latest
+    HSET traefik0/module.env LE_EMAIL me@example.com EVENTS_IMAGE ghcr.io/nethserver/cplane-traefik:latest
     PUBLISH fc1:module.init traefik0
 
 Access to redis with:
@@ -38,7 +38,7 @@ As alternative
 
     # dnf install nc
     # nc 127.0.0.1 6379 <<EOF
-    HSET traefik0/module.env LE_EMAIL davide.principi@nethesis.it EVENTS_IMAGE ghcr.io/nethserver/cplane-traefik:latest
+    HSET traefik0/module.env LE_EMAIL me@example.com EVENTS_IMAGE ghcr.io/nethserver/cplane-traefik:latest
     PUBLISH fc1:module.init traefik0
     EOF
 

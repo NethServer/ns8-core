@@ -8,6 +8,7 @@ import redis
 import os
 import sys
 import time
+import socket
 
 channel_prefix = sys.argv[1]
 event_paths = sys.argv[2:]
@@ -34,7 +35,7 @@ def event_handler(message):
         except Exception as ex:
             print(f"[ERROR] {ex}")
 
-def serve():
+def get_channels():
     global event_paths, channel_prefix
 
     channels = {}
@@ -50,11 +51,33 @@ def serve():
         print("[ERROR] nothing to do: no channel handlers found", file=sys.stderr)
         exit(1)
 
+    return channels
+
+def serve(channels):
     r = redis.Redis(host='127.0.0.1', port=6379, db=0, decode_responses=True)
     p = r.pubsub(ignore_subscribe_messages=True)
     p.subscribe(**channels)
-    p.run_in_thread(sleep_time=0.5).join()
+    return p.run_in_thread(sleep_time=0.5)
+
 
 
 if __name__ == '__main__':
-    serve()
+
+    sa = os.getenv("NOTIFY_SOCKET")
+    if sa:
+        so = socket.socket(family=socket.AF_UNIX, type=socket.SOCK_DGRAM)
+        def sd_send(msg):
+            so.sendto(msg.encode(), sa)
+    else:    
+        def sd_send(msg):
+            pass
+
+    startup_event = os.environ.get('AGENT_STARTUP_EVENT', False)
+    if startup_event:
+        sd_send(f"STATUS=[INFO] Waiting for startup event {startup_event} to complete...\n")
+        event_handler({"channel": channel_prefix + ':' + startup_event, "data": ""})
+
+    t = serve(get_channels())
+    sd_send("READY=1\n")
+
+    t.join()
