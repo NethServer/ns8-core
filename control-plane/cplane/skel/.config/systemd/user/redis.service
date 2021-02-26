@@ -1,0 +1,17 @@
+[Unit]
+Description=Control plane Redis instance
+Documentation=https://github.com/DavidePrincipi/ns8-scratchpad
+Requires=create-redis.service
+After=create-redis.service
+
+[Service]
+Environment=PODMAN_SYSTEMD_UNIT=%n
+Restart=on-failure
+ExecStart=/usr/bin/podman start redis
+ExecStop=/usr/bin/podman stop redis
+ExecStopPost=/usr/bin/podman stop redis
+PIDFile=%t/redis.pid
+Type=forking
+
+[Install]
+WantedBy=default.target

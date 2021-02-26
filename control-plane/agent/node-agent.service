@@ -1,0 +1,19 @@
+[Unit]
+Description=Node control agent
+
+[Service]
+Type=simple
+Environment=REGISTRY_AUTH_FILE=/usr/local/etc/registry.json
+Environment=VIRTUAL_ENV=/usr/local/share/agent
+Environment=PATH=/usr/local/share/agent/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin
+WorkingDirectory=/usr/local/share/agent
+ExecStartPre=/usr/bin/mkdir -p /var/lib/agent/node-events
+# XXX: use %m as alternative to the short host name placeholder, %l
+ExecStart=/usr/bin/env python3 service.py %l ./node-events /var/lib/agent/node-events
+Restart=always
+StartLimitInterval=60
+StartLimitBurst=12
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

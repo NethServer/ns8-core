@@ -15,7 +15,7 @@ podman volume create nsdc-config
 
 podman image pull "${image}"
 
-source <(ctlp-hgetall nsdc.env)
+source <(redis-hgetall nsdc.env)
 
 #
 # Override the provisioning procedure:
@@ -47,7 +47,7 @@ podman create \
     --add-host="${NSDC_HOSTNAME}:${NSDC_IPADDRESS}" \
     --network=host \
     --hostname=${NSDC_HOSTNAME} \
-    --env-file=<(ctlp-hgetall nsdc.env) \
+    --env-file=<(redis-hgetall nsdc.env) \
     --privileged=true \
     --volume=nsdc-data:/var/lib/samba \
     --volume=nsdc-config:/etc/samba \

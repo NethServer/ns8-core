@@ -1,0 +1,12 @@
+#!/bin/bash
+
+set -e
+
+mid=${1:?missing module identifier argument}
+source <(redis-hgetall "${mid}/module.env")
+
+podman pull ${EVENTS_IMAGE:?missing EVENTS_IMAGE in environmenti ${mid}/module.env}
+cid=$(podman create ${EVENTS_IMAGE})
+trap "podman rm ${cid}" EXIT
+
+podman export ${cid} | tar -C ~ -x -v -f -
