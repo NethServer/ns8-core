@@ -27,13 +27,20 @@ def event_handler(message):
         except Exception as ex:
             pass
 
+    errors = 0
     for h in sorted(handlers):
         try:
             print(f"[INFO] running handler {h}")
             exit_code = os.spawnlp(os.P_WAIT, handlers[h], h, message['data'])
-            print("[{0}] handler exit with {1}".format("INFO" if exit_code == 0 else "ERROR", exit_code))
+            if exit_code == 0:
+                print(f"[INFO] handler {h} success")
+            else:
+                print(f"[ERROR] handler {h} exit code {exit_code}")
+                errors += 1
         except Exception as ex:
             print(f"[ERROR] {ex}")
+
+    return errors
 
 def get_channels():
     global event_paths, channel_prefix
@@ -46,10 +53,6 @@ def get_channels():
                     channel_name = channel_prefix + ':' + entry.name
                     print(f"[INFO] configured event {entry.name}")
                     channels[channel_name] = event_handler
-
-    if not channels:
-        print("[ERROR] nothing to do: no channel handlers found", file=sys.stderr)
-        exit(1)
 
     return channels
 
@@ -68,16 +71,26 @@ if __name__ == '__main__':
         so = socket.socket(family=socket.AF_UNIX, type=socket.SOCK_DGRAM)
         def sd_send(msg):
             so.sendto(msg.encode(), sa)
-    else:    
+    else:
         def sd_send(msg):
-            pass
+            print(f"[INFO] {msg}")
 
     startup_event = os.environ.get('AGENT_STARTUP_EVENT', False)
     if startup_event:
-        sd_send(f"STATUS=[INFO] Waiting for startup event {startup_event} to complete...\n")
-        event_handler({"channel": channel_prefix + ':' + startup_event, "data": ""})
+        sd_send(f"STATUS=Waiting for startup event {startup_event} to complete...\n")
+        errors = event_handler({"channel": channel_prefix + ':' + startup_event, "data": ""})
+        if errors > 0:
+            sd_send(f"STATUS=Startup event {startup_event} completed with {errors} errors\n")
+            exit(2)
+        else:
+            sd_send(f"STATUS=Startup event {startup_event} completed successfully\n")
 
-    t = serve(get_channels())
+    channels = get_channels()
+    if not channels:
+        print("[ERROR] nothing to do: no channel handlers found", file=sys.stderr)
+        exit(3)
+
+    t = serve(channels)
     sd_send("READY=1\n")
 
     t.join()

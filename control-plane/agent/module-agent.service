@@ -4,7 +4,7 @@ Requires=module-init.service
 After=module-init.service
 
 [Service]
-Type=simple
+Type=notify
 Environment=REGISTRY_AUTH_FILE=/usr/local/etc/registry.json
 Environment=VIRTUAL_ENV=/usr/local/share/agent
 Environment=PATH=/usr/local/share/agent/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin
@@ -14,7 +14,7 @@ ExecStartPre=/usr/bin/mkdir -p %S/module-events %h/module-events
 WorkingDirectory=/usr/local/share/agent
 ExecStart=/usr/bin/env python3 service.py %u %S/module-events %h/module-events
 TimeoutStartSec=300
-ExecStartPost=/usr/bin/bash -c "AGENT_STARTUP_EVENT= > %S/module.init"
+ExecStartPost=/usr/bin/bash -c "echo AGENT_STARTUP_EVENT= > %S/module.init"
 Restart=always
 StartLimitInterval=60
 StartLimitBurst=12
