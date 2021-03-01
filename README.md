@@ -1,6 +1,8 @@
 # ns8-scratchpad
 
-NethServer 8 experiments using containers on Fedora 33
+NethServer 8 experiments using containers on Fedora 33.
+
+The install procedure should work also on Debian 10.
 
 
 ## Control plane components
