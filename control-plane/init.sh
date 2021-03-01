@@ -2,6 +2,8 @@
 
 set -e
 
+distro=$(awk -F = '/^ID=/ { print $2 }' /etc/os-release)
+
 if [[ ! -f /usr/local/etc/registry.json ]] ; then
     echo "[ERROR] missing the registry access configuration. Copy it to /usr/local/etc/registry.json"
     exit 1
@@ -13,9 +15,21 @@ chmod -c 644 ${REGISTRY_AUTH_FILE}
 
 echo "Set kernel parameters:"
 sysctl -w net.ipv4.ip_unprivileged_port_start=23 -w user.max_user_namespaces=28633 | tee /etc/sysctl.d/80-nethserver.conf
+if [[ ${distro} == "debian" ]]; then
+    sysctl -w kernel.unprivileged_userns_clone=1 | tee -a /etc/sysctl.d/80-nethserver.conf
+fi
 
 echo "Install dependencies:"
-dnf install -y wireguard-tools podman jq
+if [[ ${distro} == "fedora" ]]; then
+    dnf install -y wireguard-tools podman jq
+elif [[ ${distro} == "debian" ]]; then
+    apt-get -y install gnupg2 python3-venv
+    echo 'deb http://deb.debian.org/debian buster-backports main' >> /etc/apt/sources.list
+    echo 'deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/Debian_10/ /' > /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list
+    wget -O - https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/Debian_10/Release.key | apt-key add -
+    apt-get update
+    apt-get -y -t buster-backports install libseccomp2 podman
+fi
 
 installdir="/usr/local/share"
 agentdir="${installdir}/agent"
@@ -39,6 +53,7 @@ echo "Starting control plane:"
 useradd -m -k ${cplanedir}/skel cplane
 loginctl enable-linger cplane
 
+echo "NODE_PREFIX=$(hostname -s)" > /usr/local/etc/node-agent.env
 systemctl enable --now node-agent.service
 
 if [[ ! -f ~/.ssh/id_rsa.pub ]] ; then
