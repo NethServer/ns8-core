@@ -1,0 +1,8 @@
+#!/bin/bash
+
+TMP_DIR=$HOME/backup-tmp
+
+mkdir -p $TMP_DIR
+
+# backup mysql dump
+podman exec -i nextcloud-db sh -c 'exec mysqldump --all-databases -uroot -pnextcloud' > $TMP_DIR/dump.sql

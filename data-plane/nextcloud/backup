@@ -1,0 +1,23 @@
+#!/bin/bash
+
+# The scripts assumes:
+# - restic rest server is running on 127.0.0.1:8383
+# - restic repository already exists
+#
+# To execute restic server run as root:
+#   podman run -d -p 127.0.0.1:8383:8000 -v restic-server-backup:/data --name rest_server -e OPTIONS="--no-auth --debug" docker.io/restic/rest-server
+# To create thre port execute:
+#  podman run --network=host --rm -i -v $HOME/restic_password:/pass -e RESTIC_REPOSITORY=rest:http://127.0.0.1:8383/nextcloud docker.io/restic/restic -p /pass init
+#
+TMP_DIR=$HOME/backup-tmp
+
+# backup all volumes (except database)
+volumes="-v $TMP_DIR/dump.sql:/dump.sql"
+sources="/dump.sql"
+for v in $(podman volume ls --format={{.Name}} | grep -v nextcloud-db)
+do
+    volumes="$volumes -v $v:/$v "
+    sources="$sources /$v"
+done
+
+podman run --network=host --rm -i $volumes -v $HOME/restic_password:/pass -e RESTIC_REPOSITORY=rest:http://127.0.0.1:8383/nextcloud docker.io/restic/restic -p /pass backup $sources

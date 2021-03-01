@@ -1,0 +1,12 @@
+#!/bin/bash
+
+TMP_DIR=/run/user/$(id -u)
+DUMP=$TMP_DIR/dump.sql
+
+touch $DUMP
+volumes="-v $DUMP:/restore/dump.sql"
+for v in nextcloud-app-data nextcloud-app-source nextcloud-redis-data
+do
+    volumes="$volumes -v $v:/restore/$v"
+done
+podman run --network=host --rm -i $volumes -v $HOME/restic_password:/pass -e RESTIC_REPOSITORY=rest:http://127.0.0.1:8383/nextcloud docker.io/restic/restic -p /pass restore latest --target /restore 
