@@ -4,8 +4,26 @@ set -e
 
 distro=$(awk -F = '/^ID=/ { print $2 }' /etc/os-release)
 
+echo "Install dependencies:"
+if [[ ${distro} == "fedora" ]]; then
+    dnf install -y wireguard-tools podman jq
+elif [[ ${distro} == "debian" ]]; then
+    apt-get -y install gnupg2 python3-venv
+    echo 'deb http://deb.debian.org/debian buster-backports main' >> /etc/apt/sources.list
+    echo 'deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/Debian_10/ /' > /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list
+    wget -O - https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/Debian_10/Release.key | apt-key add -
+    apt-get update
+    apt-get -y -t buster-backports install libseccomp2 podman
+
+    # Enable access to journalctl --user
+    echo "Storage=persistent" >> /etc/systemd/journald.conf
+    systemctl restart systemd-journald
+fi
+
 if [[ ! -f /usr/local/etc/registry.json ]] ; then
     echo "[ERROR] missing the registry access configuration. Copy it to /usr/local/etc/registry.json"
+    echo "To create a new registry access configuration execute:"
+    echo "  podman login --authfile /usr/local/etc/registry.json ghcr.io"
     exit 1
 fi
 
@@ -17,18 +35,6 @@ echo "Set kernel parameters:"
 sysctl -w net.ipv4.ip_unprivileged_port_start=23 -w user.max_user_namespaces=28633 | tee /etc/sysctl.d/80-nethserver.conf
 if [[ ${distro} == "debian" ]]; then
     sysctl -w kernel.unprivileged_userns_clone=1 | tee -a /etc/sysctl.d/80-nethserver.conf
-fi
-
-echo "Install dependencies:"
-if [[ ${distro} == "fedora" ]]; then
-    dnf install -y wireguard-tools podman jq
-elif [[ ${distro} == "debian" ]]; then
-    apt-get -y install gnupg2 python3-venv
-    echo 'deb http://deb.debian.org/debian buster-backports main' >> /etc/apt/sources.list
-    echo 'deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/Debian_10/ /' > /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list
-    wget -O - https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/Debian_10/Release.key | apt-key add -
-    apt-get update
-    apt-get -y -t buster-backports install libseccomp2 podman
 fi
 
 installdir="/usr/local/share"
