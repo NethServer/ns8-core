@@ -1,0 +1,5 @@
+#!/bin/bash
+
+# Pull image before user, otherwise systemd will fail becase start timeout is reached
+
+podman pull docker.io/bitnami/dokuwiki:latest
