@@ -51,10 +51,10 @@ Further components will be added in the future (e.g. API Server, VPN, ...).
 ### Initialize the control plane
 
 1. Create a [GitHub PAT](https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token)
-   for the **ghcr.io** registry (private `repo` read-only access should be enough) then run the following command, specifying
+   for the **ghcr.io** registry (for read-only access `read:packages private` scope should be enough) then run the following command, specifying
    your GitHub user name and providing the generated PAT as password:
 
-       # podman login --auth-file /usr/local/etc/registry.json
+       # podman login --authfile /usr/local/etc/registry.json ghcr.io
 
 2. Execute as root:
 
@@ -64,6 +64,11 @@ Further components will be added in the future (e.g. API Server, VPN, ...).
 
 Once the control plane has been initialized run this Redis command (replace `fc1` with the output of `hostname -s`) 
 to initialize the control plane of the Traefik module instance and start its data plane services:
+
+    podman run -i --network host --rm docker.io/redis:6-alpine redis-cli <<EOF
+    HSET traefik0/module.env LE_EMAIL root@$(hostname -f) EVENTS_IMAGE ghcr.io/nethserver/cplane-traefik:latest
+    PUBLISH $(hostname -s):module.init traefik0
+    EOF
 
     HSET traefik0/module.env LE_EMAIL me@example.com EVENTS_IMAGE ghcr.io/nethserver/cplane-traefik:latest
     PUBLISH fc1:module.init traefik0
