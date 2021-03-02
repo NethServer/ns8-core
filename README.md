@@ -96,3 +96,25 @@ To uninstall the `traefik0` module run
 
     # loginctl disable-linger traefik0
     # userdel -r traefik0
+
+### Start dokuwiki instance
+
+Execute:
+```
+podman run -i --network host --rm docker.io/redis:6-alpine redis-cli <<EOF
+HSET dokuwiki0/module.env EVENTS_IMAGE ghcr.io/nethserver/dokuwiki:latest
+PUBLISH $(hostname -s):module.init dokuwiki0
+EOF
+```
+
+### Destroy an instance
+
+Execute where `<user>` is the unix user of the instance:
+```
+pkill -u <user>; userdel <user>; rm -rf /home/<user>
+```
+
+Example:
+```
+pkill -u dokuwiki0; userdel dokuwiki0; rm -rf /home/dokuwiki0/
+```
