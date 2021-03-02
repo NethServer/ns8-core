@@ -8,13 +8,15 @@
 N=dokuwiki
 HOST=dokuwiki.$(hostname -f)
 
-podman run -it --network host --rm docker.io/redis redis-cli SET traefik/http/services/$N/loadbalancer/servers/0/url http://127.0.0.1:8080
-podman run -it --network host --rm docker.io/redis redis-cli SET traefik/http/routers/$N-http/service $N
-podman run -it --network host --rm docker.io/redis redis-cli SET traefik/http/routers/$N-http/entrypoints http,https
-podman run -it --network host --rm docker.io/redis redis-cli SET traefik.http/routers/$N-http/rule "Host(\`$HOST\`)"
-podman run -it --network host --rm docker.io/redis redis-cli SET traefik/http/routers/$N-https/entrypoints http,https
-podman run -it --network host --rm docker.io/redis redis-cli SET traefik/http/routers/$N-https/rule "Host(\`$HOST\`)"
-podman run -it --network host --rm docker.io/redis redis-cli SET traefik/http/routers/$N-https/tls true
-podman run -it --network host --rm docker.io/redis redis-cli SET traefik/http/routers/$N-https/service $N
-podman run -it --network host --rm docker.io/redis redis-cli SET traefik/http/routers/$N-https/tls/certresolver letsencrypt
-podman run -it --network host --rm docker.io/redis redis-cli SET traefik/http/routers/$N-https/tls/domains/0/main $HOST
+podman run -i --network host --rm docker.io/redis:6-alpine redis-cli <<EOF
+SET traefik/http/services/$N/loadbalancer/servers/0/url http://127.0.0.1:8080
+SET traefik/http/routers/$N-http/service $N
+SET traefik/http/routers/$N-http/entrypoints http,https
+SET traefik.http/routers/$N-http/rule "Host(\`$HOST\`)"
+SET traefik/http/routers/$N-https/entrypoints http,https
+SET traefik/http/routers/$N-https/rule "Host(\`$HOST\`)"
+SET traefik/http/routers/$N-https/tls true
+SET traefik/http/routers/$N-https/service $N
+SET traefik/http/routers/$N-https/tls/certresolver letsencrypt
+SET traefik/http/routers/$N-https/tls/domains/0/main $HOST
+EOF
