@@ -1,5 +1,0 @@
-#!/bin/bash
-
-# The redis key should be already in place before traefik startup
-
-podman run -i --network host --rm docker.io/redis:6-alpine redis-cli SET traefik

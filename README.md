@@ -66,12 +66,10 @@ Once the control plane has been initialized run this Redis command (replace `fc1
 to initialize the control plane of the Traefik module instance and start its data plane services:
 
     podman run -i --network host --rm docker.io/redis:6-alpine redis-cli <<EOF
+    SET traefik 
     HSET traefik0/module.env LE_EMAIL root@$(hostname -f) EVENTS_IMAGE ghcr.io/nethserver/cplane-traefik:latest
     PUBLISH $(hostname -s):module.init traefik0
     EOF
-
-    HSET traefik0/module.env LE_EMAIL me@example.com EVENTS_IMAGE ghcr.io/nethserver/cplane-traefik:latest
-    PUBLISH fc1:module.init traefik0
 
 Access to redis with:
 
@@ -104,6 +102,22 @@ Execute:
 podman run -i --network host --rm docker.io/redis:6-alpine redis-cli <<EOF
 HSET dokuwiki0/module.env EVENTS_IMAGE ghcr.io/nethserver/dokuwiki:latest
 PUBLISH $(hostname -s):module.init dokuwiki0
+EOF
+```
+
+Setup traefik routes:
+```
+N=dokuwiki HOST=dokuwiki.$(hostname -f) podman run -i --network host --rm docker.io/redis:6-alpine redis-cli <<EOF
+SET traefik/http/services/$N/loadbalancer/servers/0/url http://127.0.0.1:8080
+SET traefik/http/routers/$N-http/service $N
+SET traefik/http/routers/$N-http/entrypoints http,https
+SET traefik.http/routers/$N-http/rule "Host(\`$HOST\`)"
+SET traefik/http/routers/$N-https/entrypoints http,https
+SET traefik/http/routers/$N-https/rule "Host(\`$HOST\`)"
+SET traefik/http/routers/$N-https/tls true
+SET traefik/http/routers/$N-https/service $N
+SET traefik/http/routers/$N-https/tls/certresolver letsencrypt
+SET traefik/http/routers/$N-https/tls/domains/0/main $HOST
 EOF
 ```
 
