@@ -107,7 +107,7 @@ EOF
 
 Setup traefik routes:
 ```
-N=dokuwiki HOST=dokuwiki.$(hostname -f) podman run -i --network host --rm docker.io/redis:6-alpine redis-cli <<EOF
+N=dokuwiki HOST=dokuwiki.$(hostname -f); podman run -i --network host --rm docker.io/redis:6-alpine redis-cli <<EOF
 SET traefik/http/services/$N/loadbalancer/servers/0/url http://127.0.0.1:8080
 SET traefik/http/routers/$N-http/service $N
 SET traefik/http/routers/$N-http/entrypoints http,https
