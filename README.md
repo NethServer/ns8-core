@@ -66,7 +66,7 @@ Once the control plane has been initialized run this Redis command (replace `fc1
 to initialize the control plane of the Traefik module instance and start its data plane services:
 
     podman run -i --network host --rm docker.io/redis:6-alpine redis-cli <<EOF
-    SET traefik 
+    SET traefik ''
     HSET traefik0/module.env LE_EMAIL root@$(hostname -f) EVENTS_IMAGE ghcr.io/nethserver/cplane-traefik:latest
     PUBLISH $(hostname -s):module.init traefik0
     EOF
@@ -119,16 +119,4 @@ SET traefik/http/routers/$N-https/service $N
 SET traefik/http/routers/$N-https/tls/certresolver letsencrypt
 SET traefik/http/routers/$N-https/tls/domains/0/main $HOST
 EOF
-```
-
-### Destroy an instance
-
-Execute where `<user>` is the unix user of the instance:
-```
-pkill -u <user>; userdel <user>; rm -rf /home/<user>
-```
-
-Example:
-```
-pkill -u dokuwiki0; userdel dokuwiki0; rm -rf /home/dokuwiki0/
 ```
