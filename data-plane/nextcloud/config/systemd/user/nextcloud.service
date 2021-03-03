@@ -1,8 +1,6 @@
 [Unit]
 Description=Podman nextcloud.service
 Documentation=man:podman-generate-systemd(1)
-Wants=network.target
-After=network-online.target
 Requires=nextcloud-app.service nextcloud-db.service nextcloud-redis.service
 Before=nextcloud-app.service nextcloud-db.service nextcloud-redis.service
 
