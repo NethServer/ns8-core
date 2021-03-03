@@ -1,0 +1,7 @@
+#!/bin/bash
+
+# Pull image before use, otherwise "systemd --user start dokuwiki" will fail because start timeout is reached
+
+podman pull docker.io/nextcloud:latest
+podman pull docker.io/redis:6-alpine
+podman pull docker.io/mariadb:10

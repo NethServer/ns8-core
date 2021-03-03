@@ -11,6 +11,8 @@ The `build.sh` is the script used to initially generate the systemd units.
 
 ## Backup and restore
 
+The draft implementation is inside `backup_scripts` directory.
+
 Assumptions:
 - there is a restic rest server is running on 127.0.0.1:8383
 - the restic repository already exists

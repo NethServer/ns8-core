@@ -120,3 +120,29 @@ SET traefik/http/routers/$N-https/tls/certresolver letsencrypt
 SET traefik/http/routers/$N-https/tls/domains/0/main $HOST
 EOF
 ```
+
+## Start nexcloud instance
+
+Execute:
+```
+podman run -i --network host --rm docker.io/redis:6-alpine redis-cli <<EOF
+HSET nextcloud0/module.env EVENTS_IMAGE ghcr.io/nethserver/nextcloud:latest
+PUBLISH $(hostname -s):module.init nextcloud0
+EOF
+```
+
+Setup traefik:
+```
+N=nextcloud HOST=nextcloud.$(hostname -f); podman run -i --network host --rm docker.io/redis:6-alpine redis-cli <<EOF
+SET traefik/http/services/$N/loadbalancer/servers/0/url http://127.0.0.1:8181
+SET traefik/http/routers/$N-http/service $N
+SET traefik/http/routers/$N-http/entrypoints http,https
+SET traefik.http/routers/$N-http/rule "Host(\`$HOST\`)"
+SET traefik/http/routers/$N-https/entrypoints http,https
+SET traefik/http/routers/$N-https/rule "Host(\`$HOST\`)"
+SET traefik/http/routers/$N-https/tls true
+SET traefik/http/routers/$N-https/service $N
+SET traefik/http/routers/$N-https/tls/certresolver letsencrypt
+SET traefik/http/routers/$N-https/tls/domains/0/main $HOST  
+EOF
+```
