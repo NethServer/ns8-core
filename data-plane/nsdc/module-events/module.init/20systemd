@@ -1,0 +1,10 @@
+#!/bin/bash
+
+set -e
+
+# Install the systemd unit
+cp -f nsdc.service /etc/systemd/system/nsdc.service
+systemctl daemon-reload
+
+# Start it
+exec systemctl enable --now nsdc.service

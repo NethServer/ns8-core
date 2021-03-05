@@ -1,0 +1,6 @@
+#!/bin/bash
+
+set -e
+
+# Write the environment for the nsdc.service Systemd unit: 
+redis-hgetall "nsdc/module.env" > /var/local/nsdc/nsdc.env
