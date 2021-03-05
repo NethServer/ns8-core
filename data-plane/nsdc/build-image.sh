@@ -10,8 +10,9 @@ buildah config --entrypoint=/ "${container}"
 buildah commit "${container}" "${image1}"
 
 image2="nsdc"
-container=$(buildah from ubuntu:rolling)
+container=$(buildah from docker.io/library/ubuntu:rolling)
 buildah run "${container}" -- bash <<EOF
+set -e
 apt-get update
 apt-get -y install samba winbind
 apt-get clean
