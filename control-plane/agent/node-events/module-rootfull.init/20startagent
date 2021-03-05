@@ -10,4 +10,4 @@ homedir="/var/local/${user}"
 mkdir "${homedir}"
 
 # Immediately start the systemd rootfull agent:
-systemctl enable --now "module-agent@{user}.service"
+systemctl enable --now "module-agent@${user}.service"

@@ -10,7 +10,7 @@ Environment=VIRTUAL_ENV=/usr/local/share/agent
 Environment=PATH=/usr/local/share/agent/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin
 Environment=AGENT_STARTUP_EVENT=module.init
 EnvironmentFile=-/var/local/%i/module-agent.env
-ExecStartPre=/usr/bin/mkdir /var/local/%i/module-events /var/local/%i/module-events-custom
+ExecStartPre=/usr/bin/mkdir -p /var/local/%i/module-events /var/local/%i/module-events-custom
 WorkingDirectory=/var/local/%i
 ExecStart=/usr/bin/env python3 service.py %i /var/local/%i/module-events /var/local/%i/module-events-custom
 TimeoutStartSec=300
