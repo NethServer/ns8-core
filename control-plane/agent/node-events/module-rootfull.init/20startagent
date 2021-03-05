@@ -1,0 +1,13 @@
+#!/bin/bash
+
+set -e
+
+user=${1:?missing user argument}
+
+homedir="/var/local/${user}"
+
+# Fail if already exists:
+mkdir "${homedir}"
+
+# Immediately start the systemd rootfull agent:
+systemctl enable --now "module-agent@{user}.service"

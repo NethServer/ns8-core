@@ -9,4 +9,5 @@ podman pull ${EVENTS_IMAGE:?missing EVENTS_IMAGE in environmenti ${mid}/module.e
 cid=$(podman create ${EVENTS_IMAGE})
 trap "podman rm ${cid}" EXIT
 
-podman export ${cid} | tar -C ~ -x -v -f -
+echo "[NOTICE] Extracting container filesystem to ${PWD}"
+podman export ${cid} | tar -x -v -f -

@@ -6,4 +6,5 @@ user=${1:?missing user argument}
 
 useradd -m -k /usr/local/share/dplane/skel "${user}" -s /bin/bash
 
+# Immediately start the systemd rootless agent:
 loginctl enable-linger "${user}"
