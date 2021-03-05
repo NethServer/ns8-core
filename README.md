@@ -13,7 +13,7 @@ The control plane purpose is managing the data plane. It runs the following comp
    stores the system and modules configuration and provides a signaling bus based on its PUB/SUB feature.
 
 2. `node-agent.service` Systemd unit, running as root. The events are defined in `/usr/local/share/agent/node-events`
-   and `/var/lib/agent/node-events` (for local Sysadmin overrides).
+   and `/var/local/node-events` (for local Sysadmin overrides).
 
 3. `module-agent.service` Systemd units, running in each module as non-privileged users. See the "Data plane components" section below for more details.
 
