@@ -1,0 +1,29 @@
+#!/bin/bash
+
+# Prepare temporary directory
+BACKUP_NAME=$1
+TMP_DIR=$HOME/restore
+mkdir -p $TMP_DIR
+DUMP=$TMP_DIR/dump.sql
+
+# Read backup password from redis
+podman run -i --network host --rm docker.io/redis:6-alpine redis-cli GET backup/$BACKUP_NAME/password > $HOME/restic_password
+
+# Read repository from redis
+REPOSITORY=$(podman run -i --network host --rm docker.io/redis:6-alpine redis-cli GET backup/$BACKUP_NAME/base_repository)"/"$(whoami)
+
+# Stopping the pod and removing all data
+systemctl --user stop nextcloud
+podman volume rm all
+
+# Restore database dump and all volumes
+touch $DUMP
+volumes="-v $DUMP:/restore/dump.sql"
+for v in nextcloud-app-data nextcloud-app-source nextcloud-redis-data
+do
+    volumes="$volumes -v $v:/restore/$v"
+done
+podman run --network=host --rm -i $volumes -v $HOME/restic_password:/pass -e RESTIC_REPOSITORY=$REPOSITORY docker.io/restic/restic -p /pass restore latest --target /restore
+
+# Start the pod
+systemctl --user start nextcloud
