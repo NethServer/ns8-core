@@ -11,7 +11,7 @@ Environment=PATH=/usr/local/share/agent/bin:/usr/local/sbin:/usr/local/bin:/usr/
 Environment=AGENT_STARTUP_EVENT=module.init
 EnvironmentFile=-%S/module-agent.env
 ExecStartPre=/usr/bin/mkdir -p %S/module-events %h/module-events
-WorkingDirectory=~
+WorkingDirectory=/usr/local/share/agent
 ExecStart=/usr/bin/env python3 service.py %u %S/module-events %h/module-events
 TimeoutStartSec=300
 ExecStartPost=/usr/bin/bash -c "echo AGENT_STARTUP_EVENT= > %S/module-agent.env"
