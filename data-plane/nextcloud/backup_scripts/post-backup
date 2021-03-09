@@ -1,5 +1,0 @@
-#!/bin/bash
-
-TMP_DIR=$HOME/backup-tmp
-
-rm -rf $TMP_DIR
