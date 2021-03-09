@@ -2,18 +2,9 @@
 Description=Samba AD Domain Controller
 
 [Service]
-Environment=PODMAN_SYSTEMD_UNIT=%n
-EnvironmentFile=/var/local/nsdc/nsdc.env
-WorkingDirectory=/var/local/nsdc
-StateDirectory=/var/local/nsdc
-Restart=on-failure
-ExecStartPre=/bin/rm -f %t/nsdc.pid %t/nsdc.ctr-id
-ExecStart=/usr/bin/podman run --hostname=$NSDC_HOSTNAME --env-file=%S/module.env --conmon-pidfile %t/nsdc.pid --cidfile %t/nsdc.ctr-id --replace --network=host --name nsdc -d --volume=nsdc-data:/var/lib/samba:Z --volume=nsdc-config:/etc/samba:Z ghcr.io/nethserver/nsdc:latest
-ExecStop=/usr/bin/podman stop --ignore --cidfile %t/nsdc.ctr-id -t 10
-ExecStopPost=/usr/bin/podman rm --ignore -f --cidfile %t/nsdc.ctr-id
-PIDFile=%t/nsdc.pid
-KillMode=none
-Type=forking
+Restart=always
+ExecStart=/usr/bin/podman start -a nsdc
+ExecStop=/usr/bin/podman stop -t 10 nsdc
 
 [Install]
 WantedBy=multi-user.target

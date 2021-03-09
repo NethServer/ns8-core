@@ -2,5 +2,18 @@
 
 set -e
 
-# Write the environment for the nsdc.service Systemd unit: 
-redis-hgetall "nsdc/module.env" > /var/local/nsdc/nsdc.env
+# Write the environment for the nsdc.service Systemd unit:
+
+# XXX: add a PREFIX to variable names to avoid PATH injection attacks:
+redis-hgetall "${MODULE_ID}/module.env" > /var/local/${MODULE_ID}/module.env
+
+echo "[DEBUG] $0 Workdir: ${PWD}"
+echo "[DEBUG] $0 Event arguments:" "${@}"
+echo "[DEBUG] $0 Environment:"
+env
+echo "[DEBUG] $0 module.env:"
+cat /var/local/${MODULE_ID}/module.env
+
+# Install the systemd unit
+cp -f /var/local/nsdc/nsdc.service /etc/systemd/system/${MODULE_ID}.service
+systemctl daemon-reload
