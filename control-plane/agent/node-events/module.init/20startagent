@@ -1,0 +1,15 @@
+#!/bin/bash
+
+set -e
+
+echo "[DEBUG] $0 Workdir: ${PWD}"
+echo "[DEBUG] $0 Event arguments:" "${@}"
+echo "[DEBUG] $0 Environment:"
+env
+
+user=${1:?missing user argument}
+
+useradd -m -k /usr/local/share/dplane/skel "${user}" -s /bin/bash
+
+# Immediately start the systemd rootless agent:
+loginctl enable-linger "${user}"

@@ -48,6 +48,8 @@ podman export ${cid} | tar -C ${installdir} -x -v -f -
 podman rm -f ${cid}
 
 cp -f ${agentdir}/node-agent.service      /etc/systemd/system/node-agent.service
+cp -f ${agentdir}/module-agent@.service   /etc/systemd/system/module-agent@.service
+cp -f ${agentdir}/module-init@.service    /etc/systemd/system/module-init@.service
 cp -f ${agentdir}/module-agent.service    /etc/systemd/user/module-agent.service
 cp -f ${agentdir}/module-init.service     /etc/systemd/user/module-init.service
 

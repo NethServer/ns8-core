@@ -9,8 +9,8 @@ Environment=VIRTUAL_ENV=/usr/local/share/agent
 Environment=PATH=/usr/local/share/agent/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin
 EnvironmentFile=-/usr/local/etc/node-agent.env
 WorkingDirectory=/usr/local/share/agent
-ExecStartPre=/usr/bin/mkdir -p /var/lib/agent/node-events
-ExecStart=/usr/bin/env python3 service.py $NODE_PREFIX ./node-events /var/lib/agent/node-events
+ExecStartPre=/usr/bin/mkdir -p /var/local/node-events
+ExecStart=/usr/bin/env python3 service.py $NODE_PREFIX ./node-events /var/local/node-events
 Restart=always
 StartLimitInterval=60
 StartLimitBurst=12

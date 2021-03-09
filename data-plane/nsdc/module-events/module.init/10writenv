@@ -1,0 +1,30 @@
+#!/bin/bash
+
+set -e
+
+# Write the environment for the nsdc.service Systemd unit:
+# XXX: add a PREFIX to variable names to avoid PATH injection attacks:
+redis-hgetall "${MODULE_ID}/module.env" > ${MODULE_STATE}/module.env
+
+echo "[DEBUG] $0 Workdir: ${PWD}"
+echo "[DEBUG] $0 Event arguments:" "${@}"
+echo "[DEBUG] $0 Environment:"
+env
+echo "[DEBUG] $0 module.env:"
+cat ${MODULE_STATE}/module.env
+
+# Install the systemd unit
+cat - >/etc/systemd/system/${MODULE_ID}.service <<EOF
+[Unit]
+Description=Samba AD Domain Controller
+
+[Service]
+Restart=always
+ExecStart=/usr/bin/podman start -a ${MODULE_ID}
+ExecStop=/usr/bin/podman stop -t 10 ${MODULE_ID}
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+systemctl daemon-reload

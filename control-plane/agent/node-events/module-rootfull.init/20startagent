@@ -1,0 +1,18 @@
+#!/bin/bash
+
+set -e
+
+echo "[DEBUG] $0 Workdir: ${PWD}"
+echo "[DEBUG] $0 Event arguments:" "${@}"
+echo "[DEBUG] $0 Environment:"
+env
+
+user=${1:?missing user argument}
+
+homedir="/var/local/${user}"
+
+# Fail if already exists:
+mkdir "${homedir}"
+
+# Immediately start the systemd rootfull agent:
+systemctl enable --now "module-agent@${user}.service"

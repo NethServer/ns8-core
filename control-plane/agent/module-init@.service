@@ -1,11 +1,11 @@
 [Unit]
-Description=Rootless %u module initialization
-ConditionDirectoryNotEmpty=!%S/module-events
+Description=Rootfull %i module initialization
+ConditionDirectoryNotEmpty=!/var/local/%i/module-events
 
 [Service]
 Type=oneshot
 Environment=REGISTRY_AUTH_FILE=/usr/local/etc/registry.json
 Environment=VIRTUAL_ENV=/usr/local/share/agent
 Environment=PATH=/usr/local/share/agent/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin
-WorkingDirectory=~
-ExecStart=/usr/bin/env module-init %u
+WorkingDirectory=/var/local/%i
+ExecStart=/usr/bin/env module-init %i

@@ -13,7 +13,7 @@ The control plane purpose is managing the data plane. It runs the following comp
    stores the system and modules configuration and provides a signaling bus based on its PUB/SUB feature.
 
 2. `node-agent.service` Systemd unit, running as root. The events are defined in `/usr/local/share/agent/node-events`
-   and `/var/lib/agent/node-events` (for local Sysadmin overrides).
+   and `/var/local/node-events` (for local Sysadmin overrides).
 
 3. `module-agent.service` Systemd units, running in each module as non-privileged users. See the "Data plane components" section below for more details.
 
@@ -146,3 +146,10 @@ SET traefik/http/routers/$N-https/tls/certresolver letsencrypt
 SET traefik/http/routers/$N-https/tls/domains/0/main $HOST  
 EOF
 ```
+
+## Uninstall
+
+The `control-plane/cleanup.sh` script attempts to stop and erase any control-plane and data-plane module. Handle it 
+with care because it erases everything under `/home/*`!
+
+    bash cleanup.sh

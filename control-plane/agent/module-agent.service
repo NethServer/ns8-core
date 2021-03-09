@@ -1,5 +1,5 @@
 [Unit]
-Description=Module control agent
+Description=Rootless %u module control agent
 Requires=module-init.service
 After=module-init.service
 

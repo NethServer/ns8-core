@@ -1,9 +1,0 @@
-#!/bin/bash
-
-set -e
-
-user=${1:?missing user argument}
-
-useradd -m -k /usr/local/share/dplane/skel "${user}" -s /bin/bash
-
-loginctl enable-linger "${user}"
