@@ -9,6 +9,7 @@ Environment=REGISTRY_AUTH_FILE=/usr/local/etc/registry.json
 Environment=VIRTUAL_ENV=/usr/local/share/agent
 Environment=PATH=/usr/local/share/agent/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin
 Environment=AGENT_STARTUP_EVENT=module.init
+# XXX: MODULE_STATE and MODULE_ROOT should be distinct dirs
 Environment=MODULE_STATE=/var/local/%i
 Environment=MODULE_ROOT=/var/local/%i
 Environment=MODULE_ID=%i

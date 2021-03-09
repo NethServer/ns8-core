@@ -11,7 +11,8 @@ podman create \
     --cap-add=chown,dac_override,dac_read_search,fowner,setgid,setuid,sys_admin \
     "--env-file=/var/local/${MODULE_ID}/module.env" \
     "--hostname=${HOSTNAME}" \
-    "--replace --name ${MODULE_ID}" \
+    --replace \
+    "--name=${MODULE_ID}" \
     "--volume=${MODULE_ID}-data:/var/lib/samba:Z" \
     "--volume=${MODULE_ID}-config:/etc/samba:Z" \
-    "${IMAGE}"
+    "${NSDC_IMAGE}"
