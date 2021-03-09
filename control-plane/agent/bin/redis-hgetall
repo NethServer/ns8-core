@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 # Fedora: dnf install python3-redis
+# XXX: add a PREFIX to variable names to avoid PATH injection attacks:
 
 import redis
 import sys

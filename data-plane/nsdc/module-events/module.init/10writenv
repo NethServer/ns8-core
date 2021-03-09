@@ -3,7 +3,6 @@
 set -e
 
 # Write the environment for the nsdc.service Systemd unit:
-
 # XXX: add a PREFIX to variable names to avoid PATH injection attacks:
 redis-hgetall "${MODULE_ID}/module.env" > /var/local/${MODULE_ID}/module.env
 

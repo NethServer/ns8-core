@@ -1,7 +1,0 @@
-#!/bin/bash
-
-echo "Event arguments:"
-echo "${@}"
-
-echo "Environment:"
-env
