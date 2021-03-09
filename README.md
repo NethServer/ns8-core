@@ -146,3 +146,10 @@ SET traefik/http/routers/$N-https/tls/certresolver letsencrypt
 SET traefik/http/routers/$N-https/tls/domains/0/main $HOST  
 EOF
 ```
+
+## Uninstall
+
+The `control-plane/cleanup.sh` script attempts to stop and erase any control-plane and data-plane module. Handle it 
+with care because it erases everything under `/home/*`!
+
+    bash cleanup.sh
