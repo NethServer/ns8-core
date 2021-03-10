@@ -16,20 +16,15 @@ elif [[ ${distro} == "debian" ]]; then
     apt-get -y -t buster-backports install libseccomp2 podman
 
     # Enable access to journalctl --user
-    echo "Storage=persistent" >> /etc/systemd/journald.conf
+    grep  -e "^#Storage=persistent" /etc/systemd/journald.conf || echo "Storage=persistent" >> /etc/systemd/journald.conf
     systemctl restart systemd-journald
 fi
 
-if [[ ! -f /usr/local/etc/registry.json ]] ; then
-    echo "[ERROR] missing the registry access configuration. Copy it to /usr/local/etc/registry.json"
-    echo "To create a new registry access configuration execute:"
-    echo "  podman login --authfile /usr/local/etc/registry.json ghcr.io"
-    exit 1
+if [ -f /usr/local/etc/registry.json ]; then
+    echo "Registry auth found."
+    export REGISTRY_AUTH_FILE=/usr/local/etc/registry.json
+    chmod -c 644 ${REGISTRY_AUTH_FILE}
 fi
-
-echo "Registry auth found."
-export REGISTRY_AUTH_FILE=/usr/local/etc/registry.json
-chmod -c 644 ${REGISTRY_AUTH_FILE}
 
 echo "Set kernel parameters:"
 sysctl -w net.ipv4.ip_unprivileged_port_start=23 -w user.max_user_namespaces=28633 | tee /etc/sysctl.d/80-nethserver.conf
@@ -71,3 +66,12 @@ fi
 echo "Adding id_rsa.pub to data plane home skeleton dir:"
 install -d -m 700 /usr/local/share/dplane/skel/.ssh
 install -m 600 -T ~/.ssh/id_rsa.pub /usr/local/share/dplane/skel/.ssh/authorized_keys
+
+if [[ ! -f /usr/local/etc/registry.json ]] ; then
+    echo "[INFO] Container registry configuration is missing."
+    echo "If you want to push images make sure /usr/local/etc/registry.json exists."
+    echo "To create and use a new registry access configuration execute:"
+    echo "  podman login --authfile /usr/local/etc/registry.json ghcr.io"
+    echo "  export REGISTRY_AUTH_FILE=/usr/local/etc/registry.json"
+    echo "  chmod -c 644 /usr/local/etc/registry.json"
+fi

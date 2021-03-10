@@ -50,15 +50,18 @@ Further components will be added in the future (e.g. API Server, VPN, ...).
 
 ### Initialize the control plane
 
-1. Create a [GitHub PAT](https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token)
-   for the **ghcr.io** registry (for read-only access `read:packages private` scope should be enough) then run the following command, specifying
-   your GitHub user name and providing the generated PAT as password:
+Execute as root:
+
+       # curl https://raw.githubusercontent.com/DavidePrincipi/ns8-scratchpad/main/control-plane/init.sh | bash
+
+
+If you're a developer and you need to push images to the registry, you must configure the authentication.
+Create a [GitHub PAT](https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token)
+for the **ghcr.io** registry (for read-only access `read:packages private` scope should be enough) then run the following command, specifying
+your GitHub user name and providing the generated PAT as password:
 
        # podman login --authfile /usr/local/etc/registry.json ghcr.io
 
-2. Execute as root:
-
-       # curl https://raw.githubusercontent.com/DavidePrincipi/ns8-scratchpad/main/control-plane/init.sh | bash
 
 ### Start the Traefik module
 
