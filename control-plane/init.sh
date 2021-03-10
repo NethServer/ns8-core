@@ -67,10 +67,10 @@ echo "Adding id_rsa.pub to data cplane home skeleton dir:"
 install -d -m 700 /usr/local/share/cplane/skel/.ssh
 install -m 600 -T ~/.ssh/id_rsa.pub /usr/local/share/cplane/skel/.ssh/authorized_keys
 
-echo "Starting control plane:"
-if ! id cplane &>/dev/null; then
-    id cplane &>/dev/null || useradd -m -k ${cplanedir}/skel -s /bin/bash cplane
-    loginctl enable-linger cplane
+echo "Starting Redis DB:"
+if ! id redis0 &>/dev/null; then
+    id redis0 &>/dev/null || useradd -m -k ${cplanedir}/skel -s /bin/bash redis0
+    loginctl enable-linger redis0
 fi
 
 if [[ ! -f /usr/local/etc/registry.json ]] ; then
