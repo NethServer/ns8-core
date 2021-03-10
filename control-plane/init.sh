@@ -52,10 +52,6 @@ echo "Setup agent:"
 python3 -mvenv ${agentdir}
 ${agentdir}/bin/pip3 install redis
 
-echo "Starting control plane:"
-useradd -m -k ${cplanedir}/skel cplane
-loginctl enable-linger cplane
-
 echo "NODE_PREFIX=$(hostname -s)" > /usr/local/etc/node-agent.env
 systemctl enable --now node-agent.service
 
@@ -66,6 +62,14 @@ fi
 echo "Adding id_rsa.pub to data plane home skeleton dir:"
 install -d -m 700 /usr/local/share/dplane/skel/.ssh
 install -m 600 -T ~/.ssh/id_rsa.pub /usr/local/share/dplane/skel/.ssh/authorized_keys
+
+echo "Adding id_rsa.pub to data cplane home skeleton dir:"
+install -d -m 700 /usr/local/share/cplane/skel/.ssh
+install -m 600 -T ~/.ssh/id_rsa.pub /usr/local/share/cplane/skel/.ssh/authorized_keys
+
+echo "Starting control plane:"
+useradd -m -k ${cplanedir}/skel -s /bin/bash cplane
+loginctl enable-linger cplane
 
 if [[ ! -f /usr/local/etc/registry.json ]] ; then
     echo "[INFO] Container registry configuration is missing."
