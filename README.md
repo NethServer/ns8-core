@@ -172,6 +172,20 @@ SET traefik/http/routers/$N-https/tls/domains/0/main $HOST
 EOF
 ```
 
+Execute `occ` command:
+```
+ssh nextcloud0@localhost
+podman exec -ti --user www-data nextcloud-app php occ
+```
+
+Setup nsdc account provider:
+```
+ssh nextcloud0@localhost
+./scripts/setup_ad.sh
+```
+
+Note: the nsdc must have a user named `ldapservice` with password `Nethesis,1234`
+
 ## Backup & restore
 
 ### Backup an instance
