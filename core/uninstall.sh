@@ -12,7 +12,7 @@ systemctl stop node-agent.service module-agent@\*.service
 echo "[NOTICE] Uninstalling the control plane"
 find /etc/systemd/system/  \( -name module\*.service -o -name node-agent.service \) -delete
 
-rm -rvf /usr/local/share/{cplane,dplane,agent}\
+rm -rvf /usr/local/share/{redis.skel,module.skel,agent}\
     /etc/sysctl.d/80-nethserver.conf \
     /etc/systemd/user/module-agent.service /etc/systemd/user/module-init.service \
     /usr/local/etc/node-agent.env

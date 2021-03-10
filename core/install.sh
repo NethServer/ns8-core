@@ -34,11 +34,11 @@ fi
 
 installdir="/usr/local/share"
 agentdir="${installdir}/agent"
-cplanedir="${installdir}/cplane"
+redisskeldir="${installdir}/redis.skel"
 
-echo "Extracting control plane sources:"
-podman pull ghcr.io/nethserver/control-plane:latest
-cid=$(podman create ghcr.io/nethserver/control-plane:latest)
+echo "Extracting core sources:"
+podman pull ghcr.io/nethserver/core:${IMAGE_TAG:-latest}
+cid=$(podman create ghcr.io/nethserver/core:${IMAGE_TAG:-latest})
 podman export ${cid} | tar -C ${installdir} -x -v -f -
 podman rm -f ${cid}
 
@@ -59,17 +59,17 @@ if [[ ! -f ~/.ssh/id_rsa.pub ]] ; then
     ssh-keygen -t rsa -N '' -f ~/.ssh/id_rsa
 fi
 
-echo "Adding id_rsa.pub to data plane home skeleton dir:"
-install -d -m 700 /usr/local/share/dplane/skel/.ssh
-install -m 600 -T ~/.ssh/id_rsa.pub /usr/local/share/dplane/skel/.ssh/authorized_keys
+echo "Adding id_rsa.pub to module skeleton dir:"
+install -d -m 700 /usr/local/share/module.skel/.ssh
+install -m 600 -T ~/.ssh/id_rsa.pub /usr/local/share/module.skel/.ssh/authorized_keys
 
-echo "Adding id_rsa.pub to data cplane home skeleton dir:"
-install -d -m 700 /usr/local/share/cplane/skel/.ssh
-install -m 600 -T ~/.ssh/id_rsa.pub /usr/local/share/cplane/skel/.ssh/authorized_keys
+echo "Adding id_rsa.pub to redis skeleton dir:"
+install -d -m 700 /usr/local/share/redis.skel/.ssh
+install -m 600 -T ~/.ssh/id_rsa.pub /usr/local/share/redis.skel/.ssh/authorized_keys
 
 echo "Starting Redis DB:"
 if ! id redis0 &>/dev/null; then
-    id redis0 &>/dev/null || useradd -m -k ${cplanedir}/skel -s /bin/bash redis0
+    id redis0 &>/dev/null || useradd -m -k ${redisskeldir} -s /bin/bash redis0
     loginctl enable-linger redis0
 fi
 

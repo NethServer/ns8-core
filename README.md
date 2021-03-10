@@ -56,7 +56,7 @@ Further components will be added in the future (e.g. API Server, VPN, ...).
 
 Execute as root:
 ```
-# curl https://raw.githubusercontent.com/DavidePrincipi/ns8-scratchpad/main/control-plane/init.sh | bash
+# curl https://raw.githubusercontent.com/DavidePrincipi/ns8-scratchpad/main/core/install.sh | bash
 ```
 
 If you're a developer and you need to push images to the registry, you must configure the authentication.
@@ -231,7 +231,7 @@ podman run -i --network host --rm docker.io/redis:6-alpine redis-cli PUBLISH nex
 
 ## Uninstall
 
-The `control-plane/cleanup.sh` script attempts to stop and erase core components and
+The `core/uninstall.sh` script attempts to stop and erase core components and
 additional modules. Handle it with care because it erases everything under `/home/*`!
 
-    bash cleanup.sh
+    bash uninstall.sh
