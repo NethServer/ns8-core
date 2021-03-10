@@ -68,13 +68,17 @@ install -d -m 700 /usr/local/share/cplane/skel/.ssh
 install -m 600 -T ~/.ssh/id_rsa.pub /usr/local/share/cplane/skel/.ssh/authorized_keys
 
 echo "Starting control plane:"
-useradd -m -k ${cplanedir}/skel -s /bin/bash cplane
-loginctl enable-linger cplane
+if ! id cplane &>/dev/null; then
+    id cplane &>/dev/null || useradd -m -k ${cplanedir}/skel -s /bin/bash cplane
+    loginctl enable-linger cplane
+fi
 
 if [[ ! -f /usr/local/etc/registry.json ]] ; then
+    echo '{"auths":{}}' > /usr/local/etc/registry.json
+    chmod -c 644 /usr/local/etc/registry.json
+    echo
     echo "[INFO] Container registry configuration is missing."
-    echo "If you want to push images make sure /usr/local/etc/registry.json exists."
-    echo "To create and use a new registry access configuration execute:"
+    echo "If you want to push images, execute login to image registry:"
     echo "  podman login --authfile /usr/local/etc/registry.json ghcr.io"
     echo "  export REGISTRY_AUTH_FILE=/usr/local/etc/registry.json"
     echo "  chmod -c 644 /usr/local/etc/registry.json"
