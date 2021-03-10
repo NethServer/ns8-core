@@ -1,0 +1,8 @@
+#!/bin/bash
+
+set -e
+
+source "/usr/local/etc/${MODULE_ID}.env"
+
+# Pull the image and create the container
+podman pull "${NSDC_IMAGE}"

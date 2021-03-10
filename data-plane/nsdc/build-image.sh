@@ -5,7 +5,6 @@ set -e
 image1="cplane-nsdc"
 container=$(buildah from scratch)
 buildah copy "${container}" module-events /module-events
-buildah copy "${container}" nsdc.service /nsdc.service
 buildah config --entrypoint='["/"]' "${container}"
 buildah commit "${container}" "${image1}"
 

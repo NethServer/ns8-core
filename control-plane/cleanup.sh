@@ -30,7 +30,7 @@ for modulehome in /var/local/*; do
     systemctl disable --now "${moduleid}"
     rm -f "/etc/systemd/system/${moduleid}.service"
     echo "[NOTICE] Deleting rootfull module ${moduleid}..."
-    rm -rvf "${modulehome}"
+    rm -rvf "${modulehome}" /usr/local/etc/${moduleid}.env
 done
 
 systemctl daemon-reload
