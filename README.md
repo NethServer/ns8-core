@@ -95,9 +95,11 @@ To uninstall the `traefik0` module run
     # loginctl disable-linger traefik0
     # userdel -r traefik0
 
-### Start dokuwiki instance
+## Applications
 
-Execute:
+### Dokuwiki
+
+To start a dokuwiki instance execute:
 ```
 podman run -i --network host --rm docker.io/redis:6-alpine redis-cli <<EOF
 HSET dokuwiki0/module.env EVENTS_IMAGE ghcr.io/nethserver/dokuwiki:latest
@@ -121,9 +123,9 @@ SET traefik/http/routers/$N-https/tls/domains/0/main $HOST
 EOF
 ```
 
-## Start nexcloud instance
+### Nextcloud
 
-Execute:
+To start a nextcloud instance execute:
 ```
 podman run -i --network host --rm docker.io/redis:6-alpine redis-cli <<EOF
 HSET nextcloud0/module.env EVENTS_IMAGE ghcr.io/nethserver/nextcloud:latest
@@ -147,7 +149,9 @@ SET traefik/http/routers/$N-https/tls/domains/0/main $HOST
 EOF
 ```
 
-# Backup an instance
+## Backup & restore
+
+### Backup an instance
 
 Each instance can implement the `backup` event. The event takes the name of the backup as first argument.
 
@@ -173,7 +177,7 @@ Example:
 podman run -i --network host --rm docker.io/redis:6-alpine redis-cli PUBLISH nextcloud0:backup backup1
 ```
 
-## Restore an instance
+### Restore an instance
 
 Each instance implementing the `backup` event, must implement also the `restore` event. The event takes the name of the backup as first argument.
 
