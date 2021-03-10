@@ -67,8 +67,10 @@ your GitHub user name and providing the generated PAT as password:
 
 ### Start the Traefik module
 
-Once the control plane has been initialized run this Redis command (replace `fc1` with the output of `hostname -s`) 
-to initialize the control plane of the Traefik module instance and start its data plane services:
+Traefik will proxy all HTTP/HTTPs connections to web applications.
+
+Once the control plane has been initialized run this Redis command to initialize the control plane of the Traefik
+module instance and start its data plane services:
 
     podman run -i --network host --rm docker.io/redis:6-alpine redis-cli <<EOF
     SET traefik ''
@@ -76,13 +78,8 @@ to initialize the control plane of the Traefik module instance and start its dat
     PUBLISH $(hostname -s):module.init traefik0
     EOF
 
-Access to redis with:
+As alternative, use `nc` command:
 
-    $ podman run -it --network host --rm redis redis-cli
-
-As alternative
-
-    # dnf install nc
     # nc 127.0.0.1 6379 <<EOF
     ...
     EOF
