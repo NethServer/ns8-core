@@ -76,7 +76,7 @@ module instance and start it:
 
     podman run -i --network host --rm docker.io/redis:6-alpine redis-cli <<EOF
     SET traefik ''
-    HSET traefik0/module.env LE_EMAIL root@$(hostname -f) EVENTS_IMAGE ghcr.io/nethserver/cplane-traefik:latest
+    HSET traefik0/module.env LE_EMAIL root@$(hostname -f) EVENTS_IMAGE ghcr.io/nethserver/traefik:latest
     PUBLISH $(hostname -s):module.init traefik0
     EOF
 
