@@ -10,9 +10,12 @@ echo "[DEBUG] $0 Event arguments:" "${@}"
 echo "[DEBUG] $0 Environment:"
 env
 
-podman pull ${EVENTS_IMAGE:?missing EVENTS_IMAGE in environmenti ${mid}/module.env}
+podman pull ${EVENTS_IMAGE:?missing EVENTS_IMAGE in environment ${mid}/module.env}
 cid=$(podman create ${EVENTS_IMAGE})
 trap "podman rm ${cid}" EXIT
 
-echo "[NOTICE] Extracting container filesystem to ${PWD}"
-podman export ${cid} | tar -x -v -f -
+initroot=$(podman inspect ${cid} -f '{{index .Config.Labels "org.nethserver.initroot"}}' | sed -r 's#(^/|/$)##')
+stripcount=$(awk -F/ '{ print NF }' <<<"${initroot}")
+
+echo "[NOTICE] Extracting container filesystem ${initroot:-/} to ${PWD}"
+podman export ${cid} | tar -x -v -f - --strip-components=${stripcount} ${initroot}

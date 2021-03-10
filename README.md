@@ -35,13 +35,16 @@ Further components will be added in the future (e.g. API Server, VPN, ...).
 
 - The unix user account has session lingering enabled: it automatically starts a persistent Systemd user manager instance.
 
-- Each module provides a bunch of event handlers and Systemd unit definitions. 
+- A module is installed by the core `node-agent` service, when it receives a "module.init" event.
+  The next sections show some examples of the Redis HSET/PUB commands that signal that event.
+
+- A module provides a bunch of event handlers and Systemd unit definitions.
   An event is handled by one or more *action* scripts, stored under `$HOME/.config/module-events`. 
   The local Sysadmin can extend and/or override them by putting their action scripts under `$HOME/module-events`.
   Module-local systemd units are installed under `$HOME/.config/systemd/user`. System-wide units are installed under
   `/etc/systemd/user`.
 
-- The module must provide a `module.init` event implementation that installs and configures
+- A module must provides a `module.init` event implementation that installs and configures
   the Podman containers. Installed services must be enabled to start on boot.
 
 - The `module-agent.service` Systemd unit executes the event handlers. The agent daemon runs in the Python virtual
@@ -108,7 +111,7 @@ Initialize the Redis DB and start the installation with:
 
 ```
 podman run -ti --network host --rm docker.io/redis:6-alpine redis-cli <<EOF
-HSET nsdc0/module.env EVENTS_IMAGE ghcr.io/nethserver/cplane-nsdc:latest NSDC_IMAGE ghcr.io/nethserver/nsdc:latest IPADDRESS 10.133.0.5 HOSTNAME nsdc1.$(hostname -d) NBDOMAIN AD REALM AD.$(hostname -d | tr a-z A-Z) ADMINPASS Nethesis,1234
+HSET nsdc0/module.env EVENTS_IMAGE ghcr.io/nethserver/nsdc:latest NSDC_IMAGE ghcr.io/nethserver/nsdc:latest IPADDRESS 10.133.0.5 HOSTNAME nsdc1.$(hostname -d) NBDOMAIN AD REALM AD.$(hostname -d | tr a-z A-Z) ADMINPASS Nethesis,1234
 PUBLISH $(hostname -s):module-rootfull.init nsdc0
 EOF
 ```
