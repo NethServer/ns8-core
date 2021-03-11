@@ -1,0 +1,25 @@
+#!/bin/bash
+
+#
+# Export all Let's Encrypt traefik certificates to redis
+#
+
+# Search for all configured traefik domains
+keys=$(podman run -i --network host --rm docker.io/redis:6-alpine redis-cli KEYS traefik/http/routers/*/domains/*/main)
+host=$(hostname -s)
+
+for k in $keys
+do
+    v=$(podman run -i --network host --rm docker.io/redis:6-alpine redis-cli GET $k)
+    workdir="$HOME/certificates/$v"
+    mkdir -p $workdir
+    # export certificate and key to file
+    podman run --rm  -v traefik-acme:/input  -v $workdir:/output  --workdir /output  docker.io/koshatul/traefik-acme:latest --exit-code --acme "/input/acme.json" -r letsencrypt $v
+    # if the certificate has been renewed, publish it to redis under certificate/<domain>/cert and certificate/<domain>/key
+    if [ $? == 99 ]; then
+       cat  $workdir/cert.pem | podman run -i --network host --rm docker.io/redis:6-alpine redis-cli -x SET certificate/$v/cert
+       cat  $workdir/key.pem | podman run -i --network host --rm docker.io/redis:6-alpine redis-cli -x SET certificate/$v/key
+       # let's inform the client (?)
+       podman run -i --network host --rm docker.io/redis:6-alpine redis-cli PUBLISH $host:certificate.update $v
+    fi
+done
