@@ -100,6 +100,25 @@ To uninstall the `traefik0` module run
     # loginctl disable-linger traefik0
     # userdel -r traefik0
 
+#### Default Let's Encrypt certificate
+
+To request a Let's Encrypt certificate for the server FQDN, just execute:
+```
+N=default HOST=$(hostname -f); podman run -i --network host --rm docker.io/redis:6-alpine redis-cli <<EOF
+SET traefik/http/routers/$N-http/service $N
+SET traefik/http/routers/$N-http/entrypoints http,https
+SET traefik.http/routers/$N-http/rule "Host(\`$HOST\`)"
+SET traefik/http/routers/$N-https/entrypoints http,https
+SET traefik/http/routers/$N-https/rule "Host(\`$HOST\`)"
+SET traefik/http/routers/$N-https/tls true
+SET traefik/http/routers/$N-https/service $N
+SET traefik/http/routers/$N-https/tls/certresolver letsencrypt
+SET traefik/http/routers/$N-https/tls/domains/0/main $HOST
+EOF
+```
+
+Traefik will generate the certificate without exposing any new service.
+
 ### Nsdc
 
 The Nsdc module runs a singleton and rootfull Samba 4 DC instance.
