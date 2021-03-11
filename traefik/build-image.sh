@@ -5,7 +5,7 @@ set -e
 image="traefik"
 container=$(buildah from scratch)
 
-buildah copy "${container}" .config /.config
+buildah copy "${container}" config /.config
 buildah config --entrypoint=/ "${container}"
 buildah commit "${container}" "${image}"
 
