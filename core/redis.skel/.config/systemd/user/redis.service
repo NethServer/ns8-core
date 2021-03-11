@@ -1,15 +1,24 @@
 [Unit]
 Description=Control plane Redis instance
 Documentation=https://github.com/DavidePrincipi/ns8-scratchpad
-Requires=create-redis.service
-After=create-redis.service
 
 [Service]
 Environment=PODMAN_SYSTEMD_UNIT=%n
 Restart=on-failure
-ExecStart=/usr/bin/podman start redis
-ExecStop=/usr/bin/podman stop redis
-ExecStopPost=/usr/bin/podman stop redis
+TimeoutStopSec=70
+ExecStartPre=/bin/rm -f %t/redis.pid %t/redis.cid
+ExecStart=/usr/bin/podman run \
+    --conmon-pidfile=%t/redis.pid \
+    --cidfile=%t/redis.cid \
+    --cgroups=no-conmon \
+    --detach \
+    --replace --name redis \
+    --network=host \
+    --volume=redis-data:/data \
+    docker.io/redis:6-alpine \
+    --appendonly yes --bind 127.0.0.1 ::1
+ExecStop=/usr/bin/podman stop --ignore --cidfile %t/redis.cid -t 10
+ExecStopPost=/usr/bin/podman rm --ignore -f --cidfile %t/redis.cid
 PIDFile=%t/redis.pid
 Type=forking
 
