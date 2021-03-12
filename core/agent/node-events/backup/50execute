@@ -1,0 +1,41 @@
+#!/bin/bash
+
+#
+# Backup the core configuration:
+# 1. pack everything inside a tar file
+# 2. save the tar file using restic
+#
+
+function cleanup {
+    rm -f $include
+    trap 'exit 0' EXIT # preserve exit code of last command
+}
+
+trap cleanup SIGINT SIGTERM EXIT
+
+BACKUP_NAME=$1
+
+pass_file=/usr/local/share/agent/restic_password
+include=$(mktemp --suffix .include)
+output_file=/usr/local/share/agent/backup/core-backup.tar.gz
+mkdir -p $(dirname $output_file)
+
+# Create the list of files to backup
+find /home/traefik*/ -name acme.json >> $include
+find /home/redis*/ -name *.rdb >> $include
+
+# Pack everything inside a tar ready to be saved
+tar czf $output_file -T $include 2>/dev/null
+
+# Read backup password from redis
+podman run -i --network host --rm docker.io/redis:6-alpine redis-cli GET backup/$BACKUP_NAME/password > $pass_file
+
+# Initialize restic repository if it has an empty configuration
+REPOSITORY=$(podman run -i --network host --rm docker.io/redis:6-alpine redis-cli GET backup/$BACKUP_NAME/base_repository)"/core"
+config=$(podman run --network=host --rm -i $volumes -v $pass_file:/pass -e RESTIC_REPOSITORY=$REPOSITORY docker.io/restic/restic -p /pass cat config)
+if [ -z "$config" ]; then
+    podman run --network=host --rm -i $volumes -v $pass_file:/pass -e RESTIC_REPOSITORY=$REPOSITORY docker.io/restic/restic -p /pass init
+fi
+
+podman run --network=host --rm -i -v $output_file:/$output_file -v $pass_file:/pass -e RESTIC_REPOSITORY=$REPOSITORY docker.io/restic/restic -p /pass backup $output_file
+
