@@ -1,0 +1,17 @@
+[Unit]
+Description=Nginx mail proxy
+Documentation=https://docs.nginx.com/nginx/admin-guide/mail-proxy/
+
+[Service]
+Environment=PODMAN_SYSTEMD_UNIT=%n
+Restart=on-failure
+TimeoutStopSec=70
+ExecStartPre=/bin/rm -f %t/container-nginx.pid %t/container-nginx.cid
+ExecStart=/usr/bin/podman run --conmon-pidfile %t/container-nginx.pid --cidfile %t/container-nginx.cid --cgroups=no-conmon --replace --network=host -d --name nginx --volume=%S/nginx.conf:/etc/nginx/nginx.conf:Z docker.io/library/nginx:1.19-alpine
+ExecStop=/usr/bin/podman stop --ignore --cidfile %t/container-nginx.cid -t 10
+ExecStopPost=/usr/bin/podman rm --ignore -f --cidfile %t/container-nginx.cid
+PIDFile=%t/container-nginx.pid
+Type=forking
+
+[Install]
+WantedBy=default.target
