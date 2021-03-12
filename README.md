@@ -119,6 +119,16 @@ EOF
 
 Traefik will generate the certificate without exposing any new service.
 
+### Restic server
+
+Install restic server for the backup:
+```
+podman run -i --network host --rm docker.io/redis:6-alpine redis-cli <<EOF
+HSET restic0/module.env EVENTS_IMAGE ghcr.io/nethserver/restic-server:latest
+PUBLISH $(hostname -s):module.init restic0
+EOF
+```
+
 ### Nsdc
 
 The Nsdc module runs a singleton and rootfull Samba 4 DC instance.
@@ -226,9 +236,9 @@ podman run -i --network host --rm docker.io/redis:6-alpine redis-cli SETNX backu
 podman run -i --network host --rm docker.io/redis:6-alpine redis-cli SET backup/backup1/base_repository rest:http://127.0.0.1:8383
 ```
 
-### Backup the core
+### Backup and restore the core
 
-To execute the backup of the core execute:
+To backup the core execute:
 ```
 podman run -i --network host --rm docker.io/redis:6-alpine redis-cli PUBLISH <hostname>:backup <backup_name>
 ```
@@ -236,6 +246,18 @@ podman run -i --network host --rm docker.io/redis:6-alpine redis-cli PUBLISH <ho
 Example:
 ```
 podman run -i --network host --rm docker.io/redis:6-alpine redis-cli PUBLISH $(hostname -s):backup backup1
+```
+
+### Restore the core
+
+To restore the core execute:
+```
+podman run -i --network host --rm docker.io/redis:6-alpine redis-cli PUBLISH $(hostname -s):restore backup1
+```
+
+Example:
+```
+podman run -i --network host --rm docker.io/redis:6-alpine redis-cli PUBLISH $(hostname -s):restore backup1
 ```
 
 ### Backup an instance

@@ -1,0 +1,40 @@
+#!/bin/bash
+
+#
+# Backup the core configuration:
+# 1. pack everything inside a tar file
+# 2. save the tar file using restic
+#
+
+BACKUP_NAME=$1
+
+BACKUP_FILE=core-backup.tar.gz
+OUTPUT_DIR=/usr/local/share/agent/backup
+PASS_FILE=$OUTPUT_DIR/restic_password
+OUTPUT_FILE=$OUTPUT_DIR/$BACKUP_FILE
+
+mkdir -p $OUTPUT_DIR
+
+REPOSITORY=$(podman run -i --network host --rm docker.io/redis:6-alpine redis-cli GET backup/$BACKUP_NAME/base_repository)"/core"
+
+# Read backup password from redis
+podman run -i --network host --rm docker.io/redis:6-alpine redis-cli GET backup/$BACKUP_NAME/password > $PASS_FILE
+
+# Restore tar.gz from restic
+podman run --network=host --rm -i -v $OUTPUT_DIR:/output -v $PASS_FILE:/pass -e RESTIC_REPOSITORY=$REPOSITORY docker.io/restic/restic -p /pass restore latest --target /output --path $BACKUP_FILE
+
+systemctl stop redis
+for u in $(getent passwd | grep traefik | cut -d':' -f1)
+do
+    loginctl disable-linger $u
+done
+
+# Explode core
+tar xvf $OUTPUT_FILE -C /
+
+# Restart services
+systemctl start redis
+for u in $(getent passwd | grep traefik | cut -d':' -f1)
+do
+    loginctl enable-linger $u
+done
