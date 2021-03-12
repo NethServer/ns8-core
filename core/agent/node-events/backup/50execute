@@ -15,10 +15,10 @@ trap cleanup SIGINT SIGTERM EXIT
 
 BACKUP_NAME=$1
 
-pass_file=/usr/local/share/agent/restic_password
-include=$(mktemp --suffix .include)
+pass_file=/usr/local/share/agent/backup/restic_password
 output_file=/usr/local/share/agent/backup/core-backup.tar.gz
 mkdir -p $(dirname $output_file)
+include=$(mktemp --suffix .include)
 
 # Create the list of files to backup
 find /home/traefik*/ -name acme.json >> $include
