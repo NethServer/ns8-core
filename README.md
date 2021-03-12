@@ -43,7 +43,7 @@ Further components will be added in the future (e.g. API Server, VPN, ...).
   Module-local systemd units are installed under `$HOME/.config/systemd/user`. System-wide units are installed under
   `/etc/systemd/user`.
 
-- A module must provides a `module.init` event implementation that installs and configures
+- A module must provide a `module.init` event implementation that installs and configures
   the Podman containers. Installed services must be enabled to start on boot.
 
 - The `module-agent.service` Systemd unit executes the event handlers. The agent daemon runs in the Python virtual
