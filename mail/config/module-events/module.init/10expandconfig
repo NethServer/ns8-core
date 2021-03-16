@@ -1,4 +1,3 @@
 #!/bin/bash
 
 source <(redis-hgetall "${MODULE_ID}/module.env")
-
