@@ -1,0 +1,17 @@
+[Unit]
+Description=Podman container-nginx.service
+Documentation=man:podman-generate-systemd(1)
+BindsTo=pod-mail.service
+After=pod-mail.service
+
+[Service]
+Environment=PODMAN_SYSTEMD_UNIT=%n
+Environment=REGISTRY_AUTH_FILE=/usr/local/etc/registry.json
+Restart=on-failure
+TimeoutStopSec=70
+ExecStartPre=/bin/rm -f %t/container-nginx.pid %t/container-nginx.ctr-id
+ExecStart=/usr/bin/podman run --conmon-pidfile %t/container-nginx.pid --cidfile %t/container-nginx.ctr-id --cgroups=no-conmon --pod-id-file %t/pod-mail.pod-id -d --replace --name nginx --volume=%h/nginx.conf:/etc/nginx/nginx.conf:Z docker.io/library/nginx:1.19-alpine
+ExecStop=/usr/bin/podman stop --ignore --cidfile %t/container-nginx.ctr-id -t 10
+ExecStopPost=/usr/bin/podman rm --ignore -f --cidfile %t/container-nginx.ctr-id
+PIDFile=%t/container-nginx.pid
+Type=forking

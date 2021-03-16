@@ -1,0 +1,21 @@
+[Unit]
+Description=Podman pod-mail.service
+Documentation=man:podman-generate-systemd(1)
+Requires=container-dovecot.service container-nginx.service
+Before=container-dovecot.service container-nginx.service
+
+[Service]
+Environment=PODMAN_SYSTEMD_UNIT=%n
+Environment=REGISTRY_AUTH_FILE=/usr/local/etc/registry.json
+Restart=on-failure
+TimeoutStopSec=70
+ExecStartPre=/bin/rm -f %t/pod-mail.pid %t/pod-mail.pod-id
+ExecStartPre=/usr/bin/podman pod create --infra-conmon-pidfile %t/pod-mail.pid --pod-id-file %t/pod-mail.pod-id --network=slirp4netns:port_handler=slirp4netns --hostname=mail.dp.nethserver.net --publish 25:10025 --publish 587:10587 --publish 143:10143 --publish 110:10110 --publish 4190:14190 --name mail --replace
+ExecStart=/usr/bin/podman pod start --pod-id-file %t/pod-mail.pod-id
+ExecStop=/usr/bin/podman pod stop --ignore --pod-id-file %t/pod-mail.pod-id -t 10
+ExecStopPost=/usr/bin/podman pod rm --ignore -f --pod-id-file %t/pod-mail.pod-id
+PIDFile=%t/pod-mail.pid
+Type=forking
+
+[Install]
+WantedBy=default.target

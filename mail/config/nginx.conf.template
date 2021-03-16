@@ -24,9 +24,9 @@ http {
 
     map $http_auth_protocol $mail_backend_port {
         default imap;
-        imap 10143;
-        pop3 10110;
-        smtp 10587;
+        imap 143;
+        pop3 110;
+        smtp 587;
     }
 
     server {
@@ -35,7 +35,7 @@ http {
 
         # Anonymous SMTP sessions are sent to Postfix listener
         if ( $http_auth_user = '' ) {
-            set $mail_backend_port 10025;
+            set $mail_backend_port 25;
         }
 
         access_log /var/log/nginx/access.log auth;
@@ -55,28 +55,38 @@ http {
     }
 }
 
+# L7 proxy for mail services
 mail {
     auth_http 127.0.0.1:19000/auth;
     server {
-        listen 25;
+        listen 10025;
         protocol smtp;
         smtp_auth login plain;
         proxy_smtp_auth on;
         xclient on;
     }
     server {
-        listen 110;
+        listen 10110;
         protocol pop3;
     }
     server {
-        listen 143;
+        listen 10143;
         protocol imap;
     }
     server {
-        listen 587;
+        listen 10587;
         protocol smtp;
         smtp_auth login plain;
         proxy_smtp_auth on;
         xclient on;
+    }
+}
+
+# L4 proxy to the LDAP account provider 
+stream {
+    server {
+        listen 389;
+        proxy_pass ${LDAPHOST}:${LDAPPORT};
+        proxy_ssl ${LDAPSSL};
     }
 }

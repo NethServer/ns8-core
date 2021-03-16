@@ -1,3 +1,25 @@
 #!/bin/bash
 
-source <(redis-hgetall "${MODULE_ID}/module.env")
+source <(redis-hgetall "module/${MODULE_ID}/module.env")
+
+# Use slirp4netns port handler to preserve client IP address for spam checks
+podman pod create \
+    --network=slirp4netns:port_handler=slirp4netns \
+    --hostname="${HOSTNAME}" \
+    --publish 25:10025 \
+    --publish 587:10587 \
+    --publish 143:10143 \
+    --publish 110:10110 \
+    --publish 4190:14190 \
+    --name mail \
+    --replace
+
+envsubst '${LDAPHOST} ${LDAPPORT} ${LDAPSSL}' < ~/.config/nginx.conf.template > ~/nginx.conf
+
+cat > ~/dovecot-ldap.conf.ext <<EOF
+hosts = 127.0.0.1
+auth_bind = yes
+auth_bind_userdn = ${BINDDN:-%u}
+base =
+scope = base
+EOF
