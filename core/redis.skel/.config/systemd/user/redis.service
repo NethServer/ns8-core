@@ -16,7 +16,7 @@ ExecStart=/usr/bin/podman run \
     --network=host \
     --volume=redis-data:/data \
     docker.io/redis:6-alpine \
-    --appendonly yes --bind 127.0.0.1 ::1
+    --save 5 1 --bind 127.0.0.1 ::1
 ExecStop=/usr/bin/podman stop --ignore --cidfile %t/redis.cid -t 10
 ExecStopPost=/usr/bin/podman rm --ignore -f --cidfile %t/redis.cid
 PIDFile=%t/redis.pid
