@@ -34,7 +34,6 @@ fi
 
 installdir="/usr/local/share"
 agentdir="${installdir}/agent"
-redisskeldir="${installdir}/redis.skel"
 
 echo "Extracting core sources:"
 podman pull ghcr.io/nethserver/core:${IMAGE_TAG:-latest}
@@ -43,6 +42,7 @@ podman export ${cid} | tar -C ${installdir} -x -v -f -
 podman rm -f ${cid}
 
 cp -f ${agentdir}/node-agent.service      /etc/systemd/system/node-agent.service
+cp -f ${agentdir}/redis.service           /etc/systemd/system/redis.service
 cp -f ${agentdir}/module-agent@.service   /etc/systemd/system/module-agent@.service
 cp -f ${agentdir}/module-init@.service    /etc/systemd/system/module-init@.service
 cp -f ${agentdir}/module-agent.service    /etc/systemd/user/module-agent.service
@@ -53,7 +53,7 @@ python3 -mvenv ${agentdir}
 ${agentdir}/bin/pip3 install redis
 
 echo "NODE_PREFIX=$(hostname -s)" > /usr/local/etc/node-agent.env
-systemctl enable --now node-agent.service
+systemctl enable --now node-agent.service redis.service
 
 if [[ ! -f ~/.ssh/id_rsa.pub ]] ; then
     ssh-keygen -t rsa -N '' -f ~/.ssh/id_rsa
@@ -62,16 +62,6 @@ fi
 echo "Adding id_rsa.pub to module skeleton dir:"
 install -d -m 700 /usr/local/share/module.skel/.ssh
 install -m 600 -T ~/.ssh/id_rsa.pub /usr/local/share/module.skel/.ssh/authorized_keys
-
-echo "Adding id_rsa.pub to redis skeleton dir:"
-install -d -m 700 /usr/local/share/redis.skel/.ssh
-install -m 600 -T ~/.ssh/id_rsa.pub /usr/local/share/redis.skel/.ssh/authorized_keys
-
-echo "Starting Redis DB:"
-if ! id redis0 &>/dev/null; then
-    id redis0 &>/dev/null || useradd -m -k ${redisskeldir} -s /bin/bash redis0
-    loginctl enable-linger redis0
-fi
 
 if [[ ! -f /usr/local/etc/registry.json ]] ; then
     echo '{"auths":{}}' > /usr/local/etc/registry.json

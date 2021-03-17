@@ -8,7 +8,6 @@ image_tag=${IMAGE_TAG:-latest}
 container=$(buildah from scratch)
 
 buildah copy ${container} agent /agent
-buildah copy ${container} redis.skel /redis.skel
 buildah copy ${container} module.skel /module.skel
 buildah config --entrypoint=/ ${container}
 buildah commit ${container} core
