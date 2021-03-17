@@ -7,10 +7,10 @@
 shopt -s nullglob
 
 echo "[NOTICE] Stop control plane agents"
-systemctl stop node-agent.service module-agent@\*.service
+systemctl stop node-agent.service module-agent@\*.service redis.service
 
 echo "[NOTICE] Uninstalling the control plane"
-find /etc/systemd/system/  \( -name module\*.service -o -name node-agent.service \) -delete
+find /etc/systemd/system/  \( -name module\*.service -o -name node-agent.service -o -name redis.service \) -delete
 
 rm -rvf /usr/local/share/{redis.skel,module.skel,agent}\
     /etc/sysctl.d/80-nethserver.conf \
@@ -21,6 +21,10 @@ for userhome in /home/*; do
     moduleid=$(basename $userhome)
     echo "[NOTICE] Deleting rootless module ${moduleid}..."
     loginctl disable-linger "${moduleid}"
+    until ! loginctl show-user "${moduleid}" &>/dev/null; do
+        sleep 1
+    done
+
     userdel -r "${moduleid}"
 done
 
@@ -32,5 +36,7 @@ for modulehome in /var/local/*; do
     echo "[NOTICE] Deleting rootfull module ${moduleid}..."
     rm -rvf "${modulehome}" /usr/local/etc/${moduleid}.env
 done
+
+podman volume rm redis-data
 
 systemctl daemon-reload
