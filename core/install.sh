@@ -8,12 +8,17 @@ echo "Install dependencies:"
 if [[ ${distro} == "fedora" ]]; then
     dnf install -y wireguard-tools podman jq
 elif [[ ${distro} == "debian" ]]; then
+    # Install podman
     apt-get -y install gnupg2 python3-venv
-    echo 'deb http://deb.debian.org/debian buster-backports main' >> /etc/apt/sources.list
+    grep -q 'http://deb.debian.org/debian buster-backports' /etc/apt/sources.list || echo 'deb http://deb.debian.org/debian buster-backports main' >> /etc/apt/sources.list
     echo 'deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/Debian_10/ /' > /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list
     wget -O - https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/Debian_10/Release.key | apt-key add -
     apt-get update
     apt-get -y -t buster-backports install libseccomp2 podman
+
+    # Install wireguard
+    apt install linux-headers-$(uname -r) -y
+    apt install wireguard -y
 
     # Enable access to journalctl --user
     grep  -e "^#Storage=persistent" /etc/systemd/journald.conf || echo "Storage=persistent" >> /etc/systemd/journald.conf
@@ -84,6 +89,20 @@ podman run -i --network host --rm docker.io/redis:6-alpine redis-cli <<EOF
 HSET module/restic0/module.env EVENTS_IMAGE ghcr.io/nethserver/restic-server:latest
 PUBLISH $(hostname -s):module.init restic0
 EOF
+
+echo "Setup WireGuard VPN:"
+private_key=$(wg genkey)
+public_key=$(echo $private_key | wg pubkey)
+podman run -i --network host --rm docker.io/redis:6-alpine redis-cli <<EOF
+HSET node/$(hostname -s)/vpn PUBLIC_KEY $public_key 
+HSET node/$(hostname -s)/vpn IP_ADDRESS 10.5.4.1
+HSET node/$(hostname -s)/vpn LISTEN_PORT 55820
+PUBLISH $(hostname -s):vpn-master.init $private_key
+EOF
+
+echo
+echo "WireGuard server public key: $public_key"
+echo
 
 
 if [[ ! -f /usr/local/etc/registry.json ]] ; then
