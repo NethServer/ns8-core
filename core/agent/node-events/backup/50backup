@@ -16,7 +16,7 @@ trap cleanup SIGINT SIGTERM EXIT
 BACKUP_NAME=$1
 
 BACKUP_FILE=core-backup.tar.gz
-OUTPUT_DIR=/usr/local/share/agent/backup
+OUTPUT_DIR=/var/lib/nethserver/backup
 PASS_FILE=$OUTPUT_DIR/restic_password
 OUTPUT_FILE=$OUTPUT_DIR/$BACKUP_FILE
 
