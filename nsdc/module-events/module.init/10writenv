@@ -4,7 +4,7 @@ set -e
 
 # Write the environment for the nsdc.service Systemd unit:
 # XXX: add a PREFIX to variable names to avoid PATH injection attacks:
-redis-hgetall "${MODULE_ID}/module.env" > /usr/local/etc/${MODULE_ID}.env
+redis-hgetall "module/${MODULE_ID}/module.env" > /usr/local/etc/${MODULE_ID}.env
 
 echo "[DEBUG] $0 Workdir: ${PWD}"
 echo "[DEBUG] $0 Event arguments:" "${@}"

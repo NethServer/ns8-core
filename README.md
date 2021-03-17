@@ -140,7 +140,7 @@ Initialize the Redis DB and start the installation with:
 
 ```
 podman run -ti --network host --rm docker.io/redis:6-alpine redis-cli <<EOF
-HSET nsdc0/module.env EVENTS_IMAGE ghcr.io/nethserver/nsdc:latest NSDC_IMAGE ghcr.io/nethserver/nsdc:latest IPADDRESS 10.133.0.5 HOSTNAME nsdc1.$(hostname -d) NBDOMAIN AD REALM AD.$(hostname -d | tr a-z A-Z) ADMINPASS Nethesis,1234
+HSET module/nsdc0/module.env EVENTS_IMAGE ghcr.io/nethserver/nsdc:latest NSDC_IMAGE ghcr.io/nethserver/nsdc:latest IPADDRESS 10.133.0.5 HOSTNAME nsdc1.$(hostname -d) NBDOMAIN AD REALM AD.$(hostname -d | tr a-z A-Z) ADMINPASS Nethesis,1234
 PUBLISH $(hostname -s):module-rootfull.init nsdc0
 EOF
 ```
@@ -157,7 +157,7 @@ The DC storage is persisted to the following Podman local volumes:
 To start a dokuwiki instance execute:
 ```
 podman run -i --network host --rm docker.io/redis:6-alpine redis-cli <<EOF
-HSET dokuwiki0/module.env EVENTS_IMAGE ghcr.io/nethserver/dokuwiki:latest
+HSET module/dokuwiki0/module.env EVENTS_IMAGE ghcr.io/nethserver/dokuwiki:latest
 PUBLISH $(hostname -s):module.init dokuwiki0
 EOF
 ```

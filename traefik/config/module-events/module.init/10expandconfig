@@ -1,7 +1,7 @@
 #!/bin/bash
 
 mid=$(id -un)
-source <(redis-hgetall "${mid}/module.env")
+source <(redis-hgetall "module/${mid}/module.env")
 
 LE_EMAIL=${LE_EMAIL:-root@$(hostname -f)}
 
