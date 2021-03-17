@@ -48,6 +48,15 @@ cp -f ${agentdir}/module-init@.service    /etc/systemd/system/module-init@.servi
 cp -f ${agentdir}/module-agent.service    /etc/systemd/user/module-agent.service
 cp -f ${agentdir}/module-init.service     /etc/systemd/user/module-init.service
 
+# Setp redis first, the agent will connect to it
+echo "Setup redis:"
+systemctl enable --now redis.service
+echo -e "Waiting for redis: "
+until [ "$(podman run -i --network host --rm docker.io/redis:6-alpine redis-cli PING 2>/dev/null)" == "PONG" ]; do
+    sleep 1
+done
+echo "OK"
+
 echo "Setup agent:"
 python3 -mvenv ${agentdir}
 ${agentdir}/bin/pip3 install redis
@@ -62,6 +71,20 @@ fi
 echo "Adding id_rsa.pub to module skeleton dir:"
 install -d -m 700 /usr/local/share/module.skel/.ssh
 install -m 600 -T ~/.ssh/id_rsa.pub /usr/local/share/module.skel/.ssh/authorized_keys
+
+echo "Setup traefik:"
+podman run -i --network host --rm docker.io/redis:6-alpine redis-cli <<EOF
+SET traefik ''
+HSET module/traefik0/module.env LE_EMAIL root@$(hostname -f) EVENTS_IMAGE ghcr.io/nethserver/traefik:latest
+PUBLISH $(hostname -s):module.init traefik0
+EOF
+
+echo "Setup restic server:"
+podman run -i --network host --rm docker.io/redis:6-alpine redis-cli <<EOF
+HSET module/restic0/module.env EVENTS_IMAGE ghcr.io/nethserver/restic-server:latest
+PUBLISH $(hostname -s):module.init restic0
+EOF
+
 
 if [[ ! -f /usr/local/etc/registry.json ]] ; then
     echo '{"auths":{}}' > /usr/local/etc/registry.json

@@ -70,17 +70,18 @@ your GitHub user name and providing the generated PAT as password:
 # podman login --authfile /usr/local/etc/registry.json ghcr.io
 ```
 
-### Traefik
+The core is composed also by the following components:
 
-Traefik will proxy all HTTP/HTTPs connections to web applications.
+- traefik, running with `traefik0` user
+- restic rest-server, running with user `restic0`
 
-Once the core has been initialized run this Redis command to initialize the Traefik
-module instance and start it:
+
+### Inspecting the core
+
+Once the core has been initialized, you can access Redis with one of the following command:
 
     podman run -i --network host --rm docker.io/redis:6-alpine redis-cli <<EOF
-    SET traefik ''
-    HSET traefik0/module.env LE_EMAIL root@$(hostname -f) EVENTS_IMAGE ghcr.io/nethserver/traefik:latest
-    PUBLISH $(hostname -s):module.init traefik0
+    PING
     EOF
 
 As alternative, use `nc` command:
@@ -118,16 +119,6 @@ EOF
 ```
 
 Traefik will generate the certificate without exposing any new service.
-
-### Restic server
-
-Install restic server for the backup:
-```
-podman run -i --network host --rm docker.io/redis:6-alpine redis-cli <<EOF
-HSET restic0/module.env EVENTS_IMAGE ghcr.io/nethserver/restic-server:latest
-PUBLISH $(hostname -s):module.init restic0
-EOF
-```
 
 ### Nsdc
 
