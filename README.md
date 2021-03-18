@@ -1,16 +1,15 @@
 # ns8-scratchpad
 
-NethServer 8 experiments using containers on Fedora 33.
+NethServer 8 experiments
 
-The install procedure should work also on Debian 10.
+System requirements: Systemd, Podman: both Fedora 33 and Debian 10 were used in the tests.
 
 
 ## Core components
 
 The core purpose is managing the applications, providing the basics for their entire lifecycle (install, upgrade, reconfigure, uninstall...). It runs the following components:
 
-1. Redis instance running as rootless container of the `redis0` user,
-   bound to TCP port 6379 in host network namespace. The Redis DB
+1. Redis instance running as rootfull container, bound to TCP port 6379. The Redis DB
    stores the system and modules configuration and provides a signaling bus based on its PUB/SUB feature.
 
 2. `node-agent.service` Systemd unit, running as root. The events are defined in `/usr/local/share/agent/node-events`
@@ -28,8 +27,8 @@ Further components will be added in the future (e.g. API Server, VPN, ...).
 ## Applications
 
 - The core instantiates a set of *modules*. Each module instance
-  runs an application (e.g. Webtop, Nextcloud) as one or more Podman **rootless containers**. In exceptional
-  cases a module can run also a set of rootfull containers; the known exception is Samba DC.
+  runs an application (e.g. Webtop, Nextcloud) as a set of one or more Podman **rootless containers**. In exceptional
+  cases a module can run also rootfull containers; the only known exception by now is Samba DC.
 
 - An exclusive unix user account is created for each module instance (e.g. `webtop0`, `nextcloud0`, `openldap0`...).
 
@@ -76,7 +75,7 @@ The core is composed also by the following components:
 - restic rest-server, running with user `restic0`
 
 
-### Inspecting the core
+### Redis
 
 Once the core has been initialized, you can access Redis with one of the following command:
 
@@ -89,6 +88,8 @@ As alternative, use `nc` command:
     # nc 127.0.0.1 6379 <<EOF
     ...
     EOF
+
+### Traefik
 
 To inspect and modify the module start a SSH session. SSH is preferred to `su - traefik0` because the latter
 does not properly initialize the Systemd session environment. Check the services are running with:
@@ -125,7 +126,7 @@ Traefik will generate the certificate without exposing any new service.
 The Nsdc module runs a singleton and rootfull Samba 4 DC instance.
 
 - *Rootfull* because Samba needs special privileges to store ACLs in the filesystem extended attributes
-- *Singleton* because Samba services are bound to a host IP address, to serve LAN clients
+- *Singleton* because Samba services are bound to a host IP address to serve LAN clients, and 127.0.0.1
 
 Initialize the Redis DB and start the installation with:
 
@@ -140,6 +141,49 @@ The DC storage is persisted to the following Podman local volumes:
 
 - nsdc0-data
 - nsdc0-config
+
+## Uninstall
+
+The `core/uninstall.sh` script attempts to stop and erase core components and
+additional modules. Handle it with care because it erases everything under `/home/*`!
+
+    bash uninstall.sh
+
+## Prototype validation
+
+List of things considered almost stable, with or without an existing prototype implementation:
+
+- Systemd & Podman foundations
+- Unix users for rootless modules
+- Wireguard VPN among nodes
+- Account providers:
+  - Samba AD and OpenLDAP account providers (both are LDAP)
+  - Remote LDAP account provider
+  - No Unix accounts for domain users
+- Node agent / Module agents
+- Events and Actions
+- Container Registry as software repository for everything
+- Store environment variables for actions and containers in Redis
+- Authenticated Redis access for write operations
+- Public Redis read only access
+- Encrypted secrets in Redis DB
+- Edge proxies with TLS termination
+- Centralized certificate management
+- FHS compliancy 
+- ...
+
+Still uncertain, undefined:
+
+- Multi-node join/leave promote/demote procedures
+- Account provider local proxy
+- Multi-master LDAP replication
+- Local sysadmin override for Actions and container images
+- Report back events state from Agents to API server
+- Port allocation for module instances
+- Module instance upgrade/downgrade rollout
+- API server
+- Use Redis accounts to access API server too
+- ...
 
 ## Applications installation
 
@@ -278,9 +322,3 @@ podman run -i --network host --rm docker.io/redis:6-alpine redis-cli PUBLISH nex
 ```
 
 
-## Uninstall
-
-The `core/uninstall.sh` script attempts to stop and erase core components and
-additional modules. Handle it with care because it erases everything under `/home/*`!
-
-    bash uninstall.sh
