@@ -1,20 +1,13 @@
 #!/bin/bash
 
-source <(redis-hgetall "module/${MODULE_ID}/module.env")
-
-# Use slirp4netns port handler to preserve client IP address for spam checks
-podman pod create \
-    --network=slirp4netns:port_handler=slirp4netns \
-    --hostname="${HOSTNAME}" \
-    --publish 25:10025 \
-    --publish 587:10587 \
-    --publish 143:10143 \
-    --publish 110:10110 \
-    --publish 4190:14190 \
-    --name mail \
-    --replace
+redis-hgetall "module/${MODULE_ID}/module.env" > ~/module.env
+source ~/module.env
 
 envsubst '${LDAPHOST} ${LDAPPORT} ${LDAPSSL}' < ~/.config/nginx.conf.template > ~/nginx.conf
+
+# Calculate the mailbox domain name for Postfix,
+# starting from the full host name assigned to the mail pod instance:
+printf "MAILBOX_DOMAIN=%s\n" $(cut -f 2- -d . <<<"${HOSTNAME}") >> ~/module.env
 
 cat > ~/dovecot-ldap.conf.ext <<EOF
 hosts = 127.0.0.1
