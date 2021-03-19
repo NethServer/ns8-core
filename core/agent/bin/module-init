@@ -3,7 +3,7 @@
 set -e
 
 mid=${1:?missing module identifier argument}
-source <(redis-hgetall "${mid}/module.env")
+source <(redis-hgetall "module/${mid}/module.env")
 
 echo "[DEBUG] $0 Workdir: ${PWD}"
 echo "[DEBUG] $0 Event arguments:" "${@}"

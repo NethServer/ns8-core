@@ -9,6 +9,9 @@ Environment=REGISTRY_AUTH_FILE=/usr/local/etc/registry.json
 Environment=VIRTUAL_ENV=/usr/local/share/agent
 Environment=PATH=/usr/local/share/agent/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin
 Environment=AGENT_STARTUP_EVENT=module.init
+Environment=MODULE_STATE=%S
+Environment=MODULE_ROOT=%h
+Environment=MODULE_ID=%u
 EnvironmentFile=-%S/module-agent.env
 ExecStartPre=/usr/bin/mkdir -p %S/module-events %h/module-events
 WorkingDirectory=/usr/local/share/agent
