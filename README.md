@@ -253,6 +253,26 @@ ssh nextcloud0@localhost
 
 Note: the nsdc must have a user named `ldapservice` with password `Nethesis,1234`
 
+### Mail
+
+Installation
+
+```
+podman run -i --network host --rm docker.io/redis:6-alpine redis-cli <<EOF
+HSET module/mail0/module.env HOSTNAME mail.example.com LDAPHOST 10.133.0.5 LDAPPORT 636 LDAPSSL on BINDDN %n@AD.DP.NETHSERVER.NET EVENTS_IMAGE ghcr.io/nethserver/mail
+PUBLISH $(hostname -s):module.init mail0
+EOF
+```
+
+TODO
+
+- No TLS config
+- No Rspamd, Unbound and Redis, no ClamAV and Olefy
+- No OpenDKIM: can we use Rspamd instead?
+- The Dovecot static userdb lookups are always successful: attempts to deliver mail to unexisting accounts are always allowed! In
+  ns7 the "passwd" userdb (sssd) was implemented to find existing accounts. Here we have to lookup users in the LDAP DB.
+
+
 ## Backup & restore
 
 ### First configuration
