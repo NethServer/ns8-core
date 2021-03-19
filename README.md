@@ -218,7 +218,7 @@ EOF
 To start a nextcloud instance execute:
 ```
 podman run -i --network host --rm docker.io/redis:6-alpine redis-cli <<EOF
-HSET nextcloud0/module.env EVENTS_IMAGE ghcr.io/nethserver/nextcloud:latest
+HSET module/nextcloud0/module.env EVENTS_IMAGE ghcr.io/nethserver/nextcloud:latest
 PUBLISH $(hostname -s):module.init nextcloud0
 EOF
 ```
