@@ -3,6 +3,13 @@
 redis-hgetall "module/${MODULE_ID}/module.env" > ~/module.env
 source ~/module.env
 
+echo "[DEBUG] $0 Workdir: ${PWD}"
+echo "[DEBUG] $0 Event arguments:" "${@}"
+echo "[DEBUG] $0 Environment:"
+env
+echo "[DEBUG] $0 module.env:"
+cat ~/module.env
+
 envsubst '${LDAPHOST} ${LDAPPORT} ${LDAPSSL}' < ~/.config/nginx.conf.template > ~/nginx.conf
 
 # Calculate the mailbox domain name for Postfix,
