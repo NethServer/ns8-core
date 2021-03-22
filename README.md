@@ -109,7 +109,7 @@ To request a Let's Encrypt certificate for the server FQDN, just execute:
 N=default HOST=$(hostname -f); podman run -i --network host --rm docker.io/redis:6-alpine redis-cli <<EOF
 SET traefik/http/routers/$N-http/service $N
 SET traefik/http/routers/$N-http/entrypoints http,https
-SET traefik.http/routers/$N-http/rule "Host(\`$HOST\`)"
+SET traefik/http/routers/$N-http/rule "Host(\`$HOST\`)"
 SET traefik/http/routers/$N-https/entrypoints http,https
 SET traefik/http/routers/$N-https/rule "Host(\`$HOST\`)"
 SET traefik/http/routers/$N-https/tls true
@@ -203,7 +203,7 @@ N=dokuwiki HOST=dokuwiki.$(hostname -f); podman run -i --network host --rm docke
 SET traefik/http/services/$N/loadbalancer/servers/0/url http://127.0.0.1:8080
 SET traefik/http/routers/$N-http/service $N
 SET traefik/http/routers/$N-http/entrypoints http,https
-SET traefik.http/routers/$N-http/rule "Host(\`$HOST\`)"
+SET traefik/http/routers/$N-http/rule "Host(\`$HOST\`)"
 SET traefik/http/routers/$N-https/entrypoints http,https
 SET traefik/http/routers/$N-https/rule "Host(\`$HOST\`)"
 SET traefik/http/routers/$N-https/tls true
@@ -229,7 +229,7 @@ N=nextcloud HOST=nextcloud.$(hostname -f); podman run -i --network host --rm doc
 SET traefik/http/services/$N/loadbalancer/servers/0/url http://127.0.0.1:8181
 SET traefik/http/routers/$N-http/service $N
 SET traefik/http/routers/$N-http/entrypoints http,https
-SET traefik.http/routers/$N-http/rule "Host(\`$HOST\`)"
+SET traefik(http/routers/$N-http/rule "Host(\`$HOST\`)"
 SET traefik/http/routers/$N-https/entrypoints http,https
 SET traefik/http/routers/$N-https/rule "Host(\`$HOST\`)"
 SET traefik/http/routers/$N-https/tls true
