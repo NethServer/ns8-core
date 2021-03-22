@@ -61,6 +61,13 @@ Execute as root:
 # curl https://raw.githubusercontent.com/DavidePrincipi/ns8-scratchpad/main/core/install.sh | bash
 ```
 
+When installing on Debian 10 Buster, first make sure to have the latest running kernel:
+```
+apt-get update
+apt-get upgrade -y
+reboot
+```
+
 If you're a developer and you need to push images to the registry, you must configure the authentication.
 Create a [GitHub PAT](https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token)
 for the **ghcr.io** registry (for read-only access `read:packages private` scope should be enough) then run the following command, specifying
@@ -184,6 +191,45 @@ Still uncertain, undefined:
 - API server
 - Use Redis accounts to access API server too
 - ...
+
+## VPN
+
+Each node is connected to the master node using WireGuard VPN in a star network topology.
+After the installation, the server will be configured as master node.
+
+The VPN uses the fixed private network `10.5.4.2.0/24`. The first node will be the master and has the default IP address set to `10.5.4.1`.
+All other worker nodes will have IP address like `10.5.4.2`, `10.5.4.3`, etc.
+
+Retrieve the server public key, it will be used inside the next command:
+```
+podman run -i --network host --rm docker.io/redis:6-alpine redis-cli HGET node/$(hostname -s)/vpn PUBLIC_KEY
+```
+
+To add a new node to the VPN, install everything on a new machine and execute:
+```
+private_key=$(wg genkey)
+public_key=$(echo $private_key | wg pubkey)
+podman run -i --network host --rm docker.io/redis:6-alpine redis-cli <<EOF
+HSET node/$(hostname -s)/vpn PUBLIC_KEY $public_key 
+HSET node/$(hostname -s)/vpn IP_ADDRESS <vpn_client_ip>
+HSET node/$(hostname -s)/vpn SERVER_PUBLIC_ADDRESS <server_public_address:port>
+HSET node/$(hostname -s)/vpn SERVER_PUBLIC_KEY <server_public_key>
+PUBLISH $(hostname -s):vpn-worker.init $private_key
+EOF
+```
+
+Then, get the new node publick key, execute on the worker:
+```
+podman run -i --network host --rm docker.io/redis:6-alpine redis-cli HGET node/$(hostname -s)/vpn PUBLIC_KEY
+```
+
+Access the server and execute: 
+```
+podman run -i --network host --rm docker.io/redis:6-alpine redis-cli <<EOF
+HSET node/$(hostname -s)/vpn/client1 PUBLIC_KEY <worker_public_key> IP_ADDRESS <vpn_client_ip>
+PUBLISH $(hostname -s):vpn-add-client client
+EOF
+```
 
 ## Applications installation
 
