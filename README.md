@@ -275,7 +275,7 @@ N=nextcloud HOST=nextcloud.$(hostname -f); podman run -i --network host --rm doc
 SET traefik/http/services/$N/loadbalancer/servers/0/url http://127.0.0.1:8181
 SET traefik/http/routers/$N-http/service $N
 SET traefik/http/routers/$N-http/entrypoints http,https
-SET traefik(http/routers/$N-http/rule "Host(\`$HOST\`)"
+SET traefik/http/routers/$N-http/rule "Host(\`$HOST\`)"
 SET traefik/http/routers/$N-https/entrypoints http,https
 SET traefik/http/routers/$N-https/rule "Host(\`$HOST\`)"
 SET traefik/http/routers/$N-https/tls true
