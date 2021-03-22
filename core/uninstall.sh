@@ -40,3 +40,5 @@ done
 podman volume rm redis-data
 
 systemctl daemon-reload
+
+systemctl disable --now wg-quick@wg0

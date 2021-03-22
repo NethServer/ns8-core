@@ -56,7 +56,7 @@ Further components will be added in the future (e.g. API Server, VPN, ...).
 
 ## Core installation
 
-Execute as root:
+Execute as root on each node:
 ```
 # curl https://raw.githubusercontent.com/DavidePrincipi/ns8-scratchpad/main/core/install.sh | bash
 ```
@@ -68,12 +68,50 @@ apt-get upgrade -y
 reboot
 ```
 
+After installation, to initialize the cluster you need 3 different steps:
+
+- master node initialization
+- join a worker to cluster
+- grant access to the worker
+
+To initialize the cluster, execute on the master node:
+```
+nethserver init
+```
+
+This command will initialize the master node as WireGuard VPN server with private IP `10.5.4.1`, listening on port `55820`.
+
+Then, move to the worker node and execute:
+```
+nethserver join <master_pubkey> <master_public_address:vpn_port> <worker_vpn_ip>
+```
+
+Where:
+- `<master_pubkey>` is the master WireGuard publick key, execute `cat /etc/wireguard/privatekey | wg pubkey` to access it
+- `<master_public_address:vpn_port>` is the master public address with WireGuard listening port, something like `1.2.3.4:55820`
+- `<worker_vpn_ip>` is the VPN private IP of the worker, something like `10.5.4.2`
+
+Finally, execute on the master node:
+```
+nethserver grant <worker_hostname> <worker_pubkey> <worker_vpn_ip>
+```
+
+Where:
+- `<worker_hostname>` is the worker hostname from `hostname -s`
+- `<worker_pubkey>` is the worker WireGuard publick key, execute `cat /etc/wireguard/privatekey | wg pubkey` to access it
+- `<<worker_vpn_ip>` is the VPN worker IP set in the previous command
+
+
+### Developer configuration
+
 If you're a developer and you need to push images to the registry, you must configure the authentication.
 Create a [GitHub PAT](https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token)
 for the **ghcr.io** registry (for read-only access `read:packages private` scope should be enough) then run the following command, specifying
 your GitHub user name and providing the generated PAT as password:
 ```
-# podman login --authfile /usr/local/etc/registry.json ghcr.io
+podman login --authfile /usr/local/etc/registry.json ghcr.io
+export REGISTRY_AUTH_FILE=/usr/local/etc/registry.json
+chmod -c 644 /usr/local/etc/registry.json
 ```
 
 The core is composed also by the following components:
@@ -197,39 +235,9 @@ Still uncertain, undefined:
 Each node is connected to the master node using WireGuard VPN in a star network topology.
 After the installation, the server will be configured as master node.
 
-The VPN uses the fixed private network `10.5.4.2.0/24`. The first node will be the master and has the default IP address set to `10.5.4.1`.
+The VPN uses a `/24` private network, default is `10.5.4.2.0/24`.
+The first node will be the master and has the default IP address set to `10.5.4.1`.
 All other worker nodes will have IP address like `10.5.4.2`, `10.5.4.3`, etc.
-
-Retrieve the server public key, it will be used inside the next command:
-```
-podman run -i --network host --rm docker.io/redis:6-alpine redis-cli HGET node/$(hostname -s)/vpn PUBLIC_KEY
-```
-
-To add a new node to the VPN, install everything on a new machine and execute:
-```
-private_key=$(wg genkey)
-public_key=$(echo $private_key | wg pubkey)
-podman run -i --network host --rm docker.io/redis:6-alpine redis-cli <<EOF
-HSET node/$(hostname -s)/vpn PUBLIC_KEY $public_key 
-HSET node/$(hostname -s)/vpn IP_ADDRESS <vpn_client_ip>
-HSET node/$(hostname -s)/vpn SERVER_PUBLIC_ADDRESS <server_public_address:port>
-HSET node/$(hostname -s)/vpn SERVER_PUBLIC_KEY <server_public_key>
-PUBLISH $(hostname -s):vpn-worker.init $private_key
-EOF
-```
-
-Then, get the new node publick key, execute on the worker:
-```
-podman run -i --network host --rm docker.io/redis:6-alpine redis-cli HGET node/$(hostname -s)/vpn PUBLIC_KEY
-```
-
-Access the server and execute: 
-```
-podman run -i --network host --rm docker.io/redis:6-alpine redis-cli <<EOF
-HSET node/$(hostname -s)/vpn/client1 PUBLIC_KEY <worker_public_key> IP_ADDRESS <vpn_client_ip>
-PUBLISH $(hostname -s):vpn-add-client client
-EOF
-```
 
 ## Applications installation
 
