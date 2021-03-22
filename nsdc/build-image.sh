@@ -1,9 +1,10 @@
 #!/bin/bash
 
 set -e
+repobase="ghcr.io/nethserver"
+reponame="samba"
 
-image1="samba"
-if ! buildah inspect --type image localhost/${image1} &>/dev/null; then
+if ! buildah inspect --type image "${repobase}/${reponame}" &>/dev/null; then
     container=$(buildah from docker.io/library/ubuntu:rolling)
     buildah run "${container}" -- bash <<EOF
 set -e
@@ -12,19 +13,19 @@ apt-get -y install samba winbind
 apt-get clean
 find /var/lib/apt/lists/ -type f -delete
 EOF
-    buildah commit "${container}" "${image1}"
+    buildah commit "${container}" "${repobase}/${reponame}"
 fi
 
-image2="nsdc"
-container=$(buildah from localhost/${image1})
+container=$(buildah from "${repobase}/${reponame}")
+reponame="nsdc"
 buildah copy "${container}" module-events /srv/module-events
 buildah copy "${container}" entrypoint.sh /entrypoint.sh
 buildah config --label 'org.nethserver.initroot=/srv' "${container}"
 buildah config --cmd='' "${container}"
 buildah config --entrypoint='[ "/bin/bash", "/entrypoint.sh" ]' "${container}"
-buildah commit "${container}" "${image2}"
+buildah commit "${container}" "${repobase}/${reponame}"
 
 echo
 echo "Publish the images with:"
 echo
-echo " buildah push ${image2} docker://ghcr.io/nethserver/${image2}:latest"
+echo " buildah push "${repobase}/${reponame}" docker://${repobase}/${reponame}"
