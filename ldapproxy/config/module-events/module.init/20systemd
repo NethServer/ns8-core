@@ -1,0 +1,3 @@
+#!/bin/bash
+
+exec systemctl --user enable --now ldapproxy.service

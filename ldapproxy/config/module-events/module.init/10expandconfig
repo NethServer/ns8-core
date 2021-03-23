@@ -1,0 +1,13 @@
+#!/bin/bash
+
+redis-hgetall "module/${MODULE_ID}/module.env" > ~/module.env
+set -a
+source ~/module.env
+set +a
+
+echo "[DEBUG] $0 Workdir: ${PWD}"
+echo "[DEBUG] $0 Event arguments:" "${@}"
+echo "[DEBUG] $0 Environment:"
+env
+
+envsubst < ~/.config/nginx.conf.template > ~/nginx.conf

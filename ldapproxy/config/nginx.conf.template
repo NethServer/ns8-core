@@ -11,7 +11,7 @@ events {
 # L4 proxy to the LDAP account provider 
 stream {
     server {
-        listen 389;
+        listen 127.0.0.1:${PROXYPORT};
         proxy_pass ${LDAPHOST}:${LDAPPORT};
         proxy_ssl ${LDAPSSL};
     }
