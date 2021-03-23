@@ -12,14 +12,12 @@ env
 echo "[DEBUG] $0 module.env:"
 cat ~/module.env
 
-envsubst '${LDAPHOST} ${LDAPPORT} ${LDAPSSL}' < ~/.config/nginx.conf.template > ~/nginx.conf
-
 # Calculate the mailbox domain name for Postfix,
 # starting from the full host name assigned to the mail pod instance:
 printf "MAILBOX_DOMAIN=%s\n" $(cut -f 2- -d . <<<"${HOSTNAME}") >> ~/module.env
 
 cat > ~/dovecot-ldap.conf.ext <<EOF
-hosts = 127.0.0.1
+hosts = ldapproxy:3890
 auth_bind = yes
 auth_bind_userdn = ${BINDDN:-%u}
 base =

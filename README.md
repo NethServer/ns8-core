@@ -17,10 +17,13 @@ The core purpose is managing the applications, providing the basics for their en
 
 3. `module-agent.service` Systemd units, running in each module as non-privileged users. See the "Additional modules" section below for more details.
 
-Some modules are considered core components, as they provide basic services for additional modules:
+4. Edge proxy, for TLS termination and centralized certificates management (Traefik)
 
-- LDAP local account provider (OpenLDAP, Samba DC)
-- Edge proxy, for TLS termination and centralized certificates management (Traefik)
+5. LDAP proxy, listening on 127.0.0.1 port 3890. It helps other modules to connect to the account provider LDAP service,
+   providing a fixed address and clear text connection.
+
+6. LDAP local account provider (OpenLDAP, Samba DC)
+
 
 Further components will be added in the future (e.g. API Server, VPN, ...).
 
@@ -134,6 +137,12 @@ As alternative, use `nc` command:
     ...
     EOF
 
+Or even shorter in Bash:
+
+    # cat >/dev/tcp/127.0.0.1/6379 <<EOF
+    ...
+    EOF
+
 ### Traefik
 
 To inspect and modify the module start a SSH session. SSH is preferred to `su - traefik0` because the latter
@@ -165,6 +174,25 @@ EOF
 ```
 
 Traefik will generate the certificate without exposing any new service.
+
+### Ldapproxy
+
+The LDAP account provider service can be local or remote, and can require TLS or not. To help modules using the LDAP
+service, a LDAP proxy is always available at 127.0.0.1:3890 without TLS.
+
+Rootless containers can establish a connection from their private network to the loopback interface with the
+following Podman arguments:
+
+    --network=slirp4netns:allow_host_loopback=true --add-host=accountprovider:10.0.2.2
+
+To create a Ldapproxy instance run the following commands, adjusting the LDAPHOST value if needed.
+
+```
+cat >/dev/tcp/127.0.0.1/6379 <<EOF
+HSET module/ldapproxy0/module.env EVENTS_IMAGE ghcr.io/nethserver/ldapproxy:latest PROXYPORT 3890 LDAPHOST 127.0.0.1 LDAPPORT 636 LDAPSSL on
+PUBLISH $(hostname -s):module.init ldapproxy0
+EOF
+```
 
 ### Nsdc
 
@@ -312,8 +340,8 @@ Note: the nsdc must have a user named `ldapservice` with password `Nethesis,1234
 Installation
 
 ```
-podman run -i --network host --rm docker.io/redis:6-alpine redis-cli <<EOF
-HSET module/mail0/module.env HOSTNAME mail.example.com LDAPHOST 10.133.0.5 LDAPPORT 636 LDAPSSL on BINDDN %n@AD.DP.NETHSERVER.NET EVENTS_IMAGE ghcr.io/nethserver/mail
+cat >/dev/tcp/127.0.0.1/6379 <<EOF
+HSET module/mail0/module.env HOSTNAME mail.example.com BINDDN %n@AD.DP.NETHSERVER.NET EVENTS_IMAGE ghcr.io/nethserver/mail
 PUBLISH $(hostname -s):module.init mail0
 EOF
 ```
