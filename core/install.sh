@@ -45,7 +45,7 @@ cid=$(podman create ghcr.io/nethserver/core:${IMAGE_TAG:-latest})
 podman export ${cid} | tar -C ${INSTALL_DIR} -x -v -f -
 podman rm -f ${cid}
 
-cp -f ${installdir}/etc/containers/containers.conf /etc/containers/containers.conf
+cp -f ${INSTALL_DIR}/etc/containers/containers.conf /etc/containers/containers.conf
 
 cp -f ${AGENT_DIR}/node-agent.service      /etc/systemd/system/node-agent.service
 cp -f ${AGENT_DIR}/redis.service           /etc/systemd/system/redis.service
