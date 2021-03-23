@@ -6,6 +6,7 @@ Documentation=https://github.com/DavidePrincipi/ns8-scratchpad
 Environment=PODMAN_SYSTEMD_UNIT=%n
 Restart=on-failure
 TimeoutStopSec=70
+EnvironmentFile=/var/lib/nethserver/redis/params.env
 ExecStartPre=/bin/rm -f %t/redis.pid %t/redis.cid
 ExecStart=/usr/bin/podman run \
     --conmon-pidfile=%t/redis.pid \
@@ -16,7 +17,8 @@ ExecStart=/usr/bin/podman run \
     --network=host \
     --volume=redis-data:/data \
     docker.io/redis:6-alpine \
-    --save 5 1 --bind 127.0.0.1 ::1
+    --save 5 1 \
+    $EXTRA_PARAMS
 ExecStop=/usr/bin/podman stop --ignore --cidfile %t/redis.cid -t 10
 ExecStopPost=/usr/bin/podman rm --ignore -f --cidfile %t/redis.cid
 PIDFile=%t/redis.pid
