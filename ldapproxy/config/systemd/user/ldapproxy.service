@@ -1,0 +1,17 @@
+[Unit]
+Description=%u LDAP account provider local proxy
+Documentation=man:podman-generate-systemd(1)
+
+[Service]
+Environment=PODMAN_SYSTEMD_UNIT=%n
+Restart=on-failure
+TimeoutStopSec=70
+ExecStartPre=/bin/rm -f %t/container-ldapproxy.pid %t/container-ldapproxy.ctr-id
+ExecStart=/usr/bin/podman run --conmon-pidfile %t/container-ldapproxy.pid --cidfile %t/container-ldapproxy.ctr-id --cgroups=no-conmon -d --network host --replace --name ldapproxy --volume %h/nginx.conf:/etc/nginx/nginx.conf:Z docker.io/library/nginx:1.19-alpine
+ExecStop=/usr/bin/podman stop --ignore --cidfile %t/container-ldapproxy.ctr-id -t 10
+ExecStopPost=/usr/bin/podman rm --ignore -f --cidfile %t/container-ldapproxy.ctr-id
+PIDFile=%t/container-ldapproxy.pid
+Type=forking
+
+[Install]
+WantedBy=default.target

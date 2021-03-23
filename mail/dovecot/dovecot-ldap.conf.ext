@@ -4,7 +4,7 @@
 # conf.d/auth-ldap.conf.ext
 
 # Space separated list of LDAP hosts to use. host:port is allowed too.
-hosts = 127.0.0.1
+hosts = ldapproxy:3890
 
 # Use authentication binding for verifying password's validity. This works by
 # logging into LDAP server using the username and password given by client.

@@ -41,10 +41,11 @@ installdir="/usr/local/share"
 agentdir="${installdir}/agent"
 
 echo "Extracting core sources:"
-podman pull ghcr.io/nethserver/core:${IMAGE_TAG:-latest}
 cid=$(podman create ghcr.io/nethserver/core:${IMAGE_TAG:-latest})
 podman export ${cid} | tar -C ${installdir} -x -v -f -
 podman rm -f ${cid}
+
+cp -f ${installdir}/etc/containers/containers.conf /etc/containers/containers.conf
 
 cp -f ${agentdir}/node-agent.service      /etc/systemd/system/node-agent.service
 cp -f ${agentdir}/redis.service           /etc/systemd/system/redis.service
