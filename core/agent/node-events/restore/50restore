@@ -28,11 +28,13 @@ for u in $(getent passwd | grep traefik | cut -d':' -f1)
 do
     loginctl disable-linger $u
 done
+systemctl stop wg-quick@wg0
 
 # Explode core
 tar xvf $OUTPUT_FILE -C /
 
 # Restart services
+systemctl start wg-quick@wg0
 systemctl start redis
 for u in $(getent passwd | grep traefik | cut -d':' -f1)
 do

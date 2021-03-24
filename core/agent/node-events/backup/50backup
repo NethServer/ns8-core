@@ -28,6 +28,7 @@ podman run -i --network host --rm docker.io/redis:6-alpine redis-cli SAVE
 
 # Create the list of files to backup
 find /home/traefik*/ -name acme.json >> $include
+find /etc/wireguard -type f >> $include
 echo $(podman volume inspect redis-data -f '{{.Mountpoint}}')/dump.rdb >> $include
 
 # Pack everything inside a tar ready to be saved
