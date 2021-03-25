@@ -189,7 +189,15 @@ To create a Ldapproxy instance run the following commands, adjusting the LDAPHOS
 
 ```
 cat >/dev/tcp/127.0.0.1/6379 <<EOF
-HSET module/ldapproxy0/module.env EVENTS_IMAGE ghcr.io/nethserver/ldapproxy:latest PROXYPORT 3890 LDAPHOST 127.0.0.1 LDAPPORT 636 LDAPSSL on
+HSET module/ldapproxy0/module.env EVENTS_IMAGE ghcr.io/nethserver/ldapproxy:latest PROXYPORT <proxy_listen_port> LDAPHOST <ldap_host> LDAPPORT <ldap_port> LDAPSSL <on|off> SCHEMA <ad|openldap> REALM <realm> BIND_DN <bind_dn> BIND_PASSWORD <pass> BASE_DN <base_dn> USER_DN <user_dn> GROUP_DN <group_dn>
+PUBLISH $(hostname -s):module.init ldapproxy0
+EOF
+```
+
+Example:
+```
+cat >/dev/tcp/127.0.0.1/6379 <<EOF
+HSET module/ldapproxy0/module.env EVENTS_IMAGE ghcr.io/nethserver/ldapproxy:latest PROXYPORT 3890 LDAPHOST 127.0.0.1 LDAPPORT 636 LDAPSSL on SCHEMA ad REALM AD.NETH.LOC BIND_DN administrator@AD.NETH.LOC BIND_PASSWORD Nethesis,1234 BASE_DN dc=ad,dc=neth,dc=loc USER_DN dc=ad,dc=neth,dc=loc GROUP_DN dc=ad,dc=neth,dc=loc
 PUBLISH $(hostname -s):module.init ldapproxy0
 EOF
 ```
@@ -297,19 +305,7 @@ EOF
 
 ### Nextcloud
 
-Make sure nsdc and ldappproxy are configured, then set global ldap config:
-```
-podman run -i --network host --rm docker.io/redis:6-alpine redis-cli <<EOF
-HSET ldap HOST <ldap_host> PORT <ldap_port> SSL <on|off> SCHEMA <ad|openldap> REALM <realm> BIND_DN <bind_dn> BIND_PASSWORD <pass> BASE_DN <base_dn> USER_DN <user_dn> GROUP_DN <group_dn>
-EOF
-```
-
-Example of ldap configuration:
-```
-podman run -i --network host --rm docker.io/redis:6-alpine redis-cli <<EOF
-HSET ldap HOST 192.168.122.213 PORT 636 SSL on SCHEMA ad REALM AD.NETH.LOC BIND_DN administrator@AD.NETH.LOC BIND_PASSWORD Nethesis,1234 BASE_DN dc=ad,dc=neth,dc=loc USER_DN dc=ad,dc=neth,dc=loc GROUP_DN dc=ad,dc=neth,dc=loc
-EOF
-```
+Nextcloud will use ldapproxy to configure the authentication, so make sure nsdc and ldappproxy are already running.
 
 To start a nextcloud instance execute:
 ```

@@ -33,7 +33,7 @@ OCC ldap:set-config s01 ldapHost accountprovider
 OCC ldap:set-config s01 ldapPort 3890
 
 # Read global ldap config from redis
-source <(redis-hgetall "ldap")
+source <(redis-hgetall "module/ldapproxy0/module.env")
 
 # Common configuration options
 OCC ldap:set-config s01 ldapAgentName $BIND_DN
