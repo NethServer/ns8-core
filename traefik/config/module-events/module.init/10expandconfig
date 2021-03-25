@@ -4,6 +4,7 @@ mid=$(id -un)
 source <(redis-hgetall "module/${mid}/module.env")
 
 LE_EMAIL=${LE_EMAIL:-root@$(hostname -f)}
+LOG_LEVEL=${LOG_LEVEL:-INFO}
 
 cat <<EOF > ~/traefik.yaml
 defaultEntryPoints:
@@ -13,7 +14,7 @@ defaultEntryPoints:
 file: {}
 
 log:
-  level: DEBUG
+  level: $LOG_LEVEL
 
 accessLog: {}
 
@@ -25,6 +26,7 @@ entryPoints:
 
 providers:
   redis:
+    rootKey: "$mid"
     endpoints:
       - "127.0.0.1:6379"
 

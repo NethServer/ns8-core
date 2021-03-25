@@ -151,7 +151,7 @@ systemctl enable --now node-agent.service
 if [ "$action" == "init" ]; then
     echo "Setup traefik:"
     podman run -i --network host --rm docker.io/redis:6-alpine redis-cli <<EOF
-SET traefik ''
+SET traefik0 ''
 HSET module/traefik0/module.env LE_EMAIL root@$(hostname -f) EVENTS_IMAGE ghcr.io/nethserver/traefik:latest
 PUBLISH $(hostname -s):module.init traefik0
 EOF
