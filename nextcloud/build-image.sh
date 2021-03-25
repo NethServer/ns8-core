@@ -6,7 +6,6 @@ image="nextcloud"
 container=$(buildah from scratch)
 
 buildah copy "${container}" config /.config
-buildah copy "${container}" scripts /scripts
 buildah config --entrypoint=/ "${container}"
 buildah commit "${container}" "${image}"
 

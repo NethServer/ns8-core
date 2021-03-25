@@ -204,7 +204,7 @@ The Nsdc module runs a singleton and rootfull Samba 4 DC instance.
 Initialize the Redis DB and start the installation with:
 
 ```
-podman run -ti --network host --rm docker.io/redis:6-alpine redis-cli <<EOF
+podman run -i --network host --rm docker.io/redis:6-alpine redis-cli <<EOF
 HSET module/nsdc0/module.env EVENTS_IMAGE ghcr.io/nethserver/nsdc:latest NSDC_IMAGE ghcr.io/nethserver/nsdc:latest IPADDRESS 10.133.0.5 HOSTNAME nsdc1.$(hostname -d) NBDOMAIN AD REALM AD.$(hostname -d | tr a-z A-Z) ADMINPASS Nethesis,1234
 PUBLISH $(hostname -s):module-rootfull.init nsdc0
 EOF
@@ -296,6 +296,20 @@ EOF
 ```
 
 ### Nextcloud
+
+Make sure nsdc and ldappproxy are configured, then set global ldap config:
+```
+podman run -i --network host --rm docker.io/redis:6-alpine redis-cli <<EOF
+HSET ldap HOST <ldap_host> PORT <ldap_port> SSL <on|off> SCHEMA <ad|openldap> REALM <realm> BIND_DN <bind_dn> BIND_PASSWORD <pass> BASE_DN <base_dn> USER_DN <user_dn> GROUP_DN <group_dn>
+EOF
+```
+
+Example of ldap configuration:
+```
+podman run -i --network host --rm docker.io/redis:6-alpine redis-cli <<EOF
+HSET ldap HOST 192.168.122.213 PORT 636 SSL on SCHEMA ad REALM AD.NETH.LOC BIND_DN administrator@AD.NETH.LOC BIND_PASSWORD Nethesis,1234 BASE_DN dc=ad,dc=neth,dc=loc USER_DN dc=ad,dc=neth,dc=loc GROUP_DN dc=ad,dc=neth,dc=loc
+EOF
+```
 
 To start a nextcloud instance execute:
 ```
