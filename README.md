@@ -67,7 +67,8 @@ Execute as root on each node:
 When installing on Debian 10 Buster, first make sure to have the latest running kernel:
 ```
 apt-get update
-apt-get upgrade -y
+apt-get --with-new-pkgs upgrade -y
+apt-get install curl
 reboot
 ```
 
@@ -102,7 +103,7 @@ nethserver grant <worker_hostname> <worker_pubkey> <worker_vpn_ip>
 Where:
 - `<worker_hostname>` is the worker hostname from `hostname -s`
 - `<worker_pubkey>` is the worker WireGuard publick key, execute `cat /etc/wireguard/privatekey | wg pubkey` to access it
-- `<<worker_vpn_ip>` is the VPN worker IP set in the previous command
+- `<worker_vpn_ip>` is the VPN worker IP set in the previous command
 
 
 ### Developer configuration
