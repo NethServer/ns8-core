@@ -1,12 +1,19 @@
 #!/bin/bash
 
 set -e
+messages=("Publish the image with:" "")
+repobase="ghcr.io/nethserver"
 
-image="nextcloud"
+reponame="nextcloud"
 container=$(buildah from scratch)
 
 buildah copy "${container}" config /.config
 buildah config --entrypoint=/ "${container}"
-buildah commit "${container}" "${image}"
+buildah commit "${container}" "${repobase}/${reponame}"
+messages+=(" buildah push ${repobase}/${reponame} docker://${repobase}/${reponame}:latest")
 
-buildah push nextcloud docker://ghcr.io/nethserver/nextcloud:latest
+#
+#
+#
+
+printf "%s\n" "${messages[@]}"

@@ -1,15 +1,19 @@
 #!/bin/bash
 
 set -e
+messages=("Publish the image with:" "")
+repobase="ghcr.io/nethserver"
 
-image="dokuwiki"
+reponame="dokuwiki"
 container=$(buildah from scratch)
 
 buildah copy "${container}" config /.config
 buildah config --entrypoint=/ "${container}"
-buildah commit "${container}" "${image}"
+buildah commit "${container}" "${repobase}/${reponame}"
+messages+=(" buildah push ${repobase}/${reponame} docker://${repobase}/${reponame}:latest")
 
-echo
-echo "Publish the image with:"
-echo
-echo " buildah push ${image} docker://ghcr.io/nethserver/${image}:latest"
+#
+#
+#
+
+printf "%s\n" "${messages[@]}"
