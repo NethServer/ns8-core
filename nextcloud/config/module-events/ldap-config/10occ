@@ -9,17 +9,6 @@ function OCC {
     podman exec -ti --user www-data nextcloud-app php occ "$@"
 }
 
-# Wait for ldap initialization
-TIMEOUT=120
-k=0
-until OCC maintenance:mode | grep -q disabled; do
-    sleep 1
-    k=$((k+1))
-    if [ $k -gt $TIMEOUT ]; then
-        exit 1
-    fi
-done
-
 OCC app:enable user_ldap >/dev/null
 
 # Create config if not exists

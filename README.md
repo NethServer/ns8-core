@@ -332,6 +332,13 @@ SET traefik0/http/routers/$N-https/tls/domains/0/main $HOST
 EOF
 ```
 
+Configure LDAP authentication:
+```
+podman run -i --network host --rm docker.io/redis:6-alpine redis-cli <<EOF
+PUBLISH nextcloud0:ldap-config ldapproxy0
+EOF
+```
+
 Execute `occ` command:
 ```
 ssh nextcloud0@localhost
