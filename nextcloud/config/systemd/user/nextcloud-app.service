@@ -11,7 +11,7 @@ EnvironmentFile=%h/params.env
 Restart=on-failure
 TimeoutStopSec=70
 ExecStartPre=/bin/rm -f %t/nextcloud-app.pid %t/nextcloud-app.ctr-id
-ExecStart=/usr/bin/podman run --log-driver journald --conmon-pidfile %t/nextcloud-app.pid --cidfile %t/nextcloud-app.ctr-id --cgroups=no-conmon --pod-id-file %t/nextcloud.pod-id --replace -d --name nextcloud-app -e MYSQL_DATABASE=nextcloud -e MYSQL_HOST=127.0.0.1 -e MYSQL_USER=nextcloud -e MYSQL_PASSWORD=nextcloud -e REDIS_HOST=127.0.0.1 -e REDIS_HOST_PORT=6379 -e APACHE_DISABLE_REWRITE_IP=1 -e TRUSTED_PROXIES=10.0.0.0/8 --env-file=%h/params.env -v nextcloud-app-data:/var/www/html/data -v nextcloud-app-source:/var/www/html docker.io/nextcloud:latest
+ExecStart=/usr/bin/podman run --conmon-pidfile %t/nextcloud-app.pid --cidfile %t/nextcloud-app.ctr-id --cgroups=no-conmon --pod-id-file %t/nextcloud.pod-id --replace -d --name nextcloud-app -e MYSQL_DATABASE=nextcloud -e MYSQL_HOST=127.0.0.1 -e MYSQL_USER=nextcloud -e MYSQL_PASSWORD=nextcloud -e REDIS_HOST=127.0.0.1 -e REDIS_HOST_PORT=6379 -e APACHE_DISABLE_REWRITE_IP=1 -e TRUSTED_PROXIES=10.0.0.0/8 --env-file=%h/params.env -v nextcloud-app-data:/var/www/html/data -v nextcloud-app-source:/var/www/html docker.io/nextcloud:latest
 ExecStop=/usr/bin/podman stop --ignore --cidfile %t/nextcloud-app.ctr-id -t 10
 ExecStopPost=/usr/bin/podman rm --ignore -f --cidfile %t/nextcloud-app.ctr-id
 PIDFile=%t/nextcloud-app.pid

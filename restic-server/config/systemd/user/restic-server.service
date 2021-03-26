@@ -6,7 +6,7 @@ Documentation=https://github.com/DavidePrincipi/ns8-scratchpad
 Environment=PODMAN_SYSTEMD_UNIT=%n
 Restart=on-failure
 ExecStartPre=/bin/rm -f %t/restic-server.pid %t/restic-server.ctr-id
-ExecStart=/usr/bin/podman run --conmon-pidfile %t/restic-server.pid --cidfile %t/restic-server.ctr-id --cgroups=no-conmon --replace --log-driver journald --name restic-server -d -p 127.0.0.1:8383:8000 -v restic-server-data:/data --env OPTIONS="--no-auth --debug" docker.io/restic/rest-server
+ExecStart=/usr/bin/podman run --conmon-pidfile %t/restic-server.pid --cidfile %t/restic-server.ctr-id --cgroups=no-conmon --replace --name restic-server -d -p 127.0.0.1:8383:8000 -v restic-server-data:/data --env OPTIONS="--no-auth --debug" docker.io/restic/rest-server
 ExecStop=/usr/bin/podman stop --ignore --cidfile %t/restic-server.ctr-id -t 10
 ExecStopPost=/usr/bin/podman rm --ignore -f --cidfile %t/restic-server.ctr-id
 PIDFile=%t/restic-server.pid

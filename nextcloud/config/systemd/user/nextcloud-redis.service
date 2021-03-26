@@ -9,7 +9,7 @@ Environment=PODMAN_SYSTEMD_UNIT=%n
 Restart=on-failure
 TimeoutStopSec=70
 ExecStartPre=/bin/rm -f %t/nextcloud-redis.pid %t/nextcloud-redis.ctr-id
-ExecStart=/usr/bin/podman run --log-driver journald --conmon-pidfile %t/nextcloud-redis.pid --cidfile %t/nextcloud-redis.ctr-id --cgroups=no-conmon --pod-id-file %t/nextcloud.pod-id --replace -d --name nextcloud-redis -v nextcloud-redis-data:/data docker.io/redis:6-alpine --appendonly yes
+ExecStart=/usr/bin/podman run --conmon-pidfile %t/nextcloud-redis.pid --cidfile %t/nextcloud-redis.ctr-id --cgroups=no-conmon --pod-id-file %t/nextcloud.pod-id --replace -d --name nextcloud-redis -v nextcloud-redis-data:/data docker.io/redis:6-alpine --appendonly yes
 ExecStop=/usr/bin/podman stop --ignore --cidfile %t/nextcloud-redis.ctr-id -t 10
 ExecStopPost=/usr/bin/podman rm --ignore -f --cidfile %t/nextcloud-redis.ctr-id
 PIDFile=%t/nextcloud-redis.pid
