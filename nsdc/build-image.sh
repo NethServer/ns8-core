@@ -9,7 +9,7 @@ if ! buildah inspect --type image "${repobase}/${reponame}" &>/dev/null; then
     buildah run "${container}" -- bash <<EOF
 set -e
 apt-get update
-apt-get -y install samba winbind
+apt-get -y install samba winbind krb5-user iputils-ping
 apt-get clean
 find /var/lib/apt/lists/ -type f -delete
 EOF

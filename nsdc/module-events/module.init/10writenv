@@ -28,6 +28,8 @@ TimeoutStopSec=70
 SuccessExitStatus=127
 ExecStartPre=/bin/rm -f %t/${MODULE_ID}.pid %t/${MODULE_ID}.cid
 ExecStart=/usr/bin/podman run \
+    --dns=none \
+    --no-hosts \
     --detach \
     --conmon-pidfile %t/${MODULE_ID}.pid \
     --cidfile %t/${MODULE_ID}.cid \
@@ -40,7 +42,10 @@ ExecStart=/usr/bin/podman run \
     --replace --name=${MODULE_ID} \
     --volume=${MODULE_ID}-data:/var/lib/samba:Z \
     --volume=${MODULE_ID}-config:/etc/samba:Z \
-    \${NSDC_IMAGE}
+    --volume=${MODULE_STATE}/hosts:/etc/hosts:Z \
+    --volume=${MODULE_STATE}/resolv.conf:/etc/resolv.conf:Z \
+    --volume=${MODULE_STATE}/krb5.conf:/etc/krb5.conf:Z \
+    \${NSDC_IMAGE} \${NSDC_ARGS}
 ExecStop=/usr/bin/podman stop --ignore --cidfile %t/${MODULE_ID}.cid -t 10
 ExecStopPost=/usr/bin/podman rm --ignore -f --cidfile %t/${MODULE_ID}.cid
 PIDFile=%t/${MODULE_ID}.pid
