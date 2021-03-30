@@ -1,0 +1,83 @@
+#!/bin/bash
+
+#
+# Basic netdata configuration
+#
+
+mid=$(id -un)
+hostname=$(hostname -f)
+master_name=""
+master_ip=""
+
+# Find master address
+for ck in $(podman run -i --network host --rm docker.io/redis:6-alpine redis-cli KEYS node/*/vpn)
+do
+    source <(redis-hgetall "${ck}")
+    if [ ! -z "$LISTEN_PORT" ]; then
+        master_ip=$IP_ADDRESS
+        master_name=$(echo ${ck} | cut -d'/' -f2)
+        break
+    fi
+done
+
+# Set defaults
+
+API_KEY="7d3dc000-cbe2-4aa0-9847-c1f508911a10"
+
+# Read netdata config
+source <(redis-hgetall "module/${mid}/module.env")
+
+#
+# cgroup configuration is necessary for container monitoring
+#
+cat > ~/netdata.conf <<EOF
+[global]
+        hostname = $hostname
+        update every = 5
+        debug log = none
+        access log = none
+
+[plugin:cgroups]
+        path to /sys/fs/cgroup/cpuacct = /host/sys/fs/cgroup/cpu,cpuacct
+        path to /sys/fs/cgroup/cpuset = /host/sys/fs/cgroup/cpuset
+        path to /sys/fs/cgroup/blkio = /host/sys/fs/cgroup/blkio
+        path to /sys/fs/cgroup/memory = /host/sys/fs/cgroup/memory
+        path to /sys/fs/cgroup/devices = /host/sys/fs/cgroup/devices
+EOF
+
+#
+# Disable Netdata cloud links 
+#
+cat > ~/cloud.conf <<EOF
+[global]
+    enabled = no
+EOF
+
+#
+# Configure data stream
+#
+if [ "$(hostname -s)" == "$master_name" ]; then
+
+    # master node
+    cat > ~/stream.conf <<EOF
+[$API_KEY]
+    enabled = yes
+    memory mode = dbengine
+    default memory mode = dbengine
+    health enabled by default = auto
+    allow from = *
+EOF
+
+   echo "EXTRA_PARAMS=' -p $master_ip:19999:19999' " > ~/params.env
+
+else
+
+    # worker node
+    cat > ~/stream.conf <<EOF
+[stream]
+    enabled = yes
+    api key = $API_KEY
+    destination = $master_ip:19999
+EOF
+
+fi

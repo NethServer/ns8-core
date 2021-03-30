@@ -266,6 +266,47 @@ PUBLISH $(hostname -s):module.init mail0
 EOF
 ```
 
+### Netdata
+
+Install and configure netdata:
+- port 19999 is not exposed
+- application is accessibile only using Traefik at `netdata.<fqdn>` on master node
+- the master node collects and display all metrics
+- worker nodes send data to master node
+
+
+Execute on the master node:
+```
+cat >/dev/tcp/127.0.0.1/6379 <<EOF
+HSET module/netdata0/module.env EVENTS_IMAGE ghcr.io/nethserver/netdata:latest
+PUBLISH $(hostname -s):module.init netdata0
+EOF
+```
+
+Setup web access using traefik (execute only on master node):
+```
+N=netdata HOST=netdata.$(hostname -f); cat >/dev/tcp/127.0.0.1/6379 <<EOF
+SET traefik0/http/services/$N/loadbalancer/servers/0/url http://127.0.0.1:19999
+SET traefik0/http/routers/$N-http/service $N
+SET traefik0/http/routers/$N-http/entrypoints http,https
+SET traefik0/http/routers/$N-http/rule "Host(\`$HOST\`)"
+SET traefik0/http/routers/$N-https/entrypoints http,https
+SET traefik0/http/routers/$N-https/rule "Host(\`$HOST\`)"
+SET traefik0/http/routers/$N-https/tls true
+SET traefik0/http/routers/$N-https/service $N
+SET traefik0/http/routers/$N-https/tls/certresolver letsencrypt
+SET traefik0/http/routers/$N-https/tls/domains/0/main $HOST
+EOF
+```
+
+To configure netdata on the worker node, execute on the master:
+```
+cat >/dev/tcp/127.0.0.1/6379 <<EOF
+HSET module/netdata1/module.env EVENTS_IMAGE ghcr.io/nethserver/netdata:latest
+PUBLISH <worker_short_hostname>:module.init netdata1
+EOF
+```
+
 ## Uninstall
 
 The `core/uninstall.sh` script attempts to stop and erase core components and
