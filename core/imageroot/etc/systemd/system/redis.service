@@ -1,5 +1,5 @@
 [Unit]
-Description=Redis DB
+Description=Core Redis DB
 Documentation=https://github.com/NethServer/ns8-scratchpad
 
 [Service]
