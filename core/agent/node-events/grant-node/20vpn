@@ -33,7 +33,7 @@ do
 
 [Peer]
 PublicKey = $PUBLIC_KEY
-AllowedIPs = ${IP_ADDRESS}/24${ROUTES:+,}${ROUTES}
+AllowedIPs = ${IP_ADDRESS}${ROUTES:+,}${ROUTES}
 EOF
     )
 done
