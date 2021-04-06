@@ -22,6 +22,7 @@ ExecStart=/usr/bin/podman run \
 ExecStop=/usr/bin/podman stop --ignore --cidfile %t/redis.cid -t 10
 ExecStopPost=/usr/bin/podman rm --ignore -f --cidfile %t/redis.cid
 PIDFile=%t/redis.pid
+TimeoutStartSec=300
 Type=forking
 
 [Install]
