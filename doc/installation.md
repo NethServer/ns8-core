@@ -9,11 +9,9 @@ Execute as root on each node:
 # curl https://raw.githubusercontent.com/NethServer/ns8-scratchpad/main/core/install.sh | bash
 ```
 
-When installing on Debian 10 Buster, first make sure to have the latest running kernel:
+When installing on Debian 10 Buster, first make sure to have the latest running kernel and curl installed:
 ```
-apt-get update
-apt-get --with-new-pkgs upgrade -y
-apt-get install curl
+apt-get update && apt-get --with-new-pkgs upgrade -y && apt-get install curl -y
 reboot
 ```
 
