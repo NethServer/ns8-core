@@ -40,7 +40,7 @@ func getTasks(c *gin.Context, queueName string) {
 	// init redis connection
 	redisConnection := redis.Instance()
 
-	// inspect redis tasks queue
+	// inspect redis tasks queue: LRANGE <queue> 0 -1
 	tasksArray, errRedis := redisConnection.LRange(queueName, 0, -1).Result()
 
 	// handle redis error

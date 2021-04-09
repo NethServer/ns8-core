@@ -12,14 +12,11 @@ go build
 ```
 
 ## Configuration
-`/opt/nethserver/api-server/conf.json`
-```json
-{
-    "listen_address": "0.0.0.0:8080",
-    "redis_type": "tcp", // could be `tcp` or `unix`
-    "redis_address": "127.0.0.1:6379", // could be an tcp address or unix socket
-    "secret": "YourSecret,11"
-}
+The configuration is read from ENV
+```bash
+LISTEN_ADDRESS=0.0.0.0:8080
+REDIS_ADDRESS=127.0.0.1:6379
+SECRET=MY_SECRET,11
 ```
 
 ## Running
@@ -28,66 +25,110 @@ To execute the binary run
 ./api-server
 ```
 
-You can also specify a different config file location with
+You can also specify configurations using env vars
 ```bash
-./api-server -c /your/config/path/file.json
+LISTEN_ADDRESS=0.0.0.0:8080 REDIS_ADDRESS=127.0.0.1:6379 SECRET=MY_SECRET,11./api-server
 ```
 
 ## APIs
-- `GET /api/tasks/:task_id`
+- `GET /api/cluster/tasks`
+- `GET /api/node/<node_id>/tasks`
+- `GET /api/module/<module_id>/tasks`
 
-  Return the task information.
+  Return the task information for each entity (Cluster, Node, Module).
 
   ```bash
-  curl -s http://localhost:8080/api/tasks/8de678c2-5b00-4199-b6d0-52b8ab6580a0 | jq
+  curl -s http://localhost:8080/api/cluster/tasks/ | jq
+  curl -s http://localhost:8080/api/node/<node_id>/tasks/ | jq
+  curl -s http://localhost:8080/api/module/<module_id>/tasks/ | jq
   ```
 
   ```json
   {
-    "id": "8de678c2-5b00-4199-b6d0-52b8ab6580a0",
-    "module": "mail",
-    "node_id": 1,
-    "params": "MY_VAR1=2;MY_VAR2=4"
+    "queue": "cluster/tasks",
+    "tasks": [
+      {
+        "id": "30f49b7f-2f9d-46c1-b743-111b09229797",
+        "action": "create-task",
+        "data": "MY_VAR=2;MY_CIAO=4"
+      },
+      ...
+    ]
   }
-  ```
-
-- `POST /api/tasks`
-
-  Create a new task and publish to `tasks-channel`
-
-  ```bash
-  curl -s -X POST http://localhost:8080/api/tasks --data '{"id": "", "module": "mail", "node_id": 1, "params": "MY_VAR1=2;MY_VAR2=4"}'
-  ```
-
-  ```json
   {
-    "message": "task created successfully",
-    "task_id": "18dfe562-2a12-4e46-9b42-1403a1460cf7"
+    "queue": "node/<node_id>/tasks",
+    "tasks": [
+      {
+        "id": "30f49b7f-2f9d-46c1-b743-111b09229797",
+        "action": "create-task",
+        "data": "MY_VAR=2;MY_CIAO=4"
+      },
+      ...
+    ]
   }
-  ```
-  
-- `DELETE /api/tasks/:task_id`
+  {
+    "queue": "module/<module_id>/tasks",
+    "tasks": [
+      {
+        "id": "30f49b7f-2f9d-46c1-b743-111b09229797",
+        "action": "create-task",
+        "data": "MY_VAR=2;MY_CIAO=4"
+      },
+      ...
+    ]
+  }
 
-  Delete a specific task
+  ```
+
+- `POST /api/cluster/tasks`
+- `POST /api/node/<node_id>/tasks`
+- `POST /api/module/<module_id>/tasks`
+
+  Create a new task and add to specific entity queue
 
   ```bash
-  curl -s -X DELETE http://localhost:8080/api/tasks/91a5b85f-9ce7-42cf-a18e-ede1c6d64671 | jq
+  curl -s -X POST http://localhost:8080/api/cluster/tasks --data '{"id": "", "action": "create-task", "data": "MY_VAR=2;MY_CIAO=4"}' | jq
+  curl -s -X POST http://localhost:8080/api/node/<node_id>/tasks --data '{"id": "", "action": "create-task", "data": "MY_VAR=2;MY_CIAO=4"}' | jq
+  curl -s -X POST http://localhost:8080/api/module/<module_id>/tasks --data '{"id": "", "action": "create-task", "data": "MY_VAR=2;MY_CIAO=4"}' | jq
   ```
 
   ```json
   {
-    "message": "task deleted successfully"
+    "message": "task queued successfully",
+    "queue": "cluster/tasks",
+    "task": {
+      "id": "ff77b29c-8a5f-4775-8858-8dcfc8f421bf",
+      "action": "create-task",
+      "data": "MY_VAR=2;MY_CIAO=4"
+    }
+  }
+  {
+    "message": "task queued successfully",
+    "queue": "node/<node_id>/tasks",
+    "task": {
+      "id": "ff77b29c-8a5f-4775-8858-8dcfc8f421bf",
+      "action": "create-task",
+      "data": "MY_VAR=2;MY_CIAO=4"
+    }
+  }
+  {
+    "message": "task queued successfully",
+    "queue": "module/<module_id>/tasks",
+    "task": {
+      "id": "ff77b29c-8a5f-4775-8858-8dcfc8f421bf",
+      "action": "create-task",
+      "data": "MY_VAR=2;MY_CIAO=4"
+    }
   }
   ```
 
   ## Redis
   Each API is mapped to a specific command on Redis:
-  - `GET /api/tasks/:task_id` ⟶ `HGET tasks/:task_id PAYLOAD`
+  - `GET /api/<cluster|node|module>/tasks` ⟶ `LRANGE <cluster|node|module>/tasks 0 -1`
 
-    `PAYLOAD` contains the task information.
+  - `POST /api/<cluster|node|module>/tasks` ⟶ `LPUSH <cluster|node|module>/tasks <payload>`
 
-  - `POST /api/tasks` ⟶ `HSET tasks/:task_id PAYLOAD <payload>` and `PUBLISH tasks-channel tasks/:task_id`
-
-    `PAYLOAD` contains the task information and `tasks-channel` is the Pub/Sub channel for communications.
-
-  - `DELETE /api/tasks/:task_id` ⟶ `DEL tasks/:task_id`
+    `PAYLOAD` contains the task information:
+    - `id` ⟶ task id is an uuid string generated from server
+    - `action` ⟶ action to execute
+    - `data` ⟶ data used from action to execute the task
