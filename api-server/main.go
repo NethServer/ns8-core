@@ -26,7 +26,6 @@ import (
 	"flag"
 	"io/ioutil"
 	"net/http"
-	"os"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/gzip"
@@ -61,14 +60,26 @@ func main() {
 		router.Use(cors.New(corsConf))
 	}
 
-	// define API
+	// define api group
 	api := router.Group("/api")
 
-	tasks := api.Group("/tasks")
+	// cluster APIs
+	cluster := api.Group("/cluster")
 	{
-		tasks.GET("/:task_id", methods.GetTask)
-		tasks.POST("", methods.CreateTask)
-		tasks.DELETE("/:task_id", methods.DeleteTask)
+		cluster.GET("/tasks", methods.GetClusterTasks)
+		cluster.POST("/tasks", methods.CreateClusterTask)
+	}
+	// node APIs
+	node := api.Group("/node")
+	{
+		node.GET("/:node_id/tasks", methods.GetNodeTasks)
+		node.POST("/:node_id/tasks", methods.CreateNodeTask)
+	}
+	// module APIs
+	module := api.Group("/module")
+	{
+		module.GET("/:module_id/tasks", methods.GetModuleTasks)
+		module.POST("/:module_id/tasks", methods.CreateModuleTask)
 	}
 
 	// handle missing endpoint
@@ -76,14 +87,6 @@ func main() {
 		c.JSON(http.StatusNotFound, gin.H{"message": "API not found"})
 	})
 
-	var listenAddress string
-	port := os.Getenv("PORT")
-
-	if port != "" {
-		listenAddress = "0.0.0.0:" + port
-	} else {
-		listenAddress = configuration.Config.ListenAddress
-	}
-
-	router.Run(listenAddress)
+	// run server
+	router.Run(configuration.Config.ListenAddress)
 }

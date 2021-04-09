@@ -24,7 +24,6 @@ package methods
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -34,35 +33,41 @@ import (
 	"github.com/NethServer/ns8-scratchpad/api-server/redis"
 )
 
-func GetTask(c *gin.Context) {
-	// get tasks param
-	taskID := c.Param("task_id")
+func getTasks(c *gin.Context, queueName string) {
+	// define tasks array
+	var tasks []models.Task
 
 	// init redis connection
 	redisConnection := redis.Instance()
 
-	// get task from redis: HGET tasks/:task_id PAYLOAD
-	stringTask, errRedis := redisConnection.HGet("tasks/"+taskID, "PAYLOAD").Result()
+	// inspect redis tasks queue
+	tasksArray, errRedis := redisConnection.LRange(queueName, 0, -1).Result()
 
-	// check error
+	// handle redis error
 	if errRedis != nil {
-		c.JSON(http.StatusNotFound, gin.H{"message": "no task found"})
+		c.JSON(http.StatusBadRequest, gin.H{"message": "error getting tasks from redis queue", "status": errRedis.Error()})
 		return
 	}
 
-	// convert task to struct
-	var task models.Task
-	errTask := json.Unmarshal([]byte(stringTask), &task)
-	if errTask != nil {
-		c.JSON(http.StatusNotFound, gin.H{"message": "error converting to struct", "status": errTask.Error()})
-		return
+	// loop tasks array
+	for _, t := range tasksArray {
+		// convert to go struct
+		var task models.Task
+		errJson := json.Unmarshal([]byte(t), &task)
+		if errJson != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"message": "error converting json task to struct", "status": errJson.Error()})
+			return
+		}
+
+		// append to slice
+		tasks = append(tasks, task)
 	}
 
-	// return saved task
-	c.JSON(http.StatusOK, task)
+	// return status created
+	c.JSON(http.StatusOK, gin.H{"tasks": tasks, "queue": queueName})
 }
 
-func CreateTask(c *gin.Context) {
+func createTask(c *gin.Context, queueName string) {
 	// bind json body
 	var jsonTask models.Task
 	if err := c.BindJSON(&jsonTask); err != nil {
@@ -70,12 +75,11 @@ func CreateTask(c *gin.Context) {
 		return
 	}
 
-	fmt.Println(jsonTask)
-
 	// create task object
 	var task models.Task
-	task = jsonTask
 	task.ID = guuid.New().String()
+	task.Action = jsonTask.Action
+	task.Data = jsonTask.Data
 
 	// init redis connection
 	redisConnection := redis.Instance()
@@ -87,45 +91,96 @@ func CreateTask(c *gin.Context) {
 		return
 	}
 
-	// set task to redis: HSET tasks/:task_id PAYLOAD <payload>
-	errRedis := redisConnection.HSet("tasks/"+task.ID, "PAYLOAD", stringTask).Err()
+	// set task to redis: LPUSH <queue> <payload>
+	errRedis := redisConnection.LPush(queueName, string(stringTask)).Err()
 
 	// handle redis error
 	if errRedis != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "error saving tasks to redis", "status": errRedis.Error()})
-		return
-	}
-
-	// publish new task in tasks-channel: PUBLISH tasks-channel tasks/:task_id
-	errRedisPub := redisConnection.Publish("tasks-channel", "tasks/"+task.ID).Err()
-
-	// handle redis error
-	if errRedisPub != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "error publish on tasks channel in redis", "status": errRedisPub.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"message": "error queuing tasks to redis", "status": errRedis.Error()})
 		return
 	}
 
 	// return status created
-	c.JSON(http.StatusCreated, gin.H{"message": "task created successfully", "task_id": task.ID})
+	c.JSON(http.StatusCreated, gin.H{"message": "task queued successfully", "task": task, "queue": queueName})
 }
 
-func DeleteTask(c *gin.Context) {
-	// get tasks param
-	taskID := c.Param("task_id")
+func GetClusterTasks(c *gin.Context) {
+	// define queue name
+	queueName := "cluster/tasks"
 
-	// init redis connection
-	redisConnection := redis.Instance()
-
-	// delete task from redis: DEL tasks/:task_id
-	errRedis := redisConnection.Del("tasks/" + taskID).Err()
-
-	// handle redis error
-	if errRedis != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "error deleting task in redis", "status": errRedis.Error()})
-		return
-	}
-
-	// return status created
-	c.JSON(http.StatusOK, gin.H{"message": "task deleted successfully"})
-
+	// get tasks
+	getTasks(c, queueName)
 }
+
+func GetNodeTasks(c *gin.Context) {
+	// get param
+	nodeID := c.Param("node_id")
+
+	// define queue name
+	queueName := "node/" + nodeID + "/tasks"
+
+	// get tasks
+	getTasks(c, queueName)
+}
+
+func GetModuleTasks(c *gin.Context) {
+	// get param
+	moduleID := c.Param("module_id")
+
+	// define queue name
+	queueName := "module/" + moduleID + "/tasks"
+
+	// get tasks
+	getTasks(c, queueName)
+}
+
+func CreateClusterTask(c *gin.Context) {
+	// define queue name
+	queueName := "cluster/tasks"
+
+	// create task
+	createTask(c, queueName)
+}
+
+func CreateNodeTask(c *gin.Context) {
+	// get param
+	nodeID := c.Param("node_id")
+
+	// define queue name
+	queueName := "node/" + nodeID + "/tasks"
+
+	// create task
+	createTask(c, queueName)
+}
+
+func CreateModuleTask(c *gin.Context) {
+	// get param
+	moduleID := c.Param("module_id")
+
+	// define queue name
+	queueName := "module/" + moduleID + "/tasks"
+
+	// create task
+	createTask(c, queueName)
+}
+
+// func DeleteTask(c *gin.Context) {
+// 	// get tasks param
+// 	taskID := c.Param("task_id")
+
+// 	// init redis connection
+// 	redisConnection := redis.Instance()
+
+// 	// delete task from redis: DEL tasks/:task_id
+// 	errRedis := redisConnection.Del("tasks/" + taskID).Err()
+
+// 	// handle redis error
+// 	if errRedis != nil {
+// 		c.JSON(http.StatusBadRequest, gin.H{"message": "error deleting task in redis", "status": errRedis.Error()})
+// 		return
+// 	}
+
+// 	// return status created
+// 	c.JSON(http.StatusOK, gin.H{"message": "task deleted successfully"})
+
+// }

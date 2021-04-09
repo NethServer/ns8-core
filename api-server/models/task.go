@@ -24,7 +24,6 @@ package models
 
 type Task struct {
 	ID     string `json:"id"`
-	Module string `json:"module"`
-	NodeID int    `json:"node_id"`
-	Params string `json:"params"`
+	Action string `json:"action"`
+	Data   string `json:"data"`
 }

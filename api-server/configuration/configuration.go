@@ -23,15 +23,11 @@
 package configuration
 
 import (
-	"encoding/json"
 	"os"
-
-	"github.com/pkg/errors"
 )
 
 type Configuration struct {
 	ListenAddress string `json:"listen_address"`
-	RedisType     string `json:"redis_type"`
 	RedisAddress  string `json:"redis_address"`
 	Secret        string `json:"secret"`
 }
@@ -39,14 +35,22 @@ type Configuration struct {
 var Config = Configuration{}
 
 func Init(ConfigFilePtr *string) {
-	// read configuration
-	if _, err := os.Stat(*ConfigFilePtr); err == nil {
-		file, _ := os.Open(*ConfigFilePtr)
-		decoder := json.NewDecoder(file)
-		// check errors or parse JSON
-		err := decoder.Decode(&Config)
-		if err != nil {
-			os.Stderr.WriteString(errors.Wrap(err, "error decoding configuration file").Error() + "\n")
-		}
+	// read configuration from ENV
+	if os.Getenv("LISTEN_ADDRESS") != "" {
+		Config.ListenAddress = os.Getenv("LISTEN_ADDRESS")
+	} else {
+		Config.ListenAddress = "127.0.0.1:8080"
+	}
+
+	if os.Getenv("REDIS_ADDRESS") != "" {
+		Config.RedisAddress = os.Getenv("REDIS_ADDRESS")
+	} else {
+		Config.RedisAddress = "127.0.0.1:6379"
+	}
+
+	if os.Getenv("SECRET") != "" {
+		Config.Secret = os.Getenv("SECRET")
+	} else {
+		Config.Secret = ""
 	}
 }
