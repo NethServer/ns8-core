@@ -33,6 +33,57 @@ import (
 	"github.com/NethServer/ns8-scratchpad/api-server/redis"
 )
 
+func getAllTasks(c *gin.Context, entityName string) {
+	// define all task object
+	var allTasks []gin.H
+
+	// init redis connection
+	redisConnection := redis.Instance()
+
+	// inspect redis tasks keys: KEYS "node/*/tasks"
+	keysArray, errRedisKeys := redisConnection.Keys(entityName + "/*/tasks").Result()
+
+	// handle redis error
+	if errRedisKeys != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "error getting all tasks from redis queue", "status": errRedisKeys.Error()})
+		return
+	}
+
+	// loop keys array
+	for _, k := range keysArray {
+		// inspect redis tasks queue: LRANGE <queue> 0 -1
+		tasksArray, errRedisRange := redisConnection.LRange(k, 0, -1).Result()
+
+		// handle redis error
+		if errRedisRange != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"message": "error getting tasks from redis queue", "status": errRedisRange.Error()})
+			return
+		}
+
+		// define tasks array
+		var tasks []models.Task
+
+		// loop tasks array
+		for _, t := range tasksArray {
+			// convert to go struct
+			var task models.Task
+			errJson := json.Unmarshal([]byte(t), &task)
+			if errJson != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"message": "error converting json task to struct", "status": errJson.Error()})
+				return
+			}
+
+			// append to slice
+			tasks = append(tasks, task)
+		}
+
+		allTasks = append(allTasks, gin.H{"tasks": tasks, "queue": k})
+	}
+
+	// return all tasks
+	c.JSON(http.StatusOK, allTasks)
+}
+
 func getTasks(c *gin.Context, queueName string) {
 	// define tasks array
 	var tasks []models.Task
@@ -63,7 +114,7 @@ func getTasks(c *gin.Context, queueName string) {
 		tasks = append(tasks, task)
 	}
 
-	// return status created
+	// return tasks
 	c.JSON(http.StatusOK, gin.H{"tasks": tasks, "queue": queueName})
 }
 
@@ -123,6 +174,11 @@ func GetNodeTasks(c *gin.Context) {
 	getTasks(c, queueName)
 }
 
+func GetAllNodeTasks(c *gin.Context) {
+	// get tasks
+	getAllTasks(c, "node")
+}
+
 func GetModuleTasks(c *gin.Context) {
 	// get param
 	moduleID := c.Param("module_id")
@@ -132,6 +188,11 @@ func GetModuleTasks(c *gin.Context) {
 
 	// get tasks
 	getTasks(c, queueName)
+}
+
+func GetAllModuleTasks(c *gin.Context) {
+	// get tasks
+	getAllTasks(c, "module")
 }
 
 func CreateClusterTask(c *gin.Context) {

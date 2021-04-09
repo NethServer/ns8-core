@@ -72,12 +72,14 @@ func main() {
 	// node APIs
 	node := api.Group("/node")
 	{
+		node.GET("/tasks", methods.GetAllNodeTasks)
 		node.GET("/:node_id/tasks", methods.GetNodeTasks)
 		node.POST("/:node_id/tasks", methods.CreateNodeTask)
 	}
 	// module APIs
 	module := api.Group("/module")
 	{
+		module.GET("/tasks", methods.GetAllModuleTasks)
 		module.GET("/:module_id/tasks", methods.GetModuleTasks)
 		module.POST("/:module_id/tasks", methods.CreateModuleTask)
 	}

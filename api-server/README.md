@@ -32,6 +32,8 @@ LISTEN_ADDRESS=0.0.0.0:8080 REDIS_ADDRESS=127.0.0.1:6379 SECRET=MY_SECRET,11./ap
 
 ## APIs
 - `GET /api/cluster/tasks`
+- `GET /api/node/tasks`
+- `GET /api/module/tasks`
 - `GET /api/node/<node_id>/tasks`
 - `GET /api/module/<module_id>/tasks`
 
@@ -39,6 +41,8 @@ LISTEN_ADDRESS=0.0.0.0:8080 REDIS_ADDRESS=127.0.0.1:6379 SECRET=MY_SECRET,11./ap
 
   ```bash
   curl -s http://localhost:8080/api/cluster/tasks/ | jq
+  curl -s http://localhost:8080/api/node/tasks/ | jq
+  curl -s http://localhost:8080/api/module/tasks/ | jq
   curl -s http://localhost:8080/api/node/<node_id>/tasks/ | jq
   curl -s http://localhost:8080/api/module/<module_id>/tasks/ | jq
   ```
@@ -55,6 +59,60 @@ LISTEN_ADDRESS=0.0.0.0:8080 REDIS_ADDRESS=127.0.0.1:6379 SECRET=MY_SECRET,11./ap
       ...
     ]
   }
+  ```
+  ```json
+  [
+    {
+      "queue": "node/1/tasks",
+      "tasks": [
+        {
+          "id": "361cc217-328a-44fb-9b56-d8051f2d539d",
+          "action": "create-task",
+          "data": "MY_VAR=2;MY_CIAO=4"
+        },
+       ...
+      ]
+    },
+    {
+      "queue": "node/2/tasks",
+      "tasks": [
+        {
+          "id": "da73d079-e23a-4dff-9fd2-5666a794c8cd",
+          "action": "create-task",
+          "data": "MY_VAR=2;MY_CIAO=4"
+        },
+        ...
+      ]
+    }
+  ]
+  ```
+  ```json
+  [
+    {
+      "queue": "module/1/tasks",
+      "tasks": [
+        {
+          "id": "361cc217-328a-44fb-9b56-d8051f2d539d",
+          "action": "create-task",
+          "data": "MY_VAR=2;MY_CIAO=4"
+        },
+       ...
+      ]
+    },
+    {
+      "queue": "module/2/tasks",
+      "tasks": [
+        {
+          "id": "da73d079-e23a-4dff-9fd2-5666a794c8cd",
+          "action": "create-task",
+          "data": "MY_VAR=2;MY_CIAO=4"
+        },
+        ...
+      ]
+    }
+  ]
+  ```
+  ```json
   {
     "queue": "node/<node_id>/tasks",
     "tasks": [
@@ -66,6 +124,8 @@ LISTEN_ADDRESS=0.0.0.0:8080 REDIS_ADDRESS=127.0.0.1:6379 SECRET=MY_SECRET,11./ap
       ...
     ]
   }
+  ```
+  ```json
   {
     "queue": "module/<module_id>/tasks",
     "tasks": [
