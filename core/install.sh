@@ -26,7 +26,7 @@ elif [[ ${distro} == "debian" ]]; then
 fi
 
 echo "Set kernel parameters:"
-sysctl -w net.ipv4.ip_unprivileged_port_start=23 -w user.max_user_namespaces=28633 -w sysctl net.ipv4.ip_forward=1 | tee /etc/sysctl.d/80-nethserver.conf
+sysctl -w net.ipv4.ip_unprivileged_port_start=23 -w user.max_user_namespaces=28633 -w net.ipv4.ip_forward=1 | tee /etc/sysctl.d/80-nethserver.conf
 if [[ ${distro} == "debian" ]]; then
     sysctl -w kernel.unprivileged_userns_clone=1 | tee -a /etc/sysctl.d/80-nethserver.conf
 fi
