@@ -34,7 +34,7 @@ type Configuration struct {
 
 var Config = Configuration{}
 
-func Init(ConfigFilePtr *string) {
+func Init() {
 	// read configuration from ENV
 	if os.Getenv("LISTEN_ADDRESS") != "" {
 		Config.ListenAddress = os.Getenv("LISTEN_ADDRESS")

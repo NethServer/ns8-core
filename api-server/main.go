@@ -23,7 +23,6 @@
 package main
 
 import (
-	"flag"
 	"io/ioutil"
 	"net/http"
 
@@ -36,10 +35,8 @@ import (
 )
 
 func main() {
-	// read and init configuration
-	ConfigFilePtr := flag.String("c", "/opt/nethserver/api-server/conf.json", "Path to configuration file")
-	flag.Parse()
-	configuration.Init(ConfigFilePtr)
+	// init configuration
+	configuration.Init()
 
 	// disable log to stdout when running in release mode
 	if gin.Mode() == gin.ReleaseMode {
