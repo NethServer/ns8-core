@@ -23,6 +23,7 @@
 package methods
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 
@@ -33,6 +34,8 @@ import (
 	"github.com/NethServer/ns8-scratchpad/api-server/redis"
 )
 
+var ctx = context.Background()
+
 func getAllTasks(c *gin.Context, entityName string) {
 	// define all task object
 	var allTasks []gin.H
@@ -41,7 +44,7 @@ func getAllTasks(c *gin.Context, entityName string) {
 	redisConnection := redis.Instance()
 
 	// inspect redis tasks keys: KEYS "node/*/tasks"
-	keysArray, errRedisKeys := redisConnection.Keys(entityName + "/*/tasks").Result()
+	keysArray, errRedisKeys := redisConnection.Keys(ctx, entityName+"/*/tasks").Result()
 
 	// handle redis error
 	if errRedisKeys != nil {
@@ -52,7 +55,7 @@ func getAllTasks(c *gin.Context, entityName string) {
 	// loop keys array
 	for _, k := range keysArray {
 		// inspect redis tasks queue: LRANGE <queue> 0 -1
-		tasksArray, errRedisRange := redisConnection.LRange(k, 0, -1).Result()
+		tasksArray, errRedisRange := redisConnection.LRange(ctx, k, 0, -1).Result()
 
 		// handle redis error
 		if errRedisRange != nil {
@@ -92,7 +95,7 @@ func getTasks(c *gin.Context, queueName string) {
 	redisConnection := redis.Instance()
 
 	// inspect redis tasks queue: LRANGE <queue> 0 -1
-	tasksArray, errRedis := redisConnection.LRange(queueName, 0, -1).Result()
+	tasksArray, errRedis := redisConnection.LRange(ctx, queueName, 0, -1).Result()
 
 	// handle redis error
 	if errRedis != nil {
@@ -143,7 +146,7 @@ func createTask(c *gin.Context, queueName string) {
 	}
 
 	// set task to redis: LPUSH <queue> <payload>
-	errRedis := redisConnection.LPush(queueName, string(stringTask)).Err()
+	errRedis := redisConnection.LPush(ctx, queueName, string(stringTask)).Err()
 
 	// handle redis error
 	if errRedis != nil {

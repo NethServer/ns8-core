@@ -25,7 +25,7 @@ package redis
 import (
 	"github.com/NethServer/ns8-scratchpad/api-server/configuration"
 
-	"github.com/go-redis/redis"
+	"github.com/go-redis/redis/v8"
 )
 
 var redisConnection *redis.Client
