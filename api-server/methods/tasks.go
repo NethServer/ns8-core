@@ -23,18 +23,16 @@
 package methods
 
 import (
-	"context"
 	"encoding/json"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 	guuid "github.com/google/uuid"
 
 	"github.com/NethServer/ns8-scratchpad/api-server/models"
 	"github.com/NethServer/ns8-scratchpad/api-server/redis"
 )
-
-var ctx = context.Background()
 
 func getAllTasks(c *gin.Context, entityName string) {
 	// define all task object
@@ -124,7 +122,7 @@ func getTasks(c *gin.Context, queueName string) {
 func createTask(c *gin.Context, queueName string) {
 	// bind json body
 	var jsonTask models.Task
-	if err := c.BindJSON(&jsonTask); err != nil {
+	if err := c.ShouldBindBodyWith(&jsonTask, binding.JSON); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "request fields malformed", "status": err.Error()})
 		return
 	}

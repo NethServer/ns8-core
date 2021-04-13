@@ -32,6 +32,7 @@ import (
 
 	"github.com/NethServer/ns8-scratchpad/api-server/configuration"
 	"github.com/NethServer/ns8-scratchpad/api-server/methods"
+	"github.com/NethServer/ns8-scratchpad/api-server/middleware"
 )
 
 func main() {
@@ -60,25 +61,37 @@ func main() {
 	// define api group
 	api := router.Group("/api")
 
-	// cluster APIs
-	cluster := api.Group("/cluster")
+	// define login and logout endpoint
+	api.POST("/login", middleware.InstanceJWT().LoginHandler)
+	api.POST("/logout", middleware.InstanceJWT().LogoutHandler)
+
+	// define refresh endpoint
+	api.GET("/refresh_token", middleware.InstanceJWT().RefreshHandler)
+
+	// define JWT middleware
+	api.Use(middleware.InstanceJWT().MiddlewareFunc())
 	{
-		cluster.GET("/tasks", methods.GetClusterTasks)
-		cluster.POST("/tasks", methods.CreateClusterTask)
-	}
-	// node APIs
-	node := api.Group("/node")
-	{
-		node.GET("/tasks", methods.GetAllNodeTasks)
-		node.GET("/:node_id/tasks", methods.GetNodeTasks)
-		node.POST("/:node_id/tasks", methods.CreateNodeTask)
-	}
-	// module APIs
-	module := api.Group("/module")
-	{
-		module.GET("/tasks", methods.GetAllModuleTasks)
-		module.GET("/:module_id/tasks", methods.GetModuleTasks)
-		module.POST("/:module_id/tasks", methods.CreateModuleTask)
+
+		// cluster APIs
+		cluster := api.Group("/cluster")
+		{
+			cluster.GET("/tasks", methods.GetClusterTasks)
+			cluster.POST("/tasks", methods.CreateClusterTask)
+		}
+		// node APIs
+		node := api.Group("/node")
+		{
+			node.GET("/tasks", methods.GetAllNodeTasks)
+			node.GET("/:node_id/tasks", methods.GetNodeTasks)
+			node.POST("/:node_id/tasks", methods.CreateNodeTask)
+		}
+		// module APIs
+		module := api.Group("/module")
+		{
+			module.GET("/tasks", methods.GetAllModuleTasks)
+			module.GET("/:module_id/tasks", methods.GetModuleTasks)
+			module.POST("/:module_id/tasks", methods.CreateModuleTask)
+		}
 	}
 
 	// handle missing endpoint
