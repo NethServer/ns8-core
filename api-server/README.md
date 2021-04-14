@@ -31,6 +31,39 @@ LISTEN_ADDRESS=0.0.0.0:8080 REDIS_ADDRESS=127.0.0.1:6379 SECRET=MY_SECRET,11./ap
 ```
 
 ## APIs
+Each API is authenticated and authorized through a `JWT (JSON Web Token)`. In order to get access to the APIs you have to login before and get a JWT `token`.
+
+- `POST /login`
+```bash
+curl -s -H "Content-Type: application/json" -X POST http://localhost:8080/api/login --data '{"username": "<username>", "password": "<password>"}' | jq
+```
+
+```json
+{
+  "code": 200,
+  "expire": "2021-04-21T14:05:35+02:00",
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY3Rpb25zIjpbImNyZWF0ZS11c2VycyIsImRlbGV0ZS11c2VycyJdLCJleHAiOjE2MTkwMDY3MzUsImlkIjoiZWRvYXJkbyIsIm9yaWdfaWF0IjoxNjE4NDAxOTM1LCJyb2xlIjoiYWRtaW4ifQ.ru8CbqduPTBI4G9R3zINC_-L38Thggg_9ExFV3Grf18"
+}
+```
+
+Once you have the `token`, each request must include this `token` in the header.
+
+```bash
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY3Rpb25zIjpbImNyZWF0ZS11c2VycyIsImRlbGV0ZS11c2VycyJdLCJleHAiOjE2MTg5MDc2NTIsImlkIjoiZWRvYXJkbyIsIm9yaWdfaWF0IjoxNjE4MzAyODUyLCJyb2xlIjoiYWRtaW4ifQ.dyqSFWi7L0aKAe7mujBJ9eN2nFnC9PcnFPhSQOZc2Nc"
+```
+
+The finally API request should be:
+```bash
+curl -s -H "Authorization: Bearer <your_token>" -X <VERB> http://localhost:8080/api/<api_name> --data '{<your_json_data}' | jq
+```
+
+### API list (not authenticated)
+- `POST /login`
+- `POST /logout`
+- `GET /refresh_token` used to refresh the access token when is expired
+
+### API list (authenticated)
+
 - `GET /api/cluster/tasks`
 - `GET /api/node/tasks`
 - `GET /api/module/tasks`
