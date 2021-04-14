@@ -36,8 +36,8 @@ import (
 )
 
 var ctx = context.Background()
-var agentPrefix = os.Getenv("AGENT_PREFIX")
-var actionPaths = os.Args[1:]
+var agentPrefix = os.Args[1]
+var actionPaths = os.Args[2:]
 var rdb *redis.Client
 
 var pollingDuration = 5 * time.Second
@@ -152,14 +152,18 @@ func runAction(task *models.Task) {
 func main() {
 	log.SetFlags(0)
 	if agentPrefix == "" {
-		log.Fatal("[FATAL] AGENT_PREFIX is not set in the environment")
+		log.Fatal("[FATAL] The agent prefix argument is not set")
 	}
 	if len(actionPaths) == 0 {
 		log.Fatal("[FATAL] Action path command arguments are not set")
 	}
 
+	redisAddress := os.Getenv("REDIS_ADDRESS")
+	if redisAddress == "" {
+		redisAddress = "127.0.0.1:6379"
+	}
 	rdb = redis.NewClient(&redis.Options{
-		Addr:     os.Getenv("REDIS_ADDRESS"),
+		Addr:     redisAddress,
 		Password: os.Getenv("REDIS_PASSWORD"),
 		DB:       0,
 	})

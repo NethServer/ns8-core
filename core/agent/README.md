@@ -5,10 +5,15 @@
 
 ## Startup
 
-Start the agent passing the directories where actions are defined as additional command line arguments, e.g.:
+Start the agent passing two or more arguments:
 
-    ./agent ~/actions ~/.config/actions
+1. The agent prefix identifier (e.g. "cluster", "node/1", "module/mail1"...)
+2. One or more directories where actions are defined
 
-The agent expects some environment variables, so a complete invocation from Bash becomes:
+For instance:
 
-    AGENT_PREFIX=cluster REDIS_ADDRESS=127.0.0.1:6379 REDIS_PASSWORD= ./agent ~/actions ~/.config/actions
+    ./agent module/mail1 ~/actions ~/.config/actions
+
+The agent accepts also some environment variables, so a complete invocation from Bash could be:
+
+    REDIS_ADDRESS=127.0.0.1:6379 REDIS_PASSWORD= ./agent module/mail1 ~/actions ~/.config/actions
