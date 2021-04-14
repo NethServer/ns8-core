@@ -31,7 +31,7 @@ import (
 	"sort"
 	"time"
 
-	"github.com/NethServer/ns8-scratchpad/api-server/models"
+	"github.com/NethServer/ns8-scratchpad/core/api-server/models"
 	"github.com/go-redis/redis/v8"
 )
 
