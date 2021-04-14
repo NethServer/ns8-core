@@ -1,3 +1,4 @@
+github.com/NethServer/ns8-scratchpad v0.0.0-20210414121342-1c41f4a1fa27 h1:kCwhET955Miog1sYHweZykI59XVjKezl3RDnVVlil6I=
 github.com/appleboy/gin-jwt/v2 v2.6.4/go.mod h1:CZpq1cRw+kqi0+yD2CwVw7VGXrrx4AqBdeZnwxVmoAs=
 github.com/appleboy/gofight/v2 v2.1.2/go.mod h1:frW+U1QZEdDgixycTj4CygQ48yLTUhplt43+Wczp3rw=
 github.com/cespare/xxhash/v2 v2.1.1 h1:6MnRN8NT7+YBpUIWxHtefFZOKTAPgGjpQSxqLNn0+qY=

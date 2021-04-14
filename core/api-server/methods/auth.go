@@ -25,8 +25,8 @@ package methods
 import (
 	"context"
 
-	"github.com/NethServer/ns8-scratchpad/api-server/models"
-	"github.com/NethServer/ns8-scratchpad/api-server/redis"
+	"github.com/NethServer/ns8-scratchpad/core/api-server/models"
+	"github.com/NethServer/ns8-scratchpad/core/api-server/redis"
 )
 
 var ctx = context.Background()

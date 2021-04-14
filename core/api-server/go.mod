@@ -1,4 +1,4 @@
-module github.com/NethServer/ns8-scratchpad/api-server
+module github.com/NethServer/ns8-scratchpad/core/api-server
 
 go 1.15
 

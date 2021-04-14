@@ -33,10 +33,10 @@ import (
 
 	jwt "github.com/appleboy/gin-jwt/v2"
 
-	"github.com/NethServer/ns8-scratchpad/api-server/configuration"
-	"github.com/NethServer/ns8-scratchpad/api-server/methods"
-	"github.com/NethServer/ns8-scratchpad/api-server/models"
-	"github.com/NethServer/ns8-scratchpad/api-server/utils"
+	"github.com/NethServer/ns8-scratchpad/core/api-server/configuration"
+	"github.com/NethServer/ns8-scratchpad/core/api-server/methods"
+	"github.com/NethServer/ns8-scratchpad/core/api-server/models"
+	"github.com/NethServer/ns8-scratchpad/core/api-server/utils"
 )
 
 type login struct {

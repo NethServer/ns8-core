@@ -23,7 +23,7 @@
 package redis
 
 import (
-	"github.com/NethServer/ns8-scratchpad/api-server/configuration"
+	"github.com/NethServer/ns8-scratchpad/core/api-server/configuration"
 
 	"github.com/go-redis/redis/v8"
 )

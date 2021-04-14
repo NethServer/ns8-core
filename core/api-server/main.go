@@ -30,9 +30,9 @@ import (
 	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
 
-	"github.com/NethServer/ns8-scratchpad/api-server/configuration"
-	"github.com/NethServer/ns8-scratchpad/api-server/methods"
-	"github.com/NethServer/ns8-scratchpad/api-server/middleware"
+	"github.com/NethServer/ns8-scratchpad/core/api-server/configuration"
+	"github.com/NethServer/ns8-scratchpad/core/api-server/methods"
+	"github.com/NethServer/ns8-scratchpad/core/api-server/middleware"
 )
 
 func main() {

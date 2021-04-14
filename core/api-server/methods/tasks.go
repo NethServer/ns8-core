@@ -30,8 +30,8 @@ import (
 	"github.com/gin-gonic/gin/binding"
 	guuid "github.com/google/uuid"
 
-	"github.com/NethServer/ns8-scratchpad/api-server/models"
-	"github.com/NethServer/ns8-scratchpad/api-server/redis"
+	"github.com/NethServer/ns8-scratchpad/core/api-server/models"
+	"github.com/NethServer/ns8-scratchpad/core/api-server/redis"
 )
 
 func getAllTasks(c *gin.Context, entityName string) {
