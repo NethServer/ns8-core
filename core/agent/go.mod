@@ -1,4 +1,4 @@
-module github.com/NethServer/ns8-scratchpad/core/agent-go
+module github.com/NethServer/ns8-scratchpad/core/agent
 
 go 1.16
 

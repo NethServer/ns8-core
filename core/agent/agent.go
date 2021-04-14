@@ -131,7 +131,7 @@ func runAction(task *models.Task) {
 			actionOutput = buf
 		}
 
-		// After the select{} async procedures already consumed their input from pipes. It is safe to Wait(). 
+		// It is safe to Wait() after the select{} finishes to consume the pipes input. 
 		if err := cmd.Wait(); err != nil {
 			exitCode = cmd.ProcessState.ExitCode()
 			log.Printf("[ERROR] Action %s terminated with errors at step %s: %v", task.Action, step, err)
