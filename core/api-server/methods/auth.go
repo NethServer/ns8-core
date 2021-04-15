@@ -24,6 +24,9 @@ package methods
 
 import (
 	"context"
+	"strings"
+
+	"github.com/gin-gonic/gin"
 
 	"github.com/NethServer/ns8-scratchpad/core/api-server/models"
 	"github.com/NethServer/ns8-scratchpad/core/api-server/redis"
@@ -31,7 +34,7 @@ import (
 
 var ctx = context.Background()
 
-func RedisAuth(username string, password string) error {
+func RedisAuthentication(username string, password string) error {
 	// init redis connection
 	redisConnection := redis.Instance()
 
@@ -48,18 +51,52 @@ func RedisAuth(username string, password string) error {
 	return nil
 }
 
-func GetUserAuthorizations(username string) (models.UserAuthorizations, error) {
-	userAuthorizationsRedis := models.UserAuthorizations{
-		Username: "edoardo",
-		Role:     "admin",
-		Actions:  []string{"create-users", "delete-users"},
+func RedisAuthorization(username string, c *gin.Context) (models.UserAuthorizations, error) {
+	// define return obj
+	var userAuthorizationsRedis models.UserAuthorizations
+
+	// init redis connection
+	redisConnection := redis.Instance()
+
+	// define path
+	var pathGet string
+	var pathScan string
+	parts := strings.Split(c.FullPath(), "/")
+	entity := parts[2]
+
+	// switch entity
+	switch entity {
+	case "cluster":
+		pathGet = "cluster"
+		pathScan = "cluster/roles/"
+	case "node":
+		pathGet = c.Param("node_id")
+		pathScan = "node/" + pathGet + "/roles/"
+	case "module":
+		pathGet = c.Param("module_id")
+		pathScan = "module/" + pathGet + "/roles/"
 	}
 
-	// read auths from redis
-	// userAuthorizationsRedis, err := ReadUserAuthorizationsRedis()
-	// if err != nil {
-	// 	return userAuthorizations, err
-	// }
+	// get role for current user: HGET user/<username> <reference>
+	role, errRedisRoleGet := redisConnection.HGet(ctx, "user/"+username, pathGet).Result()
+
+	// handle redis error
+	if errRedisRoleGet != nil {
+		return userAuthorizationsRedis, errRedisRoleGet
+	}
+
+	// get action for current role and entity: SSCAN <entity>/<reference>/roles/<role> 0
+	actions, _, errRedisRoleScan := redisConnection.SScan(ctx, pathScan+role, 0, "", 0).Result()
+
+	// handle redis error
+	if errRedisRoleScan != nil {
+		return userAuthorizationsRedis, errRedisRoleScan
+	}
+
+	// compose user authorizations
+	userAuthorizationsRedis.Username = username
+	userAuthorizationsRedis.Role = role
+	userAuthorizationsRedis.Actions = actions
 
 	// return auths
 	return userAuthorizationsRedis, nil

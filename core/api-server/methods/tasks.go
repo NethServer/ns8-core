@@ -225,24 +225,3 @@ func CreateModuleTask(c *gin.Context) {
 	// create task
 	createTask(c, queueName)
 }
-
-// func DeleteTask(c *gin.Context) {
-// 	// get tasks param
-// 	taskID := c.Param("task_id")
-
-// 	// init redis connection
-// 	redisConnection := redis.Instance()
-
-// 	// delete task from redis: DEL tasks/:task_id
-// 	errRedis := redisConnection.Del("tasks/" + taskID).Err()
-
-// 	// handle redis error
-// 	if errRedis != nil {
-// 		c.JSON(http.StatusBadRequest, gin.H{"message": "error deleting task in redis", "status": errRedis.Error()})
-// 		return
-// 	}
-
-// 	// return status created
-// 	c.JSON(http.StatusOK, gin.H{"message": "task deleted successfully"})
-
-// }

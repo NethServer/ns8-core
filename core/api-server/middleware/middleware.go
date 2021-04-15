@@ -25,7 +25,6 @@ package middleware
 import (
 	"github.com/pkg/errors"
 
-	"fmt"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -75,7 +74,7 @@ func InitJWT() *jwt.GinJWTMiddleware {
 			password := loginVals.Password
 
 			// check login with redis
-			err := methods.RedisAuth(username, password)
+			err := methods.RedisAuthentication(username, password)
 			if err != nil {
 				utils.LogError(errors.Wrap(err, "redis authentication failed for user "+username))
 				return nil, jwt.ErrFailedAuthentication
@@ -88,25 +87,13 @@ func InitJWT() *jwt.GinJWTMiddleware {
 
 		},
 		PayloadFunc: func(data interface{}) jwt.MapClaims {
-			// read authorization for current user
+			// read current user
 			if user, ok := data.(*models.UserAuthorizations); ok {
-				userAuthorizations, err := methods.GetUserAuthorizations(user.Username)
-				if err != nil {
-					utils.LogError(errors.Wrap(err, "error retrieving user authorizations"))
-
-					// return a token with no authorization for actions
-					return jwt.MapClaims{
-						identityKey: user.Username,
-						"role":      "",
-						"actions":   []string{},
-					}
-				}
-
 				// create claims map
 				return jwt.MapClaims{
 					identityKey: user.Username,
-					"role":      userAuthorizations.Role,
-					"actions":   userAuthorizations.Actions,
+					"role":      "",
+					"actions":   []string{},
 				}
 			}
 
@@ -117,16 +104,17 @@ func InitJWT() *jwt.GinJWTMiddleware {
 			// handle identity and extract claims
 			claims := jwt.ExtractClaims(c)
 
-			actions := make([]string, len(claims["actions"].([]interface{})))
-			for i, v := range claims["actions"].([]interface{}) {
-				actions[i] = fmt.Sprint(v)
+			// handle authorizations
+			userAuthorizations, err := methods.RedisAuthorization(claims[identityKey].(string), c)
+			if err != nil {
+				utils.LogError(errors.Wrap(err, "error retrieving user authorizations"))
 			}
 
 			// create user object
 			user := &models.UserAuthorizations{
 				Username: claims[identityKey].(string),
-				Role:     claims["role"].(string),
-				Actions:  actions,
+				Role:     userAuthorizations.Role,
+				Actions:  userAuthorizations.Actions,
 			}
 
 			// return user
