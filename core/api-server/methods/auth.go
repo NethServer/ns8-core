@@ -70,11 +70,11 @@ func RedisAuthorization(username string, c *gin.Context) (models.UserAuthorizati
 		pathGet = "cluster"
 		pathScan = "cluster/roles/"
 	case "node":
-		pathGet = c.Param("node_id")
-		pathScan = "node/" + pathGet + "/roles/"
+		pathGet = "node/" + c.Param("node_id")
+		pathScan = "node/" + c.Param("node_id") + "/roles/"
 	case "module":
-		pathGet = c.Param("module_id")
-		pathScan = "module/" + pathGet + "/roles/"
+		pathGet = "module/" + c.Param("module_id")
+		pathScan = "module/" + c.Param("module_id") + "/roles/"
 	}
 
 	// get role for current user: HGET user/<username> <reference>
