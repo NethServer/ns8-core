@@ -173,9 +173,21 @@ func main() {
 	if redisAddress == "" {
 		redisAddress = "127.0.0.1:6379"
 	}
+
+	// If we have a REDIS_PASSWORD the default redis username is the agentPrefix string
+	// The default user name can be overridden by the REDIS_USERNAME environment variable
+	redisUsername := ""
+	redisPassword := os.Getenv("REDIS_PASSWORD")
+	if redisPassword != "" {
+		redisUsername = os.Getenv("REDIS_USERNAME")
+		if redisUsername == "" {
+			redisUsername = agentPrefix
+		}
+	}
 	rdb = redis.NewClient(&redis.Options{
 		Addr:     redisAddress,
-		Password: os.Getenv("REDIS_PASSWORD"),
+		Username: redisUsername,
+		Password: redisPassword,
 		DB:       0,
 	})
 
@@ -185,6 +197,7 @@ func main() {
 
 	for {
 		var task models.Task
+		rdb.Do(ctx, "CLIENT", "SETNAME", agentPrefix).Result()
 
 		result, err := rdb.BLPop(ctx, pollingDuration, queueName).Result()
 		if err == redis.Nil {
