@@ -22,8 +22,25 @@
 
 package models
 
+import (
+	"encoding/json"
+)
+
 type Task struct {
 	ID     string `json:"id"`
 	Action string `json:"action"`
 	Data   string `json:"data"`
+}
+
+type TaskProgress struct {
+	Status   string `json:"status"`
+	Progress int `json:"progress"`
+}
+
+func (t *TaskProgress) UnmarshalBinary(data []byte) error {
+	if err := json.Unmarshal(data, t); err != nil {
+		return err
+	}
+
+	return nil
 }

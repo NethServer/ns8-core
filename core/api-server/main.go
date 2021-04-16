@@ -33,6 +33,7 @@ import (
 	"github.com/NethServer/ns8-scratchpad/core/api-server/configuration"
 	"github.com/NethServer/ns8-scratchpad/core/api-server/methods"
 	"github.com/NethServer/ns8-scratchpad/core/api-server/middleware"
+	"github.com/NethServer/ns8-scratchpad/core/api-server/socket"
 )
 
 func main() {
@@ -44,6 +45,9 @@ func main() {
 		gin.DefaultWriter = ioutil.Discard
 	}
 
+	// init websocket
+	socket := socket.Instance()
+
 	// init routers
 	router := gin.Default()
 
@@ -52,6 +56,7 @@ func main() {
 
 	// cors configuration only in debug mode GIN_MODE=debug (default)
 	if gin.Mode() == gin.DebugMode {
+		// gin gonic cors conf
 		corsConf := cors.DefaultConfig()
 		corsConf.AllowHeaders = []string{"Authorization", "Content-Type"}
 		corsConf.AllowAllOrigins = true
@@ -92,6 +97,17 @@ func main() {
 			module.GET("/:module_id/tasks", methods.GetModuleTasks)
 			module.POST("/:module_id/tasks", methods.CreateModuleTask)
 		}
+	}
+
+	// define websocket group
+	ws := router.Group("/ws")
+
+	// task ws APIS
+	task := ws.Group("/task")
+	{
+		task.GET("/progress/:task_id", func(c *gin.Context) {
+			socket.HandleRequest(c.Writer, c.Request)
+		})
 	}
 
 	// handle missing endpoint

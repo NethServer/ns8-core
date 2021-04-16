@@ -32,6 +32,7 @@ import (
 
 	"github.com/NethServer/ns8-scratchpad/core/api-server/models"
 	"github.com/NethServer/ns8-scratchpad/core/api-server/redis"
+	"github.com/NethServer/ns8-scratchpad/core/api-server/socket"
 )
 
 func getAllTasks(c *gin.Context, entityName string) {
@@ -142,6 +143,35 @@ func createTask(c *gin.Context, queueName string) {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "error converting task struct to json", "status": errString.Error()})
 		return
 	}
+
+	// get socket instance
+	socketConnection := socket.Instance()
+
+	// subscribe to progress channel and listen to new messages: SUBSCRIBE progress/task/<task_id>
+	progress := redisConnection.Subscribe(ctx, "progress/task/"+task.ID)
+
+	// get the channel to use
+	channel := progress.Channel()
+
+	// start routine to listen to new messages
+	go func() {
+		// iterate any messages sent on the channel
+		for msg := range channel {
+			t := &models.TaskProgress{}
+
+			// unmarshal the data into the task progress
+			err := t.UnmarshalBinary([]byte(msg.Payload))
+			if err != nil {
+				panic(err)
+			}
+
+			// identify all sessions associated with task id
+			if clientSession, ok := socket.Connections["/ws/task/progress/"+task.ID]; ok {
+				// Broadcast to all sessions
+				socketConnection.BroadcastMultiple([]byte(msg.Payload), clientSession)
+			}
+		}
+	}()
 
 	// set task to redis: LPUSH <queue> <payload>
 	errRedis := redisConnection.LPush(ctx, queueName, string(stringTask)).Err()
