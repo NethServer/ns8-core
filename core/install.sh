@@ -25,53 +25,43 @@ elif [[ ${distro} == "debian" ]]; then
     systemctl restart systemd-journald
 fi
 
-if [ -f /usr/local/etc/registry.json ]; then
-    echo "Registry auth found."
-    export REGISTRY_AUTH_FILE=/usr/local/etc/registry.json
-    chmod -c 644 ${REGISTRY_AUTH_FILE}
-fi
-
 echo "Set kernel parameters:"
 sysctl -w net.ipv4.ip_unprivileged_port_start=23 -w user.max_user_namespaces=28633 | tee /etc/sysctl.d/80-nethserver.conf
 if [[ ${distro} == "debian" ]]; then
     sysctl -w kernel.unprivileged_userns_clone=1 | tee -a /etc/sysctl.d/80-nethserver.conf
 fi
 
-INSTALL_DIR="/usr/local/share"
-AGENT_DIR="${INSTALL_DIR}/agent"
-
 echo "Extracting core sources:"
 cid=$(podman create ghcr.io/nethserver/core:${IMAGE_TAG:-latest})
-podman export ${cid} | tar -C ${INSTALL_DIR} -x -v -f -
+podman export ${cid} | tar -C / -x -v -f - >/var/lib/nethserver/node/state/image.lst
 podman rm -f ${cid}
 
-cp -f ${INSTALL_DIR}/etc/containers/containers.conf /etc/containers/containers.conf
-
-cp -f ${AGENT_DIR}/node-agent.service      /etc/systemd/system/node-agent.service
-cp -f ${AGENT_DIR}/redis.service           /etc/systemd/system/redis.service
-cp -f ${AGENT_DIR}/module-agent@.service   /etc/systemd/system/module-agent@.service
-cp -f ${AGENT_DIR}/module-init@.service    /etc/systemd/system/module-init@.service
-cp -f ${AGENT_DIR}/module-agent.service    /etc/systemd/user/module-agent.service
-cp -f ${AGENT_DIR}/module-init.service     /etc/systemd/user/module-init.service
-cp -f ${AGENT_DIR}/nethserver              /usr/local/bin/nethserver
-
-chmod a+x /usr/local/bin/nethserver
-
 if [[ ! -f ~/.ssh/id_rsa.pub ]] ; then
+    echo "Generating a new RSA key pair for SSH:"
     ssh-keygen -t rsa -N '' -f ~/.ssh/id_rsa
 fi
 
 echo "Adding id_rsa.pub to module skeleton dir:"
-install -d -m 700 /usr/local/share/module.skel/.ssh
-install -m 600 -T ~/.ssh/id_rsa.pub /usr/local/share/module.skel/.ssh/authorized_keys
+install -d -m 700 /etc/nethserver/skel/.ssh
+install -m 600 -T ~/.ssh/id_rsa.pub /etc/nethserver/skel/.ssh/authorized_keys
 
 echo "Setup agent:"
-python3 -mvenv ${AGENT_DIR}
-${AGENT_DIR}/bin/pip3 install redis
-
-echo "NODE_PREFIX=$(hostname -s)" > /usr/local/etc/node-agent.env
+agent_dir=/usr/local/nethserver/agent
+python3 -mvenv ${agent_dir}
+${agent_dir}/bin/pip3 install redis ipcalc six
 
 echo "Setup registry:"
-if [[ ! -f /usr/local/etc/registry.json ]] ; then
-    echo '{"auths":{}}' > /usr/local/etc/registry.json
+if [[ ! -f /etc/nethserver/registry.json ]] ; then
+    echo '{"auths":{}}' > /etc/nethserver/registry.json
 fi
+
+echo "Setup and start Redis:"
+podman pull docker.io/redis:6-alpine
+systemctl enable --now redis.service
+
+echo "Generating WireGuard VPN key pair:"
+pubkey=$(umask 0077; wg genkey | tee /etc/nethserver/wg0.key | wg pubkey)
+echo "${pubkey}" > /etc/nethserver/wg0.pub
+
+echo "Start API server and cluster agent:"
+systemctl enable --now api-server.service agent@cluster.service

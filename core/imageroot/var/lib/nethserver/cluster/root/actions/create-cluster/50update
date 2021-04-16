@@ -1,0 +1,141 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2021 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
+import redis
+import sys
+import ipcalc
+import os
+import json
+import time
+
+def slurp_file(file_name):
+    with open(file_name) as f: 
+        return f.read().strip()
+
+request = json.load(sys.stdin)
+network = request['network']
+endpoint = request['endpoint']
+listen_port = request['listen_port']
+admin_password_hash = request['admin_password_hash']
+
+leader_private_key = slurp_file('/etc/nethserver/wg0.key')
+leader_public_key = slurp_file('/etc/nethserver/wg0.pub')
+nodeid = 1
+ipaddr = str(ipcalc.Network(network).network() + nodeid)
+
+#
+# Configure and start the WireGuard VPN
+#
+oldmask = os.umask(0o77)
+with open('/etc/wireguard/wg0.conf', 'w') as wgconf:
+    wgconf.write(f"[Interface]\n")
+    wgconf.write(f"Address = {ipaddr}\n")
+    wgconf.write(f"ListenPort = {listen_port}\n")
+    wgconf.write(f"PrivateKey = {leader_private_key}\n\n")
+os.umask(oldmask)
+exit_code = os.spawnlp(os.P_WAIT, 'systemctl', 'systemctl', 'enable', 'wg-quick@wg0')
+assert exit_code == 0
+exit_code = os.spawnlp(os.P_WAIT, 'systemctl', 'systemctl', 'restart', 'wg-quick@wg0')
+assert exit_code == 0
+
+#
+# Bind Redis to the VPN ipaddr
+#
+with open('/etc/nethserver/redis.env', 'w') as env_file:
+    env_file.write(f'EXTRA_PARAMS="--protected-mode no --bind 127.0.0.1 ::1 {ipaddr}"\n')
+
+#
+# Start the node agent for the host node. We override the default module home directory path.
+#
+with open('/etc/nethserver/node.env', 'w') as node_file:
+    node_file.write(f'AGENT_ID=node-{nodeid}\n')
+exit_code = os.spawnlp(os.P_WAIT, 'systemctl', 'systemctl', 'enable', 'agent@node.service')
+assert exit_code == 0
+exit_code = os.spawnlp(os.P_WAIT, 'systemctl', 'systemctl', 'restart', 'agent@node.service')
+assert exit_code == 0
+
+
+# We assume Redis has just been started for the first time
+r = redis.Redis(host='127.0.0.1', port=6379, db=0, username="default", password="letmein", retry_on_timeout=True)
+
+#
+# Grant admin all privileges - XXX: does not work!
+#
+r.execute_command('ACL', 'SETUSER', 'admin', 'ON', '#' + admin_password_hash, '~*', '&*', '+@all')
+
+#
+# Initialize the cluster and node records in Redis DB
+#
+r.set('cluster/network', network)
+r.set('cluster/leader', nodeid)
+r.set('cluster/node_sequence', nodeid)
+r.hset(f'node/{nodeid}/vpn', mapping={
+    "public_key": leader_public_key,
+    "ip_address": ipaddr,
+    "endpoint": endpoint,
+    "listen_port": listen_port,
+})
+r.sadd('cluster/roles/admin', 
+    'create-cluster', 
+    'create-node',
+)
+r.hset('user/admin', mapping={"cluster": "admin"})
+
+#
+# Generate and store a password for Redis clients: API server and agents
+#
+redis_password = r.acl_genpass()
+oldmask = os.umask(0o77)
+with open('/etc/nethserver/redis-client.env', 'w') as redisconf:
+    redisconf.write(f'# XXX does not work! SECRET={redis_password}\n')
+    redisconf.write(f'# XXX does not work! REDIS_PASSWORD={redis_password}\n')
+    redisconf.write(f'REDIS_ADDRESS={ipaddr}:6379')
+os.umask(oldmask)
+
+try:
+    r.execute_command('SHUTDOWN')
+except redis.exceptions.ConnectionError:
+    pass
+
+# Wait Systemd to restart redis service again
+while True:
+    try:
+        r.ping()
+    except Exception as e:
+        print(f"[NOTICE] {e}", file=sys.stderr)
+        time.sleep(2)
+        continue
+    finally:
+        r.close()
+        break
+
+json.dump({
+    "vpn": {
+        "public_key": leader_public_key,
+        "ip_address": ipaddr,
+        "endpoint": endpoint,
+        "listen_port": listen_port,
+    },
+    "leader": nodeid,
+    "network": network,
+}, sys.stdout)
+

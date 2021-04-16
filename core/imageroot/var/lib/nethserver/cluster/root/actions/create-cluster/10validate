@@ -1,0 +1,37 @@
+#!/bin/sh
+
+#
+# Copyright (C) 2021 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
+#
+# Input data is in the form:
+#
+# {
+#     "id": "<some-uuid-string>",
+#     "action": "create-cluster",
+#     "data": {
+#         "admin_password_hash": "648a5db6b14800f4009f62ec6bdbd04b91b6b25179c92626839e3a91fb32da5e",
+#         "network": "10.5.4.0/24",
+#         "endpoint": "myclusterleader.example.com:55820",
+#         "listen_port": 55820
+#     }
+# }
+
+exit 0

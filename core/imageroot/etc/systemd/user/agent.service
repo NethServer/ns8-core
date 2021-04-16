@@ -1,0 +1,20 @@
+[Unit]
+Description=Rootless module/%u agent
+
+[Service]
+Type=simple
+EnvironmentFile=/etc/nethserver/agent.env
+EnvironmentFile=-%S/etc/nethserver/agent.env
+Environment=AGENT_INSTALL_DIR=%S/root
+Environment=AGENT_STATE_DIR=%S/state
+Environment=AGENT_ID=module/%u
+WorkingDirectory=%S/state
+ExecStart=/usr/local/bin/agent $AGENT_ID $AGENT_INSTALL_DIR/actions %h/actions-custom
+TimeoutStartSec=300
+Restart=always
+StartLimitInterval=60
+StartLimitBurst=12
+RestartSec=5
+
+[Install]
+WantedBy=default.target

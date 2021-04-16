@@ -1,0 +1,15 @@
+[Unit]
+Description=Cluster API server
+
+[Service]
+Type=simple
+Environment=GIN_MODE=debug
+Environment=LISTEN_ADDRESS=127.0.0.1:8080
+Environment=REDIS_ADDRESS=127.0.0.1:6379
+EnvironmentFile=-/etc/nethserver/api-server.env
+EnvironmentFile=-/etc/nethserver/redis-client.env
+ExecStart=/usr/local/bin/api-server
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
