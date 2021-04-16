@@ -45,8 +45,9 @@ var taskExpireDuration = 24 * time.Hour
 
 func getActionSteps(actionName string) ([]string, bool) {
 	dirFound := false
-	actionSteps := make([]string, 0, 4)
+	actionSteps := make(map[string]string)
 
+	// Squash the action dirs in a single list
 	for _, path := range actionPaths {
 		actionPath := path + "/" + actionName
 		entries, err := os.ReadDir(actionPath)
@@ -58,15 +59,25 @@ func getActionSteps(actionName string) ([]string, bool) {
 			if entry.IsDir() {
 				continue
 			}
-			actionSteps = append(actionSteps, actionPath+"/"+entry.Name())
+			actionSteps[entry.Name()] = actionPath + "/" + entry.Name()
 		}
+	}
+
+	actionStepsKeys := make([]string, 0, 8)
+	for k, _ := range actionSteps {
+		actionStepsKeys = append(actionStepsKeys, k)
 	}
 
 	// Executable steps under the actionPaths are launched sequentially
 	// in alphabetical order:
-	sort.Strings(actionSteps)
+	sort.Strings(actionStepsKeys)
 
-	return actionSteps, dirFound
+	actionStepsValues := make([]string, 0, 8)
+	for _, k := range actionStepsKeys {
+		actionStepsValues = append(actionStepsValues, actionSteps[k])
+	}
+
+	return actionStepsValues, dirFound
 }
 
 func runAction(task *models.Task) {
