@@ -25,10 +25,13 @@ package methods
 import (
 	"encoding/json"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	guuid "github.com/google/uuid"
+
+	jwt "github.com/appleboy/gin-jwt/v2"
 
 	"github.com/NethServer/ns8-scratchpad/core/api-server/models"
 	"github.com/NethServer/ns8-scratchpad/core/api-server/redis"
@@ -120,6 +123,32 @@ func getTasks(c *gin.Context, queueName string) {
 	c.JSON(http.StatusOK, gin.H{"tasks": tasks, "queue": queueName})
 }
 
+func getTaskFile(c *gin.Context, filePath string, file string) {
+	// init redis connection
+	redisConnection := redis.Instance()
+
+	// switch file type
+	switch file {
+	case "error", "output", "exit_code":
+		// read redis attribute
+		response, errRedis := redisConnection.Get(ctx, filePath).Result()
+
+		// handle redis error
+		if errRedis != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"message": "error getting file from redis", "status": errRedis.Error()})
+			return
+		}
+
+		// return file response
+		c.JSON(http.StatusOK, gin.H{"content": response, "file": filePath})
+		return
+
+	default:
+		c.JSON(http.StatusBadRequest, gin.H{"message": "invalid file type. must be output, error or exit_code"})
+		return
+	}
+}
+
 func createTask(c *gin.Context, queueName string) {
 	// bind json body
 	var jsonTask models.Task
@@ -128,11 +157,17 @@ func createTask(c *gin.Context, queueName string) {
 		return
 	}
 
+	// extract user info
+	info := jwt.ExtractClaims(c)
+
 	// create task object
 	var task models.Task
 	task.ID = guuid.New().String()
 	task.Action = jsonTask.Action
 	task.Data = jsonTask.Data
+	task.Queue = queueName
+	task.User = info["id"].(string)
+	task.Timestamp = time.Now()
 
 	// init redis connection
 	redisConnection := redis.Instance()
@@ -183,7 +218,7 @@ func createTask(c *gin.Context, queueName string) {
 	}
 
 	// return status created
-	c.JSON(http.StatusCreated, gin.H{"message": "task queued successfully", "task": task, "queue": queueName})
+	c.JSON(http.StatusCreated, gin.H{"message": "task queued successfully", "task": task})
 }
 
 func GetClusterTasks(c *gin.Context) {
@@ -192,6 +227,20 @@ func GetClusterTasks(c *gin.Context) {
 
 	// get tasks
 	getTasks(c, queueName)
+}
+
+func GetClusterTaskFiles(c *gin.Context) {
+	// get task id
+	taskID := c.Param("task_id")
+
+	// get file type
+	file := c.Param("file")
+
+	// define queue name
+	filePath := "cluster/task/" + taskID + "/" + file
+
+	// get result of file
+	getTaskFile(c, filePath, file)
 }
 
 func GetNodeTasks(c *gin.Context) {
@@ -203,6 +252,23 @@ func GetNodeTasks(c *gin.Context) {
 
 	// get tasks
 	getTasks(c, queueName)
+}
+
+func GetNodeTaskFiles(c *gin.Context) {
+	// get param
+	nodeID := c.Param("node_id")
+
+	// get task id
+	taskID := c.Param("task_id")
+
+	// get file type
+	file := c.Param("file")
+
+	// define queue name
+	filePath := "node/" + nodeID + "/task/" + taskID + "/" + file
+
+	// get result of file
+	getTaskFile(c, filePath, file)
 }
 
 func GetAllNodeTasks(c *gin.Context) {
@@ -219,6 +285,23 @@ func GetModuleTasks(c *gin.Context) {
 
 	// get tasks
 	getTasks(c, queueName)
+}
+
+func GetModuleTaskFiles(c *gin.Context) {
+	// get param
+	moduleID := c.Param("module_id")
+
+	// get task id
+	taskID := c.Param("task_id")
+
+	// get file type
+	file := c.Param("file")
+
+	// define queue name
+	filePath := "module/" + moduleID + "/task/" + taskID + "/" + file
+
+	// get result of file
+	getTaskFile(c, filePath, file)
 }
 
 func GetAllModuleTasks(c *gin.Context) {

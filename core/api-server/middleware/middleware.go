@@ -121,6 +121,11 @@ func InitJWT() *jwt.GinJWTMiddleware {
 			return user
 		},
 		Authorizator: func(data interface{}, c *gin.Context) bool {
+			// bypass auth for GET requests: // TODO
+			if c.Request.Method == "GET" {
+				return true
+			}
+
 			// extract data payload and check authorizations
 			if v, ok := data.(*models.UserAuthorizations); ok {
 				authorizedActions := v.Actions

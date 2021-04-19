@@ -65,18 +65,21 @@ curl -s -H "Authorization: Bearer <your_token>" -X <VERB> http://localhost:8080/
 ### API list (authenticated)
 
 - `GET /api/cluster/tasks`
+- `GET /api/cluster/tasks/:task_id/:file` (:file could be `output`, `error` or `exit_code`)
 - `GET /api/node/tasks`
-- `GET /api/module/tasks`
 - `GET /api/node/<node_id>/tasks`
+- `GET /api/node/<node_id>/tasks/:task_id/:file` (:file could be `output`, `error` or `exit_code`)
+- `GET /api/module/tasks`
 - `GET /api/module/<module_id>/tasks`
+- `GET /api/module/<module_id>/tasks/:task_id/:file` (:file could be `output`, `error` or `exit_code`)
 
   Return the task information for each entity (Cluster, Node, Module).
 
   ```bash
   curl -s http://localhost:8080/api/cluster/tasks/ | jq
   curl -s http://localhost:8080/api/node/tasks/ | jq
-  curl -s http://localhost:8080/api/module/tasks/ | jq
   curl -s http://localhost:8080/api/node/<node_id>/tasks/ | jq
+  curl -s http://localhost:8080/api/module/tasks/ | jq
   curl -s http://localhost:8080/api/module/<module_id>/tasks/ | jq
   ```
 
@@ -120,6 +123,19 @@ curl -s -H "Authorization: Bearer <your_token>" -X <VERB> http://localhost:8080/
   ]
   ```
   ```json
+  {
+    "queue": "node/1/tasks",
+    "tasks": [
+      {
+        "id": "30f49b7f-2f9d-46c1-b743-111b09229797",
+        "action": "create-task",
+        "data": "MY_VAR=2;MY_CIAO=4"
+      },
+      ...
+    ]
+  }
+  ```
+  ```json
   [
     {
       "queue": "module/1/tasks",
@@ -147,20 +163,7 @@ curl -s -H "Authorization: Bearer <your_token>" -X <VERB> http://localhost:8080/
   ```
   ```json
   {
-    "queue": "node/<node_id>/tasks",
-    "tasks": [
-      {
-        "id": "30f49b7f-2f9d-46c1-b743-111b09229797",
-        "action": "create-task",
-        "data": "MY_VAR=2;MY_CIAO=4"
-      },
-      ...
-    ]
-  }
-  ```
-  ```json
-  {
-    "queue": "module/<module_id>/tasks",
+    "queue": "module/2/tasks",
     "tasks": [
       {
         "id": "30f49b7f-2f9d-46c1-b743-111b09229797",

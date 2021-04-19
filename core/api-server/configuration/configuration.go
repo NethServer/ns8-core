@@ -29,6 +29,8 @@ import (
 type Configuration struct {
 	ListenAddress string `json:"listen_address"`
 	RedisAddress  string `json:"redis_address"`
+	RedisUser     string `json:"redis_user"`
+	RedisPassword string `json:"redis_password"`
 	Secret        string `json:"secret"`
 }
 
@@ -46,6 +48,16 @@ func Init() {
 		Config.RedisAddress = os.Getenv("REDIS_ADDRESS")
 	} else {
 		Config.RedisAddress = "127.0.0.1:6379"
+	}
+	if os.Getenv("REDIS_USER") != "" {
+		Config.RedisUser = os.Getenv("REDIS_USER")
+	} else {
+		Config.RedisUser = "default"
+	}
+	if os.Getenv("REDIS_PASSWORD") != "" {
+		Config.RedisPassword = os.Getenv("REDIS_PASSWORD")
+	} else {
+		Config.RedisPassword = ""
 	}
 
 	if os.Getenv("SECRET") != "" {

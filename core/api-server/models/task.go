@@ -20,21 +20,25 @@
  * author: Edoardo Spadoni <edoardo.spadoni@nethesis.it>
  */
 
-package models
+ package models
 
-import (
-	"encoding/json"
-)
+ import (
+	 "encoding/json"
+	 "time"
+ )
 
 type Task struct {
-	ID     string `json:"id"`
-	Action string `json:"action"`
-	Data   string `json:"data"`
+	ID        string    `json:"id"`
+	Action    string    `json:"action"`
+	Data      string    `json:"data"`
+	Queue     string    `json:"queue"`
+	User      string    `json:"user"`
+	Timestamp time.Time `json:"timestamp"`
 }
 
 type TaskProgress struct {
 	Status   string `json:"status"`
-	Progress int `json:"progress"`
+	Progress int    `json:"progress"`
 }
 
 func (t *TaskProgress) UnmarshalBinary(data []byte) error {

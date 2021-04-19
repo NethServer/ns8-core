@@ -43,7 +43,8 @@ func InitRedisConnection() *redis.Client {
 	redisConnection = redis.NewClient(&redis.Options{
 		Network:  "tcp",
 		Addr:     configuration.Config.RedisAddress,
-		Password: "",
+		Username: configuration.Config.RedisUser,
+		Password: configuration.Config.RedisPassword,
 		DB:       0, // redis database
 	})
 

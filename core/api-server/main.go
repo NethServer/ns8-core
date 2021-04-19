@@ -81,6 +81,7 @@ func main() {
 		cluster := api.Group("/cluster")
 		{
 			cluster.GET("/tasks", methods.GetClusterTasks)
+			cluster.GET("/tasks/:task_id/:file", methods.GetClusterTaskFiles)
 			cluster.POST("/tasks", methods.CreateClusterTask)
 		}
 		// node APIs
@@ -88,6 +89,7 @@ func main() {
 		{
 			node.GET("/tasks", methods.GetAllNodeTasks)
 			node.GET("/:node_id/tasks", methods.GetNodeTasks)
+			node.GET("/:node_id/tasks/:task_id/:file", methods.GetNodeTaskFiles)
 			node.POST("/:node_id/tasks", methods.CreateNodeTask)
 		}
 		// module APIs
@@ -95,6 +97,7 @@ func main() {
 		{
 			module.GET("/tasks", methods.GetAllModuleTasks)
 			module.GET("/:module_id/tasks", methods.GetModuleTasks)
+			module.GET("/:module_id/tasks/:task_id/:file", methods.GetModuleTaskFiles)
 			module.POST("/:module_id/tasks", methods.CreateModuleTask)
 		}
 	}
