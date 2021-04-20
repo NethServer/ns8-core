@@ -33,6 +33,7 @@ import (
 	"github.com/NethServer/ns8-scratchpad/core/api-server/configuration"
 	"github.com/NethServer/ns8-scratchpad/core/api-server/methods"
 	"github.com/NethServer/ns8-scratchpad/core/api-server/middleware"
+	"github.com/NethServer/ns8-scratchpad/core/api-server/response"
 	"github.com/NethServer/ns8-scratchpad/core/api-server/socket"
 )
 
@@ -64,6 +65,18 @@ func main() {
 	}
 
 	// define api group
+	// @title NethServer 8 API
+	// @version 1.0
+	// @description NethServer 8 API is used to create tasks across the nodes
+	// @termsOfService https://nethserver.org/terms/
+
+	// @contact.name NethServer Developer Team
+	// @contact.url https://nethserver.org/support
+
+	// @license.name GNU GENERAL PUBLIC LICENSE
+
+	// @host localhost:8080
+	// @BasePath /api
 	api := router.Group("/api")
 
 	// define login and logout endpoint
@@ -76,29 +89,25 @@ func main() {
 	// define JWT middleware
 	api.Use(middleware.InstanceJWT().MiddlewareFunc())
 	{
+		// tasks APIs
+		tasks := api.Group("/tasks")
+		{
+			// cluster
+			tasks.GET("/cluster", methods.GetClusterTasks)
+			tasks.GET("/cluster/:task_id/:file", methods.GetClusterTaskFiles)
+			tasks.POST("/cluster", methods.CreateClusterTask)
 
-		// cluster APIs
-		cluster := api.Group("/cluster")
-		{
-			cluster.GET("/tasks", methods.GetClusterTasks)
-			cluster.GET("/tasks/:task_id/:file", methods.GetClusterTaskFiles)
-			cluster.POST("/tasks", methods.CreateClusterTask)
-		}
-		// node APIs
-		node := api.Group("/node")
-		{
-			node.GET("/tasks", methods.GetAllNodeTasks)
-			node.GET("/:node_id/tasks", methods.GetNodeTasks)
-			node.GET("/:node_id/tasks/:task_id/:file", methods.GetNodeTaskFiles)
-			node.POST("/:node_id/tasks", methods.CreateNodeTask)
-		}
-		// module APIs
-		module := api.Group("/module")
-		{
-			module.GET("/tasks", methods.GetAllModuleTasks)
-			module.GET("/:module_id/tasks", methods.GetModuleTasks)
-			module.GET("/:module_id/tasks/:task_id/:file", methods.GetModuleTaskFiles)
-			module.POST("/:module_id/tasks", methods.CreateModuleTask)
+			// node
+			tasks.GET("/node", methods.GetAllNodeTasks)
+			tasks.GET("/node/:node_id", methods.GetNodeTasks)
+			tasks.GET("/node/:node_id/:task_id/:file", methods.GetNodeTaskFiles)
+			tasks.POST("/node/:node_id", methods.CreateNodeTask)
+
+			// module
+			tasks.GET("/module", methods.GetAllModuleTasks)
+			tasks.GET("/module/:module_id", methods.GetModuleTasks)
+			tasks.GET("/module/:module_id/:task_id/:file", methods.GetModuleTaskFiles)
+			tasks.POST("/module/:module_id", methods.CreateModuleTask)
 		}
 	}
 
@@ -106,16 +115,23 @@ func main() {
 	ws := router.Group("/ws")
 
 	// task ws APIS
-	task := ws.Group("/task")
+	task := ws.Group("/tasks")
 	{
-		task.GET("/progress/:task_id", func(c *gin.Context) {
+		task.GET("/progress", func(c *gin.Context) {
 			socket.HandleRequest(c.Writer, c.Request)
 		})
 	}
 
+	// start events
+	methods.ListenTaskEvents()
+
 	// handle missing endpoint
 	router.NoRoute(func(c *gin.Context) {
-		c.JSON(http.StatusNotFound, gin.H{"message": "API not found"})
+		c.JSON(http.StatusNotFound, response.StatusNotFound{
+			Code:    404,
+			Message: "API not found",
+			Data:    nil,
+		})
 	})
 
 	// run server

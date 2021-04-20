@@ -9,6 +9,9 @@ go get
 
 # build binary
 go build
+
+# build docs
+swag init
 ```
 
 ## Configuration
@@ -16,6 +19,8 @@ The configuration is read from ENV
 ```bash
 LISTEN_ADDRESS=0.0.0.0:8080
 REDIS_ADDRESS=127.0.0.1:6379
+REDIS_USER=default
+REDIS_PASSWORD=""
 SECRET=MY_SECRET,11
 ```
 
@@ -27,7 +32,7 @@ To execute the binary run
 
 You can also specify configurations using env vars
 ```bash
-LISTEN_ADDRESS=0.0.0.0:8080 REDIS_ADDRESS=127.0.0.1:6379 SECRET=MY_SECRET,11./api-server
+LISTEN_ADDRESS=0.0.0.0:8080 REDIS_ADDRESS=127.0.0.1:6379 REDIS_USER=my-user REDIS_PASSWORD=MyPass SECRET=MY_SECRET,11./api-server
 ```
 
 ## APIs
@@ -57,168 +62,10 @@ The finally API request should be:
 curl -s -H "Authorization: Bearer <your_token>" -X <VERB> http://localhost:8080/api/<api_name> --data '{<your_json_data}' | jq
 ```
 
-### API list (not authenticated)
-- `POST /login`
-- `POST /logout`
-- `GET /refresh_token` used to refresh the access token when is expired
+### API list
+The API doc is generated using swagger. THe `swagger.json` file can be found inside `doc/` directory.
 
-### API list (authenticated)
-
-- `GET /api/cluster/tasks`
-- `GET /api/cluster/tasks/:task_id/:file` (:file could be `output`, `error` or `exit_code`)
-- `GET /api/node/tasks`
-- `GET /api/node/<node_id>/tasks`
-- `GET /api/node/<node_id>/tasks/:task_id/:file` (:file could be `output`, `error` or `exit_code`)
-- `GET /api/module/tasks`
-- `GET /api/module/<module_id>/tasks`
-- `GET /api/module/<module_id>/tasks/:task_id/:file` (:file could be `output`, `error` or `exit_code`)
-
-  Return the task information for each entity (Cluster, Node, Module).
-
-  ```bash
-  curl -s http://localhost:8080/api/cluster/tasks/ | jq
-  curl -s http://localhost:8080/api/node/tasks/ | jq
-  curl -s http://localhost:8080/api/node/<node_id>/tasks/ | jq
-  curl -s http://localhost:8080/api/module/tasks/ | jq
-  curl -s http://localhost:8080/api/module/<module_id>/tasks/ | jq
-  ```
-
-  ```json
-  {
-    "queue": "cluster/tasks",
-    "tasks": [
-      {
-        "id": "30f49b7f-2f9d-46c1-b743-111b09229797",
-        "action": "create-task",
-        "data": "MY_VAR=2;MY_CIAO=4"
-      },
-      ...
-    ]
-  }
-  ```
-  ```json
-  [
-    {
-      "queue": "node/1/tasks",
-      "tasks": [
-        {
-          "id": "361cc217-328a-44fb-9b56-d8051f2d539d",
-          "action": "create-task",
-          "data": "MY_VAR=2;MY_CIAO=4"
-        },
-       ...
-      ]
-    },
-    {
-      "queue": "node/2/tasks",
-      "tasks": [
-        {
-          "id": "da73d079-e23a-4dff-9fd2-5666a794c8cd",
-          "action": "create-task",
-          "data": "MY_VAR=2;MY_CIAO=4"
-        },
-        ...
-      ]
-    }
-  ]
-  ```
-  ```json
-  {
-    "queue": "node/1/tasks",
-    "tasks": [
-      {
-        "id": "30f49b7f-2f9d-46c1-b743-111b09229797",
-        "action": "create-task",
-        "data": "MY_VAR=2;MY_CIAO=4"
-      },
-      ...
-    ]
-  }
-  ```
-  ```json
-  [
-    {
-      "queue": "module/1/tasks",
-      "tasks": [
-        {
-          "id": "361cc217-328a-44fb-9b56-d8051f2d539d",
-          "action": "create-task",
-          "data": "MY_VAR=2;MY_CIAO=4"
-        },
-       ...
-      ]
-    },
-    {
-      "queue": "module/2/tasks",
-      "tasks": [
-        {
-          "id": "da73d079-e23a-4dff-9fd2-5666a794c8cd",
-          "action": "create-task",
-          "data": "MY_VAR=2;MY_CIAO=4"
-        },
-        ...
-      ]
-    }
-  ]
-  ```
-  ```json
-  {
-    "queue": "module/2/tasks",
-    "tasks": [
-      {
-        "id": "30f49b7f-2f9d-46c1-b743-111b09229797",
-        "action": "create-task",
-        "data": "MY_VAR=2;MY_CIAO=4"
-      },
-      ...
-    ]
-  }
-
-  ```
-
-- `POST /api/cluster/tasks`
-- `POST /api/node/<node_id>/tasks`
-- `POST /api/module/<module_id>/tasks`
-
-  Create a new task and add to specific entity queue
-
-  ```bash
-  curl -s -X POST http://localhost:8080/api/cluster/tasks --data '{"id": "", "action": "create-task", "data": "MY_VAR=2;MY_CIAO=4"}' | jq
-  curl -s -X POST http://localhost:8080/api/node/<node_id>/tasks --data '{"id": "", "action": "create-task", "data": "MY_VAR=2;MY_CIAO=4"}' | jq
-  curl -s -X POST http://localhost:8080/api/module/<module_id>/tasks --data '{"id": "", "action": "create-task", "data": "MY_VAR=2;MY_CIAO=4"}' | jq
-  ```
-
-  ```json
-  {
-    "message": "task queued successfully",
-    "queue": "cluster/tasks",
-    "task": {
-      "id": "ff77b29c-8a5f-4775-8858-8dcfc8f421bf",
-      "action": "create-task",
-      "data": "MY_VAR=2;MY_CIAO=4"
-    }
-  }
-  {
-    "message": "task queued successfully",
-    "queue": "node/<node_id>/tasks",
-    "task": {
-      "id": "ff77b29c-8a5f-4775-8858-8dcfc8f421bf",
-      "action": "create-task",
-      "data": "MY_VAR=2;MY_CIAO=4"
-    }
-  }
-  {
-    "message": "task queued successfully",
-    "queue": "module/<module_id>/tasks",
-    "task": {
-      "id": "ff77b29c-8a5f-4775-8858-8dcfc8f421bf",
-      "action": "create-task",
-      "data": "MY_VAR=2;MY_CIAO=4"
-    }
-  }
-  ```
-
-  ## Redis
+## Redis
   Each API is mapped to a specific command on Redis:
   - `GET /api/<cluster|node|module>/tasks` ⟶ `LRANGE <cluster|node|module>/tasks 0 -1`
 

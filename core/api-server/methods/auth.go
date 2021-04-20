@@ -30,10 +30,22 @@ import (
 
 	"github.com/NethServer/ns8-scratchpad/core/api-server/models"
 	"github.com/NethServer/ns8-scratchpad/core/api-server/redis"
+	"github.com/NethServer/ns8-scratchpad/core/api-server/response"
 )
 
 var ctx = context.Background()
 
+// RedisAuthentication godoc
+// @Summary Login and get JWT token
+// @Description login and get JWT token
+// @Produce  json
+// @Param username body string true "Username"
+// @Param password body string true "Password"
+// @Success 200 {object} response.LoginJWT
+// @Header 200 {string} Authorization "Bearer <valid.JWT.token>"
+// @Failure 500 {object} response.StatusInternalServerError{code=int,message=string,data=object}
+// @Router /login [post]
+// @Tags /login auth
 func RedisAuthentication(username string, password string) error {
 	// init redis connection
 	redisConnection := redis.Instance()
@@ -51,6 +63,15 @@ func RedisAuthentication(username string, password string) error {
 	return nil
 }
 
+// RedisAuthorization godoc
+// @Summary Login and remove JWT token
+// @Description logout and remove JWT token
+// @Produce  json
+// @Success 200 {object} response.StatusOK
+// @Header 200 {string} Authorization "Bearer <valid.JWT.token>"
+// @Failure 500 {object} response.StatusInternalServerError{code=int,message=string,data=object}
+// @Router /logout [post]
+// @Tags /logout auth
 func RedisAuthorization(username string, c *gin.Context) (models.UserAuthorizations, error) {
 	// define return obj
 	var userAuthorizationsRedis models.UserAuthorizations

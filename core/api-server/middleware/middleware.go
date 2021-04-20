@@ -25,6 +25,7 @@ package middleware
 import (
 	"github.com/pkg/errors"
 
+	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -35,6 +36,7 @@ import (
 	"github.com/NethServer/ns8-scratchpad/core/api-server/configuration"
 	"github.com/NethServer/ns8-scratchpad/core/api-server/methods"
 	"github.com/NethServer/ns8-scratchpad/core/api-server/models"
+	"github.com/NethServer/ns8-scratchpad/core/api-server/response"
 	"github.com/NethServer/ns8-scratchpad/core/api-server/utils"
 )
 
@@ -153,8 +155,10 @@ func InitJWT() *jwt.GinJWTMiddleware {
 			return false
 		},
 		Unauthorized: func(c *gin.Context, code int, message string) {
-			c.JSON(code, gin.H{
-				"message": message,
+			c.JSON(http.StatusUnauthorized, response.StatusUnauthorized{
+				Code:    401,
+				Message: message,
+				Data:    nil,
 			})
 			return
 		},

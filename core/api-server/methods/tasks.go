@@ -30,11 +30,13 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	guuid "github.com/google/uuid"
+	"github.com/pkg/errors"
 
 	jwt "github.com/appleboy/gin-jwt/v2"
 
 	"github.com/NethServer/ns8-scratchpad/core/api-server/models"
 	"github.com/NethServer/ns8-scratchpad/core/api-server/redis"
+	"github.com/NethServer/ns8-scratchpad/core/api-server/response"
 	"github.com/NethServer/ns8-scratchpad/core/api-server/socket"
 )
 
@@ -50,7 +52,11 @@ func getAllTasks(c *gin.Context, entityName string) {
 
 	// handle redis error
 	if errRedisKeys != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "error getting all tasks from redis queue", "status": errRedisKeys.Error()})
+		c.JSON(http.StatusBadRequest, response.StatusBadRequest{
+			Code:    400,
+			Message: "error getting all tasks from redis queue",
+			Data:    errRedisKeys.Error(),
+		})
 		return
 	}
 
@@ -61,7 +67,11 @@ func getAllTasks(c *gin.Context, entityName string) {
 
 		// handle redis error
 		if errRedisRange != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"message": "error getting tasks from redis queue", "status": errRedisRange.Error()})
+			c.JSON(http.StatusBadRequest, response.StatusBadRequest{
+				Code:    400,
+				Message: "error getting tasks from redis queue",
+				Data:    errRedisRange.Error(),
+			})
 			return
 		}
 
@@ -74,7 +84,11 @@ func getAllTasks(c *gin.Context, entityName string) {
 			var task models.Task
 			errJson := json.Unmarshal([]byte(t), &task)
 			if errJson != nil {
-				c.JSON(http.StatusBadRequest, gin.H{"message": "error converting json task to struct", "status": errJson.Error()})
+				c.JSON(http.StatusBadRequest, response.StatusBadRequest{
+					Code:    400,
+					Message: "error converting json task to struct",
+					Data:    errJson.Error(),
+				})
 				return
 			}
 
@@ -86,7 +100,11 @@ func getAllTasks(c *gin.Context, entityName string) {
 	}
 
 	// return all tasks
-	c.JSON(http.StatusOK, allTasks)
+	c.JSON(http.StatusOK, response.StatusOK{
+		Code:    200,
+		Message: "success",
+		Data:    allTasks,
+	})
 }
 
 func getTasks(c *gin.Context, queueName string) {
@@ -101,7 +119,11 @@ func getTasks(c *gin.Context, queueName string) {
 
 	// handle redis error
 	if errRedis != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "error getting tasks from redis queue", "status": errRedis.Error()})
+		c.JSON(http.StatusBadRequest, response.StatusBadRequest{
+			Code:    400,
+			Message: "error getting tasks from redis queue",
+			Data:    errRedis.Error(),
+		})
 		return
 	}
 
@@ -111,7 +133,11 @@ func getTasks(c *gin.Context, queueName string) {
 		var task models.Task
 		errJson := json.Unmarshal([]byte(t), &task)
 		if errJson != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"message": "error converting json task to struct", "status": errJson.Error()})
+			c.JSON(http.StatusBadRequest, response.StatusBadRequest{
+				Code:    400,
+				Message: "error converting json task to struct",
+				Data:    errJson.Error(),
+			})
 			return
 		}
 
@@ -120,7 +146,11 @@ func getTasks(c *gin.Context, queueName string) {
 	}
 
 	// return tasks
-	c.JSON(http.StatusOK, gin.H{"tasks": tasks, "queue": queueName})
+	c.JSON(http.StatusOK, response.StatusOK{
+		Code:    200,
+		Message: "success",
+		Data:    gin.H{"tasks": tasks, "queue": queueName},
+	})
 }
 
 func getTaskFile(c *gin.Context, filePath string, file string) {
@@ -131,20 +161,32 @@ func getTaskFile(c *gin.Context, filePath string, file string) {
 	switch file {
 	case "error", "output", "exit_code":
 		// read redis attribute
-		response, errRedis := redisConnection.Get(ctx, filePath).Result()
+		r, errRedis := redisConnection.Get(ctx, filePath).Result()
 
 		// handle redis error
 		if errRedis != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"message": "error getting file from redis", "status": errRedis.Error()})
+			c.JSON(http.StatusBadRequest, response.StatusBadRequest{
+				Code:    400,
+				Message: "error getting file from redis",
+				Data:    errRedis.Error(),
+			})
 			return
 		}
 
 		// return file response
-		c.JSON(http.StatusOK, gin.H{"content": response, "file": filePath})
+		c.JSON(http.StatusOK, response.StatusOK{
+			Code:    200,
+			Message: "success",
+			Data:    gin.H{"content": r, "file": filePath},
+		})
 		return
 
 	default:
-		c.JSON(http.StatusBadRequest, gin.H{"message": "invalid file type. must be output, error or exit_code"})
+		c.JSON(http.StatusBadRequest, response.StatusBadRequest{
+			Code:    400,
+			Message: "invalid file type. must be output, error or exit_code",
+			Data:    nil,
+		})
 		return
 	}
 }
@@ -153,7 +195,11 @@ func createTask(c *gin.Context, queueName string) {
 	// bind json body
 	var jsonTask models.Task
 	if err := c.ShouldBindBodyWith(&jsonTask, binding.JSON); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "request fields malformed", "status": err.Error()})
+		c.JSON(http.StatusBadRequest, response.StatusBadRequest{
+			Code:    400,
+			Message: "request fields malformed",
+			Data:    err.Error(),
+		})
 		return
 	}
 
@@ -175,15 +221,44 @@ func createTask(c *gin.Context, queueName string) {
 	// convert json struct to json string
 	stringTask, errString := json.Marshal(task)
 	if errString != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "error converting task struct to json", "status": errString.Error()})
+		c.JSON(http.StatusBadRequest, response.StatusBadRequest{
+			Code:    400,
+			Message: "error converting task struct to json",
+			Data:    errString.Error(),
+		})
 		return
 	}
+
+	// set task to redis: LPUSH <queue> <payload>
+	errRedis := redisConnection.LPush(ctx, queueName, string(stringTask)).Err()
+
+	// handle redis error
+	if errRedis != nil {
+		c.JSON(http.StatusBadRequest, response.StatusBadRequest{
+			Code:    400,
+			Message: "error queuing tasks to redis",
+			Data:    errRedis.Error(),
+		})
+		return
+	}
+
+	// return status created
+	c.JSON(http.StatusCreated, response.StatusOK{
+		Code:    200,
+		Message: "task queued successfully",
+		Data:    task,
+	})
+}
+
+func ListenTaskEvents() {
+	// init redis connection
+	redisConnection := redis.Instance()
 
 	// get socket instance
 	socketConnection := socket.Instance()
 
-	// subscribe to progress channel and listen to new messages: SUBSCRIBE progress/task/<task_id>
-	progress := redisConnection.Subscribe(ctx, "progress/task/"+task.ID)
+	// subscribe to progress channel and listen to new messages: PSUBSCRIBE progress/task/*
+	progress := redisConnection.PSubscribe(ctx, "progress/task/*")
 
 	// get the channel to use
 	channel := progress.Channel()
@@ -201,26 +276,23 @@ func createTask(c *gin.Context, queueName string) {
 			}
 
 			// identify all sessions associated with task id
-			if clientSession, ok := socket.Connections["/ws/task/progress/"+task.ID]; ok {
+			if clientSession, ok := socket.Connections["/ws/tasks/progress"]; ok {
 				// Broadcast to all sessions
 				socketConnection.BroadcastMultiple([]byte(msg.Payload), clientSession)
 			}
 		}
 	}()
-
-	// set task to redis: LPUSH <queue> <payload>
-	errRedis := redisConnection.LPush(ctx, queueName, string(stringTask)).Err()
-
-	// handle redis error
-	if errRedis != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "error queuing tasks to redis", "status": errRedis.Error()})
-		return
-	}
-
-	// return status created
-	c.JSON(http.StatusCreated, gin.H{"message": "task queued successfully", "task": task})
 }
 
+// GetClusterTasks godoc
+// @Summary Get the list of current cluster tasks
+// @Description get cluster tasks
+// @Produce  json
+// @Success 200 {object} response.StatusOK{code=int,message=string,data=[]models.Task}
+// @Header 200 {string} Authorization "Bearer <valid.JWT.token>"
+// @Failure 400 {object} response.StatusBadRequest{code=int,message=string,data=object}
+// @Router /tasks/cluster [get]
+// @Tags /tasks cluster
 func GetClusterTasks(c *gin.Context) {
 	// define queue name
 	queueName := "cluster/tasks"
@@ -229,6 +301,17 @@ func GetClusterTasks(c *gin.Context) {
 	getTasks(c, queueName)
 }
 
+// GetClusterTaskFiles godoc
+// @Summary Get the output, error or exit code of a cluster task
+// @Description get task statuses (output, error, exit_code)
+// @Produce  json
+// @Param task_id path string true "Task ID"
+// @Param file path string true "Must be: `output`, `error`, `exit_code`"
+// @Success 200 {object} response.StatusOK{code=int,message=string,data=string}
+// @Header 200 {string} Authorization "Bearer <valid.JWT.token>"
+// @Failure 400 {object} response.StatusBadRequest{code=int,message=string,data=object}
+// @Router /tasks/cluster/{task_id}/{file} [get]
+// @Tags /tasks cluster
 func GetClusterTaskFiles(c *gin.Context) {
 	// get task id
 	taskID := c.Param("task_id")
@@ -243,6 +326,16 @@ func GetClusterTaskFiles(c *gin.Context) {
 	getTaskFile(c, filePath, file)
 }
 
+// GetNodeTasks godoc
+// @Summary Get the list of current node tasks
+// @Description get node tasks
+// @Produce  json
+// @Param node_id path string true "Node ID"
+// @Success 200 {object} response.StatusOK{code=int,message=string,data=[]models.Task}
+// @Header 200 {string} Authorization "Bearer <valid.JWT.token>"
+// @Failure 400 {object} response.StatusBadRequest{code=int,message=string,data=object}
+// @Router /tasks/node/{node_id} [get]
+// @Tags /tasks node
 func GetNodeTasks(c *gin.Context) {
 	// get param
 	nodeID := c.Param("node_id")
@@ -254,6 +347,18 @@ func GetNodeTasks(c *gin.Context) {
 	getTasks(c, queueName)
 }
 
+// GetNodeTaskFiles godoc
+// @Summary Get the output, error or exit code of a node task
+// @Description get task statuses (output, error, exit_code)
+// @Produce  json
+// @Param node_id path string true "Node ID"
+// @Param task_id path string true "Task ID"
+// @Param file path string true "Must be: `output`, `error`, `exit_code`"
+// @Success 200 {object} response.StatusOK{code=int,message=string,data=string}
+// @Header 200 {string} Authorization "Bearer <valid.JWT.token>"
+// @Failure 400 {object} response.StatusBadRequest{code=int,message=string,data=object}
+// @Router /tasks/node/{node_id}/{task_id}/{file} [get]
+// @Tags /tasks node
 func GetNodeTaskFiles(c *gin.Context) {
 	// get param
 	nodeID := c.Param("node_id")
@@ -276,6 +381,16 @@ func GetAllNodeTasks(c *gin.Context) {
 	getAllTasks(c, "node")
 }
 
+// GetModuleTasks godoc
+// @Summary Get the list of current module tasks
+// @Description get module tasks
+// @Produce  json
+// @Param module_id path string true "Module ID"
+// @Success 200 {object} response.StatusOK{code=int,message=string,data=[]models.Task}
+// @Header 200 {string} Authorization "Bearer <valid.JWT.token>"
+// @Failure 400 {object} response.StatusBadRequest{code=int,message=string,data=object}
+// @Router /tasks/module/{module_id} [get]
+// @Tags /tasks module
 func GetModuleTasks(c *gin.Context) {
 	// get param
 	moduleID := c.Param("module_id")
@@ -287,6 +402,18 @@ func GetModuleTasks(c *gin.Context) {
 	getTasks(c, queueName)
 }
 
+// GetModuleTaskFiles godoc
+// @Summary Get the output, error or exit code of a module task
+// @Description get task statuses (output, error, exit_code)
+// @Produce  json
+// @Param module_id path string true "Module ID"
+// @Param task_id path string true "Task ID"
+// @Param file path string true "Must be: `output`, `error`, `exit_code`"
+// @Success 200 {object} response.StatusOK{code=int,message=string,data=string}
+// @Header 200 {string} Authorization "Bearer <valid.JWT.token>"
+// @Failure 400 {object} response.StatusBadRequest{code=int,message=string,data=object}
+// @Router /tasks/module/{module_id}/{task_id}/{file} [get]
+// @Tags /tasks module
 func GetModuleTaskFiles(c *gin.Context) {
 	// get param
 	moduleID := c.Param("module_id")
@@ -309,6 +436,15 @@ func GetAllModuleTasks(c *gin.Context) {
 	getAllTasks(c, "module")
 }
 
+// CreateClusterTask godoc
+// @Summary Create and queue a cluster task
+// @Description create a cluster task
+// @Produce  json
+// @Success 200 {object} response.StatusCreated{code=int,message=string,data=models.Task}
+// @Header 200 {string} Authorization "Bearer <valid.JWT.token>"
+// @Failure 400 {object} response.StatusBadRequest{code=int,message=string,data=object}
+// @Router /tasks/cluster [post]
+// @Tags /tasks cluster
 func CreateClusterTask(c *gin.Context) {
 	// define queue name
 	queueName := "cluster/tasks"
@@ -317,6 +453,16 @@ func CreateClusterTask(c *gin.Context) {
 	createTask(c, queueName)
 }
 
+// CreateNodeTask godoc
+// @Summary Create and queue a node task
+// @Description create a node task
+// @Produce  json
+// @Param node_id path string true "Node ID"
+// @Success 200 {object} response.StatusCreated{code=int,message=string,data=models.Task}
+// @Header 200 {string} Authorization "Bearer <valid.JWT.token>"
+// @Failure 400 {object} response.StatusBadRequest{code=int,message=string,data=object}
+// @Router /tasks/node/{node_id} [post]
+// @Tags /tasks node
 func CreateNodeTask(c *gin.Context) {
 	// get param
 	nodeID := c.Param("node_id")
@@ -328,6 +474,16 @@ func CreateNodeTask(c *gin.Context) {
 	createTask(c, queueName)
 }
 
+// CreateModuleTask godoc
+// @Summary Create and queue a module task
+// @Description create a module task
+// @Produce  json
+// @Param module_id path string true "Module ID"
+// @Success 200 {object} response.StatusCreated{code=int,message=string,data=models.Task}
+// @Header 200 {string} Authorization "Bearer <valid.JWT.token>"
+// @Failure 400 {object} response.StatusBadRequest{code=int,message=string,data=object}
+// @Router /tasks/module/{module_id} [post]
+// @Tags /tasks module
 func CreateModuleTask(c *gin.Context) {
 	// get param
 	moduleID := c.Param("module_id")
