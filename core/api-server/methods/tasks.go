@@ -30,7 +30,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	guuid "github.com/google/uuid"
-	"github.com/pkg/errors"
 
 	jwt "github.com/appleboy/gin-jwt/v2"
 

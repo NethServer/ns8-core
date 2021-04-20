@@ -43,21 +43,11 @@ var doc = `{
                 "summary": "Login and get JWT token",
                 "parameters": [
                     {
-                        "description": "Username",
-                        "name": "username",
+                        "description": "The user to login",
+                        "name": "user",
                         "in": "body",
-                        "required": true,
                         "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "description": "Password",
-                        "name": "password",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.LoginRequestJWT"
                         }
                     }
                 ],
@@ -65,7 +55,7 @@ var doc = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/response.LoginJWT"
+                            "$ref": "#/definitions/response.LoginResponseJWT"
                         },
                         "headers": {
                             "Authorization": {
@@ -115,7 +105,19 @@ var doc = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/response.StatusOK"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.StatusOK"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "integer"
+                                        }
+                                    }
+                                }
+                            ]
                         },
                         "headers": {
                             "Authorization": {
@@ -889,7 +891,20 @@ var doc = `{
                 }
             }
         },
-        "response.LoginJWT": {
+        "response.LoginRequestJWT": {
+            "type": "object",
+            "properties": {
+                "password": {
+                    "type": "string",
+                    "example": "Nethesis,1234"
+                },
+                "username": {
+                    "type": "string",
+                    "example": "edoardo"
+                }
+            }
+        },
+        "response.LoginResponseJWT": {
             "type": "object",
             "properties": {
                 "code": {
@@ -979,7 +994,7 @@ var SwaggerInfo = swaggerInfo{
 	Version:     "1.0",
 	Host:        "localhost:8080",
 	BasePath:    "/api",
-	Schemes:     []string{},
+	Schemes:     []string{"http"},
 	Title:       "NethServer 8 API",
 	Description: "NethServer 8 API is used to create tasks across the nodes",
 }

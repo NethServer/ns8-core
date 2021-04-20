@@ -30,7 +30,6 @@ import (
 
 	"github.com/NethServer/ns8-scratchpad/core/api-server/models"
 	"github.com/NethServer/ns8-scratchpad/core/api-server/redis"
-	"github.com/NethServer/ns8-scratchpad/core/api-server/response"
 )
 
 var ctx = context.Background()
@@ -39,9 +38,8 @@ var ctx = context.Background()
 // @Summary Login and get JWT token
 // @Description login and get JWT token
 // @Produce  json
-// @Param username body string true "Username"
-// @Param password body string true "Password"
-// @Success 200 {object} response.LoginJWT
+// @Param user body response.LoginRequestJWT false "The user to login"
+// @Success 200 {object} response.LoginResponseJWT
 // @Header 200 {string} Authorization "Bearer <valid.JWT.token>"
 // @Failure 500 {object} response.StatusInternalServerError{code=int,message=string,data=object}
 // @Router /login [post]
@@ -67,7 +65,7 @@ func RedisAuthentication(username string, password string) error {
 // @Summary Login and remove JWT token
 // @Description logout and remove JWT token
 // @Produce  json
-// @Success 200 {object} response.StatusOK
+// @Success 200 {object} response.StatusOK{code=int}
 // @Header 200 {string} Authorization "Bearer <valid.JWT.token>"
 // @Failure 500 {object} response.StatusInternalServerError{code=int,message=string,data=object}
 // @Router /logout [post]

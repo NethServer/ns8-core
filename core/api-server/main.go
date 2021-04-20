@@ -59,7 +59,7 @@ func main() {
 	if gin.Mode() == gin.DebugMode {
 		// gin gonic cors conf
 		corsConf := cors.DefaultConfig()
-		corsConf.AllowHeaders = []string{"Authorization", "Content-Type"}
+		corsConf.AllowHeaders = []string{"Authorization", "Content-Type", "Accept"}
 		corsConf.AllowAllOrigins = true
 		router.Use(cors.New(corsConf))
 	}
@@ -76,6 +76,7 @@ func main() {
 	// @license.name GNU GENERAL PUBLIC LICENSE
 
 	// @host localhost:8080
+	// @schemes http
 	// @BasePath /api
 	api := router.Group("/api")
 

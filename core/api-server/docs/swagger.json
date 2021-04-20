@@ -1,4 +1,7 @@
 {
+    "schemes": [
+        "http"
+    ],
     "swagger": "2.0",
     "info": {
         "description": "NethServer 8 API is used to create tasks across the nodes",
@@ -28,21 +31,11 @@
                 "summary": "Login and get JWT token",
                 "parameters": [
                     {
-                        "description": "Username",
-                        "name": "username",
+                        "description": "The user to login",
+                        "name": "user",
                         "in": "body",
-                        "required": true,
                         "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "description": "Password",
-                        "name": "password",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.LoginRequestJWT"
                         }
                     }
                 ],
@@ -50,7 +43,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/response.LoginJWT"
+                            "$ref": "#/definitions/response.LoginResponseJWT"
                         },
                         "headers": {
                             "Authorization": {
@@ -100,7 +93,19 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/response.StatusOK"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.StatusOK"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "integer"
+                                        }
+                                    }
+                                }
+                            ]
                         },
                         "headers": {
                             "Authorization": {
@@ -874,7 +879,20 @@
                 }
             }
         },
-        "response.LoginJWT": {
+        "response.LoginRequestJWT": {
+            "type": "object",
+            "properties": {
+                "password": {
+                    "type": "string",
+                    "example": "Nethesis,1234"
+                },
+                "username": {
+                    "type": "string",
+                    "example": "edoardo"
+                }
+            }
+        },
+        "response.LoginResponseJWT": {
             "type": "object",
             "properties": {
                 "code": {

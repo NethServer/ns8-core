@@ -15,7 +15,16 @@ definitions:
       user:
         type: string
     type: object
-  response.LoginJWT:
+  response.LoginRequestJWT:
+    properties:
+      password:
+        example: Nethesis,1234
+        type: string
+      username:
+        example: edoardo
+        type: string
+    type: object
+  response.LoginResponseJWT:
     properties:
       code:
         example: 200
@@ -81,18 +90,11 @@ paths:
     post:
       description: login and get JWT token
       parameters:
-      - description: Username
+      - description: The user to login
         in: body
-        name: username
-        required: true
+        name: user
         schema:
-          type: string
-      - description: Password
-        in: body
-        name: password
-        required: true
-        schema:
-          type: string
+          $ref: '#/definitions/response.LoginRequestJWT'
       produces:
       - application/json
       responses:
@@ -103,7 +105,7 @@ paths:
               description: Bearer <valid.JWT.token>
               type: string
           schema:
-            $ref: '#/definitions/response.LoginJWT'
+            $ref: '#/definitions/response.LoginResponseJWT'
         "500":
           description: Internal Server Error
           schema:
@@ -133,7 +135,12 @@ paths:
               description: Bearer <valid.JWT.token>
               type: string
           schema:
-            $ref: '#/definitions/response.StatusOK'
+            allOf:
+            - $ref: '#/definitions/response.StatusOK'
+            - properties:
+                code:
+                  type: integer
+              type: object
         "500":
           description: Internal Server Error
           schema:
@@ -571,4 +578,6 @@ paths:
       summary: Get the output, error or exit code of a node task
       tags:
       - /tasks node
+schemes:
+- http
 swagger: "2.0"
