@@ -15,7 +15,7 @@ for userhome in /home/*; do
     moduleid=$(basename $userhome)
     echo "[NOTICE] Deleting rootless module ${moduleid}..."
     loginctl disable-linger "${moduleid}"
-    until ! loginctl show-user "${moduleid}" &>/dev/null; do
+    while loginctl show-user "${moduleid}" &>/dev/null; do
         sleep 1
     done
 
@@ -23,7 +23,7 @@ for userhome in /home/*; do
 done
 
 echo "[NOTICE] Stopping the core services"
-systemctl disable --now agent@\*.service redis.service
+systemctl disable --now api-server.service agent@{cluster,node}.service redis.service
 
 echo "[NOTICE] Uninstalling the core image files"
 (

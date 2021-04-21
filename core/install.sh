@@ -32,8 +32,9 @@ if [[ ${distro} == "debian" ]]; then
 fi
 
 echo "Extracting core sources:"
-cid=$(podman create ghcr.io/nethserver/core:${IMAGE_TAG:-latest})
-podman export ${cid} | tar -C / -x -v -f - >/var/lib/nethserver/node/state/image.lst
+mkdir -pv /var/lib/nethserver/node/state
+cid=$(podman create ghcr.io/nethserver/core:latest)
+podman export ${cid} | tar -C / -x -v -f - | tee /var/lib/nethserver/node/state/image.lst
 podman rm -f ${cid}
 
 if [[ ! -f ~/.ssh/id_rsa.pub ]] ; then
@@ -48,20 +49,68 @@ install -m 600 -T ~/.ssh/id_rsa.pub /etc/nethserver/skel/.ssh/authorized_keys
 echo "Setup agent:"
 agent_dir=/usr/local/nethserver/agent
 python3 -mvenv ${agent_dir}
-${agent_dir}/bin/pip3 install redis ipcalc six
+${agent_dir}/bin/pip3 install -U pip
+${agent_dir}/bin/pip3 install -r /etc/nethserver/pythonreq.txt
 
 echo "Setup registry:"
 if [[ ! -f /etc/nethserver/registry.json ]] ; then
     echo '{"auths":{}}' > /etc/nethserver/registry.json
 fi
 
-echo "Setup and start Redis:"
-podman pull docker.io/redis:6-alpine
-systemctl enable --now redis.service
-
 echo "Generating WireGuard VPN key pair:"
-pubkey=$(umask 0077; wg genkey | tee /etc/nethserver/wg0.key | wg pubkey)
-echo "${pubkey}" > /etc/nethserver/wg0.pub
+(umask 0077; wg genkey | tee /etc/nethserver/wg0.key | wg pubkey) | tee /etc/nethserver/wg0.pub
 
-echo "Start API server and cluster agent:"
-systemctl enable --now api-server.service agent@cluster.service
+echo "Generating API server SECRET:"
+(umask 0077; echo "SECRET=$(tr -dc '[:alnum:]' < /dev/urandom | dd bs=4 count=8 status=none)" >/etc/nethserver/api-server.env)
+
+echo "Pull core images":
+podman pull docker.io/redis:6-alpine
+
+echo "Start Redis DB and core agents:"
+systemctl enable --now redis
+
+# Drop and initialize the whole Redis DB. Just add the keys for the node bootstrap
+podman exec -i redis redis-cli >/dev/null <<EOF
+FLUSHALL
+MULTI
+HSET user/default cluster admin
+SADD cluster/roles/admin create-cluster add-node
+SET cluster/leader 1
+SET cluster/node_sequence 1
+HSET image/traefik name "Traefik edge proxy" rootfull 0 url ghcr.io/nethserver/traefik:latest
+LPUSH node/1/tasks '{"id":"add-traefik1","action":"add-module","data":"{\"image\":\"traefik\"}"}'
+EXEC
+EOF
+
+echo "Start API server and core agents:"
+echo "AGENT_ID=node/1" > /etc/nethserver/node.env
+systemctl enable --now api-server.service agent@cluster.service agent@node.service
+
+
+cat - <<EOF
+
+NethServer 8 scratchpad
+--------------------------------------------------------------------------
+
+Congratulations!
+
+This node is now ready to run as a single-node cluster instance of NS8
+
+
+A. To join this node to an alredy existing cluster run:
+
+      join-cluster <cluster_url>
+
+   For instance:
+
+      join-cluster https://admin:Nethesis,1234@cluster.example.com
+
+B. To initialize this node as a cluster leader run:
+
+      create-cluster <vpn_endpoint_address>:<vpn_endpoint_port> [vpn_cidr] [admin_password]
+
+   For instance:
+
+      create-custer $(hostname -f):55820 10.5.4.0/24 Nethesis,1234
+
+EOF

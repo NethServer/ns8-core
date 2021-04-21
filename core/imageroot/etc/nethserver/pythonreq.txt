@@ -1,0 +1,7 @@
+#
+# PIP requirements file for the Agent python environment
+# The environment is installed under /usr/local/nethserver/agent
+#
+ipcalc==1.99.0
+redis==3.5.3
+six==1.15.0

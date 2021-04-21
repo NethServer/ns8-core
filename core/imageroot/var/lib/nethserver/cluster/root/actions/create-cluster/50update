@@ -26,6 +26,7 @@ import ipcalc
 import os
 import json
 import time
+import agent
 
 def slurp_file(file_name):
     with open(file_name) as f: 
@@ -52,10 +53,8 @@ with open('/etc/wireguard/wg0.conf', 'w') as wgconf:
     wgconf.write(f"ListenPort = {listen_port}\n")
     wgconf.write(f"PrivateKey = {leader_private_key}\n\n")
 os.umask(oldmask)
-exit_code = os.spawnlp(os.P_WAIT, 'systemctl', 'systemctl', 'enable', 'wg-quick@wg0')
-assert exit_code == 0
-exit_code = os.spawnlp(os.P_WAIT, 'systemctl', 'systemctl', 'restart', 'wg-quick@wg0')
-assert exit_code == 0
+agent.run_helper('systemctl', 'enable', 'wg-quick@wg0')
+agent.run_helper('systemctl', 'restart', 'wg-quick@wg0')
 
 #
 # Bind Redis to the VPN ipaddr
@@ -63,42 +62,29 @@ assert exit_code == 0
 with open('/etc/nethserver/redis.env', 'w') as env_file:
     env_file.write(f'EXTRA_PARAMS="--protected-mode no --bind 127.0.0.1 ::1 {ipaddr}"\n')
 
-#
-# Start the node agent for the host node. We override the default module home directory path.
-#
-with open('/etc/nethserver/node.env', 'w') as node_file:
-    node_file.write(f'AGENT_ID=node-{nodeid}\n')
-exit_code = os.spawnlp(os.P_WAIT, 'systemctl', 'systemctl', 'enable', 'agent@node.service')
-assert exit_code == 0
-exit_code = os.spawnlp(os.P_WAIT, 'systemctl', 'systemctl', 'restart', 'agent@node.service')
-assert exit_code == 0
-
-
-# We assume Redis has just been started for the first time
-r = redis.Redis(host='127.0.0.1', port=6379, db=0, username="default", password="letmein", retry_on_timeout=True)
+# Get a standard Redis connection
+r = agent.redis_connect()
 
 #
-# Grant admin all privileges - XXX: does not work!
+# Grant admin all privileges
 #
-r.execute_command('ACL', 'SETUSER', 'admin', 'ON', '#' + admin_password_hash, '~*', '&*', '+@all')
+r.execute_command('ACL SETUSER', 'admin', 'ON', '#' + admin_password_hash, '~*', '&*', '+@all')
 
 #
 # Initialize the cluster and node records in Redis DB
 #
 r.set('cluster/network', network)
-r.set('cluster/leader', nodeid)
-r.set('cluster/node_sequence', nodeid)
 r.hset(f'node/{nodeid}/vpn', mapping={
     "public_key": leader_public_key,
     "ip_address": ipaddr,
     "endpoint": endpoint,
     "listen_port": listen_port,
 })
-r.sadd('cluster/roles/admin', 
-    'create-cluster', 
-    'create-node',
-)
-r.hset('user/admin', mapping={"cluster": "admin"})
+#r.sadd('cluster/roles/admin',
+#    'create-cluster',
+#    'add-node',
+#)
+#r.hset('user/admin', mapping={"cluster": "admin"})
 
 #
 # Generate and store a password for Redis clients: API server and agents
@@ -111,6 +97,7 @@ with open('/etc/nethserver/redis-client.env', 'w') as redisconf:
     redisconf.write(f'REDIS_ADDRESS={ipaddr}:6379')
 os.umask(oldmask)
 
+# Shutdown Redis to bind to the new VPN interface wg0
 try:
     r.execute_command('SHUTDOWN')
 except redis.exceptions.ConnectionError:
@@ -125,7 +112,6 @@ while True:
         time.sleep(2)
         continue
     finally:
-        r.close()
         break
 
 json.dump({

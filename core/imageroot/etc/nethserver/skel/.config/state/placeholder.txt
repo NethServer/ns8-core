@@ -1,0 +1,10 @@
+NOTICE
+
+This file is in the module state directory. It is the default working
+directory for the module agent and action scripts.
+
+Module persistent files and directories can be created here
+and passed as volumes to the module containers.
+
+It is safe to remove this file. It is possible to use it to detect
+if the module is running for the first time.

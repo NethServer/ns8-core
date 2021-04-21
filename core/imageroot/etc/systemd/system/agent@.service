@@ -3,7 +3,7 @@ Description=Rootfull %I agent
 
 [Service]
 Type=simple
-Environment=AGENT_ID=%I
+Environment=AGENT_ID=module/%I
 Environment=AGENT_INSTALL_DIR=/var/lib/nethserver/%i/root
 Environment=AGENT_STATE_DIR=/var/lib/nethserver/%i/state
 EnvironmentFile=/etc/nethserver/agent.env

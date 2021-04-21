@@ -4,14 +4,10 @@ set -e
 
 endpoint=${1:?missing endpoint argument}
 network=${2:-10.5.4.0/24}
+admin_password=${3:-Nethesis,1234}
 port=$(cut -f 2 -d : <<<"${endpoint}")
 
-# XXX drop and initialize the whole Redis DB
-podman exec -i redis redis-cli 1>&2 <<EOF
-FLUSHALL
-HSET user/default cluster admin
-SADD cluster/roles/admin create-cluster
-EOF
+read password_hash rest < <(sha256sum <<<"$admin_password")
 
 token_file=$(mktemp)
 trap "rm -f ${token_file}" EXIT
@@ -24,8 +20,9 @@ taskdata=$(jq -c -n \
     --argjson port "${port}" \
     --arg network "${network}" \
     --arg endpoint "${endpoint}" \
+    --arg password_hash "${password_hash}" \
     '{
-            "admin_password_hash": "648a5db6b14800f4009f62ec6bdbd04b91b6b25179c92626839e3a91fb32da5e",
+            "admin_password_hash": $password_hash,
             "network": $network,
             "endpoint": $endpoint,
             "listen_port": $port
