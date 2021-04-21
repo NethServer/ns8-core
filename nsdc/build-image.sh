@@ -20,7 +20,7 @@ container=$(buildah from "${repobase}/${reponame}")
 reponame="nsdc"
 buildah copy "${container}" module-events /srv/module-events
 buildah copy "${container}" entrypoint.sh /entrypoint.sh
-buildah config --label 'org.nethserver.initroot=/srv' "${container}"
+buildah config --label 'org.nethserver.imageroot=/srv' "${container}"
 buildah config --cmd='' "${container}"
 buildah config --entrypoint='[ "/bin/bash", "/entrypoint.sh" ]' "${container}"
 buildah commit "${container}" "${repobase}/${reponame}"
