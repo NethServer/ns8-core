@@ -80,6 +80,23 @@ func getActionSteps(actionName string) ([]string, bool) {
 	return actionStepsValues, dirFound
 }
 
+func prepareActionEnvironment() []string {
+	env := os.Environ()
+	key := agentPrefix + "/environment"
+	redisHash, err := rdb.HGetAll(ctx, key).Result()
+	if err == redis.Nil {
+		return env
+	}
+	if err != nil {
+		log.Printf("[ERROR] Could not fetch Redis key %s: %v", key, err)
+		return env
+	}
+	for key, value := range redisHash {
+		env = append(env, key+"="+value)
+	}
+	return env
+}
+
 func runAction(task *models.Task) {
 
 	// Redis key names where the action response is stored:
@@ -106,8 +123,13 @@ func runAction(task *models.Task) {
 		log.Printf("[ERROR] Action %s is not defined", task.Action)
 	}
 
+	// Get additional environment variables from Redis DB and
+	// other runtime sources
+	environment := prepareActionEnvironment()
+
 	for _, step := range actionSteps {
 		cmd := exec.Command(step)
+		cmd.Env = environment
 		cmd.Stdin = bytes.NewBufferString(task.Data)
 
 		stderrReader, _ := cmd.StderrPipe()
@@ -128,13 +150,13 @@ func runAction(task *models.Task) {
 			stdoutChannel <- string(qb)
 			close(stdoutChannel)
 		}()
-		
+
 		if err := cmd.Start(); err != nil {
 			log.Printf("[ERROR] Action %s startup error at step %s: %v", task.Action, step, err)
 			break
 		}
 
-		// Block until stderr and stdout are closed	
+		// Block until stderr and stdout are closed
 		select {
 		case buf := <-stderrChannel:
 			actionError = buf
@@ -142,7 +164,7 @@ func runAction(task *models.Task) {
 			actionOutput = buf
 		}
 
-		// It is safe to Wait() after the select{} finishes to consume the pipes input. 
+		// It is safe to Wait() after the select{} finishes to consume the pipes input.
 		if err := cmd.Wait(); err != nil {
 			exitCode = cmd.ProcessState.ExitCode()
 			log.Printf("[ERROR] Action %s terminated with errors at step %s: %v", task.Action, step, err)
