@@ -56,12 +56,6 @@ var doc = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/response.LoginResponseJWT"
-                        },
-                        "headers": {
-                            "Authorization": {
-                                "type": "string",
-                                "description": "Bearer \u003cvalid.JWT.token\u003e"
-                            }
                         }
                     },
                     "500": {

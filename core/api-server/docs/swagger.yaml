@@ -100,10 +100,6 @@ paths:
       responses:
         "200":
           description: OK
-          headers:
-            Authorization:
-              description: Bearer <valid.JWT.token>
-              type: string
           schema:
             $ref: '#/definitions/response.LoginResponseJWT'
         "500":

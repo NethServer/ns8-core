@@ -30,12 +30,30 @@ import (
 	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
 
+	docs "github.com/NethServer/ns8-scratchpad/core/api-server/docs"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
+
 	"github.com/NethServer/ns8-scratchpad/core/api-server/configuration"
 	"github.com/NethServer/ns8-scratchpad/core/api-server/methods"
 	"github.com/NethServer/ns8-scratchpad/core/api-server/middleware"
 	"github.com/NethServer/ns8-scratchpad/core/api-server/response"
 	"github.com/NethServer/ns8-scratchpad/core/api-server/socket"
 )
+
+// @title NethServer 8 API
+// @version 1.0
+// @description NethServer 8 API is used to create tasks across the nodes
+// @termsOfService https://nethserver.org/terms/
+
+// @contact.name NethServer Developer Team
+// @contact.url https://nethserver.org/support
+
+// @license.name GNU GENERAL PUBLIC LICENSE
+
+// @host localhost:8080
+// @schemes http
+// @BasePath /api
 
 func main() {
 	// init configuration
@@ -65,19 +83,6 @@ func main() {
 	}
 
 	// define api group
-	// @title NethServer 8 API
-	// @version 1.0
-	// @description NethServer 8 API is used to create tasks across the nodes
-	// @termsOfService https://nethserver.org/terms/
-
-	// @contact.name NethServer Developer Team
-	// @contact.url https://nethserver.org/support
-
-	// @license.name GNU GENERAL PUBLIC LICENSE
-
-	// @host localhost:8080
-	// @schemes http
-	// @BasePath /api
 	api := router.Group("/api")
 
 	// define login and logout endpoint
@@ -134,6 +139,10 @@ func main() {
 			Data:    nil,
 		})
 	})
+
+	// handle API docs route
+	docs.SwaggerInfo.Host = configuration.Config.ListenAddress
+	router.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	// run server
 	router.Run(configuration.Config.ListenAddress)

@@ -40,7 +40,6 @@ var ctx = context.Background()
 // @Produce  json
 // @Param user body response.LoginRequestJWT false "The user to login"
 // @Success 200 {object} response.LoginResponseJWT
-// @Header 200 {string} Authorization "Bearer <valid.JWT.token>"
 // @Failure 500 {object} response.StatusInternalServerError{code=int,message=string,data=object}
 // @Router /login [post]
 // @Tags /login auth
