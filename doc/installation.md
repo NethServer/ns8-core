@@ -4,50 +4,19 @@
 
 ## Core installation
 
-Execute as root on each node:
-```
-# curl https://raw.githubusercontent.com/NethServer/ns8-scratchpad/main/core/install.sh | bash
-```
-
 When installing on Debian 10 Buster, first make sure to have the latest running kernel and curl installed:
 ```
 apt-get update && apt-get --with-new-pkgs upgrade -y && apt-get install curl -y
 reboot
 ```
 
-After installation, to initialize the cluster you need 3 different steps:
-
-- master node initialization
-- join a worker to cluster
-- grant access to the worker
-
-To initialize the cluster, execute on the master node:
+Start the installation procedure:
 ```
-nethserver init
+# curl https://raw.githubusercontent.com/NethServer/ns8-scratchpad/main/core/install.sh | bash
 ```
 
-This command will initialize the master node as WireGuard VPN server with private IP `10.5.4.1`, listening on port `55820`.
-
-Then, move to the worker node and execute:
-```
-nethserver join <master_pubkey> <master_public_address:vpn_port> <worker_vpn_ip>
-```
-
-Where:
-- `<master_pubkey>` is the master WireGuard publick key, execute `cat /etc/wireguard/privatekey | wg pubkey` to access it
-- `<master_public_address:vpn_port>` is the master public address with WireGuard listening port, something like `1.2.3.4:55820`
-- `<worker_vpn_ip>` is the VPN private IP of the worker, something like `10.5.4.2`
-
-Finally, execute on the master node:
-```
-nethserver grant <worker_hostname> <worker_pubkey> <worker_vpn_ip>
-```
-
-Where:
-- `<worker_hostname>` is the worker hostname from `hostname -s`
-- `<worker_pubkey>` is the worker WireGuard publick key, execute `cat /etc/wireguard/privatekey | wg pubkey` to access it
-- `<worker_vpn_ip>` is the VPN worker IP set in the previous command
-
+The procedure configures a single node cluster. It prints how to invoke additional commands
+to initialize a multi node cluster (`create-cluster`) or to join an existing cluster (`join-cluster`).
 
 ### Developer configuration
 
@@ -56,34 +25,38 @@ Create a [GitHub PAT](https://docs.github.com/en/github/authenticating-to-github
 for the **ghcr.io** registry (for read-only access `read:packages private` scope should be enough) then run the following command, specifying
 your GitHub user name and providing the generated PAT as password:
 ```
-podman login --authfile /usr/local/etc/registry.json ghcr.io
-export REGISTRY_AUTH_FILE=/usr/local/etc/registry.json
-chmod -c 644 /usr/local/etc/registry.json
+buildah login ghcr.io
 ```
 
 The core is composed also by the following components:
 
-- traefik, running with `traefik0` user
-- restic rest-server, running with user `restic0`
-
+- traefik, running with `traefik1` user
+- restic rest-server, running with user `restic1`
 
 ### Redis
 
 Once the core has been initialized, you can access Redis with one of the following command:
 
-    podman run -i --network host --rm docker.io/redis:6-alpine redis-cli <<EOF
+    # podman exec -ti redis redis-cli <<EOF
     PING
     EOF
 
-As alternative, use `nc` command:
+The above command works only for the root user. An experimental Python based helper script
+is available for every user. This client is synchronous: it waits for the server response.
 
-    # nc 127.0.0.1 6379 <<EOF
+    $ redis-exec <<EOF
     ...
     EOF
 
-Or even shorter in Bash:
+An alternative, synchronous invocation relies on the `nc` command, provided by the `nmap-ncat` RPM:
 
-    # cat >/dev/tcp/127.0.0.1/6379 <<EOF
+    $ nc 127.0.0.1 6379 <<EOF
+    ...
+    EOF
+
+Or even shorter in Bash (asynchronous):
+
+    $ cat >/dev/tcp/127.0.0.1/6379 <<EOF
     ...
     EOF
 
@@ -92,13 +65,13 @@ Or even shorter in Bash:
 To inspect and modify the module start a SSH session. SSH is preferred to `su - traefik0` because the latter
 does not properly initialize the Systemd session environment. Check the services are running with:
 
-    # ssh traefik0@localhost
+    # ssh traefik1@localhost
     # systemctl --user status
 
-To uninstall the `traefik0` module run
+To uninstall the `traefik1` module run
 
-    # loginctl disable-linger traefik0
-    # userdel -r traefik0
+    # loginctl disable-linger traefik1
+    # userdel -r traefik1
 
 #### Default Let's Encrypt certificate
 
@@ -307,8 +280,8 @@ EOF
 
 ## Uninstall
 
-The `core/uninstall.sh` script attempts to stop and erase core components and
+The `uninstall.sh` script attempts to stop and erase core components and
 additional modules. Handle it with care because it erases everything under `/home/*`!
 
-    bash uninstall.sh
+    bash /var/lib/nethserver/node/root/uninstall.sh
 

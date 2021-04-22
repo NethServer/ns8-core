@@ -1,0 +1,42 @@
+#!/bin/bash
+
+set -e
+
+endpoint=${1:?missing endpoint argument}
+network=${2:-10.5.4.0/24}
+admin_password=${3:-Nethesis,1234}
+port=$(cut -f 2 -d : <<<"${endpoint}")
+
+read password_hash rest < <(sha256sum <<<"$admin_password")
+
+token_file=$(mktemp)
+trap "rm -f ${token_file}" EXIT
+
+curl -s -H "Content-Type: application/json" -X POST http://127.0.0.1:8080/api/login --data '{"username": "default", "password": "letmein"}' | jq -r .token >${token_file}
+
+# admin_password_hash is sha256sum of Nethesis,1234
+
+taskdata=$(jq -c -n \
+    --argjson port "${port}" \
+    --arg network "${network}" \
+    --arg endpoint "${endpoint}" \
+    --arg password_hash "${password_hash}" \
+    '{
+            "admin_password_hash": $password_hash,
+            "network": $network,
+            "endpoint": $endpoint,
+            "listen_port": $port
+    }' \
+)
+
+jsontask=$(jq -c -n \
+    --arg action create-cluster \
+    --arg taskdata "${taskdata}" \
+    '{
+        "id": "",
+        "action": $action,
+        "data": $taskdata
+    }' \
+)
+
+curl -s -H "Authorization: Bearer $(<${token_file})" -H "Content-Type: application/json" -X POST --data "${jsontask}" http://127.0.0.1:8080/api/cluster/tasks

@@ -1,0 +1,17 @@
+[Unit]
+Description=Rootfull %I agent
+
+[Service]
+Type=simple
+Environment=AGENT_ID=module/%I
+Environment=AGENT_INSTALL_DIR=/var/lib/nethserver/%i/root
+Environment=AGENT_STATE_DIR=/var/lib/nethserver/%i/state
+EnvironmentFile=/etc/nethserver/agent.env
+EnvironmentFile=-/etc/nethserver/redis-client.env
+EnvironmentFile=-/etc/nethserver/%i.env
+WorkingDirectory=/var/lib/nethserver/%i/state
+ExecStart=/usr/local/bin/agent ${AGENT_ID} ${AGENT_INSTALL_DIR}/actions /var/lib/nethserver/%i/actions-custom
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

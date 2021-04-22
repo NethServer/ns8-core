@@ -25,53 +25,92 @@ elif [[ ${distro} == "debian" ]]; then
     systemctl restart systemd-journald
 fi
 
-if [ -f /usr/local/etc/registry.json ]; then
-    echo "Registry auth found."
-    export REGISTRY_AUTH_FILE=/usr/local/etc/registry.json
-    chmod -c 644 ${REGISTRY_AUTH_FILE}
-fi
-
 echo "Set kernel parameters:"
 sysctl -w net.ipv4.ip_unprivileged_port_start=23 -w user.max_user_namespaces=28633 | tee /etc/sysctl.d/80-nethserver.conf
 if [[ ${distro} == "debian" ]]; then
     sysctl -w kernel.unprivileged_userns_clone=1 | tee -a /etc/sysctl.d/80-nethserver.conf
 fi
 
-INSTALL_DIR="/usr/local/share"
-AGENT_DIR="${INSTALL_DIR}/agent"
-
 echo "Extracting core sources:"
-cid=$(podman create ghcr.io/nethserver/core:${IMAGE_TAG:-latest})
-podman export ${cid} | tar -C ${INSTALL_DIR} -x -v -f -
+mkdir -pv /var/lib/nethserver/node/state
+cid=$(podman create ghcr.io/nethserver/core:latest)
+podman export ${cid} | tar -C / -x -v -f - | tee /var/lib/nethserver/node/state/image.lst
 podman rm -f ${cid}
 
-cp -f ${INSTALL_DIR}/etc/containers/containers.conf /etc/containers/containers.conf
-
-cp -f ${AGENT_DIR}/node-agent.service      /etc/systemd/system/node-agent.service
-cp -f ${AGENT_DIR}/redis.service           /etc/systemd/system/redis.service
-cp -f ${AGENT_DIR}/module-agent@.service   /etc/systemd/system/module-agent@.service
-cp -f ${AGENT_DIR}/module-init@.service    /etc/systemd/system/module-init@.service
-cp -f ${AGENT_DIR}/module-agent.service    /etc/systemd/user/module-agent.service
-cp -f ${AGENT_DIR}/module-init.service     /etc/systemd/user/module-init.service
-cp -f ${AGENT_DIR}/nethserver              /usr/local/bin/nethserver
-
-chmod a+x /usr/local/bin/nethserver
-
 if [[ ! -f ~/.ssh/id_rsa.pub ]] ; then
+    echo "Generating a new RSA key pair for SSH:"
     ssh-keygen -t rsa -N '' -f ~/.ssh/id_rsa
 fi
 
 echo "Adding id_rsa.pub to module skeleton dir:"
-install -d -m 700 /usr/local/share/module.skel/.ssh
-install -m 600 -T ~/.ssh/id_rsa.pub /usr/local/share/module.skel/.ssh/authorized_keys
+install -d -m 700 /etc/nethserver/skel/.ssh
+install -m 600 -T ~/.ssh/id_rsa.pub /etc/nethserver/skel/.ssh/authorized_keys
 
 echo "Setup agent:"
-python3 -mvenv ${AGENT_DIR}
-${AGENT_DIR}/bin/pip3 install redis
-
-echo "NODE_PREFIX=$(hostname -s)" > /usr/local/etc/node-agent.env
+agent_dir=/usr/local/nethserver/agent
+python3 -mvenv ${agent_dir}
+${agent_dir}/bin/pip3 install -U pip
+${agent_dir}/bin/pip3 install -r /etc/nethserver/pythonreq.txt
 
 echo "Setup registry:"
-if [[ ! -f /usr/local/etc/registry.json ]] ; then
-    echo '{"auths":{}}' > /usr/local/etc/registry.json
+if [[ ! -f /etc/nethserver/registry.json ]] ; then
+    echo '{"auths":{}}' > /etc/nethserver/registry.json
 fi
+
+echo "Generating WireGuard VPN key pair:"
+(umask 0077; wg genkey | tee /etc/nethserver/wg0.key | wg pubkey) | tee /etc/nethserver/wg0.pub
+
+echo "Generating API server SECRET:"
+(umask 0077; echo "SECRET=$(tr -dc '[:alnum:]' < /dev/urandom | dd bs=4 count=8 status=none)" >/etc/nethserver/api-server.env)
+
+echo "Pull core images":
+podman pull docker.io/redis:6-alpine
+
+echo "Start Redis DB and core agents:"
+systemctl enable --now redis
+
+# Drop and initialize the whole Redis DB. Just add the keys for the node bootstrap
+podman exec -i redis redis-cli >/dev/null <<EOF
+FLUSHALL
+MULTI
+HSET user/default cluster admin
+SADD cluster/roles/admin create-cluster add-node
+SET cluster/leader 1
+SET cluster/node_sequence 1
+HSET image/traefik name "Traefik edge proxy" rootfull 0 url ghcr.io/nethserver/traefik:latest
+LPUSH node/1/tasks '{"id":"add-traefik1","action":"add-module","data":"{\"image\":\"traefik\"}"}'
+EXEC
+EOF
+
+echo "Start API server and core agents:"
+echo "AGENT_ID=node/1" > /etc/nethserver/node.env
+systemctl enable --now api-server.service agent@cluster.service agent@node.service
+
+
+cat - <<EOF
+
+NethServer 8 scratchpad
+--------------------------------------------------------------------------
+
+Congratulations!
+
+This node is now ready to run as a single-node cluster instance of NS8
+
+
+A. To join this node to an alredy existing cluster run:
+
+      join-cluster <cluster_url>
+
+   For instance:
+
+      join-cluster https://admin:Nethesis,1234@cluster.example.com
+
+B. To initialize this node as a cluster leader run:
+
+      create-cluster <vpn_endpoint_address>:<vpn_endpoint_port> [vpn_cidr] [admin_password]
+
+   For instance:
+
+      create-custer $(hostname -f):55820 10.5.4.0/24 Nethesis,1234
+
+EOF
