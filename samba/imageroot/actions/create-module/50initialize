@@ -1,0 +1,33 @@
+#!/bin/bash
+
+#
+# Copyright (C) 2021 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
+set -e
+
+exec 1>&2 # Send any output to stderr, to not alter the action response protocol
+
+mid=$(basename ${AGENT_ID})
+
+install "${AGENT_INSTALL_DIR}/samba-dc.service" "/etc/systemd/system/${mid}.service"
+systemctl daemon-reload
+
+redis-exec HSET "${AGENT_ID}/environment" HOSTNAME "" SAMBA_IMAGE "" SAMBA_ARGS "" IPADDRESS "" PROVISION_TYPE "" NBDOMAIN "" ADMINPASS "" REALM ""
+redis-exec SADD "${AGENT_ID}/roles/admin" "create-module" "provision-domain"

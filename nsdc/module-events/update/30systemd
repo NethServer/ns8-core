@@ -1,6 +1,0 @@
-#!/bin/bash
-
-set -e
-
-# Restart the NSDC service
-exec systemctl restart "${MODULE_ID}.service"

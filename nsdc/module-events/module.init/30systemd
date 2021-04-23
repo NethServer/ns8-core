@@ -1,6 +1,0 @@
-#!/bin/bash
-
-set -e
-
-# Enable and start the NSDC service
-exec systemctl enable --now "${MODULE_ID}.service"
