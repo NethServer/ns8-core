@@ -73,8 +73,9 @@ systemctl enable --now redis
 podman exec -i redis redis-cli >/dev/null <<EOF
 FLUSHALL
 MULTI
-HSET user/default cluster admin
+HSET user/default cluster admin node/1 admin
 SADD cluster/roles/admin create-cluster add-node
+SADD node/1/roles/admin create-node add-module
 SET cluster/leader 1
 SET cluster/node_sequence 1
 HSET image/traefik name "Traefik edge proxy" rootfull 0 url ghcr.io/nethserver/traefik:latest
@@ -89,12 +90,12 @@ systemctl enable --now api-server.service agent@cluster.service agent@node.servi
 
 cat - <<EOF
 
-NethServer 8 scratchpad
+NethServer 8 Scratchpad
 --------------------------------------------------------------------------
 
 Congratulations!
 
-This node is now ready to run as a single-node cluster instance of NS8
+This node is now ready to run as a standalone instance of NS8 Scratchpad
 
 
 A. To join this node to an alredy existing cluster run:
