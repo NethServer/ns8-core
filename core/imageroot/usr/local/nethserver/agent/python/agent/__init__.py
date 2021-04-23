@@ -53,3 +53,8 @@ def run_helper(*args):
     proc = subprocess.run(args, stdout=sys.stderr)
     assert proc.returncode == 0
     return proc
+
+
+def set_env(redis, name, value)
+    fd = int(os.environ['AGENT_COMFD'])
+    os.write(fd, f'set-env {name}={value}\n')
