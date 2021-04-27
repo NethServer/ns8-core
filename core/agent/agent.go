@@ -21,14 +21,15 @@
 package main
 
 import (
-	"bytes"
 	"context"
+	"encoding/csv"
 	"encoding/json"
 	"io"
 	"log"
 	"os"
 	"os/exec"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/NethServer/ns8-scratchpad/core/api-server/models"
@@ -81,7 +82,7 @@ func getActionSteps(actionName string) ([]string, bool) {
 }
 
 func prepareActionEnvironment() []string {
-	env := os.Environ()
+	env := make([]string, 0)
 	key := agentPrefix + "/environment"
 	redisHash, err := rdb.HGetAll(ctx, key).Result()
 	if err == redis.Nil {
@@ -95,6 +96,45 @@ func prepareActionEnvironment() []string {
 		env = append(env, key+"="+value)
 	}
 	return env
+}
+
+// NOTE: This function is a copy of dedupEnvCase in go/exec module
+func dedupEnv(env []string) []string {
+	out := make([]string, 0, len(env))
+	saw := make(map[string]int, len(env)) // key => index into out
+	for _, kv := range env {
+		eq := strings.Index(kv, "=")
+		if eq < 0 {
+			out = append(out, kv)
+			continue
+		}
+		k := kv[:eq]
+		if dupIdx, isDup := saw[k]; isDup {
+			out[dupIdx] = kv
+			continue
+		}
+		saw[k] = len(out)
+		out = append(out, kv)
+	}
+	return out
+}
+
+// Transform the string array representing an environment
+// to a list of values for the redis.HSet variadic function
+func exportToRedis(env []string) []interface{} {
+	out := make([]interface{}, len(env)*2)
+	for i, kv := range env {
+		j := i * 2
+		eq := strings.Index(kv, "=")
+		if eq < 0 {
+			out[j] = kv
+			out[j+1] = ""
+		} else {
+			out[j] = kv[:eq]
+			out[j+1] = kv[eq+1:]
+		}
+	}
+	return out
 }
 
 func runAction(task *models.Task) {
@@ -125,30 +165,57 @@ func runAction(task *models.Task) {
 
 	// Get additional environment variables from Redis DB and
 	// other runtime sources
-	environment := prepareActionEnvironment()
+	environment := dedupEnv(prepareActionEnvironment())
 
 	for _, step := range actionSteps {
+		// Create a pipe to read control commands from action steps
+		comReadFd, comWriteFd, _ := os.Pipe()
+
 		cmd := exec.Command(step)
-		cmd.Env = environment
-		cmd.Stdin = bytes.NewBufferString(task.Data)
+		cmd.Env = append(append(os.Environ(), environment...),
+			"AGENT_COMFD=3", // 3 is the additional FD number where the action step can write its commands for us
+			"AGENT_TASK_ID=" + task.ID,
+			"AGENT_TASK_ACTION=" + task.Action,
+		)
+		cmd.Stdin = strings.NewReader(task.Data)
+		cmd.ExtraFiles = []*os.File{comWriteFd}
 
-		stderrReader, _ := cmd.StderrPipe()
 		stdoutReader, _ := cmd.StdoutPipe()
+		// Copy the command stderr to our stderr stream with a pipe tee
+		stderrReader, _ := cmd.StderrPipe()
+		stderrReader = io.NopCloser(io.TeeReader(stderrReader, os.Stderr))
 
-		stderrChannel := make(chan string)
 		go func() {
-			// Copy the command stderr to our stderr stream with a pipe tee
-			r := io.TeeReader(stderrReader, os.Stderr)
-			qb, _ := io.ReadAll(r)
-			stderrChannel <- string(qb)
-			close(stderrChannel)
+			bytes, _ := io.ReadAll(stderrReader)
+			actionError = string(bytes)
 		}()
 
-		stdoutChannel := make(chan string)
 		go func() {
-			qb, _ := io.ReadAll(stdoutReader)
-			stdoutChannel <- string(qb)
-			close(stdoutChannel)
+			bytes, _ := io.ReadAll(stdoutReader)
+			actionOutput = string(bytes)
+		}()
+
+		go func() {
+			// Read the commands FD line by line, parse and execute the command
+			rdr := csv.NewReader(comReadFd)
+			rdr.Comma = ' '
+			rdr.FieldsPerRecord = 3
+			for {
+				record, err := rdr.Read()
+				if err == io.EOF {
+					return
+				}
+				if err != nil {
+					log.Printf("[ERROR] Parse error: %v", err)
+					continue
+				}
+				switch cmd := record[0]; cmd {
+				case "set-env":
+					environment = append(environment, record[1]+"="+record[2])
+				default:
+					log.Printf("[ERROR] Unknown command %s", cmd)
+				}
+			}
 		}()
 
 		if err := cmd.Start(); err != nil {
@@ -156,13 +223,9 @@ func runAction(task *models.Task) {
 			break
 		}
 
-		// Block until stderr and stdout are closed
-		select {
-		case buf := <-stderrChannel:
-			actionError = buf
-		case buf := <-stdoutChannel:
-			actionOutput = buf
-		}
+		// standard FD are closed by Start. Our extra FD for commands must be closed manually
+		// otherwise it blocks our thread.
+		comWriteFd.Close()
 
 		// It is safe to Wait() after the select{} finishes to consume the pipes input.
 		if err := cmd.Wait(); err != nil {
@@ -170,10 +233,16 @@ func runAction(task *models.Task) {
 			log.Printf("[ERROR] Action %s terminated with errors at step %s: %v", task.Action, step, err)
 			break
 		}
+
+		environment = dedupEnv(environment)
 	}
 
-	// Publish the action response
 	rdb.Pipelined(ctx, func(pipe redis.Pipeliner) error {
+		// Persist the environment
+		if exitCode == 0 {
+			pipe.HSet(ctx, agentPrefix+"/environment", exportToRedis(environment)...)
+		}
+		// Publish the action response
 		pipe.Set(ctx, outputKey, actionOutput, taskExpireDuration)
 		pipe.Set(ctx, errorKey, actionError, taskExpireDuration)
 		pipe.Set(ctx, exitCodeKey, exitCode, taskExpireDuration)
@@ -221,7 +290,7 @@ func main() {
 		var task models.Task
 		rdb.Do(ctx, "CLIENT", "SETNAME", agentPrefix).Result()
 
-		result, err := rdb.BLPop(ctx, pollingDuration, queueName).Result()
+		result, err := rdb.BRPop(ctx, pollingDuration, queueName).Result()
 		if err == redis.Nil {
 			continue
 		} else if err != nil {
