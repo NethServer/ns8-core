@@ -23,6 +23,12 @@ import os
 import subprocess
 import sys
 
+__all__ = [
+    "redis_connect",
+    "run_helper",
+    "set_env",
+]
+
 def redis_connect():
     """Connect to the Redis DB with the right credentials
     """
@@ -55,6 +61,6 @@ def run_helper(*args):
     return proc
 
 
-def set_env(redis, name, value)
+def set_env(name, value):
     fd = int(os.environ['AGENT_COMFD'])
-    os.write(fd, f'set-env {name}={value}\n')
+    os.write(fd, f'set-env {name} {value}\n'.encode('utf-8'))

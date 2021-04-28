@@ -5,3 +5,8 @@
 set -a
 source /etc/nethserver/agent.env
 set +a
+
+if [[ -d ~/.config/bin ]]; then
+    # Push rootless image binary path
+    pathmunge ~/.config/bin
+fi

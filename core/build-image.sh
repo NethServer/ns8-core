@@ -6,7 +6,7 @@ repobase="ghcr.io/nethserver"
 
 # Reuse existing gobuilder-core container, to speed up builds
 if ! buildah containers --format "{{.ContainerName}}" | grep -q gobuilder-core; then
-    buildah from --name gobuilder-core -v ${PWD}:/usr/src/core:Z golang:1.16-alpine
+    buildah from --name gobuilder-core -v ${PWD}:/usr/src/core:Z docker.io/library/golang:1.16-alpine
 fi
 
 # Build statically linked Go binaries based on Musl
