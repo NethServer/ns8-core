@@ -83,6 +83,9 @@ LPUSH node/1/tasks '{"id":"add-traefik1","action":"add-module","data":"{\"image\
 EXEC
 EOF
 
+# Load module images metadata. XXX this is a temporary implementation
+grep '^HSET image/' /var/lib/nethserver/cluster/state/images-catalog.txt | podman exec -i redis redis-cli >/dev/null
+
 echo "Start API server and core agents:"
 echo "AGENT_ID=node/1" > /etc/nethserver/node.env
 systemctl enable --now api-server.service agent@cluster.service agent@node.service
