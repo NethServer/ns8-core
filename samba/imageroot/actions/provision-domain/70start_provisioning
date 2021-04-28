@@ -24,6 +24,8 @@ set -e
 
 mid=$(basename ${AGENT_ID})
 
+source unit.env
+
 /usr/bin/podman run -ti \
     --dns=none \
     --no-hosts \
@@ -34,11 +36,12 @@ mid=$(basename ${AGENT_ID})
     --env ADMINUSER \
     --env NBDOMAIN \
     --env REALM \
+    --env IPADDRESS \
     --hostname=${HOSTNAME} \
     --rm --name="${mid}-provision" \
     --volume=${mid}-data:/var/lib/samba:Z \
     --volume=${mid}-config:/etc/samba:Z \
-    --volume=hosts:/etc/hosts:Z \
-    --volume=resolv.conf:/etc/resolv.conf:Z \
-    --volume=krb5.conf:/etc/krb5.conf:Z \
+    --volume=./hosts:/etc/hosts:Z \
+    --volume=./resolv.conf:/etc/resolv.conf:Z \
+    --volume=./krb5.conf:/etc/krb5.conf:Z \
     ${SAMBA_IMAGE} ${PROVISION_TYPE}

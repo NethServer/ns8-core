@@ -22,6 +22,6 @@
 
 cat >unit.env <<EOF
 HOSTNAME=${HOSTNAME}
-SAMBA_IMAGE=ghcr.io/NethServer/samba:latest
+SAMBA_IMAGE=ghcr.io/nethserver/samba:latest
 SAMBA_ARGS=${PROVISION_TYPE}
 EOF

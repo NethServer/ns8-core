@@ -26,8 +26,8 @@ exec 1>&2 # Send any output to stderr, to not alter the action response protocol
 
 mid=$(basename ${AGENT_ID})
 
-install "${AGENT_INSTALL_DIR}/samba-dc.service" "/etc/systemd/system/${mid}.service"
+install -m 644 "${AGENT_INSTALL_DIR}/samba-dc.service" "/etc/systemd/system/${mid}.service"
 systemctl daemon-reload
 
-redis-exec HSET "${AGENT_ID}/environment" HOSTNAME "" SAMBA_IMAGE "" SAMBA_ARGS "" IPADDRESS "" PROVISION_TYPE "" NBDOMAIN "" ADMINPASS "" REALM ""
-redis-exec SADD "${AGENT_ID}/roles/admin" "create-module" "provision-domain"
+# Configure roles
+redis-exec SADD "${AGENT_ID}/roles/admin" "provision-domain"

@@ -119,26 +119,33 @@ PUBLISH $(hostname -s):module.init ldapproxy0
 EOF
 ```
 
-### Nsdc
+### Samba
 
-The Nsdc module runs a singleton and rootfull Samba 4 DC instance.
+The Samba module runs a rootfull Samba 4 DC instance.
 
-- *Rootfull* because Samba needs special privileges to store ACLs in the filesystem extended attributes
-- *Singleton* because Samba services are bound to a host IP address to serve LAN clients, and 127.0.0.1
+Rootfull mode is required because Samba needs special privileges
+to store ACLs in the filesystem extended attributes.
 
-Initialize the Redis DB and start the installation with:
+Only one instance of Samba can run on a node because Samba services are bound
+to a host IP address to serve LAN clients, and 127.0.0.1
+
+Install with:
 
 ```
-podman run -i --network host --rm docker.io/redis:6-alpine redis-cli <<EOF
-HSET module/nsdc0/module.env EVENTS_IMAGE ghcr.io/nethserver/nsdc:latest NSDC_IMAGE ghcr.io/nethserver/nsdc:latest IPADDRESS 10.133.0.5 HOSTNAME nsdc1.$(hostname -d) NBDOMAIN AD REALM AD.$(hostname -d | tr a-z A-Z) ADMINPASS Nethesis,1234
-PUBLISH $(hostname -s):module-rootfull.init nsdc0
-EOF
+install-module samba
+```
+
+If the module gets id `samba1`, start the provisioning procedure like:
+
+```
+IPADDRESS=10.133.0.2 PROVISION_TYPE=new-domain ADMINUSER=administrator ADMINPASS=Nethesis,1234 REALM=AD.DP.NETHSERVER.NET NBDOMAIN=AD HOSTNAME=dc1.ad.dp.nethserver.net /var/lib/nethserver/samba1/root/bin/provision-domain
 ```
 
 The DC storage is persisted to the following Podman local volumes:
 
-- nsdc0-data
-- nsdc0-config
+- samba1-data
+- samba1-config
+
 
 ### VPN
 

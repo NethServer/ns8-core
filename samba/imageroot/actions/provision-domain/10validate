@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 #
 # Copyright (C) 2021 Nethesis S.r.l.
@@ -22,13 +22,14 @@
 
 import agent
 import json
+import sys
 
 request = json.load(sys.stdin)
 
 adminuser = request['adminuser']
 adminpass = request['adminpass']
 realm = request['realm']
-ipaddr = request['ipaddr']
+ipaddress = request['ipaddress']
 hostname = request['hostname']
 nbdomain = request['nbdomain']
 provision_type = request['provision_type']
