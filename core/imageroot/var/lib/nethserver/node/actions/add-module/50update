@@ -62,9 +62,8 @@ if is_rootfull:
     # Create the module dirs structure
     os.mkdir(f'/var/lib/nethserver/{module_id}/')
     os.mkdir(f'/var/lib/nethserver/{module_id}/state', mode=0o700)
-    os.mkdir(f'/var/lib/nethserver/{module_id}/root')
     # Extract the module imageroot
-    os.chdir(f'/var/lib/nethserver/{module_id}/root')
+    os.chdir(f'/var/lib/nethserver/{module_id}')
     redis_sha256 = save_agent_env(module_id)
     agent.run_helper('extract-image', image['url'])
     # Start the module agent

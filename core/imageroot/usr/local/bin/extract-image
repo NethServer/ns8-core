@@ -31,5 +31,5 @@ imageroot=$(podman inspect ${cid} -f '{{index .Config.Labels "org.nethserver.ima
 stripcount=$(awk -F/ '{ print NF }' <<<"${imageroot}")
 
 echo "[NOTICE] Extracting container filesystem ${imageroot:-/} to ${PWD}"
-podman export ${cid} | tar -x -v -f - --strip-components=${stripcount} ${imageroot}
+podman export ${cid} | tar -x -v -f - --exclude-caches-under --strip-components=${stripcount} ${imageroot}
 chown -cR --reference=. .

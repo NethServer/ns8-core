@@ -290,5 +290,5 @@ EOF
 The `uninstall.sh` script attempts to stop and erase core components and
 additional modules. Handle it with care because it erases everything under `/home/*`!
 
-    bash /var/lib/nethserver/node/root/uninstall.sh
+    bash /var/lib/nethserver/node/uninstall.sh
 

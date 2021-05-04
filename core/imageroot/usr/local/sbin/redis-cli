@@ -20,13 +20,12 @@
 # along with NethServer.  If not, see COPYING.
 #
 
-# XXX temporary implementation!!!
+if [[ -t 0 ]]; then
+    with_tty=1
+fi
 
-image=${1:?missing image argument}
-node_id=${2:-1}
+source /etc/nethserver/cluster.env
 
-redis-cli <<EOF
-LPUSH cluster/tasks '{"id":"$(uuidgen)","action":"add-module","data":"{\"image\":\"${image}\",\"node\":\"${node_id}\"}"}'
-EOF
+export REDISCLI_AUTH="${REDIS_PASSWORD}"
 
-echo "[NOTICE] 'add-module' task queued. Now run journalctl to check the installation outcome."
+exec podman exec -e REDISCLI_AUTH -i ${with_tty:+-t} redis redis-cli --user cluster "${@}" 
