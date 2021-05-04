@@ -31,6 +31,7 @@ import (
 	"sort"
 	"strings"
 	"time"
+	"path"
 
 	"github.com/NethServer/ns8-scratchpad/core/api-server/models"
 	"github.com/go-redis/redis/v8"
@@ -218,6 +219,7 @@ func runAction(task *models.Task) {
 			}
 		}()
 
+		log.Printf("%s/task/%s: %s/%s is starting", agentPrefix, task.ID, task.Action, path.Base(step))
 		if err := cmd.Start(); err != nil {
 			log.Printf("[ERROR] Action %s startup error at step %s: %v", task.Action, step, err)
 			break
@@ -237,9 +239,9 @@ func runAction(task *models.Task) {
 		environment = dedupEnv(environment)
 	}
 
-	rdb.Pipelined(ctx, func(pipe redis.Pipeliner) error {
+	_, err := rdb.Pipelined(ctx, func(pipe redis.Pipeliner) error {
 		// Persist the environment
-		if exitCode == 0 {
+		if exitCode == 0 && len(environment) > 0 {
 			pipe.HSet(ctx, agentPrefix+"/environment", exportToRedis(environment)...)
 		}
 		// Publish the action response
@@ -249,6 +251,9 @@ func runAction(task *models.Task) {
 		pipe.Publish(ctx, progressChannel, `{"status":"finished","progress":100}`)
 		return nil
 	})
+	if err != nil {
+		log.Printf("[ERROR] Redis command failed: ", err)
+	}
 }
 
 func main() {
@@ -266,11 +271,11 @@ func main() {
 	}
 
 	// If we have a REDIS_PASSWORD the default redis username is the agentPrefix string
-	// The default user name can be overridden by the REDIS_USERNAME environment variable
+	// The default user name can be overridden by the REDIS_USER environment variable
 	redisUsername := ""
 	redisPassword := os.Getenv("REDIS_PASSWORD")
 	if redisPassword != "" {
-		redisUsername = os.Getenv("REDIS_USERNAME")
+		redisUsername = os.Getenv("REDIS_USER")
 		if redisUsername == "" {
 			redisUsername = agentPrefix
 		}
