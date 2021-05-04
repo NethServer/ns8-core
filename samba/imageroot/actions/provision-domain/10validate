@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env python3
 
 #
 # Copyright (C) 2021 Nethesis S.r.l.
@@ -20,16 +20,23 @@
 # along with NethServer.  If not, see COPYING.
 #
 
-image=${1:?missing image URL argument}
+import agent
+import json
+import sys
 
-set -e
+request = json.load(sys.stdin)
 
-cid=$(podman create ${image})
-trap "podman rm ${cid}" EXIT
+adminuser = request['adminuser']
+adminpass = request['adminpass']
+realm = request['realm']
+ipaddress = request['ipaddress']
+hostname = request['hostname']
+nbdomain = request['nbdomain']
+provision_type = request['provision_type']
 
-imageroot=$(podman inspect ${cid} -f '{{index .Config.Labels "org.nethserver.imageroot"}}' | sed -r 's#(^/|/$)##')
-stripcount=$(awk -F/ '{ print NF }' <<<"${imageroot}")
 
-echo "[NOTICE] Extracting container filesystem ${imageroot:-/} to ${PWD}"
-podman export ${cid} | tar -x -v -f - --exclude-caches-under --strip-components=${stripcount} ${imageroot}
-chown -cR --reference=. .
+# XXX do some effective validation
+
+for k in request:
+    # Store in the action environment for subsequent steps:
+    agent.set_env(k.upper(), request[k])

@@ -20,16 +20,28 @@
 # along with NethServer.  If not, see COPYING.
 #
 
-image=${1:?missing image URL argument}
-
 set -e
 
-cid=$(podman create ${image})
-trap "podman rm ${cid}" EXIT
+mid=$(basename ${AGENT_ID})
 
-imageroot=$(podman inspect ${cid} -f '{{index .Config.Labels "org.nethserver.imageroot"}}' | sed -r 's#(^/|/$)##')
-stripcount=$(awk -F/ '{ print NF }' <<<"${imageroot}")
+source unit.env
 
-echo "[NOTICE] Extracting container filesystem ${imageroot:-/} to ${PWD}"
-podman export ${cid} | tar -x -v -f - --exclude-caches-under --strip-components=${stripcount} ${imageroot}
-chown -cR --reference=. .
+/usr/bin/podman run -ti \
+    --dns=none \
+    --no-hosts \
+    --network=host \
+    --cap-drop=all \
+    --cap-add=chown,dac_override,dac_read_search,fowner,setgid,setuid,sys_admin \
+    --env ADMINPASS \
+    --env ADMINUSER \
+    --env NBDOMAIN \
+    --env REALM \
+    --env IPADDRESS \
+    --hostname=${HOSTNAME} \
+    --rm --name="${mid}-provision" \
+    --volume=${mid}-data:/var/lib/samba:Z \
+    --volume=${mid}-config:/etc/samba:Z \
+    --volume=./hosts:/etc/hosts:Z \
+    --volume=./resolv.conf:/etc/resolv.conf:Z \
+    --volume=./krb5.conf:/etc/krb5.conf:Z \
+    ${SAMBA_IMAGE} ${PROVISION_TYPE}

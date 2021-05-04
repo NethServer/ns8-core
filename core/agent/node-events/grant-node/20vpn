@@ -9,30 +9,33 @@ VPN_CONFIG=$VPN_OUT_DIR/wg0.conf
 
 hostname=$(hostname -s)
 
-# Load VPN config variables
-source <(redis-hgetall "node/${hostname}/vpn")
+( # import the variables in a subshell to avoid dirty vars
+    # Load VPN config variables
+    source <(redis-hgetall "node/${hostname}/vpn")
 
-# Generate VPN configuration
-cat > $VPN_CONFIG << EOF
+    # Generate VPN configuration
+    cat > $VPN_CONFIG << EOF
 [Interface]
 Address = $IP_ADDRESS/24
 PrivateKey = $(cat $VPN_OUT_DIR/privatekey)
 ListenPort = $LISTEN_PORT
 EOF
+)
 
 for ck in $(podman run -i --network host --rm docker.io/redis:6-alpine redis-cli KEYS node/*/vpn)
 do
     if [ "$ck" == "node/$hostname/vpn" ]; then
         continue
     fi
-    source <(redis-hgetall "${ck}")
-    cat >> $VPN_CONFIG <<EOF
+    ( # import the variables in a subshell to avoid dirty vars
+        source <(redis-hgetall "${ck}")
+        cat >> $VPN_CONFIG <<EOF
 
 [Peer]
 PublicKey = $PUBLIC_KEY
-AllowedIPs = $IP_ADDRESS/24
+AllowedIPs = ${IP_ADDRESS}${ROUTES:+,}${ROUTES}
 EOF
-
+    )
 done
 
 systemctl restart wg-quick@wg0

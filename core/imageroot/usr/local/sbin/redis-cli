@@ -20,16 +20,14 @@
 # along with NethServer.  If not, see COPYING.
 #
 
-image=${1:?missing image URL argument}
-
 set -e
 
-cid=$(podman create ${image})
-trap "podman rm ${cid}" EXIT
+if [[ -t 0 ]]; then
+    with_tty=1
+fi
 
-imageroot=$(podman inspect ${cid} -f '{{index .Config.Labels "org.nethserver.imageroot"}}' | sed -r 's#(^/|/$)##')
-stripcount=$(awk -F/ '{ print NF }' <<<"${imageroot}")
+source /var/lib/nethserver/cluster/state/agent.env
 
-echo "[NOTICE] Extracting container filesystem ${imageroot:-/} to ${PWD}"
-podman export ${cid} | tar -x -v -f - --exclude-caches-under --strip-components=${stripcount} ${imageroot}
-chown -cR --reference=. .
+export REDISCLI_AUTH="${REDIS_PASSWORD}"
+
+exec podman exec -e REDISCLI_AUTH -i ${with_tty:+-t} redis redis-cli --user cluster "${@}" 

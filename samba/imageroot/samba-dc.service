@@ -1,0 +1,37 @@
+[Unit]
+Description=Samba AD Domain Controller
+
+[Service]
+Type=forking
+Environment=PODMAN_SYSTEMD_UNIT=%n
+EnvironmentFile=/var/lib/nethserver/%N/state/unit.env
+Restart=on-failure
+TimeoutStopSec=70
+# samba exits with 127 on SIGTERM:
+SuccessExitStatus=127
+ExecStartPre=/bin/rm -f %t/%N.pid %t/%N.cid
+ExecStart=/usr/bin/podman run \
+    --dns=none \
+    --no-hosts \
+    --detach \
+    --conmon-pidfile %t/%N.pid \
+    --cidfile %t/%N.cid \
+    --cgroups=no-conmon \
+    --network=host \
+    --cap-drop=all \
+    --cap-add=chown,dac_override,dac_read_search,fowner,setgid,setuid,sys_admin \
+    --hostname=${HOSTNAME} \
+    --replace --name=%N \
+    --volume=%N-data:/var/lib/samba:Z \
+    --volume=%N-config:/etc/samba:Z \
+    --volume=./hosts:/etc/hosts:Z \
+    --volume=./resolv.conf:/etc/resolv.conf:Z \
+    --volume=./krb5.conf:/etc/krb5.conf:Z \
+    ${SAMBA_IMAGE} run-dc
+ExecStop=/usr/bin/podman stop --ignore --cidfile %t/%N.cid -t 10
+ExecStopPost=/usr/bin/podman rm --ignore -f --cidfile %t/%N.cid
+PIDFile=%t/%N.pid
+WorkingDirectory=/var/lib/nethserver/%N/state
+
+[Install]
+WantedBy=default.target

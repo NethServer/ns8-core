@@ -26,7 +26,7 @@ elif [[ ${distro} == "debian" ]]; then
 fi
 
 echo "Set kernel parameters:"
-sysctl -w net.ipv4.ip_unprivileged_port_start=23 -w user.max_user_namespaces=28633 | tee /etc/sysctl.d/80-nethserver.conf
+sysctl -w net.ipv4.ip_unprivileged_port_start=23 -w user.max_user_namespaces=28633 -w net.ipv4.ip_forward=1 | tee /etc/sysctl.d/80-nethserver.conf
 if [[ ${distro} == "debian" ]]; then
     sysctl -w kernel.unprivileged_userns_clone=1 | tee -a /etc/sysctl.d/80-nethserver.conf
 fi
@@ -57,34 +57,64 @@ if [[ ! -f /etc/nethserver/registry.json ]] ; then
     echo '{"auths":{}}' > /etc/nethserver/registry.json
 fi
 
-echo "Generating WireGuard VPN key pair:"
+echo "Generate WireGuard VPN key pair:"
 (umask 0077; wg genkey | tee /etc/nethserver/wg0.key | wg pubkey) | tee /etc/nethserver/wg0.pub
 
-echo "Generating API server SECRET:"
-(umask 0077; echo "SECRET=$(tr -dc '[:alnum:]' < /dev/urandom | dd bs=4 count=8 status=none)" >/etc/nethserver/api-server.env)
-
-echo "Pull core images":
-podman pull docker.io/redis:6-alpine
-
-echo "Start Redis DB and core agents:"
+echo "Start Redis DB:"
 systemctl enable --now redis
 
-# Drop and initialize the whole Redis DB. Just add the keys for the node bootstrap
-podman exec -i redis redis-cli >/dev/null <<EOF
-FLUSHALL
-MULTI
-HSET user/default cluster admin node/1 admin
-SADD cluster/roles/admin create-cluster add-node
-SADD node/1/roles/admin create-node add-module
+echo "Generating cluster password:"
+cluster_password=$(podman exec redis redis-cli ACL GENPASS)
+cluster_pwhash=$(echo -n "${cluster_password}" | sha256sum | awk '{print $1}')
+(umask 0077; exec >/var/lib/nethserver/cluster/state/agent.env
+    printf "AGENT_ID=cluster\n"
+    printf "REDIS_PASSWORD=%s\n" "${cluster_password}"
+    printf "REDIS_ADDRESS=127.0.0.1:6379\n" # Force connection to local redis instance
+)
+
+echo "Generating api-server password:"
+apiserver_password=$(podman exec redis redis-cli ACL GENPASS)
+apiserver_pwhash=$(echo -n "${apiserver_password}" | sha256sum | awk '{print $1}')
+(umask 0077; exec >/etc/nethserver/api-server.env
+    printf "REDIS_PASSWORD=%s\n" "${apiserver_password}"
+    printf "REDIS_USER=api-server\n"
+    printf "REDIS_ADDRESS=127.0.0.1:6379\n" # Force connection to local redis instance
+)
+
+echo "Generating node password:"
+node_password=$(podman exec redis redis-cli ACL GENPASS)
+node_pwhash=$(echo -n "${node_password}" | sha256sum | awk '{print $1}')
+(umask 0077; exec >/var/lib/nethserver/node/state/agent.env
+    printf "AGENT_ID=node/1\n"
+    printf "REDIS_PASSWORD=%s\n" "${node_password}"
+)
+
+(
+    # Add the keys for the cluster bootstrap
+    cat <<EOF
+SADD cluster/roles/admin add-module
 SET cluster/leader 1
 SET cluster/node_sequence 1
-HSET image/traefik name "Traefik edge proxy" rootfull 0 url ghcr.io/nethserver/traefik:latest
-LPUSH node/1/tasks '{"id":"add-traefik1","action":"add-module","data":"{\"image\":\"traefik\"}"}'
-EXEC
+LPUSH cluster/tasks '{"id":"addtraef-ik1x-xxxx-xxxx-xxxxxxxxxxxx","action":"add-module","data":"{\"image\":\"traefik\",\"node\":\"1\"}"}'
 EOF
 
+    # Load module images metadata. XXX this is a temporary implementation
+    grep '^HSET image/' /var/lib/nethserver/cluster/state/images-catalog.txt
+
+    # Setup initial ACLs
+    cat <<EOF
+ACL SETUSER cluster ON #${cluster_pwhash} ~* &* +@all
+AUTH cluster "${cluster_password}"
+ACL SETUSER default ON nopass ~* &* nocommands +@read +@connection
+ACL SETUSER api-server ON #${apiserver_pwhash} ~* &* nocommands +@read +@pubsub +lpush +@transaction +@connection
+ACL SETUSER node/1 ON #${node_pwhash} resetkeys ~node/1/* resetchannels &progress/task/* nocommands +@read +@write +@transaction +@connection +publish +psync +replconf +ping
+ACL SAVE
+SAVE
+EOF
+
+) | podman exec -i redis redis-cli
+
 echo "Start API server and core agents:"
-echo "AGENT_ID=node/1" > /etc/nethserver/node.env
 systemctl enable --now api-server.service agent@cluster.service agent@node.service
 
 

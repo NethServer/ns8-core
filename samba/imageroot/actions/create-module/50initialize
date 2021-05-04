@@ -20,16 +20,14 @@
 # along with NethServer.  If not, see COPYING.
 #
 
-image=${1:?missing image URL argument}
-
 set -e
 
-cid=$(podman create ${image})
-trap "podman rm ${cid}" EXIT
+exec 1>&2 # Send any output to stderr, to not alter the action response protocol
 
-imageroot=$(podman inspect ${cid} -f '{{index .Config.Labels "org.nethserver.imageroot"}}' | sed -r 's#(^/|/$)##')
-stripcount=$(awk -F/ '{ print NF }' <<<"${imageroot}")
+mid=$(basename ${AGENT_ID})
 
-echo "[NOTICE] Extracting container filesystem ${imageroot:-/} to ${PWD}"
-podman export ${cid} | tar -x -v -f - --exclude-caches-under --strip-components=${stripcount} ${imageroot}
-chown -cR --reference=. .
+install -m 644 "${AGENT_INSTALL_DIR}/samba-dc.service" "/etc/systemd/system/${mid}.service"
+systemctl daemon-reload
+
+# Configure roles
+redis-exec SADD "${AGENT_ID}/roles/admin" "provision-domain"

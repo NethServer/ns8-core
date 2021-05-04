@@ -21,59 +21,64 @@
 #
 
 import os
-import subprocess
 import sys
 import json
 import agent
+import uuid
+import hashlib
 
-r = agent.redis_connect() 
+def save_agent_env(module_id):
+    """Generate and persist the Redis password for module_id
+    """
+    oldmask = os.umask(0o77)
+    redis_password = str(uuid.uuid4())
+    with open('state/agent.env', 'w') as agentenv:
+        agentenv.write(f'REDIS_USER=module/{module_id}\n')
+        agentenv.write(f'REDIS_PASSWORD={redis_password}\n')
+    os.umask(oldmask)
+    return hashlib.sha256(redis_password.encode()).hexdigest()
 
-agent_id = os.getenv('AGENT_ID', 'agent_id_not_set')
 request = json.load(sys.stdin)
 image_id = request['image']
+module_id = request['module']
 
-# Retrieve the image attributes from Redis DB. Is it the image for a rootfull module?
-image = r.hgetall(f'image/{image_id}')
-is_rootfull = image.get('rootfull', "0") == "1"
-
-# Increment the module sequence for image_id (e.g. traefik => traefik1)
-module_id = image_id + str(r.incr(f'cluster/module_sequence/{image_id}'))
-
-r.hset(f'module/{module_id}', mapping={
-    "image": image_id,
-    "image_url_override": "",
-    "public_key": "",
-    "node": agent_id,
-})
+# Read from DB the rootfull flag state:
+with agent.redis_connect() as ro:
+    image = ro.hgetall(f'image/{image_id}')
+    is_rootfull = image.get('rootfull', "0") == "1"
+    assert image['url']
 
 # Push the creation task for the new module. Its agent will pick up it during the first boot. 
-r.lpush(f'module/{module_id}/tasks', json.dumps({
-    "id": f"{agent_id.replace('/', '-')}-add-module-{module_id}",
-    "action": "create-module",
-    "data": "",
-}))
+with agent.redis_connect(privileged=True) as rw:
+    subtask_id = str(uuid.uuid4())
+    rw.lpush(f'module/{module_id}/tasks', json.dumps({
+        "id": subtask_id,
+        "action": "create-module",
+        "data": "",
+    }))
 
 # Launch the module agent (async)
 if is_rootfull:
     # Create the module dirs structure
     os.mkdir(f'/var/lib/nethserver/{module_id}/')
     os.mkdir(f'/var/lib/nethserver/{module_id}/state', mode=0o700)
-    os.mkdir(f'/var/lib/nethserver/{module_id}/root')
     # Extract the module imageroot
-    os.chdir(f'/var/lib/nethserver/{module_id}/root')
+    os.chdir(f'/var/lib/nethserver/{module_id}')
+    redis_sha256 = save_agent_env(module_id)
     agent.run_helper('extract-image', image['url'])
     # Start the module agent
     agent.run_helper('systemctl', 'enable', '--now', f'agent@{module_id}.service')
 else: # rootless
     # Create the module dirs structure
     agent.run_helper('useradd', '-m', '-k', '/etc/nethserver/skel', '-s', '/bin/bash', module_id)
-    # Extract the module imageroot
     os.chdir(f'/home/{module_id}/.config')
+    redis_sha256 = save_agent_env(module_id)
+    # Extract the module imageroot and fix CWD permissions recursively
     agent.run_helper('extract-image', image['url'])
     # Start the module agent
     agent.run_helper('loginctl', 'enable-linger', module_id)
 
 json.dump({
-    "id":module_id,
-    "key":f"module/{module_id}"
+    "redis_sha256":redis_sha256,
+    "subtask":subtask_id,
 }, sys.stdout)

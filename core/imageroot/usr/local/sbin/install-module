@@ -20,16 +20,13 @@
 # along with NethServer.  If not, see COPYING.
 #
 
-image=${1:?missing image URL argument}
+# XXX temporary implementation!!!
 
-set -e
+image=${1:?missing image argument}
+node_id=${2:-1}
 
-cid=$(podman create ${image})
-trap "podman rm ${cid}" EXIT
+redis-cli <<EOF
+LPUSH cluster/tasks '{"id":"$(uuidgen)","action":"add-module","data":"{\"image\":\"${image}\",\"node\":\"${node_id}\"}"}'
+EOF
 
-imageroot=$(podman inspect ${cid} -f '{{index .Config.Labels "org.nethserver.imageroot"}}' | sed -r 's#(^/|/$)##')
-stripcount=$(awk -F/ '{ print NF }' <<<"${imageroot}")
-
-echo "[NOTICE] Extracting container filesystem ${imageroot:-/} to ${PWD}"
-podman export ${cid} | tar -x -v -f - --exclude-caches-under --strip-components=${stripcount} ${imageroot}
-chown -cR --reference=. .
+echo "[NOTICE] 'add-module' task queued. Now run journalctl to check the installation outcome."

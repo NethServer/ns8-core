@@ -36,7 +36,7 @@ trap "podman stop redis && podman rm redis" EXIT
 
 podman exec -i redis redis-cli <<EOF
 HSET t/environment MYVARIABLE MYVALUE
-LPUSH t/tasks '{"id":"t","action":"test","data":""}'
+LPUSH t/tasks '{"id":"t","action":"test","data":"INPUT"}'
 EOF
 
 ./agent t . &

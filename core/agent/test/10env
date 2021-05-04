@@ -1,5 +1,0 @@
-#!/bin/bash
-
-env 1>&2
-echo '{"status":"success"}'
-

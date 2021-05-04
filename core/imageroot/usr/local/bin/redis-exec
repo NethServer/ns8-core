@@ -23,7 +23,7 @@
 import sys
 import agent
 
-r = agent.redis_connect()
+r = agent.redis_connect(privileged=True)
 
 if len(sys.argv) > 1:
     response = r.execute_command(*sys.argv[1:])

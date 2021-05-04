@@ -1,0 +1,7 @@
+#
+# List of commands for Redis DB initialization of image/* keys
+#
+# Any line not beginning with "HSET image/" is discarded
+#
+HSET image/traefik    rootfull 0 url ghcr.io/nethserver/traefik:latest      name "Traefik edge proxy"
+HSET image/samba      rootfull 1 url ghcr.io/nethserver/samba:latest        name "Samba file server and Active Directory domain controller"
