@@ -20,7 +20,7 @@ for userhome in /home/*; do
 done
 
 echo "[NOTICE] Stopping the core services"
-systemctl disable --now api-server.service agent@{cluster,node}.service redis.service wg-quick@wg0
+systemctl disable --now api-server.service redis.service wg-quick@wg0
 
 echo "[NOTICE] Uninstalling the core image files"
 (
@@ -31,10 +31,19 @@ echo "[NOTICE] Uninstalling the core image files"
         echo ${image_entry} >> $tmp_dirlist
         continue
     fi
-    
+
     [[ -e ${image_entry} ]] && rm -vf ${image_entry}
   done
 ) </var/lib/nethserver/node/state/image.lst
+
+for modulehome in /var/lib/nethserver/*; do
+    if [[ ! -d ${modulehome} ]]; then
+      continue
+    fi
+    moduleid=$(basename $modulehome)
+    echo "[NOTICE] Deleting rootfull module ${moduleid}..."
+    systemctl disable --now agent@${moduleid} && rm -rf "${modulehome}"
+done
 
 echo "[NOTICE] Some files may be left in the following directories:"
 cat ${tmp_dirlist}

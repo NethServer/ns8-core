@@ -37,7 +37,7 @@ The core is composed also by the following components:
 
 Once the core has been initialized, you can access Redis with one of the following command:
 
-    # podman exec -ti redis redis-cli <<EOF
+    # redis-cli <<EOF
     PING
     EOF
 
@@ -138,7 +138,7 @@ install-module samba
 If the module gets id `samba1`, start the provisioning procedure like:
 
 ```
-IPADDRESS=10.133.0.2 PROVISION_TYPE=new-domain ADMINUSER=administrator ADMINPASS=Nethesis,1234 REALM=AD.DP.NETHSERVER.NET NBDOMAIN=AD HOSTNAME=dc1.ad.dp.nethserver.net /var/lib/nethserver/samba1/root/bin/provision-domain
+IPADDRESS=10.133.0.2 PROVISION_TYPE=new-domain ADMINUSER=administrator ADMINPASS=Nethesis,1234 REALM=AD.DP.NETHSERVER.NET NBDOMAIN=AD HOSTNAME=dc1.ad.dp.nethserver.net /var/lib/nethserver/samba1/bin/provision-domain
 ```
 
 The DC storage is persisted to the following Podman local volumes:

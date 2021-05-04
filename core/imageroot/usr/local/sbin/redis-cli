@@ -20,11 +20,13 @@
 # along with NethServer.  If not, see COPYING.
 #
 
+set -e
+
 if [[ -t 0 ]]; then
     with_tty=1
 fi
 
-source /etc/nethserver/cluster.env
+source /var/lib/nethserver/cluster/state/agent.env
 
 export REDISCLI_AUTH="${REDIS_PASSWORD}"
 

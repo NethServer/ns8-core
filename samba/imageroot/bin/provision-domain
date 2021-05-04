@@ -65,8 +65,8 @@ else
     exit 1
 fi
 
-cat >/dev/tcp/127.0.0.1/6379 <<EOF
-LPUSH module/${MID:-samba1}/tasks '{"id":"provision-domain","action":"provision-domain","data":$(jq -R <<<"$taskdata")}'
+redis-cli <<EOF
+LPUSH module/${MID:-samba1}/tasks '{"id":"$(uuidgen)","action":"provision-domain","data":$(jq -R <<<"$taskdata")}'
 EOF
 
 echo "[NOTICE] 'provision-domain' task queued. Now run journalctl to check the installation outcome."

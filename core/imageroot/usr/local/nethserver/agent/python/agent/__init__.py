@@ -26,13 +26,6 @@ import uuid
 import time
 import json
 
-__all__ = [
-    "redis_connect",
-    "run_helper",
-    "set_env",
-    "slurp_file",
-]
-
 def redis_connect(privileged=False, decode_responses=True, **kwargs):
     """Connect to the Redis DB with the right credentials
     """
