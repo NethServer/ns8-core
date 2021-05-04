@@ -6,8 +6,6 @@ Documentation=https://github.com/NethServer/ns8-scratchpad
 Environment=PODMAN_SYSTEMD_UNIT=%n
 Restart=always
 TimeoutStopSec=70
-Environment="EXTRA_PARAMS=--protected-mode no --bind 127.0.0.1 ::1"
-EnvironmentFile=-/etc/nethserver/redis.env
 ExecStartPre=/bin/rm -f %t/redis.pid %t/redis.cid
 ExecStart=/usr/bin/podman run \
     --conmon-pidfile=%t/redis.pid \
@@ -17,9 +15,8 @@ ExecStart=/usr/bin/podman run \
     --replace --name redis \
     --network=host \
     --volume=redis-data:/data \
-    docker.io/redis:6-alpine \
-    --save 5 1 \
-    $EXTRA_PARAMS
+    ghcr.io/nethserver/redis:latest
+
 ExecStartPost=/usr/bin/bash -c "while ! exec 3<>/dev/tcp/127.0.0.1/6379; do sleep 1 ; done"
 ExecStop=/usr/bin/podman stop --ignore --cidfile %t/redis.cid -t 10
 ExecStopPost=/usr/bin/podman rm --ignore -f --cidfile %t/redis.cid
