@@ -1,0 +1,79 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2021 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
+import sys
+import json
+import agent
+
+request = json.load(sys.stdin)
+image_id = request['image']
+node_id = request['node']
+
+# Retrieve the image attributes from Redis DB. Is it the image for a rootfull module?
+r = agent.redis_connect(privileged=True)
+image = r.hgetall(f'image/{image_id}')
+assert image['url']
+
+# Increment the module sequence for image_id (e.g. traefik => traefik1)
+module_id = image_id + str(r.incr(f'cluster/module_sequence/{image_id}'))
+
+r.hset(f'module/{module_id}', mapping={
+    "image": image_id,
+    "image_url_override": "",
+    "redis_sha256": "",
+})
+
+# Grant the host node access to the new module
+r.execute_command('ACL SETUSER',
+                    f'node/{node_id}',
+                    f'~module/{module_id}/tasks')
+
+# Wait for the module host to set up the module environment: it
+# has to return us the module password hash
+exit_code, output, error = agent.run_subtask(r,
+    agent_prefix=f'node/{node_id}',
+    action='add-module',
+    input_obj={
+        "image": image_id,
+        "module": module_id
+    })
+assert exit_code == 0
+
+outobj=json.loads(output)
+
+r.hset(f'module/{module_id}', mapping={
+    "redis_sha256": outobj['redis_sha256'],
+})
+
+# Create a new Redis user for module_id and set the password and permissions
+r.execute_command('ACL SETUSER',
+                    f'module/{module_id}', 'ON',
+                    '#' + outobj['redis_sha256'],
+                    f'~module/{module_id}/*',
+                    'resetchannels', '&progress/task/*',
+                    '+@read', '+@write', '+@transaction', '+@connection', '+publish')
+
+# Persist ACLs to disk
+r.execute_command('ACL SAVE')
+
+print(output, sys.stdout)
+exit(exit_code)

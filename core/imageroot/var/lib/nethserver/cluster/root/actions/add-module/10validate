@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/bin/sh
 
 #
 # Copyright (C) 2021 Nethesis S.r.l.
@@ -20,22 +20,4 @@
 # along with NethServer.  If not, see COPYING.
 #
 
-import sys
-import agent
-
-r = agent.redis_connect(privileged=True)
-
-if len(sys.argv) > 1:
-    response = r.execute_command(*sys.argv[1:])
-    print(response)
-    exit(0)
-
-try:
-    while True:
-        line = input()
-        cmdargs = line.split(' ')
-        response = r.execute_command(*cmdargs)
-        print(response)
-except EOFError:
-    pass
-
+exit 0
