@@ -25,6 +25,8 @@ import sys
 import uuid
 import time
 import json
+import tempfile
+from envparse import env
 
 def redis_connect(privileged=False, decode_responses=True, **kwargs):
     """Connect to the Redis DB with the right credentials
@@ -33,8 +35,14 @@ def redis_connect(privileged=False, decode_responses=True, **kwargs):
     redis_port = os.getenv('REDIS_ADDRESS', '127.0.0.1:6379').split(':', 1)[1]
     if privileged:
         redis_username = os.getenv('REDIS_USER', os.getenv('AGENT_ID'))
-        assert redis_username
-        redis_password = os.environ['REDIS_PASSWORD'] # Fatal if missing!
+        if not redis_username:
+            print("redis_connect: REDIS_USER and AGENT_ID are not set in the environment!\n", sys.stderr)
+            # Try to parse the node agent environment as fallback:
+            env.read_envfile('/var/lib/nethserver/node/state/agent.env')
+            redis_username = env('AGENT_ID', default='default')
+            redis_password = env('REDIS_PASSWORD', default='nopass')
+        else:
+            redis_password = os.environ['REDIS_PASSWORD'] # Fatal if missing!
     else:
         redis_username = 'default'
         redis_password = 'nopass'
@@ -47,7 +55,7 @@ def redis_connect(privileged=False, decode_responses=True, **kwargs):
         password=redis_password,
         decode_responses=decode_responses,
             #  we assume Redis keys and value strings are encoded UTF-8. Enabling this
-            #  option implicitly converts to UTF-8 strings instead of binary strings 
+            #  option implicitly converts to UTF-8 strings instead of binary strings
             #  (e.g. {b'key': b'value'} != {'key':'value'})
         **kwargs
     )
@@ -55,7 +63,6 @@ def redis_connect(privileged=False, decode_responses=True, **kwargs):
 def run_helper(*args):
     """Run the command and assert the exit code is 0
 
-    If the exit code is non-zero raise an assertion error.
     The command output is redirected to stderr.
     """
     proc = subprocess.run(args, stdout=sys.stderr)
@@ -89,3 +96,40 @@ def run_subtask(redis_obj, agent_prefix, action, input_string="", input_obj=None
     output = redis_obj.get(f'{agent_prefix}/task/{task_id}/output')
     error = redis_obj.get(f'{agent_prefix}/task/{task_id}/error')
     return int(exit_code), output, error
+
+def save_wgconf(ipaddr, listen_port=55820, peers={}):
+
+    private_key = slurp_file('/etc/nethserver/wg0.key')
+    env.read_envfile('/var/lib/nethserver/node/state/agent.env')
+    node_prefix = env('AGENT_ID') # Required to skip the local node
+
+    oldmask = os.umask(0o77)
+    # Create a new file beside our target file path:
+    wgconf = open('/etc/wireguard/wg0.conf.new', 'w')
+    os.umask(oldmask)
+
+    # Write the Interface head section:
+    wgconf.write(f"[Interface]\n")
+    wgconf.write(f"Address = {ipaddr}\n")
+    wgconf.write(f"ListenPort = {listen_port}\n")
+    wgconf.write(f"PrivateKey = {private_key}\n\n")
+
+    # Append Peer sections:
+    for pkey, peer in peers.items():
+        if pkey == node_prefix or pkey == f'{node_prefix}/vpn':
+            continue # Skip record if it refers to the local node
+
+        allowed_ips = set(peer['ip_address'])
+        if 'routes' in peer:
+            # The set avoids duplicate values:
+            allowed_ips.update(peer['routes'])
+
+        wgconf.write(f'[Peer]\n')
+        wgconf.write(f"PublicKey = {peer['public_key']}\n")
+        wgconf.write(f'AllowedIPs = {", ".join(allowed_ips)}\n')
+        if 'endpoint' in peer:
+            wgconf.write(f"Endpoint = {peer['endpoint']}\n")
+
+    wgconf.close()
+    # Overwrite the target file path:
+    os.rename('/etc/wireguard/wg0.conf.new', '/etc/wireguard/wg0.conf')

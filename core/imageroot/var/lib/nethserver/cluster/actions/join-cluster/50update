@@ -1,0 +1,104 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2021 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
+import agent
+import hashlib
+import requests
+import json
+import sys
+from envparse import env
+
+# Action summary:
+# 1. Send the join request to the remote cluster leader
+# 2. Receive our node_id and VPN IP address
+# 2. Configure the node AGENT_ID/REDIS_USER with new node_id and restart it
+# 3. Configure Wireguard device and routing table
+# 4. Bind Redis to the VPN IP address
+# 5. Switch Redis to replica
+
+request = json.load(sys.stdin)
+
+jwt = request['jwt']
+assert jwt
+url = request['url']
+assert url
+
+# Read our VPN public key
+public_key = agent.slurp_file('/etc/nethserver/wg0.pub')
+assert public_key
+
+
+# Import node agent configuration:
+env.read_envfile('/var/lib/nethserver/node/state/agent.env')
+node_prefix = env('AGENT_ID')
+node_pw = env('REDIS_PASSWORD')
+node_pwh = hashlib.sha256(node_pw.encode()).hexdigest()
+
+#
+# Send the remote join request
+#
+response = requests.post(url, timeout=30, json={
+        "node_pwh": node_pwh,
+        "public_key": public_key,
+        "endpoint": "",
+        "listen_port": "55820",
+    },
+    headers={'Authorization': 'Bearer ' + jwt})
+response.raise_for_status()
+payload = response.json()
+
+assert payload['ip_address']
+assert payload['node_id']
+assert payload['leader_ip_address']
+assert payload['leader_public_key']
+
+ip_address = payload['ip_address']
+node_id = payload['node_id']
+leader_ip_address = payload['leader_ip_address']
+leader_public_key = payload['leader_public_key']
+
+# Reconfigure node agent
+agent.run_helper('sed', '-i', f'/^AGENT_ID=/c\AGENT_ID=node/{node_id}', '/var/lib/nethserver/node/state/agent.env')
+
+# VPN bootstrap
+agent.save_wgconf(ip_address, listen_port, {
+    "leader-node":{"ip_address": leader_ip_address, "public_key": leader_public_key }
+})
+agent.run_helper(*'systemctl restart wg-quick@wg0'.split(' ')).check_returncode()
+
+# Restart the node agent to apply the new VPN setup
+agent.run_helper(*'systemctl restart agent@node'.split(' ')).check_returncode()
+
+# Fix cluster-leader address in /etc/hosts:
+agent.run_helper('sed', '-i', f'/cluster-leader$/c\{leader_ip_address} cluster-leader', '/etc/hosts').check_returncode()
+
+# Bind Redis to the VPN ip_address
+assert rdb.execute_command('CONFIG SET', 'bind', f'127.0.0.1 ::1 {ip_address}') is True
+assert rdb.execute_command('CONFIG SET', 'masteruser', f'node/{node_id}') is True
+assert rdb.execute_command('CONFIG SET', 'masterauth', node_pw) is True
+
+# The node_pw is stored in clear-text, but the default volume directory permissions
+# allow root-only access to it:
+assert rdb.execute_command('CONFIG REWRITE') == 'OK'
+
+# Set this Redis instance read-only
+assert rdb.execute_command('REPLICAOF', 'cluster-leader', '6379') is True

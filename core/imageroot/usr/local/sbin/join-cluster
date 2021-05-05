@@ -20,41 +20,39 @@
 # along with NethServer.  If not, see COPYING.
 #
 
-import os
 import sys
-import json
 import agent
+import argparse
+import hashlib
+import uuid
+import json
+import os
+from envparse import env
 
-agent_id = os.getenv('AGENT_ID')
-r = agent.redis_connect() 
 
-#
-# When a node is created, add the core Traefik module to it
-#
-task_id = f"{agent_id}-create-module-traefik"
+# Import the cluster credentials in the environment for agent.redis_connect
+env.read_envfile('/var/lib/nethserver/cluster/state/agent.env')
+os.environ['AGENT_ID']=env('AGENT_ID')
+os.environ['REDIS_PASSWORD']=env('REDIS_PASSWORD')
 
-pubsub = r.pubsub()
-pubsub.subscribe(f'progress/task/{task_id}')
+parser = argparse.ArgumentParser()
+parser.add_argument('url')
+parser.add_argument('token')
 
-r.lpush(f'{agent_id}/tasks', json.dumps({
-    "id": task_id,
-    "action": "add-module",
-    "data": json.dumps({
-        "image": "traefik"
-    }),
-}))
+args = parser.parse_args()
 
-for message in pubsub.listen():
-    try:
-        data = json.loads(message['data'])
-    except Exception e:
-        print(f"[ERROR] {e}")
-        exit(1)
+taskdata = {
+    "url": args.url,
+    "jwt": args.token,
+}
 
-    if data['status'] == 'finished':
-        pubsub.close()
-        break
+taskobj = {
+    "id": str(uuid.uuid4()),
+    "action": "join-cluster",
+    "data": json.dumps(taskdata),
+}
 
-exit_code = int(r.get(f'{agent_id}/task/{task_id}/exit_code'))
-if exit_code == 0:
-    pass
+rdb = agent.redis_connect(privileged=True)
+assert rdb.lpush('cluster/tasks', json.dumps(taskobj)) >= 0
+
+print("Task queued, check journalctl.")

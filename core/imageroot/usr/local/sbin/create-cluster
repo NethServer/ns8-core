@@ -1,42 +1,78 @@
-#!/bin/bash
+#!/usr/bin/env python3
 
-set -e
+#
+# Copyright (C) 2021 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
 
-endpoint=${1:?missing endpoint argument}
-network=${2:-10.5.4.0/24}
-admin_password=${3:-Nethesis,1234}
-port=$(cut -f 2 -d : <<<"${endpoint}")
+import sys
+import agent
+import argparse
+import hashlib
+import uuid
+import json
+import requests
+import os
+from envparse import env
 
-read password_hash rest < <(sha256sum <<<"$admin_password")
+# Import the cluster credentials in the environment for agent.redis_connect
+env.read_envfile('/var/lib/nethserver/cluster/state/agent.env')
+os.environ['AGENT_ID']=env('AGENT_ID')
+os.environ['REDIS_PASSWORD']=env('REDIS_PASSWORD')
 
-token_file=$(mktemp)
-trap "rm -f ${token_file}" EXIT
 
-curl -s -H "Content-Type: application/json" -X POST http://127.0.0.1:8080/api/login --data '{"username": "default", "password": "letmein"}' | jq -r .token >${token_file}
+parser = argparse.ArgumentParser()
+parser.add_argument('endpoint')
+parser.add_argument('network', default="10.5.4.0/24")
+parser.add_argument('admin_pw', default="Nethesis,1234")
 
-# admin_password_hash is sha256sum of Nethesis,1234
+args = parser.parse_args()
 
-taskdata=$(jq -c -n \
-    --argjson port "${port}" \
-    --arg network "${network}" \
-    --arg endpoint "${endpoint}" \
-    --arg password_hash "${password_hash}" \
-    '{
-            "admin_password_hash": $password_hash,
-            "network": $network,
-            "endpoint": $endpoint,
-            "listen_port": $port
-    }' \
-)
+endpoint_host, endpoint_port = args.endpoint.split(":")
 
-jsontask=$(jq -c -n \
-    --arg action create-cluster \
-    --arg taskdata "${taskdata}" \
-    '{
-        "id": "",
-        "action": $action,
-        "data": $taskdata
-    }' \
-)
+admin_pwh = hashlib.sha256(args.admin_pw.encode()).hexdigest()
 
-curl -s -H "Authorization: Bearer $(<${token_file})" -H "Content-Type: application/json" -X POST --data "${jsontask}" http://127.0.0.1:8080/api/cluster/tasks
+taskdata = {
+    "network": args.network,
+    "endpoint": args.endpoint,
+    "listen_port": endpoint_port,
+}
+
+taskobj = {
+    "id": str(uuid.uuid4()),
+    "action": "create-cluster",
+    "data": json.dumps(taskdata),
+}
+
+rdb = agent.redis_connect(privileged=True)
+assert rdb.hset('user/admin', mapping={'cluster':'owner', 'node/1':'owner', 'module/traefik1':'owner'}) >= 0
+assert rdb.execute_command('ACL', *f'SETUSER admin ON #{admin_pwh} resetkeys resetchannels nocommands'.split(' ')) == 'OK'
+assert rdb.execute_command('ACL', 'SAVE') == 'OK'
+assert rdb.lpush('cluster/tasks', json.dumps(taskobj)) >= 0
+
+loginobj = {
+    "username": "admin",
+    "password": args.admin_pw,
+}
+
+response = requests.post('http://127.0.0.1:8080/api/login', json=loginobj)
+response.raise_for_status()
+payload = response.json()
+
+print("Copy the following command to a worker node to join this cluster with admin's credentials:\n")
+print(f"    join-cluster https://{endpoint_host} {payload['token']}")
