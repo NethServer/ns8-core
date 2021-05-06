@@ -22,8 +22,16 @@
 
 set -e
 
+# Redirect any output to the journal (stderr)
+exec 1>&2
+
 # Ensure the configuration key for Traefik exists
-redis-exec SETNX "${AGENT_ID}/kv" "" >/dev/null
+redis-exec SETNX "${AGENT_ID}/kv" ""
+
+# XXX configure access to the API server
+redis-exec SET "module/traefik1/kv/http/services/api-server/loadBalancer/servers/0/url" "http://127.0.0.1:8080"
+redis-exec SET "module/traefik1/kv/http/routers/api-server/rule" 'PathPrefix(`/api/`, `/ws/`, `/docs/`)'
+redis-exec SET "module/traefik1/kv/http/routers/api-server/service" "api-server"
 
 # Enable and start the service
 systemctl --user enable --now traefik.service
