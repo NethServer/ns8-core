@@ -56,7 +56,7 @@ node_pwh = hashlib.sha256(node_pw.encode()).hexdigest()
 #
 # Send the remote join request
 #
-response = requests.post(url, timeout=30, json={
+response = requests.post(url.strip('/') + '/api/tasks/cluster', timeout=30, json={
         "node_pwh": node_pwh,
         "public_key": public_key,
         "endpoint": "",
