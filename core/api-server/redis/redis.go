@@ -31,14 +31,6 @@ import (
 var redisConnection *redis.Client
 
 func Instance() *redis.Client {
-	if redisConnection == nil {
-		redisConnection := InitRedisConnection()
-		return redisConnection
-	}
-	return redisConnection
-}
-
-func InitRedisConnection() *redis.Client {
 	// init client
 	redisConnection = redis.NewClient(&redis.Options{
 		Network:  "tcp",

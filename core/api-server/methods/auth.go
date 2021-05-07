@@ -57,6 +57,9 @@ func RedisAuthentication(username string, password string) error {
 		return errRedisAuth
 	}
 
+	// close redis connection
+	redisConnection.Close()
+
 	return nil
 }
 
@@ -115,6 +118,9 @@ func RedisAuthorization(username string, c *gin.Context) (models.UserAuthorizati
 	userAuthorizationsRedis.Username = username
 	userAuthorizationsRedis.Role = role
 	userAuthorizationsRedis.Actions = actions
+
+	// close redis connection
+	redisConnection.Close()
 
 	// return auths
 	return userAuthorizationsRedis, nil

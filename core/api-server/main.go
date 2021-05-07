@@ -26,10 +26,10 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	"github.com/fatih/structs"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
-	"github.com/fatih/structs"
 
 	docs "github.com/NethServer/ns8-scratchpad/core/api-server/docs"
 	swaggerFiles "github.com/swaggo/files"
