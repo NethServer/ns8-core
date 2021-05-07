@@ -26,6 +26,7 @@ import requests
 import json
 import sys
 import time
+import os
 from envparse import env
 
 # Action summary:
@@ -49,10 +50,17 @@ assert listen_port
 public_key = agent.slurp_file('/etc/nethserver/wg0.pub')
 assert public_key
 
+# Start the Redis client before changing sensible environment variables
+rdb = agent.redis_connect(privileged=True)
 
 # Import node agent configuration:
+if 'AGENT_ID' in os.environ:
+    del(os.environ['AGENT_ID'])
+if 'REDIS_PASSWORD' in os.environ:
+    del(os.environ['REDIS_PASSWORD'])
 env.read_envfile('/var/lib/nethserver/node/state/agent.env')
 node_pw = env('REDIS_PASSWORD')
+assert len(node_pw) > 0
 node_pwh = hashlib.sha256(node_pw.encode()).hexdigest()
 
 #
@@ -120,21 +128,19 @@ agent.run_helper(*'systemctl restart agent@node'.split(' ')).check_returncode()
 # Fix cluster-leader address in /etc/hosts:
 agent.run_helper('sed', '-i', f'/cluster-leader$/c\{leader_ip_address} cluster-leader', '/etc/hosts').check_returncode()
 
-
-rdb = agent.redis_connect(privileged=True)
-
 # Bind Redis to the VPN ip_address
 assert rdb.execute_command('CONFIG SET', 'bind', f'127.0.0.1 ::1 {ip_address}') is True
 assert rdb.execute_command('CONFIG SET', 'masteruser', f'node/{node_id}') is True
 assert rdb.execute_command('CONFIG SET', 'masterauth', node_pw) is True
 
-# The node_pw is stored in clear-text, but the default volume directory permissions
-# allow root-only access to it:
-assert rdb.execute_command('CONFIG REWRITE') == 'OK'
-
 # Set this Redis instance read-only
 assert rdb.execute_command('REPLICAOF', 'cluster-leader', '6379') == 'OK'
 
+# Write configuration to disk. The node_pw is stored in clear-text, 
+# but the default volume directory permissions allows root-only access to it:
+assert rdb.execute_command('CONFIG REWRITE') == 'OK'
+
 ### XXX maybe a redis SHUTDOWN is required to enforce the new masteruser parameter...
+###rdb.execute_command('SHUTDOWN')
 
 # The cluster agent is now locked out!

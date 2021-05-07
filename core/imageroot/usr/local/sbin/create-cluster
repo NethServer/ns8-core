@@ -31,10 +31,11 @@ import os
 from envparse import env
 
 # Import the cluster credentials in the environment for agent.redis_connect
+if 'AGENT_ID' in os.environ:
+    del(os.environ['AGENT_ID'])
+if 'REDIS_PASSWORD' in os.environ:
+    del(os.environ['REDIS_PASSWORD'])
 env.read_envfile('/var/lib/nethserver/cluster/state/agent.env')
-os.environ['AGENT_ID']=env('AGENT_ID')
-os.environ['REDIS_PASSWORD']=env('REDIS_PASSWORD')
-
 
 parser = argparse.ArgumentParser()
 parser.add_argument('endpoint')
@@ -75,4 +76,4 @@ response.raise_for_status()
 payload = response.json()
 
 print("Copy the following command to a worker node to join this cluster with admin's credentials:\n")
-print(f"    join-cluster https://{endpoint_host} {payload['token']}")
+print(f"    join-cluster http://{endpoint_host} {payload['token']}")

@@ -25,6 +25,7 @@ import sys
 import json
 import agent
 import ipcalc
+import uuid
 
 # Action summary:
 # 1. allocate a VPN IP address for the node
@@ -33,7 +34,7 @@ import ipcalc
 request = json.load(sys.stdin)
 
 node_pwh = request['node_pwh']
-assert node_pwh
+assert node_pwh and len(node_pwh) == 64
 public_key = request['public_key']
 assert public_key
 endpoint = request['endpoint']
@@ -102,7 +103,7 @@ taskobj = {
     "action": "add-module",
     "data": json.dumps({
         "image": "traefik",
-        "node": f'node/{node_id}',
+        "node": node_id,
     }),
 }
 assert rdb.lpush('cluster/tasks', json.dumps(taskobj)) >= 0

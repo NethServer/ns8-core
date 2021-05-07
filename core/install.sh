@@ -117,7 +117,7 @@ node_pwhash=$(echo -n "${node_password}" | sha256sum | awk '{print $1}')
 (
     # Add the keys for the cluster bootstrap
     cat <<EOF
-SADD cluster/roles/admin add-module
+SADD cluster/roles/owner add-node
 SET cluster/leader 1
 SET cluster/node_sequence 1
 LPUSH cluster/tasks '{"id":"$(uuidgen)","action":"add-module","data":"{\"image\":\"traefik\",\"node\":\"1\"}"}'
