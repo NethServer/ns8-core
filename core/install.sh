@@ -120,7 +120,7 @@ node_pwhash=$(echo -n "${node_password}" | sha256sum | awk '{print $1}')
 SADD cluster/roles/admin add-module
 SET cluster/leader 1
 SET cluster/node_sequence 1
-LPUSH cluster/tasks '{"id":"addtraef-ik1x-xxxx-xxxx-xxxxxxxxxxxx","action":"add-module","data":"{\"image\":\"traefik\",\"node\":\"1\"}"}'
+LPUSH cluster/tasks '{"id":"$(uuidgen)","action":"add-module","data":"{\"image\":\"traefik\",\"node\":\"1\"}"}'
 EOF
 
     # Load module images metadata. XXX this is a temporary implementation

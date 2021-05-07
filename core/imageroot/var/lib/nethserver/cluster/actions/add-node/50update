@@ -85,12 +85,27 @@ assert rdb.execute_command('ACL SETUSER',
     '+psync', '+replconf', '+ping', # for replicas
 ) is True
 
+#
 # Add the Wireguard peer configuration
+#
 peers = {pkey: rdb.hgetall(pkey) for pkey in rdb.scan_iter('node/*/vpn')}
 agent.save_wgconf(leader_ip_address, leader_listen_port, peers)
 agent.run_helper(*f'wg set wg0 peer {public_key} allowed-ips {ip_address}'.split(' ')).check_returncode()
 agent.run_helper(*f'ip route del {ip_address}'.split(' ')) # Ignore error
 agent.run_helper(*f'ip route add {ip_address} dev wg0'.split(' ')).check_returncode()
+
+#
+# Push a task for the new node: create a new Traefik module instance!
+#
+taskobj = {
+    "id": str(uuid.uuid4()),
+    "action": "add-module",
+    "data": json.dumps({
+        "image": "traefik",
+        "node": f'node/{node_id}',
+    }),
+}
+assert rdb.lpush('cluster/tasks', json.dumps(taskobj)) >= 0
 
 #
 # Return the new information to the caller
