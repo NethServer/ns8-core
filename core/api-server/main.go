@@ -29,6 +29,7 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
+	"github.com/fatih/structs"
 
 	docs "github.com/NethServer/ns8-scratchpad/core/api-server/docs"
 	swaggerFiles "github.com/swaggo/files"
@@ -104,13 +105,11 @@ func main() {
 			tasks.POST("/cluster", methods.CreateClusterTask)
 
 			// node
-			tasks.GET("/node", methods.GetAllNodeTasks)
 			tasks.GET("/node/:node_id", methods.GetNodeTasks)
 			tasks.GET("/node/:node_id/:task_id/:file", methods.GetNodeTaskFiles)
 			tasks.POST("/node/:node_id", methods.CreateNodeTask)
 
 			// module
-			tasks.GET("/module", methods.GetAllModuleTasks)
 			tasks.GET("/module/:module_id", methods.GetModuleTasks)
 			tasks.GET("/module/:module_id/:task_id/:file", methods.GetModuleTaskFiles)
 			tasks.POST("/module/:module_id", methods.CreateModuleTask)
@@ -133,11 +132,11 @@ func main() {
 
 	// handle missing endpoint
 	router.NoRoute(func(c *gin.Context) {
-		c.JSON(http.StatusNotFound, response.StatusNotFound{
+		c.JSON(http.StatusNotFound, structs.Map(response.StatusNotFound{
 			Code:    404,
 			Message: "API not found",
 			Data:    nil,
-		})
+		}))
 	})
 
 	// handle API docs route

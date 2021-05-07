@@ -28,6 +28,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/fatih/structs"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 
@@ -155,11 +156,11 @@ func InitJWT() *jwt.GinJWTMiddleware {
 			return false
 		},
 		Unauthorized: func(c *gin.Context, code int, message string) {
-			c.JSON(http.StatusUnauthorized, response.StatusUnauthorized{
+			c.JSON(http.StatusUnauthorized, structs.Map(response.StatusUnauthorized{
 				Code:    401,
 				Message: message,
 				Data:    nil,
-			})
+			}))
 			return
 		},
 		TokenLookup:   "header: Authorization, query: token, cookie: jwt",

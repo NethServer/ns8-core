@@ -80,7 +80,7 @@ func RedisAuthorization(username string, c *gin.Context) (models.UserAuthorizati
 	var pathGet string
 	var pathScan string
 	parts := strings.Split(c.FullPath(), "/")
-	entity := parts[2]
+	entity := parts[3]
 
 	// switch entity
 	switch entity {

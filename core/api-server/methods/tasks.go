@@ -27,6 +27,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/fatih/structs"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	guuid "github.com/google/uuid"
@@ -51,11 +52,11 @@ func getAllTasks(c *gin.Context, entityName string) {
 
 	// handle redis error
 	if errRedisKeys != nil {
-		c.JSON(http.StatusBadRequest, response.StatusBadRequest{
+		c.JSON(http.StatusBadRequest, structs.Map(response.StatusBadRequest{
 			Code:    400,
 			Message: "error getting all tasks from redis queue",
 			Data:    errRedisKeys.Error(),
-		})
+		}))
 		return
 	}
 
@@ -66,11 +67,11 @@ func getAllTasks(c *gin.Context, entityName string) {
 
 		// handle redis error
 		if errRedisRange != nil {
-			c.JSON(http.StatusBadRequest, response.StatusBadRequest{
+			c.JSON(http.StatusBadRequest, structs.Map(response.StatusBadRequest{
 				Code:    400,
 				Message: "error getting tasks from redis queue",
 				Data:    errRedisRange.Error(),
-			})
+			}))
 			return
 		}
 
@@ -83,11 +84,11 @@ func getAllTasks(c *gin.Context, entityName string) {
 			var task models.Task
 			errJson := json.Unmarshal([]byte(t), &task)
 			if errJson != nil {
-				c.JSON(http.StatusBadRequest, response.StatusBadRequest{
+				c.JSON(http.StatusBadRequest, structs.Map(response.StatusBadRequest{
 					Code:    400,
 					Message: "error converting json task to struct",
 					Data:    errJson.Error(),
-				})
+				}))
 				return
 			}
 
@@ -99,11 +100,11 @@ func getAllTasks(c *gin.Context, entityName string) {
 	}
 
 	// return all tasks
-	c.JSON(http.StatusOK, response.StatusOK{
+	c.JSON(http.StatusOK, structs.Map(response.StatusOK{
 		Code:    200,
 		Message: "success",
 		Data:    allTasks,
-	})
+	}))
 }
 
 func getTasks(c *gin.Context, queueName string) {
@@ -118,11 +119,11 @@ func getTasks(c *gin.Context, queueName string) {
 
 	// handle redis error
 	if errRedis != nil {
-		c.JSON(http.StatusBadRequest, response.StatusBadRequest{
+		c.JSON(http.StatusBadRequest, structs.Map(response.StatusBadRequest{
 			Code:    400,
 			Message: "error getting tasks from redis queue",
 			Data:    errRedis.Error(),
-		})
+		}))
 		return
 	}
 
@@ -132,11 +133,11 @@ func getTasks(c *gin.Context, queueName string) {
 		var task models.Task
 		errJson := json.Unmarshal([]byte(t), &task)
 		if errJson != nil {
-			c.JSON(http.StatusBadRequest, response.StatusBadRequest{
+			c.JSON(http.StatusBadRequest, structs.Map(response.StatusBadRequest{
 				Code:    400,
 				Message: "error converting json task to struct",
 				Data:    errJson.Error(),
-			})
+			}))
 			return
 		}
 
@@ -145,11 +146,11 @@ func getTasks(c *gin.Context, queueName string) {
 	}
 
 	// return tasks
-	c.JSON(http.StatusOK, response.StatusOK{
+	c.JSON(http.StatusOK, structs.Map(response.StatusOK{
 		Code:    200,
 		Message: "success",
 		Data:    gin.H{"tasks": tasks, "queue": queueName},
-	})
+	}))
 }
 
 func getTaskFile(c *gin.Context, filePath string, file string) {
@@ -164,28 +165,28 @@ func getTaskFile(c *gin.Context, filePath string, file string) {
 
 		// handle redis error
 		if errRedis != nil {
-			c.JSON(http.StatusBadRequest, response.StatusBadRequest{
+			c.JSON(http.StatusBadRequest, structs.Map(response.StatusBadRequest{
 				Code:    400,
 				Message: "error getting file from redis",
 				Data:    errRedis.Error(),
-			})
+			}))
 			return
 		}
 
 		// return file response
-		c.JSON(http.StatusOK, response.StatusOK{
+		c.JSON(http.StatusOK, structs.Map(response.StatusOK{
 			Code:    200,
 			Message: "success",
 			Data:    gin.H{"content": r, "file": filePath},
-		})
+		}))
 		return
 
 	default:
-		c.JSON(http.StatusBadRequest, response.StatusBadRequest{
+		c.JSON(http.StatusBadRequest, structs.Map(response.StatusBadRequest{
 			Code:    400,
 			Message: "invalid file type. must be output, error or exit_code",
 			Data:    nil,
-		})
+		}))
 		return
 	}
 }
@@ -194,11 +195,11 @@ func createTask(c *gin.Context, queueName string) {
 	// bind json body
 	var jsonTask models.Task
 	if err := c.ShouldBindBodyWith(&jsonTask, binding.JSON); err != nil {
-		c.JSON(http.StatusBadRequest, response.StatusBadRequest{
+		c.JSON(http.StatusBadRequest, structs.Map(response.StatusBadRequest{
 			Code:    400,
 			Message: "request fields malformed",
 			Data:    err.Error(),
-		})
+		}))
 		return
 	}
 
@@ -220,11 +221,11 @@ func createTask(c *gin.Context, queueName string) {
 	// convert json struct to json string
 	stringTask, errString := json.Marshal(task)
 	if errString != nil {
-		c.JSON(http.StatusBadRequest, response.StatusBadRequest{
+		c.JSON(http.StatusBadRequest, structs.Map(response.StatusBadRequest{
 			Code:    400,
 			Message: "error converting task struct to json",
 			Data:    errString.Error(),
-		})
+		}))
 		return
 	}
 
@@ -233,20 +234,20 @@ func createTask(c *gin.Context, queueName string) {
 
 	// handle redis error
 	if errRedis != nil {
-		c.JSON(http.StatusBadRequest, response.StatusBadRequest{
+		c.JSON(http.StatusBadRequest, structs.Map(response.StatusBadRequest{
 			Code:    400,
 			Message: "error queuing tasks to redis",
 			Data:    errRedis.Error(),
-		})
+		}))
 		return
 	}
 
 	// return status created
-	c.JSON(http.StatusCreated, response.StatusOK{
-		Code:    200,
+	c.JSON(http.StatusCreated, structs.Map(response.StatusOK{
+		Code:    201,
 		Message: "task queued successfully",
 		Data:    task,
-	})
+	}))
 }
 
 func ListenTaskEvents() {
@@ -375,11 +376,6 @@ func GetNodeTaskFiles(c *gin.Context) {
 	getTaskFile(c, filePath, file)
 }
 
-func GetAllNodeTasks(c *gin.Context) {
-	// get tasks
-	getAllTasks(c, "node")
-}
-
 // GetModuleTasks godoc
 // @Summary Get the list of current module tasks
 // @Description get module tasks
@@ -428,11 +424,6 @@ func GetModuleTaskFiles(c *gin.Context) {
 
 	// get result of file
 	getTaskFile(c, filePath, file)
-}
-
-func GetAllModuleTasks(c *gin.Context) {
-	// get tasks
-	getAllTasks(c, "module")
 }
 
 // CreateClusterTask godoc
