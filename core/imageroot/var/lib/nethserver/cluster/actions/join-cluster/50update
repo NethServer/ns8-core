@@ -25,6 +25,7 @@ import hashlib
 import requests
 import json
 import sys
+import time
 from envparse import env
 
 # Action summary:
@@ -41,6 +42,8 @@ jwt = request['jwt']
 assert jwt
 url = request['url']
 assert url
+listen_port = request['listen_port']
+assert listen_port
 
 # Read our VPN public key
 public_key = agent.slurp_file('/etc/nethserver/wg0.pub')
@@ -49,39 +52,65 @@ assert public_key
 
 # Import node agent configuration:
 env.read_envfile('/var/lib/nethserver/node/state/agent.env')
-node_prefix = env('AGENT_ID')
 node_pw = env('REDIS_PASSWORD')
 node_pwh = hashlib.sha256(node_pw.encode()).hexdigest()
 
 #
-# Send the remote join request
+# Invoke the cluster add-node action remotely:
 #
 response = requests.post(url.strip('/') + '/api/tasks/cluster', timeout=30, json={
-        "node_pwh": node_pwh,
-        "public_key": public_key,
-        "endpoint": "",
-        "listen_port": "55820",
+        "id": "",
+        "action": "add-node",
+        "data": json.dumps({
+            "node_pwh": node_pwh,
+            "public_key": public_key,
+            "endpoint": "",
+            "listen_port": listen_port,
+        }),
     },
     headers={'Authorization': 'Bearer ' + jwt})
 response.raise_for_status()
-payload = response.json()
+body = response.json()
+
+assert body['Code'] == 201
+
+task_id = body['Data']['ID']
+
+#
+# XXX Poll the remote server until the task has completed
+#
+pollurl = url.strip('/') + f'/api/tasks/cluster/{task_id}/output'
+print(f"Reading response from {pollurl}", file=sys.stderr)
+for attempt in range(0,5):
+    time.sleep(2)
+    response = requests.get(pollurl, timeout=30, headers={'Authorization': 'Bearer ' + jwt})
+    body = response.json()
+    if body['Code'] == 200:
+        break
+    print(body, file=sys.stderr)
+else:
+    raise Exception('Response timeout exceeded')
+
+payload = json.loads(body['Data']['content'])
 
 assert payload['ip_address']
 assert payload['node_id']
 assert payload['leader_ip_address']
 assert payload['leader_public_key']
+assert payload['leader_endpoint']
 
 ip_address = payload['ip_address']
 node_id = payload['node_id']
 leader_ip_address = payload['leader_ip_address']
 leader_public_key = payload['leader_public_key']
+leader_endpoint = payload['leader_endpoint']
 
 # Reconfigure node agent
-agent.run_helper('sed', '-i', f'/^AGENT_ID=/c\AGENT_ID=node/{node_id}', '/var/lib/nethserver/node/state/agent.env')
+agent.run_helper('sed', '-i', f'/^AGENT_ID=/c\AGENT_ID=node/{node_id}', '/var/lib/nethserver/node/state/agent.env').check_returncode()
 
 # VPN bootstrap
 agent.save_wgconf(ip_address, listen_port, {
-    "leader-node":{"ip_address": leader_ip_address, "public_key": leader_public_key }
+    "leader-node":{"ip_address": leader_ip_address, "public_key": leader_public_key, 'endpoint': leader_endpoint }
 })
 agent.run_helper(*'systemctl restart wg-quick@wg0'.split(' ')).check_returncode()
 
@@ -90,6 +119,9 @@ agent.run_helper(*'systemctl restart agent@node'.split(' ')).check_returncode()
 
 # Fix cluster-leader address in /etc/hosts:
 agent.run_helper('sed', '-i', f'/cluster-leader$/c\{leader_ip_address} cluster-leader', '/etc/hosts').check_returncode()
+
+
+rdb = agent.redis_connect(privileged=True)
 
 # Bind Redis to the VPN ip_address
 assert rdb.execute_command('CONFIG SET', 'bind', f'127.0.0.1 ::1 {ip_address}') is True
@@ -101,4 +133,8 @@ assert rdb.execute_command('CONFIG SET', 'masterauth', node_pw) is True
 assert rdb.execute_command('CONFIG REWRITE') == 'OK'
 
 # Set this Redis instance read-only
-assert rdb.execute_command('REPLICAOF', 'cluster-leader', '6379') is True
+assert rdb.execute_command('REPLICAOF', 'cluster-leader', '6379') == 'OK'
+
+### XXX maybe a redis SHUTDOWN is required to enforce the new masteruser parameter...
+
+# The cluster agent is now locked out!

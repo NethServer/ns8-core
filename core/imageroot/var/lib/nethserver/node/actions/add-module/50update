@@ -65,18 +65,18 @@ if is_rootfull:
     # Extract the module imageroot
     os.chdir(f'/var/lib/nethserver/{module_id}')
     redis_sha256 = save_agent_env(module_id)
-    agent.run_helper('extract-image', image['url'])
+    agent.run_helper('extract-image', image['url']).check_returncode()
     # Start the module agent
-    agent.run_helper('systemctl', 'enable', '--now', f'agent@{module_id}.service')
+    agent.run_helper('systemctl', 'enable', '--now', f'agent@{module_id}.service').check_returncode()
 else: # rootless
     # Create the module dirs structure
-    agent.run_helper('useradd', '-m', '-k', '/etc/nethserver/skel', '-s', '/bin/bash', module_id)
+    agent.run_helper('useradd', '-m', '-k', '/etc/nethserver/skel', '-s', '/bin/bash', module_id).check_returncode()
     os.chdir(f'/home/{module_id}/.config')
     redis_sha256 = save_agent_env(module_id)
     # Extract the module imageroot and fix CWD permissions recursively
-    agent.run_helper('extract-image', image['url'])
+    agent.run_helper('extract-image', image['url']).check_returncode()
     # Start the module agent
-    agent.run_helper('loginctl', 'enable-linger', module_id)
+    agent.run_helper('loginctl', 'enable-linger', module_id).check_returncode()
 
 json.dump({
     "redis_sha256":redis_sha256,

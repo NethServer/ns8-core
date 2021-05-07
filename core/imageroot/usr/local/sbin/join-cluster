@@ -38,12 +38,14 @@ os.environ['REDIS_PASSWORD']=env('REDIS_PASSWORD')
 parser = argparse.ArgumentParser()
 parser.add_argument('url')
 parser.add_argument('token')
+parser.add_argument('--listenport', default=55820, type=int)
 
 args = parser.parse_args()
 
 taskdata = {
     "url": args.url,
     "jwt": args.token,
+    "listen_port": args.listenport,
 }
 
 taskobj = {

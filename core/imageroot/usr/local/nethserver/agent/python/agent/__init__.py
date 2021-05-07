@@ -26,6 +26,7 @@ import uuid
 import time
 import json
 import tempfile
+import ipcalc
 from envparse import env
 
 def redis_connect(privileged=False, decode_responses=True, **kwargs):
@@ -65,9 +66,7 @@ def run_helper(*args):
 
     The command output is redirected to stderr.
     """
-    proc = subprocess.run(args, stdout=sys.stderr)
-    assert proc.returncode == 0
-    return proc
+    return subprocess.run(args, stdout=sys.stderr)
 
 def set_env(name, value):
     fd = int(os.environ['AGENT_COMFD'])
@@ -100,8 +99,7 @@ def run_subtask(redis_obj, agent_prefix, action, input_string="", input_obj=None
 def save_wgconf(ipaddr, listen_port=55820, peers={}):
 
     private_key = slurp_file('/etc/nethserver/wg0.key')
-    env.read_envfile('/var/lib/nethserver/node/state/agent.env')
-    node_prefix = env('AGENT_ID') # Required to skip the local node
+    public_key = slurp_file('/etc/nethserver/wg0.pub')
 
     oldmask = os.umask(0o77)
     # Create a new file beside our target file path:
@@ -116,10 +114,10 @@ def save_wgconf(ipaddr, listen_port=55820, peers={}):
 
     # Append Peer sections:
     for pkey, peer in peers.items():
-        if pkey == node_prefix or pkey == f'{node_prefix}/vpn':
+        if peer['public_key'] == public_key:
             continue # Skip record if it refers to the local node
 
-        allowed_ips = set(peer['ip_address'])
+        allowed_ips = { peer['ip_address'] }
         if 'routes' in peer:
             # The set avoids duplicate values:
             allowed_ips.update(peer['routes'])
@@ -127,7 +125,7 @@ def save_wgconf(ipaddr, listen_port=55820, peers={}):
         wgconf.write(f'[Peer]\n')
         wgconf.write(f"PublicKey = {peer['public_key']}\n")
         wgconf.write(f'AllowedIPs = {", ".join(allowed_ips)}\n')
-        if 'endpoint' in peer:
+        if 'endpoint' in peer and peer['endpoint'] != '':
             wgconf.write(f"Endpoint = {peer['endpoint']}\n")
 
     wgconf.close()

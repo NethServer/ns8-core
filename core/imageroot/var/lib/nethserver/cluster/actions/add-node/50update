@@ -39,13 +39,13 @@ assert public_key
 endpoint = request['endpoint']
 assert type(endpoint) is str
 listen_port = request['listen_port']
-assert listen_port
+assert listen_port > 0
 
 rdb = agent.redis_connect(privileged=True)
 
 #
-# 1/a. Retrieve leader_ip_address, required by the new node to complete the
-#      join procedure
+# 1/a. Retrieve the leader VPN attributes,
+#      required by the caller to complete the join-cluster action
 #
 leader_id = rdb.get('cluster/leader')
 leader_ip_address = rdb.hget(f'node/{leader_id}/vpn', 'ip_address')
@@ -54,41 +54,43 @@ leader_public_key = rdb.hget(f'node/{leader_id}/vpn', 'public_key')
 assert leader_public_key
 leader_listen_port = rdb.hget(f'node/{leader_id}/vpn', 'listen_port')
 assert leader_listen_port
+leader_endpoint = rdb.hget(f'node/{leader_id}/vpn', 'endpoint')
+assert leader_endpoint
 
 #
 # 1/b. Generate a new node_id and VPN IP address
 #
 network = ipcalc.Network(rdb.get('cluster/network'))
-node_id = str(rdb.incr(f'cluster/node_sequence'))
+node_id = int(rdb.incr(f'cluster/node_sequence'))
 ip_address = str(network.network() + node_id)
 
 #
 # 1/c. Store VPN settings of the new node
 #
-rdb.hset(f'node/{node_id}/vpn', mapping={
+assert rdb.hset(f'node/{node_id}/vpn', mapping={
     "public_key": public_key,
     "ip_address": ip_address,
     "endpoint": endpoint,
     "listen_port": str(listen_port),
-})
+}) >= 0
 
 #
 # 2. Create redis acls for the node agent
 #
-redis_grant_node = rdb.execute_command('ACL SETUSER',
+assert rdb.execute_command('ACL SETUSER',
     f'node/{node_id}', 'ON', '#' + node_pwh,
     'resetkeys',     f'~node/{node_id}/*',
     'resetchannels', '&progress/task/*',
     'nocommands',    '+@read', '+@write', '+@transaction', '+@connection', '+publish',
     '+psync', '+replconf', '+ping', # for replicas
-)
-assert redis_grant_node is True
+) is True
 
 # Add the Wireguard peer configuration
 peers = {pkey: rdb.hgetall(pkey) for pkey in rdb.scan_iter('node/*/vpn')}
 agent.save_wgconf(leader_ip_address, leader_listen_port, peers)
-agent.run_helper(f'wg set wg0 peer {public_key} allowed-ips {ip_address}'.split(' ')).check_returncode()
-# XXX agent.run_helper(f'ip route add ')
+agent.run_helper(*f'wg set wg0 peer {public_key} allowed-ips {ip_address}'.split(' ')).check_returncode()
+agent.run_helper(*f'ip route del {ip_address}'.split(' ')) # Ignore error
+agent.run_helper(*f'ip route add {ip_address} dev wg0'.split(' ')).check_returncode()
 
 #
 # Return the new information to the caller
@@ -97,6 +99,7 @@ json.dump({
     "node_id": node_id, # required to set up node agent
     "ip_address": ip_address, # required to set up wg0 device
     "leader_public_key": leader_public_key, # required for VPN auth
-    "network": network, # required to set up route table
+    "network": str(network), # required to set up route table
     "leader_ip_address": leader_ip_address, # required to rewrite /etc/hosts cluster-leader
+    "leader_endpoint": leader_endpoint, # required to reach the Wireguard listen_port
 }, sys.stdout)
