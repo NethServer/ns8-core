@@ -78,13 +78,12 @@ assert rdb.hset(f'node/{node_id}/vpn', mapping={
 #
 # 2. Create redis acls for the node agent
 #
-assert rdb.execute_command('ACL SETUSER',
+assert rdb.execute_command('ACL', 'SETUSER',
     f'node/{node_id}', 'ON', '#' + node_pwh,
-    'resetkeys',     f'~node/{node_id}/*',
+    'resetkeys', f'~node/{node_id}/*',
     'resetchannels', '&progress/task/*',
-    'nocommands',    '+@read', '+@write', '+@transaction', '+@connection', '+publish',
-    '+psync', '+replconf', '+ping', # for replicas
-) is True
+    'nocommands', '+@read', '+@write', '+@transaction', '+@connection', '+publish',
+) == 'OK'
 
 #
 # Add the Wireguard peer configuration

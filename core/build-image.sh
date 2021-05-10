@@ -49,6 +49,8 @@ protected-mode no
 save 5 1
 aclfile "/data/etc/redis.acl"
 dir "/data"
+masteruser default
+masterauth nopass
 EOR
 
 EOF

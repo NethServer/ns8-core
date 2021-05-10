@@ -60,6 +60,7 @@ taskobj = {
     "data": json.dumps(taskdata),
 }
 
+# XXX: grant admin UI access:
 rdb = agent.redis_connect(privileged=True)
 assert rdb.hset('user/admin', mapping={'cluster':'owner', 'node/1':'owner', 'module/traefik1':'owner'}) >= 0
 assert rdb.execute_command('ACL', *f'SETUSER admin ON #{admin_pwh} resetkeys resetchannels nocommands'.split(' ')) == 'OK'
