@@ -26,7 +26,8 @@ import agent
 
 request = json.load(sys.stdin)
 image_id = request['image']
-node_id = request['node']
+node_id = int(request['node'])
+assert node_id > 0
 
 # Retrieve the image attributes from Redis DB. Is it the image for a rootfull module?
 r = agent.redis_connect(privileged=True)
@@ -43,9 +44,9 @@ r.hset(f'module/{module_id}', mapping={
 })
 
 # Grant the host node access to the new module
-r.execute_command('ACL SETUSER',
-                    f'node/{node_id}',
-                    f'~module/{module_id}/tasks')
+assert r.execute_command('ACL', 'SETUSER',
+                        f'node/{node_id}',
+                        f'~module/{module_id}/tasks') == 'OK'
 
 # Wait for the module host to set up the module environment: it
 # has to return us the module password hash
@@ -65,15 +66,15 @@ r.hset(f'module/{module_id}', mapping={
 })
 
 # Create a new Redis user for module_id and set the password and permissions
-r.execute_command('ACL SETUSER',
+assert r.execute_command('ACL', 'SETUSER',
                     f'module/{module_id}', 'ON',
                     '#' + outobj['redis_sha256'],
                     f'~module/{module_id}/*',
                     'resetchannels', '&progress/task/*',
-                    '+@read', '+@write', '+@transaction', '+@connection', '+publish')
+                    '+@read', '+@write', '+@transaction', '+@connection', '+publish') == 'OK'
 
 # Persist ACLs to disk
-r.execute_command('ACL SAVE')
+assert r.execute_command('ACL', 'SAVE') == 'OK'
 
 print(output, sys.stdout)
 exit(exit_code)

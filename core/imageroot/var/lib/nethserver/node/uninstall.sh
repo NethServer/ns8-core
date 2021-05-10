@@ -52,3 +52,6 @@ systemctl daemon-reload
 
 echo "[NOTICE] Wipe Podman storage"
 podman system reset -f "${@}"
+
+echo "[NOTICE] Clean up /etc/hosts"
+sed -i '/ cluster-leader$/ d' /etc/hosts

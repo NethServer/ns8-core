@@ -30,4 +30,4 @@ install -m 644 "${AGENT_INSTALL_DIR}/samba-dc.service" "/etc/systemd/system/${mi
 systemctl daemon-reload
 
 # Configure roles
-redis-exec SADD "${AGENT_ID}/roles/admin" "provision-domain"
+redis-exec SADD "${AGENT_ID}/roles/owner" "provision-domain"

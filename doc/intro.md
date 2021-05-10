@@ -25,17 +25,17 @@ Assumptions:
 - containers are the new standard
 - built for cheap hardware or entry-level Virtual Private Server (VPS)
 - few nodes: 1 node mostly, 2 or 3 nodes sometimes
-- bodes can be on different geographical areas and the network could have poor latency
+- nodes can be on different geographical areas and the network could have poor latency
 
 ## Glossary
 
 NS8 is composed by many parts, let's explain the main terminology.
 
-- *Node*: a physical or virtual installation of NS8, it can be a `master`, `worker` or both for all-in-one installations
+- *Node*: a physical or virtual installation of NS8, it can be a *leader*, *worker* or both for all-in-one installations
 - *Cluster*: a set of one or more nodes
-- *Master*: a node which is the master of the cluster, it executes the control logic and has read-write access to the configuration
-- *Worker*: a node which execute one or more `module`, it has read-only access to the configuration. A master node can be also a worker.
+- *Leader*: the node which executes the control logic and has read-write access to the configuration.
+- *Worker*: a node which execute one or more modules, it has read-only access to the configuration. A leader node can be  a worker too.
 - *Core*: set of fundamental software which is usually installed on all cluster nodes
-- *Module*: a software running on a container, like mail server, nextcloud, which runs on a worker. Each module can have multiple instances.
-- *Instance*: a running instance of a module with a specific configuration. Each instance runs inside an isolated environment.
-- *Application*: the instance configuration available inside UI
+- *Module*: additional software that can be installed on one or more cluster nodes, like Mail server, Nextcloud, Webtop.
+- *Instance*: a running instance of a module with a specific configuration. Each instance runs inside an isolated environment and constituted by one or more Podman containers.
+- *Application*: speaking in UI terms, it corresponds to a module and its instances.

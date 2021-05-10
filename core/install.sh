@@ -1,5 +1,25 @@
 #!/bin/bash
 
+#
+# Copyright (C) 2021 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
 set -e
 
 distro=$(awk -F = '/^ID=/ { print $2 }' /etc/os-release)
@@ -57,6 +77,11 @@ if [[ ! -f /etc/nethserver/registry.json ]] ; then
     echo '{"auths":{}}' > /etc/nethserver/registry.json
 fi
 
+if ! grep -q ' cluster-leader$' /etc/hosts; then
+    echo "Add /etc/hosts entries:"
+    echo "127.0.0.1 cluster-leader" >> /etc/hosts
+fi
+
 echo "Generate WireGuard VPN key pair:"
 (umask 0077; wg genkey | tee /etc/nethserver/wg0.key | wg pubkey) | tee /etc/nethserver/wg0.pub
 
@@ -69,7 +94,7 @@ cluster_pwhash=$(echo -n "${cluster_password}" | sha256sum | awk '{print $1}')
 (umask 0077; exec >/var/lib/nethserver/cluster/state/agent.env
     printf "AGENT_ID=cluster\n"
     printf "REDIS_PASSWORD=%s\n" "${cluster_password}"
-    printf "REDIS_ADDRESS=127.0.0.1:6379\n" # Force connection to local redis instance
+    printf "REDIS_ADDRESS=127.0.0.1:6379\n" # Override the cluster-leader /etc/hosts record
 )
 
 echo "Generating api-server password:"
@@ -78,7 +103,7 @@ apiserver_pwhash=$(echo -n "${apiserver_password}" | sha256sum | awk '{print $1}
 (umask 0077; exec >/etc/nethserver/api-server.env
     printf "REDIS_PASSWORD=%s\n" "${apiserver_password}"
     printf "REDIS_USER=api-server\n"
-    printf "REDIS_ADDRESS=127.0.0.1:6379\n" # Force connection to local redis instance
+    printf "REDIS_ADDRESS=127.0.0.1:6379\n" # Override the cluster-leader /etc/hosts record
 )
 
 echo "Generating node password:"
@@ -92,10 +117,10 @@ node_pwhash=$(echo -n "${node_password}" | sha256sum | awk '{print $1}')
 (
     # Add the keys for the cluster bootstrap
     cat <<EOF
-SADD cluster/roles/admin add-module
+SADD cluster/roles/owner add-node
 SET cluster/leader 1
 SET cluster/node_sequence 1
-LPUSH cluster/tasks '{"id":"addtraef-ik1x-xxxx-xxxx-xxxxxxxxxxxx","action":"add-module","data":"{\"image\":\"traefik\",\"node\":\"1\"}"}'
+LPUSH cluster/tasks '{"id":"$(uuidgen)","action":"add-module","data":"{\"image\":\"traefik\",\"node\":\"1\"}"}'
 EOF
 
     # Load module images metadata. XXX this is a temporary implementation
@@ -105,9 +130,9 @@ EOF
     cat <<EOF
 ACL SETUSER cluster ON #${cluster_pwhash} ~* &* +@all
 AUTH cluster "${cluster_password}"
-ACL SETUSER default ON nopass ~* &* nocommands +@read +@connection
+ACL SETUSER default ON nopass ~* &* nocommands +@read +@connection +subscribe +psubscribe +psync +replconf +ping
 ACL SETUSER api-server ON #${apiserver_pwhash} ~* &* nocommands +@read +@pubsub +lpush +@transaction +@connection
-ACL SETUSER node/1 ON #${node_pwhash} resetkeys ~node/1/* resetchannels &progress/task/* nocommands +@read +@write +@transaction +@connection +publish +psync +replconf +ping
+ACL SETUSER node/1 ON #${node_pwhash} resetkeys ~node/1/* resetchannels &progress/task/* nocommands +@read +@write +@transaction +@connection +publish
 ACL SAVE
 SAVE
 EOF
@@ -127,14 +152,18 @@ Congratulations!
 
 This node is now ready to run as a standalone instance of NS8 Scratchpad
 
+Open a new login shell or type the following command to fix the environment:
+
+    source /etc/profile.d/nethserver.sh
+
 
 A. To join this node to an alredy existing cluster run:
 
-      join-cluster <cluster_url>
+      join-cluster <cluster_url> <jwt_auth>
 
    For instance:
 
-      join-cluster https://admin:Nethesis,1234@cluster.example.com
+      join-cluster https://cluster.example.com eyJhbGc...NiIsInR5c
 
 B. To initialize this node as a cluster leader run:
 
@@ -142,6 +171,6 @@ B. To initialize this node as a cluster leader run:
 
    For instance:
 
-      create-custer $(hostname -f):55820 10.5.4.0/24 Nethesis,1234
+      create-cluster $(hostname -f):55820 10.5.4.0/24 Nethesis,1234
 
 EOF

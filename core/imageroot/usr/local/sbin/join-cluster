@@ -26,9 +26,9 @@ import argparse
 import hashlib
 import uuid
 import json
-import requests
 import os
 from envparse import env
+
 
 # Import the cluster credentials in the environment for agent.redis_connect
 if 'AGENT_ID' in os.environ:
@@ -38,43 +38,25 @@ if 'REDIS_PASSWORD' in os.environ:
 env.read_envfile('/var/lib/nethserver/cluster/state/agent.env')
 
 parser = argparse.ArgumentParser()
-parser.add_argument('endpoint')
-parser.add_argument('network', default="10.5.4.0/24")
-parser.add_argument('admin_pw', default="Nethesis,1234")
+parser.add_argument('url')
+parser.add_argument('token')
+parser.add_argument('--listenport', default=55820, type=int)
 
 args = parser.parse_args()
 
-endpoint_host, endpoint_port = args.endpoint.split(":")
-
-admin_pwh = hashlib.sha256(args.admin_pw.encode()).hexdigest()
-
 taskdata = {
-    "network": args.network,
-    "endpoint": args.endpoint,
-    "listen_port": endpoint_port,
+    "url": args.url,
+    "jwt": args.token,
+    "listen_port": args.listenport,
 }
 
 taskobj = {
     "id": str(uuid.uuid4()),
-    "action": "create-cluster",
+    "action": "join-cluster",
     "data": json.dumps(taskdata),
 }
 
-# XXX: grant admin UI access:
 rdb = agent.redis_connect(privileged=True)
-assert rdb.hset('user/admin', mapping={'cluster':'owner', 'node/1':'owner', 'module/traefik1':'owner'}) >= 0
-assert rdb.execute_command('ACL', *f'SETUSER admin ON #{admin_pwh} resetkeys resetchannels nocommands'.split(' ')) == 'OK'
-assert rdb.execute_command('ACL', 'SAVE') == 'OK'
 assert rdb.lpush('cluster/tasks', json.dumps(taskobj)) >= 0
 
-loginobj = {
-    "username": "admin",
-    "password": args.admin_pw,
-}
-
-response = requests.post('http://127.0.0.1:8080/api/login', json=loginobj)
-response.raise_for_status()
-payload = response.json()
-
-print("Copy the following command to a worker node to join this cluster with admin's credentials:\n")
-print(f"    join-cluster http://{endpoint_host} {payload['token']}")
+print("Task queued, check journalctl.")
