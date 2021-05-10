@@ -70,23 +70,20 @@ does not properly initialize the Systemd session environment. Check the services
 
 To uninstall the `traefik1` module run
 
+    # systemctl stop user@$(id -u traefik1)
     # loginctl disable-linger traefik1
     # userdel -r traefik1
 
 #### Default Let's Encrypt certificate
 
+XXX: this does not work
+
 To request a Let's Encrypt certificate for the server FQDN, just execute:
 ```
-N=default HOST=$(hostname -f); podman run -i --network host --rm docker.io/redis:6-alpine redis-cli <<EOF
-SET traefik0/http/routers/$N-http/service $N
-SET traefik0/http/routers/$N-http/entrypoints http,https
-SET traefik0/http/routers/$N-http/rule "Host(\`$HOST\`)"
-SET traefik0/http/routers/$N-https/entrypoints http,https
-SET traefik0/http/routers/$N-https/rule "Host(\`$HOST\`)"
-SET traefik0/http/routers/$N-https/tls true
-SET traefik0/http/routers/$N-https/service $N
-SET traefik0/http/routers/$N-https/tls/certresolver letsencrypt
-SET traefik0/http/routers/$N-https/tls/domains/0/main $HOST
+redis-cli <<EOF
+SET module/traefik1/kv/http/routers/default/tls true
+SET module/traefik1/kv/http/routers/default/tls/certresolver letsencrypt
+SET module/traefik1/kv/http/routers/default/tls/domains/0/main $(hostname -f)
 EOF
 ```
 
@@ -104,20 +101,7 @@ following Podman arguments:
 
 To create a Ldapproxy instance run the following commands, adjusting the LDAPHOST value if needed.
 
-```
-cat >/dev/tcp/127.0.0.1/6379 <<EOF
-HSET module/ldapproxy0/module.env EVENTS_IMAGE ghcr.io/nethserver/ldapproxy:latest PROXYPORT <proxy_listen_port> LDAPHOST <ldap_host> LDAPPORT <ldap_port> LDAPSSL <on|off> SCHEMA <ad|openldap> REALM <realm> BIND_DN <bind_dn> BIND_PASSWORD <pass> BASE_DN <base_dn> USER_DN <user_dn> GROUP_DN <group_dn>
-PUBLISH $(hostname -s):module.init ldapproxy0
-EOF
-```
-
-Example:
-```
-cat >/dev/tcp/127.0.0.1/6379 <<EOF
-HSET module/ldapproxy0/module.env EVENTS_IMAGE ghcr.io/nethserver/ldapproxy:latest PROXYPORT 3890 LDAPHOST 127.0.0.1 LDAPPORT 636 LDAPSSL on SCHEMA ad REALM AD.NETH.LOC BIND_DN administrator@AD.NETH.LOC BIND_PASSWORD Nethesis,1234 BASE_DN dc=ad,dc=neth,dc=loc USER_DN dc=ad,dc=neth,dc=loc GROUP_DN dc=ad,dc=neth,dc=loc
-PUBLISH $(hostname -s):module.init ldapproxy0
-EOF
-```
+XXX: does not work
 
 ### Samba
 
@@ -149,12 +133,11 @@ The DC storage is persisted to the following Podman local volumes:
 
 ### VPN
 
-Each node is connected to the master node using WireGuard VPN in a star network topology.
-After the installation, the server will be configured as master node.
+Each node is connected to the leader node using WireGuard VPN in a star network topology.
 
-The VPN uses a `/24` private network, default is `10.5.4.2.0/24`.
-The first node will be the master and has the default IP address set to `10.5.4.1`.
-All other worker nodes will have IP address like `10.5.4.2`, `10.5.4.3`, etc.
+The VPN uses private network, default is `10.5.4.2.0/24`.
+The leader node gets the first IP address, by default `10.5.4.1`.
+Worker nodes will have IP address like `10.5.4.2`, `10.5.4.3`, etc.
 
 ## Applications installation
 
@@ -288,7 +271,7 @@ EOF
 ## Uninstall
 
 The `uninstall.sh` script attempts to stop and erase core components and
-additional modules. Handle it with care because it erases everything under `/home/*`!
+additional modules. Handle it with care because it erases everything under `/home/*` and `/var/lib/nethserver/*`!
 
     bash /var/lib/nethserver/node/uninstall.sh
 
