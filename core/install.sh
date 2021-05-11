@@ -40,6 +40,9 @@ elif [[ ${distro} == "debian" ]]; then
     apt install linux-headers-$(uname -r) -y
     apt install wireguard -y
 
+    # Install extra utils
+    apt install uuid-runtime jq -y
+
     # Enable access to journalctl --user
     grep  -e "^#Storage=persistent" /etc/systemd/journald.conf || echo "Storage=persistent" >> /etc/systemd/journald.conf
     systemctl restart systemd-journald
