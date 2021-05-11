@@ -26,8 +26,35 @@ if [[ -t 0 ]]; then
     with_tty=1
 fi
 
-source /var/lib/nethserver/cluster/state/agent.env
+hipriv="/var/lib/nethserver/cluster/state/agent.env"
+lopriv="/var/lib/nethserver/node/state/agent.env"
+mypriv="~/.config/state/agent.env"
+
+source="/etc/nethserver/agent.env"
+
+# Attempt to get maximum privileges on Redis DB connection
+if [[ -r "${hipriv}" ]]; then
+    source "${hipriv}"
+elif [[ -r "${lopriv}" ]]; then
+    source "${lopriv}"
+elif [[ -r "${mypriv}" ]]; then
+    source "${mypriv}"
+else
+    REDIS_USER=default
+    REDIS_PASSWORD=nopass
+fi
+
+
+redis_host="${REDIS_ADDRESS%:*}"
+redis_host="${redis_host:-127.0.0.1}"
+redis_user="${REDIS_USER:-$AGENT_ID}"
 
 export REDISCLI_AUTH="${REDIS_PASSWORD}"
 
-exec podman exec -e REDISCLI_AUTH -i ${with_tty:+-t} redis redis-cli --user cluster "${@}" 
+if [[ $(id -u) == 0 ]]; then
+    # For the root user, spawn a redis-cli command in the rootfull Redis container
+    exec podman exec -e REDISCLI_AUTH -i ${with_tty:+-t} redis redis-cli -h "${redis_host}" --user "${redis_user}" "${@}"
+else
+    # For non-root users, run a temporary container
+    exec podman run -e REDISCLI_AUTH -i ${with_tty:+-t} --network=host --rm ghcr.io/nethserver/redis:latest redis-cli -h "${redis_host}" --user "${redis_user}" "${@}"
+fi

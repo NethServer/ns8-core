@@ -35,29 +35,35 @@ The core is composed also by the following components:
 
 ### Redis
 
-Once the core has been initialized, you can access Redis with one of the following command:
+Once the core has been initialized, you can access Redis with one of the following commands:
 
-    # redis-cli <<EOF
+    redis-cli <<EOF
     PING
     EOF
 
-The above command works only for the root user. An experimental Python based helper script
-is available for every user. This client is synchronous: it waits for the server response.
+The `redis-cli` command is faster when invoked by the root user, because it runs a command in
+the existing `redis` rootfull container. For non-root users a temporary container is created and destroyed.
 
-    $ redis-exec <<EOF
-    ...
+The `redis-cli` command attempts to connect with the higher available Redis privileges, by reading `agent.env` files.
+
+An experimental Python-based helper script is available too and it better suits
+Bash action scripts as it does not start any container.
+This client is synchronous as it waits for the server response.
+
+    redis-exec <<EOF
+    PING
     EOF
 
-An alternative, synchronous invocation relies on the `nc` command, provided by the `nmap-ncat` RPM:
+An alternative, synchronous invocation relies on the `nc` command, provided by the `nmap-ncat` RPM (good for development environments):
 
-    $ nc 127.0.0.1 6379 <<EOF
-    ...
+    nc 127.0.0.1 6379 <<EOF
+    PING
     EOF
 
-Or even shorter in Bash (asynchronous):
+For completeness here is a pure Bash invocation that does not wait the server response:
 
-    $ cat >/dev/tcp/127.0.0.1/6379 <<EOF
-    ...
+    cat >/dev/tcp/127.0.0.1/6379 <<EOF
+    PING
     EOF
 
 ### Traefik
