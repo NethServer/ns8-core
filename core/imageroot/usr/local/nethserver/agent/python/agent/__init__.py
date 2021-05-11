@@ -37,7 +37,7 @@ def redis_connect(privileged=False, decode_responses=True, **kwargs):
     if privileged:
         redis_username = os.getenv('REDIS_USER', os.getenv('AGENT_ID'))
         if not redis_username:
-            print("redis_connect: REDIS_USER and AGENT_ID are not set in the environment!\n", sys.stderr)
+            print("redis_connect: REDIS_USER and AGENT_ID are not set in the environment!", file=sys.stderr)
             # Try to parse the node agent environment as fallback:
             env.read_envfile('/var/lib/nethserver/node/state/agent.env')
             redis_username = env('AGENT_ID', default='default')
