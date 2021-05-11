@@ -33,7 +33,7 @@ from envparse import env
 # 1. Send the join request to the remote cluster leader
 # 2. Receive our node_id and VPN IP address
 # 2. Configure the node AGENT_ID/REDIS_USER with new node_id and restart it
-# 3. Configure Wireguard device and routing table
+# 3. Configure WireGuard device and routing table
 # 4. Bind Redis to the VPN IP address
 # 5. Switch Redis to replica
 
@@ -45,6 +45,8 @@ url = request['url']
 assert url
 listen_port = request['listen_port']
 assert listen_port
+tls_verify = bool(request['tls_verify'])
+assert tls_verify is not None
 
 # Read our VPN public key
 public_key = agent.slurp_file('/etc/nethserver/wg0.pub')
@@ -76,6 +78,7 @@ response = requests.post(url.strip('/') + '/cluster-admin/api/tasks/cluster', ti
             "listen_port": listen_port,
         }),
     },
+    verify=tls_verify,
     headers={'Authorization': 'Bearer ' + jwt})
 response.raise_for_status()
 body = response.json()
@@ -87,11 +90,11 @@ task_id = body['Data']['ID']
 #
 # XXX Poll the remote server until the task has completed
 #
-pollurl = url.strip('/') + f'/api/tasks/cluster/{task_id}/output'
+pollurl = url.strip('/') + f'/cluster-admin/api/tasks/cluster/{task_id}/output'
 print(f"Reading response from {pollurl}", file=sys.stderr)
 for attempt in range(0,5):
     time.sleep(2)
-    response = requests.get(pollurl, timeout=30, headers={'Authorization': 'Bearer ' + jwt})
+    response = requests.get(pollurl, timeout=30, verify=tls_verify, headers={'Authorization': 'Bearer ' + jwt})
     body = response.json()
     if body['Code'] == 200:
         break

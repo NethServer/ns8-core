@@ -76,5 +76,5 @@ assert r.execute_command('ACL', 'SETUSER',
 # Persist ACLs to disk
 assert r.execute_command('ACL', 'SAVE') == 'OK'
 
-print(output, sys.stdout)
+print(output, file=sys.stdout)
 exit(exit_code)

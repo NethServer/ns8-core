@@ -37,10 +37,13 @@ if 'REDIS_PASSWORD' in os.environ:
     del(os.environ['REDIS_PASSWORD'])
 env.read_envfile('/var/lib/nethserver/cluster/state/agent.env')
 
+tlsverify = True
+
 parser = argparse.ArgumentParser()
 parser.add_argument('url')
 parser.add_argument('token')
 parser.add_argument('--listenport', default=55820, type=int)
+parser.add_argument('--no-tlsverify', dest='tlsverify', action='store_false')
 
 args = parser.parse_args()
 
@@ -48,6 +51,7 @@ taskdata = {
     "url": args.url,
     "jwt": args.token,
     "listen_port": args.listenport,
+    "tls_verify": args.tlsverify,
 }
 
 taskobj = {

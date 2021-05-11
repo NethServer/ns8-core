@@ -25,9 +25,10 @@
 #
 
 exec 1>&2 # Do not touch the action stdout!
-set -e
 
 mid=$(basename /home/traefik*)
 systemctl stop user@$(id -u "${mid}")
 loginctl disable-linger "${mid}"
 userdel -r "${mid}"
+
+exit 0
