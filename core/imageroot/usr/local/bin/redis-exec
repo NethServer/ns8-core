@@ -22,6 +22,7 @@
 
 import sys
 import agent
+import csv
 
 r = agent.redis_connect(privileged=True)
 
@@ -30,12 +31,7 @@ if len(sys.argv) > 1:
     print(response)
     exit(0)
 
-try:
-    while True:
-        line = input()
-        cmdargs = line.split(' ')
-        response = r.execute_command(*cmdargs)
-        print(response)
-except EOFError:
-    pass
-
+reader = csv.reader(sys.stdin, delimiter=' ', quotechar='"')
+for cmdargs in reader:
+    response = r.execute_command(*cmdargs)
+    print(response)
