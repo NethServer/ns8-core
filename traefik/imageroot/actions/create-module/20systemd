@@ -25,13 +25,22 @@ set -e
 # Redirect any output to the journal (stderr)
 exec 1>&2
 
-# Ensure the configuration key for Traefik exists
-redis-exec SETNX "${AGENT_ID}/kv" ""
+#
+# Configure HTTPS access to the API server with the auto-generated certificate, under the /cluster-admin
+# URL path prefix. The header "X-Forwarded-Prefix" is added to the forwarded request
+#
+redis-exec <<EOF
+SETNX "${AGENT_ID}/kv" ""
+SET "${AGENT_ID}/kv/http/routers/ApiServerHttps/entryPoints/0" "https"
+SET "${AGENT_ID}/kv/http/routers/ApiServerHttps/rule" "HostRegexp(\`{catchall:.*}\`) && PathPrefix(\`/cluster-admin/\`)"
+SET "${AGENT_ID}/kv/http/routers/ApiServerHttps/service" "ApiServerSvc"
+SET "${AGENT_ID}/kv/http/routers/ApiServerHttps/tls" "true"
+SET "${AGENT_ID}/kv/http/routers/ApiServerHttps/middlewares/0" "ApiServerMw0"
+SET "${AGENT_ID}/kv/http/services/ApiServerSvc/loadBalancer/servers/0/url" "http://127.0.0.1:8080"
+SET "${AGENT_ID}/kv/http/middlewares/ApiServerMw0/stripPrefix/forceSlash" "false"
+SET "${AGENT_ID}/kv/http/middlewares/ApiServerMw0/stripPrefix/prefixes/0" "/cluster-admin"
+EOF
 
-# XXX configure access to the API server
-redis-exec SET "${AGENT_ID}/kv/http/services/api-server/loadBalancer/servers/0/url" "http://127.0.0.1:8080"
-redis-exec SET "${AGENT_ID}/kv/http/routers/api-server/rule" 'PathPrefix(`/api/`, `/ws/`, `/docs/`)'
-redis-exec SET "${AGENT_ID}/kv/http/routers/api-server/service" "api-server"
 
 # Enable and start the service
 systemctl --user enable --now traefik.service

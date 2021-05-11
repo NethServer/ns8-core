@@ -82,18 +82,18 @@ To uninstall the `traefik1` module run
 
 #### Default Let's Encrypt certificate
 
-XXX: this does not work
+To enable Let's Encrypt for the admin UI with the server FQDN execute:
 
-To request a Let's Encrypt certificate for the server FQDN, just execute:
 ```
+modpfx=module/traefik1
 redis-cli <<EOF
-SET module/traefik1/kv/http/routers/default/tls true
-SET module/traefik1/kv/http/routers/default/tls/certresolver letsencrypt
-SET module/traefik1/kv/http/routers/default/tls/domains/0/main $(hostname -f)
+MULTI
+SET ${modpfx}/kv/http/routers/ApiServerHttps/rule "Host(\`$(hostname -f)\`) && PathPrefix(\`/cluster-admin/\`)"
+SET ${modpfx}/kv/http/routers/ApiServerHttps/tls/certresolver letsencrypt
+SET ${modpfx}/kv/http/routers/ApiServerHttps/tls/domains/0/main $(hostname -f)
+EXEC
 EOF
 ```
-
-Traefik will generate the certificate without exposing any new service.
 
 ### Ldapproxy
 
