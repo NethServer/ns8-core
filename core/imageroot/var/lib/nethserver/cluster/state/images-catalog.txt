@@ -5,3 +5,4 @@
 #
 HSET image/traefik    rootfull 0 url ghcr.io/nethserver/traefik:latest      name "Traefik edge proxy"
 HSET image/samba      rootfull 1 url ghcr.io/nethserver/samba:latest        name "Samba file server and Active Directory domain controller"
+HSET image/ldapproxy  rootfull 0 url ghcr.io/nethserver/ldapproxy:latest    name "TLS termination proxy for LDAP account providers"
