@@ -23,27 +23,12 @@
 import sys
 import agent
 import argparse
-import hashlib
-import uuid
-import json
-import os
-from envparse import env
-
-
-# Import the cluster credentials in the environment for agent.redis_connect
-if 'AGENT_ID' in os.environ:
-    del(os.environ['AGENT_ID'])
-if 'REDIS_PASSWORD' in os.environ:
-    del(os.environ['REDIS_PASSWORD'])
-env.read_envfile('/var/lib/nethserver/cluster/state/agent.env')
-
-tlsverify = True
 
 parser = argparse.ArgumentParser()
 parser.add_argument('url')
 parser.add_argument('token')
 parser.add_argument('--listenport', default=55820, type=int)
-parser.add_argument('--no-tlsverify', dest='tlsverify', action='store_false')
+parser.add_argument('--no-tlsverify', dest='tlsverify', action='store_false', default=True)
 
 args = parser.parse_args()
 
@@ -54,13 +39,13 @@ taskdata = {
     "tls_verify": args.tlsverify,
 }
 
-taskobj = {
-    "id": str(uuid.uuid4()),
-    "action": "join-cluster",
-    "data": json.dumps(taskdata),
-}
-
 rdb = agent.redis_connect(privileged=True)
-assert rdb.lpush('cluster/tasks', json.dumps(taskobj)) >= 0
 
-print("Task queued, check journalctl.")
+agent.run_subtask(rdb,
+    agent_prefix='cluster',
+    action='join-cluster',
+    input_obj=taskdata,
+    nowait=True,
+)
+
+print("Task queued.")

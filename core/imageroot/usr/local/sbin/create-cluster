@@ -24,18 +24,7 @@ import sys
 import agent
 import argparse
 import hashlib
-import uuid
-import json
 import requests
-import os
-from envparse import env
-
-# Import the cluster credentials in the environment for agent.redis_connect
-if 'AGENT_ID' in os.environ:
-    del(os.environ['AGENT_ID'])
-if 'REDIS_PASSWORD' in os.environ:
-    del(os.environ['REDIS_PASSWORD'])
-env.read_envfile('/var/lib/nethserver/cluster/state/agent.env')
 
 parser = argparse.ArgumentParser()
 parser.add_argument('endpoint')
@@ -48,24 +37,26 @@ endpoint_host, endpoint_port = args.endpoint.split(":")
 
 admin_pwh = hashlib.sha256(args.admin_pw.encode()).hexdigest()
 
-taskdata = {
-    "network": args.network,
-    "endpoint": args.endpoint,
-    "listen_port": endpoint_port,
-}
-
-taskobj = {
-    "id": str(uuid.uuid4()),
-    "action": "create-cluster",
-    "data": json.dumps(taskdata),
-}
-
 # XXX: grant admin UI access:
 rdb = agent.redis_connect(privileged=True)
-assert rdb.hset('user/admin', mapping={'cluster':'owner', 'node/1':'owner', 'module/traefik1':'owner'}) >= 0
+assert rdb.hset('user/admin', mapping={'cluster':'owner', 'node/1':'owner', 'module/traefik1':'owner', 'module/ldapproxy1':'owner'}) >= 0
 assert rdb.execute_command('ACL', *f'SETUSER admin ON #{admin_pwh} resetkeys resetchannels nocommands'.split(' ')) == 'OK'
 assert rdb.execute_command('ACL', 'SAVE') == 'OK'
-assert rdb.lpush('cluster/tasks', json.dumps(taskobj)) >= 0
+
+exit_code, output, error = agent.run_subtask(rdb,
+    agent_prefix='cluster',
+    action='create-cluster',
+    input_obj= {
+        "network": args.network,
+        "endpoint": args.endpoint,
+        "listen_port": endpoint_port,
+    },
+)
+if exit_code != 0:
+    print("The action create-cluster has failed:")
+    sys.stdout.write(output)
+    sys.stderr.write(error)
+    exit(exit_code)
 
 loginobj = {
     "username": "admin",

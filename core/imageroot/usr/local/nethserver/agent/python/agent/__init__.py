@@ -76,7 +76,7 @@ def slurp_file(file_name):
     with open(file_name) as f:
         return f.read().strip()
 
-def run_subtask(redis_obj, agent_prefix, action, input_string="", input_obj=None):
+def run_subtask(redis_obj, agent_prefix, action, input_string="", input_obj=None, nowait=False):
     if input_obj is not None:
         input_string = json.dumps(input_obj)
 
@@ -84,6 +84,9 @@ def run_subtask(redis_obj, agent_prefix, action, input_string="", input_obj=None
     task_obj = {"id": task_id, "action": action, "data": input_string}
 
     redis_obj.lpush(f'{agent_prefix}/tasks', json.dumps(task_obj))
+
+    if nowait:
+        return None, None, None
 
     exit_code = None
     while True: # XXX infinite loop no timeout!

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env python3
 
 #
 # Copyright (C) 2021 Nethesis S.r.l.
@@ -22,11 +22,26 @@
 
 # XXX temporary implementation!!!
 
-image=${1:?missing image argument}
-node_id=${2:-1}
+import sys
+import agent
+import argparse
 
-redis-cli <<EOF
-LPUSH cluster/tasks '{"id":"$(uuidgen)","action":"add-module","data":"{\"image\":\"${image}\",\"node\":\"${node_id}\"}"}'
-EOF
+parser = argparse.ArgumentParser()
+parser.add_argument('image')
+parser.add_argument('node', default=1, type=int)
+args = parser.parse_args()
 
-echo "[NOTICE] 'add-module' task queued. Now run journalctl to check the installation outcome."
+rdb = agent.redis_connect(privileged=True)
+
+exit_code, output, error = agent.run_subtask(rdb,
+    agent_prefix='cluster',
+    action='add-module',
+    input_obj={
+        'image': args.image,
+        'node': args.node,
+    },
+)
+
+sys.stdout.write(output)
+sys.stderr.write(error)
+exit(exit_code)
