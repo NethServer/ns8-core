@@ -157,7 +157,7 @@ func InitJWT() *jwt.GinJWTMiddleware {
 		},
 		Unauthorized: func(c *gin.Context, code int, message string) {
 			c.JSON(http.StatusUnauthorized, structs.Map(response.StatusUnauthorized{
-				Code:    401,
+				Code:    code,
 				Message: message,
 				Data:    nil,
 			}))

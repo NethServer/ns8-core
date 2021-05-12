@@ -37,6 +37,7 @@ type Task struct {
 }
 
 type TaskProgress struct {
+	ID       string `json:"id"`
 	Status   string `json:"status"`
 	Progress int    `json:"progress"`
 }
