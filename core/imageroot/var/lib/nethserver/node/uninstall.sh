@@ -23,6 +23,9 @@ echo "[NOTICE] Stopping the core services"
 systemctl disable --now api-server.service redis.service wg-quick@wg0
 rm -vf /etc/systemd/system/redis.service.d/wireguard.conf
 
+echo "[NOTICE] Wipe Redis DB"
+podman volume rm -f redis-data
+
 echo "[NOTICE] Uninstalling the core image files"
 (
   while read image_entry; do
