@@ -1,0 +1,39 @@
+#!/bin/bash
+
+#
+# Copyright (C) 2021 Nethesis S.rdb.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServerdb.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServerdb.  If not, see COPYING.
+#
+
+#
+# 1. Enable wg0 at system boot
+# 2. Configure Redis to start after it because it binds to wg0 IP address
+#
+
+set -e
+exec 1>&2
+systemctl enable wg-quick@wg0.service
+mkdir -vp /etc/systemd/system/redis.service.d
+
+cat >/etc/systemd/system/redis.service.d/wireguard.conf <<EOF
+[Unit]
+After=wg-quick@wg0.service
+Requires=wg-quick@wg0.service
+EOF
+
+systemctl daemon-reload

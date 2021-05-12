@@ -60,7 +60,7 @@ rdb.hset(f'node/{NODE_ID}/vpn', mapping={
 # Apply new VPN setup
 #
 agent.save_wgconf(ip_address, listen_port)
-agent.run_helper(*'systemctl restart wg-quick@wg0'.split()).check_returncode()
+agent.run_helper(*'systemctl restart wg-quick@wg0'.split(' ')).check_returncode()
 
 #
 # Bind Redis to the VPN ip_address

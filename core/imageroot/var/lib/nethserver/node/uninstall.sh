@@ -21,6 +21,7 @@ done
 
 echo "[NOTICE] Stopping the core services"
 systemctl disable --now api-server.service redis.service wg-quick@wg0
+rm -vf /etc/systemd/system/redis.service.d/wireguard.conf
 
 echo "[NOTICE] Uninstalling the core image files"
 (
