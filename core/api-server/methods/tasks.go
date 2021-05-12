@@ -26,7 +26,6 @@ import (
 	"encoding/json"
 	"net/http"
 	"time"
-	"strings"
 
 	"github.com/fatih/structs"
 	"github.com/gin-gonic/gin"
@@ -290,27 +289,24 @@ func ListenTaskEvents() {
 	go func() {
 		// iterate any messages sent on the channel
 		for msg := range channel {
-			// extract task ID
-			parts := strings.Split(msg.Channel, "/")
-			t := &models.TaskProgress{}
+			// create event object
+			event := &models.Event{}
+			event.Name = msg.Channel
+			event.Timestamp = time.Now()
+			event.Type = "task"
 
-			// unmarshal the data into the task progress
-			err := t.UnmarshalBinary([]byte(msg.Payload))
-			if err != nil {
+			if err := json.Unmarshal([]byte(msg.Payload), &event.Payload); err != nil {
 				panic(err)
 			}
 
-			// assign task ID
-			t.ID = parts[2]
-
 			// marshal model to json string
-			taskJSON, errJSON := json.Marshal(t)
+			taskJSON, errJSON := json.Marshal(event)
 			if errJSON != nil {
 				panic(errJSON)
 			}
 
 			// identify all sessions associated with task id
-			if clientSession, ok := socket.Connections["/ws/tasks/progress"]; ok {
+			if clientSession, ok := socket.Connections["/ws"]; ok {
 				// Broadcast to all sessions
 				socketConnection.BroadcastMultiple(taskJSON, clientSession)
 			}

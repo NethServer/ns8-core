@@ -116,16 +116,11 @@ func main() {
 		}
 	}
 
-	// define websocket group
+	// define websocket endpoint
 	ws := router.Group("/ws")
-
-	// task ws APIS
-	task := ws.Group("/tasks")
-	{
-		task.GET("/progress", func(c *gin.Context) {
-			socket.HandleRequest(c.Writer, c.Request)
-		})
-	}
+	ws.GET("", func(c *gin.Context) {
+		socket.HandleRequest(c.Writer, c.Request)
+	})
 
 	// start events
 	methods.ListenTaskEvents()
