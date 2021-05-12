@@ -284,7 +284,7 @@ var doc = `{
                 }
             }
         },
-        "/tasks/cluster/{task_id}/{file}": {
+        "/tasks/cluster/{task_id}/status": {
             "get": {
                 "description": "get task statuses (output, error, exit_code)",
                 "produces": [
@@ -299,13 +299,6 @@ var doc = `{
                         "type": "string",
                         "description": "Task ID",
                         "name": "task_id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Must be: ` + "`" + `output` + "`" + `, ` + "`" + `error` + "`" + `, ` + "`" + `exit_code` + "`" + `",
-                        "name": "file",
                         "in": "path",
                         "required": true
                     }
@@ -523,7 +516,7 @@ var doc = `{
                 }
             }
         },
-        "/tasks/module/{module_id}/{task_id}/{file}": {
+        "/tasks/module/{module_id}/{task_id}/status": {
             "get": {
                 "description": "get task statuses (output, error, exit_code)",
                 "produces": [
@@ -545,13 +538,6 @@ var doc = `{
                         "type": "string",
                         "description": "Task ID",
                         "name": "task_id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Must be: ` + "`" + `output` + "`" + `, ` + "`" + `error` + "`" + `, ` + "`" + `exit_code` + "`" + `",
-                        "name": "file",
                         "in": "path",
                         "required": true
                     }
@@ -769,7 +755,7 @@ var doc = `{
                 }
             }
         },
-        "/tasks/node/{node_id}/{task_id}/{file}": {
+        "/tasks/node/{node_id}/{task_id}/status": {
             "get": {
                 "description": "get task statuses (output, error, exit_code)",
                 "produces": [
@@ -791,13 +777,6 @@ var doc = `{
                         "type": "string",
                         "description": "Task ID",
                         "name": "task_id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Must be: ` + "`" + `output` + "`" + `, ` + "`" + `error` + "`" + `, ` + "`" + `exit_code` + "`" + `",
-                        "name": "file",
                         "in": "path",
                         "required": true
                     }

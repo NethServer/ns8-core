@@ -232,18 +232,13 @@ paths:
       summary: Create and queue a cluster task
       tags:
       - /tasks cluster
-  /tasks/cluster/{task_id}/{file}:
+  /tasks/cluster/{task_id}/status:
     get:
       description: get task statuses (output, error, exit_code)
       parameters:
       - description: Task ID
         in: path
         name: task_id
-        required: true
-        type: string
-      - description: 'Must be: `output`, `error`, `exit_code`'
-        in: path
-        name: file
         required: true
         type: string
       produces:
@@ -373,7 +368,7 @@ paths:
       summary: Create and queue a module task
       tags:
       - /tasks module
-  /tasks/module/{module_id}/{task_id}/{file}:
+  /tasks/module/{module_id}/{task_id}/status:
     get:
       description: get task statuses (output, error, exit_code)
       parameters:
@@ -385,11 +380,6 @@ paths:
       - description: Task ID
         in: path
         name: task_id
-        required: true
-        type: string
-      - description: 'Must be: `output`, `error`, `exit_code`'
-        in: path
-        name: file
         required: true
         type: string
       produces:
@@ -519,7 +509,7 @@ paths:
       summary: Create and queue a node task
       tags:
       - /tasks node
-  /tasks/node/{node_id}/{task_id}/{file}:
+  /tasks/node/{node_id}/{task_id}/status:
     get:
       description: get task statuses (output, error, exit_code)
       parameters:
@@ -531,11 +521,6 @@ paths:
       - description: Task ID
         in: path
         name: task_id
-        required: true
-        type: string
-      - description: 'Must be: `output`, `error`, `exit_code`'
-        in: path
-        name: file
         required: true
         type: string
       produces:
