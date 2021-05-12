@@ -1,5 +1,7 @@
 [Unit]
 Description=Samba AD Domain Controller
+After=network-online.target
+Wants=network-online.target
 
 [Service]
 Type=forking
