@@ -2,7 +2,7 @@
 
 NethServer 8 experiments
 
-System requirements: Systemd, Podman: both Fedora 33 and Debian 10 were used in the tests.
+System requirements: Systemd, Podman: both Fedora 33, 34, and Debian 10 were used in the tests.
 
 Draft documentation:
 

@@ -61,7 +61,7 @@ List of things considered almost stable, with or without an existing prototype i
 
 - Systemd & Podman foundations
 - Unix users for rootless modules
-- Wireguard VPN among nodes
+- WireGuard VPN among nodes
 - Account providers:
   - Samba AD and OpenLDAP account providers (both are LDAP)
   - Remote LDAP account provider
