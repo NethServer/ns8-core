@@ -144,6 +144,8 @@ EOF
 echo "Start API server and core agents:"
 systemctl enable --now api-server.service agent@cluster.service agent@node.service
 
+source /etc/profile.d/nethserver.sh
+
 echo "Install Traefik:"
 install-module traefik 1
 echo "Install Ldapproxy:"
