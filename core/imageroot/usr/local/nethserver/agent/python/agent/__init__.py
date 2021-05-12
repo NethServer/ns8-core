@@ -125,6 +125,7 @@ def save_wgconf(ipaddr, listen_port=55820, peers={}):
         wgconf.write(f'[Peer]\n')
         wgconf.write(f"PublicKey = {peer['public_key']}\n")
         wgconf.write(f'AllowedIPs = {", ".join(allowed_ips)}\n')
+        wgconf.write(f'PersistentKeepalive = 25\n')
         if 'endpoint' in peer and peer['endpoint'] != '':
             wgconf.write(f"Endpoint = {peer['endpoint']}\n")
 
