@@ -97,7 +97,7 @@ agent.run_helper(*f'ip route add {ip_address} dev wg0'.split(' ')).check_returnc
 #
 # Push a task for the new node: create a new Traefik module instance!
 #
-taskobj = {
+taskobj1 = {
     "id": str(uuid.uuid4()),
     "action": "add-module",
     "data": json.dumps({
@@ -105,7 +105,21 @@ taskobj = {
         "node": node_id,
     }),
 }
-assert rdb.lpush('cluster/tasks', json.dumps(taskobj)) >= 0
+assert rdb.lpush('cluster/tasks', json.dumps(taskobj1)) >= 0
+
+#
+# Push a task for the new node: create a new Ldapproxy module instance!
+#
+taskobj2 = {
+    "id": str(uuid.uuid4()),
+    "action": "add-module",
+    "data": json.dumps({
+        "image": "ldapproxy",
+        "node": node_id,
+    }),
+}
+assert rdb.lpush('cluster/tasks', json.dumps(taskobj2)) >= 0
+
 
 #
 # Return the new information to the caller

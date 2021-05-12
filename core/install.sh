@@ -123,7 +123,6 @@ node_pwhash=$(echo -n "${node_password}" | sha256sum | awk '{print $1}')
 SADD cluster/roles/owner add-node
 SET cluster/leader 1
 SET cluster/node_sequence 1
-LPUSH cluster/tasks '{"id":"$(uuidgen)","action":"add-module","data":"{\"image\":\"traefik\",\"node\":\"1\"}"}'
 EOF
 
     # Load module images metadata. XXX this is a temporary implementation
@@ -140,11 +139,15 @@ ACL SAVE
 SAVE
 EOF
 
-) | podman exec -i redis redis-cli
+) | redis-cli
 
 echo "Start API server and core agents:"
 systemctl enable --now api-server.service agent@cluster.service agent@node.service
 
+echo "Install Traefik:"
+install-module traefik 1
+echo "Install Ldapproxy:"
+install-module ldapproxy 1
 
 cat - <<EOF
 

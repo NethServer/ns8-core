@@ -31,4 +31,9 @@ systemctl stop user@$(id -u "${mid}")
 loginctl disable-linger "${mid}"
 userdel -r "${mid}"
 
+mid=$(basename /home/ldapproxy*)
+systemctl stop user@$(id -u "${mid}")
+loginctl disable-linger "${mid}"
+userdel -r "${mid}"
+
 exit 0
