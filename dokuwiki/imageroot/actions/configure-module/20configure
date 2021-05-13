@@ -1,0 +1,54 @@
+#!/bin/bash
+
+#
+# Copyright (C) 2021 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
+set -e
+
+# Redirect any output to the journal (stderr)
+exec 1>&2
+
+#1. variabili ambiente DOKUWIKI_HOST -> configuration db esmith (pre-requisiti, non può partire senza), configurazione runtime -> db esmith aggiuntiv
+
+# host -> traefik, -> immagine dokuwiki
+
+# read stdin
+# stdin: "mywiki 8081"
+read wiki_name tcp_port
+
+if [[ -z "${wiki_name}" ]]; then
+  # Validation error
+  echo "The wiki name is missing" >&2 # UI TODO: segnalazione campo che fallisce e i18n
+  exit 2
+fi
+
+
+# Parlo con l'agent in ascolto su FD3 
+# Al momento èdisponibile solo il comando set-env
+# I valori diventano persistenti solo se tutti gli step dell'azione terminano con exit 0
+# TODO glossario action vs step
+cat >&3 <<EOF
+set-env WIKI_NAME ${wiki_name}
+set-env TCP_PORT ${tcp_port}
+set-env PHP_ENABLE_OPCACHE 1
+dump-env
+EOF
+
+
