@@ -27,4 +27,10 @@ exec 1>&2 # Do not touch the action stdout!
 # Removing traefik1 closes any connection to the api-server.
 #
 
-exec remove-module --no-preserve traefik1
+mid=traefik1
+systemctl stop user@$(id -u "${mid}")
+loginctl disable-linger "${mid}"
+userdel -r "${mid}"
+
+# Ignore errors
+exit 0
