@@ -24,16 +24,16 @@ set -e
 exec 1>&2
 
 # Set default values for the node ldapproxy default instance:
-export PROXYPORT=3890
-export LDAPHOST=127.0.0.1
-export LDAPPORT=389
-export LDAPSSL=off
+PROXYPORT=3890
+LDAPHOST=127.0.0.1
+LDAPPORT=389
+LDAPSSL=off
 
 # Enable the service at boot
 systemctl enable --user ldapproxy
 
 # Persist environment variables in Redis DB:
-cat <<EOF 1>&${AGENT_COMFD}
+cat >&${AGENT_COMFD} <<EOF
 set-env PROXYPORT ${PROXYPORT}
 set-env LDAPHOST ${LDAPHOST}
 set-env LDAPPORT ${LDAPPORT}
