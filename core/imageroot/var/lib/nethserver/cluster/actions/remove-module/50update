@@ -1,0 +1,86 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2021 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
+import sys
+import json
+import agent
+
+request = json.load(sys.stdin)
+module_id = request['module_id']
+assert module_id
+preserve_data = request['preserve_data']
+assert preserve_data is not None
+
+#
+# 1. invoke the "destroy-module" action on the target module, if available
+# 2. invoke "remove-module" on every node
+# 3. wipe the module key space
+# 4. delete the Redis user
+#
+
+rdb = agent.redis_connect(privileged=True)
+
+assert rdb.exists(f'module/{module_id}') == 1
+
+# Invoke the module destructor, if defined. Rootfull modules must
+# implement one, to stop running services.
+exit_code, output, error = agent.run_subtask(rdb,
+    agent_prefix=f'module/{module_id}',
+    action='destroy-module',
+    input_obj={
+        "module_id": module_id,
+        "preserve_data": preserve_data,
+    })
+assert exit_code == 0 or exit_code == 8 # The module does not implement a "destroy" action
+
+errors = 0
+# Iterate over all cluster nodes and try to clean up
+# the module data and users
+for node_prefix in rdb.scan_iter('node/*/vpn'):
+    node_prefix = node_prefix.removesuffix('/vpn')
+    # XXX we could run the node tasks as coroutines...
+    exit_code, output, error = agent.run_subtask(rdb,
+        agent_prefix=node_prefix,
+        action='remove-module',
+        input_obj={
+            "module_id": module_id,
+            "preserve_data": preserve_data,
+        })
+    if exit_code != 0:
+        print(f'[ERROR] remove-module from {node_prefix}:', file=sys.stderr)
+        sys.stderr.write(error)
+        sys.stderr.write(output)
+        errors += 1
+
+# Erase the module keyspace
+module_keys = list(rdb.scan_iter(f'module/{module_id}*'))
+if module_keys:
+    rdb.delete(*module_keys)
+
+# Delete the Redis account
+assert rdb.execute_command('ACL', 'DELUSER', f'module/{module_id}') == 1
+
+# Persist ACLs to disk
+assert rdb.execute_command('ACL', 'SAVE') == 'OK'
+
+if errors > 0:
+    exit(1)

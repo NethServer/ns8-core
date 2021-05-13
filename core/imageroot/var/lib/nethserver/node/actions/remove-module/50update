@@ -20,11 +20,27 @@
 # along with NethServer.  If not, see COPYING.
 #
 
-exec 1>&2 # Do not touch the action stdout!
+exec 1>&2
+set -e
 
-#
-# Avoid the "traefik1" module clash with our new leader.
-# Removing traefik1 closes any connection to the api-server.
-#
+readarray -t input < <(jq -r '.module_id, if .preserve_data then "yes" else "no" end')
 
-exec remove-module --no-preserve traefik1
+mid=${input[0]:?missing module_id argument}
+preserve=${input[1]:?missing preserve_data argument}
+
+uid=$(id -u "${mid}" || :)
+if [[ -z $uid ]]; then # Rootfull module
+    systemctl disable --now agent@"${mid}"
+    if [[ ${preserve} == "no" ]]; then
+        rm -rf "/var/lib/nethserver/${mid}"
+    fi
+else # Rootless module
+    loginctl disable-linger "${mid}"
+    systemctl stop "user@${uid}.service"
+
+    if [[ ${preserve} == "yes" ]]; then
+        userdel "${mid}"
+    else
+        userdel -r "${mid}"
+    fi
+fi

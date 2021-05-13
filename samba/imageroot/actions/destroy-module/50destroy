@@ -20,11 +20,13 @@
 # along with NethServer.  If not, see COPYING.
 #
 
-exec 1>&2 # Do not touch the action stdout!
+exec 1>&2 # Send any output to stderr, to not alter the action response protocol
+
+mid=$(basename ${AGENT_ID})
 
 #
-# Avoid the "traefik1" module clash with our new leader.
-# Removing traefik1 closes any connection to the api-server.
+# We must stop and clean up what we installed in the "create-module" action
 #
-
-exec remove-module --no-preserve traefik1
+systemctl disable --now "${mid}.service"
+rm -vf "/etc/systemd/system/${mid}.service"
+systemctl daemon-reload

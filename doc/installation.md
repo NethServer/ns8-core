@@ -122,7 +122,7 @@ to a host IP address to serve LAN clients, and 127.0.0.1
 Install with:
 
 ```
-install-module samba
+add-module samba 1
 ```
 
 If the module gets id `samba1`, start the provisioning procedure like:

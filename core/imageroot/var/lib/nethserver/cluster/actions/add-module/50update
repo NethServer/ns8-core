@@ -60,6 +60,7 @@ exit_code, output, error = agent.run_subtask(r,
 assert exit_code == 0
 
 outobj=json.loads(output)
+outobj['mid'] = module_id
 
 r.hset(f'module/{module_id}', mapping={
     "redis_sha256": outobj['redis_sha256'],
@@ -76,5 +77,5 @@ assert r.execute_command('ACL', 'SETUSER',
 # Persist ACLs to disk
 assert r.execute_command('ACL', 'SAVE') == 'OK'
 
-print(output, file=sys.stdout)
+print(json.dumps(outobj), file=sys.stdout)
 exit(exit_code)

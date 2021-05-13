@@ -57,6 +57,19 @@ rdb.hset(f'node/{NODE_ID}/vpn', mapping={
 })
 
 #
+# Install ldapproxy here
+#
+agent.run_subtask(rdb,
+    nowait=True,
+    agent_prefix='cluster',
+    action='add-module',
+    input_obj={
+        'image': 'ldapproxy',
+        'node': NODE_ID,
+    },
+)
+
+#
 # Apply new VPN setup
 #
 agent.save_wgconf(ip_address, listen_port)

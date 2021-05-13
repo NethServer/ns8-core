@@ -147,9 +147,7 @@ systemctl enable --now api-server.service agent@cluster.service agent@node.servi
 source /etc/profile.d/nethserver.sh
 
 echo "Install Traefik:"
-install-module traefik 1
-echo "Install Ldapproxy:"
-install-module ldapproxy 1
+add-module traefik 1
 
 cat - <<EOF
 

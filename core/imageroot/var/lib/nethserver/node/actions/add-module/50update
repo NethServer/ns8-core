@@ -80,5 +80,6 @@ else: # rootless
 
 json.dump({
     "redis_sha256":redis_sha256,
+    "rootfull": is_rootfull,
     "subtask":subtask_id,
 }, sys.stdout)

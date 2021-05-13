@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env python3
 
 #
 # Copyright (C) 2021 Nethesis S.r.l.
@@ -20,11 +20,28 @@
 # along with NethServer.  If not, see COPYING.
 #
 
-exec 1>&2 # Do not touch the action stdout!
+# XXX temporary implementation!!!
 
-#
-# Avoid the "traefik1" module clash with our new leader.
-# Removing traefik1 closes any connection to the api-server.
-#
+import sys
+import agent
+import argparse
 
-exec remove-module --no-preserve traefik1
+parser = argparse.ArgumentParser()
+parser.add_argument('module')
+parser.add_argument('--no-preserve', dest='preserve_data', default=True, action='store_false')
+args = parser.parse_args()
+
+rdb = agent.redis_connect(privileged=True)
+
+exit_code, output, error = agent.run_subtask(rdb,
+    agent_prefix='cluster',
+    action='remove-module',
+    input_obj={
+        'module_id': args.module,
+        'preserve_data': args.preserve_data,
+    },
+)
+
+sys.stdout.write(output)
+sys.stderr.write(error)
+exit(exit_code)
