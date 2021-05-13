@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 #
 # Copyright (C) 2021 Nethesis S.r.l.
@@ -20,9 +20,13 @@
 # along with NethServer.  If not, see COPYING.
 #
 
-envsubst '${MAILBOX_DOMAIN}' </etc/postfix/main.cf.template >/etc/postfix/main.cf
+set -e
+exec 1>&2
 
-# Refresh file databases on startup
-newaliases
+cat >./environment <<EOF
+HOSTNAME=${HOSTNAME}
+MAILBOX_DOMAIN=${MAILBOX_DOMAIN}
+AUTH_BIND_USERDN=${AUTH_BIND_USERDN}
+EOF
 
-exec /usr/sbin/postfix start-fg
+systemctl --user restart pod-mail.service

@@ -9,7 +9,7 @@ repobase="ghcr.io/nethserver"
 #
 reponame="mail"
 container=$(buildah from scratch)
-buildah copy "${container}" config /.config
+buildah add "${container}" imageroot/ /
 buildah config --entrypoint=/ "${container}"
 buildah commit "${container}" "${repobase}/${reponame}"
 messages+=(" buildah push ${repobase}/${reponame} docker://${repobase}/${reponame}:latest")

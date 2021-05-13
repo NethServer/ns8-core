@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 #
 # Copyright (C) 2021 Nethesis S.r.l.
@@ -20,9 +20,21 @@
 # along with NethServer.  If not, see COPYING.
 #
 
-envsubst '${MAILBOX_DOMAIN}' </etc/postfix/main.cf.template >/etc/postfix/main.cf
+set -e
+exec 1>&2
 
-# Refresh file databases on startup
-newaliases
+# Enable services at boot
+systemctl --user enable pod-mail.service
 
-exec /usr/sbin/postfix start-fg
+# Calculate the mailbox domain name for Postfix,
+# starting from the full host name assigned to the mail pod instance:
+MAILBOX_DOMAIN=$(hostname -f | cut -f 2- -d ".")
+HOSTNAME=$(hostname -f)
+AUTH_BIND_USERDN="%u"
+
+# Persist environment variables in Redis DB:
+cat >&${AGENT_COMFD} <<EOF
+set-env HOSTNAME ${HOSTNAME}
+set-env AUTH_BIND_USERDN ${AUTH_BIND_USERDN}
+set-env MAILBOX_DOMAIN ${MAILBOX_DOMAIN}
+EOF
