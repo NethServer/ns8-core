@@ -48,15 +48,6 @@ with agent.redis_connect() as ro:
     is_rootfull = image.get('rootfull', "0") == "1"
     assert image['url']
 
-# Push the creation task for the new module. Its agent will pick up it during the first boot. 
-with agent.redis_connect(privileged=True) as rw:
-    subtask_id = str(uuid.uuid4())
-    rw.lpush(f'module/{module_id}/tasks', json.dumps({
-        "id": subtask_id,
-        "action": "create-module",
-        "data": "",
-    }))
-
 # Launch the module agent (async)
 if is_rootfull:
     # Create the module dirs structure
@@ -81,5 +72,4 @@ else: # rootless
 json.dump({
     "redis_sha256":redis_sha256,
     "rootfull": is_rootfull,
-    "subtask":subtask_id,
 }, sys.stdout)

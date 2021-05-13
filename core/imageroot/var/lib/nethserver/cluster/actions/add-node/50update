@@ -94,32 +94,16 @@ agent.run_helper(*f'wg set wg0 peer {public_key} persistent-keepalive 25 allowed
 agent.run_helper(*f'ip route del {ip_address}'.split(' ')) # Ignore error
 agent.run_helper(*f'ip route add {ip_address} dev wg0'.split(' ')).check_returncode()
 
-#
-# Push a task for the new node: create a new Traefik module instance!
-#
-taskobj1 = {
-    "id": str(uuid.uuid4()),
-    "action": "add-module",
-    "data": json.dumps({
-        "image": "traefik",
-        "node": node_id,
-    }),
-}
-assert rdb.lpush('cluster/tasks', json.dumps(taskobj1)) >= 0
-
-#
-# Push a task for the new node: create a new Ldapproxy module instance!
-#
-taskobj2 = {
-    "id": str(uuid.uuid4()),
-    "action": "add-module",
-    "data": json.dumps({
-        "image": "ldapproxy",
-        "node": node_id,
-    }),
-}
-assert rdb.lpush('cluster/tasks', json.dumps(taskobj2)) >= 0
-
+# Install core modules in the new node
+for core_module_image in ['traefik', 'ldapproxy']:
+    rdb.lpush('cluster/tasks', json.dumps({
+        "id": str(uuid.uuid4()),
+        "action": "add-module",
+        "data": json.dumps({
+            "image": core_module_image,
+            "node": node_id,
+        }),
+    }))
 
 #
 # Return the new information to the caller

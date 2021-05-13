@@ -30,27 +30,25 @@ node_id = int(request['node'])
 assert node_id > 0
 
 # Retrieve the image attributes from Redis DB. Is it the image for a rootfull module?
-r = agent.redis_connect(privileged=True)
-image = r.hgetall(f'image/{image_id}')
+rdb = agent.redis_connect(privileged=True)
+image = rdb.hgetall(f'image/{image_id}')
 assert image['url']
 
 # Increment the module sequence for image_id (e.g. traefik => traefik1)
-module_id = image_id + str(r.incr(f'cluster/module_sequence/{image_id}'))
+module_id = image_id + str(rdb.incr(f'cluster/module_sequence/{image_id}'))
 
-r.hset(f'module/{module_id}', mapping={
+rdb.hset(f'module/{module_id}', mapping={
     "image": image_id,
     "image_url_override": "",
     "redis_sha256": "",
 })
 
-# Grant the host node access to the new module
-assert r.execute_command('ACL', 'SETUSER',
-                        f'node/{node_id}',
-                        f'~module/{module_id}/tasks') == 'OK'
+# Push the creation task for the new module. Its agent will pick up it during the first boot.
+agent.run_subtask(rdb, agent_prefix=f'module/{module_id}', action="create-module", nowait=True)
 
 # Wait for the module host to set up the module environment: it
 # has to return us the module password hash
-exit_code, output, error = agent.run_subtask(r,
+exit_code, output, error = agent.run_subtask(rdb,
     agent_prefix=f'node/{node_id}',
     action='add-module',
     input_obj={
@@ -62,12 +60,12 @@ assert exit_code == 0
 outobj=json.loads(output)
 outobj['mid'] = module_id
 
-r.hset(f'module/{module_id}', mapping={
+rdb.hset(f'module/{module_id}', mapping={
     "redis_sha256": outobj['redis_sha256'],
 })
 
 # Create a new Redis user for module_id and set the password and permissions
-assert r.execute_command('ACL', 'SETUSER',
+assert rdb.execute_command('ACL', 'SETUSER',
                     f'module/{module_id}', 'ON',
                     '#' + outobj['redis_sha256'],
                     f'~module/{module_id}/*',
@@ -75,7 +73,8 @@ assert r.execute_command('ACL', 'SETUSER',
                     '+@read', '+@write', '+@transaction', '+@connection', '+publish') == 'OK'
 
 # Persist ACLs to disk
-assert r.execute_command('ACL', 'SAVE') == 'OK'
+assert rdb.execute_command('ACL', 'SAVE') == 'OK'
 
+del(outobj['redis_sha256'])
 print(json.dumps(outobj), file=sys.stdout)
 exit(exit_code)
