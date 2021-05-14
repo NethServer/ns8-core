@@ -138,6 +138,23 @@ func exportToRedis(env []string) []interface{} {
 	return out
 }
 
+// Persist the environment to the current working directory
+// Systemd unit file can pickup it with EnvironmentFile option
+func dumpToFile(env []string) {
+	path, _ := os.Getwd()
+	env = dedupEnv(env);
+	f, err := os.Create("./environment")
+	if err != nil {
+		log.Printf("[ERROR] Can't write %s/environment file: %s", path, err)
+		return
+	}
+	for _, line := range env {
+		f.WriteString(line+"\n")
+	}
+	f.Close()
+	log.Printf("Wrote %s/environment file", path)
+}
+
 func runAction(task *models.Task) {
 
 	// Redis key names where the action response is stored:
@@ -200,7 +217,7 @@ func runAction(task *models.Task) {
 			// Read the commands FD line by line, parse and execute the command
 			rdr := csv.NewReader(comReadFd)
 			rdr.Comma = ' '
-			rdr.FieldsPerRecord = 3
+			rdr.FieldsPerRecord = -1
 			for {
 				record, err := rdr.Read()
 				if err == io.EOF {
@@ -213,6 +230,9 @@ func runAction(task *models.Task) {
 				switch cmd := record[0]; cmd {
 				case "set-env":
 					environment = append(environment, record[1]+"="+record[2])
+				case "dump-env":
+			                rdb.HSet(ctx, agentPrefix+"/environment", exportToRedis(environment)...)
+					dumpToFile(environment)
 				default:
 					log.Printf("[ERROR] Unknown command %s", cmd)
 				}
@@ -239,7 +259,7 @@ func runAction(task *models.Task) {
 		environment = dedupEnv(environment)
 	}
 
-	_, err := rdb.Pipelined(ctx, func(pipe redis.Pipeliner) error {
+	_, err := rdb.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
 		// Persist the environment
 		if exitCode == 0 && len(environment) > 0 {
 			pipe.HSet(ctx, agentPrefix+"/environment", exportToRedis(environment)...)
@@ -253,6 +273,10 @@ func runAction(task *models.Task) {
 	})
 	if err != nil {
 		log.Printf("[ERROR] Redis command failed: ", err)
+	} else {
+		if exitCode == 0 && len(environment) > 0 {
+			dumpToFile(environment)
+		}
 	}
 }
 
