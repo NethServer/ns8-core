@@ -37,7 +37,7 @@ container=$(buildah from docker.io/library/alpine:3.13)
 buildah run "${container}" /bin/sh <<EOF
 addgroup -S vmail
 adduser -G vmail -h /var/lib/vmail -S vmail
-apk add --no-cache dovecot dovecot-ldap dovecot-pigeonhole-plugin dovecot-submissiond dovecot-pop3d dovecot-lmtpd
+apk add --no-cache dovecot dovecot-ldap dovecot-pigeonhole-plugin dovecot-submissiond dovecot-pop3d dovecot-lmtpd gettext
 find /var/cache/apk /var/lib/apk -type f -delete
 EOF
 buildah add "${container}" dovecot/ /etc/dovecot/
