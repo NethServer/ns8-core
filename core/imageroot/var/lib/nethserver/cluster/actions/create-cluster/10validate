@@ -20,18 +20,4 @@
 # along with NethServer.  If not, see COPYING.
 #
 
-#
-# Input data is in the form:
-#
-# {
-#     "id": "<some-uuid-string>",
-#     "action": "create-cluster",
-#     "data": {
-#         "admin_password_hash": "648a5db6b14800f4009f62ec6bdbd04b91b6b25179c92626839e3a91fb32da5e",
-#         "network": "10.5.4.0/24",
-#         "endpoint": "myclusterleader.example.com:55820",
-#         "listen_port": 55820
-#     }
-# }
-
 exit 0

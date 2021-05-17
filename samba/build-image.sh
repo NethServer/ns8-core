@@ -23,7 +23,7 @@ container=$(buildah from "${repobase}/${reponame}")
 reponame="samba"
 buildah add "${container}" imageroot/ /srv/imageroot/
 buildah add "${container}" scripts/entrypoint.sh /entrypoint.sh
-buildah config --label 'org.nethserver.imageroot=/srv/imageroot' "${container}"
+buildah config --label 'org.nethserver/imageroot=/srv/imageroot' "${container}"
 buildah config --cmd='' "${container}"
 buildah config --entrypoint='[ "/bin/bash", "/entrypoint.sh" ]' "${container}"
 buildah commit "${container}" "${repobase}/${reponame}"

@@ -55,8 +55,8 @@ assert exit_code == 0 or exit_code == 8 # The module does not implement a "destr
 errors = 0
 # Iterate over all cluster nodes and try to clean up
 # the module data and users
-for node_prefix in rdb.scan_iter('node/*/vpn'):
-    node_prefix = node_prefix.removesuffix('/vpn')
+for node_prefix in rdb.scan_iter('node/*/tcp_ports_sequence'):
+    node_prefix = node_prefix.removesuffix('/tcp_ports_sequence')
     # XXX we could run the node tasks as coroutines...
     exit_code, output, error = agent.run_subtask(rdb,
         agent_prefix=node_prefix,
