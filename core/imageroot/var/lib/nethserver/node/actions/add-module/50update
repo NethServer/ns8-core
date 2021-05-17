@@ -26,6 +26,7 @@ import json
 import agent
 import uuid
 import hashlib
+import subprocess
 
 def save_agent_env(module_id):
     """Generate and persist the Redis password for module_id
@@ -38,15 +39,53 @@ def save_agent_env(module_id):
     os.umask(oldmask)
     return hashlib.sha256(redis_password.encode()).hexdigest()
 
+def allocate_tcp_ports_range(module_id, size):
+    """Allocate a TCP port range of the given size for module_id
+    """
+    global rdb
+    assert size > 0
+
+    seq = rdb.incrby(f'{agent_prefix}/tcp_ports_sequence', size)
+    assert int(seq) > 0
+    rdb.hset(f'module/{module_id}/environment', 'TCP_PORT', f'{seq - 1}') # Always set the first port
+    if size > 1: # Multiple ports: always set the ports range variable
+        rdb.hset(f'module/{module_id}/environment', 'TCP_PORTS_RANGE', f'{seq - size}-{seq - 1}')
+    if size <= 8: # Few ports: set also a comma-separated list of ports variable
+        rdb.hset(f'module/{module_id}/environment', 'TCP_PORTS', ','.join(str(port) for port in range(seq-size, seq)))
+
 request = json.load(sys.stdin)
 image_id = request['image']
 module_id = request['module']
+agent_prefix = os.environ['AGENT_ID']
+rdb = agent.redis_connect(privileged=True)
+
 
 # Read from DB the rootfull flag state:
 with agent.redis_connect() as ro:
-    image = ro.hgetall(f'image/{image_id}')
-    is_rootfull = image.get('rootfull', "0") == "1"
-    assert image['url']
+    image_url = ro.hget(f'image/{image_id}', 'url')
+    assert image_url
+
+# Pull the image from the remote server
+agent.run_helper('podman', 'pull', image_url).check_returncode()
+
+# Parse the image labels
+with subprocess.Popen(['podman', 'image', 'inspect', image_url], stdout=subprocess.PIPE, stderr=sys.stderr) as proc:
+    inspect = json.load(proc.stdout)
+    labels = inspect[0]['Labels']
+
+if 'org.nethserver/rootfull' in labels:
+    is_rootfull = int(labels['org.nethserver/rootfull']) == 1
+else:
+    is_rootfull = False
+
+if 'org.nethserver/tcp_ports_demand' in labels:
+    tcp_ports_demand = int(labels['org.nethserver/tcp_ports_demand'])
+else:
+    tcp_ports_demand = 0
+
+# Allocate TCP ports, if required
+if tcp_ports_demand > 0:
+    allocate_tcp_ports_range(module_id, tcp_ports_demand)
 
 # Launch the module agent (async)
 if is_rootfull:
@@ -56,7 +95,7 @@ if is_rootfull:
     # Extract the module imageroot
     os.chdir(f'/var/lib/nethserver/{module_id}')
     redis_sha256 = save_agent_env(module_id)
-    agent.run_helper('extract-image', image['url']).check_returncode()
+    agent.run_helper('extract-image', image_url).check_returncode()
     # Start the module agent
     agent.run_helper('systemctl', 'enable', '--now', f'agent@{module_id}.service').check_returncode()
 else: # rootless
@@ -65,7 +104,7 @@ else: # rootless
     os.chdir(f'/home/{module_id}/.config')
     redis_sha256 = save_agent_env(module_id)
     # Extract the module imageroot and fix CWD permissions recursively
-    agent.run_helper('extract-image', image['url']).check_returncode()
+    agent.run_helper('extract-image', image_url).check_returncode()
     # Start the module agent
     agent.run_helper('loginctl', 'enable-linger', module_id).check_returncode()
 

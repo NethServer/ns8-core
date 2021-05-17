@@ -123,6 +123,7 @@ node_pwhash=$(echo -n "${node_password}" | sha256sum | awk '{print $1}')
 SADD cluster/roles/owner add-node
 SET cluster/leader 1
 SET cluster/node_sequence 1
+SET node/1/tcp_ports_sequence 20000
 EOF
 
     # Load module images metadata. XXX this is a temporary implementation
@@ -134,7 +135,7 @@ ACL SETUSER cluster ON #${cluster_pwhash} ~* &* +@all
 AUTH cluster "${cluster_password}"
 ACL SETUSER default ON nopass ~* &* nocommands +@read +@connection +subscribe +psubscribe +psync +replconf +ping
 ACL SETUSER api-server ON #${apiserver_pwhash} ~* &* nocommands +@read +@pubsub +lpush +@transaction +@connection
-ACL SETUSER node/1 ON #${node_pwhash} resetkeys ~node/1/* resetchannels &progress/task/* nocommands +@read +@write +@transaction +@connection +publish
+ACL SETUSER node/1 ON #${node_pwhash} resetkeys ~node/1/* ~module/*/environment resetchannels &progress/task/* nocommands +@read +@write +@transaction +@connection +publish
 ACL SAVE
 SAVE
 EOF

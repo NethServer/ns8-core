@@ -75,12 +75,15 @@ assert rdb.hset(f'node/{node_id}/vpn', mapping={
     "listen_port": str(listen_port),
 }) >= 0
 
+# Initialize the node ports sequence
+assert rdb.set(f'node/{node_id}/tcp_ports_sequence', 20000) == 'OK'
+
 #
 # 2. Create redis acls for the node agent
 #
 assert rdb.execute_command('ACL', 'SETUSER',
     f'node/{node_id}', 'ON', '#' + node_pwh,
-    'resetkeys', f'~node/{node_id}/*',
+    'resetkeys', f'~node/{node_id}/*', '~module/*/environment', # XXX: implement at cluster level environment access
     'resetchannels', '&progress/task/*',
     'nocommands', '+@read', '+@write', '+@transaction', '+@connection', '+publish',
 ) == 'OK'
