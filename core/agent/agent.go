@@ -28,10 +28,10 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path"
 	"sort"
 	"strings"
 	"time"
-	"path"
 
 	"github.com/NethServer/ns8-scratchpad/core/api-server/models"
 	"github.com/go-redis/redis/v8"
@@ -142,14 +142,14 @@ func exportToRedis(env []string) []interface{} {
 // Systemd unit file can pickup it with EnvironmentFile option
 func dumpToFile(env []string) {
 	path, _ := os.Getwd()
-	env = dedupEnv(env);
+	env = dedupEnv(env)
 	f, err := os.Create("./environment")
 	if err != nil {
 		log.Printf("[ERROR] Can't write %s/environment file: %s", path, err)
 		return
 	}
 	for _, line := range env {
-		f.WriteString(line+"\n")
+		f.WriteString(line + "\n")
 	}
 	f.Close()
 	log.Printf("Wrote %s/environment file", path)
@@ -192,8 +192,8 @@ func runAction(task *models.Task) {
 		cmd := exec.Command(step)
 		cmd.Env = append(append(os.Environ(), environment...),
 			"AGENT_COMFD=3", // 3 is the additional FD number where the action step can write its commands for us
-			"AGENT_TASK_ID=" + task.ID,
-			"AGENT_TASK_ACTION=" + task.Action,
+			"AGENT_TASK_ID="+task.ID,
+			"AGENT_TASK_ACTION="+task.Action,
 		)
 		cmd.Stdin = strings.NewReader(task.Data)
 		cmd.ExtraFiles = []*os.File{comWriteFd}
@@ -231,7 +231,7 @@ func runAction(task *models.Task) {
 				case "set-env":
 					environment = append(environment, record[1]+"="+record[2])
 				case "dump-env":
-			                rdb.HSet(ctx, agentPrefix+"/environment", exportToRedis(environment)...)
+					rdb.HSet(ctx, agentPrefix+"/environment", exportToRedis(environment)...)
 					dumpToFile(environment)
 				default:
 					log.Printf("[ERROR] Unknown command %s", cmd)
