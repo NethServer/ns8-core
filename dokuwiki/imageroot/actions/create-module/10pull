@@ -27,6 +27,9 @@ exec 1>&2
 
 IMAGE=docker.io/bitnami/dokuwiki:latest
 
-echo "set-env IMAGE ${IMAGE}" >&3
+# Talk with agent using file descriptor:
+# - save image name to environment
+
+echo "set-env IMAGE ${IMAGE}" >&${AGENT_COMFD}
 
 podman pull ${IMAGE}
