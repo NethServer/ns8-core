@@ -26,8 +26,8 @@ set -e
 exec 1>&2
 
 # read stdin
-# stdin: "mywiki 8081"
-read wiki_name tcp_port
+# stdin: "mywiki"
+read wiki_name
 
 # Make sure wiki name is not empty
 if [[ -z "${wiki_name}" ]]; then
@@ -41,7 +41,6 @@ fi
 # - dump everything to file
 cat >&${AGENT_COMFD} <<EOF
 set-env WIKI_NAME ${wiki_name}
-set-env TCP_PORT ${tcp_port}
 set-env PHP_ENABLE_OPCACHE 1
 dump-env
 EOF
