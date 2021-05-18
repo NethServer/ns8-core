@@ -50,14 +50,22 @@ when `first-action` is invoked the excuted steps are:
 
 Each Action Step receives the `task.data` string from FD 0 (stdin). Any data sent to FD 1 (stdout) constitutes the Action output data, and any data sent to FD 2 (stderr) is immediately copied to the agent stderr and appended to the Action error data.
 
-An Action Step receives an open file descriptor where it can write special command strings. The file descriptor number can be obtained from the `AGENT_COMFD` environment variable. Each command is composed by three fields
+An Action Step receives an open file descriptor where it can write special command strings. The file descriptor number can be obtained from the `AGENT_COMFD` environment variable. Each command is composed at least by one field:
 
 1. command name
 2. first argument
-3. second argument
+...
+n. nth argument
 
-The three fields are separated by the space character and are mandatory. If a field value contains
+Fields are separated by the space character. If a field value contains
 a space it can be wrapped by double quotes.
+
+Available commands:
+
+- `set-env`
+- `dump-env`
+
+### set-env
 
 The `set-env` command modifies an environment variable for subsequent steps.
 If the action is successful it persists the value in the Redis DB for future action invocations.
@@ -74,3 +82,14 @@ When all steps are completed, the following keys are set in Redis DB
 - `<agent-id>/task/<task-id>/error`, collects FD 2
 - `<agent-id>/task/<task-id>/exit_code`, 0 if all steps were successful, otherwise the exit code of the failing step
 - `<agent-id>/environment`, additional environent variables passed to the action steps. The values are persisted to Redis if the action is successful
+
+### dump-env
+
+The `dump-env` command writes to a file all variables set using `set-env`. The file can be used for subsequent steps.
+If the action is successful, `dump-env` is automatically called at the end.
+The generated file is saved inside the state directory and named `environment`.
+
+For example
+
+    dump-env
+
