@@ -149,29 +149,7 @@ Worker nodes will have IP address like `10.5.4.2`, `10.5.4.3`, etc.
 
 ### Dokuwiki
 
-To start a dokuwiki instance execute:
-```
-podman run -i --network host --rm docker.io/redis:6-alpine redis-cli <<EOF
-HSET module/dokuwiki0/module.env EVENTS_IMAGE ghcr.io/nethserver/dokuwiki:latest
-PUBLISH $(hostname -s):module.init dokuwiki0
-EOF
-```
-
-Setup traefik routes:
-```
-N=dokuwiki HOST=dokuwiki.$(hostname -f); podman run -i --network host --rm docker.io/redis:6-alpine redis-cli <<EOF
-SET traefik0/http/services/$N/loadbalancer/servers/0/url http://127.0.0.1:8080
-SET traefik0/http/routers/$N-http/service $N
-SET traefik0/http/routers/$N-http/entrypoints http,https
-SET traefik0/http/routers/$N-http/rule "Host(\`$HOST\`)"
-SET traefik0/http/routers/$N-https/entrypoints http,https
-SET traefik0/http/routers/$N-https/rule "Host(\`$HOST\`)"
-SET traefik0/http/routers/$N-https/tls true
-SET traefik0/http/routers/$N-https/service $N
-SET traefik0/http/routers/$N-https/tls/certresolver letsencrypt
-SET traefik0/http/routers/$N-https/tls/domains/0/main $HOST
-EOF
-```
+See Dokuwiki README.
 
 ### Nextcloud
 

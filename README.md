@@ -11,4 +11,5 @@ Draft documentation:
 - [Architecture](doc/architecture.md)
 - [Installation](doc/installation.md)
   - [Backup](doc/backup.md)
+- [How to create a new module](doc/new_module.md)
 - [Project progress](https://trello.com/b/R58gtZ8I/ns8-prototype)
