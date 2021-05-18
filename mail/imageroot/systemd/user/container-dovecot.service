@@ -10,11 +10,11 @@ Restart=always
 TimeoutStopSec=70
 ExecStartPre=/bin/rm -f %t/container-dovecot.pid %t/container-dovecot.ctr-id
 ExecStart=/usr/bin/podman run \
+    --detach \
     --conmon-pidfile=%t/container-dovecot.pid \
     --cidfile=%t/container-dovecot.ctr-id \
     --cgroups=no-conmon \
     --pod-id-file=%t/pod-mail.pod-id \
-    --detach \
     --volume=vmail:/var/lib/vmail:Z \
     --replace --name=dovecot \
     --env-file=./environment \

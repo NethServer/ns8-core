@@ -32,9 +32,10 @@ MAILBOX_DOMAIN=$(hostname -f | cut -f 2- -d ".")
 HOSTNAME=$(hostname -f)
 AUTH_BIND_USERDN="%u"
 
-# Persist environment variables in Redis DB:
+# Persist environment variables in Redis DB and ./environment file:
 cat >&${AGENT_COMFD} <<EOF
 set-env HOSTNAME ${HOSTNAME}
 set-env AUTH_BIND_USERDN ${AUTH_BIND_USERDN}
 set-env MAILBOX_DOMAIN ${MAILBOX_DOMAIN}
+dump-env
 EOF

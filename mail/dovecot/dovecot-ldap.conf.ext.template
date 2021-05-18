@@ -12,7 +12,7 @@ hosts = ldapproxy:3890
 # is still used, only the password field is ignored in it. Before doing any
 # search, the binding is switched back to the default DN.
 auth_bind = yes
-auth_bind_userdn = %u
+auth_bind_userdn = ${AUTH_BIND_USERDN}
 
 # LDAP is required only for password checking
 base =
