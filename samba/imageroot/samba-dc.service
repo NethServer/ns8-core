@@ -6,7 +6,7 @@ Wants=network-online.target
 [Service]
 Type=forking
 Environment=PODMAN_SYSTEMD_UNIT=%n
-EnvironmentFile=/var/lib/nethserver/%N/state/unit.env
+EnvironmentFile=/var/lib/nethserver/%N/state/environment
 Restart=on-failure
 TimeoutStopSec=70
 # samba exits with 127 on SIGTERM:
@@ -34,6 +34,7 @@ ExecStop=/usr/bin/podman stop --ignore --cidfile %t/%N.cid -t 10
 ExecStopPost=/usr/bin/podman rm --ignore -f --cidfile %t/%N.cid
 PIDFile=%t/%N.pid
 WorkingDirectory=/var/lib/nethserver/%N/state
+SyslogIdentifier=%N
 
 [Install]
 WantedBy=default.target

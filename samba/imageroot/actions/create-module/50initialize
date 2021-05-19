@@ -20,13 +20,10 @@
 # along with NethServer.  If not, see COPYING.
 #
 
+exec 1>&2 # Send any output to stderr, to not alter the action response protocol
 set -e
 
-exec 1>&2 # Send any output to stderr, to not alter the action response protocol
-
-mid=$(basename ${AGENT_ID})
-
-install -m 644 "${AGENT_INSTALL_DIR}/samba-dc.service" "/etc/systemd/system/${mid}.service"
+install -m 644 "${AGENT_INSTALL_DIR}/samba-dc.service" "/etc/systemd/system/${MODULE_ID}.service"
 systemctl daemon-reload
 
 # XXX: Configure roles
@@ -34,6 +31,6 @@ redis-exec SADD "${AGENT_ID}/roles/owner" "provision-domain"
 
 # Pull the service image, reading the tag from the local image
 tag=$(podman images -f id="${IMAGE_ID}" --format '{{ .Tag }}')
-SAMBA_DC_IMAGE="ghcr.io/nethserver/samba-dc:${tag:-latest}"
-podman-pull-missing ${SAMBA_DC_IMAGE}
-echo "set-env SAMBA_DC_IMAGE ${SAMBA_DC_IMAGE}" >&${AGENT_COMFD}
+SAMBA_IMAGE="ghcr.io/nethserver/samba-dc:${tag:-latest}"
+echo "set-env SAMBA_IMAGE ${SAMBA_IMAGE}" >&${AGENT_COMFD}
+podman-pull-missing ${SAMBA_IMAGE}
