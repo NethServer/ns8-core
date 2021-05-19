@@ -29,6 +29,7 @@ if [[ ${ID} == "fedora" ]]; then
     dnf install -y wireguard-tools podman jq
 elif [[ ${ID} == "debian" ]]; then
 
+    apt-get update
     apt-get -y install gnupg2 python3-venv
     if [[ ${VERSION_ID} == "10" ]]; then
         # Install podman
