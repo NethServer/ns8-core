@@ -103,16 +103,16 @@ set -e
 # Redirect any output to the journal (stderr)
 exec 1>&2
 
-IMAGE=docker.io/bitnami/dokuwiki:latest
+SVC_IMAGE=docker.io/bitnami/dokuwiki:latest
 
 # Talk with agent using file descriptor:
 # - save image name to environment
 
-echo "set-env IMAGE ${IMAGE}" >&${AGENT_COMFD}
+echo "set-env SVC_IMAGE ${SVC_IMAGE}" >&${AGENT_COMFD}
 
 echo "I got the following ports: $TCP_PORTS"
 
-podman pull ${IMAGE}
+podman pull ${SVC_IMAGE}
 ```
 
 Usually, a module contains also a `configure-module` action to gather user input and configure the module accordingly.
