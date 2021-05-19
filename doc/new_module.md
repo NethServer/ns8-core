@@ -2,7 +2,7 @@
 
 Each module is distributed using a container image.
 This document will guide you, a developer, on how to create a new rootless module.
-The module will be a simple web application named mymodule.
+The module will be a simple web application named `mymodule`.
 
 ## Step 0: install NS8
 
@@ -22,23 +22,26 @@ dnf install buildah
 ## Step 1: add to list catalog
 
 Each module can be installed using the `install-module` script.
-The install script searches for the given module inside `/var/lib/nethserver/cluster/state/images-catalog.txt` and save them
+The install script reads modules metadata from `/var/lib/nethserver/cluster/state/images-catalog.txt` and save them
 inside Redis.
 
 When creating a new module, save its metadata directly to Redis:
 ```
-echo 'HSET image/<key> rootfull <0|1> url <URL:tag> name "<name>"' >> /var/lib/nethserver/cluster/state/images-catalog.txt
-```
-Where:
-- `key` is the unique module name
-- `rootfull` can be: `0` if the module should run in rootless moode, `1` if the module should run in rootfull mode. If unsure, set to `0`
-- `url`: the URL of the image module inside a container registry with a tag. Usually the tag is set to `latest`
-- `name`: a name or a description for the module
-
-Example:
-```
 redis-cli HSET image/mymodule rootfull 0 url ghcr.io/nethserver/mymodule:latest name "MyModule"
 ```
+
+Remember to put the same command in the `images-catalog.txt` so other people can find the new module in future installations.
+
+The record is created by a Redis command in this generic form:
+```
+HSET image/<key> rootfull <0|1> url <URL:tag> name "<name>"
+```
+Where:
+- `key`: the module unique identifier, i.e. `mymodule`
+- `rootfull`: set to `0` if the module runs in rootless moode, `1` if the module runs in rootfull mode
+- `url`: the URL of the image module inside a container registry with a tag. Usually the tag is set to `latest`, e.g. `ghcr.io/nethserver/mymodule:latest`
+- `name`: the name of the module, e.g. `MyModule`
+
 
 ## Step 2: module structure
 
@@ -55,12 +58,12 @@ The main parts to look for are:
 - `reponame`: the name of the module
 - `org.nethserver/tcp_ports_demand` label: describe how many ports the module needs to bind. The label takes an integer number as value, like `org.nethserver/tcp_ports_demand=3`
 
-Example of `build-image.sh` file:
+Example of `build-image.sh` file with output for GitHub Actions:
 ```
 #!/bin/bash
 
 set -e
-messages=("Publish the image with:" "")
+images=()
 repobase="ghcr.io/nethserver"
 
 reponame="mymodule"
@@ -69,8 +72,16 @@ container=$(buildah from scratch)
 buildah add "${container}" imageroot /
 buildah config --entrypoint=/ --label="org.nethserver/tcp_ports_demand=1" "${container}"
 buildah commit "${container}" "${repobase}/${reponame}"
-messages+=(" buildah push ${repobase}/${reponame} docker://${repobase}/${reponame}:latest")
-printf "%s\n" "${messages[@]}"
+images+=("${repobase}/${reponame}")
+
+if [[ -n "${CI}" ]]; then
+    # Set output value for Github Actions
+    printf "::set-output name=images::%s\n" "${images[*]}"
+else
+    printf "Publish the images with:\n\n"
+    for image in "${images[@]}"; do printf "  buildah push %s docker://%s:latest\n" "${image}" "${image}" ; done
+    printf "\n"
+fi
 ```
 
 ### imageroot
@@ -82,7 +93,7 @@ It contains 2 main paths:
 - `imageroot/systemd/user/` contains all systemd `.service` files, the directory will be copied to `/home/mymodule1/.config/systemd/user/`
 
 Every module **must** define at least a `create-module` action.
-The `create-module` should contain a step to pull the image.
+The `create-module` should contain a step to pull the web service image.
 
 Something like `imageroot/actions/create-module/10pull`:
 ```
@@ -99,6 +110,8 @@ IMAGE=docker.io/bitnami/dokuwiki:latest
 # - save image name to environment
 
 echo "set-env IMAGE ${IMAGE}" >&${AGENT_COMFD}
+
+echo "I got the following ports: $TCP_PORTS"
 
 podman pull ${IMAGE}
 ```
@@ -135,25 +148,30 @@ buildah config --label="org.nethserver/tcp_ports_demand=3" "${container}"
 
 ## Step 3: start the module
 
-First, we have to tell to the cluster agent to istantiate a new module. The cluster agent will
-allocate a new unix user and call the `create-module`:
+First, we have to tell the cluster to instantiate a new module. The node agent will
+create a new Unix user that runs the rootless module and schedule the `create-module`
+action to start soon:
 ```
 add-module mymodule 1
 ```
+
+> The above command means: "add a new instance of module *mymodule* to node *1*" 
 
 The output will look like:
 ```
 {"rootfull": false, "mid": "mymodule1"}
 ```
 
+> Note: `mid` is an abbreviation for *module-identifier*.
+
 Then, wait for the `create-module` to complete. You can inspect `journalctl` to monitor the task progess.
-The task will have a name like `module/mymodule1/e6707401-44b7-4283-8fe9-f0aa189d3a23`.
+The task will store its result under a random key prefix, e.g. `module/mymodule1/task/e6707401-44b7-4283-8fe9-f0aa189d3a23`.
 Example:
 ```
 journalctl | grep module/mymodule1
 ```
 
-You can also inspect the task:
+You can also inspect the task results:
 - read the exit code: `redis-cli get module/mymodule11/task/e6707401-44b7-4283-8fe9-f0aa189d3a23/exit_code`
 - read the standard output: `redis-cli get module/mymodule1/task/e6707401-44b7-4283-8fe9-f0aa189d3a23/output`
 - read the standard error: `redis-cli get module/mymodule1/task/e6707401-44b7-4283-8fe9-f0aa189d3a23/error`
@@ -161,25 +179,34 @@ You can also inspect the task:
 
 When the `create-module` has been completed, fire the `configure-module` action:
 ```
-redis-cli LPUSH module/mymodule1/tasks '{"id": "'$(uuidgen)'", "action": "configure-module", "data": "mymodule 8181\n"}'
+redis-cli LPUSH module/mymodule1/tasks '{"id": "'$(uuidgen)'", "action": "configure-module", "data": "some input\n"}'
 ```
 
-Where `data` contains the name of the module `mymodule` and the `port` where podman should bind.
+This action should use the environment variable `$TCP_PORT` and the input data to configure the web application.
 
+The environment is stored also in a file, e.g. `/home/mymodule1/.config/state/environment`. It is safe to load it
+in Systemd unit files with the `EnvironmentFile=` directive.
+
+Every action executable step runs with `~/.config/state` as working directory.
 
 ## Step 4: add traefik routes
 
-The web application is listening only to 127.0.0.1. To make it reachable from other network hosts,
+The web application is listening only to 127.0.0.1.  To make it reachable from other network hosts,
 a new traefik route is required.
 
-Add host based route:
+To get the TCP port number among the environment variables used by the `create-module` run:
+
+    redis-cli HGETALL module/mymodule1/environment
+
+
+Assuming the port is 20001, add a hostname-based HTTP route:
 ```
-redis-cli LPUSH module/traefik1/tasks '{"id": "'$(uuidgen)'", "action": "set-host", "data": "mymodule1 http://127.0.0.1:8182 mymodule.myhost.org\n"}'
+redis-cli LPUSH module/traefik1/tasks '{"id": "'$(uuidgen)'", "action": "set-host", "data": "mymodule1 http://127.0.0.1:20001 mymodule.myhost.org\n"}'
 ```
 
 The data field contains 3 parameters:
 - the service name
-- the bind URL, set the port accordingly using the `TCP_PORT` variable from `/home/mymodule11/.config/state/environment`
+- the bind URL, set the port accordingly using the `TCP_PORT` variable from `/home/mymodule1/.config/state/environment`
 - a fully qualified host name representing the virtualhost for the module
 
 
