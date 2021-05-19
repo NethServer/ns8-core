@@ -15,8 +15,8 @@ container=$(buildah from scratch)
 
 # Add imageroot directory to the container image
 buildah add "${container}" imageroot /
-# Setup the entrypoint and ask to reserve one TCP port with the label
-buildah config --entrypoint=/ --label="org.nethserver/tcp_ports_demand=1" "${container}"
+# Setup the entrypoint, ask to reserve one TCP port with the label and set a rootless container
+buildah config --entrypoint=/ --label="org.nethserver/tcp_ports_demand=1" --label="org.nethserver/rootfull=0" "${container}"
 # Commit everything
 buildah commit "${container}" "${repobase}/${reponame}"
 
