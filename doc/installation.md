@@ -10,6 +10,8 @@ apt-get update && apt-get --with-new-pkgs upgrade -y && apt-get install curl -y
 reboot
 ```
 
+The above commands are not required on Debian 11 Bullseye.
+
 Start the installation procedure:
 ```
 # curl https://raw.githubusercontent.com/NethServer/ns8-scratchpad/main/core/install.sh | bash

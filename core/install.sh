@@ -22,19 +22,25 @@
 
 set -e
 
-distro=$(awk -F = '/^ID=/ { print $2 }' /etc/os-release)
+source /etc/os-release
 
 echo "Install dependencies:"
-if [[ ${distro} == "fedora" ]]; then
+if [[ ${ID} == "fedora" ]]; then
     dnf install -y wireguard-tools podman jq
-elif [[ ${distro} == "debian" ]]; then
-    # Install podman
+elif [[ ${ID} == "debian" ]]; then
+
     apt-get -y install gnupg2 python3-venv
-    grep -q 'http://deb.debian.org/debian buster-backports' /etc/apt/sources.list || echo 'deb http://deb.debian.org/debian buster-backports main' >> /etc/apt/sources.list
-    echo 'deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/Debian_10/ /' > /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list
-    wget -O - https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/Debian_10/Release.key | apt-key add -
-    apt-get update
-    apt-get -y -t buster-backports install libseccomp2 podman
+    if [[ ${VERSION_ID} == "10" ]]; then
+        # Install podman
+        grep -q 'http://deb.debian.org/debian buster-backports' /etc/apt/sources.list || echo 'deb http://deb.debian.org/debian buster-backports main' >> /etc/apt/sources.list
+        echo 'deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/Debian_10/ /' > /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list
+        wget -O - https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/Debian_10/Release.key | apt-key add -
+        apt-get update
+        apt-get -y -t buster-backports install libseccomp2 podman
+    else
+	apt-get -y install podman
+    fi
+
 
     # Install wireguard
     apt install linux-headers-$(uname -r) -y
@@ -50,7 +56,7 @@ fi
 
 echo "Set kernel parameters:"
 sysctl -w net.ipv4.ip_unprivileged_port_start=23 -w user.max_user_namespaces=28633 -w net.ipv4.ip_forward=1 | tee /etc/sysctl.d/80-nethserver.conf
-if [[ ${distro} == "debian" ]]; then
+if [[ ${ID} == "debian" ]]; then
     sysctl -w kernel.unprivileged_userns_clone=1 | tee -a /etc/sysctl.d/80-nethserver.conf
 fi
 

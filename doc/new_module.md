@@ -11,7 +11,7 @@ Then, make sure `buildah` is installed to the system.
 
 For Debian:
 ```
-apt install buildah
+apt-get install buildah
 ```
 
 For Fedora:
