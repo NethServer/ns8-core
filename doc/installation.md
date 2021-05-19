@@ -6,15 +6,14 @@
 
 When installing on Debian 10 Buster, first make sure to have the latest running kernel and curl installed:
 ```
-apt-get update && apt-get --with-new-pkgs upgrade -y && apt-get install curl -y
-reboot
+apt-get update && apt-get --with-new-pkgs upgrade -y && apt-get install curl -y && reboot
 ```
 
 The above commands are not required on Debian 11 Bullseye.
 
-Start the installation procedure:
+Start the installation procedure as `root`:
 ```
-# curl https://raw.githubusercontent.com/NethServer/ns8-scratchpad/main/core/install.sh | bash
+curl https://raw.githubusercontent.com/NethServer/ns8-scratchpad/main/core/install.sh | bash
 ```
 
 The procedure configures a single node cluster. It prints how to invoke additional commands
