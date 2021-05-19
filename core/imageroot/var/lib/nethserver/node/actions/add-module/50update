@@ -27,6 +27,7 @@ import agent
 import uuid
 import hashlib
 import subprocess
+import re
 
 def save_agent_env(module_id):
     """Generate and persist the Redis password for module_id
@@ -65,8 +66,11 @@ with agent.redis_connect() as ro:
     image_url = ro.hget(f'image/{image_id}', 'url')
     assert image_url
 
-# Pull the image from the remote server
-agent.run_helper('podman', 'pull', image_url).check_returncode()
+# Pull the image from the remote server, if not already available locally
+with subprocess.Popen(['podman', 'image', 'list', '-q', '-f', f'reference={re.escape(image_url)}'], stdout=subprocess.PIPE, stderr=sys.stderr) as proc:
+    output = proc.stdout.read()
+    if output == b'':
+        agent.run_helper('podman', 'pull', image_url).check_returncode()
 
 # Parse the image labels
 with subprocess.Popen(['podman', 'image', 'inspect', image_url], stdout=subprocess.PIPE, stderr=sys.stderr) as proc:
