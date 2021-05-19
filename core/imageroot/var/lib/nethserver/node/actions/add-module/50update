@@ -67,10 +67,7 @@ with agent.redis_connect() as ro:
     assert image_url
 
 # Pull the image from the remote server, if not already available locally
-with subprocess.Popen(['podman', 'image', 'list', '-q', '-f', f'reference={re.escape(image_url)}'], stdout=subprocess.PIPE, stderr=sys.stderr) as proc:
-    output = proc.stdout.read()
-    if output == b'':
-        agent.run_helper('podman', 'pull', image_url).check_returncode()
+agent.run_helper('podman-pull-missing', image_url).check_returncode()
 
 # Parse the image labels
 with subprocess.Popen(['podman', 'image', 'inspect', image_url], stdout=subprocess.PIPE, stderr=sys.stderr) as proc:
