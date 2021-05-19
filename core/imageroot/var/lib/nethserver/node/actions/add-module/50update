@@ -97,6 +97,7 @@ rdb.hset(f'module/{module_id}/environment', mapping={
     'IMAGE_URL': image_url,
     'IMAGE_DIGEST': image_digest,
     'IMAGE_REOPODIGEST': image_repodigest,
+    'MODULE_ID': module_id,
 })
 
 # Launch the module agent (async)
