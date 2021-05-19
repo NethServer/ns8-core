@@ -73,6 +73,9 @@ agent.run_helper('podman-pull-missing', image_url).check_returncode()
 with subprocess.Popen(['podman', 'image', 'inspect', image_url], stdout=subprocess.PIPE, stderr=sys.stderr) as proc:
     inspect = json.load(proc.stdout)
     labels = inspect[0]['Labels']
+    image_id = inspect[0]['Id']
+    image_digest = inspect[0]['Digest']
+    image_repodigest = inspect[0]['RepoDigests'][0]
 
 if 'org.nethserver/rootfull' in labels:
     is_rootfull = int(labels['org.nethserver/rootfull']) == 1
@@ -84,9 +87,17 @@ if 'org.nethserver/tcp_ports_demand' in labels:
 else:
     tcp_ports_demand = 0
 
-# Allocate TCP ports, if required
+# XXX Allocate TCP ports, if required
 if tcp_ports_demand > 0:
     allocate_tcp_ports_range(module_id, tcp_ports_demand)
+
+# XXX Store the image metadata for agent self-inspection purposes
+rdb.hset(f'module/{module_id}/environment', mapping={
+    'IMAGE_ID': image_id,
+    'IMAGE_URL': image_url,
+    'IMAGE_DIGEST': image_digest,
+    'IMAGE_REOPODIGEST': image_repodigest,
+})
 
 # Launch the module agent (async)
 if is_rootfull:
