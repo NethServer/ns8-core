@@ -1,0 +1,34 @@
+name: samba
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'samba/**'
+  pull_request:
+    types: ['opened', 'synchronize']
+    paths:
+      - 'samba/**'
+
+jobs:
+  push_image:
+    env:
+      REPOBASE: ghcr.io/nethserver
+      REPONAME: ${{ github.workflow }}
+      IMAGETAG: ${{ github.head_ref }}
+    name: 'Build ${{ github.workflow }}'
+    runs-on: ubuntu-20.04
+    steps:
+      - id: checkout
+        uses: actions/checkout@v2
+      - id: build
+        name: "Build the images"
+        run: "cd ${REPONAME} && bash build-image.sh"
+      - id: push
+        name: "Push the images"
+        run: |
+          # Push the images
+          set -e
+          trap 'buildah logout ghcr.io' EXIT
+          buildah login -u ${{ github.actor }} --password-stdin ghcr.io <<<"${{ secrets.GITHUB_TOKEN }}"
+          for image in ${{ steps.build.outputs.images }} ; do buildah push $image docker://${image}:${IMAGETAG:-latest} ; done

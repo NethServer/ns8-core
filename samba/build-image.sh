@@ -1,11 +1,12 @@
 #!/bin/bash
 
 set -e
-messages=("Publish the image with:" "")
+images=()
 
 repobase="ghcr.io/nethserver"
 reponame="ubuntu-samba"
 
+# Prepare a local Ubuntu-based samba image
 if ! buildah inspect --type image "${repobase}/${reponame}" &>/dev/null; then
     container=$(buildah from docker.io/library/ubuntu:rolling)
     buildah run "${container}" -- bash <<EOF
@@ -18,16 +19,34 @@ EOF
     buildah commit "${container}" "${repobase}/${reponame}"
 fi
 
-container=$(buildah from "${repobase}/${reponame}")
-
-reponame="samba"
-buildah add "${container}" imageroot/ /srv/imageroot/
+#
+# Add our entrypoint script to build samba-dc
+#
+reponame="samba-dc"
 buildah add "${container}" scripts/entrypoint.sh /entrypoint.sh
-buildah config --label 'org.nethserver/imageroot=/srv/imageroot' "${container}"
-buildah config --cmd='' "${container}"
-buildah config --entrypoint='[ "/bin/bash", "/entrypoint.sh" ]' "${container}"
+buildah config --cmd='' --entrypoint='[ "/bin/bash", "/entrypoint.sh" ]' "${container}"
 buildah commit "${container}" "${repobase}/${reponame}"
+images+=("${repobase}/${reponame}")
 
-messages+=(" buildah push ${repobase}/${reponame} docker://${repobase}/${reponame}:latest")
+#
+# Imageroot samba
+#
+container=$(buildah from scratch)
+reponame="samba"
+buildah add "${container}" imageroot /
+buildah config --label 'org.nethserver/rootfull=1' --entrypoint=/ "${container}"
+buildah commit "${container}" "${repobase}/${reponame}"
+images+=("${repobase}/${reponame}")
 
-printf "%s\n" "${messages[@]}"
+#
+#
+#
+
+if [[ -n "${CI}" ]]; then
+    # Set output value for Github Actions
+    printf "::set-output name=images::%s\n" "${images[*]}"
+else
+    printf "Publish the images with:\n\n"
+    for image in "${images[@]}"; do printf "  buildah push %s docker://%s:latest\n" "${image}" "${image}" ; done
+    printf "\n"
+fi
