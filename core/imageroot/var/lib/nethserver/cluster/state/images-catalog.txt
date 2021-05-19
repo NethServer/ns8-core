@@ -3,8 +3,8 @@
 #
 # Any line not beginning with "HSET image/" is discarded
 #
-HSET image/traefik    rootfull 0 url ghcr.io/nethserver/traefik:latest      name "Traefik edge proxy"
-HSET image/samba      rootfull 1 url ghcr.io/nethserver/samba:latest        name "Samba file server and Active Directory domain controller"
-HSET image/ldapproxy  rootfull 0 url ghcr.io/nethserver/ldapproxy:latest    name "TLS termination proxy for LDAP account providers"
-HSET image/mail       rootfull 0 url ghcr.io/nethserver/mail:latest         name "Mail services"
-HSET image/dokuwiki   rootfull 0 url ghcr.io/nethserver/dokuwiki:latest     name "Dokuwiki"
+HSET image/traefik      url ghcr.io/nethserver/traefik:latest      name "Traefik edge proxy"
+HSET image/samba        url ghcr.io/nethserver/samba:latest        name "Samba file server and Active Directory domain controller"
+HSET image/ldapproxy    url ghcr.io/nethserver/ldapproxy:latest    name "TLS termination proxy for LDAP account providers"
+HSET image/mail         url ghcr.io/nethserver/mail:latest         name "Mail services"
+HSET image/dokuwiki     url ghcr.io/nethserver/dokuwiki:latest     name "Dokuwiki"

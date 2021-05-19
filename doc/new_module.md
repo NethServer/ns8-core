@@ -27,18 +27,17 @@ inside Redis.
 
 When creating a new module, save its metadata directly to Redis:
 ```
-redis-cli HSET image/mymodule rootfull 0 url ghcr.io/nethserver/mymodule:latest name "MyModule"
+redis-cli HSET image/mymodule url ghcr.io/nethserver/mymodule:latest name "MyModule"
 ```
 
 Remember to put the same command in the `images-catalog.txt` so other people can find the new module in future installations.
 
 The record is created by a Redis command in this generic form:
 ```
-HSET image/<key> rootfull <0|1> url <URL:tag> name "<name>"
+HSET image/<key> url <URL:tag> name "<name>"
 ```
 Where:
 - `key`: the module unique identifier, i.e. `mymodule`
-- `rootfull`: set to `0` if the module runs in rootless moode, `1` if the module runs in rootfull mode
 - `url`: the URL of the image module inside a container registry with a tag. Usually the tag is set to `latest`, e.g. `ghcr.io/nethserver/mymodule:latest`
 - `name`: the name of the module, e.g. `MyModule`
 
