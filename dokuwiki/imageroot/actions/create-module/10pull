@@ -27,8 +27,8 @@ exec 1>&2
 
 IMAGE=docker.io/bitnami/dokuwiki:latest
 
-# Talk with agent using file descriptor:
-# - save image name to environment
+# Talk with agent using file descriptor to save the image name to environment
+# The ${IMAGE} variable will be used later inside systemd unit
 
 echo "set-env IMAGE ${IMAGE}" >&${AGENT_COMFD}
 

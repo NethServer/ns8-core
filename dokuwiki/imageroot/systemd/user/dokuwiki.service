@@ -1,12 +1,21 @@
+#
+# This systemd unit starts a Dokuwiki instance using podman.
+# Most parts of this file come from podman-generate-systemd.
+#
 [Unit]
 Description=Dokuwiki instance
 
 [Service]
 Environment=PODMAN_SYSTEMD_UNIT=%n
+# All configuration is saved inside the environment file including:
+# - IMAGE: the podman/docker image to rung
+# - TCP_PORT, TCP_PORTS, UDP_PORT, UDP_PORTS: the random ports assigned by system
 EnvironmentFile=%S/state/environment
 WorkingDirectory=%S/state
 Restart=always
 ExecStartPre=/bin/rm -f %t/dokuwiki.pid %t/dokuwiki.ctr-id
+# Podman should bind only to 127.0.0.1:TCP_PORT
+# Data are persistend inside dokuwiki-data volume
 ExecStart=/usr/bin/podman run --conmon-pidfile %t/dokuwiki.pid --cidfile %t/dokuwiki.ctr-id --cgroups=no-conmon --replace --name dokuwiki -d --env-file=./environment -p 127.0.0.1:${TCP_PORT}:8080 -v dokuwiki-data:/bitnami/dokuwiki ${IMAGE}
 ExecStop=/usr/bin/podman stop --ignore --cidfile %t/dokuwiki.ctr-id -t 10
 ExecStopPost=/usr/bin/podman rm --ignore -f --cidfile %t/dokuwiki.ctr-id

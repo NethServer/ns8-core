@@ -20,27 +20,50 @@
 # along with NethServer.  If not, see COPYING.
 #
 
+# Teminate on error
 set -e
 
 # Redirect any output to the journal (stderr)
 exec 1>&2
 
-# read stdin
-# stdin: "mywiki"
-read wiki_name
+# This step will configure Bitnami Dokuwiki image: https://github.com/bitnami/bitnami-docker-dokuwiki
+
+# Setup default values
+DOKUWIKI_WIKI_NAME="DokuWiki"
+DOKUWIKI_USERNAME="admin"
+DOKUWIKI_PASSWORD="Nethesis,1234"
+DOKUWIKI_EMAIL="admin@"$(hostname -f)
+DOKUWIKI_FULL_NAME="Administrator"
+
+# Read every parameter from stdin. Parameters should be separated by space
+# stdin example: "mywiki admin password admin@nethserver.org"
+read DOKUWIKI_WIKI_NAME DOKUWIKI_USERNAME DOKUWIKI_PASSWORD DOKUWIKI_EMAIL
 
 # Make sure wiki name is not empty
-if [[ -z "${wiki_name}" ]]; then
+if [[ -z "${DOKUWIKI_WIKI_NAME}" ]]; then
   # Validation error
   echo "The wiki name is missing" >&2 # FIXME: use UI validationr protocol
   exit 2
 fi
 
-# Talk with agent using file descriptor:
-# - save environment variables
-# - dump everything to file
+# Talk with agent using file descriptor.
+# Setup configuration from user input.
 cat >&${AGENT_COMFD} <<EOF
-set-env WIKI_NAME ${wiki_name}
+set-env DOKUWIKI_WIKI_NAME ${DOKUWIKI_WIKI_NAME}
+set-env DOKUWIKI_USERNAME ${DOKUWIKI_USERNAME}
+set-env DOKUWIKI_PASSWORD ${DOKUWIKI_PASSWORD}
+set-env DOKUWIKI_EMAIL ${DOKUWIKI_EMAIL}
+set-env DOKUWIKI_FULL_NAME ${DOKUWIKI_FULL_NAME}
+EOF
+
+# Setup PHP with safe defaults
+cat >&${AGENT_COMFD} <<EOF
 set-env PHP_ENABLE_OPCACHE 1
+set-env PHP_MEMORY_LIMIT 512M
+EOF
+
+# Make sure everything is saved inside the environment file
+# just before starting systemd unit
+cat >&${AGENT_COMFD} <<EOF
 dump-env
 EOF
