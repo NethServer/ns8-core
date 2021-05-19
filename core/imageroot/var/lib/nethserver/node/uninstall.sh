@@ -13,20 +13,20 @@ trap "rm -f ${tmp_dirlist}" EXIT
 
 for userhome in /home/*; do
     moduleid=$(basename $userhome)
-    echo "[NOTICE] Deleting rootless module ${moduleid}..."
+    echo "Deleting rootless module ${moduleid}..."
     systemctl stop user@$(id -u $moduleid)
     loginctl disable-linger "${moduleid}"
     userdel -r "${moduleid}"
 done
 
-echo "[NOTICE] Stopping the core services"
+echo "Stopping the core services"
 systemctl disable --now api-server.service redis.service wg-quick@wg0
 rm -vf /etc/systemd/system/redis.service.d/wireguard.conf
 
-echo "[NOTICE] Wipe Redis DB"
+echo "Wipe Redis DB"
 podman volume rm -f redis-data
 
-echo "[NOTICE] Uninstalling the core image files"
+echo "Uninstalling the core image files"
 (
   while read image_entry; do
     # Add a leading / to image_entry
@@ -45,17 +45,17 @@ for modulehome in /var/lib/nethserver/*; do
       continue
     fi
     moduleid=$(basename $modulehome)
-    echo "[NOTICE] Deleting rootfull module ${moduleid}..."
+    echo "Deleting rootfull module ${moduleid}..."
     systemctl disable --now agent@${moduleid} && rm -rf "${modulehome}"
 done
 
-echo "[NOTICE] Some files may be left in the following directories:"
+echo "Some files may be left in the following directories:"
 cat ${tmp_dirlist}
 
 systemctl daemon-reload
 
-echo "[NOTICE] Wipe Podman storage"
+echo "Wipe Podman storage"
 podman system reset -f
 
-echo "[NOTICE] Clean up /etc/hosts"
+echo "Clean up /etc/hosts"
 sed -i '/ cluster-leader$/ d' /etc/hosts

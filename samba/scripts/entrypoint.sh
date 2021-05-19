@@ -7,7 +7,7 @@ provision_type=${1:?The mandatory entrypoint argument is missing}
 if [[ $provision_type == "run-dc" ]]; then
     exec samba -i --debug-stderr
 elif [[ $provision_type == "join-domain" ]]; then
-    echo "[NOTICE] Joining domain ${REALM}..."
+    echo "Joining domain ${REALM}..."
     rm -f /etc/samba/smb.conf
     kinit "${ADMINUSER:-administrator}" <<<"${ADMINPASS}"
     samba-tool domain join ${REALM,,} DC \
@@ -17,7 +17,7 @@ elif [[ $provision_type == "join-domain" ]]; then
         "--option=interfaces = 127.0.0.1 ${IPADDRESS}"
     kdestroy
 elif [[ $provision_type == "new-domain" ]]; then
-    echo "[NOTICE] Starting domain provisioning procedure..."
+    echo "Starting domain provisioning procedure..."
     rm -f /etc/samba/smb.conf
     samba-tool domain provision \
         --server-role=dc "--domain=${NBDOMAIN}" "--realm=${REALM}" \

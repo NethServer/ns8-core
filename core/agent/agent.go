@@ -37,6 +37,18 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
+// Reference: https://www.man7.org/linux/man-pages/man3/sd-daemon.3.html
+const (
+	SD_EMERG   = "<0>" /* system is unusable */
+	SD_ALERT   = "<1>" /* action must be taken immediately */
+	SD_CRIT    = "<2>" /* critical conditions */
+	SD_ERR     = "<3>" /* error conditions */
+	SD_WARNING = "<4>" /* warning conditions */
+	SD_NOTICE  = "<5>" /* normal but significant condition */
+	SD_INFO    = "<6>" /* informational */
+	SD_DEBUG   = "<7>" /* debug-level messages */
+)
+
 var ctx = context.Background()
 var agentPrefix = os.Args[1]
 var actionPaths = os.Args[2:]
@@ -90,7 +102,7 @@ func prepareActionEnvironment() []string {
 		return env
 	}
 	if err != nil {
-		log.Printf("[ERROR] Could not fetch Redis key %s: %v", key, err)
+		log.Printf(SD_ERR + "Could not fetch Redis key %s: %v", key, err)
 		return env
 	}
 	for key, value := range redisHash {
@@ -145,7 +157,7 @@ func dumpToFile(env []string) {
 	env = dedupEnv(env)
 	f, err := os.Create("./environment")
 	if err != nil {
-		log.Printf("[ERROR] Can't write %s/environment file: %s", path, err)
+		log.Printf(SD_ERR + "Can't write %s/environment file: %s", path, err)
 		return
 	}
 	for _, line := range env {
@@ -178,7 +190,7 @@ func runAction(task *models.Task) {
 		actionOutput = ""
 		actionError = ""
 		exitCode = 8
-		log.Printf("[ERROR] Action %s is not defined", task.Action)
+		log.Printf(SD_ERR + "Action %s is not defined", task.Action)
 	}
 
 	// Get additional environment variables from Redis DB and
@@ -224,7 +236,7 @@ func runAction(task *models.Task) {
 					return
 				}
 				if err != nil {
-					log.Printf("[ERROR] Parse error: %v", err)
+					log.Printf(SD_ERR + "Parse error: %v", err)
 					continue
 				}
 				switch cmd := record[0]; cmd {
@@ -234,14 +246,14 @@ func runAction(task *models.Task) {
 					rdb.HSet(ctx, agentPrefix+"/environment", exportToRedis(environment)...)
 					dumpToFile(environment)
 				default:
-					log.Printf("[ERROR] Unknown command %s", cmd)
+					log.Printf(SD_ERR + "Unknown command %s", cmd)
 				}
 			}
 		}()
 
 		log.Printf("%s/task/%s: %s/%s is starting", agentPrefix, task.ID, task.Action, path.Base(step))
 		if err := cmd.Start(); err != nil {
-			log.Printf("[ERROR] Action %s startup error at step %s: %v", task.Action, step, err)
+			log.Printf(SD_ERR + "Action %s startup error at step %s: %v", task.Action, step, err)
 			break
 		}
 
@@ -252,7 +264,7 @@ func runAction(task *models.Task) {
 		// It is safe to Wait() after the select{} finishes to consume the pipes input.
 		if err := cmd.Wait(); err != nil {
 			exitCode = cmd.ProcessState.ExitCode()
-			log.Printf("[ERROR] Action %s terminated with errors at step %s: %v", task.Action, step, err)
+			log.Printf(SD_ERR + "Action %s terminated with errors at step %s: %v", task.Action, step, err)
 			break
 		}
 
@@ -272,7 +284,7 @@ func runAction(task *models.Task) {
 		return nil
 	})
 	if err != nil {
-		log.Printf("[ERROR] Redis command failed: ", err)
+		log.Printf(SD_ERR + "Redis command failed: ", err)
 	} else {
 		if exitCode == 0 && len(environment) > 0 {
 			dumpToFile(environment)
@@ -323,13 +335,13 @@ func main() {
 		if err == redis.Nil {
 			continue
 		} else if err != nil {
-			log.Print("[ERROR] Task queue pop error: ", err)
+			log.Print(SD_ERR + "Task queue pop error: ", err)
 			time.Sleep(pollingDuration)
 			continue
 		}
 
 		if err := json.Unmarshal([]byte(result[1]), &task); err != nil {
-			log.Print("[ERROR] Task ignored for decoding error: ", err)
+			log.Print(SD_ERR + "Task ignored for decoding error: ", err)
 			continue
 		}
 

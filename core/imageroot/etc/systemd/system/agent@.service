@@ -11,6 +11,7 @@ EnvironmentFile=-/var/lib/nethserver/%i/state/agent.env
 WorkingDirectory=/var/lib/nethserver/%i/state
 ExecStart=/usr/local/bin/agent ${AGENT_ID} ${AGENT_INSTALL_DIR}/actions /var/lib/nethserver/%i/actions-custom
 Restart=always
+SyslogIdentifier=%i-agent
 
 [Install]
 WantedBy=multi-user.target

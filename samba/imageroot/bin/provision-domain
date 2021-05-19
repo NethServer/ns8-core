@@ -61,7 +61,7 @@ elif [[ ${PROVISION_TYPE:?} == "join-domain" ]]; then
         }')
 
 else
-    echo "[ERROR] bad PROVISION_TYPE value" 1>&2
+    echo "<3> bad PROVISION_TYPE value" 1>&2
     exit 1
 fi
 
@@ -69,4 +69,4 @@ redis-cli <<EOF
 LPUSH module/${MID:-samba1}/tasks '{"id":"$(uuidgen)","action":"provision-domain","data":$(jq -R <<<"$taskdata")}'
 EOF
 
-echo "[NOTICE] 'provision-domain' task queued. Now run journalctl to check the installation outcome."
+echo "'provision-domain' task queued. Now run journalctl to check the installation outcome."

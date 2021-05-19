@@ -29,6 +29,16 @@ import tempfile
 import ipcalc
 from envparse import env
 
+# Reference https://www.man7.org/linux/man-pages/man3/sd-daemon.3.html
+SD_EMERG   = "<0>"  # system is unusable
+SD_ALERT   = "<1>"  # action must be taken immediately
+SD_CRIT    = "<2>"  # critical conditions
+SD_ERR     = "<3>"  # error conditions
+SD_WARNING = "<4>"  # warning conditions
+SD_NOTICE  = "<5>"  # normal but significant condition
+SD_INFO    = "<6>"  # informational
+SD_DEBUG   = "<7>"  # debug-level messages
+
 def redis_connect(privileged=False, decode_responses=True, **kwargs):
     """Connect to the Redis DB with the right credentials
     """
