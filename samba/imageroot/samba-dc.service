@@ -23,6 +23,7 @@ ExecStart=/usr/bin/podman run \
     --cap-drop=all \
     --cap-add=chown,dac_override,dac_read_search,fowner,setgid,setuid,sys_admin \
     --hostname=${HOSTNAME} \
+    --log-opt=tag=%N \
     --replace --name=%N \
     --volume=%N-data:/var/lib/samba:Z \
     --volume=%N-config:/etc/samba:Z \

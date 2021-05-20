@@ -34,11 +34,12 @@ set -e
     --env NBDOMAIN \
     --env REALM \
     --env IPADDRESS \
-    --hostname=${HOSTNAME} \
+    --hostname=${HOSTNAME:?} \
+    --log-opt=tag=${MODULE_ID:?}-provision \
     --rm --name=${MODULE_ID}-provision \
     --volume=${MODULE_ID}-data:/var/lib/samba:Z \
     --volume=${MODULE_ID}-config:/etc/samba:Z \
     --volume=./hosts:/etc/hosts:Z \
     --volume=./resolv.conf:/etc/resolv.conf:Z \
     --volume=./krb5.conf:/etc/krb5.conf:Z \
-    "${SAMBA_IMAGE:?not set}" "${PROVISION_TYPE?:not set}"
+    "${SAMBA_IMAGE:?}" "${PROVISION_TYPE:?}"

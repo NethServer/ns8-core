@@ -22,7 +22,5 @@
 
 set -e
 
-mid=$(basename ${AGENT_ID})
-
 # Enable and start the NSDC service
-exec systemctl enable --now "${mid}.service"
+exec systemctl enable --now "${MODULE_ID}.service"
