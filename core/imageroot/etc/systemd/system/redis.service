@@ -12,7 +12,8 @@ ExecStart=/usr/bin/podman run \
     --cidfile=%t/redis.cid \
     --cgroups=no-conmon \
     --detach \
-    --replace --name redis \
+    --log-opt=tag=%N \
+    --replace --name=%N \
     --network=host \
     --volume=redis-data:/data \
     ghcr.io/nethserver/redis:latest
