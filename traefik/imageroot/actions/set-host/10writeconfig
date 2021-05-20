@@ -25,10 +25,14 @@ set -e
 # Redirect any output to the journal (stderr)
 exec 1>&2
 
-# N is the service name
-read N URL HOST
+# Read the following space-separated parameters:
+# - N is the service name
+# - URL is the backend URL
+# - HOST is the virtual host name
+# - LETS_ENCRYPT can be 0 or 1, if set to 1 request a valid Let's Encrypt certificate
+# - FORCE_HTTPS can be 0 or 1, if set to 1 HTTP will be redirect to HTTPS
+read N URL HOST LETS_ENCRYPT FORCE_HTTPS
 
-#SET traefik0/http/routers/$N-https/tls/certresolver letsencrypt
 redis-exec <<EOF
 MULTI
 SET "${AGENT_ID}/kv/http/services/$N/loadbalancer/servers/0/url" "$URL"
@@ -42,3 +46,24 @@ SET "${AGENT_ID}/kv/http/routers/$N-https/service" "$N"
 SET "${AGENT_ID}/kv/http/routers/$N-https/tls/domains/0/main" "$HOST"
 EXEC
 EOF
+
+if [[ "$LETS_ENCRYPT" == "1" ]]; then
+    redis-exec <<EOF
+SET "${AGENT_ID}/kv/http/routers/$N-https/tls/certresolver" "letsencrypt"
+EOF
+else
+    redis-exec <<EOF
+DEL "${AGENT_ID}/kv/http/routers/$N-https/tls/certresolver"
+EOF
+fi
+
+
+if [[ "$FORCE_HTTPS" == "1" ]]; then
+    redis-exec <<EOF
+SET "${AGENT_ID}/kv/http/routers/$N-http/middlewares/0" "http2https-redirectscheme"
+EOF
+else
+    redis-exec <<EOF
+DEL "${AGENT_ID}/kv/http/routers/$N-http/middlewares/0"
+EOF
+fi

@@ -41,6 +41,13 @@ SET "${AGENT_ID}/kv/http/middlewares/ApiServerMw0/stripPrefix/forceSlash" "false
 SET "${AGENT_ID}/kv/http/middlewares/ApiServerMw0/stripPrefix/prefixes/0" "/cluster-admin"
 EOF
 
+#
+# Prepare middleware for HTTP to HTTPS redirect
+#
+redis-exec <<EOF
+SET "${AGENT_ID}/kv/http/middlewares/http2https-redirectscheme/redirectScheme/permanent" "true"
+SET "${AGENT_ID}/kv/http/middlewares/http2https-redirectscheme/redirectScheme/scheme" "https"
+EOF
 
 # Enable and start the service
 systemctl --user enable --now traefik.service
