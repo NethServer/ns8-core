@@ -32,7 +32,7 @@ All parameters must be set inside the `data` field separated by a space and term
 
 Example:
 ```
-redis-cli LPUSH module/dokuwiki1/tasks '{"id": "'$(uuidgen)'", "action": "configure-module", "data": "MyWiki admin mypassword admin@mydomain.org\n"}
+redis-cli LPUSH module/dokuwiki1/tasks '{"id": "'$(uuidgen)'", "action": "configure-module", "data": "MyWiki admin mypassword admin@mydomain.org\n"}'
 ```
 
 Finally, setup traefik to access.
@@ -46,7 +46,7 @@ All parameters must be set inside the `data` field separated by a space and term
 Example:
 ```
 source /home/dokuwiki1/.config/state/environment
-redis-cli LPUSH module/traefik1/tasks '{"id": "'$(uuidgen)'", "action": "set-host", "data": "dokuwiki1 http://127.0.0.1:'${TCP_PORT}' mywiki.myhost.org\n"}'
+redis-cli LPUSH module/traefik1/tasks '{"id": "'$(uuidgen)'", "action": "set-host", "data": "dokuwiki1 http://127.0.0.1:'${TCP_PORT}' mywiki.myhost.org 1 1\n"}'
 ```
 
 ## Uninstall
