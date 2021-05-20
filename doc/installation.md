@@ -81,20 +81,7 @@ To uninstall the `traefik1` module run
     # loginctl disable-linger traefik1
     # userdel -r traefik1
 
-#### Default Let's Encrypt certificate
-
-To enable Let's Encrypt for the admin UI with the server FQDN execute:
-
-```
-modpfx=module/traefik1
-redis-cli <<EOF
-MULTI
-SET ${modpfx}/kv/http/routers/ApiServerHttps/rule "Host(\`$(hostname -f)\`) && PathPrefix(\`/cluster-admin/\`)"
-SET ${modpfx}/kv/http/routers/ApiServerHttps/tls/certresolver letsencrypt
-SET ${modpfx}/kv/http/routers/ApiServerHttps/tls/domains/0/main $(hostname -f)
-EXEC
-EOF
-```
+See traefik README for more info.
 
 ### Ldapproxy
 
