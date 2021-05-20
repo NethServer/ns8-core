@@ -23,4 +23,4 @@
 set -e
 exec 1>&2
 
-systemctl --user restart pod-mail.service
+systemctl --user restart mail.service

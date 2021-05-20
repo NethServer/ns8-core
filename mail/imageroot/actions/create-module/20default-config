@@ -24,7 +24,7 @@ set -e
 exec 1>&2
 
 # Enable services at boot
-systemctl --user enable pod-mail.service
+systemctl --user enable mail.service
 
 # Calculate the mailbox domain name for Postfix,
 # starting from the full host name assigned to the mail pod instance:
@@ -37,5 +37,7 @@ cat >&${AGENT_COMFD} <<EOF
 set-env HOSTNAME ${HOSTNAME}
 set-env AUTH_BIND_USERDN ${AUTH_BIND_USERDN}
 set-env MAILBOX_DOMAIN ${MAILBOX_DOMAIN}
+set-env POSTFIX_IMAGE ghcr.io/nethserver/mail-postfix:latest
+set-env DOVECOT_IMAGE ghcr.io/nethserver/mail-dovecot:latest
 dump-env
 EOF

@@ -1,0 +1,34 @@
+[Unit]
+Description=Podman mail.service
+Documentation=man:podman-generate-systemd(1)
+Requires=dovecot.service postfix.service
+Before=dovecot.service postfix.service
+
+[Service]
+Environment=PODMAN_SYSTEMD_UNIT=%n
+EnvironmentFile=%S/state/environment
+Restart=on-failure
+TimeoutStopSec=70
+ExecStartPre=/bin/rm -f %t/mail.pid %t/mail.pod-id
+ExecStartPre=/usr/bin/podman pod create \
+    --infra-conmon-pidfile=%t/mail.pid \
+    --pod-id-file=%t/mail.pod-id \
+    --network=slirp4netns:port_handler=slirp4netns \
+    --hostname=${HOSTNAME} \
+    --publish=25:25 \
+    --publish=587:587 \
+    --publish=143:143 \
+    --publish=110:110 \
+    --publish=4190:4190 \
+    --add-host=ldapproxy:10.0.2.2 \
+    --replace --name=%N
+
+ExecStart=/usr/bin/podman pod start --pod-id-file %t/mail.pod-id
+ExecStop=/usr/bin/podman pod stop --ignore --pod-id-file %t/mail.pod-id -t 10
+ExecStopPost=/usr/bin/podman pod rm --ignore -f --pod-id-file %t/mail.pod-id
+PIDFile=%t/mail.pid
+Type=forking
+WorkingDirectory=%S/state
+
+[Install]
+WantedBy=default.target
