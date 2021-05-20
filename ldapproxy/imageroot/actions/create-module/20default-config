@@ -28,6 +28,7 @@ PROXYPORT=3890
 LDAPHOST=127.0.0.1
 LDAPPORT=389
 LDAPSSL=off
+NGINX_IMAGE="docker.io/library/nginx:1.20-alpine"
 
 # Enable the service at boot
 systemctl enable --user ldapproxy
@@ -38,4 +39,8 @@ set-env PROXYPORT ${PROXYPORT}
 set-env LDAPHOST ${LDAPHOST}
 set-env LDAPPORT ${LDAPPORT}
 set-env LDAPSSL ${LDAPSSL}
+set-env NGINX_IMAGE ${NGINX_IMAGE}
+dump-env
 EOF
+
+podman-pull-missing "${NGINX_IMAGE}"
