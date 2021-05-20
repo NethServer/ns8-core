@@ -1,0 +1,41 @@
+#!/bin/bash
+
+#
+# Copyright (C) 2021 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
+set -e
+
+# Redirect any output to the journal (stderr)
+exec 1>&2
+
+IMAGE_NC=docker.io/nextcloud:latest
+IMAGE_REDIS=docker.io/redis:6-alpine
+IMAGE_MARIA=docker.io/mariadb:10
+
+# Talk with agent using file descriptor to save the image name to environment
+# The ${IMAGE_XX} variable will be used later inside systemd unit
+
+echo "set-env IMAGE_NC ${IMAGE_NC}" >&${AGENT_COMFD}
+echo "set-env IMAGE_REDIS ${IMAGE_REDIS}" >&${AGENT_COMFD}
+echo "set-env IMAGE_MARIA ${IMAGE_MARIA}" >&${AGENT_COMFD}
+
+podman pull ${IMAGE_NC}
+podman pull ${IMAGE_REDIS}
+podman pull ${IMAGE_MARIA}
