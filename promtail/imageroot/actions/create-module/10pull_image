@@ -25,4 +25,5 @@ set -e
 # Redirect any output to the journal (stderr)
 exec 1>&2
 
-podman pull docker.io/grafana/promtail:2.2.1
+podman-pull-missing docker.io/grafana/promtail:2.2.1
+
