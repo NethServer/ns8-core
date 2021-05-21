@@ -32,6 +32,7 @@ import (
 	"sort"
 	"strings"
 	"time"
+	"fmt"
 
 	"github.com/NethServer/ns8-scratchpad/core/api-server/models"
 	"github.com/go-redis/redis/v8"
@@ -161,7 +162,8 @@ func dumpToFile(env []string) {
 		return
 	}
 	for _, line := range env {
-		f.WriteString(line + "\n")
+		parts := strings.Split(line, "=")
+		f.WriteString(fmt.Sprintf("%s=\"%s\"\n", parts[0], parts[1]))
 	}
 	f.Close()
 	log.Printf("Wrote %s/environment file", path)
