@@ -23,6 +23,7 @@
 set -e
 
 container="gobuilder-agent"
+redis_image="docker.io/redis:6-alpine"
 
 # Reuse existing ${container}, to speed up builds
 if ! buildah containers --format "{{.ContainerName}}" | grep -q "${container}"; then
@@ -31,15 +32,19 @@ fi
 
 buildah run "${container}" sh -c "cd /usr/src && CGO_ENABLED=0 go build -v ."
 
-podman run --volume=redis-data:/data --replace --network=host --name redis --detach docker.io/redis:6-alpine --save 5 1 --bind 127.0.0.1 ::1 --protected-mode no
-trap "podman stop redis && podman rm redis" EXIT
+podman run --volume=redis-data:/data --rm --network=host --name redis --detach $redis_image --port 6380 --save 5 1 --bind 127.0.0.1 ::1 --protected-mode no
+trap 'echo "Stopping processes..." ; kill $agentpid ; podman stop redis ; rm -f environment' EXIT
 
-podman exec -i redis redis-cli <<EOF
+podman exec -i redis redis-cli -p 6380 <<EOF
 HSET t/environment MYVARIABLE MYVALUE
 LPUSH t/tasks '{"id":"t","action":"test","data":"INPUT"}'
 EOF
 
-./agent t . &
+podman exec -i redis redis-cli -p 6380 monitor &
+
+REDIS_ADDRESS=127.0.0.1:6380 ./agent t . &
 agentpid=$!
-sleep 1
-kill $agentpid
+
+sleep 3
+
+printf "Environment file contents:\n %s\n" "$(cat environment)"

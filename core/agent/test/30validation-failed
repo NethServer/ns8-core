@@ -1,0 +1,3 @@
+#!/bin/sh
+
+echo "set-status validation-failed" >&$AGENT_COMFD
