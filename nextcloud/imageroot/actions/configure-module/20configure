@@ -65,13 +65,13 @@ set-env MYSQL_USER nextcloud
 set-env MYSQL_PASSWORD nextcloud
 set-env REDIS_HOST 127.0.0.1
 set-env REDIS_HOST_PORT 6379
-set-env APACHE_DISABLE_REWRITE_IP 1
-set-env TRUSTED_PROXIES 10.0.0.0/8
 EOF
 
-# Setup extra environment variables for MariaDB
+# Setup extra environment variables for MariaDB, PHP and Nextcloud
 cat >&${AGENT_COMFD} <<EOF
 set-env MYSQL_ROOT_PASSWORD nextcloud
+set-env PHP_MEMORY_LIMIT 512M
+set-env OVERWRITEPROTOCOL https
 EOF
 
 # Make sure everything is saved inside the environment file

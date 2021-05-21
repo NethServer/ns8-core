@@ -1,0 +1,21 @@
+
+[Unit]
+Description=Podman nextcloud-nginx.service
+BindsTo=nextcloud.service
+After=nextcloud-app.service
+Requires=nextcloud-app.service
+
+[Service]
+Environment=PODMAN_SYSTEMD_UNIT=%n
+EnvironmentFile=%S/state/environment
+Restart=always
+TimeoutStopSec=70
+ExecStartPre=/bin/rm -f %t/nextcloud-.pid %t/nextcloud-nginx.ctr-id
+ExecStart=/usr/bin/podman run --conmon-pidfile %t/nextcloud-nginx.pid --cidfile %t/nextcloud-nginx.ctr-id --cgroups=no-conmon --pod-id-file %t/nextcloud.pod-id --replace -d --name nextcloud-nginx --env-file=%S/state/environment -v %S/state/nginx.conf:/etc/nginx/nginx.conf:ro,Z --volumes-from nextcloud-app:rw,z ${IMAGE_NGINX}
+ExecStop=/usr/bin/podman stop --ignore --cidfile %t/nextcloud-nginx.ctr-id -t 10
+ExecStopPost=/usr/bin/podman rm --ignore -f --cidfile %t/nextcloud-nginx.ctr-id
+PIDFile=%t/nextcloud-nginx.pid
+Type=forking
+
+[Install]
+WantedBy=default.target

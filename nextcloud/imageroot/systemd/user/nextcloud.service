@@ -1,7 +1,7 @@
 [Unit]
 Description=Podman nextcloud.service
-Requires=nextcloud-app.service nextcloud-db.service nextcloud-redis.service
-Before=nextcloud-app.service nextcloud-db.service nextcloud-redis.service
+Requires=nextcloud-app.service nextcloud-db.service nextcloud-redis.service nextcloud-nginx.service
+Before=nextcloud-app.service nextcloud-db.service nextcloud-redis.service nextcloud-nginx.service
 
 [Service]
 Environment=PODMAN_SYSTEMD_UNIT=%n
