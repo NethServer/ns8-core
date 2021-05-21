@@ -19,7 +19,7 @@ ExecStart=/usr/bin/podman run \
     -v /var/log/journal/:/var/log/journal/ \
     -v /etc/machine-id:/etc/machine-id \
     -v ./promtail.yaml:/etc/promtail/config.yml \
-    docker.io/grafana/promtail:2.2.1 \
+    ${IMAGE} \
     -config.file=/etc/promtail/config.yml \
     -config.expand-env=true
 ExecStop=/usr/bin/podman stop --ignore --cidfile %t/%N.cid -t 10

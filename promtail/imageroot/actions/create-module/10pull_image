@@ -25,5 +25,11 @@ set -e
 # Redirect any output to the journal (stderr)
 exec 1>&2
 
-podman-pull-missing docker.io/grafana/promtail:2.2.1
+IMAGE=docker.io/grafana/promtail:2.2.1
 
+# Talk with agent using file descriptor to save the image name to environment
+# The ${IMAGE} variable will be used later inside systemd unit
+
+echo "set-env IMAGE ${IMAGE}" >&${AGENT_COMFD}
+
+podman-pull-missing ${IMAGE}
