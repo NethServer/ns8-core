@@ -29,19 +29,13 @@ import (
 	"log"
 	"os"
 	"os/exec"
-	"path"
-	"sort"
 	"strings"
 	"time"
 
+	"github.com/NethServer/ns8-scratchpad/core/agent/action"
 	"github.com/NethServer/ns8-scratchpad/core/api-server/models"
 	"github.com/go-redis/redis/v8"
 )
-
-type ActionState struct {
-	Status   string `json:"status"`
-	Progress int    `json:"progress"`
-}
 
 // Reference: https://www.man7.org/linux/man-pages/man3/sd-daemon.3.html
 const (
@@ -62,43 +56,6 @@ var rdb *redis.Client
 
 var pollingDuration = 5 * time.Second
 var taskExpireDuration = 24 * time.Hour
-
-func getActionSteps(actionName string) ([]string, bool) {
-	dirFound := false
-	actionSteps := make(map[string]string)
-
-	// Squash the action dirs in a single list
-	for _, path := range actionPaths {
-		actionPath := path + "/" + actionName
-		entries, err := os.ReadDir(actionPath)
-		if err != nil {
-			continue
-		}
-		dirFound = true
-		for _, entry := range entries {
-			if entry.IsDir() {
-				continue
-			}
-			actionSteps[entry.Name()] = actionPath + "/" + entry.Name()
-		}
-	}
-
-	actionStepsKeys := make([]string, 0, 8)
-	for k, _ := range actionSteps {
-		actionStepsKeys = append(actionStepsKeys, k)
-	}
-
-	// Executable steps under the actionPaths are launched sequentially
-	// in alphabetical order:
-	sort.Strings(actionStepsKeys)
-
-	actionStepsValues := make([]string, 0, 8)
-	for _, k := range actionStepsKeys {
-		actionStepsValues = append(actionStepsValues, actionSteps[k])
-	}
-
-	return actionStepsValues, dirFound
-}
 
 func prepareActionEnvironment() []string {
 	env := make([]string, 0)
@@ -181,25 +138,22 @@ func runAction(task *models.Task) {
 	errorKey := agentPrefix + "/task/" + task.ID + "/error"
 	exitCodeKey := agentPrefix + "/task/" + task.ID + "/exit_code"
 
-	actionState := ActionState{Status: "pending", Progress: 0}
-
-	actionStateJson, _ := json.Marshal(actionState)
-	rdb.Publish(ctx, progressChannel, actionStateJson)
-
 	// Action response payloads
 	var actionOutput string = ""
 	var actionError string = ""
 	var exitCode int = 0
 
-	actionSteps, actionDefined := getActionSteps(task.Action)
+	actionDescriptor := action.Create(task.Action, actionPaths)
 
-	if !actionDefined {
+	rdb.Publish(ctx, progressChannel, actionDescriptor.ToJSON())
+
+	if len(actionDescriptor.Steps) == 0 {
 		// If the action is not defined our exit code is returned
 		// More info in man systemd.exec and from `systemd-analyze exit-status` output
 		actionOutput = ""
 		actionError = fmt.Sprintf("Action %s is not defined", task.Action)
 		exitCode = 8
-		actionState.Status = "aborted"
+		actionDescriptor.Status = "aborted"
 		log.Print(SD_ERR + actionError)
 	}
 
@@ -207,11 +161,11 @@ func runAction(task *models.Task) {
 	// other runtime sources
 	environment := dedupEnv(prepareActionEnvironment())
 
-	for _, step := range actionSteps {
+	for stepIndex, step := range actionDescriptor.Steps {
 		// Create a pipe to read control commands from action steps
 		comReadFd, comWriteFd, _ := os.Pipe()
 
-		cmd := exec.Command(step)
+		cmd := exec.Command(step.Path)
 		cmd.Env = append(append(os.Environ(), environment...),
 			"AGENT_COMFD=3", // 3 is the additional FD number where the action step can write its commands for us
 			"AGENT_TASK_ID="+task.ID,
@@ -257,7 +211,7 @@ func runAction(task *models.Task) {
 					dumpToFile(environment)
 				case "set-status":
 					if record[1] == "validation-failed" {
-						actionState.Status = "validation-failed"
+						actionDescriptor.Status = "validation-failed"
 					} else {
 						log.Printf(SD_ERR+"set-status command failed: unknown status \"%s\"", record[1])
 					}
@@ -267,41 +221,44 @@ func runAction(task *models.Task) {
 			}
 		}()
 
-		actionState.Status = "running"
+		actionDescriptor.Status = "running"
 
-		log.Printf("%s/task/%s: %s/%s is starting", agentPrefix, task.ID, task.Action, path.Base(step))
+		log.Printf("%s/task/%s: %s/%s is starting", agentPrefix, task.ID, task.Action, step.Name)
 		if err := cmd.Start(); err != nil {
 			exitCode = 9
 			actionError = fmt.Sprintf("Action %s startup error at step %s: %v", task.Action, step, err)
-			actionState.Status = "aborted"
+			actionDescriptor.Status = "aborted"
 			log.Print(SD_ERR + actionError)
 			break
 		}
 
-		// standard FD are closed by Start. Our extra FD for commands must be closed manually
+		// standard FDs are closed by Start. Our extra FD for commands must be closed manually
 		// otherwise it blocks our thread.
 		comWriteFd.Close()
 
 		if err := cmd.Wait(); err != nil {
 			exitCode = cmd.ProcessState.ExitCode()
-			if actionState.Status == "running" {
-				actionState.Status = "aborted"
+			if actionDescriptor.Status == "running" {
+				actionDescriptor.Status = "aborted"
 			}
-			log.Printf(SD_ERR+"Action %s %s at step %s: %v", task.Action, actionState.Status, step, err)
+			log.Printf(SD_ERR+"Action %s %s at step %s: %v", task.Action, actionDescriptor.Status, step.Path, err)
 			break
-		} else if actionState.Status == "validation-failed" {
+		} else if actionDescriptor.Status == "validation-failed" {
 			exitCode = 10 // validation-error forces a non-zero exit code
-			log.Printf(SD_ERR+"Action %s %s at step %s: %v", task.Action, actionState.Status, step, err)
+			log.Printf(SD_ERR+"Action %s %s at step %s: %v", task.Action, actionDescriptor.Status, step.Path, err)
 			break
 		}
+
+		actionDescriptor.SetProgressAtStep(stepIndex, 100)
+		rdb.Publish(ctx, progressChannel, actionDescriptor.ToJSON())
 
 		environment = dedupEnv(environment)
 	}
 
 	_, err := rdb.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
 		if exitCode == 0 {
-			if actionState.Status == "running" {
-				actionState.Status = "completed"
+			if actionDescriptor.Status == "running" {
+				actionDescriptor.Status = "completed"
 			}
 			// Persist the environment
 			if len(environment) > 0 {
@@ -314,8 +271,7 @@ func runAction(task *models.Task) {
 		pipe.Set(ctx, outputKey, actionOutput, taskExpireDuration)
 		pipe.Set(ctx, errorKey, actionError, taskExpireDuration)
 		pipe.Set(ctx, exitCodeKey, exitCode, taskExpireDuration)
-		actionStateJson, _ = json.Marshal(actionState)
-		pipe.Publish(ctx, progressChannel, actionStateJson)
+		pipe.Publish(ctx, progressChannel, actionDescriptor.ToJSON())
 		return nil
 	})
 	if err != nil {
