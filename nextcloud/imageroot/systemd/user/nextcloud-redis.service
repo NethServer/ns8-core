@@ -1,12 +1,12 @@
 [Unit]
 Description=Podman nextcloud-redis.service
-Documentation=man:podman-generate-systemd(1)
 BindsTo=nextcloud.service
 After=nextcloud.service
 
 [Service]
 Environment=PODMAN_SYSTEMD_UNIT=%n
-Restart=on-failure
+EnvironmentFile=%S/state/environment
+Restart=always
 TimeoutStopSec=70
 ExecStartPre=/bin/rm -f %t/nextcloud-redis.pid %t/nextcloud-redis.ctr-id
 ExecStart=/usr/bin/podman run --conmon-pidfile %t/nextcloud-redis.pid --cidfile %t/nextcloud-redis.ctr-id --cgroups=no-conmon --pod-id-file %t/nextcloud.pod-id --replace -d --name nextcloud-redis -v nextcloud-redis-data:/data docker.io/redis:6-alpine --appendonly yes
@@ -16,4 +16,4 @@ PIDFile=%t/nextcloud-redis.pid
 Type=forking
 
 [Install]
-WantedBy=multi-user.target default.target
+WantedBy=default.target

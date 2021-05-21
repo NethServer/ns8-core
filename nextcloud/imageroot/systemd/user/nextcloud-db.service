@@ -1,21 +1,21 @@
 [Unit]
 Description=Podman nextcloud-db.service
-Documentation=man:podman-generate-systemd(1)
 BindsTo=nextcloud.service
 After=nextcloud.service
 
 [Service]
 Environment=PODMAN_SYSTEMD_UNIT=%n
-Restart=on-failure
+EnvironmentFile=%S/state/environment
+Restart=always
 TimeoutStopSec=70
 ExecStartPre=/bin/rm -f %t/nextcloud-db.pid %t/nextcloud-db.ctr-id
 ExecStartPre=/bin/mkdir -p %h/restore/
 ExecStartPre=/bin/touch %h/restore/dump.sql
-ExecStart=/usr/bin/podman run --conmon-pidfile %t/nextcloud-db.pid --cidfile %t/nextcloud-db.ctr-id --cgroups=no-conmon --pod-id-file %t/nextcloud.pod-id --replace -d --name nextcloud-db -e MYSQL_ROOT_PASSWORD=nextcloud -e MYSQL_DATABASE=nextcloud -e MYSQL_USER=nextcloud -e MYSQL_PASSWORD=nextcloud -v nextcloud-db-data:/var/lib/mysql -v %h/restore/dump.sql:/docker-entrypoint-initdb.d/dump.sql docker.io/mariadb:10
+ExecStart=/usr/bin/podman run --conmon-pidfile %t/nextcloud-db.pid --cidfile %t/nextcloud-db.ctr-id --cgroups=no-conmon --pod-id-file %t/nextcloud.pod-id --replace -d --name nextcloud-db --env-file=%S/state/environment  -v nextcloud-db-data:/var/lib/mysql -v %h/restore/dump.sql:/docker-entrypoint-initdb.d/dump.sql docker.io/mariadb:10
 ExecStop=/usr/bin/podman stop --ignore --cidfile %t/nextcloud-db.ctr-id -t 10
 ExecStopPost=/usr/bin/podman rm --ignore -f --cidfile %t/nextcloud-db.ctr-id
 PIDFile=%t/nextcloud-db.pid
 Type=forking
 
 [Install]
-WantedBy=multi-user.target default.target
+WantedBy=default.target
