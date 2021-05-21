@@ -24,6 +24,7 @@ import (
 	"context"
 	"encoding/csv"
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"os"
@@ -36,6 +37,11 @@ import (
 	"github.com/NethServer/ns8-scratchpad/core/api-server/models"
 	"github.com/go-redis/redis/v8"
 )
+
+type ActionState struct {
+	Status   string `json:"status"`
+	Progress int    `json:"progress"`
+}
 
 // Reference: https://www.man7.org/linux/man-pages/man3/sd-daemon.3.html
 const (
@@ -102,7 +108,7 @@ func prepareActionEnvironment() []string {
 		return env
 	}
 	if err != nil {
-		log.Printf(SD_ERR + "Could not fetch Redis key %s: %v", key, err)
+		log.Printf(SD_ERR+"Could not fetch Redis key %s: %v", key, err)
 		return env
 	}
 	for key, value := range redisHash {
@@ -157,7 +163,7 @@ func dumpToFile(env []string) {
 	env = dedupEnv(env)
 	f, err := os.Create("./environment")
 	if err != nil {
-		log.Printf(SD_ERR + "Can't write %s/environment file: %s", path, err)
+		log.Printf(SD_ERR+"Can't write %s/environment file: %s", path, err)
 		return
 	}
 	for _, line := range env {
@@ -175,7 +181,10 @@ func runAction(task *models.Task) {
 	errorKey := agentPrefix + "/task/" + task.ID + "/error"
 	exitCodeKey := agentPrefix + "/task/" + task.ID + "/exit_code"
 
-	rdb.Publish(ctx, progressChannel, `{"status":"pending","progress":0}`)
+	actionState := ActionState{Status: "pending", Progress: 0}
+
+	actionStateJson, _ := json.Marshal(actionState)
+	rdb.Publish(ctx, progressChannel, actionStateJson)
 
 	// Action response payloads
 	var actionOutput string = ""
@@ -188,9 +197,10 @@ func runAction(task *models.Task) {
 		// If the action is not defined our exit code is returned
 		// More info in man systemd.exec and from `systemd-analyze exit-status` output
 		actionOutput = ""
-		actionError = ""
+		actionError = fmt.Sprintf("Action %s is not defined", task.Action)
 		exitCode = 8
-		log.Printf(SD_ERR + "Action %s is not defined", task.Action)
+		actionState.Status = "aborted"
+		log.Print(SD_ERR + actionError)
 	}
 
 	// Get additional environment variables from Redis DB and
@@ -236,7 +246,7 @@ func runAction(task *models.Task) {
 					return
 				}
 				if err != nil {
-					log.Printf(SD_ERR + "Parse error: %v", err)
+					log.Printf(SD_ERR+"Parse error: %v", err)
 					continue
 				}
 				switch cmd := record[0]; cmd {
@@ -245,15 +255,26 @@ func runAction(task *models.Task) {
 				case "dump-env":
 					rdb.HSet(ctx, agentPrefix+"/environment", exportToRedis(environment)...)
 					dumpToFile(environment)
+				case "set-status":
+					if record[1] == "validation-failed" {
+						actionState.Status = "validation-failed"
+					} else {
+						log.Printf(SD_ERR+"set-status command failed: unknown status \"%s\"", record[1])
+					}
 				default:
-					log.Printf(SD_ERR + "Unknown command %s", cmd)
+					log.Printf(SD_ERR+"Unknown command %s", cmd)
 				}
 			}
 		}()
 
+		actionState.Status = "running"
+
 		log.Printf("%s/task/%s: %s/%s is starting", agentPrefix, task.ID, task.Action, path.Base(step))
 		if err := cmd.Start(); err != nil {
-			log.Printf(SD_ERR + "Action %s startup error at step %s: %v", task.Action, step, err)
+			exitCode = 9
+			actionError = fmt.Sprintf("Action %s startup error at step %s: %v", task.Action, step, err)
+			actionState.Status = "aborted"
+			log.Print(SD_ERR + actionError)
 			break
 		}
 
@@ -261,10 +282,16 @@ func runAction(task *models.Task) {
 		// otherwise it blocks our thread.
 		comWriteFd.Close()
 
-		// It is safe to Wait() after the select{} finishes to consume the pipes input.
 		if err := cmd.Wait(); err != nil {
 			exitCode = cmd.ProcessState.ExitCode()
-			log.Printf(SD_ERR + "Action %s terminated with errors at step %s: %v", task.Action, step, err)
+			if actionState.Status == "running" {
+				actionState.Status = "aborted"
+			}
+			log.Printf(SD_ERR+"Action %s %s at step %s: %v", task.Action, actionState.Status, step, err)
+			break
+		} else if actionState.Status == "validation-failed" {
+			exitCode = 10 // validation-error forces a non-zero exit code
+			log.Printf(SD_ERR+"Action %s %s at step %s: %v", task.Action, actionState.Status, step, err)
 			break
 		}
 
@@ -272,21 +299,29 @@ func runAction(task *models.Task) {
 	}
 
 	_, err := rdb.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
-		// Persist the environment
-		if exitCode == 0 && len(environment) > 0 {
-			pipe.HSet(ctx, agentPrefix+"/environment", exportToRedis(environment)...)
+		if exitCode == 0 {
+			if actionState.Status == "running" {
+				actionState.Status = "completed"
+			}
+			// Persist the environment
+			if len(environment) > 0 {
+				pipe.HSet(ctx, agentPrefix+"/environment", exportToRedis(environment)...)
+			} else {
+				pipe.Del(ctx, agentPrefix+"/environment")
+			}
 		}
 		// Publish the action response
 		pipe.Set(ctx, outputKey, actionOutput, taskExpireDuration)
 		pipe.Set(ctx, errorKey, actionError, taskExpireDuration)
 		pipe.Set(ctx, exitCodeKey, exitCode, taskExpireDuration)
-		pipe.Publish(ctx, progressChannel, `{"status":"finished","progress":100}`)
+		actionStateJson, _ = json.Marshal(actionState)
+		pipe.Publish(ctx, progressChannel, actionStateJson)
 		return nil
 	})
 	if err != nil {
-		log.Printf(SD_ERR + "Redis command failed: ", err)
+		log.Print(SD_ERR+"Redis command failed: ", err)
 	} else {
-		if exitCode == 0 && len(environment) > 0 {
+		if exitCode == 0 {
 			dumpToFile(environment)
 		}
 	}
@@ -335,13 +370,13 @@ func main() {
 		if err == redis.Nil {
 			continue
 		} else if err != nil {
-			log.Print(SD_ERR + "Task queue pop error: ", err)
+			log.Print(SD_ERR+"Task queue pop error: ", err)
 			time.Sleep(pollingDuration)
 			continue
 		}
 
 		if err := json.Unmarshal([]byte(result[1]), &task); err != nil {
-			log.Print(SD_ERR + "Task ignored for decoding error: ", err)
+			log.Print(SD_ERR+"Task ignored for decoding error: ", err)
 			continue
 		}
 
