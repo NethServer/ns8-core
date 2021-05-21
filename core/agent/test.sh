@@ -37,10 +37,11 @@ trap 'echo "Stopping processes..." ; kill $agentpid ; podman stop redis ; rm -f 
 
 podman exec -i redis redis-cli -p 6380 <<EOF
 HSET t/environment MYVARIABLE MYVALUE
-LPUSH t/tasks '{"id":"t","action":"test","data":"INPUT"}'
+LPUSH t/tasks '{"id":"t","action":"test","data":"${1:-INPUT}"}'
 EOF
 
 podman exec -i redis redis-cli -p 6380 monitor &
+sleep 1
 
 REDIS_ADDRESS=127.0.0.1:6380 ./agent t . &
 agentpid=$!

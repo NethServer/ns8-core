@@ -1,0 +1,8 @@
+#!/bin/sh
+
+input=$(cat)
+
+if [[ "${input}" != "INPUT" ]]; then
+    echo "set-status validation-failed" >&$AGENT_COMFD
+    exit 2
+fi
