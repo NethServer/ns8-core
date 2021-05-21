@@ -1,15 +1,15 @@
 [Unit]
 Description=Podman nextcloud.service
-Documentation=man:podman-generate-systemd(1)
 Requires=nextcloud-app.service nextcloud-db.service nextcloud-redis.service
 Before=nextcloud-app.service nextcloud-db.service nextcloud-redis.service
 
 [Service]
 Environment=PODMAN_SYSTEMD_UNIT=%n
-Restart=on-failure
+EnvironmentFile=%S/state/environment
+Restart=always
 TimeoutStopSec=70
 ExecStartPre=/bin/rm -f %t/nextcloud.pid %t/nextcloud.pod-id
-ExecStartPre=/usr/bin/podman pod create --infra-conmon-pidfile %t/nextcloud.pid --pod-id-file %t/nextcloud.pod-id --name nextcloud -p 127.0.0.1:8181:80 --replace --network=slirp4netns:allow_host_loopback=true --add-host=accountprovider:10.0.2.2
+ExecStartPre=/usr/bin/podman pod create --infra-conmon-pidfile %t/nextcloud.pid --pod-id-file %t/nextcloud.pod-id --name nextcloud -p 127.0.0.1:${TCP_PORT}:80 --replace --network=slirp4netns:allow_host_loopback=true --add-host=accountprovider:10.0.2.2
 ExecStart=/usr/bin/podman pod start --pod-id-file %t/nextcloud.pod-id
 ExecStop=/usr/bin/podman pod stop --ignore --pod-id-file %t/nextcloud.pod-id -t 10
 ExecStopPost=/usr/bin/podman pod rm --ignore -f --pod-id-file %t/nextcloud.pod-id
@@ -17,4 +17,4 @@ PIDFile=%t/nextcloud.pid
 Type=forking
 
 [Install]
-WantedBy=multi-user.target default.target
+WantedBy=default.target

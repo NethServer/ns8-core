@@ -31,10 +31,10 @@ exec 1>&2
 # Setup default values
 NEXTCLOUD_ADMIN_USER="admin"
 NEXTCLOUD_ADMIN_PASSWORD="Nethesis,1234"
-NEXTCLOUD_TRUSTED_DOMAINS="nextcloud."$(hostname -f)" localhost"
+NEXTCLOUD_TRUSTED_DOMAINS="nextcloud."$(hostname -f)",localhost"
 
 # Read every parameter from stdin. Parameters should be separated by space
-# stdin example: "admin password "
+# stdin example: "admin password nextcloud.test.org,localhost"
 read NEXTCLOUD_ADMIN_USER NEXTCLOUD_ADMIN_PASSWORD NEXTCLOUD_TRUSTED_DOMAINS
 
 # Make sure tesuted domains is not empty
@@ -44,12 +44,15 @@ if [[ -z "${NEXTCLOUD_TRUSTED_DOMAINS}" ]]; then
   exit 2
 fi
 
+# Transform from comma separated to space separated
+NEXTCLOUD_TRUSTED_DOMAINS=$(echo $NEXTCLOUD_TRUSTED_DOMAINS | tr , " ")
+
 # Talk with agent using file descriptor.
 # Setup configuration from user input.
 cat >&${AGENT_COMFD} <<EOF
 set-env NEXTCLOUD_ADMIN_USER ${NEXTCLOUD_ADMIN_USER}
 set-env NEXTCLOUD_ADMIN_PASSWORD ${NEXTCLOUD_ADMIN_PASSWORD}
-set-env NEXTCLOUD_TRUSTED_DOMAINS ${NEXTCLOUD_TRUSTED_DOMAINS}
+set-env NEXTCLOUD_TRUSTED_DOMAINS "${NEXTCLOUD_TRUSTED_DOMAINS}"
 EOF
 
 # Setup environment for nextcloud app: DB and Redis access
