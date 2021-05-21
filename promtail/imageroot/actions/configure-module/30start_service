@@ -24,9 +24,7 @@ set -e
 
 exec 1>&2 # Send any output to stderr, to not alter the action response protocol
 
-mid=$(basename ${AGENT_ID})
-
 # Enable and restart the promtail service
-systemctl enable "${mid}.service"
-systemctl stop "${mid}.service"
-systemctl start "${mid}.service"
+systemctl enable "${MODULE_ID}.service"
+systemctl stop "${MODULE_ID}.service"
+systemctl start "${MODULE_ID}.service"

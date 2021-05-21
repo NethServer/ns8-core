@@ -24,7 +24,5 @@ set -e
 
 exec 1>&2 # Send any output to stderr, to not alter the action response protocol
 
-mid=$(basename ${AGENT_ID})
-
-install -m 644 "${AGENT_INSTALL_DIR}/promtail.service" "/etc/systemd/system/${mid}.service"
+install -m 644 "${AGENT_INSTALL_DIR}/promtail.service" "/etc/systemd/system/${MODULE_ID}.service"
 systemctl daemon-reload
