@@ -1,4 +1,4 @@
-# Dokuwiki
+# Promtail
 
 Start and configure a Promtail instance.
 The module use the [Promtail official docker image](https://github.com/grafana/loki/releases).
@@ -20,12 +20,12 @@ Wait for `add-module` to complete by looking inside `journalctl`.
 
 ## Configure
 
-Let's assume that the promtail istance is named `promtail1`.
+Let's assume that the Promtail instance is named `promtail1`.
 
 Then launch `configure-module`, by setting the following parameters:
 - `loki_url`, *string*: Address of the remote Loki server.
 
-All parameers must be set inside the `data` field as a JSON object.
+All parameters must be set inside the `data` field as a JSON object.
 
 Example:
 ```
