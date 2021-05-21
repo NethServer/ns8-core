@@ -25,9 +25,10 @@ set -e
 # Redirect any output to the journal (stderr)
 exec 1>&2
 
-IMAGE_NC=docker.io/nextcloud:latest
+IMAGE_NC=docker.io/nextcloud:fpm-alpine
 IMAGE_REDIS=docker.io/redis:6-alpine
 IMAGE_MARIA=docker.io/mariadb:10
+IMAGE_NGINX=docker.io/nginx:alpine
 
 # Talk with agent using file descriptor to save the image name to environment
 # The ${IMAGE_XX} variable will be used later inside systemd unit
@@ -35,7 +36,9 @@ IMAGE_MARIA=docker.io/mariadb:10
 echo "set-env IMAGE_NC ${IMAGE_NC}" >&${AGENT_COMFD}
 echo "set-env IMAGE_REDIS ${IMAGE_REDIS}" >&${AGENT_COMFD}
 echo "set-env IMAGE_MARIA ${IMAGE_MARIA}" >&${AGENT_COMFD}
+echo "set-env IMAGE_NGINX ${IMAGE_NGINX}" >&${AGENT_COMFD}
 
 podman pull ${IMAGE_NC}
 podman pull ${IMAGE_REDIS}
 podman pull ${IMAGE_MARIA}
+podman pull ${IMAGE_NGINX}
