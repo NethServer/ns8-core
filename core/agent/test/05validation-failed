@@ -2,6 +2,14 @@
 
 input=$(cat)
 
+echo "set-weight 05validation-failed 0" >&$AGENT_COMFD
+echo "set-weight 10setenv 1" >&$AGENT_COMFD
+echo "set-weight 20printenv 0" >&$AGENT_COMFD
+
+# Trigger non-fatal errors:
+echo "set-weight BAD 7" >&$AGENT_COMFD
+echo "set-progress 999" >&$AGENT_COMFD
+
 if [[ "${input}" != "INPUT" ]]; then
     echo "set-status validation-failed" >&$AGENT_COMFD
     exit 2

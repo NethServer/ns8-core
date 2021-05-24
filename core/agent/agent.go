@@ -29,6 +29,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"strconv"
 	"strings"
 	"time"
 
@@ -215,6 +216,34 @@ func runAction(task *models.Task) {
 					} else {
 						log.Printf(SD_ERR+"set-status command failed: unknown status \"%s\"", record[1])
 					}
+				case "set-weight":
+					var weight int
+					var err error
+					weight, err = strconv.Atoi(record[2])
+					if err != nil {
+						log.Printf(SD_ERR+"set-weight command failed: %v", err)
+						break
+					}
+					err = actionDescriptor.SetStepWeight(record[1], weight)
+					if err != nil {
+						log.Printf(SD_ERR+"set-weight command failed: %v", err)
+						break
+					}
+					rdb.Publish(ctx, progressChannel, actionDescriptor.ToJSON())
+				case "set-progress":
+					var progress int
+					var err error
+					progress, err = strconv.Atoi(record[1])
+					if err != nil {
+						log.Printf(SD_ERR+"set-progress command failed: %v", err)
+						break
+					}
+					err = actionDescriptor.SetProgressAtStep(stepIndex, progress)
+					if err != nil {
+						log.Printf(SD_ERR+"set-progress command failed: %v", err)
+						break
+					}
+					rdb.Publish(ctx, progressChannel, actionDescriptor.ToJSON())
 				default:
 					log.Printf(SD_ERR+"Unknown command %s", cmd)
 				}

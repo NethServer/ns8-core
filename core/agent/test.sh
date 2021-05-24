@@ -48,4 +48,4 @@ agentpid=$!
 
 sleep 3
 
-printf "Environment file contents:\n %s\n" "$(cat environment)"
+printf "Environment file contents:\n%s\n" "$(cat environment)"
