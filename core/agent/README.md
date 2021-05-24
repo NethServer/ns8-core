@@ -64,6 +64,8 @@ Available commands:
 
 - `set-env`
 - `dump-env`
+- `set-progress`
+- `set-weight`
 
 ### set-env
 
@@ -85,7 +87,7 @@ When all steps are completed, the following keys are set in Redis DB
 
 ### dump-env
 
-The `dump-env` command writes to a file all variables set using `set-env`. The file can be used for subsequent steps.
+The `dump-env` command writes to a special file all variables set using `set-env`. The file can be used for subsequent steps.
 If the action is successful, `dump-env` is automatically called at the end.
 The generated file is saved inside the state directory and named `environment`.
 
@@ -93,3 +95,21 @@ For example
 
     dump-env
 
+### set-progress
+
+A step *progress* is a number from 0 to 100. The overall action progress value is given by the sum of all completed steps plus
+the current step progress value. The `set-progress` step command changes the progress value for the current step. 
+
+When the current step execution terminates successfully its progress value is always set to 100. For example
+
+     set-progress 73
+
+The above command set the current step progress to 73 (out of 100).
+
+### set-weight
+
+Each action step is assigned 1 as default *weight*. The step weight multiplies its progress value to obtain the overall action progress value. For example
+
+    set-weight 50update 8
+
+The above command sets the `50update` step weight to 8.
