@@ -22,6 +22,8 @@ package action
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 	"os"
 	"sort"
 )
@@ -33,10 +35,9 @@ type Step struct {
 }
 
 type Descriptor struct {
-	Status      string `json:"status"`
-	Progress    int    `json:"progress"`
-	CurrentStep int    `json:"-"`
-	Steps       []Step `json:"-"`
+	Status   string `json:"status"`
+	Progress int    `json:"progress"`
+	Steps    []Step `json:"-"`
 }
 
 func (d Descriptor) ToJSON() []byte {
@@ -44,7 +45,10 @@ func (d Descriptor) ToJSON() []byte {
 	return actionJson
 }
 
-func (d *Descriptor) SetProgressAtStep(stepIndex int, stepProgress int) {
+func (d *Descriptor) SetProgressAtStep(stepIndex int, stepProgress int) error {
+	if stepProgress < 0 || stepProgress > 100 {
+		return errors.New(fmt.Sprintf("Invalid step progress value: %d", stepProgress))
+	}
 	currentProgress := 0
 	targetProgress := 0
 	for s := 0; s < len(d.Steps); s++ {
@@ -58,7 +62,28 @@ func (d *Descriptor) SetProgressAtStep(stepIndex int, stepProgress int) {
 	if targetProgress > 0 {
 		d.Progress = currentProgress * 100 / targetProgress
 	}
-	return
+	return nil
+}
+
+func (d *Descriptor) getStepIndex(stepName string) (int, error) {
+	for stepIndex, step := range d.Steps {
+		if step.Name == stepName {
+			return stepIndex, nil
+		}
+	}
+	return -1, errors.New("Step " + stepName + " not found")
+}
+
+func (d *Descriptor) SetStepWeight(stepName string, weight int) error {
+	if weight < 0 {
+		return errors.New(fmt.Sprintf("Invalid step weight value: %d", weight))
+	}
+	stepIndex, err := d.getStepIndex(stepName)
+	if err != nil {
+		return err
+	}
+	d.Steps[stepIndex].Weight = weight
+	return nil
 }
 
 func Create(actionName string, actionPaths []string) Descriptor {
@@ -97,5 +122,5 @@ func Create(actionName string, actionPaths []string) Descriptor {
 		steps[i] = Step{Name: file, Path: actionSteps[file], Weight: 1}
 	}
 
-	return Descriptor{Status: "pending", Progress: 0, CurrentStep: 0, Steps: steps}
+	return Descriptor{Status: "pending", Progress: 0, Steps: steps}
 }

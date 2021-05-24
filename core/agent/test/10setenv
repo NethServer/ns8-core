@@ -1,6 +1,11 @@
 #!/bin/bash
 
 # Set a new persistent environment variable
-echo 'set-env ABC "1 2 3"' 1>&3
-sleep 1
+echo 'set-env ABC "1 2 3"' >&${AGENT_COMFD}
+
+for progress in $(seq 1 5 100); do
+    sleep 0.08
+    printf 'set-progress %d\n' $progress >&${AGENT_COMFD}
+done
+
 echo '{"status":"success"}'
