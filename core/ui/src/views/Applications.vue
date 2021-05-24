@@ -9,7 +9,7 @@ export default {
   name: "Applications",
   computed: {
     iframePath() {
-      return `/apps/${this.$route.params.appId}/index.html`;
+      return `apps/${this.$route.params.appId}/index.html`;
     },
   },
 };
