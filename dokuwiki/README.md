@@ -40,6 +40,8 @@ Then launch `set-host`, by setting the following parameters:
 - the module instance name
 - the listen URL
 - the virtual host name
+- the option to enable (1) or disable (0) Let's Encrypt certificate
+- the option to enable (1) or disable (0) HTTP to HTTPS redirection
 
 All parameters must be set inside the `data` field separated by a space and terminated with `\n`.
 
