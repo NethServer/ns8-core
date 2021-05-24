@@ -21,3 +21,6 @@ pnpm-debug.log*
 *.njsproj
 *.sln
 *.sw?
+
+# directory containing symlinks to ns8 apps
+public/apps/**
