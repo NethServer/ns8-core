@@ -93,6 +93,17 @@ Each action step receives the `task.data` string from FD 0 (INPUT). Any data sen
 
 An action step receives an open file descriptor where it can write special command strings. The file descriptor number can be obtained from the `AGENT_COMFD` environment variable.
 
+## Environment
+
+A running action step receives its operating system process environment from the agent. This environment consists of
+
+- variables inherited from the agent environment (e.g. PATH, PYTHONPATH...)
+- variables imported from the Redis DB, stored in the hash key `<AGENT_ID>/environment` (e.g. MODULE_ID, IMAGE_URL...)
+- runtime agent vars:
+
+    * `AGENT_COMFD` (integer) The file descriptor number where **action commands** (see below) can be writte to
+    * `AGENT_TASK_ID` (string) The unique identifier of the Task that started the Action
+    * `AGENT_TASK_ACTION` (string) The Action name
 
 ## Action commands
 
