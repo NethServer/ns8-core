@@ -18,7 +18,7 @@ The agent accepts also some environment variables, so a complete invocation from
 
     REDIS_ADDRESS=127.0.0.1:6379 REDIS_PASSWORD= ./agent module/mail1 . ~/.config/actions
 
-## Actions implementation
+## Actions execution model
 
 An **action** is defined by one or more directories with the same name under the root directories
 (those passed as arguments to the agent executable). Each executable file under the action
@@ -58,16 +58,18 @@ The possible action status are:
 - `aborted`
 - `validation-failed`
 
-An action status is initially set to `pending` then switches to `running` during normal steps execution. If the execution
-of a step cannot be staretd successfully the whole action is `aborted` and the exit code 9 is set.
+An action status is initially set to `pending` then switches to `running` during normal steps execution.
+
+If the execution of a step cannot be started successfully by the OS `exec()` system call the whole action
+is `aborted` and the exit code 9 is set.
 
 If an action step completes with a non-zero exit code, the whole action is considered `aborted` and no more steps are
 invoked.
 
 When all steps are executed successfully the action is considered `completed`. Then the following keys are set in Redis DB
 
-- `<agent-id>/task/<task-id>/output`, collects FD 1
-- `<agent-id>/task/<task-id>/error`, collects FD 2
+- `<agent-id>/task/<task-id>/output`, collects data sent to FD 1 by all steps
+- `<agent-id>/task/<task-id>/error`, collects data sent to FD 2 by all steps
 - `<agent-id>/task/<task-id>/exit_code`, 0 if all steps were successful, otherwise the exit code of the failing step
 - `<agent-id>/environment`, additional environent variables passed to the action steps. The values are persisted to Redis if the action is completed
 
@@ -75,27 +77,27 @@ The `validation-failed` status must be set manually with the `set-status` comman
 status is set, no more steps are invoked and the action exit code is set to 10 unless another non-zero exit code is returned by
 the last step.
 
-Exit codes summary:
+Exit codes and their meaning:
 
 - `0` - success
-- `1` - generic error
-- `2-7` - action-specific error numbers
+- `1` - **available to use** for generic errors
+- `2-7` - **available to use** for action-specific error numbers
 - `8` - the invoked action is not defined or has 0 steps (the directory is empty)
-- `9` - `execve()` error
+- `9` - OS `exec()` error, like "file is not executable" and similar
 - `10` - default exit code once `validation-failed` status is set. It
   can be overridden by terminating the step with a non-zero exit code.
-- `11-31` - reserved
-- `32-127` - action-specific error numbers
+- `11-31` - reserved to the agent implementation
+- `32-255` - **available to use** for action-specific error numbers
 
 ## File descriptors
 
-Each action step receives the `task.data` string from FD 0 (INPUT). Any data sent to FD 1 (OUTPUT) constitutes the action output data, and any data sent to FD 2 (ERROR) is immediately copied to the agent stderr stream and appended to the action error data.
+Each action step receives the `task.data` string from FD 0 (INPUT). Any data sent to FD 1 (OUTPUT) constitutes the action output data, and any data sent to FD 2 (ERROR) is immediately copied to the agent error stream and appended to the action error data.
 
-An action step receives an open file descriptor where it can write special command strings. The file descriptor number can be obtained from the `AGENT_COMFD` environment variable.
+An action step receives an additional file descriptor where it can write special command strings. The file descriptor number can be obtained from the `AGENT_COMFD` environment variable.
 
-## Environment
+## Environment and working directory
 
-A running action step receives its operating system process environment from the agent. This environment consists of
+A running action step receives the **current working directory** value and its operating system process environment from the agent. This environment consists of
 
 - variables inherited from the agent environment (e.g. PATH, PYTHONPATH...)
 - variables imported from the Redis DB, stored in the hash key `<AGENT_ID>/environment` (e.g. MODULE_ID, IMAGE_URL...)
@@ -109,12 +111,9 @@ A running action step receives its operating system process environment from the
 
 A command sent to the `AGENT_COMFD` file descriptor is an UTF-8 encoded string with a trailing new-line character.
 The string represents an array of space delimited fields. It must be composed at least by one field that identifies the
-command *name*. Further fields are *arguments*:
+*command name*. Further fields are *arguments*:
 
-1. command name
-2. first argument
-...
-n. nth argument
+    CommandName [ SPACE Argument ]... NEWLINE
 
 Fields are separated by the space character. If a field value contains
 a space it can be wrapped by double quotes.
@@ -147,8 +146,8 @@ For example
 ### dump-env
 
 The `dump-env` command writes to a special file all variables set using `set-env`. The file can be used for subsequent steps.
-If the action is successful, `dump-env` is automatically called at the end.
-The generated file is saved inside the state directory and named `environment`.
+The `dump-env` command is automatically called when the action is `completed`.
+The generated file is written to the agent current working directory as `./environment`.
 
 For example
 
@@ -167,14 +166,25 @@ For example
 
 ### set-progress
 
-A step *progress* is a number from 0 to 100. The overall action progress value is given by the sum of all completed steps plus
-the current step progress value. The `set-progress` step command changes the progress value for the current step.
+A step *progress* is a number from 0 to 100. It helps the UI to show the user a smooth progress bar.
 
-When the current step execution terminates successfully its progress value is always set to 100. For example
+When a step execution completes successfully its progress value is automatically set to 100.
 
-     set-progress 73
+For instance the following command is sent during the 3rd step of a running action. The action has
+5 steps. The command sets the current (3rd) step progress to 73 (out of 100).
 
-The above command set the current step progress to 73 (out of 100).
+    set-progress 73
+
+The overall action progress value is given by the sum of all completed steps plus
+the current step progress value. From the previous example the sum is
+
+    100 + 100 + 73 = 273
+
+As the action has 5 steps (100 units each) the overall action progress is
+
+    273 * 100 / 500 = 54%
+
+The UI can show the user that the running task progress is at 54%.
 
 ### set-weight
 
@@ -182,4 +192,5 @@ Each action step is assigned 1 as default *weight*. The step weight multiplies i
 
     set-weight 50update 8
 
-The above command sets the `50update` step weight to 8.
+The above command sets the `50update` step weight to 8. A step that downloads data from the network, or performs a long filesystem
+operation can be assigned a bigger weight to balance the progress increments of the action.
