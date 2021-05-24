@@ -19,6 +19,13 @@ curl https://raw.githubusercontent.com/NethServer/ns8-scratchpad/main/core/insta
 The procedure configures a single node cluster. It prints how to invoke additional commands
 to initialize a multi node cluster (`create-cluster`) or to join an existing cluster (`join-cluster`).
 
+Developers may prefer to run `install.sh` with a special core image. It is possible to pull
+the special image by setting the `COREIMAGE` environment variable for the installation script.
+If the image is available locally the installation script uses it. For example:
+
+    COREIMAGE=ghcr.io/nethserver/core:mybranch bash install.sh
+
+
 ### Developer configuration
 
 If you're a developer and you need to push images to the registry, you must configure the authentication.
