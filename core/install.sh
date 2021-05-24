@@ -63,7 +63,7 @@ fi
 
 echo "Extracting core sources:"
 mkdir -pv /var/lib/nethserver/node/state
-cid=$(podman create ghcr.io/nethserver/core:latest)
+cid=$(podman create "${COREIMAGE:-ghcr.io/nethserver/core:latest}")
 podman export ${cid} | tar -C / -x -v -f - | tee /var/lib/nethserver/node/state/image.lst
 podman rm -f ${cid}
 
