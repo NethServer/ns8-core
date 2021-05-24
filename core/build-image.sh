@@ -10,11 +10,20 @@ if ! buildah containers --format "{{.ContainerName}}" | grep -q gobuilder-core; 
     buildah from --name gobuilder-core -v "${PWD}:/usr/src/core:Z" docker.io/library/golang:1.16-alpine
 fi
 
+# Reuse existing nodebuilder-core container, to speed up builds
+if ! buildah containers --format "{{.ContainerName}}" | grep -q nodebuilder-core; then
+    echo "Pulling NodeJS runtime..."
+    buildah from --name nodebuilder-core -v "${PWD}:/usr/src/core:Z" docker.io/library/node:slim
+fi
+
 echo "Build statically linked Go binaries based on Musl..."
 echo "1/2 agent..."
 buildah run gobuilder-core sh -c "cd /usr/src/core/agent      && CGO_ENABLED=0 go build -v ."
 echo "2/2 api-server..."
 buildah run gobuilder-core sh -c "cd /usr/src/core/api-server && CGO_ENABLED=0 go build -v ."
+
+echo "Build static UI files with node..."
+buildah run nodebuilder-core sh -c "cd /usr/src/core/ui       && npm install && npm run build"
 
 echo "Building the Core image..."
 container=$(buildah from scratch)
@@ -22,6 +31,7 @@ reponame="core"
 buildah add "${container}" imageroot /
 buildah add "${container}" agent/agent /usr/local/bin/agent
 buildah add "${container}" api-server/api-server /usr/local/bin/api-server
+buildah add "${container}" ui/dist /var/lib/nethserver/cluster/ui
 buildah config --entrypoint=/ "${container}"
 buildah commit "${container}" "${repobase}/${reponame}"
 buildah rm "${container}"

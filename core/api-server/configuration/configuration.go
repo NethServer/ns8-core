@@ -32,6 +32,7 @@ type Configuration struct {
 	RedisUser     string `json:"redis_user"`
 	RedisPassword string `json:"redis_password"`
 	Secret        string `json:"secret"`
+	StaticPath    string `json:"static_path"`
 }
 
 var Config = Configuration{}
@@ -64,5 +65,11 @@ func Init() {
 		Config.Secret = os.Getenv("SECRET")
 	} else {
 		Config.Secret = ""
+	}
+
+	if os.Getenv("STATIC_PATH") != "" {
+		Config.StaticPath = os.Getenv("STATIC_PATH")
+	} else {
+		Config.StaticPath = "/var/lib/nethserver/cluster/ui"
 	}
 }
