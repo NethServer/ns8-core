@@ -20,9 +20,9 @@ The agent accepts also some environment variables, so a complete invocation from
 
 ## Actions implementation
 
-An Action is defined by one or more directories with the same name under the root directories
+An **action** is defined by one or more directories with the same name under the root directories
 (those passed as arguments to the agent executable). Each executable file under the action
-directories is an **Action Step**.
+directories is an **action step**.
 
     dir1
      +--first-action
@@ -48,9 +48,56 @@ when `first-action` is invoked the excuted steps are:
 - `dir2/first-action/step3`
 - `dir2/first-action/step4`
 
-Each Action Step receives the `task.data` string from FD 0 (stdin). Any data sent to FD 1 (stdout) constitutes the Action output data, and any data sent to FD 2 (stderr) is immediately copied to the agent stderr and appended to the Action error data.
+## Action status and outcomes
 
-An Action Step receives an open file descriptor where it can write special command strings. The file descriptor number can be obtained from the `AGENT_COMFD` environment variable. Each command is composed at least by one field:
+The possible action status are:
+
+- `pending`
+- `running`
+- `completed`
+- `aborted`
+- `validation-failed`
+
+An action status is initially set to `pending` then switches to `running` during normal steps execution. If the execution
+of a step cannot be staretd successfully the whole action is `aborted` and the exit code 9 is set.
+
+If an action step completes with a non-zero exit code, the whole action is considered `aborted` and no more steps are
+invoked.
+
+When all steps are executed successfully the action is considered `completed`. Then the following keys are set in Redis DB
+
+- `<agent-id>/task/<task-id>/output`, collects FD 1
+- `<agent-id>/task/<task-id>/error`, collects FD 2
+- `<agent-id>/task/<task-id>/exit_code`, 0 if all steps were successful, otherwise the exit code of the failing step
+- `<agent-id>/environment`, additional environent variables passed to the action steps. The values are persisted to Redis if the action is completed
+
+The `validation-failed` status must be set manually with the `set-status` command, described below. When the `validation-failed`
+status is set, no more steps are invoked and the action exit code is set to 10 unless another non-zero exit code is returned by
+the last step.
+
+Exit codes summary:
+
+- `0` - success
+- `1` - generic error
+- `2-7` - action-specific error numbers
+- `8` - the invoked action is not defined or has 0 steps (the directory is empty)
+- `9` - `execve()` error
+- `10` - default exit code once `validation-failed` status is set. It
+  can be overridden by terminating the step with a non-zero exit code.
+- `11-31` - reserved
+- `32-127` - action-specific error numbers
+
+## File descriptors
+
+Each action step receives the `task.data` string from FD 0 (INPUT). Any data sent to FD 1 (OUTPUT) constitutes the action output data, and any data sent to FD 2 (ERROR) is immediately copied to the agent stderr stream and appended to the action error data.
+
+An action step receives an open file descriptor where it can write special command strings. The file descriptor number can be obtained from the `AGENT_COMFD` environment variable.
+
+
+## Action commands
+
+Each command sent to the `AGENT_COMFD` file descriptor must be composed at least by one field that identifies the
+command *name*. Further fields are *arguments*:
 
 1. command name
 2. first argument
@@ -60,7 +107,7 @@ n. nth argument
 Fields are separated by the space character. If a field value contains
 a space it can be wrapped by double quotes.
 
-Available commands:
+Available commands are:
 
 - `set-env`
 - `dump-env`
@@ -75,16 +122,6 @@ For example
 
     set-env FULLNAME "First User"
 
-If an action step completes with a non-zero exit code, the whole action is considered failed and no more steps are
-invoked.
-
-When all steps are completed, the following keys are set in Redis DB
-
-- `<agent-id>/task/<task-id>/output`, collects FD 1
-- `<agent-id>/task/<task-id>/error`, collects FD 2
-- `<agent-id>/task/<task-id>/exit_code`, 0 if all steps were successful, otherwise the exit code of the failing step
-- `<agent-id>/environment`, additional environent variables passed to the action steps. The values are persisted to Redis if the action is successful
-
 ### dump-env
 
 The `dump-env` command writes to a special file all variables set using `set-env`. The file can be used for subsequent steps.
@@ -95,10 +132,21 @@ For example
 
     dump-env
 
+### set-status
+
+The `set-status` command manually changes the status of the running action. The command requires the new status name
+as argument. Accepted status names are:
+
+- `validation-failed` - see the **Action status** section for more information
+
+For example
+
+    set-status validation-failed
+
 ### set-progress
 
 A step *progress* is a number from 0 to 100. The overall action progress value is given by the sum of all completed steps plus
-the current step progress value. The `set-progress` step command changes the progress value for the current step. 
+the current step progress value. The `set-progress` step command changes the progress value for the current step.
 
 When the current step execution terminates successfully its progress value is always set to 100. For example
 
