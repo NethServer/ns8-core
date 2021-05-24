@@ -96,7 +96,8 @@ An action step receives an open file descriptor where it can write special comma
 
 ## Action commands
 
-Each command sent to the `AGENT_COMFD` file descriptor must be composed at least by one field that identifies the
+A command sent to the `AGENT_COMFD` file descriptor is an UTF-8 encoded string with a trailing new-line character.
+The string represents an array of space delimited fields. It must be composed at least by one field that identifies the
 command *name*. Further fields are *arguments*:
 
 1. command name
@@ -113,6 +114,16 @@ Available commands are:
 - `dump-env`
 - `set-progress`
 - `set-weight`
+
+For example, to send a `set-progress` command in a Bash script:
+
+    echo 'set-progress 73' >&${AGENT_COMFD}
+
+The same command in Python 3
+
+    import os
+    fd = int(os.environ['AGENT_COMFD'])
+    os.write(fd, 'set-progress 73\n'.encode('utf-8'))
 
 ### set-env
 
