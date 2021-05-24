@@ -29,6 +29,7 @@ import (
 	"github.com/fatih/structs"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/gzip"
+	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
 
 	docs "github.com/NethServer/ns8-scratchpad/core/api-server/docs"
@@ -82,6 +83,9 @@ func main() {
 		corsConf.AllowAllOrigins = true
 		router.Use(cors.New(corsConf))
 	}
+
+	// define static file endpoint
+	router.Use(static.Serve("/", static.LocalFile(configuration.Config.StaticPath, false)))
 
 	// define api group
 	api := router.Group("/api")
