@@ -71,7 +71,7 @@ def redis_connect(privileged=False, decode_responses=True, **kwargs):
         **kwargs
     )
 
-def run_helper(*args):
+def run_helper(*args, **kwargs):
     """Run the command and assert the exit code is 0
 
     The command output is redirected to stderr.
@@ -86,7 +86,7 @@ def slurp_file(file_name):
     with open(file_name) as f:
         return f.read().strip()
 
-def run_subtask(redis_obj, agent_prefix, action, input_string="", input_obj=None, nowait=False):
+def run_subtask(redis_obj, agent_prefix, action, input_string="", input_obj=None, nowait=False, progress_range=None):
     if input_obj is not None:
         input_string = json.dumps(input_obj)
 

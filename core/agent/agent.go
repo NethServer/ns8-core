@@ -152,10 +152,10 @@ func runAction(task *models.Task) {
 		// If the action is not defined our exit code is returned
 		// More info in man systemd.exec and from `systemd-analyze exit-status` output
 		actionOutput = ""
-		actionError = fmt.Sprintf("Action %s is not defined", task.Action)
+		actionError = fmt.Sprintf("Action %s is not defined\n", task.Action)
 		exitCode = 8
 		actionDescriptor.Status = "aborted"
-		log.Print(SD_ERR + actionError)
+		log.Printf(SD_ERR+"Action %s is not defined", task.Action)
 	}
 
 	// Get additional environment variables from Redis DB and
