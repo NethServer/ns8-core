@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/bin/bash
 
 #
 # Copyright (C) 2021 Nethesis S.r.l.
@@ -20,28 +20,19 @@
 # along with NethServer.  If not, see COPYING.
 #
 
-# XXX temporary implementation!!!
+image=${1:?missing image URL argument}
 
-import sys
-import agent
-import argparse
+set -e
 
-parser = argparse.ArgumentParser()
-parser.add_argument('image')
-parser.add_argument('node', default=1, type=int)
-args = parser.parse_args()
+cid=$(podman create ${image})
+trap "podman rm ${cid}" EXIT
 
-rdb = agent.redis_connect(privileged=True)
+uiroot=$(podman inspect ${cid} -f '{{index .Config.Labels "org.nethserver/uiroot"}}' | sed -r 's#(^/|/$)##')
+if [[ -z "${uiroot}" ]]; then
+    uiroot="ui" # Set the default path for the module frontend
+fi
+stripcount=$(awk -F/ '{ print NF }' <<<"${uiroot}")
 
-exit_code, output, error = agent.run_subtask(rdb,
-    agent_prefix='cluster',
-    action='add-module',
-    input_obj={
-        'image': args.image,
-        'node': args.node,
-    },
-)
-
-sys.stderr.write(error)
-sys.stdout.write(output)
-exit(exit_code)
+echo "Extracting container filesystem ${uiroot:-/} to ${PWD}"
+podman export ${cid} | tar -x -v -f - --exclude-caches-under --strip-components=${stripcount} "${uiroot}"
+chown -cR --reference=. .

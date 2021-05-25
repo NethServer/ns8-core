@@ -28,6 +28,9 @@ readarray -t input < <(jq -r '.module_id, if .preserve_data then "yes" else "no"
 mid=${input[0]:?missing module_id argument}
 preserve=${input[1]:?missing preserve_data argument}
 
+# A leader node might have it: always clean up the UI root directory:
+rm -rf "/var/lib/nethserver/cluster/ui/apps/${mid}"
+
 uid=$(id -u "${mid}" || :)
 if [[ -z $uid ]]; then # Rootfull module
     systemctl disable --now agent@"${mid}"
