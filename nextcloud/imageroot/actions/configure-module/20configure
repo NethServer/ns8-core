@@ -37,10 +37,10 @@ NEXTCLOUD_TRUSTED_DOMAINS="nextcloud."$(hostname -f)",localhost"
 # stdin example: "admin password nextcloud.test.org,localhost"
 read NEXTCLOUD_ADMIN_USER NEXTCLOUD_ADMIN_PASSWORD NEXTCLOUD_TRUSTED_DOMAINS
 
-# Make sure tesuted domains is not empty
+# Make sure trusted domains is not empty
 if [[ -z "${NEXTCLOUD_TRUSTED_DOMAINS}" ]]; then
   # Validation error
-  echo "The trusted domain list is missing" >&2 # FIXME: use UI validationr protocol
+  echo 'set-status validation-failed' >&${AGENT_COMFD}
   exit 2
 fi
 
