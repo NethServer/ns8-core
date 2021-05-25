@@ -25,10 +25,11 @@ import os
 import re
 import sys
 
-image_url = sys.argv[1]
+image_urls = sys.argv[1:]
 
-# Pull the image from the remote server, if not already available locally
-with subprocess.Popen(['podman', 'image', 'list', '-q', '-f', f'reference={re.escape(image_url)}'], stdout=subprocess.PIPE, stderr=sys.stderr) as proc:
-    output = proc.stdout.read()
-    if output == b'':
-        os.execvp('podman', ['podman', 'pull', image_url])
+for image_url in image_urls:
+    # Pull the image from the remote server, if not already available locally
+    with subprocess.Popen(['podman', 'image', 'list', '-q', '-f', f'reference={re.escape(image_url)}'], stdout=subprocess.PIPE, stderr=sys.stderr) as proc:
+        output = proc.stdout.read()
+        if output == b'':
+            subprocess.run(['podman', 'pull', image_url]).check_returncode()
