@@ -15,17 +15,19 @@ export default {
 };
 </script>
 
-<style>
+<style scoped lang="scss">
+@import "../styles/carbon-utils";
+
 #app-frame {
-  width: 100%;
-  height: 100%;
+  width: calc(100% - #{$side-menu-width});
+  height: calc(100% - 3rem);
 }
 .iframe-embedded {
   position: absolute;
-  width: 97%;
-  height: 95%;
+  /* width: 97%; //// */
+  /* height: 95%; //// */
   border: none;
-  margin-left: -20px;
+  /* margin-left: -20px; //// */
   z-index: 1;
 }
 </style>
