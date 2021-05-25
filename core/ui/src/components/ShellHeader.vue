@@ -16,7 +16,8 @@
         ><span class="status-text">Status</span
         ><span class="status-badge"></span
       ></cv-header-menu-item>
-      <cv-header-menu-item to="/dashboard?testToggle=true&testInput=firstValue&testNumber=99"
+      <cv-header-menu-item
+        to="/dashboard?testToggle=true&testInput=firstValue&testNumber=99"
         >Link 1</cv-header-menu-item
       >
       <cv-header-menu-item to="/dashboard?testInput=secondValue"
@@ -40,13 +41,15 @@
     <template slot="header-global">
       <cv-header-global-action
         v-if="!isSearchExpanded"
-        aria-label="Global search"
+        label="Search"
+        aria-label="Search"
         @click="expandSearch"
       >
         <search-20 />
       </cv-header-global-action>
       <GlobalSearch v-else @closeSearch="closeSearch" />
       <cv-header-global-action
+        label="Notifications"
         aria-label="Notifications"
         class="notifications-button"
         @click="toggleNotificationDrawer"
@@ -60,12 +63,20 @@
           v-if="unreadNotificationsCount > 0"
         ></span>
       </cv-header-global-action>
-      <cv-header-global-action aria-label="Account">
+      <cv-header-global-action
+        label="Account"
+        aria-label="Account"
+        tipPosition="bottom"
+        tipAlignment="end"
+      >
         <user-avatar-20 />
       </cv-header-global-action>
       <cv-header-global-action
+        label="Applications"
         aria-label="Applications"
         @click="toggleAppDrawer"
+        tipPosition="bottom"
+        tipAlignment="end"
       >
         <app-switcher-20 />
       </cv-header-global-action>
