@@ -122,6 +122,7 @@ Available commands are:
 
 - `set-env`
 - `dump-env`
+- `set-status`
 - `set-progress`
 - `set-weight`
 
