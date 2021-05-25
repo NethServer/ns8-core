@@ -7,7 +7,8 @@ repobase="ghcr.io/nethserver"
 reponame="promtail"
 container=$(buildah from scratch)
 
-buildah add "${container}" imageroot /
+buildah add "${container}" imageroot /imageroot
+buildah add "${container}" ui /ui
 buildah config --entrypoint=/ "${container}"
 buildah config --label="org.nethserver/rootfull=1" "${container}"
 buildah commit "${container}" "${repobase}/${reponame}"

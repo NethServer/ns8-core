@@ -28,8 +28,11 @@ cid=$(podman create ${image})
 trap "podman rm ${cid}" EXIT
 
 imageroot=$(podman inspect ${cid} -f '{{index .Config.Labels "org.nethserver/imageroot"}}' | sed -r 's#(^/|/$)##')
+if [[ -z "${imageroot}" ]]; then
+    imageroot="imageroot" # Set the default path for the module backend
+fi
 stripcount=$(awk -F/ '{ print NF }' <<<"${imageroot}")
 
 echo "Extracting container filesystem ${imageroot:-/} to ${PWD}"
-podman export ${cid} | tar -x -v -f - --exclude-caches-under --strip-components=${stripcount} ${imageroot}
+podman export ${cid} | tar -x -v -f - --exclude-caches-under --strip-components=${stripcount} "${imageroot}"
 chown -cR --reference=. .

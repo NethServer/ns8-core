@@ -35,7 +35,8 @@ images+=("${repobase}/${reponame}")
 #
 container=$(buildah from scratch)
 reponame="samba"
-buildah add "${container}" imageroot /
+buildah add "${container}" imageroot /imageroot
+buildah add "${container}" ui /ui
 buildah config --label 'org.nethserver/rootfull=1' --entrypoint=/ "${container}"
 buildah commit "${container}" "${repobase}/${reponame}"
 images+=("${repobase}/${reponame}")

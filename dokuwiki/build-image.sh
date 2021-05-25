@@ -14,7 +14,8 @@ reponame="dokuwiki"
 container=$(buildah from scratch)
 
 # Add imageroot directory to the container image
-buildah add "${container}" imageroot /
+buildah add "${container}" imageroot /imageroot
+buildah add "${container}" ui /ui
 # Setup the entrypoint, ask to reserve one TCP port with the label and set a rootless container
 buildah config --entrypoint=/ --label="org.nethserver/tcp_ports_demand=1" --label="org.nethserver/rootfull=0" "${container}"
 # Commit everything
