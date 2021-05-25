@@ -7,7 +7,8 @@ repobase="ghcr.io/nethserver"
 reponame="ldapproxy"
 container=$(buildah from scratch)
 
-buildah add "${container}" imageroot /
+buildah add "${container}" imageroot /imageroot
+buildah add "${container}" ui /ui
 buildah config --entrypoint=/ "${container}"
 buildah commit "${container}" "${repobase}/${reponame}"
 images+=("${repobase}/${reponame}")
