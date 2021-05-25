@@ -42,7 +42,7 @@ read DOKUWIKI_WIKI_NAME DOKUWIKI_USERNAME DOKUWIKI_PASSWORD DOKUWIKI_EMAIL
 # Make sure wiki name is not empty
 if [[ -z "${DOKUWIKI_WIKI_NAME}" ]]; then
   # Validation error
-  echo "The wiki name is missing" >&2 # FIXME: use UI validationr protocol
+  echo 'set-status validation-failed' >&${AGENT_COMFD}
   exit 2
 fi
 
