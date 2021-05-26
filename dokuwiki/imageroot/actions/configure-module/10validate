@@ -1,0 +1,60 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2021 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
+#
+# Validate dokuwiki configuration.
+# The only mandatory value is the Wiki name.
+# Input example:
+#
+#  {"wiki_name": "mywiki", "username": "admin", "password": "admin", "email": "admin@test.local", "user_full_name": "Administrator"}
+#
+
+import json
+import sys
+# agent is a NethServer library which provides function to communicate with the agent
+import agent
+
+# Push validation errors to this list
+errors = []
+
+# Try to parse the stdin as JSON.
+# If parsing fails, exit early and dump the error stack.
+data = json.load(sys.stdin)
+
+# Read wiki_name parameter, if not present give it a default of an empty value
+# This is the only mandatory field
+if not data.get("wiki_name", ""):
+    errors.append({"parameter": "wiki_name", "value": "wiki_name", "error": "wiki_name_is_empty"})
+
+# Following non mandatatory fields must be non empty
+for field in ["username", "password", "email"]:
+    if field in data and not data[field]:
+        errors.append({"parameter": field, "value": data[field], "error": "%s_is_empty" % field})
+
+# Set failed validation if errors is non empty
+if errors:
+    # Dump the errors in JSON format to the stdout
+    print(json.dumps(errors))
+    # Inform the agent
+    agent.set_status("validation-failed")
+    # Below line is optional: if not set, 10 is the default exit code when validation fails
+    sys.exit(10)
