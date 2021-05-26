@@ -78,9 +78,28 @@ def run_helper(*args, **kwargs):
     """
     return subprocess.run(args, stdout=sys.stderr)
 
+def __action(*args):
+    # write to stderr if AGENT file descriptor is not available:
+    # this is usefull when developing new actions
+    fd = int(os.getenv('AGENT_COMFD',2))
+    # convert to space separated string with newline end
+    cmd = "%s\n" % ' '.join(args)
+    os.write(fd, cmd.encode('utf-8'))
+
 def set_env(name, value):
-    fd = int(os.environ['AGENT_COMFD'])
-    os.write(fd, f'set-env {name} {value}\n'.encode('utf-8'))
+    __action("set-env", name, value)
+
+def dump_env():
+    __action("dump_env")
+
+def set_status(value):
+    __action("set-status", value)
+
+def set_progress(value):
+    __action("set-progress", value)
+
+def set_weight(value):
+    __action("set-weight", value)
 
 def slurp_file(file_name):
     with open(file_name) as f:
