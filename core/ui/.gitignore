@@ -22,5 +22,7 @@ pnpm-debug.log*
 *.sln
 *.sw?
 
-# directory containing symlinks to ns8 apps
-public/apps/**
+# ignore symlinks to ns8 apps
+public/apps/*
+# ...but do NOT ignore libs directory
+!public/apps/libs

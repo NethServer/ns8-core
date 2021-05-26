@@ -37,6 +37,9 @@
       <cv-header-menu-item to="/apps/ns8-app?appInput=testAppInput"
         >Ns8 app w/p</cv-header-menu-item
       >
+      <cv-header-menu-item to="/apps/ns8-app?page=about&testToggle=true"
+        >About page of Ns8 app w/p</cv-header-menu-item
+      >
     </cv-header-nav>
     <template slot="header-global">
       <cv-header-global-action
