@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env python3
 
 #
 # Copyright (C) 2021 Nethesis S.r.l.
@@ -20,50 +20,39 @@
 # along with NethServer.  If not, see COPYING.
 #
 
-# Teminate on error
-set -e
+# Configure Bitnami Dokuwiki image: https://github.com/bitnami/bitnami-docker-dokuwiki
+# Input example:
+#
+#  {"wiki_name": "mywiki", "username": "admin", "password": "admin", "email": "admin@test.local", "user_full_name": "Administrator"}
 
-# Redirect any output to the journal (stderr)
-exec 1>&2
+import json
+import sys
+# agent is a NethServer library which provides function to communicate with the agent
+import agent
 
-# This step will configure Bitnami Dokuwiki image: https://github.com/bitnami/bitnami-docker-dokuwiki
+# Try to parse the stdin as JSON.
+# If parsing fails, output everything to stderr
+data = json.load(sys.stdin)
 
 # Setup default values
-DOKUWIKI_WIKI_NAME="DokuWiki"
-DOKUWIKI_USERNAME="admin"
-DOKUWIKI_PASSWORD="Nethesis,1234"
-DOKUWIKI_EMAIL="admin@"$(hostname -f)
-DOKUWIKI_FULL_NAME="Administrator"
-
-# Read every parameter from stdin. Parameters should be separated by space
-# stdin example: "mywiki admin password admin@nethserver.org"
-read DOKUWIKI_WIKI_NAME DOKUWIKI_USERNAME DOKUWIKI_PASSWORD DOKUWIKI_EMAIL
-
-# Make sure wiki name is not empty
-if [[ -z "${DOKUWIKI_WIKI_NAME}" ]]; then
-  # Validation error
-  echo 'set-status validation-failed' >&${AGENT_COMFD}
-  exit 2
-fi
+wiki_name = data.get("wiki_name","Dokuwiki")
+username = data.get("username","admin")
+password = data.get("password","admin")
+email = data.get("email", "admin@example.org")
+full_name = data.get("user_full_name","Administrator")
 
 # Talk with agent using file descriptor.
 # Setup configuration from user input.
-cat >&${AGENT_COMFD} <<EOF
-set-env DOKUWIKI_WIKI_NAME ${DOKUWIKI_WIKI_NAME}
-set-env DOKUWIKI_USERNAME ${DOKUWIKI_USERNAME}
-set-env DOKUWIKI_PASSWORD ${DOKUWIKI_PASSWORD}
-set-env DOKUWIKI_EMAIL ${DOKUWIKI_EMAIL}
-set-env DOKUWIKI_FULL_NAME ${DOKUWIKI_FULL_NAME}
-EOF
+agent.set_env("DOKUWIKI_WIKI_NAME", wiki_name)
+agent.set_env("DOKUWIKI_USERNAME", username)
+agent.set_env("DOKUWIKI_PASSWORD", password)
+agent.set_env("DOKUWIKI_EMAIL", email)
+agent.set_env("DOKUWIKI_FULL_NAME", "user_full_name")
 
 # Setup PHP with safe defaults
-cat >&${AGENT_COMFD} <<EOF
-set-env PHP_ENABLE_OPCACHE 1
-set-env PHP_MEMORY_LIMIT 512M
-EOF
+agent.set_env("PHP_ENABLE_OPCACHE", "1")
+agent.set_env("PHP_MEMORY_LIMIT", "512M")
 
 # Make sure everything is saved inside the environment file
 # just before starting systemd unit
-cat >&${AGENT_COMFD} <<EOF
-dump-env
-EOF
+agent.dump_env()
