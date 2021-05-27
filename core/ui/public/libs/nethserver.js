@@ -11,7 +11,6 @@ nethserver = {
       return;
     }
 
-    nethserver.watchQueryData(context);
     nethserver.syncQueryParamsAndData(context);
     return setInterval(() => nethserver.checkUrlChange(context, page), 500);
   },
@@ -20,7 +19,7 @@ nethserver = {
     nethserver.queryParamsToData(context);
     nethserver.dataToQueryParams(context);
   },
-  // used only by external apps to sync UI status with URL query parameters
+  // used only by vuejs external apps to sync UI status with URL query parameters
   watchQueryData(context) {
     Object.keys(context.q).forEach((dataItem) => {
       context.$watch("q." + dataItem, function () {
