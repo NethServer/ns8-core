@@ -86,12 +86,10 @@ def slurp_file(file_name):
     with open(file_name) as f:
         return f.read().strip()
 
-def run_subtask(redis_obj, agent_prefix, action, input_string="", input_obj=None, nowait=False, progress_range=None):
-    if input_obj is not None:
-        input_string = json.dumps(input_obj)
+def run_subtask(redis_obj, agent_prefix, action, input_obj, nowait=False, progress_range=None):
 
     task_id = str(uuid.uuid4())
-    task_obj = {"id": task_id, "action": action, "data": input_string}
+    task_obj = {"id": task_id, "action": action, "data": input_obj}
 
     redis_obj.lpush(f'{agent_prefix}/tasks', json.dumps(task_obj))
 

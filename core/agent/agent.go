@@ -34,7 +34,7 @@ import (
 	"time"
 
 	"github.com/NethServer/ns8-scratchpad/core/agent/action"
-	"github.com/NethServer/ns8-scratchpad/core/api-server/models"
+	"github.com/NethServer/ns8-scratchpad/core/agent/models"
 	"github.com/go-redis/redis/v8"
 )
 
@@ -172,7 +172,8 @@ func runAction(task *models.Task) {
 			"AGENT_TASK_ID="+task.ID,
 			"AGENT_TASK_ACTION="+task.Action,
 		)
-		cmd.Stdin = strings.NewReader(task.Data)
+		inputData, _ := json.Marshal(task.Data)
+		cmd.Stdin = strings.NewReader(string(inputData))
 		cmd.ExtraFiles = []*os.File{comWriteFd}
 
 		stdoutReader, _ := cmd.StdoutPipe()

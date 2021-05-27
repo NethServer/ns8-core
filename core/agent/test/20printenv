@@ -2,5 +2,8 @@
 
 
 exec 1>&2
-echo "INPUT == $(cat)"
-env | grep ^ABC 
+printf "\nAction input is\n"
+cat -
+
+printf "\nEnvironment is\n"
+env | grep ^ABC

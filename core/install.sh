@@ -63,7 +63,7 @@ fi
 
 echo "Extracting core sources:"
 mkdir -pv /var/lib/nethserver/node/state
-cid=$(podman create "${COREIMAGE:-ghcr.io/nethserver/core:latest}")
+cid=$(podman create "${COREIMAGE:-ghcr.io/nethserver/core:${CORETAG:-latest}}")
 podman export ${cid} | tar -C / -x -v -f - | tee /var/lib/nethserver/node/state/image.lst
 podman rm -f ${cid}
 
@@ -134,7 +134,7 @@ SET node/1/tcp_ports_sequence 20000
 EOF
 
     # Load module images metadata. XXX this is a temporary implementation
-    grep '^HSET image/' /var/lib/nethserver/cluster/state/images-catalog.txt
+    grep '^HSET image/' /var/lib/nethserver/cluster/state/images-catalog.txt | sed "s/:latest/:${CORETAG:-latest}/"
 
     # Setup initial ACLs
     cat <<EOF
