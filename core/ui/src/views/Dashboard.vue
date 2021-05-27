@@ -32,8 +32,8 @@
     <div class="bx--row">
       <div class="bx--col-md-4">
         <cv-tile :light="true" class="content-tile">
-          <cv-text-input label="Label" v-model="testInput"> </cv-text-input>
-          <cv-toggle value="check-test" v-model="testToggle"> </cv-toggle>
+          <cv-text-input label="Label" v-model="q.testInput"> </cv-text-input>
+          <cv-toggle value="check-test" v-model="q.testToggle"> </cv-toggle>
           <div class="mg-top-bottom">
             <cv-button kind="" :icon="Flash16" @click="createInfoToast">
               Create info toast
@@ -187,16 +187,22 @@ import Flash16 from "@carbon/icons-vue/es/flash/16";
 // import Filter16 from "@carbon/icons-vue/es/filter/16"; ////
 import { mapState } from "vuex";
 import NotificationService from "@/mixins/notification";
+import QueryParamService from "@/mixins/queryParam";
 // import Pictogram from "@/components/Pictogram";
 // import Gear from "@/components/pictograms/Gear";
 import { formatRelative, formatDistance, subDays } from "date-fns";
+let nethserver = window.nethserver;
 
 export default {
   name: "Dashboard",
   components: {},
-  mixins: [NotificationService],
+  mixins: [NotificationService, QueryParamService],
   data() {
     return {
+      q: {
+        testInput: "",
+        testToggle: false,
+      },
       toastVisible: true,
       toastTitle: "Toast title",
       toastSubTitle: "Toast subtitle",
@@ -207,8 +213,6 @@ export default {
       formatRelative, //// use mixin
       subDays,
       formatDistance,
-      testInput: "",
-      testToggle: false,
     };
   },
   computed: {
@@ -221,6 +225,7 @@ export default {
   beforeRouteEnter(to, from, next) {
     next((vm) => {
       console.log("beforeRouteEnter", to, from); ////
+      nethserver.watchQueryData(vm);
       vm.queryParamsToData(vm, to.query);
     });
   },
@@ -229,42 +234,7 @@ export default {
     this.queryParamsToData(this, to.query);
     next();
   },
-  watch: {
-    testInput: function () {
-      if (this.testInput !== this.$route.query.testInput) {
-        this.$router.replace({
-          query: { ...this.$route.query, testInput: this.testInput },
-        });
-      }
-    },
-    testToggle: function () {
-      console.log("watch testToggle", this.testToggle); ////
-
-      const booleanQueryTestToggle = this.$route.query.testToggle == "true";
-
-      if (this.testToggle !== booleanQueryTestToggle) {
-        this.$router.replace({
-          query: { ...this.$route.query, testToggle: this.testToggle },
-        });
-      }
-    },
-  },
   methods: {
-    queryParamsToData(context, queryParams) {
-      console.log("query params", queryParams); ////
-
-      if (queryParams.testInput) {
-        context.testInput = queryParams.testInput;
-      } else {
-        context.testInput = "";
-      }
-
-      if (queryParams.testToggle) {
-        context.testToggle = queryParams.testToggle === "true";
-      } else {
-        context.testToggle = false;
-      }
-    },
     closeToast() {
       console.log("closeToast"); ////
     },

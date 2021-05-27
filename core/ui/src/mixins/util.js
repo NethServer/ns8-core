@@ -1,5 +1,5 @@
 export default {
-  name: "UtilService",
+  name: "UtilService", //// rename to ErrorService?
   data() {
     return {
       GENERIC_ERROR_MESSAGE: "Something went wrong",

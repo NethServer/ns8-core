@@ -1,5 +1,5 @@
 nethserver = {
-  // used by external apps to sync UI status with URL query parameters
+  // used only by external apps to sync UI status with URL query parameters
   initUrlBinding(context, page) {
     console.log("initUrlBinding, page", page); ////
 
@@ -11,17 +11,17 @@ nethserver = {
       return;
     }
 
-    nethserver.watchData(context);
+    nethserver.watchQueryData(context);
     nethserver.syncQueryParamsAndData(context);
     return setInterval(() => nethserver.checkUrlChange(context, page), 500);
   },
-  // used by external apps to sync UI status with URL query parameters
+  // used only by external apps to sync UI status with URL query parameters
   syncQueryParamsAndData(context) {
     nethserver.queryParamsToData(context);
     nethserver.dataToQueryParams(context);
   },
-  // used by external apps to sync UI status with URL query parameters
-  watchData(context) {
+  // used only by external apps to sync UI status with URL query parameters
+  watchQueryData(context) {
     Object.keys(context.q).forEach((dataItem) => {
       context.$watch("q." + dataItem, function () {
         console.log("watch", dataItem); ////
@@ -29,7 +29,7 @@ nethserver = {
       });
     });
   },
-  // used by external apps to sync UI status with URL query parameters
+  // used only by external apps to sync UI status with URL query parameters
   checkUrlChange(context, page) {
     const newUrl = window.parent.location.href;
 
@@ -53,7 +53,7 @@ nethserver = {
     }
     context.currentUrl = window.parent.location.href;
   },
-  // used by external apps to sync UI status with URL query parameters
+  // used only by external apps to sync UI status with URL query parameters
   queryParamsToData(context) {
     let queryParams = nethserver.getQueryParams();
 
@@ -65,19 +65,19 @@ nethserver = {
       }
     });
   },
-  // used to map a query string parameter value to its typed value
-  getTypedValue(value) {
-    if (value === "true") {
+  // used only to map a query string parameter value to its typed value
+  getTypedValue(stringValue) {
+    if (stringValue === "true") {
       return true;
     }
 
-    if (value === "false") {
+    if (stringValue === "false") {
       return false;
     }
 
-    return value;
+    return stringValue;
   },
-  // used by external apps to sync UI status with URL query parameters
+  // used only by external apps to sync UI status with URL query parameters
   dataToQueryParams(context) {
     console.log("dataToQueryParams, q", context.q); ////
 
@@ -87,11 +87,21 @@ nethserver = {
       queryParams.push(key + "=" + value);
     }
 
-    const baseUrl = window.parent.location.hash.split("?").shift();
-    const urlWithParams = baseUrl + "?" + queryParams.join("&");
-    window.parent.history.replaceState(null, "", urlWithParams);
+    const urlWithParams =
+      window.parent.ns8.$route.path + "?" + queryParams.join("&");
+
+    console.log(
+      "urlWithParams, route",
+      urlWithParams,
+      window.parent.ns8.$route.fullPath
+    ); ////
+
+    // window.parent.history.replaceState(null, "", urlWithParams); ////
+    if (window.parent.ns8.$route.fullPath != urlWithParams) {
+      window.parent.ns8.$router.replace(urlWithParams);
+    }
   },
-  // used by external apps to sync UI status with URL query parameters
+  // used only by external apps to sync UI status with URL query parameters
   getQueryParams() {
     if (
       !window.parent.location.hash.includes("?") ||
