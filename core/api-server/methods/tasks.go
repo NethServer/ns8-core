@@ -202,6 +202,7 @@ func getTaskFile(c *gin.Context, filePath string) {
 	// close redis connection
 	redisConnection.Close()
 
+	// decode the exit_status and handle the error
 	exitCodeInt, errValueExitCode := strconv.Atoi(exitCodeC)
 	if errValueExitCode != nil {
 		c.JSON(http.StatusBadRequest, structs.Map(response.StatusBadRequest{
@@ -212,11 +213,17 @@ func getTaskFile(c *gin.Context, filePath string) {
 		return
 	}
 
+	var outputData interface{}
+	// We expect a JSON-encoded output. If the unmarshal fails, return the output as-is.
+	if errOutputDecode := json.Unmarshal([]byte(outputC), &outputData); errOutputDecode != nil {
+		outputData = outputC
+	}
+
 	// return file response
 	c.JSON(http.StatusOK, structs.Map(response.StatusOK{
 		Code:    200,
 		Message: "success",
-		Data:    gin.H{"error": errorC, "output": outputC, "exit_code": exitCodeInt, "file": filePath},
+		Data:    gin.H{"error": errorC, "output": outputData, "exit_code": exitCodeInt, "file": filePath},
 	}))
 	return
 }
