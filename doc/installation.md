@@ -25,6 +25,11 @@ If the image is available locally the installation script uses it. For example:
 
     COREIMAGE=ghcr.io/nethserver/core:mybranch bash install.sh
 
+As alternative it is possible to select a specific branch build with the `CORETAG`
+environment variable: `core` itself and other core images are forcibly downloaded
+with the given tag.
+
+    CORETAG=mybranch bash install.sh
 
 ### Developer configuration
 

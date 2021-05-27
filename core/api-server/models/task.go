@@ -20,17 +20,17 @@
  * author: Edoardo Spadoni <edoardo.spadoni@nethesis.it>
  */
 
- package models
+package models
 
- import (
-	 "time"
- )
+import (
+	"time"
+)
 
 type Task struct {
-	ID        string    `json:"id"`
-	Action    string    `json:"action"`
-	Data      string    `json:"data"`
-	Queue     string    `json:"queue"`
-	User      string    `json:"user"`
-	Timestamp time.Time `json:"timestamp"`
+	ID        string      `json:"id"`
+	Action    string      `json:"action"`
+	Data      interface{} `json:"data"`
+	Queue     string      `json:"queue"`
+	User      string      `json:"user"`
+	Timestamp time.Time   `json:"timestamp"`
 }

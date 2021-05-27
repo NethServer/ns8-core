@@ -135,6 +135,7 @@ exit_code, output, error = agent.run_subtask(rdb,
     progress_range=(67,100),
     agent_prefix=f'module/{module_id}',
     action="create-module",
+    input_obj="",
     )
 assert exit_code == 0
 

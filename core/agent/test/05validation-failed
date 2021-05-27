@@ -1,5 +1,7 @@
 #!/bin/sh
 
+exec 1>&2
+
 input=$(cat)
 
 echo "set-weight 05validation-failed 0" >&$AGENT_COMFD
@@ -10,7 +12,8 @@ echo "set-weight 20printenv 0" >&$AGENT_COMFD
 echo "set-weight BAD 7" >&$AGENT_COMFD
 echo "set-progress 999" >&$AGENT_COMFD
 
-if [[ "${input}" != "INPUT" ]]; then
+if [[ "${input}" != '"OK"' ]]; then
     echo "set-status validation-failed" >&$AGENT_COMFD
+    echo "This is the offending input: ${input}"
     exit 2
 fi
