@@ -25,6 +25,7 @@ package methods
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/fatih/structs"
@@ -201,11 +202,21 @@ func getTaskFile(c *gin.Context, filePath string) {
 	// close redis connection
 	redisConnection.Close()
 
+	exitCodeInt, errValueExitCode := strconv.Atoi(exitCodeC)
+	if errValueExitCode != nil {
+		c.JSON(http.StatusBadRequest, structs.Map(response.StatusBadRequest{
+			Code:    400,
+			Message: "error in exit code value",
+			Data:    errValueExitCode.Error(),
+		}))
+		return
+	}
+
 	// return file response
 	c.JSON(http.StatusOK, structs.Map(response.StatusOK{
 		Code:    200,
 		Message: "success",
-		Data:    gin.H{"error": errorC, "output": outputC, "exit_code": exitCodeC, "file": filePath},
+		Data:    gin.H{"error": errorC, "output": outputC, "exit_code": exitCodeInt, "file": filePath},
 	}))
 	return
 }
