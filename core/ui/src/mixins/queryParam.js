@@ -4,7 +4,7 @@ export default {
   name: "QueryParamService",
   methods: {
     queryParamsToData(context, queryParams) {
-      // let queryParams = this.getQueryParams(); ////
+      // let queryParams = this.getQueryParamsForApp(); ////
 
       console.log("queryParamsToData, queryParams", queryParams); ////
 
@@ -26,7 +26,7 @@ export default {
       //   context.testToggle = false;
       // }
     },
-    getQueryParams() {
+    getQueryParamsForApp() {
       if (
         !window.location.hash.includes("?") ||
         window.location.hash.split("?").length < 2

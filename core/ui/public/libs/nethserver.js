@@ -1,9 +1,40 @@
 nethserver = {
+  // used to map a query string parameter value to its typed value
+  getTypedValue(stringValue) {
+    if (stringValue === "true") {
+      return true;
+    }
+
+    if (stringValue === "false") {
+      return false;
+    }
+
+    return stringValue;
+  },
+  // used only by NS8 core to extract query parameters from URL
+  getQueryParamsForCore() {
+    if (
+      !window.location.hash.includes("?") ||
+      window.location.hash.split("?").length < 2
+    ) {
+      return {};
+    }
+
+    const params = new URLSearchParams(window.location.hash.split("?").pop());
+    let queryParams = {};
+
+    params.forEach((value, key) => {
+      if (key) {
+        queryParams[key] = value;
+      }
+    });
+    return queryParams;
+  },
   // used only by external apps to sync UI status with URL query parameters
   initUrlBinding(context, page) {
     console.log("initUrlBinding, page", page); ////
 
-    let queryParams = nethserver.getQueryParams();
+    let queryParams = nethserver.getQueryParamsForApp();
     const requestedPage = queryParams.page || "home";
 
     if (requestedPage != page) {
@@ -19,7 +50,7 @@ nethserver = {
     nethserver.queryParamsToData(context);
     nethserver.dataToQueryParams(context);
   },
-  // used only by vuejs external apps to sync UI status with URL query parameters
+  // used by vuejs core and external apps to dynamically register a watch for every object inside data.q
   watchQueryData(context) {
     Object.keys(context.q).forEach((dataItem) => {
       context.$watch("q." + dataItem, function () {
@@ -35,7 +66,7 @@ nethserver = {
     if (newUrl != context.currentUrl) {
       console.log("url changed!"); ////
       context.currentUrl = newUrl;
-      const queryParams = nethserver.getQueryParams();
+      const queryParams = nethserver.getQueryParamsForApp();
       const requestedPage = queryParams.page || "home";
 
       if (requestedPage !== page) {
@@ -54,7 +85,7 @@ nethserver = {
   },
   // used only by external apps to sync UI status with URL query parameters
   queryParamsToData(context) {
-    let queryParams = nethserver.getQueryParams();
+    let queryParams = nethserver.getQueryParamsForApp();
 
     console.log("queryParamsToData, queryParams", queryParams); ////
 
@@ -63,18 +94,6 @@ nethserver = {
         context.q[dataItem] = nethserver.getTypedValue(queryParams[dataItem]);
       }
     });
-  },
-  // used only to map a query string parameter value to its typed value
-  getTypedValue(stringValue) {
-    if (stringValue === "true") {
-      return true;
-    }
-
-    if (stringValue === "false") {
-      return false;
-    }
-
-    return stringValue;
   },
   // used only by external apps to sync UI status with URL query parameters
   dataToQueryParams(context) {
@@ -100,8 +119,8 @@ nethserver = {
       window.parent.ns8.$router.replace(urlWithParams);
     }
   },
-  // used only by external apps to sync UI status with URL query parameters
-  getQueryParams() {
+  // used only by external apps to extract query parameters from URL
+  getQueryParamsForApp() {
     if (
       !window.parent.location.hash.includes("?") ||
       window.parent.location.hash.split("?").length < 2

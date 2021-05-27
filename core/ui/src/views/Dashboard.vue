@@ -191,6 +191,7 @@ import QueryParamService from "@/mixins/queryParam";
 // import Pictogram from "@/components/Pictogram";
 // import Gear from "@/components/pictograms/Gear";
 import { formatRelative, formatDistance, subDays } from "date-fns";
+
 let nethserver = window.nethserver;
 
 export default {

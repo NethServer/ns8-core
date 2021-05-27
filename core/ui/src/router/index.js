@@ -50,7 +50,7 @@ router.beforeEach((to, from, next) => {
   if (to.name !== "Login" && !isAuthenticated) {
     console.log("no token in localstorage"); ////
 
-    next({ name: "Login" });
+    next({ name: "Login", query: { redirect: to.fullPath } });
   } else {
     next();
   }

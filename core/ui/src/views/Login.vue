@@ -84,8 +84,9 @@ import InlineNotification from "@/components/InlineNotification";
 import UtilService from "@/mixins/util";
 import { mapState } from "vuex";
 import { mapActions } from "vuex";
-
 import to from "await-to-js";
+
+let nethserver = window.nethserver;
 
 export default {
   name: "Login",
@@ -149,8 +150,20 @@ export default {
         this.saveToStorage("loginInfo", loginInfo);
         this.setLoggedUserInStore(this.username);
 
-        if (this.$route.name !== "Dashboard") {
-          this.$router.push("dashboard");
+        const queryParams = nethserver.getQueryParamsForCore();
+
+        if (queryParams.redirect) {
+          // redirect to initially requested URL
+
+          console.log("queryParams.redirect", queryParams.redirect); ////
+
+          this.$router.replace(queryParams.redirect);
+        } else {
+          // go to NS8 home page
+
+          // if (this.$route.name !== "Dashboard") { ////
+          this.$router.replace("dashboard");
+          // }
         }
       }
     },

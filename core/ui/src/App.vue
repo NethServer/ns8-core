@@ -75,7 +75,7 @@ export default {
 
       // redirect to login page
       if (this.$route.name !== "Login") {
-        this.$router.push("login");
+        this.$router.push("/login");
       }
     },
   },
