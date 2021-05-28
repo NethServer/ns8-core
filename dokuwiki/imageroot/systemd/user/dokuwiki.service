@@ -16,7 +16,7 @@ Restart=always
 ExecStartPre=/bin/rm -f %t/dokuwiki.pid %t/dokuwiki.ctr-id
 # Podman should bind only to 127.0.0.1:TCP_PORT
 # Data are persistend inside dokuwiki-data volume
-ExecStart=/usr/bin/podman run --conmon-pidfile %t/dokuwiki.pid --cidfile %t/dokuwiki.ctr-id --cgroups=no-conmon --replace --name dokuwiki -d --env-file=./environment -p 127.0.0.1:${TCP_PORT}:8080 -v dokuwiki-data:/bitnami/dokuwiki ${IMAGE}
+ExecStart=/usr/bin/podman run --conmon-pidfile %t/dokuwiki.pid --cidfile %t/dokuwiki.ctr-id --cgroups=no-conmon --replace --name dokuwiki -d --env-file=%S/state/environment -p 127.0.0.1:${TCP_PORT}:8080 -v dokuwiki-data:/bitnami/dokuwiki ${IMAGE}
 ExecStop=/usr/bin/podman stop --ignore --cidfile %t/dokuwiki.ctr-id -t 10
 ExecStopPost=/usr/bin/podman rm --ignore -f --cidfile %t/dokuwiki.ctr-id
 PIDFile=%t/dokuwiki.pid
