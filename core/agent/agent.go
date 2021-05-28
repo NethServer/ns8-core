@@ -131,6 +131,13 @@ func dumpToFile(env []string) {
 	log.Printf("Wrote %s/environment file", path)
 }
 
+func publishStatus(client redis.Cmdable, progressChannel string, actionDescriptor action.Descriptor) {
+	err := client.Publish(ctx, progressChannel, actionDescriptor.ToJSON()).Err()
+	if err != nil {
+		log.Printf(SD_ERR+"Failed to publish the action status on channel %s", progressChannel)
+	}
+}
+
 func runAction(task *models.Task) {
 
 	// Redis key names where the action response is stored:
@@ -146,7 +153,7 @@ func runAction(task *models.Task) {
 
 	actionDescriptor := action.Create(task.Action, actionPaths)
 
-	rdb.Publish(ctx, progressChannel, actionDescriptor.ToJSON())
+	publishStatus(rdb, progressChannel, actionDescriptor)
 
 	if len(actionDescriptor.Steps) == 0 {
 		// If the action is not defined our exit code is returned
@@ -209,7 +216,7 @@ func runAction(task *models.Task) {
 				case "set-env":
 					environment = append(environment, record[1]+"="+record[2])
 				case "dump-env":
-					rdb.HSet(ctx, agentPrefix+"/environment", exportToRedis(environment)...)
+					rdb.HSet(ctx, agentPrefix+"/environment", exportToRedis(environment)...).Result()
 					dumpToFile(environment)
 				case "set-status":
 					if record[1] == "validation-failed" {
@@ -230,7 +237,7 @@ func runAction(task *models.Task) {
 						log.Printf(SD_ERR+"set-weight command failed: %v", err)
 						break
 					}
-					rdb.Publish(ctx, progressChannel, actionDescriptor.ToJSON())
+					publishStatus(rdb, progressChannel, actionDescriptor)
 				case "set-progress":
 					var progress int
 					var err error
@@ -244,7 +251,7 @@ func runAction(task *models.Task) {
 						log.Printf(SD_ERR+"set-progress command failed: %v", err)
 						break
 					}
-					rdb.Publish(ctx, progressChannel, actionDescriptor.ToJSON())
+					publishStatus(rdb, progressChannel, actionDescriptor)
 				default:
 					log.Printf(SD_ERR+"Unknown command %s", cmd)
 				}
@@ -280,7 +287,7 @@ func runAction(task *models.Task) {
 		}
 
 		actionDescriptor.SetProgressAtStep(stepIndex, 100)
-		rdb.Publish(ctx, progressChannel, actionDescriptor.ToJSON())
+		publishStatus(rdb, progressChannel, actionDescriptor)
 
 		environment = dedupEnv(environment)
 	}
@@ -301,7 +308,7 @@ func runAction(task *models.Task) {
 		pipe.Set(ctx, outputKey, actionOutput, taskExpireDuration)
 		pipe.Set(ctx, errorKey, actionError, taskExpireDuration)
 		pipe.Set(ctx, exitCodeKey, exitCode, taskExpireDuration)
-		pipe.Publish(ctx, progressChannel, actionDescriptor.ToJSON())
+		publishStatus(pipe, progressChannel, actionDescriptor)
 		return nil
 	})
 	if err != nil {
