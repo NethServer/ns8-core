@@ -321,10 +321,12 @@ func setClientNameCallback (ctx context.Context, cn *redis.Conn) error {
 func main() {
 	log.SetFlags(0)
 	if agentPrefix == "" {
-		log.Fatal("[FATAL] The agent prefix argument is not set")
+		log.Fatal(SD_EMERG+"The agent prefix argument is not set")
+		// exit(1) log.Fatal terminates the process with an exit code
 	}
 	if len(actionPaths) == 0 {
-		log.Fatal("[FATAL] Action path command arguments are not set")
+		log.Fatal(SD_EMERG+"Action path command arguments are not set")
+		// exit(1) log.Fatal terminates the process with an exit code
 	}
 
 	redisAddress := os.Getenv("REDIS_ADDRESS")
