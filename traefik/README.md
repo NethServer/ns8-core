@@ -10,28 +10,24 @@ The module exposes 2 actions:
 
 This action creates a virtual host and a proxy pass to expose web applications instances.
 The action takes 5 arguments:
-- `N`: the instance name, which is unique inside the cluster
-- `URL`:the backend target URL
-- `HOST`: a fully qualified domain named as virtual host
-- `LETS_ENCRYPT`: can be 0 or 1, if set to 1 request a valid Let's Encrypt certificate
-- `FORCE_HTTPS` can be 0 or 1, if set to 1 HTTP will be redirect to HTTPS
-
-All parameters should be separated by a space and terminated with a whiteline character.
+- `instance`: the instance name, which is unique inside the cluster
+- `url`:the backend target URL
+- `host`: a fully qualified domain named as virtual host
+- `lets_encrypt`: can be `true` or `false`, if set to `true` request a valid Let's Encrypt certificate
+- `http2https` can be `true` or `false`, if set to `true` HTTP will be redirect to HTTPS
 
 Example:
 ```
-redis-cli LPUSH module/traefik1/tasks '{"id": "'$(uuidgen)'", "action": "set-host", "data": "dokuwiki1 http://127.0.0.1:20001 dokuwiki.test.local 1 1\n"}'
+redis-cli LPUSH module/traefik1/tasks '{"id": "'$(uuidgen)'", "action": "set-host", "data": {"instance": "module1", "url": "http://127.0.0.0:2000", "host": "module.example.org", "lets_encrypt": true, "http2https": true}}'
 ```
 
 ## delete-host
 
 This action delets an existing virtual host. It can be used when removing a module instance.
 The action takes 1 parameter:
-- `N`: the instance name
-
-The parameter should be terminated with a whiteline character.
+- `instance`: the instance name
 
 Example:
 ```
-redis-cli LPUSH module/traefik1/tasks '{"id": "'$(uuidgen)'", "action": "delete-host", "data": "dokuwiki1\n"}
+redis-cli LPUSH module/traefik1/tasks '{"id": "'$(uuidgen)'", "action": "delete-host", "data": {"instance": "module1"}}
 ```
