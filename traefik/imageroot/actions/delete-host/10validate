@@ -1,0 +1,51 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2021 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
+#
+# Validate traefik delete action.
+# Input example:
+#
+#  {"instance": "module1"}
+#
+
+import json
+import sys
+import agent
+
+# Push validation errors to this list
+errors = []
+
+# Try to parse the stdin as JSON.
+# If parsing fails, exit early and dump the error stack.
+data = json.load(sys.stdin)
+
+# Read instance parameter, if not present give it a default of an empty value
+# This field is mandatory
+if not data.get("instance", ""):
+    errors.append({"parameter": "instance", "value": "instance", "error": "instance_is_empty"})
+
+# Set failed validation if errors is non empty
+if errors:
+    # Dump the errors in JSON format to the stdout
+    print(json.dumps(errors))
+    # Inform the agent
+    agent.set_status("validation-failed")
