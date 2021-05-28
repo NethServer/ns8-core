@@ -204,8 +204,8 @@ func getTaskFile(c *gin.Context, filePath string) {
 
 	exitCodeInt, errValueExitCode := strconv.Atoi(exitCodeC)
 	if errValueExitCode != nil {
-		c.JSON(http.StatusBadRequest, structs.Map(response.StatusBadRequest{
-			Code:    400,
+		c.JSON(http.StatusInternalServerError, structs.Map(response.StatusInternalServerError{
+			Code:    500,
 			Message: "error in exit code value",
 			Data:    errValueExitCode.Error(),
 		}))
