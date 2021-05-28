@@ -20,39 +20,41 @@
 # along with NethServer.  If not, see COPYING.
 #
 
-# Configure Bitnami Dokuwiki image: https://github.com/bitnami/bitnami-docker-dokuwiki
+#
+# Validate dokuwiki configuration.
+# The only mandatory value is the Wiki name.
 # Input example:
 #
 #  {"wiki_name": "mywiki", "username": "admin", "password": "admin", "email": "admin@test.local", "user_full_name": "Administrator"}
+#
 
 import json
 import sys
 # agent is a NethServer library which provides function to communicate with the agent
 import agent
 
+# Push validation errors to this list
+errors = []
+
 # Try to parse the stdin as JSON.
-# If parsing fails, output everything to stderr
+# If parsing fails, exit early and dump the error stack.
 data = json.load(sys.stdin)
 
-# Setup default values
-wiki_name = data.get("wiki_name","Dokuwiki")
-username = data.get("username","admin")
-password = data.get("password","admin")
-email = data.get("email", "admin@example.org")
-full_name = data.get("user_full_name","Administrator")
+# Read wiki_name parameter, if not present give it a default of an empty value
+# This is the only mandatory field
+if not data.get("wiki_name", ""):
+    errors.append({"parameter": "wiki_name", "value": "wiki_name", "error": "wiki_name_is_empty"})
 
-# Talk with agent using file descriptor.
-# Setup configuration from user input.
-agent.set_env("DOKUWIKI_WIKI_NAME", wiki_name)
-agent.set_env("DOKUWIKI_USERNAME", username)
-agent.set_env("DOKUWIKI_PASSWORD", password)
-agent.set_env("DOKUWIKI_EMAIL", email)
-agent.set_env("DOKUWIKI_FULL_NAME", "user_full_name")
+# Following non mandatatory fields must be non empty
+for field in ["username", "password", "email"]:
+    if field in data and not data[field]:
+        errors.append({"parameter": field, "value": data[field], "error": "%s_is_empty" % field})
 
-# Setup PHP with safe defaults
-agent.set_env("PHP_ENABLE_OPCACHE", "1")
-agent.set_env("PHP_MEMORY_LIMIT", "512M")
-
-# Make sure everything is saved inside the environment file
-# just before starting systemd unit
-agent.dump_env()
+# Set failed validation if errors is non empty
+if errors:
+    # Dump the errors in JSON format to the stdout
+    print(json.dumps(errors))
+    # Inform the agent
+    agent.set_status("validation-failed")
+    # Below line is optional: if not set, 10 is the default exit code when validation fails
+    sys.exit(10)

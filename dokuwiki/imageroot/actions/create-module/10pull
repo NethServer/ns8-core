@@ -32,4 +32,6 @@ IMAGE=docker.io/bitnami/dokuwiki:latest
 
 echo "set-env IMAGE ${IMAGE}" >&${AGENT_COMFD}
 
-podman pull ${IMAGE}
+# The podman-pull-missing wrapper will download the image only if not already present.
+# Also the wrapper takes care to trace the download progress.
+podman-pull-missing ${IMAGE}
