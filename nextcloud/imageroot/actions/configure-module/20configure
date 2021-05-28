@@ -34,7 +34,7 @@ data = json.load(sys.stdin)
 # Setup default values
 username = data.get("username","admin")
 password = data.get("password","admin")
-trusted_domains = data.get("trusted_domain", ["localhost", "nextcloud.%s" % socket.getfqdn()])
+trusted_domains = data.get("trusted_domains", ["nextcloud.%s" % socket.getfqdn()])
 
 # Talk with agent using file descriptor.
 # Setup configuration from user input.
