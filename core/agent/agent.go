@@ -313,6 +313,11 @@ func runAction(task *models.Task) {
 	}
 }
 
+func setClientNameCallback (ctx context.Context, cn *redis.Conn) error {
+	log.Print("On connect")
+	return cn.ClientSetName(ctx, agentPrefix).Err()
+}
+
 func main() {
 	log.SetFlags(0)
 	if agentPrefix == "" {
@@ -342,15 +347,13 @@ func main() {
 		Username: redisUsername,
 		Password: redisPassword,
 		DB:       0,
+		OnConnect: setClientNameCallback,
 	})
-
-	// TODO notify systemd unit startup
 
 	queueName := agentPrefix + "/tasks"
 
 	for {
 		var task models.Task
-		rdb.Do(ctx, "CLIENT", "SETNAME", agentPrefix).Result()
 
 		result, err := rdb.BRPop(ctx, pollingDuration, queueName).Result()
 		if err == redis.Nil {
