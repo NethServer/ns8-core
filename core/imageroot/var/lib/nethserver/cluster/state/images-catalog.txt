@@ -9,4 +9,4 @@ HSET image/ldapproxy    url ghcr.io/nethserver/ldapproxy:latest    name "TLS ter
 HSET image/mail         url ghcr.io/nethserver/mail:latest         name "Mail services"
 HSET image/dokuwiki     url ghcr.io/nethserver/dokuwiki:latest     name "Dokuwiki"
 HSET image/promtail     url ghcr.io/nethserver/promtail:latest     name "Promtail logs collector for Loki"
-HSET image/nextcloud    url ghcr.io/nethserver/nextcloudi:latest   name "Nextcloud"
+HSET image/nextcloud    url ghcr.io/nethserver/nextcloud:latest    name "Nextcloud"
