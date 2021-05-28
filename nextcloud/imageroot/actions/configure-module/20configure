@@ -34,13 +34,13 @@ data = json.load(sys.stdin)
 # Setup default values
 username = data.get("username","admin")
 password = data.get("password","admin")
-trusted_domains = data.get("trusted_domains", ["nextcloud.%s" % socket.getfqdn()])
+trusted_domains = data.get("trusted_domains", ["localhost", "nextcloud.%s" % socket.getfqdn()])
 
 # Talk with agent using file descriptor.
 # Setup configuration from user input.
 agent.set_env("NEXTCLOUD_ADMIN_USER", username)
 agent.set_env("NEXTCLOUD_ADMIN_PASSWORD", password)
-agent.set_env("NEXTCLOUD_TRUSTED_DOMAINS", " ".join(trusted_domains))
+agent.set_env("NEXTCLOUD_TRUSTED_DOMAINS", '"'+' '.join(trusted_domains)+'"')
 
 # Setup environment for nextcloud app: DB ,Redis and PHP
 agent.set_env("PHP_ENABLE_OPCACHE", "1")
