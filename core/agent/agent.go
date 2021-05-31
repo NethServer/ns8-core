@@ -34,7 +34,7 @@ import (
 	"time"
 
 	"github.com/NethServer/ns8-scratchpad/core/agent/action"
-	"github.com/NethServer/ns8-scratchpad/core/agent/models"
+	"github.com/NethServer/ns8-scratchpad/core/api-server/models"
 	"github.com/go-redis/redis/v8"
 )
 
@@ -364,18 +364,25 @@ func main() {
 	for {
 		var task models.Task
 
-		result, err := rdb.BRPop(ctx, pollingDuration, queueName).Result()
-		if err == redis.Nil {
+		// Pop the task from the agent tasks queue
+		popResult, popErr := rdb.BRPop(ctx, pollingDuration, queueName).Result()
+		if popErr == redis.Nil {
 			continue
-		} else if err != nil {
-			log.Print(SD_ERR+"Task queue pop error: ", err)
+		} else if popErr != nil {
+			log.Print(SD_ERR+"Task queue pop error: ", popErr)
 			time.Sleep(pollingDuration)
 			continue
 		}
 
-		if err := json.Unmarshal([]byte(result[1]), &task); err != nil {
+		if err := json.Unmarshal([]byte(popResult[1]), &task); err != nil {
 			log.Print(SD_ERR+"Task ignored for decoding error: ", err)
 			continue
+		}
+
+		// Store the task as context
+		setErr := rdb.Set(ctx, agentPrefix + "/task/" + task.ID + "/context", popResult[1], taskExpireDuration).Err()
+		if setErr != nil {
+			log.Print(SD_ERR+"Context set error: ", setErr)
 		}
 
 		// run the Action required by the Task payload
