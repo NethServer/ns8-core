@@ -165,20 +165,9 @@ func getTaskFile(c *gin.Context, filePath string) {
 	redisConnection := redis.Instance()
 
 	// read redis statuses
-	contextC, errRedisContext := redisConnection.Get(ctx, filePath+"/context").Result()
 	errorC, errRedisError := redisConnection.Get(ctx, filePath+"/error").Result()
 	outputC, errRedisOutput := redisConnection.Get(ctx, filePath+"/output").Result()
 	exitCodeC, errRedisExitCode := redisConnection.Get(ctx, filePath+"/exit_code").Result()
-
-	// handle redis error for context status
-	if errRedisContext != nil {
-		c.JSON(http.StatusBadRequest, structs.Map(response.StatusBadRequest{
-			Code:    400,
-			Message: "error getting context status from redis",
-			Data:    errRedisContext.Error(),
-		}))
-		return
-	}
 
 	// handle redis error for error status
 	if errRedisError != nil {
@@ -234,7 +223,36 @@ func getTaskFile(c *gin.Context, filePath string) {
 	c.JSON(http.StatusOK, structs.Map(response.StatusOK{
 		Code:    200,
 		Message: "success",
-		Data:    gin.H{"context": contextC, "error": errorC, "output": outputData, "exit_code": exitCodeInt, "file": filePath},
+		Data:    gin.H{"error": errorC, "output": outputData, "exit_code": exitCodeInt, "file": filePath},
+	}))
+	return
+}
+
+func getTaskContext(c *gin.Context, filePath string) {
+	// init redis connection
+	redisConnection := redis.Instance()
+
+	// read redis statuses
+	contextC, errRedisContext := redisConnection.Get(ctx, filePath+"/context").Result()
+
+	// handle redis error for context status
+	if errRedisContext != nil {
+		c.JSON(http.StatusBadRequest, structs.Map(response.StatusBadRequest{
+			Code:    400,
+			Message: "error getting context status from redis",
+			Data:    errRedisContext.Error(),
+		}))
+		return
+	}
+
+	// close redis connection
+	redisConnection.Close()
+
+	// return file response
+	c.JSON(http.StatusOK, structs.Map(response.StatusOK{
+		Code:    200,
+		Message: "success",
+		Data:    gin.H{"context": contextC, "file": filePath},
 	}))
 	return
 }
@@ -381,6 +399,27 @@ func GetClusterTaskFiles(c *gin.Context) {
 	getTaskFile(c, filePath)
 }
 
+// GetClusterTaskContext godoc
+// @Summary Get the context of a cluster task
+// @Description get task statuses (context)
+// @Produce  json
+// @Param task_id path string true "Task ID"
+// @Success 200 {object} response.StatusOK{code=int,message=string,data=string}
+// @Header 200 {string} Authorization "Bearer <valid.JWT.token>"
+// @Failure 400 {object} response.StatusBadRequest{code=int,message=string,data=object}
+// @Router /tasks/cluster/{task_id}/context [get]
+// @Tags /tasks cluster
+func GetClusterTaskContext(c *gin.Context) {
+	// get task id
+	taskID := c.Param("task_id")
+
+	// define queue name
+	filePath := "cluster/task/" + taskID
+
+	// get result of file
+	getTaskContext(c, filePath)
+}
+
 // GetNodeTasks godoc
 // @Summary Get the list of current node tasks
 // @Description get node tasks
@@ -427,6 +466,31 @@ func GetNodeTaskFiles(c *gin.Context) {
 	getTaskFile(c, filePath)
 }
 
+// GetNodeTaskContext godoc
+// @Summary Get the context of a node task
+// @Description get task statuses (context)
+// @Produce  json
+// @Param node_id path string true "Node ID"
+// @Param task_id path string true "Task ID"
+// @Success 200 {object} response.StatusOK{code=int,message=string,data=string}
+// @Header 200 {string} Authorization "Bearer <valid.JWT.token>"
+// @Failure 400 {object} response.StatusBadRequest{code=int,message=string,data=object}
+// @Router /tasks/node/{node_id}/{task_id}/context [get]
+// @Tags /tasks node
+func GetNodeTaskContext(c *gin.Context) {
+	// get param
+	nodeID := c.Param("node_id")
+
+	// get task id
+	taskID := c.Param("task_id")
+
+	// define queue name
+	filePath := "node/" + nodeID + "/task/" + taskID
+
+	// get result of file
+	getTaskContext(c, filePath)
+}
+
 // GetModuleTasks godoc
 // @Summary Get the list of current module tasks
 // @Description get module tasks
@@ -471,6 +535,31 @@ func GetModuleTaskFiles(c *gin.Context) {
 
 	// get result of file
 	getTaskFile(c, filePath)
+}
+
+// GetModuleTaskContext godoc
+// @Summary Get the context of a module task
+// @Description get task statuses (context)
+// @Produce  json
+// @Param module_id path string true "Module ID"
+// @Param task_id path string true "Task ID"
+// @Success 200 {object} response.StatusOK{code=int,message=string,data=string}
+// @Header 200 {string} Authorization "Bearer <valid.JWT.token>"
+// @Failure 400 {object} response.StatusBadRequest{code=int,message=string,data=object}
+// @Router /tasks/module/{module_id}/{task_id}/context [get]
+// @Tags /tasks module
+func GetModuleTaskContext(c *gin.Context) {
+	// get param
+	moduleID := c.Param("module_id")
+
+	// get task id
+	taskID := c.Param("task_id")
+
+	// define queue name
+	filePath := "module/" + moduleID + "/task/" + taskID
+
+	// get result of file
+	getTaskContext(c, filePath)
 }
 
 // CreateClusterTask godoc

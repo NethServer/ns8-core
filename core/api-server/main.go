@@ -106,16 +106,19 @@ func main() {
 			// cluster
 			tasks.GET("/cluster", methods.GetClusterTasks)
 			tasks.GET("/cluster/:task_id/status", methods.GetClusterTaskFiles)
+			tasks.GET("/cluster/:task_id/context", methods.GetClusterTaskContext)
 			tasks.POST("/cluster", methods.CreateClusterTask)
 
 			// node
 			tasks.GET("/node/:node_id", methods.GetNodeTasks)
 			tasks.GET("/node/:node_id/:task_id/status", methods.GetNodeTaskFiles)
+			tasks.GET("/node/:node_id/:task_id/context", methods.GetNodeTaskContext)
 			tasks.POST("/node/:node_id", methods.CreateNodeTask)
 
 			// module
 			tasks.GET("/module/:module_id", methods.GetModuleTasks)
 			tasks.GET("/module/:module_id/:task_id/status", methods.GetModuleTaskFiles)
+			tasks.GET("/module/:module_id/:task_id/context", methods.GetModuleTaskContext)
 			tasks.POST("/module/:module_id", methods.CreateModuleTask)
 		}
 	}
