@@ -19,5 +19,15 @@ export default {
         },
       });
     },
+    createTask(taskData) {
+      const token = this.getFromStorage("loginInfo")
+        ? this.getFromStorage("loginInfo").token
+        : "";
+      return this.axios.post(this.apiUrl + "/tasks/cluster", taskData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+    },
   },
 };

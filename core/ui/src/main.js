@@ -24,10 +24,6 @@ Vue.use(VueNativeSock, "ws://", {
   connectManually: true,
 });
 
-//// remove?
-import Fragment from "vue-fragment";
-Vue.use(Fragment.Plugin);
-
 //// move somewhere else?
 const toastOptions = {
   containerClassName: "toastification-container",
@@ -54,6 +50,10 @@ Vue.directive("click-outside", {
     document.body.removeEventListener("click", el.clickOutsideEvent);
   },
 });
+
+// global mixin for error messages
+import ErrorService from "@/mixins/error";
+Vue.mixin(ErrorService);
 
 Vue.config.productionTip = false;
 

@@ -30,7 +30,7 @@
           <span v-if="isTask" class="progress">{{ progress }} % </span
           ><span v-html="subTitle"></span>
         </p>
-        <!-- <p v-if="isTask" class="progress">{{ progress }} %</p> -->
+        <!-- <p v-if="isTask" class="progress">{{ progress }} %</p> //// -->
         <p
           v-if="actionLabel"
           :class="[`${carbonPrefix}--toast-notification__caption`, `action`]"
@@ -135,8 +135,13 @@ export default {
 }
 
 .cv-notifiation.bx--toast-notification.notification {
-  width: 25vw;
+  width: 26vw;
   min-width: 20rem;
+  margin-top: 0;
+}
+
+.notification-drawer .cv-notifiation.bx--toast-notification.notification {
+  margin-top: $spacing-05;
 }
 
 .notification-drawer .cv-notifiation.bx--toast-notification.notification {

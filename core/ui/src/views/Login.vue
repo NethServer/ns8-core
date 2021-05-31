@@ -81,7 +81,6 @@ import IconService from "@/mixins/icon";
 import LoginService from "@/mixins/login";
 import StorageService from "@/mixins/storage";
 import InlineNotification from "@/components/InlineNotification";
-import UtilService from "@/mixins/util";
 import { mapState } from "vuex";
 import { mapActions } from "vuex";
 import to from "await-to-js";
@@ -91,7 +90,7 @@ let nethserver = window.nethserver;
 export default {
   name: "Login",
   components: { InlineNotification },
-  mixins: [IconService, LoginService, StorageService, UtilService],
+  mixins: [IconService, LoginService, StorageService],
   data() {
     return {
       username: "",
@@ -168,6 +167,7 @@ export default {
       }
     },
     handleLoginError(error) {
+      console.error(error);
       let errorMessage = this.GENERIC_ERROR_MESSAGE;
 
       if (error.response) {

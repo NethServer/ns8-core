@@ -13,12 +13,13 @@
 
 <script>
 import TaskService from "@/mixins/task";
-import UtilService from "@/mixins/util";
 import to from "await-to-js";
+
+//// delete file?
 
 export default {
   name: "Tasks",
-  mixins: [TaskService, UtilService],
+  mixins: [TaskService],
   data() {
     return {
       error: {

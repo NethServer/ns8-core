@@ -23,7 +23,6 @@
     "vue": "^2.6.11",
     "vue-axios": "^3.2.4",
     "vue-date-fns": "^2.0.1",
-    "vue-fragment": "^1.5.2",
     "vue-native-websocket": "^2.0.14",
     "vue-router": "^3.2.0",
     "vue-toastification": "^1.7.11",

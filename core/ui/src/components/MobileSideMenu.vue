@@ -55,19 +55,13 @@ export default {
 @import "../styles/carbon-utils";
 
 .mobile-side-menu {
-  // background-color: $ui-05; ////
-  // border-left: 1px solid $interactive-02; ////
-  // color: $ui-01; ////
-  // height: 10rem; ////
   width: $side-menu-width;
-  // min-width: 23rem; ////
   height: calc(100vh - 3rem);
   position: fixed;
   top: 3rem;
   left: 0;
   z-index: 10000;
   overflow: auto;
-  // padding: 1rem; ////
 }
 
 .slide-menu-enter-active,

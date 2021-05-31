@@ -59,6 +59,8 @@ export default {
           return response;
         },
         function (error) {
+          console.error(error);
+
           // logout if 401 response code is intercepted
           if (error.response && error.response.status == 401) {
             context.$root.$emit("logout");
@@ -129,6 +131,11 @@ a {
 }
 
 // vue-toastification
+.Vue-Toastification__toast {
+  border-radius: 0 !important;
+  margin-top: $spacing-05;
+}
+
 .Vue-Toastification__container.top-right.toastification-container {
   top: 3rem;
   z-index: 7999;
@@ -175,16 +182,6 @@ a {
 .timestamp
   .bx--tooltip__trigger.bx--tooltip--bottom.bx--tooltip--align-center::before {
   border-bottom-color: $ui-05 !important;
-}
-
-//// remove?
-.notification-drawer a.bx--tabs__nav-link {
-  color: $ui-01 !important;
-}
-
-//// remove?
-.cv-tabs__panels {
-  margin-top: $spacing-05;
 }
 
 // global search

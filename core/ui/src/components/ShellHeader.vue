@@ -16,13 +16,13 @@
         ><span class="status-text">Status</span
         ><span class="status-badge"></span
       ></cv-header-menu-item>
-      <cv-header-menu-item
+      <!-- <cv-header-menu-item
         to="/dashboard?testToggle=true&testInput=firstValue&testNumber=99"
         >Link 1</cv-header-menu-item
       >
       <cv-header-menu-item to="/dashboard?testInput=secondValue"
         >Link 2</cv-header-menu-item
-      >
+      > -->
       <!-- <cv-header-menu-item to="/dashboard?testToggle=true&testInput=firstValue"
         >Dashboard w/p 1</cv-header-menu-item
       >
@@ -30,7 +30,7 @@
         >Dashboard w/p 2</cv-header-menu-item
       > -->
       <!--  //// -->
-      <!-- <cv-header-menu-item to="/tasks">Tasks</cv-header-menu-item> -->
+      <cv-header-menu-item to="/tasks">Tasks</cv-header-menu-item>
       <cv-header-menu-item to="/login">Login</cv-header-menu-item>
       <cv-header-menu-item @click="logout">Logout</cv-header-menu-item>
       <cv-header-menu-item to="/apps/ns8-app">Ns8 app</cv-header-menu-item>
@@ -128,13 +128,15 @@
           />
         </div>
         <div class="notification-divider">Recent</div>
-        <div v-if="!notifications.length">
+        <div v-if="!recentNotifications.length">
           <div class="empty-state">
             <pictogram title="empty state" class="image">
               <ExclamationMark />
             </pictogram>
             <h5 class="title">No notifications</h5>
-            <div class="description">You don't have any notifications yet</div>
+            <div class="description">
+              You don't have any recent notifications yet
+            </div>
           </div>
         </div>
         <div

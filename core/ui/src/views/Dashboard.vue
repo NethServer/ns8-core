@@ -66,15 +66,15 @@
             </cv-button>
           </div>
 
-          <!-- <div class="mg-top-bottom"> ////
+          <div class="mg-top-bottom">
             <cv-button
               kind="secondary"
               :icon="Flash16"
-              @click="createTaskNotification"
+              @click="createAddModuleTask"
             >
-              Create task notification
+              Create add module task
             </cv-button>
-          </div> -->
+          </div>
         </cv-tile>
       </div>
     </div>
@@ -191,13 +191,21 @@ import QueryParamService from "@/mixins/queryParam";
 // import Pictogram from "@/components/Pictogram";
 // import Gear from "@/components/pictograms/Gear";
 import { formatRelative, formatDistance, subDays } from "date-fns";
+import TaskService from "@/mixins/task";
+import to from "await-to-js";
+import WebSocketService from "@/mixins/websocket";
 
 let nethserver = window.nethserver;
 
 export default {
   name: "Dashboard",
   components: {},
-  mixins: [NotificationService, QueryParamService],
+  mixins: [
+    NotificationService,
+    QueryParamService,
+    TaskService,
+    WebSocketService,
+  ],
   data() {
     return {
       q: {
@@ -275,16 +283,45 @@ export default {
       };
       this.createNotification(notification);
     },
-    createTaskNotification() {
+    async createAddModuleTask() {
+      const [taskError, taskResponse] = await to(
+        this.createTask({
+          id: "",
+          action: "add-module",
+          data: {
+            image: "traefik",
+            node: 1,
+            title: "Task title",
+            text: "Initializing...",
+          }, ////
+        })
+      );
+
+      if (taskError) {
+        console.error(taskError);
+
+        const notification = {
+          title: "Cannot add module",
+          text: this.getErrorMessage(taskError),
+          type: "error",
+          app: "Cluster manager",
+        };
+        this.createNotification(notification);
+        return;
+      }
+
+      console.log("!!! taskResponse", taskResponse); ////
+
+      const taskId = taskResponse.data.Data.ID;
+      const taskData = taskResponse.data.Data.Data;
+
       const notification = {
-        title: "Installing Nextcloud",
-        text: "Configuring...",
-        type: "info",
-        app: "Cluster manager",
+        id: taskId,
+        title: taskData.title,
+        text: taskData.text,
         isTask: true,
-        progress: 0,
       };
-      this.createNotification(notification);
+      this.putNotification(notification);
     },
   },
 };
