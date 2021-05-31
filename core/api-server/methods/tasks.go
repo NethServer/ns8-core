@@ -165,9 +165,20 @@ func getTaskFile(c *gin.Context, filePath string) {
 	redisConnection := redis.Instance()
 
 	// read redis statuses
+	contextC, errRedisContext := redisConnection.Get(ctx, filePath+"/context").Result()
 	errorC, errRedisError := redisConnection.Get(ctx, filePath+"/error").Result()
 	outputC, errRedisOutput := redisConnection.Get(ctx, filePath+"/output").Result()
 	exitCodeC, errRedisExitCode := redisConnection.Get(ctx, filePath+"/exit_code").Result()
+
+	// handle redis error for context status
+	if errRedisContext != nil {
+		c.JSON(http.StatusBadRequest, structs.Map(response.StatusBadRequest{
+			Code:    400,
+			Message: "error getting context status from redis",
+			Data:    errRedisContext.Error(),
+		}))
+		return
+	}
 
 	// handle redis error for error status
 	if errRedisError != nil {
@@ -223,7 +234,7 @@ func getTaskFile(c *gin.Context, filePath string) {
 	c.JSON(http.StatusOK, structs.Map(response.StatusOK{
 		Code:    200,
 		Message: "success",
-		Data:    gin.H{"error": errorC, "output": outputData, "exit_code": exitCodeInt, "file": filePath},
+		Data:    gin.H{"context": contextC, "error": errorC, "output": outputData, "exit_code": exitCodeInt, "file": filePath},
 	}))
 	return
 }

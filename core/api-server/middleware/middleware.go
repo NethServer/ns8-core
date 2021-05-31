@@ -25,7 +25,6 @@ package middleware
 import (
 	"github.com/pkg/errors"
 
-	"net/http"
 	"time"
 
 	"github.com/fatih/structs"
@@ -156,7 +155,7 @@ func InitJWT() *jwt.GinJWTMiddleware {
 			return false
 		},
 		Unauthorized: func(c *gin.Context, code int, message string) {
-			c.JSON(http.StatusUnauthorized, structs.Map(response.StatusUnauthorized{
+			c.JSON(code, structs.Map(response.StatusUnauthorized{
 				Code:    code,
 				Message: message,
 				Data:    nil,
