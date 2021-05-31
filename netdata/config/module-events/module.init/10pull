@@ -1,5 +1,0 @@
-#!/bin/bash
-
-# Pull image before use, otherwise "systemd --user start netata" will fail because start timeout is reached
-
-podman pull docker.io/netdata/netdata:stable

@@ -1,0 +1,58 @@
+#!/bin/bash
+
+#
+# Copyright (C) 2021 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
+set -e
+
+# Redirect any output to the journal (stderr)
+exec 1>&2
+
+#
+# Basic netdata configuration
+#
+
+hostname=$(hostname -f)
+
+#
+# cgroup configuration is necessary for container monitoring
+#
+cat > netdata.conf <<EOF
+[global]
+        hostname = $hostname
+        update every = 10
+        debug log = none
+        access log = none
+
+[plugin:cgroups]
+        path to /sys/fs/cgroup/cpuacct = /host/sys/fs/cgroup/cpu,cpuacct
+        path to /sys/fs/cgroup/cpuset = /host/sys/fs/cgroup/cpuset
+        path to /sys/fs/cgroup/blkio = /host/sys/fs/cgroup/blkio
+        path to /sys/fs/cgroup/memory = /host/sys/fs/cgroup/memory
+        path to /sys/fs/cgroup/devices = /host/sys/fs/cgroup/devices
+EOF
+
+#
+# Disable Netdata cloud links 
+#
+cat > cloud.conf <<EOF
+[global]
+    enabled = no
+EOF

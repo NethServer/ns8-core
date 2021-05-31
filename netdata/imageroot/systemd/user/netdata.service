@@ -1,0 +1,17 @@
+[Unit]
+Description=Netdata instance
+
+[Service]
+Environment=PODMAN_SYSTEMD_UNIT=%n
+EnvironmentFile=%S/state/environment
+WorkingDirectory=%S/state
+Restart=always
+ExecStartPre=/bin/rm -f %t/netdata.pid %t/netdata.ctr-id
+ExecStart=/usr/bin/podman run --conmon-pidfile %t/netdata.pid --cidfile %t/netdata.ctr-id --cgroups=no-conmon --replace --name netdata --env-file=%S/state/environment -p 127.0.0.1:19999:19999 $EXTRA_LISTEN -v %S/state/stream.conf:/etc/netdata/stream.conf -v %S/state/cloud.conf:/var/lib/netdata/cloud.d/cloud.conf -v %S/state/netdata.conf:/etc/netdata/netdata.conf  -v netdatalib:/var/lib/netdata   -v netdatacache:/var/cache/netdata   -v /etc/passwd:/host/etc/passwd:ro   -v /etc/group:/host/etc/group:ro   -v /proc:/host/proc:ro   -v /sys:/host/sys:ro   -v /etc/os-release:/host/etc/os-release:ro   --cap-add SYS_PTRACE -u netdata ${IMAGE}
+ExecStop=/usr/bin/podman stop --ignore --cidfile %t/netdata.ctr-id -t 10
+ExecStopPost=/usr/bin/podman rm --ignore -f --cidfile %t/netdata.ctr-id
+PIDFile=%t/netdata.pid
+Type=forking
+
+[Install]
+WantedBy=default.target
