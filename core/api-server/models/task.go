@@ -33,4 +33,5 @@ type Task struct {
 	Queue     string      `json:"queue"`
 	User      string      `json:"user"`
 	Timestamp time.Time   `json:"timestamp"`
+	Parent    string      `json:"parent"`
 }
