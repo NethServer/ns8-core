@@ -108,7 +108,7 @@ def slurp_file(file_name):
 def run_subtask(redis_obj, agent_prefix, action, input_obj, nowait=False, progress_range=None):
 
     task_id = str(uuid.uuid4())
-    task_obj = {"id": task_id, "action": action, "data": input_obj}
+    task_obj = {"id": task_id, "action": action, "data": input_obj, "parent": os.getenv("AGENT_TASK_ID", "")}
 
     redis_obj.lpush(f'{agent_prefix}/tasks', json.dumps(task_obj))
 
