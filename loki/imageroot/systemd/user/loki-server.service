@@ -1,0 +1,32 @@
+[Unit]
+Description=Grafana Loki fully featured logging stack.
+BindsTo=loki.service
+After=loki.service
+
+[Service]
+Environment=PODMAN_SYSTEMD_UNIT=%n
+EnvironmentFile=-%S/state/environment
+Restart=always
+ExecStartPre=/bin/rm -f %t/loki-server.pid %t/loki-server.ctr-id
+ExecStart=/usr/bin/podman run \
+    --detach \
+    --conmon-pidfile=%t/loki-server.pid \
+    --cidfile=%t/loki-server.ctr-id \
+    --cgroups=no-conmon \
+    --pod-id-file %t/loki.pod-id \
+    --log-opt=tag=%u \
+    --replace \
+    --name=%N \
+    --volume=loki-server-data:/loki-server \
+    ${LOKI_IMAGE} \
+    -config.file=/etc/loki/local-config.yaml \
+    -log.level warn
+
+ExecStop=/usr/bin/podman stop --ignore --cidfile %t/loki-server.ctr-id -t 10
+ExecStopPost=/usr/bin/podman rm --ignore -f --cidfile %t/loki-server.ctr-id
+PIDFile=%t/loki-server.pid
+Type=forking
+WorkingDirectory=%S/state
+
+[Install]
+WantedBy=default.target
