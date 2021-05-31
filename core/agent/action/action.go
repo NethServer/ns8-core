@@ -86,6 +86,30 @@ func (d *Descriptor) SetStepWeight(stepName string, weight int) error {
 	return nil
 }
 
+func ListActions(actionPaths []string) []string {
+	actionDirs := make(map[string]bool)
+	for _, path := range actionPaths {
+		entries, err := os.ReadDir(path)
+		if err != nil {
+			continue
+		}
+		for _, entry := range entries {
+			if entry.IsDir() {
+				actionDirs[entry.Name()] = true
+			}
+		}
+	}
+	actions := make([]string, 0, len(actionDirs))
+	for dir, _ := range actionDirs {
+		actions = append(actions, dir)
+	}
+	return actions
+}
+
+func CreateBuiltin(actionName string) Descriptor {
+	return Descriptor{Status: "pending", Progress: 0, Steps: []Step{{Name: actionName, Path:"", Weight: 1}}}
+}
+
 func Create(actionName string, actionPaths []string) Descriptor {
 
 	actionSteps := make(map[string]string)

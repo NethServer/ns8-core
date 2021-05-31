@@ -138,6 +138,40 @@ func publishStatus(client redis.Cmdable, progressChannel string, actionDescripto
 	}
 }
 
+
+func runListActions(task *models.Task) {
+	// Redis key names where the action response is stored:
+	progressChannel := "progress/task/" + task.ID
+	outputKey := agentPrefix + "/task/" + task.ID + "/output"
+	errorKey := agentPrefix + "/task/" + task.ID + "/error"
+	exitCodeKey := agentPrefix + "/task/" + task.ID + "/exit_code"
+
+	actionDescriptor := action.CreateBuiltin(task.Action)
+	publishStatus(rdb, progressChannel, actionDescriptor)
+
+	actionDescriptor.Status = "running"
+	publishStatus(rdb, progressChannel, actionDescriptor)
+
+	actionOutput, _ := json.Marshal(action.ListActions(actionPaths))
+	actionError := ""
+	exitCode := 0
+
+	actionDescriptor.SetProgressAtStep(0, 100)
+	actionDescriptor.Status = "completed"
+
+	_, err := rdb.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
+		// Publish the action response
+		pipe.Set(ctx, outputKey, actionOutput, taskExpireDuration)
+		pipe.Set(ctx, errorKey, actionError, taskExpireDuration)
+		pipe.Set(ctx, exitCodeKey, exitCode, taskExpireDuration)
+		publishStatus(pipe, progressChannel, actionDescriptor)
+		return nil
+	})
+	if err != nil {
+		log.Print(SD_ERR+"Redis command failed: ", err)
+	}
+}
+
 func runAction(task *models.Task) {
 
 	// Redis key names where the action response is stored:
@@ -321,7 +355,6 @@ func runAction(task *models.Task) {
 }
 
 func setClientNameCallback (ctx context.Context, cn *redis.Conn) error {
-	log.Print("On connect")
 	return cn.ClientSetName(ctx, agentPrefix).Err()
 }
 
@@ -386,6 +419,11 @@ func main() {
 		}
 
 		// run the Action required by the Task payload
-		go runAction(&task)
+		switch task.Action {
+		case "list-actions":
+			go runListActions(&task)
+		default:
+			go runAction(&task)
+		}
 	}
 }
