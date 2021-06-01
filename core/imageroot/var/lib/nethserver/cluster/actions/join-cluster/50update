@@ -71,12 +71,12 @@ node_pwh = hashlib.sha256(node_pw.encode()).hexdigest()
 response = requests.post(url.strip('/') + '/cluster-admin/api/cluster/tasks', timeout=30, json={
         "id": "",
         "action": "add-node",
-        "data": json.dumps({
+        "data": {
             "node_pwh": node_pwh,
             "public_key": public_key,
             "endpoint": "",
             "listen_port": listen_port,
-        }),
+        },
     },
     verify=tls_verify,
     headers={'Authorization': 'Bearer ' + jwt})
@@ -95,14 +95,22 @@ print(f"Reading response from {pollurl}", file=sys.stderr)
 for attempt in range(0,5):
     time.sleep(2)
     response = requests.get(pollurl, timeout=30, verify=tls_verify, headers={'Authorization': 'Bearer ' + jwt})
-    body = response.json()
+    try:
+        response.raise_for_status()
+        body = response.json()
+    except Exception as e:
+        print(f"Request attempt {attempt} failed: {str(e)}")
+        continue
     if body['Code'] == 200:
         break
-    print(body, file=sys.stderr)
+    else:
+        print(agent.SD_ERR + "Unexpected response payload", file=sys.stderr)
+        print(body, file=sys.stderr)
 else:
-    raise Exception('Response timeout exceeded')
+    print(agent.SD_ERR + 'Join response reading attempts exhausted. Action aborted!', file=sys.stderr)
+    sys.exit(1)
 
-payload = json.loads(body['Data']['output'])
+payload = body['Data']['output']
 
 assert payload['ip_address']
 assert payload['node_id']
