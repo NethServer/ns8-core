@@ -84,7 +84,7 @@ assert rdb.set(f'node/{node_id}/tcp_ports_sequence', 20000) == 'OK'
 assert rdb.execute_command('ACL', 'SETUSER',
     f'node/{node_id}', 'ON', '#' + node_pwh,
     'resetkeys', f'~node/{node_id}/*',
-    'resetchannels', '&progress/task/*',
+    'resetchannels', f'&progress/node/{node_id}/*',
     'nocommands', '+@read', '+@write', '+@transaction', '+@connection', '+publish',
 ) == 'OK'
 

@@ -124,7 +124,7 @@ assert rdb.execute_command('ACL', 'SETUSER',
                     f'module/{module_id}', 'ON',
                     '#' + outobj['redis_sha256'],
                     f'~module/{module_id}/*',
-                    'resetchannels', '&progress/task/*',
+                    'resetchannels', f'&progress/module/{module_id}/*',
                     '+@read', '+@write', '+@transaction', '+@connection', '+publish') == 'OK'
 
 # Persist ACLs to disk
