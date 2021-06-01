@@ -31,70 +31,25 @@ var doc = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/login": {
-            "post": {
-                "description": "login and get JWT token",
+        "/cluster/task/{task_id}/context": {
+            "get": {
+                "description": "get task statuses (context)",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "/login auth"
+                    "/tasks cluster"
                 ],
-                "summary": "Login and get JWT token",
+                "summary": "Get the context of a cluster task",
                 "parameters": [
                     {
-                        "description": "The user to login",
-                        "name": "user",
-                        "in": "body",
-                        "schema": {
-                            "$ref": "#/definitions/response.LoginRequestJWT"
-                        }
+                        "type": "string",
+                        "description": "Task ID",
+                        "name": "task_id",
+                        "in": "path",
+                        "required": true
                     }
                 ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/response.LoginResponseJWT"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/response.StatusInternalServerError"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "integer"
-                                        },
-                                        "data": {
-                                            "type": "object"
-                                        },
-                                        "message": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                }
-            }
-        },
-        "/logout": {
-            "post": {
-                "description": "logout and remove JWT token",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "/logout auth"
-                ],
-                "summary": "Login and remove JWT token",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -108,6 +63,12 @@ var doc = `{
                                     "properties": {
                                         "code": {
                                             "type": "integer"
+                                        },
+                                        "data": {
+                                            "type": "string"
+                                        },
+                                        "message": {
+                                            "type": "string"
                                         }
                                     }
                                 }
@@ -120,12 +81,12 @@ var doc = `{
                             }
                         }
                     },
-                    "500": {
-                        "description": "Internal Server Error",
+                    "400": {
+                        "description": "Bad Request",
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/response.StatusInternalServerError"
+                                    "$ref": "#/definitions/response.StatusBadRequest"
                                 },
                                 {
                                     "type": "object",
@@ -147,7 +108,84 @@ var doc = `{
                 }
             }
         },
-        "/tasks/cluster": {
+        "/cluster/task/{task_id}/status": {
+            "get": {
+                "description": "get task statuses (output, error, exit_code)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "/tasks cluster"
+                ],
+                "summary": "Get the output, error or exit code of a cluster task",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Task ID",
+                        "name": "task_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.StatusOK"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "integer"
+                                        },
+                                        "data": {
+                                            "type": "string"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        },
+                        "headers": {
+                            "Authorization": {
+                                "type": "string",
+                                "description": "Bearer \u003cvalid.JWT.token\u003e"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.StatusBadRequest"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "integer"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/cluster/tasks": {
             "get": {
                 "description": "get cluster tasks",
                 "produces": [
@@ -284,17 +322,140 @@ var doc = `{
                 }
             }
         },
-        "/tasks/cluster/{task_id}/context": {
+        "/login": {
+            "post": {
+                "description": "login and get JWT token",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "/login auth"
+                ],
+                "summary": "Login and get JWT token",
+                "parameters": [
+                    {
+                        "description": "The user to login",
+                        "name": "user",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/response.LoginRequestJWT"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.LoginResponseJWT"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.StatusInternalServerError"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "integer"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/logout": {
+            "post": {
+                "description": "logout and remove JWT token",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "/logout auth"
+                ],
+                "summary": "Login and remove JWT token",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.StatusOK"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "integer"
+                                        }
+                                    }
+                                }
+                            ]
+                        },
+                        "headers": {
+                            "Authorization": {
+                                "type": "string",
+                                "description": "Bearer \u003cvalid.JWT.token\u003e"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.StatusInternalServerError"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "integer"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/module/{module_id}/task/{task_id}/context": {
             "get": {
                 "description": "get task statuses (context)",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "/tasks cluster"
+                    "/tasks module"
                 ],
-                "summary": "Get the context of a cluster task",
+                "summary": "Get the context of a module task",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Module ID",
+                        "name": "module_id",
+                        "in": "path",
+                        "required": true
+                    },
                     {
                         "type": "string",
                         "description": "Task ID",
@@ -361,17 +522,24 @@ var doc = `{
                 }
             }
         },
-        "/tasks/cluster/{task_id}/status": {
+        "/module/{module_id}/task/{task_id}/status": {
             "get": {
                 "description": "get task statuses (output, error, exit_code)",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "/tasks cluster"
+                    "/tasks module"
                 ],
-                "summary": "Get the output, error or exit code of a cluster task",
+                "summary": "Get the output, error or exit code of a module task",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Module ID",
+                        "name": "module_id",
+                        "in": "path",
+                        "required": true
+                    },
                     {
                         "type": "string",
                         "description": "Task ID",
@@ -438,7 +606,7 @@ var doc = `{
                 }
             }
         },
-        "/tasks/module/{module_id}": {
+        "/module/{module_id}/tasks": {
             "get": {
                 "description": "get module tasks",
                 "produces": [
@@ -593,21 +761,21 @@ var doc = `{
                 }
             }
         },
-        "/tasks/module/{module_id}/{task_id}/context": {
+        "/node/{node_id}/task/{task_id}/context": {
             "get": {
                 "description": "get task statuses (context)",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "/tasks module"
+                    "/tasks node"
                 ],
-                "summary": "Get the context of a module task",
+                "summary": "Get the context of a node task",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Module ID",
-                        "name": "module_id",
+                        "description": "Node ID",
+                        "name": "node_id",
                         "in": "path",
                         "required": true
                     },
@@ -677,21 +845,21 @@ var doc = `{
                 }
             }
         },
-        "/tasks/module/{module_id}/{task_id}/status": {
+        "/node/{node_id}/task/{task_id}/status": {
             "get": {
                 "description": "get task statuses (output, error, exit_code)",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "/tasks module"
+                    "/tasks node"
                 ],
-                "summary": "Get the output, error or exit code of a module task",
+                "summary": "Get the output, error or exit code of a node task",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Module ID",
-                        "name": "module_id",
+                        "description": "Node ID",
+                        "name": "node_id",
                         "in": "path",
                         "required": true
                     },
@@ -761,7 +929,7 @@ var doc = `{
                 }
             }
         },
-        "/tasks/node/{node_id}": {
+        "/node/{node_id}/tasks": {
             "get": {
                 "description": "get node tasks",
                 "produces": [
@@ -915,174 +1083,6 @@ var doc = `{
                     }
                 }
             }
-        },
-        "/tasks/node/{node_id}/{task_id}/context": {
-            "get": {
-                "description": "get task statuses (context)",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "/tasks node"
-                ],
-                "summary": "Get the context of a node task",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Node ID",
-                        "name": "node_id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Task ID",
-                        "name": "task_id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/response.StatusOK"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "integer"
-                                        },
-                                        "data": {
-                                            "type": "string"
-                                        },
-                                        "message": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
-                        },
-                        "headers": {
-                            "Authorization": {
-                                "type": "string",
-                                "description": "Bearer \u003cvalid.JWT.token\u003e"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/response.StatusBadRequest"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "integer"
-                                        },
-                                        "data": {
-                                            "type": "object"
-                                        },
-                                        "message": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                }
-            }
-        },
-        "/tasks/node/{node_id}/{task_id}/status": {
-            "get": {
-                "description": "get task statuses (output, error, exit_code)",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "/tasks node"
-                ],
-                "summary": "Get the output, error or exit code of a node task",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Node ID",
-                        "name": "node_id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Task ID",
-                        "name": "task_id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/response.StatusOK"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "integer"
-                                        },
-                                        "data": {
-                                            "type": "string"
-                                        },
-                                        "message": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
-                        },
-                        "headers": {
-                            "Authorization": {
-                                "type": "string",
-                                "description": "Bearer \u003cvalid.JWT.token\u003e"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/response.StatusBadRequest"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "integer"
-                                        },
-                                        "data": {
-                                            "type": "object"
-                                        },
-                                        "message": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                }
-            }
         }
     },
     "definitions": {
@@ -1096,6 +1096,9 @@ var doc = `{
                     "type": "object"
                 },
                 "id": {
+                    "type": "string"
+                },
+                "parent": {
                     "type": "string"
                 },
                 "queue": {

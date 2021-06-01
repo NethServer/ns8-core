@@ -8,6 +8,8 @@ definitions:
         type: object
       id:
         type: string
+      parent:
+        type: string
       queue:
         type: string
       timestamp:
@@ -86,41 +88,15 @@ info:
   title: NethServer 8 API
   version: "1.0"
 paths:
-  /login:
-    post:
-      description: login and get JWT token
+  /cluster/task/{task_id}/context:
+    get:
+      description: get task statuses (context)
       parameters:
-      - description: The user to login
-        in: body
-        name: user
-        schema:
-          $ref: '#/definitions/response.LoginRequestJWT'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/response.LoginResponseJWT'
-        "500":
-          description: Internal Server Error
-          schema:
-            allOf:
-            - $ref: '#/definitions/response.StatusInternalServerError'
-            - properties:
-                code:
-                  type: integer
-                data:
-                  type: object
-                message:
-                  type: string
-              type: object
-      summary: Login and get JWT token
-      tags:
-      - /login auth
-  /logout:
-    post:
-      description: logout and remove JWT token
+      - description: Task ID
+        in: path
+        name: task_id
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -136,12 +112,16 @@ paths:
             - properties:
                 code:
                   type: integer
+                data:
+                  type: string
+                message:
+                  type: string
               type: object
-        "500":
-          description: Internal Server Error
+        "400":
+          description: Bad Request
           schema:
             allOf:
-            - $ref: '#/definitions/response.StatusInternalServerError'
+            - $ref: '#/definitions/response.StatusBadRequest'
             - properties:
                 code:
                   type: integer
@@ -150,10 +130,55 @@ paths:
                 message:
                   type: string
               type: object
-      summary: Login and remove JWT token
+      summary: Get the context of a cluster task
       tags:
-      - /logout auth
-  /tasks/cluster:
+      - /tasks cluster
+  /cluster/task/{task_id}/status:
+    get:
+      description: get task statuses (output, error, exit_code)
+      parameters:
+      - description: Task ID
+        in: path
+        name: task_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            Authorization:
+              description: Bearer <valid.JWT.token>
+              type: string
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.StatusOK'
+            - properties:
+                code:
+                  type: integer
+                data:
+                  type: string
+                message:
+                  type: string
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.StatusBadRequest'
+            - properties:
+                code:
+                  type: integer
+                data:
+                  type: object
+                message:
+                  type: string
+              type: object
+      summary: Get the output, error or exit code of a cluster task
+      tags:
+      - /tasks cluster
+  /cluster/tasks:
     get:
       description: get cluster tasks
       produces:
@@ -232,10 +257,82 @@ paths:
       summary: Create and queue a cluster task
       tags:
       - /tasks cluster
-  /tasks/cluster/{task_id}/context:
+  /login:
+    post:
+      description: login and get JWT token
+      parameters:
+      - description: The user to login
+        in: body
+        name: user
+        schema:
+          $ref: '#/definitions/response.LoginRequestJWT'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.LoginResponseJWT'
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.StatusInternalServerError'
+            - properties:
+                code:
+                  type: integer
+                data:
+                  type: object
+                message:
+                  type: string
+              type: object
+      summary: Login and get JWT token
+      tags:
+      - /login auth
+  /logout:
+    post:
+      description: logout and remove JWT token
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            Authorization:
+              description: Bearer <valid.JWT.token>
+              type: string
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.StatusOK'
+            - properties:
+                code:
+                  type: integer
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.StatusInternalServerError'
+            - properties:
+                code:
+                  type: integer
+                data:
+                  type: object
+                message:
+                  type: string
+              type: object
+      summary: Login and remove JWT token
+      tags:
+      - /logout auth
+  /module/{module_id}/task/{task_id}/context:
     get:
       description: get task statuses (context)
       parameters:
+      - description: Module ID
+        in: path
+        name: module_id
+        required: true
+        type: string
       - description: Task ID
         in: path
         name: task_id
@@ -274,13 +371,18 @@ paths:
                 message:
                   type: string
               type: object
-      summary: Get the context of a cluster task
+      summary: Get the context of a module task
       tags:
-      - /tasks cluster
-  /tasks/cluster/{task_id}/status:
+      - /tasks module
+  /module/{module_id}/task/{task_id}/status:
     get:
       description: get task statuses (output, error, exit_code)
       parameters:
+      - description: Module ID
+        in: path
+        name: module_id
+        required: true
+        type: string
       - description: Task ID
         in: path
         name: task_id
@@ -319,10 +421,10 @@ paths:
                 message:
                   type: string
               type: object
-      summary: Get the output, error or exit code of a cluster task
+      summary: Get the output, error or exit code of a module task
       tags:
-      - /tasks cluster
-  /tasks/module/{module_id}:
+      - /tasks module
+  /module/{module_id}/tasks:
     get:
       description: get module tasks
       parameters:
@@ -413,13 +515,13 @@ paths:
       summary: Create and queue a module task
       tags:
       - /tasks module
-  /tasks/module/{module_id}/{task_id}/context:
+  /node/{node_id}/task/{task_id}/context:
     get:
       description: get task statuses (context)
       parameters:
-      - description: Module ID
+      - description: Node ID
         in: path
-        name: module_id
+        name: node_id
         required: true
         type: string
       - description: Task ID
@@ -460,16 +562,16 @@ paths:
                 message:
                   type: string
               type: object
-      summary: Get the context of a module task
+      summary: Get the context of a node task
       tags:
-      - /tasks module
-  /tasks/module/{module_id}/{task_id}/status:
+      - /tasks node
+  /node/{node_id}/task/{task_id}/status:
     get:
       description: get task statuses (output, error, exit_code)
       parameters:
-      - description: Module ID
+      - description: Node ID
         in: path
-        name: module_id
+        name: node_id
         required: true
         type: string
       - description: Task ID
@@ -510,10 +612,10 @@ paths:
                 message:
                   type: string
               type: object
-      summary: Get the output, error or exit code of a module task
+      summary: Get the output, error or exit code of a node task
       tags:
-      - /tasks module
-  /tasks/node/{node_id}:
+      - /tasks node
+  /node/{node_id}/tasks:
     get:
       description: get node tasks
       parameters:
@@ -602,106 +704,6 @@ paths:
                   type: string
               type: object
       summary: Create and queue a node task
-      tags:
-      - /tasks node
-  /tasks/node/{node_id}/{task_id}/context:
-    get:
-      description: get task statuses (context)
-      parameters:
-      - description: Node ID
-        in: path
-        name: node_id
-        required: true
-        type: string
-      - description: Task ID
-        in: path
-        name: task_id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          headers:
-            Authorization:
-              description: Bearer <valid.JWT.token>
-              type: string
-          schema:
-            allOf:
-            - $ref: '#/definitions/response.StatusOK'
-            - properties:
-                code:
-                  type: integer
-                data:
-                  type: string
-                message:
-                  type: string
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            allOf:
-            - $ref: '#/definitions/response.StatusBadRequest'
-            - properties:
-                code:
-                  type: integer
-                data:
-                  type: object
-                message:
-                  type: string
-              type: object
-      summary: Get the context of a node task
-      tags:
-      - /tasks node
-  /tasks/node/{node_id}/{task_id}/status:
-    get:
-      description: get task statuses (output, error, exit_code)
-      parameters:
-      - description: Node ID
-        in: path
-        name: node_id
-        required: true
-        type: string
-      - description: Task ID
-        in: path
-        name: task_id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          headers:
-            Authorization:
-              description: Bearer <valid.JWT.token>
-              type: string
-          schema:
-            allOf:
-            - $ref: '#/definitions/response.StatusOK'
-            - properties:
-                code:
-                  type: integer
-                data:
-                  type: string
-                message:
-                  type: string
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            allOf:
-            - $ref: '#/definitions/response.StatusBadRequest'
-            - properties:
-                code:
-                  type: integer
-                data:
-                  type: object
-                message:
-                  type: string
-              type: object
-      summary: Get the output, error or exit code of a node task
       tags:
       - /tasks node
 schemes:

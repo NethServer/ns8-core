@@ -369,7 +369,7 @@ func ListenTaskEvents() {
 // @Success 200 {object} response.StatusOK{code=int,message=string,data=[]models.Task}
 // @Header 200 {string} Authorization "Bearer <valid.JWT.token>"
 // @Failure 400 {object} response.StatusBadRequest{code=int,message=string,data=object}
-// @Router /tasks/cluster [get]
+// @Router /cluster/tasks [get]
 // @Tags /tasks cluster
 func GetClusterTasks(c *gin.Context) {
 	// define queue name
@@ -387,7 +387,7 @@ func GetClusterTasks(c *gin.Context) {
 // @Success 200 {object} response.StatusOK{code=int,message=string,data=string}
 // @Header 200 {string} Authorization "Bearer <valid.JWT.token>"
 // @Failure 400 {object} response.StatusBadRequest{code=int,message=string,data=object}
-// @Router /tasks/cluster/{task_id}/status [get]
+// @Router /cluster/task/{task_id}/status [get]
 // @Tags /tasks cluster
 func GetClusterTaskFiles(c *gin.Context) {
 	// get task id
@@ -408,7 +408,7 @@ func GetClusterTaskFiles(c *gin.Context) {
 // @Success 200 {object} response.StatusOK{code=int,message=string,data=string}
 // @Header 200 {string} Authorization "Bearer <valid.JWT.token>"
 // @Failure 400 {object} response.StatusBadRequest{code=int,message=string,data=object}
-// @Router /tasks/cluster/{task_id}/context [get]
+// @Router /cluster/task/{task_id}/context [get]
 // @Tags /tasks cluster
 func GetClusterTaskContext(c *gin.Context) {
 	// get task id
@@ -429,7 +429,7 @@ func GetClusterTaskContext(c *gin.Context) {
 // @Success 200 {object} response.StatusOK{code=int,message=string,data=[]models.Task}
 // @Header 200 {string} Authorization "Bearer <valid.JWT.token>"
 // @Failure 400 {object} response.StatusBadRequest{code=int,message=string,data=object}
-// @Router /tasks/node/{node_id} [get]
+// @Router /node/{node_id}/tasks [get]
 // @Tags /tasks node
 func GetNodeTasks(c *gin.Context) {
 	// get param
@@ -451,7 +451,7 @@ func GetNodeTasks(c *gin.Context) {
 // @Success 200 {object} response.StatusOK{code=int,message=string,data=string}
 // @Header 200 {string} Authorization "Bearer <valid.JWT.token>"
 // @Failure 400 {object} response.StatusBadRequest{code=int,message=string,data=object}
-// @Router /tasks/node/{node_id}/{task_id}/status [get]
+// @Router /node/{node_id}/task/{task_id}/status [get]
 // @Tags /tasks node
 func GetNodeTaskFiles(c *gin.Context) {
 	// get param
@@ -476,7 +476,7 @@ func GetNodeTaskFiles(c *gin.Context) {
 // @Success 200 {object} response.StatusOK{code=int,message=string,data=string}
 // @Header 200 {string} Authorization "Bearer <valid.JWT.token>"
 // @Failure 400 {object} response.StatusBadRequest{code=int,message=string,data=object}
-// @Router /tasks/node/{node_id}/{task_id}/context [get]
+// @Router /node/{node_id}/task/{task_id}/context [get]
 // @Tags /tasks node
 func GetNodeTaskContext(c *gin.Context) {
 	// get param
@@ -500,7 +500,7 @@ func GetNodeTaskContext(c *gin.Context) {
 // @Success 200 {object} response.StatusOK{code=int,message=string,data=[]models.Task}
 // @Header 200 {string} Authorization "Bearer <valid.JWT.token>"
 // @Failure 400 {object} response.StatusBadRequest{code=int,message=string,data=object}
-// @Router /tasks/module/{module_id} [get]
+// @Router /module/{module_id}/tasks [get]
 // @Tags /tasks module
 func GetModuleTasks(c *gin.Context) {
 	// get param
@@ -522,7 +522,7 @@ func GetModuleTasks(c *gin.Context) {
 // @Success 200 {object} response.StatusOK{code=int,message=string,data=string}
 // @Header 200 {string} Authorization "Bearer <valid.JWT.token>"
 // @Failure 400 {object} response.StatusBadRequest{code=int,message=string,data=object}
-// @Router /tasks/module/{module_id}/{task_id}/status [get]
+// @Router /module/{module_id}/task/{task_id}/status [get]
 // @Tags /tasks module
 func GetModuleTaskFiles(c *gin.Context) {
 	// get param
@@ -547,7 +547,7 @@ func GetModuleTaskFiles(c *gin.Context) {
 // @Success 200 {object} response.StatusOK{code=int,message=string,data=string}
 // @Header 200 {string} Authorization "Bearer <valid.JWT.token>"
 // @Failure 400 {object} response.StatusBadRequest{code=int,message=string,data=object}
-// @Router /tasks/module/{module_id}/{task_id}/context [get]
+// @Router /module/{module_id}/task/{task_id}/context [get]
 // @Tags /tasks module
 func GetModuleTaskContext(c *gin.Context) {
 	// get param
@@ -570,7 +570,7 @@ func GetModuleTaskContext(c *gin.Context) {
 // @Success 200 {object} response.StatusCreated{code=int,message=string,data=models.Task}
 // @Header 200 {string} Authorization "Bearer <valid.JWT.token>"
 // @Failure 400 {object} response.StatusBadRequest{code=int,message=string,data=object}
-// @Router /tasks/cluster [post]
+// @Router /cluster/tasks [post]
 // @Tags /tasks cluster
 func CreateClusterTask(c *gin.Context) {
 	// define queue name
@@ -588,7 +588,7 @@ func CreateClusterTask(c *gin.Context) {
 // @Success 200 {object} response.StatusCreated{code=int,message=string,data=models.Task}
 // @Header 200 {string} Authorization "Bearer <valid.JWT.token>"
 // @Failure 400 {object} response.StatusBadRequest{code=int,message=string,data=object}
-// @Router /tasks/node/{node_id} [post]
+// @Router /node/{node_id}/tasks [post]
 // @Tags /tasks node
 func CreateNodeTask(c *gin.Context) {
 	// get param
@@ -609,7 +609,7 @@ func CreateNodeTask(c *gin.Context) {
 // @Success 200 {object} response.StatusCreated{code=int,message=string,data=models.Task}
 // @Header 200 {string} Authorization "Bearer <valid.JWT.token>"
 // @Failure 400 {object} response.StatusBadRequest{code=int,message=string,data=object}
-// @Router /tasks/module/{module_id} [post]
+// @Router /module/{module_id}/tasks [post]
 // @Tags /tasks module
 func CreateModuleTask(c *gin.Context) {
 	// get param

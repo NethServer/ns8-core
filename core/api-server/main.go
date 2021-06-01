@@ -101,26 +101,23 @@ func main() {
 	api.Use(middleware.InstanceJWT().MiddlewareFunc())
 	{
 		// tasks APIs
-		tasks := api.Group("/tasks")
-		{
-			// cluster
-			tasks.GET("/cluster", methods.GetClusterTasks)
-			tasks.GET("/cluster/:task_id/status", methods.GetClusterTaskFiles)
-			tasks.GET("/cluster/:task_id/context", methods.GetClusterTaskContext)
-			tasks.POST("/cluster", methods.CreateClusterTask)
+		// cluster
+		api.GET("/cluster/tasks", methods.GetClusterTasks)
+		api.GET("/cluster/task/:task_id/status", methods.GetClusterTaskFiles)
+		api.GET("/cluster/task/:task_id/context", methods.GetClusterTaskContext)
+		api.POST("/cluster/tasks", methods.CreateClusterTask)
 
-			// node
-			tasks.GET("/node/:node_id", methods.GetNodeTasks)
-			tasks.GET("/node/:node_id/:task_id/status", methods.GetNodeTaskFiles)
-			tasks.GET("/node/:node_id/:task_id/context", methods.GetNodeTaskContext)
-			tasks.POST("/node/:node_id", methods.CreateNodeTask)
+		// node
+		api.GET("/node/:node_id/tasks", methods.GetNodeTasks)
+		api.GET("/node/:node_id/task/:task_id/status", methods.GetNodeTaskFiles)
+		api.GET("/node/:node_id/task/:task_id/context", methods.GetNodeTaskContext)
+		api.POST("/node/:node_id/tasks", methods.CreateNodeTask)
 
-			// module
-			tasks.GET("/module/:module_id", methods.GetModuleTasks)
-			tasks.GET("/module/:module_id/:task_id/status", methods.GetModuleTaskFiles)
-			tasks.GET("/module/:module_id/:task_id/context", methods.GetModuleTaskContext)
-			tasks.POST("/module/:module_id", methods.CreateModuleTask)
-		}
+		// module
+		api.GET("/module/:module_id/tasks", methods.GetModuleTasks)
+		api.GET("/module/:module_id/task/:task_id/status", methods.GetModuleTaskFiles)
+		api.GET("/module/:module_id/task/:task_id/context", methods.GetModuleTaskContext)
+		api.POST("/module/:module_id/tasks", methods.CreateModuleTask)
 	}
 
 	// define websocket endpoint
