@@ -328,7 +328,7 @@ func ListenTaskEvents() {
 	socketConnection := socket.Instance()
 
 	// subscribe to progress channel and listen to new messages: PSUBSCRIBE progress/task/*
-	progress := redisConnection.PSubscribe(ctx, "progress/task/*")
+	progress := redisConnection.PSubscribe(ctx, "progress/*")
 
 	// get the channel to use
 	channel := progress.Channel()
