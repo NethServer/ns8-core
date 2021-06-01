@@ -76,7 +76,7 @@ assert rdb.hset(f'node/{node_id}/vpn', mapping={
 }) >= 0
 
 # Initialize the node ports sequence
-assert rdb.set(f'node/{node_id}/tcp_ports_sequence', 20000) == 'OK'
+assert rdb.set(f'node/{node_id}/tcp_ports_sequence', 20000) is True
 
 #
 # 2. Create redis acls for the node agent
@@ -99,14 +99,15 @@ agent.run_helper(*f'ip route add {ip_address} dev wg0'.split(' ')).check_returnc
 
 # Install core modules in the new node
 for core_module_image in ['traefik', 'ldapproxy']:
-    rdb.lpush('cluster/tasks', json.dumps({
-        "id": str(uuid.uuid4()),
-        "action": "add-module",
-        "data": json.dumps({
+    agent.run_subtask(rdb,
+        agent_prefix='cluster',
+        action='add-module',
+        input_obj={
             "image": core_module_image,
             "node": node_id,
-        }),
-    }))
+        },
+        nowait=True,
+    )
 
 #
 # Return the new information to the caller
