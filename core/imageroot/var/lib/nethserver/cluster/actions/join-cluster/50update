@@ -68,7 +68,7 @@ node_pwh = hashlib.sha256(node_pw.encode()).hexdigest()
 #
 # Invoke the cluster add-node action remotely:
 #
-response = requests.post(url.strip('/') + '/cluster-admin/api/tasks/cluster', timeout=30, json={
+response = requests.post(url.strip('/') + '/cluster-admin/api/cluster/tasks', timeout=30, json={
         "id": "",
         "action": "add-node",
         "data": json.dumps({
@@ -90,7 +90,7 @@ task_id = body['Data']['ID']
 #
 # XXX Poll the remote server until the task has completed
 #
-pollurl = url.strip('/') + f'/cluster-admin/api/tasks/cluster/{task_id}/status'
+pollurl = url.strip('/') + f'/cluster-admin/api/cluster/task/{task_id}/status'
 print(f"Reading response from {pollurl}", file=sys.stderr)
 for attempt in range(0,5):
     time.sleep(2)
