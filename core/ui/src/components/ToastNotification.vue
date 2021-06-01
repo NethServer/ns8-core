@@ -8,6 +8,7 @@
         { [`${carbonPrefix}--toast-notification--low-contrast`]: lowContrast },
         `notification`,
         { 'notification-read': read },
+        `notification-${id}`,
       ]"
       v-on="$listeners"
       :role="isAlert ? 'alert' : undefined"
@@ -27,10 +28,17 @@
             `notification-text`,
           ]"
         >
-          <span v-if="isTask" class="progress">{{ progress }} % </span
-          ><span v-html="subTitle"></span>
+          <!-- <span v-if="isTask" class="progress">{{ progress }} % </span ////
+          > -->
+          <span v-html="subTitle"></span>
         </p>
-        <!-- <p v-if="isTask" class="progress">{{ progress }} %</p> //// -->
+
+        <div v-if="isTask && isProgressShown">
+          <ProgressBar :value="progress" :indeterminate="!progress" />
+          <div class="progress-bar-spacer"></div>
+          <div v-if="progress" class="progress-number">{{ progress }} %</div>
+        </div>
+
         <p
           v-if="actionLabel"
           :class="[`${carbonPrefix}--toast-notification__caption`, `action`]"
@@ -71,10 +79,12 @@
 <script>
 import { CvToastNotification } from "@carbon/vue";
 import DateTimeService from "@/mixins/datetime";
+import ProgressBar from "@/components/ProgressBar";
 
 export default {
   name: "ToastNotification",
   extends: CvToastNotification,
+  components: { ProgressBar },
   mixins: [DateTimeService],
   props: {
     showCloseButton: {
@@ -102,6 +112,22 @@ export default {
     },
     timestamp: {
       type: Date,
+    },
+    //// remove? required?
+    id: {
+      type: [Number, String],
+    },
+    isProgressShown: {
+      type: Boolean,
+      default: function () {
+        return true;
+      },
+    },
+  },
+  watch: {
+    //// remove
+    progress: function () {
+      console.log("ToastNotification: progress updated", this.progress); ////
     },
   },
 };
@@ -132,6 +158,14 @@ export default {
 
 .progress {
   margin-right: $spacing-03;
+}
+
+.progress-bar-spacer {
+  height: $spacing-03;
+}
+
+.progress-number {
+  margin-bottom: $spacing-04;
 }
 
 .cv-notifiation.bx--toast-notification.notification {

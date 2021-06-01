@@ -1,6 +1,6 @@
 import Vue from "vue";
 import Vuex from "vuex";
-import _merge from "lodash/merge";
+import _merge from "lodash/merge"; //// remove?
 
 Vue.use(Vuex);
 
@@ -50,7 +50,9 @@ export default new Vuex.Store({
       if (notificationFound) {
         console.log("updating, old", notificationFound); ////
         console.log("updating, new", notification); ////
-        notificationFound = _merge(notificationFound, notification);
+        notificationFound = _merge(notificationFound, notification); ////
+
+        // mergeNotifications(notificationFound, notification); ////
 
         console.log("updated notification", notificationFound); ////
       }
@@ -78,3 +80,15 @@ export default new Vuex.Store({
   },
   modules: {},
 });
+
+// helper functions
+
+// function mergeNotifications(oldNotification, newNotification) { //// remove
+//   // Replace oldNotification attributes with newNotification ones.
+//   // Useful if oldNotification has reactive properties to preserve
+//   console.log("mergeNotifications", oldNotification, newNotification); ////
+
+//   for (const prop in newNotification) {
+//     oldNotification[prop] = newNotification[prop];
+//   }
+// }

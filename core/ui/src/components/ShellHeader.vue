@@ -116,15 +116,17 @@
           <ToastNotification
             :kind="notification.type"
             :title="notification.title"
-            :sub-title="notification.text"
-            :low-contrast="false"
-            :show-close-button="false"
+            :subTitle="notification.text"
+            :lowContrast="false"
+            :showCloseButton="false"
             actionLabel="Details"
             @action="notificationAction"
             :read="notification.read"
             :isTask="notification.isTask"
             :progress="notification.progress"
+            :isProgressShown="true"
             :timestamp="notification.timestamp"
+            :id="notification.id"
           />
         </div>
         <div class="notification-divider">Recent</div>
@@ -147,14 +149,15 @@
           <ToastNotification
             :kind="notification.type"
             :title="notification.title"
-            :sub-title="notification.text"
-            :low-contrast="false"
-            :show-close-button="false"
+            :subTitle="notification.text"
+            :lowContrast="false"
+            :showCloseButton="false"
             actionLabel="Details"
             @action="notificationAction"
             :read="notification.read"
             :timestamp="notification.timestamp"
             @click="setNotificationReadInStore(notification.id)"
+            id="notification.id"
           />
         </div>
         <!-- </cv-tab> ////

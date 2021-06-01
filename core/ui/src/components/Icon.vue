@@ -1,10 +1,8 @@
 <template>
-  <div v-if="1 < 10">sdf</div>
-  <div v-else>sdf</div>
+  <div>icon test</div>
 </template>
 
 <script>
-
 //// use JSX?
 
 export default {

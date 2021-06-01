@@ -49,9 +49,11 @@ export default {
           subTitle: notification.text,
           isTask: notification.isTask,
           progress: notification.progress,
+          isProgressShown: false,
           actionLabel: "Details", ////
           lowContrast: false,
           showCloseButton: true,
+          id: notification.id,
         },
         listeners: {
           action: () => console.log("Clicked toast action!"), ////

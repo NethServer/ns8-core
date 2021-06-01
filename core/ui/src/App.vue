@@ -113,6 +113,10 @@ a {
   text-decoration: underline;
 }
 
+.bx--toast-notification__details {
+  flex-grow: 1;
+}
+
 .bx--link:hover {
   color: $link-02;
 }

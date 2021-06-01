@@ -70,6 +70,16 @@
             <cv-button
               kind="secondary"
               :icon="Flash16"
+              @click="createProgressTask"
+            >
+              Create progress task
+            </cv-button>
+          </div>
+
+          <div class="mg-top-bottom">
+            <cv-button
+              kind="secondary"
+              :icon="Flash16"
               @click="createAddModuleTask"
             >
               Create add module task
@@ -310,18 +320,27 @@ export default {
         return;
       }
 
-      console.log("!!! taskResponse", taskResponse); ////
+      console.log("taskResponse", taskResponse); ////
 
-      const taskId = taskResponse.data.Data.ID;
-      const taskData = taskResponse.data.Data.Data;
+      // const taskId = taskResponse.data.Data.ID; ////
+      // const taskData = taskResponse.data.Data.Data;
 
+      // const notification = {
+      //   id: taskId,
+      //   title: taskData.title,
+      //   text: taskData.text,
+      //   isTask: true,
+      // };
+      // this.putNotification(notification);
+    },
+    createProgressTask() {
       const notification = {
-        id: taskId,
-        title: taskData.title,
-        text: taskData.text,
+        title: "Task in progress",
+        text: "Please wait...",
+        app: "Cluster manager",
         isTask: true,
       };
-      this.putNotification(notification);
+      this.createNotification(notification);
     },
   },
 };

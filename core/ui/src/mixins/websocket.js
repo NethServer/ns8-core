@@ -1,13 +1,10 @@
 import NotificationService from "@/mixins/notification";
+import TaskService from "@/mixins/task";
+// import to from "await-to-js"; ////
 
 export default {
   name: "WebSocketService",
-  mixins: [NotificationService],
-  data() {
-    return {
-      task: {}, //// MOVE TO VUEX STORE
-    };
-  },
+  mixins: [NotificationService, TaskService],
   methods: {
     initWebSocket() {
       this.$connect(this.$root.config.WS_ENDPOINT);
@@ -17,34 +14,51 @@ export default {
     closeWebSocket() {
       this.$disconnect();
     },
-    onMessage(message) {
+    async onMessage(message) {
       const messageData = JSON.parse(message.data);
       console.log("ws data", messageData); ////
 
-      const progressTaskMatch = /^progress\/task\/(.+)$/.exec(messageData.name); ////
+      const progressTaskMatch = /^progress\/(.+\/task\/(.+))$/.exec(
+        messageData.name
+      ); ////
 
       if (progressTaskMatch) {
-        const taskId = progressTaskMatch[0];
+        console.log("progressTaskMatch", progressTaskMatch); ////
 
-        console.log("received taskId", taskId); ////
+        const taskPath = progressTaskMatch[1];
+        const taskId = progressTaskMatch[2];
 
         // set task progress
         const payload = messageData.payload;
 
+        console.log("ws taskPath, payload", taskPath, payload); ////
+
+        ////
+        // const [taskError, response] = await to(
+        //   this.getTaskContext(taskPath)
+        // );
+
+        // if (taskError) {
+        //   console.error("error retrieving task info", taskError);
+        //   return;
+        // }
+
+        // console.log("task info response", response); ////
+
         const notification = {
-          id: messageData.name,
-          title: payload.title,
+          id: taskId,
+          title: taskPath, //// payload.title
           text: payload.text,
           type: "info",
           isTask: true,
           progress: payload.progress,
           timestamp: payload.timestamp,
         };
+
+        console.log("pushing notification", notification); ////
+
         this.putNotification(notification);
       }
     },
-    // monitorTask(taskId) { ////
-    //   this.task[taskId] = {};
-    // },
   },
 };

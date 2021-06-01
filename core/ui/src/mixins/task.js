@@ -9,6 +9,16 @@ export default {
     },
   },
   methods: {
+    getTaskContext(taskPath) {
+      const token = this.getFromStorage("loginInfo")
+        ? this.getFromStorage("loginInfo").token
+        : "";
+      return this.axios.get(`${this.apiUrl}/tasks/${taskPath}/context`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+    },
     getClusterTasks() {
       const token = this.getFromStorage("loginInfo")
         ? this.getFromStorage("loginInfo").token
