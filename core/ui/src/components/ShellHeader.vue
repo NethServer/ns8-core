@@ -116,14 +116,13 @@
           <ToastNotification
             :kind="notification.type"
             :title="notification.title"
-            :subTitle="notification.text"
+            :description="notification.description"
             :lowContrast="false"
             :showCloseButton="false"
             actionLabel="Details"
             @action="notificationAction"
             :read="notification.read"
-            :isTask="notification.isTask"
-            :progress="notification.progress"
+            :task="notification.task"
             :isProgressShown="true"
             :timestamp="notification.timestamp"
             :id="notification.id"
@@ -149,7 +148,7 @@
           <ToastNotification
             :kind="notification.type"
             :title="notification.title"
-            :subTitle="notification.text"
+            :description="notification.description"
             :lowContrast="false"
             :showCloseButton="false"
             actionLabel="Details"
@@ -295,8 +294,8 @@ export default {
   left: 62%;
   height: 7px;
   width: 7px;
-  // background-color: $inverse-support-04; ////
-  background-color: #fff;
+  background-color: $interactive-01; ////
+  // background-color: #fff; ////
   border-radius: 50%;
   display: inline-block;
 }

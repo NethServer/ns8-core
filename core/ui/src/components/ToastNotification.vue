@@ -8,7 +8,6 @@
         { [`${carbonPrefix}--toast-notification--low-contrast`]: lowContrast },
         `notification`,
         { 'notification-read': read },
-        `notification-${id}`,
       ]"
       v-on="$listeners"
       :role="isAlert ? 'alert' : undefined"
@@ -28,13 +27,15 @@
             `notification-text`,
           ]"
         >
-          <span v-html="subTitle"></span>
+          <span v-html="description"></span>
         </p>
 
-        <div v-if="isTask && isProgressShown">
-          <ProgressBar :value="progress" :indeterminate="!progress" />
+        <div v-if="task && isProgressShown">
+          <ProgressBar :value="task.progress" :indeterminate="!task.progress" />
           <div class="progress-bar-spacer"></div>
-          <div v-if="progress" class="progress-number">{{ progress }} %</div>
+          <div v-if="task.progress" class="progress-number">
+            {{ task.progress }} %
+          </div>
         </div>
 
         <p
@@ -85,6 +86,9 @@ export default {
   components: { ProgressBar },
   mixins: [DateTimeService],
   props: {
+    description: {
+      type: String,
+    },
     showCloseButton: {
       type: Boolean,
       default: function () {
@@ -99,33 +103,17 @@ export default {
         return false;
       },
     },
-    isTask: {
-      type: Boolean,
-      default: function () {
-        return false;
-      },
-    },
-    progress: {
-      type: Number,
+    task: {
+      type: Object,
     },
     timestamp: {
       type: Date,
-    },
-    //// remove? required?
-    id: {
-      type: [Number, String],
     },
     isProgressShown: {
       type: Boolean,
       default: function () {
         return true;
       },
-    },
-  },
-  watch: {
-    //// remove
-    progress: function () {
-      console.log("ToastNotification: progress updated", this.progress); ////
     },
   },
 };

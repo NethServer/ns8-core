@@ -41,19 +41,20 @@ export default {
       this.createNotificationInStore(notification);
 
       // show toast notification
+      this.showNotification(notification);
+    },
+    showNotification(notification) {
       const toast = {
         component: ToastNotification,
         props: {
           kind: notification.type,
           title: notification.title,
-          subTitle: notification.text,
-          isTask: notification.isTask,
-          progress: notification.progress,
+          description: notification.description,
+          task: notification.task,
           isProgressShown: false,
           actionLabel: "Details", ////
           lowContrast: false,
           showCloseButton: true,
-          id: notification.id,
         },
         listeners: {
           action: () => console.log("Clicked toast action!"), ////
@@ -81,10 +82,10 @@ export default {
       );
 
       if (notificationFound) {
-        console.log("updating notification", notification); ////
+        // console.log("updating notification", notification); ////
         this.updateNotificationInStore(notification);
       } else {
-        console.log("creating notification", notification); ////
+        // console.log("creating notification", notification); ////
         this.createNotification(notification);
       }
     },

@@ -13,7 +13,7 @@ export default {
       const token = this.getFromStorage("loginInfo")
         ? this.getFromStorage("loginInfo").token
         : "";
-      return this.axios.get(`${this.apiUrl}/tasks/${taskPath}/context`, {
+      return this.axios.get(`${this.apiUrl}/${taskPath}/context`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -33,7 +33,7 @@ export default {
       const token = this.getFromStorage("loginInfo")
         ? this.getFromStorage("loginInfo").token
         : "";
-      return this.axios.post(this.apiUrl + "/tasks/cluster", taskData, {
+      return this.axios.post(this.apiUrl + "/cluster/tasks", taskData, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

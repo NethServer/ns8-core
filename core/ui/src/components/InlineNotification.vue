@@ -24,7 +24,7 @@
         </p>
         <p
           :class="`${carbonPrefix}--inline-notification__subtitle`"
-          v-html="subTitle"
+          v-html="description"
         ></p>
       </div>
     </div>
@@ -66,6 +66,9 @@ export default {
       default: function () {
         return false;
       },
+    },
+    description: {
+      type: String,
     },
   },
 };

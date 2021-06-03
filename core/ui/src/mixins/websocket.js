@@ -1,6 +1,7 @@
 import NotificationService from "@/mixins/notification";
 import TaskService from "@/mixins/task";
-// import to from "await-to-js"; ////
+import to from "await-to-js";
+// import { v4 as uuidv4 } from "uuid"; ////
 
 export default {
   name: "WebSocketService",
@@ -22,11 +23,9 @@ export default {
 
       const progressTaskMatch = /^progress\/(.+\/task\/(.+))$/.exec(
         messageData.name
-      ); ////
+      );
 
       if (progressTaskMatch) {
-        console.log("progressTaskMatch", progressTaskMatch); ////
-
         const taskPath = progressTaskMatch[1];
         const taskId = progressTaskMatch[2];
 
@@ -35,31 +34,64 @@ export default {
 
         console.log("ws taskPath, payload", taskPath, payload); ////
 
-        ////
-        // const [taskError, response] = await to(
-        //   this.getTaskContext(taskPath)
-        // );
+        const [taskError, response] = await to(this.getTaskContext(taskPath));
 
-        // if (taskError) {
-        //   console.error("error retrieving task info", taskError);
-        //   return;
-        // }
+        if (taskError) {
+          console.error("error retrieving task info", taskError);
+          return;
+        }
 
         // console.log("task info response", response); ////
 
-        const notification = {
-          id: taskId,
-          title: taskPath, //// payload.title
-          text: payload.text,
-          type: "info",
-          isTask: true,
-          progress: payload.progress,
-          timestamp: payload.timestamp,
-        };
+        const taskContext = JSON.parse(response.data.Data.context);
 
-        console.log("pushing notification", notification); ////
+        console.log("taskContext", taskContext); ////
 
-        this.putNotification(notification);
+        // check if it's a root task or a subtask
+        if (!taskContext.parent) {
+          // root task
+
+          const taskStatus = payload.status;
+
+          const notificationType =
+            taskStatus === "completed" ? "success" : "info";
+
+          let notificationText = payload.description;
+
+          if (taskStatus === "completed") {
+            //// i18n
+            notificationText = "Completed";
+          } else if (payload.description) {
+            notificationText = payload.description;
+          } else {
+            notificationText = taskContext.data.description;
+          }
+
+          const notification = {
+            id: taskId,
+            title: taskContext.data.title + " - " + taskPath, //// taskContext.data.title
+            description: notificationText,
+            type: notificationType,
+            timestamp: payload.timestamp,
+            task: {
+              context: taskContext,
+              status: taskStatus,
+              progress: payload.progress,
+            },
+          };
+
+          if (taskStatus === "completed") {
+            // show success notification
+            this.showNotification(notification);
+          }
+
+          // console.log("pushing notification", notification); ////
+
+          // eslint-disable-next-line no-debugger
+          // debugger; ////
+
+          this.putNotification(notification);
+        }
       }
     },
   },

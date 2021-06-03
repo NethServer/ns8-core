@@ -204,6 +204,7 @@ import { formatRelative, formatDistance, subDays } from "date-fns";
 import TaskService from "@/mixins/task";
 import to from "await-to-js";
 import WebSocketService from "@/mixins/websocket";
+import { v4 as uuidv4 } from "uuid";
 
 let nethserver = window.nethserver;
 
@@ -260,7 +261,7 @@ export default {
     createWarningToast() {
       const notification = {
         title: "Low disk space",
-        text: "You are running out of disk space",
+        description: "You are running out of disk space",
         type: "warning",
         app: "System manager",
       };
@@ -269,7 +270,7 @@ export default {
     createInfoToast() {
       const notification = {
         title: "Software updates",
-        text: "You have 7 new updates",
+        description: "You have 7 new updates",
         type: "info",
         app: "System manager",
       };
@@ -278,7 +279,7 @@ export default {
     createSuccessToast() {
       const notification = {
         title: "Backup completed",
-        text: "Backup data has completed succesfully",
+        description: "Backup data has completed succesfully",
         type: "success",
         app: "Backup manager",
       };
@@ -287,58 +288,46 @@ export default {
     createErrorToast() {
       const notification = {
         title: "Network error",
-        text: "Cannot retrieve cluster info. Check your connection",
+        description: "Cannot retrieve cluster info. Check your connection",
         type: "error",
         app: "Cluster manager",
       };
       this.createNotification(notification);
     },
     async createAddModuleTask() {
-      const [taskError, taskResponse] = await to(
+      const taskError = await to(
         this.createTask({
-          id: "",
+          // id: "", ////
           action: "add-module",
           data: {
             image: "traefik",
             node: 1,
-            title: "Task title",
-            text: "Initializing...",
+            title: "Traefik installation",
+            description: "Installing...",
           }, ////
         })
-      );
+      )[0];
 
       if (taskError) {
         console.error(taskError);
 
         const notification = {
           title: "Cannot add module",
-          text: this.getErrorMessage(taskError),
+          description: this.getErrorMessage(taskError),
           type: "error",
           app: "Cluster manager",
         };
         this.createNotification(notification);
         return;
       }
-
-      console.log("taskResponse", taskResponse); ////
-
-      // const taskId = taskResponse.data.Data.ID; ////
-      // const taskData = taskResponse.data.Data.Data;
-
-      // const notification = {
-      //   id: taskId,
-      //   title: taskData.title,
-      //   text: taskData.text,
-      //   isTask: true,
-      // };
-      // this.putNotification(notification);
     },
     createProgressTask() {
       const notification = {
+        id: uuidv4(),
         title: "Task in progress",
-        text: "Please wait...",
+        description: "Please wait...",
         app: "Cluster manager",
-        isTask: true,
+        task: { context: { id: uuidv4() }, status: "running", progress: 0 },
       };
       this.createNotification(notification);
     },

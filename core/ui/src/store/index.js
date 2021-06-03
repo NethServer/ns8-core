@@ -1,6 +1,6 @@
 import Vue from "vue";
 import Vuex from "vuex";
-import _merge from "lodash/merge"; //// remove?
+import _merge from "lodash/merge";
 
 Vue.use(Vuex);
 
@@ -16,19 +16,25 @@ export default new Vuex.Store({
     },
   },
   getters: {
-    unreadNotifications: (state) => {
-      return state.notifications.filter(
-        (notification) => !notification.read && !notification.isTask
+    unreadNotifications: (state, getters) => {
+      return getters.recentNotifications.filter(
+        (notification) => !notification.read
       );
     },
     unreadNotificationsCount: (state, getters) => {
       return getters.unreadNotifications.length;
     },
     ongoingNotifications: (state) => {
-      return state.notifications.filter((notification) => notification.isTask);
+      return state.notifications.filter(
+        (notification) =>
+          notification.task && notification.task.status !== "completed"
+      );
     },
     recentNotifications: (state) => {
-      return state.notifications.filter((notification) => !notification.isTask);
+      return state.notifications.filter(
+        (notification) =>
+          !(notification.task && notification.task.status !== "completed")
+      );
     },
   },
   mutations: {
@@ -43,6 +49,8 @@ export default new Vuex.Store({
         (n) => n.id == notificationId
       );
 
+      console.log("set notification read", notification); ////
+
       if (notification) {
         notification.read = true;
       }
@@ -53,8 +61,8 @@ export default new Vuex.Store({
       );
 
       if (notificationFound) {
-        console.log("updating, old", notificationFound); ////
-        console.log("updating, new", notification); ////
+        // console.log("updating, old", notificationFound); ////
+        // console.log("updating, new", notification); ////
         notificationFound = _merge(notificationFound, notification); ////
 
         // mergeNotifications(notificationFound, notification); ////
