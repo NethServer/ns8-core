@@ -6,8 +6,23 @@ export default {
     },
   },
   methods: {
-    login(username, password) {
+    executeLogin(username, password) {
       return this.axios.post(this.apiUrl + "/login", { username, password });
+    },
+    executeLogout() {
+      const token = this.getFromStorage("loginInfo")
+        ? this.getFromStorage("loginInfo").token
+        : "";
+
+      return this.axios.post(
+        this.apiUrl + "/logout",
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
     },
   },
 };

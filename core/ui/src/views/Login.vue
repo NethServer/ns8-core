@@ -84,13 +84,14 @@ import InlineNotification from "@/components/InlineNotification";
 import { mapState } from "vuex";
 import { mapActions } from "vuex";
 import to from "await-to-js";
+import WebSocketService from "@/mixins/websocket";
 
 let nethserver = window.nethserver;
 
 export default {
   name: "Login",
   components: { InlineNotification },
-  mixins: [IconService, LoginService, StorageService],
+  mixins: [IconService, LoginService, StorageService, WebSocketService],
   data() {
     return {
       username: "",
@@ -133,7 +134,7 @@ export default {
       } else {
         // invoke login API
         const [loginError, response] = await to(
-          this.login(this.username, this.password)
+          this.executeLogin(this.username, this.password)
         );
 
         if (loginError) {
@@ -148,6 +149,7 @@ export default {
 
         this.saveToStorage("loginInfo", loginInfo);
         this.setLoggedUserInStore(this.username);
+        this.initWebSocket();
 
         const queryParams = nethserver.getQueryParamsForCore();
 

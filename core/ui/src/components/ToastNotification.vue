@@ -28,8 +28,6 @@
             `notification-text`,
           ]"
         >
-          <!-- <span v-if="isTask" class="progress">{{ progress }} % </span ////
-          > -->
           <span v-html="subTitle"></span>
         </p>
 

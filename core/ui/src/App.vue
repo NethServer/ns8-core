@@ -18,6 +18,8 @@ import StorageService from "@/mixins/storage";
 import WebSocketService from "@/mixins/websocket";
 import { mapState } from "vuex";
 import { mapActions } from "vuex";
+import to from "await-to-js";
+import LoginService from "@/mixins/login";
 
 export default {
   name: "App",
@@ -26,7 +28,7 @@ export default {
     SideMenu,
     MobileSideMenu,
   },
-  mixins: [StorageService, WebSocketService],
+  mixins: [StorageService, WebSocketService, LoginService],
   computed: {
     ...mapState(["loggedUser"]),
   },
@@ -69,11 +71,20 @@ export default {
         }
       );
     },
-    logout() {
+    async logout() {
       console.log("logout"); ////
+
+      // invoke logout API
+      const logoutError = await to(this.executeLogout())[0];
+
+      if (logoutError) {
+        console.error(logoutError);
+        return;
+      }
 
       this.deleteFromStorage("loginInfo");
       this.setLoggedUserInStore("");
+      this.closeWebSocket();
 
       // redirect to login page
       if (this.$route.name !== "Login") {

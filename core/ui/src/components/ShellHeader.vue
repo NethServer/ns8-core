@@ -185,6 +185,8 @@ import AppDrawer from "@/components/AppDrawer";
 import Search20 from "@carbon/icons-vue/es/search/20";
 import StorageService from "@/mixins/storage";
 import IconService from "@/mixins/icon";
+import LoginService from "@/mixins/login";
+import WebSocketService from "@/mixins/websocket";
 
 export default {
   name: "ShellHeader",
@@ -201,7 +203,7 @@ export default {
     GlobalSearch,
     AppDrawer,
   },
-  mixins: [StorageService, IconService],
+  mixins: [StorageService, IconService, LoginService, WebSocketService],
   data() {
     return {
       isSearchExpanded: false,
@@ -244,6 +246,7 @@ export default {
       console.log("notificationAction"); ////
     },
     logout() {
+      console.log("emitting logout"); ////
       this.$root.$emit("logout");
     },
     expandSearch() {

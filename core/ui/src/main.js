@@ -13,12 +13,15 @@ import VueDateFns from "vue-date-fns";
 Vue.use(VueDateFns);
 
 import axios from "axios";
+axios.defaults.timeout = 10000;
 import VueAxios from "vue-axios";
 Vue.use(VueAxios, axios);
 
+console.log("axios.defaults", axios.defaults); ////
+console.log("axios.defaults.timeout", axios.defaults.timeout); ////
+
 import VueNativeSock from "vue-native-websocket";
 Vue.use(VueNativeSock, "ws://", {
-  format: "json",
   reconnection: true,
   reconnectionDelay: 3000,
   connectManually: true,
