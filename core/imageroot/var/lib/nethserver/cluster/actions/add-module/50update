@@ -132,10 +132,25 @@ assert rdb.execute_command('ACL', 'SAVE') == 'OK'
 
 # Push the creation task for the new module.
 exit_code, output, error = agent.run_subtask(rdb,
-    progress_range=(67,100),
+    progress_range=(67,95),
     agent_prefix=f'module/{module_id}',
     action="create-module",
     input_obj="",
+    )
+assert exit_code == 0
+
+# Configure default roles
+exit_code, output, error = agent.run_subtask(rdb,
+    progress_range=(95,100),
+    agent_prefix='cluster',
+    action="grant-actions",
+    input_obj=[
+        {"action":"*", "to": "owner", "on": f'module/{module_id}'},
+        {"action":"list-*", "to": "reader", "on": f'module/{module_id}'},
+        {"action":"get-*",  "to": "reader", "on": f'module/{module_id}'},
+        {"action":"show-*", "to": "reader", "on": f'module/{module_id}'},
+        {"action":"read-*", "to": "reader", "on": f'module/{module_id}'},
+    ],
     )
 assert exit_code == 0
 
