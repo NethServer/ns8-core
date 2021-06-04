@@ -352,6 +352,7 @@ func runAction(task *models.Task) {
 			dumpToFile(environment)
 		}
 	}
+	log.Printf("%s/task/%s: action \"%s\" status is \"%s\" (%d)", agentPrefix, task.ID, task.Action, actionDescriptor.Status, exitCode)
 }
 
 func setClientNameCallback (ctx context.Context, cn *redis.Conn) error {
