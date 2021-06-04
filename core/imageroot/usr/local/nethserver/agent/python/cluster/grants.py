@@ -98,3 +98,22 @@ def revoke(rdb, action_clause, on_clause, to_clause):
     """
     return _change_role_definition(rdb, True, action_clause, on_clause, to_clause)
 
+def alter_user(rdb, user, revoke, role, on_clause):
+    """
+    Grant/Revoke the ROLE ON some module to USER
+
+    The module can be cluster, node/X, module/modY etc.
+    The ROLE must be already defined in the given module.
+    """
+
+    pipe = rdb.pipeline()
+    for key in rdb.scan_iter(f'{on_clause}/roles/{role}'):
+        pos = key.find(f'/roles/{role}')
+        agent_id = key[:pos]
+        if revoke:
+            pipe.hdel(f'user/{user}', agent_id, role)
+        else:
+            pipe.hset(f'user/{user}', agent_id, role)
+
+    pipe.execute()
+

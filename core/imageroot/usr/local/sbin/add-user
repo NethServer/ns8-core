@@ -23,21 +23,35 @@
 import sys
 import agent
 import argparse
+import hashlib
+import getpass
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--action', required=True, help="An action name. Wildcard char \"*\" is allowed")
-parser.add_argument('--on', required=True, help="A module name. Wildcard char \"*\" is allowed")
-parser.add_argument('--to', required=True, help="A role name. Wildcard char \"*\" is allowed")
+parser.add_argument('user')
+parser.add_argument('--role', required=True)
+parser.add_argument('--password', default=False, help="If not given, the password is read from stdin")
+
 args = parser.parse_args()
 
 rdb = agent.redis_connect(privileged=True)
 
+if args.password is False:
+    password = getpass.getpass()
+else:
+    password = args.password
+
+# Create the admin user and set a password
 exit_code, output, error = agent.run_subtask(rdb,
     agent_prefix='cluster',
-    action='grant-actions',
-    input_obj=[{"on":args.on, "to":args.to, "action":args.action}],
+    action='add-user',
+    input_obj= {
+        "user": args.user,
+        "password_hash": hashlib.sha256(password.encode()).hexdigest(),
+        "grant": [{"role":args.role,"on":"*"}],
+    },
 )
-
-sys.stderr.write(error)
-sys.stdout.write(output)
-sys.exit(exit_code)
+if exit_code != 0:
+    print("The action add-user has failed:")
+    sys.stdout.write(output)
+    sys.stderr.write(error)
+    sys.exit(exit_code)

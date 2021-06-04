@@ -35,14 +35,25 @@ args = parser.parse_args()
 
 endpoint_host, endpoint_port = args.endpoint.split(":")
 
-admin_pwh = hashlib.sha256(args.admin_pw.encode()).hexdigest()
-
-# XXX: grant admin UI access:
 rdb = agent.redis_connect(privileged=True)
-assert rdb.hset('user/admin', mapping={'cluster':'owner', 'node/1':'owner', 'module/traefik1':'owner', 'module/ldapproxy1':'owner'}) >= 0
-assert rdb.execute_command('ACL', *f'SETUSER admin ON #{admin_pwh} resetkeys resetchannels nocommands'.split(' ')) == 'OK'
-assert rdb.execute_command('ACL', 'SAVE') == 'OK'
 
+# Create the admin user and set a password
+exit_code, output, error = agent.run_subtask(rdb,
+    agent_prefix='cluster',
+    action='add-user',
+    input_obj= {
+        "user": "admin",
+        "password_hash": hashlib.sha256(args.admin_pw.encode()).hexdigest(),
+        "grant": [{"role":"owner","on":"*"}],
+    },
+)
+if exit_code != 0:
+    print("The action add-user has failed:")
+    sys.stdout.write(output)
+    sys.stderr.write(error)
+    exit(exit_code)
+
+# Initialize a new cluster
 exit_code, output, error = agent.run_subtask(rdb,
     agent_prefix='cluster',
     action='create-cluster',
