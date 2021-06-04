@@ -127,10 +127,10 @@ node_pwhash=$(echo -n "${node_password}" | sha256sum | awk '{print $1}')
 (
     # Add the keys for the cluster bootstrap
     cat <<EOF
-SADD cluster/roles/owner add-node
 SET cluster/leader 1
 SET cluster/node_sequence 1
 SET node/1/tcp_ports_sequence 20000
+LPUSH cluster/tasks '{"id":"$(uuidgen)","action":"grant-actions","data":[{"action":"*","on":"cluster","to":"owner"}]}'
 EOF
 
     # Load module images metadata. XXX this is a temporary implementation
