@@ -17,9 +17,6 @@ axios.defaults.timeout = 10000;
 import VueAxios from "vue-axios";
 Vue.use(VueAxios, axios);
 
-console.log("axios.defaults", axios.defaults); ////
-console.log("axios.defaults.timeout", axios.defaults.timeout); ////
-
 import VueNativeSock from "vue-native-websocket";
 Vue.use(VueNativeSock, "ws://", {
   reconnection: true,

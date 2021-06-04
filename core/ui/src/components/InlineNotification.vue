@@ -63,13 +63,9 @@ export default {
   props: {
     showCloseButton: {
       type: Boolean,
-      default: function () {
-        return false;
-      },
+      default: false,
     },
-    description: {
-      type: String,
-    },
+    description: String,
   },
 };
 </script>

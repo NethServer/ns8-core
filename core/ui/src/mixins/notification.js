@@ -50,7 +50,7 @@ export default {
           kind: notification.type,
           title: notification.title,
           description: notification.description,
-          task: notification.task,
+          progress: notification.task ? notification.task.progress : null,
           isProgressShown: false,
           actionLabel: "Details", ////
           lowContrast: false,

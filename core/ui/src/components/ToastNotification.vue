@@ -30,12 +30,10 @@
           <span v-html="description"></span>
         </p>
 
-        <div v-if="task && isProgressShown">
-          <ProgressBar :value="task.progress" :indeterminate="!task.progress" />
+        <div v-if="isProgressShown">
+          <ProgressBar :value="progress" :indeterminate="!progress" />
           <div class="progress-bar-spacer"></div>
-          <div v-if="task.progress" class="progress-number">
-            {{ task.progress }} %
-          </div>
+          <div v-if="progress" class="progress-number">{{ progress }} %</div>
         </div>
 
         <p
@@ -77,44 +75,40 @@
 
 <script>
 import { CvToastNotification } from "@carbon/vue";
-import DateTimeService from "@/mixins/datetime";
-import ProgressBar from "@/components/ProgressBar";
+import { CvLink, CvTooltip } from "../../node_modules/@carbon/vue";
+import DateTimeService from "../mixins/datetime";
+import ProgressBar from "./ProgressBar";
 
 export default {
   name: "ToastNotification",
   extends: CvToastNotification,
-  components: { ProgressBar },
+  components: { ProgressBar, CvLink, CvTooltip },
   mixins: [DateTimeService],
   props: {
-    description: {
-      type: String,
-    },
+    description: String,
     showCloseButton: {
       type: Boolean,
-      default: function () {
-        return true;
-      },
+      default: true,
     },
     actionLabel: { type: String, default: "" },
     //// rename to isRead
     read: {
       type: Boolean,
-      default: function () {
-        return false;
-      },
+      default: false,
     },
-    task: {
-      type: Object,
-    },
-    timestamp: {
-      type: Date,
-    },
+    progress: Number,
+    timestamp: Date,
     isProgressShown: {
       type: Boolean,
-      default: function () {
-        return true;
-      },
+      default: false,
     },
+    closeAriaLabel: { type: String, default: "Dismiss notification" }, //// i18n
+    kind: {
+      type: String,
+      default: "info",
+      validator: (val) => ["error", "info", "warning", "success"].includes(val),
+    },
+    lowContrast: Boolean,
   },
 };
 </script>
@@ -129,7 +123,7 @@ export default {
 
 .action {
   padding-top: 0;
-  margin-bottom: $spacing-04;
+  margin-bottom: $spacing-06;
 }
 
 .action-button {
@@ -181,6 +175,10 @@ export default {
   font-weight: normal;
 }
 
+.notification-drawer .action {
+  margin-bottom: $spacing-04;
+}
+
 .timestamp {
   margin-bottom: $spacing-05;
   line-height: 1.29;
@@ -189,5 +187,9 @@ export default {
 .timestamp button {
   @include carbon--type-style("body-short-01");
   color: $active-ui;
+}
+
+.bx--toast-notification__details {
+  flex-grow: 1;
 }
 </style>

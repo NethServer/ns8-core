@@ -1,5 +1,4 @@
 <template>
-  <!--  //// -->
   <!-- indeterminate -->
   <div class="progress-bar-container">
     <div class="slider">
@@ -27,9 +26,7 @@ export default {
     },
     indeterminate: {
       type: Boolean,
-      default: function () {
-        return false;
-      },
+      default: false,
     },
   },
   data() {

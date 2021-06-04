@@ -101,11 +101,6 @@
             <Close20 class="bx--toast-notification__close-icon" />
           </button>
         </div>
-        <!-- <cv-tabs ////
-          class="notification-tabs"
-          aria-label="navigate between events and tasks"
-        >
-          <cv-tab id="events" label="Events" selected> -->
         <div v-if="ongoingNotifications.length" class="notification-divider">
           Ongoing
         </div>
@@ -122,7 +117,7 @@
             actionLabel="Details"
             @action="notificationAction"
             :read="notification.read"
-            :task="notification.task"
+            :progress="notification.task.progress"
             :isProgressShown="true"
             :timestamp="notification.timestamp"
             :id="notification.id"
@@ -159,9 +154,6 @@
             id="notification.id"
           />
         </div>
-        <!-- </cv-tab> ////
-          <cv-tab id="tasks" label="Tasks"> Sample tab panel content 2 </cv-tab>
-        </cv-tabs> -->
       </div>
     </transition>
   </cv-header>
@@ -338,11 +330,6 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-}
-
-//// remove?
-.notification-tabs {
-  margin-top: $spacing-05;
 }
 
 .notification-divider:first-of-type {

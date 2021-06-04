@@ -62,9 +62,7 @@ export default {
   props: {
     isShown: {
       type: Boolean,
-      default: function () {
-        return false;
-      },
+      default: false,
     },
   },
   data() {

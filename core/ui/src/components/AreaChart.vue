@@ -6,6 +6,7 @@
 </template>
 
 <script>
+//// remove file
 import Vue from "vue";
 import "@carbon/charts/styles.css";
 import chartsVue from "@carbon/charts-vue";

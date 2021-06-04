@@ -72,7 +72,7 @@ export default {
             title: taskContext.data.title + " - " + taskPath, //// taskContext.data.title
             description: notificationText,
             type: notificationType,
-            timestamp: payload.timestamp,
+            timestamp: payload.timestamp, ////
             task: {
               context: taskContext,
               status: taskStatus,
