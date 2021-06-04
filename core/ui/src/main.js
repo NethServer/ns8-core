@@ -24,6 +24,15 @@ Vue.use(VueNativeSock, "ws://", {
   connectManually: true,
 });
 
+// i18n
+import VueI18n from "vue-i18n";
+Vue.use(VueI18n);
+const i18n = new VueI18n();
+const messages = require("../public/i18n/language.json");
+const langCode = navigator.language.substr(0, 2);
+i18n.setLocaleMessage(langCode, messages);
+i18n.locale = langCode;
+
 //// move somewhere else?
 const toastOptions = {
   containerClassName: "toastification-container",
@@ -60,6 +69,7 @@ Vue.config.productionTip = false;
 window.ns8 = new Vue({
   router,
   store,
+  i18n,
   created: function () {
     this.config = window.CONFIG;
   },

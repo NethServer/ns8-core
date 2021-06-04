@@ -21,7 +21,7 @@ export default {
   props: {
     value: {
       // a number between 0 and 100
-      type: [Number, String],
+      type: Number,
       default: 0,
     },
     indeterminate: {
