@@ -22,22 +22,24 @@
 
 import sys
 import agent
-import argparse
+import json
 
-parser = argparse.ArgumentParser()
-parser.add_argument('--action', required=True, help="An action name. Wildcard char \"*\" is allowed")
-parser.add_argument('--on', required=True, help="A module name. Wildcard char \"*\" is allowed")
-parser.add_argument('--to', required=True, help="A role name. Wildcard char \"*\" is allowed")
-args = parser.parse_args()
+#
+# Sample input
+#{
+#    "user": "admin",
+#    "revoke": [{"role":"owner",  "on":"*"}],
+#    "grant":  [{"role":"reader", "on":"cluster"}],
+#}
+#
 
+request = json.load(sys.stdin)
 rdb = agent.redis_connect(privileged=True)
 
-exit_code, output, error = agent.run_subtask(rdb,
-    agent_prefix='cluster',
-    action='grant-actions',
-    input_obj=[{"on":args.on, "to":args.to, "action":args.action}],
-)
+user = request['user']
 
-sys.stderr.write(error)
-sys.stdout.write(output)
-sys.exit(exit_code)
+for roledef in request['revoke']: # !!! revoke BEFORE grant
+    cluster.grants.alter_user(rdb, user, True, roledef['role'], roledef['on'])
+
+for roledef in request['grant']:
+    cluster.grants.alter_user(rdb, user, False, roledef['role'], roledef['on'])

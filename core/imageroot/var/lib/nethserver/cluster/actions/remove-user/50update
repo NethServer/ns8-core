@@ -22,22 +22,21 @@
 
 import sys
 import agent
-import argparse
+import json
 
-parser = argparse.ArgumentParser()
-parser.add_argument('--action', required=True, help="An action name. Wildcard char \"*\" is allowed")
-parser.add_argument('--on', required=True, help="A module name. Wildcard char \"*\" is allowed")
-parser.add_argument('--to', required=True, help="A role name. Wildcard char \"*\" is allowed")
-args = parser.parse_args()
+#
+# Sample input
+#{
+#    "user": "admin"
+#}
+#
+
+request = json.load(sys.stdin)
+user = request['user']
 
 rdb = agent.redis_connect(privileged=True)
 
-exit_code, output, error = agent.run_subtask(rdb,
-    agent_prefix='cluster',
-    action='grant-actions',
-    input_obj=[{"on":args.on, "to":args.to, "action":args.action}],
-)
+rdb.delete(f'user/{user}')
 
-sys.stderr.write(error)
-sys.stdout.write(output)
-sys.exit(exit_code)
+assert rdb.execute_command('ACL', 'DELUSER', user) == 1
+assert rdb.execute_command('ACL', 'SAVE') == 'OK'

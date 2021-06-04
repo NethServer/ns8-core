@@ -25,19 +25,22 @@ import agent
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--action', required=True, help="An action name. Wildcard char \"*\" is allowed")
-parser.add_argument('--on', required=True, help="A module name. Wildcard char \"*\" is allowed")
-parser.add_argument('--to', required=True, help="A role name. Wildcard char \"*\" is allowed")
+parser.add_argument('user')
+
 args = parser.parse_args()
 
 rdb = agent.redis_connect(privileged=True)
 
+# Create the admin user and set a password
 exit_code, output, error = agent.run_subtask(rdb,
     agent_prefix='cluster',
-    action='grant-actions',
-    input_obj=[{"on":args.on, "to":args.to, "action":args.action}],
+    action='remove-user',
+    input_obj= {
+        "user": args.user,
+    },
 )
-
-sys.stderr.write(error)
-sys.stdout.write(output)
-sys.exit(exit_code)
+if exit_code != 0:
+    print("The action remove-user has failed:")
+    sys.stdout.write(output)
+    sys.stderr.write(error)
+    sys.exit(exit_code)

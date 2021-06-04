@@ -22,22 +22,27 @@
 
 import sys
 import agent
-import argparse
+import cluster.grants
+import json
 
-parser = argparse.ArgumentParser()
-parser.add_argument('--action', required=True, help="An action name. Wildcard char \"*\" is allowed")
-parser.add_argument('--on', required=True, help="A module name. Wildcard char \"*\" is allowed")
-parser.add_argument('--to', required=True, help="A role name. Wildcard char \"*\" is allowed")
-args = parser.parse_args()
+#
+# Sample input
+#{
+#    "user": "admin",
+#    "password_hash": "*****",
+#    "grant": [{"role":"owner", "on":"*"}],
+#}
+#
 
+request = json.load(sys.stdin)
 rdb = agent.redis_connect(privileged=True)
 
-exit_code, output, error = agent.run_subtask(rdb,
-    agent_prefix='cluster',
-    action='grant-actions',
-    input_obj=[{"on":args.on, "to":args.to, "action":args.action}],
-)
+user = request['user']
+password_hash = request['password_hash']
 
-sys.stderr.write(error)
-sys.stdout.write(output)
-sys.exit(exit_code)
+rdb.execute_command('ACL', 'DELUSER', user) # Drop the user to avoid double-password accounts
+assert rdb.execute_command('ACL', 'SETUSER', user, 'ON', '#'+password_hash, 'resetkeys', 'resetchannels', 'nocommands') == 'OK'
+assert rdb.execute_command('ACL', 'SAVE') == 'OK'
+
+for roledef in request['grant']:
+    cluster.grants.alter_user(rdb, user, False, roledef['role'], roledef['on'])
