@@ -54,7 +54,7 @@ func (d *Descriptor) SetProgressAtStep(stepIndex int, stepProgress int) error {
 	for s := 0; s < len(d.Steps); s++ {
 		targetProgress += 100 * d.Steps[s].Weight
 		if s == (stepIndex - 1) {
-			// weighted progress of previous steps
+			// weighed progress of previous steps
 			currentProgress = targetProgress
 		}
 	}
@@ -99,7 +99,7 @@ func ListActions(actionPaths []string) []string {
 			}
 		}
 	}
-	actions := make([]string, 0, len(actionDirs))
+	actions := []string{"list-actions"}
 	for dir, _ := range actionDirs {
 		actions = append(actions, dir)
 	}
