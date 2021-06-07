@@ -106,8 +106,8 @@ func RedisAuthorization(username string, c *gin.Context) (models.UserAuthorizati
 		return userAuthorizationsRedis, errRedisRoleGet
 	}
 
-	// get action for current role and entity: SSCAN <entity>/<reference>/roles/<role> 0
-	actions, _, errRedisRoleScan := redisConnection.SScan(ctx, pathScan+role, 0, "", 0).Result()
+	// get action for current role and entity: SMEMBERS <entity>/<reference>/roles/<role>
+	actions, errRedisRoleScan := redisConnection.SMembers(ctx, pathScan+role).Result()
 
 	// handle redis error
 	if errRedisRoleScan != nil {
