@@ -23,6 +23,7 @@
 import sys
 import json
 import agent
+import cluster.grants
 import subprocess
 import os
 import re
@@ -139,20 +140,20 @@ exit_code, output, error = agent.run_subtask(rdb,
     )
 assert exit_code == 0
 
-# Configure default roles
-exit_code, output, error = agent.run_subtask(rdb,
-    progress_range=(95,100),
-    agent_prefix='cluster',
-    action="grant-actions",
-    input_obj=[
-        {"action":"*", "to": "owner", "on": f'module/{module_id}'},
-        {"action":"list-*", "to": "reader", "on": f'module/{module_id}'},
-        {"action":"get-*",  "to": "reader", "on": f'module/{module_id}'},
-        {"action":"show-*", "to": "reader", "on": f'module/{module_id}'},
-        {"action":"read-*", "to": "reader", "on": f'module/{module_id}'},
-    ],
-    )
-assert exit_code == 0
+# Configure our builtin roles: "owner" and "reader". Owner can run any action, Reader can run
+# action names with special prefixes.
+cluster.grants.grant(rdb, action_clause="*",      to_clause="owner",  on_clause=f'module/{module_id}')
+cluster.grants.grant(rdb, action_clause="list-*", to_clause="reader", on_clause=f'module/{module_id}')
+cluster.grants.grant(rdb, action_clause="get-*",  to_clause="reader", on_clause=f'module/{module_id}')
+cluster.grants.grant(rdb, action_clause="show-*", to_clause="reader", on_clause=f'module/{module_id}')
+cluster.grants.grant(rdb, action_clause="read-*", to_clause="reader", on_clause=f'module/{module_id}')
+
+# Grant the owner role to cluster owners on the new module
+for userk in rdb.scan_iter('user/*'):
+    roles = rdb.hgetall(userk)
+    if 'cluster' in roles and roles['cluster'] == 'owner':
+        cluster.grants.alter_user(rdb, user=userk[5:], revoke=False, role='owner', on_clause=f'module/{module_id}')
+
 
 print(json.dumps({
     "module_id": module_id,
