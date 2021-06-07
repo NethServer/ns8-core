@@ -248,11 +248,17 @@ func getTaskContext(c *gin.Context, filePath string) {
 	// close redis connection
 	redisConnection.Close()
 
+	var contextData interface{}
+	// We expect a JSON-encoded context. If the unmarshal fails, return the context as-is.
+	if errOutputDecode := json.Unmarshal([]byte(contextC), &contextData); errOutputDecode != nil {
+		contextData = contextC
+	}
+
 	// return file response
 	c.JSON(http.StatusOK, structs.Map(response.StatusOK{
 		Code:    200,
 		Message: "success",
-		Data:    gin.H{"context": contextC, "file": filePath},
+		Data:    gin.H{"context": contextData, "file": filePath},
 	}))
 	return
 }
