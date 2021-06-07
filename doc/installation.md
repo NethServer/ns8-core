@@ -16,8 +16,8 @@ Start the installation procedure as `root`:
 curl https://raw.githubusercontent.com/NethServer/ns8-scratchpad/main/core/install.sh | bash
 ```
 
-The procedure configures a single node cluster. It prints how to invoke additional commands
-to initialize a multi node cluster (`create-cluster`) or to join an existing cluster (`join-cluster`).
+The procedure must be completed by invoking additional commands: follow on-screen instructions.
+Run either new cluster initialization (`create-cluster`) or joining an existing cluster (`join-cluster`).
 
 Developers may prefer to run `install.sh` with a special core image. It is possible to pull
 the special image by setting the `COREIMAGE` environment variable for the installation script.
