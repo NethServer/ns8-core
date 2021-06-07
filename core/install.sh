@@ -160,18 +160,15 @@ add-module traefik 1
 cat - <<EOF
 
 NethServer 8 Scratchpad
---------------------------------------------------------------------------
-
-Congratulations!
-
-This node is now ready to run as a standalone instance of NS8 Scratchpad
+----------------------------------------------------------------------------
 
 Open a new login shell or type the following command to fix the environment:
 
     source /etc/profile.d/nethserver.sh
 
+Finish the cluster configuration by running one of the following procedures.
 
-A. To join this node to an alredy existing cluster run:
+A. To join this node to an already existing cluster run:
 
       join-cluster <cluster_url> <jwt_auth>
 
