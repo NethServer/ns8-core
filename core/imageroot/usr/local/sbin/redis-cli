@@ -28,7 +28,7 @@ fi
 
 hipriv="/var/lib/nethserver/cluster/state/agent.env"
 lopriv="/var/lib/nethserver/node/state/agent.env"
-mypriv="~/.config/state/agent.env"
+mypriv=~/.config/state/agent.env
 
 source="/etc/nethserver/agent.env"
 
