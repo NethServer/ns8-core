@@ -149,10 +149,10 @@ cluster.grants.grant(rdb, action_clause="show-*", to_clause="reader", on_clause=
 cluster.grants.grant(rdb, action_clause="read-*", to_clause="reader", on_clause=f'module/{module_id}')
 
 # Grant the owner role to cluster owners on the new module
-for userk in rdb.scan_iter('user/*'):
+for userk in rdb.scan_iter('roles/*'):
     roles = rdb.hgetall(userk)
     if 'cluster' in roles and roles['cluster'] == 'owner':
-        cluster.grants.alter_user(rdb, user=userk[5:], revoke=False, role='owner', on_clause=f'module/{module_id}')
+        cluster.grants.alter_user(rdb, user=userk[6:], revoke=False, role='owner', on_clause=f'module/{module_id}')
 
 
 print(json.dumps({

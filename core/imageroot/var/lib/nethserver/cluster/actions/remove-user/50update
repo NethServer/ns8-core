@@ -36,7 +36,7 @@ user = request['user']
 
 rdb = agent.redis_connect(privileged=True)
 
-rdb.delete(f'user/{user}')
+rdb.delete(f'roles/{user}')
 
 assert rdb.execute_command('ACL', 'DELUSER', user) == 1
 assert rdb.execute_command('ACL', 'SAVE') == 'OK'

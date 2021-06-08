@@ -98,8 +98,8 @@ func RedisAuthorization(username string, c *gin.Context) (models.UserAuthorizati
 		pathScan = "module/" + c.Param("module_id") + "/roles/"
 	}
 
-	// get role for current user: HGET user/<username> <reference>
-	role, errRedisRoleGet := redisConnection.HGet(ctx, "user/"+username, pathGet).Result()
+	// get roles of current user: HGET roles/<username>.<entity> -> <role>
+	role, errRedisRoleGet := redisConnection.HGet(ctx, "roles/"+username, pathGet).Result()
 
 	// handle redis error
 	if errRedisRoleGet != nil {
