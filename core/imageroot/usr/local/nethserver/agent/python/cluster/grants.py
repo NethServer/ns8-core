@@ -111,9 +111,9 @@ def alter_user(rdb, user, revoke, role, on_clause):
         pos = key.find(f'/roles/{role}')
         agent_id = key[:pos]
         if revoke:
-            pipe.hdel(f'user/{user}', agent_id, role)
+            pipe.hdel(f'roles/{user}', agent_id, role)
         else:
-            pipe.hset(f'user/{user}', agent_id, role)
+            pipe.hset(f'roles/{user}', agent_id, role)
 
     pipe.execute()
 
