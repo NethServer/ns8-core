@@ -108,12 +108,14 @@ func main() {
 		api.POST("/cluster/tasks", methods.CreateClusterTask)
 
 		// node
+		api.GET("/nodes", methods.GetNodes)
 		api.GET("/node/:node_id/tasks", methods.GetNodeTasks)
 		api.GET("/node/:node_id/task/:task_id/status", methods.GetNodeTaskFiles)
 		api.GET("/node/:node_id/task/:task_id/context", methods.GetNodeTaskContext)
 		api.POST("/node/:node_id/tasks", methods.CreateNodeTask)
 
 		// module
+		api.GET("/modules", methods.GetModules)
 		api.GET("/module/:module_id/tasks", methods.GetModuleTasks)
 		api.GET("/module/:module_id/task/:task_id/status", methods.GetModuleTaskFiles)
 		api.GET("/module/:module_id/task/:task_id/context", methods.GetModuleTaskContext)

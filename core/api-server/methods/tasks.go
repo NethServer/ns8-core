@@ -26,12 +26,14 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/fatih/structs"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	guuid "github.com/google/uuid"
+	"github.com/mpvl/unique"
 
 	jwt "github.com/appleboy/gin-jwt/v2"
 
@@ -41,85 +43,56 @@ import (
 	"github.com/NethServer/ns8-scratchpad/core/api-server/socket"
 )
 
-func getAllTasks(c *gin.Context, entityName string) {
-	// define all task object
-	var allTasks []gin.H
-
+func getList(c *gin.Context, queueName string) {
 	// init redis connection
 	redisConnection := redis.Instance()
 
-	// inspect redis tasks keys: KEYS "node/*/tasks"
-	keysArray, errRedisKeys := redisConnection.Keys(ctx, entityName+"/*/tasks").Result()
+	// inspect redis queue: KEYS <queue>
+	listArray, errRedis := redisConnection.Keys(ctx, queueName).Result()
 
 	// handle redis error
-	if errRedisKeys != nil {
+	if errRedis != nil {
 		c.JSON(http.StatusBadRequest, structs.Map(response.StatusBadRequest{
 			Code:    400,
-			Message: "error getting all tasks from redis queue",
-			Data:    errRedisKeys.Error(),
+			Message: "error getting list from redis queue",
+			Data:    errRedis.Error(),
 		}))
 		return
 	}
 
-	// loop keys array
-	for _, k := range keysArray {
-		// inspect redis tasks queue: LRANGE <queue> 0 -1
-		tasksArray, errRedisRange := redisConnection.LRange(ctx, k, 0, -1).Result()
+	// define result list
+	var list []string
 
-		// handle redis error
-		if errRedisRange != nil {
-			c.JSON(http.StatusBadRequest, structs.Map(response.StatusBadRequest{
-				Code:    400,
-				Message: "error getting tasks from redis queue",
-				Data:    errRedisRange.Error(),
-			}))
-			return
-		}
+	// loop list array
+	for _, l := range listArray {
+		// get parts
+		parts := strings.Split(l, "/")
+		object := parts[1]
 
-		// define tasks array
-		var tasks []models.Task
-
-		// loop tasks array
-		for _, t := range tasksArray {
-			// convert to go struct
-			var task models.Task
-			errJson := json.Unmarshal([]byte(t), &task)
-			if errJson != nil {
-				c.JSON(http.StatusBadRequest, structs.Map(response.StatusBadRequest{
-					Code:    400,
-					Message: "error converting json task to struct",
-					Data:    errJson.Error(),
-				}))
-				return
-			}
-
-			// append to slice
-			tasks = append(tasks, task)
-		}
-
-		// close redis connection
-		redisConnection.Close()
-
-		allTasks = append(allTasks, gin.H{"tasks": tasks, "queue": k})
+		// append object to list
+		list = append(list, object)
 	}
 
-	// return all tasks
+	// unique the list
+	unique.Strings(&list)
+
+	// close redis connection
+	redisConnection.Close()
+
+	// return tasks
 	c.JSON(http.StatusOK, structs.Map(response.StatusOK{
 		Code:    200,
 		Message: "success",
-		Data:    allTasks,
+		Data:    gin.H{"list": list, "queue": queueName},
 	}))
 }
 
 func getTasks(c *gin.Context, queueName string) {
-	// define tasks array
-	var tasks []models.Task
-
 	// init redis connection
 	redisConnection := redis.Instance()
 
-	// inspect redis tasks queue: LRANGE <queue> 0 -1
-	tasksArray, errRedis := redisConnection.LRange(ctx, queueName, 0, -1).Result()
+	// inspect redis tasks queue: KEYS <queue>
+	tasksArray, errRedis := redisConnection.Keys(ctx, queueName).Result()
 
 	// handle redis error
 	if errRedis != nil {
@@ -131,22 +104,36 @@ func getTasks(c *gin.Context, queueName string) {
 		return
 	}
 
+	// define map
+	var taskMap = map[string]map[string]string{}
+
 	// loop tasks array
 	for _, t := range tasksArray {
-		// convert to go struct
-		var task models.Task
-		errJson := json.Unmarshal([]byte(t), &task)
-		if errJson != nil {
+		// extract task id
+		parts := strings.Split(t, "/")
+		file := parts[len(parts)-1]
+		task := strings.Join(parts[:len(parts)-1], "/")
+
+		// check if map exists
+		if taskMap[task] == nil {
+			taskMap[task] = make(map[string]string)
+		}
+
+		// get content of key: GET <task_id>
+		taskContent, errRedisContent := redisConnection.Get(ctx, t).Result()
+
+		// handle error
+		if errRedisContent != nil {
 			c.JSON(http.StatusBadRequest, structs.Map(response.StatusBadRequest{
 				Code:    400,
-				Message: "error converting json task to struct",
-				Data:    errJson.Error(),
+				Message: "error getting tasks status from redis key",
+				Data:    errRedis.Error(),
 			}))
 			return
 		}
 
-		// append to slice
-		tasks = append(tasks, task)
+		// assign map
+		taskMap[task][file] = taskContent
 	}
 
 	// close redis connection
@@ -156,7 +143,7 @@ func getTasks(c *gin.Context, queueName string) {
 	c.JSON(http.StatusOK, structs.Map(response.StatusOK{
 		Code:    200,
 		Message: "success",
-		Data:    gin.H{"tasks": tasks, "queue": queueName},
+		Data:    gin.H{"tasks": taskMap, "queue": queueName},
 	}))
 }
 
@@ -379,7 +366,7 @@ func ListenTaskEvents() {
 // @Tags /tasks cluster
 func GetClusterTasks(c *gin.Context) {
 	// define queue name
-	queueName := "cluster/tasks"
+	queueName := "cluster/task/*"
 
 	// get tasks
 	getTasks(c, queueName)
@@ -427,6 +414,23 @@ func GetClusterTaskContext(c *gin.Context) {
 	getTaskContext(c, filePath)
 }
 
+// GetNodes godoc
+// @Summary Get the list of nodes
+// @Description get nodes
+// @Produce  json
+// @Success 200 {object} response.StatusOK{code=int,message=string,data=[]string}
+// @Header 200 {string} Authorization "Bearer <valid.JWT.token>"
+// @Failure 400 {object} response.StatusBadRequest{code=int,message=string,data=object}
+// @Router /nodes [get]
+// @Tags /tasks node
+func GetNodes(c *gin.Context) {
+	// define queue name
+	queueName := "node/*"
+
+	// get list
+	getList(c, queueName)
+}
+
 // GetNodeTasks godoc
 // @Summary Get the list of current node tasks
 // @Description get node tasks
@@ -442,7 +446,7 @@ func GetNodeTasks(c *gin.Context) {
 	nodeID := c.Param("node_id")
 
 	// define queue name
-	queueName := "node/" + nodeID + "/tasks"
+	queueName := "node/" + nodeID + "/task/*"
 
 	// get tasks
 	getTasks(c, queueName)
@@ -498,6 +502,23 @@ func GetNodeTaskContext(c *gin.Context) {
 	getTaskContext(c, filePath)
 }
 
+// GetModules godoc
+// @Summary Get the list of modules
+// @Description get modules
+// @Produce  json
+// @Success 200 {object} response.StatusOK{code=int,message=string,data=[]string}
+// @Header 200 {string} Authorization "Bearer <valid.JWT.token>"
+// @Failure 400 {object} response.StatusBadRequest{code=int,message=string,data=object}
+// @Router /modules [get]
+// @Tags /tasks node
+func GetModules(c *gin.Context) {
+	// define queue name
+	queueName := "module/*"
+
+	// get list
+	getList(c, queueName)
+}
+
 // GetModuleTasks godoc
 // @Summary Get the list of current module tasks
 // @Description get module tasks
@@ -513,7 +534,7 @@ func GetModuleTasks(c *gin.Context) {
 	moduleID := c.Param("module_id")
 
 	// define queue name
-	queueName := "module/" + moduleID + "/tasks"
+	queueName := "module/" + moduleID + "/task/*"
 
 	// get tasks
 	getTasks(c, queueName)

@@ -16,6 +16,7 @@ require (
 	github.com/google/uuid v1.2.0
 	github.com/gorilla/websocket v1.4.2 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
+	github.com/mpvl/unique v0.0.0-20150818121801-cbe035fff7de
 	github.com/olahol/melody v0.0.0-20180227134253-7bd65910e5ab
 	github.com/pkg/errors v0.9.1
 	github.com/swaggo/files v0.0.0-20190704085106-630677cd5c14
