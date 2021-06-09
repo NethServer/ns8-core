@@ -94,6 +94,7 @@ rdb.hset(f'module/{module_id}/environment', mapping={
     'IMAGE_DIGEST': inspect_image_digest,
     'IMAGE_REOPODIGEST': inspect_image_repodigest,
     'MODULE_ID': module_id,
+    'NODE_ID': node_id,
 })
 
 # Extract the UI code to a new module home
