@@ -44,6 +44,7 @@ exit_code, output, error = agent.run_subtask(rdb,
     input_obj= {
         "user": "admin",
         "password_hash": hashlib.sha256(args.admin_pw.encode()).hexdigest(),
+        "set": {},
         "grant": [{"role":"owner","on":"*"}],
     },
 )
