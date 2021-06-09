@@ -30,6 +30,9 @@ import json
 #{
 #    "user": "admin",
 #    "password_hash": "*****",
+#    "set": {
+#        "display_name": "The Administrator"
+#    },
 #    "grant": [{"role":"owner", "on":"*"}],
 #}
 #
@@ -39,6 +42,11 @@ rdb = agent.redis_connect(privileged=True)
 
 user = request['user']
 password_hash = request['password_hash']
+
+assert rdb.hset(f'user/{user}', mapping={
+    'display_name': request['set'].get('display_name', user),
+    'email': request['set'].get('email', ''),
+}) >= 0
 
 rdb.execute_command('ACL', 'DELUSER', user) # Drop the user to avoid double-password accounts
 assert rdb.execute_command('ACL', 'SETUSER', user, 'ON', '#'+password_hash, 'resetkeys', 'resetchannels', 'nocommands') == 'OK'

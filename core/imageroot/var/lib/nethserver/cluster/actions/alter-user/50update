@@ -28,6 +28,10 @@ import json
 # Sample input
 #{
 #    "user": "admin",
+#    "set": {
+#       "display_name": "The Administrator"
+#       "email": "admin@example.com"
+#    },
 #    "revoke": [{"role":"owner",  "on":"*"}],
 #    "grant":  [{"role":"reader", "on":"cluster"}],
 #}
@@ -37,6 +41,9 @@ request = json.load(sys.stdin)
 rdb = agent.redis_connect(privileged=True)
 
 user = request['user']
+
+if 'set' in request:
+    assert rdb.hset(f'user/{user}', mapping=request['set']) >= 0
 
 for roledef in request['revoke']: # !!! revoke BEFORE grant
     cluster.grants.alter_user(rdb, user, True, roledef['role'], roledef['on'])
