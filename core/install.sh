@@ -90,6 +90,7 @@ fi
 if ! grep -q ' cluster-leader$' /etc/hosts; then
     echo "Add /etc/hosts entries:"
     echo "127.0.0.1 cluster-leader" >> /etc/hosts
+    echo "127.0.0.1 cluster-localnode" >> /etc/hosts
 fi
 
 echo "Generate WireGuard VPN key pair:"

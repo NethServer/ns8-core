@@ -58,4 +58,4 @@ echo "Wipe Podman storage"
 podman system reset -f
 
 echo "Clean up /etc/hosts"
-sed -i '/ cluster-leader$/ d' /etc/hosts
+sed -i -e '/ cluster-leader$/ d' -e '/ cluster-localnode$/ d' /etc/hosts
