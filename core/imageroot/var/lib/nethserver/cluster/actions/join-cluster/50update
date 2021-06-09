@@ -136,8 +136,12 @@ agent.run_helper(*'systemctl restart wg-quick@wg0'.split(' ')).check_returncode(
 # Restart the node agent to apply the new VPN setup
 agent.run_helper(*'systemctl restart agent@node'.split(' ')).check_returncode()
 
-# Fix cluster-leader address in /etc/hosts (picked up by agents and when podman containers are restarted):
-agent.run_helper('sed', '-i', f'/cluster-leader$/c\{leader_ip_address} cluster-leader', '/etc/hosts').check_returncode()
+# Fix cluster-leader and cluster-localnode addresses in /etc/hosts
+# !!! Warning !!! Full restart may be required by agents and podman containers to pick up this:
+agent.run_helper('sed', '-i',
+    '-e', f'/cluster-leader$/c\{leader_ip_address} cluster-leader',
+    '-e', f'/cluster-localnode$/c\{ip_address} cluster-localnode',
+    '/etc/hosts').check_returncode()
 
 # Bind Redis to the VPN ip_address
 assert rdb.execute_command('CONFIG SET', 'bind', f'127.0.0.1 ::1 {ip_address}') is True

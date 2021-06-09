@@ -56,6 +56,11 @@ rdb.hset(f'node/{NODE_ID}/vpn', mapping={
     "listen_port": str(listen_port),
 })
 
+# Update the cluster-localnode record in /etc/hosts
+agent.run_helper('sed', '-i',
+    '-e', f'/cluster-localnode$/c\{ip_address} cluster-localnode',
+    '/etc/hosts').check_returncode()
+
 #
 # Install ldapproxy here
 #
