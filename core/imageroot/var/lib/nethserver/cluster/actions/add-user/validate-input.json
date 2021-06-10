@@ -1,0 +1,51 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Add-user (input)",
+    "$id": "http://nethserver.org/json-schema/task/input/cluster/add-user",
+    "description": "Create a user account for the cluster administration web interface",
+    "examples": [
+        {
+            "user": "admin",
+            "password_hash": "73cb3858a687a8494ca3323053016282f3dad39d42cf62ca4e79dda2aac7d9ac",
+            "set": {
+                "display_name": "The Administrator"
+            },
+            "grant": [
+                {
+                    "role": "owner",
+                    "on": "*"
+                }
+            ]
+        }
+    ],
+    "type": "object",
+    "required": [
+        "user",
+        "password_hash",
+        "set",
+        "grant"
+    ],
+    "properties": {
+        "user": {
+            "description": "The new user name",
+            "$ref": "http://nethserver.org/json-schema/task/library/cluster#/definitions/strict-username-string"
+        },
+        "password_hash": {
+            "description": "SHA256 hash of the new user password",
+            "$ref": "http://nethserver.org/json-schema/task/library/cluster#/definitions/sha256-string"
+        },
+        "set": {
+            "description": "Assign values to user's attributes",
+            "$ref": "http://nethserver.org/json-schema/task/library/cluster#/definitions/user-attributes"
+        },
+        "grant": {
+            "description": "A list of initial roles on the matching objects",
+            "type": "array",
+            "title": "Grant assertions list",
+            "items": {
+                "$ref": "http://nethserver.org/json-schema/task/library/cluster#/definitions/grant-object"
+            },
+            "uniqueItems": true
+        }
+    }
+}
