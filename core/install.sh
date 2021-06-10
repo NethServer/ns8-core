@@ -78,8 +78,7 @@ install -m 600 -T ~/.ssh/id_rsa.pub /etc/nethserver/skel/.ssh/authorized_keys
 
 echo "Setup agent:"
 agent_dir=/usr/local/nethserver/agent
-python3 -mvenv ${agent_dir}
-${agent_dir}/bin/pip3 install -U pip
+python3 -mvenv ${agent_dir} --upgrade-deps
 ${agent_dir}/bin/pip3 install -r /etc/nethserver/pythonreq.txt
 
 echo "Setup registry:"
