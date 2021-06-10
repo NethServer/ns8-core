@@ -28,6 +28,11 @@ import (
 	"sort"
 )
 
+const (
+	STEP_VALIDATE_INPUT = "validate-input.json"
+	STEP_VALIDATE_OUTPUT = "validate-output.json"
+)
+
 type Step struct {
 	Name   string
 	Path   string
@@ -114,6 +119,9 @@ func Create(actionName string, actionPaths []string) Descriptor {
 
 	actionSteps := make(map[string]string)
 
+	var inputSchema = ""
+	var outputSchema = ""
+
 	// Squash the action dirs in a single list
 	for _, path := range actionPaths {
 		actionPath := path + "/" + actionName
@@ -125,8 +133,13 @@ func Create(actionName string, actionPaths []string) Descriptor {
 		for _, entry := range entries {
 			if entry.IsDir() {
 				continue
+			} else if entry.Name() == STEP_VALIDATE_INPUT {
+				inputSchema = actionPath + "/" + STEP_VALIDATE_INPUT
+			} else if entry.Name() == STEP_VALIDATE_OUTPUT {
+				outputSchema = actionPath + "/" + STEP_VALIDATE_OUTPUT
+			} else {
+				actionSteps[entry.Name()] = actionPath + "/" + entry.Name()
 			}
-			actionSteps[entry.Name()] = actionPath + "/" + entry.Name()
 		}
 	}
 
@@ -144,6 +157,14 @@ func Create(actionName string, actionPaths []string) Descriptor {
 	steps := make([]Step, len(actionStepsKeys))
 	for i, file := range actionStepsKeys {
 		steps[i] = Step{Name: file, Path: actionSteps[file], Weight: 1}
+	}
+
+	if inputSchema != "" {
+		steps = append([]Step{{Name: STEP_VALIDATE_INPUT, Path: inputSchema, Weight: 0}}, steps...)
+	}
+
+	if outputSchema != "" {
+		steps = append(steps, Step{Name: STEP_VALIDATE_OUTPUT, Path: outputSchema, Weight: 0})
 	}
 
 	return Descriptor{Status: "pending", Progress: 0, Steps: steps}

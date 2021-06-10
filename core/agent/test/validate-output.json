@@ -1,0 +1,9 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "test",
+    "description": "Input schema of the test action",
+    "examples": [
+        null
+    ],
+    "type": "null"
+}
