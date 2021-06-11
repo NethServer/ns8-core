@@ -48,7 +48,7 @@ rdb = agent.redis_connect(privileged=True)
 # 1/a. Retrieve the leader VPN attributes,
 #      required by the caller to complete the join-cluster action
 #
-leader_id = rdb.get('cluster/leader')
+leader_id = rdb.hget('cluster/environment', 'NODE_ID')
 leader_ip_address = rdb.hget(f'node/{leader_id}/vpn', 'ip_address')
 assert leader_ip_address
 leader_public_key = rdb.hget(f'node/{leader_id}/vpn', 'public_key')
@@ -73,6 +73,13 @@ assert rdb.hset(f'node/{node_id}/vpn', mapping={
     "ip_address": ip_address,
     "endpoint": endpoint,
     "listen_port": str(listen_port),
+}) >= 0
+
+#
+# 1/d. Initialize the node agent environment
+#
+assert rdb.hset(f'node/{node_id}/environment', mapping={
+    "NODE_ID": node_id
 }) >= 0
 
 # Initialize the node ports sequence

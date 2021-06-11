@@ -127,9 +127,10 @@ node_pwhash=$(echo -n "${node_password}" | sha256sum | awk '{print $1}')
 (
     # Add the keys for the cluster bootstrap
     cat <<EOF
-SET cluster/leader 1
 SET cluster/node_sequence 1
 SET node/1/tcp_ports_sequence 20000
+HSET cluster/environment NODE_ID 1
+HSET node/1/environment NODE_ID 1
 LPUSH cluster/tasks '{"id":"$(uuidgen)","action":"grant-actions","data":[{"action":"*","on":"cluster","to":"owner"}]}'
 EOF
 
