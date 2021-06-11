@@ -1,0 +1,3 @@
+#!/bin/sh
+
+echo null # Generate the expected output payload, in JSON format

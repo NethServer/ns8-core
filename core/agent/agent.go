@@ -34,6 +34,7 @@ import (
 	"time"
 
 	"github.com/NethServer/ns8-scratchpad/core/agent/action"
+	"github.com/NethServer/ns8-scratchpad/core/agent/validation"
 	"github.com/NethServer/ns8-scratchpad/core/api-server/models"
 	"github.com/go-redis/redis/v8"
 )
@@ -204,6 +205,47 @@ func runAction(task *models.Task) {
 	environment := dedupEnv(prepareActionEnvironment())
 
 	for stepIndex, step := range actionDescriptor.Steps {
+
+		// Special treatment for builtin validation steps
+		if step.Name == action.STEP_VALIDATE_INPUT {
+			errorList, validateFault := validation.ValidateGoStruct(step.Path, task.Data)
+			if validateFault != nil {
+				errorMessage := fmt.Sprintf("JSON schema input validation aborted: %v\n", validateFault)
+				log.Printf(SD_ERR+errorMessage)
+				actionError += errorMessage
+				actionDescriptor.Status = "aborted"
+				exitCode = 1
+				break
+			} else if len(errorList) > 0 {
+				actionError += fmt.Sprintf("Validation errors: %v\n", errorList)
+				errorsBuf, _ := validation.ToJSON(errorList)
+				actionOutput = string(errorsBuf)
+				exitCode = 10
+				actionDescriptor.Status = "validation-failed"
+				log.Printf(SD_ERR+"Action %s %s at step %s: %v", task.Action, actionDescriptor.Status, step.Path, errorList)
+				break
+			}
+			continue
+
+		} else if step.Name == action.STEP_VALIDATE_OUTPUT {
+			errorList, validateFault := validation.ValidateJsonString(step.Path, []byte(actionOutput))
+			if validateFault != nil {
+				errorMessage := fmt.Sprintf("JSON schema output validation aborted: %v\n", validateFault)
+				log.Printf(SD_ERR+errorMessage)
+				actionError += errorMessage
+				actionDescriptor.Status = "aborted"
+				exitCode = 1
+				break
+			} else if len(errorList) > 0 {
+				actionError += fmt.Sprintf("Validation errors: %v\n", errorList)
+				exitCode = 1
+				actionDescriptor.Status = "aborted"
+				log.Printf(SD_ERR+"Action %s %s at step %s: %v", task.Action, actionDescriptor.Status, step.Path, errorList)
+				break
+			}
+			continue
+		}
+
 		// Create a pipe to read control commands from action steps
 		comReadFd, comWriteFd, _ := os.Pipe()
 

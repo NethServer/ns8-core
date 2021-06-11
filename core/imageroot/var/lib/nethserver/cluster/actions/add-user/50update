@@ -25,23 +25,16 @@ import agent
 import cluster.grants
 import json
 
-#
-# Sample input
-#{
-#    "user": "admin",
-#    "password_hash": "*****",
-#    "set": {
-#        "display_name": "The Administrator"
-#    },
-#    "grant": [{"role":"owner", "on":"*"}],
-#}
-#
-
 request = json.load(sys.stdin)
 rdb = agent.redis_connect(privileged=True)
 
 user = request['user']
 password_hash = request['password_hash']
+
+if rdb.execute_command('ACL', 'GETUSER', user) != None:
+    agent.set_status('validation-failed')
+    json.dump({'field':'user','parameter':'user','value':user,'error':'user_already_exists'}, fp=sys.stdout)
+    sys.exit(2)
 
 assert rdb.hset(f'user/{user}', mapping={
     'display_name': request['set'].get('display_name', user),
@@ -54,3 +47,5 @@ assert rdb.execute_command('ACL', 'SAVE') == 'OK'
 
 for roledef in request['grant']:
     cluster.grants.alter_user(rdb, user, False, roledef['role'], roledef['on'])
+
+print("{}")
