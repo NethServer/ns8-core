@@ -22,3 +22,5 @@ if [[ -r /var/lib/nethserver/cluster/state/agent.env ]]; then
     source /var/lib/nethserver/cluster/state/agent.env
     set +a
 fi
+
+alias logcli="/var/lib/nethserver/node/logcli.sh"
