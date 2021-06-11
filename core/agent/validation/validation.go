@@ -24,6 +24,8 @@ import (
 	"encoding/json"
 	"github.com/xeipuuv/gojsonschema"
 	"strings"
+	"io/ioutil"
+	"os"
 )
 
 type ValidationError struct {
@@ -54,14 +56,40 @@ func ToJSON(errorList []gojsonschema.ResultError) ([]byte, error) {
 }
 
 func ValidateGoStruct(schemaPath string, data interface{}) ([]gojsonschema.ResultError, error) {
-	schemaLoader := gojsonschema.NewReferenceLoader("file://" + schemaPath)
-	documentLoader := gojsonschema.NewGoLoader(data)
 
-	result, err := gojsonschema.Validate(schemaLoader, documentLoader)
+	var schema *gojsonschema.Schema
+
+	documentLoader := gojsonschema.NewGoLoader(data)
+	schemaLoader := gojsonschema.NewSchemaLoader()
+
+	// Read JSON Schema definitions from a well-known path. Ignore read errors.
+	libraryPath := os.Getenv("AGENT_INSTALL_DIR") + "/validator-definitions.json"
+	if schemaData, err := ioutil.ReadFile(libraryPath) ; err == nil {
+		loader := gojsonschema.NewStringLoader(string(schemaData))
+		if err := schemaLoader.AddSchemas(loader) ; err != nil {
+			return nil, err
+		}
+	}
+
+	// Read the JSON Schema from the given path. This must succeed.
+	if schemaData, err := ioutil.ReadFile(schemaPath) ; err == nil {
+		loader := gojsonschema.NewStringLoader(string(schemaData))
+		if cs, err := schemaLoader.Compile(loader) ; err != nil {
+			return nil, err
+		} else {
+			schema = cs
+		}
+	} else {
+		return nil, err
+	}
+
+	// Validate "data" against the JSON Schema documents
+	result, err := schema.Validate(documentLoader)
 	if err != nil {
 		return nil, err
 	}
 
+	// Validation has completed, return the errors
 	return result.Errors(), nil
 }
 

@@ -22,6 +22,8 @@
 
 set -e
 
+export AGENT_INSTALL_DIR=.
+
 container="gobuilder-agent"
 redis_image="docker.io/redis:6-alpine"
 
