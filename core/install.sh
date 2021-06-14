@@ -38,13 +38,13 @@ elif [[ ${ID} == "debian" ]]; then
         wget -O - https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/Debian_10/Release.key | apt-key add -
         apt-get update
         apt-get -y -t buster-backports install libseccomp2 podman
+        apt install linux-headers-$(uname -r) -y
     else
-	apt-get -y install podman
+	    apt-get -y install podman
     fi
 
 
     # Install wireguard
-    apt install linux-headers-$(uname -r) -y
     apt install wireguard -y
 
     # Install extra utils
