@@ -24,6 +24,7 @@ package methods
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -37,6 +38,7 @@ import (
 
 	jwt "github.com/appleboy/gin-jwt/v2"
 
+	"github.com/NethServer/ns8-scratchpad/core/api-server/audit"
 	"github.com/NethServer/ns8-scratchpad/core/api-server/models"
 	"github.com/NethServer/ns8-scratchpad/core/api-server/redis"
 	"github.com/NethServer/ns8-scratchpad/core/api-server/response"
@@ -78,6 +80,11 @@ func getList(c *gin.Context, queueName string) {
 
 	// close redis connection
 	redisConnection.Close()
+
+	// store to audit
+	claims := jwt.ExtractClaims(c)
+	parts := strings.Split(queueName, "/")
+	audit.Store(claims["id"].(string), "list-"+parts[0], queueName, fmt.Sprintf("%v", time.Now()))
 
 	// return tasks
 	c.JSON(http.StatusOK, structs.Map(response.StatusOK{
@@ -138,6 +145,10 @@ func getTasks(c *gin.Context, queueName string) {
 
 	// close redis connection
 	redisConnection.Close()
+
+	// store to audit
+	claims := jwt.ExtractClaims(c)
+	audit.Store(claims["id"].(string), "list-task", queueName, fmt.Sprintf("%v", time.Now()))
 
 	// return tasks
 	c.JSON(http.StatusOK, structs.Map(response.StatusOK{
@@ -206,6 +217,10 @@ func getTaskFile(c *gin.Context, filePath string) {
 		outputData = outputC
 	}
 
+	// store to audit
+	claims := jwt.ExtractClaims(c)
+	audit.Store(claims["id"].(string), "status-task", filePath, fmt.Sprintf("%v", time.Now()))
+
 	// return file response
 	c.JSON(http.StatusOK, structs.Map(response.StatusOK{
 		Code:    200,
@@ -240,6 +255,10 @@ func getTaskContext(c *gin.Context, filePath string) {
 	if errOutputDecode := json.Unmarshal([]byte(contextC), &contextData); errOutputDecode != nil {
 		contextData = contextC
 	}
+
+	// store to audit
+	claims := jwt.ExtractClaims(c)
+	audit.Store(claims["id"].(string), "context-task", filePath, fmt.Sprintf("%v", time.Now()))
 
 	// return file response
 	c.JSON(http.StatusOK, structs.Map(response.StatusOK{
@@ -304,6 +323,9 @@ func createTask(c *gin.Context, queueName string) {
 
 	// close redis connection
 	redisConnection.Close()
+
+	// store to audit
+	audit.Store(task.User, "create-task", string(stringTask), fmt.Sprintf("%v", time.Now()))
 
 	// return status created
 	c.JSON(http.StatusCreated, structs.Map(response.StatusOK{

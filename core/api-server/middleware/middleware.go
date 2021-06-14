@@ -23,8 +23,8 @@
 package middleware
 
 import (
+	"fmt"
 	"github.com/pkg/errors"
-
 	"time"
 
 	"github.com/fatih/structs"
@@ -33,6 +33,7 @@ import (
 
 	jwt "github.com/appleboy/gin-jwt/v2"
 
+	"github.com/NethServer/ns8-scratchpad/core/api-server/audit"
 	"github.com/NethServer/ns8-scratchpad/core/api-server/configuration"
 	"github.com/NethServer/ns8-scratchpad/core/api-server/methods"
 	"github.com/NethServer/ns8-scratchpad/core/api-server/models"
@@ -79,8 +80,15 @@ func InitJWT() *jwt.GinJWTMiddleware {
 			err := methods.RedisAuthentication(username, password)
 			if err != nil {
 				utils.LogError(errors.Wrap(err, "redis authentication failed for user "+username))
+
+				// store login action
+				audit.Store(username, "login-fail", "", fmt.Sprintf("%v", time.Now()))
+
 				return nil, jwt.ErrFailedAuthentication
 			}
+
+			// store login action
+			audit.Store(username, "login-ok", "", fmt.Sprintf("%v", time.Now()))
 
 			// return user auth model
 			return &models.UserAuthorizations{
@@ -148,8 +156,14 @@ func InitJWT() *jwt.GinJWTMiddleware {
 					}
 				}
 
+				// store auth action
+				audit.Store(data.(*models.UserAuthorizations).Username, "auth-ok", "", fmt.Sprintf("%v", time.Now()))
+
 				return actionAllowed
 			}
+
+			// store auth action
+			audit.Store(data.(*models.UserAuthorizations).Username, "auth-fail", "", fmt.Sprintf("%v", time.Now()))
 
 			// not authorized
 			return false

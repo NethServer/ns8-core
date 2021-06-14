@@ -33,6 +33,7 @@ type Configuration struct {
 	RedisPassword string `json:"redis_password"`
 	Secret        string `json:"secret"`
 	StaticPath    string `json:"static_path"`
+	AuditFile     string `json:"audit_file"`
 }
 
 var Config = Configuration{}
@@ -71,5 +72,11 @@ func Init() {
 		Config.StaticPath = os.Getenv("STATIC_PATH")
 	} else {
 		Config.StaticPath = "/var/lib/nethserver/cluster/ui"
+	}
+
+	if os.Getenv("AUDIT_FILE") != "" {
+		Config.AuditFile = os.Getenv("AUDIT_FILE")
+	} else {
+		Config.AuditFile = "/usr/src/core/audit.db"
 	}
 }
