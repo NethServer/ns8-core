@@ -48,4 +48,4 @@ assert rdb.execute_command('ACL', 'SAVE') == 'OK'
 for roledef in request['grant']:
     cluster.grants.alter_user(rdb, user, False, roledef['role'], roledef['on'])
 
-print("{}")
+print("true")

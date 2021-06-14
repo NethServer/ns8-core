@@ -43,8 +43,8 @@ jwt = request['jwt']
 assert jwt
 url = request['url']
 assert url
-listen_port = request['listen_port']
-assert listen_port
+listen_port = int(request['listen_port'])
+assert listen_port > 0
 tls_verify = bool(request['tls_verify'])
 assert tls_verify is not None
 

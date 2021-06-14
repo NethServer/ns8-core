@@ -1,0 +1,48 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "add-node output",
+    "$id": "http://schema.nethserver.org/cluster/add-node-output.json",
+    "description": "Output schema of the add-node action",
+    "examples": [
+        {}
+    ],
+    "type": "object",
+    "required": [
+        "node_id",
+        "ip_address",
+        "network",
+        "leader_public_key",
+        "leader_ip_address",
+        "leader_endpoint"
+    ],
+    "properties": {
+        "node_id": {
+            "description": "Node identifier",
+            "type": "integer",
+            "minimum": 1
+        },
+        "ip_address": {
+            "description": "VPN IP address of the added node",
+            "type": "string",
+            "format": "ipv4"
+        },
+        "network": {
+            "description": "The VPN network CIDR used by the cluster",
+            "type": "string",
+            "format": "ipv4"
+        },
+        "leader_public_key": {
+            "description": "WireGuard public key of the leader node",
+            "type": "string"
+        },
+        "leader_ip_address": {
+            "description": "VPN IP address of the leader node",
+            "type": "string",
+            "format": "ipv4"
+        },
+        "leader_endpoint": {
+            "description": "WireGuard endpoint address to contact the leader node",
+            "type": "string"
+        }
+    }
+}
