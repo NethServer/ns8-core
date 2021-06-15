@@ -76,6 +76,11 @@ echo "Adding id_rsa.pub to module skeleton dir:"
 install -d -m 700 /etc/nethserver/skel/.ssh
 install -m 600 -T ~/.ssh/id_rsa.pub /etc/nethserver/skel/.ssh/authorized_keys
 
+if ! id "api-server" &>/dev/null; then
+    echo "Create the api-server user"
+    useradd -r -m -d /var/lib/nethserver/api-server
+fi
+
 echo "Setup agent:"
 agent_dir=/usr/local/nethserver/agent
 python3 -mvenv ${agent_dir} --upgrade-deps
