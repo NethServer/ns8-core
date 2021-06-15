@@ -27,6 +27,7 @@ import time
 import json
 import tempfile
 import ipcalc
+import csv
 from envparse import env
 
 # Reference https://www.man7.org/linux/man-pages/man3/sd-daemon.3.html
@@ -82,9 +83,13 @@ def __action(*args):
     # write to stderr if AGENT file descriptor is not available:
     # this is usefull when developing new actions
     fd = int(os.getenv('AGENT_COMFD',2))
-    # convert to space separated string with newline end
-    cmd = "%s\n" % ' '.join(args)
-    os.write(fd, cmd.encode('utf-8'))
+    # The below fdopen does the following:
+    # 1. it converts the file descriptor to an object for csv writer library
+    # 2. it does not automatically close fd, otherwise next calls to __action will fail
+    # 3. it makes sure everything is converted to utf-8 before writing
+    fdobj = os.fdopen(fd, mode="w", encoding='utf-8', closefd=False)
+    writer = csv.writer(fdobj, delimiter=' ', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+    writer.writerow(args)
 
 def set_env(name, value):
     __action("set-env", name, value)
