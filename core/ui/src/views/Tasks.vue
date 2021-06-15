@@ -5,7 +5,7 @@
       v-if="error.clusterTasks"
       kind="error"
       title="Cannot retrieve tasks:"
-      :sub-title="error.clusterTasks"
+      :description="error.clusterTasks"
       low-contrast
     />
   </div>
@@ -14,12 +14,15 @@
 <script>
 import TaskService from "@/mixins/task";
 import to from "await-to-js";
+import InlineNotification from "@/components/InlineNotification";
+import ErrorService from "@/mixins/error";
 
 //// delete file?
 
 export default {
   name: "Tasks",
-  mixins: [TaskService],
+  components: { InlineNotification },
+  mixins: [TaskService, ErrorService],
   data() {
     return {
       error: {

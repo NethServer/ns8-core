@@ -8,6 +8,7 @@ export default new Vuex.Store({
   state: {
     notifications: [],
     isNotificationDrawerShown: false,
+    taskErrorToShow: false,
     loggedUser: "",
     socket: {
       isConnected: false,
@@ -27,14 +28,46 @@ export default new Vuex.Store({
     ongoingNotifications: (state) => {
       return state.notifications.filter(
         (notification) =>
-          notification.task && notification.task.status !== "completed"
+          notification.task &&
+          !["completed", "aborted"].includes(notification.task.status)
       );
     },
     recentNotifications: (state) => {
       return state.notifications.filter(
         (notification) =>
-          !(notification.task && notification.task.status !== "completed")
+          !(
+            notification.task &&
+            !["completed", "aborted"].includes(notification.task.status)
+          )
       );
+    },
+    getNotificationById: (state) => (id) => {
+      return state.notifications.find((notification) => notification.id === id);
+    },
+    getTaskById: (state) => (taskId) => {
+      const taskNotifications = state.notifications.filter(
+        (notification) => notification.task
+      );
+
+      const tasks = taskNotifications.map((notification) => notification.task);
+
+      // deep search inside tasks hierarchy
+
+      console.log("searchTask", taskId, tasks); ////
+
+      const taskFound = searchTask(taskId, tasks);
+
+      return taskFound;
+
+      // for (const t of tasks) { ////
+      //   // deep search inside tasks hierarchy
+      //   const taskFound = searchTask(t, taskId);
+
+      //   if (taskFound) {
+      //     return taskFound;
+      //   }
+      // }
+      // return null;
     },
   },
   mutations: {
@@ -43,6 +76,9 @@ export default new Vuex.Store({
     },
     setIsNotificationDrawerShown(state, value) {
       state.isNotificationDrawerShown = value;
+    },
+    setTaskErrorToShow(state, task) {
+      state.taskErrorToShow = task;
     },
     setNotificationRead(state, notificationId) {
       const notification = state.notifications.find(
@@ -67,7 +103,7 @@ export default new Vuex.Store({
 
         // mergeNotifications(notificationFound, notification); ////
 
-        console.log("updated notification", notificationFound); ////
+        // console.log("updated notification", notificationFound); ////
       }
     },
     setLoggedUser(state, username) {
@@ -120,6 +156,9 @@ export default new Vuex.Store({
     setIsNotificationDrawerShownInStore(context, value) {
       context.commit("setIsNotificationDrawerShown", value);
     },
+    setTaskErrorToShowInStore(context, task) {
+      context.commit("setTaskErrorToShow", task);
+    },
     setNotificationReadInStore(context, notificationId) {
       context.commit("setNotificationRead", notificationId);
     },
@@ -134,6 +173,27 @@ export default new Vuex.Store({
 });
 
 // helper functions
+
+function searchTask(taskId, tasks) {
+  console.log("!! searchTask()  taskid ", taskId, "tasks", tasks); ////
+
+  if (!tasks.length) {
+    return null;
+  }
+
+  let subTasks = [];
+
+  for (const task of tasks) {
+    if (task.context && task.context.id === taskId) {
+      // console.log("task found!!", task.context.id); ////
+      return task;
+    } else {
+      subTasks = subTasks.concat(task.subTasks);
+    }
+  }
+  // recursive search
+  return searchTask(taskId, subTasks);
+}
 
 // function mergeNotifications(oldNotification, newNotification) { //// remove
 //   // Replace oldNotification attributes with newNotification ones.

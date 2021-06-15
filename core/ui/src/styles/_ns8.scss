@@ -46,18 +46,16 @@ a {
 // vue-toastification
 .Vue-Toastification__toast {
   border-radius: 0 !important;
-  margin-top: $spacing-05;
 }
 
 .Vue-Toastification__container.top-right.toastification-container {
-  top: 3rem;
+  top: 4rem;
   z-index: 7999;
 }
 
 .Vue-Toastification__toast--default.toastification-toast {
   background-color: transparent;
   padding: 0;
-  margin-bottom: 0;
 }
 // end vue-toastification
 
@@ -235,6 +233,11 @@ a.bx--side-nav__link--current::before {
 .status a.bx--header__menu-item[aria-current="page"]::after,
 .bx--header__menu-item--current::after {
   border-bottom: none;
+}
+
+// accordion for technical details of task error
+.technical-details .bx--accordion__content {
+  padding-right: 1rem;
 }
 
 // styles for small devices

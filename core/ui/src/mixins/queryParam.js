@@ -13,18 +13,6 @@ export default {
           context.q[dataItem] = nethserver.getTypedValue(queryParams[dataItem]);
         }
       });
-
-      // if (queryParams.testInput) { //// remove
-      //   context.testInput = queryParams.testInput;
-      // } else {
-      //   context.testInput = "";
-      // }
-
-      // if (queryParams.testToggle) {
-      //   context.testToggle = queryParams.testToggle === "true";
-      // } else {
-      //   context.testToggle = false;
-      // }
     },
     getQueryParamsForApp() {
       if (
@@ -44,16 +32,5 @@ export default {
       });
       return queryParams;
     },
-    // getTypedValue(stringValue) { ////
-    //   if (stringValue === "true") {
-    //     return true;
-    //   }
-
-    //   if (stringValue === "false") {
-    //     return false;
-    //   }
-
-    //   return stringValue;
-    // },
   },
 };

@@ -5,6 +5,7 @@
     <MobileSideMenu v-if="loggedUser" />
     <cv-content id="main-content">
       <router-view />
+      <TaskErrorModal />
     </cv-content>
   </div>
 </template>
@@ -20,6 +21,7 @@ import { mapState } from "vuex";
 import { mapActions } from "vuex";
 import to from "await-to-js";
 import LoginService from "@/mixins/login";
+import TaskErrorModal from "@/components/TaskErrorModal";
 
 export default {
   name: "App",
@@ -27,14 +29,16 @@ export default {
     ShellHeader,
     SideMenu,
     MobileSideMenu,
+    TaskErrorModal,
   },
   mixins: [StorageService, WebSocketService, LoginService],
   computed: {
     ...mapState(["loggedUser"]),
   },
   created() {
-    // register to logout event
+    // register to events
     this.$root.$on("logout", this.logout);
+    // this.$root.$on("notificationAction", this.notificationAction); ////
 
     // check login
     const loginInfo = this.getFromStorage("loginInfo");
@@ -91,6 +95,9 @@ export default {
         this.$router.push("/login");
       }
     },
+    // notificationAction(notification) { ////
+    //   console.log("notificationAction", notification); ////
+    // },
   },
 };
 </script>

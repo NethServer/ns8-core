@@ -30,7 +30,7 @@
           <span v-html="description"></span>
         </p>
 
-        <div v-if="isProgressShown">
+        <div v-if="isProgressShown && kind !== 'error'">
           <ProgressBar :value="progress" :indeterminate="!progress" />
           <div class="progress-bar-spacer"></div>
           <div v-if="progress" class="progress-number">{{ progress }} %</div>
@@ -40,8 +40,11 @@
           v-if="actionLabel"
           :class="[`${carbonPrefix}--toast-notification__caption`, `action`]"
         >
-          <cv-link @click="$emit('action')" :class="`action-button`">
-            {{ actionLabel }}
+          <cv-link
+            @click="$emit('notificationAction', id)"
+            :class="`action-button`"
+          >
+            {{ $t(actionLabel) }}
           </cv-link>
         </p>
 
@@ -79,18 +82,31 @@ import { CvLink, CvTooltip } from "../../node_modules/@carbon/vue";
 import DateTimeService from "../mixins/datetime";
 import ProgressBar from "./ProgressBar";
 
+// limitation of vue-toastification, vue-i18n is not visible inside this component
+import Vue from "vue";
+import VueI18n from "vue-i18n";
+Vue.use(VueI18n);
+const i18n = new VueI18n();
+const messages = require("../../public/i18n/language.json");
+const langCode = navigator.language.substr(0, 2);
+i18n.setLocaleMessage(langCode, messages);
+i18n.locale = langCode;
+
 export default {
   name: "ToastNotification",
   extends: CvToastNotification,
   components: { ProgressBar, CvLink, CvTooltip },
   mixins: [DateTimeService],
+  i18n,
   props: {
+    id: String,
     description: String,
     showCloseButton: {
       type: Boolean,
       default: true,
     },
-    actionLabel: { type: String, default: "" },
+    actionLabel: String,
+    action: Object,
     //// rename to isRead
     read: {
       type: Boolean,
@@ -110,6 +126,17 @@ export default {
     },
     lowContrast: Boolean,
   },
+  // methods: { ////
+  //   $t(...args) {
+  //     // limitation of vue-toastification, vue-i18n doesn't work properly inside this component
+  //     return window.ns8.$t(args);
+  //   },
+  //   emitAction() {
+  //     console.log("emitAction!!"); ////
+
+  //     this.$emit("notificationAction", this.id);
+  //   },
+  // },
 };
 </script>
 
@@ -123,7 +150,7 @@ export default {
 
 .action {
   padding-top: 0;
-  margin-bottom: $spacing-06;
+  margin-bottom: $spacing-04;
 }
 
 .action-button {
@@ -175,13 +202,13 @@ export default {
   font-weight: normal;
 }
 
-.notification-drawer .action {
+.timestamp {
   margin-bottom: $spacing-04;
+  line-height: 1.29;
 }
 
-.timestamp {
-  margin-bottom: $spacing-05;
-  line-height: 1.29;
+p:last-child {
+  margin-bottom: $spacing-06;
 }
 
 .timestamp button {

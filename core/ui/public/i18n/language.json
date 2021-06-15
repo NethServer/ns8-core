@@ -1,6 +1,25 @@
 {
-  "abc": "Abc",
-  "section": {
-    "dashboard": "Dashboard"
+  "common": {
+    "details": "Details",
+    "copied_to_clipboard": "Copied to clipboard",
+    "show_more": "Show more",
+    "show_less": "Show less",
+    "close": "Close",
+    "generic_error": "Something went wrong",
+    "validation_error": "Validation error"
+  },
+  "module": {
+    "configure": "Configure"
+  },
+  "task": {
+    "technical_details": "Technical details",
+    "task_failed": "Task {action} failed",
+    "task_completed": "Task {action} completed",
+    "task_pending": "Task {action} is pending",
+    "task_failed_validation": "Task {action} failed validation",
+    "subtask_failed": "Subtask {action} failed",
+    "subtask_completed": "Subtask {action} completed",
+    "subtask_pending": "Subtask {action} is pending",
+    "subtask_failed_validation": "Subtask {action} failed validation"
   }
 }

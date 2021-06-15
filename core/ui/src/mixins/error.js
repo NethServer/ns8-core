@@ -1,10 +1,5 @@
 export default {
   name: "ErrorService",
-  data() {
-    return {
-      GENERIC_ERROR_MESSAGE: "Something went wrong", //// i18n
-    };
-  },
   methods: {
     getErrorMessage(error) {
       // network issues or axios timeout reached
@@ -24,7 +19,7 @@ export default {
           return "The resource cannot be found"; //// i18n
       }
 
-      return this.GENERIC_ERROR_MESSAGE;
+      return this.$t("common.generic_error");
     },
   },
 };

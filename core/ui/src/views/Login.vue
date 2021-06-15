@@ -11,7 +11,7 @@
                   v-if="error.login"
                   kind="error"
                   title="Cannot log in:"
-                  :sub-title="error.login"
+                  :description="error.login"
                   low-contrast
                 />
                 <cv-form @submit.prevent="checkUsername" class="login-form">
@@ -170,7 +170,7 @@ export default {
     },
     handleLoginError(error) {
       console.error(error);
-      let errorMessage = this.GENERIC_ERROR_MESSAGE;
+      let errorMessage = this.$t("common.generic_error");
 
       if (error.response) {
         switch (error.response.data.Code) {

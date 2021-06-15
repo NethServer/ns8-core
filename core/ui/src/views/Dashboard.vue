@@ -85,6 +85,12 @@
               Create add module task
             </cv-button>
           </div>
+
+          <div class="mg-top-bottom">
+            <cv-button kind="primary" :icon="Flash16" @click="createTestTask">
+              Create test task
+            </cv-button>
+          </div>
         </cv-tile>
       </div>
     </div>
@@ -197,6 +203,7 @@ import Flash16 from "@carbon/icons-vue/es/flash/16";
 // import Filter16 from "@carbon/icons-vue/es/filter/16"; ////
 import { mapState } from "vuex";
 import NotificationService from "@/mixins/notification";
+import ErrorService from "@/mixins/error";
 import QueryParamService from "@/mixins/queryParam";
 // import Pictogram from "@/components/Pictogram";
 // import Gear from "@/components/pictograms/Gear";
@@ -216,6 +223,7 @@ export default {
     QueryParamService,
     TaskService,
     WebSocketService,
+    ErrorService,
   ],
   data() {
     return {
@@ -313,6 +321,30 @@ export default {
 
         const notification = {
           title: "Cannot add module",
+          description: this.getErrorMessage(taskError),
+          type: "error",
+          app: "Cluster manager",
+        };
+        this.createNotification(notification);
+        return;
+      }
+    },
+    async createTestTask() {
+      const taskError = await to(
+        this.createTask({
+          action: "test-action-1",
+          data: {
+            title: "Test task execution",
+            description: "Doing stuff...",
+          },
+        })
+      )[0];
+
+      if (taskError) {
+        console.error(taskError);
+
+        const notification = {
+          title: "Cannot create error module",
           description: this.getErrorMessage(taskError),
           type: "error",
           app: "Cluster manager",
