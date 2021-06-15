@@ -42,11 +42,9 @@ cat > netdata.conf <<EOF
         access log = none
 
 [plugin:cgroups]
-        path to /sys/fs/cgroup/cpuacct = /host/sys/fs/cgroup/cpu,cpuacct
-        path to /sys/fs/cgroup/cpuset = /host/sys/fs/cgroup/cpuset
-        path to /sys/fs/cgroup/blkio = /host/sys/fs/cgroup/blkio
-        path to /sys/fs/cgroup/memory = /host/sys/fs/cgroup/memory
-        path to /sys/fs/cgroup/devices = /host/sys/fs/cgroup/devices
+        enable memory (used mem including cache) = yes
+        use unified cgroups = yes
+        path to unified cgroups = /sys/fs/cgroup
 EOF
 
 #
