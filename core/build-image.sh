@@ -19,7 +19,7 @@ fi
 
 echo "Build statically linked Go binaries based on Musl..."
 echo "1/2 agent..."
-buildah run gobuilder-core sh -c "cd /usr/src/core/agent      && go build -v -ldflags=\"-extldflags=-static\" ."
+buildah run gobuilder-core sh -c "cd /usr/src/core/agent      && CGO_ENABLED=0 go build -v ."
 echo "2/2 api-server..."
 # Statically link libraries and disable Sqlite extensions that expect a dynamic loader (not portable across distros)
 # Ref https://www.arp242.net/static-go.html
