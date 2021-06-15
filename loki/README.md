@@ -16,13 +16,22 @@ Output example:
 {"rootfull": false, "mid": "loki1"}
 ```
 
-Wait for `add-module` to complete by looking inside `journalctl`.
+After the installation, the Loki server will listen on the IP address of the selected node's VPN interface, using the default fixed port `3100`.
 
 ## Usage
 
-After the installation, an instance of Loki will be listening on port 3100 in the selected node. The instance can be queried with logcli. eg:
+The instance can be queried with logcli. eg:
 ```
-root@leader:~# export LOKI_ADDR=http://localhost:3100
+root@leader:~# add-module loki 1
+Extracting container filesystem ui to /var/lib/nethserver/cluster/ui/apps/loki1
+ui/index.html
+b89469d5a964b4e97ca2d40b25758cd2e06a96ebe6c00af7d95b1a2d5cf635a5
+{"module_id": "loki1", "image_name": "Loki log aggregation system", "image_url": "ghcr.io/nethserver/loki:latest"}
+root@leader:~# add-module promtail 1
+Extracting container filesystem ui to /var/lib/nethserver/cluster/ui/apps/promtail1
+ui/index.html
+fe8d71c5b5f0c579ba96e4a64660b275e3a667ffddcc576b1e4cab9f3a8bf9f8
+{"module_id": "promtail1", "image_name": "Promtail logs collector for Loki", "image_url": "ghcr.io/nethserver/promtail:latest"}
 root@leader:~# logcli labels -q
 __name__
 job
@@ -38,6 +47,8 @@ root@leader:~# logcli  query -q --no-labels -t '{nodename="leader"} | json | lin
 2021-05-28T15:49:27Z loki.service: Found left-over process 19008 (podman pause) in control group while starting unit. Ignoring.
 2021-05-28T15:49:27Z This usually indicates unclean termination of a previous run, or service implementation deficiencies.
 ```
+
+`logcli` will assume that the default Loki server to use is installed on the cluster leader node, this can be changed using the environment variable [`LOKI_ADDR`](https://grafana.com/docs/loki/latest/getting-started/logcli/#example)
 
 ## Uninstall
 
