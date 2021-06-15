@@ -30,7 +30,7 @@ request = json.load(sys.stdin)
 
 network = request['network']
 endpoint = request['endpoint']
-listen_port = request['listen_port']
+listen_port = int(request['listen_port'])
 
 assert network
 assert endpoint
@@ -53,7 +53,7 @@ rdb.hset(f'node/{NODE_ID}/vpn', mapping={
     "public_key": public_key,
     "ip_address": ip_address,
     "endpoint": endpoint,
-    "listen_port": str(listen_port),
+    "listen_port": listen_port,
 })
 
 # Update the cluster-localnode record in /etc/hosts
@@ -90,4 +90,4 @@ assert redis_rewrite_conf == 'OK'
 
 json.dump({
     "ip_address": ip_address,
-}, sys.stdout)
+}, fp=sys.stdout)

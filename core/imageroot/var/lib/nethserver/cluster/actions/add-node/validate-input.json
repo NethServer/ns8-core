@@ -1,0 +1,28 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "add-node input",
+    "$id": "http://schema.nethserver.org/cluster/add-node-input.json",
+    "description": "Input schema of the add-node action",
+    "examples": [
+        {}
+    ],
+    "type": "object",
+    "required": ["node_pwh", "public_key", "endpoint", "listen_port"],
+    "properties": {
+        "node_pwh": {
+            "$ref": "http://schema.nethserver.org/cluster.json#/definitions/redis-pwh"
+        },
+        "public_key": {
+            "description": "Node public key of the WireGuard VPN",
+            "type": "string"
+        },
+        "endpoint": {
+            "description": "Announce the public WireGuard VPN endpoint of the node",
+            "type": "string"
+        },
+        "listen_port": {
+            "description": "WireGuard VPN listening port number. Can differ from the port number announced by `endpoint`",
+            "type": "integer"
+        }
+    }
+}

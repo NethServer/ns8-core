@@ -1,0 +1,43 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "create-cluster input",
+    "$id": "http://schema.nethserver.org/cluster/create-cluster-input.json",
+    "description": "Provide basic information required by the new cluster initialization procedure",
+    "examples": [
+        {
+            "network": "10.5.4.0/24",
+            "endpoint": "fc1.dp.nethserver.net:55820",
+            "listen_port": 55820
+        }
+    ],
+    "type": "object",
+    "required": [
+        "network",
+        "endpoint",
+        "listen_port"
+    ],
+    "properties": {
+        "network": {
+            "description": "The cluster VPN address in CIDR notation",
+            "examples": ["10.5.4.0/24", "192.168.73.0/24"],
+            "type": "string",
+            "format": "ipv4"
+        },
+        "endpoint": {
+            "description": "The public WireGuard VPN endpoint in `hostname:port` form. The given port may differ from the @listen_port property as it depends on external configurations (i.e. port-forwards)",
+            "examples": [
+                "my.example.com:55820",
+                "1.2.3.4:60000"
+            ],
+            "type": "string"
+        },
+        "listen_port": {
+            "description": "The listening port number for WireGuard",
+            "examples": [
+                55820,
+                56000
+            ],
+            "type": "integer"
+        }
+    }
+}

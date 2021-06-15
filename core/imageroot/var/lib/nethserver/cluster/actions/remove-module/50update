@@ -39,7 +39,13 @@ assert preserve_data is not None
 
 rdb = agent.redis_connect(privileged=True)
 
-assert rdb.exists(f'module/{module_id}') == 1
+if rdb.exists(f'module/{module_id}') != 1:
+    json.dump({"field": "module_id", "parameter": "module_id", "value": module_id, "error": "module_not_found"}, fp=sys.stdout) # XXX: implement library function
+    agent.set_status('validation-failed')
+    sys.exit(2)
+
+node_id = int(rdb.hget(f'module/{module_id}/environment', 'NODE_ID'))
+
 
 # Invoke the module destructor, if defined. Rootfull modules must
 # implement one, to stop running services.
@@ -53,23 +59,14 @@ exit_code, output, error = agent.run_subtask(rdb,
 assert exit_code == 0 or exit_code == 8 # The module does not implement a "destroy" action
 
 errors = 0
-# Iterate over all cluster nodes and try to clean up
-# the module data and users
-for node_prefix in rdb.scan_iter('node/*/tcp_ports_sequence'):
-    node_prefix = node_prefix.removesuffix('/tcp_ports_sequence')
-    # XXX we could run the node tasks as coroutines...
-    exit_code, output, error = agent.run_subtask(rdb,
-        agent_prefix=node_prefix,
-        action='remove-module',
-        input_obj={
-            "module_id": module_id,
-            "preserve_data": preserve_data,
-        })
-    if exit_code != 0:
-        print(agent.SD_ERR + f'remove-module from {node_prefix}:', file=sys.stderr)
-        sys.stderr.write(error)
-        sys.stderr.write(output)
-        errors += 1
+exit_code, output, error = agent.run_subtask(rdb,
+    agent_prefix=f'node/{node_id}',
+    action='remove-module',
+    input_obj={
+        "module_id": module_id,
+        "preserve_data": preserve_data,
+    })
+assert exit_code == 0 # The node remove-module action must succeed
 
 # Erase the module keyspace
 module_keys = list(rdb.scan_iter(f'module/{module_id}*'))
@@ -83,4 +80,6 @@ assert rdb.execute_command('ACL', 'DELUSER', f'module/{module_id}') == 1
 assert rdb.execute_command('ACL', 'SAVE') == 'OK'
 
 if errors > 0:
-    exit(1)
+    sys.exit(1)
+
+json.dump({}, fp=sys.stdout)

@@ -1,0 +1,7 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "http://schema.nethserver.org/node.json",
+    "title": "Node library",
+    "description": "Node actions validation data formats",
+    "definitions": {}
+}

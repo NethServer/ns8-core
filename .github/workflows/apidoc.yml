@@ -1,0 +1,73 @@
+name: apidoc
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '**/validate-input.json'
+      - '**/validate-output.json'
+      - '**/validator-definitions.json'
+  pull_request:
+    types: [opened, synchronize, closed]
+    paths:
+      - '**/validate-input.json'
+      - '**/validate-output.json'
+      - '**/validator-definitions.json'
+
+jobs:
+  push_image:
+    name: 'Build API docs for ${{ github.head_ref }}'
+    runs-on: ubuntu-20.04
+    steps:
+      - id: checkout
+        uses: actions/checkout@v2
+      - id: configure
+        name: "Configure git environment"
+        run: |
+          git config user.name nethbot
+          git config user.email nethbot@nethesis.it
+      - id: schemadocs
+        name: "Build the images"
+        if: "${{ github.event_name == 'push' || (github.event_name == 'pull_request' && (github.event.action == 'opened' || github.event.action == 'synchronize')) }}"
+        run: |
+          # Build the images
+          set -e
+          buildah from --name schemadocs -v "${PWD}:/usr/src:Z" docker.io/library/node:slim
+          buildah run schemadocs npm install -g @adobe/jsonschema2md
+          buildah run schemadocs sh <<'EOF'
+          set -e
+          cd /usr/src
+          rm -rf .apidoc/{dst,src}
+          for MODULE_DIR in $(find . -type d -name imageroot -printf '%h\n'); do
+            SRCDIR=.apidoc/src/${MODULE_DIR#./}
+            DSTDIR=.apidoc/dst/${MODULE_DIR#./}
+            mkdir -vp ${SRCDIR}
+            find ${MODULE_DIR} -name validate-input.json -o -name validate-output.json -o -name validator-definitions.json | node .apidoc/id-rename.js ${SRCDIR}
+            jsonschema2md -d ${SRCDIR} -o ${DSTDIR} -x ${DSTDIR} -e json
+          done
+          EOF
+      - id: publish
+        name: "Publish the API documents"
+        if: "${{ github.event_name == 'push' || (github.event_name == 'pull_request' && (github.event.action == 'opened' || github.event.action == 'synchronize')) }}"
+        run: |
+          # Publish the API documents
+          set -e
+          git add .apidoc/dst
+          PR_NUMBER=$(echo $GITHUB_REF | awk 'BEGIN { FS = "/" } ; { print $3 }')
+          if (( PR_NUMBER > 0 )); then
+            COMMIT_MESSAGE="apidoc@${{ github.head_ref }} #${PR_NUMBER}"
+          else
+            COMMIT_MESSAGE="apidoc@${{ github.head_ref }}"
+          fi
+          TREE=$(git write-tree --prefix=.apidoc/dst)
+          COMMIT=$(git commit-tree -m "${COMMIT_MESSAGE}" ${TREE})
+          git push -f origin $COMMIT:refs/heads/apidoc-${{ github.head_ref }}
+          echo "API documentation has been published to"
+          echo ""
+          echo "    https://github.com/${{ github.repository }}/tree/apidoc-${{ github.head_ref }}"
+          echo ""
+      - id: cleanup
+        name: "Cleanup apidoc-${{ github.head_ref }} branch"
+        if: "github.event_name == 'pull_request' && github.event.action == 'closed'"
+        run: |
+          git push -f origin :refs/heads/apidoc-${{ github.head_ref }}

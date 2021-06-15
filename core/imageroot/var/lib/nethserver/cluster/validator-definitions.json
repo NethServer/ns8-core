@@ -1,12 +1,12 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "$id": "http://nethserver.org/json-schema/task/library/cluster",
+    "$id": "http://schema.nethserver.org/cluster.json",
     "title": "Cluster library",
     "description": "Cluster actions validation data formats",
     "definitions": {
-        "sha256-string": {
-            "title": "SHA256 string format",
-            "description": "A SHA256 string is 64 hexadecimal digits long",
+        "redis-pwh": {
+            "title": "Redis password",
+            "description": "Redis SHA256 hashed password for Users, Cluster, Nodes and Modules",
             "examples": [
                 "73cb3858a687a8494ca3323053016282f3dad39d42cf62ca4e79dda2aac7d9ac"
             ],

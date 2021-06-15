@@ -1,0 +1,21 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "add-module output",
+    "$id": "http://schema.nethserver.org/node/add-module-output.json",
+    "description": "Return generated information of the newly added module",
+    "examples": [
+        {
+            "redis_sha256": "a0c85889af15c49d7dd08cb896ec0c5e960a67d5d48d51f06757c2cee3a0277b"
+        }
+    ],
+    "type": "object",
+    "required": [
+        "redis_sha256"
+    ],
+    "properties": {
+        "redis_sha256": {
+            "type": "string",
+            "description": "The generated Redis hashed password for the new node"
+        }
+    }
+}

@@ -20,6 +20,8 @@
 # along with NethServer.  If not, see COPYING.
 #
 
+printf "{}\n" # Send output data before stderr redirection
+
 exec 1>&2
 set -e
 

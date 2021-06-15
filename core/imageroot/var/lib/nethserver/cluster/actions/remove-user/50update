@@ -36,7 +36,14 @@ user = request['user']
 
 rdb = agent.redis_connect(privileged=True)
 
+if rdb.execute_command('ACL', 'GETUSER', user) is None:
+    json.dump({"field": "user", "parameter": "user", "value": user, "error": "user_not_found"}, fp=sys.stdout) # XXX: implement library function
+    agent.set_status('validation-failed')
+    sys.exit(2)
+
 rdb.delete(f'roles/{user}')
 
 assert rdb.execute_command('ACL', 'DELUSER', user) == 1
 assert rdb.execute_command('ACL', 'SAVE') == 'OK'
+
+print("true")

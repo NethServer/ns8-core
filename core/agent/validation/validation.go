@@ -57,7 +57,6 @@ func ToJSON(errorList []gojsonschema.ResultError) ([]byte, error) {
 
 func ValidateGoStruct(schemaPath string, data interface{}) ([]gojsonschema.ResultError, error) {
 
-	var schema *gojsonschema.Schema
 
 	documentLoader := gojsonschema.NewGoLoader(data)
 	schemaLoader := gojsonschema.NewSchemaLoader()
@@ -72,21 +71,21 @@ func ValidateGoStruct(schemaPath string, data interface{}) ([]gojsonschema.Resul
 	}
 
 	// Read the JSON Schema from the given path. This must succeed.
-	if schemaData, err := ioutil.ReadFile(schemaPath) ; err == nil {
-		loader := gojsonschema.NewStringLoader(string(schemaData))
-		if cs, err := schemaLoader.Compile(loader) ; err != nil {
-			return nil, err
-		} else {
-			schema = cs
-		}
-	} else {
-		return nil, err
+	schemaData, readFileError := ioutil.ReadFile(schemaPath)
+	if readFileError != nil {
+		return nil, readFileError
+	}
+
+	loader := gojsonschema.NewStringLoader(string(schemaData))
+	schema, compileError := schemaLoader.Compile(loader)
+	if compileError != nil {
+		return nil, compileError
 	}
 
 	// Validate "data" against the JSON Schema documents
-	result, err := schema.Validate(documentLoader)
-	if err != nil {
-		return nil, err
+	result, validateError := schema.Validate(documentLoader)
+	if validateError != nil {
+		return nil, validateError
 	}
 
 	// Validation has completed, return the errors

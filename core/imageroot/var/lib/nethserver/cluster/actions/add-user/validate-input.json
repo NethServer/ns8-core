@@ -1,8 +1,8 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "Add-user (input)",
-    "$id": "http://nethserver.org/json-schema/task/input/cluster/add-user",
-    "description": "Create a user account for the cluster administration web interface",
+    "title": "add-user input",
+    "$id": "http://schema.nethserver.org/cluster/add-user-input.json",
+    "description": "Create a user account in the Redis DB for the cluster administration web interface",
     "examples": [
         {
             "user": "admin",
@@ -27,23 +27,20 @@
     ],
     "properties": {
         "user": {
-            "description": "The new user name",
-            "$ref": "http://nethserver.org/json-schema/task/library/cluster#/definitions/strict-username-string"
+            "$ref": "http://schema.nethserver.org/cluster.json#/definitions/strict-username-string"
         },
         "password_hash": {
-            "description": "SHA256 hash of the new user password",
-            "$ref": "http://nethserver.org/json-schema/task/library/cluster#/definitions/sha256-string"
+            "$ref": "http://schema.nethserver.org/cluster.json#/definitions/redis-pwh"
         },
         "set": {
-            "description": "Assign values to user's attributes",
-            "$ref": "http://nethserver.org/json-schema/task/library/cluster#/definitions/user-attributes"
+            "$ref": "http://schema.nethserver.org/cluster.json#/definitions/user-attributes"
         },
         "grant": {
             "description": "A list of initial roles on the matching objects",
             "type": "array",
             "title": "Grant assertions list",
             "items": {
-                "$ref": "http://nethserver.org/json-schema/task/library/cluster#/definitions/grant-object"
+                "$ref": "http://schema.nethserver.org/cluster.json#/definitions/grant-object"
             },
             "uniqueItems": true
         }
