@@ -37,9 +37,9 @@ errors = []
 # If parsing fails, exit early and dump the error stack.
 data = json.load(sys.stdin)
 
-# Allo fields are mandatory
+# All fields are mandatory
 for field in ["instance", "url", "host", "lets_encrypt", "http2https"]:
-    if not data.get(field, ""):
+    if data.get(field) is None:
         errors.append({"parameter": field, "value": "", "error": "%s_is_empty" % field})
 
 # Set failed validation if errors is non empty
