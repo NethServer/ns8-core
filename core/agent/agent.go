@@ -210,7 +210,7 @@ func runAction(task *models.Task) {
 		if step.Name == action.STEP_VALIDATE_INPUT {
 			errorList, validateFault := validation.ValidateGoStruct(step.Path, task.Data)
 			if validateFault != nil {
-				errorMessage := fmt.Sprintf("JSON schema input validation aborted: %v\n", validateFault)
+				errorMessage := fmt.Sprintf("JSON Schema input validation aborted at step %s: %v\n", step.Path, validateFault)
 				log.Printf(SD_ERR+errorMessage)
 				actionError += errorMessage
 				actionDescriptor.Status = "aborted"
@@ -230,7 +230,7 @@ func runAction(task *models.Task) {
 		} else if step.Name == action.STEP_VALIDATE_OUTPUT {
 			errorList, validateFault := validation.ValidateJsonString(step.Path, []byte(actionOutput))
 			if validateFault != nil {
-				errorMessage := fmt.Sprintf("JSON schema output validation aborted: %v\n", validateFault)
+				errorMessage := fmt.Sprintf("JSON Schema output validation aborted at step %s: %v\n", step.Path, validateFault)
 				log.Printf(SD_ERR+errorMessage)
 				actionError += errorMessage
 				actionDescriptor.Status = "aborted"
