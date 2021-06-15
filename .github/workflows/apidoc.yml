@@ -4,12 +4,14 @@ on:
     branches:
       - main
     paths:
+      - '.github/workflows/apidoc.yml'
       - '**/validate-input.json'
       - '**/validate-output.json'
       - '**/validator-definitions.json'
   pull_request:
     types: [opened, synchronize, closed]
     paths:
+      - '.github/workflows/apidoc.yml'
       - '**/validate-input.json'
       - '**/validate-output.json'
       - '**/validator-definitions.json'
@@ -56,15 +58,18 @@ jobs:
           PR_NUMBER=$(echo $GITHUB_REF | awk 'BEGIN { FS = "/" } ; { print $3 }')
           if (( PR_NUMBER > 0 )); then
             COMMIT_MESSAGE="apidoc@${{ github.head_ref }} #${PR_NUMBER}"
+            REMOTE_BRANCH="apidoc-${{ github.head_ref }}"
           else
-            COMMIT_MESSAGE="apidoc@${{ github.head_ref }}"
+            BRANCH=$(basename ${{ github.ref }})
+            COMMIT_MESSAGE="apidoc@$BRANCH"
+            REMOTE_BRANCH="apidoc"
           fi
           TREE=$(git write-tree --prefix=.apidoc/dst)
           COMMIT=$(git commit-tree -m "${COMMIT_MESSAGE}" ${TREE})
-          git push -f origin $COMMIT:refs/heads/apidoc-${{ github.head_ref }}
+          git push -f origin $COMMIT:refs/heads/${REMOTE_BRANCH}
           echo "API documentation has been published to"
           echo ""
-          echo "    https://github.com/${{ github.repository }}/tree/apidoc-${{ github.head_ref }}"
+          echo "    https://github.com/${{ github.repository }}/tree/${REMOTE_BRANCH}"
           echo ""
       - id: cleanup
         name: "Cleanup apidoc-${{ github.head_ref }} branch"
