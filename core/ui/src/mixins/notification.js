@@ -79,7 +79,12 @@ export default {
           toastTimeout = 5000;
       }
 
-      if (notification.task) {
+      if (
+        notification.task &&
+        !["completed", "aborted", "validation-failed"].includes(
+          notification.task.status
+        )
+      ) {
         toastTimeout = 3000;
       }
 
@@ -270,8 +275,8 @@ export default {
             actionLabel = "module.configure";
             action = {
               type: "changeRoute",
-              // url: `/apps/ns8-app?appInput=fromAction`, ////
               url: `/apps/${taskResult.output.module_id}`,
+              // url: `/apps/ns8-app?appInput=fromAction`, ////
             };
             break;
         }
