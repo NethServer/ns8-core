@@ -36,27 +36,32 @@ import (
 )
 
 func Init() {
-	// check if file exists
-	if _, err := os.Stat(configuration.Config.AuditFile); os.IsNotExist(err) {
-		// create audit db file and initialize it
-		create()
+	// check audit file is set
+	if len(configuration.Config.AuditFile) > 0 {
+		// check if file exists
+		if _, err := os.Stat(configuration.Config.AuditFile); os.IsNotExist(err) {
+			// create audit db file and initialize it
+			create()
+		} else {
+			// check if db is valid
+			db, err := sql.Open("sqlite3", configuration.Config.AuditFile)
+			if err != nil {
+				// audit file invalid, create and initialize it
+				create()
+			}
+			defer db.Close()
+
+			// try a query
+			query := "SELECT * FROM audit LIMIT 1;"
+
+			_, err = db.Exec(query)
+			if err != nil {
+				// invalid sql schema, create and initialize it
+				create()
+			}
+		}
 	} else {
-		// check if db is valid
-		db, err := sql.Open("sqlite3", configuration.Config.AuditFile)
-		if err != nil {
-			// audit file invalid, create and initialize it
-			create()
-		}
-		defer db.Close()
-
-		// try a query
-		query := "SELECT * FROM audit LIMIT 1;"
-
-		_, err = db.Exec(query)
-		if err != nil {
-			// invalid sql schema, create and initialize it
-			create()
-		}
+		utils.LogError(errors.Wrap(errors.New("AUDIT_FILE is not set in the environment."), "[Audit DISABLED]"))
 	}
 }
 
@@ -90,31 +95,33 @@ func create() {
 }
 
 func Store(user string, action string, data string, timestamp string) {
-	// open db
-	db, err := sql.Open("sqlite3", configuration.Config.AuditFile)
-	if err != nil {
-		utils.LogError(errors.Wrap(err, "error in audit file schema open"))
-	}
-	defer db.Close()
+	// check audit file is set
+	if len(configuration.Config.AuditFile) > 0 {
+		// open db
+		db, err := sql.Open("sqlite3", configuration.Config.AuditFile)
+		if err != nil {
+			utils.LogError(errors.Wrap(err, "error in audit file schema open"))
+		}
+		defer db.Close()
 
-	// begin sqlite connection to insert
-	tx, err := db.Begin()
-	if err != nil {
-		utils.LogError(errors.Wrap(err, "error in audit file schema begin"))
-	}
+		// begin sqlite connection to insert
+		tx, err := db.Begin()
+		if err != nil {
+			utils.LogError(errors.Wrap(err, "error in audit file schema begin"))
+		}
 
-	// define statement
-	stmt, err := tx.Prepare("INSERT INTO audit(id, user, action, data, timestamp) VALUES(null, ?, ?, ?, ?)")
-	if err != nil {
-		utils.LogError(errors.Wrap(err, "error in audit file schema prepare"))
-	}
-	defer stmt.Close()
+		// define statement
+		stmt, err := tx.Prepare("INSERT INTO audit(id, user, action, data, timestamp) VALUES(null, ?, ?, ?, ?)")
+		if err != nil {
+			utils.LogError(errors.Wrap(err, "error in audit file schema prepare"))
+		}
+		defer stmt.Close()
 
-	// execute statement
-	_, err = stmt.Exec(user, action, data, timestamp)
-	if err != nil {
-		utils.LogError(errors.Wrap(err, "error in audit file schema execute"))
+		// execute statement
+		_, err = stmt.Exec(user, action, data, timestamp)
+		if err != nil {
+			utils.LogError(errors.Wrap(err, "error in audit file schema execute"))
+		}
+		tx.Commit()
 	}
-	tx.Commit()
-
 }

@@ -77,6 +77,6 @@ func Init() {
 	if os.Getenv("AUDIT_FILE") != "" {
 		Config.AuditFile = os.Getenv("AUDIT_FILE")
 	} else {
-		Config.AuditFile = "/usr/src/core/audit.db"
+		Config.AuditFile = ""
 	}
 }
