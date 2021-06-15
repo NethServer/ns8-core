@@ -61,7 +61,7 @@ exit_code, output, error = agent.run_subtask(rdb,
     input_obj= {
         "network": args.network,
         "endpoint": args.endpoint,
-        "listen_port": endpoint_port,
+        "listen_port": int(endpoint_port),
     },
 )
 if exit_code != 0:

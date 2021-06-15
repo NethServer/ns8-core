@@ -1,0 +1,31 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "create-cluster input",
+    "$id": "http://schema.nethserver.org/cluster/create-cluster-input.json",
+    "description": "Input schema of the create-cluster action",
+    "examples": [
+        {
+            "network": "10.5.4.0/24",
+            "endpoint": "fc1.dp.nethserver.net:55820",
+            "listen_port": 55820
+        }
+    ],
+    "type": "object",
+    "required": [
+        "network",
+        "endpoint",
+        "listen_port"
+    ],
+    "properties": {
+        "network": {
+            "type": "string",
+            "format": "ipv4"
+        },
+        "endpoint": {
+            "type": "string"
+        },
+        "listen_port": {
+            "type": "integer"
+        }
+    }
+}
