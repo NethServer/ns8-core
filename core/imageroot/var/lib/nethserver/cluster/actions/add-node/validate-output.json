@@ -4,7 +4,14 @@
     "$id": "http://schema.nethserver.org/cluster/add-node-output.json",
     "description": "Output schema of the add-node action",
     "examples": [
-        {}
+        {
+            "node_id": 2,
+            "ip_address": "10.5.4.2",
+            "leader_public_key": "aoBydmHg2WWv5OqYM1ZegcCdC6dev+IHnoNv3ftNY2U=",
+            "network": "10.5.4.0/24",
+            "leader_ip_address": "10.5.4.1",
+            "leader_endpoint": "fc1.example.com:55820"
+        }
     ],
     "type": "object",
     "required": [
@@ -17,32 +24,42 @@
     ],
     "properties": {
         "node_id": {
-            "description": "Node identifier",
+            "title": "Node identifier",
+            "description": "Allocated identifier of the new node",
             "type": "integer",
-            "minimum": 1
+            "minimumExclusive": 1
         },
         "ip_address": {
+            "title": "Node IP address",
             "description": "VPN IP address of the added node",
             "type": "string",
             "format": "ipv4"
         },
         "network": {
-            "description": "The VPN network CIDR used by the cluster",
+            "title": "Cluster network address",
+            "description": "The VPN network in CIDR notation used by the cluster",
             "type": "string",
             "format": "ipv4"
         },
         "leader_public_key": {
+            "title": "Leader VPN key",
             "description": "WireGuard public key of the leader node",
             "type": "string"
         },
         "leader_ip_address": {
+            "title": "Leader IP address",
             "description": "VPN IP address of the leader node",
             "type": "string",
             "format": "ipv4"
         },
         "leader_endpoint": {
-            "description": "WireGuard endpoint address to contact the leader node",
-            "type": "string"
+            "title": "Leader public VPN UDP endpoint",
+            "description": "WireGuard public UDP endpoint address to contact the leader node. Syntax is `hostname:port` or `IP:port`",
+            "type": "string",
+            "examples": [
+                "my.example.com:55820",
+                "1.2.3.4:55820"
+            ]
         }
     }
 }

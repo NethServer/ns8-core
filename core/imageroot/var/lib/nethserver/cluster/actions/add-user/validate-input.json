@@ -2,7 +2,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "add-user input",
     "$id": "http://schema.nethserver.org/cluster/add-user-input.json",
-    "description": "Create a user account for the cluster administration web interface",
+    "description": "Create a user account in the Redis DB for the cluster administration web interface",
     "examples": [
         {
             "user": "admin",

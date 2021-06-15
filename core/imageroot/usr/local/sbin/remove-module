@@ -38,7 +38,7 @@ exit_code, output, error = agent.run_subtask(rdb,
     action='remove-module',
     input_obj={
         'module_id': args.module,
-        'preserve_data': args.preserve_data,
+        'preserve_data': bool(args.preserve_data),
     },
 )
 

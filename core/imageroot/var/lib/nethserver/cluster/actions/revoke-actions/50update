@@ -44,4 +44,5 @@ for grx in grants:
         errors += 1
         print(ex, file=sys.stderr)
 
+json.dump({}, fp=sys.stdout)
 sys.exit(0 if errors == 0 else 1)

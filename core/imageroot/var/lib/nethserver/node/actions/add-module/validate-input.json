@@ -1,0 +1,45 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "add-module input",
+    "$id": "http://schema.nethserver.org/node/add-module-input.json",
+    "description": "Install a module on the worker node",
+    "examples": [
+        {
+            "image_url": "ghcr.io/nethserver/ldapproxy:latest",
+            "module_id": "ldapproxy2",
+            "is_rootfull": false
+        }
+    ],
+    "type": "object",
+    "required": [
+        "image_url",
+        "module_id",
+        "is_rootfull"
+    ],
+    "properties": {
+        "image_url": {
+            "type": "string",
+            "title": "Image URL",
+            "description": "URL of the module root image",
+            "examples": [
+                "ghcr.io/nethserver/mymodule:v2.3.2"
+            ],
+            "minLength": 1
+        },
+        "is_rootfull": {
+            "type": "boolean",
+            "title": "Required type of installation",
+            "description": "If `true` the module is installed in rootfull mode.\nIts agent runs as root and its containers can be granted **privileged access**."
+        },
+        "module_id": {
+            "type": "string",
+            "title": "Module identifier",
+            "examples": [
+                "dokuwiki1",
+                "traefik3",
+                "samba1"
+            ],
+            "minLength": 1
+        }
+    }
+}
