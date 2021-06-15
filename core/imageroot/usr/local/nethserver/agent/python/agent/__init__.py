@@ -90,7 +90,7 @@ def set_env(name, value):
     __action("set-env", name, value)
 
 def dump_env():
-    __action("dump_env")
+    __action("dump-env")
 
 def set_status(value):
     __action("set-status", value)
