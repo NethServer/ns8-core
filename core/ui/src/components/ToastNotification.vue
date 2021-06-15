@@ -24,7 +24,7 @@
         <p
           :class="[
             `${carbonPrefix}--toast-notification__subtitle`,
-            `notification-text`,
+            `notification-description`,
           ]"
         >
           <span v-html="description"></span>
@@ -158,7 +158,7 @@ export default {
   cursor: pointer;
 }
 
-.notification-text {
+.notification-description {
   margin-top: $spacing-03;
   margin-bottom: $spacing-04;
 }

@@ -231,8 +231,8 @@ import { mapState } from "vuex";
 import NotificationService from "@/mixins/notification";
 import ErrorService from "@/mixins/error";
 import QueryParamService from "@/mixins/queryParam";
-// import Pictogram from "@/components/Pictogram";
-// import Gear from "@/components/pictograms/Gear";
+// import Pictogram from "@/components/Pictogram"; ////
+// import Gear from "@/components/pictograms/Gear"; ////
 import { formatRelative, formatDistance, subDays } from "date-fns";
 import TaskService from "@/mixins/task";
 import to from "await-to-js";

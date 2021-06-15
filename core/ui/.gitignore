@@ -26,3 +26,6 @@ pnpm-debug.log*
 public/apps/*
 # ...but do NOT ignore libs directory
 !public/apps/libs
+
+# css used by ns8 apps
+public/ns8.css

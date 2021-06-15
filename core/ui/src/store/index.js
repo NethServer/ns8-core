@@ -59,22 +59,9 @@ export default new Vuex.Store({
       const tasks = taskNotifications.map((notification) => notification.task);
 
       // deep search inside tasks hierarchy
-
-      console.log("searchTask", taskId, tasks); ////
-
       const taskFound = searchTask(taskId, tasks);
 
       return taskFound;
-
-      // for (const t of tasks) { ////
-      //   // deep search inside tasks hierarchy
-      //   const taskFound = searchTask(t, taskId);
-
-      //   if (taskFound) {
-      //     return taskFound;
-      //   }
-      // }
-      // return null;
     },
   },
   mutations: {
@@ -182,7 +169,7 @@ export default new Vuex.Store({
 // helper functions
 
 function searchTask(taskId, tasks) {
-  console.log("!! searchTask()  taskid ", taskId, "tasks", tasks); ////
+  console.log("searchTask()  taskid ", taskId, "tasks", tasks); ////
 
   if (!tasks.length) {
     return null;

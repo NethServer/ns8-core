@@ -78,8 +78,6 @@ export default {
       const taskAction = task.context.action;
       const taskOrSubtask = rootTask ? "task" : "subtask";
 
-      console.log("!!! task, taskOrSubtask", task, taskOrSubtask); ////
-
       switch (task.status) {
         case "aborted":
           return this.$t("task." + taskOrSubtask + "_failed", {
