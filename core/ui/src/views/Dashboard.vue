@@ -6,6 +6,22 @@
       </div>
     </div>
     <div class="bx--row">
+      <div class="bx--col-lg-16">
+        <cv-tile :light="true" class="content-tile">
+          <h2>Add module</h2>
+          <cv-form @submit.prevent="addModule">
+            <cv-text-input
+              label="Module image"
+              helper-text="E.g. traefik, dokuwiki, ..."
+              v-model.trim="q.moduleToAdd"
+            >
+            </cv-text-input>
+            <cv-button :disabled="!q.moduleToAdd">Add module</cv-button>
+          </cv-form>
+        </cv-tile>
+      </div>
+    </div>
+    <div class="bx--row">
       <div class="bx--col-md-5">
         <cv-tile :light="true" class="content-tile">
           <h2>Main content</h2>
@@ -89,6 +105,16 @@
           <div class="mg-top-bottom">
             <cv-button kind="primary" :icon="Flash16" @click="createTestTask">
               Create test task
+            </cv-button>
+          </div>
+
+          <div class="mg-top-bottom">
+            <cv-button
+              kind="secondary"
+              :icon="Flash16"
+              @click="$router.push('/apps/ns8-app?appInput=fromAction')"
+            >
+              Push route
             </cv-button>
           </div>
         </cv-tile>
@@ -230,6 +256,7 @@ export default {
       q: {
         testInput: "",
         testToggle: false,
+        moduleToAdd: "",
       },
       toastVisible: true,
       toastTitle: "Toast title",
@@ -281,6 +308,11 @@ export default {
         description: "You have 7 new updates",
         type: "info",
         app: "System manager",
+        actionLabel: "Update",
+        action: {
+          type: "changeRoute",
+          url: `/apps/ns8-app?appInput=fromAction`,
+        }, //// remove,
       };
       this.createNotification(notification);
     },
@@ -362,6 +394,27 @@ export default {
         task: { context: { id: uuidv4() }, status: "running", progress: 0 },
       };
       this.createNotification(notification);
+    },
+    async addModule() {
+      const module = this.q.moduleToAdd.trim();
+
+      console.log("adding module", module); ////
+
+      const err = await to(
+        this.createTask({
+          action: "add-module",
+          data: {
+            image: module,
+            node: 1,
+            title: module + " installation",
+            description: "Adding module...",
+          },
+        })
+      )[0];
+
+      if (err) {
+        console.error(err);
+      }
     },
   },
 };

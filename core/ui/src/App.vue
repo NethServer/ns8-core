@@ -38,7 +38,6 @@ export default {
   created() {
     // register to events
     this.$root.$on("logout", this.logout);
-    // this.$root.$on("notificationAction", this.notificationAction); ////
 
     // check login
     const loginInfo = this.getFromStorage("loginInfo");
@@ -95,9 +94,6 @@ export default {
         this.$router.push("/login");
       }
     },
-    // notificationAction(notification) { ////
-    //   console.log("notificationAction", notification); ////
-    // },
   },
 };
 </script>

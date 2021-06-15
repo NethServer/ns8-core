@@ -112,9 +112,12 @@ export default {
           // show task error modal
           this.setTaskErrorToShowInStore(notification.task);
           break;
-        case "url":
-          // navigate to url
-          //// todo!
+        case "changeRoute":
+          // go to url
+
+          console.log("navigating to", notification.action.url); ////
+
+          this.$router.push(notification.action.url);
           break;
       }
 
@@ -265,11 +268,11 @@ export default {
         switch (taskContext.action) {
           case "add-module":
             actionLabel = "module.configure";
-            // actionUrl = `/apps/${taskResult.output.module_id}`; //// uncomment
             action = {
-              type: "navigate",
-              url: `/#/apps/ns8-app?appInput=fromAction`,
-            }; //// remove
+              type: "changeRoute",
+              // url: `/apps/ns8-app?appInput=fromAction`, ////
+              url: `/apps/${taskResult.output.module_id}`,
+            };
             break;
         }
       }

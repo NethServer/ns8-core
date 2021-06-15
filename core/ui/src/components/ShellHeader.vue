@@ -60,7 +60,11 @@
         <Notification20 />
         <span
           class="notifications-badge"
-          v-if="unreadNotificationsCount > 0"
+          v-if="unreadNotificationsCount > 0 && ongoingNotificationsCount == 0"
+        ></span>
+        <span
+          class="notifications-badge-ongoing"
+          v-if="ongoingNotificationsCount > 0"
         ></span>
       </cv-header-global-action>
       <cv-header-global-action
@@ -122,7 +126,7 @@ export default {
   },
   computed: {
     ...mapState(["isNotificationDrawerShown", "notifications"]),
-    ...mapGetters(["unreadNotificationsCount"]),
+    ...mapGetters(["unreadNotificationsCount", "ongoingNotificationsCount"]),
   },
   // watch: { ////
   //   viewWidth: function () {
@@ -178,6 +182,29 @@ export default {
   // background-color: #fff; ////
   border-radius: 50%;
   display: inline-block;
+}
+
+.notifications-badge-ongoing {
+  position: absolute;
+  top: 15%;
+  left: 62%;
+  border: 2px solid transparent;
+  border-radius: 50%;
+  border-top: 2px solid $interactive-01;
+  border-right: 2px solid $interactive-01;
+  border-bottom: 2px solid $interactive-01;
+  width: 8px;
+  height: 8px;
+  animation: ongoing-task-spin 0.5s linear infinite;
+}
+
+@keyframes ongoing-task-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .status-text {

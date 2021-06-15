@@ -30,6 +30,22 @@ a {
   color: $link-02;
 }
 
+h1 {
+  margin-bottom: $spacing-05;
+}
+
+h2 {
+  margin-bottom: $spacing-05;
+}
+
+h3 {
+  margin-bottom: $spacing-05;
+}
+
+.cv-text-input {
+  margin-bottom: $spacing-05;
+}
+
 .notification {
   margin-top: 3rem;
 }
@@ -69,6 +85,7 @@ a {
   margin-bottom: $spacing-05;
 }
 
+// empty state
 .empty-state {
   text-align: center;
   padding: $spacing-09;
@@ -85,6 +102,7 @@ a {
 .empty-state .description {
   margin-bottom: $spacing-05;
 }
+// end empty state
 
 // timestamp tooltip
 .timestamp button span {

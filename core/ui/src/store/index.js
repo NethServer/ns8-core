@@ -29,15 +29,22 @@ export default new Vuex.Store({
       return state.notifications.filter(
         (notification) =>
           notification.task &&
-          !["completed", "aborted"].includes(notification.task.status)
+          !["completed", "aborted", "validation-failed"].includes(
+            notification.task.status
+          )
       );
+    },
+    ongoingNotificationsCount: (state, getters) => {
+      return getters.ongoingNotifications.length;
     },
     recentNotifications: (state) => {
       return state.notifications.filter(
         (notification) =>
           !(
             notification.task &&
-            !["completed", "aborted"].includes(notification.task.status)
+            !["completed", "aborted", "validation-failed"].includes(
+              notification.task.status
+            )
           )
       );
     },
