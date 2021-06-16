@@ -5,6 +5,7 @@
         :kind="getTaskKind(subTask)"
         :title="getTaskStatusDescription(subTask, false)"
         low-contrast
+        :showCloseButton="false"
       />
       <TaskHierarchy
         v-if="subTask.subTasks.length"

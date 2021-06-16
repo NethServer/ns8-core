@@ -22,6 +22,47 @@
       </div>
     </div>
     <div class="bx--row">
+      <div class="bx--col-lg-16">
+        <cv-tile :light="true" class="content-tile">
+          <h2>Backend validation</h2>
+          <cv-form @submit.prevent="testValidation">
+            <cv-text-input
+              label="Name"
+              v-model="q.name"
+              helper-text="Cannot be empty"
+              :invalid-message="$t(error.name)"
+              ref="name"
+            >
+            </cv-text-input>
+            <cv-text-input
+              label="Email"
+              v-model="q.email"
+              helper-text="Must be a valid email"
+              :invalid-message="$t(error.email)"
+              ref="email"
+            >
+            </cv-text-input>
+            <InlineNotification
+              v-if="error.testValidation"
+              kind="error"
+              :title="$t('error.error') + ':'"
+              :description="error.testValidation"
+              low-contrast
+              showCloseButton
+              @close="error.testValidation = ''"
+            />
+            <NsButton
+              size="default"
+              :icon="Flash20"
+              :loading="loading.testValidation"
+              :disabled="loading.testValidation"
+              >Test validation</NsButton
+            >
+          </cv-form>
+        </cv-tile>
+      </div>
+    </div>
+    <div class="bx--row">
       <div class="bx--col-md-5">
         <cv-tile :light="true" class="content-tile">
           <h2>Main content</h2>
@@ -51,7 +92,7 @@
           <cv-text-input label="Label" v-model="q.testInput"> </cv-text-input>
           <cv-toggle value="check-test" v-model="q.testToggle"> </cv-toggle>
           <div class="mg-top-bottom">
-            <cv-button kind="" :icon="Flash16" @click="createInfoToast">
+            <cv-button kind="" :icon="Flash20" @click="createInfoToast">
               Create info toast
             </cv-button>
           </div>
@@ -59,7 +100,7 @@
           <div class="mg-top-bottom">
             <cv-button
               kind="primary"
-              :icon="Flash16"
+              :icon="Flash20"
               @click="createSuccessToast"
             >
               Create success toast
@@ -69,7 +110,7 @@
           <div class="mg-top-bottom">
             <cv-button
               kind="secondary"
-              :icon="Flash16"
+              :icon="Flash20"
               @click="createWarningToast"
             >
               Create warning toast
@@ -77,7 +118,7 @@
           </div>
 
           <div class="mg-top-bottom">
-            <cv-button kind="danger" :icon="Flash16" @click="createErrorToast">
+            <cv-button kind="danger" :icon="Flash20" @click="createErrorToast">
               Create error toast
             </cv-button>
           </div>
@@ -85,7 +126,7 @@
           <div class="mg-top-bottom">
             <cv-button
               kind="secondary"
-              :icon="Flash16"
+              :icon="Flash20"
               @click="createProgressTask"
             >
               Create progress task
@@ -95,7 +136,7 @@
           <div class="mg-top-bottom">
             <cv-button
               kind="secondary"
-              :icon="Flash16"
+              :icon="Flash20"
               @click="createAddModuleTask"
             >
               Create add module task
@@ -103,18 +144,8 @@
           </div>
 
           <div class="mg-top-bottom">
-            <cv-button kind="primary" :icon="Flash16" @click="createTestTask">
+            <cv-button kind="primary" :icon="Flash20" @click="createTestTask">
               Create test task
-            </cv-button>
-          </div>
-
-          <div class="mg-top-bottom">
-            <cv-button
-              kind="secondary"
-              :icon="Flash16"
-              @click="$router.push('/apps/ns8-app?appInput=fromAction')"
-            >
-              Push route
             </cv-button>
           </div>
         </cv-tile>
@@ -125,7 +156,7 @@
         <!-- <div class="mg-top-bottom">
           <cv-icon-button
             kind="secondary"
-            :icon="Flash16"
+            :icon="Flash20"
             label="Button label"
             tip-position="bottom"
             tip-alignment="center"
@@ -225,14 +256,16 @@
 
 <script>
 // import AreaChart from "@/components/AreaChart"; ////
-import Flash16 from "@carbon/icons-vue/es/flash/16";
+import NsButton from "@/components/NsButton"; ////
+import Flash20 from "@carbon/icons-vue/es/flash/20";
 // import Filter16 from "@carbon/icons-vue/es/filter/16"; ////
 import { mapState } from "vuex";
 import NotificationService from "@/mixins/notification";
-import ErrorService from "@/mixins/error";
+import UtilService from "@/mixins/util";
 import QueryParamService from "@/mixins/queryParam";
 // import Pictogram from "@/components/Pictogram"; ////
 // import Gear from "@/components/pictograms/Gear"; ////
+import InlineNotification from "@/components/InlineNotification";
 import { formatRelative, formatDistance, subDays } from "date-fns";
 import TaskService from "@/mixins/task";
 import to from "await-to-js";
@@ -243,13 +276,13 @@ let nethserver = window.nethserver;
 
 export default {
   name: "Dashboard",
-  components: {},
+  components: { NsButton, InlineNotification },
   mixins: [
     NotificationService,
     QueryParamService,
     TaskService,
     WebSocketService,
-    ErrorService,
+    UtilService,
   ],
   data() {
     return {
@@ -257,6 +290,16 @@ export default {
         testInput: "",
         testToggle: false,
         moduleToAdd: "",
+        name: "",
+        email: "",
+      },
+      loading: {
+        testValidation: false,
+      },
+      error: {
+        testValidation: "",
+        name: "",
+        email: "",
       },
       toastVisible: true,
       toastTitle: "Toast title",
@@ -264,7 +307,7 @@ export default {
       toastCaption: "Toast caption",
       lowContrast: false,
       snippet: 'printf("A short bit of code.");',
-      Flash16, //// use mixin
+      Flash20, //// use mixin
       formatRelative, //// use mixin
       subDays,
       formatDistance,
@@ -288,6 +331,14 @@ export default {
     console.log("beforeRouteUpdate", to, from); ////
     this.queryParamsToData(this, to.query);
     next();
+  },
+  created() {
+    // register to validation failed event
+    this.$root.$on("validationFailed", this.validationFailed);
+  },
+  beforeDestroy() {
+    // remove event listeners
+    this.$root.$off("validationFailed");
   },
   methods: {
     closeToast() {
@@ -335,7 +386,7 @@ export default {
       this.createNotification(notification);
     },
     async createAddModuleTask() {
-      const taskError = await to(
+      const res = await to(
         this.createTask({
           // id: "", ////
           action: "add-module",
@@ -346,14 +397,15 @@ export default {
             description: "Installing...",
           }, ////
         })
-      )[0];
+      );
+      const err = res[0];
 
-      if (taskError) {
-        console.error(taskError);
+      if (err) {
+        console.error(err);
 
         const notification = {
           title: "Cannot add module",
-          description: this.getErrorMessage(taskError),
+          description: this.getErrorMessage(err),
           type: "error",
           app: "Cluster manager",
         };
@@ -362,7 +414,7 @@ export default {
       }
     },
     async createTestTask() {
-      const taskError = await to(
+      const res = await to(
         this.createTask({
           action: "test-action-1",
           data: {
@@ -370,14 +422,15 @@ export default {
             description: "Doing stuff...",
           },
         })
-      )[0];
+      );
+      const err = res[0];
 
-      if (taskError) {
-        console.error(taskError);
+      if (err) {
+        console.error(err);
 
         const notification = {
           title: "Cannot create error module",
-          description: this.getErrorMessage(taskError),
+          description: this.getErrorMessage(err),
           type: "error",
           app: "Cluster manager",
         };
@@ -400,7 +453,7 @@ export default {
 
       console.log("adding module", module); ////
 
-      const err = await to(
+      const res = await to(
         this.createTask({
           action: "add-module",
           data: {
@@ -410,10 +463,42 @@ export default {
             description: "Adding module...",
           },
         })
-      )[0];
+      );
+      const err = res[0];
 
       if (err) {
         console.error(err);
+      }
+    },
+    async testValidation() {
+      this.clearErrors(this);
+      this.loading.testValidation = true;
+
+      const res = await to(
+        this.createTask({
+          action: "validation-test",
+          data: {
+            name: this.q.name,
+            email: this.q.email,
+            title: "Task with validation",
+            description: "Doing stuff...",
+          },
+        })
+      );
+      const err = res[0];
+      this.loading.testValidation = false;
+
+      if (err) {
+        this.error.testValidation = this.getErrorMessage(err);
+      }
+    },
+    validationFailed(validationErrors) {
+      console.log("validationErrors", validationErrors); ////
+
+      for (const validationError of validationErrors) {
+        const param = validationError.parameter;
+        // set i18n error message
+        this.error[param] = "validation." + validationError.error;
       }
     },
   },

@@ -60,7 +60,7 @@ Vue.directive("click-outside", {
   },
 });
 
-// // global mixin for error messages ////
+// // global mixin for error messages //// remove
 // import ErrorService from "@/mixins/error";
 // Vue.mixin(ErrorService);
 

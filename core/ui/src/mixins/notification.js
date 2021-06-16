@@ -70,15 +70,6 @@ export default {
 
       let toastTimeout;
 
-      switch (notification.type) {
-        case "error":
-        case "warning":
-          toastTimeout = 10000;
-          break;
-        default:
-          toastTimeout = 5000;
-      }
-
       if (
         notification.task &&
         !["completed", "aborted", "validation-failed"].includes(
@@ -86,11 +77,18 @@ export default {
         )
       ) {
         toastTimeout = 3000;
+      } else {
+        // standard timeout
+        toastTimeout = 5000;
       }
 
-      this.$toast(toast, {
+      console.log("notification.id", notification.id); ////
+
+      const toastId = this.$toast(toast, {
         timeout: toastTimeout,
       });
+
+      console.log("toastId", toastId); ////
     },
     putNotification(notification) {
       const notificationFound = this.notifications.find(
@@ -142,11 +140,23 @@ export default {
 
       if (["completed", "aborted", "validation-failed"].includes(taskStatus)) {
         // get output and error
-        const [taskError, response] = await to(this.getTaskStatus(taskPath));
+        const [err, response] = await to(this.getTaskStatus(taskPath));
 
-        console.log("task result: taskError, response", taskError, response); ////
+        if (err) {
+          const notification = {
+            title: this.$t("error.cannot_retrieve_task_status"),
+            description: this.getErrorMessage(err),
+            type: "error",
+          };
+          this.createNotification(notification);
+        }
 
         taskResult = response.data.Data;
+
+        if (taskStatus === "validation-failed") {
+          // show validation errors
+          this.$root.$emit("validationFailed", taskResult.output);
+        }
       }
 
       const taskContext = response.data.Data.context;
@@ -217,9 +227,9 @@ export default {
           //// i18n
           notificationText = "Completed";
         } else if (taskStatus === "aborted") {
-          notificationText = this.$t("common.generic_error");
+          notificationText = this.$t("error.generic_error");
         } else if (taskStatus === "validation-failed") {
-          notificationText = this.$t("common.validation_error");
+          notificationText = this.$t("error.validation_error");
         } else if (payload.description) {
           notificationText = payload.description;
         } else {

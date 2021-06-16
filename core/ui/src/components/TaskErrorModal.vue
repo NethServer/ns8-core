@@ -10,6 +10,7 @@
         :kind="getTaskKind(taskErrorToShow)"
         :title="getTaskStatusDescription(taskErrorToShow, true)"
         low-contrast
+        :showCloseButton="false"
       />
       <div v-if="subTasks.length">
         <TaskHierarchy :subTasks="subTasks" />
@@ -23,8 +24,6 @@
               kind="multiline"
               :copy-feedback="$t('common.copied_to_clipboard')"
               :feedback-aria-label="$t('copied_to_clipboard')"
-              :less-text="$t('common.show_less')"
-              :more-text="$t('common.show_more')"
               :wrap-text="true"
               >{{ taskErrorToShow }}</cv-code-snippet
             >

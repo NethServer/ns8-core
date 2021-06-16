@@ -78,7 +78,8 @@ export default {
       console.log("logout"); ////
 
       // invoke logout API
-      const logoutError = await to(this.executeLogout())[0];
+      const res = await to(this.executeLogout());
+      const logoutError = res[0];
 
       if (logoutError) {
         console.error(logoutError);

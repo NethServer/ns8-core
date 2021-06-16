@@ -2,11 +2,18 @@
   "common": {
     "details": "Details",
     "copied_to_clipboard": "Copied to clipboard",
-    "show_more": "Show more",
-    "show_less": "Show less",
-    "close": "Close",
+    "more_info": "More info",
+    "close": "Close"
+  },
+  "error": {
+    "error": "Error",
     "generic_error": "Something went wrong",
-    "validation_error": "Validation error"
+    "validation_error": "Validation error",
+    "network_error": "Network error",
+    "401": "Missing or invalid authentication",
+    "403": "Operation not authorized",
+    "404": "Resource not found",
+    "cannot_retrieve_task_status": "Cannot retrieve task status"
   },
   "module": {
     "configure": "Configure"
@@ -21,5 +28,9 @@
     "subtask_completed": "Subtask {action} completed",
     "subtask_pending": "Subtask {action} is pending",
     "subtask_failed_validation": "Subtask {action} failed validation"
+  },
+  "validation": {
+    "name_is_empty": "Name is empty ////",
+    "email_is_empty": "Email is empty ////"
   }
 }

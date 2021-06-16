@@ -7,6 +7,7 @@
       title="Cannot retrieve tasks:"
       :description="error.clusterTasks"
       low-contrast
+      :showCloseButton="false"
     />
   </div>
 </template>
@@ -15,14 +16,14 @@
 import TaskService from "@/mixins/task";
 import to from "await-to-js";
 import InlineNotification from "@/components/InlineNotification";
-import ErrorService from "@/mixins/error";
+import UtilService from "@/mixins/util";
 
 //// delete file?
 
 export default {
   name: "Tasks",
   components: { InlineNotification },
-  mixins: [TaskService, ErrorService],
+  mixins: [TaskService, UtilService],
   data() {
     return {
       error: {

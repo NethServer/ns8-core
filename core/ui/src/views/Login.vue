@@ -13,6 +13,7 @@
                   title="Cannot log in:"
                   :description="error.login"
                   low-contrast
+                  :showCloseButton="false"
                 />
                 <cv-form @submit.prevent="checkUsername" class="login-form">
                   <cv-text-input
@@ -170,7 +171,7 @@ export default {
     },
     handleLoginError(error) {
       console.error(error);
-      let errorMessage = this.$t("common.generic_error");
+      let errorMessage = this.$t("error.generic_error");
 
       if (error.response) {
         switch (error.response.data.Code) {
