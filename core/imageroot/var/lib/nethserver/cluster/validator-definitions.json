@@ -66,6 +66,52 @@
             "minLength": 1,
             "maxLength": 32,
             "pattern": "^[a-z_][a-z0-9_-]*[$]?$"
+        },
+        "grant-assertion": {
+            "type": "object",
+            "required": [
+                "action",
+                "to",
+                "on"
+            ],
+            "properties": {
+                "action": {
+                    "title": "Action name matcher",
+                    "description": "Match action names with wildcard `*` character",
+                    "examples": [
+                        "list-*",
+                        "show-*",
+                        "list-users",
+                        "add-user"
+                    ],
+                    "type": "string",
+                    "minLength": 1
+                },
+                "on": {
+                    "title": "On clause matcher",
+                    "description": "Match the `agent_id`: a prefixed module name, node ID, or `cluster`",
+                    "examples": [
+                        "module/dokuwiki*",
+                        "node/*",
+                        "cluster"
+                    ],
+                    "type": "string",
+                    "minLength": 1
+                },
+                "to": {
+                    "title": "User name matcher",
+                    "examples": [
+                        "admin",
+                        "cluster",
+                        "module/*",
+                        "node/3",
+                        "*"
+                    ],
+                    "description": "Match Redis user names with wildcard `*` character",
+                    "type": "string",
+                    "minLength": 1
+                }
+            }
         }
     }
 }

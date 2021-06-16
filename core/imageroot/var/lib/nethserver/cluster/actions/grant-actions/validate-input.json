@@ -2,61 +2,23 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "grant-actions input",
     "$id": "http://schema.nethserver.org/cluster/grant-actions-input.json",
-    "description": "Grant permissions with matches",
+    "description": "Set permissions with a list of grant assertions",
     "examples": [
-        {
-            "action": "*",
-            "to": "owner",
-            "on": "cluster"
-        },
-        {
-            "action": "list-*",
-            "to": "*",
-            "on": "cluster"
-        }
+        [
+            {
+                "action": "*",
+                "to": "owner",
+                "on": "cluster"
+            },
+            {
+                "action": "list-*",
+                "to": "*",
+                "on": "cluster"
+            }
+        ]
     ],
-    "type": "object",
-    "required": [
-        "action",
-        "to",
-        "on"
-    ],
-    "properties": {
-        "action": {
-            "title": "Action name matcher",
-            "description": "Match action names with wildcard `*` character",
-            "examples": [
-                "list-*",
-                "show-*",
-                "list-users",
-                "add-user"
-            ],
-            "type": "string",
-            "minLength": 1
-        },
-        "on": {
-            "title": "On clause matcher",
-            "description": "Match the `agent_id`: a prefixed module name, node ID, or `cluster`",
-            "examples": [
-                "module/dokuwiki*",
-                "node/*",
-                "cluster"
-            ],
-            "type": "string",
-            "minLength": 1
-        },
-        "to": {
-            "title": "User name matcher",
-            "examples": [
-                "admin",
-                "cluster",
-                "module/*",
-                "node/3",
-                "*"
-            ],
-            "description": "Match Redis user names with wildcard `*` character",
-            "type": "string",
-            "minLength": 1
-        }
+    "type": "array",
+    "items": {
+        "$ref": "http://schema.nethserver.org/cluster.json#/definitions/grant-assertion"
     }
 }
