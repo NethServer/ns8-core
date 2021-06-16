@@ -20,8 +20,7 @@
         "network": {
             "description": "The cluster VPN address in CIDR notation",
             "examples": ["10.5.4.0/24", "192.168.73.0/24"],
-            "type": "string",
-            "format": "ipv4"
+            "type": "string"
         },
         "endpoint": {
             "description": "The public WireGuard VPN endpoint in `hostname:port` form. The given port may differ from the @listen_port property as it depends on external configurations (i.e. port-forwards)",

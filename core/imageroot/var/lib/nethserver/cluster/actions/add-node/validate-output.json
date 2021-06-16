@@ -38,8 +38,7 @@
         "network": {
             "title": "Cluster network address",
             "description": "The VPN network in CIDR notation used by the cluster",
-            "type": "string",
-            "format": "ipv4"
+            "type": "string"
         },
         "leader_public_key": {
             "title": "Leader VPN key",
