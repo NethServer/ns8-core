@@ -219,7 +219,7 @@ func runAction(task *models.Task) {
 			} else if len(errorList) > 0 {
 				actionError += fmt.Sprintf("Validation errors: %v\n", errorList)
 				errorsBuf, _ := validation.ToJSON(errorList)
-				actionOutput = string(errorsBuf)
+				actionOutput += string(errorsBuf)
 				exitCode = 10
 				actionDescriptor.Status = "validation-failed"
 				log.Printf(SD_ERR+"Action %s %s at step %s: %v", task.Action, actionDescriptor.Status, step.Path, errorList)
@@ -266,12 +266,12 @@ func runAction(task *models.Task) {
 
 		go func() {
 			bytes, _ := io.ReadAll(stderrReader)
-			actionError = string(bytes)
+			actionError += string(bytes)
 		}()
 
 		go func() {
 			bytes, _ := io.ReadAll(stdoutReader)
-			actionOutput = string(bytes)
+			actionOutput += string(bytes)
 		}()
 
 		go func() {
@@ -339,7 +339,7 @@ func runAction(task *models.Task) {
 		log.Printf("%s/task/%s: %s/%s is starting", agentPrefix, task.ID, task.Action, step.Name)
 		if err := cmd.Start(); err != nil {
 			exitCode = 9
-			actionError = fmt.Sprintf("Action %s startup error at step %s: %v", task.Action, step, err)
+			actionError += fmt.Sprintf("Action %s startup error at step %s: %v", task.Action, step, err)
 			actionDescriptor.Status = "aborted"
 			log.Print(SD_ERR + actionError)
 			break

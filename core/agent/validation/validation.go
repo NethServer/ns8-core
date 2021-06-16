@@ -26,6 +26,7 @@ import (
 	"strings"
 	"io/ioutil"
 	"os"
+	"fmt"
 )
 
 type ValidationError struct {
@@ -66,26 +67,26 @@ func ValidateGoStruct(schemaPath string, data interface{}) ([]gojsonschema.Resul
 	if schemaData, err := ioutil.ReadFile(libraryPath) ; err == nil {
 		loader := gojsonschema.NewStringLoader(string(schemaData))
 		if err := schemaLoader.AddSchemas(loader) ; err != nil {
-			return nil, err
+			return nil, fmt.Errorf("Schema loader error while loding %s: %w", libraryPath, err)
 		}
 	}
 
 	// Read the JSON Schema from the given path. This must succeed.
 	schemaData, readFileError := ioutil.ReadFile(schemaPath)
 	if readFileError != nil {
-		return nil, readFileError
+		return nil, fmt.Errorf("Failed to read schema file %s: %w", schemaPath, readFileError)
 	}
 
 	loader := gojsonschema.NewStringLoader(string(schemaData))
 	schema, compileError := schemaLoader.Compile(loader)
 	if compileError != nil {
-		return nil, compileError
+		return nil, fmt.Errorf("Schema compile error for file %s: %w", schemaPath, compileError)
 	}
 
 	// Validate "data" against the JSON Schema documents
 	result, validateError := schema.Validate(documentLoader)
 	if validateError != nil {
-		return nil, validateError
+		return nil, fmt.Errorf("Schema validate error: %w", validateError)
 	}
 
 	// Validation has completed, return the errors
@@ -96,7 +97,7 @@ func ValidateJsonString(schemaPath string, data []byte) ([]gojsonschema.ResultEr
 	var ddata interface{}
 	err := json.Unmarshal(data, &ddata)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("JSON unmarshal error: %w. Input data: %v", err, data)
 	}
 	return ValidateGoStruct(schemaPath, ddata)
 }

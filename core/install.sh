@@ -77,7 +77,7 @@ install -d -m 700 /etc/nethserver/skel/.ssh
 install -m 600 -T ~/.ssh/id_rsa.pub /etc/nethserver/skel/.ssh/authorized_keys
 
 if ! id "api-server" &>/dev/null; then
-    echo "Create the api-server user"
+    echo "Create the api-server user:"
     useradd -r -m -d /var/lib/nethserver/api-server api-server
 fi
 
