@@ -154,3 +154,6 @@ assert rdb.execute_command('REPLICAOF', leader_ip_address, '6379') == 'OK'
 assert rdb.execute_command('CONFIG REWRITE') == 'OK'
 
 # Redis DB becomes read-only: agents are now locked out!
+
+# Send some JSON data to complete the action
+json.dump({}, fp=sys.stdout)
