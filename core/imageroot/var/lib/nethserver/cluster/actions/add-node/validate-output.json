@@ -38,7 +38,7 @@
         "network": {
             "title": "Cluster network address",
             "description": "The VPN network in CIDR notation used by the cluster",
-            "type": "string"
+            "$ref": "http://schema.nethserver.org/cluster.json#/definitions/ipv4-cidr"
         },
         "leader_public_key": {
             "title": "Leader VPN key",

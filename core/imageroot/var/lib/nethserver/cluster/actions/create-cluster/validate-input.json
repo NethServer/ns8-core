@@ -18,9 +18,9 @@
     ],
     "properties": {
         "network": {
-            "description": "The cluster VPN address in CIDR notation",
-            "examples": ["10.5.4.0/24", "192.168.73.0/24"],
-            "type": "string"
+            "title": "VPN network address",
+            "description": "The cluster VPN network address in CIDR notation",
+            "$ref": "http://schema.nethserver.org/cluster.json#/definitions/ipv4-cidr"
         },
         "endpoint": {
             "description": "The public WireGuard VPN endpoint in `hostname:port` form. The given port may differ from the @listen_port property as it depends on external configurations (i.e. port-forwards)",
