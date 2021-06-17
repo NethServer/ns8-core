@@ -88,6 +88,62 @@ info:
   title: NethServer 8 API
   version: "1.0"
 paths:
+  /audit:
+    get:
+      description: get task statuses (output, error, exit_code)
+      parameters:
+      - description: user search by user
+        in: query
+        name: user
+        type: string
+      - description: action search by action
+        in: query
+        name: action
+        type: string
+      - description: filter result search by from date ISO8601
+        in: query
+        name: from
+        type: string
+      - description: filter result search by to date ISO8601
+        in: query
+        name: to
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            Authorization:
+              description: Bearer <valid.JWT.token>
+              type: string
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.StatusOK'
+            - properties:
+                code:
+                  type: integer
+                data:
+                  type: string
+                message:
+                  type: string
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.StatusBadRequest'
+            - properties:
+                code:
+                  type: integer
+                data:
+                  type: object
+                message:
+                  type: string
+              type: object
+      summary: Get the output, error or exit code of a cluster task
+      tags:
+      - /audit audit
   /cluster/task/{task_id}/context:
     get:
       description: get task statuses (context)
