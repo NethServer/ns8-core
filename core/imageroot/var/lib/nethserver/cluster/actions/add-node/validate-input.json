@@ -4,10 +4,20 @@
     "$id": "http://schema.nethserver.org/cluster/add-node-input.json",
     "description": "Input schema of the add-node action",
     "examples": [
-        {}
+        {
+            "endpoint": "",
+            "listen_port": 55820,
+            "node_pwh": "b12f4f5137c4c6b4ef2efd936b88119c4af8356d4e9c3a31a18cd4a88effc41d",
+            "public_key": "XCVh3GCRqMcmIgpHhsbCL7Usm7Lm7Hb7bsS5LTSz/Dc="
+        }
     ],
     "type": "object",
-    "required": ["node_pwh", "public_key", "endpoint", "listen_port"],
+    "required": [
+        "node_pwh",
+        "public_key",
+        "endpoint",
+        "listen_port"
+    ],
     "properties": {
         "node_pwh": {
             "$ref": "http://schema.nethserver.org/cluster.json#/definitions/redis-pwh"
