@@ -99,7 +99,6 @@ export default {
 
 .loading {
   position: absolute;
-  // top: 15%; ////
   right: 1rem;
   border: 3px solid transparent;
   border-radius: 50%;

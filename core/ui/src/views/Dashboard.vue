@@ -211,29 +211,27 @@
       <div class="bx--col-md-6">
         <div class="mg-top-bottom">
           <cv-toggle value="check-1"> </cv-toggle>
-        </div>
+        </div>-->
 
-        <div class="mg-top-bottom">
-          <cv-interactive-tooltip alignment="center" direction="right">
-            <template v-if="true" slot="label"> Tooltip label </template>
-            <template v-if="true" slot="trigger"
-              ><Filter16
-                class="bx--overflow-menu__icon bx--toolbar-filter-icon"
-              />
-            </template>
-            <template v-if="true" slot="content">
-              <p>
-                Lorem ipsum dolor sit amet, consectetur adipisicing elit, seed
-                do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-                Ut enim ad minim veniam, quis nostrud exercitation ullamco
-                laboris nisi ut aliquip ex ea commodo consequat.
-              </p>
-              <button class="bx--button">Clicky one</button>
-            </template>
-          </cv-interactive-tooltip>
-        </div>
+    <!-- <div class="mg-top-bottom">
+      <cv-interactive-tooltip alignment="center" direction="right">
+        <template v-if="true" slot="label"> Tooltip label </template>
+        <template v-if="true" slot="trigger"
+          ><Filter16 class="bx--overflow-menu__icon bx--toolbar-filter-icon" />
+        </template>
+        <template v-if="true" slot="content">
+          <p>
+            Lorem ipsum dolor sit amet, consectetur adipisicing elit, seed do
+            eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim
+            ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
+            aliquip ex ea commodo consequat.
+          </p>
+          <button class="bx--button">Clicky one</button>
+        </template>
+      </cv-interactive-tooltip>
+    </div> -->
 
-        <div class="mg-top-bottom">
+    <!-- <div class="mg-top-bottom">
           <cv-toast-notification
             v-if="toastVisible"
             kind="info"
@@ -363,7 +361,7 @@ export default {
         action: {
           type: "changeRoute",
           url: `/apps/ns8-app?appInput=fromAction`,
-        }, //// remove,
+        },
       };
       this.createNotification(notification);
     },
@@ -388,14 +386,13 @@ export default {
     async createAddModuleTask() {
       const res = await to(
         this.createTask({
-          // id: "", ////
           action: "add-module",
           data: {
             image: "traefik",
             node: 1,
             title: "Traefik installation",
             description: "Installing...",
-          }, ////
+          },
         })
       );
       const err = res[0];

@@ -16,17 +16,21 @@
         <TaskHierarchy :subTasks="subTasks" />
       </div>
 
-      <cv-accordion ref="acc" class="technical-details">
+      <cv-accordion ref="acc" class="task-more-info">
         <cv-accordion-item :open="toggleAccordion[0]">
-          <template slot="title">{{ $t("task.technical_details") }}</template>
+          <template slot="title">{{ $t("common.more_info") }}</template>
           <template slot="content">
-            <cv-code-snippet
-              kind="multiline"
-              :copy-feedback="$t('common.copied_to_clipboard')"
-              :feedback-aria-label="$t('copied_to_clipboard')"
-              :wrap-text="true"
-              >{{ taskErrorToShow }}</cv-code-snippet
-            >
+            <div class="code-snippet-wrapper">
+              <NsCodeSnippet
+                :copyTooltip="$t('common.copy_to_clipboard')"
+                :copy-feedback="$t('common.copied_to_clipboard')"
+                :feedback-aria-label="$t('common.copied_to_clipboard')"
+                :wrap-text="true"
+                :moreText="$t('common.show_more')"
+                :lessText="$t('common.show_less')"
+                >{{ taskErrorToShow }}</NsCodeSnippet
+              >
+            </div>
           </template>
         </cv-accordion-item>
       </cv-accordion>
@@ -39,12 +43,13 @@
 import { mapState } from "vuex";
 import { mapActions } from "vuex";
 import InlineNotification from "@/components/InlineNotification";
+import NsCodeSnippet from "@/components/NsCodeSnippet";
 import TaskHierarchy from "@/components/TaskHierarchy";
 import TaskService from "@/mixins/task";
 
 export default {
   name: "TaskErrorModal",
-  components: { InlineNotification, TaskHierarchy },
+  components: { InlineNotification, TaskHierarchy, NsCodeSnippet },
   mixins: [TaskService],
   props: {},
   data() {
@@ -75,4 +80,8 @@ export default {
 
 <style scoped lang="scss">
 @import "../styles/carbon-utils";
+
+.code-snippet-wrapper {
+  max-height: 11rem;
+}
 </style>

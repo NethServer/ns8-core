@@ -176,7 +176,7 @@ export default {
       if (error.response) {
         switch (error.response.data.Code) {
           case 401:
-            errorMessage = "Invalid username or password";
+            errorMessage = "Invalid username or password"; //// use i18n string
             break;
         }
       } else if (error.message === "Network Error") {

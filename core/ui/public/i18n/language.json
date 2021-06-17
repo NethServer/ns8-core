@@ -1,7 +1,10 @@
 {
   "common": {
     "details": "Details",
-    "copied_to_clipboard": "Copied to clipboard",
+    "copy_to_clipboard": "Copy to clipboard",
+    "copied_to_clipboard": "Copied!",
+    "show_more": "Show more",
+    "show_less": "Show less",
     "more_info": "More info",
     "close": "Close"
   },
@@ -19,7 +22,6 @@
     "configure": "Configure"
   },
   "task": {
-    "technical_details": "Technical details",
     "task_failed": "Task {action} failed",
     "task_completed": "Task {action} completed",
     "task_pending": "Task {action} is pending",

@@ -28,16 +28,18 @@ export default {
 const Template = (args, { argTypes }) => ({
   props: Object.keys(argTypes),
   components: { NsButton },
-  template: '<NsButton v-bind="$props">I am a button</NsButton>',
+  template: '<NsButton v-bind="$props">{{ slotContent }}</NsButton>',
 });
 
 export const Default = Template.bind({});
 Default.args = {
+  slotContent: `Button text`,
   kind: "default",
 };
 
 export const Icon = Template.bind({});
 Icon.args = {
+  slotContent: `Button text`,
   kind: "default",
   icon: Save,
 };
