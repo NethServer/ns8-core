@@ -37,8 +37,8 @@ import (
 )
 
 // GetAudits godoc
-// @Summary Get the output, error or exit code of a cluster task
-// @Description get task statuses (output, error, exit_code)
+// @Summary Get audit logs for user, action and timestamp
+// @Description get audit logs (user, action, data, timestamp)
 // @Produce  json
 // @Param user query string false "user search by user"
 // @Param action query string false "action search by action"

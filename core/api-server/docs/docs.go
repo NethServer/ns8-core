@@ -33,14 +33,14 @@ var doc = `{
     "paths": {
         "/audit": {
             "get": {
-                "description": "get task statuses (output, error, exit_code)",
+                "description": "get audit logs (user, action, data, timestamp)",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "/audit audit"
                 ],
-                "summary": "Get the output, error or exit code of a cluster task",
+                "summary": "Get audit logs for user, action and timestamp",
                 "parameters": [
                     {
                         "type": "string",
