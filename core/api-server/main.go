@@ -124,6 +124,9 @@ func main() {
 		api.GET("/module/:module_id/task/:task_id/status", methods.GetModuleTaskFiles)
 		api.GET("/module/:module_id/task/:task_id/context", methods.GetModuleTaskContext)
 		api.POST("/module/:module_id/tasks", methods.CreateModuleTask)
+
+		// audit APIs
+		api.GET("/audit", methods.GetAudits)
 	}
 
 	// define websocket endpoint

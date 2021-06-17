@@ -73,8 +73,12 @@ func RedisAuthentication(username string, password string) error {
 // @Router /logout [post]
 // @Tags /logout auth
 func RedisAuthorization(username string, c *gin.Context) (models.UserAuthorizations, error) {
-	// define return obj
 	var userAuthorizationsRedis models.UserAuthorizations
+
+	// bypass auth for GET requests: // TODO
+	if c.Request.Method == "GET" {
+		return userAuthorizationsRedis, nil
+	}
 
 	// init redis connection
 	redisConnection := redis.Instance()

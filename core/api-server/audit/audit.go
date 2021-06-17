@@ -24,10 +24,12 @@ package audit
 
 import (
 	"os"
+	"time"
 
 	"github.com/pkg/errors"
 
 	"github.com/NethServer/ns8-scratchpad/core/api-server/configuration"
+	"github.com/NethServer/ns8-scratchpad/core/api-server/models"
 	"github.com/NethServer/ns8-scratchpad/core/api-server/utils"
 
 	"database/sql"
@@ -94,34 +96,93 @@ func create() {
 	}
 }
 
-func Store(user string, action string, data string, timestamp string) {
+func Store(audit models.Audit) {
 	// check audit file is set
 	if len(configuration.Config.AuditFile) > 0 {
 		// open db
 		db, err := sql.Open("sqlite3", configuration.Config.AuditFile)
 		if err != nil {
-			utils.LogError(errors.Wrap(err, "error in audit file schema open"))
+			utils.LogError(errors.Wrap(err, "[STORE] error in audit file schema open"))
 		}
 		defer db.Close()
 
 		// begin sqlite connection to insert
 		tx, err := db.Begin()
 		if err != nil {
-			utils.LogError(errors.Wrap(err, "error in audit file schema begin"))
+			utils.LogError(errors.Wrap(err, "[STORE] error in audit file schema begin"))
 		}
 
 		// define statement
 		stmt, err := tx.Prepare("INSERT INTO audit(id, user, action, data, timestamp) VALUES(null, ?, ?, ?, ?)")
 		if err != nil {
-			utils.LogError(errors.Wrap(err, "error in audit file schema prepare"))
+			utils.LogError(errors.Wrap(err, "[STORE] error in audit file schema prepare"))
 		}
 		defer stmt.Close()
 
 		// execute statement
-		_, err = stmt.Exec(user, action, data, timestamp)
+		_, err = stmt.Exec(audit.User, audit.Action, audit.Data, audit.Timestamp.Format(time.RFC3339))
 		if err != nil {
-			utils.LogError(errors.Wrap(err, "error in audit file schema execute"))
+			utils.LogError(errors.Wrap(err, "[STORE] error in audit file schema execute"))
 		}
 		tx.Commit()
 	}
+}
+
+func Query(query string, args ...interface{}) []models.Audit {
+	// define results
+	var results []models.Audit
+
+	// check audit file is set
+	if len(configuration.Config.AuditFile) > 0 {
+		// open db
+		db, err := sql.Open("sqlite3", configuration.Config.AuditFile)
+		if err != nil {
+			utils.LogError(errors.Wrap(err, "[QUERY] error in audit file schema open"))
+		}
+		defer db.Close()
+
+		// define query
+		cleanArgs := make([]interface{}, 0, len(args))
+		for _, item := range args {
+			if item != "" {
+				cleanArgs = append(cleanArgs, item)
+			}
+		}
+
+		rows, err := db.Query(query, cleanArgs...)
+		if err != nil {
+			utils.LogError(errors.Wrap(err, "[QUERY] error in audit query execution"))
+		}
+		defer rows.Close()
+
+		// loop rows
+		for rows.Next() {
+			var auditRow models.Audit
+			var timestamp string
+			if err := rows.Scan(&auditRow.ID, &auditRow.User, &auditRow.Action, &auditRow.Data, &timestamp); err != nil {
+				utils.LogError(errors.Wrap(err, "[QUERY] error in audit query row extraction"))
+			}
+
+			// parse date
+			t, err := time.Parse(time.RFC3339, timestamp)
+
+			if err != nil {
+				utils.LogError(errors.Wrap(err, "[QUERY] error in audit parse timestamp"))
+			}
+
+			// append results
+			auditRow.Timestamp = t
+			results = append(results, auditRow)
+		}
+
+		// check rows error
+		errRows := rows.Err()
+		if errRows != nil {
+			utils.LogError(errors.Wrap(errRows, "[QUERY] error in rows query loop"))
+		}
+	}
+
+	// return results
+	return results
+
 }

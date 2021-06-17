@@ -23,7 +23,6 @@
 package middleware
 
 import (
-	"fmt"
 	"github.com/pkg/errors"
 	"time"
 
@@ -82,13 +81,27 @@ func InitJWT() *jwt.GinJWTMiddleware {
 				utils.LogError(errors.Wrap(err, "redis authentication failed for user "+username))
 
 				// store login action
-				audit.Store(username, "login-fail", "", fmt.Sprintf("%v", time.Now()))
+				auditData := models.Audit{
+					ID:        0,
+					User:      username,
+					Action:    "login-fail",
+					Data:      "",
+					Timestamp: time.Now(),
+				}
+				audit.Store(auditData)
 
 				return nil, jwt.ErrFailedAuthentication
 			}
 
 			// store login action
-			audit.Store(username, "login-ok", "", fmt.Sprintf("%v", time.Now()))
+			auditData := models.Audit{
+				ID:        0,
+				User:      username,
+				Action:    "login-ok",
+				Data:      "",
+				Timestamp: time.Now(),
+			}
+			audit.Store(auditData)
 
 			// return user auth model
 			return &models.UserAuthorizations{
@@ -157,13 +170,27 @@ func InitJWT() *jwt.GinJWTMiddleware {
 				}
 
 				// store auth action
-				audit.Store(data.(*models.UserAuthorizations).Username, "auth-ok", "", fmt.Sprintf("%v", time.Now()))
+				auditData := models.Audit{
+					ID:        0,
+					User:      data.(*models.UserAuthorizations).Username,
+					Action:    "auth-ok",
+					Data:      "",
+					Timestamp: time.Now(),
+				}
+				audit.Store(auditData)
 
 				return actionAllowed
 			}
 
 			// store auth action
-			audit.Store(data.(*models.UserAuthorizations).Username, "auth-fail", "", fmt.Sprintf("%v", time.Now()))
+			auditData := models.Audit{
+				ID:        0,
+				User:      data.(*models.UserAuthorizations).Username,
+				Action:    "auth-fail",
+				Data:      "",
+				Timestamp: time.Now(),
+			}
+			audit.Store(auditData)
 
 			// not authorized
 			return false

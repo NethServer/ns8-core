@@ -24,7 +24,6 @@ package methods
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -84,7 +83,15 @@ func getList(c *gin.Context, queueName string) {
 	// store to audit
 	claims := jwt.ExtractClaims(c)
 	parts := strings.Split(queueName, "/")
-	audit.Store(claims["id"].(string), "list-"+parts[0], queueName, fmt.Sprintf("%v", time.Now()))
+
+	auditData := models.Audit{
+		ID:        0,
+		User:      claims["id"].(string),
+		Action:    "list-" + parts[0],
+		Data:      queueName,
+		Timestamp: time.Now(),
+	}
+	audit.Store(auditData)
 
 	// return tasks
 	c.JSON(http.StatusOK, structs.Map(response.StatusOK{
@@ -148,7 +155,14 @@ func getTasks(c *gin.Context, queueName string) {
 
 	// store to audit
 	claims := jwt.ExtractClaims(c)
-	audit.Store(claims["id"].(string), "list-task", queueName, fmt.Sprintf("%v", time.Now()))
+	auditData := models.Audit{
+		ID:        0,
+		User:      claims["id"].(string),
+		Action:    "list-task",
+		Data:      queueName,
+		Timestamp: time.Now(),
+	}
+	audit.Store(auditData)
 
 	// return tasks
 	c.JSON(http.StatusOK, structs.Map(response.StatusOK{
@@ -219,7 +233,14 @@ func getTaskFile(c *gin.Context, filePath string) {
 
 	// store to audit
 	claims := jwt.ExtractClaims(c)
-	audit.Store(claims["id"].(string), "status-task", filePath, fmt.Sprintf("%v", time.Now()))
+	auditData := models.Audit{
+		ID:        0,
+		User:      claims["id"].(string),
+		Action:    "status-task",
+		Data:      filePath,
+		Timestamp: time.Now(),
+	}
+	audit.Store(auditData)
 
 	// return file response
 	c.JSON(http.StatusOK, structs.Map(response.StatusOK{
@@ -258,7 +279,14 @@ func getTaskContext(c *gin.Context, filePath string) {
 
 	// store to audit
 	claims := jwt.ExtractClaims(c)
-	audit.Store(claims["id"].(string), "context-task", filePath, fmt.Sprintf("%v", time.Now()))
+	auditData := models.Audit{
+		ID:        0,
+		User:      claims["id"].(string),
+		Action:    "context-task",
+		Data:      filePath,
+		Timestamp: time.Now(),
+	}
+	audit.Store(auditData)
 
 	// return file response
 	c.JSON(http.StatusOK, structs.Map(response.StatusOK{
@@ -325,7 +353,14 @@ func createTask(c *gin.Context, queueName string) {
 	redisConnection.Close()
 
 	// store to audit
-	audit.Store(task.User, "create-task", string(stringTask), fmt.Sprintf("%v", time.Now()))
+	auditData := models.Audit{
+		ID:        0,
+		User:      task.User,
+		Action:    "create-task",
+		Data:      string(stringTask),
+		Timestamp: time.Now(),
+	}
+	audit.Store(auditData)
 
 	// return status created
 	c.JSON(http.StatusCreated, structs.Map(response.StatusOK{
