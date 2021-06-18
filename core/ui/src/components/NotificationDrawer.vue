@@ -21,7 +21,7 @@
         Ongoing
       </div>
       <div v-for="notification in ongoingNotifications" :key="notification.id">
-        <ToastNotification
+        <NsToastNotification
           :kind="notification.type"
           :title="notification.title"
           :description="notification.description"
@@ -54,7 +54,7 @@
         v-for="notification in recentNotifications"
         :key="notification.id"
       >
-        <ToastNotification
+        <NsToastNotification
           :kind="notification.type"
           :title="notification.title"
           :description="notification.description"
@@ -75,7 +75,7 @@
 
 <script>
 import Close20 from "@carbon/icons-vue/es/close/20";
-import ToastNotification from "@/components/ToastNotification";
+import NsToastNotification from "@/components/NsToastNotification";
 import Pictogram from "@/components/Pictogram";
 import ExclamationMark from "@/components/pictograms/ExclamationMark";
 import { mapActions } from "vuex";
@@ -87,7 +87,7 @@ export default {
   mixins: [NotificationService],
   components: {
     Close20,
-    ToastNotification,
+    NsToastNotification,
     Pictogram,
     ExclamationMark,
   },

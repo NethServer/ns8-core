@@ -1,14 +1,14 @@
-import ProgressBar from "../components/ProgressBar.vue";
+import NsProgressBar from "../components/NsProgressBar.vue";
 
 export default {
-  title: "Components/ProgressBar",
-  component: ProgressBar,
+  title: "Components/NsProgressBar",
+  component: NsProgressBar,
 };
 
 const Template = (args, { argTypes }) => ({
   props: Object.keys(argTypes),
-  components: { ProgressBar },
-  template: '<ProgressBar v-bind="$props" />',
+  components: { NsProgressBar },
+  template: '<NsProgressBar v-bind="$props" />',
 });
 
 export const Determinate = Template.bind({});

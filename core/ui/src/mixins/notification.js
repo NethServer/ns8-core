@@ -1,7 +1,7 @@
 import { mapState } from "vuex";
 import { mapActions } from "vuex";
 import { mapGetters } from "vuex";
-import ToastNotification from "@/components/ToastNotification";
+import NsToastNotification from "@/components/NsToastNotification";
 import to from "await-to-js";
 
 export default {
@@ -50,7 +50,7 @@ export default {
     },
     showNotification(notification) {
       const toast = {
-        component: ToastNotification,
+        component: NsToastNotification,
         props: {
           kind: notification.type,
           title: notification.title,

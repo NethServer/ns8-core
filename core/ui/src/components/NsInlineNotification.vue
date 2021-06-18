@@ -58,7 +58,7 @@
 import { CvInlineNotification } from "@carbon/vue";
 
 export default {
-  name: "InlineNotification",
+  name: "NsInlineNotification",
   extends: CvInlineNotification,
   props: {
     showCloseButton: {
@@ -66,8 +66,21 @@ export default {
       default: true,
     },
     description: String,
+    actionLabel: { type: String, default: "" },
+    closeAriaLabel: { type: String, default: "Dismiss notification" },
+    kind: {
+      type: String,
+      default: "info",
+      validator: (val) => ["error", "info", "warning", "success"].includes(val),
+    },
+    lowContrast: Boolean,
   },
 };
 </script>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+.bx--inline-notification__title {
+  margin-right: 0.75rem;
+  margin-bottom: 0.2rem;
+}
+</style>

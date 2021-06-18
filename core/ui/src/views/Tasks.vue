@@ -1,7 +1,7 @@
 <template>
   <div>
     <h1>Tasks page</h1>
-    <InlineNotification
+    <NsInlineNotification
       v-if="error.clusterTasks"
       kind="error"
       title="Cannot retrieve tasks:"
@@ -15,14 +15,14 @@
 <script>
 import TaskService from "@/mixins/task";
 import to from "await-to-js";
-import InlineNotification from "@/components/InlineNotification";
+import NsInlineNotification from "@/components/NsInlineNotification";
 import UtilService from "@/mixins/util";
 
 //// delete file?
 
 export default {
   name: "Tasks",
-  components: { InlineNotification },
+  components: { NsInlineNotification },
   mixins: [TaskService, UtilService],
   data() {
     return {

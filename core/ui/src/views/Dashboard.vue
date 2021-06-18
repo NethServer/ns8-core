@@ -42,7 +42,7 @@
               ref="email"
             >
             </cv-text-input>
-            <InlineNotification
+            <NsInlineNotification
               v-if="error.testValidation"
               kind="error"
               :title="$t('error.error') + ':'"
@@ -263,7 +263,7 @@ import UtilService from "@/mixins/util";
 import QueryParamService from "@/mixins/queryParam";
 // import Pictogram from "@/components/Pictogram"; ////
 // import Gear from "@/components/pictograms/Gear"; ////
-import InlineNotification from "@/components/InlineNotification";
+import NsInlineNotification from "@/components/NsInlineNotification";
 import { formatRelative, formatDistance, subDays } from "date-fns";
 import TaskService from "@/mixins/task";
 import to from "await-to-js";
@@ -274,7 +274,7 @@ let nethserver = window.nethserver;
 
 export default {
   name: "Dashboard",
-  components: { NsButton, InlineNotification },
+  components: { NsButton, NsInlineNotification },
   mixins: [
     NotificationService,
     QueryParamService,

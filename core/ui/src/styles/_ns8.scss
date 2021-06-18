@@ -7,11 +7,7 @@ body {
 
 #app {
   height: 100%;
-}
-
-////
-#main-content {
-  height: 100%;
+  background-color: $ui-01;
 }
 
 a {
@@ -35,10 +31,6 @@ h1 {
 }
 
 h2 {
-  margin-bottom: $spacing-05;
-}
-
-h3 {
   margin-bottom: $spacing-05;
 }
 

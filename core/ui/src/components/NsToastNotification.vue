@@ -21,34 +21,48 @@
         <h3 :class="`${carbonPrefix}--toast-notification__title`">
           {{ title }}
         </h3>
-        <p
+        <div
           :class="[
             `${carbonPrefix}--toast-notification__subtitle`,
-            `notification-description`,
+            `notification-description-and-progress`,
+            { 'fix-margin-bottom': actionLabel },
           ]"
         >
           <span v-html="description"></span>
-        </p>
 
-        <div v-if="isProgressShown && kind !== 'error'">
-          <ProgressBar :value="progress" :indeterminate="!progress" />
-          <div class="progress-bar-spacer"></div>
-          <div v-if="progress" class="progress-number">{{ progress }} %</div>
+          <div v-if="isProgressShown && kind !== 'error'" class="progress">
+            <NsProgressBar :value="progress" :indeterminate="!progress" />
+            <div class="progress-bar-spacer"></div>
+            <div v-if="progress" class="progress-number">{{ progress }} %</div>
+          </div>
         </div>
 
-        <p
+        <div
           v-if="actionLabel"
           :class="[`${carbonPrefix}--toast-notification__caption`, `action`]"
         >
-          <cv-link
+          <!-- <cv-link ////
             @click="$emit('notificationAction', id)"
             :class="`action-button`"
           >
             {{ $t(actionLabel) }}
-          </cv-link>
-        </p>
+          </cv-link> -->
 
-        <p v-if="timestamp" class="timestamp">
+          <button
+            @click="$emit('notificationAction', id)"
+            :class="[
+              `${carbonPrefix}--inline-notification__action-button`,
+              `${carbonPrefix}--btn`,
+              `${carbonPrefix}--btn--sm`,
+              `${carbonPrefix}--btn--ghost`,
+            ]"
+            type="button"
+          >
+            {{ actionLabel }}
+          </button>
+        </div>
+
+        <div v-if="timestamp" class="timestamp">
           <cv-tooltip
             alignment="center"
             direction="bottom"
@@ -60,7 +74,7 @@
               })
             }}
           </cv-tooltip>
-        </p>
+        </div>
       </div>
       <button
         v-if="showCloseButton"
@@ -80,7 +94,7 @@
 import { CvToastNotification } from "@carbon/vue";
 import { CvLink, CvTooltip } from "../../node_modules/@carbon/vue";
 import DateTimeService from "../mixins/datetime";
-import ProgressBar from "./ProgressBar";
+import NsProgressBar from "./NsProgressBar";
 
 // limitation of vue-toastification, vue-i18n is not visible inside this component
 import Vue from "vue";
@@ -93,9 +107,9 @@ i18n.setLocaleMessage(langCode, messages);
 i18n.locale = langCode;
 
 export default {
-  name: "ToastNotification",
+  name: "NsToastNotification",
   extends: CvToastNotification,
-  components: { ProgressBar, CvLink, CvTooltip },
+  components: { NsProgressBar, CvLink, CvTooltip },
   mixins: [DateTimeService],
   i18n,
   props: {
@@ -150,30 +164,39 @@ export default {
 
 .action {
   padding-top: 0;
-  margin-bottom: $spacing-04;
+  margin-bottom: 0;
 }
 
-.action-button {
-  color: #78a9ff;
-  cursor: pointer;
+// .action-button {
+//   color: #78a9ff;
+//   cursor: pointer;
+// }
+
+.bx--toast-notification .bx--inline-notification__action-button.bx--btn--ghost {
+  color: $inverse-link;
+  margin-left: -16px;
 }
 
-.notification-description {
+.notification-description-and-progress {
   margin-top: $spacing-03;
   margin-bottom: $spacing-04;
 }
 
+.fix-margin-bottom {
+  margin-bottom: 0;
+}
+
 .progress {
-  margin-right: $spacing-03;
+  margin-top: $spacing-04;
 }
 
 .progress-bar-spacer {
   height: $spacing-03;
 }
 
-.progress-number {
-  margin-bottom: $spacing-04;
-}
+// .progress-number { ////
+//   margin-bottom: $spacing-04;
+// }
 
 .cv-notifiation.bx--toast-notification.notification {
   width: 26vw;

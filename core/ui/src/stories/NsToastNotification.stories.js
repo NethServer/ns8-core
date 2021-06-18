@@ -1,8 +1,8 @@
-import ToastNotification from "../components/ToastNotification.vue";
+import NsToastNotification from "../components/NsToastNotification.vue";
 
 export default {
-  title: "Components/ToastNotification",
-  component: ToastNotification,
+  title: "Components/NsToastNotification",
+  component: NsToastNotification,
   argTypes: {
     kind: {
       options: ["error", "info", "warning", "success"],
@@ -13,8 +13,8 @@ export default {
 
 const Template = (args, { argTypes }) => ({
   props: Object.keys(argTypes),
-  components: { ToastNotification },
-  template: '<ToastNotification v-bind="$props" />',
+  components: { NsToastNotification },
+  template: '<NsToastNotification v-bind="$props" />',
 });
 
 export const Default = Template.bind({});

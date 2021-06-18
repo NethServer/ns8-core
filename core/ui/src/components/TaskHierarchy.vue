@@ -1,7 +1,7 @@
 <template>
   <div class="indent">
     <div v-for="(subTask, index) in subTasks" :key="index">
-      <InlineNotification
+      <NsInlineNotification
         :kind="getTaskKind(subTask)"
         :title="getTaskStatusDescription(subTask, false)"
         low-contrast
@@ -17,12 +17,12 @@
 
 <script>
 import TaskService from "@/mixins/task";
-import InlineNotification from "@/components/InlineNotification";
+import NsInlineNotification from "@/components/NsInlineNotification";
 
 export default {
   name: "TaskHierarchy",
   mixins: [TaskService],
-  components: { InlineNotification },
+  components: { NsInlineNotification },
   props: {
     subTasks: {
       type: Array,

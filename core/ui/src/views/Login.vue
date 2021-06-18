@@ -7,10 +7,11 @@
             <cv-tile :light="true" class="login-tile">
               <h2 class="login-title">Log in</h2>
               <div v-if="step === 'username'">
-                <InlineNotification
+                <!-- //// i18n -->
+                <NsInlineNotification
                   v-if="error.login"
                   kind="error"
-                  title="Cannot log in:"
+                  title="Cannot log in"
                   :description="error.login"
                   low-contrast
                   :showCloseButton="false"
@@ -81,7 +82,7 @@
 import IconService from "@/mixins/icon";
 import LoginService from "@/mixins/login";
 import StorageService from "@/mixins/storage";
-import InlineNotification from "@/components/InlineNotification";
+import NsInlineNotification from "@/components/NsInlineNotification";
 import { mapState } from "vuex";
 import { mapActions } from "vuex";
 import to from "await-to-js";
@@ -91,7 +92,7 @@ let nethserver = window.nethserver;
 
 export default {
   name: "Login",
-  components: { InlineNotification },
+  components: { NsInlineNotification },
   mixins: [IconService, LoginService, StorageService, WebSocketService],
   data() {
     return {

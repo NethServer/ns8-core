@@ -17,7 +17,7 @@
 
 <script>
 export default {
-  name: "ProgressBar",
+  name: "NsProgressBar",
   props: {
     value: {
       // a number between 0 and 100

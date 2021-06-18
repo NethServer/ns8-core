@@ -6,7 +6,7 @@
   >
     <template slot="title">{{ getTaskTitle(taskErrorToShow) }}</template>
     <template slot="content" v-if="taskErrorToShow">
-      <InlineNotification
+      <NsInlineNotification
         :kind="getTaskKind(taskErrorToShow)"
         :title="getTaskStatusDescription(taskErrorToShow, true)"
         low-contrast
@@ -42,14 +42,14 @@
 <script>
 import { mapState } from "vuex";
 import { mapActions } from "vuex";
-import InlineNotification from "@/components/InlineNotification";
+import NsInlineNotification from "@/components/NsInlineNotification";
 import NsCodeSnippet from "@/components/NsCodeSnippet";
 import TaskHierarchy from "@/components/TaskHierarchy";
 import TaskService from "@/mixins/task";
 
 export default {
   name: "TaskErrorModal",
-  components: { InlineNotification, TaskHierarchy, NsCodeSnippet },
+  components: { NsInlineNotification, TaskHierarchy, NsCodeSnippet },
   mixins: [TaskService],
   props: {},
   data() {
