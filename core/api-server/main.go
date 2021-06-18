@@ -127,6 +127,8 @@ func main() {
 
 		// audit APIs
 		api.GET("/audit", methods.GetAudits)
+		api.GET("/audit/users", methods.GetAuditsUsers)
+		api.GET("/audit/actions", methods.GetAuditsActions)
 	}
 
 	// define websocket endpoint

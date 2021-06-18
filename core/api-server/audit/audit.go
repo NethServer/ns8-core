@@ -128,7 +128,7 @@ func Store(audit models.Audit) {
 	}
 }
 
-func Query(query string, args ...interface{}) []models.Audit {
+func QueryArgs(query string, args ...interface{}) []models.Audit {
 	// define results
 	var results []models.Audit
 
@@ -173,6 +173,49 @@ func Query(query string, args ...interface{}) []models.Audit {
 			// append results
 			auditRow.Timestamp = t
 			results = append(results, auditRow)
+		}
+
+		// check rows error
+		errRows := rows.Err()
+		if errRows != nil {
+			utils.LogError(errors.Wrap(errRows, "[QUERY] error in rows query loop"))
+		}
+	}
+
+	// return results
+	return results
+
+}
+
+func Query(query string) []string {
+	// define results
+	var results []string
+
+	// check audit file is set
+	if len(configuration.Config.AuditFile) > 0 {
+		// open db
+		db, err := sql.Open("sqlite3", configuration.Config.AuditFile)
+		if err != nil {
+			utils.LogError(errors.Wrap(err, "[QUERY] error in audit file schema open"))
+		}
+		defer db.Close()
+
+		// define query
+		rows, err := db.Query(query)
+		if err != nil {
+			utils.LogError(errors.Wrap(err, "[QUERY] error in audit query execution"))
+		}
+		defer rows.Close()
+
+		// loop rows
+		for rows.Next() {
+			var field string
+			if err := rows.Scan(&field); err != nil {
+				utils.LogError(errors.Wrap(err, "[QUERY] error in audit query row extraction"))
+			}
+
+			// append results
+			results = append(results, field)
 		}
 
 		// check rows error

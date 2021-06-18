@@ -144,6 +144,84 @@ paths:
       summary: Get audit logs for user, action and timestamp
       tags:
       - /audit audit
+  /audit/actions:
+    get:
+      description: get audit actions
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            Authorization:
+              description: Bearer <valid.JWT.token>
+              type: string
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.StatusOK'
+            - properties:
+                code:
+                  type: integer
+                data:
+                  type: string
+                message:
+                  type: string
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.StatusBadRequest'
+            - properties:
+                code:
+                  type: integer
+                data:
+                  type: object
+                message:
+                  type: string
+              type: object
+      summary: Get all actions in audit.db
+      tags:
+      - /audit audit
+  /audit/users:
+    get:
+      description: get audit users
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          headers:
+            Authorization:
+              description: Bearer <valid.JWT.token>
+              type: string
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.StatusOK'
+            - properties:
+                code:
+                  type: integer
+                data:
+                  type: string
+                message:
+                  type: string
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.StatusBadRequest'
+            - properties:
+                code:
+                  type: integer
+                data:
+                  type: object
+                message:
+                  type: string
+              type: object
+      summary: Get all users in audit.db
+      tags:
+      - /audit audit
   /cluster/task/{task_id}/context:
     get:
       description: get task statuses (context)

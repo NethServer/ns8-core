@@ -125,6 +125,142 @@ var doc = `{
                 }
             }
         },
+        "/audit/actions": {
+            "get": {
+                "description": "get audit actions",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "/audit audit"
+                ],
+                "summary": "Get all actions in audit.db",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.StatusOK"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "integer"
+                                        },
+                                        "data": {
+                                            "type": "string"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        },
+                        "headers": {
+                            "Authorization": {
+                                "type": "string",
+                                "description": "Bearer \u003cvalid.JWT.token\u003e"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.StatusBadRequest"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "integer"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/audit/users": {
+            "get": {
+                "description": "get audit users",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "/audit audit"
+                ],
+                "summary": "Get all users in audit.db",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.StatusOK"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "integer"
+                                        },
+                                        "data": {
+                                            "type": "string"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        },
+                        "headers": {
+                            "Authorization": {
+                                "type": "string",
+                                "description": "Bearer \u003cvalid.JWT.token\u003e"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.StatusBadRequest"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "integer"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
         "/cluster/task/{task_id}/context": {
             "get": {
                 "description": "get task statuses (context)",

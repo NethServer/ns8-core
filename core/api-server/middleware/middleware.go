@@ -203,7 +203,7 @@ func InitJWT() *jwt.GinJWTMiddleware {
 			}))
 			return
 		},
-		TokenLookup:   "header: Authorization, query: token, cookie: jwt",
+		TokenLookup:   "header: Authorization, token: jwt",
 		TokenHeadName: "Bearer",
 		TimeFunc:      time.Now,
 	})

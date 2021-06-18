@@ -55,6 +55,7 @@ func GetAudits(c *gin.Context) {
 	action := c.Query("action")
 	from := c.Query("from")
 	to := c.Query("to")
+	limit := c.Query("limit")
 
 	// define query
 	query := "SELECT * FROM audit WHERE true"
@@ -76,8 +77,17 @@ func GetAudits(c *gin.Context) {
 		query += " AND timestamp <= ?"
 	}
 
+	// order by
+	query += " ORDER BY timestamp desc"
+
+	// add limit
+	if len(limit) == 0 {
+		limit = "500" // if not specified, limit to 500 records
+	}
+	query += " LIMIT " + limit
+
 	// execute query
-	results := audit.Query(query, user, action, from, to)
+	results := audit.QueryArgs(query, user, action, from, to)
 
 	// store audit
 	claims := jwt.ExtractClaims(c)
@@ -112,4 +122,72 @@ func GetAudits(c *gin.Context) {
 		}
 	}
 
+}
+
+// GetAuditsUsers godoc
+// @Summary Get all users in audit.db
+// @Description get audit users
+// @Produce  json
+// @Success 200 {object} response.StatusOK{code=int,message=string,data=string}
+// @Header 200 {string} Authorization "Bearer <valid.JWT.token>"
+// @Failure 400 {object} response.StatusBadRequest{code=int,message=string,data=object}
+// @Router /audit/users [get]
+// @Tags /audit audit
+func GetAuditsUsers(c *gin.Context) {
+	// define query
+	query := "SELECT DISTINCT user FROM audit"
+
+	// execute query
+	users := audit.Query(query)
+
+	// store audit
+	claims := jwt.ExtractClaims(c)
+	auditData := models.Audit{
+		User:      claims["id"].(string),
+		Action:    "list-audit-users",
+		Data:      "",
+		Timestamp: time.Now(),
+	}
+	audit.Store(auditData)
+
+	// return users
+	c.JSON(http.StatusOK, structs.Map(response.StatusOK{
+		Code:    200,
+		Message: "success",
+		Data:    gin.H{"users": users},
+	}))
+}
+
+// GetAuditsActions godoc
+// @Summary Get all actions in audit.db
+// @Description get audit actions
+// @Produce  json
+// @Success 200 {object} response.StatusOK{code=int,message=string,data=string}
+// @Header 200 {string} Authorization "Bearer <valid.JWT.token>"
+// @Failure 400 {object} response.StatusBadRequest{code=int,message=string,data=object}
+// @Router /audit/actions [get]
+// @Tags /audit audit
+func GetAuditsActions(c *gin.Context) {
+	// define query
+	query := "SELECT DISTINCT action FROM audit"
+
+	// execute query
+	actions := audit.Query(query)
+
+	// store audit
+	claims := jwt.ExtractClaims(c)
+	auditData := models.Audit{
+		User:      claims["id"].(string),
+		Action:    "list-audit-actions",
+		Data:      "",
+		Timestamp: time.Now(),
+	}
+	audit.Store(auditData)
+
+	// return actions
+	c.JSON(http.StatusOK, structs.Map(response.StatusOK{
+		Code:    200,
+		Message: "success",
+		Data:    gin.H{"actions": actions},
+	}))
 }
