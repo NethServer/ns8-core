@@ -151,7 +151,49 @@ exit_code, output, error = agent.run_subtask(rdb,
     action="create-module",
     input_obj="",
     )
-assert exit_code == 0
+assert exit_code == 0 # Ensure create-module is successful
+
+create_output = output.strip() # Ignore garbage whitespaces
+if create_output == "":
+    create_output = '[]' # An empty output is considered an empty array
+#
+# Expected output schema
+#
+# [
+#     {
+#         "action":"set-host",
+#         "agent":"traefik@node",
+#         "data": {
+#             "url":"http://127.0.0.1:3000",
+#             "instance":"module3",
+#             "host":"www.example.com"
+#         }
+#     }
+# ]
+#
+for task in json.loads(create_output):
+    xaction = task['action']
+    xagent = task['agent']
+
+    if xagent == 'node': # Expand to the agent prefix of the current node
+        agent_prefix = f'node/{node_id}'
+    elif xagent.endswith('@node'): # Module agent lookup
+        default_instance = rdb.get(f'node/{node_id}/default_instance/{xagent[0:-len("@node")]}')
+        agent_prefix = f'module/{default_instance}'
+    elif xagent.endswith('@cluster'):
+        default_instance = rdb.get(f'cluster/default_instance/{xagent[0:-len("@cluster")]}')
+        agent_prefix = f'module/{default_instance}'
+    else:
+        agent_prefix = xagent
+
+    assert xaction in rdb.smembers(f'{agent_prefix}/roles/create-module') # Check the action is authorized
+
+    exit_code, output, error = agent.run_subtask(rdb,
+        agent_prefix=agent_prefix,
+        action=xaction,
+        input_obj=task.get('data', {}),
+    )
+    assert exit_code == 0 # Ensure the secondary actions from create-module are successful
 
 # Configure our builtin roles: "owner" and "reader". Owner can run any action, Reader can run
 # action names with special prefixes.
@@ -167,9 +209,8 @@ for userk in rdb.scan_iter('roles/*'):
     if 'cluster' in roles and roles['cluster'] == 'owner':
         cluster.grants.alter_user(rdb, user=userk[6:], revoke=False, role='owner', on_clause=f'module/{module_id}')
 
-
-print(json.dumps({
+json.dump({
     "module_id": module_id,
     "image_name": image['name'],
     "image_url": image_url,
-}), file=sys.stdout)
+}, fp=sys.stdout)
