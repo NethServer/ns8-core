@@ -10,3 +10,4 @@ HSET image/mail         url ghcr.io/nethserver/mail:latest         name "Mail se
 HSET image/dokuwiki     url ghcr.io/nethserver/dokuwiki:latest     name "Dokuwiki"
 HSET image/promtail     url ghcr.io/nethserver/promtail:latest     name "Promtail logs collector for Loki"
 HSET image/nextcloud    url ghcr.io/nethserver/nextcloud:latest    name "Nextcloud"
+HSET image/netdata      url ghcr.io/nethserver/netdata:latest      name "Netdata"
