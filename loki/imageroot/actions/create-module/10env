@@ -19,20 +19,11 @@
 # You should have received a copy of the GNU General Public License
 # along with NethServer.  If not, see COPYING.
 #
-
 set -e
 
 exec 1>&2 # Send any output to stderr, to not alter the action response protocol
 
-#Configure as default Loki server the leader node.
-
-leader_id=$(REDIS_USER=default redis-exec HGET cluster/environment NODE_ID)
-
 cat >&${AGENT_COMFD} <<EOF
-set-env LOKI_URL http://$(REDIS_USER=default redis-exec HGET node/${leader_id}/vpn ip_address):3100/loki/api/v1/push
+set-env LOKI_ADDR $(REDIS_USER=default redis-exec HGET node/${NODE_ID}/vpn ip_address)
 dump-env
 EOF
-
-install -m 644 "${AGENT_INSTALL_DIR}/promtail.service" "/etc/systemd/system/${MODULE_ID}.service"
-systemctl daemon-reload
-systemctl enable --now "${MODULE_ID}.service"

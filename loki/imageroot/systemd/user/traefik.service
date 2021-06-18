@@ -1,0 +1,31 @@
+[Unit]
+Description=Podman traefik.service
+BindsTo=loki.service
+After=loki.service
+
+[Service]
+Environment=PODMAN_SYSTEMD_UNIT=%n
+EnvironmentFile=-%S/state/environment
+Restart=always
+ExecStartPre=/bin/rm -f %t/traefik.pid %t/traefik.ctr-id
+ExecStart=/usr/bin/podman run \
+    --detach \
+    --conmon-pidfile=%t/traefik.pid \
+    --cidfile=%t/traefik.ctr-id \
+    --cgroups=no-conmon \
+    --pod-id-file %t/loki.pod-id \
+    --log-opt=tag=%u \
+    --replace \
+    --name=%N \
+    --volume=./traefik.yaml:/etc/traefik.yaml:Z \
+    ${TRAEFIK_IMAGE} \
+    --entryPoints.loki.address=:13100 \
+    --providers.file.filename=/etc/traefik.yaml
+ExecStop=/usr/bin/podman stop --ignore --cidfile %t/traefik.ctr-id -t 10
+ExecStopPost=/usr/bin/podman rm --ignore -f --cidfile %t/traefik.ctr-id
+PIDFile=%t/traefik.pid
+Type=forking
+WorkingDirectory=%S/state
+
+[Install]
+WantedBy=default.target

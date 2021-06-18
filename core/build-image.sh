@@ -28,10 +28,18 @@ buildah run gobuilder-core sh -c "cd /usr/src/core/api-server && go build -v -ld
 echo "Build static UI files with node..."
 buildah run nodebuilder-core sh -c "cd /usr/src/core/ui       && npm install && npm run build"
 
+echo "Download Logcli..."
+logcli_tmp_dir=$(mktemp -d)
+wget https://github.com/grafana/loki/releases/download/v2.2.1/logcli-linux-amd64.zip -P ${logcli_tmp_dir}
+unzip ${logcli_tmp_dir}/logcli-linux-amd64.zip -d ${logcli_tmp_dir}
+
 echo "Building the Core image..."
 container=$(buildah from scratch)
 reponame="core"
 buildah add "${container}" imageroot /
+buildah add "${container}" ${logcli_tmp_dir}/logcli-linux-amd64 /usr/local/sbin/logcli
+rm -r ${logcli_tmp_dir}
+trap "rm -rf ${logcli_tmp_dir}" EXIT
 buildah add "${container}" agent/agent /usr/local/bin/agent
 buildah add "${container}" api-server/api-server /usr/local/bin/api-server
 buildah add "${container}" ui/dist /var/lib/nethserver/cluster/ui

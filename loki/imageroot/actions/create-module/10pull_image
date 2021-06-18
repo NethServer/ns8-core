@@ -22,17 +22,16 @@
 
 set -e
 
-exec 1>&2 # Send any output to stderr, to not alter the action response protocol
+# Redirect any output to the journal (stderr)
+exec 1>&2
 
-#Configure as default Loki server the leader node.
+LOKI_IMAGE="docker.io/grafana/loki:2.2.1"
+TRAEFIK_IMAGE="docker.io/traefik:v2.4"
 
-leader_id=$(REDIS_USER=default redis-exec HGET cluster/environment NODE_ID)
+# Talk with agent using file descriptor to save the image name to environment
+# The ${IMAGE} variable will be used later inside systemd unit
 
-cat >&${AGENT_COMFD} <<EOF
-set-env LOKI_URL http://$(REDIS_USER=default redis-exec HGET node/${leader_id}/vpn ip_address):3100/loki/api/v1/push
-dump-env
-EOF
+echo "set-env LOKI_IMAGE ${LOKI_IMAGE}" >&${AGENT_COMFD}
+echo "set-env TRAEFIK_IMAGE ${TRAEFIK_IMAGE}" >&${AGENT_COMFD}
 
-install -m 644 "${AGENT_INSTALL_DIR}/promtail.service" "/etc/systemd/system/${MODULE_ID}.service"
-systemctl daemon-reload
-systemctl enable --now "${MODULE_ID}.service"
+podman-pull-missing ${LOKI_IMAGE} ${TRAEFIK_IMAGE}
