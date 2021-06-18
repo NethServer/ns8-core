@@ -16,10 +16,39 @@
     "401": "Missing or invalid authentication",
     "403": "Operation not authorized",
     "404": "Resource not found",
-    "cannot_retrieve_task_status": "Cannot retrieve task status"
+    "cannot_retrieve_task_status": "Cannot retrieve task status",
+    "invalid_username_or_password": "Invalid username or password"
   },
-  "module": {
-    "configure": "Configure"
+  "login": {
+    "login": "Log in",
+    "logging_in_as": "Logging in as",
+    "not_you": "Not you?",
+    "cannot_login": "Cannot log in",
+    "username": "Username",
+    "password": "Password",
+    "username_placeholder": "Your username",
+    "password_placeholder": "Your password",
+    "remember_username": "Remember username",
+    "hide_password": "Hide password",
+    "show_password": "Show password"
+  },
+  "shell": {
+    "skip_to_content": "Skip to content",
+    "status": "Status",
+    "search": "Search",
+    "account": "Account",
+    "applications": "Applications",
+    "search_placeholder": "Search...",
+    "no_search_results": "No results",
+    "no_search_results_description": "Try changing your search query"
+  },
+  "notification": {
+    "notifications": "Notifications",
+    "unread": "unread",
+    "ongoing": "Ongoing",
+    "recent": "Recent",
+    "no_notifications": "No notifications",
+    "no_notifications_description": "You don't have any recent notifications yet"
   },
   "task": {
     "task_failed": "Task {action} failed",
@@ -29,7 +58,9 @@
     "subtask_failed": "Subtask {action} failed",
     "subtask_completed": "Subtask {action} completed",
     "subtask_pending": "Subtask {action} is pending",
-    "subtask_failed_validation": "Subtask {action} failed validation"
+    "subtask_failed_validation": "Subtask {action} failed validation",
+    "completed": "Completed",
+    "configure": "Configure"
   },
   "validation": {
     "name_is_empty": "Name is empty ////",

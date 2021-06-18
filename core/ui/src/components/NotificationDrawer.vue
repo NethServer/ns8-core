@@ -2,8 +2,8 @@
   <transition name="slide-notifications">
     <div v-if="isShown" class="notification-drawer">
       <div class="notification-drawer__header">
-        <h4>Notifications</h4>
-        <span>{{ unreadNotificationsCount }} unread</span>
+        <h4>{{ $t("notification.notifications") }}</h4>
+        <span>{{ unreadNotificationsCount }} {{ $t("notification.unread") }}</span>
         <button
           aria-label="close"
           type="button"
@@ -18,7 +18,7 @@
         </button>
       </div>
       <div v-if="ongoingNotifications.length" class="notification-divider">
-        Ongoing
+        {{ $t("notification.ongoing") }}
       </div>
       <div v-for="notification in ongoingNotifications" :key="notification.id">
         <NsToastNotification
@@ -37,15 +37,15 @@
           :id="notification.id"
         />
       </div>
-      <div class="notification-divider">Recent</div>
+      <div class="notification-divider">{{ $t("notification.recent") }}</div>
       <div v-if="!recentNotifications.length">
         <div class="empty-state">
           <pictogram title="empty state" class="image">
             <ExclamationMark />
           </pictogram>
-          <h5 class="title">No notifications</h5>
+          <h5 class="title">{{ $t("notification.no_notifications") }}</h5>
           <div class="description">
-            You don't have any recent notifications yet
+            {{ $t("notification.no_notifications_description") }}
           </div>
         </div>
       </div>

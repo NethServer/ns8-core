@@ -25,6 +25,7 @@
           :class="[
             `${carbonPrefix}--toast-notification__subtitle`,
             `notification-description-and-progress`,
+            `row`,
             { 'fix-margin-bottom': actionLabel },
           ]"
         >
@@ -39,13 +40,13 @@
 
         <div
           v-if="actionLabel"
-          :class="[`${carbonPrefix}--toast-notification__caption`, `action`]"
+          :class="[`${carbonPrefix}--toast-notification__caption`, `action`, `row`]"
         >
           <!-- <cv-link ////
             @click="$emit('notificationAction', id)"
             :class="`action-button`"
           >
-            {{ $t(actionLabel) }}
+            {{ actionLabel }}
           </cv-link> -->
 
           <button
@@ -62,7 +63,7 @@
           </button>
         </div>
 
-        <div v-if="timestamp" class="timestamp">
+        <div v-if="timestamp" class="timestamp row">
           <cv-tooltip
             alignment="center"
             direction="bottom"
@@ -96,22 +97,11 @@ import { CvLink, CvTooltip } from "../../node_modules/@carbon/vue";
 import DateTimeService from "../mixins/datetime";
 import NsProgressBar from "./NsProgressBar";
 
-// limitation of vue-toastification, vue-i18n is not visible inside this component
-import Vue from "vue";
-import VueI18n from "vue-i18n";
-Vue.use(VueI18n);
-const i18n = new VueI18n();
-const messages = require("../../public/i18n/language.json");
-const langCode = navigator.language.substr(0, 2);
-i18n.setLocaleMessage(langCode, messages);
-i18n.locale = langCode;
-
 export default {
   name: "NsToastNotification",
   extends: CvToastNotification,
   components: { NsProgressBar, CvLink, CvTooltip },
   mixins: [DateTimeService],
-  i18n,
   props: {
     id: String,
     description: String,
@@ -132,7 +122,7 @@ export default {
       type: Boolean,
       default: false,
     },
-    closeAriaLabel: { type: String, default: "Dismiss notification" }, //// i18n
+    closeAriaLabel: { type: String, default: "Dismiss notification" },
     kind: {
       type: String,
       default: "info",
@@ -140,17 +130,6 @@ export default {
     },
     lowContrast: Boolean,
   },
-  // methods: { ////
-  //   $t(...args) {
-  //     // limitation of vue-toastification, vue-i18n doesn't work properly inside this component
-  //     return window.ns8.$t(args);
-  //   },
-  //   emitAction() {
-  //     console.log("emitAction!!"); ////
-
-  //     this.$emit("notificationAction", this.id);
-  //   },
-  // },
 };
 </script>
 
@@ -178,7 +157,7 @@ export default {
 }
 
 .notification-description-and-progress {
-  margin-top: $spacing-03;
+  margin-top: $spacing-04;
   margin-bottom: $spacing-04;
 }
 
@@ -230,7 +209,7 @@ export default {
   line-height: 1.29;
 }
 
-p:last-child {
+div.row:last-child {
   margin-bottom: $spacing-06;
 }
 

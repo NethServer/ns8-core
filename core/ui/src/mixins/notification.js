@@ -224,8 +224,7 @@ export default {
         let notificationText = payload.description;
 
         if (taskStatus === "completed") {
-          //// i18n
-          notificationText = "Completed";
+          notificationText = this.$t("task.completed");
         } else if (taskStatus === "aborted") {
           notificationText = this.$t("error.generic_error");
         } else if (taskStatus === "validation-failed") {
@@ -282,7 +281,7 @@ export default {
         // task completed successfully
         switch (taskContext.action) {
           case "add-module":
-            actionLabel = "module.configure";
+            actionLabel = this.$t("task.configure");
             action = {
               type: "changeRoute",
               url: `/apps/${taskResult.output.module_id}`,

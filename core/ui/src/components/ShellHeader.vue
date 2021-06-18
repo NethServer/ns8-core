@@ -5,15 +5,15 @@
       aria-controls="side-nav"
       @click="toggleMobileSideMenu"
     />
-    <cv-skip-to-content href="#main-content"
-      >Skip to content</cv-skip-to-content
-    >
+    <cv-skip-to-content href="#main-content">{{
+      $t("shell.skip_to_content")
+    }}</cv-skip-to-content>
     <cv-header-name to="/" prefix="">{{
       $root.config.PRODUCT_NAME
     }}</cv-header-name>
     <cv-header-nav>
       <cv-header-menu-item to="/dashboard?" class="status"
-        ><span class="status-text">Status</span
+        ><span class="status-text">{{ $t("shell.status") }}</span
         ><span class="status-badge"></span
       ></cv-header-menu-item>
       <!-- <cv-header-menu-item
@@ -44,16 +44,16 @@
     <template slot="header-global">
       <cv-header-global-action
         v-if="!isSearchExpanded"
-        label="Search"
-        aria-label="Search"
+        :label="$t('shell.search')"
+        :aria-label="$t('shell.search')"
         @click="expandSearch"
       >
         <search-20 />
       </cv-header-global-action>
       <GlobalSearch v-else @closeSearch="closeSearch" />
       <cv-header-global-action
-        label="Notifications"
-        aria-label="Notifications"
+        :label="$t('notification.notifications')"
+        :aria-label="$t('notification.notifications')"
         class="notifications-button"
         @click="toggleNotificationDrawer"
       >
@@ -68,16 +68,16 @@
         ></span>
       </cv-header-global-action>
       <cv-header-global-action
-        label="Account"
-        aria-label="Account"
+        :label="$t('shell.account')"
+        :aria-label="$t('shell.account')"
         tipPosition="bottom"
         tipAlignment="end"
       >
         <user-avatar-20 />
       </cv-header-global-action>
       <cv-header-global-action
-        label="Applications"
-        aria-label="Applications"
+        :label="$t('shell.applications')"
+        :aria-label="$t('shell.applications')"
         @click="toggleAppDrawer"
         tipPosition="bottom"
         tipAlignment="end"
@@ -128,17 +128,6 @@ export default {
     ...mapState(["isNotificationDrawerShown", "notifications"]),
     ...mapGetters(["unreadNotificationsCount", "ongoingNotificationsCount"]),
   },
-  // watch: { ////
-  //   viewWidth: function () {
-  //     console.log("viewWidth", this.viewWidth); ////
-  //   },
-  // },
-  // created() { ////
-  //   window.addEventListener("resize", this.handleViewResize);
-  // },
-  // beforeDestroy() { ////
-  //   window.removeEventListener("resize", this.handleViewResize);
-  // },
   methods: {
     ...mapActions(["setIsNotificationDrawerShownInStore"]),
     toggleNotificationDrawer() {
@@ -178,8 +167,7 @@ export default {
   left: 62%;
   height: 7px;
   width: 7px;
-  background-color: $interactive-01; ////
-  // background-color: #fff; ////
+  background-color: $interactive-01;
   border-radius: 50%;
   display: inline-block;
 }
@@ -217,7 +205,6 @@ export default {
   right: 16%;
   height: 8px;
   width: 8px;
-  // background-color: $inverse-support-04; ////
   background-color: $inverse-support-02;
   border-radius: 50%;
   display: inline-block;

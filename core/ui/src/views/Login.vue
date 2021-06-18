@@ -5,28 +5,27 @@
         <div class="bx--offset-md-1 bx--col-md-6 bx--offset-lg-4 bx--col-lg-8">
           <div class="test">
             <cv-tile :light="true" class="login-tile">
-              <h2 class="login-title">Log in</h2>
+              <h2 class="login-title">{{ $t("login.login") }}</h2>
               <div v-if="step === 'username'">
-                <!-- //// i18n -->
                 <NsInlineNotification
                   v-if="error.login"
                   kind="error"
-                  title="Cannot log in"
+                  :title="$t('cannot_login')"
                   :description="error.login"
                   low-contrast
                   :showCloseButton="false"
                 />
                 <cv-form @submit.prevent="checkUsername" class="login-form">
                   <cv-text-input
-                    label="Username"
+                    :label="$t('login.username')"
                     v-model="username"
                     class="mg-bottom-md"
-                    placeholder="Your username"
+                    :placeholder="$t('login.username_placeholder')"
                     :invalid-message="error.username"
                     ref="usernameInput"
                   ></cv-text-input>
                   <cv-checkbox
-                    label="Remember username"
+                    :label="$t('login.remember_username')"
                     class="mg-bottom-md"
                     v-model="rememberUsername"
                     value="checkRememberUsername"
@@ -43,29 +42,30 @@
               </div>
               <div v-else-if="step === 'password'">
                 <span
-                  >Logging in as <strong>{{ username }}</strong></span
+                  >{{ $t("login.logging_in_as") }}
+                  <strong>{{ username }}</strong></span
                 >
-                <cv-link @click="goToUsername" class="not-you"
-                  >Not you?</cv-link
-                >
+                <cv-link @click="goToUsername" class="not-you">{{
+                  $t("login.not_you")
+                }}</cv-link>
                 <cv-form @submit.prevent="checkPassword" class="login-form">
                   <cv-text-input
-                    label="Password"
+                    :label="$t('login.password')"
                     type="password"
                     v-model="password"
                     class="bx--password-input mg-bottom-md"
-                    placeholder="Your password"
+                    :placeholder="$t('login.password_placeholder')"
                     :invalid-message="error.password"
-                    password-hide-label="Hide password"
-                    password-show-label="Show password"
+                    :password-hide-label="$t('login.hide_password')"
+                    :password-show-label="$t('login.show_password')"
                     ref="passwordInput"
                   ></cv-text-input>
                   <div class="login-footer">
-                    <cv-button
+                    <NsButton
                       kind="primary"
                       :icon="ArrowRight20"
                       class="login-button"
-                      >Log in</cv-button
+                      >{{ $t("login.login") }}</NsButton
                     >
                   </div>
                 </cv-form>
@@ -83,6 +83,7 @@ import IconService from "@/mixins/icon";
 import LoginService from "@/mixins/login";
 import StorageService from "@/mixins/storage";
 import NsInlineNotification from "@/components/NsInlineNotification";
+import NsButton from "@/components/NsButton";
 import { mapState } from "vuex";
 import { mapActions } from "vuex";
 import to from "await-to-js";
@@ -92,7 +93,7 @@ let nethserver = window.nethserver;
 
 export default {
   name: "Login",
-  components: { NsInlineNotification },
+  components: { NsInlineNotification, NsButton },
   mixins: [IconService, LoginService, StorageService, WebSocketService],
   data() {
     return {
@@ -177,11 +178,11 @@ export default {
       if (error.response) {
         switch (error.response.data.Code) {
           case 401:
-            errorMessage = "Invalid username or password"; //// use i18n string
+            errorMessage = this.$t("error.invalid_username_or_password");
             break;
         }
       } else if (error.message === "Network Error") {
-        errorMessage = "Network error"; //// use i18n string
+        errorMessage = this.$t("error.network_error");
       }
 
       this.error.login = errorMessage;

@@ -1,7 +1,7 @@
 <template>
   <div class="global-search" v-click-outside="clickOutside">
     <cv-text-input
-      placeholder="Search..."
+      :placeholder="$t('shell.search_placeholder')"
       ref="search"
       @input="inputSearch"
       v-model="query"
@@ -12,8 +12,10 @@
           <pictogram title="empty state" class="image">
             <ExclamationMark />
           </pictogram>
-          <h5 class="title">No results</h5>
-          <div class="description">Try changing your search query</div>
+          <h5 class="title">{{ $t("shell.no_search_results") }}</h5>
+          <div class="description">
+            {{ $t("shell.no_search_results_description") }}
+          </div>
         </div>
       </div>
       <cv-structured-list v-else>
@@ -59,7 +61,7 @@ export default {
       showResults: false,
       results: [],
       searchFields: ["name", "description", "application", "tags"], ////
-      minChars: 1, ////
+      minChars: 1, //// 2
       maxResults: 10,
       allResults: [
         {
@@ -172,9 +174,6 @@ export default {
 }
 
 .global-search .search-results {
-  // border-left: 1px solid $interactive-02; ////
-  // border-right: 1px solid $interactive-02;
-  // border-bottom: 1px solid $interactive-02;
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.5);
 }
 
