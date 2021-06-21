@@ -20,6 +20,9 @@
 # along with NethServer.  If not, see COPYING.
 #
 
+# Redirect any output to the journal (stderr)
+exec 1>&2
+
 TRAEFIK_IMAGE="docker.io/traefik:v2.4"
 
 cat >&${AGENT_COMFD} <<EOF
