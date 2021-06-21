@@ -1,28 +1,28 @@
 <template>
-  <div class="indent">
-    <div v-for="(subTask, index) in subTasks" :key="index">
-      <NsInlineNotification
-        :kind="getTaskKind(subTask)"
-        :title="getTaskStatusDescription(subTask, false)"
-        low-contrast
-        :showCloseButton="false"
-      />
+  <ul>
+    <li v-for="(subTask, index) in subTasks" :key="index">
+      <div class="task-item">
+        <component
+          :is="getTaskIcon(subTask)"
+          :class="`bx--inline-notification__icon ${subTask.status}`"
+        />
+        <span v-html="getTaskStatusDescription(subTask, false)"></span>
+      </div>
       <TaskHierarchy
         v-if="subTask.subTasks.length"
         :subTasks="subTask.subTasks"
       />
-    </div>
-  </div>
+    </li>
+  </ul>
 </template>
 
 <script>
 import TaskService from "@/mixins/task";
-import NsInlineNotification from "@/components/NsInlineNotification";
 
 export default {
   name: "TaskHierarchy",
   mixins: [TaskService],
-  components: { NsInlineNotification },
+  components: {},
   props: {
     subTasks: {
       type: Array,
@@ -35,7 +35,37 @@ export default {
 <style scoped lang="scss">
 @import "../styles/carbon-utils";
 
-.indent {
-  padding-left: $spacing-09;
+ul {
+  padding: 0;
+  margin: 0;
+  list-style-type: none;
+  position: relative;
+}
+
+li {
+  list-style-type: none;
+  border-left: 1px solid #000;
+  margin-left: 1.3rem;
+}
+
+li div {
+  padding-left: 1em;
+  position: relative;
+}
+
+li div::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -1px;
+  bottom: 50%;
+  width: 0.75em;
+  border: 1px solid #000;
+  border-top: 0 none transparent;
+  border-right: 0 none transparent;
+}
+
+ul > li:last-child {
+  border-left: 1px solid transparent;
 }
 </style>

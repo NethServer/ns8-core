@@ -51,14 +51,14 @@
     "no_notifications_description": "You don't have any recent notifications yet"
   },
   "task": {
-    "task_failed": "Task {action} failed",
-    "task_completed": "Task {action} completed",
-    "task_pending": "Task {action} is pending",
-    "task_failed_validation": "Task {action} failed validation",
-    "subtask_failed": "Subtask {action} failed",
-    "subtask_completed": "Subtask {action} completed",
-    "subtask_pending": "Subtask {action} is pending",
-    "subtask_failed_validation": "Subtask {action} failed validation",
+    "task_failed": "Task <strong>{action}</strong> failed",
+    "task_completed": "Task <strong>{action}</strong> completed",
+    "task_pending": "Task <strong>{action}</strong> is pending",
+    "task_failed_validation": "Task <strong>{action}</strong> failed validation",
+    "subtask_failed": "Subtask <strong>{action}</strong> failed",
+    "subtask_completed": "Subtask <strong>{action}</strong> completed",
+    "subtask_pending": "Subtask <strong>{action}</strong> is pending",
+    "subtask_failed_validation": "Subtask <strong>{action}</strong> failed validation",
     "completed": "Completed",
     "configure": "Configure"
   },

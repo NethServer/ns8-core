@@ -3,6 +3,16 @@ import NsCodeSnippet from "../components/NsCodeSnippet.vue";
 export default {
   title: "Components/NsCodeSnippet",
   component: NsCodeSnippet,
+  argTypes: {
+    copyTipPosition: {
+      options: ["top", "right", "bottom", "left"],
+      control: { type: "radio" },
+    },
+    copyTipAlignment: {
+      options: ["start", "center", "end"],
+      control: { type: "radio" },
+    },
+  },
 };
 
 const Template = (args, { argTypes }) => ({

@@ -30,8 +30,8 @@
       kind="ghost"
       :icon="Copy20"
       :label="tooltipToShow"
-      tip-position="bottom"
-      tip-alignment="center"
+      :tip-position="copyTipPosition"
+      :tip-alignment="copyTipAlignment"
       @click="copyCode"
       :disabled="disabled"
     />
@@ -62,11 +62,6 @@ export default {
   components: { CvButton, CvIconButton, ChevronDown20 },
   mixins: [carbonPrefixMixin, themeMixin],
   props: {
-    copyTooltip: {
-      type: String,
-      default: "Copy to clipboard",
-    },
-    copyFeedback: { type: String, default: "Copied" },
     wrapText: { type: Boolean, default: true },
     disabled: Boolean,
     feedbackAriaLabel: String,
@@ -74,6 +69,22 @@ export default {
     lessText: { type: String, default: "Show less" },
     moreText: { type: String, default: "Show more" },
     hideExpandButton: Boolean,
+    copyTooltip: {
+      type: String,
+      default: "Copy to clipboard",
+    },
+    copyFeedback: { type: String, default: "Copied" },
+    copyTipPosition: {
+      type: String,
+      default: "bottom",
+      validator: (val) => ["top", "right", "bottom", "left"].includes(val),
+    },
+    copyTipAlignment: {
+      type: String,
+      default: "end",
+      validator: (val) => ["start", "center", "end"].includes(val),
+    },
+    light: Boolean,
   },
   data() {
     return {

@@ -3,20 +3,21 @@
     size="default"
     :visible="!!taskErrorToShow"
     @modal-hidden="taskErrorModalHidden"
+    class="task-error-modal"
   >
     <template slot="title">{{ getTaskTitle(taskErrorToShow) }}</template>
     <template slot="content" v-if="taskErrorToShow">
-      <NsInlineNotification
-        :kind="getTaskKind(taskErrorToShow)"
-        :title="getTaskStatusDescription(taskErrorToShow, true)"
-        low-contrast
-        :showCloseButton="false"
-      />
-      <div v-if="subTasks.length">
-        <TaskHierarchy :subTasks="subTasks" />
+      <div class="task-item">
+        <component
+          :is="getTaskIcon(taskErrorToShow)"
+          :class="`bx--inline-notification__icon ${taskErrorToShow.status} task-icon`"
+        />
+        <span v-html="getTaskStatusDescription(taskErrorToShow, true)"></span>
       </div>
-
-      <cv-accordion ref="acc" class="task-more-info">
+      <div v-if="subTasks.length">
+        <TaskHierarchy :subTasks="subTasks" class="task-hierarchy" />
+      </div>
+      <cv-accordion ref="accordion" class="task-more-info">
         <cv-accordion-item :open="toggleAccordion[0]">
           <template slot="title">{{ $t("common.more_info") }}</template>
           <template slot="content">
@@ -28,6 +29,7 @@
                 :wrap-text="true"
                 :moreText="$t('common.show_more')"
                 :lessText="$t('common.show_less')"
+                light
                 >{{ taskErrorToShow }}</NsCodeSnippet
               >
             </div>
@@ -72,7 +74,9 @@ export default {
       setTimeout(() => this.setTaskErrorToShowInStore(null), 300);
     },
     toggleAccordion(ev) {
-      this.$refs.acc.state.map((item, index) => index === ev.changedIndex);
+      this.$refs.accordion.state.map(
+        (item, index) => index === ev.changedIndex
+      );
     },
   },
 };
@@ -83,5 +87,9 @@ export default {
 
 .code-snippet-wrapper {
   max-height: 11rem;
+}
+
+.task-hierarchy {
+  margin-left: -0.8rem;
 }
 </style>

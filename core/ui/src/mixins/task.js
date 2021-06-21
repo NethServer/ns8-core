@@ -1,4 +1,8 @@
 import StorageService from "@/mixins/storage";
+import ErrorFilled16 from "@carbon/icons-vue/es/error--filled/16";
+import CheckmarkFilled16 from "@carbon/icons-vue/es/checkmark--filled/16";
+import WarningFilled16 from "@carbon/icons-vue/es/warning--filled/16";
+import InformationFilled16 from "@carbon/icons-vue/es/information--filled/16";
 
 export default {
   name: "TaskService",
@@ -72,6 +76,19 @@ export default {
           return "warning";
         default:
           return "info";
+      }
+    },
+    getTaskIcon(task) {
+      switch (task.status) {
+        case "aborted":
+        case "validation-failed":
+          return ErrorFilled16;
+        case "completed":
+          return CheckmarkFilled16;
+        case "pending":
+          return WarningFilled16;
+        default:
+          return InformationFilled16;
       }
     },
     getTaskStatusDescription(task, rootTask = true) {
