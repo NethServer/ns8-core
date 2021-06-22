@@ -24,23 +24,14 @@ set -e
 exec 1>&2
 
 # Set default values for the node ldapproxy default instance:
-PROXYPORT=3890
-LDAPHOST=127.0.0.1
-LDAPPORT=389
-LDAPSSL=off
 NGINX_IMAGE="docker.io/library/nginx:1.20-alpine"
 
-# Enable the service at boot
+# Enable the service to start at boot
 systemctl enable --user ldapproxy
 
 # Persist environment variables in Redis DB:
 cat >&${AGENT_COMFD} <<EOF
-set-env PROXYPORT ${PROXYPORT}
-set-env LDAPHOST ${LDAPHOST}
-set-env LDAPPORT ${LDAPPORT}
-set-env LDAPSSL ${LDAPSSL}
 set-env NGINX_IMAGE ${NGINX_IMAGE}
-dump-env
 EOF
 
 podman-pull-missing "${NGINX_IMAGE}"

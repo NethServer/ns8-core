@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env python3
 
 #
 # Copyright (C) 2021 Nethesis S.r.l.
@@ -20,17 +20,24 @@
 # along with NethServer.  If not, see COPYING.
 #
 
-set -e
-exec 1>&2
+import sys
+import json
+import agent
+import os
 
-tmpconf=$(mktemp nginx.conf.XXXXXX)
-trap "rm -f ${tmpconf}" EXIT
+request = json.load(sys.stdin)
 
-envsubst >${tmpconf} <${AGENT_INSTALL_DIR}/nginx.conf.template
+host = request['host']
+port = int(request['port'])
+tls  = bool(request['tls'])
+schema = request['schema']
+backend = request['backend']
 
-# Restart ldapproxy if something has changed in the configuration
-if ! diff -q nginx.conf ${tmpconf} ; then
-    mv -v ${tmpconf} nginx.conf
-    echo "Restart ldapproxy.service"
-    systemctl --user restart ldapproxy.service
-fi
+agent.set_env('BACKEND', backend)
+agent.set_env('SCHEMA', schema)
+agent.set_env('LDAPHOST', host)
+agent.set_env('LDAPPORT', port)
+agent.set_env('LDAPTLS', 'on' if tls else 'off')
+agent.dump_env()
+
+json.dump({}, fp=sys.stdout)
