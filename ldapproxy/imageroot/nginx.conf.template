@@ -8,11 +8,11 @@ events {
     worker_connections  1024;
 }
 
-# L4 proxy to the LDAP account provider 
+# L4 proxy to the ${SCHEMA} LDAP account provider 
 stream {
     server {
-        listen 127.0.0.1:${PROXYPORT};
+        listen 127.0.0.1:${TCP_PORT};
         proxy_pass ${LDAPHOST}:${LDAPPORT};
-        proxy_ssl ${LDAPSSL};
+        proxy_ssl ${LDAPTLS};
     }
 }

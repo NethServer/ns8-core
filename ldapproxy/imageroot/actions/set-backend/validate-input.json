@@ -1,0 +1,65 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "set-backend input",
+    "$id": "http://schema.nethserver.org/ldapproxy/set-backend-input.json",
+    "description": "Configure the LDAP backend endpoint",
+    "examples": [
+        {
+            "backend": "ldap1",
+            "schema": "rfc2307",
+            "host": "10.2.3.12",
+            "port": 389,
+            "tls": false
+        },
+        {
+            "backend": "samba1",
+            "schema": "ad",
+            "host": "127.0.0.1",
+            "port": 636,
+            "tls": true
+        }
+    ],
+    "type": "object",
+    "required": [
+        "backend",
+        "schema",
+        "host",
+        "port",
+        "tls"
+    ],
+    "properties": {
+        "backend": {
+            "type": "string",
+            "title": "Backend name",
+            "examples": [
+                "samba1",
+                "Azure"
+            ],
+            "description": "The backend module ID for local account providers, i.e. `host=127.0.0.1`. For remote account providers, just a meaningful word"
+        },
+        "schema": {
+            "enum": [
+                "ad",
+                "rfc2307"
+            ],
+            "title": "LDAP schema",
+            "description": "Describe the LDAP tree structure of the backend."
+        },
+        "host": {
+            "title": "Endpoint IP address",
+            "description": "Host name or IP address of the LDAP backend",
+            "type": "string"
+        },
+        "port": {
+            "title": "Endpoint TCP port",
+            "description": "TCP port number of the LDAP backend",
+            "type": "integer",
+            "minimum": 1
+        },
+        "tls": {
+            "title": "TLS connection",
+            "description": "Connect the LDAP backend with TLS encryption",
+            "type": "boolean"
+        }
+    }
+}

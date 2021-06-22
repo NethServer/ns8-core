@@ -1,6 +1,7 @@
 [Unit]
 Description=%u LDAP account provider local proxy
 Documentation=man:podman-generate-systemd(1)
+ConditionPathExists=%S/state/nginx.conf
 
 [Service]
 Environment=PODMAN_SYSTEMD_UNIT=%n
