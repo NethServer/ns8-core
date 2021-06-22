@@ -23,7 +23,9 @@
 package audit
 
 import (
+	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/pkg/errors"
@@ -145,7 +147,15 @@ func QueryArgs(query string, args ...interface{}) []models.Audit {
 		cleanArgs := make([]interface{}, 0, len(args))
 		for _, item := range args {
 			if item != "" {
-				cleanArgs = append(cleanArgs, item)
+				if strings.Contains(fmt.Sprintf("%v", item), ",") {
+					parts := strings.Split(fmt.Sprintf("%v", item), ",")
+
+					for _, element := range parts {
+						cleanArgs = append(cleanArgs, element)
+					}
+				} else {
+					cleanArgs = append(cleanArgs, item)
+				}
 			}
 		}
 

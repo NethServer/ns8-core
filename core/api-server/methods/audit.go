@@ -24,6 +24,7 @@ package methods
 
 import (
 	"net/http"
+	"strings"
 	"time"
 
 	jwt "github.com/appleboy/gin-jwt/v2"
@@ -42,8 +43,10 @@ import (
 // @Produce  json
 // @Param user query string false "user search by user"
 // @Param action query string false "action search by action"
+// @Param payload query string false "payload full text search by payload"
 // @Param from query string false "filter result search by from date ISO8601"
 // @Param to query string false "filter result search by to date ISO8601"
+// @Param limit query string false "limit results to limit value"
 // @Success 200 {object} response.StatusOK{code=int,message=string,data=string}
 // @Header 200 {string} Authorization "Bearer <valid.JWT.token>"
 // @Failure 400 {object} response.StatusBadRequest{code=int,message=string,data=object}
@@ -53,6 +56,7 @@ func GetAudits(c *gin.Context) {
 	// get query params
 	user := c.Query("user")
 	action := c.Query("action")
+	payload := c.Query("payload")
 	from := c.Query("from")
 	to := c.Query("to")
 	limit := c.Query("limit")
@@ -62,11 +66,18 @@ func GetAudits(c *gin.Context) {
 
 	// check params
 	if len(user) > 0 {
-		query += " AND user = ?"
+		users := strings.Split(user, ",")
+		query += " AND user IN (?" + strings.Repeat(",?", len(users)-1) + ")"
 	}
 
 	if len(action) > 0 {
-		query += " AND action = ?"
+		actions := strings.Split(action, ",")
+		query += " AND action IN (?" + strings.Repeat(",?", len(actions)-1) + ")"
+	}
+
+	if len(payload) > 0 {
+		payload = "%" + payload + "%"
+		query += " AND data LIKE ?"
 	}
 
 	if len(from) > 0 {
@@ -87,7 +98,7 @@ func GetAudits(c *gin.Context) {
 	query += " LIMIT " + limit
 
 	// execute query
-	results := audit.QueryArgs(query, user, action, from, to)
+	results := audit.QueryArgs(query, user, action, payload, from, to)
 
 	// store audit
 	claims := jwt.ExtractClaims(c)
