@@ -22,11 +22,9 @@
 
 exec 1>&2 # Send any output to stderr, to not alter the action response protocol
 
-mid=$(basename ${AGENT_ID})
-
 #
 # We must stop and clean up what we installed in the "create-module" action
 #
-systemctl disable --now "${mid}.service"
-rm -vf "/etc/systemd/system/${mid}.service"
+systemctl disable --now "${MODULE_ID}.service"
+rm -vf "/etc/systemd/system/${MODULE_ID}.service"
 systemctl daemon-reload
