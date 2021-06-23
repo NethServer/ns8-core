@@ -1,0 +1,66 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2021 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
+import agent
+import json
+import sys
+import os
+
+request = json.load(sys.stdin)
+
+rdb = agent.redis_connect()
+
+# Check if Samba is installed and a DC is already configured in our cluster
+first_samba = rdb.get('cluster/default_instance/samba')
+agent.assert_exp(first_samba) # Safety check
+penv = rdb.hgetall(f'module/{first_samba}/environment')
+
+if 'PROVISION_COMPLETE' in penv:
+    provision_type = 'join-domain'
+    realm = penv['REALM']
+    nbdomain = penv['NBDOMAIN']
+else: # Expect values from the request
+    provision_type = 'new-domain'
+    try:
+        realm = request['realm'].upper()
+        nbdomain = request['nbdomain'].upper()
+    except KeyError as ex:
+        json.dump({"parameter": ex.args[0], "value": None, "error": "missing_parameter"}, fp=sys.stdout)
+        agent.set_status('validation-failed')
+        sys.exit(3)
+
+if 'hostname' in request: # Use given hostname (short)
+    hostname = request['hostname'].lower()
+else: # Build a default hostname for the DC
+    hostname = os.environ['MODULE_ID'].replace('samba', 'dc')
+
+agent.set_env('PROVISION_TYPE', provision_type)
+
+# Save values of optional parameters
+agent.set_env('NBDOMAIN', nbdomain)
+agent.set_env('REALM', realm)
+agent.set_env('HOSTNAME', hostname + "." + realm.lower())
+
+# JSON Schema mandatory fields. We are sure they are present.
+agent.set_env('ADMINUSER', request['adminuser'])
+agent.set_env('ADMINPASS', request['adminpass'])
+agent.set_env('IPADDRESS', request['ipaddress'])

@@ -26,9 +26,6 @@ set -e
 install -m 644 "${AGENT_INSTALL_DIR}/samba-dc.service" "/etc/systemd/system/${MODULE_ID}.service"
 systemctl daemon-reload
 
-# XXX: Configure roles
-redis-exec SADD "${AGENT_ID}/roles/owner" "provision-domain"
-
 # Pull the service image, reading the tag from the local image
 tag=$(podman images -f id="${IMAGE_ID}" --format '{{ .Tag }}')
 SAMBA_IMAGE="ghcr.io/nethserver/samba-dc:${tag:-latest}"

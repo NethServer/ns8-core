@@ -20,7 +20,10 @@
 # along with NethServer.  If not, see COPYING.
 #
 
+echo '{}' # Satisfy validate-output.json schema
+
+exec 1>&2
 set -e
 
 # Enable and start the NSDC service
-exec systemctl enable --now "${MODULE_ID}.service"
+systemctl enable --now "${MODULE_ID}.service"
