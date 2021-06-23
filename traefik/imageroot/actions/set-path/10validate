@@ -42,6 +42,11 @@ for field in ["instance", "url", "path", "http2https"]:
     if data.get(field) is None:
         errors.append({"parameter": field, "value": "", "error": "%s_is_empty" % field})
 
+#lets_encrypt field must present if host is used
+if not errors:
+    if data.get("host") is not None and data.get("lets_encrypt") is None:
+        errors.append({"parameter": field, "value": "", "error": "lets_encrypt_is_empty"})
+
 # Set failed validation if errors is non empty
 if errors:
     # Dump the errors in JSON format to the stdout
