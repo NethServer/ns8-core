@@ -89,7 +89,7 @@ func GetAudits(c *gin.Context) {
 	}
 
 	// order by
-	query += " ORDER BY timestamp desc"
+	query += " ORDER BY id desc"
 
 	// add limit
 	if len(limit) == 0 {
