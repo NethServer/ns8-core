@@ -32,7 +32,8 @@ exec 1>&2
 redis-exec <<EOF
 SETNX "${AGENT_ID}/kv" ""
 SET "${AGENT_ID}/kv/http/routers/ApiServerHttps/entryPoints/0" "https"
-SET "${AGENT_ID}/kv/http/routers/ApiServerHttps/rule" "HostRegexp(\`{catchall:.*}\`) && PathPrefix(\`/cluster-admin/\`)"
+SET "${AGENT_ID}/kv/http/routers/ApiServerHttps/rule" "PathPrefix(\`/cluster-admin/\`)"
+SET "${AGENT_ID}/kv/http/routers/ApiServerHttps/priority" "1"
 SET "${AGENT_ID}/kv/http/routers/ApiServerHttps/service" "ApiServerSvc"
 SET "${AGENT_ID}/kv/http/routers/ApiServerHttps/tls" "true"
 SET "${AGENT_ID}/kv/http/routers/ApiServerHttps/middlewares/0" "ApiServerMw0"
