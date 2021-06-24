@@ -32,10 +32,10 @@ def allocate_tcp_ports_range(node_id, module_id, size):
     """Allocate in "node_id" a TCP port range of the given "size" for "module_id"
     """
     global rdb
-    assert size > 0
+    agent.assert_exp(size > 0)
 
     seq = rdb.incrby(f'node/{int(node_id)}/tcp_ports_sequence', size)
-    assert int(seq) > 0
+    agent.assert_exp(int(seq) > 0)
     rdb.hset(f'module/{module_id}/environment', 'TCP_PORT', f'{seq - 1}') # Always set the first port
     if size > 1: # Multiple ports: always set the ports range variable
         rdb.hset(f'module/{module_id}/environment', 'TCP_PORTS_RANGE', f'{seq - size}-{seq - 1}')
@@ -45,13 +45,13 @@ def allocate_tcp_ports_range(node_id, module_id, size):
 request = json.load(sys.stdin)
 image_id = request['image']
 node_id = int(request['node'])
-assert node_id > 0
+agent.assert_exp(node_id > 0)
 
 # Retrieve the image attributes from Redis DB. Is it the image for a rootfull module?
 rdb = agent.redis_connect(privileged=True)
 image = rdb.hgetall(f'image/{image_id}')
 image_url = image['url']
-assert image_url
+agent.assert_exp(image_url)
 
 # Pull the image from the remote server, if not already available locally
 agent.run_helper('podman-pull-missing', image_url, progress_range=(0,33)).check_returncode()
@@ -125,7 +125,7 @@ exit_code, output, error = agent.run_subtask(rdb,
         "module_id": module_id,
         "is_rootfull": is_rootfull,
     })
-assert exit_code == 0
+agent.assert_exp(exit_code == 0)
 
 outobj=json.loads(output)
 
@@ -134,15 +134,15 @@ rdb.hset(f'module/{module_id}', mapping={
 })
 
 # Create a new Redis user for module_id and set the password and permissions
-assert rdb.execute_command('ACL', 'SETUSER',
+agent.assert_exp(rdb.execute_command('ACL', 'SETUSER',
                     f'module/{module_id}', 'ON',
                     '#' + outobj['redis_sha256'],
                     f'~module/{module_id}/*',
                     'resetchannels', f'&progress/module/{module_id}/*',
-                    '+@read', '+@write', '+@transaction', '+@connection', '+publish') == 'OK'
+                    '+@read', '+@write', '+@transaction', '+@connection', '+publish') == 'OK')
 
 # Persist ACLs to disk
-assert rdb.execute_command('ACL', 'SAVE') == 'OK'
+agent.assert_exp(rdb.execute_command('ACL', 'SAVE') == 'OK')
 
 # Push the creation task for the new module.
 exit_code, output, error = agent.run_subtask(rdb,
@@ -151,7 +151,7 @@ exit_code, output, error = agent.run_subtask(rdb,
     action="create-module",
     input_obj="",
     )
-assert exit_code == 0 # Ensure create-module is successful
+agent.assert_exp(exit_code == 0) # Ensure create-module is successful
 
 create_output = output.strip() # Ignore garbage whitespaces
 if create_output == "":
@@ -186,14 +186,14 @@ for task in json.loads(create_output):
     else:
         agent_prefix = xagent
 
-    assert xaction in rdb.smembers(f'{agent_prefix}/roles/create-module') # Check the action is authorized
+    agent.assert_exp(xaction in rdb.smembers(f'{agent_prefix}/roles/create-module')) # Check the action is authorized
 
     exit_code, output, error = agent.run_subtask(rdb,
         agent_prefix=agent_prefix,
         action=xaction,
         input_obj=task.get('data', {}),
     )
-    assert exit_code == 0 # Ensure the secondary actions from create-module are successful
+    agent.assert_exp(exit_code == 0) # Ensure the secondary actions from create-module are successful
 
 # Configure our builtin roles: "owner" and "reader". Owner can run any action, Reader can run
 # action names with special prefixes.

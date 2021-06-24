@@ -43,7 +43,7 @@ if rdb.execute_command('ACL', 'GETUSER', user) is None:
 
 rdb.delete(f'roles/{user}')
 
-assert rdb.execute_command('ACL', 'DELUSER', user) == 1
-assert rdb.execute_command('ACL', 'SAVE') == 'OK'
+agent.assert_exp(rdb.execute_command('ACL', 'DELUSER', user) == 1)
+agent.assert_exp(rdb.execute_command('ACL', 'SAVE') == 'OK')
 
 print("true")

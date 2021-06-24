@@ -40,17 +40,17 @@ from envparse import env
 request = json.load(sys.stdin)
 
 jwt = request['jwt']
-assert jwt
+agent.assert_exp(jwt)
 url = request['url']
-assert url
+agent.assert_exp(url)
 listen_port = int(request['listen_port'])
-assert listen_port > 0
+agent.assert_exp(listen_port > 0)
 tls_verify = bool(request['tls_verify'])
-assert tls_verify is not None
+agent.assert_exp(tls_verify is not None)
 
 # Read our VPN public key
 public_key = agent.slurp_file('/etc/nethserver/wg0.pub')
-assert public_key
+agent.assert_exp(public_key)
 
 # Start the Redis client before changing sensible environment variables
 rdb = agent.redis_connect(privileged=True)
@@ -62,7 +62,7 @@ if 'REDIS_PASSWORD' in os.environ:
     del(os.environ['REDIS_PASSWORD'])
 env.read_envfile('/var/lib/nethserver/node/state/agent.env')
 node_pw = env('REDIS_PASSWORD')
-assert len(node_pw) > 0
+agent.assert_exp(len(node_pw) > 0)
 node_pwh = hashlib.sha256(node_pw.encode()).hexdigest()
 
 #
@@ -83,7 +83,7 @@ response = requests.post(url.strip('/') + '/cluster-admin/api/cluster/tasks', ti
 response.raise_for_status()
 body = response.json()
 
-assert body['Code'] == 201
+agent.assert_exp(body['Code'] == 201)
 
 task_id = body['Data']['ID']
 
@@ -112,11 +112,11 @@ else:
 
 payload = body['Data']['output']
 
-assert payload['ip_address']
-assert payload['node_id']
-assert payload['leader_ip_address']
-assert payload['leader_public_key']
-assert payload['leader_endpoint']
+agent.assert_exp(payload['ip_address'])
+agent.assert_exp(payload['node_id'])
+agent.assert_exp(payload['leader_ip_address'])
+agent.assert_exp(payload['leader_public_key'])
+agent.assert_exp(payload['leader_endpoint'])
 
 ip_address = payload['ip_address']
 node_id = payload['node_id']
@@ -144,14 +144,14 @@ agent.run_helper('sed', '-i',
     '/etc/hosts').check_returncode()
 
 # Bind Redis to the VPN ip_address
-assert rdb.execute_command('CONFIG SET', 'bind', f'127.0.0.1 ::1 {ip_address}') is True
+agent.assert_exp(rdb.execute_command('CONFIG SET', 'bind', f'127.0.0.1 ::1 {ip_address}') is True)
 
 # Set this Redis instance read-only
-assert rdb.execute_command('REPLICAOF', leader_ip_address, '6379') == 'OK'
+agent.assert_exp(rdb.execute_command('REPLICAOF', leader_ip_address, '6379') == 'OK')
 
 # Write configuration to disk. The node_pw is stored in clear-text, 
 # but the default volume directory permissions allows root-only access to it:
-assert rdb.execute_command('CONFIG REWRITE') == 'OK'
+agent.assert_exp(rdb.execute_command('CONFIG REWRITE') == 'OK')
 
 # Redis DB becomes read-only: agents are now locked out!
 

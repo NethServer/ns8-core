@@ -26,9 +26,9 @@ import agent
 
 request = json.load(sys.stdin)
 module_id = request['module_id']
-assert module_id
+agent.assert_exp(module_id)
 preserve_data = request['preserve_data']
-assert preserve_data is not None
+agent.assert_exp(preserve_data is not None)
 
 #
 # 1. invoke the "destroy-module" action on the target module, if available
@@ -56,7 +56,7 @@ exit_code, output, error = agent.run_subtask(rdb,
         "module_id": module_id,
         "preserve_data": preserve_data,
     })
-assert exit_code == 0 or exit_code == 8 # The module does not implement a "destroy" action
+agent.assert_exp(exit_code == 0 or exit_code == 8) # The module does not implement a "destroy" action
 
 errors = 0
 exit_code, output, error = agent.run_subtask(rdb,
@@ -66,7 +66,7 @@ exit_code, output, error = agent.run_subtask(rdb,
         "module_id": module_id,
         "preserve_data": preserve_data,
     })
-assert exit_code == 0 # The node remove-module action must succeed
+agent.assert_exp(exit_code == 0) # The node remove-module action must succeed
 
 # Erase the module keyspace
 module_keys = list(rdb.scan_iter(f'module/{module_id}*'))
@@ -74,10 +74,10 @@ if module_keys:
     rdb.delete(*module_keys)
 
 # Delete the Redis account
-assert rdb.execute_command('ACL', 'DELUSER', f'module/{module_id}') == 1
+agent.assert_exp(rdb.execute_command('ACL', 'DELUSER', f'module/{module_id}') == 1)
 
 # Persist ACLs to disk
-assert rdb.execute_command('ACL', 'SAVE') == 'OK'
+agent.assert_exp(rdb.execute_command('ACL', 'SAVE') == 'OK')
 
 if errors > 0:
     sys.exit(1)
