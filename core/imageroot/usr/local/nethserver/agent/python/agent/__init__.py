@@ -28,6 +28,7 @@ import json
 import tempfile
 import ipcalc
 import csv
+import traceback
 from envparse import env
 
 # Reference https://www.man7.org/linux/man-pages/man3/sd-daemon.3.html
@@ -167,3 +168,17 @@ def save_wgconf(ipaddr, listen_port=55820, peers={}):
     wgconf.close()
     # Overwrite the target file path:
     os.rename('/etc/wireguard/wg0.conf.new', '/etc/wireguard/wg0.conf')
+
+def assert_exp(exp, message='Assertion failed'):
+    """Like the Python assert statement, this function asserts "exp" evaluates to True.
+    If the assertion fails, the program is aborted and a stack trace is printed to stderr.
+    """
+    if exp:
+        return
+    else:
+        try:
+            raise Exception(message)
+        except:
+            if message: print(message, file=sys.stderr)
+            traceback.print_stack(sys.exc_info()[2].tb_frame.f_back, file=sys.stderr)
+            sys.exit(2)
