@@ -34,13 +34,13 @@ import uuid
 request = json.load(sys.stdin)
 
 node_pwh = request['node_pwh']
-assert node_pwh and len(node_pwh) == 64
+agent.assert_exp(node_pwh and len(node_pwh) == 64)
 public_key = request['public_key']
-assert public_key
+agent.assert_exp(public_key)
 endpoint = request['endpoint']
-assert type(endpoint) is str
+agent.assert_exp(type(endpoint) is str)
 listen_port = request['listen_port']
-assert listen_port > 0
+agent.assert_exp(listen_port > 0)
 
 rdb = agent.redis_connect(privileged=True)
 
@@ -50,13 +50,13 @@ rdb = agent.redis_connect(privileged=True)
 #
 leader_id = rdb.hget('cluster/environment', 'NODE_ID')
 leader_ip_address = rdb.hget(f'node/{leader_id}/vpn', 'ip_address')
-assert leader_ip_address
+agent.assert_exp(leader_ip_address)
 leader_public_key = rdb.hget(f'node/{leader_id}/vpn', 'public_key')
-assert leader_public_key
+agent.assert_exp(leader_public_key)
 leader_listen_port = rdb.hget(f'node/{leader_id}/vpn', 'listen_port')
-assert leader_listen_port
+agent.assert_exp(leader_listen_port)
 leader_endpoint = rdb.hget(f'node/{leader_id}/vpn', 'endpoint')
-assert leader_endpoint
+agent.assert_exp(leader_endpoint)
 
 #
 # 1/b. Generate a new node_id and VPN IP address
@@ -68,32 +68,32 @@ ip_address = str(network.network() + node_id)
 #
 # 1/c. Store VPN settings of the new node
 #
-assert rdb.hset(f'node/{node_id}/vpn', mapping={
+agent.assert_exp(rdb.hset(f'node/{node_id}/vpn', mapping={
     "public_key": public_key,
     "ip_address": ip_address,
     "endpoint": endpoint,
     "listen_port": str(listen_port),
-}) >= 0
+}) >= 0)
 
 #
 # 1/d. Initialize the node agent environment
 #
-assert rdb.hset(f'node/{node_id}/environment', mapping={
+agent.assert_exp(rdb.hset(f'node/{node_id}/environment', mapping={
     "NODE_ID": node_id
-}) >= 0
+}) >= 0)
 
 # Initialize the node ports sequence
-assert rdb.set(f'node/{node_id}/tcp_ports_sequence', 20000) is True
+agent.assert_exp(rdb.set(f'node/{node_id}/tcp_ports_sequence', 20000) is True)
 
 #
 # 2. Create redis acls for the node agent
 #
-assert rdb.execute_command('ACL', 'SETUSER',
+agent.assert_exp(rdb.execute_command('ACL', 'SETUSER',
     f'node/{node_id}', 'ON', '#' + node_pwh,
     'resetkeys', f'~node/{node_id}/*',
     'resetchannels', f'&progress/node/{node_id}/*',
     'nocommands', '+@read', '+@write', '+@transaction', '+@connection', '+publish',
-) == 'OK'
+) == 'OK')
 
 #
 # Add the WireGuard peer configuration

@@ -43,7 +43,7 @@ rdb = agent.redis_connect(privileged=True)
 user = request['user']
 
 if 'set' in request:
-    assert rdb.hset(f'user/{user}', mapping=request['set']) >= 0
+    agent.assert_exp(rdb.hset(f'user/{user}', mapping=request['set']) >= 0)
 
 for roledef in request['revoke']: # !!! revoke BEFORE grant
     cluster.grants.alter_user(rdb, user, True, roledef['role'], roledef['on'])

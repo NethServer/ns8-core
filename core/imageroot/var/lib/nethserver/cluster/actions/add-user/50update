@@ -36,14 +36,14 @@ if rdb.execute_command('ACL', 'GETUSER', user) != None:
     json.dump({'field':'user','parameter':'user','value':user,'error':'user_already_exists'}, fp=sys.stdout) # XXX: implement library function
     sys.exit(2)
 
-assert rdb.hset(f'user/{user}', mapping={
+agent.assert_exp(rdb.hset(f'user/{user}', mapping={
     'display_name': request['set'].get('display_name', user),
     'email': request['set'].get('email', ''),
-}) >= 0
+}) >= 0)
 
 rdb.execute_command('ACL', 'DELUSER', user) # Drop the user to avoid double-password accounts
-assert rdb.execute_command('ACL', 'SETUSER', user, 'ON', '#'+password_hash, 'resetkeys', 'resetchannels', 'nocommands') == 'OK'
-assert rdb.execute_command('ACL', 'SAVE') == 'OK'
+agent.assert_exp(rdb.execute_command('ACL', 'SETUSER', user, 'ON', '#'+password_hash, 'resetkeys', 'resetchannels', 'nocommands') == 'OK')
+agent.assert_exp(rdb.execute_command('ACL', 'SAVE') == 'OK')
 
 for roledef in request['grant']:
     cluster.grants.alter_user(rdb, user, False, roledef['role'], roledef['on'])

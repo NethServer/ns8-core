@@ -32,12 +32,12 @@ network = request['network']
 endpoint = request['endpoint']
 listen_port = int(request['listen_port'])
 
-assert network
-assert endpoint
-assert listen_port
+agent.assert_exp(network)
+agent.assert_exp(endpoint)
+agent.assert_exp(listen_port)
 
 public_key = agent.slurp_file('/etc/nethserver/wg0.pub')
-assert public_key
+agent.assert_exp(public_key)
 
 NODE_ID = 1
 ip_address = str(ipcalc.Network(network).network() + NODE_ID)
@@ -84,9 +84,9 @@ agent.run_helper(*'systemctl restart wg-quick@wg0'.split(' ')).check_returncode(
 # Bind Redis to the VPN ip_address
 #
 redis_bind_vpn_ip = rdb.execute_command('CONFIG SET', 'bind', f'127.0.0.1 ::1 {ip_address}')
-assert redis_bind_vpn_ip is True
+agent.assert_exp(redis_bind_vpn_ip is True)
 redis_rewrite_conf = rdb.execute_command('CONFIG REWRITE')
-assert redis_rewrite_conf == 'OK'
+agent.assert_exp(redis_rewrite_conf == 'OK')
 
 json.dump({
     "ip_address": ip_address,
