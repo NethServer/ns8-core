@@ -52,7 +52,10 @@ r.set(f'{prefix}/services/{data["instance"]}/loadBalancer/servers/0/url', data["
 r.set(f'{router}/service', data["instance"])
 r.set(f'{router}/entrypoints', "http,https")
 
-if data.get("host") is not None:
+if data.get("host") is not None and data.get("path") is None:
+    r.set(f'{router}/rule', f'Host(`{data["host"]}`)')
+    r.set(f'{router}/priority', '3')
+elif data.get("host") is not None and data.get("path") is not None:
     r.set(f'{router}/rule', f'Host(`{data["host"]}`) && PathPrefix(`{data["path"]}`)')
     r.set(f'{router}/priority', '2')
 else:
@@ -61,7 +64,10 @@ else:
 
 r.set(f'{router_s}/entrypoints', "http,https")
 
-if data.get("host") is not None:
+if data.get("host") is not None and data.get("path") is None:
+    r.set(f'{router_s}/rule', f'Host(`{data["host"]}`)')
+    r.set(f'{router_s}/priority', '3')
+elif data.get("host") is not None and data.get("path") is not None:
     r.set(f'{router_s}/rule', f'Host(`{data["host"]}`) && PathPrefix(`{data["path"]}`)')
     r.set(f'{router_s}/priority', '2')
 else:

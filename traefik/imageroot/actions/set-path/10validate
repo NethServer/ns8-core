@@ -38,9 +38,14 @@ errors = []
 data = json.load(sys.stdin)
 
 # Check the mandatory fields
-for field in ["instance", "url", "path", "http2https"]:
+for field in ["instance", "url", "http2https"]:
     if data.get(field) is None:
         errors.append({"parameter": field, "value": "", "error": "%s_is_empty" % field})
+
+# At least one of host or path fields must be present
+if not errors:
+    if data.get("host") is None and data.get("path") is None:
+        errors.append({"parameter": field, "value": "", "error": "host_and_path_are_empty" % field})
 
 #lets_encrypt field must present if host is used
 if not errors:
