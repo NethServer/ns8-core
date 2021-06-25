@@ -69,8 +69,8 @@ if 'org.nethserver.rootfull' in inspect_labels:
 else:
     is_rootfull = False
 
-if 'org.nethserver/tcp_ports_demand' in inspect_labels:
-    tcp_ports_demand = int(inspect_labels['org.nethserver/tcp_ports_demand'])
+if 'org.nethserver.tcp-ports-demand' in inspect_labels:
+    tcp_ports_demand = int(inspect_labels['org.nethserver.tcp-ports-demand'])
 else:
     tcp_ports_demand = 0
 
