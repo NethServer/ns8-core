@@ -64,8 +64,8 @@ with subprocess.Popen(['podman', 'image', 'inspect', image_url], stdout=subproce
     inspect_image_digest = inspect[0]['Digest']
     inspect_image_repodigest = inspect[0]['RepoDigests'][0]
 
-if 'org.nethserver/rootfull' in inspect_labels:
-    is_rootfull = int(inspect_labels['org.nethserver/rootfull']) == 1
+if 'org.nethserver.rootfull' in inspect_labels:
+    is_rootfull = int(inspect_labels['org.nethserver.rootfull']) == 1
 else:
     is_rootfull = False
 
