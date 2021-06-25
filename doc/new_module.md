@@ -55,7 +55,7 @@ The script creates an empty container image and publish it to the registry on us
 The main parts to look for are:
 - `repobase`: the URL of the remote image registry
 - `reponame`: the name of the module
-- `org.nethserver/tcp_ports_demand` label: describe how many ports the module needs to bind. The label takes an integer number as value, like `org.nethserver/tcp_ports_demand=3`
+- `org.nethserver.tcp-ports-demand` label: describe how many ports the module needs to bind. The label takes an integer number as value, like `org.nethserver.tcp-ports-demand=3`
 
 Example of `build-image.sh` file with output for GitHub Actions:
 ```
@@ -69,7 +69,7 @@ reponame="mymodule"
 container=$(buildah from scratch)
 
 buildah add "${container}" imageroot /
-buildah config --entrypoint=/ --label="org.nethserver/tcp_ports_demand=1" "${container}"
+buildah config --entrypoint=/ --label="org.nethserver.tcp-ports-demand=1" "${container}"
 buildah commit "${container}" "${repobase}/${reponame}"
 images+=("${repobase}/${reponame}")
 
@@ -128,9 +128,9 @@ Feel free to use `dokuwiki` as scaffold module: just copy it and change it accor
 #### Port allocation
 
 A module can require one or more TCP ports allocation with the
-"org.nethserver/tcp_ports_demand" image label. For instance
+"org.nethserver.tcp-ports-demand" image label. For instance
 ```
- org.nethserver/tcp_ports_demand=3
+ org.nethserver.tcp-ports-demand=3
 ```
 
 It means the module receives a range of three TCP port numbers in the
@@ -142,7 +142,7 @@ usual module environment, where the following variables are set
 
 This command adds the label to the image:
 ```
-buildah config --label="org.nethserver/tcp_ports_demand=3" "${container}"
+buildah config --label="org.nethserver.tcp-ports-demand=3" "${container}"
 ```
 
 ## Step 3: start the module
