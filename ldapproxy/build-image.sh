@@ -11,7 +11,6 @@ buildah add "${container}" imageroot /imageroot
 buildah add "${container}" ui /ui
 buildah config \
     --label 'org.nethserver/tcp_ports_demand=1' \
-    --label 'org.nethserver/register_default_instance=1' \
     --entrypoint=/ "${container}"
 buildah commit "${container}" "${repobase}/${reponame}"
 images+=("${repobase}/${reponame}")
