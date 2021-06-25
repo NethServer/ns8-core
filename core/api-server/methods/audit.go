@@ -106,7 +106,7 @@ func GetAudits(c *gin.Context) {
 		User:      claims["id"].(string),
 		Action:    "list-audits",
 		Data:      "",
-		Timestamp: time.Now(),
+		Timestamp: time.Now().UTC(),
 	}
 	audit.Store(auditData)
 
@@ -157,7 +157,7 @@ func GetAuditsUsers(c *gin.Context) {
 		User:      claims["id"].(string),
 		Action:    "list-audit-users",
 		Data:      "",
-		Timestamp: time.Now(),
+		Timestamp: time.Now().UTC(),
 	}
 	audit.Store(auditData)
 
@@ -191,7 +191,7 @@ func GetAuditsActions(c *gin.Context) {
 		User:      claims["id"].(string),
 		Action:    "list-audit-actions",
 		Data:      "",
-		Timestamp: time.Now(),
+		Timestamp: time.Now().UTC(),
 	}
 	audit.Store(auditData)
 

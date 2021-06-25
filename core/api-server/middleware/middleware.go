@@ -86,7 +86,7 @@ func InitJWT() *jwt.GinJWTMiddleware {
 					User:      username,
 					Action:    "login-fail",
 					Data:      "",
-					Timestamp: time.Now(),
+					Timestamp: time.Now().UTC(),
 				}
 				audit.Store(auditData)
 
@@ -99,7 +99,7 @@ func InitJWT() *jwt.GinJWTMiddleware {
 				User:      username,
 				Action:    "login-ok",
 				Data:      "",
-				Timestamp: time.Now(),
+				Timestamp: time.Now().UTC(),
 			}
 			audit.Store(auditData)
 
@@ -175,7 +175,7 @@ func InitJWT() *jwt.GinJWTMiddleware {
 					User:      data.(*models.UserAuthorizations).Username,
 					Action:    "auth-ok",
 					Data:      "",
-					Timestamp: time.Now(),
+					Timestamp: time.Now().UTC(),
 				}
 				audit.Store(auditData)
 
@@ -188,7 +188,7 @@ func InitJWT() *jwt.GinJWTMiddleware {
 				User:      data.(*models.UserAuthorizations).Username,
 				Action:    "auth-fail",
 				Data:      "",
-				Timestamp: time.Now(),
+				Timestamp: time.Now().UTC(),
 			}
 			audit.Store(auditData)
 

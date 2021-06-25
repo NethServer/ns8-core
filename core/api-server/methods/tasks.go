@@ -89,7 +89,7 @@ func getList(c *gin.Context, queueName string) {
 		User:      claims["id"].(string),
 		Action:    "list-" + parts[0],
 		Data:      queueName,
-		Timestamp: time.Now(),
+		Timestamp: time.Now().UTC(),
 	}
 	audit.Store(auditData)
 
@@ -160,7 +160,7 @@ func getTasks(c *gin.Context, queueName string) {
 		User:      claims["id"].(string),
 		Action:    "list-task",
 		Data:      queueName,
-		Timestamp: time.Now(),
+		Timestamp: time.Now().UTC(),
 	}
 	audit.Store(auditData)
 
@@ -238,7 +238,7 @@ func getTaskFile(c *gin.Context, filePath string) {
 		User:      claims["id"].(string),
 		Action:    "status-task",
 		Data:      filePath,
-		Timestamp: time.Now(),
+		Timestamp: time.Now().UTC(),
 	}
 	audit.Store(auditData)
 
@@ -284,7 +284,7 @@ func getTaskContext(c *gin.Context, filePath string) {
 		User:      claims["id"].(string),
 		Action:    "context-task",
 		Data:      filePath,
-		Timestamp: time.Now(),
+		Timestamp: time.Now().UTC(),
 	}
 	audit.Store(auditData)
 
@@ -319,7 +319,7 @@ func createTask(c *gin.Context, queueName string) {
 	task.Data = jsonTask.Data
 	task.Queue = queueName
 	task.User = info["id"].(string)
-	task.Timestamp = time.Now()
+	task.Timestamp = time.Now().UTC()
 	task.Parent = ""
 
 	// init redis connection
@@ -358,7 +358,7 @@ func createTask(c *gin.Context, queueName string) {
 		User:      task.User,
 		Action:    "create-task",
 		Data:      string(stringTask),
-		Timestamp: time.Now(),
+		Timestamp: time.Now().UTC(),
 	}
 	audit.Store(auditData)
 
@@ -390,7 +390,7 @@ func ListenTaskEvents() {
 			// create event object
 			event := &models.Event{}
 			event.Name = msg.Channel
-			event.Timestamp = time.Now()
+			event.Timestamp = time.Now().UTC()
 			event.Type = "task"
 
 			if err := json.Unmarshal([]byte(msg.Payload), &event.Payload); err != nil {
