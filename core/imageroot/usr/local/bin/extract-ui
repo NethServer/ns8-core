@@ -27,7 +27,7 @@ set -e
 cid=$(podman create ${image})
 trap "podman rm ${cid}" EXIT
 
-uiroot=$(podman inspect ${cid} -f '{{index .Config.Labels "org.nethserver/uiroot"}}' | sed -r 's#(^/|/$)##')
+uiroot=$(podman inspect ${cid} -f '{{index .Config.Labels "org.nethserver.uiroot"}}' | sed -r 's#(^/|/$)##')
 if [[ -z "${uiroot}" ]]; then
     uiroot="ui" # Set the default path for the module frontend
 fi
