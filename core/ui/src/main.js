@@ -72,6 +72,7 @@ window.ns8 = new Vue({
   i18n,
   created: function () {
     this.config = window.CONFIG;
+    this.$root.apiUrl = this.config.API_SCHEME + this.config.API_ENDPOINT;
   },
   render: (h) => h(App),
 }).$mount("#app");

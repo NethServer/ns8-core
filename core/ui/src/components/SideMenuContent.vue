@@ -1,7 +1,7 @@
 <template>
   <div>
     <cv-side-nav-items>
-      <cv-side-nav-menu title="Network">
+      <cv-side-nav-menu :title="$t('network.title')">
         <template v-slot:nav-icon><Network_220 /></template>
         <cv-side-nav-menu-item href="javascript:void(0)" active>
           Menu item
@@ -13,7 +13,7 @@
           Menu item
         </cv-side-nav-menu-item>
       </cv-side-nav-menu>
-      <cv-side-nav-menu title="Account provider">
+      <cv-side-nav-menu :title="$t('account_provider.title')">
         <template v-slot:nav-icon><Events20 /></template>
         <cv-side-nav-menu-item href="javascript:void(0)">
           Menu item
@@ -25,17 +25,21 @@
           Menu item
         </cv-side-nav-menu-item>
       </cv-side-nav-menu>
-      <cv-side-nav-link href="javascript:void(0)">
-        <template v-slot:nav-icon><Save20 /></template>
-        Backup
+      <cv-side-nav-link to="software-center">
+        <template v-slot:nav-icon><Application20 /></template>
+        {{ $t("software_center.title") }}
       </cv-side-nav-link>
       <cv-side-nav-link href="javascript:void(0)">
+        <template v-slot:nav-icon><Save20 /></template>
+        {{ $t("backup.title") }}
+      </cv-side-nav-link>
+      <cv-side-nav-link to="logs">
         <template v-slot:nav-icon><Catalog20 /></template>
-        Logs
+        {{ $t("logs.title") }}
       </cv-side-nav-link>
       <cv-side-nav-link href="javascript:void(0)">
         <template v-slot:nav-icon><Settings20 /></template>
-        Settings
+        {{ $t("settings.title") }}
       </cv-side-nav-link>
     </cv-side-nav-items>
   </div>
@@ -47,10 +51,18 @@ import Events20 from "@carbon/icons-vue/es/events/20";
 import Save20 from "@carbon/icons-vue/es/save/20";
 import Settings20 from "@carbon/icons-vue/es/settings/20";
 import Catalog20 from "@carbon/icons-vue/es/catalog/20";
+import Application20 from "@carbon/icons-vue/es/application/20";
 
 export default {
   name: "SideMenuContent",
-  components: { Network_220, Events20, Save20, Catalog20, Settings20 },
+  components: {
+    Network_220,
+    Events20,
+    Save20,
+    Catalog20,
+    Settings20,
+    Application20,
+  },
   data() {
     return {};
   },

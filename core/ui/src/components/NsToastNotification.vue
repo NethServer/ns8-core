@@ -40,7 +40,11 @@
 
         <div
           v-if="actionLabel"
-          :class="[`${carbonPrefix}--toast-notification__caption`, `action`, `row`]"
+          :class="[
+            `${carbonPrefix}--toast-notification__caption`,
+            `action`,
+            `row`,
+          ]"
         >
           <!-- <cv-link ////
             @click="$emit('notificationAction', id)"
@@ -70,7 +74,7 @@
             :tip="timestamp.toString()"
           >
             {{
-              formatDistance(timestamp, new Date(), {
+              formatDateDistance(timestamp, new Date(), {
                 addSuffix: true,
               })
             }}

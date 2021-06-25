@@ -3,7 +3,9 @@
     <div v-if="isShown" class="notification-drawer">
       <div class="notification-drawer__header">
         <h4>{{ $t("notification.notifications") }}</h4>
-        <span>{{ unreadNotificationsCount }} {{ $t("notification.unread") }}</span>
+        <span
+          >{{ unreadNotificationsCount }} {{ $t("notification.unread") }}</span
+        >
         <button
           aria-label="close"
           type="button"

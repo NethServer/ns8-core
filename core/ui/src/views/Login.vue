@@ -10,7 +10,7 @@
                 <NsInlineNotification
                   v-if="error.login"
                   kind="error"
-                  :title="$t('cannot_login')"
+                  :title="$t('login.cannot_login')"
                   :description="error.login"
                   low-contrast
                   :showCloseButton="false"
@@ -65,6 +65,8 @@
                       kind="primary"
                       :icon="ArrowRight20"
                       class="login-button"
+                      :loading="loading.login"
+                      :disabled="loading.login"
                       >{{ $t("login.login") }}</NsButton
                     >
                   </div>
@@ -88,13 +90,20 @@ import { mapState } from "vuex";
 import { mapActions } from "vuex";
 import to from "await-to-js";
 import WebSocketService from "@/mixins/websocket";
+import UtilService from "@/mixins/util";
 
 let nethserver = window.nethserver;
 
 export default {
   name: "Login",
   components: { NsInlineNotification, NsButton },
-  mixins: [IconService, LoginService, StorageService, WebSocketService],
+  mixins: [
+    IconService,
+    LoginService,
+    StorageService,
+    WebSocketService,
+    UtilService,
+  ],
   data() {
     return {
       username: "",
@@ -105,6 +114,9 @@ export default {
         username: "",
         password: "",
         login: "",
+      },
+      loading: {
+        login: false,
       },
     };
   },
@@ -129,16 +141,20 @@ export default {
       }
     },
     async checkPassword() {
-      this.error.password = "";
+      this.clearErrors(this);
 
       if (!this.password.trim()) {
         this.error.password = "Password is required";
         this.focusPassword();
       } else {
+        this.loading.login = true;
+
         // invoke login API
         const [loginError, response] = await to(
           this.executeLogin(this.username, this.password)
         );
+
+        this.loading.login = false;
 
         if (loginError) {
           this.handleLoginError(loginError);
@@ -172,7 +188,6 @@ export default {
       }
     },
     handleLoginError(error) {
-      console.error(error);
       let errorMessage = this.$t("error.generic_error");
 
       if (error.response) {

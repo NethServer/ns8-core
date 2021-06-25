@@ -7,17 +7,12 @@ import InformationFilled16 from "@carbon/icons-vue/es/information--filled/16";
 export default {
   name: "TaskService",
   mixins: [StorageService],
-  computed: {
-    apiUrl() {
-      return this.$root.config.API_SCHEME + this.$root.config.API_ENDPOINT;
-    },
-  },
   methods: {
     getTaskContext(taskPath) {
       const token = this.getFromStorage("loginInfo")
         ? this.getFromStorage("loginInfo").token
         : "";
-      return this.axios.get(`${this.apiUrl}/${taskPath}/context`, {
+      return this.axios.get(`${this.$root.apiUrl}/${taskPath}/context`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -27,7 +22,7 @@ export default {
       const token = this.getFromStorage("loginInfo")
         ? this.getFromStorage("loginInfo").token
         : "";
-      return this.axios.get(`${this.apiUrl}/${taskPath}/status`, {
+      return this.axios.get(`${this.$root.apiUrl}/${taskPath}/status`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -37,7 +32,7 @@ export default {
       const token = this.getFromStorage("loginInfo")
         ? this.getFromStorage("loginInfo").token
         : "";
-      return this.axios.get(this.apiUrl + "/tasks/cluster", {
+      return this.axios.get(`${this.$root.apiUrl}/tasks/cluster`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -47,7 +42,7 @@ export default {
       const token = this.getFromStorage("loginInfo")
         ? this.getFromStorage("loginInfo").token
         : "";
-      return this.axios.post(this.apiUrl + "/cluster/tasks", taskData, {
+      return this.axios.post(`${this.$root.apiUrl}/cluster/tasks`, taskData, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

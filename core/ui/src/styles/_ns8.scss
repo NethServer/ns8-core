@@ -213,6 +213,16 @@ a.bx--side-nav__link--current::before {
 .cv-side-nav-item-link.bx--side-nav__link {
   height: 3rem;
 }
+
+a.bx--side-nav__link[aria-current="page"],
+a.bx--side-nav__link--current {
+  background-color: $inverse-02;
+}
+
+a.bx--side-nav__link[aria-current="page"] .bx--side-nav__link-text,
+a.bx--side-nav__link--current .bx--side-nav__link-text {
+  color: $ui-01;
+}
 // end side menu
 
 // app drawer
@@ -282,6 +292,49 @@ a.bx--side-nav__link--current::before {
   padding-bottom: 0.5rem;
 }
 // end task error modal
+
+// form
+.cv-form .bx--form-item {
+  margin-bottom: $spacing-05;
+}
+
+.cv-form .cv-multi-select {
+  margin-bottom: $spacing-05;
+}
+// end form
+
+// logs page
+.logs-max-results {
+  max-width: 12rem;
+}
+
+.bx--number input[type=number] {
+  padding-right: 5rem;
+}
+// end logs page
+
+// data table
+.bx--toolbar-search-container-expandable .bx--search {
+  position: static;
+  width: 3rem;
+  width: var(--cds-layout-04, 3rem);
+  height: 100%;
+}
+
+.bx--toolbar-search-container-expandable .bx--search .bx--search-magnifier {
+  left: 0;
+  width: 3rem;
+  width: var(--cds-layout-04, 3rem);
+  height: 3rem;
+  height: var(--cds-layout-04, 3rem);
+  padding: 1rem;
+  padding: var(--cds-spacing-05, 1rem);
+  cursor: pointer;
+  -webkit-transition: background 0.11s cubic-bezier(0, 0, 0.38, 0.9);
+  transition: background 0.11s cubic-bezier(0, 0, 0.38, 0.9);
+  pointer-events: all;
+}
+// end data table
 
 // styles for small devices
 @media (max-width: $breakpoint-large) {
