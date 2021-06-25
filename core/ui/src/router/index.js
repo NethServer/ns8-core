@@ -4,6 +4,8 @@ import Dashboard from "../views/Dashboard.vue";
 import Login from "../views/Login.vue";
 import Tasks from "../views/Tasks.vue";
 import Applications from "../views/Applications.vue";
+import SoftwareCenter from "../views/SoftwareCenter.vue";
+import Logs from "../views/Logs.vue";
 
 Vue.use(VueRouter);
 
@@ -28,6 +30,16 @@ const routes = [
     path: "/apps/:appId",
     name: "Applications",
     component: Applications,
+  },
+  {
+    path: "/software-center",
+    name: "SoftwareCenter",
+    component: SoftwareCenter,
+  },
+  {
+    path: "/logs",
+    name: "Logs",
+    component: Logs,
   },
 ];
 

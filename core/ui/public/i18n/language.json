@@ -6,7 +6,12 @@
     "show_more": "Show more",
     "show_less": "Show less",
     "more_info": "More info",
-    "close": "Close"
+    "close": "Close",
+    "selected": "Selected",
+    "optional": "optional",
+    "expand": "Expand",
+    "collapse": "Collapse",
+    "reset_filters": "Reset filters"
   },
   "error": {
     "error": "Error",
@@ -61,6 +66,45 @@
     "subtask_failed_validation": "Subtask <strong>{action}</strong> failed validation",
     "completed": "Completed",
     "configure": "Configure"
+  },
+  "network": {
+    "title": "Network"
+  },
+  "account_provider": {
+    "title": "Account provider"
+  },
+  "backup": {
+    "title": "Backup"
+  },
+  "settings": {
+    "title": "Settings"
+  },
+  "software_center": {
+    "title": "Software center"
+  },
+  "logs": {
+    "title": "Logs",
+    "start_date": "Start date",
+    "end_date": "End date",
+    "search_logs": "Search logs",
+    "users": "Users",
+    "users_label": "Select users",
+    "actions": "Actions",
+    "actions_label": "Select actions",
+    "max_results": "Max results",
+    "timestamp": "Timestamp",
+    "user": "User",
+    "action": "Action",
+    "auditInfo": "Audit info",
+    "start_time_label": "Start time (24-hour)",
+    "end_time_label": "End time (24-hour)",
+    "cannot_retrieve_audit_users": "Cannot retrieve log users",
+    "cannot_retrieve_audit_actions": "Cannot retrieve log actions",
+    "cannot_retrieve_audit_logs": "Cannot retrieve logs",
+    "audit_info_placeholder": "Search anything inside data content of log",
+    "no_logs_found": "No logs found",
+    "no_logs_found_description": "Try changing your search filters",
+    "invalid_interval": "Invalid time interval"
   },
   "validation": {
     "name_is_empty": "Name is empty ////",

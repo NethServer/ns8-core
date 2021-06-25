@@ -12,7 +12,7 @@
       $root.config.PRODUCT_NAME
     }}</cv-header-name>
     <cv-header-nav>
-      <cv-header-menu-item to="/dashboard?" class="status"
+      <cv-header-menu-item to="/dashboard" class="status"
         ><span class="status-text">{{ $t("shell.status") }}</span
         ><span class="status-badge"></span
       ></cv-header-menu-item>
@@ -101,7 +101,6 @@ import GlobalSearch from "@/components/GlobalSearch";
 import AppDrawer from "@/components/AppDrawer";
 import Search20 from "@carbon/icons-vue/es/search/20";
 import StorageService from "@/mixins/storage";
-import IconService from "@/mixins/icon";
 import LoginService from "@/mixins/login";
 import WebSocketService from "@/mixins/websocket";
 import NotificationDrawer from "@/components/NotificationDrawer";
@@ -117,7 +116,7 @@ export default {
     AppDrawer,
     NotificationDrawer,
   },
-  mixins: [StorageService, IconService, LoginService, WebSocketService],
+  mixins: [StorageService, LoginService, WebSocketService],
   data() {
     return {
       isSearchExpanded: false,

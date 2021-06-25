@@ -177,7 +177,7 @@
           <div>
             Relative 2:
             {{
-              formatDistance(subDays(new Date(), 2), new Date(), {
+              formatDateDistance(subDays(new Date(), 2), new Date(), {
                 addSuffix: true,
               })
             }}
@@ -264,7 +264,7 @@ import QueryParamService from "@/mixins/queryParam";
 // import Pictogram from "@/components/Pictogram"; ////
 // import Gear from "@/components/pictograms/Gear"; ////
 import NsInlineNotification from "@/components/NsInlineNotification";
-import { formatRelative, formatDistance, subDays } from "date-fns";
+import { formatRelative, formatDateDistance, subDays } from "date-fns";
 import TaskService from "@/mixins/task";
 import to from "await-to-js";
 import WebSocketService from "@/mixins/websocket";
@@ -308,7 +308,7 @@ export default {
       Flash20, //// use mixin
       formatRelative, //// use mixin
       subDays,
-      formatDistance,
+      formatDateDistance,
     };
   },
   computed: {
@@ -391,7 +391,8 @@ export default {
             image: "traefik",
             node: 1,
             title: "Traefik installation",
-            description: "Installing...",
+            description:
+              "Installing... very very very very very very very long description",
           },
         })
       );
