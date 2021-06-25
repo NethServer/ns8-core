@@ -111,26 +111,18 @@ func GetAudits(c *gin.Context) {
 	audit.Store(auditData)
 
 	// return results
-	if len(results) > 0 {
+	if len(configuration.Config.AuditFile) == 0 {
+		c.JSON(http.StatusBadRequest, structs.Map(response.StatusBadRequest{
+			Code:    400,
+			Message: "audit is disabled. AUDIT_FILE is not set in the environment",
+			Data:    gin.H{"audits": nil},
+		}))
+	} else {
 		c.JSON(http.StatusOK, structs.Map(response.StatusOK{
 			Code:    200,
 			Message: "success",
 			Data:    gin.H{"audits": results},
 		}))
-	} else {
-		if len(configuration.Config.AuditFile) == 0 {
-			c.JSON(http.StatusBadRequest, structs.Map(response.StatusBadRequest{
-				Code:    400,
-				Message: "audit is disabled. AUDIT_FILE is not set in the environment",
-				Data:    gin.H{"audits": nil},
-			}))
-		} else {
-			c.JSON(http.StatusNotFound, structs.Map(response.StatusNotFound{
-				Code:    404,
-				Message: "no audits found",
-				Data:    gin.H{"audits": nil},
-			}))
-		}
 	}
 
 }
