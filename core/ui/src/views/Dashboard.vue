@@ -24,8 +24,12 @@
     <div class="bx--row">
       <div class="bx--col-lg-16">
         <cv-tile :light="true" class="content-tile">
-          <h2>Backend validation</h2>
-          <cv-form @submit.prevent="testValidation">
+          <NsButton :icon="Flash20" @click="isTestValidationModalShown = true"
+            >Open test validation modal</NsButton
+          >
+
+          <!-- <h2>Backend validation</h2> -->
+          <!-- <cv-form @submit.prevent="testValidation">
             <cv-text-input
               label="Name"
               v-model="q.name"
@@ -58,7 +62,7 @@
               :disabled="loading.testValidation"
               >Test validation</NsButton
             >
-          </cv-form>
+          </cv-form> -->
         </cv-tile>
       </div>
     </div>
@@ -249,6 +253,52 @@
         </div>
       </div>
     </div> -->
+
+    <!-- test validation modal -->
+    <cv-modal
+      size="default"
+      :visible="isTestValidationModalShown"
+      @modal-hidden="isTestValidationModalShown = false"
+    >
+      <template slot="title">Test validation modal</template>
+      <template slot="content">
+        <cv-form @submit.prevent="testValidation">
+          <cv-text-input
+            label="Name"
+            v-model="q.name"
+            helper-text="Cannot be empty"
+            :invalid-message="$t(error.name)"
+            ref="name"
+          >
+          </cv-text-input>
+          <cv-text-input
+            label="Email"
+            v-model="q.email"
+            helper-text="Must be a valid email"
+            :invalid-message="$t(error.email)"
+            ref="email"
+          >
+          </cv-text-input>
+          <NsInlineNotification
+            v-if="error.testValidation"
+            kind="error"
+            :title="$t('error.error') + ':'"
+            :description="error.testValidation"
+            low-contrast
+            showCloseButton
+            @close="error.testValidation = ''"
+          />
+          <NsButton
+            size="default"
+            :icon="Flash20"
+            :loading="loading.testValidation"
+            :disabled="loading.testValidation"
+            >Test validation</NsButton
+          >
+        </cv-form>
+      </template>
+      <template slot="secondary-button">{{ $t("common.close") }}</template>
+    </cv-modal>
   </div>
 </template>
 
@@ -309,6 +359,7 @@ export default {
       formatRelative, //// use mixin
       subDays,
       formatDateDistance,
+      isTestValidationModalShown: false,
     };
   },
   computed: {
@@ -331,12 +382,15 @@ export default {
     next();
   },
   created() {
-    // register to validation failed event
+    // register to validation events
     this.$root.$on("validationFailed", this.validationFailed);
+
+    this.$root.$on("validationOk", this.validationOk);
   },
   beforeDestroy() {
     // remove event listeners
     this.$root.$off("validationFailed");
+    this.$root.$off("validationOk");
   },
   methods: {
     closeToast() {
@@ -498,6 +552,10 @@ export default {
         // set i18n error message
         this.error[param] = "validation." + validationError.error;
       }
+    },
+    validationOk() {
+      console.log("validationOk!"); ////
+      this.isTestValidationModalShown = false;
     },
   },
 };

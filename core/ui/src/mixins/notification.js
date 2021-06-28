@@ -159,6 +159,11 @@ export default {
         }
       }
 
+      if (taskStatus === "running") {
+        // validation is ok (e.g.: close the modal that created the task)
+        this.$root.$emit("validationOk");
+      }
+
       const taskContext = response.data.Data.context;
 
       console.log("taskContext", taskContext); ////
