@@ -1,0 +1,91 @@
+#!/usr/bin/env python3
+
+#
+# Create NethServer repository metadata
+# Walk all directories on the given path: each path represent a package
+#
+
+import os
+import sys
+import json
+import imghdr
+import semver
+import subprocess
+
+path = '.'
+index = []
+defaults = {
+    "name": "",
+    "description": { "en": "" },
+    "logo": None,
+    "screenshots": [],
+    "categories" : [ "unknown" ],
+    "authors" : [ {"name": "uknown", "email": "info@nethserver.org" } ],
+    "docs": { 
+        "documentation_url": "https://docs.nethserver.org",
+        "bug_url": "https://github.com/NethServer/dev",
+        "code_url": "https://github.com/NethServer/"
+    },
+    "source": "ghcr.io/nethserver"
+}
+
+# Get current working directory if no path is specified
+if len(sys.argv) >= 2:
+    path = sys.argv[1]
+
+# Walk all subdirectories
+with os.scandir(path) as it:
+    for entry in it:
+        if entry.is_dir():
+            # make sure to copy the defaults and do not just creating a reference
+            metadata = dict(defaults)
+            version_labels = {}
+            metadata_file = os.path.join(entry.name, "metadata.json")
+            if os.path.isfile(metadata_file):
+                with open(metadata_file) as metadata_fp:
+                    metadata = json.load(metadata_fp)
+            else:
+                metadata["name"] = entry.name
+                metadata["description"]["en"] = f"Auto-generated description for {entry.name}"
+                metadata["source"] = f"{metadata['source']}/{entry.name}"
+
+            # add log if the file is present and it's a png
+            logo = os.path.join(entry.name, "logo.png")
+            if os.path.isfile(logo):
+                if imghdr.what(logo) == "png":
+                    metadata["logo"] = "logo.png"
+
+            # add screenshots if pngs are available inside the screenshots directory
+            screenshot_dirs = os.path.join(entry.name, "screenshots")
+            if os.path.isdir(screenshot_dirs):
+                with os.scandir(screenshot_dirs) as sdir:
+                    for screenshot in sdir:
+                        if imghdr.what(screenshot) == "png":
+                            metadata["screenshots"].append(os.path.join("screenshots",screenshot.name))
+            else:
+                metadata["screenshots"] = []
+
+            # Parse the image info from remote registry to retrieve tags
+            with subprocess.Popen(["skopeo", "inspect", f'docker://{metadata["source"]}'], stdout=subprocess.PIPE, stderr=sys.stderr) as proc:
+                info = json.load(proc.stdout)
+                metadata["versions"] = []
+                versions = []
+                for tag in info["RepoTags"]:
+                    try:
+                        versions.append(semver.VersionInfo.parse(tag))
+                        # Retrieve labels for each valid version
+                        p = subprocess.Popen(["skopeo", "inspect", f'docker://{metadata["source"]}:{tag}'], stdout=subprocess.PIPE, stderr=sys.stderr)
+                        info_tags = json.load(p.stdout)
+                        version_labels[tag] = info_tags['Labels']
+                    except:
+                        # skip invalid semantic versions
+                        pass
+
+                # Sort by most recent
+                for v in sorted(versions, reverse=True):
+                    metadata["versions"].append({"tag": f"{v}", "testing": (not v.prerelease is None),  "labels": version_labels[f"{v}"]})
+
+            index.append(metadata)
+
+with open (os.path.join(path, 'repodata.json'), 'w') as outfile:
+    json.dump(index, outfile)

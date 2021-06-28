@@ -22,3 +22,5 @@ six==1.15.0
 typing-extensions==3.10.0.0
 urllib3==1.26.6
 yarl==1.6.3
+semver==2.13.0
+jsonschema==3.2.0
