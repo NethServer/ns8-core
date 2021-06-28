@@ -31,7 +31,7 @@
         >
           <span v-html="description"></span>
 
-          <div v-if="isProgressShown && kind !== 'error'" class="progress">
+          <div v-if="isProgressShown" class="progress">
             <NsProgressBar :value="progress" :indeterminate="!progress" />
             <div class="progress-bar-spacer"></div>
             <div v-if="progress" class="progress-number">{{ progress }} %</div>
@@ -67,11 +67,11 @@
           </button>
         </div>
 
-        <div v-if="timestamp" class="timestamp row">
+        <div v-if="timestamp && !isProgressShown" class="timestamp row">
           <cv-tooltip
             alignment="center"
             direction="bottom"
-            :tip="timestamp.toString()"
+            :tip="formatDate(timestamp, 'yyyy-MM-dd HH:mm:ss')"
           >
             {{
               formatDateDistance(timestamp, new Date(), {

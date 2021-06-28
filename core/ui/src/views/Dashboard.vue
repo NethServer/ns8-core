@@ -553,8 +553,8 @@ export default {
         this.error[param] = "validation." + validationError.error;
       }
     },
-    validationOk() {
-      console.log("validationOk!"); ////
+    validationOk(task) {
+      console.log("validationOk, task", task); ////
       this.isTestValidationModalShown = false;
     },
   },

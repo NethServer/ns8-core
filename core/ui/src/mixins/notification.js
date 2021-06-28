@@ -159,11 +159,6 @@ export default {
         }
       }
 
-      if (taskStatus === "running") {
-        // validation is ok (e.g.: close the modal that created the task)
-        this.$root.$emit("validationOk");
-      }
-
       const taskContext = response.data.Data.context;
 
       console.log("taskContext", taskContext); ////
@@ -240,6 +235,24 @@ export default {
           notificationText = taskContext.data.description;
         }
 
+        // emit validationOk if validation is successful
+        let taskValidated = false;
+        const task = this.getTaskById(taskContext.id);
+        console.log("task running task found", task); ////
+
+        if (task) {
+          taskValidated = task.validated;
+
+          if (
+            (taskStatus === "running" || taskStatus === "completed") &&
+            !task.validated
+          ) {
+            // validation is ok (e.g.: close the modal that created the task)
+            this.$root.$emit("validationOk", task);
+            taskValidated = true;
+          }
+        }
+
         const notification = {
           id: taskId,
           title: taskContext.data.title,
@@ -251,6 +264,7 @@ export default {
             status: taskStatus,
             progress: payload.progress,
             subTasks: [],
+            validated: taskValidated,
           },
         };
 
