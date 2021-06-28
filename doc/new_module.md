@@ -200,7 +200,7 @@ To get the TCP port number among the environment variables used by the `create-m
 
 Assuming the port is 20001, add a hostname-based HTTP route:
 ```
-redis-cli LPUSH module/traefik1/tasks '{"id": "'$(uuidgen)'", "action": "set-host", "data": "mymodule1 http://127.0.0.1:20001 mymodule.myhost.org\n"}'
+redis-cli LPUSH module/traefik1/tasks '{"id": "'$(uuidgen)'", "action": "set-route", "data": {"instance": "mymodule1", "url": "http://127.0.0.1:20001", "host": "mymodule.myhost.org", "lets_encrypt": true, "http2https": false}}'
 ```
 
 The data field contains 3 parameters:

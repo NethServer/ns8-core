@@ -46,7 +46,7 @@ LPUSH module/nextcloud1/tasks  '{"id": "'$(uuidgen)'", "action": "configure-modu
 ```
 
 Finally, setup traefik to access.
-Then launch `set-host`, by setting the following parameters:
+Then launch `set-route`, by setting the following parameters:
 - the module instance name
 - the listen URL
 - the virtual host name
@@ -55,16 +55,14 @@ Then launch `set-host`, by setting the following parameters:
 
 See `/home/nextcloid1/.config/state/environment` to find the `TCP_PORT` where the instance will listen. In this exmple `TCP_PORT` is `2000`:
 ```
-redis-cli LPUSH module/traefik1/tasks '{"id": "'$(uuidgen)'", "action": "set-host", "data": {"instance": "nextcloud", "url": "http://127.0.0.1:20000", "host": "nextcloud.example.org, "lets_encrypt": true, "http2https": true} }' 
+redis-cli LPUSH module/traefik1/tasks '{"id": "'$(uuidgen)'", "action": "set-route", "data": {"instance": "nextcloud", "url": "http://127.0.0.1:20000", "host": "nextcloud.example.org, "lets_encrypt": true, "http2https": true} }'
 ```
 
-
-All parameters must be set inside the `data` field separated by a space and terminated with `\n`.
 The `TCP_PORT` parameter can be found inside `/home/nextcloud1/.config/state/environment`.
 
 Example:
 ```
-redis-cli LPUSH module/traefik1/tasks '{"id": "'$(uuidgen)'", "action": "set-host", "data": "nextcloud1 http://127.0.0.1:'${TCP_PORT}' mywiki.myhost.org 1 1\n"}'
+redis-cli LPUSH module/traefik1/tasks '{"id": "'$(uuidgen)'", "action": "set-route", "data": {"instance": "nextcloud1", "url": "http://127.0.0.1:"'${TCP_PORT}'", "host": "mywiki.myhost.org", "lets_encrypt": true, "http2https": true} }'
 ```
 
 ## Uninstall
