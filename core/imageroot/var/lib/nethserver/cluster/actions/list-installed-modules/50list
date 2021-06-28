@@ -1,0 +1,48 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2021 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
+import sys
+import json
+import subprocess
+import agent
+
+modules = []
+digest_map = {}
+rdb = agent.redis_connect(privileged=False)
+
+# Parse the image labels
+with subprocess.Popen(['podman', 'images', '--format', 'json'], stdout=subprocess.PIPE, stderr=sys.stderr) as proc:
+    images = json.load(proc.stdout)
+    for i in images:
+        digest_map[i['Digest']] = i['Names'][0]
+
+# Grant the owner role to cluster owners on the new module
+for m in rdb.scan_iter('module/*/environment'):
+    vars = rdb.hgetall(m)
+    info = digest_map.get(vars['IMAGE_DIGEST'], 'uknown:uknown')
+    url, sep, tag = info.partition(":")
+    module = { 'id' : vars['MODULE_ID'], 'node': vars['NODE_ID'], 'digest': vars['IMAGE_DIGEST'], 'url': url, 'version': tag} 
+    modules.append(module)
+
+json.dump({
+    "modules": modules,
+}, fp=sys.stdout)

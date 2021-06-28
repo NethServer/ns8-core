@@ -1,0 +1,103 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2021 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
+import os
+import sys
+import json
+import agent
+import semver
+import urllib
+import subprocess
+import cluster.grants
+import urllib.request
+
+rdb = agent.redis_connect(privileged=True)
+
+modules = []
+installed = {}
+
+# Search for installed modules
+for m in rdb.scan_iter('module/*/environment'):
+    vars = rdb.hgetall(m)
+    url, sep, tag = vars['IMAGE_URL'].partition(":")
+    if url not in installed.keys():
+        installed[url] = []
+    installed[url].append({ 'id': vars["MODULE_ID"], 'node': vars['NODE_ID'], 'version': tag })
+ 
+# List existing repositories
+for m in rdb.scan_iter('cluster/repository/*'):
+    repo = rdb.hgetall(m)
+    # Skip disabled repositories
+    if int(repo["status"]) == 0:
+        continue
+
+    url = urllib.parse.urljoin(repo["url"], "repodata.json")
+    with urllib.request.urlopen(url) as req:
+       repodata = json.loads(req.read().decode())
+
+       for package in repodata:
+           package["repository"] = os.path.basename(m)
+           package["repository_updated"] = req.headers['Last-Modified']
+
+           # Set absolute path for logo
+           if package["logo"]:
+               # make sure escape special chars
+               package["logo"] = urllib.parse.urljoin(repo["url"], urllib.parse.quote(package["logo"]))
+
+           # Set absolute path for screenshots
+           screenshots = []
+           for s in package["screenshots"]:
+               # make sure escape special chars
+               screenshots.append(urllib.parse.urljoin(repo["url"], urllib.parse.quote(s)))
+           package["screenshots"] = screenshots
+
+           package["installed"] = []
+           package["updates"] = []
+           if package["source"] in installed.keys():
+               newest_version = None
+               for version in package["versions"]:
+                   v = semver.VersionInfo.parse(version["tag"])
+                   # Skip testing versions if testing is disabled
+                   if int(repo["testing"]) == 0 and not v.prerelease is None:
+                       continue
+
+                   newest_version = version["tag"]
+                   break
+
+               # Handle multiple instances of the same module
+               for instance in installed[package["source"]]:
+                   package["installed"].append(instance)
+                   try:
+                       cur = semver.VersionInfo.parse(instance["version"])
+                   except:
+                       # There is no safe way to update a dev install
+                       cur = semver.VersionInfo.parse('999.999.999')
+
+                   # Version from remote repositories are already sorted
+                   # First match is the newest release
+                   if v > cur:
+                       package["updates"].append(instance)
+
+           modules.append(package)
+        
+
+json.dump(modules, fp=sys.stdout)

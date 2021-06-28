@@ -1,0 +1,80 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2021 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
+import sys
+import agent
+import cluster.grants
+import json
+from semver import VersionInfo
+import urllib.request
+import subprocess
+
+rdb = agent.redis_connect(privileged=True)
+
+installed = {}
+updates = []
+
+# Search for installed modules
+for m in rdb.scan_iter('module/*/environment'):
+    vars = rdb.hgetall(m)
+    url, sep, tag = vars['IMAGE_URL'].partition(":")
+    if url not in installed.keys():
+        installed[url] = []
+    installed[url].append({ 'id': vars["MODULE_ID"], 'node': vars['NODE_ID'], 'digest': vars['IMAGE_DIGEST'], 'version': tag })
+    
+
+# Retrieve metadata for all repositories
+for m in rdb.scan_iter('cluster/repository/*'):
+    repo = rdb.hgetall(m)
+    # Analize only enabled repositories
+    if int(repo["status"]) == 1:
+        url = urllib.parse.urljoin(repo["url"], "repodata.json")
+        with urllib.request.urlopen(url) as req:
+            repodata = json.loads(req.read().decode())
+
+            for package in repodata:
+                # skip not installed packages
+                if package["source"] not in installed.keys():
+                    continue
+
+                newest_version = None
+                for version in package["versions"]:
+                    v = VersionInfo.parse(version["tag"])
+                    # Skip testing versions if testing is disabled
+                    if int(repo["testing"]) == 0 and not v.prerelease is None:
+                        continue
+
+                    newest_version = version["tag"]
+                    break
+
+                # Handle multiple instances of the same module
+                for instance in installed[package["source"]]:
+                    cur = VersionInfo.parse(instance["version"])
+
+                    # Version from remote repositories are already sorted
+                    # First match is the newest release
+                    if v > cur:
+                        instance["update"] = version["tag"]
+                        updates.append(instance)
+
+
+json.dump(updates, fp=sys.stdout)
