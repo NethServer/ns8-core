@@ -29,7 +29,6 @@ request = json.load(sys.stdin)
 rdb = agent.redis_connect(privileged=True)
 
 name = request['name']
-url = request['url']
 
 if not rdb.delete(f'cluster/repository/{name}'):
     sys.exit(1)
