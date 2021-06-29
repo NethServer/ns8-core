@@ -51,31 +51,31 @@ router_s=f'{prefix}/routers/{data["instance"]}-https'
 r.set(f'{prefix}/services/{data["instance"]}/loadBalancer/servers/0/url', data["url"])
 r.set(f'{router}/service', data["instance"])
 r.set(f'{router}/entrypoints', "http,https")
-
+r.set(f'{router_s}/entrypoints', "http,https")
 
 # Remove trailing slash if present
 if data.get("path") is not None:
     path = data["path"].rstrip("/")
 
 if data.get("host") is not None and data.get("path") is None:
+    #http routes
     r.set(f'{router}/rule', f'Host(`{data["host"]}`)')
     r.set(f'{router}/priority', '3')
-elif data.get("host") is not None and data.get("path") is not None:
-    r.set(f'{router}/rule', f'Host(`{data["host"]}`) && (Path(`{path}`) || PathPrefix(`{path}/`))')
-    r.set(f'{router}/priority', '2')
-else:
-    r.set(f'{router}/rule', f'Path(`{path}`) || PathPrefix(`{path}/`)')
-    r.set(f'{router}/priority', '1')
-
-r.set(f'{router_s}/entrypoints', "http,https")
-
-if data.get("host") is not None and data.get("path") is None:
+    #https routes
     r.set(f'{router_s}/rule', f'Host(`{data["host"]}`)')
     r.set(f'{router_s}/priority', '3')
 elif data.get("host") is not None and data.get("path") is not None:
+    #http routes
     r.set(f'{router_s}/rule', f'Host(`{data["host"]}`) && (Path(`{path}`) || PathPrefix(`{path}/`))')
     r.set(f'{router_s}/priority', '2')
+    #https routes
+    r.set(f'{router}/rule', f'Host(`{data["host"]}`) && (Path(`{path}`) || PathPrefix(`{path}/`))')
+    r.set(f'{router}/priority', '2')
 else:
+    #http routes
+    r.set(f'{router}/rule', f'Path(`{path}`) || PathPrefix(`{path}/`)')
+    r.set(f'{router}/priority', '1')
+    #https routes
     r.set(f'{router_s}/rule', f'Path(`{path}`) || PathPrefix(`{path}/`)')
     r.set(f'{router_s}/priority', '1')
 
