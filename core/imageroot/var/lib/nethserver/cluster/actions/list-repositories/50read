@@ -26,7 +26,6 @@ import json
 import agent
 import cluster.grants
 
-request = json.load(sys.stdin)
 rdb = agent.redis_connect(privileged=True)
 
 repositories = []
@@ -34,6 +33,6 @@ repositories = []
 # Grant the owner role to cluster owners on the new module
 for m in rdb.scan_iter('cluster/repository/*'):
     repo = rdb.hgetall(m)
-    repositories.append({"name" : os.path.basename(m), "url": repo["url"], "testing": repo["testing"], "status": repo["status"]})
+    repositories.append({"name" : os.path.basename(m), "url": repo["url"], "testing": (repo["testing"] == "1"), "status": (repo["status"] == "1")})
 
 json.dump(repositories, fp=sys.stdout)
