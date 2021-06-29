@@ -1,0 +1,25 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "delete-route input",
+    "$id": "http://schema.nethserver.org/traefik/delete-route-input.json",
+    "description": "Delete a HTTP route",
+    "examples": [
+        {
+            "instance": "module1"
+	}
+    ],
+    "type": "object",
+    "required": [
+        "instance"
+    ],
+    "properties": {
+        "instance": {
+            "type": "string",
+            "title": "Instance name",
+            "examples": [
+                "module1"
+            ],
+            "description": "The instance name, which is unique inside the cluster."
+        }
+    }
+}
