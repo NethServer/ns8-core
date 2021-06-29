@@ -78,7 +78,7 @@ func InitJWT() *jwt.GinJWTMiddleware {
 			// check login with redis
 			err := methods.RedisAuthentication(username, password)
 			if err != nil {
-				utils.LogError(errors.Wrap(err, "redis authentication failed for user "+username))
+				utils.LogError(errors.Wrap(err, "[AUTH] redis authentication failed for user "+username))
 
 				// store login action
 				auditData := models.Audit{
@@ -130,7 +130,7 @@ func InitJWT() *jwt.GinJWTMiddleware {
 			// handle authorizations
 			userAuthorizations, err := methods.RedisAuthorization(claims[identityKey].(string), c)
 			if err != nil {
-				utils.LogError(errors.Wrap(err, "error retrieving user authorizations"))
+				utils.LogError(errors.Wrap(err, "[AUTH] error retrieving user authorizations"))
 			}
 
 			// create user object
@@ -157,7 +157,7 @@ func InitJWT() *jwt.GinJWTMiddleware {
 				var jsonTask models.Task
 				errJson := c.ShouldBindBodyWith(&jsonTask, binding.JSON)
 				if errJson != nil {
-					utils.LogError(errors.Wrap(errJson, "error unmarshalling task obj"))
+					utils.LogError(errors.Wrap(errJson, "[AUTH] error unmarshalling task obj"))
 					return false
 				}
 
@@ -210,7 +210,7 @@ func InitJWT() *jwt.GinJWTMiddleware {
 
 	// check middleware errors
 	if errDefine != nil {
-		utils.LogError(errors.Wrap(errDefine, "middleware definition error"))
+		utils.LogError(errors.Wrap(errDefine, "[AUTH] middleware definition error"))
 	}
 
 	// init middleware
@@ -218,7 +218,7 @@ func InitJWT() *jwt.GinJWTMiddleware {
 
 	// check error on initialization
 	if errInit != nil {
-		utils.LogError(errors.Wrap(errInit, "middleware initialization error"))
+		utils.LogError(errors.Wrap(errInit, "[AUTH] middleware initialization error"))
 	}
 
 	// return object

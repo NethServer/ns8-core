@@ -104,27 +104,27 @@ func Store(audit models.Audit) {
 		// open db
 		db, err := sql.Open("sqlite3", configuration.Config.AuditFile)
 		if err != nil {
-			utils.LogError(errors.Wrap(err, "[STORE] error in audit file schema open"))
+			utils.LogError(errors.Wrap(err, "[AUDIT][STORE] error in audit file schema open"))
 		}
 		defer db.Close()
 
 		// begin sqlite connection to insert
 		tx, err := db.Begin()
 		if err != nil {
-			utils.LogError(errors.Wrap(err, "[STORE] error in audit file schema begin"))
+			utils.LogError(errors.Wrap(err, "[AUDIT][STORE] error in audit file schema begin"))
 		}
 
 		// define statement
 		stmt, err := tx.Prepare("INSERT INTO audit(id, user, action, data, timestamp) VALUES(null, ?, ?, ?, ?)")
 		if err != nil {
-			utils.LogError(errors.Wrap(err, "[STORE] error in audit file schema prepare"))
+			utils.LogError(errors.Wrap(err, "[AUDIT][STORE] error in audit file schema prepare"))
 		}
 		defer stmt.Close()
 
 		// execute statement
 		_, err = stmt.Exec(audit.User, audit.Action, audit.Data, audit.Timestamp.Format(time.RFC3339))
 		if err != nil {
-			utils.LogError(errors.Wrap(err, "[STORE] error in audit file schema execute"))
+			utils.LogError(errors.Wrap(err, "[AUDIT][STORE] error in audit file schema execute"))
 		}
 		tx.Commit()
 	}
@@ -139,7 +139,7 @@ func QueryArgs(query string, args ...interface{}) []models.Audit {
 		// open db
 		db, err := sql.Open("sqlite3", configuration.Config.AuditFile)
 		if err != nil {
-			utils.LogError(errors.Wrap(err, "[QUERY] error in audit file schema open"))
+			utils.LogError(errors.Wrap(err, "[AUDIT][QUERY] error in audit file schema open"))
 		}
 		defer db.Close()
 
@@ -161,7 +161,7 @@ func QueryArgs(query string, args ...interface{}) []models.Audit {
 
 		rows, err := db.Query(query, cleanArgs...)
 		if err != nil {
-			utils.LogError(errors.Wrap(err, "[QUERY] error in audit query execution"))
+			utils.LogError(errors.Wrap(err, "[AUDIT][QUERY] error in audit query execution"))
 		}
 		defer rows.Close()
 
@@ -170,14 +170,14 @@ func QueryArgs(query string, args ...interface{}) []models.Audit {
 			var auditRow models.Audit
 			var timestamp string
 			if err := rows.Scan(&auditRow.ID, &auditRow.User, &auditRow.Action, &auditRow.Data, &timestamp); err != nil {
-				utils.LogError(errors.Wrap(err, "[QUERY] error in audit query row extraction"))
+				utils.LogError(errors.Wrap(err, "[AUDIT][QUERY] error in audit query row extraction"))
 			}
 
 			// parse date
 			t, err := time.Parse(time.RFC3339, timestamp)
 
 			if err != nil {
-				utils.LogError(errors.Wrap(err, "[QUERY] error in audit parse timestamp"))
+				utils.LogError(errors.Wrap(err, "[AUDIT][QUERY] error in audit parse timestamp"))
 			}
 
 			// append results
@@ -188,7 +188,7 @@ func QueryArgs(query string, args ...interface{}) []models.Audit {
 		// check rows error
 		errRows := rows.Err()
 		if errRows != nil {
-			utils.LogError(errors.Wrap(errRows, "[QUERY] error in rows query loop"))
+			utils.LogError(errors.Wrap(errRows, "[AUDIT][QUERY] error in rows query loop"))
 		}
 	}
 
@@ -206,14 +206,14 @@ func Query(query string) []string {
 		// open db
 		db, err := sql.Open("sqlite3", configuration.Config.AuditFile)
 		if err != nil {
-			utils.LogError(errors.Wrap(err, "[QUERY] error in audit file schema open"))
+			utils.LogError(errors.Wrap(err, "[AUDIT][QUERY] error in audit file schema open"))
 		}
 		defer db.Close()
 
 		// define query
 		rows, err := db.Query(query)
 		if err != nil {
-			utils.LogError(errors.Wrap(err, "[QUERY] error in audit query execution"))
+			utils.LogError(errors.Wrap(err, "[AUDIT][QUERY] error in audit query execution"))
 		}
 		defer rows.Close()
 
@@ -221,7 +221,7 @@ func Query(query string) []string {
 		for rows.Next() {
 			var field string
 			if err := rows.Scan(&field); err != nil {
-				utils.LogError(errors.Wrap(err, "[QUERY] error in audit query row extraction"))
+				utils.LogError(errors.Wrap(err, "[AUDIT][QUERY] error in audit query row extraction"))
 			}
 
 			// append results
@@ -231,7 +231,7 @@ func Query(query string) []string {
 		// check rows error
 		errRows := rows.Err()
 		if errRows != nil {
-			utils.LogError(errors.Wrap(errRows, "[QUERY] error in rows query loop"))
+			utils.LogError(errors.Wrap(errRows, "[AUDIT][QUERY] error in rows query loop"))
 		}
 	}
 

@@ -71,7 +71,7 @@ func main() {
 	audit.Init()
 
 	// init websocket
-	socket := socket.Instance()
+	socketConnection := socket.Instance()
 
 	// init routers
 	router := gin.Default()
@@ -134,7 +134,9 @@ func main() {
 	// define websocket endpoint
 	ws := router.Group("/ws")
 	ws.GET("", func(c *gin.Context) {
-		socket.HandleRequest(c.Writer, c.Request)
+		if socket.ValidateAuth(c.Query("jwt")) {
+			socketConnection.HandleRequest(c.Writer, c.Request)
+		}
 	})
 
 	// start events

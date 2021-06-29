@@ -8,7 +8,11 @@ export default {
   methods: {
     initWebSocket() {
       //// need to monitor this.$socket.readyState?
-      this.$connect(this.$root.config.WS_ENDPOINT);
+      this.$connect(
+        this.$root.config.WS_ENDPOINT +
+          "?jwt=" +
+          this.getFromStorage("loginInfo").token
+      );
 
       this.$options.sockets.onmessage = this.onMessage;
       console.log("websocket connected"); ////

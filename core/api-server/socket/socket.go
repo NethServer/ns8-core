@@ -23,8 +23,15 @@
 package socket
 
 import (
+	"fmt"
+
 	"github.com/olahol/melody"
-	//"github.com/NethServer/ns8-scratchpad/core/api-server/utils"
+	jwt "github.com/dgrijalva/jwt-go"
+
+	"github.com/pkg/errors"
+
+	"github.com/NethServer/ns8-scratchpad/core/api-server/configuration"
+	"github.com/NethServer/ns8-scratchpad/core/api-server/utils"
 )
 
 var socketConnection *melody.Melody
@@ -52,6 +59,28 @@ func InitSocketConnection() *melody.Melody {
 	Connections = make(map[string][]*melody.Session)
 
 	return socketConnection
+}
+
+func ValidateAuth(tokenString string) bool {
+	// convert token string and validate it
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		// validate the alg
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+		}
+
+		// return secret
+		return []byte(configuration.Config.Secret), nil
+	})
+
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		if claims["id"] != nil {
+			return true
+		}
+	} else {
+		utils.LogError(errors.Wrap(err, "[SOCKET] error in JWT validation"))
+	}
+	return false
 }
 
 func OnConnect(s *melody.Session) {
