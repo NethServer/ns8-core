@@ -363,7 +363,7 @@ func createTask(c *gin.Context, queueName string) {
 	audit.Store(auditData)
 
 	// return status created
-	c.JSON(http.StatusCreated, structs.Map(response.StatusOK{
+	c.JSON(http.StatusCreated, structs.Map(response.StatusCreated{
 		Code:    201,
 		Message: "task queued successfully",
 		Data:    task,

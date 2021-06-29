@@ -27,8 +27,8 @@ import (
 )
 
 type Event struct {
-	Name      string      `json:"name"`
-	Payload   interface{} `json:"payload"`
-	Timestamp time.Time   `json:"timestamp"`
-	Type      string      `json:"type"`
+	Name      string      `json:"name" structs:"name"`
+	Payload   interface{} `json:"payload" structs:"payload"`
+	Timestamp time.Time   `json:"timestamp" structs:"timestamp"`
+	Type      string      `json:"type" structs:"type"`
 }

@@ -27,9 +27,9 @@ import (
 )
 
 type Audit struct {
-	ID        int       `json:"id"`
-	User      string    `json:"user"`
-	Action    string    `json:"action"`
-	Data      string    `json:"data"`
-	Timestamp time.Time `json:"timestamp"`
+	ID        int       `json:"id" structs:"id"`
+	User      string    `json:"user" structs:"user"`
+	Action    string    `json:"action" structs:"action"`
+	Data      string    `json:"data" structs:"data"`
+	Timestamp time.Time `json:"timestamp" structs:"timestamp"`
 }

@@ -23,7 +23,7 @@
 package models
 
 type UserAuthorizations struct {
-	Username string   `json:"username"`
-	Role     string   `json:"role"`
-	Actions  []string `json:"actions"`
+	Username string   `json:"username" structs:"username"`
+	Role     string   `json:"role" structs:"role"`
+	Actions  []string `json:"actions" structs:"actions"`
 }

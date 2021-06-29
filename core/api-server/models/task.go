@@ -27,11 +27,11 @@ import (
 )
 
 type Task struct {
-	ID        string      `json:"id"`
-	Action    string      `json:"action"`
-	Data      interface{} `json:"data"`
-	Queue     string      `json:"queue"`
-	User      string      `json:"user"`
-	Timestamp time.Time   `json:"timestamp"`
-	Parent    string      `json:"parent"`
+	ID        string      `json:"id" structs:"id"`
+	Action    string      `json:"action" structs:"action"`
+	Data      interface{} `json:"data" structs:"data"`
+	Queue     string      `json:"queue" structs:"queue"`
+	User      string      `json:"user" structs:"user"`
+	Timestamp time.Time   `json:"timestamp" structs:"timestamp"`
+	Parent    string      `json:"parent" structs:"parent"`
 }
