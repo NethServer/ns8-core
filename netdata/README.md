@@ -38,7 +38,7 @@ redis-cli LPUSH module/netdata1/tasks '{"id": "'$(uuidgen)'", "action": "configu
 ```
 
 Finally, setup traefik to access netdata.
-Launch `set-host`, by setting the following parameters:
+Launch `set-route`, by setting the following parameters:
 - the module instance name
 - the listen URL
 - the virtual host name
@@ -47,7 +47,7 @@ Launch `set-host`, by setting the following parameters:
 
 Netdata always listens to port `19999`.
 ```
-redis-cli LPUSH module/traefik1/tasks '{"id": "'$(uuidgen)'", "action": "set-host", "data": {"instance": "netdata1", "url": "http://127.0.0.1:19999", "host": "netdata.test.local", "lets_encrypt": true, "http2https": true} }'
+redis-cli LPUSH module/traefik1/tasks '{"id": "'$(uuidgen)'", "action": "set-route", "data": {"instance": "netdata1", "url": "http://127.0.0.1:19999", "host": "netdata.test.local", "lets_encrypt": true, "http2https": true} }'
 ```
 
 ### Streamer

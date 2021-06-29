@@ -155,12 +155,14 @@ if create_output == "":
 #
 # [
 #     {
-#         "action":"set-host",
+#         "action":"set-route",
 #         "agent":"traefik@node",
 #         "data": {
 #             "url":"http://127.0.0.1:3000",
 #             "instance":"module3",
-#             "host":"www.example.com"
+#             "host":"www.example.com",
+#             "http2https": false,
+#             "lets_encrypt": true
 #         }
 #     }
 # ]

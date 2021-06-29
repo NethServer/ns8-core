@@ -42,7 +42,7 @@ redis-cli LPUSH module/dokuwiki1/tasks '{"id": "'$(uuidgen)'", "action": "config
 ```
 
 Finally, setup traefik to access.
-Then launch `set-host`, by setting the following parameters:
+Then launch `set-route`, by setting the following parameters:
 - the module instance name
 - the listen URL
 - the virtual host name
@@ -51,7 +51,7 @@ Then launch `set-host`, by setting the following parameters:
 
 See `/home/dokuwiki1/.config/state/environment` to find the `TCP_PORT` where the instance will listen. In this exmple `TCP_PORT` is `2000`:
 ```
-redis-cli LPUSH module/traefik1/tasks '{"id": "'$(uuidgen)'", "action": "set-host", "data": {"instance": "dokuwiki1", "url": "http://127.0.0.1:20000", "host": "mywiki.example.org", "lets_encrypt": true, "http2https": true} }' 
+redis-cli LPUSH module/traefik1/tasks '{"id": "'$(uuidgen)'", "action": "set-route", "data": {"instance": "dokuwiki1", "url": "http://127.0.0.1:20000", "host": "mywiki.example.org", "lets_encrypt": true, "http2https": true} }'
 ```
 
 ## Uninstall
