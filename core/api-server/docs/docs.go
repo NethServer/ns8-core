@@ -56,6 +56,12 @@ var doc = `{
                     },
                     {
                         "type": "string",
+                        "description": "data full text search by data",
+                        "name": "data",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
                         "description": "filter result search by from date ISO8601",
                         "name": "from",
                         "in": "query"
@@ -64,6 +70,12 @@ var doc = `{
                         "type": "string",
                         "description": "filter result search by to date ISO8601",
                         "name": "to",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "limit results to limit value",
+                        "name": "limit",
                         "in": "query"
                     }
                 ],
@@ -494,6 +506,17 @@ var doc = `{
                     "/tasks cluster"
                 ],
                 "summary": "Create and queue a cluster task",
+                "parameters": [
+                    {
+                        "description": "Task Payload",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.TaskJSON"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -931,6 +954,15 @@ var doc = `{
                         "name": "module_id",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "description": "Task Payload",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.TaskJSON"
+                        }
                     }
                 ],
                 "responses": {
@@ -1325,6 +1357,15 @@ var doc = `{
                         "name": "node_id",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "description": "Task Payload",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.TaskJSON"
+                        }
                     }
                 ],
                 "responses": {
@@ -1484,6 +1525,22 @@ var doc = `{
                 }
             }
         },
+        "models.TaskJSON": {
+            "type": "object",
+            "properties": {
+                "action": {
+                    "type": "string",
+                    "example": "list-modules"
+                },
+                "data": {
+                    "type": "object"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "null"
+                }
+            }
+        },
         "response.LoginRequestJWT": {
             "type": "object",
             "properties": {
@@ -1566,7 +1623,15 @@ var doc = `{
             "type": "object",
             "properties": {
                 "code": {
+                    "type": "integer",
+                    "example": 200
+                },
+                "data": {
                     "type": "object"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Success"
                 }
             }
         }

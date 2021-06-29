@@ -299,7 +299,7 @@ func getTaskContext(c *gin.Context, filePath string) {
 
 func createTask(c *gin.Context, queueName string) {
 	// bind json body
-	var jsonTask models.Task
+	var jsonTask models.TaskJSON
 	if err := c.ShouldBindBodyWith(&jsonTask, binding.JSON); err != nil {
 		c.JSON(http.StatusBadRequest, structs.Map(response.StatusBadRequest{
 			Code:    400,
@@ -651,6 +651,7 @@ func GetModuleTaskContext(c *gin.Context) {
 // @Summary Create and queue a cluster task
 // @Description create a cluster task
 // @Produce  json
+// @Param payload body models.TaskJSON true "Task Payload"
 // @Success 200 {object} response.StatusCreated{code=int,message=string,data=models.Task}
 // @Header 200 {string} Authorization "Bearer <valid.JWT.token>"
 // @Failure 400 {object} response.StatusBadRequest{code=int,message=string,data=object}
@@ -669,6 +670,7 @@ func CreateClusterTask(c *gin.Context) {
 // @Description create a node task
 // @Produce  json
 // @Param node_id path string true "Node ID"
+// @Param payload body models.TaskJSON true "Task Payload"
 // @Success 200 {object} response.StatusCreated{code=int,message=string,data=models.Task}
 // @Header 200 {string} Authorization "Bearer <valid.JWT.token>"
 // @Failure 400 {object} response.StatusBadRequest{code=int,message=string,data=object}
@@ -690,6 +692,7 @@ func CreateNodeTask(c *gin.Context) {
 // @Description create a module task
 // @Produce  json
 // @Param module_id path string true "Module ID"
+// @Param payload body models.TaskJSON true "Task Payload"
 // @Success 200 {object} response.StatusCreated{code=int,message=string,data=models.Task}
 // @Header 200 {string} Authorization "Bearer <valid.JWT.token>"
 // @Failure 400 {object} response.StatusBadRequest{code=int,message=string,data=object}

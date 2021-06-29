@@ -17,6 +17,17 @@ definitions:
       user:
         type: string
     type: object
+  models.TaskJSON:
+    properties:
+      action:
+        example: list-modules
+        type: string
+      data:
+        type: object
+      id:
+        example: "null"
+        type: string
+    type: object
   response.LoginRequestJWT:
     properties:
       password:
@@ -74,7 +85,13 @@ definitions:
   response.StatusOK:
     properties:
       code:
+        example: 200
+        type: integer
+      data:
         type: object
+      message:
+        example: Success
+        type: string
     type: object
 host: localhost:8080
 info:
@@ -100,6 +117,10 @@ paths:
         in: query
         name: action
         type: string
+      - description: data full text search by data
+        in: query
+        name: data
+        type: string
       - description: filter result search by from date ISO8601
         in: query
         name: from
@@ -107,6 +128,10 @@ paths:
       - description: filter result search by to date ISO8601
         in: query
         name: to
+        type: string
+      - description: limit results to limit value
+        in: query
+        name: limit
         type: string
       produces:
       - application/json
@@ -355,6 +380,13 @@ paths:
       - /tasks cluster
     post:
       description: create a cluster task
+      parameters:
+      - description: Task Payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/models.TaskJSON'
       produces:
       - application/json
       responses:
@@ -613,6 +645,12 @@ paths:
         name: module_id
         required: true
         type: string
+      - description: Task Payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/models.TaskJSON'
       produces:
       - application/json
       responses:
@@ -845,6 +883,12 @@ paths:
         name: node_id
         required: true
         type: string
+      - description: Task Payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/models.TaskJSON'
       produces:
       - application/json
       responses:
