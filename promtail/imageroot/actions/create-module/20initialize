@@ -24,12 +24,12 @@ set -e
 
 exec 1>&2 # Send any output to stderr, to not alter the action response protocol
 
-#Configure as default Loki server the leader node.
+#Get the module id of the default Loki instance.
 
-leader_id=$(REDIS_USER=default redis-exec HGET cluster/environment NODE_ID)
+loki_id=$(REDIS_USER=default redis-exec GET cluster/default_instance/loki)
 
 cat >&${AGENT_COMFD} <<EOF
-set-env LOKI_URL http://$(REDIS_USER=default redis-exec HGET node/${leader_id}/vpn ip_address):3100/loki/api/v1/push
+set-env LOKI_URL http://$(REDIS_USER=default redis-exec HGET module/${loki_id}/environment LOKI_ADDR):3100/loki/api/v1/push
 dump-env
 EOF
 

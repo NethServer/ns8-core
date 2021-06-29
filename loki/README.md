@@ -48,7 +48,7 @@ root@leader:~# logcli  query -q --no-labels -t '{nodename="leader"} | json | lin
 2021-05-28T15:49:27Z This usually indicates unclean termination of a previous run, or service implementation deficiencies.
 ```
 
-`logcli` will assume that the default Loki server to use is installed on the cluster leader node, this can be changed using the environment variable [`LOKI_ADDR`](https://grafana.com/docs/loki/latest/getting-started/logcli/#example)
+`logcli` will use the default Loki instance of the cluster, this can be changed using the environment variable [`LOKI_ADDR`](https://grafana.com/docs/loki/latest/getting-started/logcli/#example)
 
 ## Uninstall
 
