@@ -320,7 +320,7 @@ func createTask(c *gin.Context, queueName string) {
 	task.Queue = queueName
 	task.User = info["id"].(string)
 	task.Timestamp = time.Now().UTC()
-	task.Parent = ""
+	task.Parent = jsonTask.Parent
 
 	// init redis connection
 	redisConnection := redis.Instance()

@@ -40,4 +40,5 @@ type TaskJSON struct {
 	ID     string      `json:"id" structs:"id" example:"null"`
 	Action string      `json:"action" structs:"action" example:"list-modules"`
 	Data   interface{} `json:"data" structs:"data"`
+	Parent string      `json:"parent" structs:"parent"`
 }
