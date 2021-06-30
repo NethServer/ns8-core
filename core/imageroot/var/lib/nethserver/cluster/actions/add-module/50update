@@ -74,6 +74,11 @@ if 'org.nethserver.tcp-ports-demand' in inspect_labels:
 else:
     tcp_ports_demand = 0
 
+if 'org.nethserver.authorizations' in inspect_labels:
+    authorizations = inspect_labels['org.nethserver.authorizations'].split()
+else:
+    authorizations = []
+
 # Increment the module sequence for image_id (e.g. traefik => traefik1)
 module_id = image_id + str(rdb.incr(f'cluster/module_sequence/{image_id}'))
 
@@ -138,38 +143,17 @@ agent.assert_exp(rdb.execute_command('ACL', 'SETUSER',
 # Persist ACLs to disk
 agent.assert_exp(rdb.execute_command('ACL', 'SAVE') == 'OK')
 
-# Push the creation task for the new module.
-exit_code, output, error = agent.run_subtask(rdb,
-    progress_range=(67,95),
-    agent_prefix=f'module/{module_id}',
-    action="create-module",
-    input_obj="",
-    )
-agent.assert_exp(exit_code == 0) # Ensure create-module is successful
+# Grant required authorizations to the new module
+for authz in authorizations:
+    if '*' in authz:
+        print(agent.SD_WARNING + f'Cannot grant authorization "{authz}" to {module_id}. Wildcard is not allowed.')
+        continue
 
-create_output = output.strip() # Ignore garbage whitespaces
-if create_output == "":
-    create_output = '[]' # An empty output is considered an empty array
-#
-# Expected output schema
-#
-# [
-#     {
-#         "action":"set-route",
-#         "agent":"traefik@node",
-#         "data": {
-#             "url":"http://127.0.0.1:3000",
-#             "instance":"module3",
-#             "host":"www.example.com",
-#             "http2https": false,
-#             "lets_encrypt": true
-#         }
-#     }
-# ]
-#
-for task in json.loads(create_output):
-    xaction = task['action']
-    xagent = task['agent']
+    xagent, xrole = authz.split(':') # e.g. traefik@node:routeadm
+
+    if xrole == 'owner':
+        print(agent.SD_WARNING + f'Cannot grant authorization "{authz}" to {module_id}. Role "{xrole}" is forbidden.')
+        continue
 
     if xagent == 'node': # Expand to the agent prefix of the current node
         agent_prefix = f'node/{node_id}'
@@ -182,14 +166,16 @@ for task in json.loads(create_output):
     else:
         agent_prefix = xagent
 
-    agent.assert_exp(xaction in rdb.smembers(f'{agent_prefix}/roles/create-module')) # Check the action is authorized
+    cluster.grants.alter_user(rdb, user=f'module/{module_id}', revoke=False, role=xrole, on_clause=agent_prefix)
 
-    exit_code, output, error = agent.run_subtask(rdb,
-        agent_prefix=agent_prefix,
-        action=xaction,
-        input_obj=task.get('data', {}),
-    )
-    agent.assert_exp(exit_code == 0) # Ensure the secondary actions from create-module are successful
+# Push the creation task for the new module.
+exit_code, output, error = agent.run_subtask(rdb,
+    progress_range=(67,95),
+    agent_prefix=f'module/{module_id}',
+    action="create-module",
+    input_obj="",
+)
+agent.assert_exp(exit_code == 0) # Ensure create-module is successful
 
 # Configure our builtin roles: "owner" and "reader". Owner can run any action, Reader can run
 # action names with special prefixes.
@@ -201,9 +187,9 @@ cluster.grants.grant(rdb, action_clause="read-*", to_clause="reader", on_clause=
 
 # Grant the owner role to cluster owners on the new module
 for userk in rdb.scan_iter('roles/*'):
-    roles = rdb.hgetall(userk)
-    if 'cluster' in roles and roles['cluster'] == 'owner':
-        cluster.grants.alter_user(rdb, user=userk[6:], revoke=False, role='owner', on_clause=f'module/{module_id}')
+    user_auths = rdb.hgetall(userk)
+    if 'cluster' in user_auths and user_auths['cluster'] == 'owner':
+        cluster.grants.alter_user(rdb, user=userk[len('roles/'):], revoke=False, role='owner', on_clause=f'module/{module_id}')
 
 json.dump({
     "module_id": module_id,

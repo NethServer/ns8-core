@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/bin/bash
 
 #
 # Copyright (C) 2021 Nethesis S.r.l.
@@ -20,18 +20,11 @@
 # along with NethServer.  If not, see COPYING.
 #
 
-import cluster.grants
-import agent
-import os
+set -e    # exit immediately if an error occurs
+exec 1>&2 # ensure any output is sent to stderr
 
 #
-# Allow other modules to call our set-* actions from their "create-module" implementations
+# Allow other modules to call our *-route actions by requiring the "routeadm" role
 #
 
-rdb = agent.redis_connect(privileged=True)
-cluster.grants.grant(
-    rdb,
-    action_clause="set-*",
-    on_clause=os.environ['AGENT_ID'],
-    to_clause="create-module",
-)
+redis-exec SADD "${AGENT_ID}/roles/routeadm" "delete-route" "set-route"
