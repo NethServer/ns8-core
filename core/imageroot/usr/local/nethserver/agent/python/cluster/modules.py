@@ -106,8 +106,11 @@ def list_installed(rdb):
 
     return installed
 
-def list_updates(available, installed):
+def list_updates(rdb):
     updates = []
+    installed = list_installed(rdb)
+    available = list_available(rdb)
+
     for module in available:
         if module["source"] not in installed.keys():
             continue
@@ -116,8 +119,9 @@ def list_updates(available, installed):
         for version in module["versions"]:
             v = semver.VersionInfo.parse(version["tag"])
             # Skip testing versions if testing is disabled
-            #if int(repo["testing"]) == 0 and not v.prerelease is None:
-            #    continue
+            testing = rdb.hget(f'cluster/repository/{module["repository"]}', 'testing')
+            if int(testing) == 0 and not v.prerelease is None:
+                continue
 
             newest_version = version["tag"]
             break
