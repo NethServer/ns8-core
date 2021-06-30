@@ -153,21 +153,24 @@ async def _amonitor_task(client, agent_id, action, data, parent, **npargs):
 
     return task_id
 
-def run(agent_id, action, data={}, parent="", progress_range=None, tls_verify=False, endpoint='http://cluster-leader/cluster-admin'):
+def run(agent_id, action, data={}, parent=None, progress_range=None, tls_verify=False, endpoint='http://cluster-leader/cluster-admin'):
     """Run a new task and wait until it completes. An object with exit_code, error, output is returned.
     """
+
+    if parent is None:
+        parent = os.getenv("AGENT_TASK_ID", "")
 
     # There are two main tasks that run concurrently. We must ensure the web socket captures any status update
     # of the Task even before it is created. This ensures we can catch the "completed" message and retrieve the
     # Task status from Redis after it becomes available.
     async def _asyncf():
+        nonlocal parent
         theaders = _get_theaders_cache()
         pconn = {
             'tls_verify': tls_verify,
             'endpoint': endpoint,
         }
         async with aiohttp.ClientSession(raise_for_status=True) as client:
-
             try:
                 task_id = await _amonitor_task(client, agent_id, action, data, parent, theaders=theaders, **pconn)
             except aiohttp.ClientResponseError as ex:
