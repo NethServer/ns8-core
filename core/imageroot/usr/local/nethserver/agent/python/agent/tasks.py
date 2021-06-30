@@ -148,7 +148,7 @@ async def _amonitor_task(client, agent_id, action, data, parent, **npargs):
             if jdata['payload']['status'] != 'completed':
                 continue # Ignore any status but "completed" XXX: catch "progress" too!
 
-            if task_id and jdata['name'] == f'progress/{agent_id}/{task_id}':
+            if task_id and jdata['name'] == f'progress/{agent_id}/task/{task_id}':
                 break
 
     return task_id

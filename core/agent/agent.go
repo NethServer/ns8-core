@@ -142,7 +142,7 @@ func publishStatus(client redis.Cmdable, progressChannel string, actionDescripto
 
 func runListActions(task *models.Task) {
 	// Redis key names where the action response is stored:
-	progressChannel := "progress/" + agentPrefix + "/" + task.ID
+	progressChannel := "progress/" + agentPrefix + "/task/" + task.ID
 	outputKey := agentPrefix + "/task/" + task.ID + "/output"
 	errorKey := agentPrefix + "/task/" + task.ID + "/error"
 	exitCodeKey := agentPrefix + "/task/" + task.ID + "/exit_code"
