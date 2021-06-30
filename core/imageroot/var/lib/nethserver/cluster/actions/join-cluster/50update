@@ -21,6 +21,7 @@
 #
 
 import agent
+import agent.tasks
 import hashlib
 import requests
 import json
@@ -68,49 +69,23 @@ node_pwh = hashlib.sha256(node_pw.encode()).hexdigest()
 #
 # Invoke the cluster add-node action remotely:
 #
-response = requests.post(url.strip('/') + '/cluster-admin/api/cluster/tasks', timeout=30, json={
-        "id": "",
-        "action": "add-node",
-        "data": {
-            "node_pwh": node_pwh,
-            "public_key": public_key,
-            "endpoint": "",
-            "listen_port": listen_port,
-        },
+response = agent.tasks.run(
+    agent_id='cluster',
+    action='add-node',
+    data={
+        "node_pwh": node_pwh,
+        "public_key": public_key,
+        "endpoint": "",
+        "listen_port": listen_port,
     },
-    verify=tls_verify,
-    headers={'Authorization': 'Bearer ' + jwt})
-response.raise_for_status()
-body = response.json()
-
-agent.assert_exp(body['Code'] == 201)
-
-task_id = body['Data']['ID']
-
-#
-# XXX Poll the remote server until the task has completed
-#
-pollurl = url.strip('/') + f'/cluster-admin/api/cluster/task/{task_id}/status'
-print(f"Reading response from {pollurl}", file=sys.stderr)
-for attempt in range(0,5):
-    time.sleep(2)
-    response = requests.get(pollurl, timeout=30, verify=tls_verify, headers={'Authorization': 'Bearer ' + jwt})
-    try:
-        response.raise_for_status()
-        body = response.json()
-    except Exception as e:
-        print(f"Request attempt {attempt} failed: {str(e)}")
-        continue
-    if body['Code'] == 200:
-        break
-    else:
-        print(agent.SD_ERR + "Unexpected response payload", file=sys.stderr)
-        print(body, file=sys.stderr)
-else:
-    print(agent.SD_ERR + 'Join response reading attempts exhausted. Action aborted!', file=sys.stderr)
-    sys.exit(1)
-
-payload = body['Data']['output']
+    parent='', # Our AGENT_TASK_ID is useless in another cluster: force parent to empty string
+    endpoint=url.strip('/') + '/cluster-admin',
+    tls_verify=tls_verify,
+    progress_range=(20,98),
+    auth_token=jwt,
+)
+agent.assert_exp(response['exit_code'] == 0)
+payload = response['output']
 
 agent.assert_exp(payload['ip_address'])
 agent.assert_exp(payload['node_id'])
@@ -123,6 +98,8 @@ node_id = payload['node_id']
 leader_ip_address = payload['leader_ip_address']
 leader_public_key = payload['leader_public_key']
 leader_endpoint = payload['leader_endpoint']
+
+print(f"Leader response is successful: the cluster was joined as node/{node_id}! Remote task reference: cluster/task/{response['id']}", file=sys.stderr)
 
 # Reconfigure node agent
 agent.run_helper('sed', '-i', f'/^AGENT_ID=/c\AGENT_ID=node/{node_id}', '/var/lib/nethserver/node/state/agent.env').check_returncode()

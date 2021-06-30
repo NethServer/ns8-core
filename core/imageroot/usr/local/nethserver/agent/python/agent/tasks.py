@@ -23,6 +23,7 @@ import asyncio
 import json
 import os
 import urllib
+import sys
 
 async def _alogin(client, **npargs):
     """Read the Redis user credentials from the environment and retrieve a new authorization token.
@@ -61,7 +62,7 @@ async def _aread_status(client, agent_id, task_id, **npargs):
         theaders = _get_theaders_cache()
 
     async with client.get(
-        f'{endpoint}/api/{agent_id}/task/{task_id}/status', 
+        f'{endpoint}/api/{agent_id}/task/{task_id}/status',
         ssl=tls_verify,
         headers=theaders,
     ) as resp:
@@ -74,9 +75,14 @@ async def _aread_status(client, agent_id, task_id, **npargs):
         'exit_code': jresp['data']['exit_code'],
     }
 
-def _get_theaders_cache():
+def _get_theaders_cache(token=None):
     """Build authorization headers from the file cache contents.
     """
+    if token:
+        return {
+            "Authorization": "Bearer " + token
+        }
+
     if 'AGENT_STATE_DIR' in os.environ:
         cachefile = os.environ['AGENT_STATE_DIR'] + '/apitoken.cache' 
     else:
@@ -153,7 +159,7 @@ async def _amonitor_task(client, agent_id, action, data, parent, **npargs):
 
     return task_id
 
-def run(agent_id, action, data={}, parent=None, progress_range=None, tls_verify=False, endpoint='http://cluster-leader/cluster-admin'):
+def run(agent_id, action, data={}, parent=None, progress_range=None, tls_verify=False, endpoint='http://cluster-leader/cluster-admin', auth_token=None):
     """Run a new task and wait until it completes. An object with exit_code, error, output is returned.
     """
 
@@ -165,7 +171,7 @@ def run(agent_id, action, data={}, parent=None, progress_range=None, tls_verify=
     # Task status from Redis after it becomes available.
     async def _asyncf():
         nonlocal parent
-        theaders = _get_theaders_cache()
+        theaders = _get_theaders_cache(auth_token)
         pconn = {
             'tls_verify': tls_verify,
             'endpoint': endpoint,
