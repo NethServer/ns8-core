@@ -25,6 +25,8 @@ set -e
 # Redirect any output to the journal (stderr)
 exec 1>&2
 
+CLUSTER_NETWORK=$(redis-exec GET cluster/network | sed 's!None!0.0.0.0/0!')
+
 #
 # Configure HTTPS access to the API server with the auto-generated certificate, under the /cluster-admin
 # URL path prefix. The header "X-Forwarded-Prefix" is added to the forwarded request
@@ -37,9 +39,16 @@ SET "${AGENT_ID}/kv/http/routers/ApiServerHttps/priority" "1"
 SET "${AGENT_ID}/kv/http/routers/ApiServerHttps/service" "ApiServerSvc"
 SET "${AGENT_ID}/kv/http/routers/ApiServerHttps/tls" "true"
 SET "${AGENT_ID}/kv/http/routers/ApiServerHttps/middlewares/0" "ApiServerMw0"
+SET "${AGENT_ID}/kv/http/routers/ApiServerHttp/entryPoints/0" "http"
+SET "${AGENT_ID}/kv/http/routers/ApiServerHttp/rule" "PathPrefix(\`/cluster-admin/\`)"
+SET "${AGENT_ID}/kv/http/routers/ApiServerHttp/service" "ApiServerSvc"
+SET "${AGENT_ID}/kv/http/routers/ApiServerHttp/middlewares/0" "ApiServerMw0"
+SET "${AGENT_ID}/kv/http/routers/ApiServerHttp/middlewares/1" "ApiServerMw1"
 SET "${AGENT_ID}/kv/http/services/ApiServerSvc/loadBalancer/servers/0/url" "http://127.0.0.1:8080"
 SET "${AGENT_ID}/kv/http/middlewares/ApiServerMw0/stripPrefix/forceSlash" "false"
 SET "${AGENT_ID}/kv/http/middlewares/ApiServerMw0/stripPrefix/prefixes/0" "/cluster-admin"
+SET "${AGENT_ID}/kv/http/middlewares/ApiServerMw1/ipWhiteList/sourceRange/0" "127.0.0.1"
+SET "${AGENT_ID}/kv/http/middlewares/ApiServerMw1/ipWhiteList/sourceRange/1" "${CLUSTER_NETWORK}"
 EOF
 
 #
