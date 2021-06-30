@@ -74,7 +74,12 @@ func main() {
 	socketConnection := socket.Instance()
 
 	// init routers
-	router := gin.Default()
+	//router := gin.Default()
+	router := gin.New()
+	router.Use(
+		gin.LoggerWithWriter(gin.DefaultWriter, "/ws"),
+		gin.Recovery(),
+	)
 
 	// add default compression
 	router.Use(gzip.Gzip(gzip.DefaultCompression))

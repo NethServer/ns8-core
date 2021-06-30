@@ -63,22 +63,24 @@ func InitSocketConnection() *melody.Melody {
 
 func ValidateAuth(tokenString string) bool {
 	// convert token string and validate it
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		// validate the alg
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
-		}
+	if tokenString != "" {
+		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+			// validate the alg
+			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+				return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+			}
 
-		// return secret
-		return []byte(configuration.Config.Secret), nil
-	})
+			// return secret
+			return []byte(configuration.Config.Secret), nil
+		})
 
-	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		if claims["id"] != nil {
-			return true
+		if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+			if claims["id"] != nil {
+				return true
+			}
+		} else {
+			utils.LogError(errors.Wrap(err, "[SOCKET] error in JWT validation"))
 		}
-	} else {
-		utils.LogError(errors.Wrap(err, "[SOCKET] error in JWT validation"))
 	}
 	return false
 }

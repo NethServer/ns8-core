@@ -1,18 +1,19 @@
 import NotificationService from "@/mixins/notification";
+import StorageService from "@/mixins/storage";
 import TaskService from "@/mixins/task";
 // import { v4 as uuidv4 } from "uuid"; ////
 
 export default {
   name: "WebSocketService",
-  mixins: [NotificationService, TaskService],
+  mixins: [NotificationService, TaskService, StorageService],
   methods: {
     initWebSocket() {
       //// need to monitor this.$socket.readyState?
-      this.$connect(
-        this.$root.config.WS_ENDPOINT +
-          "?jwt=" +
-          this.getFromStorage("loginInfo").token
-      );
+      var jwt =
+        (this.getFromStorage("loginInfo") &&
+          this.getFromStorage("loginInfo").token) ||
+        "";
+      this.$connect(this.$root.config.WS_ENDPOINT + "?jwt=" + jwt);
 
       this.$options.sockets.onmessage = this.onMessage;
       console.log("websocket connected"); ////
