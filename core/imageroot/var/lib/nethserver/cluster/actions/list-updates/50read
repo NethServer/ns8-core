@@ -21,64 +21,12 @@
 #
 
 import sys
-import agent
-import cluster.grants
 import json
-from semver import VersionInfo
-import urllib.request
-import subprocess
+import agent
+import cluster.modules
 
 rdb = agent.redis_connect(privileged=True)
-
-installed = {}
-updates = []
-
-# Search for installed modules
-for m in rdb.scan_iter('module/*/environment'):
-    vars = rdb.hgetall(m)
-    url, sep, tag = vars['IMAGE_URL'].partition(":")
-    if url not in installed.keys():
-        installed[url] = []
-    installed[url].append({ 'id': vars["MODULE_ID"], 'node': vars['NODE_ID'], 'digest': vars['IMAGE_DIGEST'], 'version': tag })
-    
-
-# Retrieve metadata for all repositories
-for m in rdb.scan_iter('cluster/repository/*'):
-    repo = rdb.hgetall(m)
-    # Analize only enabled repositories
-    if int(repo["status"]) == 1:
-        url = urllib.parse.urljoin(repo["url"], "repodata.json")
-        with urllib.request.urlopen(url) as req:
-            repodata = json.loads(req.read().decode())
-
-            for package in repodata:
-                # skip not installed packages
-                if package["source"] not in installed.keys():
-                    continue
-
-                newest_version = None
-                for version in package["versions"]:
-                    v = VersionInfo.parse(version["tag"])
-                    # Skip testing versions if testing is disabled
-                    if int(repo["testing"]) == 0 and not v.prerelease is None:
-                        continue
-
-                    newest_version = version["tag"]
-                    break
-
-                # Handle multiple instances of the same module
-                for instance in installed[package["source"]]:
-                    try:
-                        cur = VersionInfo.parse(instance["version"])
-                    except:
-                        # skip installed instanced with dev version
-                        continue
-
-                    # Version from remote repositories are already sorted
-                    # First match is the newest release
-                    if v > cur:
-                        instance["update"] = version["tag"]
-                        updates.append(instance)
-
-
+installed = cluster.modules.list_installed(rdb)
+available = cluster.modules.list_available(rdb)
+updates = cluster.modules.list_updates(available, installed)
 json.dump(updates, fp=sys.stdout)

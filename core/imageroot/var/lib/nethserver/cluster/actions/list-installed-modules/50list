@@ -22,25 +22,9 @@
 
 import sys
 import json
-import subprocess
 import agent
+import cluster.modules
 
-modules = []
-digest_map = {}
 rdb = agent.redis_connect(privileged=False)
-
-# Parse the image labels
-with subprocess.Popen(['podman', 'images', '--format', 'json'], stdout=subprocess.PIPE, stderr=sys.stderr) as proc:
-    images = json.load(proc.stdout)
-    for i in images:
-        digest_map[i['Digest']] = i['Names'][0]
-
-# Grant the owner role to cluster owners on the new module
-for m in rdb.scan_iter('module/*/environment'):
-    vars = rdb.hgetall(m)
-    info = digest_map.get(vars['IMAGE_DIGEST'], 'uknown:uknown')
-    url, sep, tag = info.partition(":")
-    module = { 'id' : vars['MODULE_ID'], 'node': vars['NODE_ID'], 'digest': vars['IMAGE_DIGEST'], 'url': url, 'version': tag} 
-    modules.append(module)
-
-json.dump(modules, fp=sys.stdout)
+installed = cluster.modules.list_installed(rdb)
+json.dump(installed, fp=sys.stdout)
