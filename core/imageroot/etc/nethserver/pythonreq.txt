@@ -2,8 +2,24 @@
 # PIP requirements file for the Agent python environment
 # The environment is installed under /usr/local/nethserver/agent
 #
-ipcalc==1.99.0
-redis==3.5.3
-six==1.15.0
-requests==2.25.1
+aiodns==3.0.0
+aiohttp==3.7.4.post0
+async-timeout==3.0.1
+attrs==21.2.0
+brotlipy==0.7.0
+cchardet==2.1.7
+certifi==2021.5.30
+cffi==1.14.5
+chardet==4.0.0
 envparse==0.2.0
+idna==2.10
+ipcalc==1.99.0
+multidict==5.1.0
+pycares==4.0.0
+pycparser==2.20
+redis==3.5.3
+requests==2.25.1
+six==1.15.0
+typing-extensions==3.10.0.0
+urllib3==1.26.6
+yarl==1.6.3
