@@ -43,6 +43,4 @@ for m in rdb.scan_iter('module/*/environment'):
     module = { 'id' : vars['MODULE_ID'], 'node': vars['NODE_ID'], 'digest': vars['IMAGE_DIGEST'], 'url': url, 'version': tag} 
     modules.append(module)
 
-json.dump({
-    "modules": modules,
-}, fp=sys.stdout)
+json.dump(modules, fp=sys.stdout)
