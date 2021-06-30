@@ -56,6 +56,9 @@ rdb.hset(f'node/{NODE_ID}/vpn', mapping={
     "listen_port": listen_port,
 })
 
+# Our first Traefik instance is missing the VPN network: fix it here.
+rdb.set('module/traefik1/kv/http/middlewares/ApiServerMw1/ipWhiteList/sourceRange/1', network)
+
 # Update the cluster-localnode record in /etc/hosts
 agent.run_helper('sed', '-i',
     '-e', f'/cluster-localnode$/c\{ip_address} cluster-localnode',
