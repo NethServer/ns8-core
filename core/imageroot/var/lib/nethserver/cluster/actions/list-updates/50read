@@ -68,7 +68,11 @@ for m in rdb.scan_iter('cluster/repository/*'):
 
                 # Handle multiple instances of the same module
                 for instance in installed[package["source"]]:
-                    cur = VersionInfo.parse(instance["version"])
+                    try:
+                        cur = VersionInfo.parse(instance["version"])
+                    except:
+                        # skip installed instanced with dev version
+                        continue
 
                     # Version from remote repositories are already sorted
                     # First match is the newest release
