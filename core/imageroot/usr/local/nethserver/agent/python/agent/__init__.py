@@ -123,6 +123,42 @@ def slurp_file(file_name):
     with open(file_name) as f:
         return f.read().strip()
 
+def resolve_agent_id(agent_selector, node_id=None):
+    """Resolves agent_selector to an agent_id
+    If node_id is None (default), the NODE_ID value from the environment is considered.
+    """
+    rdb = redis_connect(privileged=False)
+    agent_id = None
+
+    if node_id is None:
+        node_id = os.environ.get('NODE_ID')
+
+    if agent_selector == 'node': # Expand to the agent id of the current node
+        if node_id:
+            agent_id = f'node/{node_id}'
+    elif agent_selector.endswith('@node'): # Default module instance on the current node
+        if node_id:
+            default_instance = rdb.get(f'node/{node_id}/default_instance/{agent_selector[0:-len("@node")]}')
+            if default_instance:
+                agent_id = f'module/{default_instance}'
+    elif agent_selector.endswith('@cluster'): # Default module instance for the whole cluster
+        default_instance = rdb.get(f'cluster/default_instance/{agent_selector[0:-len("@cluster")]}')
+        if default_instance:
+            agent_id = f'module/{default_instance}'
+    elif agent_selector.isnumeric(): # Convert to a node ID
+        agent_id = f'node/{agent_selector}'
+    elif agent_selector == 'cluster' \
+        or agent_selector.startswith('module/') \
+        or agent_selector.startswith('node/'): # Return value as-is
+        agent_id = agent_selector
+    else: # Consider the selector as a module ID. Add the "module/" prefix
+        agent_id = f'module/{agent_selector}'
+
+    if agent_id is None:
+        warnings.warn(f"Could not resolve {agent_selector} to an agent_id", stacklevel=2)
+
+    return agent_id
+
 def run_subtask(redis_obj, agent_prefix, action, input_obj, nowait=False, progress_range=None):
 
     task_id = str(uuid.uuid4())
