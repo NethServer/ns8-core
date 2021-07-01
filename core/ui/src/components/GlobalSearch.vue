@@ -52,6 +52,8 @@ import Settings20 from "@carbon/icons-vue/es/settings/20";
 import Pictogram from "@/components/Pictogram";
 import ExclamationMark from "@/components/pictograms/ExclamationMark";
 
+//// use vue-debounce?
+
 export default {
   name: "GlobalSearch",
   components: { Settings20, Pictogram, ExclamationMark },
@@ -137,6 +139,8 @@ export default {
         this.showResults = false;
         return;
       }
+
+      //// todo see software center
 
       // search
       this.results = this.allResults.filter((option) => {

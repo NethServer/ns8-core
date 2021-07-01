@@ -11,7 +11,9 @@
     "optional": "optional",
     "expand": "Expand",
     "collapse": "Collapse",
-    "reset_filters": "Reset filters"
+    "reset_filters": "Reset filters",
+    "menu": "Menu",
+    "clear_search": "Clear search"
   },
   "error": {
     "error": "Error",
@@ -80,7 +82,30 @@
     "title": "Settings"
   },
   "software_center": {
-    "title": "Software center"
+    "title": "Software center",
+    "search_placeholder": "Start typing to search apps...",
+    "software_updates": "Software updates",
+    "you_have_updates": "You have {numUpdates} apps to update",
+    "all": "All",
+    "installed": "Installed",
+    "updates": "Updates",
+    "install": "Install",
+    "install_another_instance": "Install instance",
+    "other_actions": "Other actions",
+    "search_results": "Search results",
+    "no_apps_found": "No apps found",
+    "no_apps_found_description": "Try changing your search query",
+    "open": "Open",
+    "update": "Update",
+    "add_to_launcher": "Add to launcher",
+    "details": "Details",
+    "uninstall": "Uninstall",
+    "categories": {
+      "collaboration": "Collaboration",
+      "system_administration": "System administration",
+      "office": "Office",
+      "documentation": "Documentation"
+    }
   },
   "logs": {
     "title": "Logs",

@@ -7,6 +7,9 @@ import Search20 from "@carbon/icons-vue/es/search/20";
 import RowExpand20 from "@carbon/icons-vue/es/row--expand/20";
 import RowCollapse20 from "@carbon/icons-vue/es/row--collapse/20";
 import Reset20 from "@carbon/icons-vue/es/reset/20";
+import Download20 from "@carbon/icons-vue/es/download/20";
+import Launch20 from "@carbon/icons-vue/es/launch/20";
+import Upgrade20 from "@carbon/icons-vue/es/upgrade/20";
 
 export default {
   name: "IconService",
@@ -21,6 +24,9 @@ export default {
       RowExpand20,
       RowCollapse20,
       Reset20,
+      Download20,
+      Launch20,
+      Upgrade20,
     };
   },
 };

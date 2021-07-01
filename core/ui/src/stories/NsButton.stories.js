@@ -22,13 +22,15 @@ export default {
       options: ["default", "field", "small", "sm", "lg", "xl"],
       control: { type: "select" },
     },
+    buttonClick: { action: "clickAction" },
   },
 };
 
 const Template = (args, { argTypes }) => ({
   props: Object.keys(argTypes),
   components: { NsButton },
-  template: '<NsButton v-bind="$props">{{ slotContent }}</NsButton>',
+  template:
+    '<NsButton v-bind="$props" @click="buttonClick(\'testArg\')">{{ slotContent }}</NsButton>',
 });
 
 export const Default = Template.bind({});
