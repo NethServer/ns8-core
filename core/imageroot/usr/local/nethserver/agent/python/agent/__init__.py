@@ -29,7 +29,8 @@ import tempfile
 import ipcalc
 import csv
 import traceback
-from envparse import env
+import shlex
+import warnings
 
 # Reference https://www.man7.org/linux/man-pages/man3/sd-daemon.3.html
 SD_EMERG   = "<0>"  # system is unusable
@@ -48,14 +49,7 @@ def redis_connect(privileged=False, decode_responses=True, **kwargs):
     redis_port = os.getenv('REDIS_ADDRESS', '127.0.0.1:6379').split(':', 1)[1]
     if privileged:
         redis_username = os.getenv('REDIS_USER', os.getenv('AGENT_ID'))
-        if not redis_username:
-            print("redis_connect: REDIS_USER and AGENT_ID are not set in the environment!", file=sys.stderr)
-            # Try to parse the node agent environment as fallback:
-            env.read_envfile('/var/lib/nethserver/node/state/agent.env')
-            redis_username = env('AGENT_ID', default='default')
-            redis_password = env('REDIS_PASSWORD', default='nopass')
-        else:
-            redis_password = os.environ['REDIS_PASSWORD'] # Fatal if missing!
+        redis_password = os.environ['REDIS_PASSWORD'] # Fatal if missing!
     else:
         redis_username = 'default'
         redis_password = 'nopass'
@@ -72,6 +66,24 @@ def redis_connect(privileged=False, decode_responses=True, **kwargs):
             #  (e.g. {b'key': b'value'} != {'key':'value'})
         **kwargs
     )
+
+def read_envfile(file_path):
+    """Read an environment file (e.g. agent.env) and return a dictionary of its contents
+    """
+    fo = open(file_path, 'r')
+    lineno = 0
+    env = {}
+    for line in fo.readlines():
+        lineno =+ 1
+        try:
+            variable, value = line.split("=")
+        except ValueError:
+            warnings.warn(f'read_envfile: Cannot parse line {lineno} in {file_path}', stacklevel=2)
+            continue
+
+        env[variable] = ''.join(list(shlex.shlex(value, posix=True)))
+
+    return env
 
 def run_helper(*args, **kwargs):
     """Run the command and assert the exit code is 0

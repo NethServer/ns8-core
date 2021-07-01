@@ -11,7 +11,6 @@ cchardet==2.1.7
 certifi==2021.5.30
 cffi==1.14.5
 chardet==4.0.0
-envparse==0.2.0
 idna==2.10
 ipcalc==1.99.0
 multidict==5.1.0
