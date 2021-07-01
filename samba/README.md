@@ -22,6 +22,9 @@ Install & provision a new domain:
 
 ## Configure ldapproxy
 
+When a Samba module is installed for the first time on a node, it binds itself with the
+node default Ldapproxy instance.
+
 This command binds `ldapproxy1` with the new `samba1` local account provider LDAP backend.
 TLS is required by Samba (clear-text LDAP binds are not allowed). 
 
