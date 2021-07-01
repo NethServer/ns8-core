@@ -14,5 +14,7 @@ stream {
         listen 127.0.0.1:${TCP_PORT};
         proxy_pass ${LDAPHOST}:${LDAPPORT};
         proxy_ssl ${LDAPTLS};
+        proxy_ssl_verify ${LDAPTLS_VERIFY};
+        proxy_ssl_verify_depth ${LDAPTLS_VERIFY_DEPTH};
     }
 }
