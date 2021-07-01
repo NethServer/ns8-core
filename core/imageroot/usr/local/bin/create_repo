@@ -7,6 +7,7 @@
 
 import os
 import sys
+import copy
 import json
 import imghdr
 import semver
@@ -38,7 +39,7 @@ with os.scandir(path) as it:
     for entry in it:
         if entry.is_dir():
             # make sure to copy the defaults and do not just creating a reference
-            metadata = dict(defaults)
+            metadata = copy.deepcopy(defaults)
             version_labels = {}
             metadata_file = os.path.join(entry.name, "metadata.json")
             if os.path.isfile(metadata_file):
