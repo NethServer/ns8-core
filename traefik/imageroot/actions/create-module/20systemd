@@ -25,7 +25,7 @@ set -e
 # Redirect any output to the journal (stderr)
 exec 1>&2
 
-CLUSTER_NETWORK=$(redis-exec GET cluster/network | sed 's!None!0.0.0.0/0!')
+CLUSTER_NETWORK=$(REDIS_USER=default redis-exec GET cluster/network | sed 's!None!0.0.0.0/0!')
 
 #
 # Configure HTTPS access to the API server with the auto-generated certificate, under the /cluster-admin
