@@ -158,7 +158,7 @@ for authz in authorizations:
     if xagent.endswith("@any"):
         agent_selector = 'module/' + xagent[0:-len("@any")] + '*' # wildcard allowed in on_clause
     else:
-        agent_selector = agent.resolve_agent_id(xagent)
+        agent_selector = agent.resolve_agent_id(xagent, node_id=node_id)
 
     cluster.grants.alter_user(rdb,
         user=f'module/{module_id}',
