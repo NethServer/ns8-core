@@ -29,7 +29,7 @@ All parameters must be set inside the `data` field as a JSON object.
 
 Example:
 ```
-redis-cli LPUSH module/promtail1/tasks '{"id":"'$(uuidgen)'","action":"configure-module","data":"{\"loki_url\":\"https://example.com/loki/api/v1/push\"}"}'
+redis-cli LPUSH module/promtail1/tasks '{"id":"'$(uuidgen)'","action":"configure-module","data": {"loki\_url":"https://example.com/loki/api/v1/push"} }'
 ```
 
 ## Uninstall

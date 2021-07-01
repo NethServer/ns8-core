@@ -1,0 +1,25 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "delete-route input",
+    "$id": "http://schema.nethserver.org/traefik/delete-route-input.json",
+    "description": "Delete a HTTP route",
+    "examples": [
+        {
+            "loki_url": "http://10.135.0.3:3100/loki/api/v1/push"
+	}
+    ],
+    "type": "object",
+    "required": [
+        "loki_url"
+    ],
+    "properties": {
+        "loki_url": {
+            "type": "string",
+	    "format": "uri",
+            "title": "Url of the Loki instance",
+            "examples": [
+                "http://10.135.0.3:3100/loki/api/v1/push"
+            ]
+        }
+    }
+}
