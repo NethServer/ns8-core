@@ -1,0 +1,59 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2021 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
+import agent
+import agent.tasks
+import os
+import sys
+
+module_id = os.environ['MODULE_ID']
+node_id = os.environ['NODE_ID']
+
+# Check if a ldapproxy instance is available in this node
+default_ldapproxy_id = agent.resolve_agent_id('ldapproxy@node')
+if default_ldapproxy_id is None:
+    sys.exit(0)
+
+rdb = agent.redis_connect(privileged=False)
+# Extract the ldapproxy environment
+ldapproxy_env = rdb.hgetall(f'{default_ldapproxy_id}/environment')
+
+# Check if an account provider is already configured
+if ldapproxy_env.get('BACKEND'):
+    sys.exit(0)
+
+print(f"Configuring {module_id} as default account provider for node/{node_id}", file=sys.stderr)
+
+set_backend_result = agent.tasks.run(
+    agent_id=default_ldapproxy_id,
+    action='set-backend',
+    data={
+        "backend": module_id,
+        "schema": "ad",
+        "host": "127.0.0.1",
+        "port": 636,
+        "tls": True,
+        "tls_verify": False,
+    }
+)
+
+agent.assert_exp(set_backend_result['exit_code'] == 0)
