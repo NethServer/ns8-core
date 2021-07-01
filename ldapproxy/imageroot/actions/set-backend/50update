@@ -32,12 +32,16 @@ port = int(request['port'])
 tls  = bool(request['tls'])
 schema = request['schema']
 backend = request['backend']
+tls_verify = bool(request['tls_verify'])
 
 agent.set_env('BACKEND', backend)
 agent.set_env('SCHEMA', schema)
 agent.set_env('LDAPHOST', host)
 agent.set_env('LDAPPORT', port)
 agent.set_env('LDAPTLS', 'on' if tls else 'off')
+agent.set_env('LDAPTLS_VERIFY', 'on' if tls_verify else 'off')
+agent.set_env('LDAPTLS_VERIFY_DEPTH', '2') # Hardcoded default
+
 agent.dump_env()
 
 json.dump({}, fp=sys.stdout)
