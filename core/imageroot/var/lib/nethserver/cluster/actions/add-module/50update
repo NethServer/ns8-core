@@ -146,7 +146,7 @@ agent.assert_exp(rdb.execute_command('ACL', 'SAVE') == 'OK')
 # Grant required authorizations to the new module
 for authz in authorizations:
     if '*' in authz:
-        print(agent.SD_WARNING + f'Cannot grant authorization "{authz}" to {module_id}. Wildcard is not allowed.')
+        print(agent.SD_WARNING + f'Cannot grant authorization "{authz}" to {module_id}. Wildcard is not allowed, use @any suffix instead.')
         continue
 
     xagent, xrole = authz.split(':') # e.g. traefik@node:routeadm
@@ -155,18 +155,17 @@ for authz in authorizations:
         print(agent.SD_WARNING + f'Cannot grant authorization "{authz}" to {module_id}. Role "{xrole}" is forbidden.')
         continue
 
-    if xagent == 'node': # Expand to the agent prefix of the current node
-        agent_prefix = f'node/{node_id}'
-    elif xagent.endswith('@node'): # Module agent lookup
-        default_instance = rdb.get(f'node/{node_id}/default_instance/{xagent[0:-len("@node")]}')
-        agent_prefix = f'module/{default_instance}'
-    elif xagent.endswith('@cluster'):
-        default_instance = rdb.get(f'cluster/default_instance/{xagent[0:-len("@cluster")]}')
-        agent_prefix = f'module/{default_instance}'
+    if xagent.endswith("@any"):
+        agent_selector = 'module/' + xagent[0:-len("@any")] + '*' # wildcard allowed in on_clause
     else:
-        agent_prefix = xagent
+        agent_selector = agent.resolve_agent_id(xagent)
 
-    cluster.grants.alter_user(rdb, user=f'module/{module_id}', revoke=False, role=xrole, on_clause=agent_prefix)
+    cluster.grants.alter_user(rdb,
+        user=f'module/{module_id}',
+        revoke=False,
+        role=xrole,
+        on_clause=agent_selector,
+    )
 
 # Push the creation task for the new module.
 exit_code, output, error = agent.run_subtask(rdb,
