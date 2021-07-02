@@ -160,6 +160,18 @@ systemctl enable --now api-server.service agent@cluster.service agent@node.servi
 
 source /etc/profile.d/nethserver.sh
 
+echo "Grant default permissions on the cluster:"
+python <<'EOF'
+import agent
+import cluster.grants
+rdb = agent.redis_connect(privileged=True)
+cluster.grants.grant(rdb, action_clause="*",      to_clause="owner",  on_clause='cluster')
+cluster.grants.grant(rdb, action_clause="list-*", to_clause="reader", on_clause='cluster')
+cluster.grants.grant(rdb, action_clause="get-*",  to_clause="reader", on_clause='cluster')
+cluster.grants.grant(rdb, action_clause="show-*", to_clause="reader", on_clause='cluster')
+cluster.grants.grant(rdb, action_clause="read-*", to_clause="reader", on_clause='cluster')
+EOF
+
 echo "Install Traefik:"
 add-module traefik 1
 
