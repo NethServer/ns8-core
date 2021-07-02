@@ -21,7 +21,7 @@ defaults = {
     "logo": None,
     "screenshots": [],
     "categories" : [ "unknown" ],
-    "authors" : [ {"name": "uknown", "email": "info@nethserver.org" } ],
+    "authors" : [ {"name": "unknown", "email": "info@nethserver.org" } ],
     "docs": { 
         "documentation_url": "https://docs.nethserver.org",
         "bug_url": "https://github.com/NethServer/dev",
