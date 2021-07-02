@@ -124,7 +124,7 @@ async def _apost_task(client, agent_id, action, data, parent, **npargs):
 
 def _get_token(theaders):
     if not 'Authorization' in theaders:
-        return 'eyJhbGciOiJIUzI1NiJ9.e30.qvi3rANM-kA4AAqkds0uf7bMgM7bpsYsCJWFoXKX9nQ' # an invalid token
+        return ''
     return theaders['Authorization'][len('Bearer '):]
 
 async def _amonitor_task(client, agent_id, action, data, parent, **npargs):
