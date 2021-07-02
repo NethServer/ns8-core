@@ -27,7 +27,7 @@ install -m 644 "${AGENT_INSTALL_DIR}/samba-dc.service" "/etc/systemd/system/${MO
 systemctl daemon-reload
 
 # Pull the service image, reading the tag from the local image
-tag=$(podman images -f id="${IMAGE_ID}" --format '{{ .Tag }}')
-SAMBA_IMAGE="ghcr.io/nethserver/samba-dc:${tag:-latest}"
+tags=($(podman images -f id="${IMAGE_ID}" --format '{{ .Tag }}'))
+SAMBA_IMAGE="ghcr.io/nethserver/samba-dc:${tags[0]:-latest}"
 echo "set-env SAMBA_IMAGE ${SAMBA_IMAGE}" >&${AGENT_COMFD}
 podman-pull-missing ${SAMBA_IMAGE}
