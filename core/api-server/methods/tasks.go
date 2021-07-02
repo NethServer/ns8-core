@@ -119,7 +119,7 @@ func getTasks(c *gin.Context, queueName string) {
 	}
 
 	// define map
-	var taskMap = map[string]map[string]string{}
+	var taskMap map[string]map[string]interface{}
 
 	// loop tasks array
 	for _, t := range tasksArray {
@@ -129,8 +129,12 @@ func getTasks(c *gin.Context, queueName string) {
 		task := strings.Join(parts[:len(parts)-1], "/")
 
 		// check if map exists
+		if taskMap == nil {
+			taskMap = make(map[string]map[string]interface{})
+		}
+		// check if chil of map exists
 		if taskMap[task] == nil {
-			taskMap[task] = make(map[string]string)
+			taskMap[task] = make(map[string]interface{})
 		}
 
 		// get content of key: GET <task_id>
@@ -146,8 +150,14 @@ func getTasks(c *gin.Context, queueName string) {
 			return
 		}
 
+		var taskContentData interface{}
+		// We expect a JSON-encoded output. If the unmarshal fails, return the output as-is.
+		if errOutputDecode := json.Unmarshal([]byte(taskContent), &taskContentData); errOutputDecode != nil {
+			taskContentData = taskContent
+		}
+
 		// assign map
-		taskMap[task][file] = taskContent
+		taskMap[task][file] = taskContentData
 	}
 
 	// close redis connection
