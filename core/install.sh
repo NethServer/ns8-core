@@ -176,10 +176,11 @@ cluster.grants.grant(rdb, action_clause="read-*", to_clause="reader", on_clause=
 EOF
 
 echo "Install Traefik:"
-if [ -z ${CORETAG} ]; then
+if [[ -z ${CORETAG} ]]; then
     add-module traefik 1
 else
-    add-module ghcr.io/nethserver/traefik:${CORETAG} 1
+    add-module "ghcr.io/nethserver/traefik:${CORETAG}" 1
+fi
 
 cat - <<EOF
 
