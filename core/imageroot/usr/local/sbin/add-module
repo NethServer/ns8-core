@@ -63,7 +63,14 @@ parser.add_argument('node', default=1, type=int)
 args = parser.parse_args()
 
 rdb = agent.redis_connect(privileged=True)
-image_url = get_latest_module(args.image, rdb)
+
+# if the image name contains a slash, let's assume it's a valid image URL,
+# like ghr.io/nethserver/<image>:<tag>
+if "/" in args.image:
+    image_url = args.image
+else:
+# search for the package inside the repsoitory metadata
+    image_url = get_latest_module(args.image, rdb)
 
 if not image_url:
     print(f"No available module found for '{args.image}'", file=sys.stderr)
