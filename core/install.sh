@@ -142,7 +142,7 @@ EOF
     # Configure default module repository
     # FIXME: remove testing flag before official release
     cat <<EOF
-HSET cluster/repository/default url https://raw.githubusercontent.com/NethServer/ns8-scratchpad/${REPOBRANCH:-repo}/ status 1 testing 1
+HSET cluster/repository/default url https://raw.githubusercontent.com/NethServer/ns8-repomd/${REPOBRANCH:-repomd}/ status 1 testing 1
 EOF
 
     # Setup initial ACLs
