@@ -1,0 +1,26 @@
+name: repomd
+on:
+  workflow_run:
+    workflows:
+      - core
+      - dokuwiki
+      - ldapproxy
+      - loki
+      - mail
+      - netdata
+      - nextcloud
+      - promtail
+      - samba
+      - traefik
+    types: [completed]
+
+jobs:
+  buildtrigger:
+    name: 'Start remote repomd workflow'
+    runs-on: ubuntu-20.04
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - id: webhook
+        run: |
+          # Send webhook request
+          curl -X POST -H "Authorization: Bearer ${{ github.token }}" -H "Accept: application/vnd.github.v3+json" -d '{"ref":"main"}' https://api.github.com/repos/NethServer/ns8-repomd/actions/workflows/repomd/dispatches
