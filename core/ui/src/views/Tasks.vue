@@ -6,7 +6,6 @@
       kind="error"
       title="Cannot retrieve tasks:"
       :description="error.clusterTasks"
-      low-contrast
       :showCloseButton="false"
     />
   </div>

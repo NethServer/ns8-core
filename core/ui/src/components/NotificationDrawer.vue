@@ -40,17 +40,11 @@
         />
       </div>
       <div class="notification-divider">{{ $t("notification.recent") }}</div>
-      <div v-if="!recentNotifications.length">
-        <div class="empty-state">
-          <pictogram title="empty state" class="image">
-            <ExclamationMark />
-          </pictogram>
-          <h5 class="title">{{ $t("notification.no_notifications") }}</h5>
-          <div class="description">
-            {{ $t("notification.no_notifications_description") }}
-          </div>
-        </div>
-      </div>
+      <NsEmptyState
+        v-if="!recentNotifications.length"
+        :title="$t('notification.no_notifications')"
+        :description="$t('notification.no_notifications_description')"
+      />
       <div
         v-else
         v-for="notification in recentNotifications"
@@ -78,8 +72,7 @@
 <script>
 import Close20 from "@carbon/icons-vue/es/close/20";
 import NsToastNotification from "@/components/NsToastNotification";
-import Pictogram from "@/components/Pictogram";
-import ExclamationMark from "@/components/pictograms/ExclamationMark";
+import NsEmptyState from "@/components/NsEmptyState";
 import { mapActions } from "vuex";
 import { mapGetters } from "vuex";
 import NotificationService from "@/mixins/notification";
@@ -90,8 +83,7 @@ export default {
   components: {
     Close20,
     NsToastNotification,
-    Pictogram,
-    ExclamationMark,
+    NsEmptyState,
   },
   props: {
     isShown: {

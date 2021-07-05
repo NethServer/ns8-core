@@ -12,7 +12,6 @@
                   kind="error"
                   :title="$t('login.cannot_login')"
                   :description="error.login"
-                  low-contrast
                   :showCloseButton="false"
                 />
                 <cv-form @submit.prevent="checkUsername" class="login-form">
@@ -191,7 +190,7 @@ export default {
       let errorMessage = this.$t("error.generic_error");
 
       if (error.response) {
-        switch (error.response.data.Code) {
+        switch (error.response.data.code) {
           case 401:
             errorMessage = this.$t("error.invalid_username_or_password");
             break;

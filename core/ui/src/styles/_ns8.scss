@@ -26,14 +26,6 @@ a {
   color: $link-02;
 }
 
-h1 {
-  margin-bottom: $spacing-05;
-}
-
-h2 {
-  margin-bottom: $spacing-05;
-}
-
 .cv-text-input {
   margin-bottom: $spacing-05;
 }
@@ -72,29 +64,22 @@ h2 {
   margin-bottom: $spacing-05;
 }
 
+.toolbar {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.title-and-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
 .content-tile {
   margin-top: $spacing-05;
   margin-bottom: $spacing-05;
 }
-
-// empty state
-.empty-state {
-  text-align: center;
-  padding: $spacing-09;
-}
-
-.empty-state .image {
-  margin-bottom: $spacing-05;
-}
-
-.empty-state .title {
-  margin-bottom: $spacing-05;
-}
-
-.empty-state .description {
-  margin-bottom: $spacing-05;
-}
-// end empty state
 
 // timestamp tooltip
 .timestamp button span {
@@ -139,6 +124,12 @@ h2 {
   border-color: #393939;
 }
 // end global search
+
+// fix cv-search icon
+.cv-search.bx--form-item > div > svg {
+  position: absolute;
+  left: 1rem;
+}
 
 // side menu
 .bx--side-nav {
@@ -308,7 +299,7 @@ a.bx--side-nav__link--current .bx--side-nav__link-text {
   max-width: 12rem;
 }
 
-.bx--number input[type=number] {
+.bx--number input[type="number"] {
   padding-right: 5rem;
 }
 // end logs page
@@ -335,6 +326,38 @@ a.bx--side-nav__link--current .bx--side-nav__link-text {
   pointer-events: all;
 }
 // end data table
+
+// loader
+.loader {
+  width: 1rem;
+  height: 1rem;
+  border: 3px solid transparent;
+  border-radius: 50%;
+  border-top: 3px solid currentColor;
+  border-right: 3px solid currentColor;
+  border-bottom: 3px solid currentColor;
+  animation: spin 0.5s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+// end loader
+
+// animation for expandable chevron
+.toggle-expand > svg {
+  transition: transform 110ms;
+}
+
+.toggle-expand.expanded > svg {
+  transform: rotate(180deg);
+}
+// end animation for expandable chevron
 
 // styles for small devices
 @media (max-width: $breakpoint-large) {

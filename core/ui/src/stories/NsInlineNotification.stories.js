@@ -29,3 +29,11 @@ Action.args = {
   description: "Detailed description about what happened",
   actionLabel: "Action button",
 };
+
+export const Loading = Template.bind({});
+Loading.args = {
+  title: "Doing stuff",
+  description: "Processing data...",
+  actionLabel: "Cancel",
+  loading: true,
+};

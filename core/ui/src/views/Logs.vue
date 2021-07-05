@@ -66,7 +66,6 @@
               kind="error"
               :title="$t('logs.cannot_retrieve_audit_users')"
               :description="error.auditUsers"
-              low-contrast
               :showCloseButton="false"
             />
             <cv-multi-select
@@ -82,7 +81,6 @@
               kind="error"
               :title="$t('logs.cannot_retrieve_audit_actions')"
               :description="error.auditActions"
-              low-contrast
               :showCloseButton="false"
             />
             <cv-text-input
@@ -121,20 +119,13 @@
             kind="error"
             :title="$t('logs.cannot_retrieve_audit_logs')"
             :description="error.auditLogs"
-            low-contrast
             :showCloseButton="false"
           />
-          <div v-if="!this.tableRows.length && !loading.auditLogs">
-            <div class="empty-state">
-              <pictogram title="empty state" class="image">
-                <ExclamationMark />
-              </pictogram>
-              <h5 class="title">{{ $t("logs.no_logs_found") }}</h5>
-              <div class="description">
-                {{ $t("logs.no_logs_found_description") }}
-              </div>
-            </div>
-          </div>
+          <NsEmptyState
+            v-if="!this.tableRows.length && !loading.auditLogs"
+            :title="$t('logs.no_logs_found')"
+            :description="$t('logs.no_logs_found_description')"
+          />
           <div v-else>
             <cv-data-table-skeleton
               v-if="loading.auditLogs"
@@ -213,12 +204,11 @@ import NsInlineNotification from "../components/NsInlineNotification.vue";
 import IconService from "@/mixins/icon";
 import to from "await-to-js";
 import UtilService from "@/mixins/util";
-import Pictogram from "@/components/Pictogram";
-import ExclamationMark from "@/components/pictograms/ExclamationMark";
+import NsEmptyState from "@/components/NsEmptyState";
 
 export default {
   name: "Logs",
-  components: { NsButton, NsInlineNotification, Pictogram, ExclamationMark },
+  components: { NsButton, NsInlineNotification, NsEmptyState },
   mixins: [
     DateTimeService,
     DataTableService,
@@ -317,7 +307,7 @@ export default {
         return;
       }
 
-      const users = responseUsers.data.Data.users;
+      const users = responseUsers.data.data.users;
 
       this.users = users.map((u) => {
         return { label: u, value: u, name: u };
@@ -333,7 +323,7 @@ export default {
         return;
       }
 
-      const actions = responseActions.data.Data.actions;
+      const actions = responseActions.data.data.actions;
 
       this.actions = actions.map((u) => {
         return { label: u, value: u, name: u };
@@ -411,7 +401,7 @@ export default {
         return;
       }
 
-      const audits = response.data.Data.audits ? response.data.Data.audits : [];
+      const audits = response.data.data.audits ? response.data.data.audits : [];
 
       let logs = audits.map((audit) => {
         const localTimestamp = this.formatDate(

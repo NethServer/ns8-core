@@ -10,6 +10,10 @@ import Reset20 from "@carbon/icons-vue/es/reset/20";
 import Download20 from "@carbon/icons-vue/es/download/20";
 import Launch20 from "@carbon/icons-vue/es/launch/20";
 import Upgrade20 from "@carbon/icons-vue/es/upgrade/20";
+import Settings20 from "@carbon/icons-vue/es/settings/20";
+import ChevronDown20 from "@carbon/icons-vue/es/chevron--down/20";
+import ChevronUp20 from "@carbon/icons-vue/es/chevron--up/20";
+import Information20 from "@carbon/icons-vue/es/information/20";
 
 export default {
   name: "IconService",
@@ -27,6 +31,10 @@ export default {
       Download20,
       Launch20,
       Upgrade20,
+      Settings20,
+      ChevronDown20,
+      ChevronUp20,
+      Information20,
     };
   },
 };

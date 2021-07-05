@@ -282,9 +282,8 @@
           <NsInlineNotification
             v-if="error.testValidation"
             kind="error"
-            :title="$t('error.error') + ':'"
+            :title="$t('error.error')"
             :description="error.testValidation"
-            low-contrast
             showCloseButton
             @close="error.testValidation = ''"
           />

@@ -1,35 +1,39 @@
 <template>
   <div class="bx--grid bx--grid--full-width">
     <div class="bx--row">
-      <div class="bx--col-lg-16">
-        <h1 class="page-title">{{ $t("software_center.title") }}</h1>
+      <div class="bx--col-lg-16 page-title title-and-toolbar">
+        <h1>{{ $t("software_center.title") }}</h1>
+        <NsButton kind="ghost" :icon="Settings20" @click="openSettings()">{{
+          $t("common.settings")
+        }}</NsButton>
       </div>
     </div>
     <div class="bx--row">
       <div class="bx--col-md-8">
         <NsInlineNotification
-          v-if="true"
+          v-if="upgradableApps.length"
           kind="warning"
           :title="$t('software_center.software_updates')"
           :description="
-            $t('software_center.you_have_updates', {
-              numUpdates: 7,
+            $tc('software_center.you_have_updates', upgradableApps.length, {
+              numUpdates: upgradableApps.length,
             })
           "
           :actionLabel="$t('common.details')"
           @action="goToUpdates"
-          low-contrast
           :showCloseButton="false"
         />
         <cv-tile :light="true" class="content-tile">
-          <NsSearchInput
+          <cv-search
+            :label="$t('software_center.search_placeholder')"
             :placeholder="$t('software_center.search_placeholder')"
+            size="xl"
+            :clear-aria-label="$t('common.clear_search')"
             v-model="q.search"
+            v-debounce="searchApp"
             class="app-search"
-            @search="searchApp"
-            @clear="clearSearch"
-            :clearLabel="$t('common.clear_search')"
-          />
+          >
+          </cv-search>
           <cv-content-switcher
             class="switcher"
             @selected="contentSwitcherSelected"
@@ -53,16 +57,54 @@
 
           <section v-if="['all', 'installed', 'updates'].includes(q.view)">
             <cv-content-switcher-content owner-id="all">
-              <NsAppList :apps="allApps" />
-              <!-- //// empty state -->
+              <AppList
+                v-if="allApps.length"
+                :apps="allApps"
+                :isUpdatingAll="isUpdatingAll"
+              />
+              <NsEmptyState v-else :title="$t('software_center.no_apps')" />
             </cv-content-switcher-content>
             <cv-content-switcher-content owner-id="installed">
-              <NsAppList :apps="installedApps" />
-              <!-- //// empty state -->
+              <AppList
+                v-if="installedApps.length"
+                :apps="installedApps"
+                :isUpdatingAll="isUpdatingAll"
+              />
+              <NsEmptyState v-else :title="$t('software_center.no_apps')" />
             </cv-content-switcher-content>
             <cv-content-switcher-content owner-id="updates">
-              <NsAppList :apps="upgradableApps" />
-              <!-- //// empty state -->
+              <!-- update all -->
+              <NsInlineNotification
+                v-if="updateAllAppsTimeout"
+                kind="info"
+                :title="$t('software_center.update_will_start_in_a_moment')"
+                :actionLabel="$t('common.cancel')"
+                @action="cancelUpdateAll"
+                :showCloseButton="false"
+                loading
+              />
+              <div
+                v-if="upgradableApps.length && !updateAllAppsTimeout"
+                class="toolbar"
+              >
+                <NsButton
+                  kind="primary"
+                  :icon="Upgrade20"
+                  @click="updateAll()"
+                  >{{ $t("software_center.update_all") }}</NsButton
+                >
+              </div>
+              <AppList
+                v-if="upgradableApps.length"
+                :apps="upgradableApps"
+                :isUpdatingAll="isUpdatingAll"
+              />
+              <NsEmptyState
+                v-else
+                :title="$t('software_center.system_up_to_date')"
+              >
+                <Love />
+              </NsEmptyState>
             </cv-content-switcher-content>
           </section>
           <!-- search results -->
@@ -70,17 +112,16 @@
             <h6 class="search-results-title">
               {{ $t("software_center.search_results") }}
             </h6>
-            <NsAppList v-if="searchResults.length" :apps="searchResults" />
-            <!-- empty state -->
-            <div v-else class="empty-state">
-              <pictogram title="empty state" class="image">
-                <ExclamationMark />
-              </pictogram>
-              <h5 class="title">{{ $t("software_center.no_apps_found") }}</h5>
-              <div class="description">
-                {{ $t("software_center.no_apps_found_description") }}
-              </div>
-            </div>
+            <AppList
+              v-if="searchResults.length"
+              :apps="searchResults"
+              :isUpdatingAll="isUpdatingAll"
+            />
+            <NsEmptyState
+              v-else
+              :title="$t('software_center.no_apps_found')"
+              :description="$t('software_center.no_apps_found_description')"
+            />
           </div>
         </cv-tile>
       </div>
@@ -91,11 +132,11 @@
 <script>
 import NsInlineNotification from "../components/NsInlineNotification.vue";
 import IconService from "@/mixins/icon";
-import NsSearchInput from "@/components/NsSearchInput";
-import NsAppList from "@/components/NsAppList";
+import AppList from "@/components/AppList";
 import QueryParamService from "@/mixins/queryParam";
-import Pictogram from "@/components/Pictogram";
-import ExclamationMark from "@/components/pictograms/ExclamationMark";
+import NsEmptyState from "@/components/NsEmptyState";
+import Love from "../components/pictograms/Love";
+import NsButton from "@/components/NsButton";
 
 let nethserver = window.nethserver;
 
@@ -103,10 +144,10 @@ export default {
   name: "SoftwareCenter",
   components: {
     NsInlineNotification,
-    NsSearchInput,
-    NsAppList,
-    ExclamationMark,
-    Pictogram,
+    AppList,
+    NsEmptyState,
+    Love,
+    NsButton,
   },
   mixins: [IconService, QueryParamService],
   data() {
@@ -115,12 +156,14 @@ export default {
         search: "",
         view: "all",
       },
-      minCharsForSearch: 2,
+      minCharsForSearch: 1,
       maxResults: 50,
       searchFields: ["name", "description", "categories"],
       searchResults: [],
       installedApps: [],
       upgradableApps: [],
+      updateAllAppsTimeout: 0,
+      updateAllAppsDuration: 10000, // you have 10 seconds to cancel "Update all"
       //// remove
       allApps: [
         {
@@ -137,8 +180,12 @@ export default {
           categories: ["collaboration", "office"],
           authors: [
             {
-              name: "uknown",
+              name: "Foo Bar",
               email: "info@nethserver.org",
+            },
+            {
+              name: "John Doe",
+              email: "info@johndoe.org",
             },
           ],
           docs: {
@@ -146,12 +193,32 @@ export default {
             bug_url: "https://github.com/NethServer/dev",
             code_url: "https://github.com/NethServer/",
           },
-          source: "ghcr.io/nethserver/nextcloud",
-          versions: [],
+          source: "https://ghcr.io/nethserver/nextcloud",
+          versions: [
+            {
+              tag: "0.0.2",
+              testing: false,
+              labels: {
+                "io.buildah.version": "1.19.6",
+                "org.nethserver.rootfull": "0",
+                "org.nethserver.tcp_ports_demand": "1",
+              },
+            },
+            {
+              tag: "0.0.1",
+              testing: false,
+              labels: {
+                "io.buildah.version": "1.19.6",
+                "org.nethserver/rootfull": "0",
+                "org.nethserver/tcp_ports_demand": "1",
+              },
+            },
+          ],
           repository: "t1",
           repository_updated: "Mon, 28 Jun 2021 13:35:04 GMT",
           installed: [],
           updates: [],
+          expandInstances: false,
         },
         {
           name: "traefik",
@@ -166,7 +233,7 @@ export default {
           categories: ["system_administration"],
           authors: [
             {
-              name: "uknown",
+              name: "Foo Bar",
               email: "info@nethserver.org",
             },
           ],
@@ -175,23 +242,54 @@ export default {
             bug_url: "https://github.com/NethServer/dev",
             code_url: "https://github.com/NethServer/",
           },
-          source: "ghcr.io/nethserver/traefik",
-          versions: [],
+          source: "https://ghcr.io/nethserver/traefik",
+          versions: [
+            {
+              tag: "0.0.2",
+              testing: false,
+              labels: {
+                "io.buildah.version": "1.19.6",
+                "org.nethserver.rootfull": "0",
+                "org.nethserver.tcp_ports_demand": "1",
+              },
+            },
+            {
+              tag: "0.0.1",
+              testing: false,
+              labels: {
+                "io.buildah.version": "1.19.6",
+                "org.nethserver/rootfull": "0",
+                "org.nethserver/tcp_ports_demand": "1",
+              },
+            },
+          ],
           repository: "t1",
           repository_updated: "Mon, 28 Jun 2021 13:35:04 GMT",
           installed: [
             {
               id: "traefik1",
               node: "1",
-              version: "latest",
+              version: "1.0",
+            },
+            {
+              id: "traefik2",
+              node: "2",
+              version: "1.2",
             },
           ],
-          updates: [],
+          updates: [
+            {
+              id: "traefik1",
+              node: "1",
+              version: "1.2",
+            },
+          ],
+          expandInstances: false,
         },
         {
           name: "dokuwiki",
           description: {
-            en: "DokuWiki is a wiki application licensed under GPLv2 and written in the PHP programming language. It works on plain text files and thus does not need a database. Its syntax is similar to the one used by MediaWiki.",
+            en: "Simple wiki that doesn't require a database",
             it: "DokuWiki è un'applicazione wiki scritta in PHP.",
           },
           logo: "https://upload.wikimedia.org/wikipedia/commons/9/9d/Dokuwiki_logo.svg",
@@ -201,7 +299,7 @@ export default {
           categories: ["documentation"],
           authors: [
             {
-              name: "uknown",
+              name: "Foo Bar",
               email: "info@nethserver.org",
             },
           ],
@@ -210,38 +308,49 @@ export default {
             bug_url: "https://github.com/NethServer/dev",
             code_url: "https://github.com/NethServer/",
           },
-          source: "ghcr.io/nethserver/traefik",
-          versions: [],
+          source: "https://ghcr.io/nethserver/traefik",
+          versions: [
+            {
+              tag: "0.0.2",
+              testing: false,
+              labels: {
+                "io.buildah.version": "1.19.6",
+                "org.nethserver.rootfull": "0",
+                "org.nethserver.tcp_ports_demand": "1",
+              },
+            },
+            {
+              tag: "0.0.1",
+              testing: false,
+              labels: {
+                "io.buildah.version": "1.19.6",
+                "org.nethserver/rootfull": "0",
+                "org.nethserver/tcp_ports_demand": "1",
+              },
+            },
+          ],
           repository: "t1",
           repository_updated: "Mon, 28 Jun 2021 13:35:04 GMT",
           installed: [
             {
               id: "dokuwiki1",
               node: "1",
-              version: "latest",
+              version: "1.1",
             },
           ],
           updates: [
             {
-              id: "dokuwiki",
+              id: "dokuwiki1",
               node: "1",
               version: "1.2",
             },
           ],
+          expandInstances: false,
         },
       ],
     };
   },
   computed: {
-    //// remove?
-    // isContentSwitcherSelected() {
-    //   console.log("this.q.view", this.q.view); ////
-
-    //   return (index) => {
-    //     console.log("index", index); ////
-    //     return this.q.view === index;
-    //   };
-    // },
     csbAllSelected() {
       return this.q.view === "all";
     },
@@ -250,6 +359,9 @@ export default {
     },
     csbUpdatesSelected() {
       return this.q.view === "updates";
+    },
+    isUpdatingAll() {
+      return this.updateAllAppsTimeout > 0;
     },
   },
   beforeRouteEnter(to, from, next) {
@@ -276,8 +388,6 @@ export default {
   },
   methods: {
     searchApp(query) {
-      console.log("search app!", query); ////
-
       // clean query
       const cleanRegex = /[^a-zA-Z0-9]/g;
       const queryText = query.replace(cleanRegex, "");
@@ -300,8 +410,6 @@ export default {
       this.searchResults = this.allApps.filter((app) => {
         // compare query text with search fields of apps
         return this.searchFields.some((searchField) => {
-          console.log("searchField", searchField); ////
-
           if (app[searchField]) {
             if (searchField === "description") {
               const langCode = this.$root.$i18n.locale;
@@ -341,16 +449,26 @@ export default {
       }
     },
     contentSwitcherSelected(value) {
-      console.log("contentSwitcherSelected, value", value); ////
-
       this.q.view = value;
     },
     goToUpdates() {
       this.$router.replace("/software-center?view=updates");
     },
-    clearSearch() {
-      this.q.search = "";
-      this.q.view = "all";
+    openSettings() {
+      console.log("openSettings"); ////
+    },
+    updateAll() {
+      console.log("updateAll"); ////
+      this.updateAllAppsTimeout = setTimeout(() => {
+        console.log("updating all!"); ////
+        this.updateAllAppsTimeout = 0;
+      }, this.updateAllAppsDuration);
+    },
+    cancelUpdateAll() {
+      console.log("cancelUpdateAllApps"); ////
+
+      clearTimeout(this.updateAllAppsTimeout);
+      this.updateAllAppsTimeout = 0;
     },
   },
 };
@@ -369,6 +487,7 @@ export default {
 
 .search-results-title {
   margin-top: $spacing-07;
+  margin-bottom: $spacing-03;
   color: $text-02;
 }
 </style>

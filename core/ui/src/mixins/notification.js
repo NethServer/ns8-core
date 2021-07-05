@@ -151,7 +151,7 @@ export default {
           this.createNotification(notification);
         }
 
-        taskResult = response.data.Data;
+        taskResult = response.data.data;
 
         if (taskStatus === "validation-failed") {
           // show validation errors
@@ -159,7 +159,7 @@ export default {
         }
       }
 
-      const taskContext = response.data.Data.context;
+      const taskContext = response.data.data.context;
 
       console.log("taskContext", taskContext); ////
 

@@ -7,17 +7,11 @@
       v-model="query"
     />
     <div v-if="showResults" class="search-results">
-      <div v-if="!results.length">
-        <div class="empty-state">
-          <pictogram title="empty state" class="image">
-            <ExclamationMark />
-          </pictogram>
-          <h5 class="title">{{ $t("shell.no_search_results") }}</h5>
-          <div class="description">
-            {{ $t("shell.no_search_results_description") }}
-          </div>
-        </div>
-      </div>
+      <NsEmptyState
+        v-if="!results.length"
+        :title="$t('shell.no_search_results')"
+        :description="$t('shell.no_search_results_description')"
+      />
       <cv-structured-list v-else>
         <template slot="items">
           <cv-structured-list-item
@@ -49,14 +43,13 @@
 
 <script>
 import Settings20 from "@carbon/icons-vue/es/settings/20";
-import Pictogram from "@/components/Pictogram";
-import ExclamationMark from "@/components/pictograms/ExclamationMark";
+import NsEmptyState from "@/components/NsEmptyState";
 
 //// use vue-debounce?
 
 export default {
   name: "GlobalSearch",
-  components: { Settings20, Pictogram, ExclamationMark },
+  components: { Settings20, NsEmptyState },
   data() {
     return {
       query: "",

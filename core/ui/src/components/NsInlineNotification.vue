@@ -13,19 +13,25 @@
     :role="isAlert ? 'alert' : false"
     :aria-live="!isAlert ? 'polite' : false"
   >
-    <div :class="`${carbonPrefix}--inline-notification__details`">
+    <div :class="`${carbonPrefix}--inline-notification__details details`">
       <component
         :is="icon"
         :class="`${carbonPrefix}--inline-notification__icon`"
       />
       <div :class="`${carbonPrefix}--inline-notification__text-wrapper`">
-        <p :class="`${carbonPrefix}--inline-notification__title`">
-          {{ title }}
-        </p>
         <p
-          :class="`${carbonPrefix}--inline-notification__subtitle`"
+          :class="`${carbonPrefix}--inline-notification__title title`"
+          v-html="title"
+        ></p>
+        <p
+          v-if="description"
+          :class="[
+            `${carbonPrefix}--inline-notification__subtitle`,
+            { 'mg-right': loading },
+          ]"
           v-html="description"
         ></p>
+        <p v-if="loading" class="loader"></p>
       </div>
     </div>
     <button
@@ -74,13 +80,33 @@ export default {
       validator: (val) => ["error", "info", "warning", "success"].includes(val),
     },
     lowContrast: Boolean,
+    loading: {
+      type: Boolean,
+      default: false,
+    },
   },
 };
 </script>
 
 <style scoped lang="scss">
-.bx--inline-notification__title {
+@import "../styles/carbon-utils";
+
+.title {
   margin-right: 0.75rem;
   margin-bottom: 0.2rem;
+}
+
+.mg-right {
+  margin-right: 0.75rem;
+}
+
+// place action button next to description
+.details {
+  flex-grow: 0;
+}
+
+// place close button on the right
+.bx--inline-notification__close-button {
+  position: absolute !important;
 }
 </style>

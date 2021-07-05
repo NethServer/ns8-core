@@ -1,5 +1,7 @@
 import NsSearchInput from "../components/NsSearchInput.vue";
 
+//// delete file?
+
 export default {
   title: "Components/NsSearchInput",
   component: NsSearchInput,
