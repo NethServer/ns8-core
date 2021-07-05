@@ -164,7 +164,10 @@ systemctl enable --now api-server.service agent@cluster.service agent@node.servi
 source /etc/profile.d/nethserver.sh
 
 echo "Install Traefik:"
-add-module traefik 1
+if [ -z ${CORETAG} ]; then
+    add-module traefik 1
+else
+    add-module ghcr.io/nethserver/traefik:${CORETAG} 1
 
 cat - <<EOF
 
