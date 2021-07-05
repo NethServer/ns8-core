@@ -1,0 +1,51 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2021 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
+import sys
+import json
+import agent
+import cluster.modules
+
+def get_module(source, modules):
+    for m in modules:
+        if m["source"] == source:
+            return m
+    return None
+
+rdb = agent.redis_connect(privileged=True)
+installed = cluster.modules.list_installed(rdb)
+available = cluster.modules.list_available(rdb)
+updates = cluster.modules.list_updates(rdb)
+
+# Prepare variables for later use
+for a in available:
+    a["updates"] = []
+    a["installed"] = []
+
+    if a["source"] in installed.keys():
+        a["installed"].append(installed[a["source"]])
+
+    m = get_module(a["source"], updates)
+    if m is not None:
+        a["updates"].append(m)
+
+json.dump(available, fp=sys.stdout)

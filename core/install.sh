@@ -139,8 +139,11 @@ HSET node/1/environment NODE_ID 1
 LPUSH cluster/tasks '{"id":"$(uuidgen)","action":"grant-actions","data":[{"action":"*","on":"cluster","to":"owner"}]}'
 EOF
 
-    # Load module images metadata. XXX this is a temporary implementation
-    grep '^HSET image/' /var/lib/nethserver/cluster/state/images-catalog.txt | sed "s/:latest/:${CORETAG:-latest}/"
+    # Configure default module repository
+    # FIXME: remove testing flag before official release
+    cat <<EOF
+HSET cluster/repository/default url https://raw.githubusercontent.com/NethServer/ns8-repomd/${REPOBRANCH:-repomd}/ status 1 testing 1
+EOF
 
     # Setup initial ACLs
     cat <<EOF
@@ -173,7 +176,10 @@ cluster.grants.grant(rdb, action_clause="read-*", to_clause="reader", on_clause=
 EOF
 
 echo "Install Traefik:"
-add-module traefik 1
+if [ -z ${CORETAG} ]; then
+    add-module traefik 1
+else
+    add-module ghcr.io/nethserver/traefik:${CORETAG} 1
 
 cat - <<EOF
 

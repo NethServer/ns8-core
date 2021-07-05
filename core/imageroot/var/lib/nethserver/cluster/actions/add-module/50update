@@ -43,14 +43,14 @@ def allocate_tcp_ports_range(node_id, module_id, size):
         rdb.hset(f'module/{module_id}/environment', 'TCP_PORTS', ','.join(str(port) for port in range(seq-size, seq)))
 
 request = json.load(sys.stdin)
-image_id = request['image']
+image_url = request['image']
+# Extract base URL using slice of image_url until the version separator ':', than retrieve the name of the image
+# which is the one after the last /
+image_id = os.path.basename(image_url[:image_url.index(":")])
 node_id = int(request['node'])
 agent.assert_exp(node_id > 0)
 
-# Retrieve the image attributes from Redis DB. Is it the image for a rootfull module?
 rdb = agent.redis_connect(privileged=True)
-image = rdb.hgetall(f'image/{image_id}')
-image_url = image['url']
 agent.assert_exp(image_url)
 
 # Pull the image from the remote server, if not already available locally
@@ -192,6 +192,6 @@ for userk in rdb.scan_iter('roles/*'):
 
 json.dump({
     "module_id": module_id,
-    "image_name": image['name'],
+    "image_name": image_id,
     "image_url": image_url,
 }, fp=sys.stdout)
