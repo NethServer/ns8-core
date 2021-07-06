@@ -43,5 +43,3 @@ set -e
     --volume=./resolv.conf:/etc/resolv.conf:Z \
     --volume=./krb5.conf:/etc/krb5.conf:Z \
     "${SAMBA_DC_IMAGE:?}" "${PROVISION_TYPE:?}"
-
-echo 'set-env PROVISION_COMPLETE 1' >&${AGENT_COMFD}
