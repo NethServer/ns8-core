@@ -131,7 +131,8 @@
     <AppInfoModal
       :app="appInfo.app"
       :isShown="appInfo.isShown"
-      @close="appInfo.isShown = false"
+      @close="onClose"
+      @install="installInstance"
     />
   </div>
 </template>
@@ -187,6 +188,14 @@ export default {
           return update.id === instance.id;
         })
       );
+    },
+    onClose() {
+      const context = this;
+
+      // needed to reset modal scroll to top
+      setTimeout(() => {
+        context.appInfo.isShown = false;
+      }, 250);
     },
   },
 };

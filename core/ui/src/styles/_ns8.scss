@@ -359,6 +359,11 @@ a.bx--side-nav__link--current .bx--side-nav__link-text {
 }
 // end animation for expandable chevron
 
+// modal with full-width content
+.no-pad-modal .bx--modal-content {
+  padding-right: 1rem !important;
+}
+
 // styles for small devices
 @media (max-width: $breakpoint-large) {
   // remove left margin because side menu is not shown

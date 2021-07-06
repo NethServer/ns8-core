@@ -1,8 +1,15 @@
 <template>
   <div v-if="app">
-    <cv-modal size="default" :visible="isShown" @modal-hidden="$emit('close')">
+    <cv-modal
+      size="default"
+      :visible="isShown"
+      @modal-hidden="$emit('close')"
+      class="no-pad-modal"
+      @primary-click="$emit('install', app)"
+    >
       <template slot="title">{{ $t("software_center.app_info") }}</template>
-      <template slot="content">
+      <!-- v-if="isShown" is needed to reset modal scroll to top -->
+      <template v-if="isShown" slot="content">
         <section>
           <div class="logo-and-name">
             <div class="app-logo">
@@ -13,11 +20,9 @@
             </div>
           </div>
         </section>
-        <section>
+        <section v-if="app.screenshots.length">
           <div class="screenshots">
-            <div v-for="(screenshot, index) in app.screenshots" :key="index">
-              {{ screenshot }}
-            </div>
+            <NsImageGallery :fullScreen="true" :images="app.screenshots" />
           </div>
         </section>
         <section>
@@ -78,9 +83,7 @@
             <span class="section-title"
               >{{ $t("software_center.source_package") }}:
             </span>
-            <cv-link :href="app.source" target="_blank">
-              {{ app.source }}
-            </cv-link>
+            {{ app.source }}
           </div>
         </section>
         <section>
@@ -110,15 +113,20 @@
         </section>
       </template>
       <template slot="secondary-button">{{ $t("common.close") }}</template>
+      <template slot="primary-button">{{
+        $t("software_center.install")
+      }}</template>
     </cv-modal>
   </div>
 </template>
 
 <script>
 import ModuleService from "@/mixins/module";
+import NsImageGallery from "../components/NsImageGallery";
 
 export default {
   name: "AppInfoModal",
+  components: { NsImageGallery },
   mixins: [ModuleService],
   props: {
     isShown: Boolean,

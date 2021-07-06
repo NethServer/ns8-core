@@ -174,8 +174,10 @@ export default {
           },
           logo: "https://cdn.iconscout.com/icon/free/png-256/nextcloud-2752119-2284936.png",
           screenshots: [
-            "https://en.wikipedia.org/wiki/Nextcloud#/media/File:Nextcloud_18.0.2_Screenshot.png",
-            "https://en.wikipedia.org/wiki/Nextcloud#/media/File:Nextcloud_Box_package.jpg",
+            "https://upload.wikimedia.org/wikipedia/commons/7/7d/Nextcloud_18.0.2_Screenshot.png",
+            "https://upload.wikimedia.org/wikipedia/commons/a/ad/Nextcloud_Box_package.jpg",
+            "https://upload.wikimedia.org/wikipedia/commons/d/db/Mt_Herschel%2C_Antarctica%2C_Jan_2006.jpg",
+            "https://upload.wikimedia.org/wikipedia/commons/8/8f/Fryxellsee_Opt.jpg",
           ],
           categories: ["collaboration", "office"],
           authors: [
@@ -193,7 +195,7 @@ export default {
             bug_url: "https://github.com/NethServer/dev",
             code_url: "https://github.com/NethServer/",
           },
-          source: "https://ghcr.io/nethserver/nextcloud",
+          source: "ghcr.io/nethserver/nextcloud",
           versions: [
             {
               tag: "0.0.2",
@@ -227,9 +229,7 @@ export default {
             it: "Traefik è un moderno reverse proxy e load balancer che semplifica il deploy di microservizi.",
           },
           logo: "https://symbols.getvecta.com/stencil_98/35_traefik-icon.290dcd6a8f.png",
-          screenshots: [
-            "http://127.0.0.1:8000/screenshots/template%3Adokuwiki_template.png",
-          ],
+          screenshots: [],
           categories: ["system_administration"],
           authors: [
             {
@@ -242,7 +242,7 @@ export default {
             bug_url: "https://github.com/NethServer/dev",
             code_url: "https://github.com/NethServer/",
           },
-          source: "https://ghcr.io/nethserver/traefik",
+          source: "ghcr.io/nethserver/traefik",
           versions: [
             {
               tag: "0.0.2",
@@ -294,7 +294,7 @@ export default {
           },
           logo: "https://upload.wikimedia.org/wikipedia/commons/9/9d/Dokuwiki_logo.svg",
           screenshots: [
-            "http://127.0.0.1:8000/screenshots/template%3Adokuwiki_template.png",
+            "https://upload.wikimedia.org/wikipedia/commons/7/7d/Nextcloud_18.0.2_Screenshot.png",
           ],
           categories: ["documentation"],
           authors: [
@@ -308,7 +308,7 @@ export default {
             bug_url: "https://github.com/NethServer/dev",
             code_url: "https://github.com/NethServer/",
           },
-          source: "https://ghcr.io/nethserver/traefik",
+          source: "ghcr.io/nethserver/traefik",
           versions: [
             {
               tag: "0.0.2",
