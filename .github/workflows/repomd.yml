@@ -23,4 +23,7 @@ jobs:
       - id: webhook
         run: |
           # Send webhook request
-          curl -X POST -H "Authorization: Bearer ${{ github.token }}" -H "Accept: application/vnd.github.v3+json" -d '{"ref":"main"}' https://api.github.com/repos/NethServer/ns8-repomd/actions/workflows/repomd/dispatches
+          curl -f -X POST -H @- -d '{"ref":"main"}' https://api.github.com/repos/NethServer/ns8-repomd/actions/workflows/repomd.yml/dispatches <<EOF
+          Authorization: Bearer ${{ secrets.REPOMD_TOKEN }}
+          Accept: application/vnd.github.v3+json
+          EOF
