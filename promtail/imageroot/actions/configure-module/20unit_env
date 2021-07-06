@@ -26,7 +26,18 @@ import sys
 
 data = json.load(sys.stdin)
 
-for k in data:
-    # Store in the action environment for subsequent steps:
-    agent.set_env(k.upper(), data[k])
-    agent.dump_env()
+r = agent.redis_connect(privileged=False)
+
+if data.get("loki_url") is not None:
+    agent.set_env("LOKI_URL", data["loki_url"])
+else:
+    agent.set_env("LOKI_URL", "")
+
+if data.get("loki_instance") is not None:
+    agent.set_env("LOKI_INSTANCE", data["loki_instance"])
+    loki_addr = r.hget(f'module/{data["loki_instance"]}/environment', "LOKI_ADDR")
+    agent.set_env("LOKI_URL", f'http://{loki_addr}:3100/loki/api/v1/push')
+else:
+    agent.set_env("LOKI_INSTANCE", "")
+
+agent.dump_env()

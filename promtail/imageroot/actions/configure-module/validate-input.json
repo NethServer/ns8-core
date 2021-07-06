@@ -6,11 +6,15 @@
     "examples": [
         {
             "loki_url": "http://10.135.0.3:3100/loki/api/v1/push"
-	}
+	},
+	{
+	    "instance": "loki1"
+        }
     ],
     "type": "object",
-    "required": [
-        "loki_url"
+    "OneOf": [
+        { "required" : ["loki_url"]},
+        { "required" : ["instance"]}
     ],
     "properties": {
         "loki_url": {
@@ -20,6 +24,14 @@
             "examples": [
                 "http://10.135.0.3:3100/loki/api/v1/push"
             ]
+        },
+        "instance": {
+            "type": "string",
+            "title": "Module instance name of the Loki server",
+            "examples": [
+                "loki1"
+            ]
         }
+
     }
 }
