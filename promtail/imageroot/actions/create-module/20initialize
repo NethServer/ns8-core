@@ -28,10 +28,7 @@ exec 1>&2 # Send any output to stderr, to not alter the action response protocol
 
 loki_id=$(REDIS_USER=default redis-exec GET cluster/default_instance/loki)
 
-cat >&${AGENT_COMFD} <<EOF
-set-env LOKI_URL http://$(REDIS_USER=default redis-exec HGET module/${loki_id}/environment LOKI_ADDR):3100/loki/api/v1/push
-dump-env
-EOF
+jq -cnM --arg loki_instance ${loki_id} '{"loki_instance":$loki_instance}' | ../actions/configure-module/20unit_env
 
 install -m 644 "${AGENT_INSTALL_DIR}/promtail.service" "/etc/systemd/system/${MODULE_ID}.service"
 systemctl daemon-reload
