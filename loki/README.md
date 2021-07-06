@@ -5,15 +5,15 @@ The module use the [Loki official docker image](https://github.com/grafana/loki/
 
 ## Install
 
-Instantiate the module:
+Instantiate the module, example:
 ```
-add-module loki 1
+add-module ghcr.io/nethserver/loki:latest 1
 ```
 
 The output of the command will return the instance name.
 Output example:
 ```
-{"rootfull": false, "mid": "loki1"}
+{"module_id": "loki1", "image_name": "Loki log aggregation system", "image_url": "ghcr.io/nethserver/loki:latest"}
 ```
 
 After the installation, the Loki server will listen on the IP address of the selected node's VPN interface, using the default fixed port `3100`.
@@ -22,12 +22,12 @@ After the installation, the Loki server will listen on the IP address of the sel
 
 The instance can be queried with logcli. eg:
 ```
-root@leader:~# add-module loki 1
+root@leader:~# add-module ghcr.io/nethserver/loki:latest 1
 Extracting container filesystem ui to /var/lib/nethserver/cluster/ui/apps/loki1
 ui/index.html
 b89469d5a964b4e97ca2d40b25758cd2e06a96ebe6c00af7d95b1a2d5cf635a5
 {"module_id": "loki1", "image_name": "Loki log aggregation system", "image_url": "ghcr.io/nethserver/loki:latest"}
-root@leader:~# add-module promtail 1
+root@leader:~# add-module ghcr.io/nethserver/promtail:latest 1
 Extracting container filesystem ui to /var/lib/nethserver/cluster/ui/apps/promtail1
 ui/index.html
 fe8d71c5b5f0c579ba96e4a64660b275e3a667ffddcc576b1e4cab9f3a8bf9f8

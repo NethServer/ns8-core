@@ -5,15 +5,15 @@ The module use the [Promtail official docker image](https://github.com/grafana/l
 
 ## Install
 
-Instantiate the module:
+Instantiate the module, example:
 ```
-add-module promtail 1
+add-module ghcr.io/nethserver/promtail:latest 1
 ```
 
 The output of the command will return the instance name.
 Output example:
 ```
-{"rootfull": true, "mid": "promtail1"}
+{"module_id": "promtail1", "image_name": "promtail", "image_url": "ghcr.io/nethserver/promtail:latest"}
 ```
 
 Wait for `add-module` to complete by looking inside `journalctl`.
@@ -32,11 +32,11 @@ All parameters must be set inside the `data` field as a JSON object.
 
 Example:
 ```
-redis-cli LPUSH module/promtail1/tasks '{"id":"'$(uuidgen)'","action":"configure-module","data": {"loki\_url":"https://example.com/loki/api/v1/push"} }'
+redis-cli LPUSH module/promtail1/tasks '{"id":"'$(uuidgen)'","action":"configure-module","data": {"loki_url":"https://example.com/loki/api/v1/push"}}'
 ```
 
 ```
-redis-cli LPUSH module/promtail1/tasks '{"id":"'$(uuidgen)'","action":"configure-module","data": {"loki\_instance":"loki1"} }'
+redis-cli LPUSH module/promtail1/tasks '{"id":"'$(uuidgen)'","action":"configure-module","data": {"loki_instance":"loki1"}}'
 ```
 
 
