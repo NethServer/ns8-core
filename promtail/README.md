@@ -25,20 +25,32 @@ As default, the Loki server used will be the default instance of the cluster.
 Let's assume that the Promtail instance is named `promtail1`.
 
 Then launch `configure-module`, by setting the following parameters:
-- `loki_url`, *string*: Address of the remote Loki server.
 - `loki_instance`, *string*: Module id of the Loki server.
+- `loki_url`, *string*: Address of the remote Loki server.
+- `auth`, *object*: Authentication credentials, only valid if `loki_url` is used:
+  - `token`, *string*: Bearer token to send to the server.
+  - `basic`, *object*: Basic auth username and password for authenticate to the server.
+    - `username`, *string*: Username.
+    - `Password`, *string*: Password.
 
 All parameters must be set inside the `data` field as a JSON object.
 
 Example:
 ```
+redis-cli LPUSH module/promtail1/tasks '{"id":"'$(uuidgen)'","action":"configure-module","data": {"loki_instance":"loki1"}}'
+```
+
+```
 redis-cli LPUSH module/promtail1/tasks '{"id":"'$(uuidgen)'","action":"configure-module","data": {"loki_url":"https://example.com/loki/api/v1/push"}}'
 ```
 
 ```
-redis-cli LPUSH module/promtail1/tasks '{"id":"'$(uuidgen)'","action":"configure-module","data": {"loki_instance":"loki1"}}'
+redis-cli LPUSH module/promtail1/tasks '{"id":"'$(uuidgen)'","action":"configure-module","data": {"loki_url": ""https://example.com/loki/api/v1/push", "auth": {"token": "XXXXXXXXXXXXXXXXXX"}}}'
 ```
 
+```
+redis-cli LPUSH module/promtail1/tasks '{"id":"'$(uuidgen)'","action":"configure-module","data": {"loki_url": "http://10.135.0.3:3100/loki/api/v1/push", "auth": {"basic": {"user": "user", "password": "password"}}}}'
+```
 
 ## Uninstall
 

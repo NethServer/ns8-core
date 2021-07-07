@@ -2,36 +2,81 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "delete-route input",
     "$id": "http://schema.nethserver.org/traefik/delete-route-input.json",
-    "description": "Delete a HTTP route",
+    "description": "Configure a Promtail agent",
     "examples": [
         {
             "loki_url": "http://10.135.0.3:3100/loki/api/v1/push"
-	},
-	{
-	    "instance": "loki1"
+        },
+        {
+            "loki_instance": "loki1"
+        },
+        {
+            "loki_url": "http://10.135.0.3:3100/loki/api/v1/push",
+            "auth": {
+                "basic": {
+                    "user": "user",
+                    "password": "password"
+		}
+	    }
+        },
+        {
+            "loki_url": "http://10.135.0.3:3100/loki/api/v1/push",
+            "auth": {
+                "token": "XXXXXXXXXXXXXXXXXX"
+	    }
         }
     ],
     "type": "object",
-    "OneOf": [
-        { "required" : ["loki_url"]},
-        { "required" : ["instance"]}
+    "oneOf": [
+        {"required": ["loki_url"]},
+        {"required": ["loki_instance"]}
     ],
+    "additionalProperties": false,
     "properties": {
         "loki_url": {
             "type": "string",
-	    "format": "uri",
+            "format": "uri",
             "title": "Url of the Loki instance",
             "examples": [
                 "http://10.135.0.3:3100/loki/api/v1/push"
             ]
         },
-        "instance": {
+        "loki_instance": {
             "type": "string",
             "title": "Module instance name of the Loki server",
             "examples": [
                 "loki1"
             ]
+        },
+        "auth": {
+            "type": "object",
+            "oneOf": [
+                {"required": ["token"]},
+                {"required": ["basic"]}
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "token": {
+                "type":"string",
+                "title": "Bearer token to send to the server"
+                },
+                "basic": {
+                "title": "Basic auth username and password for authenticate to the server",
+                    "type": "object",
+                    "required": [
+                        "username",
+                        "password"
+                    ],
+                    "properties": {
+                        "username": {
+                            "type":"string"
+                        },
+                        "password": {
+                            "type":"string"
+                        }
+                    }
+                }
+            }
         }
-
     }
 }

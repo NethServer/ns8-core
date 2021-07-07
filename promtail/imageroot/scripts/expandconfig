@@ -1,0 +1,59 @@
+#!/bin/bash
+
+#
+# Copyright (C) 2021 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
+set -e
+
+cat >promtail.yaml <<EOF
+server:
+  disable: true
+clients:
+  - url: ${LOKI_URL}
+EOF
+
+if [ -n "${LOKI_AUTH_TOKEN}" ]; then
+cat >>promtail.yaml <<EOF
+    bearer_token: ${LOKI_AUTH_TOKEN}
+EOF
+fi
+
+if [ -n "${LOKI_AUTH_USERNAME}" ]; then
+cat >>promtail.yaml <<EOF
+    basic_auth:
+        username: ${LOKI_AUTH_USERNAME}
+        password: ${LOKI_AUTH_PASSWORD}
+EOF
+fi
+
+
+cat >>promtail.yaml <<EOF
+scrape_configs:
+  - job_name: journal
+    journal:
+      json: true
+      labels:
+        job: systemd-journal
+      max_age: 12h
+    relabel_configs:
+    - source_labels:
+      - __journal__hostname
+      target_label: nodename
+EOF
