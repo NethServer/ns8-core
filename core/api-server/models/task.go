@@ -20,16 +20,17 @@
  * author: Edoardo Spadoni <edoardo.spadoni@nethesis.it>
  */
 
- package models
+package models
 
- import (
-	 "time"
- )
+import (
+	"time"
+)
 
 type Task struct {
 	ID        string      `json:"id" structs:"id"`
 	Action    string      `json:"action" structs:"action"`
 	Data      interface{} `json:"data" structs:"data"`
+	Extra     interface{} `json:"extra" structs:"extra"`
 	Queue     string      `json:"queue" structs:"queue"`
 	User      string      `json:"user" structs:"user"`
 	Timestamp time.Time   `json:"timestamp" structs:"timestamp"`
@@ -40,5 +41,6 @@ type TaskJSON struct {
 	ID     string      `json:"id" structs:"id" example:"null"`
 	Action string      `json:"action" structs:"action" example:"list-modules"`
 	Data   interface{} `json:"data" structs:"data"`
+	Extra  interface{} `json:"extra" structs:"extra"`
 	Parent string      `json:"parent" structs:"parent"`
 }

@@ -327,6 +327,7 @@ func createTask(c *gin.Context, queueName string) {
 	task.ID = guuid.New().String()
 	task.Action = jsonTask.Action
 	task.Data = jsonTask.Data
+	task.Extra = jsonTask.Extra
 	task.Queue = queueName
 	task.User = info["id"].(string)
 	task.Timestamp = time.Now().UTC()
