@@ -107,6 +107,9 @@ def __action(*args):
 def set_env(name, value):
     __action("set-env", name, value)
 
+def unset_env(name):
+    __action("unset-env", name)
+
 def dump_env():
     __action("dump-env")
 
