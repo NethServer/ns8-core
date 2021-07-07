@@ -32,7 +32,7 @@ rdb = agent.redis_connect()
 # Lookup a DC for the given realm
 for ksamba in rdb.scan_iter(f'module/samba*/environment'):
     penv = rdb.hgetall(ksamba)
-    if penv['REALM'] == request['realm']:
+    if penv.get('REALM', '') == request['realm'].upper():
         provision_type = 'join-domain'
         realm = penv['REALM']
         nbdomain = penv['NBDOMAIN']
