@@ -41,8 +41,7 @@ The above command will:
 
 ## Uninstall
 
-To uninstall the instance:
+To uninstall the instance and remove traefik virtual host:
 ```
-redis-cli LPUSH module/traefik1/tasks '{"id": "'$(uuidgen)'", "action": "delete-host", "data": {"instance": "dokuwiki1"}}'
 remove-module dokuwiki1 --no-preserve
 ```
