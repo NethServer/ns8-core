@@ -72,7 +72,7 @@ agent.run_subtask(rdb,
     agent_prefix='cluster',
     action='add-module',
     input_obj={
-        'image': 'ldapproxy',
+        'image': 'ghcr.io/nethserver/ldapproxy:latest',
         'node': NODE_ID,
     },
 )

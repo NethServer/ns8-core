@@ -110,7 +110,7 @@ for core_module_image in ['traefik', 'ldapproxy']:
         agent_prefix='cluster',
         action='add-module',
         input_obj={
-            "image": core_module_image,
+            "image": f'ghcr.io/nethserver/{core_module_image}:latest',
             "node": node_id,
         },
         nowait=True,
