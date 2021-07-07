@@ -1,0 +1,64 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Configure dokuwiki",
+  "$id": "http://nethserver.org/json-schema/task/input/dokuwiki/configure",
+  "description": "Configure dokuwiki",
+  "examples": [
+    {
+      "wiki_name": "mywiki",
+      "username": "admin",
+      "password": "admin",
+      "email": "admin@test.local",
+      "user_full_name": "Administrator",
+      "host": "wiki.nethserver.org",
+      "http2https": true,
+      "lets_encrypt": true
+    }
+  ],
+  "type": "object",
+  "required": [
+    "wiki_name",
+    "username",
+    "password",
+    "email",
+    "host",
+    "http2https",
+    "lets_encrypt"
+  ],
+  "properties": {
+    "wiki_name": {
+      "type": "string",
+      "description": "Name of the wiki"
+    },
+    "username": {
+      "type": "string",
+      "description": "Administrator user name, usually set to 'admin'"
+    },
+    "password": {
+      "type": "string",
+      "description": "Default password for administrator user, it can be changed later"
+    },
+    "user_full_name": {
+      "type": "string",
+      "description": "Administrator full user name"
+    },
+    "email": {
+      "description": "The mail address of the administrator user",
+      "format": "idn-email"
+    },
+    "host": {
+      "description": "Host name for the wiki, like 'wiki.nethserver.org'",
+      "format": "idn-hostname"
+    },
+    "lets_encrypt": {
+      "type": "boolean",
+      "title": "Let's Encrypt certificate",
+      "description": "Request a valid Let's Encrypt certificate."
+    },
+    "http2https": {
+      "type": "boolean",
+      "title": "HTTP to HTTPS redirection",
+      "description": "Redirect all the HTTP requests to HTTPS"
+    }
+  }
+}
