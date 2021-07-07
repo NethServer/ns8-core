@@ -1,0 +1,27 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "add-route input",
+    "$id": "http://schema.nethserver.org/cluster/add-route-input.json",
+    "description": "Route traffic to the given network through a VPN node",
+    "examples": [
+        {
+            "network": "192.168.2.0/16",
+            "node_id": 3
+        }
+    ],
+    "required": [
+        "network",
+        "node_id"
+    ],
+    "properties": {
+        "network": {
+            "$ref": "http://schema.nethserver.org/cluster.json#/definitions/ipv4-cidr"
+        },
+        "node_id": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "title": "Destination node identifier",
+            "description": "Node ID used as route next-hop"
+        }
+    }
+}

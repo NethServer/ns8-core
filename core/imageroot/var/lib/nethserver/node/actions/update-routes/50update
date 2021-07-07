@@ -1,0 +1,73 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2021 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
+import agent
+import agent.tasks
+import os
+import sys
+import json
+
+requests = json.load(sys.stdin)
+
+self_id = int(os.environ['NODE_ID'])
+
+with agent.redis_connect(privileged=False) as rdb:
+    # Fetch the whole VPN peers configuration
+    peers = {pkey: rdb.hgetall(pkey) for pkey in rdb.scan_iter('node/*/vpn')}
+
+
+errors = 0
+for req in requests:
+    pconf = peers[f'node/{req["node_id"]}/vpn']
+    destinations = {*pconf.get('destinations', '').split()}
+    destinations.update(req['add'])
+    destinations.difference_update(req['remove'])
+    peers[f'node/{req["node_id"]}/vpn']['destinations'] = ' '.join(destinations)
+
+    if req['node_id'] == self_id:
+        # No VPN and routing changes are needed. Just store the new destinations set in the Redis DB:
+        with agent.redis_connect(privileged=True) as rdb:
+            hset_result = rdb.hset(f'node/{self_id}/vpn', 'destinations', ' '.join(destinations))
+            if not hset_result >= 0:
+                errors += 1
+                print(agent.SD_ERR, f"Failed to store the destinations set of node/{self_id}: {destinations}", file=sys.stderr)
+    else:
+        # Apply immediately the new configuration to the WireGuard wg0 interface...
+        wset_proc = agent.run_helper(*f'wg set wg0 peer {pconf["public_key"]} allowed-ips {",".join(destinations)}'.split())
+        if wset_proc.returncode != 0:
+            errors +=1
+            print(agent.SD_ERR, f'Runtime change of allowed-ips has failed for peer node/{req["node_id"]}', file=sys.stderr)
+
+        for xdest in destinations:
+            # ...and to the system routing table
+            ipro_proc = agent.run_helper(*f'ip route replace {xdest} nexthop dev wg0'.split())
+            if ipro_proc.returncode != 0:
+                errors += 1
+                print(agent.SD_ERR, f"Runtime change of routing table has failed for destination {xdest}", file=sys.stderr)
+
+# Write the new configuration to file
+pconf = peers[f'node/{self_id}/vpn']
+agent.save_wgconf(pconf['ip_address'], pconf['listen_port'], peers)
+
+agent.assert_exp(errors == 0)
+
+print("true") # Honor output JSON schema

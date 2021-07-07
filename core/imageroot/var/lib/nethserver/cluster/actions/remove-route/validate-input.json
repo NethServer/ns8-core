@@ -1,0 +1,27 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "remove-route input",
+    "$id": "http://schema.nethserver.org/cluster/remove-route-input.json",
+    "description": "Remove the route for the given network through the VPN node",
+    "examples": [
+        {
+            "network": "192.168.2.0/16",
+            "node_id": 3
+        }
+    ],
+    "required": [
+        "network",
+        "node_id"
+    ],
+    "properties": {
+        "network": {
+            "$ref": "http://schema.nethserver.org/cluster.json#/definitions/ipv4-cidr"
+        },
+        "node_id": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "title": "Destination node identifier",
+            "description": "Node ID used as route next-hop"
+        }
+    }
+}

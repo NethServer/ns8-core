@@ -71,6 +71,7 @@ ip_address = str(network.network() + node_id)
 agent.assert_exp(rdb.hset(f'node/{node_id}/vpn', mapping={
     "public_key": public_key,
     "ip_address": ip_address,
+    "destinations": ip_address + '/32',
     "endpoint": endpoint,
     "listen_port": str(listen_port),
 }) >= 0)

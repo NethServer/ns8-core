@@ -1,0 +1,59 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "update-routes input",
+    "$id": "http://schema.nethserver.org/node/update-routes-input.json",
+    "description": "Change the IP routes handled by the WireGuard VPN",
+    "examples": [
+        [
+            {
+                "add": [
+                    "192.168.2.0/24"
+                ],
+                "remove": [],
+                "node_id": 3
+            },
+            {
+                "add": [],
+                "remove": [
+                    "192.168.5.0/24"
+                ],
+                "node_id": 2
+            }
+        ]
+    ],
+    "type": "array",
+    "uniqueItems": true,
+    "items": {
+        "$ref": "#/definitions/routeItem"
+    },
+    "definitions": {
+        "routeItem": {
+            "type": "object",
+            "required": [
+                "node_id",
+                "add",
+                "remove"
+            ],
+            "properties": {
+                "node_id": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0,
+                    "title": "Destination node identifier",
+                    "description": "Node ID used as route next-hop"
+                },
+                "add": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "http://schema.nethserver.org/node.json#/definitions/ipv4-cidr"
+                    }
+                },
+                "remove": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "http://schema.nethserver.org/node.json#/definitions/ipv4-cidr"
+                    }
+                }
+            }
+        }
+    }
+}
