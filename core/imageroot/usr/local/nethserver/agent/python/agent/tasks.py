@@ -19,11 +19,13 @@
 #
 
 import aiohttp
+import aioredis
 import asyncio
 import json
 import os
 import urllib
 import sys
+import uuid
 
 async def _alogin(client, **npargs):
     """Read the Redis user credentials from the environment and retrieve a new authorization token.
@@ -33,7 +35,7 @@ async def _alogin(client, **npargs):
     redis_username = os.getenv('REDIS_USER', os.getenv('AGENT_ID', 'default'))
     redis_password = os.environ['REDIS_PASSWORD'] # Fatal if missing!
     async with client.post(
-        f'{endpoint}/api/login', 
+        f'{endpoint}/api/login',
         json={
             'username':redis_username,
             'password':redis_password
@@ -84,7 +86,7 @@ def _get_theaders_cache(token=None):
         }
 
     if 'AGENT_STATE_DIR' in os.environ:
-        cachefile = os.environ['AGENT_STATE_DIR'] + '/apitoken.cache' 
+        cachefile = os.environ['AGENT_STATE_DIR'] + '/apitoken.cache'
     else:
         cachefile = None
 
@@ -151,7 +153,7 @@ async def _amonitor_task(client, agent_id, action, data, parent, **npargs):
             except:
                 continue # Discard unknown message
 
-            if jdata['payload']['status'] != 'completed':
+            if not jdata['payload']['status'] in ['completed', 'aborted', 'validation-failed']:
                 continue # Ignore any status but "completed" XXX: catch "progress" too!
 
             if task_id and jdata['name'] == f'progress/{agent_id}/task/{task_id}':
@@ -159,17 +161,57 @@ async def _amonitor_task(client, agent_id, action, data, parent, **npargs):
 
     return task_id
 
-def run(agent_id, action, data={}, parent=None, progress_range=None, tls_verify=False, endpoint='http://cluster-leader/cluster-admin', auth_token=None):
+def run(agent_id, action, data={}, **kwargs):
     """Run a new task and wait until it completes. An object with exit_code, error, output is returned.
     """
+    results = runp([{
+        'agent_id': agent_id,
+        'action': action,
+        'data': data,
+    }], **kwargs)
+    return results[0]
 
+def runp(tasks, **kwargs):
+    """Run tasks in parallel and return an array of results.
+    """
+    return asyncio.run(_runp(tasks, nowait=False, **kwargs))
+
+def runp_nowait(tasks, **kwargs):
+    """Run tasks in parallel and do not wait for completion, instead task IDs are returned.
+    """
+    return asyncio.run(_runp(tasks, nowait=True, **kwargs))
+
+def runp_brief(tasks, **kwargs):
+    """Run tasks in parallel and return the number of failed tasks. Errors are sent to sys.stderr
+    """
+    results = asyncio.run(_runp(tasks, nowait=False, **kwargs))
+    errors = 0
+    for idx, result in enumerate(results):
+        if isinstance(result, Exception):
+            print(f"Task {tasks[idx]['action']}@{tasks[idx]['agent_id']} run failed: {result}", file=sys.stderr)
+            errors += 1
+        elif result['exit_code'] != 0:
+            print(f"Task {tasks[idx]['action']}@{tasks[idx]['agent_id']} run failed: {repr(result)}", file=sys.stderr)
+            errors += 1
+
+    return errors
+
+async def _runp(tasks, nowait=False, **kwargs):
+    runners = []
+    for task in tasks:
+        if not 'data' in task:
+            task['data']={}
+        runfunc = _run if nowait is False else _run_nowait
+        otask = asyncio.create_task(runfunc(task['agent_id'], task['action'], data=task['data'], **kwargs), name=task['action'] + '@' + task['agent_id'])
+        runners.append(otask)
+
+    return await asyncio.gather(*runners, return_exceptions=(len(tasks) > 1))
+
+async def _run_nowait(agent_id, action, data={}, parent=None, progress_range=None, tls_verify=False, endpoint='http://cluster-leader/cluster-admin', auth_token=None):
     if parent is None:
         parent = os.getenv("AGENT_TASK_ID", "")
 
-    # There are two main tasks that run concurrently. We must ensure the web socket captures any status update
-    # of the Task even before it is created. This ensures we can catch the "completed" message and retrieve the
-    # Task status from Redis after it becomes available.
-    async def _asyncf():
+    async def run_apiserver():
         nonlocal parent
         theaders = _get_theaders_cache(auth_token)
         pconn = {
@@ -177,6 +219,62 @@ def run(agent_id, action, data={}, parent=None, progress_range=None, tls_verify=
             'endpoint': endpoint,
         }
         async with aiohttp.ClientSession(raise_for_status=True) as client:
+            try:
+                task_id = await _apost_task(client, agent_id, action, data, parent, theaders=theaders, **pconn)
+            except aiohttp.ClientResponseError as ex:
+                if not ex.status in [401]:
+                    raise ex
+                theaders = await _alogin(client, **pconn)
+                task_id = await _apost_task(client, agent_id, action, data, parent, theaders=theaders, **pconn)
+            return f'{agent_id}/task/{task_id}'
+
+    async def run_redis():
+        nonlocal parent
+        redis_username = os.getenv('REDIS_USER', os.getenv('AGENT_ID', 'default'))
+        redis_password = os.environ['REDIS_PASSWORD'] # Fatal if missing!
+        async with aioredis.from_url(
+            endpoint,
+            username=redis_username,
+            password=redis_password,
+            decode_responses=True
+        ) as rdb:
+            task_id = str(uuid.uuid4())
+            task_obj = {
+                "id": task_id,
+                "action": action,
+                "data": data,
+                "parent": parent
+            }
+
+            lpush_retval = await rdb.lpush(f'{agent_id}/tasks', json.dumps(task_obj))
+            if not (lpush_retval >= 1):
+                return None
+            else:
+                return f'{agent_id}/task/{task_id}'
+
+    if endpoint.startswith("redis://"):
+        return await run_redis()
+    else:
+        return await run_apiserver()
+
+
+async def _run(agent_id, action, data={}, parent=None, progress_range=None, tls_verify=False, endpoint='http://cluster-leader/cluster-admin', auth_token=None):
+
+    if parent is None:
+        parent = os.getenv("AGENT_TASK_ID", "")
+
+    # There are two main tasks that run concurrently. We must ensure the web socket captures any status update
+    # of the Task even before it is created. This ensures we can catch the "completed" message and retrieve the
+    # Task status from Redis after it becomes available.
+    async def run_apiserver():
+        nonlocal parent
+        theaders = _get_theaders_cache(auth_token)
+        pconn = {
+            'tls_verify': tls_verify,
+            'endpoint': endpoint,
+        }
+        async with aiohttp.ClientSession(raise_for_status=True) as client:
+
             try:
                 task_id = await _amonitor_task(client, agent_id, action, data, parent, theaders=theaders, **pconn)
             except aiohttp.ClientResponseError as ex:
@@ -193,4 +291,64 @@ def run(agent_id, action, data={}, parent=None, progress_range=None, tls_verify=
                 theaders = await _alogin(client, **pconn)
                 return await _aread_status(client, agent_id, task_id, theaders=theaders, **pconn)
 
-    return asyncio.run(_asyncf())
+    async def run_redis():
+        nonlocal parent
+        redis_username = os.getenv('REDIS_USER', os.getenv('AGENT_ID', 'default'))
+        redis_password = os.environ['REDIS_PASSWORD'] # Fatal if missing!
+        async with aioredis.from_url(
+            endpoint,
+            username=redis_username,
+            password=redis_password,
+            decode_responses=True
+        ) as rdb:
+            task_id = str(uuid.uuid4())
+            task_obj = {
+                "id": task_id,
+                "action": action,
+                "data": data,
+                "parent": parent
+            }
+
+            pubsub = rdb.pubsub()
+            await pubsub.subscribe(f'progress/{agent_id}/task/{task_id}')
+            lpush_retval = await rdb.lpush(f'{agent_id}/tasks', json.dumps(task_obj))
+            if not (lpush_retval >= 1):
+                return None
+
+            async for message in pubsub.listen():
+                try:
+                    jdata = json.loads(message['data'])
+                except:
+                    continue # Discard unreadable message
+
+                if jdata['status'] in ['completed', 'aborted', 'validation-failed']:
+                    break
+                else:
+                    continue # Ignore any status but "completed" XXX: catch "progress" too!
+
+            await pubsub.close()
+
+            output = await rdb.get(f'{agent_id}/task/{task_id}/output')
+            try:
+                output = json.loads(output) # Attempt to decode output as a JSON string
+            except:
+                pass
+
+            exit_code = await rdb.get(f'{agent_id}/task/{task_id}/exit_code')
+            if exit_code.isnumeric():
+                exit_code = int(exit_code)
+
+            error = await rdb.get(f'{agent_id}/task/{task_id}/error')
+
+        return {
+            'id': task_id,
+            'output': output,
+            'error': error,
+            'exit_code': exit_code,
+        }
+
+
+    if endpoint.startswith("redis://"):
+        return await run_redis()
+    else:
+        return await run_apiserver()
