@@ -121,6 +121,7 @@ a space it can be wrapped by double quotes.
 Available commands are:
 
 - `set-env`
+- `unset-env`
 - `dump-env`
 - `set-status`
 - `set-progress`
@@ -143,6 +144,14 @@ If the action is successful it persists the value in the Redis DB for future act
 For example
 
     set-env FULLNAME "First User"
+
+### unset-env
+
+The `unset-env` command remove an environment variable for subsequent steps.
+If the action is successful it persists the value in the Redis DB for future action invocations.
+For example
+
+    unset-env FULLNAME
 
 ### dump-env
 

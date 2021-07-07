@@ -291,6 +291,12 @@ func runAction(task *models.Task) {
 				switch cmd := record[0]; cmd {
 				case "set-env":
 					environment = append(environment, record[1]+"="+record[2])
+				case "unset-env":
+					for i, envVar := range environment {
+						if strings.HasPrefix(envVar, record[1]+"=") {
+							environment = append(environment[:i], environment[i+1:]...)
+						}
+					}
 				case "dump-env":
 					rdb.HSet(ctx, agentPrefix+"/environment", exportToRedis(environment)...).Result()
 					dumpToFile(environment)
