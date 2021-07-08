@@ -1,15 +1,17 @@
-# ns8-scratchpad
+# NS8 - NethServer 8 prototype
 
-NethServer 8 experiments
+Supported distributions:
+- Fedora 34
+- Debian 11 (bullseye)
 
-System requirements: Systemd, Podman: developed on Fedora 33, 34, Debian 10 and 11.
-
-Draft documentation:
+Draft documentation for developers:
 
 - [Introduction](doc/intro.md)
-- [Design](doc/design.md)
-- [Architecture](doc/architecture.md)
-- [Installation](doc/installation.md)
-  - [Backup](doc/backup.md)
+- [Design & Architecture](doc/design.md)
+- [Technical details](doc/details.md)
+- [Installation  & First steps](doc/installation.md)
 - [How to create a new module](doc/new_module.md)
-- [Project progress](https://trello.com/b/R58gtZ8I/ns8-prototype)
+
+Links:
+- [API documentation](https://github.com/NethServer/ns8-scratchpad/tree/apidoc)
+- [Project roadmap](https://trello.com/b/R58gtZ8I/ns8-prototype)
