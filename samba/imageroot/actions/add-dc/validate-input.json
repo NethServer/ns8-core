@@ -1,0 +1,28 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "add-dc input",
+    "$id": "http://schema.nethserver.org/samba/add-dc-input.json",
+    "description": "Add a new DC to the lists of known DCs",
+    "examples": [
+        {
+            "hostname": "dc3",
+            "ipaddress": "192.168.4.3"
+        }
+    ],
+    "type": "object",
+    "required": [
+        "hostname",
+        "ipaddress"
+    ],
+    "properties": {
+        "ipaddress": {
+            "type": "string",
+            "format": "ipv4"
+        },
+        "hostname": {
+            "type": "string",
+            "pattern": "^[a-zA-Z][-a-zA-Z0-9]*$",
+            "maxLength": 15
+        }
+    }
+}

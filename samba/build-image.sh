@@ -40,7 +40,7 @@ buildah add "${container}" ui /ui
 buildah config \
     --label 'org.nethserver.rootfull=1' \
     --label "org.nethserver.images=ghcr.io/nethserver/samba-dc:${IMAGETAG:-latest}" \
-    --label 'org.nethserver.authorizations=ldapproxy@node:accountprovider cluster:accountprovider' \
+    --label 'org.nethserver.authorizations=ldapproxy@node:accountprovider cluster:accountprovider samba@any:peer' \
     --entrypoint=/ "${container}"
 buildah commit "${container}" "${repobase}/${reponame}"
 images+=("${repobase}/${reponame}")

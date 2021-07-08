@@ -20,14 +20,18 @@
 # along with NethServer.  If not, see COPYING.
 #
 
-exec 1>&2 # Send any output to stderr, to not alter the action response protocol
+exec 1>&2
 set -e
 
-#
-# Allow other modules to call our actions by requiring the "peer" role
-#
-redis-exec SADD "${AGENT_ID}/roles/peer" "add-dc"
+# When a new DC is added to our domain it invokes this action so we can
+# update our configuration files.
 
-# Install the Systemd unit for this module instance
-install -m 644 "${AGENT_INSTALL_DIR}/samba-dc.service" "/etc/systemd/system/${MODULE_ID}.service"
-systemctl daemon-reload
+read ipaddress hostname <<<$(jq -r '.ipaddress, "\t", .hostname')
+
+# Persist the new DC address for future containers
+echo "${ipaddress:?} ${hostname:?}" >> hosts
+echo "nameserver ${ipaddress:?}" >> resolv.conf
+
+# Update the running container configuration
+cat hosts | podman exec ${MODULE_ID} sh -c "cat - >/etc/hosts"
+cat resolv.conf | podman exec ${MODULE_ID} sh -c "cat - >/etc/resolv.conf"
