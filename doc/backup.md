@@ -1,5 +1,7 @@
 # Backup & restore
 
+**THIS DOCUMENTATION IS OBSOLETE**
+
 ## First configuration
 
 The core and each instance can implement the `backup` event. The event takes the name of the backup as first argument.

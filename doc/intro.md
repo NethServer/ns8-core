@@ -39,3 +39,6 @@ NS8 is composed by many parts, let's explain the main terminology.
 - *Module*: additional software that can be installed on one or more cluster nodes, like Mail server, Nextcloud, Webtop.
 - *Instance*: a running instance of a module with a specific configuration. Each instance runs inside an isolated environment and constituted by one or more Podman containers.
 - *Application*: speaking in UI terms, it corresponds to a module and its instances.
+
+---
+Next: [Design & Architecture](design.md)

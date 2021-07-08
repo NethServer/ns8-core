@@ -2,7 +2,10 @@
 
 Each module is distributed using a container image.
 This document will guide you, a developer, on how to create a new rootless module.
-The module will be a simple web application named `mymodule`.
+The module will be a simple NethServer package for [Dokuwiki](https://www.dokuwiki.org/dokuwiki).
+
+Before moving further, please take a look to [how NethServer is designed](design.md).
+See also [Technical details](details.md).
 
 ## Step 0: install NS8
 
@@ -19,34 +22,21 @@ For Fedora:
 dnf install buildah
 ```
 
-## Step 1: add to list catalog
-
-Each module can be installed using the `install-module` script.
-The install script reads modules metadata from `/var/lib/nethserver/cluster/state/images-catalog.txt` and save them
-inside Redis.
-
-When creating a new module, save its metadata directly to Redis:
+To push push images to the registry, you must configure the authentication.
+Create a [GitHub Personal Access Token (PAT)](https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token)
+for the **ghcr.io** registry (for read-only access `read:packages private` scope should be enough) then run the following command, specifying
+your GitHub user name and providing the generated PAT as password:
 ```
-redis-cli HSET image/mymodule url ghcr.io/nethserver/mymodule:latest name "MyModule"
+buildah login ghcr.io
 ```
 
-Remember to put the same command in the `images-catalog.txt` so other people can find the new module in future installations.
-
-The record is created by a Redis command in this generic form:
-```
-HSET image/<key> url <URL:tag> name "<name>"
-```
-Where:
-- `key`: the module unique identifier, i.e. `mymodule`
-- `url`: the URL of the image module inside a container registry with a tag. Usually the tag is set to `latest`, e.g. `ghcr.io/nethserver/mymodule:latest`
-- `name`: the name of the module, e.g. `MyModule`
-
-
-## Step 2: module structure
+## Step 1: module structure
 
 A module is usually composed by 2 main parts:
 - `imageroot` directory, contains all scripts to configure the module
 - `build-image.sh`, a script to generate the container image and push it to the image registry
+- `ui` directory, contains all user interface files
+- `README.md` describes module implementation and usage
 
 ### build-image.sh
 
@@ -55,161 +45,74 @@ The script creates an empty container image and publish it to the registry on us
 The main parts to look for are:
 - `repobase`: the URL of the remote image registry
 - `reponame`: the name of the module
-- `org.nethserver.tcp-ports-demand` label: describe how many ports the module needs to bind. The label takes an integer number as value, like `org.nethserver.tcp-ports-demand=3`
+- labels:
+  - `org.nethserver.tcp-ports-demand=1`: the container will use a single TCP port accessible using Traefik as proxy
+  - `org.nethserver.rootfull=0`: this is a rootless module
+  - `org.nethserver.authorizations=traefik@any:routeadm`: the module will automatically configure Traefik
+  - `org.nethserver.images=docker.io/bitnami/dokuwiki:20200729.0.0-debian-10-r299`: use a specific upstream image
+    to make sure all installations will use the same software version
 
-Example of `build-image.sh` file with output for GitHub Actions:
-```
-#!/bin/bash
-
-set -e
-images=()
-repobase="ghcr.io/nethserver"
-
-reponame="mymodule"
-container=$(buildah from scratch)
-
-buildah add "${container}" imageroot /
-buildah config --entrypoint=/ --label="org.nethserver.tcp-ports-demand=1" "${container}"
-buildah commit "${container}" "${repobase}/${reponame}"
-images+=("${repobase}/${reponame}")
-
-if [[ -n "${CI}" ]]; then
-    # Set output value for Github Actions
-    printf "::set-output name=images::%s\n" "${images[*]}"
-else
-    printf "Publish the images with:\n\n"
-    for image in "${images[@]}"; do printf "  buildah push %s docker://%s:latest\n" "${image}" "${image}" ; done
-    printf "\n"
-fi
-```
+See [Dokuwiki build image script](../dokuwiki/buildimage.sh).
 
 ### imageroot
 
 The `imageroot` directory will be extracted to the system during the module install.
 It contains 2 main paths:
 
-- `imageroot/actions` contains all actions for the module agent, the directory will be copied to `/home/mymodule1/.config/actions/`
-- `imageroot/systemd/user/` contains all systemd `.service` files, the directory will be copied to `/home/mymodule1/.config/systemd/user/`
-
-Every module **must** define at least a `create-module` action.
-The `create-module` should contain a step to pull the web service image.
-
-Something like `imageroot/actions/create-module/10pull`:
-```
-#!/bin/bash
-
-set -e
-
-# Redirect any output to the journal (stderr)
-exec 1>&2
-
-SVC_IMAGE=docker.io/bitnami/dokuwiki:latest
-
-# Talk with agent using file descriptor:
-# - save image name to environment
-
-echo "set-env SVC_IMAGE ${SVC_IMAGE}" >&${AGENT_COMFD}
-
-echo "I got the following ports: $TCP_PORTS"
-
-podman pull ${SVC_IMAGE}
-```
+- `imageroot/actions` contains all actions for the module agent, the directory will be copied to `/home/dokuwiki1/.config/actions/`
+- `imageroot/systemd/user/` contains all systemd `.service` files, the directory will be copied to `/dokuwiki/.config/systemd/user/`
 
 Usually, a module contains also a `configure-module` action to gather user input and configure the module accordingly.
 The `configure-module` action should:
 
-- validate user input
-- set environment variables and eventually expand the configuration
-- enable and start the systemd unit
-
+- [validate](../dokuwiki/imageroot/actions/configure-module/validate-input.json) user input
+- [set environment variables](../dokuwiki/imageroot/actions/configure-module/20configure) and eventually expand the configuration
+- [enable and start the systemd unit](../dokuwiki/imageroot/actions/configure-module/60systemd)
+- [setup Traefik proxy](../dokuwiki/imageroot/actions/configure-module/30traefik), if needed
 
 Feel free to use `dokuwiki` as scaffold module: just copy it and change it accordingly to your needs.
 
-#### Port allocation
+### User Interface
 
-A module can require one or more TCP ports allocation with the
-"org.nethserver.tcp-ports-demand" image label. For instance
+TODO
+
+## Step 2: push the image to registry
+
+The `build-image.sh` script will output the command to push the image to registry. Example:
 ```
- org.nethserver.tcp-ports-demand=3
+buildah push ghcr.io/nethserver/dokuwiki docker://ghcr.io/nethserver/dokuwiki:latest
 ```
 
-It means the module receives a range of three TCP port numbers in the
-usual module environment, where the following variables are set
+If the package should be added to a repository, make sure to specify a valid [semantic version](https://semver.org/) as tag.
+Example:
 
-- `TCP_PORT=1001` (always set to the range first port)
-- `TCP_PORTS_RANGE=1001-1003` (the full range, if more than one port is allocated)
-- `TCP_PORTS=1001,1002,1003` (comma-separated list of port numbers, if no more than 8 ports are allocated)
-
-This command adds the label to the image:
 ```
-buildah config --label="org.nethserver.tcp-ports-demand=3" "${container}"
+buildah push ghcr.io/nethserver/dokuwiki docker://ghcr.io/nethserver/dokuwiki:0.0.1
 ```
 
 ## Step 3: start the module
 
 First, we have to tell the cluster to instantiate a new module. The node agent will
 create a new Unix user that runs the rootless module and schedule the `create-module`
-action to start soon:
+action to start soon.
+Just install the module straight from the image registry, without using NethServer package repository:
 ```
-add-module mymodule 1
-```
-
-> The above command means: "add a new instance of module *mymodule* to node *1*" 
-
-The output will look like:
-```
-{"rootfull": false, "mid": "mymodule1"}
+add-module ghcr.io/nethserver/dokuwiki:latest 1
 ```
 
-> Note: `mid` is an abbreviation for *module-identifier*.
+In case of error, see `journalctl`.
 
-Then, wait for the `create-module` to complete. You can inspect `journalctl` to monitor the task progess.
-The task will store its result under a random key prefix, e.g. `module/mymodule1/task/e6707401-44b7-4283-8fe9-f0aa189d3a23`.
-Example:
-```
-journalctl | grep module/mymodule1
-```
+When the `create-module` has been completed, start the [configuration](../dokuwiki/README.md#configure).
 
-You can also inspect the task results:
-- read the exit code: `redis-cli get module/mymodule11/task/e6707401-44b7-4283-8fe9-f0aa189d3a23/exit_code`
-- read the standard output: `redis-cli get module/mymodule1/task/e6707401-44b7-4283-8fe9-f0aa189d3a23/output`
-- read the standard error: `redis-cli get module/mymodule1/task/e6707401-44b7-4283-8fe9-f0aa189d3a23/error`
+## Step 5: publish the package
 
+If you want to publish the package, first make sure the package as a tag which is a valid semantic version.
+Then create a new Pull Request (PR) to [ns8-repomd](https://github.com/NethServer/ns8-repomd/) repository.
+The PR should contain:
+- a new [directory](https://github.com/NethServer/ns8-repomd/tree/main/dokuwiki) with the name of the module
+- the directory should contain:
+  - a file named [`metadata.json`](thttps://github.com/NethServer/ns8-repomd/blob/main/dokuwiki/metadata.json) which contains all information regarding the module itself
+  - a [logo](https://github.com/NethServer/ns8-repomd/blob/main/dokuwiki/logo.png)
+  - a [screenshots](https://github.com/NethServer/ns8-repomd/tree/main/dokuwiki/screenshots) directory with one ore more screenshots (optional)
 
-When the `create-module` has been completed, fire the `configure-module` action:
-```
-redis-cli LPUSH module/mymodule1/tasks '{"id": "'$(uuidgen)'", "action": "configure-module", "data": "some input\n"}'
-```
-
-This action should use the environment variable `$TCP_PORT` and the input data to configure the web application.
-
-The environment is stored also in a file, e.g. `/home/mymodule1/.config/state/environment`. It is safe to load it
-in Systemd unit files with the `EnvironmentFile=` directive.
-
-Every action executable step runs with `~/.config/state` as working directory.
-
-## Step 4: add traefik routes
-
-The web application is listening only to 127.0.0.1.  To make it reachable from other network hosts,
-a new traefik route is required.
-
-To get the TCP port number among the environment variables used by the `create-module` run:
-
-    redis-cli HGETALL module/mymodule1/environment
-
-
-Assuming the port is 20001, add a hostname-based HTTP route:
-```
-redis-cli LPUSH module/traefik1/tasks '{"id": "'$(uuidgen)'", "action": "set-route", "data": {"instance": "mymodule1", "url": "http://127.0.0.1:20001", "host": "mymodule.myhost.org", "lets_encrypt": true, "http2https": false}}'
-```
-
-The data field contains 3 parameters:
-- the service name
-- the bind URL, set the port accordingly using the `TCP_PORT` variable from `/home/mymodule1/.config/state/environment`
-- a fully qualified host name representing the virtualhost for the module
-
-
-To remove a host based route:
-```
-redis-cli LPUSH module/traefik1/tasks '{"id": "'$(uuidgen)'", "action": "delete-host", "data": "mymodule1\n"}'
-```
+When the PR has been merged, [repository metadata](https://github.com/NethServer/ns8-repomd/tree/repomd) will be automatically updated accordingly.
