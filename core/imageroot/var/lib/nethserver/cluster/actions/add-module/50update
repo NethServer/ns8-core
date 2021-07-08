@@ -79,6 +79,11 @@ if 'org.nethserver.authorizations' in inspect_labels:
 else:
     authorizations = []
 
+if 'org.nethserver.images' in inspect_labels:
+    extra_images = inspect_labels['org.nethserver.images'].split()
+else:
+    extra_images = []
+
 # Increment the module sequence for image_id (e.g. traefik => traefik1)
 module_id = image_id + str(rdb.incr(f'cluster/module_sequence/{image_id}'))
 
@@ -172,7 +177,9 @@ exit_code, output, error = agent.run_subtask(rdb,
     progress_range=(67,95),
     agent_prefix=f'module/{module_id}',
     action="create-module",
-    input_obj="",
+    input_obj={
+        'images': extra_images,
+    },
 )
 agent.assert_exp(exit_code == 0) # Ensure create-module is successful
 

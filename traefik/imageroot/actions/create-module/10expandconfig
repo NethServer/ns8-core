@@ -28,13 +28,6 @@ exec 1>&2
 LE_EMAIL=${LE_EMAIL:-root@$(hostname -f)}
 LOG_LEVEL=${LOG_LEVEL:-INFO}
 
-# Set action weights
-cat >&${AGENT_COMFD} <<EOF
-set-weight 10expandconfig 1
-set-weight 10pullimage 10
-set-weight 20systemd 2
-EOF
-
 cat >traefik.yaml <<EOF 
 defaultEntryPoints:
   - http

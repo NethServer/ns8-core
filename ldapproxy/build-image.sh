@@ -10,7 +10,8 @@ container=$(buildah from scratch)
 buildah add "${container}" imageroot /imageroot
 buildah add "${container}" ui /ui
 buildah config \
-    --label 'org.nethserver.tcp-ports-demand=1' \
+    --label='org.nethserver.tcp-ports-demand=1' \
+    --label='org.nethserver.images=docker.io/library/nginx:1.20-alpine' \
     --entrypoint=/ "${container}"
 buildah commit "${container}" "${repobase}/${reponame}"
 images+=("${repobase}/${reponame}")
