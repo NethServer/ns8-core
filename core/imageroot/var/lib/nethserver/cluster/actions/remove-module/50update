@@ -58,7 +58,6 @@ exit_code, output, error = agent.run_subtask(rdb,
     })
 agent.assert_exp(exit_code == 0)
 
-errors = 0
 exit_code, output, error = agent.run_subtask(rdb,
     agent_prefix=f'node/{node_id}',
     action='remove-module',
@@ -78,8 +77,5 @@ agent.assert_exp(rdb.execute_command('ACL', 'DELUSER', f'module/{module_id}') ==
 
 # Persist ACLs to disk
 agent.assert_exp(rdb.execute_command('ACL', 'SAVE') == 'OK')
-
-if errors > 0:
-    sys.exit(1)
 
 json.dump({}, fp=sys.stdout)
