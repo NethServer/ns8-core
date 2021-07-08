@@ -10,13 +10,15 @@ export default {
         return this.$t("error.network_error");
       }
 
-      switch (error.response.status) {
-        case 401:
-          return this.$t("error.401");
-        case 403:
-          return this.$t("error.403");
-        case 404:
-          return this.$t("error.404");
+      if (error.response) {
+        switch (error.response.status) {
+          case 401:
+            return this.$t("error.401");
+          case 403:
+            return this.$t("error.403");
+          case 404:
+            return this.$t("error.404");
+        }
       }
 
       return this.$t("error.generic_error");

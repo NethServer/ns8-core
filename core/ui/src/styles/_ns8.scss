@@ -64,6 +64,16 @@ a {
   margin-bottom: $spacing-05;
 }
 
+// used for secondary pages (e.g. where breadcrumb is shown)
+.page-subtitle {
+  margin-top: $spacing-06;
+  margin-bottom: $spacing-04;
+}
+
+.breadcrumb {
+  margin-top: $spacing-06;
+}
+
 .toolbar {
   display: flex;
   justify-content: flex-end;
@@ -80,6 +90,35 @@ a {
   margin-top: $spacing-05;
   margin-bottom: $spacing-05;
 }
+
+.empty-state-button {
+  margin-top: $spacing-05;
+}
+
+// status badge (enabled/disabled)
+.status-container {
+  display: flex;
+  align-items: center;
+}
+
+.status-container .enabled-badge {
+  height: 8px;
+  width: 8px;
+  background-color: $inverse-support-02;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: $spacing-03;
+}
+
+.status-container .disabled-badge {
+  height: 8px;
+  width: 8px;
+  background-color: $ui-04;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: $spacing-03;
+}
+// end status badge (enabled/disabled)
 
 // timestamp tooltip
 .timestamp button span {
@@ -324,6 +363,10 @@ a.bx--side-nav__link--current .bx--side-nav__link-text {
   -webkit-transition: background 0.11s cubic-bezier(0, 0, 0.38, 0.9);
   transition: background 0.11s cubic-bezier(0, 0, 0.38, 0.9);
   pointer-events: all;
+}
+
+.table-overflow-menu {
+  margin: 0 auto;
 }
 // end data table
 

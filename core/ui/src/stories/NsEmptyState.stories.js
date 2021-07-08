@@ -9,23 +9,34 @@ export default {
 const Template = (args, { argTypes }) => ({
   props: Object.keys(argTypes),
   components: { NsEmptyState },
-  template: '<NsEmptyState v-bind="$props"></NsEmptyState>',
+  template:
+    '<NsEmptyState v-bind="$props">\
+      <template v-slot:description>\
+        Try changing your search criteria\
+      </template>\
+    </NsEmptyState>',
 });
 
 export const Default = Template.bind({});
 Default.args = {
   title: "No search results",
-  description: "Try changing your search criteria",
 };
 
 const CustomPictogramTemplate = (args, { argTypes }) => ({
   props: Object.keys(argTypes),
   components: { NsEmptyState, Gear },
-  template: '<NsEmptyState v-bind="$props"><Gear /></NsEmptyState>',
+  template:
+    '<NsEmptyState v-bind="$props">\
+      <template v-slot:pictogram>\
+        <Gear />\
+      </template>\
+      <template v-slot:description>\
+        Try changing your search criteria\
+      </template>\
+    </NsEmptyState>',
 });
 
 export const CustomPictogram = CustomPictogramTemplate.bind({}); ////
 CustomPictogram.args = {
   title: "No search results",
-  description: "Try changing your search criteria",
 };

@@ -1,17 +1,18 @@
 <template>
   <div class="empty-state">
     <pictogram title="empty state" class="image">
-      <template v-if="hasDefaultSlot">
-        <slot></slot>
+      <template v-if="hasPictogramSlot">
+        <slot name="pictogram"></slot>
       </template>
       <template v-else>
         <ExclamationMark />
       </template>
     </pictogram>
     <h5 class="title">{{ title }}</h5>
-    <div v-if="description" class="description">
-      {{ description }}
-    </div>
+
+    <template v-if="hasDescriptionSlot">
+      <slot name="description"></slot>
+    </template>
   </div>
 </template>
 
@@ -27,11 +28,14 @@ export default {
       type: String,
       required: true,
     },
-    description: String,
+    // description: String, ////
   },
   computed: {
-    hasDefaultSlot() {
-      return !!this.$slots.default;
+    hasPictogramSlot() {
+      return !!this.$slots.pictogram;
+    },
+    hasDescriptionSlot() {
+      return !!this.$slots.description;
     },
   },
 };
@@ -50,10 +54,6 @@ export default {
 }
 
 .empty-state .title {
-  margin-bottom: $spacing-05;
-}
-
-.empty-state .description {
   margin-bottom: $spacing-05;
 }
 </style>

@@ -31,7 +31,8 @@ export default new Vuex.Store({
           notification.task &&
           !["completed", "aborted", "validation-failed"].includes(
             notification.task.status
-          )
+          ) &&
+          !notification.isHidden
       );
     },
     ongoingNotificationsCount: (state, getters) => {
@@ -45,7 +46,7 @@ export default new Vuex.Store({
             !["completed", "aborted", "validation-failed"].includes(
               notification.task.status
             )
-          )
+          ) && !notification.isHidden
       );
     },
     getNotificationById: (state) => (id) => {
@@ -169,7 +170,7 @@ export default new Vuex.Store({
 // helper functions
 
 function searchTask(taskId, tasks) {
-  console.log("searchTask()  taskid ", taskId, "tasks", tasks); ////
+  // console.log("searchTask()  taskid ", taskId, "tasks", tasks); ////
 
   if (!tasks.length) {
     return null;

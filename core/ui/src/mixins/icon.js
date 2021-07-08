@@ -14,6 +14,9 @@ import Settings20 from "@carbon/icons-vue/es/settings/20";
 import ChevronDown20 from "@carbon/icons-vue/es/chevron--down/20";
 import ChevronUp20 from "@carbon/icons-vue/es/chevron--up/20";
 import Information20 from "@carbon/icons-vue/es/information/20";
+import Application20 from "@carbon/icons-vue/es/application/20";
+import Add20 from "@carbon/icons-vue/es/add/20";
+import Rocket20 from "@carbon/icons-vue/es/rocket/20";
 
 export default {
   name: "IconService",
@@ -35,6 +38,9 @@ export default {
       ChevronDown20,
       ChevronUp20,
       Information20,
+      Application20,
+      Add20,
+      Rocket20,
     };
   },
 };

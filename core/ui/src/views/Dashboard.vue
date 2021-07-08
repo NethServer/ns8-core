@@ -1,14 +1,14 @@
 <template>
   <div class="bx--grid bx--grid--full-width">
     <div class="bx--row">
-      <div class="bx--col-lg-16">
-        <h1 class="page-title">Cluster dashboard</h1>
+      <div class="bx--col-lg-16 page-title">
+        <h2>Cluster dashboard</h2>
       </div>
     </div>
     <div class="bx--row">
       <div class="bx--col-lg-16">
         <cv-tile :light="true" class="content-tile">
-          <h2>Add module</h2>
+          <h4>Add module</h4>
           <cv-form @submit.prevent="addModule">
             <cv-text-input
               label="Module image"
@@ -205,7 +205,7 @@
       <div class="bx--col-md-4">
         <div class="mg-top-bottom">
           <cv-tile :light="true">
-            <h1>Test tile</h1>
+            <h2>Test tile</h2>
             <p>This is some tile content</p>
           </cv-tile>
         </div>
@@ -382,7 +382,6 @@ export default {
   created() {
     // register to validation events
     this.$root.$on("validationFailed", this.validationFailed);
-
     this.$root.$on("validationOk", this.validationOk);
   },
   beforeDestroy() {
@@ -431,17 +430,20 @@ export default {
         title: "Network error",
         description: "Cannot retrieve cluster info. Check your connection",
         type: "error",
-        app: "Cluster manager",
       };
       this.createNotification(notification);
     },
     async createAddModuleTask() {
+      const taskAction = "add-module";
+
       const res = await to(
         this.createTask({
-          action: "add-module",
+          action: taskAction,
           data: {
             image: "traefik",
             node: 1,
+          },
+          extra: {
             title: "Traefik installation",
             description:
               "Installing... very very very very very very very long description",
@@ -451,23 +453,19 @@ export default {
       const err = res[0];
 
       if (err) {
-        console.error(err);
-
-        const notification = {
-          title: "Cannot add module",
-          description: this.getErrorMessage(err),
-          type: "error",
-          app: "Cluster manager",
-        };
-        this.createNotification(notification);
+        this.createTaskErroNotification(
+          err,
+          this.$t("task.cannot_create_task", { action: taskAction })
+        );
         return;
       }
     },
     async createTestTask() {
+      const taskAction = "test-action-1";
       const res = await to(
         this.createTask({
-          action: "test-action-1",
-          data: {
+          action: taskAction,
+          extra: {
             title: "Test task execution",
             description: "Doing stuff...",
           },
@@ -476,15 +474,10 @@ export default {
       const err = res[0];
 
       if (err) {
-        console.error(err);
-
-        const notification = {
-          title: "Cannot create error module",
-          description: this.getErrorMessage(err),
-          type: "error",
-          app: "Cluster manager",
-        };
-        this.createNotification(notification);
+        this.createTaskErroNotification(
+          err,
+          this.$t("task.cannot_create_task", { action: taskAction })
+        );
         return;
       }
     },
@@ -493,22 +486,22 @@ export default {
         id: uuidv4(),
         title: "Task in progress",
         description: "Please wait...",
-        app: "Cluster manager",
         task: { context: { id: uuidv4() }, status: "running", progress: 0 },
       };
       this.createNotification(notification);
     },
     async addModule() {
       const module = this.q.moduleToAdd.trim();
-
-      console.log("adding module", module); ////
+      const taskAction = "add-module";
 
       const res = await to(
         this.createTask({
-          action: "add-module",
+          action: taskAction,
           data: {
             image: module,
             node: 1,
+          },
+          extra: {
             title: module + " installation",
             description: "Adding module...",
           },
@@ -517,16 +510,21 @@ export default {
       const err = res[0];
 
       if (err) {
-        console.error(err);
+        this.createTaskErroNotification(
+          err,
+          this.$t("task.cannot_create_task", { action: taskAction })
+        );
+        return;
       }
     },
     async testValidation() {
       this.clearErrors(this);
       this.loading.testValidation = true;
+      const taskAction = "validation-test";
 
       const res = await to(
         this.createTask({
-          action: "validation-test",
+          action: taskAction,
           data: {
             name: this.q.name,
             email: this.q.email,
@@ -539,7 +537,11 @@ export default {
       this.loading.testValidation = false;
 
       if (err) {
-        this.error.testValidation = this.getErrorMessage(err);
+        this.createTaskErroNotification(
+          err,
+          this.$t("task.cannot_create_task", { action: taskAction })
+        );
+        return;
       }
     },
     validationFailed(validationErrors) {

@@ -43,8 +43,11 @@
       <NsEmptyState
         v-if="!recentNotifications.length"
         :title="$t('notification.no_notifications')"
-        :description="$t('notification.no_notifications_description')"
-      />
+      >
+        <template #description>{{
+          $t("notification.no_notifications_description")
+        }}</template>
+      </NsEmptyState>
       <div
         v-else
         v-for="notification in recentNotifications"

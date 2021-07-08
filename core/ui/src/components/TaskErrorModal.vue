@@ -30,6 +30,7 @@
                 :moreText="$t('common.show_more')"
                 :lessText="$t('common.show_less')"
                 light
+                expanded
                 >{{ taskErrorToShow }}</NsCodeSnippet
               >
             </div>

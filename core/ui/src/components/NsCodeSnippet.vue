@@ -62,6 +62,7 @@ export default {
   components: { CvButton, CvIconButton, ChevronDown20 },
   mixins: [carbonPrefixMixin, themeMixin],
   props: {
+    expanded: { type: Boolean, default: false },
     wrapText: { type: Boolean, default: true },
     disabled: Boolean,
     feedbackAriaLabel: String,
@@ -88,7 +89,6 @@ export default {
   },
   data() {
     return {
-      expanded: false,
       Copy20, //// use mixin?
       justCopied: false,
     };

@@ -1,8 +1,8 @@
 <template>
   <div class="bx--grid bx--grid--full-width">
     <div class="bx--row">
-      <div class="bx--col-lg-16">
-        <h1 class="page-title">{{ $t("logs.title") }}</h1>
+      <div class="bx--col-lg-16 page-title">
+        <h2>{{ $t("logs.title") }}</h2>
       </div>
     </div>
     <div class="bx--row">
@@ -124,8 +124,11 @@
           <NsEmptyState
             v-if="!this.tableRows.length && !loading.auditLogs"
             :title="$t('logs.no_logs_found')"
-            :description="$t('logs.no_logs_found_description')"
-          />
+          >
+            <template #description>{{
+              $t("logs.no_logs_found_description")
+            }}</template>
+          </NsEmptyState>
           <div v-else>
             <cv-data-table-skeleton
               v-if="loading.auditLogs"

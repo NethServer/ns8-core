@@ -1,11 +1,12 @@
 import Vue from "vue";
 import VueRouter from "vue-router";
-import Dashboard from "../views/Dashboard.vue";
-import Login from "../views/Login.vue";
-import Tasks from "../views/Tasks.vue";
-import Applications from "../views/Applications.vue";
-import SoftwareCenter from "../views/SoftwareCenter.vue";
-import Logs from "../views/Logs.vue";
+import Dashboard from "../views/Dashboard";
+import Login from "../views/Login";
+import Settings from "../views/Settings";
+import Applications from "../views/Applications";
+import SoftwareCenter from "../views/SoftwareCenter";
+import Logs from "../views/Logs";
+import SettingsSoftwareRepository from "../views/SettingsSoftwareRepository";
 
 Vue.use(VueRouter);
 
@@ -22,9 +23,9 @@ const routes = [
     component: Login,
   },
   {
-    path: "/tasks",
-    name: "Tasks",
-    component: Tasks,
+    path: "/settings",
+    name: "Settings",
+    component: Settings,
   },
   {
     path: "/apps/:appId",
@@ -40,6 +41,11 @@ const routes = [
     path: "/logs",
     name: "Logs",
     component: Logs,
+  },
+  {
+    path: "/settings/software-repository",
+    name: "SettingsSoftwareRepository",
+    component: SettingsSoftwareRepository,
   },
 ];
 

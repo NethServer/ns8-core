@@ -2,10 +2,14 @@
   <div class="bx--grid bx--grid--full-width">
     <div class="bx--row">
       <div class="bx--col-lg-16 page-title title-and-toolbar">
-        <h1>{{ $t("software_center.title") }}</h1>
-        <NsButton kind="ghost" :icon="Settings20" @click="openSettings()">{{
-          $t("common.settings")
-        }}</NsButton>
+        <h2>{{ $t("software_center.title") }}</h2>
+        <NsButton
+          kind="ghost"
+          size="field"
+          :icon="Settings20"
+          @click="goToSettingsSoftwareRepository()"
+          >{{ $t("common.settings") }}</NsButton
+        >
       </div>
     </div>
     <div class="bx--row">
@@ -56,23 +60,31 @@
           </cv-content-switcher>
 
           <section v-if="['all', 'installed', 'updates'].includes(q.view)">
-            <cv-content-switcher-content owner-id="all">
+            <div v-if="csbAllSelected">
               <AppList
                 v-if="allApps.length"
                 :apps="allApps"
                 :isUpdatingAll="isUpdatingAll"
               />
-              <NsEmptyState v-else :title="$t('software_center.no_apps')" />
-            </cv-content-switcher-content>
-            <cv-content-switcher-content owner-id="installed">
+              <NsEmptyState
+                v-else
+                :title="$t('software_center.no_apps')"
+                key="all-empty-state"
+              />
+            </div>
+            <div v-if="csbInstalledSelected">
               <AppList
                 v-if="installedApps.length"
                 :apps="installedApps"
                 :isUpdatingAll="isUpdatingAll"
               />
-              <NsEmptyState v-else :title="$t('software_center.no_apps')" />
-            </cv-content-switcher-content>
-            <cv-content-switcher-content owner-id="updates">
+              <NsEmptyState
+                v-else
+                :title="$t('software_center.no_apps')"
+                key="installed-empty-state"
+              />
+            </div>
+            <div v-if="csbUpdatesSelected">
               <!-- update all -->
               <NsInlineNotification
                 v-if="updateAllAppsTimeout"
@@ -102,10 +114,13 @@
               <NsEmptyState
                 v-else
                 :title="$t('software_center.system_up_to_date')"
+                key="updates-empty-state"
               >
-                <Love />
+                <template #pictogram>
+                  <Love />
+                </template>
               </NsEmptyState>
-            </cv-content-switcher-content>
+            </div>
           </section>
           <!-- search results -->
           <div v-if="q.view === 'search'">
@@ -120,8 +135,12 @@
             <NsEmptyState
               v-else
               :title="$t('software_center.no_apps_found')"
-              :description="$t('software_center.no_apps_found_description')"
-            />
+              key="search-empty-state"
+            >
+              <template #description>
+                {{ $t("software_center.no_apps_found_description") }}
+              </template>
+            </NsEmptyState>
           </div>
         </cv-tile>
       </div>
@@ -137,6 +156,9 @@ import QueryParamService from "@/mixins/queryParam";
 import NsEmptyState from "@/components/NsEmptyState";
 import Love from "../components/pictograms/Love";
 import NsButton from "@/components/NsButton";
+import to from "await-to-js";
+import UtilService from "@/mixins/util";
+import TaskService from "@/mixins/task";
 
 let nethserver = window.nethserver;
 
@@ -149,7 +171,7 @@ export default {
     Love,
     NsButton,
   },
-  mixins: [IconService, QueryParamService],
+  mixins: [IconService, QueryParamService, UtilService, TaskService],
   data() {
     return {
       q: {
@@ -364,6 +386,13 @@ export default {
       return this.updateAllAppsTimeout > 0;
     },
   },
+  watch: {
+    "q.search": function () {
+      if (!this.q.search) {
+        this.q.view = "all";
+      }
+    },
+  },
   beforeRouteEnter(to, from, next) {
     next((vm) => {
       console.log("beforeRouteEnter", to, from); ////
@@ -378,16 +407,43 @@ export default {
   },
   created() {
     //// call api
-    this.searchResults = this.allApps;
+    // this.upgradableApps = [];
+    // this.installedApps = [];
+    // this.searchResults = this.allApps; ////
     this.installedApps = this.allApps.filter((app) => {
       return app.installed.length;
     });
     this.upgradableApps = this.allApps.filter((app) => {
       return app.updates.length;
     });
+
+    this.listModules();
   },
   methods: {
+    async listModules() {
+      const taskAction = "list-modules";
+
+      const res = await to(
+        this.createTask({
+          action: taskAction,
+          extra: {
+            isNotificationHidden: true,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        this.createTaskErroNotification(
+          err,
+          this.$t("task.cannot_create_task", { action: taskAction })
+        );
+        return;
+      }
+    },
     searchApp(query) {
+      console.log("searchApp", query); ////
+
       // clean query
       const cleanRegex = /[^a-zA-Z0-9]/g;
       const queryText = query.replace(cleanRegex, "");
@@ -454,8 +510,8 @@ export default {
     goToUpdates() {
       this.$router.replace("/software-center?view=updates");
     },
-    openSettings() {
-      console.log("openSettings"); ////
+    goToSettingsSoftwareRepository() {
+      this.$router.push("/settings/software-repository");
     },
     updateAll() {
       console.log("updateAll"); ////

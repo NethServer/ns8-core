@@ -17,7 +17,12 @@
     "settings": "Settings",
     "cancel": "Cancel",
     "node": "Node",
-    "version": "Version"
+    "version": "Version",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "edit": "Edit",
+    "delete": "Delete",
+    "required": "Required"
   },
   "error": {
     "error": "Error",
@@ -71,7 +76,8 @@
     "subtask_pending": "Subtask <strong>{action}</strong> is pending",
     "subtask_failed_validation": "Subtask <strong>{action}</strong> failed validation",
     "completed": "Completed",
-    "configure": "Configure"
+    "configure": "Configure",
+    "cannot_create_task": "Cannot create task {action}"
   },
   "network": {
     "title": "Network"
@@ -83,7 +89,21 @@
     "title": "Backup"
   },
   "settings": {
-    "title": "Settings"
+    "title": "Settings",
+    "sw_repositories": "Software repositories"
+  },
+  "settings_sw_repositories": {
+    "no_sw_repositories": "No software repositories",
+    "no_sw_repositories_description": "You can create one by clicking on the button below",
+    "create_repository": "Create repository",
+    "name": "Name",
+    "url": "URL",
+    "status": "Status",
+    "testing": "Testing",
+    "edit_repository": "Edit repository",
+    "repository_same_name_already_exists": "A repository with this name already exists",
+    "repository_same_url_already_exists": "A repository with this URL already exists",
+    "repository_not_accessible": "Repository not accessible"
   },
   "software_center": {
     "title": "Software center",
@@ -149,9 +169,5 @@
     "no_logs_found": "No logs found",
     "no_logs_found_description": "Try changing your search filters",
     "invalid_interval": "Invalid time interval"
-  },
-  "validation": {
-    "name_is_empty": "Name is empty ////",
-    "email_is_empty": "Email is empty ////"
   }
 }

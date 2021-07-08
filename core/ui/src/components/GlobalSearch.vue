@@ -10,8 +10,11 @@
       <NsEmptyState
         v-if="!results.length"
         :title="$t('shell.no_search_results')"
-        :description="$t('shell.no_search_results_description')"
-      />
+      >
+        <template #description>
+          {{ $t("shell.no_search_results_description") }}</template
+        >
+      </NsEmptyState>
       <cv-structured-list v-else>
         <template slot="items">
           <cv-structured-list-item
