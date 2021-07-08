@@ -36,5 +36,5 @@ name = request['name']
 # check if the repository exists
 if not rdb.hgetall(f'cluster/repository/{name}'):
     agent.set_status('validation-failed')
-    json.dump({'field':'name','parameter':'name','value':name,'error':'repository_not_found'}, fp=sys.stdout)
+    json.dump([{'field':'name','parameter':'name','value':name,'error':'repository_not_found'}], fp=sys.stdout)
     sys.exit(2)

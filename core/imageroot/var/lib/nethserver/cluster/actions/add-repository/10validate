@@ -28,6 +28,8 @@ import traceback
 import jsonschema 
 import urllib.request
 
+errors = []
+
 request = json.load(sys.stdin)
 rdb = agent.redis_connect(privileged=True)
 
@@ -36,16 +38,17 @@ url = request['url']
 
 # check for duplicate names
 if rdb.hgetall(f'cluster/repository/{name}'):
-    agent.set_status('validation-failed')
-    json.dump({'field':'name','parameter':'name','value':name,'error':'repository_same_name_already_exists'}, fp=sys.stdout)
-    sys.exit(2)
+    errors.append({'field':'name','parameter':'name','value':name,'error':'repository_same_name_already_exists'})
 
 # check for duplicate urls
 for m in rdb.scan_iter('cluster/repository/*'):
     if rdb.hget(m, 'url') == url:
-        agent.set_status('validation-failed')
-        json.dump({'field':'url','parameter':'url','value':url,'error':'repository_same_url_already_exists'}, fp=sys.stdout)
-        sys.exit(2)
+        errors.append({'field':'url','parameter':'url','value':url,'error':'repository_same_url_already_exists'})
+
+if errors:
+    agent.set_status('validation-failed')
+    json.dump(errors, fp=sys.stdout)
+    sys.exit(2)
 
 try:
     url = urllib.parse.urljoin(url, "repodata.json")
@@ -53,7 +56,7 @@ try:
         # fail if response is not valid
         if req.status != 200:
             agent.set_status('validation-failed')
-            json.dump({'field':'url','parameter':'url','value':url,'error':'repodata_not_found'}, fp=sys.stdout)
+            json.dump([{'field':'url','parameter':'url','value':url,'error':'repodata_not_found'}], fp=sys.stdout)
             sys.exit(2)
 
         # validate repodata against json schema
@@ -61,7 +64,7 @@ try:
             repodata = json.loads(req.read().decode())
         except:
             agent.set_status('validation-failed')
-            json.dump({'field':'url','parameter':'url','value':url,'error':'repodata_is_not_json'}, fp=sys.stdout)
+            json.dump([{'field':'url','parameter':'url','value':url,'error':'repodata_is_not_json'}], fp=sys.stdout)
             sys.exit(2)
 
         with open("/var/lib/nethserver/cluster/repodata-schema.json", 'r') as fp:
@@ -71,13 +74,13 @@ try:
             jsonschema.validate(instance=repodata, schema=schema)
         except:
             agent.set_status('validation-failed')
-            json.dump({'field':'url','parameter':'url','value':url,'error':'repodata_is_not_valid_metadata'}, fp=sys.stdout)
+            json.dump([{'field':'url','parameter':'url','value':url,'error':'repodata_is_not_valid_metadata'}], fp=sys.stdout)
             sys.exit(2)
 
 except:
     # just fail if the URL is not reachable
     agent.set_status('validation-failed')
-    json.dump({'field':'url','parameter':'url','value':url,'error':'repository_not_accessible'}, fp=sys.stdout)
+    json.dump([{'field':'url','parameter':'url','value':url,'error':'repository_not_accessible'}], fp=sys.stdout)
     traceback.print_exc(file=sys.stderr)
     sys.exit(2)
 
