@@ -199,7 +199,7 @@ A. To join this node to an already existing cluster run:
 
    For instance:
 
-      join-cluster https://cluster.example.com eyJhbGc...NiIsInR5c
+      source /etc/profile.d/nethserver.sh && join-cluster https://cluster.example.com eyJhbGc...NiIsInR5c
 
 B. To initialize this node as a cluster leader run:
 
@@ -207,6 +207,6 @@ B. To initialize this node as a cluster leader run:
 
    For instance:
 
-      create-cluster $(hostname -f):55820 10.5.4.0/24 Nethesis,1234
+      source /etc/profile.d/nethserver.sh && create-cluster $(hostname -f):55820 10.5.4.0/24 Nethesis,1234
 
 EOF
