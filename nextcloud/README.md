@@ -16,16 +16,6 @@ add-module nextcloud 1
 The output of the command will return the instance name.
 Output example:
 ```
-Trying to pull ghcr.io/nethserver/nextcloud:latest...
-Getting image source signatures
-Copying blob sha256:d08608c7bf4e48259ce20524ad0e4285e4e9576a223890ab6092c55d9a03c081
-Copying config sha256:9b4a5d22259145875b18c00daf9bf344f57d5acb39b46dd5fa4e89d73e26d6d9
-Writing manifest to image destination
-Storing signatures
-9b4a5d22259145875b18c00daf9bf344f57d5acb39b46dd5fa4e89d73e26d6d9
-Extracting container filesystem ui to /var/lib/nethserver/cluster/ui/apps/nextcloud1
-ui/index.html
-4234e1db74f05d24beb04feab8038d4dfb1af123abe29a196e1d390b72cb68e0
 {"module_id": "nextcloud1", "image_name": "Dokuwiki", "image_url": "ghcr.io/nethserver/nextcloud:latest"}
 ```
 
@@ -64,6 +54,14 @@ Example:
 ```
 redis-cli LPUSH module/traefik1/tasks '{"id": "'$(uuidgen)'", "action": "set-route", "data": {"instance": "nextcloud1", "url": "http://127.0.0.1:"'${TCP_PORT}'", "host": "mywiki.myhost.org", "lets_encrypt": true, "http2https": true} }'
 ```
+
+To execute `occ` command inside an instance:
+```
+ssh nextcloud1@localhost
+podman exec -ti --user www-data nextcloud-app php occ
+```
+
+
 
 ## Uninstall
 
