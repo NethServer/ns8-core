@@ -1,0 +1,23 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "create-module input",
+    "$id": "http://schema.nethserver.org/agent/create-module-input.json",
+    "description": "Input schema of the basic create-module action",
+    "examples": [
+        {
+            "images": [
+                "docker.io/traefik:v2.4"
+            ]
+        }
+    ],
+    "type": "object",
+    "properties": {
+        "images": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "uniqueItems": true
+        }
+    }
+}

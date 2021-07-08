@@ -119,8 +119,8 @@ def set_status(value):
 def set_progress(value):
     __action("set-progress", value)
 
-def set_weight(value):
-    __action("set-weight", value)
+def set_weight(step_name, weight):
+    __action("set-weight", step_name, str(weight))
 
 def slurp_file(file_name):
     with open(file_name) as f:

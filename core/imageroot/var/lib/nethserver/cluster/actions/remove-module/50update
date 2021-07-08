@@ -56,7 +56,7 @@ exit_code, output, error = agent.run_subtask(rdb,
         "module_id": module_id,
         "preserve_data": preserve_data,
     })
-agent.assert_exp(exit_code == 0 or exit_code == 8) # The module does not implement a "destroy" action
+agent.assert_exp(exit_code == 0)
 
 errors = 0
 exit_code, output, error = agent.run_subtask(rdb,
