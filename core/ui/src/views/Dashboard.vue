@@ -444,7 +444,7 @@ export default {
             node: 1,
           },
           extra: {
-            title: "Traefik installation",
+            title: this.$t("action." + taskAction),
             description:
               "Installing... very very very very very very very long description",
           },
@@ -466,7 +466,7 @@ export default {
         this.createTask({
           action: taskAction,
           extra: {
-            title: "Test task execution",
+            title: this.$t("action." + taskAction),
             description: "Doing stuff...",
           },
         })
@@ -502,7 +502,7 @@ export default {
             node: 1,
           },
           extra: {
-            title: module + " installation",
+            title: this.$t("action." + taskAction),
             description: "Adding module...",
           },
         })
@@ -528,7 +528,7 @@ export default {
           data: {
             name: this.q.name,
             email: this.q.email,
-            title: "Task with validation",
+            title: this.$t("action." + taskAction),
             description: "Doing stuff...",
           },
         })

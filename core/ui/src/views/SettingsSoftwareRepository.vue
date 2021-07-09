@@ -24,6 +24,23 @@
       </div>
       <div class="bx--row">
         <div class="bx--col-lg-16">
+          <!-- repository being deleted -->
+          <NsInlineNotification
+            v-if="repoToDelete"
+            kind="warning"
+            :title="
+              $t('settings_sw_repositories.repository_deleted', {
+                repo: repoToDelete.name,
+              })
+            "
+            :actionLabel="$t('common.undo')"
+            @action="cancelDeleteRepository()"
+            :showCloseButton="false"
+          />
+        </div>
+      </div>
+      <div class="bx--row">
+        <div class="bx--col-lg-16">
           <cv-tile :light="true" class="content-tile">
             <div v-if="!tableRows.length && !loading.repositories">
               <NsEmptyState
@@ -116,7 +133,7 @@
                         >
                         <cv-overflow-menu-item
                           danger
-                          @click="deleteRepository(row)"
+                          @click="willDeleteRepository(row)"
                           >{{ $t("common.delete") }}</cv-overflow-menu-item
                         >
                       </cv-overflow-menu>
@@ -135,6 +152,7 @@
       :visible="q.isShownCreateRepoModal"
       @modal-hidden="q.isShownCreateRepoModal = false"
       @primary-click="createRepository"
+      :primary-button-disabled="loading.createRepository"
     >
       <template slot="title">{{
         $t("settings_sw_repositories.create_repository")
@@ -184,6 +202,7 @@
       :visible="q.isShownEditRepoModal"
       @modal-hidden="q.isShownEditRepoModal = false"
       @primary-click="editRepository"
+      :primary-button-disabled="loading.editRepository"
     >
       <template slot="title">{{
         $t("settings_sw_repositories.edit_repository")
@@ -241,12 +260,13 @@ import QueryParamService from "@/mixins/queryParam";
 import NsEmptyState from "@/components/NsEmptyState";
 import NsButton from "@/components/NsButton";
 import DataTableService from "../mixins/dataTable";
+import NsInlineNotification from "../components/NsInlineNotification.vue";
 
 let nethserver = window.nethserver;
 
 export default {
   name: "SettingsSoftwareRepository",
-  components: { NsEmptyState, NsButton },
+  components: { NsEmptyState, NsButton, NsInlineNotification },
   mixins: [
     TaskService,
     UtilService,
@@ -270,8 +290,12 @@ export default {
       },
       tableColumns: ["name", "url", "status", "testing"],
       tableRows: [],
+      repoToDelete: null,
+      deleteRepoDelay: 5000, // you have 5 seconds to undo repository deletion
       loading: {
         repositories: true,
+        createRepository: false,
+        editRepository: false,
       },
       error: {
         name: "",
@@ -288,56 +312,38 @@ export default {
   },
   beforeRouteEnter(to, from, next) {
     next((vm) => {
-      console.log("beforeRouteEnter", to, from); ////
       nethserver.watchQueryData(vm);
       vm.queryParamsToData(vm, to.query);
     });
   },
   beforeRouteUpdate(to, from, next) {
-    console.log("beforeRouteUpdate", to, from); ////
     this.queryParamsToData(this, to.query);
     next();
   },
   created() {
     // register to events
-    this.$root.$on("validationFailed", this.validationFailed); ////
-
-    // this.$root.$on("validationOk", this.validationOk);
+    this.$root.$on("validationFailed", this.validationFailed);
 
     this.listRepositories();
   },
-  // beforeDestroy() { ////
-  //   // remove event listeners
-  //   this.$root.$off("validationFailed");
-  //   this.$root.$off("validationOk");
-  // },
+  beforeDestroy() {
+    // unregister events
+    this.$root.$off("validationFailed");
+  },
   methods: {
     validationFailed(validationErrors) {
-      //// remove
-      console.log("validationErrors", validationErrors); ////
+      // enable "Create repository" button
+      this.loading.createRepository = false;
 
-      //// remove, it's always an array
-      // if (Array.isArray(validationErrors)) {
-      // list of errors
+      // enable "Edit repository" button
+      this.loading.editRepository = false;
+
       for (const validationError of validationErrors) {
         const param = validationError.parameter;
         // set i18n error message
         this.error[param] = "settings_sw_repositories." + validationError.error;
       }
-      // } else { ////
-      //   // single error
-      //   const param = validationErrors.parameter;
-      //   // set i18n error message
-      //   this.error[param] =
-      //     "settings_sw_repositories." + validationErrors.error;
-      // }
     },
-    // validationOk(task) {
-    //   //// remove
-    //   console.log("validationOk, task", task); ////
-    //   this.q.isShownCreateRepoModal = false;
-    //   this.q.isShownEditRepoModal = false;
-    // },
     showCreateRepoModal() {
       this.clearErrors(this);
       this.q.isShownCreateRepoModal = true;
@@ -351,6 +357,7 @@ export default {
       this.q.isShownEditRepoModal = true;
     },
     async listRepositories() {
+      this.loading.repositories = true;
       const taskAction = "list-repositories";
 
       // register to task completion
@@ -360,6 +367,7 @@ export default {
         this.createTask({
           action: taskAction,
           extra: {
+            title: this.$t("action." + taskAction),
             isNotificationHidden: true,
           },
         })
@@ -379,15 +387,6 @@ export default {
       this.$root.$off("list-repositories-completed");
 
       this.tableRows = taskResult.output;
-
-      // //// remove
-      // this.tableRows.push({
-      //   name: "Afsdafds",
-      //   url: "asdfsdlfjsdf",
-      //   status: false,
-      //   testing: false,
-      // });
-
       this.loading.repositories = false;
     },
     validateNewRepository() {
@@ -407,14 +406,12 @@ export default {
       return isValidationOk;
     },
     async createRepository() {
-      console.log("createRepository"); ////
+      this.loading.createRepository = true;
 
       if (!this.validateNewRepository()) {
+        this.loading.createRepository = false;
         return;
       }
-
-      ////
-      console.log("create repo", this.q); ////
 
       const taskAction = "add-repository";
 
@@ -437,6 +434,7 @@ export default {
             testing: this.q.isNewRepoTesting,
           },
           extra: {
+            title: this.$t("action." + taskAction),
             isNotificationHidden: true,
           },
         })
@@ -451,28 +449,29 @@ export default {
         return;
       }
     },
-    addRepositoryValidationOk(task) {
-      console.log("addRepositoryValidationOk", task); ////
-
+    addRepositoryValidationOk() {
       // hide modal after validation
       this.q.isShownCreateRepoModal = false;
+
+      // enable "Create repository" button
+      this.loading.createRepository = false;
 
       // unregister from event
       this.$root.$off("add-repository-validation-ok");
     },
-    alterRepositoryValidationOk(task) {
-      console.log("editRepositoryValidationOk", task); ////
-
+    alterRepositoryValidationOk() {
       // hide modal after validation
       this.q.isShownEditRepoModal = false;
+
+      // enable "Edit repository" button
+      this.loading.editRepository = false;
 
       // unregister from event
       this.$root.$off("alter-repository-validation-ok");
     },
     async editRepository() {
-      console.log("editRepository"); ////
-
-      const taskAction = "alter-repository"; ////
+      this.loading.editRepository = true;
+      const taskAction = "alter-repository";
 
       // register to task validation
       this.$root.$on(
@@ -492,6 +491,7 @@ export default {
             testing: this.q.isEditRepoEnabled,
           },
           extra: {
+            title: this.$t("action." + taskAction),
             isNotificationHidden: true,
           },
         })
@@ -507,20 +507,28 @@ export default {
       }
     },
     addRepositoriesCompleted() {
-      console.log("alterRepositoryCompleted"); ////
-
       this.$root.$off("add-repository-completed");
       this.listRepositories();
     },
     alterRepositoryCompleted() {
-      console.log("alterRepositoryCompleted"); ////
-
       this.$root.$off("alter-repository-completed");
       this.listRepositories();
     },
-    async deleteRepository(repo) {
-      console.log("deleteRepository", repo); ////
+    willDeleteRepository(repo) {
+      const timeout = setTimeout(() => {
+        this.deleteRepository(repo);
+        this.repoToDelete = null;
+      }, this.deleteRepoDelay);
 
+      repo.timeout = timeout;
+      this.repoToDelete = repo;
+
+      // remove repo from table
+      this.tableRows = this.tableRows.filter((r) => {
+        return r.name != repo.name;
+      });
+    },
+    async deleteRepository(repo) {
       const taskAction = "remove-repository"; ////
 
       // register to task completion
@@ -533,6 +541,7 @@ export default {
             name: repo.name,
           },
           extra: {
+            title: this.$t("action." + taskAction),
             isNotificationHidden: true,
           },
         })
@@ -548,9 +557,12 @@ export default {
       }
     },
     removeRepositoryCompleted() {
-      console.log("removeRepositoryCompleted"); ////
-
       this.$root.$off("remove-repository-completed");
+      this.listRepositories();
+    },
+    cancelDeleteRepository() {
+      clearTimeout(this.repoToDelete.timeout);
+      this.repoToDelete = null;
       this.listRepositories();
     },
   },

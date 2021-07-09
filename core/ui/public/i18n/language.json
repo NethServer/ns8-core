@@ -16,6 +16,7 @@
     "clear_search": "Clear search",
     "settings": "Settings",
     "cancel": "Cancel",
+    "undo": "Undo",
     "node": "Node",
     "version": "Version",
     "enabled": "Enabled",
@@ -79,6 +80,14 @@
     "configure": "Configure",
     "cannot_create_task": "Cannot create task {action}"
   },
+  "action": {
+    "add-module": "Add module",
+    "list-repositories": "List repositories",
+    "add-repository": "Add repository",
+    "alter-repository": "Alter repository",
+    "remove-repository": "Remove repository",
+    "list-modules": "List modules"
+  },
   "network": {
     "title": "Network"
   },
@@ -103,7 +112,8 @@
     "edit_repository": "Edit repository",
     "repository_same_name_already_exists": "A repository with this name already exists",
     "repository_same_url_already_exists": "A repository with this URL already exists",
-    "repository_not_accessible": "Repository not accessible"
+    "repository_not_accessible": "Repository not accessible",
+    "repository_deleted": "Repository {repo} deleted"
   },
   "software_center": {
     "title": "Software center",

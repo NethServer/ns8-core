@@ -27,6 +27,10 @@
           @action="goToUpdates"
           :showCloseButton="false"
         />
+      </div>
+    </div>
+    <div>
+      <div>
         <cv-tile :light="true" class="content-tile">
           <cv-search
             :label="$t('software_center.search_placeholder')"
@@ -102,7 +106,7 @@
                 <NsButton
                   kind="primary"
                   :icon="Upgrade20"
-                  @click="updateAll()"
+                  @click="willUpdateAll()"
                   >{{ $t("software_center.update_all") }}</NsButton
                 >
               </div>
@@ -185,7 +189,7 @@ export default {
       installedApps: [],
       upgradableApps: [],
       updateAllAppsTimeout: 0,
-      updateAllAppsDuration: 10000, // you have 10 seconds to cancel "Update all"
+      updateAllAppsDelay: 5000, // you have 5 seconds to cancel "Update all"
       //// remove
       allApps: [
         {
@@ -427,6 +431,7 @@ export default {
         this.createTask({
           action: taskAction,
           extra: {
+            title: this.$t("action." + taskAction),
             isNotificationHidden: true,
           },
         })
@@ -513,12 +518,12 @@ export default {
     goToSettingsSoftwareRepository() {
       this.$router.push("/settings/software-repository");
     },
-    updateAll() {
-      console.log("updateAll"); ////
+    willUpdateAll() {
+      console.log("willUpdateAll"); ////
       this.updateAllAppsTimeout = setTimeout(() => {
         console.log("updating all!"); ////
         this.updateAllAppsTimeout = 0;
-      }, this.updateAllAppsDuration);
+      }, this.updateAllAppsDelay);
     },
     cancelUpdateAll() {
       console.log("cancelUpdateAllApps"); ////

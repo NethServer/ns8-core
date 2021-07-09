@@ -14,14 +14,6 @@ a {
   cursor: pointer;
 }
 
-.bx--link {
-  text-decoration: underline;
-}
-
-.bx--toast-notification a {
-  text-decoration: underline;
-}
-
 .bx--link:hover {
   color: $link-02;
 }
@@ -61,13 +53,13 @@ a {
 
 .page-title {
   margin-top: $spacing-07;
-  margin-bottom: $spacing-05;
+  margin-bottom: $spacing-06;
 }
 
 // used for secondary pages (e.g. where breadcrumb is shown)
 .page-subtitle {
   margin-top: $spacing-06;
-  margin-bottom: $spacing-04;
+  margin-bottom: $spacing-05;
 }
 
 .breadcrumb {
@@ -87,7 +79,6 @@ a {
 }
 
 .content-tile {
-  margin-top: $spacing-05;
   margin-bottom: $spacing-05;
 }
 

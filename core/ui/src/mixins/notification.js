@@ -137,7 +137,7 @@ export default {
       this.setIsNotificationDrawerShownInStore(false);
     },
     async handleProgressTaskMessage(taskPath, taskId, payload) {
-      const [err, response] = await to(this.getTaskContext(taskPath));
+      const [err, contextResponse] = await to(this.getTaskContext(taskPath));
 
       if (err) {
         console.error("error retrieving task info", err);
@@ -149,7 +149,7 @@ export default {
 
       if (["completed", "aborted", "validation-failed"].includes(taskStatus)) {
         // get output and error
-        const [err, response] = await to(this.getTaskStatus(taskPath));
+        const [err, statusResponse] = await to(this.getTaskStatus(taskPath));
 
         if (err) {
           const notification = {
@@ -160,7 +160,7 @@ export default {
           this.createNotification(notification);
         }
 
-        taskResult = response.data.data;
+        taskResult = statusResponse.data.data;
 
         if (taskStatus === "validation-failed") {
           // show validation errors
@@ -168,8 +168,7 @@ export default {
         }
       }
 
-      //// RENAME RESPONSE VARIABLE
-      const taskContext = response.data.data.context;
+      const taskContext = contextResponse.data.data.context;
 
       console.log("taskContext", taskContext); ////
 

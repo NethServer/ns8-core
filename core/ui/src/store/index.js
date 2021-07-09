@@ -45,8 +45,13 @@ export default new Vuex.Store({
             notification.task &&
             !["completed", "aborted", "validation-failed"].includes(
               notification.task.status
-            )
-          ) && !notification.isHidden
+            ) &&
+            !notification.isHidden
+          ) &&
+          (!notification.task ||
+            !["completed", "pending", "running"].includes(
+              notification.task.status
+            ))
       );
     },
     getNotificationById: (state) => (id) => {
