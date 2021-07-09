@@ -1,6 +1,21 @@
 # samba
 
-## new-domain
+The Samba module allows to install one or more AD domains in a NS8
+cluster. An AD domain (or realm, in Kerberos terms), can have one or more
+domain controllers (DCs). Provisioning a new domain and joining an
+additional domain controller to an existing domain are both implemented by
+the same action: `provision-domain`.
+
+Do not assign the IP address of a untrusted network! The IP address
+assigned to Samba DC exposes internal services that are not designed to be
+exposed publicly. The IP address is added to the cluster VPN routes, so
+DCs can see each other and perform replication.
+
+The LDAP service of Samba DCs does not allow clear-text LDAP binds: enable TLS or
+use Kerberos/GSSAPI authentication. The default node Ldapproxy instance is configured
+to enable TLS automatically.
+
+## Provision
 
 Install & provision a new domain:
 
@@ -20,12 +35,15 @@ Install & provision a new domain:
     }
     EOF
 
-## Configure ldapproxy
+Further Samba instances for the same `realm` are **joined** to the existing domain.
 
-When a Samba module is installed for the first time on a node, it binds itself with the
-node default Ldapproxy instance.
+## Configure Ldapproxy
 
-This command binds `ldapproxy1` with the new `samba1` local account provider LDAP backend.
+When a Samba module is provisioned for the first time on a node, it checks if the
+node default Ldapproxy instance is not bound to another account provider. If so,
+Samba invokes the `set-backend` on Ldapproxy automatically.
+
+This command manually binds `ldapproxy1` with the `samba2` local account provider LDAP backend.
 TLS is required by Samba (clear-text LDAP binds are not allowed). 
 
     http :8080/api/module/ldapproxy1/tasks "Authorization: Bearer $TOKEN" <<EOF
@@ -36,7 +54,8 @@ TLS is required by Samba (clear-text LDAP binds are not allowed).
             "schema": "ad",
             "host": "127.0.0.1",
             "port": 636,
-            "tls": true
+            "tls": true,
+            "tls_verify": false
         }
     }
     EOF
@@ -52,22 +71,3 @@ TLS is required by Samba (clear-text LDAP binds are not allowed).
     # In alpine:
     apk add openldap-clients
     ldapsearch -D 'AD\administrator' -w Nethesis,1234 -H ldap://127.0.0.1:20000 -s sub -b 'DC=ad,DC=dp,DC=nethserver,DC=net' samaccountname=administrator
-
-## join-domain
-
-Join an additional DC (installed on another node):
-
-1. Complete the provisioning of the first instance
-
-2. Proceed with:
-
-       http :8080/api/module/samba2/tasks "Authorization: Bearer $TOKEN" <<EOF
-       {
-           "action":"provision-domain",
-           "data":{
-               "adminuser":"administrator",
-               "adminpass":"Nethesis,1234",
-               "ipaddress":"10.134.0.56"
-           }
-       }
-       EOF
