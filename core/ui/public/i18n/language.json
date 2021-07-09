@@ -118,7 +118,7 @@
   "software_center": {
     "title": "Software center",
     "search_placeholder": "Start typing to search apps...",
-    "software_updates": "Software updates",
+    "software_updates": "Updates",
     "you_have_updates": "You have {numUpdates} app to update | You have {numUpdates} apps to update",
     "all": "All",
     "installed": "Installed",
@@ -149,6 +149,11 @@
     "source_code": "Source code",
     "source_package": "Source package",
     "authors": "Author | Authors",
+    "app_installation": "{app} installation",
+    "choose_node_for_installation": "Select the node where {app} will be installed",
+    "about_to_install_app": "{app} will be installed on the system",
+    "cannot_retrieve_cluster_nodes": "Cannot retrieve cluster nodes",
+    "installing_app_on_node": "Installing {app} on node {node}",
     "app_categories": {
       "collaboration": "Collaboration",
       "system_administration": "System administration",

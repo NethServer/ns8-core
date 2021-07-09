@@ -86,30 +86,44 @@ a {
   margin-top: $spacing-05;
 }
 
-// status badge (enabled/disabled)
-.status-container {
+// status badges
+.badge-container {
   display: flex;
   align-items: center;
 }
 
-.status-container .enabled-badge {
+.badge-container .green-badge {
   height: 8px;
   width: 8px;
   background-color: $inverse-support-02;
   border-radius: 50%;
   display: inline-block;
-  margin-right: $spacing-03;
 }
 
-.status-container .disabled-badge {
+.badge-container .gray-badge {
   height: 8px;
   width: 8px;
   background-color: $ui-04;
   border-radius: 50%;
   display: inline-block;
+}
+
+.badge-container .yellow-badge {
+  height: 8px;
+  width: 8px;
+  background-color: $support-03;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.left-badge {
   margin-right: $spacing-03;
 }
-// end status badge (enabled/disabled)
+
+.right-badge {
+  margin-left: $spacing-04;
+}
+// end status badges
 
 // timestamp tooltip
 .timestamp button span {
@@ -271,10 +285,11 @@ a.bx--side-nav__link--current .bx--side-nav__link-text {
 }
 // end app drawer
 
-.status a.bx--header__menu-item[aria-current="page"]::after,
-.bx--header__menu-item--current::after {
-  border-bottom: none;
-}
+//// ??
+// .status a.bx--header__menu-item[aria-current="page"]::after,
+// .bx--header__menu-item--current::after {
+//   border-bottom: none;
+// }
 
 // accordion for technical details of task error
 .task-more-info {

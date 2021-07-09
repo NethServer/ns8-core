@@ -17,6 +17,7 @@ import Information20 from "@carbon/icons-vue/es/information/20";
 import Application20 from "@carbon/icons-vue/es/application/20";
 import Add20 from "@carbon/icons-vue/es/add/20";
 import Rocket20 from "@carbon/icons-vue/es/rocket/20";
+import Chip20 from "@carbon/icons-vue/es/chip/20";
 
 export default {
   name: "IconService",
@@ -41,6 +42,7 @@ export default {
       Application20,
       Add20,
       Rocket20,
+      Chip20,
     };
   },
 };

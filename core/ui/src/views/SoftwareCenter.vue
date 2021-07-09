@@ -1,154 +1,235 @@
 <template>
-  <div class="bx--grid bx--grid--full-width">
-    <div class="bx--row">
-      <div class="bx--col-lg-16 page-title title-and-toolbar">
-        <h2>{{ $t("software_center.title") }}</h2>
-        <NsButton
-          kind="ghost"
-          size="field"
-          :icon="Settings20"
-          @click="goToSettingsSoftwareRepository()"
-          >{{ $t("common.settings") }}</NsButton
-        >
+  <div>
+    <div class="bx--grid bx--grid--full-width">
+      <div class="bx--row">
+        <div class="bx--col-lg-16 page-title title-and-toolbar">
+          <h2>{{ $t("software_center.title") }}</h2>
+          <NsButton
+            kind="ghost"
+            size="field"
+            :icon="Settings20"
+            @click="goToSettingsSoftwareRepository()"
+            >{{ $t("common.settings") }}</NsButton
+          >
+        </div>
       </div>
-    </div>
-    <div class="bx--row">
-      <div class="bx--col-md-8">
-        <NsInlineNotification
-          v-if="upgradableApps.length"
-          kind="warning"
-          :title="$t('software_center.software_updates')"
-          :description="
-            $tc('software_center.you_have_updates', upgradableApps.length, {
-              numUpdates: upgradableApps.length,
-            })
-          "
-          :actionLabel="$t('common.details')"
-          @action="goToUpdates"
-          :showCloseButton="false"
-        />
+      <div class="bx--row">
+        <div class="bx--col-lg-16">
+          <NsInlineNotification
+            v-if="error.nodes"
+            kind="error"
+            :title="$t('software_center.cannot_retrieve_cluster_nodes')"
+            :description="error.nodes"
+            :showCloseButton="false"
+          />
+        </div>
       </div>
-    </div>
-    <div>
+      <div class="bx--row">
+        <div class="bx--col-lg-16">
+          <NsInlineNotification
+            v-if="updates.length"
+            kind="warning"
+            :title="$t('software_center.software_updates')"
+            :description="
+              $tc('software_center.you_have_updates', updates.length, {
+                numUpdates: updates.length,
+              })
+            "
+            :actionLabel="$t('common.details')"
+            @action="goToUpdates"
+            :showCloseButton="false"
+          />
+        </div>
+      </div>
       <div>
-        <cv-tile :light="true" class="content-tile">
-          <cv-search
-            :label="$t('software_center.search_placeholder')"
-            :placeholder="$t('software_center.search_placeholder')"
-            size="xl"
-            :clear-aria-label="$t('common.clear_search')"
-            v-model="q.search"
-            v-debounce="searchApp"
-            class="app-search"
-          >
-          </cv-search>
-          <cv-content-switcher
-            class="switcher"
-            @selected="contentSwitcherSelected"
-          >
-            <cv-content-switcher-button
-              owner-id="all"
-              :selected="csbAllSelected"
-              >{{ $t("software_center.all") }}</cv-content-switcher-button
+        <div>
+          <cv-tile :light="true" class="content-tile">
+            <cv-search
+              :label="$t('software_center.search_placeholder')"
+              :placeholder="$t('software_center.search_placeholder')"
+              size="xl"
+              :clear-aria-label="$t('common.clear_search')"
+              v-model="q.search"
+              v-debounce="searchApp"
+              class="app-search"
             >
-            <cv-content-switcher-button
-              owner-id="installed"
-              :selected="csbInstalledSelected"
-              >{{ $t("software_center.installed") }}</cv-content-switcher-button
+            </cv-search>
+            <cv-content-switcher
+              class="switcher"
+              @selected="contentSwitcherSelected"
             >
-            <cv-content-switcher-button
-              owner-id="updates"
-              :selected="csbUpdatesSelected"
-              >{{ $t("software_center.updates") }}</cv-content-switcher-button
-            >
-          </cv-content-switcher>
+              <cv-content-switcher-button
+                owner-id="all"
+                :selected="csbAllSelected"
+                >{{ $t("software_center.all") }}</cv-content-switcher-button
+              >
+              <cv-content-switcher-button
+                owner-id="installed"
+                :selected="csbInstalledSelected"
+                >{{
+                  $t("software_center.installed")
+                }}</cv-content-switcher-button
+              >
+              <cv-content-switcher-button
+                owner-id="updates"
+                :selected="csbUpdatesSelected"
+                >{{ $t("software_center.updates") }}</cv-content-switcher-button
+              >
+            </cv-content-switcher>
 
-          <section v-if="['all', 'installed', 'updates'].includes(q.view)">
-            <div v-if="csbAllSelected">
-              <AppList
-                v-if="allApps.length"
-                :apps="allApps"
-                :isUpdatingAll="isUpdatingAll"
-              />
-              <NsEmptyState
-                v-else
-                :title="$t('software_center.no_apps')"
-                key="all-empty-state"
-              />
-            </div>
-            <div v-if="csbInstalledSelected">
-              <AppList
-                v-if="installedApps.length"
-                :apps="installedApps"
-                :isUpdatingAll="isUpdatingAll"
-              />
-              <NsEmptyState
-                v-else
-                :title="$t('software_center.no_apps')"
-                key="installed-empty-state"
-              />
-            </div>
-            <div v-if="csbUpdatesSelected">
-              <!-- update all -->
-              <NsInlineNotification
-                v-if="updateAllAppsTimeout"
-                kind="info"
-                :title="$t('software_center.update_will_start_in_a_moment')"
-                :actionLabel="$t('common.cancel')"
-                @action="cancelUpdateAll"
-                :showCloseButton="false"
-                loading
-              />
-              <div
-                v-if="upgradableApps.length && !updateAllAppsTimeout"
-                class="toolbar"
-              >
-                <NsButton
-                  kind="primary"
-                  :icon="Upgrade20"
-                  @click="willUpdateAll()"
-                  >{{ $t("software_center.update_all") }}</NsButton
-                >
+            <section v-if="['all', 'installed', 'updates'].includes(q.view)">
+              <div v-if="csbAllSelected">
+                <NsEmptyState
+                  v-if="!modules.length && !loading.modules"
+                  :title="$t('software_center.no_apps')"
+                  key="all-empty-state"
+                />
+                <AppList
+                  v-else
+                  :apps="modules"
+                  :isUpdatingAll="isUpdatingAll"
+                  :skeleton="loading.modules"
+                  @install="openInstallModal"
+                />
               </div>
+              <div v-if="csbInstalledSelected">
+                <NsEmptyState
+                  v-if="!installedModules.length && !loading.modules"
+                  :title="$t('software_center.no_apps')"
+                  key="installed-empty-state"
+                />
+                <AppList
+                  v-else
+                  :apps="installedModules"
+                  :isUpdatingAll="isUpdatingAll"
+                  :skeleton="loading.modules"
+                  @install="openInstallModal"
+                />
+              </div>
+              <div v-if="csbUpdatesSelected">
+                <!-- update all -->
+                <NsInlineNotification
+                  v-if="updateAllAppsTimeout"
+                  kind="info"
+                  :title="$t('software_center.update_will_start_in_a_moment')"
+                  :actionLabel="$t('common.cancel')"
+                  @action="cancelUpdateAll"
+                  :showCloseButton="false"
+                  loading
+                />
+                <div
+                  v-if="updates.length && !updateAllAppsTimeout"
+                  class="toolbar"
+                >
+                  <NsButton
+                    kind="primary"
+                    :icon="Upgrade20"
+                    @click="willUpdateAll()"
+                    >{{ $t("software_center.update_all") }}</NsButton
+                  >
+                </div>
+                <NsEmptyState
+                  v-if="updates.length && !loading.modules"
+                  :title="$t('software_center.system_up_to_date')"
+                  key="updates-empty-state"
+                >
+                  <template #pictogram>
+                    <Love />
+                  </template>
+                </NsEmptyState>
+                <AppList
+                  v-else
+                  :apps="updates"
+                  :isUpdatingAll="isUpdatingAll"
+                  :skeleton="loading.modules"
+                  @install="openInstallModal"
+                />
+              </div>
+            </section>
+            <!-- search results -->
+            <div v-if="q.view === 'search'">
+              <h6 class="search-results-title">
+                {{ $t("software_center.search_results") }}
+              </h6>
               <AppList
-                v-if="upgradableApps.length"
-                :apps="upgradableApps"
+                v-if="searchResults.length"
+                :apps="searchResults"
                 :isUpdatingAll="isUpdatingAll"
+                :skeleton="loading.modules"
+                @install="openInstallModal"
               />
               <NsEmptyState
                 v-else
-                :title="$t('software_center.system_up_to_date')"
-                key="updates-empty-state"
+                :title="$t('software_center.no_apps_found')"
+                key="search-empty-state"
               >
-                <template #pictogram>
-                  <Love />
+                <template #description>
+                  {{ $t("software_center.no_apps_found_description") }}
                 </template>
               </NsEmptyState>
             </div>
-          </section>
-          <!-- search results -->
-          <div v-if="q.view === 'search'">
-            <h6 class="search-results-title">
-              {{ $t("software_center.search_results") }}
-            </h6>
-            <AppList
-              v-if="searchResults.length"
-              :apps="searchResults"
-              :isUpdatingAll="isUpdatingAll"
-            />
-            <NsEmptyState
-              v-else
-              :title="$t('software_center.no_apps_found')"
-              key="search-empty-state"
-            >
-              <template #description>
-                {{ $t("software_center.no_apps_found_description") }}
-              </template>
-            </NsEmptyState>
-          </div>
-        </cv-tile>
+          </cv-tile>
+        </div>
       </div>
     </div>
+    <!-- install modal -->
+    <cv-modal
+      size="default"
+      :visible="isShownInstallModal"
+      @modal-hidden="isShownInstallModal = false"
+      @primary-click="installInstance"
+      class="no-pad-modal"
+      :primary-button-disabled="!selectedNode"
+    >
+      <template v-if="appToInstall" slot="title">{{
+        $t("software_center.app_installation", { app: appToInstall.name })
+      }}</template>
+      <template v-if="appToInstall" slot="content">
+        <div v-if="nodes.length == 1">
+          <div>
+            {{
+              $t("software_center.about_to_install_app", {
+                app: appToInstall.name,
+              })
+            }}
+          </div>
+        </div>
+        <div v-else>
+          <div>
+            {{
+              $t("software_center.choose_node_for_installation", {
+                app: appToInstall.name,
+              })
+            }}
+          </div>
+          <div class="bx--grid bx--grid--full-width nodes">
+            <div class="bx--row">
+              <div
+                v-for="(node, index) in nodes"
+                :key="index"
+                class="bx--col-sm-1"
+              >
+                <NsTile
+                  :light="true"
+                  class="content-tile"
+                  kind="selectable"
+                  v-model="node.selected"
+                  value="nodeValue"
+                  :icon="Chip20"
+                  @click="deselectOtherNodes(node)"
+                >
+                  <h6>{{ $t("common.node") }} {{ node.id }}</h6>
+                </NsTile>
+              </div>
+            </div>
+          </div>
+        </div>
+      </template>
+      <template slot="secondary-button">{{ $t("common.cancel") }}</template>
+      <template slot="primary-button">{{
+        $t("software_center.install")
+      }}</template>
+    </cv-modal>
   </div>
 </template>
 
@@ -160,9 +241,11 @@ import QueryParamService from "@/mixins/queryParam";
 import NsEmptyState from "@/components/NsEmptyState";
 import Love from "../components/pictograms/Love";
 import NsButton from "@/components/NsButton";
+import NsTile from "@/components/NsTile";
 import to from "await-to-js";
 import UtilService from "@/mixins/util";
 import TaskService from "@/mixins/task";
+import NodeService from "@/mixins/node";
 
 let nethserver = window.nethserver;
 
@@ -174,8 +257,15 @@ export default {
     NsEmptyState,
     Love,
     NsButton,
+    NsTile,
   },
-  mixins: [IconService, QueryParamService, UtilService, TaskService],
+  mixins: [
+    IconService,
+    QueryParamService,
+    UtilService,
+    TaskService,
+    NodeService,
+  ],
   data() {
     return {
       q: {
@@ -186,10 +276,20 @@ export default {
       maxResults: 50,
       searchFields: ["name", "description", "categories"],
       searchResults: [],
-      installedApps: [],
-      upgradableApps: [],
+      modules: [],
+      // installedApps: [], ////
+      // upgradableApps: [], ////
       updateAllAppsTimeout: 0,
       updateAllAppsDelay: 5000, // you have 5 seconds to cancel "Update all"
+      isShownInstallModal: false,
+      appToInstall: null,
+      nodes: [],
+      loading: {
+        modules: true,
+      },
+      error: {
+        nodes: "",
+      },
       //// remove
       allApps: [
         {
@@ -389,6 +489,21 @@ export default {
     isUpdatingAll() {
       return this.updateAllAppsTimeout > 0;
     },
+    installedModules() {
+      console.log("installedModules, ", this.modules); ////
+      return this.modules.filter((app) => {
+        return app.installed.length;
+      });
+    },
+    updates() {
+      console.log("installedModules, ", this.modules); ////
+      return this.modules.filter((app) => {
+        return app.updates.length;
+      });
+    },
+    selectedNode() {
+      return this.nodes.find((n) => n.selected);
+    },
   },
   watch: {
     "q.search": function () {
@@ -414,18 +529,55 @@ export default {
     // this.upgradableApps = [];
     // this.installedApps = [];
     // this.searchResults = this.allApps; ////
-    this.installedApps = this.allApps.filter((app) => {
-      return app.installed.length;
-    });
-    this.upgradableApps = this.allApps.filter((app) => {
-      return app.updates.length;
-    });
+    // this.installedApps = this.allApps.filter((app) => {
+    //   return app.installed.length;
+    // });
+    // this.upgradableApps = this.allApps.filter((app) => {
+    //   return app.updates.length;
+    // });
+
+    this.retrieveClusterNodes();
 
     this.listModules();
   },
   methods: {
+    async retrieveClusterNodes() {
+      // get cluster nodes
+      const [errNodes, responseNodes] = await to(this.getNodes());
+
+      if (errNodes) {
+        console.error("error retrieving cluster nodes", errNodes);
+        this.error.nodes = this.getErrorMessage(errNodes);
+        return;
+      }
+
+      console.log("responseNodes", responseNodes); ////
+
+      let nodes = responseNodes.data.data.list;
+
+      //// remove
+      nodes.push("2");
+      nodes.push("3");
+      nodes.push("4");
+      nodes.push("5");
+      nodes.push("6");
+
+      nodes = nodes.map((n) => {
+        return { id: n, selected: false };
+      });
+
+      // if there is only a node, select the first
+      if (nodes.length == 1) {
+        nodes[0].selected = true;
+      }
+      this.nodes = nodes;
+    },
     async listModules() {
-      const taskAction = "list-modules";
+      this.loading.modules = true;
+      const taskAction = "list-modules"; ////
+
+      // register to task completion
+      this.$root.$on(taskAction + "-completed", this.listModulesCompleted);
 
       const res = await to(
         this.createTask({
@@ -446,6 +598,23 @@ export default {
         return;
       }
     },
+    listModulesCompleted(taskContext, taskResult) {
+      // unregister from event
+      this.$root.$off("list-modules-completed");
+
+      let modules = taskResult.output;
+
+      modules = modules.map((m) => {
+        m.expandInstances = false;
+        return m;
+      });
+
+      console.log("modules", this.modules); ////
+
+      this.modules = modules;
+
+      this.loading.modules = false;
+    },
     searchApp(query) {
       console.log("searchApp", query); ////
 
@@ -460,7 +629,7 @@ export default {
       }
 
       if (queryText.length < this.minCharsForSearch) {
-        this.searchResults = this.allApps;
+        this.searchResults = this.modules;
         return;
       }
 
@@ -468,7 +637,7 @@ export default {
       this.q.view = "search";
 
       // search
-      this.searchResults = this.allApps.filter((app) => {
+      this.searchResults = this.modules.filter((app) => {
         // compare query text with search fields of apps
         return this.searchFields.some((searchField) => {
           if (app[searchField]) {
@@ -531,6 +700,55 @@ export default {
       clearTimeout(this.updateAllAppsTimeout);
       this.updateAllAppsTimeout = 0;
     },
+    openInstallModal(app) {
+      this.appToInstall = app;
+      this.isShownInstallModal = true;
+    },
+    async installInstance() {
+      console.log(
+        "installing",
+        this.appToInstall.name,
+        "node",
+        this.selectedNode.id
+      ); ////
+
+      const taskAction = "add-module";
+
+      const res = await to(
+        this.createTask({
+          action: taskAction,
+          data: {
+            image: this.appToInstall.name,
+            node: parseInt(this.selectedNode.id),
+          },
+          extra: {
+            title: this.$t("action." + taskAction),
+            description: this.$t("software_center.installing_app_on_node", {
+              app: this.appToInstall.name,
+              node: this.selectedNode.id,
+            }),
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        this.createTaskErroNotification(
+          err,
+          this.$t("task.cannot_create_task", { action: taskAction })
+        );
+        return;
+      }
+
+      this.isShownInstallModal = false;
+    },
+    deselectOtherNodes(node) {
+      for (let n of this.nodes) {
+        if (n.id !== node.id) {
+          n.selected = false;
+        }
+      }
+    },
   },
 };
 </script>
@@ -550,5 +768,9 @@ export default {
   margin-top: $spacing-07;
   margin-bottom: $spacing-03;
   color: $text-02;
+}
+
+.nodes {
+  margin-top: $spacing-07;
 }
 </style>

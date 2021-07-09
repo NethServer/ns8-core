@@ -37,6 +37,7 @@ export default {
   },
   created() {
     // register to events
+    this.$root.$on("login", this.initNs8);
     this.$root.$on("logout", this.logout);
 
     // check login
@@ -45,9 +46,8 @@ export default {
       this.setLoggedUserInStore(loginInfo.username);
     }
 
-    this.initWebSocket();
-
     this.configureAxiosInterceptors();
+    this.initNs8();
   },
   beforeDestroy() {
     // remove all event listeners
@@ -94,6 +94,16 @@ export default {
       if (this.$route.name !== "Login") {
         this.$router.push("/login");
       }
+    },
+    initNs8() {
+      // invoked on webapp loading and after logging in
+
+      console.log(">>> initNs8"); ////
+
+      this.initWebSocket();
+
+      // check for updates
+      ////
     },
   },
 };

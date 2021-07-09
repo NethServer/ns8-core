@@ -167,7 +167,9 @@ export default {
 
         this.saveToStorage("loginInfo", loginInfo);
         this.setLoggedUserInStore(this.username);
-        this.initWebSocket();
+
+        // emit login event to initialize webapp (connect ws, invoke api...)
+        this.$root.$emit("login");
 
         const queryParams = nethserver.getQueryParamsForCore();
 

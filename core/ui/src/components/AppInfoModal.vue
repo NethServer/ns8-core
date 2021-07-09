@@ -5,7 +5,6 @@
       :visible="isShown"
       @modal-hidden="$emit('close')"
       class="no-pad-modal"
-      @primary-click="$emit('install', app)"
     >
       <template slot="title">{{ $t("software_center.app_info") }}</template>
       <!-- v-if="isShown" is needed to reset modal scroll to top -->
@@ -45,7 +44,7 @@
             <span class="section-title"
               >{{ $t("software_center.latest_version") }}:</span
             >
-            {{ app.versions[0].tag }}
+            {{ app.versions.length ? app.versions[0].tag : "-" }}
           </div>
         </section>
         <section>
@@ -113,9 +112,9 @@
         </section>
       </template>
       <template slot="secondary-button">{{ $t("common.close") }}</template>
-      <template slot="primary-button">{{
+      <!-- <template slot="primary-button">{{ ////
         $t("software_center.install")
-      }}</template>
+      }}</template> -->
     </cv-modal>
   </div>
 </template>

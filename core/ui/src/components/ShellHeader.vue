@@ -12,10 +12,13 @@
       $root.config.PRODUCT_NAME
     }}</cv-header-name>
     <cv-header-nav>
-      <cv-header-menu-item to="/dashboard" class="status"
-        ><span class="status-text">{{ $t("shell.status") }}</span
-        ><span class="status-badge"></span
-      ></cv-header-menu-item>
+      <cv-header-menu-item to="/dashboard" class="status">
+        <div class="badge-container">
+          <span>{{ $t("shell.status") }}</span>
+          <span class="green-badge right-badge"></span>
+        </div>
+      </cv-header-menu-item>
+
       <!-- <cv-header-menu-item
         to="/dashboard?testToggle=true&testInput=firstValue&testNumber=99"
         >Link 1</cv-header-menu-item
@@ -194,18 +197,18 @@ export default {
   }
 }
 
-.status-text {
-  margin-right: $spacing-05;
-}
+// .status-text { ////
+//   margin-right: $spacing-05;
+// }
 
-.status-badge {
-  position: absolute;
-  top: 45%;
-  right: 16%;
-  height: 8px;
-  width: 8px;
-  background-color: $inverse-support-02;
-  border-radius: 50%;
-  display: inline-block;
-}
+// .status-badge {
+//   position: absolute;
+//   top: 45%;
+//   right: 16%;
+//   height: 8px;
+//   width: 8px;
+//   background-color: $inverse-support-02;
+//   border-radius: 50%;
+//   display: inline-block;
+// }
 </style>

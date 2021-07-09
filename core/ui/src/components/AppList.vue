@@ -1,7 +1,38 @@
 <template>
   <div>
     <div class="app-list">
-      <div v-for="(app, index) in apps" :key="index">
+      <div v-if="skeleton">
+        <cv-tile
+          v-for="(row, index) in skeletonRows"
+          :key="index"
+          kind="standard"
+          class="app"
+        >
+          <cv-skeleton-text
+            :paragraph="true"
+            :line-count="2"
+          ></cv-skeleton-text>
+          <!-- <div class="app-logo"> ////
+            <cv-skeleton-text heading></cv-skeleton-text>
+          </div>
+          <div class="app-name-and-description">
+            <cv-skeleton-text
+              :paragraph="true"
+              :line-count="2"
+            ></cv-skeleton-text>
+          </div>
+          <div class="app-categories">
+            <cv-skeleton-text></cv-skeleton-text>
+          </div>
+          <div class="app-details">
+            <cv-skeleton-text heading></cv-skeleton-text>
+          </div>
+          <div class="app-actions">
+            <cv-skeleton-text heading></cv-skeleton-text>
+          </div> -->
+        </cv-tile>
+      </div>
+      <div v-else v-for="(app, index) in apps" :key="index">
         <cv-tile kind="standard" @click="showAppInfo(app)" class="app">
           <div class="app-logo">
             <a @click="showAppInfo(app)">
@@ -132,7 +163,6 @@
       :app="appInfo.app"
       :isShown="appInfo.isShown"
       @close="onClose"
-      @install="installInstance"
     />
   </div>
 </template>
@@ -153,6 +183,11 @@ export default {
       required: true,
     },
     isUpdatingAll: Boolean,
+    skeleton: Boolean,
+    skeletonRows: {
+      type: Number,
+      default: 5,
+    },
   },
   data() {
     return {
@@ -164,7 +199,9 @@ export default {
   },
   methods: {
     installInstance(app) {
-      console.log("installInstance", app); ////
+      console.log("AppList installInstance", app); ////
+
+      this.$emit("install", app);
     },
     openApp(app) {
       console.log("openApp", app); ////

@@ -102,25 +102,25 @@
                     <cv-data-table-cell>{{ row.name }}</cv-data-table-cell>
                     <cv-data-table-cell>{{ row.url }}</cv-data-table-cell>
                     <cv-data-table-cell>
-                      <div class="status-container">
+                      <div class="badge-container">
                         <template v-if="row.status"
-                          ><span class="enabled-badge"></span>
+                          ><span class="green-badge left-badge"></span>
                           {{ $t("common.enabled") }}</template
                         >
                         <template v-else
-                          ><span class="disabled-badge"></span
+                          ><span class="gray-badge left-badge"></span
                           >{{ $t("common.disabled") }}</template
                         >
                       </div>
                     </cv-data-table-cell>
                     <cv-data-table-cell
-                      ><div class="status-container">
+                      ><div class="badge-container">
                         <template v-if="row.testing"
-                          ><span class="enabled-badge"></span>
+                          ><span class="green-badge left-badge"></span>
                           {{ $t("common.enabled") }}</template
                         >
                         <template v-else
-                          ><span class="disabled-badge"></span
+                          ><span class="gray-badge left-badge"></span
                           >{{ $t("common.disabled") }}</template
                         >
                       </div></cv-data-table-cell

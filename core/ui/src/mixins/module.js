@@ -15,6 +15,10 @@ export default {
       let i18nCategories = [];
 
       for (const category of app.categories) {
+        if (category === "unknown") {
+          return "-";
+        }
+
         i18nCategories.push(
           this.$t("software_center.app_categories." + category)
         );

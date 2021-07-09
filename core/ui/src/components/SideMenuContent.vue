@@ -36,7 +36,11 @@
         :active="isLinkActive('/software-center')"
       >
         <template v-slot:nav-icon><Application20 /></template>
-        {{ $t("software_center.title") }}
+
+        <div class="badge-container">
+          <span>{{ $t("software_center.title") }}</span>
+          <span class="yellow-badge right-badge"></span>
+        </div>
       </cv-side-nav-link>
       <cv-side-nav-link href="javascript:void(0)">
         <template v-slot:nav-icon><Save20 /></template>
