@@ -63,3 +63,5 @@ agent.set_env('HOSTNAME', hostname)
 agent.set_env('ADMINUSER', request['adminuser'])
 agent.set_env('ADMINPASS', request['adminpass'])
 agent.set_env('IPADDRESS', request['ipaddress'])
+
+agent.dump_env()

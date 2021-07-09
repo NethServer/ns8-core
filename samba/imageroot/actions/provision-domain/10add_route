@@ -24,28 +24,27 @@ import agent
 import agent.tasks
 import os
 import sys
+import json
 
-agent.assert_exp(os.environ['REALM'])
-agent.assert_exp(os.environ['IPADDRESS'])
-agent.assert_exp(os.environ['HOSTNAME'])
+#
+# This is a prerequisite: if IP routing is not correctly set, the DC join might fail.
+#
 
-# Prepare the list of tasks to run in parallel
-tasks = []
-for key in rdb.scan_iter(match='module/samba*/environment'):
-    if key == f"{os.getenv('AGENT_ID')}/environment":
-        continue # skip DC itself
-    elif rdb.hget(key, 'REALM') != os.environ['REALM']:
-        continue # skip DCs of other realms
+request = json.load(sys.stdin)
 
-    peer_agent_id = key.stripsuffix('/environment')
-    tasks.append({
-        'agent_id': peer_agent_id,
-        'action': 'add-dc',
-        'data': {
-            'ipaddress': os.environ['IPADDRESS'],
-            'hostname': os.environ['HOSTNAME'],
-        },
-    })
 
-errors = agent.tasks.runp_brief(tasks)
-agent.assert_exp(errors == 0)
+ip_address = request['ipaddress']
+module_id = os.environ['MODULE_ID']
+node_id = int(os.environ['NODE_ID'])
+agent.assert_exp(node_id > 0)
+
+add_route_result = agent.tasks.run(
+    agent_id='cluster',
+    action='add-route',
+    data={
+        "network": ip_address + '/32',
+        "node_id": node_id,
+    }
+)
+
+agent.assert_exp(add_route_result['exit_code'] == 0)

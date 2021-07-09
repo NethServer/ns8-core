@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/bin/bash
 
 #
 # Copyright (C) 2021 Nethesis S.r.l.
@@ -20,23 +20,21 @@
 # along with NethServer.  If not, see COPYING.
 #
 
-import agent
-import agent.tasks
-import os
-import sys
+exec 1>&2
+set -e
 
-ip_address = os.environ['IPADDRESS']
-module_id = os.environ['MODULE_ID']
-node_id = int(os.environ['NODE_ID'])
-agent.assert_exp(node_id > 0)
+cat >&"${AGENT_COMFD}" <<EOF
+set-weight 01validate_ip 0
+set-weight 40start_provisioning 5
+EOF
 
-add_route_result = agent.tasks.run(
-    agent_id='cluster',
-    action='add-route',
-    data={
-        "network": ip_address + '/32',
-        "node_id": node_id,
-    }
-)
+read -r ipaddress < <(jq -r '.ipaddress')
 
-agent.assert_exp(add_route_result['exit_code'] == 0)
+# Check if ipaddress is bound to a network interface
+if ! ip -o address show to "${ipaddress}/32" up | grep -q "${ipaddress}"; then
+    jq -c -n --arg ipaddress "${ipaddress}" '[{"field":"ipaddress","parameter":"ipaddress","value":$ipaddress,"error":"ipaddress_does_not_exist"}]'
+    echo "set-status validation-failed" >&"${AGENT_COMFD}"
+    exit 2
+fi
+
+exit 0
