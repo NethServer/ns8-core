@@ -24,6 +24,7 @@ import os
 import sys
 import json
 import agent
+import agent.tasks
 import ipcalc
 import uuid
 
@@ -96,13 +97,26 @@ agent.assert_exp(rdb.execute_command('ACL', 'SETUSER',
 ) == 'OK')
 
 #
-# Route peer traffic through the WireGuard VPN (add-node => add-route => update-routes)
+# Route peer traffic through the WireGuard VPN
 #
-add_route_result = agent.tasks.run(agent_prefix='cluster', action='add-route', endpoint="redis://cluster-leader", data={
-    'network': ip_address + '/32',
-    'node_id': node_id,
-})
-agent.assert_exp(add_route_result['exit_code'] == 0)
+
+# Build the task requests, one for each existing
+node_tasks = [{
+    'agent_id': knode.removesuffix('/vpn'),
+    'action': 'update-routes',
+    'data': [{
+        "add": [ip_address + '/32'],
+        "remove": [],
+        "node_id": node_id,
+    }],
+} for knode in rdb.scan_iter('node/*/vpn') if knode.removesuffix('/vpn') != f'node/{node_id}']
+
+# Parallel tasks run
+node_errors = agent.tasks.runp_brief(
+    node_tasks,
+    endpoint="redis://cluster-leader",
+)
+agent.assert_exp(node_errors == 0)
 
 # Install core modules in the new node
 for core_module_image in ['traefik', 'ldapproxy']:
@@ -115,6 +129,18 @@ for core_module_image in ['traefik', 'ldapproxy']:
         },
         nowait=True,
     )
+
+# Complete VPN setup on the new node
+agent.run_subtask(rdb,
+    agent_prefix=f'node/{node_id}',
+    action='update-routes',
+    input_obj=[{
+        "add": [ip_address + '/32'],
+        "remove": [],
+        "node_id": node_id,
+    }],
+    nowait=True,
+)
 
 #
 # Return the new information to the caller

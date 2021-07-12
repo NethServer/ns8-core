@@ -204,10 +204,10 @@ def save_wgconf(ipaddr, listen_port=55820, peers={}):
         if peer['public_key'] == public_key:
             continue # Skip record if it refers to the local node
 
-        allowed_ips = { peer['ip_address'] }
+        allowed_ips = { peer['ip_address'] + '/32' }
         if 'destinations' in peer:
             # The set avoids duplicate values:
-            allowed_ips.update(peer['destinations'])
+            allowed_ips.update(peer['destinations'].split())
 
         wgconf.write(f'[Peer]\n')
         wgconf.write(f"PublicKey = {peer['public_key']}\n")

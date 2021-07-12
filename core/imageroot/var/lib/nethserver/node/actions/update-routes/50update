@@ -41,7 +41,7 @@ for req in requests:
     destinations = {*pconf.get('destinations', '').split()}
     destinations.update(req['add'])
     destinations.difference_update(req['remove'])
-    peers[f'node/{req["node_id"]}/vpn']['destinations'] = ' '.join(destinations)
+    pconf['destinations'] = ' '.join(destinations)
 
     if req['node_id'] == self_id:
         # No VPN and routing changes are needed. Just store the new destinations set in the Redis DB:
