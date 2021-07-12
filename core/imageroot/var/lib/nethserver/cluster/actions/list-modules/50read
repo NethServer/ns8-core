@@ -39,6 +39,7 @@ updates = cluster.modules.list_updates(rdb)
 # Prepare variables for later use
 for a in available:
     a["updates"] = []
+    a["installed"] = []
 
     if a["source"] in installed.keys():
         a["installed"] = installed[a["source"]]
