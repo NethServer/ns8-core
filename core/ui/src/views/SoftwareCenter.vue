@@ -90,6 +90,7 @@
                   :isUpdatingAll="isUpdatingAll"
                   :skeleton="loading.modules"
                   @install="openInstallModal"
+                  key="all-app-list"
                 />
               </div>
               <div v-if="csbInstalledSelected">
@@ -104,6 +105,7 @@
                   :isUpdatingAll="isUpdatingAll"
                   :skeleton="loading.modules"
                   @install="openInstallModal"
+                  key="installed-app-list"
                 />
               </div>
               <div v-if="csbUpdatesSelected">
@@ -144,6 +146,7 @@
                   :skeleton="loading.modules"
                   @install="openInstallModal"
                   :showUpdates="true"
+                  key="updates-app-list"
                 />
               </div>
             </section>
@@ -158,6 +161,7 @@
                 :isUpdatingAll="isUpdatingAll"
                 :skeleton="loading.modules"
                 @install="openInstallModal"
+                key="search-app-list"
               />
               <NsEmptyState
                 v-else
@@ -522,19 +526,7 @@ export default {
     next();
   },
   created() {
-    //// call api
-    // this.upgradableApps = [];
-    // this.installedApps = [];
-    // this.searchResults = this.allApps; ////
-    // this.installedApps = this.allApps.filter((app) => {
-    //   return app.installed.length;
-    // });
-    // this.upgradableApps = this.allApps.filter((app) => {
-    //   return app.updates.length;
-    // });
-
     this.retrieveClusterNodes();
-
     this.listModules();
   },
   methods: {

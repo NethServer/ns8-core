@@ -12,27 +12,9 @@
             :paragraph="true"
             :line-count="2"
           ></cv-skeleton-text>
-          <!-- <div class="app-logo"> ////
-            <cv-skeleton-text heading></cv-skeleton-text>
-          </div>
-          <div class="app-name-and-description">
-            <cv-skeleton-text
-              :paragraph="true"
-              :line-count="2"
-            ></cv-skeleton-text>
-          </div>
-          <div class="app-categories">
-            <cv-skeleton-text></cv-skeleton-text>
-          </div>
-          <div class="app-details">
-            <cv-skeleton-text heading></cv-skeleton-text>
-          </div>
-          <div class="app-actions">
-            <cv-skeleton-text heading></cv-skeleton-text>
-          </div> -->
         </cv-tile>
       </div>
-      <div v-else v-for="(app, index) in apps" :key="index">
+      <div v-else v-for="(app, index) in appsLoaded" :key="index">
         <cv-tile kind="standard" @click="showAppInfo(app)" class="app">
           <div class="app-logo">
             <a @click="showAppInfo(app)">
@@ -40,12 +22,12 @@
             </a>
           </div>
           <div class="app-name-and-description">
-            <a @click="showAppInfo(app)">
-              <div class="app-name">{{ app.name }}</div>
-              <div class="app-description">
-                {{ getAppDescription(app) }}
-              </div>
-            </a>
+            <div class="app-name">
+              <a @click="showAppInfo(app)">{{ app.name }}</a>
+            </div>
+            <div class="app-description">
+              {{ getAppDescription(app) }}
+            </div>
           </div>
           <div class="app-categories">{{ getAppCategories(app) }}</div>
           <div class="app-details">
@@ -110,9 +92,11 @@
                   tip-alignment="end"
                   class="overflow-menu"
                 >
-                  <cv-overflow-menu-item primary-focus @click="openApp(app)">{{
-                    $t("software_center.open")
-                  }}</cv-overflow-menu-item>
+                  <cv-overflow-menu-item
+                    primary-focus
+                    @click="openApp(instance)"
+                    >{{ $t("software_center.open") }}</cv-overflow-menu-item
+                  >
                   <cv-overflow-menu-item @click="addToLauncher(app)">{{
                     $t("software_center.add_to_launcher")
                   }}</cv-overflow-menu-item>
@@ -127,7 +111,7 @@
                   kind="secondary"
                   size="sm"
                   :icon="Launch20"
-                  @click="openApp(app)"
+                  @click="openApp(instance)"
                   >{{ $t("software_center.open") }}</NsButton
                 >
                 <cv-overflow-menu
@@ -161,6 +145,7 @@
           </cv-tile>
         </div>
       </div>
+      <infinite-loading @infinite="infiniteScrollHandler"></infinite-loading>
     </div>
     <AppInfoModal
       :app="appInfo.app"
@@ -199,7 +184,16 @@ export default {
         isShown: false,
         app: null,
       },
+      // infinite scroll
+      appsLoaded: [],
+      pageNum: 0,
+      pageSize: 20,
     };
+  },
+  watch: {
+    apps: function () {
+      this.infiniteScrollHandler();
+    },
   },
   methods: {
     installInstance(app) {
@@ -207,8 +201,10 @@ export default {
 
       this.$emit("install", app);
     },
-    openApp(app) {
-      console.log("openApp", app); ////
+    openApp(instance) {
+      console.log("openApp", instance); ////
+
+      this.$router.push(`/apps/${instance.id}`);
     },
     updateApp(app) {
       console.log("updateApp", app); ////
@@ -251,6 +247,27 @@ export default {
         });
       } else {
         return app.installed;
+      }
+    },
+    infiniteScrollHandler($state) {
+      const pageApps = this.apps.slice(
+        this.pageNum * this.pageSize,
+        (this.pageNum + 1) * this.pageSize
+      );
+
+      console.log("pageApps", pageApps); ////
+
+      if (pageApps.length) {
+        this.pageNum++;
+        this.appsLoaded.push(...pageApps);
+
+        if ($state) {
+          $state.loaded();
+        }
+      } else {
+        if ($state) {
+          $state.complete();
+        }
       }
     },
   },

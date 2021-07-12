@@ -30,6 +30,7 @@
     "vue-debounce": "^3.0.0",
     "vue-gallery": "^2.0.1",
     "vue-i18n": "^8.24.4",
+    "vue-infinite-loading": "^2.4.5",
     "vue-native-websocket": "^2.0.14",
     "vue-router": "^3.2.0",
     "vue-toastification": "^1.7.11",

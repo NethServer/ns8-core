@@ -27,6 +27,14 @@ Vue.use(VueNativeSock, "ws://", {
   connectManually: true,
 });
 
+import InfiniteLoading from "vue-infinite-loading";
+Vue.use(InfiniteLoading, {
+  slots: {
+    noResults: "",
+    noMore: "",
+  },
+});
+
 // i18n
 import VueI18n from "vue-i18n";
 Vue.use(VueI18n);
