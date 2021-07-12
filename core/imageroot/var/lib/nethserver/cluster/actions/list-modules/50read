@@ -39,10 +39,9 @@ updates = cluster.modules.list_updates(rdb)
 # Prepare variables for later use
 for a in available:
     a["updates"] = []
-    a["installed"] = []
 
     if a["source"] in installed.keys():
-        a["installed"].append(installed[a["source"]])
+        a["installed"] = installed[a["source"]]
 
     m = get_module(a["source"], updates)
     if m is not None:
