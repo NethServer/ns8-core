@@ -9,7 +9,9 @@ container=$(buildah from scratch)
 
 buildah add "${container}" imageroot /imageroot
 buildah add "${container}" ui /ui
-buildah config --entrypoint=/ "${container}"
+buildah config --entrypoint=/ \
+	--label="org.nethserver.images=docker.io/traefik:v2.4 docker.io/grafana/loki:2.2.1" \
+	"${container}"
 buildah commit "${container}" "${repobase}/${reponame}"
 images+=("${repobase}/${reponame}")
 
