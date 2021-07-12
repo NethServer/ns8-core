@@ -101,10 +101,8 @@ export default {
     },
     putNotification(notification) {
       if (this.notificationExists(notification)) {
-        // console.log("updating notification", notification); ////
         this.updateNotificationInStore(notification);
       } else {
-        // console.log("creating notification", notification); ////
         this.createNotification(notification);
       }
     },
@@ -278,12 +276,7 @@ export default {
         if (taskResult) {
           notification.task.result = taskResult;
 
-          // emit an event so that who requested the task can handle the result
-
-          // console.log(">>> taskResult", taskResult); ////
-          // console.log(">>> task", task); ////
-          // console.log(">>> taskContext", taskContext); ////
-
+          // emit an event so that the component that requested the task can handle the result
           this.$root.$emit(
             taskContext.action + "-completed",
             taskContext,

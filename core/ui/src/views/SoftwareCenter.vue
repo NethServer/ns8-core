@@ -284,8 +284,6 @@ export default {
       searchResults: [],
       modules: [],
       updates: [],
-      // installedApps: [], ////
-      // upgradableApps: [], ////
       updateAllAppsTimeout: 0,
       updateAllAppsDelay: 5000, // you have 5 seconds to cancel "Update all"
       isShownInstallModal: false,
@@ -497,7 +495,6 @@ export default {
       return this.updateAllAppsTimeout > 0;
     },
     installedModules() {
-      console.log("installedModules, ", this.modules); ////
       return this.modules.filter((app) => {
         return app.installed.length;
       });
@@ -541,8 +538,6 @@ export default {
         return;
       }
 
-      console.log("responseNodes", responseNodes); ////
-
       let nodes = responseNodes.data.data.list;
 
       //// remove
@@ -564,7 +559,7 @@ export default {
     },
     async listModules() {
       this.loading.modules = true;
-      const taskAction = "list-modules"; ////
+      const taskAction = "list-modules";
 
       // register to task completion
       this.$root.$on(taskAction + "-completed", this.listModulesCompleted);
@@ -598,8 +593,6 @@ export default {
         m.expandInstances = false;
         return m;
       });
-
-      console.log("modules", modules); ////
 
       this.modules = modules;
       this.loading.modules = false;
@@ -702,15 +695,12 @@ export default {
       this.$router.push("/settings/software-repository");
     },
     willUpdateAll() {
-      console.log("willUpdateAll"); ////
       this.updateAllAppsTimeout = setTimeout(() => {
         console.log("updating all!"); ////
         this.updateAllAppsTimeout = 0;
       }, this.updateAllAppsDelay);
     },
     cancelUpdateAll() {
-      console.log("cancelUpdateAllApps"); ////
-
       clearTimeout(this.updateAllAppsTimeout);
       this.updateAllAppsTimeout = 0;
     },
@@ -719,13 +709,6 @@ export default {
       this.isShownInstallModal = true;
     },
     async installInstance() {
-      console.log(
-        "installing",
-        this.appToInstall.name,
-        "node",
-        this.selectedNode.id
-      ); ////
-
       const taskAction = "add-module";
 
       const res = await to(

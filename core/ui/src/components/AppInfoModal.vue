@@ -112,9 +112,6 @@
         </section>
       </template>
       <template slot="secondary-button">{{ $t("common.close") }}</template>
-      <!-- <template slot="primary-button">{{ ////
-        $t("software_center.install")
-      }}</template> -->
     </cv-modal>
   </div>
 </template>

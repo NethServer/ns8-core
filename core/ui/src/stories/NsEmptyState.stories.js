@@ -36,7 +36,7 @@ const CustomPictogramTemplate = (args, { argTypes }) => ({
     </NsEmptyState>',
 });
 
-export const CustomPictogram = CustomPictogramTemplate.bind({}); ////
+export const CustomPictogram = CustomPictogramTemplate.bind({});
 CustomPictogram.args = {
   title: "No search results",
 };

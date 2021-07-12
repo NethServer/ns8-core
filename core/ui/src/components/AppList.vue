@@ -197,21 +197,15 @@ export default {
   },
   methods: {
     installInstance(app) {
-      console.log("AppList installInstance", app); ////
-
       this.$emit("install", app);
     },
     openApp(instance) {
-      console.log("openApp", instance); ////
-
       this.$router.push(`/apps/${instance.id}`);
     },
     updateApp(app) {
       console.log("updateApp", app); ////
     },
     showAppInfo(app) {
-      console.log("showAppInfo", app); ////
-
       this.appInfo.isShown = true;
       this.appInfo.app = app;
     },
@@ -254,8 +248,6 @@ export default {
         this.pageNum * this.pageSize,
         (this.pageNum + 1) * this.pageSize
       );
-
-      console.log("pageApps", pageApps); ////
 
       if (pageApps.length) {
         this.pageNum++;

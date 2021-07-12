@@ -140,7 +140,6 @@ export default {
       this.setIsNotificationDrawerShownInStore(!this.isNotificationDrawerShown);
     },
     logout() {
-      console.log("emitting logout"); ////
       this.$root.$emit("logout");
     },
     expandSearch() {
@@ -200,19 +199,4 @@ export default {
     transform: rotate(360deg);
   }
 }
-
-// .status-text { ////
-//   margin-right: $spacing-05;
-// }
-
-// .status-badge {
-//   position: absolute;
-//   top: 45%;
-//   right: 16%;
-//   height: 8px;
-//   width: 8px;
-//   background-color: $inverse-support-02;
-//   border-radius: 50%;
-//   display: inline-block;
-// }
 </style>

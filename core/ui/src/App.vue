@@ -97,14 +97,11 @@ export default {
         this.$router.push("/login");
       }
     },
+    // invoked on webapp loading and after logging in
     initNs8() {
-      // invoked on webapp loading and after logging in
-
-      console.log(">>> initNs8"); ////
-
       this.initWebSocket();
 
-      // check for updates
+      // check for software updates
       this.listUpdates();
     },
     async listUpdates() {
@@ -137,8 +134,6 @@ export default {
       this.$root.$off("list-updates-completed");
 
       let updates = taskResult.output;
-
-      console.log("updates", updates); ////
 
       //// add fake updates
       updates.push({

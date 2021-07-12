@@ -96,8 +96,7 @@
 </template>
 
 <script>
-import { CvToastNotification } from "@carbon/vue";
-import { CvLink, CvTooltip } from "../../node_modules/@carbon/vue"; ////
+import { CvToastNotification, CvLink, CvTooltip } from "@carbon/vue";
 import DateTimeService from "../mixins/datetime";
 import NsProgressBar from "./NsProgressBar";
 

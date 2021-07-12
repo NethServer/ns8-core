@@ -310,8 +310,6 @@ import { mapState } from "vuex";
 import NotificationService from "@/mixins/notification";
 import UtilService from "@/mixins/util";
 import QueryParamService from "@/mixins/queryParam";
-// import Pictogram from "@/components/Pictogram"; ////
-// import Gear from "@/components/pictograms/Gear"; ////
 import NsInlineNotification from "@/components/NsInlineNotification";
 import { formatRelative, subDays } from "date-fns";
 import TaskService from "@/mixins/task";

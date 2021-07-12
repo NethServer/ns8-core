@@ -13,13 +13,9 @@
     v-on="$listeners"
     ref="tile"
   >
-    <!-- can i now click on this -->
     <template>
       <slot></slot>
     </template>
-    <!-- <template slot="below"> ////
-      <slot name="below"></slot>
-    </template> -->
 
     <!-- icon -->
     <NsSvg v-if="icon" :svg="icon" class="tile-icon" />
@@ -27,11 +23,6 @@
 </template>
 
 <script>
-// import CvTileClickable from "./_cv-tile-clickable"; ////
-// import CvTileExpandable from "./_cv-tile-expandable";
-// import CvTileSelectable from "./_cv-tile-selectable";
-// import CvTileStandard from "./_cv-tile-standard";
-
 import { CvTile } from "@carbon/vue";
 import NsSvg from "./NsSvg";
 
@@ -46,15 +37,10 @@ export default {
   },
   components: {
     NsSvg,
-    // CvTileClickable, ////
-    // CvTileExpandable,
-    // CvTileSelectable,
-    // CvTileStandard,
   },
   props: {
-    // expanded: Boolean, ////
+    // NsTile cannot be expandable
     selected: Boolean,
-    // NsTile cannot be expandable because of icon
     kind: {
       type: String,
       default: "standard",

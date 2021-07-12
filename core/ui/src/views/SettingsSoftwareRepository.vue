@@ -529,7 +529,7 @@ export default {
       });
     },
     async deleteRepository(repo) {
-      const taskAction = "remove-repository"; ////
+      const taskAction = "remove-repository";
 
       // register to task completion
       this.$root.$on(taskAction + "-completed", this.removeRepositoryCompleted);
