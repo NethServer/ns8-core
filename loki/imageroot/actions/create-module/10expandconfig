@@ -22,9 +22,6 @@
 
 set -e
 
-LE_EMAIL=${LE_EMAIL:-root@$(hostname -f)}
-LOG_LEVEL=${LOG_LEVEL:-INFO}
-
 cat >traefik.yaml <<EOF
 http:
   routers:

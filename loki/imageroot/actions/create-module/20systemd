@@ -25,9 +25,5 @@ set -e
 # Redirect any output to the journal (stderr)
 exec 1>&2
 
-cat >&${AGENT_COMFD} <<EOF
-dump-env
-EOF
-
 # Enable and start the service
 systemctl --user enable --now loki.service
