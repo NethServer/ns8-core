@@ -61,9 +61,21 @@ if [[ ${ID} == "debian" ]]; then
     sysctl -w kernel.unprivileged_userns_clone=1 | tee -a /etc/sysctl.d/80-nethserver.conf
 fi
 
+# Pull modules from the given development branch
+imagetag="$1"
+shift
+if [[ -n "${imagetag}" ]]; then
+    for module in "${@}"; do
+        podman pull "ghcr.io/nethserver/${module}:${imagetag}"
+        echo "Tagging development branch ${module}:${imagetag} => ${module}:latest"
+        podman tag "ghcr.io/nethserver/${module}:${imagetag}" "ghcr.io/nethserver/${module}:latest"
+    done
+    shift $# # Discard all arguments
+fi
+
 echo "Extracting core sources:"
 mkdir -pv /var/lib/nethserver/node/state
-cid=$(podman create "${COREIMAGE:-ghcr.io/nethserver/core:${CORETAG:-latest}}")
+cid=$(podman create "ghcr.io/nethserver/core:latest")
 podman export ${cid} | tar -C / -x -v -f - | tee /var/lib/nethserver/node/state/image.lst
 podman rm -f ${cid}
 
@@ -176,11 +188,7 @@ cluster.grants.grant(rdb, action_clause="read-*", to_clause="reader", on_clause=
 EOF
 
 echo "Install Traefik:"
-if [[ -z ${CORETAG} ]]; then
-    add-module traefik 1
-else
-    add-module "ghcr.io/nethserver/traefik:${CORETAG}" 1
-fi
+add-module traefik 1
 
 cat - <<EOF
 

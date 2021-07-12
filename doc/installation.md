@@ -19,17 +19,11 @@ curl https://raw.githubusercontent.com/NethServer/ns8-scratchpad/main/core/insta
 The procedure must be completed by invoking additional commands: follow on-screen instructions.
 Run either new cluster initialization (`create-cluster`) or joining an existing cluster (`join-cluster`).
 
-Developers may prefer to run `install.sh` with a special core image. It is possible to pull
-the special image by setting the `COREIMAGE` environment variable for the installation script.
-If the image is available locally the installation script uses it. For example:
+Developers may prefer to run `install.sh` with one or more images from a
+development branch. The first argument selects the branch name, following
+arguments the module names to be pulled from that branch.
 
-    COREIMAGE=ghcr.io/nethserver/core:mybranch bash install.sh
-
-As alternative it is possible to select a specific branch build with the `CORETAG`
-environment variable: `core` itself and other core images are forcibly downloaded
-with the given tag.
-
-    CORETAG=mybranch bash install.sh
+    bash install.sh mybranch module1 module2 ...
 
 ### Developer configuration
 
