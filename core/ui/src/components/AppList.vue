@@ -57,12 +57,15 @@
               >{{ $t("software_center.app_info") }}</NsButton
             >
           </div>
-          <div v-if="app.installed.length" class="toggle-instances">
+          <div
+            v-if="app.installed && app.installed.length"
+            class="toggle-instances"
+          >
             <NsButton
               kind="ghost"
               :icon="ChevronDown20"
               size="field"
-              @click="toggleInstalledInstances(app)"
+              @click="toggleExpandInstances(app)"
               :class="['toggle-expand', { expanded: app.expandInstances }]"
               >{{ $t("software_center.instances") }}</NsButton
             >
@@ -80,7 +83,7 @@
         </cv-tile>
         <div v-if="app.expandInstances">
           <cv-tile
-            v-for="(instance, index) in app.installed"
+            v-for="(instance, index) in getInstancesToShow(app)"
             :key="index"
             kind="standard"
             class="instance"
@@ -145,7 +148,7 @@
             </div>
           </cv-tile>
           <!-- install new instance -->
-          <cv-tile kind="standard" class="instance">
+          <cv-tile v-if="!showUpdates" kind="standard" class="instance">
             <div class="instance-name">
               <NsButton
                 kind="secondary"
@@ -188,6 +191,7 @@ export default {
       type: Number,
       default: 5,
     },
+    showUpdates: Boolean,
   },
   data() {
     return {
@@ -215,7 +219,7 @@ export default {
       this.appInfo.isShown = true;
       this.appInfo.app = app;
     },
-    toggleInstalledInstances(app) {
+    toggleExpandInstances(app) {
       app.expandInstances = !app.expandInstances;
     },
     isInstanceUpgradable(app, instance) {
@@ -233,6 +237,21 @@ export default {
       setTimeout(() => {
         context.appInfo.isShown = false;
       }, 250);
+    },
+    getInstancesToShow(app) {
+      if (this.showUpdates) {
+        // only show upgradable instances
+        return app.installed.filter((installedInstance) => {
+          return app.updates.find((update) => {
+            return (
+              update.id === installedInstance.id &&
+              update.node === installedInstance.node
+            );
+          });
+        });
+      } else {
+        return app.installed;
+      }
     },
   },
 };

@@ -32,7 +32,8 @@
         </cv-side-nav-menu-item>
       </cv-side-nav-menu>
       <cv-side-nav-link
-        to="/software-center"
+        v-if="getUpdatesCount > 0"
+        to="/software-center?view=updates"
         :active="isLinkActive('/software-center')"
       >
         <template v-slot:nav-icon><Application20 /></template>
@@ -41,6 +42,14 @@
           <span>{{ $t("software_center.title") }}</span>
           <span class="yellow-badge right-badge"></span>
         </div>
+      </cv-side-nav-link>
+      <cv-side-nav-link
+        v-else
+        to="/software-center"
+        :active="isLinkActive('/software-center')"
+      >
+        <template v-slot:nav-icon><Application20 /></template>
+        <span>{{ $t("software_center.title") }}</span>
       </cv-side-nav-link>
       <cv-side-nav-link href="javascript:void(0)">
         <template v-slot:nav-icon><Save20 /></template>
@@ -65,6 +74,7 @@ import Save20 from "@carbon/icons-vue/es/save/20";
 import Settings20 from "@carbon/icons-vue/es/settings/20";
 import Catalog20 from "@carbon/icons-vue/es/catalog/20";
 import Application20 from "@carbon/icons-vue/es/application/20";
+import { mapGetters } from "vuex";
 
 export default {
   name: "SideMenuContent",
@@ -78,6 +88,9 @@ export default {
   },
   data() {
     return {};
+  },
+  computed: {
+    ...mapGetters(["getUpdatesCount"]),
   },
   methods: {
     isLinkActive(path) {

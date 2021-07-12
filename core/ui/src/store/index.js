@@ -15,6 +15,8 @@ export default new Vuex.Store({
       message: "",
       reconnectError: false,
     },
+    // apps to update
+    updates: [],
   },
   getters: {
     unreadNotifications: (state, getters) => {
@@ -69,6 +71,9 @@ export default new Vuex.Store({
 
       return taskFound;
     },
+    getUpdatesCount: (state) => {
+      return state.updates.length;
+    },
   },
   mutations: {
     createNotification(state, notification) {
@@ -108,6 +113,9 @@ export default new Vuex.Store({
     },
     setLoggedUser(state, username) {
       state.loggedUser = username;
+    },
+    setUpdates(state, updates) {
+      state.updates = updates;
     },
     //// does it work?
     SOCKET_ONOPEN(state, event) {
@@ -168,6 +176,9 @@ export default new Vuex.Store({
     setLoggedUserInStore(context, username) {
       context.commit("setLoggedUser", username);
     },
+    setUpdatesInStore(context, updates) {
+      context.commit("setUpdates", updates);
+    },
   },
   modules: {},
 });
@@ -175,8 +186,6 @@ export default new Vuex.Store({
 // helper functions
 
 function searchTask(taskId, tasks) {
-  // console.log("searchTask()  taskid ", taskId, "tasks", tasks); ////
-
   if (!tasks.length) {
     return null;
   }
@@ -185,7 +194,6 @@ function searchTask(taskId, tasks) {
 
   for (const task of tasks) {
     if (task.context && task.context.id === taskId) {
-      // console.log("task found!!", task.context.id); ////
       return task;
     } else {
       subTasks = subTasks.concat(task.subTasks);
@@ -194,13 +202,3 @@ function searchTask(taskId, tasks) {
   // recursive search
   return searchTask(taskId, subTasks);
 }
-
-// function mergeNotifications(oldNotification, newNotification) { //// remove
-//   // Replace oldNotification attributes with newNotification ones.
-//   // Useful if oldNotification has reactive properties to preserve
-//   console.log("mergeNotifications", oldNotification, newNotification); ////
-
-//   for (const prop in newNotification) {
-//     oldNotification[prop] = newNotification[prop];
-//   }
-// }

@@ -54,7 +54,7 @@
     "status": "Status",
     "search": "Search",
     "account": "Account",
-    "applications": "Applications",
+    "app_launcher": "App launcher",
     "search_placeholder": "Search...",
     "no_search_results": "No results",
     "no_search_results_description": "Try changing your search query"
@@ -86,7 +86,8 @@
     "add-repository": "Add repository",
     "alter-repository": "Alter repository",
     "remove-repository": "Remove repository",
-    "list-modules": "List modules"
+    "list-modules": "List modules",
+    "list-updates": "List updates"
   },
   "network": {
     "title": "Network"

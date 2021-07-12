@@ -22,6 +22,7 @@ import { mapActions } from "vuex";
 import to from "await-to-js";
 import LoginService from "@/mixins/login";
 import TaskErrorModal from "@/components/TaskErrorModal";
+import TaskService from "@/mixins/task";
 
 export default {
   name: "App",
@@ -31,7 +32,7 @@ export default {
     MobileSideMenu,
     TaskErrorModal,
   },
-  mixins: [StorageService, WebSocketService, LoginService],
+  mixins: [StorageService, WebSocketService, LoginService, TaskService],
   computed: {
     ...mapState(["loggedUser"]),
   },
@@ -40,14 +41,14 @@ export default {
     this.$root.$on("login", this.initNs8);
     this.$root.$on("logout", this.logout);
 
+    this.configureAxiosInterceptors();
+
     // check login
     const loginInfo = this.getFromStorage("loginInfo");
     if (loginInfo && loginInfo.username) {
       this.setLoggedUserInStore(loginInfo.username);
+      this.initNs8();
     }
-
-    this.configureAxiosInterceptors();
-    this.initNs8();
   },
   beforeDestroy() {
     // remove all event listeners
@@ -57,6 +58,7 @@ export default {
   },
   methods: {
     ...mapActions(["setLoggedUserInStore"]),
+    ...mapActions(["setUpdatesInStore"]),
     configureAxiosInterceptors() {
       const context = this;
       axios.interceptors.response.use(
@@ -103,7 +105,54 @@ export default {
       this.initWebSocket();
 
       // check for updates
-      ////
+      this.listUpdates();
+    },
+    async listUpdates() {
+      const taskAction = "list-updates";
+
+      // register to task completion
+      this.$root.$on(taskAction + "-completed", this.listUpdatesCompleted);
+
+      const res = await to(
+        this.createTask({
+          action: taskAction,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        this.createTaskErroNotification(
+          err,
+          this.$t("task.cannot_create_task", { action: taskAction })
+        );
+        return;
+      }
+    },
+    listUpdatesCompleted(taskContext, taskResult) {
+      // unregister from event
+      this.$root.$off("list-updates-completed");
+
+      let updates = taskResult.output;
+
+      console.log("updates", updates); ////
+
+      //// add fake updates
+      updates.push({
+        id: "traefik7",
+        node: "1",
+        version: "1.2",
+      });
+      updates.push({
+        id: "test8",
+        node: "1",
+        version: "1.2",
+      }); ////
+
+      this.setUpdatesInStore(updates);
     },
   },
 };

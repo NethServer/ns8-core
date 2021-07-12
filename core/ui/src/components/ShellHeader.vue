@@ -79,8 +79,8 @@
         <user-avatar-20 />
       </cv-header-global-action>
       <cv-header-global-action
-        :label="$t('shell.applications')"
-        :aria-label="$t('shell.applications')"
+        :label="$t('shell.app_launcher')"
+        :aria-label="$t('shell.app_launcher')"
         @click="toggleAppDrawer"
         tipPosition="bottom"
         tipAlignment="end"
@@ -128,7 +128,11 @@ export default {
   },
   computed: {
     ...mapState(["isNotificationDrawerShown", "notifications"]),
-    ...mapGetters(["unreadNotificationsCount", "ongoingNotificationsCount"]),
+    ...mapGetters([
+      "unreadNotificationsCount",
+      "ongoingNotificationsCount",
+      "getUpdatesCount",
+    ]),
   },
   methods: {
     ...mapActions(["setIsNotificationDrawerShownInStore"]),

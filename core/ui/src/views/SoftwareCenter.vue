@@ -24,7 +24,7 @@
           />
         </div>
       </div>
-      <div class="bx--row">
+      <div v-if="q.view !== 'updates'" class="bx--row">
         <div class="bx--col-lg-16">
           <NsInlineNotification
             v-if="updates.length"
@@ -129,7 +129,7 @@
                   >
                 </div>
                 <NsEmptyState
-                  v-if="updates.length && !loading.modules"
+                  v-if="!updates.length && !loading.modules"
                   :title="$t('software_center.system_up_to_date')"
                   key="updates-empty-state"
                 >
@@ -143,6 +143,7 @@
                   :isUpdatingAll="isUpdatingAll"
                   :skeleton="loading.modules"
                   @install="openInstallModal"
+                  :showUpdates="true"
                 />
               </div>
             </section>
@@ -246,6 +247,7 @@ import to from "await-to-js";
 import UtilService from "@/mixins/util";
 import TaskService from "@/mixins/task";
 import NodeService from "@/mixins/node";
+import { mapActions } from "vuex";
 
 let nethserver = window.nethserver;
 
@@ -277,6 +279,7 @@ export default {
       searchFields: ["name", "description", "categories"],
       searchResults: [],
       modules: [],
+      updates: [],
       // installedApps: [], ////
       // upgradableApps: [], ////
       updateAllAppsTimeout: 0,
@@ -495,12 +498,6 @@ export default {
         return app.installed.length;
       });
     },
-    updates() {
-      console.log("installedModules, ", this.modules); ////
-      return this.modules.filter((app) => {
-        return app.updates.length;
-      });
-    },
     selectedNode() {
       return this.nodes.find((n) => n.selected);
     },
@@ -541,6 +538,7 @@ export default {
     this.listModules();
   },
   methods: {
+    ...mapActions(["setUpdatesInStore"]),
     async retrieveClusterNodes() {
       // get cluster nodes
       const [errNodes, responseNodes] = await to(this.getNodes());
@@ -609,11 +607,35 @@ export default {
         return m;
       });
 
-      console.log("modules", this.modules); ////
+      console.log("modules", modules); ////
 
       this.modules = modules;
-
       this.loading.modules = false;
+
+      let updates = [];
+
+      for (const module of modules) {
+        //// add fake update
+        if (module.name === "traefik") {
+          module.installed.push({
+            id: "traefik7",
+            node: "1",
+            version: "1.2",
+          });
+          module.updates.push({
+            id: "traefik7",
+            node: "1",
+            version: "1.2",
+          });
+        } ////
+
+        if (module.updates.length) {
+          updates.push(module);
+        }
+      }
+
+      this.setUpdatesInStore(updates);
+      this.updates = updates;
     },
     searchApp(query) {
       console.log("searchApp", query); ////

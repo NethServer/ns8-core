@@ -45,12 +45,8 @@ export default {
       if (!notification.isHidden) {
         this.showNotification(notification);
       }
-
-      console.log("SHOW NOTIF JUST CREATED", notification.id); ////
     },
     showNotification(notification) {
-      console.log("SHOWING", notification.id); ////
-
       const toast = {
         component: NsToastNotification,
         props: {
@@ -249,7 +245,6 @@ export default {
         // emit validationOk if validation is successful
         let taskValidated = false;
         const task = this.getTaskById(taskContext.id);
-        console.log("task running task found", task); ////
 
         if (task) {
           taskValidated = task.validated;
@@ -307,29 +302,12 @@ export default {
 
           if (this.shouldShowNotification(notification, taskStatus)) {
             this.showNotification(notification);
-
-            console.log(
-              "SHOW NOTIF BECAUSE HAS COMPLETED",
-              taskStatus,
-              notification.id
-            ); ////
           }
         }
 
-        // if ( ////
-        //   !(taskContext.extra && taskContext.extra.isNotificationHidden) ||
-        //   ["aborted", "validation-failed"].includes(taskStatus)
-        // ) {
         this.putNotification(notification);
-
-        console.log("PUT NOTIF", taskStatus, notification.id); ////
-        // } else { ////
-        //   //// remove else
-        //   console.log("NOT PUTTING NOTIF..."); ////
-        // }
       }
     },
-    //// remove method?
     shouldShowNotification(notification, taskStatus) {
       // - show notification unless isNotificationHidden is true
       // - error notifications are shown even if isNotificationHidden is true
