@@ -45,12 +45,11 @@ tasks = [{
 } for knode in rdb.scan_iter('node/*/vpn')]
 
 # Parallel tasks run
-results = agent.tasks.runp(
+errors = agent.tasks.runp_brief(
     tasks,
     endpoint="redis://cluster-leader",
 )
 
-for result in results:
-    agent.assert_exp(result['exit_code'] == 0)
+agent.assert_exp(errors == 0)
 
 print("true") # Honor output JSON schema

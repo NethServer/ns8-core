@@ -71,7 +71,6 @@ ip_address = str(network.network() + node_id)
 agent.assert_exp(rdb.hset(f'node/{node_id}/vpn', mapping={
     "public_key": public_key,
     "ip_address": ip_address,
-    "destinations": ip_address + '/32',
     "endpoint": endpoint,
     "listen_port": str(listen_port),
 }) >= 0)
@@ -97,13 +96,13 @@ agent.assert_exp(rdb.execute_command('ACL', 'SETUSER',
 ) == 'OK')
 
 #
-# Add the WireGuard peer configuration
+# Route peer traffic through the WireGuard VPN (add-node => add-route => update-routes)
 #
-peers = {pkey: rdb.hgetall(pkey) for pkey in rdb.scan_iter('node/*/vpn')}
-agent.save_wgconf(leader_ip_address, leader_listen_port, peers)
-agent.run_helper(*f'wg set wg0 peer {public_key} persistent-keepalive 25 allowed-ips {ip_address}'.split(' ')).check_returncode()
-agent.run_helper(*f'ip route del {ip_address}'.split(' ')) # Ignore error
-agent.run_helper(*f'ip route add {ip_address} dev wg0'.split(' ')).check_returncode()
+add_route_result = agent.tasks.run(agent_prefix='cluster', action='add-route', endpoint="redis://cluster-leader", data={
+    'network': ip_address + '/32',
+    'node_id': node_id,
+})
+agent.assert_exp(add_route_result['exit_code'] == 0)
 
 # Install core modules in the new node
 for core_module_image in ['traefik', 'ldapproxy']:

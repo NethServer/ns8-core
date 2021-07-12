@@ -52,7 +52,7 @@ for req in requests:
                 print(agent.SD_ERR, f"Failed to store the destinations set of node/{self_id}: {destinations}", file=sys.stderr)
     else:
         # Apply immediately the new configuration to the WireGuard wg0 interface...
-        wset_proc = agent.run_helper(*f'wg set wg0 peer {pconf["public_key"]} allowed-ips {",".join(destinations)}'.split())
+        wset_proc = agent.run_helper(*f'wg set wg0 peer {pconf["public_key"]} persistent-keepalive 25 allowed-ips {",".join(destinations)}'.split())
         if wset_proc.returncode != 0:
             errors +=1
             print(agent.SD_ERR, f'Runtime change of allowed-ips has failed for peer node/{req["node_id"]}', file=sys.stderr)
