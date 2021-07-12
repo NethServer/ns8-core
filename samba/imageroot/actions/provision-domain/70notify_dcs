@@ -39,7 +39,7 @@ for key in rdb.scan_iter(match='module/samba*/environment'):
     elif rdb.hget(key, 'REALM') != os.environ['REALM']:
         continue # skip DCs of other realms
 
-    peer_agent_id = key.stripsuffix('/environment')
+    peer_agent_id = key.removesuffix('/environment')
     tasks.append({
         'agent_id': peer_agent_id,
         'action': 'add-dc',
