@@ -6,7 +6,8 @@
   "examples": [
     [
       {
-        "name": "dokuwiki",
+        "id": "dokuwiki",
+        "name": "Dokuwiki",
         "description": {
           "en": "Auto-generated description for traefik"
         },
@@ -65,9 +66,13 @@
   "items": {
     "type": "object",
     "properties": {
+     "id": {
+        "type": "string",
+        "description": "Unique id of a package"
+      },
       "name": {
         "type": "string",
-        "description": "Unique name of a package"
+        "description": "Common name of a package"
       },
       "description": {
         "type": "object",
