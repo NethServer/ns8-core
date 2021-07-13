@@ -26,6 +26,15 @@ import urllib
 import os.path
 import urllib.request
 
+def __urljoin(base_path, *args):
+    '''replace urllib.parse.joinurl because it doesn't handle multiple parameters
+    '''
+    parts = [base_path]
+    for arg in args:
+        # also make sure to escape special chars using quote
+        parts.append(urllib.parse.quote(arg))
+    return "/".join(part.strip("/") for part in parts)
+
 def __parse_repository_metadata(repository_name, repository_url, repository_updated, repodata):
     modules = []
 
@@ -40,14 +49,12 @@ def __parse_repository_metadata(repository_name, repository_url, repository_upda
 
         # Set absolute path for logo
         if package["logo"]:
-           # make sure escape special chars
-           package["logo"] = urllib.parse.urljoin(repository_url, urllib.parse.quote(package["logo"]))
+           package["logo"] = __urljoin(repository_url, package["id"], package["logo"])
 
         # Set absolute path for screenshots
         screenshots = []
         for s in package["screenshots"]:
-           # make sure escape special chars
-           screenshots.append(urllib.parse.urljoin(repository_url, urllib.parse.quote(s)))
+           screenshots.append(__urljoin(repository_url, package["id"], s))
         package["screenshots"] = screenshots
 
         modules.append(package)
