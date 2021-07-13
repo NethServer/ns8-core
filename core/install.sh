@@ -63,8 +63,8 @@ fi
 
 # Pull modules from the given development branch
 imagetag="$1"
-shift
 if [[ -n "${imagetag}" ]]; then
+    shift
     for module in "${@}"; do
         podman pull "ghcr.io/nethserver/${module}:${imagetag}"
         echo "Tagging development branch ${module}:${imagetag} => ${module}:latest"
