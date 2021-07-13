@@ -26,7 +26,7 @@ import urllib
 import os.path
 import urllib.request
 
-def __urljoin(base_path, *args):
+def _urljoin(base_path, *args):
     '''replace urllib.parse.joinurl because it doesn't handle multiple parameters
     '''
     parts = [base_path]
@@ -35,7 +35,7 @@ def __urljoin(base_path, *args):
         parts.append(urllib.parse.quote(arg))
     return "/".join(part.strip("/") for part in parts)
 
-def __parse_repository_metadata(repository_name, repository_url, repository_updated, repodata):
+def _parse_repository_metadata(repository_name, repository_url, repository_updated, repodata):
     modules = []
 
     try:
@@ -49,12 +49,12 @@ def __parse_repository_metadata(repository_name, repository_url, repository_upda
 
         # Set absolute path for logo
         if package["logo"]:
-           package["logo"] = __urljoin(repository_url, package["id"], package["logo"])
+           package["logo"] = _urljoin(repository_url, package["id"], package["logo"])
 
         # Set absolute path for screenshots
         screenshots = []
         for s in package["screenshots"]:
-           screenshots.append(__urljoin(repository_url, package["id"], s))
+           screenshots.append(_urljoin(repository_url, package["id"], s))
         package["screenshots"] = screenshots
 
         modules.append(package)
@@ -62,11 +62,11 @@ def __parse_repository_metadata(repository_name, repository_url, repository_upda
     return modules
 
 
-def __list_repository_modules(rdb, repository_name, repository_url):
+def _list_repository_modules(rdb, repository_name, repository_url):
     key = f'cluster/repository_cache/{repository_name}'
     cache = rdb.hgetall(key)
     if cache:
-        return __parse_repository_metadata(repository_name, repository_url, cache["updated"], cache["data"])
+        return _parse_repository_metadata(repository_name, repository_url, cache["updated"], cache["data"])
 
     try:
         url = urllib.parse.urljoin(repository_url, "repodata.json")
@@ -77,7 +77,7 @@ def __list_repository_modules(rdb, repository_name, repository_url):
         return []
 
     updated = req.headers.get('Last-Modified', "")
-    modules = __parse_repository_metadata(repository_name, repository_url, updated, repodata)
+    modules = _parse_repository_metadata(repository_name, repository_url, updated, repodata)
     # Save inside the cache if data is valid
     if modules:
         # Save also repodata file date
@@ -96,7 +96,7 @@ def list_available(rdb):
         if int(repo["status"]) == 0:
             continue
         
-        modules.extend(__list_repository_modules(rdb, os.path.basename(m), repo["url"]))
+        modules.extend(_list_repository_modules(rdb, os.path.basename(m), repo["url"]))
 
     return modules
 
@@ -150,5 +150,3 @@ def list_updates(rdb):
                 updates.append(update)
 
     return updates
-
-
