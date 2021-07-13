@@ -21,6 +21,7 @@ buildah config --entrypoint=/ \
     --label="org.nethserver.tcp-ports-demand=1" \
     --label="org.nethserver.rootfull=0" \
     --label="org.nethserver.authorizations=traefik@any:routeadm" \
+    --label="org.nethserver.images=docker.io/bitnami/dokuwiki:20200729.0.0-debian-10-r299" \
     "${container}"
 # Commit everything
 buildah commit "${container}" "${repobase}/${reponame}"
@@ -34,6 +35,6 @@ if [[ -n "${CI}" ]]; then
 else
     # Just print info for manual push
     printf "Publish the images with:\n\n"
-    for image in "${images[@]}"; do printf "  buildah push %s docker://%s:latest\n" "${image}" "${image}" ; done
+    for image in "${images[@]}"; do printf "  buildah push %s docker://%s:0.0.1\n" "${image}" "${image}" ; done
     printf "\n"
 fi
