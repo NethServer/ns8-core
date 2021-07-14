@@ -172,8 +172,6 @@ export default {
 
         const parentTask = this.getTaskById(taskContext.parent);
 
-        console.log("parentTask", parentTask); ////
-
         // check if subTask has already been added to subTasks list
         const subTask = parentTask.subTasks.find(
           (subTask) => subTask.context.id === taskContext.id
@@ -209,6 +207,8 @@ export default {
       } else {
         // root task
 
+        console.log("ROOT TASK, PROGRESS", payload.progress); ////
+
         let notificationType;
 
         switch (taskStatus) {
@@ -227,7 +227,18 @@ export default {
         let notificationText = payload.description;
 
         if (taskStatus === "completed") {
-          notificationText = this.$t("task.completed");
+          if (taskContext.action === "add-module") {
+            // completed description for add-module
+            notificationText = this.$t(
+              "software_center.instance_installed_on_node",
+              {
+                instance: taskResult.output.module_id,
+                node: taskContext.extra.node,
+              }
+            );
+          } else {
+            notificationText = this.$t("task.completed");
+          }
         } else if (taskStatus === "aborted") {
           notificationText = this.$t("error.generic_error");
         } else if (taskStatus === "validation-failed") {

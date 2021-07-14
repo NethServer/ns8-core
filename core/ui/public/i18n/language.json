@@ -154,7 +154,8 @@
     "choose_node_for_installation": "Select the node where {app} will be installed",
     "about_to_install_app": "{app} will be installed on the system",
     "cannot_retrieve_cluster_nodes": "Cannot retrieve cluster nodes",
-    "installing_app_on_node": "Installing {app} on node {node}",
+    "installing_on_node": "Installing on node {node}",
+    "instance_installed_on_node": "{instance} installed on node {node}",
     "app_categories": {
       "collaboration": "Collaboration",
       "system_administration": "System administration",

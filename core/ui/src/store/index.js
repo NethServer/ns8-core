@@ -43,17 +43,17 @@ export default new Vuex.Store({
     recentNotifications: (state) => {
       return state.notifications.filter(
         (notification) =>
-          !(
-            notification.task &&
-            !["completed", "aborted", "validation-failed"].includes(
+          // task errors
+          (notification.task &&
+            ["aborted", "validation-failed"].includes(
               notification.task.status
-            ) &&
-            !notification.isHidden
-          ) &&
-          (!notification.task ||
-            !["completed", "pending", "running"].includes(
-              notification.task.status
-            ))
+            )) ||
+          // task completed with isHidden = false
+          (notification.task &&
+            !notification.isHidden &&
+            ["completed"].includes(notification.task.status)) ||
+          // non-task notifications
+          !notification.task
       );
     },
     getNotificationById: (state) => (id) => {

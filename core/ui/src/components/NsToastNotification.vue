@@ -46,13 +46,6 @@
             `row`,
           ]"
         >
-          <!-- <cv-link ////
-            @click="$emit('notificationAction', id)"
-            :class="`action-button`"
-          >
-            {{ actionLabel }}
-          </cv-link> -->
-
           <button
             @click="$emit('notificationAction', id)"
             :class="[
@@ -175,10 +168,6 @@ export default {
 .progress-bar-spacer {
   height: $spacing-03;
 }
-
-// .progress-number { ////
-//   margin-bottom: $spacing-04;
-// }
 
 .cv-notifiation.bx--toast-notification.notification {
   width: 26vw;

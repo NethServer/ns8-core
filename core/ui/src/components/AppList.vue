@@ -174,7 +174,7 @@ export default {
     skeleton: Boolean,
     skeletonRows: {
       type: Number,
-      default: 5,
+      default: 8,
     },
     showUpdates: Boolean,
   },
@@ -192,6 +192,20 @@ export default {
   },
   watch: {
     apps: function () {
+      this.appsLoaded = [];
+      this.pageNum = 0;
+
+      if (this.showUpdates) {
+        // expand all app instances to have "Update" buttons more accessible
+        for (const app of this.apps) {
+          app.expandInstances = true;
+        }
+      } else {
+        // collapse all app instances
+        for (const app of this.apps) {
+          app.expandInstances = false;
+        }
+      }
       this.infiniteScrollHandler();
     },
   },

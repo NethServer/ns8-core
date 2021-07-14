@@ -512,13 +512,11 @@ export default {
   },
   beforeRouteEnter(to, from, next) {
     next((vm) => {
-      console.log("beforeRouteEnter", to, from); ////
       nethserver.watchQueryData(vm);
       vm.queryParamsToData(vm, to.query);
     });
   },
   beforeRouteUpdate(to, from, next) {
-    console.log("beforeRouteUpdate", to, from); ////
     this.queryParamsToData(this, to.query);
     next();
   },
@@ -550,11 +548,8 @@ export default {
       nodes = nodes.map((n) => {
         return { id: n, selected: false };
       });
+      nodes[0].selected = true;
 
-      // if there is only a node, select the first
-      if (nodes.length == 1) {
-        nodes[0].selected = true;
-      }
       this.nodes = nodes;
     },
     async listModules() {
@@ -596,7 +591,6 @@ export default {
 
       this.modules = modules;
       this.loading.modules = false;
-
       let updates = [];
 
       for (const module of modules) {
@@ -623,8 +617,6 @@ export default {
       this.updates = updates;
     },
     searchApp(query) {
-      console.log("searchApp", query); ////
-
       // clean query
       const cleanRegex = /[^a-zA-Z0-9]/g;
       const queryText = query.replace(cleanRegex, "");
@@ -711,19 +703,24 @@ export default {
     async installInstance() {
       const taskAction = "add-module";
 
+      // register to task completion
+      this.$root.$on(taskAction + "-completed", this.addModuleCompleted);
+
       const res = await to(
         this.createTask({
           action: taskAction,
           data: {
-            image: this.appToInstall.name,
+            image: this.appToInstall.source + ":latest",
             node: parseInt(this.selectedNode.id),
           },
           extra: {
-            title: this.$t("action." + taskAction),
-            description: this.$t("software_center.installing_app_on_node", {
+            title: this.$t("software_center.app_installation", {
               app: this.appToInstall.name,
+            }),
+            description: this.$t("software_center.installing_on_node", {
               node: this.selectedNode.id,
             }),
+            node: this.selectedNode.id,
           },
         })
       );
@@ -738,6 +735,13 @@ export default {
       }
 
       this.isShownInstallModal = false;
+    },
+    addModuleCompleted() {
+      // unregister from event
+      this.$root.$off("add-module-completed");
+
+      // reload apps
+      this.listModules();
     },
     deselectOtherNodes(node) {
       for (let n of this.nodes) {

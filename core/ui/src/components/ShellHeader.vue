@@ -33,8 +33,6 @@
         >Dashboard w/p 2</cv-header-menu-item
       > -->
       <!--  //// -->
-      <cv-header-menu-item to="/tasks">Tasks</cv-header-menu-item>
-      <cv-header-menu-item to="/login">Login</cv-header-menu-item>
       <cv-header-menu-item @click="logout">Logout</cv-header-menu-item>
       <cv-header-menu-item to="/apps/ns8-app">Ns8 app</cv-header-menu-item>
       <cv-header-menu-item to="/apps/ns8-app?appInput=testAppInput"
