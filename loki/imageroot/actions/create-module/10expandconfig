@@ -26,14 +26,21 @@ cat >traefik.yaml <<EOF
 http:
   routers:
     loki-log-ingress:
-      rule: "Path(\`/loki/api/v1/push\`)"
+      rule: "Path(\`/loki/api/v1/push\`) && Headers(\`Authorization\`, \`Bearer ${LOKI_LOGS_INGRESS_TOKEN}\`)"
       service: loki
     loki-api:
       rule: "PathPrefix(\`/\`)"
       service: loki
+      middlewares:
+        - loki-auth
   services:
     loki:
       loadBalancer:
         servers:
         - url: "http://127.0.0.1:3100"
+  middlewares:
+    loki-auth:
+      basicAuth:
+        users:
+          - "${LOKI_API_AUTH_USERNAME}:$(openssl passwd -apr1 ${LOKI_API_AUTH_PASSWORD})"
 EOF
