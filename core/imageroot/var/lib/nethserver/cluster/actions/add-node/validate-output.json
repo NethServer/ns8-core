@@ -10,7 +10,10 @@
             "leader_public_key": "aoBydmHg2WWv5OqYM1ZegcCdC6dev+IHnoNv3ftNY2U=",
             "network": "10.5.4.0/24",
             "leader_ip_address": "10.5.4.1",
-            "leader_endpoint": "fc1.example.com:55820"
+            "leader_endpoint": "fc1.example.com:55820",
+            "subtasks": [
+                "cluster/task/6b7bc618-3281-41bb-a4f0-6af44b4131c9"
+            ]
         }
     ],
     "type": "object",
@@ -59,6 +62,19 @@
                 "my.example.com:55820",
                 "1.2.3.4:55820"
             ]
+        },
+        "subtasks": {
+            "type": "array",
+            "items": {
+                "oneOf": [
+                    {
+                        "type": "string"
+                    },
+                    {
+                        "type": "null"
+                    }
+                ]
+            }
         }
     }
 }

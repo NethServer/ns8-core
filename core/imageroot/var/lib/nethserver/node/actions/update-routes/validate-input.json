@@ -1,0 +1,11 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "update-routes input",
+    "$id": "http://schema.nethserver.org/node/update-routes-input.json",
+    "description": "Just an empty object",
+    "examples": [
+        {}
+    ],
+    "type": "object",
+    "properties": {}
+}
