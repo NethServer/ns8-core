@@ -582,6 +582,7 @@ export default {
       // unregister from event
       this.$root.$off("list-modules-completed");
 
+      this.loading.modules = false;
       let modules = taskResult.output;
 
       modules = modules.map((m) => {
@@ -589,20 +590,28 @@ export default {
         return m;
       });
 
-      this.modules = modules;
-      this.loading.modules = false;
       let updates = [];
 
       for (const module of modules) {
-        //// add fake update
+        //// add fake updates
         if (module.name === "traefik") {
           module.installed.push({
-            id: "traefik7",
+            id: "traefik77",
+            node: "1",
+            version: "1.2",
+          });
+          module.installed.push({
+            id: "traefik88",
             node: "1",
             version: "1.2",
           });
           module.updates.push({
-            id: "traefik7",
+            id: "traefik77",
+            node: "1",
+            version: "1.2",
+          });
+          module.updates.push({
+            id: "traefik88",
             node: "1",
             version: "1.2",
           });
@@ -611,10 +620,14 @@ export default {
         if (module.updates.length) {
           updates.push(module);
         }
+
+        // sort installed instances
+        module.installed.sort(this.sortModuleInstances());
       }
 
       this.setUpdatesInStore(updates);
       this.updates = updates;
+      this.modules = modules;
     },
     searchApp(query) {
       // clean query
