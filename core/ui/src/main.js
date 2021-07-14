@@ -17,11 +17,22 @@ axios.defaults.timeout = 10000;
 import VueAxios from "vue-axios";
 Vue.use(VueAxios, axios);
 
+import vueDebounce from "vue-debounce";
+Vue.use(vueDebounce);
+
 import VueNativeSock from "vue-native-websocket";
 Vue.use(VueNativeSock, "ws://", {
   reconnection: true,
   reconnectionDelay: 3000,
   connectManually: true,
+});
+
+import InfiniteLoading from "vue-infinite-loading";
+Vue.use(InfiniteLoading, {
+  slots: {
+    noResults: "",
+    noMore: "",
+  },
 });
 
 // i18n

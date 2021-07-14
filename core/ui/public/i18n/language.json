@@ -11,7 +11,19 @@
     "optional": "optional",
     "expand": "Expand",
     "collapse": "Collapse",
-    "reset_filters": "Reset filters"
+    "reset_filters": "Reset filters",
+    "menu": "Menu",
+    "clear_search": "Clear search",
+    "settings": "Settings",
+    "cancel": "Cancel",
+    "undo": "Undo",
+    "node": "Node",
+    "version": "Version",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "edit": "Edit",
+    "delete": "Delete",
+    "required": "Required"
   },
   "error": {
     "error": "Error",
@@ -42,7 +54,7 @@
     "status": "Status",
     "search": "Search",
     "account": "Account",
-    "applications": "Applications",
+    "app_launcher": "App launcher",
     "search_placeholder": "Search...",
     "no_search_results": "No results",
     "no_search_results_description": "Try changing your search query"
@@ -65,7 +77,17 @@
     "subtask_pending": "Subtask <strong>{action}</strong> is pending",
     "subtask_failed_validation": "Subtask <strong>{action}</strong> failed validation",
     "completed": "Completed",
-    "configure": "Configure"
+    "configure": "Configure",
+    "cannot_create_task": "Cannot create task {action}"
+  },
+  "action": {
+    "add-module": "Add module",
+    "list-repositories": "List repositories",
+    "add-repository": "Add repository",
+    "alter-repository": "Alter repository",
+    "remove-repository": "Remove repository",
+    "list-modules": "List modules",
+    "list-updates": "List updates"
   },
   "network": {
     "title": "Network"
@@ -77,10 +99,69 @@
     "title": "Backup"
   },
   "settings": {
-    "title": "Settings"
+    "title": "Settings",
+    "sw_repositories": "Software repositories"
+  },
+  "settings_sw_repositories": {
+    "no_sw_repositories": "No software repositories",
+    "no_sw_repositories_description": "You can create one by clicking on the button below",
+    "create_repository": "Create repository",
+    "name": "Name",
+    "url": "URL",
+    "status": "Status",
+    "testing": "Testing",
+    "edit_repository": "Edit repository",
+    "repository_same_name_already_exists": "A repository with this name already exists",
+    "repository_same_url_already_exists": "A repository with this URL already exists",
+    "repository_not_accessible": "Repository not accessible",
+    "repository_deleted": "Repository {repo} deleted"
   },
   "software_center": {
-    "title": "Software center"
+    "title": "Software center",
+    "search_placeholder": "Start typing to search apps...",
+    "software_updates": "Updates",
+    "you_have_updates": "You have {numUpdates} app to update | You have {numUpdates} apps to update",
+    "all": "All",
+    "installed": "Installed",
+    "updates": "Updates",
+    "install": "Install",
+    "install_new_instance": "Install new instance",
+    "other_actions": "Other actions",
+    "search_results": "Search results",
+    "no_apps_found": "No apps found",
+    "no_apps": "No apps",
+    "no_apps_found_description": "Try changing your search query",
+    "open": "Open",
+    "update": "Update",
+    "update_all": "Update all apps",
+    "update_will_start_in_a_moment": "Update will start in a moment...",
+    "add_to_launcher": "Add to launcher",
+    "details": "Details",
+    "uninstall": "Uninstall",
+    "system_up_to_date": "Your system is up to date",
+    "instances": "Instances",
+    "app_info": "App info",
+    "categories": "Category | Categories",
+    "latest_version": "Latest version",
+    "source": "Source",
+    "repository": "Repository",
+    "documentation": "Documentation",
+    "bugs": "Bugs",
+    "source_code": "Source code",
+    "source_package": "Source package",
+    "authors": "Author | Authors",
+    "app_installation": "{app} installation",
+    "choose_node_for_installation": "Select the node where {app} will be installed",
+    "about_to_install_app": "{app} will be installed on the system",
+    "cannot_retrieve_cluster_nodes": "Cannot retrieve cluster nodes",
+    "installing_on_node": "Installing on node {node}",
+    "instance_installed_on_node": "{instance} installed on node {node}",
+    "app_categories": {
+      "collaboration": "Collaboration",
+      "system_administration": "System administration",
+      "office": "Office",
+      "documentation": "Documentation"
+    }
   },
   "logs": {
     "title": "Logs",
@@ -105,9 +186,5 @@
     "no_logs_found": "No logs found",
     "no_logs_found_description": "Try changing your search filters",
     "invalid_interval": "Invalid time interval"
-  },
-  "validation": {
-    "name_is_empty": "Name is empty ////",
-    "email_is_empty": "Email is empty ////"
   }
 }

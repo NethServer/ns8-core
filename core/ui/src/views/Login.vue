@@ -12,7 +12,6 @@
                   kind="error"
                   :title="$t('login.cannot_login')"
                   :description="error.login"
-                  low-contrast
                   :showCloseButton="false"
                 />
                 <cv-form @submit.prevent="checkUsername" class="login-form">
@@ -168,7 +167,9 @@ export default {
 
         this.saveToStorage("loginInfo", loginInfo);
         this.setLoggedUserInStore(this.username);
-        this.initWebSocket();
+
+        // emit login event to initialize webapp (connect ws, invoke api...)
+        this.$root.$emit("login");
 
         const queryParams = nethserver.getQueryParamsForCore();
 
@@ -191,7 +192,7 @@ export default {
       let errorMessage = this.$t("error.generic_error");
 
       if (error.response) {
-        switch (error.response.data.Code) {
+        switch (error.response.data.code) {
           case 401:
             errorMessage = this.$t("error.invalid_username_or_password");
             break;

@@ -8,11 +8,7 @@ export default {
   name: "NotificationService",
   computed: {
     ...mapState(["notifications"]),
-    ...mapGetters([
-      "getNotificationById",
-      "getNotificationByTaskId",
-      "getTaskById",
-    ]),
+    ...mapGetters(["getNotificationById", "getTaskById"]),
   },
   methods: {
     ...mapActions([
@@ -45,8 +41,10 @@ export default {
       // create notification in vuex store
       this.createNotificationInStore(notification);
 
-      // show toast notification
-      this.showNotification(notification);
+      // show toast notification (if isHidden is false)
+      if (!notification.isHidden) {
+        this.showNotification(notification);
+      }
     },
     showNotification(notification) {
       const toast = {
@@ -90,16 +88,21 @@ export default {
 
       console.log("toastId", toastId); ////
     },
-    putNotification(notification) {
+    notificationExists(notification) {
       const notificationFound = this.notifications.find(
         (n) => n.id === notification.id
       );
 
       if (notificationFound) {
-        // console.log("updating notification", notification); ////
+        return true;
+      } else {
+        return false;
+      }
+    },
+    putNotification(notification) {
+      if (this.notificationExists(notification)) {
         this.updateNotificationInStore(notification);
       } else {
-        // console.log("creating notification", notification); ////
         this.createNotification(notification);
       }
     },
@@ -128,7 +131,7 @@ export default {
       this.setIsNotificationDrawerShownInStore(false);
     },
     async handleProgressTaskMessage(taskPath, taskId, payload) {
-      const [err, response] = await to(this.getTaskContext(taskPath));
+      const [err, contextResponse] = await to(this.getTaskContext(taskPath));
 
       if (err) {
         console.error("error retrieving task info", err);
@@ -140,7 +143,7 @@ export default {
 
       if (["completed", "aborted", "validation-failed"].includes(taskStatus)) {
         // get output and error
-        const [err, response] = await to(this.getTaskStatus(taskPath));
+        const [err, statusResponse] = await to(this.getTaskStatus(taskPath));
 
         if (err) {
           const notification = {
@@ -151,7 +154,7 @@ export default {
           this.createNotification(notification);
         }
 
-        taskResult = response.data.Data;
+        taskResult = statusResponse.data.data;
 
         if (taskStatus === "validation-failed") {
           // show validation errors
@@ -159,7 +162,7 @@ export default {
         }
       }
 
-      const taskContext = response.data.Data.context;
+      const taskContext = contextResponse.data.data.context;
 
       console.log("taskContext", taskContext); ////
 
@@ -168,8 +171,6 @@ export default {
         // subtask
 
         const parentTask = this.getTaskById(taskContext.parent);
-
-        console.log("parentTask", parentTask); ////
 
         // check if subTask has already been added to subTasks list
         const subTask = parentTask.subTasks.find(
@@ -206,6 +207,8 @@ export default {
       } else {
         // root task
 
+        console.log("ROOT TASK, PROGRESS", payload.progress); ////
+
         let notificationType;
 
         switch (taskStatus) {
@@ -224,7 +227,18 @@ export default {
         let notificationText = payload.description;
 
         if (taskStatus === "completed") {
-          notificationText = this.$t("task.completed");
+          if (taskContext.action === "add-module") {
+            // completed description for add-module
+            notificationText = this.$t(
+              "software_center.instance_installed_on_node",
+              {
+                instance: taskResult.output.module_id,
+                node: taskContext.extra.node,
+              }
+            );
+          } else {
+            notificationText = this.$t("task.completed");
+          }
         } else if (taskStatus === "aborted") {
           notificationText = this.$t("error.generic_error");
         } else if (taskStatus === "validation-failed") {
@@ -232,13 +246,14 @@ export default {
         } else if (payload.description) {
           notificationText = payload.description;
         } else {
-          notificationText = taskContext.data.description;
+          notificationText = taskContext.extra
+            ? taskContext.extra.description
+            : "-";
         }
 
         // emit validationOk if validation is successful
         let taskValidated = false;
         const task = this.getTaskById(taskContext.id);
-        console.log("task running task found", task); ////
 
         if (task) {
           taskValidated = task.validated;
@@ -248,17 +263,18 @@ export default {
             !task.validated
           ) {
             // validation is ok (e.g.: close the modal that created the task)
-            this.$root.$emit("validationOk", task);
+            this.$root.$emit(taskContext.action + "-validation-ok", task);
             taskValidated = true;
           }
         }
 
         const notification = {
           id: taskId,
-          title: taskContext.data.title,
+          title: taskContext.extra ? taskContext.extra.title : "-",
           description: notificationText,
           type: notificationType,
           timestamp: payload.timestamp, ////
+          isHidden: taskContext.extra && taskContext.extra.isNotificationHidden,
           task: {
             context: taskContext,
             status: taskStatus,
@@ -271,6 +287,13 @@ export default {
         if (taskResult) {
           notification.task.result = taskResult;
 
+          // emit an event so that the component that requested the task can handle the result
+          this.$root.$emit(
+            taskContext.action + "-completed",
+            taskContext,
+            taskResult
+          );
+
           // set notification action
           let [actionLabel, action] = this.getActionParams(
             taskContext,
@@ -281,11 +304,23 @@ export default {
           notification.actionLabel = actionLabel;
           notification.action = action;
 
-          // show notification
-          this.showNotification(notification);
+          if (this.shouldShowNotification(notification, taskStatus)) {
+            this.showNotification(notification);
+          }
         }
+
         this.putNotification(notification);
       }
+    },
+    shouldShowNotification(notification, taskStatus) {
+      // - show notification unless isNotificationHidden is true
+      // - error notifications are shown even if isNotificationHidden is true
+      // - show notification only if it already exists (to avoid showing duplicate notifications if it is new but already completed)
+      return (
+        (!notification.isHidden ||
+          ["aborted", "validation-failed"].includes(taskStatus)) &&
+        this.notificationExists(notification)
+      );
     },
     getActionParams(taskContext, taskStatus, taskResult) {
       let [actionLabel, action] = ["", {}];

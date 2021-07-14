@@ -7,6 +7,17 @@ import Search20 from "@carbon/icons-vue/es/search/20";
 import RowExpand20 from "@carbon/icons-vue/es/row--expand/20";
 import RowCollapse20 from "@carbon/icons-vue/es/row--collapse/20";
 import Reset20 from "@carbon/icons-vue/es/reset/20";
+import Download20 from "@carbon/icons-vue/es/download/20";
+import Launch20 from "@carbon/icons-vue/es/launch/20";
+import Upgrade20 from "@carbon/icons-vue/es/upgrade/20";
+import Settings20 from "@carbon/icons-vue/es/settings/20";
+import ChevronDown20 from "@carbon/icons-vue/es/chevron--down/20";
+import ChevronUp20 from "@carbon/icons-vue/es/chevron--up/20";
+import Information20 from "@carbon/icons-vue/es/information/20";
+import Application20 from "@carbon/icons-vue/es/application/20";
+import Add20 from "@carbon/icons-vue/es/add/20";
+import Rocket20 from "@carbon/icons-vue/es/rocket/20";
+import Chip20 from "@carbon/icons-vue/es/chip/20";
 
 export default {
   name: "IconService",
@@ -21,6 +32,17 @@ export default {
       RowExpand20,
       RowCollapse20,
       Reset20,
+      Download20,
+      Launch20,
+      Upgrade20,
+      Settings20,
+      ChevronDown20,
+      ChevronUp20,
+      Information20,
+      Application20,
+      Add20,
+      Rocket20,
+      Chip20,
     };
   },
 };

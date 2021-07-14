@@ -30,6 +30,8 @@
     },
     "required": [
           "name",
-          "url"
+          "url",
+          "testing",
+          "status"
     ]
 }

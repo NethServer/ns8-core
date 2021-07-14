@@ -10,7 +10,7 @@
     <!-- spinning loader -->
     <span
       v-if="showLoading"
-      :class="['loading', `${carbonPrefix}--btn__icon`]"
+      :class="['loader', `${carbonPrefix}--btn__icon`]"
     ></span>
 
     <!-- icon -->
@@ -97,8 +97,7 @@ export default {
   height: 1rem;
 }
 
-.loading {
-  position: absolute;
+.loader {
   right: 1rem;
   border: 3px solid transparent;
   border-radius: 50%;

@@ -12,10 +12,13 @@
       $root.config.PRODUCT_NAME
     }}</cv-header-name>
     <cv-header-nav>
-      <cv-header-menu-item to="/dashboard" class="status"
-        ><span class="status-text">{{ $t("shell.status") }}</span
-        ><span class="status-badge"></span
-      ></cv-header-menu-item>
+      <cv-header-menu-item to="/dashboard" class="status">
+        <div class="badge-container">
+          <span>{{ $t("shell.status") }}</span>
+          <span class="green-badge right-badge"></span>
+        </div>
+      </cv-header-menu-item>
+
       <!-- <cv-header-menu-item
         to="/dashboard?testToggle=true&testInput=firstValue&testNumber=99"
         >Link 1</cv-header-menu-item
@@ -30,8 +33,6 @@
         >Dashboard w/p 2</cv-header-menu-item
       > -->
       <!--  //// -->
-      <cv-header-menu-item to="/tasks">Tasks</cv-header-menu-item>
-      <cv-header-menu-item to="/login">Login</cv-header-menu-item>
       <cv-header-menu-item @click="logout">Logout</cv-header-menu-item>
       <cv-header-menu-item to="/apps/ns8-app">Ns8 app</cv-header-menu-item>
       <cv-header-menu-item to="/apps/ns8-app?appInput=testAppInput"
@@ -76,8 +77,8 @@
         <user-avatar-20 />
       </cv-header-global-action>
       <cv-header-global-action
-        :label="$t('shell.applications')"
-        :aria-label="$t('shell.applications')"
+        :label="$t('shell.app_launcher')"
+        :aria-label="$t('shell.app_launcher')"
         @click="toggleAppDrawer"
         tipPosition="bottom"
         tipAlignment="end"
@@ -125,7 +126,11 @@ export default {
   },
   computed: {
     ...mapState(["isNotificationDrawerShown", "notifications"]),
-    ...mapGetters(["unreadNotificationsCount", "ongoingNotificationsCount"]),
+    ...mapGetters([
+      "unreadNotificationsCount",
+      "ongoingNotificationsCount",
+      "getUpdatesCount",
+    ]),
   },
   methods: {
     ...mapActions(["setIsNotificationDrawerShownInStore"]),
@@ -133,7 +138,6 @@ export default {
       this.setIsNotificationDrawerShownInStore(!this.isNotificationDrawerShown);
     },
     logout() {
-      console.log("emitting logout"); ////
       this.$root.$emit("logout");
     },
     expandSearch() {
@@ -192,20 +196,5 @@ export default {
   100% {
     transform: rotate(360deg);
   }
-}
-
-.status-text {
-  margin-right: $spacing-05;
-}
-
-.status-badge {
-  position: absolute;
-  top: 45%;
-  right: 16%;
-  height: 8px;
-  width: 8px;
-  background-color: $inverse-support-02;
-  border-radius: 50%;
-  display: inline-block;
 }
 </style>

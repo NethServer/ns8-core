@@ -10,13 +10,15 @@ export default {
         return this.$t("error.network_error");
       }
 
-      switch (error.response.status) {
-        case 401:
-          return this.$t("error.401");
-        case 403:
-          return this.$t("error.403");
-        case 404:
-          return this.$t("error.404");
+      if (error.response) {
+        switch (error.response.status) {
+          case 401:
+            return this.$t("error.401");
+          case 403:
+            return this.$t("error.403");
+          case 404:
+            return this.$t("error.404");
+        }
       }
 
       return this.$t("error.generic_error");
@@ -39,6 +41,39 @@ export default {
           return 1;
         }
         return 0;
+      };
+    },
+    /**
+     * Sort function for module instances (e.g. ["dokuwiki1", "dokuwiki2", "dokuwiki11"])
+     *
+     */
+    sortModuleInstances() {
+      return function (instance1, instance2) {
+        const instance1Name = instance1.id.split(/[0-9]+/)[0];
+        const instance1Number = parseInt(
+          instance1.id.substring(instance1Name.length)
+        );
+
+        const instance2Name = instance2.id.split(/[0-9]+/)[0];
+        const instance2Number = parseInt(
+          instance2.id.substring(instance2Name.length)
+        );
+
+        // compare instance names
+        if (instance1Name < instance2Name) {
+          return -1;
+        } else if (instance1Name > instance2Name) {
+          return 1;
+        } else {
+          // compare instance numbers
+          if (instance1Number < instance2Number) {
+            return -1;
+          } else if (instance1Number > instance2Number) {
+            return 1;
+          } else {
+            return 0;
+          }
+        }
       };
     },
     /**
