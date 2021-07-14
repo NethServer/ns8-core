@@ -24,6 +24,7 @@ import os
 import sys
 import json
 import agent
+import agent.tasks
 import ipcalc
 import uuid
 
@@ -65,12 +66,20 @@ network = ipcalc.Network(rdb.get('cluster/network'))
 node_id = int(rdb.incr(f'cluster/node_sequence'))
 ip_address = str(network.network() + node_id)
 
+# Prepare a list of tasks to update VPN routes on existing nodes
+update_routes_tasks = [{
+    'agent_id': knode.removesuffix('/vpn'),
+    'action': 'update-routes',
+    'data': {},
+} for knode in rdb.scan_iter('node/*/vpn')] # It's ok, the new node record is still not present.
+
 #
 # 1/c. Store VPN settings of the new node
 #
 agent.assert_exp(rdb.hset(f'node/{node_id}/vpn', mapping={
     "public_key": public_key,
     "ip_address": ip_address,
+    "destinations": "",
     "endpoint": endpoint,
     "listen_port": str(listen_port),
 }) >= 0)
@@ -96,25 +105,45 @@ agent.assert_exp(rdb.execute_command('ACL', 'SETUSER',
 ) == 'OK')
 
 #
-# Add the WireGuard peer configuration
+# 3. Ask existing nodes (leader included) to update their IP routes and VPN configuration
 #
-peers = {pkey: rdb.hgetall(pkey) for pkey in rdb.scan_iter('node/*/vpn')}
-agent.save_wgconf(leader_ip_address, leader_listen_port, peers)
-agent.run_helper(*f'wg set wg0 peer {public_key} persistent-keepalive 25 allowed-ips {ip_address}'.split(' ')).check_returncode()
-agent.run_helper(*f'ip route del {ip_address}'.split(' ')) # Ignore error
-agent.run_helper(*f'ip route add {ip_address} dev wg0'.split(' ')).check_returncode()
+node_errors = agent.tasks.runp_brief(
+    update_routes_tasks,
+    endpoint="redis://cluster-leader",
+)
+agent.assert_exp(node_errors == 0)
 
-# Install core modules in the new node
-for core_module_image in ['traefik', 'ldapproxy']:
-    agent.run_subtask(rdb,
-        agent_prefix='cluster',
-        action='add-module',
-        input_obj={
-            "image": f'ghcr.io/nethserver/{core_module_image}:latest',
+#
+# 4. Additional tasks for the new node: they are picked up when the join-cluster has been completed
+#    in a random order and must not depend on each other.
+#
+additional_tasks = [
+    {
+        'agent_id': 'cluster',
+        'action': 'add-module',
+        'data': {
+            "image": f'ghcr.io/nethserver/traefik:latest',
             "node": node_id,
-        },
-        nowait=True,
-    )
+        }
+    },
+    {
+        'agent_id': 'cluster',
+        'action': 'add-module',
+        'data': {
+            "image": f'ghcr.io/nethserver/ldapproxy:latest',
+            "node": node_id,
+        }
+    },
+    {
+        'agent_id': f'node/{node_id}',
+        'action': 'update-routes',
+        'data': {},
+    },
+]
+subtasks = agent.tasks.runp_nowait(
+    additional_tasks,
+    endpoint="redis://cluster-leader",
+)
 
 #
 # Return the new information to the caller
@@ -126,4 +155,5 @@ json.dump({
     "network": str(network), # required to set up route table
     "leader_ip_address": leader_ip_address, # required to rewrite /etc/hosts cluster-leader
     "leader_endpoint": leader_endpoint, # required to reach the WireGuard listen_port
+    "subtasks": subtasks,
 }, sys.stdout)

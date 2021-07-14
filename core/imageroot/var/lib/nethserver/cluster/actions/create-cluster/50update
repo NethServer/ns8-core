@@ -52,6 +52,7 @@ rdb.set('cluster/network', network)
 rdb.hset(f'node/{NODE_ID}/vpn', mapping={
     "public_key": public_key,
     "ip_address": ip_address,
+    "destinations": "",
     "endpoint": endpoint,
     "listen_port": listen_port,
 })

@@ -167,6 +167,7 @@ cluster.grants.grant(rdb, action_clause="list-*", to_clause="reader", on_clause=
 cluster.grants.grant(rdb, action_clause="get-*",  to_clause="reader", on_clause='cluster')
 cluster.grants.grant(rdb, action_clause="show-*", to_clause="reader", on_clause='cluster')
 cluster.grants.grant(rdb, action_clause="read-*", to_clause="reader", on_clause='cluster')
+cluster.grants.grant(rdb, action_clause="*-route", to_clause="accountprovider", on_clause='cluster')
 EOF
 
 echo "Install Traefik:"
