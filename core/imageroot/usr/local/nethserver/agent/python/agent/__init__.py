@@ -85,11 +85,14 @@ def read_envfile(file_path):
 
     return env
 
-def run_helper(*args, **kwargs):
-    """Run the command and assert the exit code is 0
+def run_helper(*args, log_command=True, **kwargs):
+    """Run the command in args, writing the command line to stderr.
 
     The command output is redirected to stderr.
     """
+    if log_command:
+        print(shlex.join(args), file=sys.stderr)
+
     return subprocess.run(args, stdout=sys.stderr)
 
 def __action(*args):
