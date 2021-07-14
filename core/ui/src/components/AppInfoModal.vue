@@ -12,7 +12,14 @@
         <section>
           <div class="logo-and-name">
             <div class="app-logo">
-              <img :src="app.logo" :alt="app.name + ' logo'" />
+              <img
+                :src="
+                  app.logo
+                    ? app.logo
+                    : require('@/assets/module_default_logo.png')
+                "
+                :alt="app.name + ' logo'"
+              />
             </div>
             <div class="app-name">
               <h3>{{ app.name }}</h3>

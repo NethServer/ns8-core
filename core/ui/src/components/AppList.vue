@@ -18,7 +18,14 @@
         <cv-tile kind="standard" @click="showAppInfo(app)" class="app">
           <div class="app-logo">
             <a @click="showAppInfo(app)">
-              <img :src="app.logo" :alt="app.name + ' logo'" />
+              <img
+                :src="
+                  app.logo
+                    ? app.logo
+                    : require('@/assets/module_default_logo.png')
+                "
+                :alt="app.name + ' logo'"
+              />
             </a>
           </div>
           <div class="app-name-and-description">
