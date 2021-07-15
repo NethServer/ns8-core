@@ -48,7 +48,8 @@ else:
 if data.get("loki_instance") is not None:
     agent.set_env("LOKI_INSTANCE", data["loki_instance"])
     loki_addr = r.hget(f'module/{data["loki_instance"]}/environment', "LOKI_ADDR")
-    agent.set_env("LOKI_URL", f'http://{loki_addr}:3100/loki/api/v1/push')
+    loki_http_port = r.hget(f'module/{data["loki_instance"]}/environment', "LOKI_HTTP_PORT")
+    agent.set_env("LOKI_URL", f'http://{loki_addr}:{loki_http_port}/loki/api/v1/push')
     token = r.hget(f'module/{data["loki_instance"]}/environment', "LOKI_LOGS_INGRESS_TOKEN")
     agent.set_env("LOKI_AUTH_TOKEN", token)
     #unset the auth credentials
