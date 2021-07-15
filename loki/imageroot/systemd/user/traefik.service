@@ -8,6 +8,7 @@ Environment=PODMAN_SYSTEMD_UNIT=%n
 EnvironmentFile=-%S/state/environment
 Restart=always
 ExecStartPre=/bin/rm -f %t/traefik.pid %t/traefik.ctr-id
+ExecStartPre=%S/scripts/expandconfig-traefik
 ExecStart=/usr/bin/podman run \
     --detach \
     --conmon-pidfile=%t/traefik.pid \
