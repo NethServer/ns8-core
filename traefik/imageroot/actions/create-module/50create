@@ -59,5 +59,6 @@ SET "${AGENT_ID}/kv/http/middlewares/http2https-redirectscheme/redirectScheme/pe
 SET "${AGENT_ID}/kv/http/middlewares/http2https-redirectscheme/redirectScheme/scheme" "https"
 EOF
 
-# Enable and start the service
+# Enable and start the services
 systemctl --user enable --now traefik.service
+systemctl --user enable --now certificate-exporter.path

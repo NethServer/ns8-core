@@ -1,0 +1,10 @@
+[Unit]
+Description=Monitor acme.json file for changes
+After=traefik.service
+
+[Path]
+PathChanged=%h/.local/share/containers/storage/volumes/traefik-acme/_data/acme.json
+Unit=certificate-exporter.service
+
+[Install]
+WantedBy=default.target

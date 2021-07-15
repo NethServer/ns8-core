@@ -1,0 +1,13 @@
+[Unit]
+Description=Executes exporter on acme.json changes
+
+[Service]
+Type=simple
+EnvironmentFile=/etc/nethserver/agent.env
+EnvironmentFile=%S/state/environment
+EnvironmentFile=%S/state/agent.env
+ExecStart=%S/bin/export-certificate
+WorkingDirectory=%h/.local/share/containers/storage/volumes/traefik-acme/_data/
+
+[Install]
+WantedBy=multi-user.target
