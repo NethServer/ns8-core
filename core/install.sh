@@ -30,25 +30,7 @@ if [[ ${ID} == "fedora" ]]; then
 elif [[ ${ID} == "debian" ]]; then
 
     apt-get update
-    apt-get -y install gnupg2 python3-venv
-    if [[ ${VERSION_ID} == "10" ]]; then
-        # Install podman
-        grep -q 'http://deb.debian.org/debian buster-backports' /etc/apt/sources.list || echo 'deb http://deb.debian.org/debian buster-backports main' >> /etc/apt/sources.list
-        echo 'deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/Debian_10/ /' > /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list
-        wget -O - https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/Debian_10/Release.key | apt-key add -
-        apt-get update
-        apt-get -y -t buster-backports install libseccomp2 podman
-        apt install linux-headers-$(uname -r) -y
-    else
-	    apt-get -y install podman
-    fi
-
-
-    # Install wireguard
-    apt install wireguard -y
-
-    # Install extra utils
-    apt install uuid-runtime jq -y
+    apt-get -y install gnupg2 python3-venv podman wireguard uuid-runtime jq
 
     # Enable access to journalctl --user
     grep  -e "^#Storage=persistent" /etc/systemd/journald.conf || echo "Storage=persistent" >> /etc/systemd/journald.conf
