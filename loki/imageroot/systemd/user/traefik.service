@@ -20,7 +20,7 @@ ExecStart=/usr/bin/podman run \
     --name=%N \
     --volume=./traefik.yaml:/etc/traefik.yaml:Z \
     ${TRAEFIK_IMAGE} \
-    --entryPoints.loki.address=:13100 \
+    --entryPoints.loki.address=:${LOKI_HTTP_PORT} \
     --providers.file.filename=/etc/traefik.yaml
 ExecStop=/usr/bin/podman stop --ignore --cidfile %t/traefik.ctr-id -t 10
 ExecStopPost=/usr/bin/podman rm --ignore -f --cidfile %t/traefik.ctr-id

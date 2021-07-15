@@ -13,7 +13,7 @@ ExecStartPre=/usr/bin/podman pod create \
     --infra-conmon-pidfile %t/loki.pid \
     --pod-id-file %t/loki.pod-id \
     --name loki \
-    -p ${LOKI_ADDR}:3100:13100 \
+    -p ${LOKI_ADDR}:${LOKI_HTTP_PORT}:${LOKI_HTTP_PORT} \
     --replace \
     --network=slirp4netns:allow_host_loopback=true
 ExecStart=/usr/bin/podman pod start --pod-id-file %t/loki.pod-id
