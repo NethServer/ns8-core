@@ -1,0 +1,19 @@
+[Unit]
+Description=module/%u events gateway
+ConditionPathExists=%S/state/eventsgw.conf
+After=agent.service
+
+[Service]
+Type=simple
+Environment=AGENT_ID=module/%u
+Environment=AGENT_INSTALL_DIR=%S
+Environment=AGENT_STATE_DIR=%S/state
+EnvironmentFile=/etc/nethserver/agent.env
+EnvironmentFile=-%S/state/agent.env
+WorkingDirectory=%S/state
+ExecStart=/usr/local/bin/eventsgw
+Restart=always
+SyslogIdentifier=%u-eventsgw
+
+[Install]
+WantedBy=default.target
