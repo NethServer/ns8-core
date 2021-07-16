@@ -19,14 +19,41 @@
 # You should have received a copy of the GNU General Public License
 # along with NethServer.  If not, see COPYING.
 #
+
 set -e
 
-exec 1>&2 # Send any output to stderr, to not alter the action response protocol
+cat >promtail.yaml <<EOF
+server:
+  disable: true
+clients:
+  - url: ${LOKI_URL}
+EOF
 
-cat >&${AGENT_COMFD} <<EOF
-set-env LOKI_ADDR $(REDIS_USER=default redis-exec HGET node/${NODE_ID}/vpn ip_address)
-set-env LOKI_API_AUTH_USERNAME loki
-set-env LOKI_API_AUTH_PASSWORD $(uuidgen)
-set-env LOKI_LOGS_INGRESS_TOKEN $(uuidgen)
-dump-env
+if [ -n "${LOKI_AUTH_TOKEN}" ]; then
+cat >>promtail.yaml <<EOF
+    bearer_token: ${LOKI_AUTH_TOKEN}
+EOF
+fi
+
+if [ -n "${LOKI_AUTH_USERNAME}" ]; then
+cat >>promtail.yaml <<EOF
+    basic_auth:
+        username: ${LOKI_AUTH_USERNAME}
+        password: ${LOKI_AUTH_PASSWORD}
+EOF
+fi
+
+
+cat >>promtail.yaml <<EOF
+scrape_configs:
+  - job_name: journal
+    journal:
+      json: true
+      labels:
+        job: systemd-journal
+      max_age: 12h
+    relabel_configs:
+    - source_labels:
+      - __journal__hostname
+      target_label: nodename
 EOF
