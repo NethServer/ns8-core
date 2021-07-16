@@ -164,7 +164,7 @@ export default {
 
       const taskContext = contextResponse.data.data.context;
 
-      console.log("taskContext", taskContext); ////
+      // console.log("taskContext", taskContext); ////
 
       // check if it's a root task or a subtask
       if (taskContext.parent) {
@@ -207,7 +207,7 @@ export default {
       } else {
         // root task
 
-        console.log("ROOT TASK, PROGRESS", payload.progress); ////
+        // console.log("ROOT TASK, PROGRESS", payload.progress); ////
 
         let notificationType;
 
@@ -325,7 +325,7 @@ export default {
     getActionParams(taskContext, taskStatus, taskResult) {
       let [actionLabel, action] = ["", {}];
 
-      console.log("taskResult", taskResult); ////
+      // console.log("taskResult", taskResult); ////
 
       if (taskStatus === "aborted" || taskStatus === "validation-failed") {
         // task error
@@ -338,15 +338,12 @@ export default {
             actionLabel = this.$t("task.configure");
             action = {
               type: "changeRoute",
-              url: `/apps/${taskResult.output.module_id}`,
+              url: `/apps/${taskResult.output.module_id}?page=settings`,
               // url: `/apps/ns8-app?appInput=fromAction`, ////
             };
             break;
         }
       }
-
-      console.log("returning actionLabel, action", actionLabel, action); ////
-
       return [actionLabel, action];
     },
   },

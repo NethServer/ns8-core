@@ -1,0 +1,25 @@
+{
+  "common": {
+    "show_password": "Show password",
+    "hide_password": "Hide password",
+    "save": "Save"
+  },
+  "status": {
+    "title": "Status"
+  },
+  "settings": {
+    "title": "Settings",
+    "wiki_name": "Wiki name",
+    "admin_username": "Administrator username",
+    "admin_password": "Administrator password",
+    "admin_email": "Administrator email address",
+    "admin_full_name": "Administrator full name",
+    "wiki_fqdn": "Wiki FQDN"
+  },
+  "logs": {
+    "title": "Logs"
+  },
+  "about": {
+    "title": "About"
+  }
+}

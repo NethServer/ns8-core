@@ -137,12 +137,12 @@ export default {
 
       //// add fake updates
       updates.push({
-        id: "traefik7",
+        id: "traefik77",
         node: "1",
         version: "1.2",
       });
       updates.push({
-        id: "test8",
+        id: "traefik88",
         node: "1",
         version: "1.2",
       }); ////
