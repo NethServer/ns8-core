@@ -1,0 +1,143 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2021 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
+import configparser
+import agent
+import agent.tasks
+import asyncio
+import asyncio.subprocess
+import aioredis
+import sys
+import os
+import uuid
+import json
+
+agent_id = os.environ.get('AGENT_ID', 'cluster')
+
+async def _run_command(cmdline, data):
+    proc = await asyncio.create_subprocess_shell(cmdline, stdin=asyncio.subprocess.PIPE)
+    if type(data) is bytes:
+        byteo = data
+    else:
+        byteo = bytes(data, 'utf-8')
+    await proc.communicate(input=byteo)
+    return proc.returncode
+
+async def _run_action(action, data):
+    global agent_id
+    redis_username = os.getenv('REDIS_USER', os.getenv('AGENT_ID', 'default'))
+    redis_password = os.environ['REDIS_PASSWORD'] # Fatal if missing!
+
+    # Check if data has JSON syntax
+    try:
+        jdata = json.loads(data) # try to decode the JSON object
+    except:
+        jdata = data # convert data to JSON string (see json.dumps call below)
+
+    async with aioredis.from_url('redis://cluster-leader',
+        username=redis_username,
+        password=redis_password,
+        decode_responses=True,
+    ) as rdb:
+        task_id = str(uuid.uuid4())
+        task_obj = {
+            "id": task_id,
+            "action": action,
+            "data": jdata,
+            "parent": "",
+        }
+        lpush_retval = await rdb.lpush(f'{agent_id}/tasks', json.dumps(task_obj))
+        if not (lpush_retval >= 1):
+            return None
+        else:
+            return f'{agent_id}/task/{task_id}'
+
+
+async def _listener_loop(*args, **kwargs):
+    while True:
+        try:
+            return await _listener(*args, **kwargs)
+        except aioredis.ConnectionError as ex:
+            print(agent.SD_WARNING+"Lost connection with Redis:", ex, file=sys.stderr)
+            await asyncio.sleep(5)
+            continue
+        except Exception as ex:
+            raise ex
+
+async def _listener(tasks_map):
+    async with aioredis.from_url('redis://127.0.0.1',
+        username='default',
+        password='default',
+        decode_responses=True,
+    ) as rdb:
+        psubscribe_list = []
+        subscribe_list = []
+        for channel in tasks_map:
+            if '*' in channel:
+                psubscribe_list.append(channel)
+            else:
+                subscribe_list.append(channel)
+
+        pubsub = rdb.pubsub(ignore_subscribe_messages=True)
+
+        if len(subscribe_list) > 0:
+            await pubsub.subscribe(*subscribe_list)
+            print('Subscribed to', *subscribe_list, file=sys.stderr)
+        if len(psubscribe_list) > 0:
+            await pubsub.psubscribe(*psubscribe_list)
+            print('Subscribed to', *psubscribe_list, file=sys.stderr)
+
+        async for msg in pubsub.listen():
+            if msg['type'] == 'message':
+                ktask = msg['channel']
+            elif msg['type'] == 'pmessage':
+                ktask = msg['pattern']
+            else:
+                print(agent.SD_ERR+"Cannot handle message:", repr(msg), file=sys.stderr)
+                continue
+
+            for item in tasks_map[ktask]:
+                section, value = item
+                if section == 'actions':
+                    taskf = _run_action
+                elif section == 'commands':
+                    taskf = _run_command
+
+                asyncio.create_task(taskf(value, msg['data']), name=ktask)
+
+
+#
+# Read the configuration file and start the event listener
+#
+config = configparser.ConfigParser(delimiters=('='))
+config.read('eventsgw.conf')
+tasks_map = {}
+for section in ['actions', 'commands']:
+    try:
+        for item in config.items(section):
+            channel, value = item
+            tasks_map.setdefault(channel, [])
+            tasks_map[channel].append((section, value))
+    except configparser.NoSectionError:
+        pass
+
+asyncio.run(_listener_loop(tasks_map))
