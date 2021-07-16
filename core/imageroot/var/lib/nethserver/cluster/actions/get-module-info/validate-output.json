@@ -1,0 +1,129 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "get-module-info output",
+  "description": "Get module info output",
+  "$id": "http://schema.nethserver.org/cluster/get-modules-info.json",
+  "examples": [
+    {
+      "name": "dokuwiki",
+      "description": {
+        "en": "Auto-generated description for dokuwiki"
+      },
+      "logo": "http://127.0.0.1:8000/logo.png",
+      "screenshots": [
+        "http://127.0.0.1:8000/screenshots/template%3Adokuwiki_template.png"
+      ],
+      "categories": [
+        "unknown"
+      ],
+      "authors": [
+        {
+          "name": "unknown",
+          "email": "info@nethserver.org"
+        }
+      ],
+      "docs": {
+        "documentation_url": "https://docs.nethserver.org",
+        "bug_url": "https://github.com/NethServer/dev",
+        "code_url": "https://github.com/NethServer/"
+      },
+      "source": "ghcr.io/nethserver/dokuwiki",
+      "repository": "t3"
+    }
+  ],
+  "oneOf": [
+    {
+      "type": "null"
+    },
+    {
+      "$ref": "#/definitions/module"
+    }
+  ],
+  "definitions": {
+    "module": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Unique name of a package"
+        },
+        "description": {
+          "type": "object",
+          "description": "A map of language codes (eg. en, it) with the translated description"
+        },
+        "logo": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "The filename of the logo. The logo must be a PNG image of 256x256 pixels"
+        },
+        "categories": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "authors": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "parameters": {
+              "name": {
+                "type": "string",
+                "description": "Author full name"
+              },
+              "email": {
+                "type": "idn-email",
+                "description": "Author mail address"
+              }
+            }
+          }
+        },
+        "docs": {
+          "type": "object",
+          "parameters": {
+            "documentation_url": {
+              "type": "uri",
+              "description": "Link to the package documentation"
+            },
+            "bug_url": {
+              "type": "uri",
+              "description": "Link to the package issue tracker"
+            },
+            "code_url": {
+              "type": "uri",
+              "description": "Link to the source code repository"
+            }
+          },
+          "required": [
+            "documentation_url",
+            "bug_url",
+            "code_url"
+          ]
+        },
+        "source": {
+          "type": "string",
+          "description": "URL of package inside a container registry. The URL must not contain the prefix 'docker://' or similar"
+        },
+        "repository": {
+          "type": "string",
+          "description": "The internal ID of the repository inside redis"
+        },
+        "repository_updated": {
+          "type": "string",
+          "description": "Date and time of last modification to remote repodata"
+        }
+      },
+      "required": [
+        "name",
+        "description",
+        "logo",
+        "categories",
+        "authors",
+        "docs",
+        "source"
+      ]
+    }
+  }
+}
