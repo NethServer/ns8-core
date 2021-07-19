@@ -1,0 +1,65 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "update-routes input",
+    "$id": "http://schema.nethserver.org/cluster/update-routes-input.json",
+    "description": "Route traffic to the given networks through VPN nodes",
+    "examples": [
+        {
+            "add": [
+                {
+                    "network": "192.168.2.0/24",
+                    "node_id": 3
+                },
+                {
+                    "network": "192.168.3.0/24",
+                    "node_id": 4
+                }
+            ],
+            "remove": []
+        }
+    ],
+    "type": "object",
+    "anyOf": [
+        {
+            "required": [
+                "add"
+            ]
+        },
+        {
+            "required": [
+                "remove"
+            ]
+        }
+    ],
+    "properties": {
+        "add": {
+            "$ref": "#/definitions/changeList"
+        },
+        "remove": {
+            "$ref": "#/definitions/changeList"
+        }
+    },
+    "definitions": {
+        "changeList": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": [
+                    "network",
+                    "node_id"
+                ],
+                "properties": {
+                    "network": {
+                        "$ref": "http://schema.nethserver.org/cluster.json#/definitions/ipv4-cidr"
+                    },
+                    "node_id": {
+                        "type": "integer",
+                        "exclusiveMinimum": 0,
+                        "title": "Destination node identifier",
+                        "description": "Node ID used as route next-hop"
+                    }
+                }
+            }
+        }
+    }
+}
