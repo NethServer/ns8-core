@@ -142,7 +142,7 @@ agent.assert_exp(rdb.execute_command('ACL', 'SETUSER',
                     f'module/{module_id}', 'ON',
                     '#' + outobj['redis_sha256'],
                     f'~module/{module_id}/*',
-                    'resetchannels', f'&progress/module/{module_id}/*',
+                    'resetchannels', f'&progress/module/{module_id}/*', f'&/module/{module_id}/event/*',
                     '+@read', '+@write', '+@transaction', '+@connection', '+publish') == 'OK')
 
 # Persist ACLs to disk
