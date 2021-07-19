@@ -25,6 +25,8 @@ import ipcalc
 import os
 import json
 import agent
+import agent.tasks
+import cluster.grants
 
 request = json.load(sys.stdin)
 
@@ -66,19 +68,6 @@ agent.run_helper('sed', '-i',
     '/etc/hosts').check_returncode()
 
 #
-# Install ldapproxy here
-#
-agent.run_subtask(rdb,
-    nowait=True,
-    agent_prefix='cluster',
-    action='add-module',
-    input_obj={
-        'image': 'ghcr.io/nethserver/ldapproxy:latest',
-        'node': NODE_ID,
-    },
-)
-
-#
 # Apply new VPN setup
 #
 agent.save_wgconf(ip_address, listen_port)
@@ -91,6 +80,23 @@ redis_bind_vpn_ip = rdb.execute_command('CONFIG SET', 'bind', f'127.0.0.1 ::1 {i
 agent.assert_exp(redis_bind_vpn_ip is True)
 redis_rewrite_conf = rdb.execute_command('CONFIG REWRITE')
 agent.assert_exp(redis_rewrite_conf == 'OK')
+
+# (Samba) account provider might want to route some IP addresses through our VPN. Define a role for that:
+cluster.grants.grant(rdb, action_clause="update-routes", to_clause="accountprovider", on_clause='cluster')
+
+#
+# Install ldapproxy here
+#
+add_module_result = agent.tasks.run(
+    agent_id='cluster',
+    action='add-module',
+    data={
+        'image': 'ghcr.io/nethserver/ldapproxy:latest',
+        'node': NODE_ID,
+    },
+    endpoint="redis://cluster-leader",
+)
+agent.assert_exp(add_module_result['exit_code'] == 0)
 
 json.dump({
     "ip_address": ip_address,
