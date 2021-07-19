@@ -1,0 +1,72 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2021 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
+#
+# Read Dokuwiki configuration
+#
+
+import os
+import sys
+import json
+import agent
+import subprocess
+
+# Prepare return variable
+status = {}
+
+rdb = agent.redis_connect()
+status["instance"] = os.environ["MODULE_ID"];
+status["node"] = rdb.hget(f'module/{os.environ["MODULE_ID"]}/environment', 'NODE_ID')
+
+unit = {"name": "dokuwiki"}
+unit["active"] = subprocess.run(["systemctl", "-q", "--user", "is-active", "dokuwiki"]).returncode == 0
+unit["enabled"] = subprocess.run(["systemctl", "-q", "--user", "is-enabled", "dokuwiki"]).returncode == 0
+unit["failed"] = subprocess.run(["systemctl", "-q", "--user", "is-failed", "dokuwiki"]).returncode == 0
+status["services"] = [unit]
+
+status["images"] = []
+try:
+    images = subprocess.run(["podman", "image", "list", "--format", "{{index .Names 0}},{{.Size}},{{.CreatedAt}}"], capture_output=True, text=True, check=True)
+    for i in images.stdout.split("\n"):
+        # skip empty lines
+        if not i:
+            continue
+        info = i.split(",")
+        status["images"].append({"name": info[0], "size": info[1], "created": info[2]})
+except:
+    pass
+
+status["volumes"] = []
+try:
+    images = subprocess.run(["podman", "volume", "ls", "--format", "{{.Name}},{{.Mountpoint}},{{.CreatedAt}}"], capture_output=True, text=True, check=True)
+    for i in images.stdout.split("\n"):
+        # skip empty lines
+        if not i:
+            continue
+        info = i.split(",")
+        status["volumes"].append({"name": info[0], 'mount': info[1], "created": info[2]})
+except:
+    pass
+
+
+# Dump the result
+json.dump(status, fp=sys.stdout)
