@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "info-module input",
+  "$id": "http://schema.nethserver.org/cluster/get-module-info-input.json",
+  "description": "Retrieve the metadata information af a module",
+  "examples": [
+    {
+      "id": "dokuwiki"
+    }
+  ],
+  "type": "object",
+  "properties": {
+    "id": {
+      "description": "Module id",
+      "type": "string"
+    }
+  },
+  "required": [
+    "id"
+  ]
+}
