@@ -1,7 +1,7 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "get-status input",
-    "$id": "http://schema.nethserver.org/dokuwiki/get-status-input.json",
+    "$id": "http://schema.nethserver.org/agent/get-status-input.json",
     "description": "The action does not accept any input",
     "examples": [
         null

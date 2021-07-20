@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "get-module-info output",
   "description": "Get module info output",
-  "$id": "http://schema.nethserver.org/cluster/get-modules-info.json",
+  "$id": "http://schema.nethserver.org/cluster/get-module-info-output.json",
   "examples": [
     {
       "name": "dokuwiki",

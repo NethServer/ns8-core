@@ -1,8 +1,8 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Get Dokuwiki status",
-  "$id": "http://nethserver.org/json-schema/task/input/dokuwiki/get-status",
-  "description": "Get Dokuwiki instance running status",
+  "title": "Get module status",
+  "$id": "http://schema.nethserver.org/agent/get-status-output.json",
+  "description": "Get module instance running status",
   "examples": [
     {
       "instance": "dokuwiki1",

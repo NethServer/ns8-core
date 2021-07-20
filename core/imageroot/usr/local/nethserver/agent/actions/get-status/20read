@@ -26,8 +26,10 @@
 
 import os
 import sys
+import glob
 import json
 import agent
+import os.path
 import subprocess
 
 # Prepare return variable
@@ -37,11 +39,13 @@ rdb = agent.redis_connect()
 status["instance"] = os.environ["MODULE_ID"];
 status["node"] = rdb.hget(f'module/{os.environ["MODULE_ID"]}/environment', 'NODE_ID')
 
-unit = {"name": "dokuwiki"}
-unit["active"] = subprocess.run(["systemctl", "-q", "--user", "is-active", "dokuwiki"]).returncode == 0
-unit["enabled"] = subprocess.run(["systemctl", "-q", "--user", "is-enabled", "dokuwiki"]).returncode == 0
-unit["failed"] = subprocess.run(["systemctl", "-q", "--user", "is-failed", "dokuwiki"]).returncode == 0
-status["services"] = [unit]
+status["services"] = []
+for f in glob.glob(f'{os.environ["HOME"]}/.config/systemd/user/*.service'):
+    unit = os.path.basename(f)
+    service = {"name": unit.removesuffix(".service")}
+    for a in ["active", "enabled", "failed"]:
+        service[a] = subprocess.run(["systemctl", "-q", "--user", f"is-{a}", unit]).returncode == 0
+    status["services"].append(service)
 
 status["images"] = []
 try:
