@@ -275,7 +275,15 @@ The following actions are automatically available for all modules:
 Each module can add extra step to the above actions by creating a directory with the of the action itself inside the module implementation,
 e.g. `imageroot/actions/myapp/create-module/20mystep`.
 
-If a module needs user input to have a valid default configuration, it should declare a `configure-module` action.
+##### Recommended actions
+
+As a convention, all modules with a UI should also implement the following actions:
+
+- `configure-module`: it validates the user input and applies the configuration, see [Dokuwiki example](../dokuwiki/imageroot/actions/configure-module)
+- `get-configuration`: it should return current configuration, the output should be equal or similar to configure-module input, see [Dokuwiki example](../dokuwiki/imageroot/actions/get-configuration)
+- `get-status`: it should return the current module status, like the node where the application is running, the image used, etc, see [Dokuwiki example](../dokuwiki/imageroot/actions/get-status)
+
+The cluster also exposes a [`get-module-info`](../core/imageroot/var/lib/nethserver/cluster/actions/get-module-info) action which returns all application metadata.
 
 ##### Environment variables
 
