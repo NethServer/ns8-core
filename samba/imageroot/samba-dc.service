@@ -7,12 +7,15 @@ ConditionPathExists=/var/lib/nethserver/%N/state/environment
 [Service]
 Type=forking
 Environment=PODMAN_SYSTEMD_UNIT=%n
+EnvironmentFile=/etc/nethserver/agent.env
 EnvironmentFile=/var/lib/nethserver/%N/state/environment
 Restart=on-failure
 TimeoutStopSec=70
 # samba exits with 127 on SIGTERM:
 SuccessExitStatus=127
 ExecStartPre=/bin/rm -f %t/%N.pid %t/%N.cid
+# Workaround SELinux access denied:
+ExecStartPre=python3 /var/lib/nethserver/%N/bin/expand_resolv_conf
 ExecStart=/usr/bin/podman run \
     --dns=none \
     --no-hosts \

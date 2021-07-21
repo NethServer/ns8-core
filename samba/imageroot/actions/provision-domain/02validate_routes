@@ -1,0 +1,58 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2021 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
+import agent
+import json
+import sys
+import os
+import dns.resolver
+
+request = json.load(sys.stdin)
+realm = request['realm'].upper()
+
+rsv = dns.resolver.Resolver(configure=False)
+
+# Lookup a DC for the given realm
+with agent.redis_connect() as rdb:
+    for ksamba in rdb.scan_iter(f'module/samba*/environment'):
+        penv = rdb.hgetall(ksamba)
+        if penv.get('REALM') == realm and penv.get('IPADDRESS'):
+            rsv.nameservers.append(penv['IPADDRESS'])
+
+if not rsv.nameservers:
+    # There are no DCs for the given realm. Nothing to do.
+    print(f"New Active Directory domain {realm}: no changes needed to IP routing configuration.", file=sys.stderr)
+    sys.exit(0)
+
+try:
+    resolve_ret = rsv.resolve(realm)
+    print("DNS nameserver", resolve_ret.nameserver, file=sys.stderr)
+    print("DNS authority", resolve_ret.response.authority, file=sys.stderr)
+    print("Domain", resolve_ret.rrset.to_text(), file=sys.stderr)
+except dns.resolver.NoAnswer:
+    json.dump({"parameter": "realm", "value": realm, "error": "domain_controllers_notavailable"}, fp=sys.stdout)
+    agent.set_status('validation-failed')
+    sys.exit(3)
+except dns.exception.Timeout:
+    json.dump({"parameter": "realm", "value": realm, "error": "domain_controllers_unreachable"}, fp=sys.stdout)
+    agent.set_status('validation-failed')
+    sys.exit(4)

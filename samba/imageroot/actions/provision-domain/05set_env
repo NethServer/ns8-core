@@ -26,27 +26,25 @@ import sys
 import os
 
 request = json.load(sys.stdin)
+realm = request['realm'].upper()
 
 rdb = agent.redis_connect()
 
-# Check if Samba is installed and a DC is already configured in our cluster
-first_samba = rdb.get('cluster/default_instance/samba')
-agent.assert_exp(first_samba) # Safety check
-penv = rdb.hgetall(f'module/{first_samba}/environment')
-
-if 'PROVISION_COMPLETE' in penv:
-    provision_type = 'join-domain'
-    realm = penv['REALM']
-    nbdomain = penv['NBDOMAIN']
-else: # Expect values from the request
+# Lookup a DC for the given realm
+for ksamba in rdb.scan_iter(f'module/samba*/environment'):
+    penv = rdb.hgetall(ksamba)
+    if penv.get('REALM', '') == realm:
+        provision_type = 'join-domain'
+        nbdomain = penv['NBDOMAIN']
+        break
+else: # No DC found for the realm. Create a new AD domain
     provision_type = 'new-domain'
     try:
-        realm = request['realm'].upper()
         nbdomain = request['nbdomain'].upper()
     except KeyError as ex:
-        json.dump({"parameter": ex.args[0], "value": None, "error": "missing_parameter"}, fp=sys.stdout)
+        json.dump({"parameter": 'nbdomain', "value": None, "error": "missing_parameter"}, fp=sys.stdout)
         agent.set_status('validation-failed')
-        sys.exit(3)
+        sys.exit(7)
 
 if 'hostname' in request: # Use given hostname (short)
     hostname = request['hostname'].lower()
@@ -58,9 +56,11 @@ agent.set_env('PROVISION_TYPE', provision_type)
 # Save values of optional parameters
 agent.set_env('NBDOMAIN', nbdomain)
 agent.set_env('REALM', realm)
-agent.set_env('HOSTNAME', hostname + "." + realm.lower())
+agent.set_env('HOSTNAME', hostname + '.' + realm.lower())
 
 # JSON Schema mandatory fields. We are sure they are present.
 agent.set_env('ADMINUSER', request['adminuser'])
 agent.set_env('ADMINPASS', request['adminpass'])
 agent.set_env('IPADDRESS', request['ipaddress'])
+
+agent.dump_env()

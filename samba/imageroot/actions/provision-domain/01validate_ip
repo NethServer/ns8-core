@@ -23,25 +23,18 @@
 exec 1>&2
 set -e
 
-/usr/bin/podman run \
-    --dns=none \
-    --no-hosts \
-    --network=host \
-    --cap-drop=all \
-    --cap-add=chown,dac_override,dac_read_search,fowner,setgid,setuid,sys_admin \
-    --env ADMINPASS \
-    --env ADMINUSER \
-    --env NBDOMAIN \
-    --env REALM \
-    --env IPADDRESS \
-    --hostname=${HOSTNAME:?} \
-    --log-opt=tag=${MODULE_ID:?}-provision \
-    --rm --name=${MODULE_ID}-provision \
-    --volume=${MODULE_ID}-data:/var/lib/samba:Z \
-    --volume=${MODULE_ID}-config:/etc/samba:Z \
-    --volume=./hosts:/etc/hosts:Z \
-    --volume=./resolv.conf:/etc/resolv.conf:Z \
-    --volume=./krb5.conf:/etc/krb5.conf:Z \
-    "${SAMBA_DC_IMAGE:?}" "${PROVISION_TYPE:?}"
+cat >&"${AGENT_COMFD}" <<EOF
+set-weight 01validate_ip 0
+set-weight 40start_provisioning 5
+EOF
 
-echo 'set-env PROVISION_COMPLETE 1' >&${AGENT_COMFD}
+read -r ipaddress < <(jq -r '.ipaddress')
+
+# Check if ipaddress is bound to a network interface
+if ! ip -o address show to "${ipaddress}/32" up | grep -q "${ipaddress}"; then
+    jq -c -n --arg ipaddress "${ipaddress}" '[{"field":"ipaddress","parameter":"ipaddress","value":$ipaddress,"error":"ipaddress_does_not_exist"}]'
+    echo "set-status validation-failed" >&"${AGENT_COMFD}"
+    exit 2
+fi
+
+exit 0
