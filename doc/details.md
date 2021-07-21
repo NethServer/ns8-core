@@ -54,6 +54,7 @@ For completeness here is a pure Bash invocation that does not wait the server re
 
 TODO:
 - redis queues
+- redis channels
 - schema: https://docs.google.com/document/d/13bo5guJN588HGzP5EPe9e5heHBmPt88U9AoyV0OCs0g/edit#heading=h.ahj72tll1jvk
 
 ### Proxy and certificates: Traefik
@@ -62,6 +63,35 @@ Traefik is the proxy server used to access all HTTP/HTTPS services.
 It also handles Let's Encrypt certificate requests and renewal.
 
 See [Traefik README](../traefik/README.md) for more info.
+
+Let's Encrypt certificates are automatically exported to Redis upon request and renewal.
+Certificates are saved under an hash named `/module/traefik<X>/certificate/<domain>` key,
+i.e `/module/traefik1/certificate/server.nethserver.org`.
+The certificate is saved inside the `cert` field, while the key is saved inside the `key` field.
+
+When a certicate is exported, Traefik module fires the `certificate-update` event with
+a JSON messages. The JSON message contains the following fields:
+
+- `key`: the X509 certificate private key, PEM format encoded with base64
+- `certificate`: the X509 certificate, PEM format encoded with base64
+- `node`: the node id where the traefik instance is running
+- `module`: the module id of the traefik instance
+- `domain`: the FQDN for the certificate
+
+Example:
+```json
+{
+    "key": "AAa...",
+    "certificate": "BBb..",
+    "node": "1",
+    "module": "traefik1",
+    "domain": "server.nethserver.org"
+}
+```
+
+The event is published under Redis channel `module/traefik<X>/event/certificate-update`.
+
+See also [how to fire and handle events](#events).
 
 ## Packages
 
@@ -119,6 +149,57 @@ See [dokuwiki directory](https://github.com/NethServer/ns8-repomd/tree/main/doku
 metadata directory.
 
 Execute `createrepo.sh` to generate the `repodata.json`. The format is described [here](https://github.com/NethServer/ns8-scratchpad/blob/main/core/imageroot/var/lib/nethserver/cluster/repodata-schema.json).
+
+## Events
+
+Events are messages pulished on specific Redis channels. Modules must subscribe to the channel if they
+want to be notfied.
+
+Usually channel address is under a module name, something like `module/<module_id>/event/<event_name>`.
+
+### Signaling events
+
+To signal an event, just [PUBLISH](https://redis.io/commands/PUBLISH) a message to the channel.
+All events take a JSON object as a parameter.
+
+Example:
+```
+redis-cli PUBLISH module/traefik1/event/test '{"field": "value"}'
+```
+
+### Handling events
+
+Events are handled by the `eventsgw` service.
+Multiple service instances run for both rootfull and rootless modules.
+
+The service starts only if the `eventsgw.conf` configuration file exists.
+Rootfull modules must create the the file inside `/var/lib/nethserver/<module_id>/state/eventsgw.conf`,
+i.e `/var/lib/nethserver/samba1/state/eventsgw.conf`.
+Rootless module must create the file inside the state dir `/home/<module_id>/.config/state/eventsgw.conf`,
+i.e. `/home/openldap1/.config/state/eventsgw.conf`.
+
+The `eventsgw.conf` is a INI file with an `actions` section.
+Each section has a key-value format:
+- the key on the left is the Redis channel to subscribe
+- the value on the right is the command or action to execute
+
+Example:
+```ini
+[actions]
+# Execute an action on the module when the event is received. The event data is passed to the action `data` argument.
+module/traefik*/event/certificate-renew = renew-certificate
+```
+
+Modules should always use an action upon receiving an event.
+
+Still the `eventgsw` service can also execute a shell comand instead of a full action.
+Use this mode just for testing.
+Example:
+```ini
+[commands]
+# Execute a shell command when the event is received. Event data is piped to STDIN.
+module/traefik1/event/certificate-update = redis-exec INCR mykey
+```
 
 ## Module architecture
 
