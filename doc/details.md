@@ -292,6 +292,7 @@ Such directory should contain:
   It should contains a sub-directory named `user` where systemd units are stored.
   - `actions`: a list of directories, each directory implements an `action`
 - `ui` directory: it contains all UI source code of the module
+- `bin` directory: additional binaries for the module
 - `build-image.sh`: a script to manually build the image of the module and push it inside the image registry.
 - `README.md`: a [Markdown](https://guides.github.com/features/mastering-markdown/) file describing the module purpose and implementation
 
@@ -410,7 +411,7 @@ The cluster also exposes a [`get-module-info`](../core/imageroot/var/lib/nethser
 
 ##### Environment variables
 
-Environment variables are saved inside Redis at 'module/<module_id>/environment`.
+Environment variables are saved inside Redis at `module/<module_id>/environment`.
 
 Each action has access to all environment variables:
 1. added by `add-module`
@@ -440,8 +441,8 @@ i.e `/home/myapp1/.config/state/environment`.
 
 ##### Action commands
 
-Actions can talk to their own agent using a simple protocol.
-An action can set/unset environment variable, dump the environment to a well known file, etc.
+During the action execution, action steps can talk to the agent using a simple protocol.
+It is possible to set/unset environment variables, dump the environment to a well known file, etc.
 
 See all [available action commands](../core/agent/README.md#action-commands).
 
@@ -455,16 +456,24 @@ agent.dump_env()
 
 ##### Database access
 
-Each module has granted full read-only access to the Redis database.
-To enable write access, the module should authenticate itself.
-Everything is already available inside the Python library.
+Everyone can access the Redis database with read-only privileges. The
+Redis user `default` (password is not important) can be used for this
+purpose.
+
+To get write access a module must provide the Redis credentials stored in
+the `agent.env` file. The complete path is `~/.config/state/agent.env`.
+Write access is restricted to Redis keys and channels with prefix
+`module/{module_id}/*`. The same credentials allow read access of keys
+with the same prefix.
+
+The above rules are already implemented by the Python `agent` module.
 
 Access Redis in read-only:
 ```python
 import agent
 
 rdb = agent.redis_connect(privileged=False)
-repo = rdb.hgetall('module/myapp1/environment')
+somehash = rdb.hgetall('cluster/somehash')
 ```
 
 Access Redis in read-write mode:
@@ -472,7 +481,7 @@ Access Redis in read-write mode:
 import agent
 
 rdb = agent.redis_connect(privileged=True)
-repo = rdb.hset('module/myapp1/environment', {'myvar': 'myvalue'})
+rdb.hset('module/myapp1/myhash', mapping={'myvar': 'myvalue'})
 ```
 
 ##### Exit codes
