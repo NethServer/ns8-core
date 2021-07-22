@@ -74,12 +74,18 @@ func ValidateAuth(tokenString string) bool {
 			return []byte(configuration.Config.Secret), nil
 		})
 
+		if err != nil {
+			utils.LogError(errors.Wrap(err, "[SOCKET] error in JWT token validation"))
+			return false
+		}
+
 		if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 			if claims["id"] != nil {
 				return true
 			}
 		} else {
-			utils.LogError(errors.Wrap(err, "[SOCKET] error in JWT validation"))
+			utils.LogError(errors.Wrap(err, "[SOCKET] error in JWT token claims"))
+			return false
 		}
 	}
 	return false
