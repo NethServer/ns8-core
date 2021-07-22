@@ -15,7 +15,7 @@ TimeoutStopSec=70
 SuccessExitStatus=127
 ExecStartPre=/bin/rm -f %t/%N.pid %t/%N.cid
 # Workaround SELinux access denied:
-ExecStartPre=python3 /var/lib/nethserver/%N/bin/expand_resolv_conf
+ExecStartPre=-python3 /var/lib/nethserver/%N/bin/expand_resolv_conf
 ExecStart=/usr/bin/podman run \
     --dns=none \
     --no-hosts \
