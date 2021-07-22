@@ -61,4 +61,3 @@ EOF
 
 # Enable and start the services
 systemctl --user enable --now traefik.service
-systemctl --user enable --now certificate-exporter.path
