@@ -12,40 +12,97 @@
             <cv-text-input
               :label="$t('settings.wiki_name')"
               v-model.trim="wikiName"
+              class="mg-bottom"
+              :invalid-message="$t(error.wiki_name)"
+              :disabled="loading.settings"
+              ref="wikiName"
             >
             </cv-text-input>
             <cv-text-input
               :label="$t('settings.admin_username')"
               v-model.trim="username"
+              class="mg-bottom"
+              :invalid-message="$t(error.username)"
+              :disabled="loading.settings"
+              ref="username"
             >
             </cv-text-input>
-            <!-- //// i18n -->
             <cv-text-input
               :label="$t('settings.admin_password')"
               v-model.trim="password"
               type="password"
-              :password-show-label="$t('common.show_password')"
-              :password-hide-label="$t('common.hide_password')"
+              :password-show-label="$t('settings.show_password')"
+              :password-hide-label="$t('settings.hide_password')"
+              class="mg-bottom"
+              :invalid-message="$t(error.password)"
+              :disabled="loading.settings"
+              ref="password"
             >
             </cv-text-input>
             <cv-text-input
               :label="$t('settings.admin_email')"
               placeholder="admin@example.com"
               v-model.trim="email"
+              class="mg-bottom"
+              :invalid-message="$t(error.email)"
+              :disabled="loading.settings"
+              ref="email"
             >
             </cv-text-input>
             <cv-text-input
               :label="$t('settings.admin_full_name')"
               v-model.trim="userFullName"
+              class="mg-bottom"
+              :invalid-message="$t(error.user_full_name)"
+              :disabled="loading.settings"
+              ref="userFullName"
             >
             </cv-text-input>
             <cv-text-input
               :label="$t('settings.wiki_fqdn')"
               placeholder="mywiki.example.org"
               v-model.trim="host"
+              class="mg-bottom"
+              :invalid-message="$t(error.host)"
+              :disabled="loading.settings"
+              ref="host"
             >
             </cv-text-input>
-            <cv-button>{{ $t("common.save") }}</cv-button>
+            <cv-toggle
+              value="letsEncrypt"
+              :label="$t('settings.lets_encrypt')"
+              v-model="isLetsEncryptEnabled"
+              :disabled="loading.settings"
+              class="mg-bottom"
+            >
+              <template slot="text-left">{{
+                $t("settings.disabled")
+              }}</template>
+              <template slot="text-right">{{
+                $t("settings.enabled")
+              }}</template>
+            </cv-toggle>
+            <cv-toggle
+              value="httpToHttps"
+              :label="$t('settings.http_to_https')"
+              v-model="isHttpToHttpsEnabled"
+              :disabled="loading.settings"
+              class="mg-bottom"
+            >
+              <template slot="text-left">{{
+                $t("settings.disabled")
+              }}</template>
+              <template slot="text-right">{{
+                $t("settings.enabled")
+              }}</template>
+            </cv-toggle>
+            <NsButton
+              kind="primary"
+              :icon="Save20"
+              :loading="loading.settings"
+              :disabled="loading.settings"
+              >{{ $t("settings.save") }}</NsButton
+            >
           </cv-form>
         </cv-tile>
       </div>
@@ -54,17 +111,24 @@
 </template>
 
 <script>
+import to from "await-to-js";
+import TaskService from "@/mixins/task";
+import IconService from "@/mixins/icon";
+import { mapState } from "vuex";
+import NsButton from "@/components/NsButton";
+import UtilService from "@/mixins/util";
+
 let nethserver = window.nethserver;
 
 export default {
   name: "Settings",
-  components: {},
+  components: { NsButton },
+  mixins: [TaskService, IconService, UtilService],
   data() {
     return {
       q: {
         page: "settings",
       },
-      currentUrl: "",
       urlCheckInterval: null,
       wikiName: "",
       username: "",
@@ -72,12 +136,47 @@ export default {
       email: "",
       userFullName: "",
       host: "",
+      isLetsEncryptEnabled: false,
+      isHttpToHttpsEnabled: false,
+      loading: {
+        settings: true,
+      },
+      error: {
+        wiki_name: "",
+        username: "",
+        password: "",
+        user_full_name: "",
+        email: "",
+        host: "",
+        lets_encrypt: "",
+        http2https: "",
+      },
     };
+  },
+  computed: {
+    ...mapState(["instanceName"]),
+    //// move to mixin?
+    core() {
+      return window.parent.ns8;
+    },
+  },
+  watch: {
+    instanceName: function () {
+      // we do this in created() too, but we must wait instanceName is computed
+      if (this.instanceName) {
+        this.getConfiguration();
+      }
+    },
+  },
+  created() {
+    if (this.instanceName) {
+      this.getConfiguration();
+    }
   },
   beforeRouteEnter(to, from, next) {
     next((vm) => {
       nethserver.watchQueryData(vm);
-      vm.urlCheckInterval = nethserver.initUrlBinding(vm, vm.q.page); ////
+      vm.urlCheckInterval = nethserver.initUrlBinding(vm, vm.q.page);
     });
   },
   beforeRouteLeave(to, from, next) {
@@ -85,8 +184,189 @@ export default {
     next();
   },
   methods: {
-    saveSettings() {
-      console.log("saveSettings"); ////
+    async getConfiguration() {
+      this.loading.settings = true;
+      const taskAction = "get-configuration";
+
+      // register to task completion
+      this.core.$root.$on(
+        taskAction + "-completed",
+        this.getConfigurationCompleted
+      );
+
+      const res = await to(
+        this.createModuleTask(this.instanceName, {
+          action: taskAction,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        this.createTaskErrorNotificationForApp(
+          err,
+          this.$t("task.cannot_create_task", { action: taskAction })
+        );
+        return;
+      }
+    },
+    validateSaveSettings() {
+      this.clearErrors(this);
+
+      let isValidationOk = true;
+
+      if (!this.wikiName) {
+        this.error.wiki_name = "common.required";
+
+        if (isValidationOk) {
+          this.focusElement("wikiName");
+        }
+        isValidationOk = false;
+      }
+
+      if (!this.username) {
+        this.error.username = "common.required";
+
+        if (isValidationOk) {
+          this.focusElement("username");
+        }
+        isValidationOk = false;
+      }
+
+      if (!this.password) {
+        this.error.password = "common.required";
+
+        if (isValidationOk) {
+          this.focusElement("password");
+        }
+        isValidationOk = false;
+      }
+
+      if (!this.email) {
+        this.error.email = "common.required";
+
+        if (isValidationOk) {
+          this.focusElement("email");
+        }
+        isValidationOk = false;
+      }
+
+      if (this.email && !/^\S+@\S+$/.test(this.email)) {
+        this.error.email = "settings.email_format";
+
+        if (isValidationOk) {
+          this.focusElement("email");
+        }
+        isValidationOk = false;
+      }
+
+      if (!this.userFullName) {
+        this.error.user_full_name = "common.required";
+
+        if (isValidationOk) {
+          this.focusElement("userFullName");
+        }
+        isValidationOk = false;
+      }
+
+      if (!this.host) {
+        this.error.host = "common.required";
+
+        if (isValidationOk) {
+          this.focusElement("host");
+        }
+        isValidationOk = false;
+      }
+
+      return isValidationOk;
+    },
+    saveSettingsValidationFailed(validationErrors) {
+      this.loading.settings = false;
+
+      for (const validationError of validationErrors) {
+        const param = validationError.parameter;
+        // set i18n error message
+        this.error[param] = "settings." + validationError.error;
+      }
+    },
+    async saveSettings() {
+      const validationOk = this.validateSaveSettings();
+      if (!validationOk) {
+        return;
+      }
+
+      this.loading.settings = true;
+      const taskAction = "configure-module";
+
+      // register to task validation
+      this.core.$root.$on(
+        taskAction + "-validation-failed",
+        this.saveSettingsValidationFailed
+      );
+
+      // register to task completion
+      this.core.$root.$on(
+        taskAction + "-completed",
+        this.saveSettingsCompleted
+      );
+
+      const res = await to(
+        this.createModuleTask(this.instanceName, {
+          action: taskAction,
+          data: {
+            wiki_name: this.wikiName,
+            username: this.username,
+            password: this.password,
+            user_full_name: this.userFullName,
+            email: this.email,
+            host: this.host,
+            lets_encrypt: this.isLetsEncryptEnabled,
+            http2https: this.isHttpToHttpsEnabled,
+          },
+          extra: {
+            title: this.$t("settings.instance_configuration", {
+              instance: this.instanceName,
+            }),
+            description: this.$t("settings.configuring"),
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        this.createTaskErrorNotificationForApp(
+          err,
+          this.$t("task.cannot_create_task", { action: taskAction })
+        );
+        return;
+      }
+    },
+    getConfigurationCompleted(taskContext, taskResult) {
+      // unregister from event
+      this.core.$root.$off("get-configuration-completed");
+
+      const config = taskResult.output;
+      this.wikiName = config.wiki_name;
+      this.username = config.username;
+      this.password = config.password;
+      this.userFullName = config.user_full_name;
+      this.email = config.email;
+      this.host = config.host;
+      this.isLetsEncryptEnabled = config.lets_encrypt;
+      this.isHttpToHttpsEnabled = config.http2https;
+      this.loading.settings = false;
+    },
+    saveSettingsCompleted() {
+      // unregister from event
+      this.core.$root.$off("configure-module-completed");
+
+      this.loading.settings = false;
+
+      // reload configuration
+      this.getConfiguration();
     },
   },
 };
@@ -94,4 +374,7 @@ export default {
 
 <style scoped lang="scss">
 @import "../styles/carbon-utils";
+.mg-bottom {
+  margin-bottom: $spacing-06;
+}
 </style>

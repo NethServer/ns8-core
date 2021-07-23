@@ -11,19 +11,16 @@
 <script>
 import AppSideMenu from "./components/AppSideMenu";
 import AppMobileSideMenu from "./components/AppMobileSideMenu";
+import { mapActions } from "vuex";
 
 let nethserver = window.nethserver;
 
 export default {
   name: "App",
-  components: { AppSideMenu, AppMobileSideMenu },
-  data() {
-    return {
-      urlPrefix: "#/apps/dokuwiki1", ////
-    };
-  },
+  components: { AppSideMenu, AppMobileSideMenu /*Ns8TestLibrarySample*/ },
   created() {
-    console.log("dokuwiki1 mounted"); ////
+    // register to events
+    this.$root.$on("appNavigation", this.onAppNavigation);
 
     // listen to change route events
     const context = this;
@@ -31,19 +28,27 @@ export default {
       "changeRoute",
       function (e) {
         const requestedPage = e.detail;
-        // context.$router.push(requestedPage); ////
         context.$router.replace(requestedPage);
       },
       false
     );
 
     const queryParams = nethserver.getQueryParamsForApp();
-    const requestedPage = queryParams.page || "home";
+    const requestedPage = queryParams.page || "status";
 
-    if (requestedPage != "home") {
-      console.log("replacing", this.$route.path, requestedPage); ////
+    if (requestedPage != "status") {
       this.$router.replace(requestedPage);
     }
+  },
+  beforeDestroy() {
+    // remove event listener
+    this.$root.$off("appNavigation");
+  },
+  methods: {
+    ...mapActions(["setInstanceNameInStore"]),
+    onAppNavigation(appInstance) {
+      this.setInstanceNameInStore(appInstance);
+    },
   },
 };
 </script>

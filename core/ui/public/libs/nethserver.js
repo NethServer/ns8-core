@@ -74,6 +74,10 @@ nethserver = {
       const queryParams = nethserver.getQueryParamsForApp();
       const requestedPage = queryParams.page || "status";
 
+      // emit app navigation event
+      const appInstance = /#\/apps\/(\w+)/.exec(window.parent.location.hash)[1];
+      context.$root.$emit("appNavigation", appInstance, requestedPage);
+
       if (requestedPage !== page) {
         // page has changed, need to change route
         console.log("detected page change, dispatch event", requestedPage); ////
@@ -82,9 +86,6 @@ nethserver = {
         window.dispatchEvent(
           new CustomEvent("changeRoute", { detail: requestedPage })
         );
-
-        // emit navigation event to keep updated current page in app side menu
-        context.$root.$emit("appNavigation", requestedPage);
       } else {
         nethserver.syncQueryParamsAndData(context);
       }

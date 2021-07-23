@@ -7,7 +7,8 @@
     </div>
     <div class="bx--row">
       <div class="bx--col-lg-16">
-        <cv-tile :light="true" class="content-tile">Dokuwiki logs</cv-tile>
+        <!-- //// TODO -->
+        <!-- <cv-tile :light="true" class="content-tile"></cv-tile> -->
       </div>
     </div>
   </div>
@@ -24,25 +25,16 @@ export default {
       q: {
         page: "logs",
       },
-      currentUrl: "",
       urlCheckInterval: null,
     };
   },
   beforeRouteEnter(to, from, next) {
-    console.log(
-      "logs beforeRouteEnter, parent url",
-      window.parent.location.href
-    ); ////
     next((vm) => {
       nethserver.watchQueryData(vm);
-      vm.urlCheckInterval = nethserver.initUrlBinding(vm, vm.q.page); ////
+      vm.urlCheckInterval = nethserver.initUrlBinding(vm, vm.q.page);
     });
   },
   beforeRouteLeave(to, from, next) {
-    console.log(
-      "logs beforeRouteLeave, clear urlCheckInterval",
-      this.urlCheckInterval
-    ); ////
     clearInterval(this.urlCheckInterval);
     next();
   },

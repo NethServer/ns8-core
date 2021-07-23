@@ -1993,6 +1993,11 @@ autoprefixer@^9.8.6:
     postcss "^7.0.32"
     postcss-value-parser "^4.1.0"
 
+await-to-js@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/await-to-js/-/await-to-js-3.0.0.tgz#70929994185616f4675a91af6167eb61cc92868f"
+  integrity sha512-zJAaP9zxTcvTHRlejau3ZOY4V7SRpiByf3/dxx2uyKxxor19tpmpV2QRsTKikckwhaPmr2dVpxxMr7jOCYVp5g==
+
 aws-sign2@~0.7.0:
   version "0.7.0"
   resolved "https://registry.npm.taobao.org/aws-sign2/download/aws-sign2-0.7.0.tgz#b46e890934a9591f2d2f6f86d7e6a9f1b3fe76a8"
@@ -2002,6 +2007,13 @@ aws4@^1.8.0:
   version "1.11.0"
   resolved "https://registry.npm.taobao.org/aws4/download/aws4-1.11.0.tgz?cache=0&sync_timestamp=1604101385256&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2Faws4%2Fdownload%2Faws4-1.11.0.tgz#d61f46d83b2519250e2784daf5b09479a8b41c59"
   integrity sha1-1h9G2DslGSUOJ4Ta9bCUeai0HFk=
+
+axios@^0.21.1:
+  version "0.21.1"
+  resolved "https://registry.yarnpkg.com/axios/-/axios-0.21.1.tgz#22563481962f4d6bde9a76d516ef0e5d3c09b2b8"
+  integrity sha512-dKQiRHxGD9PPRIUNIWvZhPTPpl1rf/OxTYKsqKUDjBwYylTvV7SjSHJb9ratfyzM6wCdLCOYLzs73qpg5c4iGA==
+  dependencies:
+    follow-redirects "^1.10.0"
 
 babel-eslint@^10.1.0:
   version "10.1.0"
@@ -2494,10 +2506,10 @@ carbon-components@10.30.0:
     lodash.debounce "^4.0.8"
     warning "^3.0.0"
 
-carbon-components@^10.39.0:
-  version "10.39.0"
-  resolved "https://registry.yarnpkg.com/carbon-components/-/carbon-components-10.39.0.tgz#384cf2467d3f213af16865c80703da9b96329573"
-  integrity sha512-UrDWQ1RlUr7Nn0b9Vs9E3p14V3o5U+3TS700hbHyAxYYq9CoI8WKQhx16x5Leot6dD8HVVTxkb3ahgv6iJG9Rg==
+carbon-components@10.34.0:
+  version "10.34.0"
+  resolved "https://registry.yarnpkg.com/carbon-components/-/carbon-components-10.34.0.tgz#38a8bc4e03193e09459b22caf0fe2c72a64a63e8"
+  integrity sha512-KgWIFvJv5lg0puFsjXwIqv99ew8u1gUnrjN6/0vmyz2T/sJxGkDuiGAUlZsjmpsF+z2weK9pDu4cutjHYId2Sg==
   dependencies:
     "@carbon/telemetry" "0.0.0-alpha.6"
     flatpickr "4.6.1"
@@ -2990,7 +3002,7 @@ core-js-compat@^3.14.0, core-js-compat@^3.15.0, core-js-compat@^3.6.5:
     browserslist "^4.16.6"
     semver "7.0.0"
 
-core-js@^3.6.5:
+core-js@^3.15.2, core-js@^3.6.5:
   version "3.15.2"
   resolved "https://registry.nlark.com/core-js/download/core-js-3.15.2.tgz?cache=0&sync_timestamp=1624966050136&other_urls=https%3A%2F%2Fregistry.nlark.com%2Fcore-js%2Fdownload%2Fcore-js-3.15.2.tgz#740660d2ff55ef34ce664d7e2455119c5bdd3d61"
   integrity sha1-dAZg0v9V7zTOZk1+JFURnFvdPWE=
@@ -4295,7 +4307,7 @@ fn.name@1.x.x:
   resolved "https://registry.yarnpkg.com/fn.name/-/fn.name-1.1.0.tgz#26cad8017967aea8731bc42961d04a3d5988accc"
   integrity sha512-GRnmB5gPyJpAhTQdSZTSp9uaPSvl09KoYcMQtsB9rQoOmzs9dH6ffeccH+Z+cv6P68Hu5bC6JjRh4Ah/mHSNRw==
 
-follow-redirects@^1.0.0:
+follow-redirects@^1.0.0, follow-redirects@^1.10.0:
   version "1.14.1"
   resolved "https://registry.nlark.com/follow-redirects/download/follow-redirects-1.14.1.tgz#d9114ded0a1cfdd334e164e6662ad02bfd91ff43"
   integrity sha1-2RFN7Qoc/dM04WTmZirQK/2R/0M=
@@ -6377,6 +6389,13 @@ npm-run-path@^4.0.0:
     console-control-strings "~1.1.0"
     gauge "~2.7.3"
     set-blocking "~2.0.0"
+
+ns8-test-library@0.0.2:
+  version "0.0.2"
+  resolved "https://registry.yarnpkg.com/ns8-test-library/-/ns8-test-library-0.0.2.tgz#696af9e196afaba261650d9ae81fb3ea983737b9"
+  integrity sha512-33awSr134tN4sAVz6RPuOj+f3qfMrihdcvPxPdWm30j3jwVyEA49TNfeijUdttKRudFV3NuujIvorb7JEmnb+w==
+  dependencies:
+    core-js "^3.15.2"
 
 nth-check@^1.0.2:
   version "1.0.2"
@@ -9047,6 +9066,11 @@ vm-browserify@^1.0.1:
   version "1.1.2"
   resolved "https://registry.npm.taobao.org/vm-browserify/download/vm-browserify-1.1.2.tgz#78641c488b8e6ca91a75f511e7a3b32a86e5dda0"
   integrity sha1-eGQcSIuObKkadfUR56OzKobl3aA=
+
+vue-axios@^3.2.4:
+  version "3.2.4"
+  resolved "https://registry.yarnpkg.com/vue-axios/-/vue-axios-3.2.4.tgz#2334158db8ac2a0f603aa431c2626fbf6d766724"
+  integrity sha512-8Dgws6dwt+1LoKEU4HDzIPfaRgWHl0xLDLW6kxrAk/z3GAJ2thkajcXC4qZgmqj0cZRx/Z/dzooKi5HWtUQwxA==
 
 vue-eslint-parser@^7.0.0:
   version "7.8.0"

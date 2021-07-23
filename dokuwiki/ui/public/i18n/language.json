@@ -1,11 +1,25 @@
 {
   "common": {
-    "show_password": "Show password",
-    "hide_password": "Hide password",
-    "save": "Save"
+    "required": "Required"
   },
   "status": {
-    "title": "Status"
+    "title": "Status",
+    "app_instance": "App instance",
+    "services": "Service | Services",
+    "images": "Image | Images",
+    "volumes": "Volume | Volumes",
+    "installation_node": "Installation node",
+    "node": "Node",
+    "failed_services": "{num} failed service | {num} failed services",
+    "active_services": "{num} active service | {num} active services",
+    "inactive_services": "{num} inactive service | {num} inactive services",
+    "name": "Name",
+    "size": "Size",
+    "created": "Created",
+    "mount": "Mount",
+    "no_services": "No services",
+    "no_images": "No images",
+    "no_volumes": "No volumes"
   },
   "settings": {
     "title": "Settings",
@@ -14,12 +28,31 @@
     "admin_password": "Administrator password",
     "admin_email": "Administrator email address",
     "admin_full_name": "Administrator full name",
-    "wiki_fqdn": "Wiki FQDN"
+    "wiki_fqdn": "Wiki FQDN",
+    "show_password": "Show password",
+    "hide_password": "Hide password",
+    "save": "Save",
+    "lets_encrypt": "Let's Encrypt",
+    "http_to_https": "HTTP to HTTPS",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "instance_configuration": "{instance} configuration",
+    "configuring": "Configuring...",
+    "email_format": "Invalid email address"
   },
   "logs": {
     "title": "Logs"
   },
   "about": {
     "title": "About"
+  },
+  "task": {
+    "cannot_create_task": "Cannot create task {action}"
+  },
+  "action": {
+    "get-status": "Get status",
+    "get-configuration": "Get configuration",
+    "configure-module": "Configure module",
+    "get-module-info": "Get module info"
   }
 }

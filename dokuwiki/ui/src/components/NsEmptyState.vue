@@ -19,6 +19,8 @@
 </template>
 
 <script>
+//// FILE COPIED FROM CORE
+
 import Pictogram from "./Pictogram.vue";
 import ExclamationMark from "./pictograms/ExclamationMark";
 

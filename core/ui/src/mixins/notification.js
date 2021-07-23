@@ -139,6 +139,7 @@ export default {
       }
 
       const taskStatus = payload.status;
+      const taskContext = contextResponse.data.data.context;
       let taskResult;
 
       if (["completed", "aborted", "validation-failed"].includes(taskStatus)) {
@@ -158,13 +159,12 @@ export default {
 
         if (taskStatus === "validation-failed") {
           // show validation errors
-          this.$root.$emit("validationFailed", taskResult.output);
+          this.$root.$emit(
+            taskContext.action + "-validation-failed",
+            taskResult.output
+          );
         }
       }
-
-      const taskContext = contextResponse.data.data.context;
-
-      // console.log("taskContext", taskContext); ////
 
       // check if it's a root task or a subtask
       if (taskContext.parent) {
@@ -287,12 +287,14 @@ export default {
         if (taskResult) {
           notification.task.result = taskResult;
 
-          // emit an event so that the component that requested the task can handle the result
-          this.$root.$emit(
-            taskContext.action + "-completed",
-            taskContext,
-            taskResult
-          );
+          if (taskStatus === "completed") {
+            // emit an event so that the component that requested the task can handle the result
+            this.$root.$emit(
+              taskContext.action + "-completed",
+              taskContext,
+              taskResult
+            );
+          }
 
           // set notification action
           let [actionLabel, action] = this.getActionParams(

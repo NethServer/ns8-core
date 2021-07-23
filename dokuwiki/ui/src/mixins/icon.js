@@ -20,6 +20,8 @@ import Rocket20 from "@carbon/icons-vue/es/rocket/20";
 import Chip20 from "@carbon/icons-vue/es/chip/20";
 import Save20 from "@carbon/icons-vue/es/save/20";
 
+//// FILE COPIED FROM CORE
+
 export default {
   name: "IconService",
   data() {

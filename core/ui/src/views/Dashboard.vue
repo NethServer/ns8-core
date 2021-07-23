@@ -27,42 +27,6 @@
           <NsButton :icon="Flash20" @click="isTestValidationModalShown = true"
             >Open test validation modal</NsButton
           >
-
-          <!-- <h2>Backend validation</h2> -->
-          <!-- <cv-form @submit.prevent="testValidation">
-            <cv-text-input
-              label="Name"
-              v-model="q.name"
-              helper-text="Cannot be empty"
-              :invalid-message="$t(error.name)"
-              ref="name"
-            >
-            </cv-text-input>
-            <cv-text-input
-              label="Email"
-              v-model="q.email"
-              helper-text="Must be a valid email"
-              :invalid-message="$t(error.email)"
-              ref="email"
-            >
-            </cv-text-input>
-            <NsInlineNotification
-              v-if="error.testValidation"
-              kind="error"
-              :title="$t('error.error') + ':'"
-              :description="error.testValidation"
-              low-contrast
-              showCloseButton
-              @close="error.testValidation = ''"
-            />
-            <NsButton
-              size="default"
-              :icon="Flash20"
-              :loading="loading.testValidation"
-              :disabled="loading.testValidation"
-              >Test validation</NsButton
-            >
-          </cv-form> -->
         </cv-tile>
       </div>
     </div>
@@ -80,16 +44,6 @@
         </cv-tile>
       </div>
     </div>
-    <!-- <div class="bx--row">
-      <div class="bx--col-md-4 bx--col-lg-7">7/16</div>
-      <div class="bx--col-md-4 bx--offset-lg-1 bx--col-lg-8">8/16</div>
-    </div>
-    <div class="bx--row">
-      <div class="bx--col-md-4 bx--col-lg-4">1/4</div>
-      <div class="bx--col-md-4 bx--col-lg-4">1/4</div>
-      <div class="bx--col-md-4 bx--col-lg-4">1/4</div>
-      <div class="bx--col-md-4 bx--col-lg-4">1/4</div>
-    </div> -->
     <div class="bx--row">
       <div class="bx--col-md-4">
         <cv-tile :light="true" class="content-tile">
@@ -377,16 +331,6 @@ export default {
     this.queryParamsToData(this, to.query);
     next();
   },
-  created() {
-    // register to validation events
-    this.$root.$on("validationFailed", this.validationFailed);
-    this.$root.$on("validationOk", this.validationOk);
-  },
-  beforeDestroy() {
-    // remove event listeners
-    this.$root.$off("validationFailed");
-    this.$root.$off("validationOk");
-  },
   methods: {
     closeToast() {
       console.log("closeToast"); ////
@@ -451,7 +395,7 @@ export default {
       const err = res[0];
 
       if (err) {
-        this.createTaskErroNotification(
+        this.createTaskErrorNotification(
           err,
           this.$t("task.cannot_create_task", { action: taskAction })
         );
@@ -472,7 +416,7 @@ export default {
       const err = res[0];
 
       if (err) {
-        this.createTaskErroNotification(
+        this.createTaskErrorNotification(
           err,
           this.$t("task.cannot_create_task", { action: taskAction })
         );
@@ -508,7 +452,7 @@ export default {
       const err = res[0];
 
       if (err) {
-        this.createTaskErroNotification(
+        this.createTaskErrorNotification(
           err,
           this.$t("task.cannot_create_task", { action: taskAction })
         );
@@ -535,25 +479,12 @@ export default {
       this.loading.testValidation = false;
 
       if (err) {
-        this.createTaskErroNotification(
+        this.createTaskErrorNotification(
           err,
           this.$t("task.cannot_create_task", { action: taskAction })
         );
         return;
       }
-    },
-    validationFailed(validationErrors) {
-      console.log("validationErrors", validationErrors); ////
-
-      for (const validationError of validationErrors) {
-        const param = validationError.parameter;
-        // set i18n error message
-        this.error[param] = "validation." + validationError.error;
-      }
-    },
-    validationOk(task) {
-      console.log("validationOk, task", task); ////
-      this.isTestValidationModalShown = false;
     },
   },
 };

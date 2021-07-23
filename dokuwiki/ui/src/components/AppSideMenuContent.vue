@@ -1,7 +1,11 @@
 <template>
   <div>
-    <div class="module-id">
-      <span>app name ////</span>
+    <div class="instance-name">
+      <span v-if="instanceName">{{ instanceName }}</span>
+      <cv-skeleton-text
+        v-else
+        :width="instanceNameSkeletonWidth"
+      ></cv-skeleton-text>
     </div>
 
     <cv-side-nav-items>
@@ -42,6 +46,7 @@ import Settings20 from "@carbon/icons-vue/es/settings/20";
 import Catalog20 from "@carbon/icons-vue/es/catalog/20";
 import Information20 from "@carbon/icons-vue/es/information/20";
 import Activity20 from "@carbon/icons-vue/es/activity/20";
+import { mapState } from "vuex";
 
 let nethserver = window.nethserver;
 
@@ -52,6 +57,14 @@ export default {
     Settings20,
     Information20,
     Activity20,
+  },
+  data() {
+    return {
+      instanceNameSkeletonWidth: "70%",
+    };
+  },
+  computed: {
+    ...mapState(["instanceName"]),
   },
   created() {
     // register to appNavigation event
@@ -73,17 +86,14 @@ export default {
       this.$forceUpdate();
     },
     goToPage(page) {
-      //// parametrize dokuwiki1
-      const path = "/apps/dokuwiki1?page=" + page;
-
-      console.log("goToPage", path, window.parent.ns8.$route.fullPath); ////
+      const path = `/apps/${this.instanceName}?page=${page}`;
 
       if (window.parent.ns8.$route.fullPath != path) {
         window.parent.ns8.$router.push(path);
       }
     },
-    onAppNavigation(page) {
-      console.log("onAppNavigation", page); ////
+    onAppNavigation() {
+      // update current page highlight in side menu
       this.$forceUpdate();
     },
   },
@@ -93,7 +103,7 @@ export default {
 <style scoped lang="scss">
 @import "../styles/carbon-utils";
 
-.module-id {
+.instance-name {
   height: 3rem;
   padding-left: 1.5rem;
   margin-top: 1rem;

@@ -3,8 +3,15 @@ import App from "./App.vue";
 import router from "./router";
 import store from "./store";
 
+//// needed?
 import CarbonComponentsVue from "@carbon/vue";
 Vue.use(CarbonComponentsVue);
+
+//// needed?
+import axios from "axios";
+axios.defaults.timeout = 10000;
+import VueAxios from "vue-axios";
+Vue.use(VueAxios, axios);
 
 // i18n
 import VueI18n from "vue-i18n";

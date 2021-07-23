@@ -4,11 +4,14 @@ import CheckmarkFilled16 from "@carbon/icons-vue/es/checkmark--filled/16";
 import WarningFilled16 from "@carbon/icons-vue/es/warning--filled/16";
 import InformationFilled16 from "@carbon/icons-vue/es/information--filled/16";
 import UtilService from "@/mixins/util";
-import NotificationService from "@/mixins/notification";
+//// CHANGED FOR EXTERNAL APP
+// import NotificationService from "@/mixins/notification";
+
+//// FILE COPIED FROM CORE
 
 export default {
   name: "TaskService",
-  mixins: [StorageService, UtilService, NotificationService],
+  mixins: [StorageService, UtilService /*NotificationService*/],
   methods: {
     getTaskContext(taskPath) {
       const token = this.getFromStorage("loginInfo")
@@ -40,6 +43,7 @@ export default {
         },
       });
     },
+    //// RENAME TO createClusterTask
     createTask(taskData) {
       const token = this.getFromStorage("loginInfo")
         ? this.getFromStorage("loginInfo").token
@@ -49,6 +53,36 @@ export default {
           Authorization: `Bearer ${token}`,
         },
       });
+    },
+    //// ADDED FOR EXTERNAL APP
+    createClusterTaskForApp(taskData) {
+      const token = this.getFromStorage("loginInfo")
+        ? this.getFromStorage("loginInfo").token
+        : "";
+      return this.axios.post(
+        `${window.parent.ns8.$root.apiUrl}/cluster/tasks`,
+        taskData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+    },
+    //// CHANGED (added) FOR EXTERNAL APP
+    createModuleTask(moduleId, taskData) {
+      const token = this.getFromStorage("loginInfo")
+        ? this.getFromStorage("loginInfo").token
+        : "";
+      return this.axios.post(
+        `${window.parent.ns8.$root.apiUrl}/module/${moduleId}/tasks`,
+        taskData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
     },
     getTaskTitle(task) {
       if (
@@ -122,6 +156,15 @@ export default {
         type: "error",
       };
       this.createNotification(notification);
+    },
+    createTaskErrorNotificationForApp(err, message) {
+      //// ADDED FOR EXTERNAL APP
+
+      window.parent.ns8.$root.$emit(
+        "createTaskErrorNotificationForApp",
+        err,
+        message
+      );
     },
   },
 };

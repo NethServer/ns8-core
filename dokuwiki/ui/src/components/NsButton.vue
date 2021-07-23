@@ -23,6 +23,8 @@
 </template>
 
 <script>
+//// FILE COPIED FROM CORE
+
 import { CvButton } from "@carbon/vue";
 
 export default {

@@ -12,14 +12,3 @@ export default {
   components: { AppSideMenuContent },
 };
 </script>
-
-<style scoped lang="scss">
-@import "../styles/carbon-utils";
-
-// @media (max-width: $breakpoint-large) { ////
-//   // hide side menu on small devices
-//   #side-nav {
-//     display: none;
-//   }
-// }
-</style>
