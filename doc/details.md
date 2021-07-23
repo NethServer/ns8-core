@@ -16,46 +16,87 @@ Most NethServer files are saved inside `/var/lib/nethserver/` and `/usr/local/ne
 ### Database: Redis
 
 NethServer configuration is saved inside Redis which runs as rootfull container.
-To see Redis service status, use `systemctl status redis`.
 
-Once the core has been initialized, you can access Redis with one of the following commands:
+#### Data inspection commands
+
+Get the Redis service status:
+
+    systemctl status redis
+
+Access Redis with one of the following commands:
 
     redis-cli <<EOF
     PING
     EOF
 
-The `redis-cli` command is faster when invoked by the root user, because it runs a command in
-the existing `redis` rootfull container. For non-root users a temporary container is created and destroyed.
+* The `redis-cli` command is faster when invoked by the root user, because
+  it runs a command in the existing `redis` rootfull container. For
+  non-root users a temporary container is created and destroyed.
 
-The `redis-cli` command attempts to connect with the higher available Redis privileges, by reading `agent.env` files.
+* The `redis-cli` command attempts to connect with the higher available
+  Redis privileges, by reading `agent.env` files.
 
-An experimental Python-based helper script is available too and it better suits
-Bash action scripts as it does not start any container.
-This client is synchronous as it waits for the server response.
+An experimental Python-based helper script is available too and it better
+suits Bash action scripts as it does not start any container. This client
+is synchronous as it waits for the server response.
 
     redis-exec <<EOF
     PING
     EOF
 
-An alternative, synchronous invocation relies on the `nc` command, provided by the `nmap-ncat` RPM (good for development environments):
+An alternative, synchronous invocation relies on the `nc` command,
+provided by the `nmap-ncat` RPM (good for development environments):
 
     nc 127.0.0.1 6379 <<EOF
     PING
     EOF
 
-For completeness here is a pure Bash invocation that does not wait the server response:
+For completeness here is a pure Bash invocation that does not wait the
+server response:
 
     cat >/dev/tcp/127.0.0.1/6379 <<EOF
     PING
     EOF
 
 
-#### DB schema and queues
+#### Database schema and conventions
 
-TODO:
-- redis queues
-- redis channels
-- schema: https://docs.google.com/document/d/13bo5guJN588HGzP5EPe9e5heHBmPt88U9AoyV0OCs0g/edit#heading=h.ahj72tll1jvk
+Redis is a key/value database. Some key naming rules are enforced because
+access rights are based on key name patterns. Both admin UI users and
+agents have their own Redis credentials for authentication and
+authorization. 
+
+Some key rule examples:
+
+* `module/{module_id}/environment` The key type is HASH. It stores
+  environment variables for the module agent of *module_id*.
+
+* `node/{node_id}/vpn` The key type is HASH. It stores the cluster VPN
+  configuration applied by the node agent *node_id*
+
+* `cluster/node_sequence` The key value is an integer. As the name
+  suggests it is used to generate a node ID, when a new node is added to
+  the cluster.
+
+The complete Redis schema is frequently updated. It is temporarly published at the following URL:
+
+https://docs.google.com/document/d/13bo5guJN588HGzP5EPe9e5heHBmPt88U9AoyV0OCs0g
+
+Redis provides blocking pop operations on lists. The BRPOP command is used
+by agents to wait on a queue for incoming tasks. Task queues keys look
+like `module/{module_id}/tasks`.
+
+Redis provides PUB/SUB operations on *channels*. Channels are used to
+implement the observer pattern, for instance in the following situations:
+
+1. An agent wants to notify the UI about the progress of a running task.
+   The channel name in this case looks like
+   `progress/module/{module_id}/task/{uuid}`.
+
+2. An agent wants to communicate to other agents that a particular event
+   occurred (e.g. a TLS certificate was automatically renewed). The
+   channel name in this case could be like
+   `module/{module_id}/event/{event_name}`
 
 ### Proxy and certificates: Traefik
 
@@ -251,6 +292,7 @@ Such directory should contain:
   It should contains a sub-directory named `user` where systemd units are stored.
   - `actions`: a list of directories, each directory implements an `action`
 - `ui` directory: it contains all UI source code of the module
+- `bin` directory: additional binaries for the module
 - `build-image.sh`: a script to manually build the image of the module and push it inside the image registry.
 - `README.md`: a [Markdown](https://guides.github.com/features/mastering-markdown/) file describing the module purpose and implementation
 
@@ -262,7 +304,7 @@ Module images can use a list of well-known labels to configure the system:
 - `org.nethserver.images`: see [Image download](#image-download)
 - `org.nethserver.rootfull`: can be `0` or `1`, if set to `0` the module will run podman in rootless mode,
   if set to `1` the module will run podman in rootfull mode
-- `org.nethserver.authorizations`: see agent API below 
+- `org.nethserver.authorizations`: see [Roles and authorizations](#roles-and-authorizations)
 
 ##### Image download
 
@@ -369,7 +411,7 @@ The cluster also exposes a [`get-module-info`](../core/imageroot/var/lib/nethser
 
 ##### Environment variables
 
-Environment variables are saved inside Redis at 'module/<module_id>/environment`.
+Environment variables are saved inside Redis at `module/<module_id>/environment`.
 
 Each action has access to all environment variables:
 1. added by `add-module`
@@ -399,8 +441,8 @@ i.e `/home/myapp1/.config/state/environment`.
 
 ##### Action commands
 
-Actions can talk to their own agent using a simple protocol.
-An action can set/unset environment variable, dump the environment to a well known file, etc.
+During the action execution, action steps can talk to the agent using a simple protocol.
+It is possible to set/unset environment variables, dump the environment to a well known file, etc.
 
 See all [available action commands](../core/agent/README.md#action-commands).
 
@@ -414,16 +456,24 @@ agent.dump_env()
 
 ##### Database access
 
-Each module has granted full read-only access to the Redis database.
-To enable write access, the module should authenticate itself.
-Everything is already available inside the Python library.
+Everyone can access the Redis database with read-only privileges. The
+Redis user `default` (password is not important) can be used for this
+purpose.
+
+To get write access a module must provide the Redis credentials stored in
+the `agent.env` file. The complete path is `~/.config/state/agent.env`.
+Write access is restricted to Redis keys and channels with prefix
+`module/{module_id}/*`. The same credentials allow read access of keys
+with the same prefix.
+
+The above rules are already implemented by the Python `agent` module.
 
 Access Redis in read-only:
 ```python
 import agent
 
 rdb = agent.redis_connect(privileged=False)
-repo = rdb.hgetall('module/myapp1/environment')
+somehash = rdb.hgetall('cluster/somehash')
 ```
 
 Access Redis in read-write mode:
@@ -431,7 +481,7 @@ Access Redis in read-write mode:
 import agent
 
 rdb = agent.redis_connect(privileged=True)
-repo = rdb.hset('module/myapp1/environment', {'myvar': 'myvalue'})
+rdb.hset('module/myapp1/myhash', mapping={'myvar': 'myvalue'})
 ```
 
 ##### Exit codes
@@ -460,15 +510,194 @@ As general rule, schema files are loaded from special paths:
 - `${AGENT_INSTALL_DIR}/actions/<action-name>/validate-input.json`: schema applied to validate the input data
 - `${AGENT_INSTALL_DIR}/actions/<action-name>/validate-output.json`: schema applied to validate the output data
 
-#### Agent API
+### Agent API
 
-TODO
+Agents wait for tasks on a Redis list. Only the `cluster` agent and the
+`api-server` are allowed to push a new task for an arbitrary module. The
+task contain two main attributes: the action name (`action`), and the
+action input (`data`).
 
-#### Roles and authorizations
+The following Redis command run the `list-actions` action on the cluster agent:
 
-TODO
+    LPUSH cluster/tasks '{"id":"1a4a3965-d8d2-4c22-99d5-e17e6a5db36b","action":"list-actions","data":{}}'
 
-#### Automatic builds
+Read the action output:
+
+    GET cluster/task/1a4a3965-d8d2-4c22-99d5-e17e6a5db36b/output
+
+The action output is a string in JSON format.
+
+```json
+[
+  "list-actions",
+  "destroy-module",
+  "add-module",
+  "add-user",
+  "remove-module",
+  "remove-repository",
+  "update-routes",
+  "alter-user",
+  "grant-actions",
+  "remove-user",
+  "add-repository",
+  "get-module-info",
+  "join-cluster",
+  "list-installed-modules",
+  "list-updates",
+  "revoke-actions",
+  "create-module",
+  "get-status",
+  "add-node",
+  "alter-repository",
+  "create-cluster",
+  "list-modules",
+  "list-repositories"
+]
+```
+
+Read the collected stderr data from the action steps:
+
+    GET cluster/task/1a4a3965-d8d2-4c22-99d5-e17e6a5db36b/error
+
+Read the originally submitted task payload:
+
+    GET cluster/task/1a4a3965-d8d2-4c22-99d5-e17e6a5db36b/context
+
+Read the action exit code:
+
+    GET cluster/task/1a4a3965-d8d2-4c22-99d5-e17e6a5db36b/exit_code
+
+The above keys are transient. After a few hours they are evicted. This
+command return the remaining key TTL (Time To Live), in seconds.
+
+    TTL cluster/task/1a4a3965-d8d2-4c22-99d5-e17e6a5db36b/error
+
+While the action is running, some messages are sent through the progress
+channel. It is possible to get them by subscribing the channel.
+
+    SUBSCRIBE progress/cluster/task/1a4a3965-d8d2-4c22-99d5-e17e6a5db36b
+
+The Python module `agent.tasks` implements the above calls internally.
+
+```python
+import agent.tasks
+print(agent.tasks.run(agent_id='cluster', action='list-actions', endpoint='redis://cluster-leader'))
+```
+
+Note the `endpoint=` argument: it uses the `redis://` protocol, that
+requires `cluster` privileges to work.
+
+As said above, only the `cluster` agent and `api-server` are allowed to
+LPUSH new tasks in Redis. Module agents must submit tasks for other agents
+as HTTP requests, through the `api-server`. 
+
+Basically this can be done in two steps:
+
+1. obtain a JWT token with the module Redis credentials
+2. send the task request
+
+The Python module `agent.tasks` implements the two steps internally.
+
+It has a few assumptions, that are always satisfied by an action step environment:
+
+* It obtain the module credentials from the environment (`REDIS_USER`,
+  `AGENT_ID`, and `REDIS_PASSWORD`)
+* It stores the JWT token in the current working directory (the file is
+  `./apitoken.cache`)
+
+This is an example call, note that the `agent_id` is obtained from the
+environment.
+
+```python
+import agent.tasks, os
+print(agent.tasks.run(agent_id=os.environ['AGENT_ID'], action='list-actions'))
+```
+
+The above call fails, because agents are not generally authorized to run
+`list-actions`. However, just for this example, it is possible to override
+the Redis credentials received from the environment.
+
+```python
+import agent.tasks, os
+os.environ['REDIS_USER'] = 'admin'
+os.environ['REDIS_PASSWORD'] = 'Nethesis,1234'
+print(agent.tasks.run(agent_id=os.environ['AGENT_ID'], action='list-actions'))
+```
+
+The next section explains how to authorize agents to run actions through
+roles assignment.
+
+### Roles and authorizations
+
+In normal conditions module actions must be assigned to `roles`, and roles
+must be granted to agents and users.
+
+In Redis, a SET contains the actions assigned to a role. The set can be modified
+during the `create-module` action.
+
+The following Bash command in the `create-module` action allows agents
+with the `actionsreader` role to run `list-actions` on `AGENT_ID` (e.g.
+`module/mymod1`).
+
+```sh
+    redis-exec SADD "${AGENT_ID}/roles/actionsreader" "list-actions"
+```
+
+Now it is possible to grant the `actionsreader` on `module/mymod1` to
+another agent (e.g. `module/authmod2`). This is the corresponding Redis command:
+
+    HSET roles/module/authmod2 module/mymod1 actionsreader
+
+Roles are always granted by the `cluster` agent.
+
+Users with the `owner` role can use the following actions to manage users
+and their roles:
+
+- `add-user`
+- `remove-user`
+- `grant-actions`
+- `revoke-actions`
+
+Those actions are implemented with the `cluster.grants` Python module.
+
+A module can require additional roles to other modules when it is
+instantiated. Set the label `org.nethserver.authorizations` of the module
+image to a space separated list of values. Each value describes what is
+the required role and what are the modules. The value syntax is `{agent
+selector}:{role}`. For instance
+
+    org.nethserver.authorizations = mymod@node:actionsreader funmod@cluster:rolex coolmod@any:roley
+
+If the installed module is `authmod2`, the above label is interpreted in
+the following way:
+
+1. grant `authmod2` role `actionsreader` on the _default instance_ of
+   module `mymod` running on the same node (`@node` suffix). The first
+   instance of `mymod` installed on the node of `authmod2` is usually the
+   default one.
+
+2. grant `authmod2` role `rolex` on the _default instance_ of `funmod` at
+   cluster level (`@cluster` suffix). That means the first instance of `funmod`
+   installed in the cluster on any node.
+
+3. grant `authmod2` role `roley` on any existing instance of module `coolmod`.
+
+Other possible *agent selector* values:
+
+- `cluster` - selects the cluster agent
+- `node` - selects the node agent where the module is running
+
+Depending on the running node ID the value resolves to an agent ID. The above rules
+are implemented in Python by the `agent.resolve_agent_id()` function
+
+```python
+import agent, os
+print(agent.resolve_agent_id('traefik@node', node_id=os.getenv('NODE_ID', 1)))
+```
+
+The `node_id` argument is optional.
+
+### Automatic builds
 
 Every time a commit is pushed to the repository, a new build can
 be automatically started.
@@ -477,9 +706,16 @@ To enable automatic builds, create a yaml file like `.github/workflows/<module>.
 Use [dokuwki Github workflow](../.github/workflows/dokuwiki.yaml) as a template, make sure to replace all occurrences of `dokuwiki`
 with the name of the new module.
 
-##### API doc generation
+### API doc generation
 
-TODO
+If an action has JSON schema validators, the schema file is converted to
+Markdown format and published in the `apidoc` branch. Browse it at
+
+https://github.com/NethServer/ns8-scratchpad/tree/apidoc
+
+Pull requests are assigned a dedicated branch. If the PR source branch is
+`newfeature` the resulting documentation branch is `apidoc-newfeature`.
+The branch lives as long as the PR is merged, or closed.
 
 ---
 Next: [How to create a new module](new_module.md)
