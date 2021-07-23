@@ -144,11 +144,9 @@ and extract the files from the core image to system path, like `/var/lib/nethser
 
 When installing a rootless module, the package will be extracted inside the home of the module Unix user.
 
-## API server and UI
+## API server
 
 The API server is a daemon implemented using [Go](https://golang.org).
-
-The UI is a web application developed with [VueJs](https://vuejs.org/) and based on [Carbon Design System](https://www.carbondesignsystem.com/).
 
 TODO:
 
@@ -157,6 +155,47 @@ TODO:
 - how to create user and roles
 - UI default credentials
 - auditing
+
+## User Interface
+
+NS8 user interface is a web application developed with [VueJs](https://vuejs.org/) and based on [Carbon Design System](https://www.carbondesignsystem.com/).
+
+NS8 UI can be accessed at `https://leader_node/cluster-admin/`. Default username is `admin` and default password is `Nethesis,1234`. The web application source is structured in multiple VueJs projects: the core UI project and a distinct project for every module UI (e.g. Dokuwiki).
+
+### Core UI
+
+Core UI includes:
+- Login page
+- Shell UI
+  - Side menu
+  - Top header
+  - Global search
+  - Notification drawer
+  - App launcher
+  - Account menu
+- Cluster status page
+- Software center
+- Cluster logs (auditing)
+- Cluster settings
+
+Core UI also includes a set of reusable UI components that are used in core and NS8 modules; they are easily recognizable since their name starts with `Ns`, e.g. `NsButton`, `NsInlineNotification`.
+These components can be tested with [Storybook](https://storybook.js.org/). To launch Storybook webapp:
+
+```
+cd core/ui
+yarn storybook
+```
+
+### NS8 modules UI
+
+Every NS8 module follows the same UI guidelines in order to provide a uniform user experience. Almost every module has at least these standard pages:
+- Status
+- Settings
+- Logs
+- About
+
+NS8 modules make use of core features and functions, e.g. requesting the creation of a notification or the execution of a task.
+
 
 ## Package repository
 
