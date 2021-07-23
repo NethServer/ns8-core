@@ -21,7 +21,7 @@
 #
 
 import sys
-import agent
+import agent.tasks
 import argparse
 
 parser = argparse.ArgumentParser()
@@ -30,14 +30,13 @@ parser.add_argument('--on')
 parser.add_argument('--action')
 args = parser.parse_args()
 
-rdb = agent.redis_connect(privileged=True)
-
-exit_code, output, error = agent.run_subtask(rdb,
-    agent_prefix='cluster',
+result = agent.tasks.run(
+    agent_id='cluster',
     action='revoke-actions',
-    input_obj=[{"on":args.on, "to":args.to, "action":args.action}],
+    data=[{"on":args.on, "to":args.to, "action":args.action}],
+    endpoint="redis://cluster-leader",
 )
 
-sys.stderr.write(error)
-sys.stdout.write(output)
-sys.exit(exit_code)
+print(result['error'], file=sys.stderr, end='')
+print(result['output'])
+sys.exit(result['exit_code'])

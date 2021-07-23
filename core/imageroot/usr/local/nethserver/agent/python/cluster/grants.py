@@ -20,7 +20,7 @@
 
 import fnmatch
 import agent
-import json
+import agent.tasks
 
 def _lookup_grant_on(rdb, agent_pattern):
     """
@@ -48,10 +48,15 @@ def _lookup_actions(rdb, agent_id):
     """
     Retrieve the available actions from agent_id
     """
-    exit_code, output, error = agent.run_subtask(rdb, agent_id, 'list-actions', {})
-    if exit_code != 0:
+    list_actions_result = agent.tasks.run(
+        agent_id=agent_id,
+        action='list-actions',
+        data={},
+        endpoint="redis://cluster-leader", # require "cluster" credentials
+    )
+    if list_actions_result['exit_code'] != 0:
         return []
-    return json.loads(output)
+    return list_actions_result['output']
 
 def _change_role_definition(rdb, revoke, action_clause, on_clause, to_clause):
     if "*" in on_clause:

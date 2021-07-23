@@ -165,27 +165,6 @@ def resolve_agent_id(agent_selector, node_id=None):
 
     return agent_id
 
-def run_subtask(redis_obj, agent_prefix, action, input_obj, nowait=False, progress_range=None):
-
-    task_id = str(uuid.uuid4())
-    task_obj = {"id": task_id, "action": action, "data": input_obj, "parent": os.getenv("AGENT_TASK_ID", "")}
-
-    redis_obj.lpush(f'{agent_prefix}/tasks', json.dumps(task_obj))
-
-    if nowait:
-        return None, None, None
-
-    exit_code = None
-    while True: # XXX infinite loop no timeout!
-        exit_code = redis_obj.get(f'{agent_prefix}/task/{task_id}/exit_code')
-        if exit_code is not None:
-            break
-        time.sleep(1)
-
-    output = redis_obj.get(f'{agent_prefix}/task/{task_id}/output')
-    error = redis_obj.get(f'{agent_prefix}/task/{task_id}/error')
-    return int(exit_code), output, error
-
 def save_wgconf(ipaddr, listen_port=55820, peers={}):
 
     private_key = slurp_file('/etc/nethserver/wg0.key')

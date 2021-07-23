@@ -171,10 +171,15 @@ def run(agent_id, action, data={}, **kwargs):
     }], **kwargs)
     return results[0]
 
+def run_nowait(*args, **kwargs):
+    """Run the task but do no wait for completion. Instead return immediately a task identifier.
+    """
+    return run(*args, nowait=True, **kwargs)
+
 def runp(tasks, **kwargs):
     """Run tasks in parallel and return an array of results.
     """
-    return asyncio.run(_runp(tasks, nowait=False, **kwargs))
+    return asyncio.run(_runp(tasks, **kwargs))
 
 def runp_nowait(tasks, **kwargs):
     """Run tasks in parallel and do not wait for completion, instead task IDs are returned.
@@ -184,7 +189,7 @@ def runp_nowait(tasks, **kwargs):
 def runp_brief(tasks, **kwargs):
     """Run tasks in parallel and return the number of failed tasks. Errors are sent to sys.stderr
     """
-    results = asyncio.run(_runp(tasks, nowait=False, **kwargs))
+    results = asyncio.run(_runp(tasks, **kwargs))
     errors = 0
     for idx, result in enumerate(results):
         if isinstance(result, Exception):
