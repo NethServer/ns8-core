@@ -23,6 +23,7 @@
 import sys
 import json
 import agent
+import agent.tasks
 import cluster.grants
 import subprocess
 import os
@@ -120,18 +121,20 @@ agent.run_helper('extract-ui', image_url).check_returncode()
 
 # Wait for the module host to set up the module environment: it
 # has to return us the module password hash
-exit_code, output, error = agent.run_subtask(rdb,
-    progress_range=(34,66),
-    agent_prefix=f'node/{node_id}',
+add_module_result = agent.tasks.run(
+    agent_id=f'node/{node_id}',
     action='add-module',
-    input_obj={
+    data={
         "image_url": image_url,
         "module_id": module_id,
         "is_rootfull": is_rootfull,
-    })
-agent.assert_exp(exit_code == 0)
+    },
+    endpoint="redis://cluster-leader",
+    progress_range=(34,66),
+)
+agent.assert_exp(add_module_result['exit_code'] == 0)
 
-outobj=json.loads(output)
+outobj=add_module_result['output']
 
 rdb.hset(f'module/{module_id}', mapping={
     "redis_sha256": outobj['redis_sha256'],
@@ -173,15 +176,16 @@ for authz in authorizations:
     )
 
 # Push the creation task for the new module.
-exit_code, output, error = agent.run_subtask(rdb,
-    progress_range=(67,95),
-    agent_prefix=f'module/{module_id}',
+create_module_result = agent.tasks.run(
+    agent_id=f'module/{module_id}',
     action="create-module",
-    input_obj={
+    data={
         'images': extra_images,
     },
+    endpoint="redis://cluster-leader",
+    progress_range=(67,95),
 )
-agent.assert_exp(exit_code == 0) # Ensure create-module is successful
+agent.assert_exp(create_module_result['exit_code'] == 0) # Ensure create-module is successful
 
 # Configure our builtin roles: "owner" and "reader". Owner can run any action, Reader can run
 # action names with special prefixes.

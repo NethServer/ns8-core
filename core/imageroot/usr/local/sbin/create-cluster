@@ -21,7 +21,8 @@
 #
 
 import sys
-import agent
+import subprocess
+import agent.tasks
 import argparse
 import hashlib
 import requests
@@ -35,40 +36,23 @@ args = parser.parse_args()
 
 endpoint_host, endpoint_port = args.endpoint.split(":")
 
-rdb = agent.redis_connect(privileged=True)
-
-# Create the admin user and set a password
-exit_code, output, error = agent.run_subtask(rdb,
-    agent_prefix='cluster',
-    action='add-user',
-    input_obj= {
-        "user": "admin",
-        "password_hash": hashlib.sha256(args.admin_pw.encode()).hexdigest(),
-        "set": {},
-        "grant": [{"role":"owner","on":"*"}],
-    },
-)
-if exit_code != 0:
-    print("The action add-user has failed:")
-    sys.stdout.write(output)
-    sys.stderr.write(error)
-    exit(exit_code)
+subprocess.run(['add-user', '--role', 'owner', '--password', args.admin_pw, 'admin']).check_returncode()
 
 # Initialize a new cluster
-exit_code, output, error = agent.run_subtask(rdb,
-    agent_prefix='cluster',
+result = agent.tasks.run(
+    agent_id='cluster',
     action='create-cluster',
-    input_obj= {
+    data={
         "network": args.network,
         "endpoint": args.endpoint,
         "listen_port": int(endpoint_port),
     },
+    endpoint="redis://cluster-leader",
 )
-if exit_code != 0:
-    print("The action create-cluster has failed:")
-    sys.stdout.write(output)
-    sys.stderr.write(error)
-    exit(exit_code)
+if result['exit_code'] != 0:
+    print(result['error'], file=sys.stderr, end='')
+    print(result['output'])
+    sys.exit(result['exit_code'])
 
 loginobj = {
     "username": "admin",
@@ -80,4 +64,4 @@ response.raise_for_status()
 payload = response.json()
 
 print("Copy the following command to a worker node to join this cluster with admin's credentials:\n")
-print(f"    join-cluster --no-tlsverify https://{endpoint_host} {payload['token']}")
+print(f"    source /etc/profile.d/nethserver.sh && join-cluster --no-tlsverify https://{endpoint_host} {payload['token']}")

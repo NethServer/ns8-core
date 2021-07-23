@@ -23,7 +23,7 @@
 # XXX temporary implementation!!!
 
 import sys
-import agent
+import agent.tasks
 import argparse
 
 parser = argparse.ArgumentParser()
@@ -31,17 +31,16 @@ parser.add_argument('module')
 parser.add_argument('--no-preserve', dest='preserve_data', default=True, action='store_false')
 args = parser.parse_args()
 
-rdb = agent.redis_connect(privileged=True)
-
-exit_code, output, error = agent.run_subtask(rdb,
-    agent_prefix='cluster',
+result = agent.tasks.run(
+    agent_id='cluster',
     action='remove-module',
-    input_obj={
+    data={
         'module_id': args.module,
         'preserve_data': bool(args.preserve_data),
     },
+    endpoint="redis://cluster-leader",
 )
 
-sys.stdout.write(output)
-sys.stderr.write(error)
-exit(exit_code)
+print(result['error'], file=sys.stderr, end='')
+print(result['output'])
+sys.exit(result['exit_code'])

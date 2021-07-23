@@ -23,6 +23,7 @@
 import sys
 import json
 import agent
+import agent.tasks
 
 request = json.load(sys.stdin)
 module_id = request['module_id']
@@ -49,23 +50,27 @@ node_id = int(rdb.hget(f'module/{module_id}/environment', 'NODE_ID'))
 
 # Invoke the module destructor, if defined. Rootfull modules must
 # implement one, to stop running services.
-exit_code, output, error = agent.run_subtask(rdb,
-    agent_prefix=f'module/{module_id}',
+destroy_module_result = agent.tasks.run(
+    agent_id=f'module/{module_id}',
     action='destroy-module',
-    input_obj={
+    data={
         "module_id": module_id,
         "preserve_data": preserve_data,
-    })
-agent.assert_exp(exit_code == 0)
+    },
+    endpoint="redis://cluster-leader",
+)
+agent.assert_exp(destroy_module_result['exit_code'] == 0)
 
-exit_code, output, error = agent.run_subtask(rdb,
-    agent_prefix=f'node/{node_id}',
+remove_module_result = agent.tasks.run(
+    agent_id=f'node/{node_id}',
     action='remove-module',
-    input_obj={
+    data={
         "module_id": module_id,
         "preserve_data": preserve_data,
-    })
-agent.assert_exp(exit_code == 0) # The node remove-module action must succeed
+    },
+    endpoint="redis://cluster-leader",
+)
+agent.assert_exp(remove_module_result['exit_code'] == 0) # The node remove-module action must succeed
 
 # Erase the module keyspace
 module_keys = list(rdb.scan_iter(f'module/{module_id}*'))

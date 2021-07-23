@@ -23,6 +23,7 @@
 import sys
 import agent
 import argparse
+import agent.tasks
 
 parser = argparse.ArgumentParser()
 parser.add_argument('url')
@@ -39,13 +40,11 @@ taskdata = {
     "tls_verify": args.tlsverify,
 }
 
-rdb = agent.redis_connect(privileged=True)
-
-agent.run_subtask(rdb,
-    agent_prefix='cluster',
+task_id = agent.tasks.run_nowait(
+    agent_id='cluster',
     action='join-cluster',
-    input_obj=taskdata,
-    nowait=True,
+    data=taskdata,
+    endpoint="redis://cluster-leader",
 )
 
-print("Task queued.")
+print("Task queued as", task_id)

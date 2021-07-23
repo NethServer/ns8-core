@@ -22,6 +22,7 @@
 
 import sys
 import agent
+import agent.tasks
 import argparse
 import urllib.parse
 import cluster.modules
@@ -76,15 +77,16 @@ if not image_url:
     print(f"No available module found for '{args.image}'", file=sys.stderr)
     sys.exit(1)
 
-exit_code, output, error = agent.run_subtask(rdb,
-    agent_prefix='cluster',
+result = agent.tasks.run(
+    agent_id='cluster',
     action='add-module',
-    input_obj={
+    data={
         'image': image_url,
         'node': args.node,
     },
+    endpoint="redis://cluster-leader",
 )
 
-sys.stderr.write(error)
-sys.stdout.write(output)
-exit(exit_code)
+print(result['error'], file=sys.stderr, end='')
+print(result['output'])
+sys.exit(result['exit_code'])

@@ -21,7 +21,7 @@
 #
 
 import sys
-import agent
+import agent.tasks
 import argparse
 import hashlib
 import getpass
@@ -33,26 +33,24 @@ parser.add_argument('--password', default=False, help="If not given, the passwor
 
 args = parser.parse_args()
 
-rdb = agent.redis_connect(privileged=True)
-
 if args.password is False:
     password = getpass.getpass()
 else:
     password = args.password
 
 # Create the admin user and set a password
-exit_code, output, error = agent.run_subtask(rdb,
-    agent_prefix='cluster',
+result = agent.tasks.run(
+    agent_id='cluster',
     action='add-user',
-    input_obj= {
+    data={
         "user": args.user,
         "password_hash": hashlib.sha256(password.encode()).hexdigest(),
         "set": {},
         "grant": [{"role":args.role,"on":"*"}],
     },
+    endpoint="redis://cluster-leader",
 )
-if exit_code != 0:
-    print("The action add-user has failed:")
-    sys.stdout.write(output)
-    sys.stderr.write(error)
-    sys.exit(exit_code)
+
+print(result['error'], file=sys.stderr, end='')
+print(result['output'])
+sys.exit(result['exit_code'])
