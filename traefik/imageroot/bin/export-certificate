@@ -41,7 +41,7 @@ def _read_and_set():
         return
     with open('./acme.json') as fp:
         data = json.load(fp)
-        if not data:
+        if not data or not data["letsencrypt"]["Certificates"]:
             return
         rdb = agent.redis_connect(privileged=True)
         for info in data["letsencrypt"]["Certificates"]:
