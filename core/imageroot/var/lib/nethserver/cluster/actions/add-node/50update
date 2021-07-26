@@ -38,10 +38,15 @@ node_pwh = request['node_pwh']
 agent.assert_exp(node_pwh and len(node_pwh) == 64)
 public_key = request['public_key']
 agent.assert_exp(public_key)
-endpoint = request['endpoint']
-agent.assert_exp(type(endpoint) is str)
 listen_port = request['listen_port']
 agent.assert_exp(listen_port > 0)
+
+try:
+    endpoint = agent.sanitize_endpoint(request['endpoint'])
+except:
+    json.dump({"field": "endpoint", "parameter": "endpoint", "value": request['endpoint'], "error": "endpoint_resolution_failed"}, fp=sys.stdout)
+    agent.set_status('validation-failed')
+    sys.exit(2)
 
 rdb = agent.redis_connect(privileged=True)
 

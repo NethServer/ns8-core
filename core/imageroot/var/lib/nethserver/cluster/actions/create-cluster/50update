@@ -31,8 +31,14 @@ import cluster.grants
 request = json.load(sys.stdin)
 
 network = request['network']
-endpoint = request['endpoint']
 listen_port = int(request['listen_port'])
+
+try:
+    endpoint = agent.sanitize_endpoint(request['endpoint'])
+except:
+    json.dump({"field": "endpoint", "parameter": "endpoint", "value": request['endpoint'], "error": "endpoint_resolution_failed"}, fp=sys.stdout)
+    agent.set_status('validation-failed')
+    sys.exit(2)
 
 agent.assert_exp(network)
 agent.assert_exp(endpoint)

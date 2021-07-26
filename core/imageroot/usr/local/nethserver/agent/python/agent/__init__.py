@@ -31,6 +31,7 @@ import csv
 import traceback
 import shlex
 import warnings
+import dns.resolver
 
 # Reference https://www.man7.org/linux/man-pages/man3/sd-daemon.3.html
 SD_EMERG   = "<0>"  # system is unusable
@@ -201,6 +202,25 @@ def save_wgconf(ipaddr, listen_port=55820, peers={}):
     wgconf.close()
     # Overwrite the target file path:
     os.rename('/etc/wireguard/wg0.conf.new', '/etc/wireguard/wg0.conf')
+
+def sanitize_endpoint(endpoint):
+    """Resolve an endpoint string to an IP address with DNS if necessary.
+    This function might throw exceptions if DNS resolution fails.
+    Empty string is returned as-is.
+    """
+
+    if len(endpoint) == 0:
+        return endpoint # empty string is allowed: it means there is no public VPN endpoint at all.
+
+    try:
+        ipcalc.IP(endpoint)
+        return endpoint
+    except:
+        pass # endpoint is not a valid IP address: try to resolve it with DNS
+
+    rsv = dns.resolver.Resolver()
+    ans = rsv.resolve(endpoint)
+    return ans.rrset[0].to_text()
 
 def assert_exp(exp, message='Assertion failed'):
     """Like the Python assert statement, this function asserts "exp" evaluates to True.
