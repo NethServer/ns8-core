@@ -18,7 +18,9 @@
             "host": "127.0.0.1",
             "port": 636,
             "tls": true,
-            "tls_verify": false
+            "tls_verify": false,
+            "bind_dn": "ldapservice@ad.example.com",
+            "bind_password": "kA13VnRAKsWd5DZO/PUAGI_ypoiCPCm%"
         }
     ],
     "type": "object",
@@ -30,6 +32,16 @@
         "tls"
     ],
     "properties": {
+        "bind_dn": {
+            "type": "string",
+            "title": "Bind DN",
+            "description": "Distinguished Name (user name) for LDAP simple bind"
+        },
+        "bind_password": {
+            "type": "string",
+            "title": "Bind password",
+            "description": "LDAP simple bind password"
+        },
         "backend": {
             "type": "string",
             "title": "Backend name",
@@ -40,7 +52,7 @@
             "description": "The backend module ID for local account providers, i.e. `host=127.0.0.1`. For remote account providers, just a meaningful word"
         },
         "schema": {
-            "type":"string",
+            "type": "string",
             "enum": [
                 "ad",
                 "rfc2307"

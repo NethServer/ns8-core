@@ -46,7 +46,9 @@ The `set-backend` action configures and restarts the L4 proxy service.
             "host": "127.0.0.1",
             "port": 636,
             "tls": true,
-            "tls_verify": false
+            "tls_verify": false,
+            "bind_dn": "ldapservice@ad.example.com",
+            "bind_password": "kA13VnRAKsWd5DZO/PUAGI_ypoiCPCm%"
         }
     }
     EOF
