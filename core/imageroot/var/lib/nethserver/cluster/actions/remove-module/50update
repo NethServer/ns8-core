@@ -72,6 +72,11 @@ remove_module_result = agent.tasks.run(
 )
 agent.assert_exp(remove_module_result['exit_code'] == 0) # The node remove-module action must succeed
 
+# If module_id is registered as default_instance, forget it:
+for kdef in rdb.scan_iter('*/default_instance/*'):
+    if rdb.get(kdef) == module_id:
+        rdb.delete(kdef)
+
 # Erase the module keyspace
 module_keys = list(rdb.scan_iter(f'module/{module_id}*'))
 if module_keys:
