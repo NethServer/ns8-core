@@ -27,6 +27,8 @@ elif [[ $provision_type == "new-domain" ]]; then
         "--option=bind interfaces only = yes" \
         "--option=interfaces = 127.0.0.1 ${IPADDRESS}"
     samba-tool user setexpiry --noexpiry "${ADMINUSER:-administrator}"
+    samba-tool user create "${SVCUSER}" <<<"${SVCPASS}"$'\n'"${SVCPASS}"
+    samba-tool user setexpiry --noexpiry "${SVCUSER}"
 else
     echo "[WARNING] Provision type $provision_type is not recognized: now going to sleep +INF"
     exec sleep +INF

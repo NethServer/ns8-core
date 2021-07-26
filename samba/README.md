@@ -92,6 +92,9 @@ This command manually binds `ldapproxy1` with the `samba2` local account
 provider LDAP backend. TLS is required by Samba (clear-text LDAP binds are
 not allowed).
 
+    # retrieve the ldapservice password
+    redis-cli HGET module/samba1/environment SVCPASS
+    # output: "Random,1234"
     http :8080/api/module/ldapproxy1/tasks "Authorization: Bearer $TOKEN" <<EOF
     {
         "action":"set-backend",
@@ -101,7 +104,9 @@ not allowed).
             "host": "127.0.0.1",
             "port": 636,
             "tls": true,
-            "tls_verify": false
+            "tls_verify": false,
+            "bind_dn": "AD\\ldapservice",
+            "bind_password:": "Random,1234"
         }
     }
     EOF
@@ -117,3 +122,4 @@ not allowed).
     # In alpine:
     apk add openldap-clients
     ldapsearch -D 'AD\administrator' -w Nethesis,1234 -H ldap://127.0.0.1:20000 -s sub -b 'DC=ad,DC=dp,DC=nethserver,DC=net' samaccountname=administrator
+    ldapsearch -D 'AD\ldapservice' -w Random,1234 -H ldap://127.0.0.1:20000 -s sub -b 'DC=ad,DC=dp,DC=nethserver,DC=net' samaccountname=ldapservice
