@@ -212,15 +212,21 @@ def sanitize_endpoint(endpoint):
     if len(endpoint) == 0:
         return endpoint # empty string is allowed: it means there is no public VPN endpoint at all.
 
+    if ':' in endpoint:
+        nhost, nport = endpoint.split(':')
+    else:
+        nhost = endpoint
+        nport = '55820' # default port number, if missing
+
     try:
-        ipcalc.IP(endpoint)
-        return endpoint
+        ipcalc.IP(nhost)
+        return nhost + ':' + nport
     except:
         pass # endpoint is not a valid IP address: try to resolve it with DNS
 
     rsv = dns.resolver.Resolver()
-    ans = rsv.resolve(endpoint)
-    return ans.rrset[0].to_text()
+    ans = rsv.resolve(nhost)
+    return ans.rrset[0].to_text() + ':' + nport
 
 def assert_exp(exp, message='Assertion failed'):
     """Like the Python assert statement, this function asserts "exp" evaluates to True.
