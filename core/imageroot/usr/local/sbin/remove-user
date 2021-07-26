@@ -36,6 +36,7 @@ result = agent.tasks.run(
     data={
         "user": args.user,
     },
+    endpoint="redis://cluster-leader",
 )
 
 print(result['error'], file=sys.stderr, end='')
