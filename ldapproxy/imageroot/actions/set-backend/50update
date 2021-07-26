@@ -33,6 +33,8 @@ tls  = bool(request['tls'])
 schema = request['schema']
 backend = request['backend']
 tls_verify = bool(request['tls_verify'])
+bind_dn = request.get('bind_dn', '')
+bind_password = request.get('bind_password', '')
 
 agent.set_env('BACKEND', backend)
 agent.set_env('SCHEMA', schema)
@@ -41,6 +43,8 @@ agent.set_env('LDAPPORT', port)
 agent.set_env('LDAPTLS', 'on' if tls else 'off')
 agent.set_env('LDAPTLS_VERIFY', 'on' if tls_verify else 'off')
 agent.set_env('LDAPTLS_VERIFY_DEPTH', '2') # Hardcoded default
+agent.set_env('BIND_DN', bind_dn)
+agent.set_env('BIND_PASSWORD', bind_password)
 
 agent.dump_env()
 
