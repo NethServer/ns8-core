@@ -414,3 +414,12 @@ a.bx--side-nav__link--current .bx--side-nav__link-text {
     margin-left: 0 !important;
   }
 }
+
+// styles for large devices
+@media (min-width: $breakpoint-large) {
+  // limit form fields width on large devices
+  .bx--text-input,
+  .bx--text-input__field-wrapper {
+    max-width: $breakpoint-medium;
+  }
+}

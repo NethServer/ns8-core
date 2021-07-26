@@ -31,11 +31,9 @@
             <NsImageGallery :fullScreen="true" :images="app.screenshots" />
           </div>
         </section>
-        <section>
-          <div class="description">
-            {{ getAppDescription(app) }}
-          </div>
-        </section>
+        <div class="description">
+          {{ getAppDescription(app) }}
+        </div>
         <section>
           <div>
             <span class="section-title"
@@ -158,6 +156,10 @@ export default {
 .app-logo img {
   width: 100%;
   height: 100%;
+}
+
+.description {
+  margin-bottom: $spacing-06;
 }
 
 section {

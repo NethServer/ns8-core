@@ -321,17 +321,10 @@ export default {
     next();
   },
   created() {
-    // register to events
-    this.$root.$on("validationFailed", this.validationFailed);
-
     this.listRepositories();
   },
-  beforeDestroy() {
-    // unregister events
-    this.$root.$off("validationFailed");
-  },
   methods: {
-    validationFailed(validationErrors) {
+    addRepositoryValidationFailed(validationErrors) {
       // enable "Create repository" button
       this.loading.createRepository = false;
 
@@ -375,7 +368,7 @@ export default {
       const err = res[0];
 
       if (err) {
-        this.createTaskErroNotification(
+        this.createTaskErrorNotification(
           err,
           this.$t("task.cannot_create_task", { action: taskAction })
         );
@@ -420,6 +413,10 @@ export default {
         taskAction + "-validation-ok",
         this.addRepositoryValidationOk
       );
+      this.$root.$on(
+        taskAction + "-validation-failed",
+        this.addRepositoryValidationFailed
+      );
 
       // register to task completion
       this.$root.$on(taskAction + "-completed", this.addRepositoriesCompleted);
@@ -442,7 +439,7 @@ export default {
       const err = res[0];
 
       if (err) {
-        this.createTaskErroNotification(
+        this.createTaskErrorNotification(
           err,
           this.$t("task.cannot_create_task", { action: taskAction })
         );
@@ -499,7 +496,7 @@ export default {
       const err = res[0];
 
       if (err) {
-        this.createTaskErroNotification(
+        this.createTaskErrorNotification(
           err,
           this.$t("task.cannot_create_task", { action: taskAction })
         );
@@ -549,7 +546,7 @@ export default {
       const err = res[0];
 
       if (err) {
-        this.createTaskErroNotification(
+        this.createTaskErrorNotification(
           err,
           this.$t("task.cannot_create_task", { action: taskAction })
         );

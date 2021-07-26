@@ -30,12 +30,17 @@ nethserver = {
     });
     return queryParams;
   },
+  getPage() {
+    let queryParams = nethserver.getQueryParamsForApp();
+    const page = queryParams.page || "status";
+    return page;
+  },
   // used only by external apps to sync UI status with URL query parameters
   initUrlBinding(context, page) {
     console.log("initUrlBinding, page", page); ////
 
     let queryParams = nethserver.getQueryParamsForApp();
-    const requestedPage = queryParams.page || "home";
+    const requestedPage = queryParams.page || "status";
 
     if (requestedPage != page) {
       console.log("page mismatch, return", requestedPage, page); ////
@@ -67,7 +72,11 @@ nethserver = {
       console.log("url changed!"); ////
       context.currentUrl = newUrl;
       const queryParams = nethserver.getQueryParamsForApp();
-      const requestedPage = queryParams.page || "home";
+      const requestedPage = queryParams.page || "status";
+
+      // emit app navigation event
+      const appInstance = /#\/apps\/(\w+)/.exec(window.parent.location.hash)[1];
+      context.$root.$emit("appNavigation", appInstance, requestedPage);
 
       if (requestedPage !== page) {
         // page has changed, need to change route
@@ -78,7 +87,7 @@ nethserver = {
           new CustomEvent("changeRoute", { detail: requestedPage })
         );
       } else {
-        nethserver.syncQueryParamsAndData(context); //// remove context.?
+        nethserver.syncQueryParamsAndData(context);
       }
     }
     context.currentUrl = window.parent.location.href;
@@ -102,7 +111,7 @@ nethserver = {
     let queryParams = [];
 
     for (const [key, value] of Object.entries(context.q)) {
-      queryParams.push(key + "=" + value);
+      queryParams.push(key + "=" + encodeURIComponent(value));
     }
 
     const urlWithParams =

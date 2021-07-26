@@ -1,5 +1,10 @@
 <template>
-  <cv-side-nav id="side-nav" fixed expanded>
+  <cv-side-nav
+    id="side-nav"
+    :fixed="!isExternalApp"
+    :expanded="!isExternalApp"
+    :rail="isExternalApp"
+  >
     <SideMenuContent />
   </cv-side-nav>
 </template>
@@ -10,6 +15,11 @@ import SideMenuContent from "@/components/SideMenuContent";
 export default {
   name: "SideMenu",
   components: { SideMenuContent },
+  computed: {
+    isExternalApp() {
+      return this.$route.path.includes("/apps/");
+    },
+  },
 };
 </script>
 

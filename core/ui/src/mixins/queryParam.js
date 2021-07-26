@@ -4,10 +4,6 @@ export default {
   name: "QueryParamService",
   methods: {
     queryParamsToData(context, queryParams) {
-      // let queryParams = this.getQueryParamsForApp(); ////
-
-      console.log("queryParamsToData, queryParams", queryParams); ////
-
       Object.keys(context.q).forEach((dataItem) => {
         if (typeof queryParams[dataItem] !== "undefined") {
           context.q[dataItem] = nethserver.getTypedValue(queryParams[dataItem]);

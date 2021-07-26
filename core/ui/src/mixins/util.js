@@ -99,5 +99,14 @@ export default {
         return s;
       }
     },
+    /**
+     * Set focus on an HTML element
+     */
+    focusElement(elementRef) {
+      this.$nextTick(() => {
+        const element = this.$refs[elementRef];
+        element.focus();
+      });
+    },
   },
 };

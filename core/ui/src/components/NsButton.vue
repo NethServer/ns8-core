@@ -9,13 +9,13 @@
 
     <!-- spinning loader -->
     <span
-      v-if="showLoading"
+      v-if="loading"
       :class="['loader', `${carbonPrefix}--btn__icon`]"
     ></span>
 
     <!-- icon -->
     <CvSvg
-      v-if="icon && !showLoading"
+      v-if="icon && !loading"
       :svg="icon"
       :class="`${carbonPrefix}--btn__icon`"
     />
@@ -61,25 +61,6 @@ export default {
         ["default", "field", "small", "sm", "lg", "xl"].includes(val),
     },
     loading: Boolean,
-  },
-  data() {
-    return {
-      showLoading: false,
-      loadingTimeout: null,
-    };
-  },
-  watch: {
-    loading: function () {
-      if (this.loading) {
-        // show loading spinner after a little delay to avoid flickering
-        this.loadingTimeout = setTimeout(() => {
-          this.showLoading = true;
-        }, 500);
-      } else {
-        clearTimeout(this.loadingTimeout);
-        this.showLoading = false;
-      }
-    },
   },
 };
 </script>

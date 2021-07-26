@@ -11,7 +11,9 @@
     <h5 class="title">{{ title }}</h5>
 
     <template v-if="hasDescriptionSlot">
-      <slot name="description"></slot>
+      <div class="description">
+        <slot name="description"></slot>
+      </div>
     </template>
   </div>
 </template>
@@ -52,7 +54,7 @@ export default {
   margin-bottom: $spacing-05;
 }
 
-.empty-state .title {
-  margin-bottom: $spacing-05;
+.empty-state .description {
+  margin-top: $spacing-05;
 }
 </style>

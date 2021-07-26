@@ -1,0 +1,13 @@
+//// must be equal to core/ui/src/styles/_caron-utils.scss
+
+@import "~carbon-components/scss/globals/scss/vendor/@carbon/type/scss/font-family.scss";
+@import "~carbon-components/scss/globals/scss/vendor/@carbon/layout/scss/breakpoint.scss";
+@import "~carbon-components/scss/globals/scss/typography.scss";
+@import "~carbon-components/scss/globals/scss/vars.scss";
+// @import "./branding"; //// needed?
+
+$breakpoint-large: 1056px;
+$breakpoint-medium: 672px;
+$notification-drawer-width: 27rem;
+$side-menu-width: 16rem;
+$side-menu-collapsed-width: 3rem;

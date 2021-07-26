@@ -18,29 +18,8 @@
           <span class="green-badge right-badge"></span>
         </div>
       </cv-header-menu-item>
-
-      <!-- <cv-header-menu-item
-        to="/dashboard?testToggle=true&testInput=firstValue&testNumber=99"
-        >Link 1</cv-header-menu-item
-      >
-      <cv-header-menu-item to="/dashboard?testInput=secondValue"
-        >Link 2</cv-header-menu-item
-      > -->
-      <!-- <cv-header-menu-item to="/dashboard?testToggle=true&testInput=firstValue"
-        >Dashboard w/p 1</cv-header-menu-item
-      >
-      <cv-header-menu-item to="/dashboard?testInput=secondValue"
-        >Dashboard w/p 2</cv-header-menu-item
-      > -->
-      <!--  //// -->
       <cv-header-menu-item @click="logout">Logout</cv-header-menu-item>
-      <cv-header-menu-item to="/apps/ns8-app">Ns8 app</cv-header-menu-item>
-      <cv-header-menu-item to="/apps/ns8-app?appInput=testAppInput"
-        >Ns8 app w/p</cv-header-menu-item
-      >
-      <cv-header-menu-item to="/apps/ns8-app?page=about&testToggle=true"
-        >About page of Ns8 app w/p</cv-header-menu-item
-      >
+      <cv-header-menu-item to="/apps/dokuwiki1">dokuwiki1</cv-header-menu-item>
     </cv-header-nav>
     <template slot="header-global">
       <cv-header-global-action

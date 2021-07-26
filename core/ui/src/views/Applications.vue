@@ -19,9 +19,17 @@ export default {
 @import "../styles/carbon-utils";
 
 #app-frame {
-  width: calc(100% - #{$side-menu-width});
+  width: calc(100% - #{$side-menu-collapsed-width});
   height: calc(100% - 3rem);
 }
+
+@media (max-width: $breakpoint-large) {
+  // remove left margin since core collapsed side menu is not shown
+  #app-frame {
+    width: 100%;
+  }
+}
+
 .iframe-embedded {
   position: absolute;
   border: none;

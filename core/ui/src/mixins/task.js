@@ -113,7 +113,7 @@ export default {
           return "";
       }
     },
-    createTaskErroNotification(err, message) {
+    createTaskErrorNotification(err, message) {
       console.error(err);
 
       const notification = {
