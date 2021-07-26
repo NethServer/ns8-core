@@ -1,0 +1,22 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "set-certificate input",
+    "$id": "http://schema.nethserver.org/traefik/set-certificate-input.json",
+    "description": "Request a let's encrypt certificate",
+    "examples": [
+        {
+        "fqdn": "example.com"
+    }
+    ],
+    "type": "object",
+    "required": [
+        "fqdn"
+    ],
+    "properties": {
+        "fqdn": {
+            "type":"string",
+            "format": "hostname",
+            "title": "A fully qualified domain name"
+        }
+    }
+}
