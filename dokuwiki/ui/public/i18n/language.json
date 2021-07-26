@@ -1,13 +1,14 @@
 {
   "common": {
-    "required": "Required"
+    "required": "Required",
+    "work_in_progress": "Work in progress"
   },
   "status": {
     "title": "Status",
     "app_instance": "App instance",
     "services": "Service | Services",
-    "images": "Image | Images",
-    "volumes": "Volume | Volumes",
+    "app_images": "App image | App images",
+    "app_volumes": "App volume | App volumes",
     "installation_node": "Installation node",
     "node": "Node",
     "failed_services": "{num} failed service | {num} failed services",

@@ -40,40 +40,6 @@
           ></cv-skeleton-text>
         </cv-tile>
       </div>
-      <div class="bx--col-md-4">
-        <cv-tile v-if="loading.status" light class="content-tile">
-          <cv-skeleton-text
-            :paragraph="true"
-            :line-count="4"
-          ></cv-skeleton-text>
-        </cv-tile>
-        <NsStatusCard
-          v-else-if="status.services.length"
-          light
-          :value="status.services.length"
-          :label="$tc('status.services', status.services.length)"
-          :valueError="failedServices"
-          :valueSuccess="activeServices"
-          :valueWarning="inactiveServices"
-          :errorTooltip="
-            $tc('status.failed_services', failedServices, {
-              num: failedServices,
-            })
-          "
-          :successTooltip="
-            $tc('status.active_services', activeServices, {
-              num: activeServices,
-            })
-          "
-          :warningTooltip="
-            $tc('status.inactive_services', inactiveServices, {
-              num: inactiveServices,
-            })
-          "
-          min-height
-          class="content-tile"
-        />
-      </div>
     </div>
     <!-- services -->
     <div class="bx--row">
@@ -118,7 +84,7 @@
     <!-- images -->
     <div class="bx--row">
       <div class="bx--col-lg-16 page-subtitle">
-        <h4>{{ $tc("status.images", 2) }}</h4>
+        <h4>{{ $tc("status.app_images", 2) }}</h4>
       </div>
     </div>
     <div class="bx--row">
@@ -147,7 +113,7 @@
                   v-for="(image, index) in status.images"
                   :key="index"
                 >
-                  <cv-structured-list-data>{{
+                  <cv-structured-list-data class="break-word">{{
                     image.name
                   }}</cv-structured-list-data>
                   <cv-structured-list-data>{{
@@ -171,7 +137,7 @@
     <!-- volumes -->
     <div class="bx--row">
       <div class="bx--col-lg-16 page-subtitle">
-        <h4>{{ $tc("status.volumes", 2) }}</h4>
+        <h4>{{ $tc("status.app_volumes", 2) }}</h4>
       </div>
     </div>
     <div class="bx--row">
@@ -203,7 +169,7 @@
                   <cv-structured-list-data>{{
                     volume.name
                   }}</cv-structured-list-data>
-                  <cv-structured-list-data>{{
+                  <cv-structured-list-data class="break-word">{{
                     volume.mount
                   }}</cv-structured-list-data>
                   <cv-structured-list-data>{{
@@ -356,3 +322,11 @@ export default {
   },
 };
 </script>
+
+<style scoped lang="scss">
+@import "../styles/carbon-utils";
+
+.break-word {
+  word-wrap: break-word;
+}
+</style>

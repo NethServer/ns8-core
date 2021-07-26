@@ -7,19 +7,27 @@
     </div>
     <div class="bx--row">
       <div class="bx--col-lg-16">
-        <!-- //// TODO -->
-        <!-- <cv-tile :light="true" class="content-tile"></cv-tile> -->
+        <cv-tile :light="true" class="content-tile">
+          <NsEmptyState :title="$t('common.work_in_progress')">
+            <template #pictogram>
+              <Bulldozer />
+            </template>
+          </NsEmptyState>
+        </cv-tile>
       </div>
     </div>
   </div>
 </template>
 
 <script>
+import NsEmptyState from "@/components/NsEmptyState";
+import Bulldozer from "../components/pictograms/Bulldozer";
+
 let nethserver = window.nethserver;
 
 export default {
   name: "Logs",
-  components: {},
+  components: { NsEmptyState, Bulldozer },
   data() {
     return {
       q: {

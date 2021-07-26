@@ -293,8 +293,8 @@ export default {
       }
     },
     async saveSettings() {
-      const validationOk = this.validateSaveSettings();
-      if (!validationOk) {
+      const isValidationOk = this.validateSaveSettings();
+      if (!isValidationOk) {
         return;
       }
 
