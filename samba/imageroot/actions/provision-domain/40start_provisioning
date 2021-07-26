@@ -34,6 +34,8 @@ set -e
     --env NBDOMAIN \
     --env REALM \
     --env IPADDRESS \
+    --env SVCPASS \
+    --env SVCUSER \
     --hostname=${HOSTNAME:?} \
     --log-opt=tag=${MODULE_ID:?}-provision \
     --rm --name=${MODULE_ID}-provision \
