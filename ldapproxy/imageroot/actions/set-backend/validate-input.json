@@ -20,7 +20,7 @@
             "tls": true,
             "tls_verify": false,
             "bind_dn": "ldapservice@ad.example.com",
-            "bind_password": "kA13VnRAKsWd5DZO/PUAGI_ypoiCPCm%"
+            "bind_password": "supersecret"
         }
     ],
     "type": "object",
@@ -32,15 +32,20 @@
         "tls"
     ],
     "properties": {
+        "base_dn": {
+            "type":"string",
+            "title": "Base DN",
+            "description": "Specifies the default base DN to use when performing LDAP operations.  The base must be specified as a Distinguished Name in LDAP format"
+        },
         "bind_dn": {
             "type": "string",
             "title": "Bind DN",
-            "description": "Distinguished Name (user name) for LDAP simple bind"
+            "description": "Distinguished Name for LDAP simple bind. It works like a user name. See also `bind_password`."
         },
         "bind_password": {
             "type": "string",
             "title": "Bind password",
-            "description": "LDAP simple bind password"
+            "description": "LDAP simple bind password. See also `bind_dn`."
         },
         "backend": {
             "type": "string",

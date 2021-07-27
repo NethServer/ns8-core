@@ -11,10 +11,10 @@ events {
 # L4 proxy to the ${SCHEMA} LDAP account provider 
 stream {
     server {
-        listen 127.0.0.1:${TCP_PORT};
-        proxy_pass ${LDAPHOST}:${LDAPPORT};
-        proxy_ssl ${LDAPTLS};
-        proxy_ssl_verify ${LDAPTLS_VERIFY};
-        proxy_ssl_verify_depth ${LDAPTLS_VERIFY_DEPTH};
+        listen ${LDAPHOST}:${LDAPPORT};
+        proxy_pass ${HOST}:${PORT};
+        proxy_ssl ${PROXY_SSL};
+        proxy_ssl_verify ${PROXY_SSL_VERIFY};
+        proxy_ssl_verify_depth ${PROXY_SSL_VERIFY_DEPTH};
     }
 }
