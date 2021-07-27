@@ -194,7 +194,6 @@
 import to from "await-to-js";
 import TaskService from "@/mixins/task";
 import { mapState } from "vuex";
-import NsStatusCard from "@/components/NsStatusCard";
 import NsInfoCard from "@/components/NsInfoCard";
 import NsSystemdServiceCard from "@/components/NsSystemdServiceCard";
 import Application32 from "@carbon/icons-vue/es/application/32";
@@ -206,7 +205,7 @@ let nethserver = window.nethserver;
 
 export default {
   name: "Status",
-  components: { NsStatusCard, NsInfoCard, NsSystemdServiceCard, NsEmptyState },
+  components: { NsInfoCard, NsSystemdServiceCard, NsEmptyState },
   mixins: [TaskService],
   data() {
     return {
