@@ -1,0 +1,11 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "set-certificate output",
+    "$id": "http://schema.nethserver.org/traefik/set-certificate-output.json",
+    "description": "Just a boolean value. It is `true` if the routes have been added successfully",
+    "examples": [
+        true,
+        false
+    ],
+    "type": "boolean"
+}

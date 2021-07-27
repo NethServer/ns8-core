@@ -177,10 +177,6 @@ cat - <<EOF
 NethServer 8 Scratchpad
 ----------------------------------------------------------------------------
 
-Open a new login shell or type the following command to fix the environment:
-
-    source /etc/profile.d/nethserver.sh
-
 Finish the cluster configuration by running one of the following procedures.
 
 A. To join this node to an already existing cluster run:
@@ -199,4 +195,10 @@ B. To initialize this node as a cluster leader run:
 
       source /etc/profile.d/nethserver.sh && create-cluster $(hostname -f):55820 10.5.4.0/24 Nethesis,1234
 
+Finally, access the administration UI at:
+
+   https://$(hostname -f)/cluster-admin/
+
+   User: admin
+   Password: Nethesis,1234
 EOF

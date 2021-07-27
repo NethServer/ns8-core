@@ -27,6 +27,28 @@ arguments the module names to be pulled from that branch.
 After the install and the first cluster configuration, you can install a new application
 or mess around with the core ones.
 
+An experimental UI is also available ad `https://<server_fqdn>/cluster-admin/`:
+
+- default user: `admin`
+- default password: `Nethesis,1234`
+
+If all Let's Encrypt requirements for [HTTP-01 challenge](https://letsencrypt.org/docs/challenge-types/#http-01-challenge) are met,
+it's possible to request a valid certificate for the FQDN.
+
+Example:
+```
+pip install httpie
+export TOKEN=$(http :8080/api/login username=admin password=Nethesis,1234 | jq -r .token)
+http :8080/api/module/traefik5/tasks "Authorization: Bearer $TOKEN" <<EOF
+{
+    "action":"set-certificate",
+    "data": {
+        "fqdn": "server.nethserver.org"
+    }
+}
+EOF
+```
+
 ### Application installation
 
 To install an instance of an available application use:

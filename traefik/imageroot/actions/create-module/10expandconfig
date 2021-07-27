@@ -64,4 +64,7 @@ certificatesResolvers:
       httpChallenge:
         entryPoint: http
       tlsChallenge: false
+
+ping:
+  manualRouting: true
 EOF
