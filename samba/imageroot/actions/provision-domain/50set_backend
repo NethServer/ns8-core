@@ -28,6 +28,7 @@ import sys
 module_id = os.environ['MODULE_ID']
 node_id = os.environ['NODE_ID']
 domain = os.environ['REALM'].lower()
+base_dn = 'DC=' + domain.replace('.', ',DC=')
 svcpass = os.environ['SVCPASS']
 svcuser = os.environ['SVCUSER']
 
@@ -60,6 +61,7 @@ set_backend_result = agent.tasks.run(
         "tls_verify": False,
         "bind_dn": svcuser + "@" + domain,
         "bind_password": svcpass,
+        "base_dn": base_dn,
     }
 )
 
