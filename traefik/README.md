@@ -5,8 +5,8 @@ This module implements a proxy for web applications using [Traefik](https://doc.
 The module exposes 2 actions:
 - `set-route`
 - `delete-route`
-
-
+- `set-certificate`
+- `delete-certificate`
 
 ## set-route
 
@@ -58,4 +58,29 @@ The action takes 1 parameter:
 Example:
 ```
 redis-cli LPUSH module/traefik1/tasks '{"id": "'$(uuidgen)'", "action": "delete-route", "data": {"instance": "module1"}}
+```
+
+## set-certificate
+
+This action explicitly requests a Let's Encrypt certificate. It can be used when there is no hostname (or hostname + path) route configured on traefik module or if the service is not make accessible via traefik.
+
+The action takes 1 parameter:
+- `fqdn`: the fqdn of the requested certificate
+
+Example:
+```
+redis-cli LPUSH module/traefik1/tasks '{"id": "'$(uuidgen)'", "action": "set-certificate", "data": {"fqdn": "example.com"}}
+```
+## delete-certificate
+
+This action deletes an existing route used for explicit request a certificate.
+
+NB. The certificate will **not** actually be removed from traefik and if the conditions will remain in place it will be renewed.
+
+The action takes 1 parameter:
+- `fqdn`: the fqdn of the requested certificate
+
+Example:
+```
+redis-cli LPUSH module/traefik1/tasks '{"id": "'$(uuidgen)'", "action": "delete-certificate", "data": {"fqdn": "example.com"}}
 ```
