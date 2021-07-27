@@ -26,6 +26,23 @@ exec 1>&2
 tmpconf=$(mktemp nginx.conf.XXXXXX)
 trap "rm -f ${tmpconf}" EXIT
 
+export PROXY_SSL PROXY_SSL_VERIFY PROXY_SSL_VERIFY_DEPTH
+
+if [[ "${TLS}" == "1" ]]; then
+    PROXY_SSL="on"
+else
+    PROXY_SSL="off"
+fi
+
+if [[ "${TLS_VERIFY}" == "1" ]]; then
+    PROXY_SSL_VERIFY="on"
+else
+    PROXY_SSL_VERIFY="off"
+fi
+
+# Use default value "2", if not already set.
+PROXY_SSL_VERIFY_DEPTH=${PROXY_SSL_VERIFY_DEPTH:-2}
+
 envsubst >${tmpconf} <${AGENT_INSTALL_DIR}/nginx.conf.template
 
 # Restart ldapproxy if something has changed in the configuration

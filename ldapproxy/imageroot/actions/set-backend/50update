@@ -33,18 +33,29 @@ tls  = bool(request['tls'])
 schema = request['schema']
 backend = request['backend']
 tls_verify = bool(request['tls_verify'])
+base_dn = request.get('base_dn', '')
 bind_dn = request.get('bind_dn', '')
 bind_password = request.get('bind_password', '')
 
 agent.set_env('BACKEND', backend)
 agent.set_env('SCHEMA', schema)
-agent.set_env('LDAPHOST', host)
-agent.set_env('LDAPPORT', port)
-agent.set_env('LDAPTLS', 'on' if tls else 'off')
-agent.set_env('LDAPTLS_VERIFY', 'on' if tls_verify else 'off')
-agent.set_env('LDAPTLS_VERIFY_DEPTH', '2') # Hardcoded default
-agent.set_env('BIND_DN', bind_dn)
 agent.set_env('BIND_PASSWORD', bind_password)
+agent.set_env('TLS', '1' if tls else '')
+agent.set_env('TLS_VERIFY', '1' if tls_verify else '')
+agent.set_env('URI', f'{"ldaps" if tls else "ldap"}://{host}:{port}')
+agent.set_env('HOST', host)
+agent.set_env('PORT', port)
+#
+# LDAP* variables can be passed to OpenLDAP libraries,
+# as documented by LDAP.CONF(5) man page. Use the same variables
+# as configuration sources for other clients.
+#
+agent.set_env('LDAPURI', 'ldap://127.0.0.1:' + os.environ['TCP_PORT'])
+agent.set_env('LDAPHOST', '127.0.0.1')
+agent.set_env('LDAPPORT', os.environ['TCP_PORT'])
+agent.set_env('LDAPBINDDN', bind_dn)
+agent.set_env('LDAPTLS_REQCERT', 'try' if tls_verify else 'never')
+agent.set_env('LDAPBASE', base_dn)
 
 agent.dump_env()
 

@@ -110,16 +110,3 @@ not allowed).
         }
     }
     EOF
-    # retrieve the TCP port used by ldapproxy1
-    redis-cli HGET module/ldapproxy1/environment TCP_PORT
-    # output: "20000"
-
-
-## Test with ldapsearch
-
-    podman run --network=host --replace --name=alpine -d alpine sh -c 'sleep INF'
-    podman exec -ti alpine sh
-    # In alpine:
-    apk add openldap-clients
-    ldapsearch -D 'AD\administrator' -w Nethesis,1234 -H ldap://127.0.0.1:20000 -s sub -b 'DC=ad,DC=dp,DC=nethserver,DC=net' samaccountname=administrator
-    ldapsearch -D 'AD\ldapservice' -w Random,1234 -H ldap://127.0.0.1:20000 -s sub -b 'DC=ad,DC=dp,DC=nethserver,DC=net' samaccountname=ldapservice
