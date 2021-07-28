@@ -1,0 +1,92 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2021 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
+import os
+import sys
+import json
+import agent
+import subprocess
+from cluster.ldapproxy import Ldapproxy
+
+# Execute occ command
+# All output is sent to standard error
+# It reurns the process exit code
+def occ(args):
+    cmd = ['podman', 'exec', '-ti', '--user', 'www-data', 'nextcloud-app', 'php', './occ']
+    p = subprocess.run(cmd + args, stdout=sys.stderr)
+    return p.returncode
+
+def set_ldap(k, v):
+    return occ(["ldap:set-config", "s01", k, v])
+
+data = json.load(sys.stdin)
+
+lp = Ldapproxy()
+domain = lp.get_domain(data["domain"])
+
+occ(["app:enable", "user_ldap"])
+if occ(["ldap:show-config", "s01"]) > 0:
+    occ(["ldap:create-empty-config"])
+
+
+# Static config for ldapproxy
+set_ldap("ldapHost", "10.0.2.2") # special podman IP
+set_ldap("ldapPort", domain["port"])
+
+# Common configuration options
+set_ldap("ldapAgentName", domain["bind_dn"])
+occ(["ldap:set-config", "s01", "--", "ldapAgentPassword", domain["bind_password"]])
+set_ldap("ldapBase", domain["base_dn"])
+set_ldap("ldapBaseGroups", domain["base_dn"])
+set_ldap("ldapBaseUsers", domain["base_dn"])
+
+set_ldap("ldapLoginFilterMode", "0")
+set_ldap("ldapLoginFilterUsername", "1")
+set_ldap("ldapGroupDisplayName", "cn")
+
+set_ldap("turnOffCertCheck", "1")
+set_ldap("ldapConfigurationActive", "1")
+set_ldap("ldapTLS", "0")
+
+if domain["schema"] == "ad":
+    set_ldap("ldapGroupFilter", "(&(objectClass=group)(!(cn=backup operators))(!(cn=users))(!(cn=read-only domain controllers))(!(cn=network configuration operators))(!(cn=enterprise admins))(!(cn=domain users))(!(cn=allowed rodc password replication group))(!(cn=iis_iusrs))(!(cn=incoming forest trust builders))(!(cn=domain computers))(!(cn=enterprise read-only domain controllers))(!(cn=replicator))(!(cn=schema admins))(!(cn=group policy creator owners))(!(cn=domain controllers))(!(cn=ras and ias servers))(!(cn=denied rodc password replication group))(!(cn=dnsupdateproxy))(!(cn=print operators))(!(cn=performance log users))(!(cn=account operators))(!(cn=windows authorization access group))(!(cn=server operators))(!(cn=terminal server license servers))(!(cn=remote desktop users))(!(cn=guests))(!(cn=performance monitor users))(!(cn=cert publishers))(!(cn=dnsadmins))(!(cn=cryptographic operators))(!(cn=administrators))(!(cn=event log readers))(!(cn=certificate service dcom access))(!(cn=pre-windows 2000 compatible access))(!(cn=domain guests))(!(cn=distributed com users)))")
+    set_ldap("ldapGroupFilterObjectclass", "group")
+    set_ldap("ldapGroupMemberAssocAttr", "member")
+    set_ldap("ldapLoginFilter", "(&(&(|(objectclass=person)))(|(sAMAccountName=%uid)(userPrincipalName=%uid)))")
+    set_ldap("ldapUserDisplayName", "displayName")
+    set_ldap("ldapUserDisplayName2", "sAMAccountName")
+    set_ldap("ldapUserFilter", "(&(|(objectclass=person)))")
+    set_ldap("ldapUserFilterObjectclass", "person")
+    set_ldap("ldapEmailAttribute", "userPrincipalname")
+    set_ldap("useMemberOfToDetectMembership", "1") # expand all groups
+else:
+    set_ldap("ldapGroupFilter", "(&(|(objectclass=posixGroup)))")
+    set_ldap("ldapGroupFilterObjectclass", "posixGroup")
+    set_ldap("ldapGroupMemberAssocAttr", "memberUid")
+    set_ldap("ldapLoginFilter", "(&(|(objectclass=inetOrgPerson))(|(uid=%uid)(|(mail=%uid))))")
+    set_ldap("ldapLoginFilterEmail", "1")
+    set_ldap("ldapUserDisplayName", "cn")
+    set_ldap("ldapUserDisplayName2", "uid")
+    set_ldap("ldapUserFilter", "(|(objectclass=inetOrgPerson))")
+    set_ldap("ldapUserFilterObjectclass", "inetOrgPerson")
+    set_ldap("ldapEmailAttribute", "mail")
+    set_ldap("useMemberOfToDetectMembership", "0")

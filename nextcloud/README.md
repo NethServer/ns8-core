@@ -31,17 +31,13 @@ Then launch `configure-module`, by setting the following parameters:
 
 Example:
 ```
-pip install httpie
-TOKEN=$(http :8080/api/login username=admin password=Nethesis,1234 | jq -r .token)
-http :8080/api/module/nextcloud1/tasks "Authorization: Bearer $TOKEN" <<EOF
+api-cli run configure-module --agent module/nextcloud1 --data - <<EOF
 {
-  "action": "configure-module",
-  "data": {
     "username": "admin",
     "password": "Nethesis,1234",
-    "host": "nextcloud.nethserver.orf",
-    "lets_encrypt": true
-  }
+    "host": "nextcloud.nethserver.org",
+    "lets_encrypt": true,
+    "domain": "ad.nethserver.org"
 }
 EOF
 ```

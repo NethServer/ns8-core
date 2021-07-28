@@ -8,7 +8,8 @@
       "username": "admin",
       "password": "admin",
       "host": "nextcloud.myhost.local",
-      "lets_encrypt": true
+      "lets_encrypt": true,
+      "domain": "ad.myhost.local"
     }
   ],
   "type": "object",
@@ -16,7 +17,8 @@
     "username",
     "password",
     "host",
-    "lets_encrypt"
+    "lets_encrypt",
+    "domain"
   ],
   "properties": {
     "username": {
@@ -36,6 +38,11 @@
       "type": "boolean",
       "title": "Let's Encrypt certificate",
       "description": "Request a valid Let's Encrypt certificate."
+    },
+    "domain": {
+      "description": "LDAP domain configured inside ldapproxy",
+      "format": "idn-hostname",
+      "type": "string"
     }
   }
 }
