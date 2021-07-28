@@ -11,7 +11,7 @@
   "dependencies": {
     "@carbon/icons-vue": "^10.35.0",
     "@carbon/vue": "^2.38.2",
-    "andrelib": "0.0.21",
+    "andrelib": "0.0.23",
     "await-to-js": "^3.0.0",
     "axios": "^0.21.1",
     "carbon-components": "^10.39.0",

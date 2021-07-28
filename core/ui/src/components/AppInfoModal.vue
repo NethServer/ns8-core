@@ -32,7 +32,7 @@
           </div>
         </section>
         <div class="description">
-          {{ getAppDescription(app) }}
+          {{ getApplicationDescription(app) }}
         </div>
         <section>
           <div>
@@ -41,7 +41,7 @@
                 $tc("software_center.categories", app.categories.length)
               }}:</span
             >
-            {{ getAppCategories(app) }}
+            {{ getApplicationCategories(app) }}
           </div>
         </section>
         <section>
@@ -122,16 +122,24 @@
 </template>
 
 <script>
-import ModuleService from "@/mixins/module";
+import { UtilService } from "andrelib"; ////
 import NsImageGallery from "../components/NsImageGallery";
 
 export default {
   name: "AppInfoModal",
   components: { NsImageGallery },
-  mixins: [ModuleService],
+  mixins: [UtilService],
   props: {
     isShown: Boolean,
     app: { type: [Object, null] },
+  },
+  methods: {
+    getApplicationDescription(app) {
+      return this.getAppDescription(app, this);
+    },
+    getApplicationCategories(app) {
+      return this.getAppCategories(app, this);
+    },
   },
 };
 </script>

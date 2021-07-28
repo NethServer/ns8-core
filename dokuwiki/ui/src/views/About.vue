@@ -33,7 +33,7 @@
               </div>
             </section>
             <div class="description">
-              {{ getAppDescription(app) }}
+              {{ getApplicationDescription(app) }}
             </div>
             <section>
               <div>
@@ -45,7 +45,7 @@
                     )
                   }}:</span
                 >
-                {{ getAppCategories(app) }}
+                {{ getApplicationCategories(app) }}
               </div>
             </section>
             <section>
@@ -213,29 +213,11 @@ export default {
       this.app = taskResult.output;
       this.loading.moduleInfo = false;
     },
-    getAppDescription(app) {
-      const langCode = window.parent.ns8.$root.$i18n.locale;
-      let description = app.description[langCode];
-
-      if (!description) {
-        // fallback to english
-        description = app.description.en;
-      }
-      return description;
+    getApplicationDescription(app) {
+      return this.getAppDescription(app, window.parent.ns8);
     },
-    getAppCategories(app) {
-      let i18nCategories = [];
-
-      for (const category of app.categories) {
-        if (category === "unknown") {
-          return "-";
-        }
-
-        i18nCategories.push(
-          window.parent.ns8.$t("software_center.app_categories." + category)
-        );
-      }
-      return i18nCategories.join(", ");
+    getApplicationCategories(app) {
+      return this.getAppCategories(app, window.parent.ns8);
     },
   },
 };

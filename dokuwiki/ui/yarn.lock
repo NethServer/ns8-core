@@ -1749,10 +1749,10 @@ amdefine@>=0.0.4:
   resolved "https://registry.nlark.com/amdefine/download/amdefine-1.0.1.tgz#4a5282ac164729e93619bcfd3ad151f817ce91f5"
   integrity sha1-SlKCrBZHKek2Gbz9OtFR+BfOkfU=
 
-andrelib@0.0.21:
-  version "0.0.21"
-  resolved "https://registry.yarnpkg.com/andrelib/-/andrelib-0.0.21.tgz#6a56800c0e4d1fdf07e6d4a06d3ac9b1e060ffb5"
-  integrity sha512-0Z4vaKvFmlNDV/m8NMJakCAiH8PNZjYzFM/0fV3LoZB/xllrar5LnztQApF4ODrcG5P80wexDp4vnOnJEtFmmA==
+andrelib@0.0.23:
+  version "0.0.23"
+  resolved "https://registry.yarnpkg.com/andrelib/-/andrelib-0.0.23.tgz#2887a56ed310a46aae74c14a4b29cf89f0138020"
+  integrity sha512-ncIsqW+pXIezWjHsBpx1yMvRJh4SkfASN6ISfACqmdJa9rrVDhr2eiRdNa1d4b/kSKBCwLeaHXCb7MO/WNjytw==
   dependencies:
     core-js "^3.15.2"
 

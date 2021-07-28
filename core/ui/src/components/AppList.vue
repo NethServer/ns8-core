@@ -33,10 +33,10 @@
               <a @click="showAppInfo(app)">{{ app.name }}</a>
             </div>
             <div class="app-description">
-              {{ getAppDescription(app) }}
+              {{ getApplicationDescription(app) }}
             </div>
           </div>
-          <div class="app-categories">{{ getAppCategories(app) }}</div>
+          <div class="app-categories">{{ getApplicationCategories(app) }}</div>
           <div class="app-details">
             <NsButton
               kind="ghost"
@@ -163,14 +163,13 @@
 </template>
 
 <script>
-import { IconService } from "andrelib"; ////
+import { IconService, UtilService } from "andrelib"; ////
 import AppInfoModal from "@/components/AppInfoModal";
-import ModuleService from "@/mixins/module";
 
 export default {
   name: "AppList",
   components: { AppInfoModal },
-  mixins: [IconService, ModuleService],
+  mixins: [IconService, UtilService],
   props: {
     apps: {
       type: Array,
@@ -281,6 +280,12 @@ export default {
           $state.complete();
         }
       }
+    },
+    getApplicationDescription(app) {
+      return this.getAppDescription(app, this);
+    },
+    getApplicationCategories(app) {
+      return this.getAppCategories(app, this);
     },
   },
 };
