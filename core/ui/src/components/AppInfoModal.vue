@@ -28,7 +28,7 @@
         </section>
         <section v-if="app.screenshots.length">
           <div class="screenshots">
-            <NsImageGallery :fullScreen="true" :images="app.screenshots" />
+            <ImageGallery :fullScreen="true" :images="app.screenshots" />
           </div>
         </section>
         <div class="description">
@@ -123,11 +123,11 @@
 
 <script>
 import { UtilService } from "andrelib"; ////
-import NsImageGallery from "../components/NsImageGallery";
+import ImageGallery from "../components/ImageGallery";
 
 export default {
   name: "AppInfoModal",
-  components: { NsImageGallery },
+  components: { ImageGallery },
   mixins: [UtilService],
   props: {
     isShown: Boolean,
