@@ -1,0 +1,164 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2021 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
+import agent.tasks
+import json
+import argparse
+import os
+import requests
+import sys
+import getpass
+
+def _get_cachefile_path():
+    # Ensure there is a sane environment setup: fail if XDG_RUNTIME_DIR is
+    # not set.
+    return os.environ['XDG_RUNTIME_DIR'] + '/.api-cli.cache'
+
+def _cachefile_exists():
+    try:
+        return os.path.exists(_get_cachefile_path())
+    except KeyError:
+        return False
+
+
+def login_command(args):
+    if args.username:
+        username = args.username
+    else:
+        username = input('username: ')
+
+    if args.password:
+        password = args.password
+    else:
+        password = getpass.getpass('password: ')
+
+    if args.endpoint:
+        endpoint = args.endpoint
+    else:
+        endpoint = 'http://cluster-leader/cluster-admin'
+
+    response = requests.post(
+        endpoint + '/api/login',
+        data={'username': username, 'password': password},
+        verify=args.tlsverify,
+    )
+    if response.status_code == 401:
+        print("Invalid credentials", file=sys.stderr)
+        sys.exit(1)
+
+    response.raise_for_status()
+    token = response.json()['token']
+
+    if args.output:
+        print(token)
+    else:
+        oldmask = os.umask(0o77)
+        with open(_get_cachefile_path(), 'w') as fo:
+            fo.write(token)
+        os.umask(oldmask)
+        print(f"User {username}, login successful.")
+
+def logout_command(args):
+    try:
+        os.unlink(_get_cachefile_path())
+    except FileNotFoundError:
+        pass
+
+def run_command(args):
+    kwargs = {'tls_verify': args.tlsverify}
+    if args.token:
+        kwargs['auth_token'] = args.token
+    elif args.username:
+        # Override environment variables with command args value:
+        os.environ['REDIS_USER'] = args.username
+        os.environ['AGENT_ID'] = args.username
+        if args.password:
+            os.environ['REDIS_PASSWORD'] = args.password
+    elif _cachefile_exists():
+        # Use the cache file token
+        with open(_get_cachefile_path(), 'r') as fo:
+            token = fo.read()
+        token.rstrip("\n")
+        kwargs['auth_token'] = token
+
+
+    if args.endpoint:
+        kwargs['endpoint'] = args.endpoint
+    elif not 'auth_token' in kwargs and (os.getenv('AGENT_ID') == 'cluster' or os.getenv('REDIS_USER') == 'cluster'):
+        print('Warning: using user "cluster" credentials from the environment', file=sys.stderr)
+        # The "cluster" user has no roles. It can
+        # run actions with redis:// endpoint though.
+        kwargs['endpoint'] = 'redis://cluster-leader'
+
+    if args.data and args.data != '-':
+        data = json.loads(args.data)
+    else:
+        data = json.load(fp=sys.stdin)
+
+    if args.nowait:
+        response = agent.tasks.run_nowait(args.agent, args.action, data, **kwargs)
+        print(response)
+    else:
+        response = agent.tasks.run(args.agent, args.action, data, **kwargs)
+        print(response['error'], file=sys.stderr, end='')
+
+        if args.raw:
+            print(response['output'])
+        else:
+            json.dump(response['output'], fp=sys.stdout)
+            print()
+
+        sys.exit(response['exit_code'])
+
+
+root_parser = argparse.ArgumentParser(description='Invoke cluster APIs from the command line')
+root_parser.add_argument('--endpoint', help='override the library default endpoint URL')
+root_parser.add_argument('--no-tlsverify', dest='tlsverify', action='store_false', default=True, help="do not verify TLS certificate of HTTPS endpoint")
+
+subparsers = root_parser.add_subparsers(title="commands", required=True, dest='command')
+
+login_parser = subparsers.add_parser('login', help="authenticate with the remote server")
+login_parser.add_argument('-u', '--username')
+login_parser.add_argument('-p', '--password')
+login_parser.add_argument('-o', '--output', help="print the authorization token instead of writing it to the disk", action='store_true')
+
+login_parser = subparsers.add_parser('logout', help="clean up the authorization token disk cache")
+
+submit_parser = subparsers.add_parser('run', aliases=['submit'], help="submit a task to the remote server and print the results")
+submit_parser.add_argument('action', help='action name, e.g. "list-actions"', default='list-actions')
+
+auth_group = submit_parser.add_mutually_exclusive_group()
+auth_group.add_argument('-t', '--token', help='authorization token returned by the "login -o" command')
+auth_group.add_argument('-u', '--username')
+
+submit_parser.add_argument('-p', '--password', help="requires --username")
+submit_parser.add_argument('-a', '--agent', help='agent ID (e.g. "module/traefik1"). Defaults to "cluster"', default='cluster')
+submit_parser.add_argument('-d', '--data', help='string in JSON format, set as task input data. Special value "-" reads data from stdin', default='{}')
+submit_parser.add_argument('--nowait', help='do not wait for task completion. Return immediately the task ID', action='store_true')
+submit_parser.add_argument('--raw', help='convert output with print() instead dumping it in JSON format', action='store_true')
+
+args = root_parser.parse_args()
+
+command = globals().get(args.command + '_command')
+
+command(args)
+
