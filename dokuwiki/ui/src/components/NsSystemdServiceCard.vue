@@ -24,11 +24,8 @@
 </template>
 
 <script>
-import NsSvg from "@/components/NsSvg";
-
 export default {
   name: "NsSystemdServiceCard",
-  components: { NsSvg },
   props: {
     serviceName: {
       type: String,

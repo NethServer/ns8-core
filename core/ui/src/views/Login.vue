@@ -82,7 +82,6 @@
 <script>
 import { IconService } from "andrelib"; ////
 import LoginService from "@/mixins/login";
-import NsInlineNotification from "@/components/NsInlineNotification";
 import { mapState } from "vuex";
 import { mapActions } from "vuex";
 import to from "await-to-js";
@@ -91,7 +90,6 @@ import { QueryParamService, UtilService, StorageService } from "andrelib"; ////
 
 export default {
   name: "Login",
-  components: { NsInlineNotification },
   mixins: [
     IconService,
     LoginService,

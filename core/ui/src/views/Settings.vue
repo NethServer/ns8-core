@@ -66,8 +66,6 @@
 </template>
 
 <script>
-// import to from "await-to-js"; ////
-import NsTile from "@/components/NsTile";
 import {
   QueryParamService,
   UtilService,
@@ -77,7 +75,6 @@ import {
 
 export default {
   name: "Settings",
-  components: { NsTile },
   mixins: [TaskService, UtilService, IconService, QueryParamService],
   data() {
     return {

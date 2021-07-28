@@ -1,9 +1,8 @@
 import { mapState } from "vuex";
 import { mapActions } from "vuex";
 import { mapGetters } from "vuex";
-import NsToastNotification from "@/components/NsToastNotification";
 import to from "await-to-js";
-import { UtilService } from "andrelib"; ////
+import { UtilService, NsToastNotification } from "andrelib"; ////
 
 export default {
   name: "NotificationService",

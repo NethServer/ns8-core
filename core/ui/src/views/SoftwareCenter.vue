@@ -239,9 +239,7 @@
 </template>
 
 <script>
-import NsInlineNotification from "../components/NsInlineNotification.vue";
 import AppList from "@/components/AppList";
-import NsTile from "@/components/NsTile";
 import to from "await-to-js";
 import NodeService from "@/mixins/node";
 import { mapActions } from "vuex";
@@ -255,9 +253,7 @@ import {
 export default {
   name: "SoftwareCenter",
   components: {
-    NsInlineNotification,
     AppList,
-    NsTile,
   },
   mixins: [
     IconService,

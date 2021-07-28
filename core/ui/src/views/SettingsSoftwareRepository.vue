@@ -254,7 +254,6 @@
 <script>
 import to from "await-to-js";
 import DataTableService from "../mixins/dataTable";
-import NsInlineNotification from "../components/NsInlineNotification.vue";
 import {
   QueryParamService,
   UtilService,
@@ -264,7 +263,6 @@ import {
 
 export default {
   name: "SettingsSoftwareRepository",
-  components: { NsInlineNotification },
   mixins: [
     TaskService,
     UtilService,

@@ -74,7 +74,6 @@
 
 <script>
 import Close20 from "@carbon/icons-vue/es/close/20";
-import NsToastNotification from "@/components/NsToastNotification";
 import { mapActions } from "vuex";
 import { mapGetters } from "vuex";
 import NotificationService from "@/mixins/notification";
@@ -83,8 +82,7 @@ export default {
   name: "NotificationDrawer",
   mixins: [NotificationService],
   components: {
-    Close20,
-    NsToastNotification,
+    Close20, //// use mixin
   },
   props: {
     isShown: {

@@ -201,13 +201,11 @@
 <script>
 import DataTableService from "../mixins/dataTable";
 import AuditService from "../mixins/audit";
-import NsInlineNotification from "../components/NsInlineNotification.vue";
 import to from "await-to-js";
 import { UtilService, IconService, DateTimeService } from "andrelib"; ////
 
 export default {
   name: "Logs",
-  components: { NsInlineNotification },
   mixins: [
     DateTimeService,
     DataTableService,

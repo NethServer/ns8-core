@@ -18,11 +18,8 @@
 </template>
 
 <script>
-import NsSvg from "@/components/NsSvg";
-
 export default {
   name: "NsInfoCard",
-  components: { NsSvg },
   props: {
     title: {
       type: String,

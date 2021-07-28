@@ -1,4 +1,4 @@
-import NsProgressBar from "../components/NsProgressBar.vue";
+import { NsProgressBar } from "andrelib"; ////
 
 export default {
   title: "Components/NsProgressBar",

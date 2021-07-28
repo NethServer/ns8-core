@@ -1,4 +1,4 @@
-import NsCodeSnippet from "../components/NsCodeSnippet.vue";
+import { NsCodeSnippet } from "andrelib"; ////
 
 export default {
   title: "Components/NsCodeSnippet",

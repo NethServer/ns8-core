@@ -1,4 +1,4 @@
-import NsToastNotification from "../components/NsToastNotification.vue";
+import { NsToastNotification } from "andrelib"; ////
 
 export default {
   title: "Components/NsToastNotification",

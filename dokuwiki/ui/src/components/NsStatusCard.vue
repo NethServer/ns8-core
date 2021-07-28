@@ -57,11 +57,9 @@
 import CheckmarkFilled20 from "@carbon/icons-vue/es/checkmark--filled/20";
 import ErrorFilled20 from "@carbon/icons-vue/es/error--filled/20";
 import Warning20 from "@carbon/icons-vue/es/warning--filled/20";
-import NsSvg from "@/components/NsSvg";
 
 export default {
   name: "NsStatusCard",
-  components: { NsSvg },
   props: {
     value: {
       type: [Number, String],

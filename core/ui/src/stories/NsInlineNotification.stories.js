@@ -1,4 +1,4 @@
-import NsInlineNotification from "../components/NsInlineNotification.vue";
+import { NsInlineNotification } from "andrelib"; ////
 
 export default {
   title: "Components/NsInlineNotification",

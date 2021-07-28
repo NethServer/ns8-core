@@ -262,7 +262,6 @@ import Flash20 from "@carbon/icons-vue/es/flash/20";
 import { mapState } from "vuex";
 import NotificationService from "@/mixins/notification";
 import { QueryParamService, UtilService, TaskService } from "andrelib"; ////
-import NsInlineNotification from "@/components/NsInlineNotification";
 import { formatRelative, subDays } from "date-fns";
 import to from "await-to-js";
 import WebSocketService from "@/mixins/websocket";
@@ -270,7 +269,6 @@ import { v4 as uuidv4 } from "uuid";
 
 export default {
   name: "Dashboard",
-  components: { NsInlineNotification },
   mixins: [
     NotificationService,
     QueryParamService,
