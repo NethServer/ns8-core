@@ -90,7 +90,7 @@
 
 <script>
 import { CvToastNotification, CvLink, CvTooltip } from "@carbon/vue";
-import DateTimeService from "../mixins/datetime";
+import { DateTimeService } from "andrelib"; ////
 import NsProgressBar from "./NsProgressBar";
 
 export default {
