@@ -80,7 +80,7 @@
 </template>
 
 <script>
-import IconService from "@/mixins/icon";
+import { IconService } from "andrelib"; ////
 import LoginService from "@/mixins/login";
 import NsInlineNotification from "@/components/NsInlineNotification";
 import { mapState } from "vuex";

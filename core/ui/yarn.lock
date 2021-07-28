@@ -3407,10 +3407,10 @@ alphanum-sort@^1.0.0:
   resolved "https://registry.npmjs.org/alphanum-sort/-/alphanum-sort-1.0.2.tgz"
   integrity sha1-l6ERlkmyEa0zaR2fn0hqjsn74KM=
 
-andrelib@0.0.20:
-  version "0.0.20"
-  resolved "https://registry.yarnpkg.com/andrelib/-/andrelib-0.0.20.tgz#645ce30cb74bf6fb353ecc71a6f0fd55fed61081"
-  integrity sha512-rgtdDzmzORRmspkOSicdCpll+IioMmMo5V7H5S+lDKz9JyUzaqT8bdRTJvO9wjTAsoA4VBgr3c0VU5MYWdznsA==
+andrelib@0.0.21:
+  version "0.0.21"
+  resolved "https://registry.yarnpkg.com/andrelib/-/andrelib-0.0.21.tgz#6a56800c0e4d1fdf07e6d4a06d3ac9b1e060ffb5"
+  integrity sha512-0Z4vaKvFmlNDV/m8NMJakCAiH8PNZjYzFM/0fV3LoZB/xllrar5LnztQApF4ODrcG5P80wexDp4vnOnJEtFmmA==
   dependencies:
     core-js "^3.15.2"
 

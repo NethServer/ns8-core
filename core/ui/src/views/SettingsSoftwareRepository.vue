@@ -253,10 +253,14 @@
 
 <script>
 import to from "await-to-js";
-import IconService from "@/mixins/icon";
 import DataTableService from "../mixins/dataTable";
 import NsInlineNotification from "../components/NsInlineNotification.vue";
-import { QueryParamService, UtilService, TaskService } from "andrelib"; ////
+import {
+  QueryParamService,
+  UtilService,
+  TaskService,
+  IconService,
+} from "andrelib"; ////
 
 export default {
   name: "SettingsSoftwareRepository",

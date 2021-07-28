@@ -163,7 +163,7 @@
 </template>
 
 <script>
-import IconService from "@/mixins/icon";
+import { IconService } from "andrelib"; ////
 import AppInfoModal from "@/components/AppInfoModal";
 import ModuleService from "@/mixins/module";
 
