@@ -21,6 +21,7 @@ buildah config --entrypoint=/ \
     --label="org.nethserver.tcp-ports-demand=1" \
     --label="org.nethserver.rootfull=0" \
     --label="org.nethserver.images=docker.io/redis:6-alpine docker.io/mariadb:10 docker.io/nginx:1.21-alpine docker.io/nextcloud:22-fpm-alpine" \
+    --label="org.nethserver.authorizations=traefik@any:routeadm" \
     "${container}"
 # Commit everything
 buildah commit "${container}" "${repobase}/${reponame}"
