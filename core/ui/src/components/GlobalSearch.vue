@@ -46,13 +46,13 @@
 
 <script>
 import Settings20 from "@carbon/icons-vue/es/settings/20";
-import NsEmptyState from "@/components/NsEmptyState";
+// import NsEmptyState from "@/components/NsEmptyState"; ////
 
 //// use vue-debounce?
 
 export default {
   name: "GlobalSearch",
-  components: { Settings20, NsEmptyState },
+  components: { Settings20 },
   data() {
     return {
       query: "",

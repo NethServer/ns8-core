@@ -3,9 +3,11 @@ import { mapActions } from "vuex";
 import { mapGetters } from "vuex";
 import NsToastNotification from "@/components/NsToastNotification";
 import to from "await-to-js";
+import { UtilService } from "andrelib"; ////
 
 export default {
   name: "NotificationService",
+  mixins: [UtilService],
   computed: {
     ...mapState(["notifications"]),
     ...mapGetters(["getNotificationById", "getTaskById"]),

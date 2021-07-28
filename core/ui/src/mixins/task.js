@@ -3,7 +3,7 @@ import ErrorFilled16 from "@carbon/icons-vue/es/error--filled/16";
 import CheckmarkFilled16 from "@carbon/icons-vue/es/checkmark--filled/16";
 import WarningFilled16 from "@carbon/icons-vue/es/warning--filled/16";
 import InformationFilled16 from "@carbon/icons-vue/es/information--filled/16";
-import UtilService from "@/mixins/util";
+import { UtilService } from "andrelib"; ////
 import NotificationService from "@/mixins/notification";
 
 export default {

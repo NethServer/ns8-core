@@ -254,19 +254,18 @@
 <script>
 import TaskService from "@/mixins/task";
 import to from "await-to-js";
-import UtilService from "@/mixins/util";
 import IconService from "@/mixins/icon";
-import QueryParamService from "@/mixins/queryParam";
-import NsEmptyState from "@/components/NsEmptyState";
-import NsButton from "@/components/NsButton";
+// import NsEmptyState from "@/components/NsEmptyState"; ////
+// import NsButton from "@/components/NsButton"; ////
 import DataTableService from "../mixins/dataTable";
 import NsInlineNotification from "../components/NsInlineNotification.vue";
+import { QueryParamService, UtilService } from "andrelib"; ////
 
-let nethserver = window.nethserver;
+// let nethserver = window.nethserver; ////
 
 export default {
   name: "SettingsSoftwareRepository",
-  components: { NsEmptyState, NsButton, NsInlineNotification },
+  components: { NsInlineNotification },
   mixins: [
     TaskService,
     UtilService,
@@ -312,12 +311,12 @@ export default {
   },
   beforeRouteEnter(to, from, next) {
     next((vm) => {
-      nethserver.watchQueryData(vm);
-      vm.queryParamsToData(vm, to.query);
+      vm.watchQueryData(vm);
+      vm.queryParamsToDataForCore(vm, to.query);
     });
   },
   beforeRouteUpdate(to, from, next) {
-    this.queryParamsToData(this, to.query);
+    this.queryParamsToDataForCore(this, to.query);
     next();
   },
   created() {

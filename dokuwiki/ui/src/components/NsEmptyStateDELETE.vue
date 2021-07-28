@@ -19,7 +19,7 @@
 </template>
 
 <script>
-//// FILE COPIED FROM CORE
+//// FILE COPIED FROM CORE - delete file
 
 import Pictogram from "./Pictogram.vue";
 import ExclamationMark from "./pictograms/ExclamationMark";

@@ -1,4 +1,4 @@
-import NsButton from "../components/NsButton.vue";
+import { NsButton } from "andrelib"; ////
 import Save from "@carbon/icons-vue/es/save/20";
 
 export default {

@@ -163,14 +163,14 @@
 </template>
 
 <script>
-import NsButton from "@/components/NsButton";
+// import NsButton from "@/components/NsButton"; ////
 import IconService from "@/mixins/icon";
 import AppInfoModal from "@/components/AppInfoModal";
 import ModuleService from "@/mixins/module";
 
 export default {
   name: "AppList",
-  components: { NsButton, AppInfoModal },
+  components: { AppInfoModal },
   mixins: [IconService, ModuleService],
   props: {
     apps: {

@@ -24,7 +24,9 @@ import LoginService from "@/mixins/login";
 import TaskErrorModal from "@/components/TaskErrorModal";
 import TaskService from "@/mixins/task";
 import NotificationService from "@/mixins/notification";
-import UtilService from "@/mixins/util";
+import { UtilService } from "andrelib"; ////
+
+//// remove andrelib from package.json
 
 export default {
   name: "App",

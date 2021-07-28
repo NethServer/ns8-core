@@ -127,13 +127,14 @@
 import to from "await-to-js";
 import TaskService from "@/mixins/task";
 import { mapState } from "vuex";
+import { QueryParamService } from "andrelib"; ////
 
-let nethserver = window.nethserver;
+// let nethserver = window.nethserver; //// remove
 
 export default {
   name: "About",
   components: {},
-  mixins: [TaskService],
+  mixins: [TaskService, QueryParamService],
   data() {
     return {
       q: {
@@ -168,8 +169,8 @@ export default {
   },
   beforeRouteEnter(to, from, next) {
     next((vm) => {
-      nethserver.watchQueryData(vm);
-      vm.urlCheckInterval = nethserver.initUrlBinding(vm, vm.q.page);
+      vm.watchQueryData(vm);
+      vm.urlCheckInterval = vm.initUrlBindingForApp(vm, vm.q.page);
     });
   },
   beforeRouteLeave(to, from, next) {

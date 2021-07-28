@@ -257,13 +257,12 @@
 
 <script>
 // import AreaChart from "@/components/AreaChart"; ////
-import NsButton from "@/components/NsButton"; ////
+// import NsButton from "@/components/NsButton"; ////
 import Flash20 from "@carbon/icons-vue/es/flash/20";
 // import Filter16 from "@carbon/icons-vue/es/filter/16"; ////
 import { mapState } from "vuex";
 import NotificationService from "@/mixins/notification";
-import UtilService from "@/mixins/util";
-import QueryParamService from "@/mixins/queryParam";
+import { QueryParamService, UtilService } from "andrelib"; ////
 import NsInlineNotification from "@/components/NsInlineNotification";
 import { formatRelative, subDays } from "date-fns";
 import TaskService from "@/mixins/task";
@@ -271,19 +270,23 @@ import to from "await-to-js";
 import WebSocketService from "@/mixins/websocket";
 import { v4 as uuidv4 } from "uuid";
 
-let nethserver = window.nethserver;
+// let nethserver = window.nethserver; ////
 
 export default {
   name: "Dashboard",
-  components: { NsButton, NsInlineNotification },
+  components: { NsInlineNotification },
   mixins: [
     NotificationService,
     QueryParamService,
+    UtilService,
     TaskService,
     WebSocketService,
-    UtilService,
+    // TestService,
   ],
   data() {
+    // this.testFun(); ////
+    console.log("getErrorMessage", this.getErrorMessage({ a: "aaa" })); ////
+
     return {
       q: {
         testInput: "",
@@ -322,13 +325,13 @@ export default {
   beforeRouteEnter(to, from, next) {
     next((vm) => {
       console.log("beforeRouteEnter", to, from); ////
-      nethserver.watchQueryData(vm);
-      vm.queryParamsToData(vm, to.query);
+      vm.watchQueryData(vm);
+      vm.queryParamsToDataForCore(vm, to.query);
     });
   },
   beforeRouteUpdate(to, from, next) {
     console.log("beforeRouteUpdate", to, from); ////
-    this.queryParamsToData(this, to.query);
+    this.queryParamsToDataForCore(this, to.query);
     next();
   },
   methods: {

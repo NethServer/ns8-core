@@ -1,4 +1,4 @@
-import UtilService from "@/mixins/util";
+import { UtilService } from "andrelib"; ////
 
 export default {
   name: "DataTableService",

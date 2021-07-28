@@ -1,3 +1,5 @@
+//// delete file
+
 nethserver = {
   // used to map a query string parameter value to its typed value
   getTypedValue(stringValue) {

@@ -7,6 +7,8 @@
     </div>
     <div class="bx--row">
       <div class="bx--col-md-4">
+        <cv-text-input label="qwerty" v-model.trim="q.test" class="mg-bottom">
+        </cv-text-input>
         <NsInfoCard
           v-if="!loading.status"
           light
@@ -199,18 +201,20 @@ import NsSystemdServiceCard from "@/components/NsSystemdServiceCard";
 import Application32 from "@carbon/icons-vue/es/application/32";
 import EdgeNode32 from "@carbon/icons-vue/es/edge-node/32";
 import Cube32 from "@carbon/icons-vue/es/cube/32";
-import NsEmptyState from "@/components/NsEmptyState";
+// import NsEmptyState from "@/components/NsEmptyState"; ////
+import { QueryParamService } from "andrelib"; ////
 
-let nethserver = window.nethserver;
+// let nethserver = window.nethserver; //// remove
 
 export default {
   name: "Status",
-  components: { NsInfoCard, NsSystemdServiceCard, NsEmptyState },
-  mixins: [TaskService],
+  components: { NsInfoCard, NsSystemdServiceCard },
+  mixins: [TaskService, QueryParamService],
   data() {
     return {
       q: {
         page: "status",
+        test: "", ////
       },
       urlCheckInterval: null,
       isRedirectChecked: false,
@@ -264,8 +268,8 @@ export default {
   },
   beforeRouteEnter(to, from, next) {
     next((vm) => {
-      nethserver.watchQueryData(vm);
-      vm.urlCheckInterval = nethserver.initUrlBinding(vm, vm.q.page);
+      vm.watchQueryData(vm);
+      vm.urlCheckInterval = vm.initUrlBindingForApp(vm, vm.q.page);
     });
   },
   beforeRouteLeave(to, from, next) {

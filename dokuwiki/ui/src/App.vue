@@ -12,12 +12,16 @@
 import AppSideMenu from "./components/AppSideMenu";
 import AppMobileSideMenu from "./components/AppMobileSideMenu";
 import { mapActions } from "vuex";
+import { QueryParamService } from "andrelib"; ////
 
-let nethserver = window.nethserver;
+// let nethserver = window.nethserver; //// remove
+
+//// remove andrelib from package.json
 
 export default {
   name: "App",
   components: { AppSideMenu, AppMobileSideMenu /*Ns8TestLibrarySample*/ },
+  mixins: [QueryParamService],
   created() {
     // register to events
     this.$root.$on("appNavigation", this.onAppNavigation);
@@ -33,7 +37,7 @@ export default {
       false
     );
 
-    const queryParams = nethserver.getQueryParamsForApp();
+    const queryParams = this.getQueryParamsForApp();
     const requestedPage = queryParams.page || "status";
 
     if (requestedPage != "status") {
