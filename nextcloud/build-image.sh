@@ -17,7 +17,11 @@ container=$(buildah from scratch)
 buildah add "${container}" imageroot /imageroot
 buildah add "${container}" ui /ui
 # Setup the entrypoint, ask to reserve one TCP port with the label and set a rootless container
-buildah config --entrypoint=/ --label="org.nethserver.tcp-ports-demand=1" --label="org.nethserver.rootfull=0" "${container}"
+buildah config --entrypoint=/ \
+    --label="org.nethserver.tcp-ports-demand=1" \
+    --label="org.nethserver.rootfull=0" \
+    --label="org.nethserver.images=docker.io/redis:6-alpine,docker.io/mariadb:10,docker.io/nginx:1.21-alpine" \
+    "${container}"
 # Commit everything
 buildah commit "${container}" "${repobase}/${reponame}"
 
