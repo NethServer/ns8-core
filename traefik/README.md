@@ -69,7 +69,7 @@ The action takes 1 parameter:
 
 Example:
 ```
-redis-cli LPUSH module/traefik1/tasks '{"id": "'$(uuidgen)'", "action": "set-certificate", "data": {"fqdn": "example.com"}}
+redis-cli LPUSH module/traefik1/tasks '{"id": "'$(uuidgen)'", "action": "set-certificate", "data": {"fqdn": "'$(hostname -f)'"}}'
 ```
 ## delete-certificate
 
@@ -82,5 +82,5 @@ The action takes 1 parameter:
 
 Example:
 ```
-redis-cli LPUSH module/traefik1/tasks '{"id": "'$(uuidgen)'", "action": "delete-certificate", "data": {"fqdn": "example.com"}}
+redis-cli LPUSH module/traefik1/tasks '{"id": "'$(uuidgen)'", "action": "delete-certificate", "data": {"fqdn": "'$(hostname -f)"}}'
 ```
