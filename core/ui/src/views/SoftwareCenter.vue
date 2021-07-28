@@ -242,17 +242,12 @@
 import NsInlineNotification from "../components/NsInlineNotification.vue";
 import IconService from "@/mixins/icon";
 import AppList from "@/components/AppList";
-// import NsEmptyState from "@/components/NsEmptyState"; ////
-// import Love from "../components/pictograms/Love"; ////
-// import NsButton from "@/components/NsButton"; ////
 import NsTile from "@/components/NsTile";
 import to from "await-to-js";
 import TaskService from "@/mixins/task";
 import NodeService from "@/mixins/node";
 import { mapActions } from "vuex";
 import { QueryParamService, UtilService } from "andrelib"; ////
-
-// let nethserver = window.nethserver; ////
 
 export default {
   name: "SoftwareCenter",

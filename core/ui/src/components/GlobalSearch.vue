@@ -46,7 +46,6 @@
 
 <script>
 import Settings20 from "@carbon/icons-vue/es/settings/20";
-// import NsEmptyState from "@/components/NsEmptyState"; ////
 
 //// use vue-debounce?
 

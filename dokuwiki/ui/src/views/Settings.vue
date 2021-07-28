@@ -115,14 +115,10 @@ import to from "await-to-js";
 import TaskService from "@/mixins/task";
 import IconService from "@/mixins/icon";
 import { mapState } from "vuex";
-// import NsButton from "@/components/NsButton"; ////
 import { QueryParamService, UtilService } from "andrelib"; ////
-
-// let nethserver = window.nethserver; //// remove
 
 export default {
   name: "Settings",
-  // components: { NsButton }, ////
   mixins: [TaskService, IconService, UtilService, QueryParamService],
   data() {
     return {

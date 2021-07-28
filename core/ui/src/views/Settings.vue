@@ -72,8 +72,6 @@ import NsTile from "@/components/NsTile";
 import IconService from "@/mixins/icon";
 import { QueryParamService, UtilService } from "andrelib"; ////
 
-// let nethserver = window.nethserver; ////
-
 export default {
   name: "Settings",
   components: { NsTile },

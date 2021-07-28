@@ -202,12 +202,10 @@
 import DateTimeService from "../mixins/datetime";
 import DataTableService from "../mixins/dataTable";
 import AuditService from "../mixins/audit";
-// import NsButton from "../components/NsButton.vue"; ////
 import NsInlineNotification from "../components/NsInlineNotification.vue";
 import IconService from "@/mixins/icon";
 import to from "await-to-js";
 import { UtilService } from "andrelib"; ////
-// import NsEmptyState from "@/components/NsEmptyState"; ////
 
 export default {
   name: "Logs",

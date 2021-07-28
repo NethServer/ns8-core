@@ -49,8 +49,6 @@ import Activity20 from "@carbon/icons-vue/es/activity/20";
 import { mapState } from "vuex";
 import { QueryParamService } from "andrelib"; ////
 
-// let nethserver = window.nethserver; //// remove
-
 export default {
   name: "AppSideMenuContent",
   components: {

@@ -20,11 +20,7 @@
 </template>
 
 <script>
-// import NsEmptyState from "@/components/NsEmptyState"; ////
-// import Bulldozer from "../components/pictograms/Bulldozer"; ////
 import { QueryParamService } from "andrelib"; ////
-
-// let nethserver = window.nethserver; //// remove
 
 export default {
   name: "Logs",

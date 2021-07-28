@@ -255,13 +255,9 @@
 import TaskService from "@/mixins/task";
 import to from "await-to-js";
 import IconService from "@/mixins/icon";
-// import NsEmptyState from "@/components/NsEmptyState"; ////
-// import NsButton from "@/components/NsButton"; ////
 import DataTableService from "../mixins/dataTable";
 import NsInlineNotification from "../components/NsInlineNotification.vue";
 import { QueryParamService, UtilService } from "andrelib"; ////
-
-// let nethserver = window.nethserver; ////
 
 export default {
   name: "SettingsSoftwareRepository",

@@ -14,13 +14,11 @@ import AppMobileSideMenu from "./components/AppMobileSideMenu";
 import { mapActions } from "vuex";
 import { QueryParamService } from "andrelib"; ////
 
-// let nethserver = window.nethserver; //// remove
-
 //// remove andrelib from package.json
 
 export default {
   name: "App",
-  components: { AppSideMenu, AppMobileSideMenu /*Ns8TestLibrarySample*/ },
+  components: { AppSideMenu, AppMobileSideMenu },
   mixins: [QueryParamService],
   created() {
     // register to events

@@ -37,6 +37,7 @@ export const Default = Template.bind({});
 Default.args = {
   slotContent: `Button text`,
   kind: "default",
+  loading: false,
   value: "selected",
 };
 
@@ -45,5 +46,6 @@ Icon.args = {
   slotContent: `Button text`,
   kind: "default",
   icon: Save,
+  loading: false,
   value: "selected",
 };

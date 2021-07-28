@@ -129,8 +129,6 @@ import TaskService from "@/mixins/task";
 import { mapState } from "vuex";
 import { QueryParamService } from "andrelib"; ////
 
-// let nethserver = window.nethserver; //// remove
-
 export default {
   name: "About",
   components: {},

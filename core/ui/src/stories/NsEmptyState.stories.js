@@ -1,5 +1,4 @@
 import { NsEmptyState, Gear } from "andrelib"; ////
-// import Gear from "../components/pictograms/Gear"; ////
 
 export default {
   title: "Components/NsEmptyState",

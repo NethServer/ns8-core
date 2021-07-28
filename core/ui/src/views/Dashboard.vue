@@ -257,7 +257,6 @@
 
 <script>
 // import AreaChart from "@/components/AreaChart"; ////
-// import NsButton from "@/components/NsButton"; ////
 import Flash20 from "@carbon/icons-vue/es/flash/20";
 // import Filter16 from "@carbon/icons-vue/es/filter/16"; ////
 import { mapState } from "vuex";
@@ -270,8 +269,6 @@ import to from "await-to-js";
 import WebSocketService from "@/mixins/websocket";
 import { v4 as uuidv4 } from "uuid";
 
-// let nethserver = window.nethserver; ////
-
 export default {
   name: "Dashboard",
   components: { NsInlineNotification },
@@ -281,10 +278,8 @@ export default {
     UtilService,
     TaskService,
     WebSocketService,
-    // TestService,
   ],
   data() {
-    // this.testFun(); ////
     console.log("getErrorMessage", this.getErrorMessage({ a: "aaa" })); ////
 
     return {
