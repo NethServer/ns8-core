@@ -82,13 +82,12 @@
 <script>
 import IconService from "@/mixins/icon";
 import LoginService from "@/mixins/login";
-import StorageService from "@/mixins/storage";
 import NsInlineNotification from "@/components/NsInlineNotification";
 import { mapState } from "vuex";
 import { mapActions } from "vuex";
 import to from "await-to-js";
 import WebSocketService from "@/mixins/websocket";
-import { QueryParamService, UtilService } from "andrelib"; ////
+import { QueryParamService, UtilService, StorageService } from "andrelib"; ////
 
 export default {
   name: "Login",

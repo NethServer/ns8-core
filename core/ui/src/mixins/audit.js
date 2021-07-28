@@ -1,4 +1,4 @@
-import StorageService from "@/mixins/storage";
+import { StorageService } from "andrelib"; ////
 
 export default {
   name: "AuditService",

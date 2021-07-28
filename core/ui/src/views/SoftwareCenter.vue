@@ -244,10 +244,9 @@ import IconService from "@/mixins/icon";
 import AppList from "@/components/AppList";
 import NsTile from "@/components/NsTile";
 import to from "await-to-js";
-import TaskService from "@/mixins/task";
 import NodeService from "@/mixins/node";
 import { mapActions } from "vuex";
-import { QueryParamService, UtilService } from "andrelib"; ////
+import { QueryParamService, UtilService, TaskService } from "andrelib"; ////
 
 export default {
   name: "SoftwareCenter",
@@ -551,7 +550,7 @@ export default {
       this.$root.$on(taskAction + "-completed", this.listModulesCompleted);
 
       const res = await to(
-        this.createTask({
+        this.createClusterTask({
           action: taskAction,
           extra: {
             title: this.$t("action." + taskAction),
@@ -711,7 +710,7 @@ export default {
       this.$root.$on(taskAction + "-completed", this.addModuleCompleted);
 
       const res = await to(
-        this.createTask({
+        this.createClusterTask({
           action: taskAction,
           data: {
             image: this.appToInstall.source + ":latest",

@@ -17,7 +17,7 @@
 </template>
 
 <script>
-import TaskService from "@/mixins/task";
+import { TaskService } from "andrelib"; ////
 
 export default {
   name: "TaskHierarchy",

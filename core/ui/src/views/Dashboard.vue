@@ -261,10 +261,9 @@ import Flash20 from "@carbon/icons-vue/es/flash/20";
 // import Filter16 from "@carbon/icons-vue/es/filter/16"; ////
 import { mapState } from "vuex";
 import NotificationService from "@/mixins/notification";
-import { QueryParamService, UtilService } from "andrelib"; ////
+import { QueryParamService, UtilService, TaskService } from "andrelib"; ////
 import NsInlineNotification from "@/components/NsInlineNotification";
 import { formatRelative, subDays } from "date-fns";
-import TaskService from "@/mixins/task";
 import to from "await-to-js";
 import WebSocketService from "@/mixins/websocket";
 import { v4 as uuidv4 } from "uuid";
@@ -377,7 +376,7 @@ export default {
       const taskAction = "add-module";
 
       const res = await to(
-        this.createTask({
+        this.createClusterTask({
           action: taskAction,
           data: {
             image: "traefik",
@@ -403,7 +402,7 @@ export default {
     async createTestTask() {
       const taskAction = "test-action-1";
       const res = await to(
-        this.createTask({
+        this.createClusterTask({
           action: taskAction,
           extra: {
             title: this.$t("action." + taskAction),
@@ -435,7 +434,7 @@ export default {
       const taskAction = "add-module";
 
       const res = await to(
-        this.createTask({
+        this.createClusterTask({
           action: taskAction,
           data: {
             image: module,
@@ -463,7 +462,7 @@ export default {
       const taskAction = "validation-test";
 
       const res = await to(
-        this.createTask({
+        this.createClusterTask({
           action: taskAction,
           data: {
             name: this.q.name,

@@ -112,10 +112,9 @@
 
 <script>
 import to from "await-to-js";
-import TaskService from "@/mixins/task";
 import IconService from "@/mixins/icon";
 import { mapState } from "vuex";
-import { QueryParamService, UtilService } from "andrelib"; ////
+import { QueryParamService, UtilService, TaskService } from "andrelib"; ////
 
 export default {
   name: "Settings",
@@ -191,7 +190,7 @@ export default {
       );
 
       const res = await to(
-        this.createModuleTask(this.instanceName, {
+        this.createModuleTaskForApp(this.instanceName, {
           action: taskAction,
           extra: {
             title: this.$t("action." + taskAction),
@@ -310,7 +309,7 @@ export default {
       );
 
       const res = await to(
-        this.createModuleTask(this.instanceName, {
+        this.createModuleTaskForApp(this.instanceName, {
           action: taskAction,
           data: {
             wiki_name: this.wikiName,

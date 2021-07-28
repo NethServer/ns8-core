@@ -195,14 +195,13 @@
 
 <script>
 import to from "await-to-js";
-import TaskService from "@/mixins/task";
 import { mapState } from "vuex";
 import NsInfoCard from "@/components/NsInfoCard";
 import NsSystemdServiceCard from "@/components/NsSystemdServiceCard";
 import Application32 from "@carbon/icons-vue/es/application/32";
 import EdgeNode32 from "@carbon/icons-vue/es/edge-node/32";
 import Cube32 from "@carbon/icons-vue/es/cube/32";
-import { QueryParamService } from "andrelib"; ////
+import { QueryParamService, TaskService } from "andrelib"; ////
 
 export default {
   name: "Status",
@@ -296,7 +295,7 @@ export default {
       );
 
       const res = await to(
-        this.createModuleTask(this.instanceName, {
+        this.createModuleTaskForApp(this.instanceName, {
           action: taskAction,
           extra: {
             title: this.$t("action." + taskAction),

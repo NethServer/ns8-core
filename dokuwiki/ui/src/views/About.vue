@@ -125,9 +125,8 @@
 
 <script>
 import to from "await-to-js";
-import TaskService from "@/mixins/task";
 import { mapState } from "vuex";
-import { QueryParamService } from "andrelib"; ////
+import { QueryParamService, TaskService } from "andrelib"; ////
 
 export default {
   name: "About",

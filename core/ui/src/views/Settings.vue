@@ -66,11 +66,10 @@
 </template>
 
 <script>
-import TaskService from "@/mixins/task";
 // import to from "await-to-js"; ////
 import NsTile from "@/components/NsTile";
 import IconService from "@/mixins/icon";
-import { QueryParamService, UtilService } from "andrelib"; ////
+import { QueryParamService, UtilService, TaskService } from "andrelib"; ////
 
 export default {
   name: "Settings",

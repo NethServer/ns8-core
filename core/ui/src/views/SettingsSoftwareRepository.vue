@@ -252,12 +252,11 @@
 </template>
 
 <script>
-import TaskService from "@/mixins/task";
 import to from "await-to-js";
 import IconService from "@/mixins/icon";
 import DataTableService from "../mixins/dataTable";
 import NsInlineNotification from "../components/NsInlineNotification.vue";
-import { QueryParamService, UtilService } from "andrelib"; ////
+import { QueryParamService, UtilService, TaskService } from "andrelib"; ////
 
 export default {
   name: "SettingsSoftwareRepository",
@@ -352,7 +351,7 @@ export default {
       this.$root.$on(taskAction + "-completed", this.listRepositoriesCompleted);
 
       const res = await to(
-        this.createTask({
+        this.createClusterTask({
           action: taskAction,
           extra: {
             title: this.$t("action." + taskAction),
@@ -417,7 +416,7 @@ export default {
       this.$root.$on(taskAction + "-completed", this.addRepositoriesCompleted);
 
       const res = await to(
-        this.createTask({
+        this.createClusterTask({
           action: taskAction,
           data: {
             name: this.q.newRepoName,
@@ -475,7 +474,7 @@ export default {
       this.$root.$on(taskAction + "-completed", this.alterRepositoryCompleted);
 
       const res = await to(
-        this.createTask({
+        this.createClusterTask({
           action: taskAction,
           data: {
             name: this.q.editRepoName,
@@ -527,7 +526,7 @@ export default {
       this.$root.$on(taskAction + "-completed", this.removeRepositoryCompleted);
 
       const res = await to(
-        this.createTask({
+        this.createClusterTask({
           action: taskAction,
           data: {
             name: repo.name,

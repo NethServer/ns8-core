@@ -48,7 +48,7 @@ import { mapActions } from "vuex";
 import NsInlineNotification from "@/components/NsInlineNotification";
 import NsCodeSnippet from "@/components/NsCodeSnippet";
 import TaskHierarchy from "@/components/TaskHierarchy";
-import TaskService from "@/mixins/task";
+import { TaskService } from "andrelib"; ////
 
 export default {
   name: "TaskErrorModal",

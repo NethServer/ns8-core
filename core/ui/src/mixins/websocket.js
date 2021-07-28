@@ -1,6 +1,5 @@
 import NotificationService from "@/mixins/notification";
-import StorageService from "@/mixins/storage";
-import TaskService from "@/mixins/task";
+import { TaskService, StorageService } from "andrelib"; ////
 // import { v4 as uuidv4 } from "uuid"; ////
 
 export default {
