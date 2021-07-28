@@ -16,10 +16,8 @@ add-module nextcloud 1
 The output of the command will return the instance name.
 Output example:
 ```
-{"module_id": "nextcloud1", "image_name": "Dokuwiki", "image_url": "ghcr.io/nethserver/nextcloud:latest"}
+{'module_id': 'nextcloud8', 'image_name': 'nextcloud', 'image_url': 'ghcr.io/nethserver/nextcloud:latest'}
 ```
-
-Wait for `add-module` to complete by looking inside `journalctl`.
 
 ## Configure
 
@@ -28,11 +26,24 @@ Let's assume that the nextcloud istance is named `nextcloud1`.
 Then launch `configure-module`, by setting the following parameters:
 - administrator user
 - administrator password
-- comma-separated list of trused domains
+- fully qualified domain name for Nextcloud
+- let's encrypt option 
 
 Example:
 ```
-LPUSH module/nextcloud1/tasks  '{"id": "'$(uuidgen)'", "action": "configure-module", "data": {"username": "admin", "password": "admin", "trusted_domains": ["nextcloud.example.org"]}}'
+pip install httpie
+TOKEN=$(http :8080/api/login username=admin password=Nethesis,1234 | jq -r .token)
+http :8080/api/module/nextcloud1/tasks "Authorization: Bearer $TOKEN" <<EOF
+{
+  "action": "configure-module",
+  "data": {
+    "username": "admin",
+    "password": "Nethesis,1234",
+    "host": "nextcloud.nethserver.orf",
+    "lets_encrypt": true
+  }
+}
+EOF
 ```
 
 Finally, setup traefik to access.
