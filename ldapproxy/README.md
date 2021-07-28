@@ -14,7 +14,7 @@ running. To connect with the Ldapproxy default instance:
 
 1. Retrieve the default instance ID
 
-       HGET node/${NODE_ID}/default_instance/ldapproxy (=> ldapproxy1)
+       GET node/${NODE_ID}/default_instance/ldapproxy (=> ldapproxy1)
 
 2. Retrieve the TCP port
 
