@@ -197,8 +197,6 @@
 <script>
 import to from "await-to-js";
 import { mapState } from "vuex";
-import NsInfoCard from "@/components/NsInfoCard";
-import NsSystemdServiceCard from "@/components/NsSystemdServiceCard";
 import Application32 from "@carbon/icons-vue/es/application/32";
 import EdgeNode32 from "@carbon/icons-vue/es/edge-node/32";
 import Cube32 from "@carbon/icons-vue/es/cube/32";
@@ -206,7 +204,6 @@ import { QueryParamService, TaskService, DateTimeService } from "andrelib"; ////
 
 export default {
   name: "Status",
-  components: { NsInfoCard, NsSystemdServiceCard },
   mixins: [TaskService, QueryParamService, DateTimeService],
   data() {
     return {

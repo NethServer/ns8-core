@@ -433,6 +433,23 @@ a.bx--side-nav__link--current .bx--side-nav__link-text {
 }
 // end branding colors for NsProgressBar
 
+// colors for NsStatusCard and NsSystemdServiceCard
+.status-card .success-icon,
+.service-card .success-icon {
+  color: $support-02;
+}
+
+.status-card .error-icon,
+.service-card .error-icon {
+  color: $danger-01;
+}
+
+.status-card .warning-icon,
+.service-card .warning-icon {
+  color: $support-03;
+}
+// end colors for NsStatusCard and NsSystemdServiceCard
+
 // styles for small devices
 @media (max-width: $breakpoint-large) {
   // remove left margin because side menu is not shown
