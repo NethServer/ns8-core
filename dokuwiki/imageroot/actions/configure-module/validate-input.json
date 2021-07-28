@@ -47,6 +47,7 @@
       "format": "idn-email"
     },
     "host": {
+      "type": "string",
       "description": "Host name for the wiki, like 'wiki.nethserver.org'",
       "format": "idn-hostname"
     },
