@@ -36,17 +36,42 @@ This is the priority of the rules type evaluation (top-down):
 
 Only `host`
 ```
-redis-cli LPUSH module/traefik1/tasks '{"id": "'$(uuidgen)'", "action": "set-route", "data": {"instance": "module1", "url": "http://127.0.0.0:2000", "host": "module.example.org", "lets_encrypt": true, "http2https": true}}'
+api-cli run set-route --agent module/traefik1 --data - <<EOF
+{
+  "instance": "module1",
+  "url": "http://127.0.0.0:2000",
+  "host": "module.example.org",
+  "lets_encrypt": true,
+  "http2https": true
+}
+EOF
 ```
 
 `host` and `path`
 ```
-redis-cli LPUSH module/traefik1/tasks '{"id": "'$(uuidgen)'", "action": "set-route", "data": {"instance": "module1", "url": "http://127.0.0.0:2000", "host": "module.example.org", "path": "/foo", "lets_encrypt": true, "http2https": true}}'
+api-cli run set-route --agent module/traefik1 --data - <<EOF
+{
+  "instance": "module1",
+  "url": "http://127.0.0.0:2000",
+  "host": "module.example.org",
+  "path": "/foo",
+  "lets_encrypt": true,
+  "http2https": true
+}
+EOF
 ```
 Only `path`
 
 ```
-redis-cli LPUSH module/traefik1/tasks '{"id": "'$(uuidgen)'", "action": "set-route", "data": {"instance": "module1", "url": "http://127.0.0.0:2000", "path":"/foo", "lets_encrypt": true, "http2https": true}}'
+api-cli run set-route --agent module/traefik1 --data - <<EOF
+{
+  "instance": "module1",
+  "url": "http://127.0.0.0:2000",
+  "path": "/foo",
+  "lets_encrypt": true,
+  "http2https": true
+}
+EOF
 ```
 
 ## delete-route
@@ -57,7 +82,7 @@ The action takes 1 parameter:
 
 Example:
 ```
-redis-cli LPUSH module/traefik1/tasks '{"id": "'$(uuidgen)'", "action": "delete-route", "data": {"instance": "module1"}}
+api-cli run delete-route --agent module/traefik1 --data '{"instance": "module1"}'
 ```
 
 ## set-certificate
@@ -69,7 +94,7 @@ The action takes 1 parameter:
 
 Example:
 ```
-redis-cli LPUSH module/traefik1/tasks '{"id": "'$(uuidgen)'", "action": "set-certificate", "data": {"fqdn": "'$(hostname -f)'"}}'
+api-cli run set-certificate --agent module/traefik1 --data "{\"fqdn\": \"$(hostname -f)\""
 ```
 ## delete-certificate
 
@@ -82,5 +107,5 @@ The action takes 1 parameter:
 
 Example:
 ```
-redis-cli LPUSH module/traefik1/tasks '{"id": "'$(uuidgen)'", "action": "delete-certificate", "data": {"fqdn": "'$(hostname -f)"}}'
+api-cli run delete-certificate --agent module/traefik1 --data "{\"fqdn\": \"$(hostname -f)\""
 ```
