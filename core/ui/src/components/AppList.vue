@@ -163,7 +163,7 @@
 </template>
 
 <script>
-import { IconService, UtilService } from "andrelib"; ////
+import { IconService, UtilService } from "@nethserver/ns8-ui-lib";
 import AppInfoModal from "@/components/AppInfoModal";
 
 export default {

@@ -1,4 +1,4 @@
-import { NsInlineNotification } from "andrelib"; ////
+import { NsInlineNotification } from "@nethserver/ns8-ui-lib";
 
 export default {
   title: "Components/NsInlineNotification",

@@ -13,7 +13,7 @@ axios.defaults.timeout = 10000;
 import VueAxios from "vue-axios";
 Vue.use(VueAxios, axios);
 
-import ns8Lib from "andrelib"; ////
+import ns8Lib from "@nethserver/ns8-ui-lib";
 Vue.use(ns8Lib);
 
 // i18n

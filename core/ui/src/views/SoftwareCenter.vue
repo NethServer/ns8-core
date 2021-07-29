@@ -248,7 +248,7 @@ import {
   UtilService,
   TaskService,
   IconService,
-} from "andrelib"; ////
+} from "@nethserver/ns8-ui-lib";
 
 export default {
   name: "SoftwareCenter",

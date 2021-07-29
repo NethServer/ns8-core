@@ -20,7 +20,7 @@
 </template>
 
 <script>
-import { QueryParamService } from "andrelib"; ////
+import { QueryParamService } from "@nethserver/ns8-ui-lib";
 
 export default {
   name: "Logs",

@@ -122,7 +122,7 @@
 </template>
 
 <script>
-import { UtilService } from "andrelib"; ////
+import { UtilService } from "@nethserver/ns8-ui-lib";
 import ImageGallery from "../components/ImageGallery";
 
 export default {

@@ -262,11 +262,15 @@ import Flash20 from "@carbon/icons-vue/es/flash/20";
 // import Filter16 from "@carbon/icons-vue/es/filter/16"; ////
 import { mapState } from "vuex";
 import NotificationService from "@/mixins/notification";
-import { QueryParamService, UtilService, TaskService } from "andrelib"; ////
 import { formatRelative, subDays } from "date-fns";
 import to from "await-to-js";
 import WebSocketService from "@/mixins/websocket";
 import { v4 as uuidv4 } from "uuid";
+import {
+  QueryParamService,
+  UtilService,
+  TaskService,
+} from "@nethserver/ns8-ui-lib";
 
 //// rename to Status?
 

@@ -1,4 +1,4 @@
-import { NsToastNotification } from "andrelib"; ////
+import { NsToastNotification } from "@nethserver/ns8-ui-lib";
 
 export default {
   title: "Components/NsToastNotification",

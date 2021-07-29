@@ -1,4 +1,4 @@
-import { NsInfoCard } from "andrelib"; ////
+import { NsInfoCard } from "@nethserver/ns8-ui-lib";
 import Application32 from "@carbon/icons-vue/es/application/32";
 
 export default {

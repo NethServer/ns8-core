@@ -126,7 +126,7 @@
 <script>
 import to from "await-to-js";
 import { mapState } from "vuex";
-import { QueryParamService, TaskService } from "andrelib"; ////
+import { QueryParamService, TaskService } from "@nethserver/ns8-ui-lib";
 
 export default {
   name: "About",

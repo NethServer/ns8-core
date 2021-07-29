@@ -1,4 +1,4 @@
-import { NsStatusCard } from "andrelib"; ////
+import { NsStatusCard } from "@nethserver/ns8-ui-lib";
 import Cube32 from "@carbon/icons-vue/es/cube/32";
 
 export default {

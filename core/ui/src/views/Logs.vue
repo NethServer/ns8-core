@@ -206,7 +206,7 @@ import {
   IconService,
   DateTimeService,
   DataTableService,
-} from "andrelib"; ////
+} from "@nethserver/ns8-ui-lib";
 
 export default {
   name: "Logs",

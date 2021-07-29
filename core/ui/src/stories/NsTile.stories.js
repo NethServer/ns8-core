@@ -1,4 +1,4 @@
-import { NsTile } from "andrelib"; ////
+import { NsTile } from "@nethserver/ns8-ui-lib";
 import Notification20 from "@carbon/icons-vue/es/notification/20";
 
 export default {

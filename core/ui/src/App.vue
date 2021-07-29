@@ -22,9 +22,13 @@ import to from "await-to-js";
 import LoginService from "@/mixins/login";
 import TaskErrorModal from "@/components/TaskErrorModal";
 import NotificationService from "@/mixins/notification";
-import { UtilService, TaskService, StorageService } from "andrelib"; ////
+import {
+  UtilService,
+  TaskService,
+  StorageService,
+} from "@nethserver/ns8-ui-lib";
 
-//// remove andrelib from package.json
+//// use @nethserver/ns8-ui-lib with version in package.json
 
 export default {
   name: "App",

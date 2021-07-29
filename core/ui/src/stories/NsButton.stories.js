@@ -1,4 +1,4 @@
-import { NsButton } from "andrelib"; ////
+import { NsButton } from "@nethserver/ns8-ui-lib";
 import Save from "@carbon/icons-vue/es/save/20";
 
 export default {

@@ -80,13 +80,17 @@
 </template>
 
 <script>
-import { IconService } from "andrelib"; ////
+import { IconService } from "@nethserver/ns8-ui-lib";
 import LoginService from "@/mixins/login";
 import { mapState } from "vuex";
 import { mapActions } from "vuex";
 import to from "await-to-js";
 import WebSocketService from "@/mixins/websocket";
-import { QueryParamService, UtilService, StorageService } from "andrelib"; ////
+import {
+  QueryParamService,
+  UtilService,
+  StorageService,
+} from "@nethserver/ns8-ui-lib";
 
 export default {
   name: "Login",

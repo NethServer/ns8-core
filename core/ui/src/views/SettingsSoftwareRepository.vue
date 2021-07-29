@@ -259,7 +259,7 @@ import {
   TaskService,
   IconService,
   DataTableService,
-} from "andrelib"; ////
+} from "@nethserver/ns8-ui-lib";
 
 export default {
   name: "SettingsSoftwareRepository",

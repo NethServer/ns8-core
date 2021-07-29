@@ -1,4 +1,4 @@
-import { NsEmptyState, Gear } from "andrelib"; ////
+import { NsEmptyState, Gear } from "@nethserver/ns8-ui-lib";
 
 export default {
   title: "Components/NsEmptyState",

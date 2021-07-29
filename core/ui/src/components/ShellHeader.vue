@@ -83,7 +83,7 @@ import Search20 from "@carbon/icons-vue/es/search/20";
 import LoginService from "@/mixins/login";
 import WebSocketService from "@/mixins/websocket";
 import NotificationDrawer from "@/components/NotificationDrawer";
-import { StorageService } from "andrelib"; ////
+import { StorageService } from "@nethserver/ns8-ui-lib";
 
 export default {
   name: "ShellHeader",

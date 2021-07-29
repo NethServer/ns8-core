@@ -46,7 +46,7 @@
 import { mapState } from "vuex";
 import { mapActions } from "vuex";
 import TaskHierarchy from "@/components/TaskHierarchy";
-import { TaskService } from "andrelib"; ////
+import { TaskService } from "@nethserver/ns8-ui-lib";
 
 export default {
   name: "TaskErrorModal",

@@ -12,9 +12,9 @@
 import AppSideMenu from "./components/AppSideMenu";
 import AppMobileSideMenu from "./components/AppMobileSideMenu";
 import { mapActions } from "vuex";
-import { QueryParamService } from "andrelib"; ////
+import { QueryParamService } from "@nethserver/ns8-ui-lib";
 
-//// remove andrelib from package.json
+//// use @nethserver/ns8-ui-lib with version in package.json
 
 export default {
   name: "App",

@@ -1,5 +1,5 @@
 import NotificationService from "@/mixins/notification";
-import { TaskService, StorageService } from "andrelib"; ////
+import { TaskService, StorageService } from "@nethserver/ns8-ui-lib";
 // import { v4 as uuidv4 } from "uuid"; ////
 
 export default {

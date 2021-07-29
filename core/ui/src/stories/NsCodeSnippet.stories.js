@@ -1,4 +1,4 @@
-import { NsCodeSnippet } from "andrelib"; ////
+import { NsCodeSnippet } from "@nethserver/ns8-ui-lib";
 
 export default {
   title: "Components/NsCodeSnippet",
