@@ -21,6 +21,12 @@ export const Default = Template.bind({});
 Default.args = {
   title: "Something happened",
   description: "Detailed description about what happened",
+  kind: "info",
+  showCloseButton: false,
+  actionLabel: "",
+  closeAriaLabel: "Dismiss notification",
+  lowContrast: false,
+  loading: false,
 };
 
 export const Action = Template.bind({});
@@ -28,6 +34,11 @@ Action.args = {
   title: "Something happened",
   description: "Detailed description about what happened",
   actionLabel: "Action button",
+  kind: "info",
+  showCloseButton: false,
+  closeAriaLabel: "Dismiss notification",
+  lowContrast: false,
+  loading: false,
 };
 
 export const Loading = Template.bind({});
@@ -36,4 +47,8 @@ Loading.args = {
   description: "Processing data...",
   actionLabel: "Cancel",
   loading: true,
+  kind: "info",
+  showCloseButton: false,
+  closeAriaLabel: "Dismiss notification",
+  lowContrast: false,
 };

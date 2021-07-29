@@ -26,13 +26,17 @@ Default.args = {
   slotContent: `Tile title`,
   // required for selectable kind
   value: "selectedValue",
+  light: false,
+  selected: false,
 };
 
 export const Icon = Template.bind({});
 Icon.args = {
   slotContent: `Tile title`,
   kind: "standard",
-  icon: Notification20,
   // required for selectable kind
   value: "selectedValue",
+  light: false,
+  selected: false,
+  icon: Notification20,
 };
