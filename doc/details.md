@@ -388,6 +388,13 @@ To retrieve the output:
 redis-cli get cluster/task/$UUID/output
 ```
 
+As alternative to running an action by pushing a raw task object in a
+Redis queue, use the `api-cli` command.
+
+```
+api-cli run list-modules --data null
+```
+
 The following actions are automatically available for all modules:
 
 - `create-module`: executed upon installation, it automatically downloads the module image and all images

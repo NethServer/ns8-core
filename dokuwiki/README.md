@@ -32,7 +32,18 @@ Then launch `configure-module`, by setting the following parameters:
 
 Example:
 ```
-redis-cli LPUSH module/dokuwiki1/tasks '{"id": "'$(uuidgen)'", "action": "configure-module", "data":{"wiki_name":"mywiki","username":"admin","password":"admin","email":"admin@test.local","user_full_name":"Administrator","host":"dokuwiki.test.local","http2https":true,"lets_encrypt":false}}'
+api-cli run configure-module --agent module/dokuwiki1 --data - <<EOF
+{
+  "wiki_name": "mywiki",
+  "username": "admin",
+  "password": "admin",
+  "email": "admin@test.local",
+  "user_full_name": "Administrator",
+  "host": "dokuwiki.test.local",
+  "http2https": true,
+  "lets_encrypt": false
+}
+EOF
 ```
 
 The above command will:
