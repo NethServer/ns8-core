@@ -32,7 +32,7 @@ async def _alogin(client, **npargs):
     """
     tls_verify = npargs['tls_verify']
     endpoint = npargs['endpoint']
-    redis_username = os.getenv('REDIS_USER', os.getenv('AGENT_ID', 'default'))
+    redis_username = os.environ['REDIS_USER'] # Fatal if missing!
     redis_password = os.environ['REDIS_PASSWORD'] # Fatal if missing!
     async with client.post(
         f'{endpoint}/api/login',
@@ -235,7 +235,7 @@ async def _run_nowait(agent_id, action, data={}, parent=None, progress_range=Non
 
     async def run_redis():
         nonlocal parent
-        redis_username = os.getenv('REDIS_USER', os.getenv('AGENT_ID', 'default'))
+        redis_username = os.environ['REDIS_USER'] # Fatal if missing!
         redis_password = os.environ['REDIS_PASSWORD'] # Fatal if missing!
         async with aioredis.from_url(
             endpoint,
@@ -298,7 +298,7 @@ async def _run(agent_id, action, data={}, parent=None, progress_range=None, tls_
 
     async def run_redis():
         nonlocal parent
-        redis_username = os.getenv('REDIS_USER', os.getenv('AGENT_ID', 'default'))
+        redis_username = os.environ['REDIS_USER'] # Fatal if missing!
         redis_password = os.environ['REDIS_PASSWORD'] # Fatal if missing!
         async with aioredis.from_url(
             endpoint,
