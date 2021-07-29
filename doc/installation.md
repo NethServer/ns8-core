@@ -37,16 +37,7 @@ it's possible to request a valid certificate for the FQDN.
 
 Example:
 ```
-pip install httpie
-export TOKEN=$(http :8080/api/login username=admin password=Nethesis,1234 | jq -r .token)
-http :8080/api/module/traefik5/tasks "Authorization: Bearer $TOKEN" <<EOF
-{
-    "action":"set-certificate",
-    "data": {
-        "fqdn": "server.nethserver.org"
-    }
-}
-EOF
+api-cli run set-certificate --agent module/traefik5 --data "{\"fqdn\": \"$(hostname -f)\"}"
 ```
 
 ### Application installation

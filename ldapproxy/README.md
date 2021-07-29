@@ -59,21 +59,16 @@ Ldapproxy instances.
 
 The `set-backend` action configures and restarts the L4 proxy service.
 
-    # pip install httpie
-    export TOKEN=$(http :8080/api/login username=admin password=Nethesis,1234 | jq -r .token)
-    http :8080/api/module/ldapproxy2/tasks "Authorization: Bearer $TOKEN" <<EOF
+    api-cli run set-backend --agent module/ldapproxy2 --data - <<EOF
     {
-        "action":"set-backend", 
-        "data": {
-            "backend": "samba2",
-            "schema": "ad",
-            "base_dn": "DC=ad,DC=example,DC=com",
-            "host": "127.0.0.1",
-            "port": 636,
-            "tls": true,
-            "tls_verify": false,
-            "bind_dn": "ldapservice@ad.example.com",
-            "bind_password": "supersecret"
-        }
+        "backend": "samba2",
+        "schema": "ad",
+        "base_dn": "DC=ad,DC=example,DC=com",
+        "host": "127.0.0.1",
+        "port": 636,
+        "tls": true,
+        "tls_verify": false,
+        "bind_dn": "ldapservice@ad.example.com",
+        "bind_password": "supersecret"
     }
     EOF
