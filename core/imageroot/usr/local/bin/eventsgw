@@ -31,8 +31,6 @@ import os
 import uuid
 import json
 
-agent_id = os.environ.get('AGENT_ID', 'cluster')
-
 async def _run_command(cmdline, data):
     proc = await asyncio.create_subprocess_shell(cmdline, stdin=asyncio.subprocess.PIPE)
     if type(data) is bytes:
@@ -43,8 +41,8 @@ async def _run_command(cmdline, data):
     return proc.returncode
 
 async def _run_action(action, data):
-    global agent_id
-    redis_username = os.getenv('REDIS_USER', os.getenv('AGENT_ID', 'default'))
+    agent_id = os.getenv('AGENT_ID', 'cluster')
+    redis_username = os.environ['REDIS_USER'] # Fatal if missing!
     redis_password = os.environ['REDIS_PASSWORD'] # Fatal if missing!
 
     # Check if data has JSON syntax

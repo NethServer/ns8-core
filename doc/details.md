@@ -600,8 +600,8 @@ The Python module `agent.tasks` implements the two steps internally.
 
 It has a few assumptions, that are always satisfied by an action step environment:
 
-* It obtain the module credentials from the environment (`REDIS_USER`,
-  `AGENT_ID`, and `REDIS_PASSWORD`)
+* It obtain the module credentials from the environment from `REDIS_USER`
+  and `REDIS_PASSWORD`
 * It stores the JWT token in the current working directory (the file is
   `./apitoken.cache`)
 

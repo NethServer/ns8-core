@@ -48,7 +48,7 @@ def redis_connect(privileged=False, decode_responses=True, **kwargs):
     redis_host = os.getenv('REDIS_ADDRESS', '127.0.0.1:6379').split(':', 1)[0]
     redis_port = os.getenv('REDIS_ADDRESS', '127.0.0.1:6379').split(':', 1)[1]
     if privileged:
-        redis_username = os.getenv('REDIS_USER', os.getenv('AGENT_ID'))
+        redis_username = os.environ['REDIS_USER'] # Fatal if missing!
         redis_password = os.environ['REDIS_PASSWORD'] # Fatal if missing!
     else:
         redis_username = 'default'
