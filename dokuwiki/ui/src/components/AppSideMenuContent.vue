@@ -64,7 +64,7 @@ export default {
     };
   },
   computed: {
-    ...mapState(["instanceName"]),
+    ...mapState(["instanceName", "ns8Core"]),
   },
   created() {
     // register to appNavigation event
@@ -78,22 +78,21 @@ export default {
     isLinkActive(page) {
       return this.getPage() === page;
     },
-    //// move to mixin
     goToPath(path) {
-      if (window.parent.ns8.$route.fullPath != path) {
-        window.parent.ns8.$router.push(path);
+      if (this.ns8Core.$route.fullPath != path) {
+        this.ns8Core.$router.push(path);
       }
       this.$forceUpdate();
     },
     goToPage(page) {
       const path = `/apps/${this.instanceName}?page=${page}`;
 
-      if (window.parent.ns8.$route.fullPath != path) {
-        window.parent.ns8.$router.push(path);
+      if (this.ns8Core.$route.fullPath != path) {
+        this.ns8Core.$router.push(path);
       }
     },
     onAppNavigation() {
-      // update current page highlight in side menu
+      // highlight current page in side menu
       this.$forceUpdate();
     },
   },

@@ -39,7 +39,7 @@
               <div>
                 <span class="section-title"
                   >{{
-                    core.$tc(
+                    ns8Core.$tc(
                       "software_center.categories",
                       app.categories.length
                     )
@@ -51,7 +51,7 @@
             <section>
               <div>
                 <span class="section-title"
-                  >{{ core.$t("software_center.documentation") }}:
+                  >{{ ns8Core.$t("software_center.documentation") }}:
                 </span>
                 <cv-link :href="app.docs.documentation_url" target="_blank">
                   {{ app.docs.documentation_url }}
@@ -61,7 +61,7 @@
             <section>
               <div>
                 <span class="section-title"
-                  >{{ core.$t("software_center.bugs") }}:
+                  >{{ ns8Core.$t("software_center.bugs") }}:
                 </span>
                 <cv-link :href="app.docs.bug_url" target="_blank">
                   {{ app.docs.bug_url }}
@@ -71,7 +71,7 @@
             <section>
               <div>
                 <span class="section-title"
-                  >{{ core.$t("software_center.source_code") }}:
+                  >{{ ns8Core.$t("software_center.source_code") }}:
                 </span>
                 <cv-link :href="app.docs.code_url" target="_blank">
                   {{ app.docs.code_url }}
@@ -81,7 +81,7 @@
             <section>
               <div>
                 <span class="section-title"
-                  >{{ core.$t("software_center.source_package") }}:
+                  >{{ ns8Core.$t("software_center.source_package") }}:
                 </span>
                 {{ app.source }}
               </div>
@@ -90,7 +90,7 @@
               <div>
                 <span class="section-title"
                   >{{
-                    core.$tc("software_center.authors", app.authors.length)
+                    ns8Core.$tc("software_center.authors", app.authors.length)
                   }}:
                 </span>
                 <span v-if="app.authors.length == 1"
@@ -145,24 +145,10 @@ export default {
     };
   },
   computed: {
-    ...mapState(["instanceName"]),
-    //// move to mixin?
-    core() {
-      return window.parent.ns8;
-    },
-  },
-  watch: {
-    instanceName: function () {
-      // we do this in created() too, but we must wait instanceName is computed
-      if (this.instanceName) {
-        this.getModuleInfo();
-      }
-    },
+    ...mapState(["instanceName", "ns8Core"]),
   },
   created() {
-    if (this.instanceName) {
-      this.getModuleInfo();
-    }
+    this.getModuleInfo();
   },
   beforeRouteEnter(to, from, next) {
     next((vm) => {
@@ -180,7 +166,7 @@ export default {
       const taskAction = "get-module-info";
 
       // register to task completion
-      window.parent.ns8.$root.$on(
+      this.ns8Core.$root.$on(
         taskAction + "-completed",
         this.getModuleInfoCompleted
       );
@@ -209,15 +195,15 @@ export default {
     },
     getModuleInfoCompleted(taskContext, taskResult) {
       // unregister from event
-      window.parent.ns8.$root.$off("get-module-info-completed");
+      this.ns8Core.$root.$off("get-module-info-completed");
       this.app = taskResult.output;
       this.loading.moduleInfo = false;
     },
     getApplicationDescription(app) {
-      return this.getAppDescription(app, window.parent.ns8);
+      return this.getAppDescription(app, this.ns8Core);
     },
     getApplicationCategories(app) {
-      return this.getAppCategories(app, window.parent.ns8);
+      return this.getAppCategories(app, this.ns8Core);
     },
   },
 };

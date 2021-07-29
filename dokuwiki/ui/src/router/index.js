@@ -11,7 +11,7 @@ const routes = [
     path: "/",
     name: "Status",
     component: Status,
-    alias: "/status", //// important
+    alias: "/status", // important
   },
   {
     path: "/settings",

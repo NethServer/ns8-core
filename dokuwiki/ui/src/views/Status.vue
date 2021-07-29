@@ -197,14 +197,16 @@
 <script>
 import to from "await-to-js";
 import { mapState } from "vuex";
-import Application32 from "@carbon/icons-vue/es/application/32";
-import EdgeNode32 from "@carbon/icons-vue/es/edge-node/32";
-import Cube32 from "@carbon/icons-vue/es/cube/32";
-import { QueryParamService, TaskService, DateTimeService } from "andrelib"; ////
+import {
+  QueryParamService,
+  TaskService,
+  DateTimeService,
+  IconService,
+} from "andrelib"; ////
 
 export default {
   name: "Status",
-  mixins: [TaskService, QueryParamService, DateTimeService],
+  mixins: [TaskService, QueryParamService, DateTimeService, IconService],
   data() {
     return {
       q: {
@@ -215,16 +217,13 @@ export default {
       isRedirectChecked: false,
       redirectTimeout: 0,
       status: null,
-      Application32, //// use mixin?
-      EdgeNode32, //// use mixin?
-      Cube32, //// use mixin?
       loading: {
         status: true,
       },
     };
   },
   computed: {
-    ...mapState(["instanceName"]),
+    ...mapState(["instanceName", "ns8Core"]),
     failedServices() {
       if (!this.status) {
         return 0;
@@ -248,18 +247,8 @@ export default {
       }
     },
   },
-  watch: {
-    instanceName: function () {
-      // we do this in created() too, but we must wait instanceName is computed
-      if (this.instanceName) {
-        this.getStatus();
-      }
-    },
-  },
   created() {
-    if (this.instanceName) {
-      this.getStatus();
-    }
+    this.getStatus();
   },
   beforeRouteEnter(to, from, next) {
     next((vm) => {
@@ -287,7 +276,7 @@ export default {
       const taskAction = "get-status";
 
       // register to task completion
-      window.parent.ns8.$root.$on(
+      this.ns8Core.$root.$on(
         taskAction + "-completed",
         this.getStatusCompleted
       );
@@ -313,7 +302,7 @@ export default {
     },
     getStatusCompleted(taskContext, taskResult) {
       // unregister from event
-      window.parent.ns8.$root.$off("get-status-completed");
+      this.ns8Core.$root.$off("get-status-completed");
       this.status = taskResult.output;
       this.loading.status = false;
     },

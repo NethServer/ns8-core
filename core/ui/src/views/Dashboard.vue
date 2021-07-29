@@ -5,7 +5,8 @@
         <h2>Cluster dashboard</h2>
       </div>
     </div>
-    <div class="bx--row">
+    <!-- //// delete -->
+    <!-- <div class="bx--row">
       <div class="bx--col-lg-16">
         <cv-tile :light="true" class="content-tile">
           <h4>Add module</h4>
@@ -20,8 +21,8 @@
           </cv-form>
         </cv-tile>
       </div>
-    </div>
-    <div class="bx--row">
+    </div> -->
+    <!-- <div class="bx--row">
       <div class="bx--col-lg-16">
         <cv-tile :light="true" class="content-tile">
           <NsButton :icon="Flash20" @click="isTestValidationModalShown = true"
@@ -29,7 +30,7 @@
           >
         </cv-tile>
       </div>
-    </div>
+    </div> -->
     <div class="bx--row">
       <div class="bx--col-md-5">
         <cv-tile :light="true" class="content-tile">

@@ -21,8 +21,11 @@ export default {
   components: { AppSideMenu, AppMobileSideMenu },
   mixins: [QueryParamService],
   created() {
-    // register to events
-    this.$root.$on("appNavigation", this.onAppNavigation);
+    const ns8Core = window.parent.ns8;
+    this.setNs8CoreInStore(ns8Core);
+
+    const appInstance = /#\/apps\/(\w+)/.exec(window.parent.location.hash)[1];
+    this.setInstanceNameInStore(appInstance);
 
     // listen to change route events
     const context = this;
@@ -42,15 +45,8 @@ export default {
       this.$router.replace(requestedPage);
     }
   },
-  beforeDestroy() {
-    // remove event listener
-    this.$root.$off("appNavigation");
-  },
   methods: {
-    ...mapActions(["setInstanceNameInStore"]),
-    onAppNavigation(appInstance) {
-      this.setInstanceNameInStore(appInstance);
-    },
+    ...mapActions(["setInstanceNameInStore", "setNs8CoreInStore"]),
   },
 };
 </script>
