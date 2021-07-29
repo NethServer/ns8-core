@@ -268,6 +268,8 @@ import to from "await-to-js";
 import WebSocketService from "@/mixins/websocket";
 import { v4 as uuidv4 } from "uuid";
 
+//// rename to Status?
+
 export default {
   name: "Dashboard",
   mixins: [
