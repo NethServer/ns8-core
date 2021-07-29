@@ -18,41 +18,30 @@ The LDAP service of Samba DCs does not allow clear-text LDAP binds: enable
 TLS or use Kerberos/GSSAPI authentication. The default node Ldapproxy
 instance is configured to enable TLS automatically.
 
-To run the example commands of the following sections initialize a shell
-environment with the following commands:
-
-    pip install httpie
-    export TOKEN=$(http :8080/api/login username=admin password=Nethesis,1234 | jq -r .token)
 
 ## Provision
 
 Provision a new domain:
 
-    http :8080/api/module/samba1/tasks "Authorization: Bearer $TOKEN" <<EOF
+    api-cli run provision-domain --agent module/samba1 --data - <<EOF
     {
-        "action":"provision-domain",
-        "data":{
-            "adminuser":"administrator",
-            "adminpass":"Nethesis,1234",
-            "realm":"ad.$(hostname -d)",
-            "nbdomain":"ad",
-            "ipaddress":"10.133.0.2"
-        }
+        "adminuser":"administrator",
+        "adminpass":"Nethesis,1234",
+        "realm":"ad.$(hostname -d)",
+        "nbdomain":"ad",
+        "ipaddress":"10.133.0.2"
     }
     EOF
 
 Further Samba instances for the same `realm` are **joined** to the existing domain.
 The command is similar.
 
-    http :8080/api/module/samba2/tasks "Authorization: Bearer $TOKEN" <<EOF
+    api-cli run provision-domain --agent module/samba2 --data - <<EOF
     {
-        "action":"provision-domain",
-        "data":{
-            "adminuser":"administrator",
-            "adminpass":"Nethesis,1234",
-            "realm":"ad.$(hostname -d)",
-            "ipaddress":"10.124.0.2"
-        }
+        "adminuser":"administrator",
+        "adminpass":"Nethesis,1234",
+        "realm":"ad.$(hostname -d)",
+        "ipaddress":"10.124.0.2"
     }
     EOF
 
@@ -70,14 +59,11 @@ routes, it is possible to use the cluster VPN to route IP traffic among
 DCs. For example this command enable the cluster VPN routes to join a second
 DC:
 
-    http :8080/api/module/samba2/tasks "Authorization: Bearer $TOKEN" <<EOF
+    api-cli run set-routes --agent module/samba2 --data - <<EOF
     {
-        "action":"set-routes",
-        "data": {
-            "realm": "ad.$(hostname -d)",
-            "ipaddress": "10.124.0.2",
-            "use_cluster_vpn": true
-        }
+        "realm": "ad.$(hostname -d)",
+        "ipaddress": "10.124.0.2",
+        "use_cluster_vpn": true
     }
     EOF
 
@@ -88,25 +74,23 @@ if the node default Ldapproxy instance is not bound to another account
 provider. If so, Samba invokes the `set-backend` on Ldapproxy
 automatically.
 
-This command manually binds `ldapproxy1` with the `samba2` local account
+This command manually binds `ldapproxy3` with the `samba2` local account
 provider LDAP backend. TLS is required by Samba (clear-text LDAP binds are
-not allowed).
+not allowed), however `tls_verify` is disabled because Samba has a
+self-signed certificate.
 
     # retrieve the ldapservice password
     redis-cli HGET module/samba1/environment SVCPASS
     # output: "Random,1234"
-    http :8080/api/module/ldapproxy1/tasks "Authorization: Bearer $TOKEN" <<EOF
+    api-cli run set-backend --agent module/ldapproxy3 --data - <<EOF
     {
-        "action":"set-backend",
-        "data": {
-            "backend": "samba1",
-            "schema": "ad",
-            "host": "127.0.0.1",
-            "port": 636,
-            "tls": true,
-            "tls_verify": false,
-            "bind_dn": "AD\\ldapservice",
-            "bind_password:": "Random,1234"
-        }
+        "backend": "samba1",
+        "schema": "ad",
+        "host": "127.0.0.1",
+        "port": 636,
+        "tls": true,
+        "tls_verify": false,
+        "bind_dn": "AD\\ldapservice",
+        "bind_password:": "Random,1234"
     }
     EOF
