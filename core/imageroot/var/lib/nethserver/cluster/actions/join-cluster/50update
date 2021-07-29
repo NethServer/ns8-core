@@ -96,8 +96,11 @@ leader_endpoint = payload['leader_endpoint']
 
 print(f"Leader response is successful: the cluster was joined as node/{node_id}! Remote task reference: cluster/task/{response['id']}", file=sys.stderr)
 
-# Reconfigure node agent
-agent.run_helper('sed', '-i', f'/^AGENT_ID=/c\AGENT_ID=node/{node_id}', '/var/lib/nethserver/node/state/agent.env').check_returncode()
+# Reconfigure the node agent environment, preserving the original node password
+agent.run_helper('sed', '-i',
+    '-e', f'/^AGENT_ID=/c\AGENT_ID=node/{node_id}',
+    '-e', f'/^REDIS_USER=/c\REDIS_USER=node/{node_id}',
+    '/var/lib/nethserver/node/state/agent.env').check_returncode()
 
 # VPN bootstrap
 agent.save_wgconf(ip_address, listen_port, {
@@ -112,7 +115,7 @@ agent.run_helper('sed', '-i',
     '-e', f'/cluster-localnode$/c\{ip_address} cluster-localnode',
     '/etc/hosts').check_returncode()
 
-# Restart the node agent to apply the new VPN setup
+# Restart the node agent to apply the new environment setup
 agent.run_helper(*'systemctl restart agent@node'.split(' ')).check_returncode()
 
 # Bind Redis to the VPN ip_address
