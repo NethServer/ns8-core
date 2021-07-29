@@ -199,10 +199,14 @@
 </template>
 
 <script>
-import DataTableService from "../mixins/dataTable";
 import AuditService from "../mixins/audit";
 import to from "await-to-js";
-import { UtilService, IconService, DateTimeService } from "andrelib"; ////
+import {
+  UtilService,
+  IconService,
+  DateTimeService,
+  DataTableService,
+} from "andrelib"; ////
 
 export default {
   name: "Logs",

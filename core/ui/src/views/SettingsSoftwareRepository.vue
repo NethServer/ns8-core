@@ -253,12 +253,12 @@
 
 <script>
 import to from "await-to-js";
-import DataTableService from "../mixins/dataTable";
 import {
   QueryParamService,
   UtilService,
   TaskService,
   IconService,
+  DataTableService,
 } from "andrelib"; ////
 
 export default {
