@@ -63,7 +63,10 @@ curl -s -H "Authorization: Bearer <your_token>" -X <VERB> http://localhost:8080/
 ```
 
 ### API list
-The API doc is generated using swagger. THe `swagger.json` file can be found inside `doc/` directory.
+The API doc is generated using swagger. The `swagger.json` file is built
+automatically and published at:
+
+https://raw.githubusercontent.com/NethServer/ns8-scratchpad/swagdoc/swagger.json
 
 ## Redis
   Each API is mapped to a specific command on Redis:

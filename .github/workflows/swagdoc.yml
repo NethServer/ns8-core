@@ -1,0 +1,48 @@
+name: swagdoc
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/swagdoc.yml'
+      - core/api-server/**.go
+
+jobs:
+  push_image:
+    name: 'Build OpenAPI docs for ${{ github.head_ref }}'
+    runs-on: ubuntu-20.04
+    steps:
+      - id: checkout
+        uses: actions/checkout@v2
+      - id: configure
+        name: "Configure git environment"
+        run: |
+          git config user.name nethbot
+          git config user.email nethbot@nethesis.it
+      - id: swaginit
+        name: "Build the images"
+        run: |
+          # Build the images
+          cd core/api-server
+          buildah from --name golang -v "${PWD}:/usr/src:Z" docker.io/library/golang:1.16-alpine
+          buildah run golang sh <<'EOF'
+          go get -u github.com/swaggo/swag/cmd/swag
+          cd /usr/src
+          swag init
+          EOF
+      - id: publish
+        name: "Publish the API documents"
+        run: |
+          # Publish the API documents
+          git add core/api-server/docs
+          BRANCH=$(basename ${{ github.ref }})
+          COMMIT_MESSAGE="swagdoc@$BRANCH"
+          REMOTE_BRANCH="swagdoc"
+          TREE=$(git write-tree --prefix=core/api-server/docs)
+          COMMIT=$(git commit-tree -m "${COMMIT_MESSAGE}" ${TREE})
+          git push -f origin $COMMIT:refs/heads/${REMOTE_BRANCH}
+          echo "OpenAPI documentation has been published to"
+          echo ""
+          echo "    https://github.com/${{ github.repository }}/tree/${REMOTE_BRANCH}"
+          echo ""
+
