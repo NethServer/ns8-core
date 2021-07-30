@@ -144,11 +144,9 @@ and extract the files from the core image to system path, like `/var/lib/nethser
 
 When installing a rootless module, the package will be extracted inside the home of the module Unix user.
 
-## API server and UI
+## API server
 
 The API server is a daemon implemented using [Go](https://golang.org).
-
-The UI is a web application developed with [VueJs](https://vuejs.org/) and based on [Carbon Design System](https://www.carbondesignsystem.com/).
 
 TODO:
 
@@ -157,6 +155,62 @@ TODO:
 - how to create user and roles
 - UI default credentials
 - auditing
+
+## User Interface
+
+NS8 user interface is a web application developed with [VueJs](https://vuejs.org/) and based on [Carbon Design System](https://www.carbondesignsystem.com/).
+
+NS8 UI can be accessed at `https://leader_node/cluster-admin/`. Default username is `admin` and default password is `Nethesis,1234`. The web application source is structured in multiple VueJs projects:
+- Core UI
+- A distinct UI project for every module (e.g. Dokuwiki)
+- A UI library that includes a set of reusable UI components and functions (VueJs mixins) used by core and modules UI
+
+### Core UI
+
+Core UI includes the following components:
+- Login page
+- Shell
+  - Side menu
+  - Top header
+  - Global search
+  - Notification drawer
+  - App launcher
+- Cluster status page
+- Software center
+- Cluster logs (auditing)
+- Cluster settings
+
+Core UI also includes a [Storybook](https://storybook.js.org/) to explore and test the reusable components included in the UI library.
+To launch Storybook webapp:
+
+```bash
+cd core/ui
+yarn storybook
+```
+
+### Modules UI
+
+Every NS8 module follows the same UI guidelines in order to provide a uniform user experience. Almost every module has at least these standard pages:
+- Status
+- Settings
+- Logs
+- About
+
+Status page is the landing page of the module, it should provide a dashboard displaying the current status of the module, including instance name, installation node and information about module services.
+
+Settings page should contain a form to set and review module configuration.
+
+Logs page should display log entries relevant to the module, in order to support troubleshooting activity.
+
+About page should provide module meta-information such as documentation URL, source code and author information.
+
+NS8 modules make use of UI library components and functions, e.g. by including the shared `NsButton` component in a module form, or requesting the execution of a cluster task.
+
+### UI library
+
+Since core and modules UI share multiple components and features, these facilities have been aggregated into NPM package `@nethserver/ns8-ui-lib`.
+The reusable UI components included in the library are easily recognizable since their name starts with `Ns` prefix, e.g. `NsButton`, `NsInlineNotification`.
+The library also includes a set of VueJs mixins used by core and modules to access utility functions and perform common tasks.
 
 ## Package repository
 
