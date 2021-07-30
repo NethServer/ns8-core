@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class= "app-side-menu-content">
     <div class="instance-name">
       <span v-if="instanceName">{{ instanceName }}</span>
       <cv-skeleton-text
@@ -100,8 +100,6 @@ export default {
 </script>
 
 <style scoped lang="scss">
-@import "../styles/carbon-utils";
-
 .instance-name {
   height: 3rem;
   padding-left: 1.5rem;

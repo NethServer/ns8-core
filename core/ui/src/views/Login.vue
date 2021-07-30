@@ -123,7 +123,7 @@ export default {
   },
   mounted() {
     console.log("mounted login page"); ////
-    this.focusUsername();
+    this.focusElement("usernameInput");
   },
   methods: {
     ...mapActions(["setLoggedUserInStore"]),
@@ -132,10 +132,10 @@ export default {
 
       if (!this.username.trim()) {
         this.error.username = "Username is required";
-        this.focusUsername();
+        this.focusElement("usernameInput");
       } else {
         this.step = "password";
-        this.focusPassword();
+        this.focusElement("passwordInput");
       }
     },
     async checkPassword() {
@@ -143,7 +143,7 @@ export default {
 
       if (!this.password.trim()) {
         this.error.password = "Password is required";
-        this.focusPassword();
+        this.focusElement("passwordInput");
       } else {
         this.loading.login = true;
 
@@ -203,28 +203,14 @@ export default {
       this.error.login = errorMessage;
       this.step = "username";
       this.password = "";
-      this.focusUsername();
+      this.focusElement("usernameInput");
     },
     goToUsername() {
       this.step = "username";
       this.username = "";
       this.password = "";
-      this.focusUsername();
+      this.focusElement("usernameInput");
       this.error.login = "";
-    },
-    focusUsername() {
-      // focus on username field
-      this.$nextTick(() => {
-        const usernameInput = this.$refs.usernameInput;
-        usernameInput.focus();
-      });
-    },
-    focusPassword() {
-      // focus on password field
-      this.$nextTick(() => {
-        const passwordInput = this.$refs.passwordInput;
-        passwordInput.focus();
-      });
     },
   },
 };

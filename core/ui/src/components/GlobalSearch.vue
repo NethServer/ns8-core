@@ -46,12 +46,14 @@
 
 <script>
 import Settings20 from "@carbon/icons-vue/es/settings/20";
+import { UtilService } from "@nethserver/ns8-ui-lib";
 
 //// use vue-debounce?
 
 export default {
   name: "GlobalSearch",
   components: { Settings20 },
+  mixins: [UtilService],
   data() {
     return {
       query: "",
@@ -103,7 +105,7 @@ export default {
   },
   mounted() {
     console.log("global search mounted"); ////
-    this.focusSearch();
+    this.focusElement("search");
 
     // prevent glitch: click-outside is incorrectly detected when global search appears
     setTimeout(() => {
@@ -116,13 +118,6 @@ export default {
       if (this.isClickOutsideEnabled) {
         this.$emit("closeSearch");
       }
-    },
-    focusSearch() {
-      // focus on search field
-      this.$nextTick(() => {
-        const searchInput = this.$refs.search;
-        searchInput.focus();
-      });
     },
     inputSearch() {
       // clean query
