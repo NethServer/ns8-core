@@ -24,7 +24,7 @@
 import VueGallery from "vue-gallery";
 
 export default {
-  name: "NsImageGallery",
+  name: "ImageGallery",
   components: { VueGallery },
   props: {
     images: Array,

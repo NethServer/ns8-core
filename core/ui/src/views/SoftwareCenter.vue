@@ -239,31 +239,21 @@
 </template>
 
 <script>
-import NsInlineNotification from "../components/NsInlineNotification.vue";
-import IconService from "@/mixins/icon";
 import AppList from "@/components/AppList";
-import QueryParamService from "@/mixins/queryParam";
-import NsEmptyState from "@/components/NsEmptyState";
-import Love from "../components/pictograms/Love";
-import NsButton from "@/components/NsButton";
-import NsTile from "@/components/NsTile";
 import to from "await-to-js";
-import UtilService from "@/mixins/util";
-import TaskService from "@/mixins/task";
 import NodeService from "@/mixins/node";
 import { mapActions } from "vuex";
-
-let nethserver = window.nethserver;
+import {
+  QueryParamService,
+  UtilService,
+  TaskService,
+  IconService,
+} from "@nethserver/ns8-ui-lib";
 
 export default {
   name: "SoftwareCenter",
   components: {
-    NsInlineNotification,
     AppList,
-    NsEmptyState,
-    Love,
-    NsButton,
-    NsTile,
   },
   mixins: [
     IconService,
@@ -512,12 +502,12 @@ export default {
   },
   beforeRouteEnter(to, from, next) {
     next((vm) => {
-      nethserver.watchQueryData(vm);
-      vm.queryParamsToData(vm, to.query);
+      vm.watchQueryData(vm);
+      vm.queryParamsToDataForCore(vm, to.query);
     });
   },
   beforeRouteUpdate(to, from, next) {
-    this.queryParamsToData(this, to.query);
+    this.queryParamsToDataForCore(this, to.query);
     next();
   },
   created() {
@@ -560,7 +550,7 @@ export default {
       this.$root.$on(taskAction + "-completed", this.listModulesCompleted);
 
       const res = await to(
-        this.createTask({
+        this.createClusterTask({
           action: taskAction,
           extra: {
             title: this.$t("action." + taskAction),
@@ -720,7 +710,7 @@ export default {
       this.$root.$on(taskAction + "-completed", this.addModuleCompleted);
 
       const res = await to(
-        this.createTask({
+        this.createClusterTask({
           action: taskAction,
           data: {
             image: this.appToInstall.source + ":latest",

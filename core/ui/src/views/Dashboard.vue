@@ -5,7 +5,8 @@
         <h2>Cluster dashboard</h2>
       </div>
     </div>
-    <div class="bx--row">
+    <!-- //// delete -->
+    <!-- <div class="bx--row">
       <div class="bx--col-lg-16">
         <cv-tile :light="true" class="content-tile">
           <h4>Add module</h4>
@@ -20,8 +21,8 @@
           </cv-form>
         </cv-tile>
       </div>
-    </div>
-    <div class="bx--row">
+    </div> -->
+    <!-- <div class="bx--row">
       <div class="bx--col-lg-16">
         <cv-tile :light="true" class="content-tile">
           <NsButton :icon="Flash20" @click="isTestValidationModalShown = true"
@@ -29,7 +30,7 @@
           >
         </cv-tile>
       </div>
-    </div>
+    </div> -->
     <div class="bx--row">
       <div class="bx--col-md-5">
         <cv-tile :light="true" class="content-tile">
@@ -257,33 +258,34 @@
 
 <script>
 // import AreaChart from "@/components/AreaChart"; ////
-import NsButton from "@/components/NsButton"; ////
 import Flash20 from "@carbon/icons-vue/es/flash/20";
 // import Filter16 from "@carbon/icons-vue/es/filter/16"; ////
 import { mapState } from "vuex";
 import NotificationService from "@/mixins/notification";
-import UtilService from "@/mixins/util";
-import QueryParamService from "@/mixins/queryParam";
-import NsInlineNotification from "@/components/NsInlineNotification";
 import { formatRelative, subDays } from "date-fns";
-import TaskService from "@/mixins/task";
 import to from "await-to-js";
 import WebSocketService from "@/mixins/websocket";
 import { v4 as uuidv4 } from "uuid";
+import {
+  QueryParamService,
+  UtilService,
+  TaskService,
+} from "@nethserver/ns8-ui-lib";
 
-let nethserver = window.nethserver;
+//// rename to Status?
 
 export default {
   name: "Dashboard",
-  components: { NsButton, NsInlineNotification },
   mixins: [
     NotificationService,
     QueryParamService,
+    UtilService,
     TaskService,
     WebSocketService,
-    UtilService,
   ],
   data() {
+    console.log("getErrorMessage", this.getErrorMessage({ a: "aaa" })); ////
+
     return {
       q: {
         testInput: "",
@@ -322,13 +324,13 @@ export default {
   beforeRouteEnter(to, from, next) {
     next((vm) => {
       console.log("beforeRouteEnter", to, from); ////
-      nethserver.watchQueryData(vm);
-      vm.queryParamsToData(vm, to.query);
+      vm.watchQueryData(vm);
+      vm.queryParamsToDataForCore(vm, to.query);
     });
   },
   beforeRouteUpdate(to, from, next) {
     console.log("beforeRouteUpdate", to, from); ////
-    this.queryParamsToData(this, to.query);
+    this.queryParamsToDataForCore(this, to.query);
     next();
   },
   methods: {
@@ -379,7 +381,7 @@ export default {
       const taskAction = "add-module";
 
       const res = await to(
-        this.createTask({
+        this.createClusterTask({
           action: taskAction,
           data: {
             image: "traefik",
@@ -405,7 +407,7 @@ export default {
     async createTestTask() {
       const taskAction = "test-action-1";
       const res = await to(
-        this.createTask({
+        this.createClusterTask({
           action: taskAction,
           extra: {
             title: this.$t("action." + taskAction),
@@ -437,7 +439,7 @@ export default {
       const taskAction = "add-module";
 
       const res = await to(
-        this.createTask({
+        this.createClusterTask({
           action: taskAction,
           data: {
             image: module,
@@ -465,7 +467,7 @@ export default {
       const taskAction = "validation-test";
 
       const res = await to(
-        this.createTask({
+        this.createClusterTask({
           action: taskAction,
           data: {
             name: this.q.name,

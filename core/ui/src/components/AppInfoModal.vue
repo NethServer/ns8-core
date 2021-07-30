@@ -28,11 +28,11 @@
         </section>
         <section v-if="app.screenshots.length">
           <div class="screenshots">
-            <NsImageGallery :fullScreen="true" :images="app.screenshots" />
+            <ImageGallery :fullScreen="true" :images="app.screenshots" />
           </div>
         </section>
         <div class="description">
-          {{ getAppDescription(app) }}
+          {{ getApplicationDescription(app) }}
         </div>
         <section>
           <div>
@@ -41,7 +41,7 @@
                 $tc("software_center.categories", app.categories.length)
               }}:</span
             >
-            {{ getAppCategories(app) }}
+            {{ getApplicationCategories(app) }}
           </div>
         </section>
         <section>
@@ -122,16 +122,24 @@
 </template>
 
 <script>
-import ModuleService from "@/mixins/module";
-import NsImageGallery from "../components/NsImageGallery";
+import { UtilService } from "@nethserver/ns8-ui-lib";
+import ImageGallery from "../components/ImageGallery";
 
 export default {
   name: "AppInfoModal",
-  components: { NsImageGallery },
-  mixins: [ModuleService],
+  components: { ImageGallery },
+  mixins: [UtilService],
   props: {
     isShown: Boolean,
     app: { type: [Object, null] },
+  },
+  methods: {
+    getApplicationDescription(app) {
+      return this.getAppDescription(app, this);
+    },
+    getApplicationCategories(app) {
+      return this.getAppCategories(app, this);
+    },
   },
 };
 </script>

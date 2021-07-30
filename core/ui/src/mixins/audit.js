@@ -1,4 +1,4 @@
-import StorageService from "@/mixins/storage";
+import { StorageService } from "@nethserver/ns8-ui-lib";
 
 export default {
   name: "AuditService",

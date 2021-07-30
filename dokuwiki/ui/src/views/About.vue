@@ -33,25 +33,25 @@
               </div>
             </section>
             <div class="description">
-              {{ getAppDescription(app) }}
+              {{ getApplicationDescription(app) }}
             </div>
             <section>
               <div>
                 <span class="section-title"
                   >{{
-                    core.$tc(
+                    ns8Core.$tc(
                       "software_center.categories",
                       app.categories.length
                     )
                   }}:</span
                 >
-                {{ getAppCategories(app) }}
+                {{ getApplicationCategories(app) }}
               </div>
             </section>
             <section>
               <div>
                 <span class="section-title"
-                  >{{ core.$t("software_center.documentation") }}:
+                  >{{ ns8Core.$t("software_center.documentation") }}:
                 </span>
                 <cv-link :href="app.docs.documentation_url" target="_blank">
                   {{ app.docs.documentation_url }}
@@ -61,7 +61,7 @@
             <section>
               <div>
                 <span class="section-title"
-                  >{{ core.$t("software_center.bugs") }}:
+                  >{{ ns8Core.$t("software_center.bugs") }}:
                 </span>
                 <cv-link :href="app.docs.bug_url" target="_blank">
                   {{ app.docs.bug_url }}
@@ -71,7 +71,7 @@
             <section>
               <div>
                 <span class="section-title"
-                  >{{ core.$t("software_center.source_code") }}:
+                  >{{ ns8Core.$t("software_center.source_code") }}:
                 </span>
                 <cv-link :href="app.docs.code_url" target="_blank">
                   {{ app.docs.code_url }}
@@ -81,7 +81,7 @@
             <section>
               <div>
                 <span class="section-title"
-                  >{{ core.$t("software_center.source_package") }}:
+                  >{{ ns8Core.$t("software_center.source_package") }}:
                 </span>
                 {{ app.source }}
               </div>
@@ -90,7 +90,7 @@
               <div>
                 <span class="section-title"
                   >{{
-                    core.$tc("software_center.authors", app.authors.length)
+                    ns8Core.$tc("software_center.authors", app.authors.length)
                   }}:
                 </span>
                 <span v-if="app.authors.length == 1"
@@ -125,15 +125,13 @@
 
 <script>
 import to from "await-to-js";
-import TaskService from "@/mixins/task";
 import { mapState } from "vuex";
-
-let nethserver = window.nethserver;
+import { QueryParamService, TaskService } from "@nethserver/ns8-ui-lib";
 
 export default {
   name: "About",
   components: {},
-  mixins: [TaskService],
+  mixins: [TaskService, QueryParamService],
   data() {
     return {
       q: {
@@ -147,29 +145,15 @@ export default {
     };
   },
   computed: {
-    ...mapState(["instanceName"]),
-    //// move to mixin?
-    core() {
-      return window.parent.ns8;
-    },
-  },
-  watch: {
-    instanceName: function () {
-      // we do this in created() too, but we must wait instanceName is computed
-      if (this.instanceName) {
-        this.getModuleInfo();
-      }
-    },
+    ...mapState(["instanceName", "ns8Core"]),
   },
   created() {
-    if (this.instanceName) {
-      this.getModuleInfo();
-    }
+    this.getModuleInfo();
   },
   beforeRouteEnter(to, from, next) {
     next((vm) => {
-      nethserver.watchQueryData(vm);
-      vm.urlCheckInterval = nethserver.initUrlBinding(vm, vm.q.page);
+      vm.watchQueryData(vm);
+      vm.urlCheckInterval = vm.initUrlBindingForApp(vm, vm.q.page);
     });
   },
   beforeRouteLeave(to, from, next) {
@@ -182,7 +166,7 @@ export default {
       const taskAction = "get-module-info";
 
       // register to task completion
-      window.parent.ns8.$root.$on(
+      this.ns8Core.$root.$on(
         taskAction + "-completed",
         this.getModuleInfoCompleted
       );
@@ -211,33 +195,15 @@ export default {
     },
     getModuleInfoCompleted(taskContext, taskResult) {
       // unregister from event
-      window.parent.ns8.$root.$off("get-module-info-completed");
+      this.ns8Core.$root.$off("get-module-info-completed");
       this.app = taskResult.output;
       this.loading.moduleInfo = false;
     },
-    getAppDescription(app) {
-      const langCode = window.parent.ns8.$root.$i18n.locale;
-      let description = app.description[langCode];
-
-      if (!description) {
-        // fallback to english
-        description = app.description.en;
-      }
-      return description;
+    getApplicationDescription(app) {
+      return this.getAppDescription(app, this.ns8Core);
     },
-    getAppCategories(app) {
-      let i18nCategories = [];
-
-      for (const category of app.categories) {
-        if (category === "unknown") {
-          return "-";
-        }
-
-        i18nCategories.push(
-          window.parent.ns8.$t("software_center.app_categories." + category)
-        );
-      }
-      return i18nCategories.join(", ");
+    getApplicationCategories(app) {
+      return this.getAppCategories(app, this.ns8Core);
     },
   },
 };

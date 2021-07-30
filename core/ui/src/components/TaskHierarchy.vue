@@ -17,7 +17,7 @@
 </template>
 
 <script>
-import TaskService from "@/mixins/task";
+import { TaskService } from "@nethserver/ns8-ui-lib";
 
 export default {
   name: "TaskHierarchy",

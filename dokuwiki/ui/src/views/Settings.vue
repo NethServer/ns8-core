@@ -112,18 +112,17 @@
 
 <script>
 import to from "await-to-js";
-import TaskService from "@/mixins/task";
-import IconService from "@/mixins/icon";
 import { mapState } from "vuex";
-import NsButton from "@/components/NsButton";
-import UtilService from "@/mixins/util";
-
-let nethserver = window.nethserver;
+import {
+  QueryParamService,
+  UtilService,
+  TaskService,
+  IconService,
+} from "@nethserver/ns8-ui-lib";
 
 export default {
   name: "Settings",
-  components: { NsButton },
-  mixins: [TaskService, IconService, UtilService],
+  mixins: [TaskService, IconService, UtilService, QueryParamService],
   data() {
     return {
       q: {
@@ -154,29 +153,15 @@ export default {
     };
   },
   computed: {
-    ...mapState(["instanceName"]),
-    //// move to mixin?
-    core() {
-      return window.parent.ns8;
-    },
-  },
-  watch: {
-    instanceName: function () {
-      // we do this in created() too, but we must wait instanceName is computed
-      if (this.instanceName) {
-        this.getConfiguration();
-      }
-    },
+    ...mapState(["instanceName", "ns8Core"]),
   },
   created() {
-    if (this.instanceName) {
-      this.getConfiguration();
-    }
+    this.getConfiguration();
   },
   beforeRouteEnter(to, from, next) {
     next((vm) => {
-      nethserver.watchQueryData(vm);
-      vm.urlCheckInterval = nethserver.initUrlBinding(vm, vm.q.page);
+      vm.watchQueryData(vm);
+      vm.urlCheckInterval = vm.initUrlBindingForApp(vm, vm.q.page);
     });
   },
   beforeRouteLeave(to, from, next) {
@@ -189,13 +174,13 @@ export default {
       const taskAction = "get-configuration";
 
       // register to task completion
-      this.core.$root.$on(
+      this.ns8Core.$root.$on(
         taskAction + "-completed",
         this.getConfigurationCompleted
       );
 
       const res = await to(
-        this.createModuleTask(this.instanceName, {
+        this.createModuleTaskForApp(this.instanceName, {
           action: taskAction,
           extra: {
             title: this.$t("action." + taskAction),
@@ -302,19 +287,19 @@ export default {
       const taskAction = "configure-module";
 
       // register to task validation
-      this.core.$root.$on(
+      this.ns8Core.$root.$on(
         taskAction + "-validation-failed",
         this.saveSettingsValidationFailed
       );
 
       // register to task completion
-      this.core.$root.$on(
+      this.ns8Core.$root.$on(
         taskAction + "-completed",
         this.saveSettingsCompleted
       );
 
       const res = await to(
-        this.createModuleTask(this.instanceName, {
+        this.createModuleTaskForApp(this.instanceName, {
           action: taskAction,
           data: {
             wiki_name: this.wikiName,
@@ -346,7 +331,7 @@ export default {
     },
     getConfigurationCompleted(taskContext, taskResult) {
       // unregister from event
-      this.core.$root.$off("get-configuration-completed");
+      this.ns8Core.$root.$off("get-configuration-completed");
 
       const config = taskResult.output;
       this.wikiName = config.wiki_name;
@@ -361,7 +346,7 @@ export default {
     },
     saveSettingsCompleted() {
       // unregister from event
-      this.core.$root.$off("configure-module-completed");
+      this.ns8Core.$root.$off("configure-module-completed");
 
       this.loading.settings = false;
 

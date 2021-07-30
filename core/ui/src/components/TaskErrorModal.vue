@@ -45,14 +45,12 @@
 <script>
 import { mapState } from "vuex";
 import { mapActions } from "vuex";
-import NsInlineNotification from "@/components/NsInlineNotification";
-import NsCodeSnippet from "@/components/NsCodeSnippet";
 import TaskHierarchy from "@/components/TaskHierarchy";
-import TaskService from "@/mixins/task";
+import { TaskService } from "@nethserver/ns8-ui-lib";
 
 export default {
   name: "TaskErrorModal",
-  components: { NsInlineNotification, TaskHierarchy, NsCodeSnippet },
+  components: { TaskHierarchy },
   mixins: [TaskService],
   props: {},
   data() {

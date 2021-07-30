@@ -1,4 +1,4 @@
-import NsProgressBar from "../components/NsProgressBar.vue";
+import { NsProgressBar } from "@nethserver/ns8-ui-lib";
 
 export default {
   title: "Components/NsProgressBar",

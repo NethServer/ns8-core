@@ -6,7 +6,11 @@
       </div>
     </div>
     <div class="bx--row">
-      <div class="bx--col-md-4">
+      <div class="bx--col-lg-8 bx--col-max-4">
+        <!-- //// delete -->
+        <!-- <cv-text-input label="qwerty" v-model.trim="q.test" class="mg-bottom"> -->
+        <!-- </cv-text-input> -->
+        <!-- {{ formatDate(new Date(), "yyyy-MM-dd HH:mm:ss") }} -->
         <NsInfoCard
           v-if="!loading.status"
           light
@@ -23,7 +27,7 @@
           ></cv-skeleton-text>
         </cv-tile>
       </div>
-      <div class="bx--col-md-4">
+      <div class="bx--col-lg-8 bx--col-max-4">
         <NsInfoCard
           v-if="!loading.status"
           light
@@ -57,7 +61,7 @@
         v-else
         v-for="(service, index) in status.services"
         :key="index"
-        class="bx--col-md-4"
+        class="bx--col-lg-8 bx--col-max-4"
       >
         <NsSystemdServiceCard
           light
@@ -72,7 +76,7 @@
       </div>
     </div>
     <div v-else class="bx--row">
-      <div class="bx--col-md-4">
+      <div class="bx--col-lg-8 bx--col-max-4">
         <cv-tile light class="content-tile">
           <cv-skeleton-text
             :paragraph="true"
@@ -192,41 +196,34 @@
 
 <script>
 import to from "await-to-js";
-import TaskService from "@/mixins/task";
 import { mapState } from "vuex";
-import NsStatusCard from "@/components/NsStatusCard";
-import NsInfoCard from "@/components/NsInfoCard";
-import NsSystemdServiceCard from "@/components/NsSystemdServiceCard";
-import Application32 from "@carbon/icons-vue/es/application/32";
-import EdgeNode32 from "@carbon/icons-vue/es/edge-node/32";
-import Cube32 from "@carbon/icons-vue/es/cube/32";
-import NsEmptyState from "@/components/NsEmptyState";
-
-let nethserver = window.nethserver;
+import {
+  QueryParamService,
+  TaskService,
+  DateTimeService,
+  IconService,
+} from "@nethserver/ns8-ui-lib";
 
 export default {
   name: "Status",
-  components: { NsStatusCard, NsInfoCard, NsSystemdServiceCard, NsEmptyState },
-  mixins: [TaskService],
+  mixins: [TaskService, QueryParamService, DateTimeService, IconService],
   data() {
     return {
       q: {
         page: "status",
+        test: "", ////
       },
       urlCheckInterval: null,
       isRedirectChecked: false,
       redirectTimeout: 0,
       status: null,
-      Application32, //// use mixin?
-      EdgeNode32, //// use mixin?
-      Cube32, //// use mixin?
       loading: {
         status: true,
       },
     };
   },
   computed: {
-    ...mapState(["instanceName"]),
+    ...mapState(["instanceName", "ns8Core"]),
     failedServices() {
       if (!this.status) {
         return 0;
@@ -250,23 +247,13 @@ export default {
       }
     },
   },
-  watch: {
-    instanceName: function () {
-      // we do this in created() too, but we must wait instanceName is computed
-      if (this.instanceName) {
-        this.getStatus();
-      }
-    },
-  },
   created() {
-    if (this.instanceName) {
-      this.getStatus();
-    }
+    this.getStatus();
   },
   beforeRouteEnter(to, from, next) {
     next((vm) => {
-      nethserver.watchQueryData(vm);
-      vm.urlCheckInterval = nethserver.initUrlBinding(vm, vm.q.page);
+      vm.watchQueryData(vm);
+      vm.urlCheckInterval = vm.initUrlBindingForApp(vm, vm.q.page);
     });
   },
   beforeRouteLeave(to, from, next) {
@@ -289,13 +276,13 @@ export default {
       const taskAction = "get-status";
 
       // register to task completion
-      window.parent.ns8.$root.$on(
+      this.ns8Core.$root.$on(
         taskAction + "-completed",
         this.getStatusCompleted
       );
 
       const res = await to(
-        this.createModuleTask(this.instanceName, {
+        this.createModuleTaskForApp(this.instanceName, {
           action: taskAction,
           extra: {
             title: this.$t("action." + taskAction),
@@ -315,7 +302,7 @@ export default {
     },
     getStatusCompleted(taskContext, taskResult) {
       // unregister from event
-      window.parent.ns8.$root.$off("get-status-completed");
+      this.ns8Core.$root.$off("get-status-completed");
       this.status = taskResult.output;
       this.loading.status = false;
     },

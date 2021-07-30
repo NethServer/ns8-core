@@ -1,5 +1,4 @@
-import NsEmptyState from "../components/NsEmptyState.vue";
-import Gear from "../components/pictograms/Gear";
+import { NsEmptyState, Gear } from "@nethserver/ns8-ui-lib";
 
 export default {
   title: "Components/NsEmptyState",

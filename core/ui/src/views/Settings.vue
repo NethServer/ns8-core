@@ -66,18 +66,15 @@
 </template>
 
 <script>
-import TaskService from "@/mixins/task";
-// import to from "await-to-js"; ////
-import UtilService from "@/mixins/util";
-import NsTile from "@/components/NsTile";
-import IconService from "@/mixins/icon";
-import QueryParamService from "@/mixins/queryParam";
-
-let nethserver = window.nethserver;
+import {
+  QueryParamService,
+  UtilService,
+  TaskService,
+  IconService,
+} from "@nethserver/ns8-ui-lib";
 
 export default {
   name: "Settings",
-  components: { NsTile },
   mixins: [TaskService, UtilService, IconService, QueryParamService],
   data() {
     return {
@@ -89,13 +86,13 @@ export default {
   beforeRouteEnter(to, from, next) {
     next((vm) => {
       console.log("beforeRouteEnter", to, from); ////
-      nethserver.watchQueryData(vm);
-      vm.queryParamsToData(vm, to.query);
+      vm.watchQueryData(vm);
+      vm.queryParamsToDataForCore(vm, to.query);
     });
   },
   beforeRouteUpdate(to, from, next) {
     console.log("beforeRouteUpdate", to, from); ////
-    this.queryParamsToData(this, to.query);
+    this.queryParamsToDataForCore(this, to.query);
     next();
   },
   methods: {

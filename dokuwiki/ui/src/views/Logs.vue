@@ -20,14 +20,11 @@
 </template>
 
 <script>
-import NsEmptyState from "@/components/NsEmptyState";
-import Bulldozer from "../components/pictograms/Bulldozer";
-
-let nethserver = window.nethserver;
+import { QueryParamService } from "@nethserver/ns8-ui-lib";
 
 export default {
   name: "Logs",
-  components: { NsEmptyState, Bulldozer },
+  mixins: [QueryParamService],
   data() {
     return {
       q: {
@@ -38,8 +35,8 @@ export default {
   },
   beforeRouteEnter(to, from, next) {
     next((vm) => {
-      nethserver.watchQueryData(vm);
-      vm.urlCheckInterval = nethserver.initUrlBinding(vm, vm.q.page);
+      vm.watchQueryData(vm);
+      vm.urlCheckInterval = vm.initUrlBindingForApp(vm, vm.q.page);
     });
   },
   beforeRouteLeave(to, from, next) {

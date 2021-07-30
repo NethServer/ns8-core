@@ -252,21 +252,17 @@
 </template>
 
 <script>
-import TaskService from "@/mixins/task";
 import to from "await-to-js";
-import UtilService from "@/mixins/util";
-import IconService from "@/mixins/icon";
-import QueryParamService from "@/mixins/queryParam";
-import NsEmptyState from "@/components/NsEmptyState";
-import NsButton from "@/components/NsButton";
-import DataTableService from "../mixins/dataTable";
-import NsInlineNotification from "../components/NsInlineNotification.vue";
-
-let nethserver = window.nethserver;
+import {
+  QueryParamService,
+  UtilService,
+  TaskService,
+  IconService,
+  DataTableService,
+} from "@nethserver/ns8-ui-lib";
 
 export default {
   name: "SettingsSoftwareRepository",
-  components: { NsEmptyState, NsButton, NsInlineNotification },
   mixins: [
     TaskService,
     UtilService,
@@ -312,12 +308,12 @@ export default {
   },
   beforeRouteEnter(to, from, next) {
     next((vm) => {
-      nethserver.watchQueryData(vm);
-      vm.queryParamsToData(vm, to.query);
+      vm.watchQueryData(vm);
+      vm.queryParamsToDataForCore(vm, to.query);
     });
   },
   beforeRouteUpdate(to, from, next) {
-    this.queryParamsToData(this, to.query);
+    this.queryParamsToDataForCore(this, to.query);
     next();
   },
   created() {
@@ -357,7 +353,7 @@ export default {
       this.$root.$on(taskAction + "-completed", this.listRepositoriesCompleted);
 
       const res = await to(
-        this.createTask({
+        this.createClusterTask({
           action: taskAction,
           extra: {
             title: this.$t("action." + taskAction),
@@ -422,7 +418,7 @@ export default {
       this.$root.$on(taskAction + "-completed", this.addRepositoriesCompleted);
 
       const res = await to(
-        this.createTask({
+        this.createClusterTask({
           action: taskAction,
           data: {
             name: this.q.newRepoName,
@@ -480,7 +476,7 @@ export default {
       this.$root.$on(taskAction + "-completed", this.alterRepositoryCompleted);
 
       const res = await to(
-        this.createTask({
+        this.createClusterTask({
           action: taskAction,
           data: {
             name: this.q.editRepoName,
@@ -532,7 +528,7 @@ export default {
       this.$root.$on(taskAction + "-completed", this.removeRepositoryCompleted);
 
       const res = await to(
-        this.createTask({
+        this.createClusterTask({
           action: taskAction,
           data: {
             name: repo.name,

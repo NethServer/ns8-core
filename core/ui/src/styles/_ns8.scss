@@ -49,6 +49,23 @@ a {
   background-color: transparent;
   padding: 0;
 }
+
+.bx--toast-notification .bx--inline-notification__action-button.bx--btn--ghost {
+  // branding color
+  color: $inverse-link;
+}
+
+.notification-drawer
+  .cv-notifiation.bx--toast-notification.notification.notification-read {
+  // branding color
+  border-color: $ui-04;
+}
+
+.cv-notifiation .timestamp button {
+  @include carbon--type-style("body-short-01");
+  // branding color
+  color: $active-ui;
+}
 // end vue-toastification
 
 .page-title {
@@ -406,6 +423,32 @@ a.bx--side-nav__link--current .bx--side-nav__link-text {
 .no-pad-modal .bx--modal-content {
   padding-right: 1rem !important;
 }
+
+// branding colors for NsProgressBar
+.progress-bar-container .line,
+.progress-bar-container .progress-line,
+.progress-bar-container .indeterminate-line,
+.progress-bar-container .indeterminate-subline {
+  background: $interactive-01;
+}
+// end branding colors for NsProgressBar
+
+// colors for NsStatusCard and NsSystemdServiceCard
+.status-card .success-icon,
+.service-card .success-icon {
+  color: $support-02;
+}
+
+.status-card .error-icon,
+.service-card .error-icon {
+  color: $danger-01;
+}
+
+.status-card .warning-icon,
+.service-card .warning-icon {
+  color: $support-03;
+}
+// end colors for NsStatusCard and NsSystemdServiceCard
 
 // styles for small devices
 @media (max-width: $breakpoint-large) {

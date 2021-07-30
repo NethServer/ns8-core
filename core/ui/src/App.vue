@@ -15,16 +15,21 @@ import ShellHeader from "./components/ShellHeader";
 import SideMenu from "./components/SideMenu";
 import MobileSideMenu from "./components/MobileSideMenu";
 import axios from "axios";
-import StorageService from "@/mixins/storage";
 import WebSocketService from "@/mixins/websocket";
 import { mapState } from "vuex";
 import { mapActions } from "vuex";
 import to from "await-to-js";
 import LoginService from "@/mixins/login";
 import TaskErrorModal from "@/components/TaskErrorModal";
-import TaskService from "@/mixins/task";
 import NotificationService from "@/mixins/notification";
-import UtilService from "@/mixins/util";
+import {
+  UtilService,
+  TaskService,
+  StorageService,
+} from "@nethserver/ns8-ui-lib";
+
+//// package.json local ui lib:
+//// "@nethserver/ns8-ui-lib": "/home/andre/git/ns8-ui-lib",
 
 export default {
   name: "App",
@@ -49,10 +54,10 @@ export default {
     // register to events
     this.$root.$on("login", this.initNs8);
     this.$root.$on("logout", this.logout);
-    this.$root.$on("createNotificationForApp", this.createNotificationForApp);
+    // this.$root.$on("createNotificationForApp", this.createNotificationForApp); //// not used?
     this.$root.$on(
-      "createTaskErrorNotificationForApp",
-      this.createTaskErrorNotificationForApp
+      "createTaskErrorNotification",
+      this.createTaskErrorNotification
     );
 
     this.configureAxiosInterceptors();
@@ -125,7 +130,7 @@ export default {
       this.$root.$on(taskAction + "-completed", this.listUpdatesCompleted);
 
       const res = await to(
-        this.createTask({
+        this.createClusterTask({
           action: taskAction,
           extra: {
             title: this.$t("action." + taskAction),
@@ -163,13 +168,20 @@ export default {
 
       this.setUpdatesInStore(updates);
     },
-    createNotificationForApp(notification) {
-      // create a notification as requested by an external app
+    // createNotificationForApp(notification) { //// not used?
+    //   // create a notification as requested by an external app
+    //   this.createNotification(notification);
+    // },
+    createTaskErrorNotification(err, message) {
+      // create a task error notification as requested by an external app ////
+      // this.createTaskErrorNotification(err, message); ////
+
+      const notification = {
+        title: message,
+        description: this.getErrorMessage(err),
+        type: "error",
+      };
       this.createNotification(notification);
-    },
-    createTaskErrorNotificationForApp(err, message) {
-      // create a task error notification as requested by an external app
-      this.createTaskErrorNotification(err, message);
     },
   },
 };

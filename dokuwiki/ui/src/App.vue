@@ -12,15 +12,21 @@
 import AppSideMenu from "./components/AppSideMenu";
 import AppMobileSideMenu from "./components/AppMobileSideMenu";
 import { mapActions } from "vuex";
+import { QueryParamService } from "@nethserver/ns8-ui-lib";
 
-let nethserver = window.nethserver;
+//// package.json local ui lib:
+//// "@nethserver/ns8-ui-lib": "/home/andre/git/ns8-ui-lib",
 
 export default {
   name: "App",
-  components: { AppSideMenu, AppMobileSideMenu /*Ns8TestLibrarySample*/ },
+  components: { AppSideMenu, AppMobileSideMenu },
+  mixins: [QueryParamService],
   created() {
-    // register to events
-    this.$root.$on("appNavigation", this.onAppNavigation);
+    const ns8Core = window.parent.ns8;
+    this.setNs8CoreInStore(ns8Core);
+
+    const appInstance = /#\/apps\/(\w+)/.exec(window.parent.location.hash)[1];
+    this.setInstanceNameInStore(appInstance);
 
     // listen to change route events
     const context = this;
@@ -33,22 +39,15 @@ export default {
       false
     );
 
-    const queryParams = nethserver.getQueryParamsForApp();
+    const queryParams = this.getQueryParamsForApp();
     const requestedPage = queryParams.page || "status";
 
     if (requestedPage != "status") {
       this.$router.replace(requestedPage);
     }
   },
-  beforeDestroy() {
-    // remove event listener
-    this.$root.$off("appNavigation");
-  },
   methods: {
-    ...mapActions(["setInstanceNameInStore"]),
-    onAppNavigation(appInstance) {
-      this.setInstanceNameInStore(appInstance);
-    },
+    ...mapActions(["setInstanceNameInStore", "setNs8CoreInStore"]),
   },
 };
 </script>

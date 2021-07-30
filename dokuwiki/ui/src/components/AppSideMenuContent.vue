@@ -47,8 +47,7 @@ import Catalog20 from "@carbon/icons-vue/es/catalog/20";
 import Information20 from "@carbon/icons-vue/es/information/20";
 import Activity20 from "@carbon/icons-vue/es/activity/20";
 import { mapState } from "vuex";
-
-let nethserver = window.nethserver;
+import { QueryParamService } from "@nethserver/ns8-ui-lib";
 
 export default {
   name: "AppSideMenuContent",
@@ -58,13 +57,14 @@ export default {
     Information20,
     Activity20,
   },
+  mixins: [QueryParamService],
   data() {
     return {
       instanceNameSkeletonWidth: "70%",
     };
   },
   computed: {
-    ...mapState(["instanceName"]),
+    ...mapState(["instanceName", "ns8Core"]),
   },
   created() {
     // register to appNavigation event
@@ -76,24 +76,23 @@ export default {
   },
   methods: {
     isLinkActive(page) {
-      return nethserver.getPage() === page;
+      return this.getPage() === page;
     },
-    //// move to mixin
     goToPath(path) {
-      if (window.parent.ns8.$route.fullPath != path) {
-        window.parent.ns8.$router.push(path);
+      if (this.ns8Core.$route.fullPath != path) {
+        this.ns8Core.$router.push(path);
       }
       this.$forceUpdate();
     },
     goToPage(page) {
       const path = `/apps/${this.instanceName}?page=${page}`;
 
-      if (window.parent.ns8.$route.fullPath != path) {
-        window.parent.ns8.$router.push(path);
+      if (this.ns8Core.$route.fullPath != path) {
+        this.ns8Core.$router.push(path);
       }
     },
     onAppNavigation() {
-      // update current page highlight in side menu
+      // highlight current page in side menu
       this.$forceUpdate();
     },
   },

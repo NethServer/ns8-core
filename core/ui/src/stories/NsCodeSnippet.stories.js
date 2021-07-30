@@ -1,4 +1,4 @@
-import NsCodeSnippet from "../components/NsCodeSnippet.vue";
+import { NsCodeSnippet } from "@nethserver/ns8-ui-lib";
 
 export default {
   title: "Components/NsCodeSnippet",
@@ -23,6 +23,18 @@ const Template = (args, { argTypes }) => ({
 
 export const Default = Template.bind({});
 Default.args = {
+  wrapText: true,
+  expanded: false,
+  hideCopyButton: false,
+  lessText: "Show less",
+  moreText: "Show more",
+  hideExpandButton: false,
+  copyTooltip: "Copy to clipboard",
+  copyFeedback: "Copied",
+  copyTipPosition: "bottom",
+  copyTipAlignment: "end",
+  disabled: false,
+  light: false,
   slotContent: `Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
 Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. 
 Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
@@ -36,6 +48,17 @@ Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil 
 
 export const OneLine = Template.bind({});
 OneLine.args = {
-  slotContent: `let foo = "bar";`,
   hideExpandButton: true,
+  wrapText: true,
+  expanded: false,
+  hideCopyButton: false,
+  lessText: "Show less",
+  moreText: "Show more",
+  copyTooltip: "Copy to clipboard",
+  copyFeedback: "Copied",
+  copyTipPosition: "bottom",
+  copyTipAlignment: "end",
+  disabled: false,
+  light: false,
+  slotContent: `let foo = "bar";`,
 };

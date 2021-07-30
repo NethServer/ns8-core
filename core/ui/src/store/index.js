@@ -193,6 +193,10 @@ function searchTask(taskId, tasks) {
   let subTasks = [];
 
   for (const task of tasks) {
+    if (!task) {
+      continue;
+    }
+
     if (task.context && task.context.id === taskId) {
       return task;
     } else {
