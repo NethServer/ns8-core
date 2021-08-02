@@ -5,9 +5,9 @@
         <h2>{{ $t("logs.title") }}</h2>
       </div>
     </div>
-    <div class="bx--row">
-      <div class="bx--col-md-8">
-        <cv-tile :light="true" class="content-tile">
+    <cv-tile :light="true" class="content-tile">
+      <div class="bx--row">
+        <div class="bx--col-md-8">
           <cv-form @submit.prevent="searchLogs">
             <div>
               <cv-date-picker
@@ -114,6 +114,10 @@
               >
             </div>
           </cv-form>
+        </div>
+      </div>
+      <div class="bx--row">
+        <div class="bx--col-md-8">
           <NsInlineNotification
             v-if="error.auditLogs"
             kind="error"
@@ -121,6 +125,10 @@
             :description="error.auditLogs"
             :showCloseButton="false"
           />
+        </div>
+      </div>
+      <div class="bx--row">
+        <div class="bx--col-md-8">
           <NsEmptyState
             v-if="!this.tableRows.length && !loading.auditLogs"
             :title="$t('logs.no_logs_found')"
@@ -192,9 +200,9 @@
               </template></cv-data-table
             >
           </div>
-        </cv-tile>
+        </div>
       </div>
-    </div>
+    </cv-tile>
   </div>
 </template>
 
@@ -431,11 +439,11 @@ export default {
 
 .interval-date {
   display: inline-flex;
+  margin-right: $spacing-06;
 }
 
 .interval-time {
   display: inline-flex;
-  margin-left: $spacing-06;
 }
 
 .audit-info-expanded {
