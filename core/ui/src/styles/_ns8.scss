@@ -10,6 +10,18 @@ body {
   background-color: $ui-01;
 }
 
+@media (max-width: $breakpoint-large) {
+  // remove left margin because side menu is not shown on smaller screens
+  .bx--content {
+    margin-left: 0 !important;
+  }
+
+  // core side menu is collapsed on smaller screens
+  .app-content {
+    margin-left: $side-menu-collapsed-width !important;
+  }
+}
+
 a {
   cursor: pointer;
 }
@@ -38,6 +50,7 @@ a {
 // vue-toastification
 .Vue-Toastification__toast {
   border-radius: 0 !important;
+  min-width: 16rem !important; //// use variable of small-screen notif width
 }
 
 .Vue-Toastification__container.top-right.toastification-container {
@@ -59,6 +72,31 @@ a {
   .cv-notifiation.bx--toast-notification.notification.notification-read {
   // branding color
   border-color: $ui-04;
+}
+
+.cv-notifiation.bx--toast-notification.notification {
+  // let small screens use a narrow notification drawer
+  min-width: 0 !important;
+  // all notifications have the same width
+  width: 25rem !important;
+}
+
+@media (max-width: $breakpoint-large) {
+  .cv-notifiation.bx--toast-notification.notification {
+    // reduce notifications width on medium screens
+    width: 20rem !important;
+  }
+
+  .notification-drawer .cv-notifiation.bx--toast-notification.notification {
+    width: 100% !important;
+  }
+}
+
+@media (max-width: $breakpoint-medium) {
+  .cv-notifiation.bx--toast-notification.notification {
+    // reduce notifications width on medium screens
+    width: 100% !important;
+  }
 }
 
 .cv-notifiation .timestamp button {
@@ -281,6 +319,55 @@ a.bx--side-nav__link--current .bx--side-nav__link-text {
 }
 // end side menu
 
+// app side menu
+.app-content {
+  margin-left: $side-menu-width !important;
+}
+
+.bx--side-nav.app-side-nav {
+  background-color: $interactive-02;
+}
+
+.app-side-menu-content .cv-side-nav-item-link.bx--side-nav__link:hover {
+  background-color: $ui-05 !important;
+}
+
+.app-side-nav .bx--side-nav__items {
+  padding-top: 0;
+}
+
+.app-side-menu-content .current-page {
+  background-color: $ui-05;
+}
+
+.app-side-menu-content .current-page a::before {
+  background-color: $inverse-support-04;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 4px;
+  content: "";
+}
+
+@media (max-width: $breakpoint-large) {
+  // collapse app side nav on smaller screens...
+  .app-side-nav {
+    width: $side-menu-collapsed-width;
+  }
+
+  // ...but expand it on hover
+  .app-side-nav:hover {
+    width: $side-menu-width;
+  }
+
+  // hide instance name when app side menu is collapsed
+  .instance-name {
+    display: none !important;
+  }
+}
+// end app side menu
+
 // app drawer
 .app-drawer .bx--structured-list-td,
 .app-drawer .empty-state {
@@ -453,65 +540,6 @@ a.bx--side-nav__link--current .bx--side-nav__link-text {
   color: $support-03;
 }
 // end colors for NsStatusCard and NsSystemdServiceCard
-
-// app side menu
-.app-content {
-  margin-left: $side-menu-width !important;
-}
-
-.bx--side-nav.app-side-nav {
-  background-color: $interactive-02;
-}
-
-.app-side-menu-content .cv-side-nav-item-link.bx--side-nav__link:hover {
-  background-color: $ui-05 !important;
-}
-
-.app-side-nav .bx--side-nav__items {
-  padding-top: 0;
-}
-
-.app-side-menu-content .current-page {
-  background-color: $ui-05;
-}
-
-.app-side-menu-content .current-page a::before {
-  background-color: $inverse-support-04;
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  width: 4px;
-  content: "";
-}
-// end app side menu
-
-// styles for small devices
-@media (max-width: $breakpoint-large) {
-  // remove left margin because side menu is not shown
-  .bx--content {
-    margin-left: 0 !important;
-  }
-
-  .app-content {
-    margin-left: $side-menu-collapsed-width !important;
-  }
-
-  // collapse app side nav...
-  .app-side-nav {
-    width: $side-menu-collapsed-width;
-  }
-
-  // ...but expand it on hover
-  .app-side-nav:hover {
-    width: $side-menu-width;
-  }
-
-  // hide instance name when app side menu is collapsed
-  .instance-name {
-    display: none !important;
-  }
-}
 
 // styles for large devices
 @media (min-width: $breakpoint-large) {

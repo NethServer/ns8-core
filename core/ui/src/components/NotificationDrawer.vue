@@ -136,7 +136,6 @@ export default {
   border-left: 1px solid $interactive-02;
   color: $ui-01;
   width: $notification-drawer-width;
-  // min-width: 20rem; ////
   height: calc(100vh - 3rem);
   position: fixed;
   top: 3rem;
@@ -178,5 +177,16 @@ export default {
   line-height: 1.34;
   letter-spacing: 0.32px;
   color: $active-ui;
+}
+
+@media (max-width: $breakpoint-medium) {
+  .slide-notifications-enter,
+  .slide-notifications-leave-to {
+    transform: translateX($notification-drawer-width-small-screen);
+  }
+
+  .notification-drawer {
+    width: $notification-drawer-width-small-screen;
+  }
 }
 </style>
