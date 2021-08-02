@@ -1,5 +1,5 @@
 <template>
-  <cv-side-nav id="side-nav" fixed expanded class="app-side-nav">
+  <cv-side-nav id="app-side-nav" fixed expanded class="app-side-nav">
     <AppSideMenuContent />
   </cv-side-nav>
 </template>

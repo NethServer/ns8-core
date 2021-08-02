@@ -275,6 +275,10 @@ a.bx--side-nav__link[aria-current="page"] .bx--side-nav__link-text,
 a.bx--side-nav__link--current .bx--side-nav__link-text {
   color: $ui-01;
 }
+
+.bx--side-nav--rail {
+  width: $side-menu-collapsed-width;
+}
 // end side menu
 
 // app drawer
@@ -463,15 +467,6 @@ a.bx--side-nav__link--current .bx--side-nav__link-text {
   background-color: $ui-05 !important;
 }
 
-// extra space between core side menu icons and app menu icons
-.app-side-menu-content a.bx--side-nav__link,
-.app-side-menu-content .bx--side-nav a.bx--header__menu-item,
-.app-side-menu-content .bx--side-nav
-  .bx--header__menu-title[aria-expanded="true"]
-  + .bx--header__menu {
-  padding-left: $spacing-06;
-}
-
 .app-side-nav .bx--side-nav__items {
   padding-top: 0;
 }
@@ -496,6 +491,25 @@ a.bx--side-nav__link--current .bx--side-nav__link-text {
   // remove left margin because side menu is not shown
   .bx--content {
     margin-left: 0 !important;
+  }
+
+  .app-content {
+    margin-left: $side-menu-collapsed-width !important;
+  }
+
+  // collapse app side nav...
+  .app-side-nav {
+    width: $side-menu-collapsed-width;
+  }
+
+  // ...but expand it on hover
+  .app-side-nav:hover {
+    width: $side-menu-width;
+  }
+
+  // hide instance name when app side menu is collapsed
+  .instance-name {
+    display: none !important;
   }
 }
 

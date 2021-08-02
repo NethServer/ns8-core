@@ -135,7 +135,7 @@ export default {
   background-color: $ui-05;
   border-left: 1px solid $interactive-02;
   color: $ui-01;
-  width: $notification-drawer-width; //// fixed to 16rem?
+  width: $notification-drawer-width;
   // min-width: 20rem; ////
   height: calc(100vh - 3rem);
   position: fixed;

@@ -1,5 +1,5 @@
 <template>
-  <div class= "app-side-menu-content">
+  <div class="app-side-menu-content">
     <div class="instance-name">
       <span v-if="instanceName">{{ instanceName }}</span>
       <cv-skeleton-text
@@ -102,7 +102,7 @@ export default {
 <style scoped lang="scss">
 .instance-name {
   height: 3rem;
-  padding-left: 1.5rem;
+  padding-left: 1rem;
   margin-top: 1rem;
   display: flex;
   align-items: center;
