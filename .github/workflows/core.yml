@@ -47,3 +47,20 @@ jobs:
           trap 'buildah logout ghcr.io' EXIT
           buildah login -u ${{ github.actor }} --password-stdin ghcr.io <<<"${{ secrets.GITHUB_TOKEN }}"
           for image in ${{ steps.build.outputs.images }} ; do buildah push $image docker://${image}:${IMAGETAG:-latest} ; done
+  test_image:
+    needs: push_image
+    name: "Test ${{ github.workflow }}"
+    runs-on: [self-hosted, ns8-runner]
+    steps:
+      - id: checkout
+        uses: actions/checkout@v2
+      - id: test
+        name: "Run the tests suite"
+        run: |
+          # Run the tests suite
+          set -x
+          sudo pip install robotframework
+          ssh root@127.0.0.1 <<EOF
+          cd ${PWD}/${{ github.workflow }}
+          exec robot -d /srv/webroot/run-${{ github.run_id }} tests
+          EOF
