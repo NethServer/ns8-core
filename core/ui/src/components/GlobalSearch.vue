@@ -1,11 +1,14 @@
 <template>
   <div class="global-search" v-click-outside="clickOutside">
-    <cv-text-input
+    <cv-search
+      :label="$t('shell.search_placeholder')"
       :placeholder="$t('shell.search_placeholder')"
-      ref="search"
-      @input="inputSearch"
+      :clear-aria-label="$t('common.clear_search')"
       v-model="query"
-    />
+      v-debounce="search"
+      ref="search"
+    >
+    </cv-search>
     <div v-if="showResults" class="search-results">
       <NsEmptyState
         v-if="!results.length"
@@ -47,8 +50,6 @@
 <script>
 import Settings20 from "@carbon/icons-vue/es/settings/20";
 import { UtilService } from "@nethserver/ns8-ui-lib";
-
-//// use vue-debounce?
 
 export default {
   name: "GlobalSearch",
@@ -119,7 +120,7 @@ export default {
         this.$emit("closeSearch");
       }
     },
-    inputSearch() {
+    search() {
       // clean query
       const cleanRegex = /[^a-zA-Z0-9]/g;
       const queryText = this.query.replace(cleanRegex, "");
@@ -162,9 +163,23 @@ export default {
 @import "../styles/carbon-utils";
 
 .global-search {
-  width: 100%;
+  width: 30rem;
   background-color: $ui-05;
   color: $ui-01;
+}
+
+@media (max-width: $breakpoint-large) {
+  .global-search {
+    width: 75%;
+  }
+}
+
+@media (max-width: $breakpoint-medium) {
+  .global-search {
+    position: absolute;
+    top: 3rem;
+    width: 100%;
+  }
 }
 
 .global-search .search-results {

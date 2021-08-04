@@ -219,11 +219,19 @@ a {
 .global-search input {
   background-color: $ui-05 !important;
   color: $ui-01 !important;
-  margin-top: 3px; //// fix
 }
 
 .global-search label {
   display: none;
+}
+
+.global-search .bx--search-close {
+  display: none;
+  // fill: $ui-01; ////
+}
+
+.global-search .bx--search-close:hover, .bx--search-button:hover {
+  background-color: $interactive-02;
 }
 
 .global-search .bx--structured-list {
