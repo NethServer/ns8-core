@@ -230,7 +230,8 @@ a {
   // fill: $ui-01; ////
 }
 
-.global-search .bx--search-close:hover, .bx--search-button:hover {
+.global-search .bx--search-close:hover,
+.bx--search-button:hover {
   background-color: $interactive-02;
 }
 
@@ -525,6 +526,22 @@ a.bx--side-nav__link--current .bx--side-nav__link-text {
 
 .table-overflow-menu {
   margin: 0 auto;
+}
+
+// show data table pagination in smaller screens too
+.cv-data-table
+  .bx--pagination__left
+  .cv-select.bx--form-item.bx--select__item-count {
+  display: flex !important;
+}
+.cv-data-table .bx--pagination__right .bx--pagination__button {
+  display: flex !important;
+}
+.cv-data-table .bx--pagination__right .bx--select__page-number {
+  display: flex !important;
+}
+.cv-data-table .bx--pagination__right .bx--pagination__text {
+  display: inline-block !important;
 }
 // end data table
 
