@@ -100,12 +100,4 @@ export default {
 </script>
 
 <style scoped lang="scss">
-.instance-name {
-  height: 3rem;
-  padding-left: 1rem;
-  margin-top: 1rem;
-  display: flex;
-  align-items: center;
-  font-weight: 600;
-}
 </style>

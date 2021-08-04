@@ -5,6 +5,16 @@
         <h2>{{ $t("logs.title") }}</h2>
       </div>
     </div>
+    <div class="bx--row">
+      <div class="bx--col-lg-16">
+        <NsInlineNotification
+          class="landscape-warning"
+          kind="warning"
+          :title="$t('common.use_landscape_mode')"
+          :description="$t('common.use_landscape_mode_description')"
+        />
+      </div>
+    </div>
     <cv-tile :light="true" class="content-tile">
       <div class="bx--row">
         <div class="bx--col-md-8">
@@ -167,27 +177,27 @@
                   <cv-data-table-cell>{{ row.user }}</cv-data-table-cell>
                   <cv-data-table-cell>{{ row.action }}</cv-data-table-cell>
                   <cv-data-table-cell
-                    :class="{ 'audit-info-expanded': !row.auditInfoExpanded }"
+                    :class="{ 'audit-info-collapsed': row.auditInfoCollapsed }"
                   >
                     <cv-icon-button
                       v-if="row.auditInfo"
                       kind="ghost"
                       size="sm"
                       :icon="
-                        row.auditInfoExpanded ? RowCollapse20 : RowExpand20
+                        row.auditInfoCollapsed ? RowExpand20 : RowCollapse20
                       "
                       :label="
-                        row.auditInfoExpanded
-                          ? $t('common.collapse')
-                          : $t('common.expand')
+                        row.auditInfoCollapsed
+                          ? $t('common.expand')
+                          : $t('common.collapse')
                       "
-                      @click="row.auditInfoExpanded = !row.auditInfoExpanded"
+                      @click="row.auditInfoCollapsed = !row.auditInfoCollapsed"
                       tip-position="left"
                       class="expand-audit-info-button"
                     />
                     <code>
                       <pre
-                        v-if="row.auditInfoExpanded"
+                        v-if="!row.auditInfoCollapsed"
                         class="audit-info-pre"
                         >{{ tryParseJson(row.auditInfo) }}</pre
                       >
@@ -423,7 +433,7 @@ export default {
           user: audit.user,
           action: audit.action,
           auditInfo: audit.data ? audit.data : "",
-          auditInfoExpanded: false,
+          auditInfoCollapsed: true,
           id: audit.id,
         };
       });
@@ -446,7 +456,7 @@ export default {
   display: inline-flex;
 }
 
-.audit-info-expanded {
+.audit-info-collapsed {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

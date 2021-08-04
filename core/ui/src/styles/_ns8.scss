@@ -5,20 +5,20 @@ body {
   height: calc(100vh - 3rem);
 }
 
-#app {
+#ns8-core {
   height: 100%;
   background-color: $ui-01;
 }
 
+.bx--grid.no-padding {
+  padding-left: 0;
+  padding-right: 0;
+}
+
 @media (max-width: $breakpoint-large) {
   // remove left margin because side menu is not shown on smaller screens
-  .bx--content {
-    margin-left: 0 !important;
-  }
-
-  // core side menu is collapsed on smaller screens
-  .app-content {
-    margin-left: $side-menu-collapsed-width !important;
+  #ns8-core .bx--content {
+    margin-left: 0;
   }
 }
 
@@ -45,6 +45,14 @@ a {
 
 .mg-bottom-md {
   margin-bottom: $spacing-05 !important;
+}
+
+@media (max-width: $breakpoint-medium) {
+  // reduce product name font size and padding on smaller screens
+  .cv-header .cv-header-name {
+    font-size: 0.8rem;
+    padding-right: $spacing-05;
+  }
 }
 
 // vue-toastification
@@ -123,7 +131,7 @@ a {
 
 .toolbar {
   display: flex;
-  justify-content: flex-end;
+  // justify-content: flex-end; ////
   align-items: center;
 }
 
@@ -135,6 +143,24 @@ a {
 
 .content-tile {
   margin-bottom: $spacing-05;
+}
+
+.mg-bottom-sm {
+  margin-bottom: $spacing-03;
+}
+
+// used to center flex items in responsive rows
+.align-items-center {
+  align-items: center;
+}
+
+.icon-and-text {
+  display: flex;
+  align-items: center;
+}
+
+.icon-and-text .icon {
+  margin-right: $spacing-03;
 }
 
 .empty-state-button {
@@ -320,8 +346,15 @@ a.bx--side-nav__link--current .bx--side-nav__link-text {
 // end side menu
 
 // app side menu
-.app-content {
-  margin-left: $side-menu-width !important;
+#ns8-app .app-content {
+  margin-left: $side-menu-width;
+}
+
+@media (max-width: $breakpoint-large) {
+  // core side menu is collapsed on smaller screens
+  #ns8-app .app-content {
+    margin-left: $side-menu-collapsed-width;
+  }
 }
 
 .bx--side-nav.app-side-nav {
@@ -334,6 +367,15 @@ a.bx--side-nav__link--current .bx--side-nav__link-text {
 
 .app-side-nav .bx--side-nav__items {
   padding-top: 0;
+}
+
+.app-side-menu-content .instance-name {
+  height: 3rem;
+  padding-left: 1rem;
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  font-weight: 600;
 }
 
 .app-side-menu-content .current-page {
@@ -362,7 +404,7 @@ a.bx--side-nav__link--current .bx--side-nav__link-text {
   }
 
   // hide instance name when app side menu is collapsed
-  .instance-name {
+  .app-side-menu-content .instance-name {
     display: none !important;
   }
 }
@@ -548,5 +590,16 @@ a.bx--side-nav__link--current .bx--side-nav__link-text {
   .bx--text-input__field-wrapper,
   .cv-multi-select {
     max-width: $breakpoint-medium;
+  }
+}
+
+// warning for pages optimized for landscape mode (e.g. pages containing tables)
+.landscape-warning {
+  display: none;
+}
+@media (max-width: 639px) {
+  // show warning only for screens smaller than 640px
+  .landscape-warning {
+    display: block;
   }
 }

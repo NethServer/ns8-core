@@ -23,7 +23,9 @@
     "disabled": "Disabled",
     "edit": "Edit",
     "delete": "Delete",
-    "required": "Required"
+    "required": "Required",
+    "use_landscape_mode": "Rotate your device",
+    "use_landscape_mode_description": "This page is optimized for landscape mode"
   },
   "error": {
     "error": "Error",
@@ -156,6 +158,7 @@
     "cannot_retrieve_cluster_nodes": "Cannot retrieve cluster nodes",
     "installing_on_node": "Installing on node {node}",
     "instance_installed_on_node": "{instance} installed on node {node}",
+    "app_instances": "{app} instances",
     "app_categories": {
       "collaboration": "Collaboration",
       "system_administration": "System administration",

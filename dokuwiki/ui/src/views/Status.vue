@@ -6,7 +6,7 @@
       </div>
     </div>
     <div class="bx--row">
-      <div class="bx--col-lg-8 bx--col-max-4">
+      <div class="bx--col-md-4 bx--col-max-4">
         <!-- //// delete -->
         <!-- <cv-text-input label="qwerty" v-model.trim="q.test" class="mg-bottom"> -->
         <!-- </cv-text-input> -->
@@ -27,7 +27,7 @@
           ></cv-skeleton-text>
         </cv-tile>
       </div>
-      <div class="bx--col-lg-8 bx--col-max-4">
+      <div class="bx--col-md-4 bx--col-max-4">
         <NsInfoCard
           v-if="!loading.status"
           light
@@ -61,7 +61,7 @@
         v-else
         v-for="(service, index) in status.services"
         :key="index"
-        class="bx--col-lg-8 bx--col-max-4"
+        class="bx--col-md-4 bx--col-max-4"
       >
         <NsSystemdServiceCard
           light
@@ -76,7 +76,7 @@
       </div>
     </div>
     <div v-else class="bx--row">
-      <div class="bx--col-lg-8 bx--col-max-4">
+      <div class="bx--col-md-4 bx--col-max-4">
         <cv-tile light class="content-tile">
           <cv-skeleton-text
             :paragraph="true"
@@ -123,7 +123,7 @@
                   <cv-structured-list-data>{{
                     image.size
                   }}</cv-structured-list-data>
-                  <cv-structured-list-data>{{
+                  <cv-structured-list-data class="break-word">{{
                     image.created
                   }}</cv-structured-list-data>
                 </cv-structured-list-item>
@@ -315,5 +315,6 @@ export default {
 
 .break-word {
   word-wrap: break-word;
+  max-width: 30vw;
 }
 </style>

@@ -1,5 +1,5 @@
 <template>
-  <div id="app">
+  <div id="ns8-core">
     <ShellHeader v-if="loggedUser" />
     <SideMenu v-if="loggedUser" />
     <MobileSideMenu v-if="loggedUser" />
@@ -54,7 +54,6 @@ export default {
     // register to events
     this.$root.$on("login", this.initNs8);
     this.$root.$on("logout", this.logout);
-    // this.$root.$on("createNotificationForApp", this.createNotificationForApp); //// not used?
     this.$root.$on(
       "createTaskErrorNotification",
       this.createTaskErrorNotification
@@ -168,14 +167,7 @@ export default {
 
       this.setUpdatesInStore(updates);
     },
-    // createNotificationForApp(notification) { //// not used?
-    //   // create a notification as requested by an external app
-    //   this.createNotification(notification);
-    // },
     createTaskErrorNotification(err, message) {
-      // create a task error notification as requested by an external app ////
-      // this.createTaskErrorNotification(err, message); ////
-
       const notification = {
         title: message,
         description: this.getErrorMessage(err),

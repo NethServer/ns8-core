@@ -1,5 +1,5 @@
 <template>
-  <div id="app">
+  <div id="ns8-app">
     <cv-content id="main-content" class="app-content">
       <AppSideMenu />
       <AppMobileSideMenu />

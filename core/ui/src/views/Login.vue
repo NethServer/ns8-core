@@ -220,16 +220,13 @@ export default {
 @import "../styles/carbon-utils";
 
 .login-bg {
-  height: calc(100vh - 3rem);
+  height: 100vh;
   background-color: $interactive-02;
 }
 
 .login-tile {
-  margin-top: $spacing-13;
+  margin-top: 25vh;
   padding-bottom: 0;
-}
-
-.login-title {
   margin-bottom: $spacing-03;
 }
 

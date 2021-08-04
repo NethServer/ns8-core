@@ -102,13 +102,7 @@ export default new Vuex.Store({
       );
 
       if (notificationFound) {
-        // console.log("updating, old", notificationFound); ////
-        // console.log("updating, new", notification); ////
-        notificationFound = _merge(notificationFound, notification); ////
-
-        // mergeNotifications(notificationFound, notification); ////
-
-        // console.log("updated notification", notificationFound); ////
+        notificationFound = _merge(notificationFound, notification);
       }
     },
     setLoggedUser(state, username) {

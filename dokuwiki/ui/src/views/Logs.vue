@@ -5,6 +5,17 @@
         <h2>{{ $t("logs.title") }}</h2>
       </div>
     </div>
+    <!-- //// landscape mode warning needed? -->
+    <!-- <div class="bx--row">
+      <div class="bx--col-lg-16">
+        <NsInlineNotification
+          class="landscape-warning"
+          kind="warning"
+          :title="$t('common.use_landscape_mode')"
+          :description="$t('common.use_landscape_mode_description')"
+        />
+      </div>
+    </div> -->
     <div class="bx--row">
       <div class="bx--col-lg-16">
         <cv-tile :light="true" class="content-tile">

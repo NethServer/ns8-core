@@ -74,10 +74,6 @@ Vue.directive("click-outside", {
   },
 });
 
-// // global mixin for error messages //// remove
-// import ErrorService from "@/mixins/error";
-// Vue.mixin(ErrorService);
-
 Vue.config.productionTip = false;
 
 window.ns8 = new Vue({
@@ -89,4 +85,4 @@ window.ns8 = new Vue({
     this.$root.apiUrl = this.config.API_SCHEME + this.config.API_ENDPOINT;
   },
   render: (h) => h(App),
-}).$mount("#app");
+}).$mount("#ns8-core");
