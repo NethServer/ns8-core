@@ -21,7 +21,7 @@ export default new Vuex.Store({
   getters: {
     unreadNotifications: (state, getters) => {
       return getters.recentNotifications.filter(
-        (notification) => !notification.read
+        (notification) => !notification.isRead
       );
     },
     unreadNotificationsCount: (state, getters) => {
@@ -90,10 +90,10 @@ export default new Vuex.Store({
         (n) => n.id == notificationId
       );
 
-      console.log("set notification read", notification); ////
+      console.log("set notification isRead", notification); ////
 
       if (notification) {
-        notification.read = true;
+        notification.isRead = true;
       }
     },
     updateNotification(state, notification) {

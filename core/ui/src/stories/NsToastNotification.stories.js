@@ -26,7 +26,7 @@ Default.args = {
   actionLabel: "Action",
   lowContrast: false,
   timestamp: new Date(),
-  read: false,
+  isRead: false,
   progress: 0,
   isProgressShown: false,
   closeAriaLabel: "Dismiss notification",
@@ -43,6 +43,6 @@ Progress.args = {
   progress: 75,
   isProgressShown: true,
   timestamp: new Date(),
-  read: false,
+  isRead: false,
   closeAriaLabel: "Dismiss notification",
 };
