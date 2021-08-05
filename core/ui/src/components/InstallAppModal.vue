@@ -121,6 +121,7 @@ export default {
       this.nodes = nodes;
     },
     async installInstance() {
+      const version = this.app.versions[0].tag;
       const taskAction = "add-module";
 
       // register to task completion
@@ -130,7 +131,7 @@ export default {
         this.createClusterTask({
           action: taskAction,
           data: {
-            image: this.app.source + ":latest",
+            image: this.app.source + ":" + version,
             node: parseInt(this.selectedNode.id),
           },
           extra: {
