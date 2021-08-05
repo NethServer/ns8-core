@@ -1,24 +1,32 @@
 *** Settings ***
-Library           OperatingSystem
+Library           SSHLibrary
 
 *** Variables ***
 ${COREBRANCH}     main
+${SSH_KEYFILE}    %{HOME}/.ssh/id_ecdsa
 
 *** Keywords ***
 Install the core
-    # Ensure the file system was cleaned up properly:
-    ${output} =    Run    rm -rf /etc/nethserver /var/lib/nethserver /usr/local/nethserver /home/*[0-9]
-    ${rc} =    Run And Return Rc    bash ${EXECDIR}${/}install.sh ${COREBRANCH} >${OUTPUT DIR}${/}suite.log 2>&1
+    Open Connection    127.0.0.1
+    Login With Public Key    root    ${SSH_KEYFILE}
+    Execute Command    rm -rf install.sh uninstall.sh /etc/nethserver /var/lib/nethserver /usr/local/nethserver /home/*[0-9]
+    Put File    install.sh    .    mode=0644
+    ${rc} =    Execute Command    bash install.sh ${COREBRANCH}
+    ...            return_stdout=False
+    ...            return_stderr=False
+    ...            return_rc=True
     Should Be Equal As Integers    ${rc}    0
-	# Basic post install sanity checks:
+    # Basic post install sanity checks:
     File Should Exist    /etc/nethserver/wg0.key
     File Should Exist    /etc/nethserver/wg0.pub
     File Should Exist    /etc/nethserver/api-server.env
-    ${output} =    Run    systemctl --failed
+    ${output} =     Execute Command    systemctl --failed
     Should Contain    ${output}    0 loaded units listed.
 
 Uninstall core and modules
-    ${output} =    Run    bash /var/lib/nethserver/node/uninstall.sh 2>&1 | tee -a ${OUTPUT DIR}${/}suite.log
+    Put File    imageroot/var/lib/nethserver/node/uninstall.sh    .    mode=0644
+    Execute Command    bash uninstall.sh
+    Close Connection
 
 *** Settings ***
 Suite Setup       Install the core

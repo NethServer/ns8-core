@@ -1,13 +1,13 @@
 *** Settings ***
-Library           OperatingSystem
+Library    SSHLibrary
 
 *** Test Cases ***
 WireGuard device is present
-    ${rc} =    Run And Return Rc    ip link show wg0
+    ${rc} =    Execute Command    ip link show wg0    return_rc=True  return_stdout=False
     Should Be Equal As Integers    ${rc}    0
 
 WireGuard device is configured
-    ${output} =    Run    wg
+    ${output} =    Execute Command    wg
     Should Contain    ${output}    interface: wg0
 
 WireGuard configuration file is present

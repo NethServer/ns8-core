@@ -55,12 +55,18 @@ jobs:
       - id: checkout
         uses: actions/checkout@v2
       - id: test
+        env:
+          RF_IMAGE: "ghcr.io/marketsquare/robotframework-browser/rfbrowser-stable:v7.1.1"
         name: "Run the tests suite"
         run: |
           # Run the tests suite
-          set -x
-          sudo pip install robotframework
-          ssh root@127.0.0.1 <<EOF
-          cd ${PWD}/${{ github.workflow }}
-          exec robot -d /srv/webroot/run-${{ github.run_id }} tests
+          sudo dnf install podman -y
+          rm -rf ~/_ssh
+          cp -r --no-preserve=mode ~/.ssh ~/_ssh
+          mkdir -p -m 777 ~/out
+          podman run -i -v ~/out:/home/pwuser/out:Z -v ~/_ssh:/home/pwuser/.ssh:Z -v ${PWD}:/home/pwuser/work:Z --network=host --rm ${RF_IMAGE} bash -s <<EOF
+          set -e -x
+          cd ~/work/${{ github.workflow }}
+          pip install -r tests/pythonreq.txt
+          robot -v 'BRANCHMODULES:' -v COREBRANCH:${{ github.head_ref }} -d ~/out/run-${{ github.run_id }} tests
           EOF

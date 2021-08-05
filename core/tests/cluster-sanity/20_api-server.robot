@@ -1,11 +1,11 @@
 *** Settings ***
-Library           OperatingSystem
+Library    SSHLibrary
 
 *** Test Cases ***
 Service has not failed
-    ${rc} =    Run And Return Rc    systemctl is-failed -q api-server
+    ${rc} =    Execute Command    systemctl is-failed -q api-server    return_rc=True  return_stdout=False
     Should Be Equal As Integers    ${rc}    1
 
 Service is reachable
-    ${output} =    Run    curl http://127.0.0.1:8080/api/nodes
+    ${output} =    Execute Command    curl http://127.0.0.1:8080/api/nodes
     Should Contain    ${output}    "code":401
