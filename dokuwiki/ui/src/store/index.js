@@ -5,6 +5,7 @@ Vue.use(Vuex);
 
 export default new Vuex.Store({
   state: {
+    appName: "Dokuwiki",
     instanceName: "",
     ns8Core: null,
   },

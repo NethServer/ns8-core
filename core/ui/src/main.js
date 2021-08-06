@@ -38,6 +38,10 @@ Vue.use(InfiniteLoading, {
 import ns8Lib from "@nethserver/ns8-ui-lib";
 Vue.use(ns8Lib);
 
+// global mixin to set page title
+import { PageTitleService } from "@nethserver/ns8-ui-lib";
+Vue.mixin(PageTitleService);
+
 // i18n
 import VueI18n from "vue-i18n";
 Vue.use(VueI18n);

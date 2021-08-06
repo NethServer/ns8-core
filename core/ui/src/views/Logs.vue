@@ -235,6 +235,9 @@ export default {
     AuditService,
     UtilService,
   ],
+  pageTitle() {
+    return this.$t("logs.title");
+  },
   data() {
     return {
       maxResults: 0,

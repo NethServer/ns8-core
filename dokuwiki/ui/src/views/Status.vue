@@ -8,7 +8,7 @@
     <div class="bx--row">
       <div class="bx--col-md-4 bx--col-max-4">
         <!-- //// delete -->
-        <!-- <cv-text-input label="qwerty" v-model.trim="q.test" class="mg-bottom"> -->
+        <!-- <cv-text-input label="test" v-model.trim="q.test" class="mg-bottom"> -->
         <!-- </cv-text-input> -->
         <!-- {{ formatDate(new Date(), "yyyy-MM-dd HH:mm:ss") }} -->
         <NsInfoCard
@@ -207,6 +207,9 @@ import {
 export default {
   name: "Status",
   mixins: [TaskService, QueryParamService, DateTimeService, IconService],
+  pageTitle() {
+    return this.$t("status.title") + " - " + this.appName;
+  },
   data() {
     return {
       q: {
@@ -223,7 +226,7 @@ export default {
     };
   },
   computed: {
-    ...mapState(["instanceName", "ns8Core"]),
+    ...mapState(["instanceName", "ns8Core", "appName"]),
     failedServices() {
       if (!this.status) {
         return 0;

@@ -123,6 +123,9 @@ import {
 export default {
   name: "Settings",
   mixins: [TaskService, IconService, UtilService, QueryParamService],
+  pageTitle() {
+    return this.$t("settings.title") + " - " + this.appName;
+  },
   data() {
     return {
       q: {
@@ -153,7 +156,7 @@ export default {
     };
   },
   computed: {
-    ...mapState(["instanceName", "ns8Core"]),
+    ...mapState(["instanceName", "ns8Core", "appName"]),
   },
   created() {
     this.getConfiguration();

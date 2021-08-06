@@ -159,6 +159,9 @@ export default {
   name: "SoftwareCenterAppInstances",
   components: { InstallAppModal },
   mixins: [TaskService, UtilService, IconService, QueryParamService],
+  pageTitle() {
+    return this.$t("software_center.app_instances_no_name");
+  },
   data() {
     return {
       appName: "",

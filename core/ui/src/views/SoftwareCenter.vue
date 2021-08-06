@@ -193,6 +193,9 @@ export default {
     InstallAppModal,
   },
   mixins: [IconService, QueryParamService, UtilService, TaskService],
+  pageTitle() {
+    return this.$t("software_center.title");
+  },
   data() {
     return {
       q: {

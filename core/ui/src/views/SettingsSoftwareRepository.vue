@@ -270,6 +270,9 @@ export default {
     QueryParamService,
     DataTableService,
   ],
+  pageTitle() {
+    return this.$t("settings.sw_repositories");
+  },
   data() {
     return {
       q: {

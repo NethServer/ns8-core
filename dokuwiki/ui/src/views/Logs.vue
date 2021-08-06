@@ -32,10 +32,14 @@
 
 <script>
 import { QueryParamService } from "@nethserver/ns8-ui-lib";
+import { mapState } from "vuex";
 
 export default {
   name: "Logs",
   mixins: [QueryParamService],
+  pageTitle() {
+    return this.$t("logs.title") + " - " + this.appName;
+  },
   data() {
     return {
       q: {
@@ -43,6 +47,9 @@ export default {
       },
       urlCheckInterval: null,
     };
+  },
+  computed: {
+    ...mapState(["appName"]),
   },
   beforeRouteEnter(to, from, next) {
     next((vm) => {

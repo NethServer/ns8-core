@@ -5,7 +5,7 @@
         <div class="bx--offset-md-1 bx--col-md-6 bx--offset-lg-4 bx--col-lg-8">
           <div class="test">
             <cv-tile :light="true" class="login-tile">
-              <h2 class="login-title">{{ $t("login.login") }}</h2>
+              <h2 class="login-title">{{ $t("login.title") }}</h2>
               <div v-if="step === 'username'">
                 <NsInlineNotification
                   v-if="error.login"
@@ -110,6 +110,9 @@ export default {
     UtilService,
     QueryParamService,
   ],
+  pageTitle() {
+    return this.$t("login.title");
+  },
   data() {
     return {
       username: "",

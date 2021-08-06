@@ -2,7 +2,7 @@
   <div class="bx--grid bx--grid--full-width">
     <div class="bx--row">
       <div class="bx--col-lg-16 page-title">
-        <h2>Cluster dashboard</h2>
+        <h2>{{ $t("dashboard.title") }}</h2>
       </div>
     </div>
     <!-- //// delete -->
@@ -283,6 +283,9 @@ export default {
     TaskService,
     WebSocketService,
   ],
+  pageTitle() {
+    return this.$t("dashboard.title");
+  },
   data() {
     return {
       q: {
@@ -314,7 +317,6 @@ export default {
   },
   computed: {
     ...mapState(["notifications"]),
-    ////
     now() {
       return this.$date(new Date());
     },
