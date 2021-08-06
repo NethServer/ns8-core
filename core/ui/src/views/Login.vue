@@ -22,6 +22,7 @@
                     :placeholder="$t('login.username_placeholder')"
                     :invalid-message="error.username"
                     ref="usernameInput"
+                    name="username"
                   ></cv-text-input>
                   <cv-checkbox
                     :label="$t('login.remember_username')"
@@ -48,6 +49,12 @@
                   $t("login.not_you")
                 }}</cv-link>
                 <cv-form @submit.prevent="checkPassword" class="login-form">
+                  <!-- hidden username field (to help browser saving credentials) -->
+                  <cv-text-input
+                    v-model="username"
+                    name="username"
+                    class="hidden"
+                  ></cv-text-input>
                   <cv-text-input
                     :label="$t('login.password')"
                     type="password"
@@ -58,6 +65,7 @@
                     :password-hide-label="$t('login.hide_password')"
                     :password-show-label="$t('login.show_password')"
                     ref="passwordInput"
+                    name="password"
                   ></cv-text-input>
                   <div class="login-footer">
                     <NsButton
@@ -249,5 +257,9 @@ export default {
 
 .not-you {
   margin-left: $spacing-03;
+}
+
+.hidden {
+  display: none;
 }
 </style>
