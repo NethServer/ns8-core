@@ -416,9 +416,6 @@ export default {
         return app.installed.length;
       });
     },
-    // selectedNode() { ////
-    //   return this.nodes.find((n) => n.selected);
-    // },
   },
   watch: {
     "q.search": function () {
@@ -438,8 +435,6 @@ export default {
     next();
   },
   created() {
-    // this.retrieveClusterNodes(); ////
-
     this.listModules();
   },
   methods: {
