@@ -1,5 +1,5 @@
 # api-server
-This component is used to send command from UI to Redis, using the Pub/Sub protocol.
+This component is used to send command from UI to Redis, using HTTP Rest API and Redis Pub/Sub protocol.
 
 ## Building
 To build the binary just execute
@@ -78,3 +78,11 @@ https://raw.githubusercontent.com/NethServer/ns8-scratchpad/swagdoc/swagger.json
     - `id` ⟶ task id is an uuid string generated from server
     - `action` ⟶ action to execute
     - `data` ⟶ data used from action to execute the task
+
+## Audit
+Every request made to the server, using its APIs or WebSocket, is logged inside an audit db. The audit db is store in a file using a SQLite database schema. Each record is composed by:
+- `ID`: the unique id of the record, autoincrement
+- `User`: the name of the user that made the specific action
+- `Action`: the name of the action made by the user
+- `Data`: the payload of the action (if present)
+- `Timestamp`: the time when the specific action is executed

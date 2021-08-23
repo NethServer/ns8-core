@@ -148,13 +148,18 @@ When installing a rootless module, the package will be extracted inside the home
 
 The API server is a daemon implemented using [Go](https://golang.org).
 
-TODO:
+This component is used to send command from UI to Redis, using HTTP Rest API and Redis Pub/Sub protocol.
 
-- UI and API server paths
-- UI core parts
-- how to create user and roles
-- UI default credentials
-- auditing
+### API Paths
+// TODO: Link to the documentation generated with Swagger.
+
+### Audit
+Every request made to the server, using its APIs or WebSocket, is logged inside an audit db. The audit db is store in a file using a SQLite database schema. Each record is composed by:
+- `ID`: the unique id of the record, autoincrement
+- `User`: the name of the user that made the specific action
+- `Action`: the name of the action made by the user
+- `Data`: the payload of the action (if present)
+- `Timestamp`: the time when the specific action is executed
 
 ## User Interface
 
