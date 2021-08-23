@@ -76,6 +76,9 @@ import {
 export default {
   name: "Settings",
   mixins: [TaskService, UtilService, IconService, QueryParamService],
+  pageTitle() {
+    return this.$t("settings.title");
+  },
   data() {
     return {
       q: {

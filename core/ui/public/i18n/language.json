@@ -23,7 +23,9 @@
     "disabled": "Disabled",
     "edit": "Edit",
     "delete": "Delete",
-    "required": "Required"
+    "required": "Required",
+    "use_landscape_mode": "Rotate your device",
+    "use_landscape_mode_description": "This page is optimized for landscape mode"
   },
   "error": {
     "error": "Error",
@@ -37,6 +39,7 @@
     "invalid_username_or_password": "Invalid username or password"
   },
   "login": {
+    "title": "Log in",
     "login": "Log in",
     "logging_in_as": "Logging in as",
     "not_you": "Not you?",
@@ -156,6 +159,8 @@
     "cannot_retrieve_cluster_nodes": "Cannot retrieve cluster nodes",
     "installing_on_node": "Installing on node {node}",
     "instance_installed_on_node": "{instance} installed on node {node}",
+    "app_instances": "{app} instances",
+    "app_instances_no_name": "App instances",
     "app_categories": {
       "collaboration": "Collaboration",
       "system_administration": "System administration",
@@ -186,5 +191,8 @@
     "no_logs_found": "No logs found",
     "no_logs_found_description": "Try changing your search filters",
     "invalid_interval": "Invalid time interval"
+  },
+  "dashboard": {
+    "title": "Cluster status"
   }
 }

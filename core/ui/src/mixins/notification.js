@@ -24,8 +24,8 @@ export default {
         notification.type = "info";
       }
 
-      if (notification.read == undefined) {
-        notification.read = false;
+      if (notification.isRead == undefined) {
+        notification.isRead = false;
       }
 
       //// need to generate a unique id for notifications?

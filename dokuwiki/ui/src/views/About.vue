@@ -132,6 +132,9 @@ export default {
   name: "About",
   components: {},
   mixins: [TaskService, QueryParamService],
+  pageTitle() {
+    return this.$t("about.title") + " - " + this.appName;
+  },
   data() {
     return {
       q: {
@@ -145,7 +148,7 @@ export default {
     };
   },
   computed: {
-    ...mapState(["instanceName", "ns8Core"]),
+    ...mapState(["ns8Core", "appName"]),
   },
   created() {
     this.getModuleInfo();

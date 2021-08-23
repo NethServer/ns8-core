@@ -5,7 +5,7 @@
         <div class="bx--offset-md-1 bx--col-md-6 bx--offset-lg-4 bx--col-lg-8">
           <div class="test">
             <cv-tile :light="true" class="login-tile">
-              <h2 class="login-title">{{ $t("login.login") }}</h2>
+              <h2 class="login-title">{{ $t("login.title") }}</h2>
               <div v-if="step === 'username'">
                 <NsInlineNotification
                   v-if="error.login"
@@ -22,6 +22,7 @@
                     :placeholder="$t('login.username_placeholder')"
                     :invalid-message="error.username"
                     ref="usernameInput"
+                    name="username"
                   ></cv-text-input>
                   <cv-checkbox
                     :label="$t('login.remember_username')"
@@ -48,6 +49,12 @@
                   $t("login.not_you")
                 }}</cv-link>
                 <cv-form @submit.prevent="checkPassword" class="login-form">
+                  <!-- hidden username field (to help browser saving credentials) -->
+                  <cv-text-input
+                    v-model="username"
+                    name="username"
+                    class="hidden"
+                  ></cv-text-input>
                   <cv-text-input
                     :label="$t('login.password')"
                     type="password"
@@ -58,6 +65,7 @@
                     :password-hide-label="$t('login.hide_password')"
                     :password-show-label="$t('login.show_password')"
                     ref="passwordInput"
+                    name="password"
                   ></cv-text-input>
                   <div class="login-footer">
                     <NsButton
@@ -102,6 +110,9 @@ export default {
     UtilService,
     QueryParamService,
   ],
+  pageTitle() {
+    return this.$t("login.title");
+  },
   data() {
     return {
       username: "",
@@ -123,7 +134,7 @@ export default {
   },
   mounted() {
     console.log("mounted login page"); ////
-    this.focusUsername();
+    this.focusElement("usernameInput");
   },
   methods: {
     ...mapActions(["setLoggedUserInStore"]),
@@ -132,10 +143,10 @@ export default {
 
       if (!this.username.trim()) {
         this.error.username = "Username is required";
-        this.focusUsername();
+        this.focusElement("usernameInput");
       } else {
         this.step = "password";
-        this.focusPassword();
+        this.focusElement("passwordInput");
       }
     },
     async checkPassword() {
@@ -143,7 +154,7 @@ export default {
 
       if (!this.password.trim()) {
         this.error.password = "Password is required";
-        this.focusPassword();
+        this.focusElement("passwordInput");
       } else {
         this.loading.login = true;
 
@@ -203,28 +214,14 @@ export default {
       this.error.login = errorMessage;
       this.step = "username";
       this.password = "";
-      this.focusUsername();
+      this.focusElement("usernameInput");
     },
     goToUsername() {
       this.step = "username";
       this.username = "";
       this.password = "";
-      this.focusUsername();
+      this.focusElement("usernameInput");
       this.error.login = "";
-    },
-    focusUsername() {
-      // focus on username field
-      this.$nextTick(() => {
-        const usernameInput = this.$refs.usernameInput;
-        usernameInput.focus();
-      });
-    },
-    focusPassword() {
-      // focus on password field
-      this.$nextTick(() => {
-        const passwordInput = this.$refs.passwordInput;
-        passwordInput.focus();
-      });
     },
   },
 };
@@ -234,16 +231,13 @@ export default {
 @import "../styles/carbon-utils";
 
 .login-bg {
-  height: calc(100vh - 3rem);
+  height: 100vh;
   background-color: $interactive-02;
 }
 
 .login-tile {
-  margin-top: $spacing-13;
+  margin-top: 25vh;
   padding-bottom: 0;
-}
-
-.login-title {
   margin-bottom: $spacing-03;
 }
 
@@ -266,5 +260,9 @@ export default {
 
 .not-you {
   margin-left: $spacing-03;
+}
+
+.hidden {
+  display: none;
 }
 </style>

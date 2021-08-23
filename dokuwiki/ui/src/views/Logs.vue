@@ -5,6 +5,17 @@
         <h2>{{ $t("logs.title") }}</h2>
       </div>
     </div>
+    <!-- //// landscape mode warning needed? -->
+    <!-- <div class="bx--row">
+      <div class="bx--col-lg-16">
+        <NsInlineNotification
+          class="landscape-warning"
+          kind="warning"
+          :title="$t('common.use_landscape_mode')"
+          :description="$t('common.use_landscape_mode_description')"
+        />
+      </div>
+    </div> -->
     <div class="bx--row">
       <div class="bx--col-lg-16">
         <cv-tile :light="true" class="content-tile">
@@ -21,10 +32,14 @@
 
 <script>
 import { QueryParamService } from "@nethserver/ns8-ui-lib";
+import { mapState } from "vuex";
 
 export default {
   name: "Logs",
   mixins: [QueryParamService],
+  pageTitle() {
+    return this.$t("logs.title") + " - " + this.appName;
+  },
   data() {
     return {
       q: {
@@ -32,6 +47,9 @@ export default {
       },
       urlCheckInterval: null,
     };
+  },
+  computed: {
+    ...mapState(["appName"]),
   },
   beforeRouteEnter(to, from, next) {
     next((vm) => {

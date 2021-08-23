@@ -5,9 +5,21 @@ body {
   height: calc(100vh - 3rem);
 }
 
-#app {
+#ns8-core {
   height: 100%;
   background-color: $ui-01;
+}
+
+.bx--grid.no-padding {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+@media (max-width: $breakpoint-large) {
+  // remove left margin because side menu is not shown on smaller screens
+  #ns8-core .bx--content {
+    margin-left: 0;
+  }
 }
 
 a {
@@ -35,9 +47,18 @@ a {
   margin-bottom: $spacing-05 !important;
 }
 
+@media (max-width: $breakpoint-medium) {
+  // reduce product name font size and padding on smaller screens
+  .cv-header .cv-header-name {
+    font-size: 0.8rem;
+    padding-right: $spacing-05;
+  }
+}
+
 // vue-toastification
 .Vue-Toastification__toast {
   border-radius: 0 !important;
+  min-width: 16rem !important; //// use variable of small-screen notif width
 }
 
 .Vue-Toastification__container.top-right.toastification-container {
@@ -59,6 +80,31 @@ a {
   .cv-notifiation.bx--toast-notification.notification.notification-read {
   // branding color
   border-color: $ui-04;
+}
+
+.cv-notifiation.bx--toast-notification.notification {
+  // let small screens use a narrow notification drawer
+  min-width: 0 !important;
+  // all notifications have the same width
+  width: 25rem !important;
+}
+
+@media (max-width: $breakpoint-large) {
+  .cv-notifiation.bx--toast-notification.notification {
+    // reduce notifications width on medium screens
+    width: 20rem !important;
+  }
+
+  .notification-drawer .cv-notifiation.bx--toast-notification.notification {
+    width: 100% !important;
+  }
+}
+
+@media (max-width: $breakpoint-medium) {
+  .cv-notifiation.bx--toast-notification.notification {
+    // reduce notifications width on medium screens
+    width: 100% !important;
+  }
 }
 
 .cv-notifiation .timestamp button {
@@ -85,7 +131,7 @@ a {
 
 .toolbar {
   display: flex;
-  justify-content: flex-end;
+  // justify-content: flex-end; ////
   align-items: center;
 }
 
@@ -97,6 +143,24 @@ a {
 
 .content-tile {
   margin-bottom: $spacing-05;
+}
+
+.mg-bottom-sm {
+  margin-bottom: $spacing-03;
+}
+
+// used to center flex items in responsive rows
+.align-items-center {
+  align-items: center;
+}
+
+.icon-and-text {
+  display: flex;
+  align-items: center;
+}
+
+.icon-and-text .icon {
+  margin-right: $spacing-03;
 }
 
 .empty-state-button {
@@ -155,11 +219,20 @@ a {
 .global-search input {
   background-color: $ui-05 !important;
   color: $ui-01 !important;
-  margin-top: 3px; //// fix
 }
 
 .global-search label {
   display: none;
+}
+
+.global-search .bx--search-close {
+  display: none;
+  // fill: $ui-01; ////
+}
+
+.global-search .bx--search-close:hover,
+.bx--search-button:hover {
+  background-color: $interactive-02;
 }
 
 .global-search .bx--structured-list {
@@ -275,7 +348,76 @@ a.bx--side-nav__link[aria-current="page"] .bx--side-nav__link-text,
 a.bx--side-nav__link--current .bx--side-nav__link-text {
   color: $ui-01;
 }
+
+.bx--side-nav--rail {
+  width: $side-menu-collapsed-width;
+}
 // end side menu
+
+// app side menu
+#ns8-app .app-content {
+  margin-left: $side-menu-width;
+}
+
+@media (max-width: $breakpoint-large) {
+  // core side menu is collapsed on smaller screens
+  #ns8-app .app-content {
+    margin-left: $side-menu-collapsed-width;
+  }
+}
+
+.bx--side-nav.app-side-nav {
+  background-color: $interactive-02;
+}
+
+.app-side-menu-content .cv-side-nav-item-link.bx--side-nav__link:hover {
+  background-color: $ui-05 !important;
+}
+
+.app-side-nav .bx--side-nav__items {
+  padding-top: 0;
+}
+
+.app-side-menu-content .instance-name {
+  height: 3rem;
+  padding-left: 1rem;
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+}
+
+.app-side-menu-content .current-page {
+  background-color: $ui-05;
+}
+
+.app-side-menu-content .current-page a::before {
+  background-color: $inverse-support-04;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 4px;
+  content: "";
+}
+
+@media (max-width: $breakpoint-large) {
+  // collapse app side nav on smaller screens...
+  .app-side-nav {
+    width: $side-menu-collapsed-width;
+  }
+
+  // ...but expand it on hover
+  .app-side-nav:hover {
+    width: $side-menu-width;
+  }
+
+  // hide instance name when app side menu is collapsed
+  .app-side-menu-content .instance-name {
+    display: none !important;
+  }
+}
+// end app side menu
 
 // app drawer
 .app-drawer .bx--structured-list-td,
@@ -385,6 +527,22 @@ a.bx--side-nav__link--current .bx--side-nav__link-text {
 .table-overflow-menu {
   margin: 0 auto;
 }
+
+// show data table pagination in smaller screens too
+.cv-data-table
+  .bx--pagination__left
+  .cv-select.bx--form-item.bx--select__item-count {
+  display: flex !important;
+}
+.cv-data-table .bx--pagination__right .bx--pagination__button {
+  display: flex !important;
+}
+.cv-data-table .bx--pagination__right .bx--select__page-number {
+  display: flex !important;
+}
+.cv-data-table .bx--pagination__right .bx--pagination__text {
+  display: inline-block !important;
+}
 // end data table
 
 // loader
@@ -450,19 +608,23 @@ a.bx--side-nav__link--current .bx--side-nav__link-text {
 }
 // end colors for NsStatusCard and NsSystemdServiceCard
 
-// styles for small devices
-@media (max-width: $breakpoint-large) {
-  // remove left margin because side menu is not shown
-  .bx--content {
-    margin-left: 0 !important;
-  }
-}
-
 // styles for large devices
 @media (min-width: $breakpoint-large) {
   // limit form fields width on large devices
   .bx--text-input,
-  .bx--text-input__field-wrapper {
+  .bx--text-input__field-wrapper,
+  .cv-multi-select {
     max-width: $breakpoint-medium;
+  }
+}
+
+// warning for pages optimized for landscape mode (e.g. pages containing tables)
+.landscape-warning {
+  display: none;
+}
+@media (max-width: 639px) {
+  // show warning only for screens smaller than 640px
+  .landscape-warning {
+    display: block;
   }
 }

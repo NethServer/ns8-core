@@ -32,7 +32,7 @@
           :actionLabel="notification.actionLabel"
           :action="notification.action"
           @notificationAction="handleNotificationAction"
-          :read="notification.read"
+          :isRead="notification.isRead"
           :progress="notification.task.progress"
           :isProgressShown="true"
           :timestamp="notification.timestamp"
@@ -62,7 +62,7 @@
           :actionLabel="notification.actionLabel"
           :action="notification.action"
           @notificationAction="handleNotificationAction"
-          :read="notification.read"
+          :isRead="notification.isRead"
           :timestamp="notification.timestamp"
           @click="setNotificationReadInStore(notification.id)"
           :id="notification.id"
@@ -135,8 +135,7 @@ export default {
   background-color: $ui-05;
   border-left: 1px solid $interactive-02;
   color: $ui-01;
-  width: $notification-drawer-width; //// fixed to 16rem?
-  // min-width: 20rem; ////
+  width: $notification-drawer-width;
   height: calc(100vh - 3rem);
   position: fixed;
   top: 3rem;
@@ -178,5 +177,16 @@ export default {
   line-height: 1.34;
   letter-spacing: 0.32px;
   color: $active-ui;
+}
+
+@media (max-width: $breakpoint-medium) {
+  .slide-notifications-enter,
+  .slide-notifications-leave-to {
+    transform: translateX($notification-drawer-width-small-screen);
+  }
+
+  .notification-drawer {
+    width: $notification-drawer-width-small-screen;
+  }
 }
 </style>

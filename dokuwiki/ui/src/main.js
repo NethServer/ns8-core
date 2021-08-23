@@ -16,6 +16,10 @@ Vue.use(VueAxios, axios);
 import ns8Lib from "@nethserver/ns8-ui-lib";
 Vue.use(ns8Lib);
 
+// global mixin to set page title
+import { PageTitleService } from "@nethserver/ns8-ui-lib";
+Vue.mixin(PageTitleService);
+
 // i18n
 import VueI18n from "vue-i18n";
 
@@ -33,4 +37,4 @@ new Vue({
   store,
   i18n,
   render: (h) => h(App),
-}).$mount("#app");
+}).$mount("#ns8-app");

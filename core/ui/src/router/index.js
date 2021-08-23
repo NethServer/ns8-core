@@ -7,6 +7,7 @@ import Applications from "../views/Applications";
 import SoftwareCenter from "../views/SoftwareCenter";
 import Logs from "../views/Logs";
 import SettingsSoftwareRepository from "../views/SettingsSoftwareRepository";
+import SoftwareCenterAppInstances from "../views/SoftwareCenterAppInstances";
 
 Vue.use(VueRouter);
 
@@ -28,6 +29,11 @@ const routes = [
     component: Settings,
   },
   {
+    path: "/settings/software-repository",
+    name: "SettingsSoftwareRepository",
+    component: SettingsSoftwareRepository,
+  },
+  {
     path: "/apps/:appId",
     name: "Applications",
     component: Applications,
@@ -38,19 +44,18 @@ const routes = [
     component: SoftwareCenter,
   },
   {
+    path: "/software-center/app-instances/:appName",
+    name: "SoftwareCenterAppInstances",
+    component: SoftwareCenterAppInstances,
+  },
+  {
     path: "/logs",
     name: "Logs",
     component: Logs,
   },
-  {
-    path: "/settings/software-repository",
-    name: "SettingsSoftwareRepository",
-    component: SettingsSoftwareRepository,
-  },
 ];
 
 const router = new VueRouter({
-  // mode: "history", //// verify
   base: process.env.BASE_URL,
   routes,
 });

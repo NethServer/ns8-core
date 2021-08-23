@@ -94,13 +94,10 @@ export default {
   width: 20rem; //// fixed? move to carbon-utils scss
   max-height: 100%;
   // height: 23rem; //// fixed?
-  // min-width: 10rem;
   position: fixed;
   top: 3rem;
   right: 0;
-  // z-index: 7000;
   overflow: auto;
-  // padding: 1rem; ////
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.5);
 }
 

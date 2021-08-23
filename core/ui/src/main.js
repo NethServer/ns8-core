@@ -38,6 +38,10 @@ Vue.use(InfiniteLoading, {
 import ns8Lib from "@nethserver/ns8-ui-lib";
 Vue.use(ns8Lib);
 
+// global mixin to set page title
+import { PageTitleService } from "@nethserver/ns8-ui-lib";
+Vue.mixin(PageTitleService);
+
 // i18n
 import VueI18n from "vue-i18n";
 Vue.use(VueI18n);
@@ -74,10 +78,6 @@ Vue.directive("click-outside", {
   },
 });
 
-// // global mixin for error messages //// remove
-// import ErrorService from "@/mixins/error";
-// Vue.mixin(ErrorService);
-
 Vue.config.productionTip = false;
 
 window.ns8 = new Vue({
@@ -89,4 +89,4 @@ window.ns8 = new Vue({
     this.$root.apiUrl = this.config.API_SCHEME + this.config.API_ENDPOINT;
   },
   render: (h) => h(App),
-}).$mount("#app");
+}).$mount("#ns8-core");

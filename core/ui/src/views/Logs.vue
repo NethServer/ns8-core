@@ -6,8 +6,18 @@
       </div>
     </div>
     <div class="bx--row">
-      <div class="bx--col-md-8">
-        <cv-tile :light="true" class="content-tile">
+      <div class="bx--col-lg-16">
+        <NsInlineNotification
+          class="landscape-warning"
+          kind="warning"
+          :title="$t('common.use_landscape_mode')"
+          :description="$t('common.use_landscape_mode_description')"
+        />
+      </div>
+    </div>
+    <cv-tile :light="true" class="content-tile">
+      <div class="bx--row">
+        <div class="bx--col-md-8">
           <cv-form @submit.prevent="searchLogs">
             <div>
               <cv-date-picker
@@ -114,6 +124,10 @@
               >
             </div>
           </cv-form>
+        </div>
+      </div>
+      <div class="bx--row">
+        <div class="bx--col-md-8">
           <NsInlineNotification
             v-if="error.auditLogs"
             kind="error"
@@ -121,6 +135,10 @@
             :description="error.auditLogs"
             :showCloseButton="false"
           />
+        </div>
+      </div>
+      <div class="bx--row">
+        <div class="bx--col-md-8">
           <NsEmptyState
             v-if="!this.tableRows.length && !loading.auditLogs"
             :title="$t('logs.no_logs_found')"
@@ -159,27 +177,27 @@
                   <cv-data-table-cell>{{ row.user }}</cv-data-table-cell>
                   <cv-data-table-cell>{{ row.action }}</cv-data-table-cell>
                   <cv-data-table-cell
-                    :class="{ 'audit-info-expanded': !row.auditInfoExpanded }"
+                    :class="{ 'audit-info-collapsed': row.auditInfoCollapsed }"
                   >
                     <cv-icon-button
                       v-if="row.auditInfo"
                       kind="ghost"
                       size="sm"
                       :icon="
-                        row.auditInfoExpanded ? RowCollapse20 : RowExpand20
+                        row.auditInfoCollapsed ? RowExpand20 : RowCollapse20
                       "
                       :label="
-                        row.auditInfoExpanded
-                          ? $t('common.collapse')
-                          : $t('common.expand')
+                        row.auditInfoCollapsed
+                          ? $t('common.expand')
+                          : $t('common.collapse')
                       "
-                      @click="row.auditInfoExpanded = !row.auditInfoExpanded"
+                      @click="row.auditInfoCollapsed = !row.auditInfoCollapsed"
                       tip-position="left"
                       class="expand-audit-info-button"
                     />
                     <code>
                       <pre
-                        v-if="row.auditInfoExpanded"
+                        v-if="!row.auditInfoCollapsed"
                         class="audit-info-pre"
                         >{{ tryParseJson(row.auditInfo) }}</pre
                       >
@@ -192,9 +210,9 @@
               </template></cv-data-table
             >
           </div>
-        </cv-tile>
+        </div>
       </div>
-    </div>
+    </cv-tile>
   </div>
 </template>
 
@@ -217,6 +235,9 @@ export default {
     AuditService,
     UtilService,
   ],
+  pageTitle() {
+    return this.$t("logs.title");
+  },
   data() {
     return {
       maxResults: 0,
@@ -415,7 +436,7 @@ export default {
           user: audit.user,
           action: audit.action,
           auditInfo: audit.data ? audit.data : "",
-          auditInfoExpanded: false,
+          auditInfoCollapsed: true,
           id: audit.id,
         };
       });
@@ -431,14 +452,14 @@ export default {
 
 .interval-date {
   display: inline-flex;
+  margin-right: $spacing-06;
 }
 
 .interval-time {
   display: inline-flex;
-  margin-left: $spacing-06;
 }
 
-.audit-info-expanded {
+.audit-info-collapsed {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
