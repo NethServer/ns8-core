@@ -48,7 +48,7 @@
                 kind="selectable"
                 v-model="node.selected"
                 value="nodeValue"
-                :icon="EdgeNode20"
+                :footerIcon="EdgeNode20"
                 @click="deselectOtherNodes(node)"
               >
                 <h6>{{ $t("common.node") }} {{ node.id }}</h6>

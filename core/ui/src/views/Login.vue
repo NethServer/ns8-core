@@ -177,10 +177,6 @@ export default {
 
         this.saveToStorage("loginInfo", loginInfo);
         this.setLoggedUserInStore(this.username);
-
-        // emit login event to initialize webapp (connect ws, invoke api...)
-        this.$root.$emit("login");
-
         const queryParams = this.getQueryParamsForCore();
 
         if (queryParams.redirect) {
@@ -192,10 +188,11 @@ export default {
         } else {
           // go to NS8 home page
 
-          // if (this.$route.name !== "Dashboard") { ////
           this.$router.replace("dashboard");
-          // }
         }
+
+        // emit login event to initialize webapp (connect ws, invoke api...)
+        this.$root.$emit("login");
       }
     },
     handleLoginError(error) {

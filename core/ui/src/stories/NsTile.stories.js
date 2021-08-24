@@ -1,5 +1,6 @@
 import { NsTile } from "@nethserver/ns8-ui-lib";
 import Notification20 from "@carbon/icons-vue/es/notification/20";
+import EdgeCluster32 from "@carbon/icons-vue/es/edge-cluster/32";
 
 export default {
   title: "Components/NsTile",
@@ -28,6 +29,8 @@ Default.args = {
   value: "selectedValue",
   light: false,
   selected: false,
+  centered: false,
+  large: false,
 };
 
 export const Icon = Template.bind({});
@@ -38,5 +41,20 @@ Icon.args = {
   value: "selectedValue",
   light: false,
   selected: false,
-  icon: Notification20,
+  icon: EdgeCluster32,
+  centered: true,
+  large: false,
+};
+
+export const FooterIcon = Template.bind({});
+FooterIcon.args = {
+  slotContent: `Tile title`,
+  kind: "standard",
+  // required for selectable kind
+  value: "selectedValue",
+  light: false,
+  selected: false,
+  footerIcon: Notification20,
+  centered: false,
+  large: false,
 };

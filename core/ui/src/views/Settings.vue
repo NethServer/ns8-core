@@ -12,20 +12,21 @@
           class="content-tile"
           kind="clickable"
           @click="goToSettingsSoftwareRepository"
-          :icon="Application20"
+          :icon="Application32"
         >
           <h6>{{ $t("settings.sw_repositories") }}</h6>
         </NsTile>
       </div>
+      <!-- //// remove fake tiles -->
       <div class="bx--col-md-4 bx--col-lg-4">
         <NsTile
           :light="true"
           class="content-tile"
           kind="clickable"
           @click="actionClick"
-          :icon="Application20"
+          :icon="Cube32"
         >
-          <h6>Test ////</h6>
+          <h6>Test</h6>
         </NsTile>
       </div>
       <div class="bx--col-md-4 bx--col-lg-4">
@@ -34,9 +35,9 @@
           class="content-tile"
           kind="clickable"
           @click="actionClick"
-          :icon="Application20"
+          :icon="Cube32"
         >
-          <h6>Test ////</h6>
+          <h6>Test</h6>
         </NsTile>
       </div>
       <div class="bx--col-md-4 bx--col-lg-4">
@@ -45,9 +46,9 @@
           class="content-tile"
           kind="clickable"
           @click="actionClick"
-          :icon="Application20"
+          :icon="Cube32"
         >
-          <h6>Test ////</h6>
+          <h6>Test</h6>
         </NsTile>
       </div>
       <div class="bx--col-md-2 bx--col-lg-4">
@@ -56,9 +57,9 @@
           class="content-tile"
           kind="clickable"
           @click="actionClick"
-          :icon="Application20"
+          :icon="Cube32"
         >
-          <h6>Test ////</h6>
+          <h6>Test</h6>
         </NsTile>
       </div>
     </div>
@@ -78,13 +79,6 @@ export default {
   mixins: [TaskService, UtilService, IconService, QueryParamService],
   pageTitle() {
     return this.$t("settings.title");
-  },
-  data() {
-    return {
-      q: {
-        view: "",
-      },
-    };
   },
   beforeRouteEnter(to, from, next) {
     next((vm) => {

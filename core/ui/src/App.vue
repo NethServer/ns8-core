@@ -1,8 +1,8 @@
 <template>
   <div id="ns8-core">
-    <ShellHeader v-if="loggedUser" />
-    <SideMenu v-if="loggedUser" />
-    <MobileSideMenu v-if="loggedUser" />
+    <ShellHeader v-if="loggedUser && isClusterInitialized" />
+    <SideMenu v-if="loggedUser && isClusterInitialized" />
+    <MobileSideMenu v-if="loggedUser && isClusterInitialized" />
     <cv-content id="main-content">
       <router-view />
       <TaskErrorModal />
@@ -47,6 +47,11 @@ export default {
     NotificationService,
     UtilService,
   ],
+  data() {
+    return {
+      isClusterInitialized: false,
+    };
+  },
   computed: {
     ...mapState(["loggedUser"]),
   },
@@ -75,8 +80,7 @@ export default {
     this.closeWebSocket();
   },
   methods: {
-    ...mapActions(["setLoggedUserInStore"]),
-    ...mapActions(["setUpdatesInStore"]),
+    ...mapActions(["setLoggedUserInStore", "setUpdatesInStore"]),
     configureAxiosInterceptors() {
       const context = this;
       axios.interceptors.response.use(
@@ -119,8 +123,37 @@ export default {
     initNs8() {
       this.initWebSocket();
 
-      // check for software updates
-      this.listUpdates();
+      this.retrieveClusterStatus();
+    },
+    async retrieveClusterStatus() {
+      const loginInfo = this.getFromStorage("loginInfo");
+
+      console.log("loginInfo", loginInfo); ////
+
+      //// TEST
+      // const [clusterStatusError, response] = await to(
+      //   this.getClusterStatus(loginInfo.username, loginInfo.token)
+      // );
+
+      // if (clusterStatusError) {
+      //   this.createTaskErrorNotification(
+      //     clusterStatusError,
+      //     this.$t("error.cannot_retrieve_cluster_status")
+      //   );
+      //   return;
+      // }
+
+      //// use response
+      this.isClusterInitialized = false; //// remove
+      // this.setIsClusterInitializedInStore(isClusterInitialized); ////
+
+      if (this.isClusterInitialized) {
+        // check for software updates
+        this.listUpdates();
+      } else {
+        // redirect to cluster initialization page
+        this.$router.replace("init?page=welcome");
+      }
     },
     async listUpdates() {
       const taskAction = "list-updates";

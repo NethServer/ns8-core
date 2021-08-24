@@ -8,6 +8,7 @@ import SoftwareCenter from "../views/SoftwareCenter";
 import Logs from "../views/Logs";
 import SettingsSoftwareRepository from "../views/SettingsSoftwareRepository";
 import SoftwareCenterAppInstances from "../views/SoftwareCenterAppInstances";
+import InitializeCluster from "../views/InitializeCluster";
 
 Vue.use(VueRouter);
 
@@ -22,6 +23,11 @@ const routes = [
     path: "/login",
     name: "Login",
     component: Login,
+  },
+  {
+    path: "/init",
+    name: "InitializeCluster",
+    component: InitializeCluster,
   },
   {
     path: "/settings",

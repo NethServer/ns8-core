@@ -36,7 +36,10 @@
     "403": "Operation not authorized",
     "404": "Resource not found",
     "cannot_retrieve_task_status": "Cannot retrieve task status",
-    "invalid_username_or_password": "Invalid username or password"
+    "invalid_username_or_password": "Invalid username or password",
+    "cannot_retrieve_cluster_status": "Cannot retrieve cluster status",
+    "passwords_do_not_match": "Passwords do not match",
+    "old_new_passwords_must_be_different": "New password must be different from current password"
   },
   "login": {
     "title": "Log in",
@@ -51,6 +54,25 @@
     "remember_username": "Remember username",
     "hide_password": "Hide password",
     "show_password": "Show password"
+  },
+  "init": {
+    "welcome": "Welcome to {product}",
+    "configure_node": "Configure this node",
+    "create_new_cluster": "Create new cluster",
+    "create_cluster": "Create cluster",
+    "join_cluster_title": "Add this node to existing cluster",
+    "change_password_description": "Please change admin password",
+    "current_password": "Current admin password",
+    "new_password": "New admin password",
+    "new_password_confirm": "Re-enter new admin password",
+    "change_password": "Change password",
+    "vpn_endpoint_address": "VPN endpoint address",
+    "vpn_endpoint_port": "VPN endpoint port",
+    "vpn_cidr": "VPN CIDR",
+    "join_cluster_instead": "Join an existing cluster instead",
+    "create_cluster_instead": "Create a new cluster instead",
+    "cluster_url": "Cluster URL",
+    "join_cluster": "Join cluster"
   },
   "shell": {
     "skip_to_content": "Skip to content",
