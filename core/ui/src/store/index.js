@@ -17,6 +17,7 @@ export default new Vuex.Store({
     },
     // apps to update
     updates: [],
+    isClusterInitialized: false,
   },
   getters: {
     unreadNotifications: (state, getters) => {
@@ -111,6 +112,9 @@ export default new Vuex.Store({
     setUpdates(state, updates) {
       state.updates = updates;
     },
+    setIsClusterInitialized(state, value) {
+      state.isClusterInitialized = value;
+    },
     //// does it work?
     SOCKET_ONOPEN(state, event) {
       // Vue.prototype.$socket = event.currentTarget;
@@ -172,6 +176,9 @@ export default new Vuex.Store({
     },
     setUpdatesInStore(context, updates) {
       context.commit("setUpdates", updates);
+    },
+    setIsClusterInitializedInStore(context, value) {
+      context.commit("setIsClusterInitialized", value);
     },
   },
   modules: {},

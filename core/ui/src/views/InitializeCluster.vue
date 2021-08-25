@@ -1,5 +1,15 @@
 <template>
   <div class="bx--grid">
+    <div class="bx--row">
+      <div class="bx--col-lg-16">
+        <div class="logo">
+          <img
+            :src="require('@/assets/logo.png')"
+            :alt="this.$root.config.PRODUCT_NAME + ' logo'"
+          />
+        </div>
+      </div>
+    </div>
     <!-- //// loader while waiting api -->
     <template v-if="isPasswordChangeNeeded">
       <div class="bx--row">
@@ -16,45 +26,51 @@
         <div class="bx--col-lg-16">
           <NsInlineNotification
             kind="info"
-            :title="$t('init.change_password_description')"
+            :title="$t('init.change_admin_password')"
+            :description="$t('init.change_admin_password_description')"
             :showCloseButton="false"
           />
         </div>
       </div>
       <div class="bx--row">
         <div class="bx--col-lg-16">
-          <cv-form @submit.prevent="changePassword">
-            <cv-text-input
-              :label="$t('init.current_password')"
-              v-model="currentPassword"
-              :invalid-message="$t(error.currentPassword)"
-              type="password"
-              light
-              ref="currentPassword"
-            >
-            </cv-text-input>
-            <cv-text-input
-              :label="$t('init.new_password')"
-              v-model="newPassword"
-              :invalid-message="$t(error.newPassword)"
-              type="password"
-              light
-              ref="newPassword"
-            >
-            </cv-text-input>
-            <cv-text-input
-              :label="$t('init.new_password_confirm')"
-              v-model="newPasswordConfirm"
-              :invalid-message="$t(error.newPasswordConfirm)"
-              type="password"
-              light
-              ref="newPasswordConfirm"
-            >
-            </cv-text-input>
-            <NsButton kind="primary" :icon="Edit20">{{
-              $t("init.change_password")
-            }}</NsButton>
-          </cv-form>
+          <cv-tile light class="content-tile">
+            <cv-form @submit.prevent="changePassword">
+              <cv-text-input
+                :label="$t('init.current_password')"
+                v-model="currentPassword"
+                :invalid-message="$t(error.currentPassword)"
+                type="password"
+                ref="currentPassword"
+              >
+              </cv-text-input>
+              <NsPasswordInput
+                :label="$t('init.new_password')"
+                v-model="newPassword"
+                @passwordValidation="onPasswordValidation"
+                :invalid-message="$t(error.newPassword)"
+                :passwordHideLabel="$t('password.hide_password')"
+                :passwordShowLabel="$t('password.show_password')"
+                :lengthLabel="$t('password.long_enough')"
+                :lowercaseLabel="$t('password.lowercase_letter')"
+                :uppercaseLabel="$t('password.uppercase_letter')"
+                :numberLabel="$t('password.number')"
+                :symbolLabel="$t('password.symbol')"
+                ref="newPassword"
+              />
+              <cv-text-input
+                :label="$t('init.new_password_confirm')"
+                v-model="newPasswordConfirm"
+                :invalid-message="$t(error.newPasswordConfirm)"
+                type="password"
+                ref="newPasswordConfirm"
+              >
+              </cv-text-input>
+              <NsButton kind="primary" :icon="Edit20">{{
+                $t("init.change_password")
+              }}</NsButton>
+            </cv-form>
+          </cv-tile>
         </div>
       </div>
     </template>
@@ -78,7 +94,10 @@
             @click="selectCreateCluster"
             large
           >
-            <h6>{{ $t("init.create_new_cluster") }}</h6>
+            <h6>{{ $t("init.create_cluster") }}</h6>
+            <div class="tile-description">
+              {{ $t("init.create_cluster_description") }}
+            </div>
           </NsTile>
         </div>
         <div class="bx--col-md-4">
@@ -89,7 +108,10 @@
             @click="selectJoinCluster"
             large
           >
-            <h6>{{ $t("init.join_cluster_title") }}</h6>
+            <h6>{{ $t("init.join_cluster") }}</h6>
+            <div class="tile-description">
+              {{ $t("init.join_cluster_description") }}
+            </div>
           </NsTile>
         </div>
       </div>
@@ -98,45 +120,47 @@
       <!-- create cluster form -->
       <div class="bx--row">
         <div class="bx--col-lg-16 page-title">
-          <h2>{{ $t("init.create_new_cluster") }}</h2>
+          <h2>{{ $t("init.create_cluster") }}</h2>
+          <div class="title-description">
+            {{ $t("init.create_cluster_description") }}
+          </div>
         </div>
       </div>
       <div class="bx--row">
         <div class="bx--col-lg-16">
-          <cv-form @submit.prevent="createCluster">
-            <cv-text-input
-              :label="$t('init.vpn_endpoint_address')"
-              v-model.trim="vpnEndpointAddress"
-              :invalid-message="$t(error.vpnEndpointAddress)"
-              light
-              ref="vpnEndpointAddress"
-            >
-            </cv-text-input>
-            <cv-text-input
-              :label="$t('init.vpn_endpoint_port')"
-              v-model.trim="vpnEndpointPort"
-              :invalid-message="$t(error.vpnEndpointPort)"
-              light
-              ref="vpnEndpointPort"
-            >
-            </cv-text-input>
-            <cv-text-input
-              :label="$t('init.vpn_cidr')"
-              v-model.trim="vpnCidr"
-              :invalid-message="$t(error.vpnCidr)"
-              light
-              ref="vpnCidr"
-            >
-            </cv-text-input>
-            <NsButton kind="primary" :icon="EdgeCluster20">{{
-              $t("init.create_cluster")
-            }}</NsButton>
-            <div>
-              <cv-link @click="selectJoinCluster" class="mg-top">{{
-                $t("init.join_cluster_instead")
-              }}</cv-link>
-            </div>
-          </cv-form>
+          <cv-tile light class="content-tile">
+            <cv-form @submit.prevent="createCluster">
+              <cv-text-input
+                :label="$t('init.vpn_endpoint_address')"
+                v-model.trim="vpnEndpointAddress"
+                :invalid-message="$t(error.vpnEndpointAddress)"
+                ref="vpnEndpointAddress"
+              >
+              </cv-text-input>
+              <cv-text-input
+                :label="$t('init.vpn_endpoint_port')"
+                v-model.trim="vpnEndpointPort"
+                :invalid-message="$t(error.vpnEndpointPort)"
+                ref="vpnEndpointPort"
+              >
+              </cv-text-input>
+              <cv-text-input
+                :label="$t('init.vpn_cidr')"
+                v-model.trim="vpnCidr"
+                :invalid-message="$t(error.vpnCidr)"
+                ref="vpnCidr"
+              >
+              </cv-text-input>
+              <NsButton kind="primary" :icon="EdgeCluster20">{{
+                $t("init.create_cluster")
+              }}</NsButton>
+              <div>
+                <cv-link @click="selectJoinCluster" class="mg-top">{{
+                  $t("init.join_cluster_instead")
+                }}</cv-link>
+              </div>
+            </cv-form>
+          </cv-tile>
         </div>
       </div>
     </div>
@@ -144,29 +168,33 @@
       <!-- join cluster form -->
       <div class="bx--row">
         <div class="bx--col-lg-16 page-title">
-          <h2>{{ $t("init.join_cluster_title") }}</h2>
+          <h2>{{ $t("init.join_cluster") }}</h2>
+          <div class="title-description">
+            {{ $t("init.join_cluster_description") }}
+          </div>
         </div>
       </div>
       <div class="bx--row">
         <div class="bx--col-lg-16">
-          <cv-form @submit.prevent="joinCluster">
-            <cv-text-input
-              :label="$t('init.cluster_url')"
-              v-model.trim="clusterUrl"
-              :invalid-message="$t(error.clusterUrl)"
-              light
-              ref="clusterUrl"
-            >
-            </cv-text-input>
-            <NsButton kind="primary" :icon="Connect20">{{
-              $t("init.join_cluster")
-            }}</NsButton>
-            <div>
-              <cv-link @click="selectCreateCluster" class="mg-top">{{
-                $t("init.create_cluster_instead")
-              }}</cv-link>
-            </div>
-          </cv-form>
+          <cv-tile light class="content-tile">
+            <cv-form @submit.prevent="joinCluster">
+              <cv-text-input
+                :label="$t('init.cluster_url')"
+                v-model.trim="clusterUrl"
+                :invalid-message="$t(error.clusterUrl)"
+                ref="clusterUrl"
+              >
+              </cv-text-input>
+              <NsButton kind="primary" :icon="Connect20">{{
+                $t("init.join_cluster")
+              }}</NsButton>
+              <div>
+                <cv-link @click="selectCreateCluster" class="mg-top">{{
+                  $t("init.create_cluster_instead")
+                }}</cv-link>
+              </div>
+            </cv-form>
+          </cv-tile>
         </div>
       </div>
     </div>
@@ -174,18 +202,19 @@
 </template>
 
 <script>
-//// remove useless imports
-
 import {
   QueryParamService,
   UtilService,
-  TaskService,
   IconService,
+  StorageService,
+  NsPasswordInput,
 } from "@nethserver/ns8-ui-lib";
+import { mapActions } from "vuex";
 
 export default {
   name: "InitializeCluster",
-  mixins: [TaskService, UtilService, IconService, QueryParamService],
+  components: { NsPasswordInput },
+  mixins: [UtilService, IconService, QueryParamService, StorageService],
   pageTitle() {
     return this.$t("init.welcome", { product: this.$root.config.PRODUCT_NAME });
   },
@@ -194,12 +223,11 @@ export default {
       q: {
         page: "welcome",
       },
-      // createClusterSelected: false, ////
-      // joinClusterSelected: false, ////
       isPasswordChangeNeeded: false,
       currentPassword: "",
       newPassword: "",
       newPasswordConfirm: "",
+      isPasswordValid: false,
       vpnEndpointAddress: "",
       vpnEndpointPort: "",
       vpnCidr: "",
@@ -231,16 +259,13 @@ export default {
     this.checkPasswordChange();
   },
   methods: {
+    ...mapActions(["setIsClusterInitializedInStore"]),
     selectCreateCluster() {
-      console.log("selectCreateCluster"); ////
-      // this.createClusterSelected = true; ////
-      this.$router.push("/init?page=create"); ////
+      this.$router.push("/init?page=create");
       this.focusElement("vpnEndpointAddress");
     },
     selectJoinCluster() {
-      console.log("selectJoinCluster"); ////
-      // this.joinClusterSelected = true; ////
-      this.$router.push("/init?page=join"); ////
+      this.$router.push("/init?page=join");
       this.focusElement("clusterUrl");
     },
     async checkPasswordChange() {
@@ -262,13 +287,14 @@ export default {
       // }
 
       //// use response
-      this.isPasswordChangeNeeded = false; //// remove
+      this.isPasswordChangeNeeded = true; //// remove
+    },
+    onPasswordValidation(isPasswordValid) {
+      this.isPasswordValid = isPasswordValid;
     },
     validatePasswordChange() {
       this.clearErrors(this);
       let isValidationOk = true;
-
-      //// todo force password strength?
 
       if (!this.currentPassword) {
         this.error.currentPassword = "common.required";
@@ -283,30 +309,58 @@ export default {
         this.error.newPassword = "common.required";
 
         if (isValidationOk) {
-          this.focusElement("newPassword");
+          this.focusNewPassword();
           isValidationOk = false;
         }
       } else {
         if (this.newPasswordConfirm !== this.newPassword) {
-          this.error.newPassword = "error.passwords_do_not_match";
-          this.error.newPasswordConfirm = "error.passwords_do_not_match";
+          this.error.newPassword = "password.passwords_do_not_match";
+          this.error.newPasswordConfirm = "password.passwords_do_not_match";
 
           if (isValidationOk) {
-            this.focusElement("newPasswordConfirm");
+            this.focusNewPassword();
             isValidationOk = false;
           }
         }
 
         if (this.currentPassword === this.newPassword) {
-          this.error.newPassword = "error.old_new_passwords_must_be_different";
+          this.error.newPassword =
+            "password.old_new_passwords_must_be_different";
 
           if (isValidationOk) {
-            this.focusElement("newPassword");
+            this.focusNewPassword();
+            isValidationOk = false;
+          }
+        }
+
+        if (!this.isPasswordValid) {
+          this.error.newPassword = "password.password_not_secure";
+
+          if (isValidationOk) {
+            this.focusNewPassword();
             isValidationOk = false;
           }
         }
       }
+
+      if (!this.newPasswordConfirm) {
+        this.error.newPasswordConfirm = "common.required";
+
+        if (isValidationOk) {
+          this.focusElement("newPasswordConfirm");
+          isValidationOk = false;
+        }
+      }
       return isValidationOk;
+    },
+    focusNewPassword() {
+      // NsPasswordInput has a <div> as root element, need to focus nested <input> element
+      this.$nextTick(() => {
+        const element = this.$refs.newPassword.$el
+          .getElementsByClassName("password-input")[0]
+          .getElementsByClassName("bx--password-input")[0];
+        element.focus();
+      });
     },
     changePassword() {
       if (!this.validatePasswordChange()) {
@@ -355,6 +409,21 @@ export default {
           this.focusElement("vpnEndpointPort");
           isValidationOk = false;
         }
+      } else {
+        const vpnEndpointPortNumber = Number(this.vpnEndpointPort);
+
+        if (
+          !(
+            Number.isInteger(vpnEndpointPortNumber) && vpnEndpointPortNumber > 0
+          )
+        ) {
+          this.error.vpnEndpointPort = "error.invalid_port_number";
+
+          if (isValidationOk) {
+            this.focusElement("vpnEndpointPort");
+            isValidationOk = false;
+          }
+        }
       }
 
       if (!this.vpnCidr) {
@@ -365,6 +434,7 @@ export default {
           isValidationOk = false;
         }
       }
+      return isValidationOk;
     },
     createCluster() {
       console.log("createCluster"); ////
@@ -374,6 +444,10 @@ export default {
       }
 
       //// todo
+
+      this.setIsClusterInitializedInStore(true);
+      this.$router.replace("/dashboard");
+      console.log("done"); ////
     },
     validateJoinCluster() {
       this.clearErrors(this);
@@ -387,6 +461,7 @@ export default {
           isValidationOk = false;
         }
       }
+      return isValidationOk;
     },
     joinCluster() {
       console.log("joinCluster"); ////
@@ -396,6 +471,10 @@ export default {
       }
 
       //// todo
+
+      this.setIsClusterInitializedInStore(true);
+      this.$router.replace("/dashboard");
+      console.log("done"); ////
     },
   },
 };
@@ -404,7 +483,24 @@ export default {
 <style scoped lang="scss">
 @import "../styles/carbon-utils";
 
+.logo {
+  width: 4rem;
+  height: 4rem;
+  margin-top: $spacing-07;
+  flex-shrink: 0;
+}
+
+.logo img {
+  width: 100%;
+  height: 100%;
+}
+
 .mg-top {
   margin-top: $spacing-07;
+}
+
+.tile-description {
+  margin-top: $spacing-03;
+  color: $text-02;
 }
 </style>

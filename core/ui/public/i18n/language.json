@@ -38,8 +38,19 @@
     "cannot_retrieve_task_status": "Cannot retrieve task status",
     "invalid_username_or_password": "Invalid username or password",
     "cannot_retrieve_cluster_status": "Cannot retrieve cluster status",
+    "invalid_port_number": "Invalid port number"
+  },
+  "password": {
+    "hide_password": "Hide password",
+    "show_password": "Show password",
+    "long_enough": "Long enough",
+    "lowercase_letter": "Lowercase letter",
+    "uppercase_letter": "Uppercase letter",
+    "number": "Number",
+    "symbol": "Symbol",
+    "old_new_passwords_must_be_different": "New password must be different from current password",
     "passwords_do_not_match": "Passwords do not match",
-    "old_new_passwords_must_be_different": "New password must be different from current password"
+    "password_not_secure": "Password must meet all security requirements below"
   },
   "login": {
     "title": "Log in",
@@ -51,17 +62,17 @@
     "password": "Password",
     "username_placeholder": "Your username",
     "password_placeholder": "Your password",
-    "remember_username": "Remember username",
-    "hide_password": "Hide password",
-    "show_password": "Show password"
+    "remember_username": "Remember username"
   },
   "init": {
     "welcome": "Welcome to {product}",
     "configure_node": "Configure this node",
-    "create_new_cluster": "Create new cluster",
     "create_cluster": "Create cluster",
-    "join_cluster_title": "Add this node to existing cluster",
-    "change_password_description": "Please change admin password",
+    "create_cluster_description": "Create a new cluster and promote this node as cluster leader",
+    "join_cluster": "Join cluster",
+    "join_cluster_description": "Add this node to an existing cluster",
+    "change_admin_password": "Change admin password",
+    "change_admin_password_description": "This is needed for security reasons",
     "current_password": "Current admin password",
     "new_password": "New admin password",
     "new_password_confirm": "Re-enter new admin password",
@@ -71,8 +82,7 @@
     "vpn_cidr": "VPN CIDR",
     "join_cluster_instead": "Join an existing cluster instead",
     "create_cluster_instead": "Create a new cluster instead",
-    "cluster_url": "Cluster URL",
-    "join_cluster": "Join cluster"
+    "cluster_url": "Cluster URL"
   },
   "shell": {
     "skip_to_content": "Skip to content",

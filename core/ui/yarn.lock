@@ -1726,10 +1726,10 @@
     call-me-maybe "^1.0.1"
     glob-to-regexp "^0.3.0"
 
-"@nethserver/ns8-ui-lib@^0.0.5":
-  version "0.0.5"
-  resolved "https://registry.yarnpkg.com/@nethserver/ns8-ui-lib/-/ns8-ui-lib-0.0.5.tgz#c3f312f951b603e384a5abdfd4bd579de0443d5e"
-  integrity sha512-mb2Gozjn3JdHT88PqFKccgZjU5E/CmPxZKnCPiohATmzQfa8DssHKekzzy1rq/SSxmVXMpWHL5e37WPwm/pZyQ==
+"@nethserver/ns8-ui-lib@^0.0.7":
+  version "0.0.7"
+  resolved "https://registry.yarnpkg.com/@nethserver/ns8-ui-lib/-/ns8-ui-lib-0.0.7.tgz#608b9aa2460cf095fb137b059ce11d03ee1e391b"
+  integrity sha512-7rH3nSDf9E/neiZlufo7mpoqmwRtpN+JgKj9X6f/aGGhPnhIrqB1SbGZahwgxI10LxQ3UYQpNUzjCLYpeVXZhg==
   dependencies:
     core-js "^3.15.2"
     date-fns "^2.23.0"
@@ -9903,7 +9903,7 @@ opencollective-postinstall@^2.0.2:
 
 opener@^1.5.1:
   version "1.5.2"
-  resolved "https://registry.npmjs.org/opener/-/opener-1.5.2.tgz"
+  resolved "https://registry.yarnpkg.com/opener/-/opener-1.5.2.tgz#5d37e1f35077b9dcac4301372271afdeb2a13598"
   integrity sha512-ur5UIdyw5Y7yEj9wLzhqXiy6GZ3Mwx0yGI+5sMn2r0N0v3cKJvUmFH5yPP+WXh9e0xfyzyJX95D8l088DNFj7A==
 
 opn@^5.5.0:
@@ -12773,7 +12773,7 @@ text-hex@1.0.x:
 
 text-table@0.2.0, text-table@^0.2.0:
   version "0.2.0"
-  resolved "https://registry.npmjs.org/text-table/-/text-table-0.2.0.tgz"
+  resolved "https://registry.yarnpkg.com/text-table/-/text-table-0.2.0.tgz#7f5ee823ae805207c00af2df4a84ec3fcfa570b4"
   integrity sha1-f17oI66AUgfACvLfSoTsP8+lcLQ=
 
 thenify-all@^1.0.0:

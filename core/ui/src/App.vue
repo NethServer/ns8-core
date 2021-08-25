@@ -47,13 +47,8 @@ export default {
     NotificationService,
     UtilService,
   ],
-  data() {
-    return {
-      isClusterInitialized: false,
-    };
-  },
   computed: {
-    ...mapState(["loggedUser"]),
+    ...mapState(["loggedUser", "isClusterInitialized"]),
   },
   created() {
     // register to events
@@ -65,6 +60,7 @@ export default {
     );
 
     this.configureAxiosInterceptors();
+    this.configureClusterInitializationRedirect();
 
     // check login
     const loginInfo = this.getFromStorage("loginInfo");
@@ -80,7 +76,29 @@ export default {
     this.closeWebSocket();
   },
   methods: {
-    ...mapActions(["setLoggedUserInStore", "setUpdatesInStore"]),
+    ...mapActions([
+      "setLoggedUserInStore",
+      "setUpdatesInStore",
+      "setIsClusterInitializedInStore",
+    ]),
+    configureClusterInitializationRedirect() {
+      // if cluster has not been initialized, redirect to /init
+      this.$router.beforeEach(async (to, from, next) => {
+        console.log("global guard: from, to", from, to); ////
+
+        // allow navigation on init pages
+        if (to.path === "/init") {
+          console.log("ok, proceed"); ////
+          next();
+        } else if (!this.isClusterInitialized) {
+          console.log("GOING TO INIT/WELCOME"); ////
+
+          next("/init?page=welcome");
+        } else {
+          next();
+        }
+      });
+    },
     configureAxiosInterceptors() {
       const context = this;
       axios.interceptors.response.use(
@@ -143,16 +161,16 @@ export default {
       //   return;
       // }
 
-      //// use response
-      this.isClusterInitialized = false; //// remove
-      // this.setIsClusterInitializedInStore(isClusterInitialized); ////
+      const isClusterInitialized = false; //// use response
+
+      this.setIsClusterInitializedInStore(isClusterInitialized);
 
       if (this.isClusterInitialized) {
         // check for software updates
         this.listUpdates();
       } else {
         // redirect to cluster initialization page
-        this.$router.replace("init?page=welcome");
+        this.$router.replace("/init?page=welcome");
       }
     },
     async listUpdates() {

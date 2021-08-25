@@ -62,8 +62,8 @@
                     class="bx--password-input mg-bottom-md"
                     :placeholder="$t('login.password_placeholder')"
                     :invalid-message="error.password"
-                    :password-hide-label="$t('login.hide_password')"
-                    :password-show-label="$t('login.show_password')"
+                    :password-hide-label="$t('password.hide_password')"
+                    :password-show-label="$t('password.show_password')"
                     ref="passwordInput"
                     name="password"
                   ></cv-text-input>
@@ -188,7 +188,7 @@ export default {
         } else {
           // go to NS8 home page
 
-          this.$router.replace("dashboard");
+          this.$router.replace("/dashboard");
         }
 
         // emit login event to initialize webapp (connect ws, invoke api...)

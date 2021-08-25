@@ -2,11 +2,7 @@
 @import "./carbon-utils";
 
 body {
-  height: calc(100vh - 3rem);
-}
-
-#ns8-core {
-  height: 100%;
+  // height: calc(100vh - 3rem); //// remove
   background-color: $ui-01;
 }
 
@@ -30,14 +26,11 @@ a {
   color: $link-02;
 }
 
-.cv-text-input {
-  margin-bottom: $spacing-05;
-}
-
 .notification {
   margin-top: 3rem;
 }
 
+//// remove
 .mg-top-bottom {
   margin-top: $spacing-05;
   margin-bottom: $spacing-05;
@@ -145,6 +138,11 @@ a {
   margin-bottom: $spacing-05;
 }
 
+.title-description {
+  color: $text-02;
+  margin-top: $spacing-03;
+}
+
 .mg-bottom-sm {
   margin-bottom: $spacing-03;
 }
@@ -227,7 +225,7 @@ a {
 
 .global-search .bx--search-close {
   display: none;
-  // fill: $ui-01; ////
+  // fill: $ui-01; //// remove
 }
 
 .global-search .bx--search-close:hover,
@@ -483,11 +481,10 @@ a.bx--side-nav__link--current .bx--side-nav__link-text {
 // end task error modal
 
 // form
-.cv-form .bx--form-item {
-  margin-bottom: $spacing-05;
-}
-
-.cv-form .cv-multi-select {
+.cv-text-input,
+.cv-form .bx--form-item,
+.cv-form .cv-multi-select,
+.ns-password-input {
   margin-bottom: $spacing-05;
 }
 // end form
