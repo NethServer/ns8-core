@@ -16,8 +16,7 @@ import SideMenu from "./components/SideMenu";
 import MobileSideMenu from "./components/MobileSideMenu";
 import axios from "axios";
 import WebSocketService from "@/mixins/websocket";
-import { mapState } from "vuex";
-import { mapActions } from "vuex";
+import { mapState, mapActions } from "vuex";
 import to from "await-to-js";
 import LoginService from "@/mixins/login";
 import TaskErrorModal from "@/components/TaskErrorModal";
@@ -60,7 +59,6 @@ export default {
     );
 
     this.configureAxiosInterceptors();
-    this.configureClusterInitializationRedirect();
 
     // check login
     const loginInfo = this.getFromStorage("loginInfo");
@@ -79,23 +77,31 @@ export default {
     ...mapActions([
       "setLoggedUserInStore",
       "setUpdatesInStore",
-      "setIsClusterInitializedInStore",
+      "setClusterInitializedInStore",
     ]),
     configureClusterInitializationRedirect() {
       // if cluster has not been initialized, redirect to /init
       this.$router.beforeEach(async (to, from, next) => {
         console.log("global guard: from, to", from, to); ////
 
-        // allow navigation on init pages
-        if (to.path === "/init") {
-          console.log("ok, proceed"); ////
-          next();
-        } else if (!this.isClusterInitialized) {
-          console.log("GOING TO INIT/WELCOME"); ////
-
-          next("/init?page=welcome");
+        if (this.isClusterInitialized) {
+          if (to.path === "/init") {
+            // cannot navigate to initialization page if cluster is already initialized
+            return false;
+          } else {
+            next();
+          }
         } else {
-          next();
+          // cluster not initialized
+          if (to.path === "/init") {
+            console.log("ok, proceed"); ////
+            next();
+          } else {
+            // redirect: only /init is allowed
+            console.log("GOING TO INIT/WELCOME"); ////
+
+            next("/init?page=welcome");
+          }
         }
       });
     },
@@ -161,9 +167,9 @@ export default {
       //   return;
       // }
 
-      const isClusterInitialized = false; //// use response
+      const isClusterInitialized = true; //// use response
 
-      this.setIsClusterInitializedInStore(isClusterInitialized);
+      this.setClusterInitializedInStore(isClusterInitialized);
 
       if (this.isClusterInitialized) {
         // check for software updates
@@ -172,6 +178,8 @@ export default {
         // redirect to cluster initialization page
         this.$router.replace("/init?page=welcome");
       }
+
+      this.configureClusterInitializationRedirect();
     },
     async listUpdates() {
       const taskAction = "list-updates";

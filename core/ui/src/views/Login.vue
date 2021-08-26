@@ -41,13 +41,13 @@
                 </cv-form>
               </div>
               <div v-else-if="step === 'password'">
-                <span
-                  >{{ $t("login.logging_in_as") }}
-                  <strong>{{ username }}</strong></span
-                >
-                <cv-link @click="goToUsername" class="not-you">{{
-                  $t("login.not_you")
-                }}</cv-link>
+                <div class="login-as">
+                  {{ $t("login.logging_in_as") }}
+                  <strong>{{ username }}</strong>
+                  <cv-link @click="goToUsername" class="not-you">{{
+                    $t("login.not_you")
+                  }}</cv-link>
+                </div>
                 <cv-form @submit.prevent="checkPassword" class="login-form">
                   <!-- hidden username field (to help browser saving credentials) -->
                   <cv-text-input
@@ -90,8 +90,7 @@
 <script>
 import { IconService } from "@nethserver/ns8-ui-lib";
 import LoginService from "@/mixins/login";
-import { mapState } from "vuex";
-import { mapActions } from "vuex";
+import { mapState, mapActions } from "vuex";
 import to from "await-to-js";
 import WebSocketService from "@/mixins/websocket";
 import {
@@ -132,9 +131,23 @@ export default {
   computed: {
     ...mapState(["loggedUser"]),
   },
+  created() {
+    const rememberedUsername = this.getFromStorage("username");
+
+    if (rememberedUsername) {
+      this.rememberUsername = true;
+      this.username = rememberedUsername;
+      this.step = "password";
+    }
+  },
   mounted() {
     console.log("mounted login page"); ////
-    this.focusElement("usernameInput");
+
+    if (this.step === "username") {
+      this.focusElement("usernameInput");
+    } else {
+      this.focusElement("passwordInput");
+    }
   },
   methods: {
     ...mapActions(["setLoggedUserInStore"]),
@@ -177,6 +190,14 @@ export default {
 
         this.saveToStorage("loginInfo", loginInfo);
         this.setLoggedUserInStore(this.username);
+
+        if (this.rememberUsername) {
+          console.log("saving username to storage", this.username); ////
+          this.saveToStorage("username", this.username);
+        } else {
+          this.deleteFromStorage("username");
+        }
+
         const queryParams = this.getQueryParamsForCore();
 
         if (queryParams.redirect) {
@@ -188,7 +209,7 @@ export default {
         } else {
           // go to NS8 home page
 
-          this.$router.replace("/dashboard");
+          this.$router.replace("/status");
         }
 
         // emit login event to initialize webapp (connect ws, invoke api...)
@@ -253,6 +274,10 @@ export default {
   width: 50%;
   height: 100%;
   margin-right: -1rem;
+}
+
+.login-as {
+  margin-top: $spacing-05;
 }
 
 .not-you {

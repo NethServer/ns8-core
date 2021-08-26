@@ -3,7 +3,7 @@
     <cv-header-menu-button
       aria-label="Header menu"
       aria-controls="side-nav"
-      @click="toggleMobileSideMenu"
+      @click="toggleMobileSideMenuShownInStore"
     />
     <cv-skip-to-content href="#main-content">{{
       $t("shell.skip_to_content")
@@ -12,9 +12,11 @@
       $root.config.PRODUCT_NAME
     }}</cv-header-name>
     <cv-header-nav>
-      <cv-header-menu-item to="/dashboard" class="status">
+      <cv-header-menu-item to="/status" class="status">
         <div class="badge-container">
-          <span>{{ $t("shell.status") }}</span>
+          <span v-shortkey.once="['ctrl', 'd']" @shortkey="goToClusterStatus">{{
+            $t("shell.status")
+          }}</span>
           <span class="green-badge right-badge"></span>
         </div>
       </cv-header-menu-item>
@@ -27,6 +29,8 @@
         :label="$t('shell.search')"
         :aria-label="$t('shell.search')"
         @click="expandSearch"
+        v-shortkey.once="['ctrl', 's']"
+        @shortkey="expandSearch"
       >
         <search-20 />
       </cv-header-global-action>
@@ -35,7 +39,7 @@
         :label="$t('notification.notifications')"
         :aria-label="$t('notification.notifications')"
         class="notifications-button"
-        @click="toggleNotificationDrawer"
+        @click="toggleNotificationDrawerShownInStore"
       >
         <Notification20 />
         <span
@@ -58,15 +62,15 @@
       <cv-header-global-action
         :label="$t('shell.app_launcher')"
         :aria-label="$t('shell.app_launcher')"
-        @click="toggleAppDrawer"
+        @click="toggleAppDrawerShownInStore"
         tipPosition="bottom"
         tipAlignment="end"
       >
         <app-switcher-20 />
       </cv-header-global-action>
     </template>
-    <AppDrawer :isShown="isAppDrawerShown" />
-    <NotificationDrawer :isShown="isNotificationDrawerShown" />
+    <AppDrawer />
+    <NotificationDrawer />
   </cv-header>
 </template>
 
@@ -74,9 +78,7 @@
 import Notification20 from "@carbon/icons-vue/es/notification/20";
 import UserAvatar20 from "@carbon/icons-vue/es/user--avatar/20";
 import AppSwitcher20 from "@carbon/icons-vue/es/app-switcher/20";
-import { mapState } from "vuex";
-import { mapActions } from "vuex";
-import { mapGetters } from "vuex";
+import { mapState, mapActions, mapGetters } from "vuex";
 import GlobalSearch from "@/components/GlobalSearch";
 import AppDrawer from "@/components/AppDrawer";
 import Search20 from "@carbon/icons-vue/es/search/20";
@@ -84,6 +86,8 @@ import LoginService from "@/mixins/login";
 import WebSocketService from "@/mixins/websocket";
 import NotificationDrawer from "@/components/NotificationDrawer";
 import { StorageService } from "@nethserver/ns8-ui-lib";
+
+//// use IconService instead importing all icons
 
 export default {
   name: "ShellHeader",
@@ -100,22 +104,18 @@ export default {
   data() {
     return {
       isSearchExpanded: false,
-      isAppDrawerShown: false,
     };
   },
   computed: {
-    ...mapState(["isNotificationDrawerShown", "notifications"]),
-    ...mapGetters([
-      "unreadNotificationsCount",
-      "ongoingNotificationsCount",
-      "getUpdatesCount",
-    ]),
+    ...mapState(["notifications"]),
+    ...mapGetters(["unreadNotificationsCount", "ongoingNotificationsCount"]),
   },
   methods: {
-    ...mapActions(["setIsNotificationDrawerShownInStore"]),
-    toggleNotificationDrawer() {
-      this.setIsNotificationDrawerShownInStore(!this.isNotificationDrawerShown);
-    },
+    ...mapActions([
+      "toggleMobileSideMenuShownInStore",
+      "toggleAppDrawerShownInStore",
+      "toggleNotificationDrawerShownInStore",
+    ]),
     logout() {
       this.$root.$emit("logout");
     },
@@ -125,12 +125,8 @@ export default {
     closeSearch() {
       this.isSearchExpanded = false;
     },
-    toggleMobileSideMenu() {
-      this.$root.$emit("toggleMobileSideMenu");
-    },
-    toggleAppDrawer() {
-      this.isAppDrawerShown = !this.isAppDrawerShown;
-      console.log("toggleAppDrawer", this.isAppDrawerShown); ////
+    goToClusterStatus() {
+      this.$router.push("/status");
     },
   },
 };

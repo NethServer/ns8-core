@@ -8,6 +8,8 @@ export default new Vuex.Store({
   state: {
     notifications: [],
     isNotificationDrawerShown: false,
+    isMobileSideMenuShown: false,
+    isAppDrawerShown: false,
     taskErrorToShow: false,
     loggedUser: "",
     socket: {
@@ -80,8 +82,23 @@ export default new Vuex.Store({
     createNotification(state, notification) {
       state.notifications.unshift(notification);
     },
-    setIsNotificationDrawerShown(state, value) {
+    setNotificationDrawerShown(state, value) {
       state.isNotificationDrawerShown = value;
+    },
+    toggleNotificationDrawerShown(state) {
+      state.isNotificationDrawerShown = !state.isNotificationDrawerShown;
+    },
+    setMobileSideMenuShown(state, value) {
+      state.isMobileSideMenuShown = value;
+    },
+    toggleMobileSideMenuShown(state) {
+      state.isMobileSideMenuShown = !state.isMobileSideMenuShown;
+    },
+    setAppDrawerShown(state, value) {
+      state.isAppDrawerShown = value;
+    },
+    toggleAppDrawerShown(state) {
+      state.isAppDrawerShown = !state.isAppDrawerShown;
     },
     setTaskErrorToShow(state, task) {
       state.taskErrorToShow = task;
@@ -112,7 +129,7 @@ export default new Vuex.Store({
     setUpdates(state, updates) {
       state.updates = updates;
     },
-    setIsClusterInitialized(state, value) {
+    setClusterInitialized(state, value) {
       state.isClusterInitialized = value;
     },
     //// does it work?
@@ -159,8 +176,23 @@ export default new Vuex.Store({
     createNotificationInStore(context, notification) {
       context.commit("createNotification", notification);
     },
-    setIsNotificationDrawerShownInStore(context, value) {
-      context.commit("setIsNotificationDrawerShown", value);
+    setNotificationDrawerShownInStore(context, value) {
+      context.commit("setNotificationDrawerShown", value);
+    },
+    toggleNotificationDrawerShownInStore(context) {
+      context.commit("toggleNotificationDrawerShown");
+    },
+    setMobileSideMenuShownInStore(context, value) {
+      context.commit("setMobileSideMenuShown", value);
+    },
+    toggleMobileSideMenuShownInStore(context) {
+      context.commit("toggleMobileSideMenuShown");
+    },
+    setAppDrawerShownInStore(context, value) {
+      context.commit("setAppDrawerShown", value);
+    },
+    toggleAppDrawerShownInStore(context) {
+      context.commit("toggleAppDrawerShown");
     },
     setTaskErrorToShowInStore(context, task) {
       context.commit("setTaskErrorToShow", task);
@@ -177,8 +209,8 @@ export default new Vuex.Store({
     setUpdatesInStore(context, updates) {
       context.commit("setUpdates", updates);
     },
-    setIsClusterInitializedInStore(context, value) {
-      context.commit("setIsClusterInitialized", value);
+    setClusterInitializedInStore(context, value) {
+      context.commit("setClusterInitialized", value);
     },
   },
   modules: {},

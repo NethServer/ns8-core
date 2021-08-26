@@ -84,7 +84,7 @@ export default {
         },
         {
           category: "System",
-          name: "Cluster dashboard",
+          name: "Cluster status",
           description: "Monitor cluster status",
           tags: "monitor,status",
         },

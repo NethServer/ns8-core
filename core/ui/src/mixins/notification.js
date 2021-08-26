@@ -1,6 +1,4 @@
-import { mapState } from "vuex";
-import { mapActions } from "vuex";
-import { mapGetters } from "vuex";
+import { mapState, mapActions, mapGetters } from "vuex";
 import to from "await-to-js";
 import { UtilService, NsToastNotification } from "@nethserver/ns8-ui-lib";
 
@@ -16,7 +14,7 @@ export default {
       "createNotificationInStore",
       "updateNotificationInStore",
       "setTaskErrorToShowInStore",
-      "setIsNotificationDrawerShownInStore",
+      "setNotificationDrawerShownInStore",
     ]),
     createNotification(notification) {
       // fill missing attributes
@@ -129,7 +127,7 @@ export default {
       }
 
       // hide notification drawer
-      this.setIsNotificationDrawerShownInStore(false);
+      this.setNotificationDrawerShownInStore(false);
     },
     async handleProgressTaskMessage(taskPath, taskId, payload) {
       const [err, contextResponse] = await to(this.getTaskContext(taskPath));

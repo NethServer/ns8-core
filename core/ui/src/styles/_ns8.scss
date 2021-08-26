@@ -165,6 +165,15 @@ a {
   margin-top: $spacing-05;
 }
 
+.ghost-button-dark-bg {
+  color: $inverse-link;
+}
+
+.ghost-button-dark-bg:hover {
+  background-color: $hover-secondary;
+  color: $inverse-link;
+}
+
 // status badges
 .badge-container {
   display: flex;

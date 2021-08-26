@@ -1,7 +1,8 @@
 <template>
   <transition name="slide-menu">
     <div
-      v-if="isMenuShown"
+      v-if="isMobileSideMenuShown"
+      v-click-outside="clickOutside"
       class="
         mobile-side-menu
         cv-side-nav
@@ -9,7 +10,6 @@
         bx--side-nav--expanded
       "
     >
-      <!-- v-click-outside="clickOutside" //// -->
       <SideMenuContent />
     </div>
   </transition>
@@ -17,40 +17,35 @@
 
 <script>
 import SideMenuContent from "@/components/SideMenuContent";
+import { mapState, mapActions } from "vuex";
 
 export default {
   name: "MobileSideMenu",
   components: { SideMenuContent },
   data() {
     return {
-      isMenuShown: false,
-      isClickOutsideEnabled: false, ////
+      isTransitioning: false,
     };
   },
-  created() {
-    // register to logout event
-    this.$root.$on("toggleMobileSideMenu", this.toggleMobileSideMenu);
+  computed: {
+    ...mapState(["isMobileSideMenuShown"]),
   },
-  mounted() {
-    // prevent glitch: click-outside is incorrectly detected when mobile side menu appears
-    setTimeout(() => {
-      this.isClickOutsideEnabled = true; ////
-    }, 200);
-  },
-  beforeDestroy() {
-    // remove event listener
-    this.$root.$off("toggleMobileSideMenu", this.toggleMobileSideMenu);
-  },
-  methods: {
-    toggleMobileSideMenu() {
-      this.isMenuShown = !this.isMenuShown;
-    },
-    clickOutside() {
-      console.log("click outside mobile side menu", this.isMenuShown); //// fix
+  watch: {
+    isMobileSideMenuShown: function () {
+      this.isTransitioning = true;
 
       setTimeout(() => {
-        this.isMenuShown = false;
-      }, 200);
+        this.isTransitioning = false;
+      }, 300); // same duration as .slide-menu transition
+    },
+  },
+  methods: {
+    ...mapActions(["setMobileSideMenuShownInStore"]),
+    clickOutside() {
+      if (!this.isTransitioning) {
+        // close menu
+        this.setMobileSideMenuShownInStore(false);
+      }
     },
   },
 };

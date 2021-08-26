@@ -66,7 +66,7 @@
                 ref="newPasswordConfirm"
               >
               </cv-text-input>
-              <NsButton kind="primary" :icon="Edit20">{{
+              <NsButton kind="primary" :icon="Password20">{{
                 $t("init.change_password")
               }}</NsButton>
             </cv-form>
@@ -259,7 +259,7 @@ export default {
     this.checkPasswordChange();
   },
   methods: {
-    ...mapActions(["setIsClusterInitializedInStore"]),
+    ...mapActions(["setClusterInitializedInStore"]),
     selectCreateCluster() {
       this.$router.push("/init?page=create");
       this.focusElement("vpnEndpointAddress");
@@ -445,8 +445,8 @@ export default {
 
       //// todo
 
-      this.setIsClusterInitializedInStore(true);
-      this.$router.replace("/dashboard");
+      this.setClusterInitializedInStore(true);
+      this.$router.replace("/status");
       console.log("done"); ////
     },
     validateJoinCluster() {
@@ -472,8 +472,8 @@ export default {
 
       //// todo
 
-      this.setIsClusterInitializedInStore(true);
-      this.$router.replace("/dashboard");
+      this.setClusterInitializedInStore(true);
+      this.$router.replace("/status");
       console.log("done"); ////
     },
   },

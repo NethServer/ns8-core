@@ -1,12 +1,16 @@
 <template>
   <transition name="slide-notifications">
-    <div v-if="isShown" class="notification-drawer">
+    <div
+      v-if="isNotificationDrawerShown"
+      v-click-outside="clickOutside"
+      class="notification-drawer"
+    >
       <div class="notification-drawer__header">
         <h4>{{ $t("notification.notifications") }}</h4>
         <span
           >{{ unreadNotificationsCount }} {{ $t("notification.unread") }}</span
         >
-        <button
+        <!-- <button //// remove
           aria-label="close"
           type="button"
           data-notification-btn
@@ -17,7 +21,7 @@
           @click="closeDrawer"
         >
           <Close20 class="bx--toast-notification__close-icon" />
-        </button>
+        </button> -->
       </div>
       <div v-if="ongoingNotifications.length" class="notification-divider">
         {{ $t("notification.ongoing") }}
@@ -73,29 +77,20 @@
 </template>
 
 <script>
-import Close20 from "@carbon/icons-vue/es/close/20";
-import { mapActions } from "vuex";
-import { mapGetters } from "vuex";
+import { mapState, mapActions, mapGetters } from "vuex";
 import NotificationService from "@/mixins/notification";
 
 export default {
   name: "NotificationDrawer",
   mixins: [NotificationService],
-  components: {
-    Close20, //// use mixin
-  },
-  props: {
-    isShown: {
-      type: Boolean,
-      default: false,
-    },
-  },
   data() {
     return {
       isNotificationDetailsShown: false,
+      isTransitioning: false,
     };
   },
   computed: {
+    ...mapState(["isNotificationDrawerShown"]),
     ...mapGetters([
       "unreadNotifications",
       "unreadNotificationsCount",
@@ -103,16 +98,28 @@ export default {
       "recentNotifications",
     ]),
   },
+  watch: {
+    isNotificationDrawerShown: function () {
+      this.isTransitioning = true;
+
+      setTimeout(() => {
+        this.isTransitioning = false;
+      }, 300); // same duration as .slide-notifications transition
+    },
+  },
   methods: {
     ...mapActions([
-      "setIsNotificationDrawerShownInStore",
+      "setNotificationDrawerShownInStore",
       "setNotificationReadInStore",
     ]),
-    closeDrawer() {
-      this.setIsNotificationDrawerShownInStore(false);
-    },
     notificationDetailsHidden() {
       this.isNotificationDetailsShown = false;
+    },
+    clickOutside() {
+      if (!this.isTransitioning) {
+        // close menu
+        this.setNotificationDrawerShownInStore(false);
+      }
     },
   },
 };

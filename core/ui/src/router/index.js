@@ -1,6 +1,6 @@
 import Vue from "vue";
 import VueRouter from "vue-router";
-import Dashboard from "../views/Dashboard";
+import ClusterStatus from "../views/ClusterStatus";
 import Login from "../views/Login";
 import Settings from "../views/Settings";
 import Applications from "../views/Applications";
@@ -13,11 +13,11 @@ import InitializeCluster from "../views/InitializeCluster";
 Vue.use(VueRouter);
 
 const routes = [
-  { path: "/", redirect: "/dashboard" },
+  { path: "/", redirect: "/status" },
   {
-    path: "/dashboard",
-    name: "Dashboard",
-    component: Dashboard,
+    path: "/status",
+    name: "ClusterStatus",
+    component: ClusterStatus,
   },
   {
     path: "/login",

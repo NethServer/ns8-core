@@ -43,8 +43,7 @@
 </template>
 
 <script>
-import { mapState } from "vuex";
-import { mapActions } from "vuex";
+import { mapState, mapActions } from "vuex";
 import TaskHierarchy from "@/components/TaskHierarchy";
 import { TaskService } from "@nethserver/ns8-ui-lib";
 

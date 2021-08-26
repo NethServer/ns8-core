@@ -92,7 +92,9 @@
     "app_launcher": "App launcher",
     "search_placeholder": "Search...",
     "no_search_results": "No results",
-    "no_search_results_description": "Try changing your search query"
+    "no_search_results_description": "Try changing your search query",
+    "no_apps": "No apps",
+    "no_apps_description": "To install apps go to Software center"
   },
   "notification": {
     "notifications": "Notifications",
@@ -224,7 +226,7 @@
     "no_logs_found_description": "Try changing your search filters",
     "invalid_interval": "Invalid time interval"
   },
-  "dashboard": {
+  "cluster_status": {
     "title": "Cluster status"
   }
 }

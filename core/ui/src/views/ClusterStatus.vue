@@ -2,7 +2,7 @@
   <div class="bx--grid bx--grid--full-width">
     <div class="bx--row">
       <div class="bx--col-lg-16 page-title">
-        <h2>{{ $t("dashboard.title") }}</h2>
+        <h2>{{ $t("cluster_status.title") }}</h2>
       </div>
     </div>
     <!-- //// delete -->
@@ -275,7 +275,7 @@ import {
 //// rename to Status?
 
 export default {
-  name: "Dashboard",
+  name: "ClusterStatus",
   mixins: [
     NotificationService,
     QueryParamService,
@@ -284,7 +284,7 @@ export default {
     WebSocketService,
   ],
   pageTitle() {
-    return this.$t("dashboard.title");
+    return this.$t("cluster_status.title");
   },
   data() {
     return {

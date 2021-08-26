@@ -32,7 +32,7 @@
         </cv-side-nav-menu-item>
       </cv-side-nav-menu>
       <cv-side-nav-link
-        to="/software-center"
+        @click="goToSoftwareCenter"
         :active="isLinkActive('/software-center')"
       >
         <template v-slot:nav-icon><Application20 /></template>
@@ -46,11 +46,14 @@
         <template v-slot:nav-icon><Save20 /></template>
         {{ $t("backup.title") }}
       </cv-side-nav-link>
-      <cv-side-nav-link to="/logs" :active="isLinkActive('/logs')">
+      <cv-side-nav-link @click="goToLogs" :active="isLinkActive('/logs')">
         <template v-slot:nav-icon><Catalog20 /></template>
         {{ $t("logs.title") }}
       </cv-side-nav-link>
-      <cv-side-nav-link to="/settings" :active="isLinkActive('/settings')">
+      <cv-side-nav-link
+        @click="goToSettings"
+        :active="isLinkActive('/settings')"
+      >
         <template v-slot:nav-icon><Settings20 /></template>
         {{ $t("settings.title") }}
       </cv-side-nav-link>
@@ -65,7 +68,7 @@ import Save20 from "@carbon/icons-vue/es/save/20";
 import Settings20 from "@carbon/icons-vue/es/settings/20";
 import Catalog20 from "@carbon/icons-vue/es/catalog/20";
 import Application20 from "@carbon/icons-vue/es/application/20";
-import { mapGetters } from "vuex";
+import { mapActions, mapGetters } from "vuex";
 
 export default {
   name: "SideMenuContent",
@@ -84,8 +87,21 @@ export default {
     ...mapGetters(["getUpdatesCount"]),
   },
   methods: {
+    ...mapActions(["setMobileSideMenuShownInStore"]),
     isLinkActive(path) {
       return this.$route.path.includes(path);
+    },
+    goToSoftwareCenter() {
+      this.$router.push("/software-center");
+      this.setMobileSideMenuShownInStore(false);
+    },
+    goToLogs() {
+      this.$router.push("/logs");
+      this.setMobileSideMenuShownInStore(false);
+    },
+    goToSettings() {
+      this.$router.push("/settings");
+      this.setMobileSideMenuShownInStore(false);
     },
   },
 };

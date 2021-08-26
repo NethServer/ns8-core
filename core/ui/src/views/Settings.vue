@@ -51,7 +51,7 @@
           <h6>Test</h6>
         </NsTile>
       </div>
-      <div class="bx--col-md-2 bx--col-lg-4">
+      <div class="bx--col-md-4 bx--col-lg-4">
         <NsTile
           :light="true"
           class="content-tile"
