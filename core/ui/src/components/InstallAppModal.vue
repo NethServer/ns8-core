@@ -121,7 +121,13 @@ export default {
       this.nodes = nodes;
     },
     async installInstance() {
-      const version = this.app.versions[0].tag;
+      let version;
+
+      if (this.app.versions.length) {
+        version = this.app.versions[0].tag;
+      } else {
+        version = "latest"; //// remove?
+      }
       const taskAction = "add-module";
 
       // register to task completion
@@ -163,6 +169,9 @@ export default {
       this.$root.$off("add-module-completed");
 
       this.$emit("installationCompleted");
+
+      // show new app in app drawer
+      this.$root.$emit("reloadAppDrawer");
     },
     deselectOtherNodes(node) {
       for (let n of this.nodes) {

@@ -137,6 +137,14 @@ export default {
         return;
       }
 
+      //// remove
+      if (payload.progress != 0 && payload.progress != 100) {
+        console.log("@@ PROGRESS", payload.progress); ////
+        console.log("@@ PAYLOAD", payload); ////
+        console.log("@@ taskPath", taskPath); ////
+        console.log("@@ taskId", taskId); ////
+      }
+
       const taskStatus = payload.status;
       const taskContext = contextResponse.data.data.context;
       let taskResult;
@@ -176,6 +184,11 @@ export default {
           (subTask) => subTask.context.id === taskContext.id
         );
 
+        //// remove
+        if (payload.progress != 0 && payload.progress != 100) {
+          console.log("@@ subtask! parent", taskContext.parent); ////
+        }
+
         if (!subTask) {
           // add subtask to subTasks list
 
@@ -205,6 +218,11 @@ export default {
         console.log("subtask status", taskStatus); ////
       } else {
         // root task
+
+        //// remove
+        if (payload.progress != 0 && payload.progress != 100) {
+          console.log("@@ root task"); ////
+        }
 
         // console.log("ROOT TASK, PROGRESS", payload.progress); ////
 

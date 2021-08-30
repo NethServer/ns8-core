@@ -6,7 +6,7 @@
       :clear-aria-label="$t('common.clear_search')"
       v-model="query"
       v-debounce="search"
-      ref="search"
+      ref="global-search"
     >
     </cv-search>
     <div v-if="showResults" class="search-results">
@@ -106,7 +106,7 @@ export default {
   },
   mounted() {
     console.log("global search mounted"); ////
-    this.focusElement("search");
+    this.focusElement("global-search");
 
     // prevent glitch: click-outside is incorrectly detected when global search appears
     setTimeout(() => {

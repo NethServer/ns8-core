@@ -172,7 +172,7 @@ export default {
 }
 
 .notification-divider {
-  margin: $spacing-07 $spacing-05 $spacing-03;
+  margin: $spacing-07 0 $spacing-03;
   padding-bottom: $spacing-02;
   border-bottom: 1px solid $text-02;
   color: $active-ui;

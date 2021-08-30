@@ -146,7 +146,6 @@ export default {
     // invoked on webapp loading and after logging in
     initNs8() {
       this.initWebSocket();
-
       this.retrieveClusterStatus();
     },
     async retrieveClusterStatus() {

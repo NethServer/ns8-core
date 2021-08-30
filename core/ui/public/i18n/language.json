@@ -92,9 +92,24 @@
     "app_launcher": "App launcher",
     "search_placeholder": "Search...",
     "no_search_results": "No results",
-    "no_search_results_description": "Try changing your search query",
+    "no_search_results_description": "Try changing your search query"
+  },
+  "app_drawer": {
     "no_apps": "No apps",
-    "no_apps_description": "To install apps go to Software center"
+    "no_apps_description": "To install apps go to Software center",
+    "cannot_retrieve_installed_apps": "Cannot retrieve installed apps",
+    "search_placeholder": "Search app...",
+    "no_search_results": "No results",
+    "no_search_results_description": "Try changing your search query",
+    "edit_favorite_apps": "Edit favorite apps",
+    "favorites": "Favorites",
+    "favorite": "Favorite",
+    "set_favorite_apps": "Set favorite apps",
+    "all_apps": "All apps",
+    "search_results": "Search results",
+    "grid": "Grid",
+    "list": "List",
+    "done_edit_favorites": "Done"
   },
   "notification": {
     "notifications": "Notifications",
@@ -172,7 +187,7 @@
     "update": "Update",
     "update_all": "Update all apps",
     "update_will_start_in_a_moment": "Update will start in a moment...",
-    "add_to_launcher": "Add to launcher",
+    "set_as_favorite": "Set as favorite",
     "details": "Details",
     "uninstall": "Uninstall",
     "system_up_to_date": "Your system is up to date",

@@ -10,6 +10,7 @@ export default new Vuex.Store({
     isNotificationDrawerShown: false,
     isMobileSideMenuShown: false,
     isAppDrawerShown: false,
+    isEditingFavoriteApps: false,
     taskErrorToShow: false,
     loggedUser: "",
     socket: {
@@ -99,6 +100,9 @@ export default new Vuex.Store({
     },
     toggleAppDrawerShown(state) {
       state.isAppDrawerShown = !state.isAppDrawerShown;
+    },
+    setEditingFavoriteApps(state, value) {
+      state.isEditingFavoriteApps = value;
     },
     setTaskErrorToShow(state, task) {
       state.taskErrorToShow = task;
@@ -193,6 +197,9 @@ export default new Vuex.Store({
     },
     toggleAppDrawerShownInStore(context) {
       context.commit("toggleAppDrawerShown");
+    },
+    setEditingFavoriteAppsInStore(context, value) {
+      context.commit("setEditingFavoriteApps", value);
     },
     setTaskErrorToShowInStore(context, task) {
       context.commit("setTaskErrorToShow", task);

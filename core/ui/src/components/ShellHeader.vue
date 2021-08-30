@@ -14,9 +14,11 @@
     <cv-header-nav>
       <cv-header-menu-item to="/status" class="status">
         <div class="badge-container">
-          <span v-shortkey.once="['ctrl', 'd']" @shortkey="goToClusterStatus">{{
-            $t("shell.status")
-          }}</span>
+          <span
+            v-shortkey.once="['ctrl', 'shift', 's']"
+            @shortkey="goToClusterStatus"
+            >{{ $t("shell.status") }}</span
+          >
           <span class="green-badge right-badge"></span>
         </div>
       </cv-header-menu-item>
@@ -29,7 +31,7 @@
         :label="$t('shell.search')"
         :aria-label="$t('shell.search')"
         @click="expandSearch"
-        v-shortkey.once="['ctrl', 's']"
+        v-shortkey.once="['ctrl', 'shift', 'f']"
         @shortkey="expandSearch"
       >
         <search-20 />
@@ -65,6 +67,8 @@
         @click="toggleAppDrawerShownInStore"
         tipPosition="bottom"
         tipAlignment="end"
+        v-shortkey.once="['ctrl', 'shift', 'a']"
+        @shortkey="toggleAppDrawerShownInStore"
       >
         <app-switcher-20 />
       </cv-header-global-action>
