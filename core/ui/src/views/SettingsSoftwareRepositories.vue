@@ -274,7 +274,7 @@ import {
 } from "@nethserver/ns8-ui-lib";
 
 export default {
-  name: "SettingsSoftwareRepository",
+  name: "SettingsSoftwareRepositories",
   mixins: [
     TaskService,
     UtilService,

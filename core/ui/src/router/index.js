@@ -6,7 +6,7 @@ import Settings from "../views/Settings";
 import Applications from "../views/Applications";
 import SoftwareCenter from "../views/SoftwareCenter";
 import Logs from "../views/Logs";
-import SettingsSoftwareRepository from "../views/SettingsSoftwareRepository";
+import SettingsSoftwareRepositories from "../views/SettingsSoftwareRepositories";
 import SoftwareCenterAppInstances from "../views/SoftwareCenterAppInstances";
 import InitializeCluster from "../views/InitializeCluster";
 
@@ -36,8 +36,8 @@ const routes = [
   },
   {
     path: "/settings/software-repository",
-    name: "SettingsSoftwareRepository",
-    component: SettingsSoftwareRepository,
+    name: "SettingsSoftwareRepositories",
+    component: SettingsSoftwareRepositories,
   },
   {
     path: "/apps/:appId",

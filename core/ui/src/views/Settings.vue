@@ -11,7 +11,7 @@
           :light="true"
           class="content-tile"
           kind="clickable"
-          @click="goToSettingsSoftwareRepository"
+          @click="goToSettingsSoftwareRepositories"
           :icon="Application32"
         >
           <h6>{{ $t("settings.sw_repositories") }}</h6>
@@ -97,7 +97,7 @@ export default {
     actionClick() {
       console.log("actionClick //// remove"); ////
     },
-    goToSettingsSoftwareRepository() {
+    goToSettingsSoftwareRepositories() {
       this.$router.push("/settings/software-repository");
     },
   },
