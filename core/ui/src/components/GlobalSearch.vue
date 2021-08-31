@@ -5,6 +5,7 @@
       :placeholder="$t('shell.search_placeholder')"
       :clear-aria-label="$t('common.clear_search')"
       v-model="query"
+      @input="onSearchInput"
       v-debounce="search"
       ref="global-search"
     >
@@ -155,6 +156,12 @@ export default {
       }
       this.showResults = true;
     },
+    onSearchInput() {
+      // needed to manage clear search button
+      if (!this.query.length) {
+        this.search();
+      }
+    },
   },
 };
 </script>
@@ -198,5 +205,33 @@ export default {
 
 .result-icon {
   margin-right: $spacing-03;
+}
+</style>
+
+<style lang="scss">
+@import "../styles/carbon-utils";
+
+// global styles
+.global-search .bx--structured-list {
+  margin-bottom: 0;
+}
+
+.global-search .search-results .bx--structured-list-td,
+.global-search .search-results .empty-state {
+  background-color: $ui-05 !important;
+  color: $ui-01 !important;
+}
+
+.global-search
+  .bx--structured-list.bx--structured-list--condensed
+  .bx--structured-list-td,
+.global-search
+  .bx--structured-list.bx--structured-list--condensed
+  .bx--structured-list-th {
+  padding: $spacing-05 !important;
+}
+
+.global-search .bx--structured-list-row {
+  border-color: #393939;
 }
 </style>

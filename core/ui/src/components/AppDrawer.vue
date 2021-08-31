@@ -35,8 +35,10 @@
             <cv-search
               :label="$t('app_drawer.search_placeholder')"
               :placeholder="$t('app_drawer.search_placeholder')"
+              :clear-aria-label="$t('common.clear_search')"
               v-model.trim="searchQuery"
               v-debounce="searchApp"
+              @input="onSearchInput"
               class="app-drawer-search"
               ref="appSearch"
             >
@@ -189,7 +191,7 @@
                         v-for="(app, index) in favoriteApps"
                         :key="index"
                       >
-                        <cv-structured-list-data class="app-drawer-app">
+                        <cv-structured-list-data class="app-list-element">
                           <div class="app" @click="openApp(app)">
                             <Rocket32 class="app-icon" />
                             <span>{{ app.id }}</span>
@@ -421,10 +423,10 @@ export default {
       apps.sort(this.sortModuleInstances());
       this.apps = apps;
     },
-    searchApp(query) {
+    searchApp() {
       // clean query
       const cleanRegex = /[^a-zA-Z0-9]/g;
-      const queryText = query.replace(cleanRegex, "");
+      const queryText = this.searchQuery.replace(cleanRegex, "");
 
       // empty search
       if (queryText.length == 0) {
@@ -453,14 +455,18 @@ export default {
       this.setEditingFavoriteAppsInStore(true);
     },
     doneEditFavorites() {
-      console.log("doneEditFavorites"); ////
-
       //// todo call api to save favorites
 
       setTimeout(() => {
         this.setEditingFavoriteAppsInStore(false);
         this.loadAppDrawerViewFromStorage();
       }, 100);
+    },
+    onSearchInput() {
+      // needed to manage clear search button
+      if (!this.searchQuery.length) {
+        this.searchApp();
+      }
     },
   },
 };
@@ -624,11 +630,35 @@ export default {
 @import "../styles/carbon-utils";
 
 // global styles
-.cv-structured-list-data.bx--structured-list-td.app-drawer-app:hover {
+.app-drawer .bx--structured-list-td,
+.app-drawer .empty-state {
+  background-color: $ui-05 !important;
+  color: $ui-01 !important;
+}
+
+.app-drawer
+  .bx--structured-list.bx--structured-list--condensed
+  .bx--structured-list-td,
+.app-drawer
+  .bx--structured-list.bx--structured-list--condensed
+  .bx--structured-list-th {
+  padding: $spacing-05 !important;
+}
+
+.app-drawer .bx--structured-list-row {
+  border-color: #393939;
+}
+
+.app-drawer .bx--structured-list {
+  margin-bottom: 0;
+}
+
+.app-drawer
+  .cv-structured-list-data.bx--structured-list-td.app-list-element:hover {
   background-color: #353535 !important;
 }
 
-.toggle-app-favorite .bx--toggle-input__label .bx--toggle__switch {
+.app-drawer .toggle-app-favorite .bx--toggle-input__label .bx--toggle__switch {
   margin-top: $spacing-03;
 }
 </style>

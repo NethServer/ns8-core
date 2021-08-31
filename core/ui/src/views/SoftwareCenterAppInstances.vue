@@ -291,4 +291,12 @@ export default {
 .app-actions {
   text-align: end;
 }
+
+.mg-bottom-sm {
+  margin-bottom: $spacing-03;
+}
+
+.align-items-center {
+  align-items: center;
+}
 </style>

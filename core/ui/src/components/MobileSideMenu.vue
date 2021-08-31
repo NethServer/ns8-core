@@ -4,6 +4,7 @@
       v-if="isMobileSideMenuShown"
       v-click-outside="clickOutside"
       class="
+        ns8-side-nav
         mobile-side-menu
         cv-side-nav
         bx--side-nav bx--side-nav__navigation

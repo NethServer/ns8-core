@@ -48,6 +48,7 @@
     "uppercase_letter": "Uppercase letter",
     "number": "Number",
     "symbol": "Symbol",
+    "equal": "Equal",
     "old_new_passwords_must_be_different": "New password must be different from current password",
     "passwords_do_not_match": "Passwords do not match",
     "password_not_secure": "Password must meet all security requirements below"

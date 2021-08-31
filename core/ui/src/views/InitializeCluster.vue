@@ -45,10 +45,12 @@
               >
               </cv-text-input>
               <NsPasswordInput
-                :label="$t('init.new_password')"
+                :newPasswordLabel="$t('init.new_password')"
+                :confirmPasswordLabel="$t('init.new_password_confirm')"
                 v-model="newPassword"
                 @passwordValidation="onPasswordValidation"
-                :invalid-message="$t(error.newPassword)"
+                :newPasswordInvalidMessage="$t(error.newPassword)"
+                :confirmPasswordInvalidMessage="$t(error.confirmPassword)"
                 :passwordHideLabel="$t('password.hide_password')"
                 :passwordShowLabel="$t('password.show_password')"
                 :lengthLabel="$t('password.long_enough')"
@@ -56,16 +58,9 @@
                 :uppercaseLabel="$t('password.uppercase_letter')"
                 :numberLabel="$t('password.number')"
                 :symbolLabel="$t('password.symbol')"
-                ref="newPassword"
+                :equalLabel="$t('password.equal')"
+                :focus="focusPasswordField"
               />
-              <cv-text-input
-                :label="$t('init.new_password_confirm')"
-                v-model="newPasswordConfirm"
-                :invalid-message="$t(error.newPasswordConfirm)"
-                type="password"
-                ref="newPasswordConfirm"
-              >
-              </cv-text-input>
               <NsButton kind="primary" :icon="Password20">{{
                 $t("init.change_password")
               }}</NsButton>
@@ -226,8 +221,8 @@ export default {
       isPasswordChangeNeeded: false,
       currentPassword: "",
       newPassword: "",
-      newPasswordConfirm: "",
-      isPasswordValid: false,
+      passwordValidation: false,
+      focusPasswordField: { element: "" },
       vpnEndpointAddress: "",
       vpnEndpointPort: "",
       vpnCidr: "",
@@ -235,7 +230,7 @@ export default {
       error: {
         currentPassword: "",
         newPassword: "",
-        newPasswordConfirm: "",
+        confirmPassword: "",
         vpnEndpointAddress: "",
         vpnEndpointPort: "",
         vpnCidr: "",
@@ -289,8 +284,8 @@ export default {
       //// use response
       this.isPasswordChangeNeeded = true; //// remove
     },
-    onPasswordValidation(isPasswordValid) {
-      this.isPasswordValid = isPasswordValid;
+    onPasswordValidation(passwordValidation) {
+      this.passwordValidation = passwordValidation;
     },
     validatePasswordChange() {
       this.clearErrors(this);
@@ -309,58 +304,55 @@ export default {
         this.error.newPassword = "common.required";
 
         if (isValidationOk) {
-          this.focusNewPassword();
+          this.focusPasswordField = { element: "newPassword" };
           isValidationOk = false;
         }
       } else {
-        if (this.newPasswordConfirm !== this.newPassword) {
-          this.error.newPassword = "password.passwords_do_not_match";
-          this.error.newPasswordConfirm = "password.passwords_do_not_match";
-
-          if (isValidationOk) {
-            this.focusNewPassword();
-            isValidationOk = false;
-          }
-        }
-
         if (this.currentPassword === this.newPassword) {
-          this.error.newPassword =
-            "password.old_new_passwords_must_be_different";
+          if (!this.error.newPassword) {
+            this.error.newPassword =
+              "password.old_new_passwords_must_be_different";
+          }
 
           if (isValidationOk) {
-            this.focusNewPassword();
+            this.focusPasswordField = { element: "newPassword" };
             isValidationOk = false;
           }
         }
 
-        if (!this.isPasswordValid) {
-          this.error.newPassword = "password.password_not_secure";
+        if (
+          !this.passwordValidation.isLengthOk ||
+          !this.passwordValidation.isLowercaseOk ||
+          !this.passwordValidation.isUppercaseOk ||
+          !this.passwordValidation.isNumberOk ||
+          !this.passwordValidation.isSymbolOk
+        ) {
+          if (!this.error.newPassword) {
+            this.error.newPassword = "password.password_not_secure";
+          }
 
           if (isValidationOk) {
-            this.focusNewPassword();
+            this.focusPasswordField = { element: "newPassword" };
             isValidationOk = false;
           }
         }
-      }
 
-      if (!this.newPasswordConfirm) {
-        this.error.newPasswordConfirm = "common.required";
+        if (!this.passwordValidation.isEqualOk) {
+          if (!this.error.newPassword) {
+            this.error.newPassword = "password.passwords_do_not_match";
+          }
 
-        if (isValidationOk) {
-          this.focusElement("newPasswordConfirm");
-          isValidationOk = false;
+          if (!this.error.confirmPassword) {
+            this.error.confirmPassword = "password.passwords_do_not_match";
+          }
+
+          if (isValidationOk) {
+            this.focusPasswordField = { element: "confirmPassword" };
+            isValidationOk = false;
+          }
         }
       }
       return isValidationOk;
-    },
-    focusNewPassword() {
-      // NsPasswordInput has a <div> as root element, need to focus nested <input> element
-      this.$nextTick(() => {
-        const element = this.$refs.newPassword.$el
-          .getElementsByClassName("password-input")[0]
-          .getElementsByClassName("bx--password-input")[0];
-        element.focus();
-      });
     },
     changePassword() {
       if (!this.validatePasswordChange()) {

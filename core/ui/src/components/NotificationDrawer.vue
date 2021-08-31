@@ -197,3 +197,75 @@ export default {
   }
 }
 </style>
+
+<style lang="scss">
+@import "../styles/carbon-utils";
+
+// global styles
+
+.Vue-Toastification__toast {
+  border-radius: 0 !important;
+  min-width: 16rem !important; //// use variable of small-screen notif width
+}
+
+.Vue-Toastification__container.top-right.toastification-container {
+  top: 4rem;
+  z-index: 7999;
+}
+
+.Vue-Toastification__toast--default.toastification-toast {
+  background-color: transparent;
+  padding: 0;
+}
+
+.bx--toast-notification .bx--inline-notification__action-button.bx--btn--ghost {
+  // branding color
+  color: $inverse-link;
+}
+
+.notification-drawer
+  .cv-notifiation.bx--toast-notification.notification.notification-read {
+  // branding color
+  border-color: $ui-04;
+}
+
+.cv-notifiation.bx--toast-notification.notification {
+  // let small screens use a narrow notification drawer
+  min-width: 0 !important;
+  // all notifications have the same width
+  width: 25rem !important;
+}
+
+@media (max-width: $breakpoint-large) {
+  .cv-notifiation.bx--toast-notification.notification {
+    // reduce notifications width on medium screens
+    width: 20rem !important;
+  }
+
+  .notification-drawer .cv-notifiation.bx--toast-notification.notification {
+    width: 100% !important;
+  }
+}
+
+@media (max-width: $breakpoint-medium) {
+  .cv-notifiation.bx--toast-notification.notification {
+    // reduce notifications width on medium screens
+    width: 100% !important;
+  }
+}
+
+.cv-notifiation .timestamp button {
+  @include carbon--type-style("body-short-01");
+  // branding color
+  color: $active-ui;
+}
+
+.timestamp button span {
+  background-color: $ui-05 !important;
+}
+
+.timestamp
+  .bx--tooltip__trigger.bx--tooltip--bottom.bx--tooltip--align-center::before {
+  border-bottom-color: $ui-05 !important;
+}
+</style>
