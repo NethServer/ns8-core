@@ -415,6 +415,29 @@ a {
 }
 // end colors for NsStatusCard and NsSystemdServiceCard
 
+// hint tooltip
+.hint {
+  width: 0;
+  height: 0;
+  position: relative;
+}
+
+.hint-button {
+  margin-top: $spacing-05 !important;
+}
+
+.hint .bx--tooltip__trigger:not(.bx--btn--icon-only):focus {
+  outline: none;
+  fill: none;
+}
+// end hint tooltip
+
+// info tooltip
+.info.bx--tooltip__trigger svg,
+.info.bx--tooltip__trigger:hover svg, .bx--tooltip__trigger:focus svg {
+    fill: $support-04;
+}
+
 // styles for large devices
 @media (min-width: $breakpoint-medium) {
   // limit form fields width on large devices

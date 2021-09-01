@@ -212,6 +212,7 @@ export default {
 @import "../styles/carbon-utils";
 
 // global styles
+
 .global-search .bx--structured-list {
   margin-bottom: 0;
 }

@@ -2,7 +2,17 @@
   <div class="bx--grid bx--grid--full-width">
     <div class="bx--row">
       <div class="bx--col-lg-16 page-title">
-        <h2>{{ $t("cluster_status.title") }}</h2>
+        <h2>
+          {{ $t("cluster_status.title") }}
+          <cv-tooltip
+            alignment="center"
+            direction="bottom"
+            :tip="$t('common.global_shortcut') + ': CTRL+SHIFT+S'"
+            class="info"
+          >
+            <Information16 />
+          </cv-tooltip>
+        </h2>
       </div>
     </div>
     <!-- //// delete -->
@@ -271,11 +281,13 @@ import {
   UtilService,
   TaskService,
 } from "@nethserver/ns8-ui-lib";
+import Information16 from "@carbon/icons-vue/es/information/16";
 
 //// rename to Status?
 
 export default {
   name: "ClusterStatus",
+  components: { Information16 },
   mixins: [
     NotificationService,
     QueryParamService,

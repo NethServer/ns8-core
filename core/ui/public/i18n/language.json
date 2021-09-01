@@ -25,7 +25,9 @@
     "delete": "Delete",
     "required": "Required",
     "use_landscape_mode": "Rotate your device",
-    "use_landscape_mode_description": "This page is optimized for landscape mode"
+    "use_landscape_mode_description": "This page is optimized for landscape mode",
+    "got_it": "Got it",
+    "global_shortcut": "Global shortcut"
   },
   "error": {
     "error": "Error",
@@ -111,6 +113,10 @@
     "grid": "Grid",
     "list": "List",
     "done_edit_favorites": "Done"
+  },
+  "hint": {
+    "notifications": "You can find notifications and progress of tasks here",
+    "copy_to_clipboard": "Click here to copy to clipboard"
   },
   "notification": {
     "notifications": "Notifications",

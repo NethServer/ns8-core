@@ -24,6 +24,9 @@
       </cv-header-menu-item>
       <cv-header-menu-item @click="logout">Logout</cv-header-menu-item>
       <cv-header-menu-item to="/apps/dokuwiki1">dokuwiki1</cv-header-menu-item>
+      <cv-header-menu-item @click="isHintShown = !isHintShown"
+        >Toggle hint</cv-header-menu-item
+      >
     </cv-header-nav>
     <template slot="header-global">
       <cv-header-global-action
@@ -34,7 +37,7 @@
         v-shortkey.once="['ctrl', 'shift', 'f']"
         @shortkey="expandSearch"
       >
-        <search-20 />
+        <Search20 />
       </cv-header-global-action>
       <GlobalSearch v-else @closeSearch="closeSearch" />
       <cv-header-global-action
@@ -53,6 +56,30 @@
           v-if="ongoingNotificationsCount > 0"
         ></span>
       </cv-header-global-action>
+      <!-- notification drawer hint -->
+      <span class="hint hint-notifications">
+        <cv-interactive-tooltip
+          alignment="end"
+          direction="bottom"
+          :visible="isHintShown"
+        >
+          <template slot="trigger">
+            <span></span>
+          </template>
+          <template slot="content">
+            <p>
+              {{ $t("hint.notifications") }}
+            </p>
+            <NsButton
+              kind="primary"
+              size="small"
+              @click="isHintShown = false"
+              class="hint-button"
+              >{{ $t("common.got_it") }}</NsButton
+            >
+          </template>
+        </cv-interactive-tooltip>
+      </span>
       <cv-header-global-action
         :label="$t('shell.account')"
         :aria-label="$t('shell.account')"
@@ -62,7 +89,7 @@
         <user-avatar-20 />
       </cv-header-global-action>
       <cv-header-global-action
-        :label="$t('shell.app_launcher')"
+        :label="$t('shell.app_launcher') + ' (CTRL+SHIFT+A)'"
         :aria-label="$t('shell.app_launcher')"
         @click="toggleAppDrawerShownInStore"
         tipPosition="bottom"
@@ -82,16 +109,14 @@
 import Notification20 from "@carbon/icons-vue/es/notification/20";
 import UserAvatar20 from "@carbon/icons-vue/es/user--avatar/20";
 import AppSwitcher20 from "@carbon/icons-vue/es/app-switcher/20";
+import Search20 from "@carbon/icons-vue/es/search/20";
 import { mapState, mapActions, mapGetters } from "vuex";
 import GlobalSearch from "@/components/GlobalSearch";
 import AppDrawer from "@/components/AppDrawer";
-import Search20 from "@carbon/icons-vue/es/search/20";
 import LoginService from "@/mixins/login";
 import WebSocketService from "@/mixins/websocket";
 import NotificationDrawer from "@/components/NotificationDrawer";
 import { StorageService } from "@nethserver/ns8-ui-lib";
-
-//// use IconService instead importing all icons
 
 export default {
   name: "ShellHeader",
@@ -108,6 +133,7 @@ export default {
   data() {
     return {
       isSearchExpanded: false,
+      isHintShown: false, //// remove
     };
   },
   computed: {
@@ -175,5 +201,10 @@ export default {
   100% {
     transform: rotate(360deg);
   }
+}
+
+.hint-notifications {
+  top: 1.8rem;
+  right: 0.8rem;
 }
 </style>
