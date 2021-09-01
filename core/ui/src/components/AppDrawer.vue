@@ -350,8 +350,6 @@ export default {
       }
     },
     clickOutside() {
-      console.log("clickOutside"); ////
-
       if (!this.isTransitioning) {
         // close menu
         this.setAppDrawerShownInStore(false);

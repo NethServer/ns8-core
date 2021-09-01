@@ -59,6 +59,7 @@ export default {
     );
 
     this.configureAxiosInterceptors();
+    this.configureClickOutsideDrawers();
 
     // check login
     const loginInfo = this.getFromStorage("loginInfo");
@@ -68,17 +69,34 @@ export default {
     }
   },
   beforeDestroy() {
+    this.closeWebSocket();
+    window.removeEventListener("blur", this.clickOutsideDrawers);
+
     // remove all event listeners
     this.$root.$off();
-
-    this.closeWebSocket();
   },
   methods: {
     ...mapActions([
       "setLoggedUserInStore",
       "setUpdatesInStore",
       "setClusterInitializedInStore",
+      "setMobileSideMenuShownInStore",
+      "setNotificationDrawerShownInStore",
+      "setAppDrawerShownInStore",
     ]),
+    configureClickOutsideDrawers() {
+      // needed to detect click outside mobile side menu, app drawer and
+      // notification drawer when the user is on an external NS8 app
+      window.addEventListener("blur", this.clickOutsideDrawers);
+    },
+    clickOutsideDrawers() {
+      if (document.activeElement.id == "app-frame") {
+        // close side menu and drawers
+        this.setMobileSideMenuShownInStore(false);
+        this.setNotificationDrawerShownInStore(false);
+        this.setAppDrawerShownInStore(false);
+      }
+    },
     configureClusterInitializationRedirect() {
       // if cluster has not been initialized, redirect to /init
       this.$router.beforeEach(async (to, from, next) => {
