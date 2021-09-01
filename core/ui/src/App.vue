@@ -53,10 +53,7 @@ export default {
     // register to events
     this.$root.$on("login", this.initNs8);
     this.$root.$on("logout", this.logout);
-    this.$root.$on(
-      "createTaskErrorNotification",
-      this.createTaskErrorNotification
-    );
+    this.$root.$on("createErrorNotification", this.createErrorNotification);
 
     this.configureAxiosInterceptors();
     this.configureClickOutsideDrawers();
@@ -64,8 +61,8 @@ export default {
     // check login
     const loginInfo = this.getFromStorage("loginInfo");
     if (loginInfo && loginInfo.username) {
-      this.setLoggedUserInStore(loginInfo.username);
-      this.initNs8();
+      // refresh authorization token
+      this.refreshToken(loginInfo);
     }
   },
   beforeDestroy() {
@@ -84,6 +81,21 @@ export default {
       "setNotificationDrawerShownInStore",
       "setAppDrawerShownInStore",
     ]),
+    async refreshToken(loginInfo) {
+      // invoke refresh token API
+      const res = await to(this.executeRefreshToken());
+      const refreshTokenError = res[0];
+
+      if (refreshTokenError) {
+        this.createErrorNotification(
+          refreshTokenError,
+          this.$t("error.cannot_refresh_token")
+        );
+        return;
+      }
+      this.setLoggedUserInStore(loginInfo.username);
+      this.initNs8();
+    },
     configureClickOutsideDrawers() {
       // needed to detect click outside mobile side menu, app drawer and
       // notification drawer when the user is on an external NS8 app
@@ -100,8 +112,6 @@ export default {
     configureClusterInitializationRedirect() {
       // if cluster has not been initialized, redirect to /init
       this.$router.beforeEach(async (to, from, next) => {
-        console.log("global guard: from, to", from, to); ////
-
         if (this.isClusterInitialized) {
           if (to.path === "/init") {
             // cannot navigate to initialization page if cluster is already initialized
@@ -112,12 +122,9 @@ export default {
         } else {
           // cluster not initialized
           if (to.path === "/init") {
-            console.log("ok, proceed"); ////
             next();
           } else {
             // redirect: only /init is allowed
-            console.log("GOING TO INIT/WELCOME"); ////
-
             next("/init?page=welcome");
           }
         }
@@ -177,7 +184,7 @@ export default {
       // );
 
       // if (clusterStatusError) {
-      //   this.createTaskErrorNotification(
+      //   this.createErrorNotification(
       //     clusterStatusError,
       //     this.$t("error.cannot_retrieve_cluster_status")
       //   );
@@ -216,7 +223,7 @@ export default {
       const err = res[0];
 
       if (err) {
-        this.createTaskErrorNotification(
+        this.createErrorNotification(
           err,
           this.$t("task.cannot_create_task", { action: taskAction })
         );
@@ -243,7 +250,7 @@ export default {
 
       this.setUpdatesInStore(updates);
     },
-    createTaskErrorNotification(err, message) {
+    createErrorNotification(err, message) {
       const notification = {
         title: message,
         description: this.getErrorMessage(err),

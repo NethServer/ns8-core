@@ -12,7 +12,7 @@
       $root.config.PRODUCT_NAME
     }}</cv-header-name>
     <cv-header-nav>
-      <cv-header-menu-item to="/status" class="status">
+      <!-- <cv-header-menu-item to="/status" class="status"> //// remove?
         <div class="badge-container">
           <span
             v-shortkey.once="['ctrl', 'shift', 's']"
@@ -21,9 +21,8 @@
           >
           <span class="green-badge right-badge"></span>
         </div>
-      </cv-header-menu-item>
+      </cv-header-menu-item> -->
       <cv-header-menu-item @click="logout">Logout</cv-header-menu-item>
-      <cv-header-menu-item to="/apps/dokuwiki1">dokuwiki1</cv-header-menu-item>
       <cv-header-menu-item @click="isHintShown = !isHintShown"
         >Toggle hint</cv-header-menu-item
       >
@@ -31,7 +30,7 @@
     <template slot="header-global">
       <cv-header-global-action
         v-if="!isSearchExpanded"
-        :label="$t('shell.search')"
+        :label="$t('shell.search') + ' (CTRL+SHIFT+F)'"
         :aria-label="$t('shell.search')"
         @click="expandSearch"
         v-shortkey.once="['ctrl', 'shift', 'f']"
@@ -56,6 +55,7 @@
           v-if="ongoingNotificationsCount > 0"
         ></span>
       </cv-header-global-action>
+      <!-- //// show hint on first task/notification? -->
       <!-- notification drawer hint -->
       <span class="hint hint-notifications">
         <cv-interactive-tooltip

@@ -274,7 +274,7 @@ export default {
       // );
 
       // if (checkPasswordChangeError) {
-      //   this.createTaskErrorNotification(
+      //   this.createErrorNotification(
       //     checkPasswordChangeError,
       //     this.$t("init.???")
       //   );
@@ -371,7 +371,7 @@ export default {
       // );
 
       // if (changePasswordError) {
-      //   this.createTaskErrorNotification(
+      //   this.createErrorNotification(
       //     changePasswordError,
       //     this.$t("init.???")
       //   );

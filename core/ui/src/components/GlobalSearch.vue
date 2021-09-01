@@ -8,6 +8,9 @@
       @input="onSearchInput"
       v-debounce="search"
       ref="global-search"
+      @keyup.enter.native="openResult(selectedResult)"
+      @keyup.down="selectNextResult()"
+      @keyup.up="selectPreviousResult()"
     >
     </cv-search>
     <div v-if="showResults" class="search-results">
@@ -24,21 +27,40 @@
           <cv-structured-list-item
             v-for="(result, index) in results"
             :key="index"
+            :class="{ 'selected-result': result.url === selectedResult.url }"
           >
             <cv-structured-list-data>
-              <div class="search-result-column">
-                <Settings20 class="result-icon" />
-                <span>{{ result.name }}</span>
+              <div
+                class="search-result-column"
+                @click="openResult(result)"
+                @mouseover="selectResult(result)"
+              >
+                <div class="flex">
+                  <Settings20 class="result-icon" />
+                  <span>{{ result.name }}</span>
+                </div>
               </div></cv-structured-list-data
             >
             <cv-structured-list-data
-              ><div class="search-result-column description">
-                <span>{{ result.description }}</span>
+              ><div
+                class="search-result-column description"
+                @click="openResult(result)"
+                @mouseover="selectResult(result)"
+              >
+                <div class="flex">
+                  <span>{{ result.description }}</span>
+                </div>
               </div></cv-structured-list-data
             >
             <cv-structured-list-data
-              ><div class="search-result-column category">
-                <span>{{ result.category }}</span>
+              ><div
+                class="search-result-column category"
+                @click="openResult(result)"
+                @mouseover="selectResult(result)"
+              >
+                <div class="flex">
+                  <span>{{ result.category }}</span>
+                </div>
               </div></cv-structured-list-data
             >
           </cv-structured-list-item>
@@ -61,6 +83,8 @@ export default {
       query: "",
       showResults: false,
       results: [],
+      selectedResult: {},
+      lastSearchQuery: "",
       searchFields: ["name", "description", "application", "tags"], ////
       minChars: 1, //// 2
       maxResults: 10,
@@ -70,43 +94,48 @@ export default {
           name: "Firewall",
           description: "Launch Firewall application",
           tags: "gateway,firewall,fw",
+          url: "/apps/firewall1",
         },
         {
           category: "Firewall",
           name: "Create port forward",
           description: "Create port forward in Firewall app",
           tags: "pf,port,port forward",
+          url: "/apps/firewall1?page=port_forward",
         },
         {
           category: "System",
           name: "Account",
           description: "Configure your account",
           tags: "user,password",
+          url: "/account",
         },
         {
           category: "System",
           name: "Cluster status",
           description: "Monitor cluster status",
           tags: "monitor,status",
+          url: "/status",
         },
         {
           category: "Applications",
           name: "Nextcloud",
           description: "Content collaboration platform",
           tags: "file,sharing",
+          url: "/apps/nextcloud1",
         },
         {
           category: "System",
           name: "Cluster nodes",
           description: "Manage and deploy cluster nodes",
           tags: "agent",
+          url: "/nodes",
         },
       ],
       isClickOutsideEnabled: false,
     };
   },
   mounted() {
-    console.log("global search mounted"); ////
     this.focusElement("global-search");
 
     // prevent glitch: click-outside is incorrectly detected when global search appears
@@ -116,7 +145,6 @@ export default {
   },
   methods: {
     clickOutside() {
-      //// fix, check if it is currently shown
       if (this.isClickOutsideEnabled) {
         this.$emit("closeSearch");
       }
@@ -134,6 +162,12 @@ export default {
 
       //// todo see software center
 
+      if (queryText === this.lastSearchQuery) {
+        return;
+      }
+
+      this.lastSearchQuery = queryText;
+
       // search
       this.results = this.allResults.filter((option) => {
         // compare query text with all search fields of option
@@ -149,6 +183,9 @@ export default {
       }, this);
 
       if (this.results.length) {
+        // select first result
+        this.selectedResult = this.results[0];
+
         // limit maximum number of results
         if (this.results.length > this.maxResults) {
           this.results = this.results.slice(0, this.maxResults);
@@ -160,6 +197,41 @@ export default {
       // needed to manage clear search button
       if (!this.query.length) {
         this.search();
+      }
+    },
+    openResult(result) {
+      if (result.url) {
+        this.$router.push(result.url);
+        this.$emit("closeSearch");
+      }
+    },
+    selectResult(result) {
+      this.selectedResult = result;
+    },
+    selectNextResult() {
+      const currentIndex = this.results.findIndex(
+        (result) => result.url === this.selectedResult.url
+      );
+
+      const newIndex = currentIndex + 1;
+
+      if (this.results.length > newIndex) {
+        this.selectedResult = this.results[newIndex];
+      } else {
+        this.selectedResult = this.results[0];
+      }
+    },
+    selectPreviousResult() {
+      const currentIndex = this.results.findIndex(
+        (result) => result.url === this.selectedResult.url
+      );
+
+      const newIndex = currentIndex - 1;
+
+      if (newIndex >= 0) {
+        this.selectedResult = this.results[newIndex];
+      } else {
+        this.selectedResult = this.results[this.results.length - 1];
       }
     },
   },
@@ -196,6 +268,20 @@ export default {
 .search-result-column {
   display: flex;
   align-items: center;
+  padding: $spacing-06 $spacing-05 $spacing-07;
+  width: 100%;
+  cursor: pointer;
+}
+
+.flex {
+  display: flex;
+  align-items: center;
+}
+
+.global-search .search-result-column.description {
+  display: inline-block;
+  position: relative;
+  top: -0.5rem;
 }
 
 .search-result-column.description,
@@ -205,6 +291,10 @@ export default {
 
 .result-icon {
   margin-right: $spacing-03;
+}
+
+.selected-result {
+  box-shadow: inset 0px 0px 0px 3px $focus;
 }
 </style>
 
@@ -217,10 +307,13 @@ export default {
   margin-bottom: 0;
 }
 
-.global-search .search-results .bx--structured-list-td,
+.global-search .search-results .bx--structured-list-td {
+  color: $ui-01 !important;
+}
+
+.global-search .search-results .bx--structured-list-tbody,
 .global-search .search-results .empty-state {
   background-color: $ui-05 !important;
-  color: $ui-01 !important;
 }
 
 .global-search
@@ -234,5 +327,9 @@ export default {
 
 .global-search .bx--structured-list-row {
   border-color: #393939;
+}
+
+.global-search .cv-structured-list-data.bx--structured-list-td {
+  padding: 0;
 }
 </style>

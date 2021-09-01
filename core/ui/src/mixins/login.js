@@ -22,5 +22,16 @@ export default {
         }
       );
     },
+    executeRefreshToken() {
+      const token = this.getFromStorage("loginInfo")
+        ? this.getFromStorage("loginInfo").token
+        : "";
+
+      return this.axios.get(`${this.$root.apiUrl}/refresh_token`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+    },
   },
 };

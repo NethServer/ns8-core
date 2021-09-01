@@ -390,7 +390,7 @@ export default {
 
       if (err) {
         this.error.apps = this.getErrorMessage(err);
-        this.createTaskErrorNotification(
+        this.createErrorNotification(
           err,
           this.$t("task.cannot_create_task", { action: taskAction })
         );
