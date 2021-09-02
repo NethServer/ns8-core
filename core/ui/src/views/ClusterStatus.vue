@@ -15,32 +15,68 @@
         </h2>
       </div>
     </div>
-    <!-- //// delete -->
-    <!-- <div class="bx--row">
-      <div class="bx--col-lg-16">
-        <cv-tile :light="true" class="content-tile">
-          <h4>Add module</h4>
-          <cv-form @submit.prevent="addModule">
-            <cv-text-input
-              label="Module image"
-              helper-text="E.g. traefik, dokuwiki, ..."
-              v-model.trim="q.moduleToAdd"
-            >
-            </cv-text-input>
-            <cv-button :disabled="!q.moduleToAdd">Add module</cv-button>
-          </cv-form>
+    <div class="bx--row">
+      <div class="bx--col-md-4 bx--col-max-4">
+        <cv-tile
+          v-if="loading.nodes"
+          light
+          class="content-tile min-height-card"
+        >
+          <cv-skeleton-text
+            :paragraph="true"
+            :line-count="5"
+          ></cv-skeleton-text>
         </cv-tile>
-      </div>
-    </div> -->
-    <!-- <div class="bx--row">
-      <div class="bx--col-lg-16">
-        <cv-tile :light="true" class="content-tile">
-          <NsButton :icon="Flash20" @click="isTestValidationModalShown = true"
-            >Open test validation modal</NsButton
-          >
+        <cv-tile
+          v-else-if="error.nodes"
+          light
+          class="content-tile min-height-card"
+        >
+          <NsInlineNotification
+            kind="error"
+            :title="$t('error.cannot_retrieve_cluster_nodes')"
+            :description="error.nodes"
+            :showCloseButton="false"
+          />
         </cv-tile>
+        <NsInfoCard
+          v-else
+          light
+          :title="nodes.length.toString()"
+          :description="$tc('common.nodes', nodes.length)"
+          :icon="EdgeNode32"
+          class="content-tile min-height-card"
+        />
       </div>
-    </div> -->
+      <div class="bx--col-md-4 bx--col-max-4">
+        <cv-tile v-if="loading.apps" light class="content-tile min-height-card">
+          <cv-skeleton-text
+            :paragraph="true"
+            :line-count="5"
+          ></cv-skeleton-text>
+        </cv-tile>
+        <cv-tile
+          v-else-if="error.apps"
+          light
+          class="content-tile min-height-card"
+        >
+          <NsInlineNotification
+            kind="error"
+            :title="$t('error.cannot_retrieve_installed_apps')"
+            :description="error.apps"
+            :showCloseButton="false"
+          />
+        </cv-tile>
+        <NsInfoCard
+          v-else
+          light
+          :title="apps.length.toString()"
+          :description="$tc('common.installed_apps', apps.length)"
+          :icon="Application32"
+          class="content-tile min-height-card"
+        />
+      </div>
+    </div>
     <div class="bx--row">
       <div class="bx--col-md-5">
         <cv-tile :light="true" class="content-tile">
@@ -218,60 +254,16 @@
         </div>
       </div>
     </div> -->
-
-    <!-- test validation modal -->
-    <cv-modal
-      size="default"
-      :visible="isTestValidationModalShown"
-      @modal-hidden="isTestValidationModalShown = false"
-    >
-      <template slot="title">Test validation modal</template>
-      <template slot="content">
-        <cv-form @submit.prevent="testValidation">
-          <cv-text-input
-            label="Name"
-            v-model="q.name"
-            helper-text="Cannot be empty"
-            :invalid-message="$t(error.name)"
-            ref="name"
-          >
-          </cv-text-input>
-          <cv-text-input
-            label="Email"
-            v-model="q.email"
-            helper-text="Must be a valid email"
-            :invalid-message="$t(error.email)"
-            ref="email"
-          >
-          </cv-text-input>
-          <NsInlineNotification
-            v-if="error.testValidation"
-            kind="error"
-            :title="$t('error.error')"
-            :description="error.testValidation"
-            showCloseButton
-            @close="error.testValidation = ''"
-          />
-          <NsButton
-            size="default"
-            :icon="Flash20"
-            :loading="loading.testValidation"
-            :disabled="loading.testValidation"
-            >Test validation</NsButton
-          >
-        </cv-form>
-      </template>
-      <template slot="secondary-button">{{ $t("common.close") }}</template>
-    </cv-modal>
   </div>
 </template>
 
 <script>
 // import AreaChart from "@/components/AreaChart"; ////
 import Flash20 from "@carbon/icons-vue/es/flash/20";
-// import Filter16 from "@carbon/icons-vue/es/filter/16"; ////
-import { mapState } from "vuex";
 import NotificationService from "@/mixins/notification";
+import NodeService from "@/mixins/node";
+import Information16 from "@carbon/icons-vue/es/information/16";
+import { mapState } from "vuex";
 import { formatRelative, subDays } from "date-fns";
 import to from "await-to-js";
 import WebSocketService from "@/mixins/websocket";
@@ -280,8 +272,8 @@ import {
   QueryParamService,
   UtilService,
   TaskService,
+  IconService,
 } from "@nethserver/ns8-ui-lib";
-import Information16 from "@carbon/icons-vue/es/information/16";
 
 //// rename to Status?
 
@@ -294,6 +286,8 @@ export default {
     UtilService,
     TaskService,
     WebSocketService,
+    NodeService,
+    IconService,
   ],
   pageTitle() {
     return this.$t("cluster_status.title");
@@ -307,13 +301,16 @@ export default {
         name: "",
         email: "",
       },
+      nodes: [],
       loading: {
-        testValidation: false,
+        nodes: true,
+        apps: true,
       },
       error: {
-        testValidation: "",
         name: "",
         email: "",
+        nodes: "",
+        apps: "",
       },
       toastVisible: true,
       toastTitle: "Toast title",
@@ -324,7 +321,6 @@ export default {
       Flash20, //// use mixin
       formatRelative, //// use mixin
       subDays,
-      isTestValidationModalShown: false,
     };
   },
   computed: {
@@ -345,7 +341,70 @@ export default {
     this.queryParamsToDataForCore(this, to.query);
     next();
   },
+  created() {
+    this.retrieveClusterNodes();
+    this.listInstalledModules();
+  },
   methods: {
+    async retrieveClusterNodes() {
+      this.loading.nodes = true;
+      const [errNodes, responseNodes] = await to(this.getNodes());
+
+      if (errNodes) {
+        console.error("error retrieving cluster nodes", errNodes);
+        this.error.nodes = this.getErrorMessage(errNodes);
+        this.loading.nodes = false;
+        return;
+      }
+
+      this.nodes = responseNodes.data.data.list;
+      this.loading.nodes = false;
+    },
+    async listInstalledModules() {
+      this.loading.apps = true;
+      const taskAction = "list-installed-modules";
+
+      // register to task completion
+      this.$root.$on(
+        taskAction + "-completed",
+        this.listInstalledModulesCompleted
+      );
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+          },
+        })
+      );
+      const errApps = res[0];
+
+      if (errApps) {
+        console.error("error retrieving installed apps", errApps);
+        this.error.apps = this.getErrorMessage(errApps);
+        this.loading.apps = false;
+        return;
+      }
+    },
+    listInstalledModulesCompleted(taskContext, taskResult) {
+      // unregister from event
+      this.$root.$off("list-installed-modules-completed");
+      this.loading.apps = false;
+      let apps = [];
+
+      console.log("taskResult.output", taskResult.output); ////
+
+      for (let instanceList of Object.values(taskResult.output)) {
+        for (let instance of instanceList) {
+          apps.push(instance);
+        }
+      }
+
+      this.apps = apps;
+      this.loading.apps = false;
+    },
     closeToast() {
       console.log("closeToast"); ////
     },
@@ -464,33 +523,6 @@ export default {
         })
       );
       const err = res[0];
-
-      if (err) {
-        this.createErrorNotification(
-          err,
-          this.$t("task.cannot_create_task", { action: taskAction })
-        );
-        return;
-      }
-    },
-    async testValidation() {
-      this.clearErrors(this);
-      this.loading.testValidation = true;
-      const taskAction = "validation-test";
-
-      const res = await to(
-        this.createClusterTask({
-          action: taskAction,
-          data: {
-            name: this.q.name,
-            email: this.q.email,
-            title: this.$t("action." + taskAction),
-            description: "Doing stuff...",
-          },
-        })
-      );
-      const err = res[0];
-      this.loading.testValidation = false;
 
       if (err) {
         this.createErrorNotification(

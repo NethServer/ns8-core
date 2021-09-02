@@ -6,6 +6,10 @@ body {
   background-color: $ui-01;
 }
 
+.bx--content {
+  background-color: $ui-01;
+}
+
 .bx--grid.no-padding {
   padding-left: 0;
   padding-right: 0;
@@ -434,9 +438,15 @@ a {
 
 // info tooltip
 .info.bx--tooltip__trigger svg,
-.info.bx--tooltip__trigger:hover svg, .bx--tooltip__trigger:focus svg {
-    fill: $support-04;
+.info.bx--tooltip__trigger:hover svg,
+.bx--tooltip__trigger:focus svg {
+  fill: $support-04;
 }
+
+.min-height-card {
+  min-height: 9rem;
+}
+
 
 // styles for large devices
 @media (min-width: $breakpoint-medium) {

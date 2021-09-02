@@ -8,7 +8,7 @@
       <NsInlineNotification
         v-if="error.apps"
         kind="error"
-        :title="$t('app_drawer.cannot_retrieve_installed_apps')"
+        :title="$t('error.cannot_retrieve_installed_apps')"
         :description="error.apps"
         :showCloseButton="false"
       />

@@ -14,7 +14,7 @@
       <NsInlineNotification
         v-if="error.nodes"
         kind="error"
-        :title="$t('software_center.cannot_retrieve_cluster_nodes')"
+        :title="$t('error.cannot_retrieve_cluster_nodes')"
         :description="error.nodes"
         :showCloseButton="false"
       />

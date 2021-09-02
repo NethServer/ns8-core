@@ -17,6 +17,5 @@ Default.args = {
   title: "Card title",
   description: "Card description",
   light: false,
-  minHeight: false,
   icon: Application32,
 };
