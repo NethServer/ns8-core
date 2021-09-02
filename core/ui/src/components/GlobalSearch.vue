@@ -8,9 +8,10 @@
       @input="onSearchInput"
       v-debounce="search"
       ref="global-search"
-      @keyup.enter.native="openResult(selectedResult)"
-      @keyup.down="selectNextResult()"
-      @keyup.up="selectPreviousResult()"
+      @keydown.enter.native="openResult(selectedResult)"
+      @keydown.esc.native="closeSearch"
+      @keydown.down.prevent="selectNextResult"
+      @keydown.up.prevent="selectPreviousResult"
     >
     </cv-search>
     <div v-if="showResults" class="search-results">
@@ -146,8 +147,11 @@ export default {
   methods: {
     clickOutside() {
       if (this.isClickOutsideEnabled) {
-        this.$emit("closeSearch");
+        this.closeSearch();
       }
+    },
+    closeSearch() {
+      this.$emit("closeSearch");
     },
     search() {
       // clean query
@@ -202,7 +206,7 @@ export default {
     openResult(result) {
       if (result.url) {
         this.$router.push(result.url);
-        this.$emit("closeSearch");
+        this.closeSearch();
       }
     },
     selectResult(result) {
