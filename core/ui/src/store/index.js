@@ -136,6 +136,11 @@ export default new Vuex.Store({
     setClusterInitialized(state, value) {
       state.isClusterInitialized = value;
     },
+    markAllNotificationsRead(state, unreadNotifications) {
+      for (let notification of unreadNotifications) {
+        notification.isRead = true;
+      }
+    },
     //// does it work?
     SOCKET_ONOPEN(state, event) {
       // Vue.prototype.$socket = event.currentTarget;
@@ -218,6 +223,12 @@ export default new Vuex.Store({
     },
     setClusterInitializedInStore(context, value) {
       context.commit("setClusterInitialized", value);
+    },
+    markAllNotificationsReadInStore(context) {
+      context.commit(
+        "markAllNotificationsRead",
+        context.getters.unreadNotifications
+      );
     },
   },
   modules: {},

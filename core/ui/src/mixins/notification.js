@@ -1,6 +1,7 @@
 import { mapState, mapActions, mapGetters } from "vuex";
 import to from "await-to-js";
 import { UtilService, NsToastNotification } from "@nethserver/ns8-ui-lib";
+import { v4 as uuidv4 } from "uuid";
 
 export default {
   name: "NotificationService",
@@ -15,6 +16,7 @@ export default {
       "updateNotificationInStore",
       "setTaskErrorToShowInStore",
       "setNotificationDrawerShownInStore",
+      "setNotificationReadInStore",
     ]),
     createNotification(notification) {
       // fill missing attributes
@@ -26,15 +28,12 @@ export default {
         notification.isRead = false;
       }
 
-      //// need to generate a unique id for notifications?
-      const now = new Date();
-
       if (!notification.id) {
-        notification.id = now.getTime().toString();
+        notification.id = uuidv4();
       }
 
       if (!notification.timestamp) {
-        notification.timestamp = now;
+        notification.timestamp = new Date();
       }
 
       // create notification in vuex store
@@ -83,6 +82,7 @@ export default {
 
       const toastId = this.$toast(toast, {
         timeout: toastTimeout,
+        id: notification.id,
       });
 
       console.log("toastId", toastId); ////
@@ -125,6 +125,12 @@ export default {
           this.$router.push(notification.action.url);
           break;
       }
+
+      // set notification as read
+      this.setNotificationReadInStore(notificationId);
+
+      // dismiss toast notification
+      this.$toast.dismiss(notificationId);
 
       // hide notification drawer
       this.setNotificationDrawerShownInStore(false);

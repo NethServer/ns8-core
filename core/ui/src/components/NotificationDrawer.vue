@@ -6,10 +6,15 @@
       class="notification-drawer"
     >
       <div class="notification-drawer__header">
-        <h4>{{ $t("notification.notifications") }}</h4>
-        <span
+        <h5>{{ $t("notification.notifications") }}</h5>
+        <span v-if="unreadNotificationsCount > 0"
           >{{ unreadNotificationsCount }} {{ $t("notification.unread") }}</span
         >
+        <cv-overflow-menu flip-menu>
+          <cv-overflow-menu-item @click="markAllRead" id="overflow-item">{{
+            $t("notification.mark_all_read")
+          }}</cv-overflow-menu-item>
+        </cv-overflow-menu>
         <!-- <button //// remove
           aria-label="close"
           type="button"
@@ -111,15 +116,25 @@ export default {
     ...mapActions([
       "setNotificationDrawerShownInStore",
       "setNotificationReadInStore",
+      "markAllNotificationsReadInStore",
     ]),
     notificationDetailsHidden() {
       this.isNotificationDetailsShown = false;
     },
     clickOutside() {
-      if (!this.isTransitioning) {
+      // close notification drawer by clicking outside of it
+      // don't close notification drawer when clicking on overflow menu
+      if (
+        !this.isTransitioning &&
+        document.activeElement &&
+        document.activeElement.parentElement.id !== "overflow-item"
+      ) {
         // close menu
         this.setNotificationDrawerShownInStore(false);
       }
+    },
+    markAllRead() {
+      this.markAllNotificationsReadInStore();
     },
   },
 };
@@ -223,18 +238,26 @@ export default {
   color: $inverse-link;
 }
 
-.notification-drawer
-  .cv-notifiation.bx--toast-notification.notification.notification-read {
-  // branding color
-  border-color: $ui-04;
-}
-
 .cv-notifiation.bx--toast-notification.notification {
   // let small screens use a narrow notification drawer
   min-width: 0 !important;
-  // all notifications have the same width
-  width: 25rem !important;
 }
+
+// overflow menu
+.bx--tooltip__trigger svg {
+  fill: $ui-01 !important;
+}
+
+.bx--tooltip__trigger:hover svg,
+.bx--tooltip__trigger:focus svg {
+  fill: $ui-01 !important;
+}
+
+.bx--overflow-menu:hover,
+.bx--overflow-menu__trigger:hover {
+  background-color: #393939 !important;
+}
+// end overflow menu
 
 @media (max-width: $breakpoint-large) {
   .cv-notifiation.bx--toast-notification.notification {
@@ -252,20 +275,5 @@ export default {
     // reduce notifications width on medium screens
     width: 100% !important;
   }
-}
-
-.cv-notifiation .timestamp button {
-  @include carbon--type-style("body-short-01");
-  // branding color
-  color: $active-ui;
-}
-
-.timestamp button span {
-  background-color: $ui-05 !important;
-}
-
-.timestamp
-  .bx--tooltip__trigger.bx--tooltip--bottom.bx--tooltip--align-center::before {
-  border-bottom-color: $ui-05 !important;
 }
 </style>

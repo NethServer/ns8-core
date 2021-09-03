@@ -628,6 +628,7 @@ export default {
 @import "../styles/carbon-utils";
 
 // global styles
+
 .app-drawer .bx--structured-list-td,
 .app-drawer .empty-state {
   background-color: $ui-05 !important;

@@ -447,6 +447,9 @@ a {
   min-height: 9rem;
 }
 
+.bx--overflow-menu-options {
+  z-index: 10000;
+}
 
 // styles for large devices
 @media (min-width: $breakpoint-medium) {

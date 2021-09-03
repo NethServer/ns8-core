@@ -128,7 +128,8 @@
     "ongoing": "Ongoing",
     "recent": "Recent",
     "no_notifications": "No notifications",
-    "no_notifications_description": "You don't have any recent notifications yet"
+    "no_notifications_description": "You don't have any recent notifications yet",
+    "mark_all_read": "Mark all as read"
   },
   "task": {
     "task_failed": "Task <strong>{action}</strong> failed",
