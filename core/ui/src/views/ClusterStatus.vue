@@ -24,7 +24,7 @@
         >
           <cv-skeleton-text
             :paragraph="true"
-            :line-count="5"
+            :line-count="4"
           ></cv-skeleton-text>
         </cv-tile>
         <cv-tile
@@ -52,7 +52,7 @@
         <cv-tile v-if="loading.apps" light class="content-tile min-height-card">
           <cv-skeleton-text
             :paragraph="true"
-            :line-count="5"
+            :line-count="4"
           ></cv-skeleton-text>
         </cv-tile>
         <cv-tile
@@ -75,20 +75,6 @@
           :icon="Application32"
           class="content-tile min-height-card"
         />
-      </div>
-    </div>
-    <div class="bx--row">
-      <div class="bx--col-md-5">
-        <cv-tile :light="true" class="content-tile">
-          <h2>Main content</h2>
-          <p>This is some tile content</p>
-        </cv-tile>
-      </div>
-      <div class="bx--col-md-3">
-        <cv-tile :light="true" class="content-tile">
-          <h2>Side content</h2>
-          <p>This is some tile content</p>
-        </cv-tile>
       </div>
     </div>
     <div class="bx--row">
@@ -393,8 +379,6 @@ export default {
       this.$root.$off("list-installed-modules-completed");
       this.loading.apps = false;
       let apps = [];
-
-      console.log("taskResult.output", taskResult.output); ////
 
       for (let instanceList of Object.values(taskResult.output)) {
         for (let instance of instanceList) {

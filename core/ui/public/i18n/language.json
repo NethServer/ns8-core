@@ -46,7 +46,8 @@
     "invalid_port_number": "Invalid port number",
     "cannot_refresh_token": "Cannot refresh token",
     "cannot_retrieve_cluster_nodes": "Cannot retrieve cluster nodes",
-    "cannot_retrieve_installed_apps": "Cannot retrieve installed apps"
+    "cannot_retrieve_installed_apps": "Cannot retrieve installed apps",
+    "cannot_retrieve_cluster_tasks": "Cannot retrieve cluster tasks"
   },
   "password": {
     "hide_password": "Hide password",

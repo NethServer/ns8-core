@@ -213,6 +213,10 @@ export default {
 }
 </style>
 
+<style scoped lang="scss">
+@import "../styles/carbon-utils";
+</style>
+
 <style lang="scss">
 @import "../styles/carbon-utils";
 
@@ -244,17 +248,17 @@ export default {
 }
 
 // overflow menu
-.bx--tooltip__trigger svg {
+.cv-overflow-menu .bx--tooltip__trigger svg {
   fill: $ui-01 !important;
 }
 
-.bx--tooltip__trigger:hover svg,
-.bx--tooltip__trigger:focus svg {
+.cv-overflow-menu .bx--tooltip__trigger:hover svg,
+.cv-overflow-menu .bx--tooltip__trigger:focus svg {
   fill: $ui-01 !important;
 }
 
-.bx--overflow-menu:hover,
-.bx--overflow-menu__trigger:hover {
+.cv-overflow-menu.bx--overflow-menu:hover,
+.cv-overflow-menu.bx--overflow-menu__trigger:hover {
   background-color: #393939 !important;
 }
 // end overflow menu

@@ -53,7 +53,7 @@
                 </div>
               </div></cv-structured-list-data
             >
-            <cv-structured-list-data
+            <!-- <cv-structured-list-data //// remove?
               ><div
                 class="search-result-column category"
                 @click="openResult(result)"
@@ -63,7 +63,7 @@
                   <span>{{ result.category }}</span>
                 </div>
               </div></cv-structured-list-data
-            >
+            > -->
           </cv-structured-list-item>
         </template>
       </cv-structured-list>
@@ -163,8 +163,6 @@ export default {
         this.showResults = false;
         return;
       }
-
-      //// todo see software center
 
       if (queryText === this.lastSearchQuery) {
         return;
@@ -272,7 +270,7 @@ export default {
 .search-result-column {
   display: flex;
   align-items: center;
-  padding: $spacing-06 $spacing-05 $spacing-07;
+  padding: $spacing-06 $spacing-05 $spacing-07 0; ////
   width: 100%;
   cursor: pointer;
 }
@@ -297,7 +295,14 @@ export default {
   margin-right: $spacing-03;
 }
 
-.selected-result {
+@media (max-width: $breakpoint-medium) {
+  // hide result icon on smaller screens
+  .result-icon {
+    display: none;
+  }
+}
+
+.result-icon .selected-result {
   box-shadow: inset 0px 0px 0px 3px $focus;
 }
 </style>
@@ -306,6 +311,8 @@ export default {
 @import "../styles/carbon-utils";
 
 // global styles
+
+//// refactor and remove useless styles
 
 .global-search .bx--structured-list {
   margin-bottom: 0;

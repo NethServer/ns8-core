@@ -172,7 +172,21 @@ export default {
     initNs8() {
       this.initWebSocket();
       this.retrieveClusterStatus();
+      // this.retrieveClusterTasks(); ////
     },
+    // async retrieveClusterTasks() { ////
+    //   const [clusterTasksError, response] = await to(this.getClusterTasks());
+
+    //   if (clusterTasksError) {
+    //     this.createErrorNotification(
+    //       clusterTasksError,
+    //       this.$t("error.cannot_retrieve_cluster_tasks")
+    //     );
+    //     return;
+    //   }
+
+    //   console.log("clusterTasks response", response); ////
+    // },
     async retrieveClusterStatus() {
       const loginInfo = this.getFromStorage("loginInfo");
 
