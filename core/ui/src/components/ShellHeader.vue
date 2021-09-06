@@ -12,16 +12,6 @@
       $root.config.PRODUCT_NAME
     }}</cv-header-name>
     <cv-header-nav>
-      <!-- <cv-header-menu-item to="/status" class="status"> //// remove?
-        <div class="badge-container">
-          <span
-            v-shortkey.once="['ctrl', 'shift', 's']"
-            @shortkey="goToClusterStatus"
-            >{{ $t("shell.status") }}</span
-          >
-          <span class="green-badge right-badge"></span>
-        </div>
-      </cv-header-menu-item> -->
       <cv-header-menu-item @click="logout">Logout</cv-header-menu-item>
       <cv-header-menu-item @click="isHintShown = !isHintShown"
         >Toggle hint</cv-header-menu-item
@@ -33,8 +23,6 @@
         :label="$t('shell.search') + ' (CTRL+SHIFT+F)'"
         :aria-label="$t('shell.search')"
         @click="expandSearch"
-        v-shortkey.once="['ctrl', 'shift', 'f']"
-        @shortkey="expandSearch"
       >
         <Search20 />
       </cv-header-global-action>
@@ -94,8 +82,6 @@
         @click="toggleAppDrawerShownInStore"
         tipPosition="bottom"
         tipAlignment="end"
-        v-shortkey.once="['ctrl', 'shift', 'a']"
-        @shortkey="toggleAppDrawerShownInStore"
       >
         <app-switcher-20 />
       </cv-header-global-action>
@@ -132,12 +118,11 @@ export default {
   mixins: [StorageService, LoginService, WebSocketService],
   data() {
     return {
-      isSearchExpanded: false,
       isHintShown: false, //// remove
     };
   },
   computed: {
-    ...mapState(["notifications"]),
+    ...mapState(["notifications", "isSearchExpanded"]),
     ...mapGetters(["unreadNotificationsCount", "ongoingNotificationsCount"]),
   },
   methods: {
@@ -145,15 +130,16 @@ export default {
       "toggleMobileSideMenuShownInStore",
       "toggleAppDrawerShownInStore",
       "toggleNotificationDrawerShownInStore",
+      "setSearchExpandedInStore",
     ]),
     logout() {
       this.$root.$emit("logout");
     },
     expandSearch() {
-      this.isSearchExpanded = true;
+      this.setSearchExpandedInStore(true);
     },
     closeSearch() {
-      this.isSearchExpanded = false;
+      this.setSearchExpandedInStore(false);
     },
     goToClusterStatus() {
       this.$router.push("/status");

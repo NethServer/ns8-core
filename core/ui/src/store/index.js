@@ -11,6 +11,7 @@ export default new Vuex.Store({
     isMobileSideMenuShown: false,
     isAppDrawerShown: false,
     isEditingFavoriteApps: false,
+    isSearchExpanded: false,
     taskErrorToShow: false,
     loggedUser: "",
     socket: {
@@ -103,6 +104,12 @@ export default new Vuex.Store({
     },
     setEditingFavoriteApps(state, value) {
       state.isEditingFavoriteApps = value;
+    },
+    setSearchExpanded(state, value) {
+      state.isSearchExpanded = value;
+    },
+    toggleSearchExpanded(state) {
+      state.isSearchExpanded = !state.isSearchExpanded;
     },
     setTaskErrorToShow(state, task) {
       state.taskErrorToShow = task;
@@ -205,6 +212,12 @@ export default new Vuex.Store({
     },
     setEditingFavoriteAppsInStore(context, value) {
       context.commit("setEditingFavoriteApps", value);
+    },
+    setSearchExpandedInStore(context, value) {
+      context.commit("setSearchExpanded", value);
+    },
+    toggleSearchExpandedInStore(context) {
+      context.commit("toggleSearchExpanded");
     },
     setTaskErrorToShowInStore(context, task) {
       context.commit("setTaskErrorToShow", task);

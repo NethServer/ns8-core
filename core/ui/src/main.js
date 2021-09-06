@@ -78,8 +78,6 @@ Vue.directive("click-outside", {
   },
 });
 
-Vue.use(require("vue-shortkey"));
-
 Vue.config.productionTip = false;
 
 window.ns8 = new Vue({

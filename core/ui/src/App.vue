@@ -54,9 +54,13 @@ export default {
     this.$root.$on("login", this.initNs8);
     this.$root.$on("logout", this.logout);
     this.$root.$on("createErrorNotification", this.createErrorNotification);
+    this.$root.$on(
+      "configureKeyboardShortcuts",
+      this.configureKeyboardShortcuts
+    );
 
     this.configureAxiosInterceptors();
-    this.configureClickOutsideDrawers();
+    this.configureEventListeners();
 
     // check login
     const loginInfo = this.getFromStorage("loginInfo");
@@ -68,6 +72,10 @@ export default {
   beforeDestroy() {
     this.closeWebSocket();
     window.removeEventListener("blur", this.clickOutsideDrawers);
+    window.removeEventListener(
+      "keydown",
+      this.configureKeyboardShortcutsListener
+    );
 
     // remove all event listeners
     this.$root.$off();
@@ -80,7 +88,32 @@ export default {
       "setMobileSideMenuShownInStore",
       "setNotificationDrawerShownInStore",
       "setAppDrawerShownInStore",
+      "toggleSearchExpandedInStore",
+      "toggleAppDrawerShownInStore",
     ]),
+    configureKeyboardShortcuts(window) {
+      window.addEventListener(
+        "keydown",
+        this.configureKeyboardShortcutsListener,
+        false
+      );
+    },
+    configureKeyboardShortcutsListener(e) {
+      if (e.ctrlKey && e.shiftKey && e.code === "KeyA") {
+        this.toggleAppDrawerShownInStore();
+        // disable default behavior of shortcut
+        e.preventDefault();
+      } else if (e.ctrlKey && e.shiftKey && e.code === "KeyF") {
+        this.toggleSearchExpandedInStore();
+        // disable default behavior of shortcut
+        e.preventDefault();
+      } else if (e.ctrlKey && e.shiftKey && e.code === "KeyS") {
+        this.$router.push("/status");
+        this.setMobileSideMenuShownInStore(false);
+        // disable default behavior of shortcut
+        e.preventDefault();
+      }
+    },
     async refreshToken(loginInfo) {
       // invoke refresh token API
       const res = await to(this.executeRefreshToken());
@@ -96,10 +129,13 @@ export default {
       this.setLoggedUserInStore(loginInfo.username);
       this.initNs8();
     },
-    configureClickOutsideDrawers() {
+    configureEventListeners() {
       // needed to detect click outside mobile side menu, app drawer and
       // notification drawer when the user is on an external NS8 app
       window.addEventListener("blur", this.clickOutsideDrawers);
+
+      // NS8 global shortcuts
+      this.configureKeyboardShortcuts(window);
     },
     clickOutsideDrawers() {
       if (document.activeElement.id == "app-frame") {

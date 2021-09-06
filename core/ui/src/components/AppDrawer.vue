@@ -403,6 +403,8 @@ export default {
       this.loading.apps = false;
       let apps = [];
 
+      console.log("list-installed-modules result", taskResult.output); ////
+
       for (let instanceList of Object.values(taskResult.output)) {
         for (let instance of instanceList) {
           apps.push(instance);
