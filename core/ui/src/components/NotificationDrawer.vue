@@ -8,7 +8,7 @@
       <div class="notification-drawer__header">
         <h5>{{ $t("notification.notifications") }}</h5>
         <span v-if="unreadNotificationsCount > 0"
-          >{{ unreadNotificationsCount }} {{ $t("notification.unread") }}</span
+          >{{ unreadNotificationsCount }} {{ $tc("notification.unread", unreadNotificationsCount) }}</span
         >
         <cv-overflow-menu flip-menu>
           <cv-overflow-menu-item @click="markAllRead" id="overflow-item">{{
@@ -59,7 +59,7 @@
       </NsEmptyState>
       <div
         v-else
-        v-for="notification in recentNotifications"
+        v-for="notification in recentNotificationsLoaded"
         :key="notification.id"
       >
         <NsToastNotification
@@ -77,6 +77,7 @@
           :id="notification.id"
         />
       </div>
+      <infinite-loading @infinite="infiniteScrollHandler"></infinite-loading>
     </div>
   </transition>
 </template>
@@ -92,6 +93,10 @@ export default {
     return {
       isNotificationDetailsShown: false,
       isTransitioning: false,
+      // infinite scroll
+      recentNotificationsLoaded: [],
+      pageNum: 0,
+      pageSize: 20,
     };
   },
   computed: {
@@ -110,6 +115,11 @@ export default {
       setTimeout(() => {
         this.isTransitioning = false;
       }, 300); // same duration as .slide-notifications transition
+    },
+    recentNotifications: function () {
+      this.recentNotificationsLoaded = [];
+      this.pageNum = 0;
+      this.infiniteScrollHandler();
     },
   },
   methods: {
@@ -135,6 +145,30 @@ export default {
     },
     markAllRead() {
       this.markAllNotificationsReadInStore();
+    },
+    infiniteScrollHandler($state) {
+      const pageNotifications = this.recentNotifications.slice(
+        this.pageNum * this.pageSize,
+        (this.pageNum + 1) * this.pageSize
+      );
+
+      if (pageNotifications.length) {
+        this.pageNum++;
+        this.recentNotificationsLoaded.push(...pageNotifications);
+
+        console.log(
+          "recentNotificationsLoaded length",
+          this.recentNotificationsLoaded.length
+        ); ////
+
+        if ($state) {
+          $state.loaded();
+        }
+      } else {
+        if ($state) {
+          $state.complete();
+        }
+      }
     },
   },
 };

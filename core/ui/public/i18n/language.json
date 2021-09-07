@@ -125,7 +125,7 @@
   },
   "notification": {
     "notifications": "Notifications",
-    "unread": "unread",
+    "unread": "unread | unread",
     "ongoing": "Ongoing",
     "recent": "Recent",
     "no_notifications": "No notifications",
