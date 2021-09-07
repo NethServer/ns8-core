@@ -259,6 +259,7 @@ import {
   UtilService,
   TaskService,
   IconService,
+  StorageService,
 } from "@nethserver/ns8-ui-lib";
 
 //// rename to Status?
@@ -274,6 +275,7 @@ export default {
     WebSocketService,
     NodeService,
     IconService,
+    StorageService,
   ],
   pageTitle() {
     return this.$t("cluster_status.title");
@@ -328,8 +330,13 @@ export default {
     next();
   },
   created() {
-    this.retrieveClusterNodes();
-    this.listInstalledModules();
+    // check login
+    const loginInfo = this.getFromStorage("loginInfo");
+
+    if (loginInfo) {
+      this.retrieveClusterNodes();
+      this.listInstalledModules();
+    }
   },
   methods: {
     async retrieveClusterNodes() {

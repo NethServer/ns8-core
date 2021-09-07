@@ -1,14 +1,3 @@
-@import "~carbon-components/scss/globals/scss/vendor/@carbon/type/scss/font-family.scss";
-@import "~carbon-components/scss/globals/scss/vendor/@carbon/layout/scss/breakpoint.scss";
-@import "~carbon-components/scss/globals/scss/typography.scss";
-@import "~carbon-components/scss/globals/scss/vars.scss";
-// @import "./branding"; // not needed, branding css rules are inside core _ns8.scss
-
-//// must be equal to core/ui/src/styles/_caron-utils.scss
-$breakpoint-large: 1056px;
-$breakpoint-medium: 672px;
-$breakpoint-small: 320px;
-$notification-drawer-width: 27rem;
-$notification-drawer-width-small-screen: 16rem;
-$side-menu-width: 16rem;
-$side-menu-collapsed-width: 3rem;
+//// when external apps will be on a different repo than core, we'll need to import scss from url,
+//// e.g. @import url(https://...);
+@import "../../../../core/ui/src/styles/_carbon-utils.scss";
