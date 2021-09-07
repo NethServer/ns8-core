@@ -23,50 +23,29 @@
           {{ $t("shell.no_search_results_description") }}</template
         >
       </NsEmptyState>
-      <cv-structured-list v-else>
-        <template slot="items">
-          <cv-structured-list-item
-            v-for="(result, index) in results"
-            :key="index"
-            :class="{ 'selected-result': result.url === selectedResult.url }"
-          >
-            <cv-structured-list-data>
-              <div
-                class="search-result-column"
-                @click="openResult(result)"
-                @mouseover="selectResult(result)"
-              >
-                <div class="flex">
-                  <Settings20 class="result-icon" />
-                  <span>{{ result.name }}</span>
-                </div>
-              </div></cv-structured-list-data
-            >
-            <cv-structured-list-data
-              ><div
-                class="search-result-column description"
-                @click="openResult(result)"
-                @mouseover="selectResult(result)"
-              >
-                <div class="flex">
-                  <span>{{ result.description }}</span>
-                </div>
-              </div></cv-structured-list-data
-            >
-            <!-- <cv-structured-list-data //// remove?
-              ><div
-                class="search-result-column category"
-                @click="openResult(result)"
-                @mouseover="selectResult(result)"
-              >
-                <div class="flex">
-                  <span>{{ result.category }}</span>
-                </div>
-              </div></cv-structured-list-data
-            > -->
-          </cv-structured-list-item>
-        </template>
-      </cv-structured-list>
+      <div
+        v-else
+        v-for="(result, index) in results"
+        :key="index"
+        :class="[
+          'search-result',
+          { 'selected-result': result.url === selectedResult.url },
+        ]"
+        @click="openResult(result)"
+        @mouseover="selectResult(result)"
+      >
+        <div class="search-result-column name">
+          <div class="flex">
+            <Settings20 class="result-icon" />
+            <span>{{ result.name }}</span>
+          </div>
+        </div>
+        <div class="search-result-column description">
+          <div class="flex">
+            <span>{{ result.description }}</span>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -263,16 +242,39 @@ export default {
   }
 }
 
+.global-search {
+  animation: animate-search 0.3s ease;
+}
+
+@keyframes animate-search {
+  0% {
+    transform: scaleX(0);
+    transform-origin: right;
+  }
+  100% {
+    transform: scaleX(1);
+    transform-origin: right;
+  }
+}
+
 .global-search .search-results {
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.5);
+  background-color: $ui-05;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.search-result {
+  display: flex;
+  justify-content: space-between;
+  cursor: pointer;
+  line-height: 1.29;
 }
 
 .search-result-column {
   display: flex;
   align-items: center;
-  padding: $spacing-06 $spacing-05 $spacing-07 0; ////
-  width: 100%;
-  cursor: pointer;
+  padding: $spacing-07 $spacing-05;
 }
 
 .flex {
@@ -280,10 +282,8 @@ export default {
   align-items: center;
 }
 
-.global-search .search-result-column.description {
-  display: inline-block;
-  position: relative;
-  top: -0.5rem;
+.search-result-column.description {
+  text-align: right;
 }
 
 .search-result-column.description,
@@ -302,8 +302,8 @@ export default {
   }
 }
 
-.result-icon .selected-result {
-  box-shadow: inset 0px 0px 0px 3px $focus;
+.selected-result {
+  box-shadow: inset 0px 0px 0px 2px $focus;
 }
 </style>
 
