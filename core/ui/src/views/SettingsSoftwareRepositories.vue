@@ -175,6 +175,7 @@
             :label="$t('settings_sw_repositories.name')"
             v-model.trim="q.newRepoName"
             :invalid-message="$t(error.name)"
+            ref="newRepoName"
           >
           </cv-text-input>
           <cv-text-input
@@ -319,6 +320,15 @@ export default {
       return this.tableColumns.map((column) => {
         return this.$t("settings_sw_repositories." + column);
       });
+    },
+  },
+  watch: {
+    "q.isShownCreateRepoModal": function () {
+      if (this.q.isShownCreateRepoModal) {
+        setTimeout(() => {
+          this.focusElement("newRepoName");
+        }, 200);
+      }
     },
   },
   beforeRouteEnter(to, from, next) {
