@@ -25,8 +25,8 @@ package socket
 import (
 	"fmt"
 
+	jwt "github.com/golang-jwt/jwt"
 	"github.com/olahol/melody"
-	jwt "github.com/dgrijalva/jwt-go"
 
 	"github.com/pkg/errors"
 
