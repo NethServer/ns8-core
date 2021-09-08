@@ -8,7 +8,7 @@
             kind="ghost"
             size="field"
             :icon="Settings20"
-            @click="goToSettingsSoftwareRepository()"
+            @click="goToSettingsSoftwareRepositories()"
             >{{ $t("common.settings") }}</NsButton
           >
         </div>
@@ -484,7 +484,7 @@ export default {
       const err = res[0];
 
       if (err) {
-        this.createTaskErrorNotification(
+        this.createErrorNotification(
           err,
           this.$t("task.cannot_create_task", { action: taskAction })
         );
@@ -608,7 +608,7 @@ export default {
     goToUpdates() {
       this.$router.replace("/software-center?view=updates");
     },
-    goToSettingsSoftwareRepository() {
+    goToSettingsSoftwareRepositories() {
       this.$router.push("/settings/software-repository");
     },
     willUpdateAll() {

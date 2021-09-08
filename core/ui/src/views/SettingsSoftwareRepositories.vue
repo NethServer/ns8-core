@@ -24,6 +24,16 @@
       </div>
       <div class="bx--row">
         <div class="bx--col-lg-16">
+          <NsInlineNotification
+            class="landscape-warning"
+            kind="warning"
+            :title="$t('common.use_landscape_mode')"
+            :description="$t('common.use_landscape_mode_description')"
+          />
+        </div>
+      </div>
+      <div class="bx--row">
+        <div class="bx--col-lg-16">
           <!-- repository being deleted -->
           <NsInlineNotification
             v-if="repoToDelete"
@@ -100,7 +110,9 @@
                     :value="`${rowIndex}`"
                   >
                     <cv-data-table-cell>{{ row.name }}</cv-data-table-cell>
-                    <cv-data-table-cell>{{ row.url }}</cv-data-table-cell>
+                    <cv-data-table-cell class="break-word">{{
+                      row.url
+                    }}</cv-data-table-cell>
                     <cv-data-table-cell>
                       <div class="badge-container">
                         <template v-if="row.status"
@@ -262,7 +274,7 @@ import {
 } from "@nethserver/ns8-ui-lib";
 
 export default {
-  name: "SettingsSoftwareRepository",
+  name: "SettingsSoftwareRepositories",
   mixins: [
     TaskService,
     UtilService,
@@ -367,7 +379,7 @@ export default {
       const err = res[0];
 
       if (err) {
-        this.createTaskErrorNotification(
+        this.createErrorNotification(
           err,
           this.$t("task.cannot_create_task", { action: taskAction })
         );
@@ -438,7 +450,7 @@ export default {
       const err = res[0];
 
       if (err) {
-        this.createTaskErrorNotification(
+        this.createErrorNotification(
           err,
           this.$t("task.cannot_create_task", { action: taskAction })
         );
@@ -495,7 +507,7 @@ export default {
       const err = res[0];
 
       if (err) {
-        this.createTaskErrorNotification(
+        this.createErrorNotification(
           err,
           this.$t("task.cannot_create_task", { action: taskAction })
         );
@@ -545,7 +557,7 @@ export default {
       const err = res[0];
 
       if (err) {
-        this.createTaskErrorNotification(
+        this.createErrorNotification(
           err,
           this.$t("task.cannot_create_task", { action: taskAction })
         );
@@ -567,4 +579,9 @@ export default {
 
 <style scoped lang="scss">
 @import "../styles/carbon-utils";
+
+.break-word {
+  word-wrap: break-word;
+  max-width: 20vw;
+}
 </style>

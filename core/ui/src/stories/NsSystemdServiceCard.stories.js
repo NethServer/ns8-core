@@ -24,6 +24,5 @@ Default.args = {
   enabledLabel: "enabled",
   disaledLabel: "disabled",
   light: false,
-  minHeight: false,
   icon: Cube32,
 };

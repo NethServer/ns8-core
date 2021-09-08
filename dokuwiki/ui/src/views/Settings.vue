@@ -194,7 +194,7 @@ export default {
       const err = res[0];
 
       if (err) {
-        this.createTaskErrorNotificationForApp(
+        this.createErrorNotificationForApp(
           err,
           this.$t("task.cannot_create_task", { action: taskAction })
         );
@@ -325,7 +325,7 @@ export default {
       const err = res[0];
 
       if (err) {
-        this.createTaskErrorNotificationForApp(
+        this.createErrorNotificationForApp(
           err,
           this.$t("task.cannot_create_task", { action: taskAction })
         );

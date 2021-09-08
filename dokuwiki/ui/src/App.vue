@@ -39,6 +39,9 @@ export default {
       false
     );
 
+    // configure NS8 global shortcuts
+    ns8Core.$root.$emit("configureKeyboardShortcuts", window);
+
     const queryParams = this.getQueryParamsForApp();
     const requestedPage = queryParams.page || "status";
 

@@ -478,4 +478,8 @@ export default {
   margin-top: $spacing-07;
   margin-bottom: $spacing-09;
 }
+
+.logs-max-results {
+  max-width: 12rem;
+}
 </style>

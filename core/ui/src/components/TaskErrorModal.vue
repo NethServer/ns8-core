@@ -17,44 +17,71 @@
       <div v-if="subTasks.length">
         <TaskHierarchy :subTasks="subTasks" class="task-hierarchy" />
       </div>
-      <cv-accordion ref="accordion" class="task-more-info">
-        <cv-accordion-item :open="toggleAccordion[0]">
-          <template slot="title">{{ $t("common.more_info") }}</template>
-          <template slot="content">
-            <div class="code-snippet-wrapper">
-              <NsCodeSnippet
-                :copyTooltip="$t('common.copy_to_clipboard')"
-                :copy-feedback="$t('common.copied_to_clipboard')"
-                :feedback-aria-label="$t('common.copied_to_clipboard')"
-                :wrap-text="true"
-                :moreText="$t('common.show_more')"
-                :lessText="$t('common.show_less')"
-                light
-                expanded
-                >{{ taskErrorToShow }}</NsCodeSnippet
-              >
-            </div>
-          </template>
-        </cv-accordion-item>
-      </cv-accordion>
+      <div @click="showCopyClipboardHint">
+        <cv-accordion ref="accordion" class="task-more-info">
+          <cv-accordion-item :open="toggleAccordion[0]">
+            <template slot="title">{{ $t("common.more_info") }}</template>
+            <template slot="content">
+              <!-- copy to clipboard hint -->
+              <span class="hint hint-copy-to-clipboard">
+                <cv-interactive-tooltip
+                  alignment="end"
+                  direction="bottom"
+                  :visible="isCopyClipboardHintShown"
+                >
+                  <template slot="trigger">
+                    <span></span>
+                  </template>
+                  <template slot="content">
+                    <p>
+                      {{ $t("hint.copy_to_clipboard") }}
+                    </p>
+                    <NsButton
+                      kind="primary"
+                      size="small"
+                      @click="isCopyClipboardHintShown = false"
+                      class="hint-button"
+                      >{{ $t("common.got_it") }}</NsButton
+                    >
+                  </template>
+                </cv-interactive-tooltip>
+              </span>
+              <div class="code-snippet-wrapper">
+                <NsCodeSnippet
+                  :copyTooltip="$t('common.copy_to_clipboard')"
+                  :copy-feedback="$t('common.copied_to_clipboard')"
+                  :feedback-aria-label="$t('common.copied_to_clipboard')"
+                  :wrap-text="true"
+                  :moreText="$t('common.show_more')"
+                  :lessText="$t('common.show_less')"
+                  light
+                  expanded
+                  >{{ taskErrorToShow }}</NsCodeSnippet
+                >
+              </div>
+            </template>
+          </cv-accordion-item>
+        </cv-accordion>
+      </div>
     </template>
     <template slot="secondary-button">{{ $t("common.close") }}</template>
   </cv-modal>
 </template>
 
 <script>
-import { mapState } from "vuex";
-import { mapActions } from "vuex";
+import { mapState, mapActions } from "vuex";
 import TaskHierarchy from "@/components/TaskHierarchy";
-import { TaskService } from "@nethserver/ns8-ui-lib";
+import { TaskService, StorageService } from "@nethserver/ns8-ui-lib";
 
 export default {
   name: "TaskErrorModal",
   components: { TaskHierarchy },
-  mixins: [TaskService],
+  mixins: [TaskService, StorageService],
   props: {},
   data() {
-    return {};
+    return {
+      isCopyClipboardHintShown: false,
+    };
   },
   computed: {
     ...mapState(["taskErrorToShow"]),
@@ -77,6 +104,18 @@ export default {
         (item, index) => index === ev.changedIndex
       );
     },
+    showCopyClipboardHint() {
+      setTimeout(() => {
+        const isCopyClipboardHintShown = this.getFromStorage(
+          "isCopyClipboardHintShown"
+        );
+
+        if (!isCopyClipboardHintShown) {
+          this.isCopyClipboardHintShown = true;
+          this.saveToStorage("isCopyClipboardHintShown", true);
+        }
+      }, 400);
+    },
   },
 };
 </script>
@@ -90,5 +129,11 @@ export default {
 
 .task-hierarchy {
   margin-left: -0.8rem;
+}
+
+.hint-copy-to-clipboard {
+  top: 1.7rem;
+  right: 2.3rem;
+  float: right;
 }
 </style>

@@ -18,6 +18,8 @@
     "cancel": "Cancel",
     "undo": "Undo",
     "node": "Node",
+    "nodes": "Node | Nodes",
+    "installed_apps": "Installed app | Installed apps",
     "version": "Version",
     "enabled": "Enabled",
     "disabled": "Disabled",
@@ -25,18 +27,40 @@
     "delete": "Delete",
     "required": "Required",
     "use_landscape_mode": "Rotate your device",
-    "use_landscape_mode_description": "This page is optimized for landscape mode"
+    "use_landscape_mode_description": "This page is optimized for landscape mode",
+    "got_it": "Got it",
+    "global_shortcut": "Global shortcut"
   },
   "error": {
     "error": "Error",
     "generic_error": "Something went wrong",
     "validation_error": "Validation error",
     "network_error": "Network error",
-    "401": "Missing or invalid authentication",
+    "network_timeout": "Network timeout",
+    "401": "Invalid authentication",
     "403": "Operation not authorized",
     "404": "Resource not found",
     "cannot_retrieve_task_status": "Cannot retrieve task status",
-    "invalid_username_or_password": "Invalid username or password"
+    "invalid_username_or_password": "Invalid username or password",
+    "cannot_retrieve_cluster_status": "Cannot retrieve cluster status",
+    "invalid_port_number": "Invalid port number",
+    "cannot_refresh_token": "Cannot refresh token",
+    "cannot_retrieve_cluster_nodes": "Cannot retrieve cluster nodes",
+    "cannot_retrieve_installed_apps": "Cannot retrieve installed apps",
+    "cannot_retrieve_cluster_tasks": "Cannot retrieve cluster tasks"
+  },
+  "password": {
+    "hide_password": "Hide password",
+    "show_password": "Show password",
+    "long_enough": "Long enough",
+    "lowercase_letter": "Lowercase letter",
+    "uppercase_letter": "Uppercase letter",
+    "number": "Number",
+    "symbol": "Symbol",
+    "equal": "Equal",
+    "old_new_passwords_must_be_different": "New password must be different from current password",
+    "passwords_do_not_match": "Passwords do not match",
+    "password_not_secure": "Password must meet all security requirements below"
   },
   "login": {
     "title": "Log in",
@@ -48,13 +72,30 @@
     "password": "Password",
     "username_placeholder": "Your username",
     "password_placeholder": "Your password",
-    "remember_username": "Remember username",
-    "hide_password": "Hide password",
-    "show_password": "Show password"
+    "remember_username": "Remember username"
+  },
+  "init": {
+    "welcome": "Welcome to {product}",
+    "configure_node": "Configure this node",
+    "create_cluster": "Create cluster",
+    "create_cluster_description": "Create a new cluster and promote this node as cluster leader",
+    "join_cluster": "Join cluster",
+    "join_cluster_description": "Add this node to an existing cluster",
+    "change_admin_password": "Change admin password",
+    "change_admin_password_description": "This is needed for security reasons",
+    "current_password": "Current admin password",
+    "new_password": "New admin password",
+    "new_password_confirm": "Re-enter new admin password",
+    "change_password": "Change password",
+    "vpn_endpoint_address": "VPN endpoint address",
+    "vpn_endpoint_port": "VPN endpoint port",
+    "vpn_cidr": "VPN CIDR",
+    "join_cluster_instead": "Join an existing cluster instead",
+    "create_cluster_instead": "Create a new cluster instead",
+    "cluster_url": "Cluster URL"
   },
   "shell": {
     "skip_to_content": "Skip to content",
-    "status": "Status",
     "search": "Search",
     "account": "Account",
     "app_launcher": "App launcher",
@@ -62,13 +103,34 @@
     "no_search_results": "No results",
     "no_search_results_description": "Try changing your search query"
   },
+  "app_drawer": {
+    "no_apps": "No apps",
+    "no_apps_description": "To install apps go to Software center",
+    "search_placeholder": "Search app...",
+    "no_search_results": "No results",
+    "no_search_results_description": "Try changing your search query",
+    "edit_favorite_apps": "Edit favorite apps",
+    "favorites": "Favorites",
+    "favorite": "Favorite",
+    "set_favorite_apps": "Set favorite apps",
+    "all_apps": "All apps",
+    "search_results": "Search results",
+    "grid": "Grid",
+    "list": "List",
+    "done_edit_favorites": "Done"
+  },
+  "hint": {
+    "notifications": "You can find notifications and progress of tasks here",
+    "copy_to_clipboard": "Click here to copy to clipboard"
+  },
   "notification": {
     "notifications": "Notifications",
-    "unread": "unread",
+    "unread": "unread | unread",
     "ongoing": "Ongoing",
     "recent": "Recent",
     "no_notifications": "No notifications",
-    "no_notifications_description": "You don't have any recent notifications yet"
+    "no_notifications_description": "You don't have any recent notifications yet",
+    "mark_all_read": "Mark all as read"
   },
   "task": {
     "task_failed": "Task <strong>{action}</strong> failed",
@@ -138,7 +200,7 @@
     "update": "Update",
     "update_all": "Update all apps",
     "update_will_start_in_a_moment": "Update will start in a moment...",
-    "add_to_launcher": "Add to launcher",
+    "set_as_favorite": "Set as favorite",
     "details": "Details",
     "uninstall": "Uninstall",
     "system_up_to_date": "Your system is up to date",
@@ -156,7 +218,6 @@
     "app_installation": "{app} installation",
     "choose_node_for_installation": "Select the node where {app} will be installed",
     "about_to_install_app": "{app} will be installed on the system",
-    "cannot_retrieve_cluster_nodes": "Cannot retrieve cluster nodes",
     "installing_on_node": "Installing on node {node}",
     "instance_installed_on_node": "{instance} installed on node {node}",
     "app_instances": "{app} instances",
@@ -192,7 +253,7 @@
     "no_logs_found_description": "Try changing your search filters",
     "invalid_interval": "Invalid time interval"
   },
-  "dashboard": {
+  "cluster_status": {
     "title": "Cluster status"
   }
 }

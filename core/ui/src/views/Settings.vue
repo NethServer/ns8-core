@@ -11,21 +11,22 @@
           :light="true"
           class="content-tile"
           kind="clickable"
-          @click="goToSettingsSoftwareRepository"
-          :icon="Application20"
+          @click="goToSettingsSoftwareRepositories"
+          :icon="Application32"
         >
           <h6>{{ $t("settings.sw_repositories") }}</h6>
         </NsTile>
       </div>
+      <!-- //// remove fake tiles -->
       <div class="bx--col-md-4 bx--col-lg-4">
         <NsTile
           :light="true"
           class="content-tile"
           kind="clickable"
           @click="actionClick"
-          :icon="Application20"
+          :icon="Cube32"
         >
-          <h6>Test ////</h6>
+          <h6>Test</h6>
         </NsTile>
       </div>
       <div class="bx--col-md-4 bx--col-lg-4">
@@ -34,9 +35,9 @@
           class="content-tile"
           kind="clickable"
           @click="actionClick"
-          :icon="Application20"
+          :icon="Cube32"
         >
-          <h6>Test ////</h6>
+          <h6>Test</h6>
         </NsTile>
       </div>
       <div class="bx--col-md-4 bx--col-lg-4">
@@ -45,20 +46,20 @@
           class="content-tile"
           kind="clickable"
           @click="actionClick"
-          :icon="Application20"
+          :icon="Cube32"
         >
-          <h6>Test ////</h6>
+          <h6>Test</h6>
         </NsTile>
       </div>
-      <div class="bx--col-md-2 bx--col-lg-4">
+      <div class="bx--col-md-4 bx--col-lg-4">
         <NsTile
           :light="true"
           class="content-tile"
           kind="clickable"
           @click="actionClick"
-          :icon="Application20"
+          :icon="Cube32"
         >
-          <h6>Test ////</h6>
+          <h6>Test</h6>
         </NsTile>
       </div>
     </div>
@@ -79,13 +80,6 @@ export default {
   pageTitle() {
     return this.$t("settings.title");
   },
-  data() {
-    return {
-      q: {
-        view: "",
-      },
-    };
-  },
   beforeRouteEnter(to, from, next) {
     next((vm) => {
       console.log("beforeRouteEnter", to, from); ////
@@ -103,7 +97,7 @@ export default {
     actionClick() {
       console.log("actionClick //// remove"); ////
     },
-    goToSettingsSoftwareRepository() {
+    goToSettingsSoftwareRepositories() {
       this.$router.push("/settings/software-repository");
     },
   },

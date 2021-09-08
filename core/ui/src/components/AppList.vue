@@ -4,7 +4,7 @@
       <div v-if="skeleton" class="bx--grid bx--grid--full-width no-padding">
         <div class="bx--row">
           <div
-            v-for="index in 4"
+            v-for="index in 8"
             :key="index"
             class="bx--col-md-4 bx--col-max-4"
           >

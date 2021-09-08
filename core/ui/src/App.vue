@@ -1,8 +1,8 @@
 <template>
   <div id="ns8-core">
-    <ShellHeader v-if="loggedUser" />
-    <SideMenu v-if="loggedUser" />
-    <MobileSideMenu v-if="loggedUser" />
+    <ShellHeader v-if="loggedUser && isClusterInitialized" />
+    <SideMenu v-if="loggedUser && isClusterInitialized" />
+    <MobileSideMenu v-if="loggedUser && isClusterInitialized" />
     <cv-content id="main-content">
       <router-view />
       <TaskErrorModal />
@@ -16,8 +16,7 @@ import SideMenu from "./components/SideMenu";
 import MobileSideMenu from "./components/MobileSideMenu";
 import axios from "axios";
 import WebSocketService from "@/mixins/websocket";
-import { mapState } from "vuex";
-import { mapActions } from "vuex";
+import { mapState, mapActions } from "vuex";
 import to from "await-to-js";
 import LoginService from "@/mixins/login";
 import TaskErrorModal from "@/components/TaskErrorModal";
@@ -48,35 +47,125 @@ export default {
     UtilService,
   ],
   computed: {
-    ...mapState(["loggedUser"]),
+    ...mapState(["loggedUser", "isClusterInitialized"]),
   },
   created() {
     // register to events
     this.$root.$on("login", this.initNs8);
     this.$root.$on("logout", this.logout);
+    this.$root.$on("createErrorNotification", this.createErrorNotification);
     this.$root.$on(
-      "createTaskErrorNotification",
-      this.createTaskErrorNotification
+      "configureKeyboardShortcuts",
+      this.configureKeyboardShortcuts
     );
 
     this.configureAxiosInterceptors();
+    this.configureEventListeners();
 
     // check login
     const loginInfo = this.getFromStorage("loginInfo");
     if (loginInfo && loginInfo.username) {
-      this.setLoggedUserInStore(loginInfo.username);
-      this.initNs8();
+      // refresh authorization token
+      this.refreshToken(loginInfo);
     }
   },
   beforeDestroy() {
+    this.closeWebSocket();
+    window.removeEventListener("blur", this.clickOutsideDrawers);
+    window.removeEventListener(
+      "keydown",
+      this.configureKeyboardShortcutsListener
+    );
+
     // remove all event listeners
     this.$root.$off();
-
-    this.closeWebSocket();
   },
   methods: {
-    ...mapActions(["setLoggedUserInStore"]),
-    ...mapActions(["setUpdatesInStore"]),
+    ...mapActions([
+      "setLoggedUserInStore",
+      "setUpdatesInStore",
+      "setClusterInitializedInStore",
+      "setMobileSideMenuShownInStore",
+      "setNotificationDrawerShownInStore",
+      "setAppDrawerShownInStore",
+      "toggleSearchExpandedInStore",
+      "toggleAppDrawerShownInStore",
+    ]),
+    configureKeyboardShortcuts(window) {
+      window.addEventListener(
+        "keydown",
+        this.configureKeyboardShortcutsListener,
+        false
+      );
+    },
+    configureKeyboardShortcutsListener(e) {
+      if (e.ctrlKey && e.shiftKey && e.code === "KeyA") {
+        this.toggleAppDrawerShownInStore();
+        // disable default behavior of shortcut
+        e.preventDefault();
+      } else if (e.ctrlKey && e.shiftKey && e.code === "KeyF") {
+        this.toggleSearchExpandedInStore();
+        // disable default behavior of shortcut
+        e.preventDefault();
+      } else if (e.ctrlKey && e.shiftKey && e.code === "KeyS") {
+        this.$router.push("/status");
+        this.setMobileSideMenuShownInStore(false);
+        // disable default behavior of shortcut
+        e.preventDefault();
+      }
+    },
+    async refreshToken(loginInfo) {
+      // invoke refresh token API
+      const res = await to(this.executeRefreshToken());
+      const refreshTokenError = res[0];
+
+      if (refreshTokenError) {
+        this.createErrorNotification(
+          refreshTokenError,
+          this.$t("error.cannot_refresh_token")
+        );
+        return;
+      }
+      this.setLoggedUserInStore(loginInfo.username);
+      this.initNs8();
+    },
+    configureEventListeners() {
+      // needed to detect click outside mobile side menu, app drawer and
+      // notification drawer when the user is on an external NS8 app
+      window.addEventListener("blur", this.clickOutsideDrawers);
+
+      // NS8 global shortcuts
+      this.configureKeyboardShortcuts(window);
+    },
+    clickOutsideDrawers() {
+      if (document.activeElement.id == "app-frame") {
+        // close side menu and drawers
+        this.setMobileSideMenuShownInStore(false);
+        this.setNotificationDrawerShownInStore(false);
+        this.setAppDrawerShownInStore(false);
+      }
+    },
+    configureClusterInitializationRedirect() {
+      // if cluster has not been initialized, redirect to /init
+      this.$router.beforeEach(async (to, from, next) => {
+        if (this.isClusterInitialized) {
+          if (to.path === "/init") {
+            // cannot navigate to initialization page if cluster is already initialized
+            return false;
+          } else {
+            next();
+          }
+        } else {
+          // cluster not initialized
+          if (to.path === "/init") {
+            next();
+          } else {
+            // redirect: only /init is allowed
+            next("/init?page=welcome");
+          }
+        }
+      });
+    },
     configureAxiosInterceptors() {
       const context = this;
       axios.interceptors.response.use(
@@ -118,9 +207,53 @@ export default {
     // invoked on webapp loading and after logging in
     initNs8() {
       this.initWebSocket();
+      this.retrieveClusterStatus();
+      // this.retrieveClusterTasks(); ////
+    },
+    // async retrieveClusterTasks() { ////
+    //   const [clusterTasksError, response] = await to(this.getClusterTasks());
 
-      // check for software updates
-      this.listUpdates();
+    //   if (clusterTasksError) {
+    //     this.createErrorNotification(
+    //       clusterTasksError,
+    //       this.$t("error.cannot_retrieve_cluster_tasks")
+    //     );
+    //     return;
+    //   }
+
+    //   console.log("clusterTasks response", response); ////
+    // },
+    async retrieveClusterStatus() {
+      const loginInfo = this.getFromStorage("loginInfo");
+
+      console.log("loginInfo", loginInfo); ////
+
+      //// TEST
+      // const [clusterStatusError, response] = await to(
+      //   this.getClusterStatus(loginInfo.username, loginInfo.token)
+      // );
+
+      // if (clusterStatusError) {
+      //   this.createErrorNotification(
+      //     clusterStatusError,
+      //     this.$t("error.cannot_retrieve_cluster_status")
+      //   );
+      //   return;
+      // }
+
+      const isClusterInitialized = true; //// use response
+
+      this.setClusterInitializedInStore(isClusterInitialized);
+
+      if (this.isClusterInitialized) {
+        // check for software updates
+        this.listUpdates();
+      } else {
+        // redirect to cluster initialization page
+        this.$router.replace("/init?page=welcome");
+      }
+
+      this.configureClusterInitializationRedirect();
     },
     async listUpdates() {
       const taskAction = "list-updates";
@@ -140,7 +273,7 @@ export default {
       const err = res[0];
 
       if (err) {
-        this.createTaskErrorNotification(
+        this.createErrorNotification(
           err,
           this.$t("task.cannot_create_task", { action: taskAction })
         );
@@ -167,7 +300,7 @@ export default {
 
       this.setUpdatesInStore(updates);
     },
-    createTaskErrorNotification(err, message) {
+    createErrorNotification(err, message) {
       const notification = {
         title: message,
         description: this.getErrorMessage(err),

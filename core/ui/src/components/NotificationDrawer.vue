@@ -1,12 +1,21 @@
 <template>
   <transition name="slide-notifications">
-    <div v-if="isShown" class="notification-drawer">
+    <div
+      v-if="isNotificationDrawerShown"
+      v-click-outside="clickOutside"
+      class="notification-drawer"
+    >
       <div class="notification-drawer__header">
-        <h4>{{ $t("notification.notifications") }}</h4>
-        <span
-          >{{ unreadNotificationsCount }} {{ $t("notification.unread") }}</span
+        <h5>{{ $t("notification.notifications") }}</h5>
+        <span v-if="unreadNotificationsCount > 0"
+          >{{ unreadNotificationsCount }} {{ $tc("notification.unread", unreadNotificationsCount) }}</span
         >
-        <button
+        <cv-overflow-menu flip-menu>
+          <cv-overflow-menu-item @click="markAllRead" id="overflow-item">{{
+            $t("notification.mark_all_read")
+          }}</cv-overflow-menu-item>
+        </cv-overflow-menu>
+        <!-- <button //// remove
           aria-label="close"
           type="button"
           data-notification-btn
@@ -17,7 +26,7 @@
           @click="closeDrawer"
         >
           <Close20 class="bx--toast-notification__close-icon" />
-        </button>
+        </button> -->
       </div>
       <div v-if="ongoingNotifications.length" class="notification-divider">
         {{ $t("notification.ongoing") }}
@@ -50,7 +59,7 @@
       </NsEmptyState>
       <div
         v-else
-        v-for="notification in recentNotifications"
+        v-for="notification in recentNotificationsLoaded"
         :key="notification.id"
       >
         <NsToastNotification
@@ -68,34 +77,30 @@
           :id="notification.id"
         />
       </div>
+      <infinite-loading @infinite="infiniteScrollHandler"></infinite-loading>
     </div>
   </transition>
 </template>
 
 <script>
-import Close20 from "@carbon/icons-vue/es/close/20";
-import { mapActions } from "vuex";
-import { mapGetters } from "vuex";
+import { mapState, mapActions, mapGetters } from "vuex";
 import NotificationService from "@/mixins/notification";
 
 export default {
   name: "NotificationDrawer",
   mixins: [NotificationService],
-  components: {
-    Close20, //// use mixin
-  },
-  props: {
-    isShown: {
-      type: Boolean,
-      default: false,
-    },
-  },
   data() {
     return {
       isNotificationDetailsShown: false,
+      isTransitioning: false,
+      // infinite scroll
+      recentNotificationsLoaded: [],
+      pageNum: 0,
+      pageSize: 20,
     };
   },
   computed: {
+    ...mapState(["isNotificationDrawerShown"]),
     ...mapGetters([
       "unreadNotifications",
       "unreadNotificationsCount",
@@ -103,16 +108,67 @@ export default {
       "recentNotifications",
     ]),
   },
+  watch: {
+    isNotificationDrawerShown: function () {
+      this.isTransitioning = true;
+
+      setTimeout(() => {
+        this.isTransitioning = false;
+      }, 300); // same duration as .slide-notifications transition
+    },
+    recentNotifications: function () {
+      this.recentNotificationsLoaded = [];
+      this.pageNum = 0;
+      this.infiniteScrollHandler();
+    },
+  },
   methods: {
     ...mapActions([
-      "setIsNotificationDrawerShownInStore",
+      "setNotificationDrawerShownInStore",
       "setNotificationReadInStore",
+      "markAllNotificationsReadInStore",
     ]),
-    closeDrawer() {
-      this.setIsNotificationDrawerShownInStore(false);
-    },
     notificationDetailsHidden() {
       this.isNotificationDetailsShown = false;
+    },
+    clickOutside() {
+      // close notification drawer by clicking outside of it
+      // don't close notification drawer when clicking on overflow menu
+      if (
+        !this.isTransitioning &&
+        document.activeElement &&
+        document.activeElement.parentElement.id !== "overflow-item"
+      ) {
+        // close menu
+        this.setNotificationDrawerShownInStore(false);
+      }
+    },
+    markAllRead() {
+      this.markAllNotificationsReadInStore();
+    },
+    infiniteScrollHandler($state) {
+      const pageNotifications = this.recentNotifications.slice(
+        this.pageNum * this.pageSize,
+        (this.pageNum + 1) * this.pageSize
+      );
+
+      if (pageNotifications.length) {
+        this.pageNum++;
+        this.recentNotificationsLoaded.push(...pageNotifications);
+
+        console.log(
+          "recentNotificationsLoaded length",
+          this.recentNotificationsLoaded.length
+        ); ////
+
+        if ($state) {
+          $state.loaded();
+        }
+      } else {
+        if ($state) {
+          $state.complete();
+        }
+      }
     },
   },
 };
@@ -165,7 +221,7 @@ export default {
 }
 
 .notification-divider {
-  margin: $spacing-07 $spacing-05 $spacing-03;
+  margin: $spacing-07 0 $spacing-03;
   padding-bottom: $spacing-02;
   border-bottom: 1px solid $text-02;
   color: $active-ui;
@@ -187,6 +243,75 @@ export default {
 
   .notification-drawer {
     width: $notification-drawer-width-small-screen;
+  }
+}
+</style>
+
+<style scoped lang="scss">
+@import "../styles/carbon-utils";
+</style>
+
+<style lang="scss">
+@import "../styles/carbon-utils";
+
+// global styles
+
+.Vue-Toastification__toast {
+  border-radius: 0 !important;
+  min-width: 16rem !important; //// use variable of small-screen notif width
+}
+
+.Vue-Toastification__container.top-right.toastification-container {
+  top: 4rem;
+  z-index: 7999;
+}
+
+.Vue-Toastification__toast--default.toastification-toast {
+  background-color: transparent;
+  padding: 0;
+}
+
+.bx--toast-notification .bx--inline-notification__action-button.bx--btn--ghost {
+  // branding color
+  color: $inverse-link;
+}
+
+.cv-notifiation.bx--toast-notification.notification {
+  // let small screens use a narrow notification drawer
+  min-width: 0 !important;
+}
+
+// overflow menu
+.cv-overflow-menu .bx--tooltip__trigger svg {
+  fill: $ui-01 !important;
+}
+
+.cv-overflow-menu .bx--tooltip__trigger:hover svg,
+.cv-overflow-menu .bx--tooltip__trigger:focus svg {
+  fill: $ui-01 !important;
+}
+
+.cv-overflow-menu.bx--overflow-menu:hover,
+.cv-overflow-menu.bx--overflow-menu__trigger:hover {
+  background-color: #393939 !important;
+}
+// end overflow menu
+
+@media (max-width: $breakpoint-large) {
+  .cv-notifiation.bx--toast-notification.notification {
+    // reduce notifications width on medium screens
+    width: 20rem !important;
+  }
+
+  .notification-drawer .cv-notifiation.bx--toast-notification.notification {
+    width: 100% !important;
+  }
+}
+
+@media (max-width: $breakpoint-medium) {
+  .cv-notifiation.bx--toast-notification.notification {
+    // reduce notifications width on medium screens
+    width: 100% !important;
   }
 }
 </style>

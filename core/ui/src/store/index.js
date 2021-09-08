@@ -8,6 +8,10 @@ export default new Vuex.Store({
   state: {
     notifications: [],
     isNotificationDrawerShown: false,
+    isMobileSideMenuShown: false,
+    isAppDrawerShown: false,
+    isEditingFavoriteApps: false,
+    isSearchExpanded: false,
     taskErrorToShow: false,
     loggedUser: "",
     socket: {
@@ -17,6 +21,7 @@ export default new Vuex.Store({
     },
     // apps to update
     updates: [],
+    isClusterInitialized: false,
   },
   getters: {
     unreadNotifications: (state, getters) => {
@@ -79,8 +84,32 @@ export default new Vuex.Store({
     createNotification(state, notification) {
       state.notifications.unshift(notification);
     },
-    setIsNotificationDrawerShown(state, value) {
+    setNotificationDrawerShown(state, value) {
       state.isNotificationDrawerShown = value;
+    },
+    toggleNotificationDrawerShown(state) {
+      state.isNotificationDrawerShown = !state.isNotificationDrawerShown;
+    },
+    setMobileSideMenuShown(state, value) {
+      state.isMobileSideMenuShown = value;
+    },
+    toggleMobileSideMenuShown(state) {
+      state.isMobileSideMenuShown = !state.isMobileSideMenuShown;
+    },
+    setAppDrawerShown(state, value) {
+      state.isAppDrawerShown = value;
+    },
+    toggleAppDrawerShown(state) {
+      state.isAppDrawerShown = !state.isAppDrawerShown;
+    },
+    setEditingFavoriteApps(state, value) {
+      state.isEditingFavoriteApps = value;
+    },
+    setSearchExpanded(state, value) {
+      state.isSearchExpanded = value;
+    },
+    toggleSearchExpanded(state) {
+      state.isSearchExpanded = !state.isSearchExpanded;
     },
     setTaskErrorToShow(state, task) {
       state.taskErrorToShow = task;
@@ -110,6 +139,14 @@ export default new Vuex.Store({
     },
     setUpdates(state, updates) {
       state.updates = updates;
+    },
+    setClusterInitialized(state, value) {
+      state.isClusterInitialized = value;
+    },
+    markAllNotificationsRead(state, unreadNotifications) {
+      for (let notification of unreadNotifications) {
+        notification.isRead = true;
+      }
     },
     //// does it work?
     SOCKET_ONOPEN(state, event) {
@@ -155,8 +192,32 @@ export default new Vuex.Store({
     createNotificationInStore(context, notification) {
       context.commit("createNotification", notification);
     },
-    setIsNotificationDrawerShownInStore(context, value) {
-      context.commit("setIsNotificationDrawerShown", value);
+    setNotificationDrawerShownInStore(context, value) {
+      context.commit("setNotificationDrawerShown", value);
+    },
+    toggleNotificationDrawerShownInStore(context) {
+      context.commit("toggleNotificationDrawerShown");
+    },
+    setMobileSideMenuShownInStore(context, value) {
+      context.commit("setMobileSideMenuShown", value);
+    },
+    toggleMobileSideMenuShownInStore(context) {
+      context.commit("toggleMobileSideMenuShown");
+    },
+    setAppDrawerShownInStore(context, value) {
+      context.commit("setAppDrawerShown", value);
+    },
+    toggleAppDrawerShownInStore(context) {
+      context.commit("toggleAppDrawerShown");
+    },
+    setEditingFavoriteAppsInStore(context, value) {
+      context.commit("setEditingFavoriteApps", value);
+    },
+    setSearchExpandedInStore(context, value) {
+      context.commit("setSearchExpanded", value);
+    },
+    toggleSearchExpandedInStore(context) {
+      context.commit("toggleSearchExpanded");
     },
     setTaskErrorToShowInStore(context, task) {
       context.commit("setTaskErrorToShow", task);
@@ -172,6 +233,15 @@ export default new Vuex.Store({
     },
     setUpdatesInStore(context, updates) {
       context.commit("setUpdates", updates);
+    },
+    setClusterInitializedInStore(context, value) {
+      context.commit("setClusterInitialized", value);
+    },
+    markAllNotificationsReadInStore(context) {
+      context.commit(
+        "markAllNotificationsRead",
+        context.getters.unreadNotifications
+      );
     },
   },
   modules: {},

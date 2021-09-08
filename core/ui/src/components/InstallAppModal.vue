@@ -14,7 +14,7 @@
       <NsInlineNotification
         v-if="error.nodes"
         kind="error"
-        :title="$t('software_center.cannot_retrieve_cluster_nodes')"
+        :title="$t('error.cannot_retrieve_cluster_nodes')"
         :description="error.nodes"
         :showCloseButton="false"
       />
@@ -48,7 +48,7 @@
                 kind="selectable"
                 v-model="node.selected"
                 value="nodeValue"
-                :icon="EdgeNode20"
+                :footerIcon="EdgeNode20"
                 @click="deselectOtherNodes(node)"
               >
                 <h6>{{ $t("common.node") }} {{ node.id }}</h6>
@@ -121,7 +121,13 @@ export default {
       this.nodes = nodes;
     },
     async installInstance() {
-      const version = this.app.versions[0].tag;
+      let version;
+
+      if (this.app.versions.length) {
+        version = this.app.versions[0].tag;
+      } else {
+        version = "latest"; //// remove?
+      }
       const taskAction = "add-module";
 
       // register to task completion
@@ -148,7 +154,7 @@ export default {
       const err = res[0];
 
       if (err) {
-        this.createTaskErrorNotification(
+        this.createErrorNotification(
           err,
           this.$t("task.cannot_create_task", { action: taskAction })
         );
@@ -163,6 +169,9 @@ export default {
       this.$root.$off("add-module-completed");
 
       this.$emit("installationCompleted");
+
+      // show new app in app drawer
+      this.$root.$emit("reloadAppDrawer");
     },
     deselectOtherNodes(node) {
       for (let n of this.nodes) {

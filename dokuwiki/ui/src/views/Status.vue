@@ -17,8 +17,7 @@
           :title="status.instance"
           :description="$t('status.app_instance')"
           :icon="Application32"
-          min-height
-          class="content-tile"
+          class="content-tile min-height-card"
         />
         <cv-tile v-else light class="content-tile">
           <cv-skeleton-text
@@ -34,8 +33,7 @@
           :title="$t('status.node') + ' ' + status.node"
           :description="$t('status.installation_node')"
           :icon="EdgeNode32"
-          min-height
-          class="content-tile"
+          class="content-tile min-height-card"
         />
         <cv-tile v-else light class="content-tile">
           <cv-skeleton-text
@@ -65,8 +63,7 @@
       >
         <NsSystemdServiceCard
           light
-          min-height
-          class="content-tile"
+          class="content-tile min-height-card"
           :serviceName="service.name"
           :active="service.active"
           :failed="service.failed"
@@ -296,7 +293,7 @@ export default {
       const err = res[0];
 
       if (err) {
-        this.createTaskErrorNotificationForApp(
+        this.createErrorNotificationForApp(
           err,
           this.$t("task.cannot_create_task", { action: taskAction })
         );

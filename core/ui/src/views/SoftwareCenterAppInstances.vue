@@ -90,9 +90,12 @@
                         @click="openInstance(instance)"
                         >{{ $t("software_center.open") }}</cv-overflow-menu-item
                       >
-                      <cv-overflow-menu-item @click="addToLauncher(instance)">{{
-                        $t("software_center.add_to_launcher")
-                      }}</cv-overflow-menu-item>
+                      <cv-overflow-menu-item
+                        @click="setFavoriteApp(instance)"
+                        >{{
+                          $t("software_center.set_as_favorite")
+                        }}</cv-overflow-menu-item
+                      >
                       <cv-overflow-menu-item
                         danger
                         @click="uninstallInstance(instance)"
@@ -117,9 +120,12 @@
                       tip-alignment="end"
                       class="overflow-menu"
                     >
-                      <cv-overflow-menu-item @click="addToLauncher(instance)">{{
-                        $t("software_center.add_to_launcher")
-                      }}</cv-overflow-menu-item>
+                      <cv-overflow-menu-item
+                        @click="setFavoriteApp(instance)"
+                        >{{
+                          $t("software_center.set_as_favorite")
+                        }}</cv-overflow-menu-item
+                      >
                       <cv-overflow-menu-item
                         danger
                         @click="uninstallInstance(app)"
@@ -154,6 +160,7 @@ import {
   TaskService,
   IconService,
 } from "@nethserver/ns8-ui-lib";
+import { mapActions } from "vuex";
 
 export default {
   name: "SoftwareCenterAppInstances",
@@ -187,6 +194,7 @@ export default {
     this.listModules();
   },
   methods: {
+    ...mapActions(["setAppDrawerShownInStore"]),
     async listModules() {
       this.loading.modules = true;
       const taskAction = "list-modules";
@@ -206,7 +214,7 @@ export default {
       const err = res[0];
 
       if (err) {
-        this.createTaskErrorNotification(
+        this.createErrorNotification(
           err,
           this.$t("task.cannot_create_task", { action: taskAction })
         );
@@ -247,8 +255,12 @@ export default {
     updateInstance(instance) {
       console.log("updateInstance", instance); ////
     },
-    addToLauncher(instance) {
-      console.log("addToLauncher", instance); ////
+    setFavoriteApp(instance) {
+      console.log("setFavoriteApp", instance); ////
+
+      //// todo call api to save favorite
+
+      this.setAppDrawerShownInStore(true);
     },
     uninstallInstance(instance) {
       console.log("uninstallInstance", instance); ////
@@ -278,5 +290,13 @@ export default {
 
 .app-actions {
   text-align: end;
+}
+
+.mg-bottom-sm {
+  margin-bottom: $spacing-03;
+}
+
+.align-items-center {
+  align-items: center;
 }
 </style>

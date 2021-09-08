@@ -1,27 +1,33 @@
 import Vue from "vue";
 import VueRouter from "vue-router";
-import Dashboard from "../views/Dashboard";
+import ClusterStatus from "../views/ClusterStatus";
 import Login from "../views/Login";
 import Settings from "../views/Settings";
 import Applications from "../views/Applications";
 import SoftwareCenter from "../views/SoftwareCenter";
 import Logs from "../views/Logs";
-import SettingsSoftwareRepository from "../views/SettingsSoftwareRepository";
+import SettingsSoftwareRepositories from "../views/SettingsSoftwareRepositories";
 import SoftwareCenterAppInstances from "../views/SoftwareCenterAppInstances";
+import InitializeCluster from "../views/InitializeCluster";
 
 Vue.use(VueRouter);
 
 const routes = [
-  { path: "/", redirect: "/dashboard" },
+  { path: "/", redirect: "/status" },
   {
-    path: "/dashboard",
-    name: "Dashboard",
-    component: Dashboard,
+    path: "/status",
+    name: "ClusterStatus",
+    component: ClusterStatus,
   },
   {
     path: "/login",
     name: "Login",
     component: Login,
+  },
+  {
+    path: "/init",
+    name: "InitializeCluster",
+    component: InitializeCluster,
   },
   {
     path: "/settings",
@@ -30,8 +36,8 @@ const routes = [
   },
   {
     path: "/settings/software-repository",
-    name: "SettingsSoftwareRepository",
-    component: SettingsSoftwareRepository,
+    name: "SettingsSoftwareRepositories",
+    component: SettingsSoftwareRepositories,
   },
   {
     path: "/apps/:appId",

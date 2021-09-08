@@ -2,11 +2,11 @@
 @import "./carbon-utils";
 
 body {
-  height: calc(100vh - 3rem);
+  // height: calc(100vh - 3rem); //// remove
+  background-color: $ui-01;
 }
 
-#ns8-core {
-  height: 100%;
+.bx--content {
   background-color: $ui-01;
 }
 
@@ -30,17 +30,8 @@ a {
   color: $link-02;
 }
 
-.cv-text-input {
-  margin-bottom: $spacing-05;
-}
-
 .notification {
   margin-top: 3rem;
-}
-
-.mg-top-bottom {
-  margin-top: $spacing-05;
-  margin-bottom: $spacing-05;
 }
 
 .mg-bottom-md {
@@ -54,65 +45,6 @@ a {
     padding-right: $spacing-05;
   }
 }
-
-// vue-toastification
-.Vue-Toastification__toast {
-  border-radius: 0 !important;
-  min-width: 16rem !important; //// use variable of small-screen notif width
-}
-
-.Vue-Toastification__container.top-right.toastification-container {
-  top: 4rem;
-  z-index: 7999;
-}
-
-.Vue-Toastification__toast--default.toastification-toast {
-  background-color: transparent;
-  padding: 0;
-}
-
-.bx--toast-notification .bx--inline-notification__action-button.bx--btn--ghost {
-  // branding color
-  color: $inverse-link;
-}
-
-.notification-drawer
-  .cv-notifiation.bx--toast-notification.notification.notification-read {
-  // branding color
-  border-color: $ui-04;
-}
-
-.cv-notifiation.bx--toast-notification.notification {
-  // let small screens use a narrow notification drawer
-  min-width: 0 !important;
-  // all notifications have the same width
-  width: 25rem !important;
-}
-
-@media (max-width: $breakpoint-large) {
-  .cv-notifiation.bx--toast-notification.notification {
-    // reduce notifications width on medium screens
-    width: 20rem !important;
-  }
-
-  .notification-drawer .cv-notifiation.bx--toast-notification.notification {
-    width: 100% !important;
-  }
-}
-
-@media (max-width: $breakpoint-medium) {
-  .cv-notifiation.bx--toast-notification.notification {
-    // reduce notifications width on medium screens
-    width: 100% !important;
-  }
-}
-
-.cv-notifiation .timestamp button {
-  @include carbon--type-style("body-short-01");
-  // branding color
-  color: $active-ui;
-}
-// end vue-toastification
 
 .page-title {
   margin-top: $spacing-07;
@@ -145,13 +77,9 @@ a {
   margin-bottom: $spacing-05;
 }
 
-.mg-bottom-sm {
-  margin-bottom: $spacing-03;
-}
-
-// used to center flex items in responsive rows
-.align-items-center {
-  align-items: center;
+.title-description {
+  color: $text-02;
+  margin-top: $spacing-03;
 }
 
 .icon-and-text {
@@ -166,6 +94,17 @@ a {
 .empty-state-button {
   margin-top: $spacing-05;
 }
+
+// ghost button on dark background
+.ghost-button-dark-bg {
+  color: $inverse-link;
+}
+
+.ghost-button-dark-bg:hover {
+  background-color: $hover-secondary;
+  color: $inverse-link;
+}
+// end ghost button on dark background
 
 // status badges
 .badge-container {
@@ -206,153 +145,45 @@ a {
 }
 // end status badges
 
-// timestamp tooltip
-.timestamp button span {
-  background-color: $ui-05 !important;
-}
-.timestamp
-  .bx--tooltip__trigger.bx--tooltip--bottom.bx--tooltip--align-center::before {
-  border-bottom-color: $ui-05 !important;
-}
-
-// global search
-.global-search input {
+// global search, app drawer search
+.global-search input,
+.app-drawer-search input {
   background-color: $ui-05 !important;
   color: $ui-01 !important;
 }
 
-.global-search label {
+.global-search label,
+.app-drawer-search label {
   display: none;
 }
 
-.global-search .bx--search-close {
-  display: none;
-  // fill: $ui-01; ////
+.global-search .bx--search-close,
+.global-search .bx--search-button,
+.app-drawer-search .bx--search-close,
+.app-drawer-search .bx--search-button {
+  fill: $ui-01;
+}
+
+.global-search .bx--search-close::before,
+.global-search .bx--search-close:hover::before,
+.app-drawer-search .bx--search-close::before,
+.app-drawer-search .bx--search-close:hover::before {
+  background-color: transparent;
 }
 
 .global-search .bx--search-close:hover,
-.bx--search-button:hover {
-  background-color: $interactive-02;
+.global-search .bx--search-button:hover,
+.app-drawer-search .bx--search-close:hover,
+.app-drawer-search .bx--search-button:hover {
+  background-color: $hover-secondary;
 }
-
-.global-search .bx--structured-list {
-  margin-bottom: 0;
-}
-
-.global-search .search-results .bx--structured-list-td,
-.global-search .search-results .empty-state {
-  background-color: $ui-05 !important;
-  color: $ui-01 !important;
-}
-
-.global-search
-  .bx--structured-list.bx--structured-list--condensed
-  .bx--structured-list-td,
-.global-search
-  .bx--structured-list.bx--structured-list--condensed
-  .bx--structured-list-th {
-  padding: $spacing-05 !important;
-}
-
-.global-search .bx--structured-list-row {
-  border-color: #393939;
-}
-// end global search
+// end global search, app drawer search
 
 // fix cv-search icon
 .cv-search.bx--form-item > div > svg {
   position: absolute;
   left: 1rem;
 }
-
-// side menu
-.bx--side-nav {
-  background-color: $ui-05;
-  color: $ui-01;
-}
-
-.bx--side-nav__submenu {
-  color: $ui-01;
-}
-
-a.bx--side-nav__link > .bx--side-nav__link-text,
-.bx--side-nav a.bx--header__menu-item .bx--text-truncate-end {
-  color: $ui-01;
-}
-
-.bx--side-nav__menu a.bx--side-nav__link--current > span,
-.bx--side-nav__menu a.bx--side-nav__link[aria-current="page"] > span,
-a.bx--side-nav__link--current > span {
-  color: $ui-01;
-}
-
-.bx--side-nav__icon > svg {
-  width: 20px;
-  height: 20px;
-  fill: $ui-01;
-}
-
-.bx--side-nav__menu a.bx--side-nav__link--current,
-.bx--side-nav__menu a.bx--side-nav__link[aria-current="page"],
-a.bx--side-nav__link--current {
-  background-color: $interactive-02;
-}
-
-.bx--side-nav__submenu:hover {
-  color: $ui-01;
-  background-color: $interactive-02;
-}
-
-.bx--side-nav__item:not(.bx--side-nav__item--active):hover
-  .bx--side-nav__item:not(.bx--side-nav__item--active)
-  > .bx--side-nav__submenu:hover,
-.bx--side-nav__item:not(.bx--side-nav__item--active)
-  > .bx--side-nav__link:hover,
-.bx--side-nav__menu
-  a.bx--side-nav__link:not(.bx--side-nav__link--current):not([aria-current="page"]):hover,
-.bx--side-nav a.bx--header__menu-item:hover,
-.bx--side-nav .bx--header__menu-title[aria-expanded="true"]:hover {
-  color: $ui-01;
-  background-color: $interactive-02;
-}
-
-.bx--side-nav__item:not(.bx--side-nav__item--active)
-  > .bx--side-nav__link:hover
-  > span,
-.bx--side-nav__item:not(.bx--side-nav__item--active)
-  .bx--side-nav__menu-item
-  > .bx--side-nav__link:hover
-  > span {
-  color: $ui-01;
-}
-
-a.bx--side-nav__link[aria-current="page"]::before,
-a.bx--side-nav__link--current::before {
-  background-color: $inverse-support-04;
-}
-
-.bx--side-nav__submenu {
-  height: 3rem;
-}
-
-.cv-side-nav-item-link.bx--side-nav__link {
-  height: 3rem;
-}
-
-a.bx--side-nav__link[aria-current="page"],
-a.bx--side-nav__link--current {
-  background-color: $inverse-02;
-}
-
-a.bx--side-nav__link[aria-current="page"] .bx--side-nav__link-text,
-a.bx--side-nav__link--current .bx--side-nav__link-text {
-  color: $ui-01;
-}
-
-.bx--side-nav--rail {
-  width: $side-menu-collapsed-width;
-}
-// end side menu
 
 // app side menu
 #ns8-app .app-content {
@@ -419,31 +250,6 @@ a.bx--side-nav__link--current .bx--side-nav__link-text {
 }
 // end app side menu
 
-// app drawer
-.app-drawer .bx--structured-list-td,
-.app-drawer .empty-state {
-  background-color: $ui-05 !important;
-  color: $ui-01 !important;
-}
-
-.app-drawer
-  .bx--structured-list.bx--structured-list--condensed
-  .bx--structured-list-td,
-.app-drawer
-  .bx--structured-list.bx--structured-list--condensed
-  .bx--structured-list-th {
-  padding: $spacing-05 !important;
-}
-
-.app-drawer .bx--structured-list-row {
-  border-color: #393939;
-}
-
-.app-drawer .bx--structured-list {
-  margin-bottom: 0;
-}
-// end app drawer
-
 // accordion for technical details of task error
 .task-more-info {
   margin-top: $spacing-04;
@@ -483,24 +289,18 @@ a.bx--side-nav__link--current .bx--side-nav__link-text {
 // end task error modal
 
 // form
-.cv-form .bx--form-item {
-  margin-bottom: $spacing-05;
-}
-
-.cv-form .cv-multi-select {
+.cv-text-input,
+.cv-form .bx--form-item,
+.cv-form .cv-multi-select,
+.ns-password-input {
   margin-bottom: $spacing-05;
 }
 // end form
 
-// logs page
-.logs-max-results {
-  max-width: 12rem;
-}
-
+// fix padding of number input
 .bx--number input[type="number"] {
   padding-right: 5rem;
 }
-// end logs page
 
 // data table
 .bx--toolbar-search-container-expandable .bx--search {
@@ -557,6 +357,17 @@ a.bx--side-nav__link--current .bx--side-nav__link-text {
   animation: spin 0.5s linear infinite;
 }
 
+.loader-large {
+  width: 3rem;
+  height: 3rem;
+  border: 6px solid transparent;
+  border-radius: 50%;
+  border-top: 6px solid currentColor;
+  border-right: 6px solid currentColor;
+  border-bottom: 6px solid currentColor;
+  animation: spin 0.5s linear infinite;
+}
+
 @keyframes spin {
   0% {
     transform: rotate(0deg);
@@ -608,13 +419,45 @@ a.bx--side-nav__link--current .bx--side-nav__link-text {
 }
 // end colors for NsStatusCard and NsSystemdServiceCard
 
+// hint tooltip
+.hint {
+  width: 0;
+  height: 0;
+  position: relative;
+}
+
+.hint-button {
+  margin-top: $spacing-05 !important;
+}
+
+.hint .bx--tooltip__trigger:not(.bx--btn--icon-only):focus {
+  outline: none;
+  fill: none;
+}
+// end hint tooltip
+
+// info tooltip
+.info.bx--tooltip__trigger svg,
+.info.bx--tooltip__trigger:hover svg,
+.bx--tooltip__trigger:focus svg {
+  fill: $support-04;
+}
+
+.min-height-card {
+  min-height: 9rem;
+}
+
+.bx--overflow-menu-options {
+  z-index: 10000;
+}
+
 // styles for large devices
-@media (min-width: $breakpoint-large) {
+@media (min-width: $breakpoint-medium) {
   // limit form fields width on large devices
   .bx--text-input,
   .bx--text-input__field-wrapper,
   .cv-multi-select {
-    max-width: $breakpoint-medium;
+    max-width: 38rem;
   }
 }
 

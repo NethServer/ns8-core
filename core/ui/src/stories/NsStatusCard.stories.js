@@ -23,6 +23,5 @@ Default.args = {
   successTooltip: "Running components",
   warningTooltip: "Unknown components",
   light: false,
-  minHeight: false,
   icon: Cube32,
 };

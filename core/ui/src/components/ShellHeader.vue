@@ -3,7 +3,7 @@
     <cv-header-menu-button
       aria-label="Header menu"
       aria-controls="side-nav"
-      @click="toggleMobileSideMenu"
+      @click="toggleMobileSideMenuShownInStore"
     />
     <cv-skip-to-content href="#main-content">{{
       $t("shell.skip_to_content")
@@ -12,30 +12,26 @@
       $root.config.PRODUCT_NAME
     }}</cv-header-name>
     <cv-header-nav>
-      <cv-header-menu-item to="/dashboard" class="status">
-        <div class="badge-container">
-          <span>{{ $t("shell.status") }}</span>
-          <span class="green-badge right-badge"></span>
-        </div>
-      </cv-header-menu-item>
       <cv-header-menu-item @click="logout">Logout</cv-header-menu-item>
-      <cv-header-menu-item to="/apps/dokuwiki1">dokuwiki1</cv-header-menu-item>
+      <cv-header-menu-item @click="isHintShown = !isHintShown"
+        >Toggle hint</cv-header-menu-item
+      >
     </cv-header-nav>
     <template slot="header-global">
       <cv-header-global-action
         v-if="!isSearchExpanded"
-        :label="$t('shell.search')"
+        :label="$t('shell.search') + ' (CTRL+SHIFT+F)'"
         :aria-label="$t('shell.search')"
         @click="expandSearch"
       >
-        <search-20 />
+        <Search20 />
       </cv-header-global-action>
       <GlobalSearch v-else @closeSearch="closeSearch" />
       <cv-header-global-action
         :label="$t('notification.notifications')"
         :aria-label="$t('notification.notifications')"
         class="notifications-button"
-        @click="toggleNotificationDrawer"
+        @click="toggleNotificationDrawerShownInStore"
       >
         <Notification20 />
         <span
@@ -47,6 +43,31 @@
           v-if="ongoingNotificationsCount > 0"
         ></span>
       </cv-header-global-action>
+      <!-- //// show hint on first task/notification? -->
+      <!-- notification drawer hint -->
+      <span class="hint hint-notifications">
+        <cv-interactive-tooltip
+          alignment="end"
+          direction="bottom"
+          :visible="isHintShown"
+        >
+          <template slot="trigger">
+            <span></span>
+          </template>
+          <template slot="content">
+            <p>
+              {{ $t("hint.notifications") }}
+            </p>
+            <NsButton
+              kind="primary"
+              size="small"
+              @click="isHintShown = false"
+              class="hint-button"
+              >{{ $t("common.got_it") }}</NsButton
+            >
+          </template>
+        </cv-interactive-tooltip>
+      </span>
       <cv-header-global-action
         :label="$t('shell.account')"
         :aria-label="$t('shell.account')"
@@ -56,17 +77,17 @@
         <user-avatar-20 />
       </cv-header-global-action>
       <cv-header-global-action
-        :label="$t('shell.app_launcher')"
+        :label="$t('shell.app_launcher') + ' (CTRL+SHIFT+A)'"
         :aria-label="$t('shell.app_launcher')"
-        @click="toggleAppDrawer"
+        @click="toggleAppDrawerShownInStore"
         tipPosition="bottom"
         tipAlignment="end"
       >
         <app-switcher-20 />
       </cv-header-global-action>
     </template>
-    <AppDrawer :isShown="isAppDrawerShown" />
-    <NotificationDrawer :isShown="isNotificationDrawerShown" />
+    <AppDrawer />
+    <NotificationDrawer />
   </cv-header>
 </template>
 
@@ -74,12 +95,10 @@
 import Notification20 from "@carbon/icons-vue/es/notification/20";
 import UserAvatar20 from "@carbon/icons-vue/es/user--avatar/20";
 import AppSwitcher20 from "@carbon/icons-vue/es/app-switcher/20";
-import { mapState } from "vuex";
-import { mapActions } from "vuex";
-import { mapGetters } from "vuex";
+import Search20 from "@carbon/icons-vue/es/search/20";
+import { mapState, mapActions, mapGetters } from "vuex";
 import GlobalSearch from "@/components/GlobalSearch";
 import AppDrawer from "@/components/AppDrawer";
-import Search20 from "@carbon/icons-vue/es/search/20";
 import LoginService from "@/mixins/login";
 import WebSocketService from "@/mixins/websocket";
 import NotificationDrawer from "@/components/NotificationDrawer";
@@ -99,38 +118,31 @@ export default {
   mixins: [StorageService, LoginService, WebSocketService],
   data() {
     return {
-      isSearchExpanded: false,
-      isAppDrawerShown: false,
+      isHintShown: false, //// remove
     };
   },
   computed: {
-    ...mapState(["isNotificationDrawerShown", "notifications"]),
-    ...mapGetters([
-      "unreadNotificationsCount",
-      "ongoingNotificationsCount",
-      "getUpdatesCount",
-    ]),
+    ...mapState(["notifications", "isSearchExpanded"]),
+    ...mapGetters(["unreadNotificationsCount", "ongoingNotificationsCount"]),
   },
   methods: {
-    ...mapActions(["setIsNotificationDrawerShownInStore"]),
-    toggleNotificationDrawer() {
-      this.setIsNotificationDrawerShownInStore(!this.isNotificationDrawerShown);
-    },
+    ...mapActions([
+      "toggleMobileSideMenuShownInStore",
+      "toggleAppDrawerShownInStore",
+      "toggleNotificationDrawerShownInStore",
+      "setSearchExpandedInStore",
+    ]),
     logout() {
       this.$root.$emit("logout");
     },
     expandSearch() {
-      this.isSearchExpanded = true;
+      this.setSearchExpandedInStore(true);
     },
     closeSearch() {
-      this.isSearchExpanded = false;
+      this.setSearchExpandedInStore(false);
     },
-    toggleMobileSideMenu() {
-      this.$root.$emit("toggleMobileSideMenu");
-    },
-    toggleAppDrawer() {
-      this.isAppDrawerShown = !this.isAppDrawerShown;
-      console.log("toggleAppDrawer", this.isAppDrawerShown); ////
+    goToClusterStatus() {
+      this.$router.push("/status");
     },
   },
 };
@@ -175,5 +187,10 @@ export default {
   100% {
     transform: rotate(360deg);
   }
+}
+
+.hint-notifications {
+  top: 1.8rem;
+  right: 0.8rem;
 }
 </style>
