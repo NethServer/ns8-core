@@ -222,6 +222,12 @@
     "instance_installed_on_node": "{instance} installed on node {node}",
     "app_instances": "{app} instances",
     "app_instances_no_name": "App instances",
+    "app_uninstallation": "{app} uninstallation",
+    "instance_uninstallation": "{instance} uninstallation",
+    "about_to_uninstall_instance": "{instance} will be uninstalled from the system",
+    "uninstall_instance": "Uninstall instance",
+    "uninstalling": "Uninstalling...",
+    "no_instance_installed": "No instance installed",
     "app_categories": {
       "collaboration": "Collaboration",
       "system_administration": "System administration",

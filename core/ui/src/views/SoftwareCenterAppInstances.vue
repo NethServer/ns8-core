@@ -29,11 +29,14 @@
       <div class="bx--row">
         <div class="bx--col-lg-16">
           <cv-tile light class="content-tile">
-            <div class="toolbar">
+            <div
+              v-if="app && app.installed && app.installed.length"
+              class="toolbar"
+            >
               <NsButton
                 kind="secondary"
                 :icon="Download20"
-                @click="installInstance(app)"
+                @click="installInstance()"
                 >{{ $t("software_center.install_new_instance") }}
               </NsButton>
             </div>
@@ -43,101 +46,120 @@
                 :line-count="4"
               ></cv-skeleton-text>
             </cv-tile>
-            <cv-tile
-              v-else
-              v-for="(instance, index) in app.installed"
-              :key="index"
-              kind="standard"
-              class="instance"
-            >
-              <div class="bx--row align-items-center">
-                <div
-                  class="bx--col-sm-2 bx--col-md-2 mg-bottom-sm instance-name"
-                >
-                  <div class="icon-and-text">
-                    <NsSvg :svg="Application20" class="icon" />
-                    <span>{{ instance.id }}</span>
+            <div v-else>
+              <NsEmptyState
+                v-if="!app.installed.length"
+                :title="$t('software_center.no_instance_installed')"
+              >
+                <template #description>
+                  <NsButton
+                    kind="primary"
+                    :icon="Download20"
+                    @click="installInstance()"
+                    >{{ $t("software_center.install_new_instance") }}
+                  </NsButton>
+                </template>
+              </NsEmptyState>
+              <cv-tile
+                v-else
+                v-for="(instance, index) in app.installed"
+                :key="index"
+                kind="standard"
+                class="instance"
+              >
+                <div class="bx--row align-items-center">
+                  <div
+                    class="bx--col-sm-2 bx--col-md-2 mg-bottom-sm instance-name"
+                  >
+                    <div class="icon-and-text">
+                      <NsSvg :svg="Application20" class="icon" />
+                      <span>{{ instance.id }}</span>
+                    </div>
                   </div>
-                </div>
-                <div class="bx--col-sm-2 bx--col-md-2 mg-bottom-sm">
-                  {{ $t("common.version") }} {{ instance.version }}
-                </div>
-                <div class="bx--col-sm-2 bx--col-md-2 mg-bottom-sm">
-                  <div class="icon-and-text">
-                    <NsSvg :svg="EdgeNode20" class="icon" />
-                    <span>{{ $t("common.node") }} {{ instance.node }}</span>
+                  <div class="bx--col-sm-2 bx--col-md-2 mg-bottom-sm">
+                    {{ $t("common.version") }} {{ instance.version }}
                   </div>
-                </div>
+                  <div class="bx--col-sm-2 bx--col-md-2 mg-bottom-sm">
+                    <div class="icon-and-text">
+                      <NsSvg :svg="EdgeNode20" class="icon" />
+                      <span>{{ $t("common.node") }} {{ instance.node }}</span>
+                    </div>
+                  </div>
 
-                <div class="bx--col-sm-2 bx--col-md-2 mg-bottom-sm app-actions">
-                  <!-- app is installed and can be updated -->
-                  <template v-if="isInstanceUpgradable(app, instance)">
-                    <NsButton
-                      kind="primary"
-                      size="field"
-                      :icon="Upgrade20"
-                      @click="updateInstance(instance)"
-                      >{{ $t("software_center.update") }}</NsButton
-                    >
-                    <cv-overflow-menu
-                      :flip-menu="true"
-                      tip-position="top"
-                      tip-alignment="end"
-                      class="overflow-menu"
-                    >
-                      <cv-overflow-menu-item
-                        primary-focus
+                  <div
+                    class="bx--col-sm-2 bx--col-md-2 mg-bottom-sm app-actions"
+                  >
+                    <!-- app is installed and can be updated -->
+                    <template v-if="isInstanceUpgradable(app, instance)">
+                      <NsButton
+                        kind="primary"
+                        size="field"
+                        :icon="Upgrade20"
+                        @click="updateInstance(instance)"
+                        >{{ $t("software_center.update") }}</NsButton
+                      >
+                      <cv-overflow-menu
+                        :flip-menu="true"
+                        tip-position="top"
+                        tip-alignment="end"
+                        class="overflow-menu"
+                      >
+                        <cv-overflow-menu-item
+                          primary-focus
+                          @click="openInstance(instance)"
+                          >{{
+                            $t("software_center.open")
+                          }}</cv-overflow-menu-item
+                        >
+                        <cv-overflow-menu-item
+                          @click="setFavoriteApp(instance)"
+                          >{{
+                            $t("software_center.set_as_favorite")
+                          }}</cv-overflow-menu-item
+                        >
+                        <cv-overflow-menu-item
+                          danger
+                          @click="showUninstallModal(app, instance)"
+                          >{{
+                            $t("software_center.uninstall")
+                          }}</cv-overflow-menu-item
+                        >
+                      </cv-overflow-menu>
+                    </template>
+                    <!-- app is installed, no update available -->
+                    <template v-else>
+                      <NsButton
+                        kind="secondary"
+                        size="field"
+                        :icon="Launch20"
                         @click="openInstance(instance)"
-                        >{{ $t("software_center.open") }}</cv-overflow-menu-item
+                        >{{ $t("software_center.open") }}</NsButton
                       >
-                      <cv-overflow-menu-item
-                        @click="setFavoriteApp(instance)"
-                        >{{
-                          $t("software_center.set_as_favorite")
-                        }}</cv-overflow-menu-item
+                      <cv-overflow-menu
+                        :flip-menu="true"
+                        tip-position="top"
+                        tip-alignment="end"
+                        class="overflow-menu"
                       >
-                      <cv-overflow-menu-item
-                        danger
-                        @click="uninstallInstance(instance)"
-                        >{{
-                          $t("software_center.uninstall")
-                        }}</cv-overflow-menu-item
-                      >
-                    </cv-overflow-menu>
-                  </template>
-                  <!-- app is installed, no update available -->
-                  <template v-else>
-                    <NsButton
-                      kind="secondary"
-                      size="field"
-                      :icon="Launch20"
-                      @click="openInstance(instance)"
-                      >{{ $t("software_center.open") }}</NsButton
-                    >
-                    <cv-overflow-menu
-                      :flip-menu="true"
-                      tip-position="top"
-                      tip-alignment="end"
-                      class="overflow-menu"
-                    >
-                      <cv-overflow-menu-item
-                        @click="setFavoriteApp(instance)"
-                        >{{
-                          $t("software_center.set_as_favorite")
-                        }}</cv-overflow-menu-item
-                      >
-                      <cv-overflow-menu-item
-                        danger
-                        @click="uninstallInstance(app)"
-                        >{{
-                          $t("software_center.uninstall")
-                        }}</cv-overflow-menu-item
-                      >
-                    </cv-overflow-menu>
-                  </template>
+                        <cv-overflow-menu-item
+                          @click="setFavoriteApp(instance)"
+                          >{{
+                            $t("software_center.set_as_favorite")
+                          }}</cv-overflow-menu-item
+                        >
+                        <cv-overflow-menu-item
+                          danger
+                          @click="showUninstallModal(app, instance)"
+                          >{{
+                            $t("software_center.uninstall")
+                          }}</cv-overflow-menu-item
+                        >
+                      </cv-overflow-menu>
+                    </template>
+                  </div>
                 </div>
-              </div>
-            </cv-tile>
+              </cv-tile>
+            </div>
           </cv-tile>
         </div>
       </div>
@@ -148,6 +170,32 @@
       @close="isShownInstallModal = false"
       @installationCompleted="listModules"
     />
+    <!-- uninstall instance modal -->
+    <cv-modal
+      size="default"
+      :visible="isUninstallModalShown"
+      @modal-hidden="isUninstallModalShown = false"
+      @primary-click="uninstallInstance"
+    >
+      <template v-if="instanceToUninstall" slot="title">{{
+        $t("software_center.app_uninstallation", {
+          app: appToUninstall.name,
+        })
+      }}</template>
+      <template v-if="instanceToUninstall" slot="content">
+        <div class="mg-bottom-md">
+          {{
+            $t("software_center.about_to_uninstall_instance", {
+              instance: instanceToUninstall.id,
+            })
+          }}
+        </div>
+      </template>
+      <template slot="secondary-button">{{ $t("common.cancel") }}</template>
+      <template slot="primary-button">{{
+        $t("software_center.uninstall_instance")
+      }}</template>
+    </cv-modal>
   </div>
 </template>
 
@@ -174,6 +222,9 @@ export default {
       appName: "",
       app: null,
       isShownInstallModal: false,
+      isUninstallModalShown: false,
+      appToUninstall: null,
+      instanceToUninstall: null,
       loading: {
         modules: true,
       },
@@ -262,11 +313,47 @@ export default {
 
       this.setAppDrawerShownInStore(true);
     },
-    uninstallInstance(instance) {
-      console.log("uninstallInstance", instance); ////
+    showUninstallModal(app, instance) {
+      this.appToUninstall = app;
+      this.instanceToUninstall = instance;
+      this.isUninstallModalShown = true;
     },
-    installInstance(app) {
-      console.log("installInstance", app); ////
+    async uninstallInstance() {
+      const taskAction = "remove-module";
+
+      // register to task completion
+      this.$root.$on(taskAction + "-completed", this.removeModuleCompleted);
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          data: {
+            module_id: this.instanceToUninstall.id,
+            preserve_data: false,
+          },
+          extra: {
+            title: this.$t("software_center.instance_uninstallation", {
+              instance: this.instanceToUninstall.id,
+            }),
+            description: this.$t("software_center.uninstalling"),
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        this.createErrorNotification(
+          err,
+          this.$t("task.cannot_create_task", { action: taskAction })
+        );
+        return;
+      }
+      this.isUninstallModalShown = false;
+    },
+    removeModuleCompleted() {
+      this.listModules();
+    },
+    installInstance() {
       this.isShownInstallModal = true;
     },
   },
