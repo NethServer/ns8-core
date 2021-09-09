@@ -138,6 +138,7 @@ async def _amonitor_task(client, agent_id, action, data, parent, **npargs):
     theaders = npargs['theaders']
     tls_verify = npargs['tls_verify']
     endpoint = npargs['endpoint']
+    progress_callback = npargs['progress_callback']
     async with client.ws_connect(
         f'{endpoint}/ws?jwt=' + urllib.parse.quote_plus(_get_token(theaders)),
         ssl=tls_verify,
@@ -153,11 +154,11 @@ async def _amonitor_task(client, agent_id, action, data, parent, **npargs):
             except:
                 continue # Discard unknown message
 
-            if not jdata['payload']['status'] in ['completed', 'aborted', 'validation-failed']:
-                continue # Ignore any status but "completed" XXX: catch "progress" too!
-
             if task_id and jdata['name'] == f'progress/{agent_id}/task/{task_id}':
-                break
+                if progress_callback:
+                    progress_callback(jdata['payload']['progress'])
+                if jdata['payload']['status'] in ['completed', 'aborted', 'validation-failed']:
+                    break
 
     return task_id
 
@@ -202,17 +203,41 @@ def runp_brief(tasks, **kwargs):
     return errors
 
 async def _runp(tasks, nowait=False, **kwargs):
+
+    if 'progress_callback' in kwargs:
+        # Equally distribute the progress weight of each task
+        parent_cbk = kwargs['progress_callback']
+        del kwargs['progress_callback']
+        runp_progress = [0] * len(tasks)
+        last_value = -1
+        def create_task_cbk(idx):
+            return lambda p: task_progress_callback(p, idx)
+        def task_progress_callback(p, idx):
+            nonlocal last_value, runp_progress, parent_cbk
+            runp_progress[idx] = p
+            curr_value = int(sum(runp_progress) / len(runp_progress))
+            if curr_value > last_value:
+                last_value = curr_value
+                parent_cbk(curr_value)
+    else:
+        parent_cbk = None
+
     runners = []
-    for task in tasks:
+    for idx, task in enumerate(tasks):
         if not 'data' in task:
             task['data']={}
+
+        if parent_cbk:
+            task_cbk = create_task_cbk(idx)
+        else:
+            task_cbk = None
         runfunc = _run if nowait is False else _run_nowait
-        otask = asyncio.create_task(runfunc(task['agent_id'], task['action'], data=task['data'], **kwargs), name=task['action'] + '@' + task['agent_id'])
+        otask = asyncio.create_task(runfunc(task['agent_id'], task['action'], data=task['data'], progress_callback=task_cbk, **kwargs), name=task['action'] + '@' + task['agent_id'])
         runners.append(otask)
 
     return await asyncio.gather(*runners, return_exceptions=(len(tasks) > 1))
 
-async def _run_nowait(agent_id, action, data={}, parent=None, progress_range=None, tls_verify=False, endpoint='http://cluster-leader/cluster-admin', auth_token=None):
+async def _run_nowait(agent_id, action, data={}, parent=None, tls_verify=False, endpoint='http://cluster-leader/cluster-admin', auth_token=None):
     if parent is None:
         parent = os.getenv("AGENT_TASK_ID", "")
 
@@ -263,7 +288,7 @@ async def _run_nowait(agent_id, action, data={}, parent=None, progress_range=Non
         return await run_apiserver()
 
 
-async def _run(agent_id, action, data={}, parent=None, progress_range=None, tls_verify=False, endpoint='http://cluster-leader/cluster-admin', auth_token=None):
+async def _run(agent_id, action, data={}, parent=None, tls_verify=False, endpoint='http://cluster-leader/cluster-admin', auth_token=None, progress_callback=None):
 
     if parent is None:
         parent = os.getenv("AGENT_TASK_ID", "")
@@ -275,6 +300,7 @@ async def _run(agent_id, action, data={}, parent=None, progress_range=None, tls_
         nonlocal parent
         theaders = _get_theaders_cache(auth_token)
         pconn = {
+            'progress_callback': progress_callback,
             'tls_verify': tls_verify,
             'endpoint': endpoint,
         }
@@ -326,10 +352,11 @@ async def _run(agent_id, action, data={}, parent=None, progress_range=None, tls_
                 except:
                     continue # Discard unreadable message
 
+                if progress_callback:
+                    progress_callback(jdata['progress'])
+
                 if jdata['status'] in ['completed', 'aborted', 'validation-failed']:
                     break
-                else:
-                    continue # Ignore any status but "completed" XXX: catch "progress" too!
 
             await pubsub.close()
 
