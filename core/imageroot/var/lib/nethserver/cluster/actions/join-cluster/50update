@@ -76,7 +76,7 @@ response = agent.tasks.run(
     parent='', # Our AGENT_TASK_ID is useless in another cluster: force parent to empty string
     endpoint=url.strip('/') + '/cluster-admin',
     tls_verify=tls_verify,
-    progress_range=(20,98),
+    progress_callback=agent.get_progress_callback(20,98),
     auth_token=jwt,
 )
 agent.assert_exp(response['exit_code'] == 0)

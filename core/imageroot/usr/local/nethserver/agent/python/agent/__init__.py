@@ -85,6 +85,17 @@ def read_envfile(file_path):
 
     return env
 
+def get_progress_callback(range_low, range_high):
+    """Return a function that maps progress range 0-100 to range_low-range_high and
+    calls internally the set_progress() function.
+    """
+    assert_exp(range_low < range_high)
+    delta = range_high - range_low
+    def cbk(progress):
+        if progress >= 0 and progress <= 100:
+            set_progress(range_low + int(delta * progress / 100))
+    return cbk
+
 def run_helper(*args, log_command=True, **kwargs):
     """Run the command in args, writing the command line to stderr.
 
@@ -93,7 +104,25 @@ def run_helper(*args, log_command=True, **kwargs):
     if log_command:
         print(shlex.join(args), file=sys.stderr)
 
-    return subprocess.run(args, stdout=sys.stderr)
+    progress_callback = kwargs.get('progress_callback', None)
+
+    curr_progress = -1
+    fdr, fdw = os.pipe()
+    child_env = dict(os.environ, AGENT_COMFD=str(fdw))
+    proc = subprocess.Popen(args, stdout=sys.stderr, pass_fds=(fdw,), env=child_env)
+    os.close(fdw)
+    with os.fdopen(fdr, mode="r", encoding='utf-8') as fdh:
+        rows = csv.reader(fdh, delimiter=' ', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        for row in rows:
+            if row[0] == 'set-progress' and progress_callback and int(row[1]) > curr_progress:
+                curr_progress = int(row[1])
+                progress_callback(curr_progress)
+    proc.wait()
+
+    if progress_callback and curr_progress < 100:
+        progress_callback(100)
+
+    return subprocess.CompletedProcess(args, proc.returncode)
 
 def __action(*args):
     # write to stderr if AGENT file descriptor is not available:
