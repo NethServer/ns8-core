@@ -1,0 +1,79 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2021 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
+import sys
+import json
+import psutil
+
+# Prepare return variable
+ret = {
+        'load': { '1min': -1, '5min': -1, '15min': -1 },
+        'cpu': { 'count': -1, 'usage': -1, 'info': [] },
+        'memory':{ 'total': -1, 'used': -1, 'free': -1 },
+        'swap': { 'total': -1, 'used': -1, 'free': -1 },
+        'disks': []
+      }
+
+cpu_count = psutil.cpu_count()
+ret['cpu']['count'] = cpu_count
+ret['cpu']['usage'] = psutil.cpu_percent(0.1)
+
+# parse cpuinfo to retrieve details about system CPUs
+with open("/proc/cpuinfo") as fp:
+    c = {}
+    for line in fp.readlines():
+        # parse each line by breaking on ':' and remove useless space chars
+        # parts[0] contains the field, parts[1] contains the value
+        parts = list(map(lambda x: x.strip(), line.split(':',1)))
+
+        # 'processor' field indicates data about a new CPU
+        if parts[0] == 'processor':
+            if c:
+                ret['cpu']['info'].append(c)
+            c = {}
+        elif parts[0] == 'model name':
+            c['model'] = parts[1]
+        elif parts[0] == 'vendor_id':
+            c['vendor'] = parts[1]
+        elif parts[0] == 'cpu MHz':
+            c['clock'] = parts[1]
+    if c:
+        ret['cpu']['info'].append(c)
+
+load = psutil.getloadavg()
+ret['load']['1min'] = load[0] / cpu_count * 100
+ret['load']['5min'] = load[1] / cpu_count * 100
+ret['load']['15min'] = load[2] / cpu_count * 100
+memory = psutil.virtual_memory()
+ret['memory']['total'] = memory[0]
+ret['memory']['free'] = memory[1]
+ret['memory']['used'] = memory[0]-memory[1]
+swap = psutil.swap_memory()
+ret['swap']['total'] = swap[0]
+ret['swap']['free'] = swap[2]
+ret['swap']['used'] = swap[1]
+for p in psutil.disk_partitions():
+    usage = psutil.disk_usage(p[1])
+    ret['disks'].append({'device': p[0], 'mountpoint': p[1], 'fstype': p[2], 'total': usage[0], 'used': usage[1], 'free': usage[2]})
+
+# Dump the result
+json.dump(ret, fp=sys.stdout)
