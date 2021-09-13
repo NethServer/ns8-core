@@ -146,6 +146,25 @@ subtasks = agent.tasks.runp_nowait(
 )
 
 #
+# Node API authorizations
+#
+
+# Configure our builtin roles: "owner" and "reader". Owner can run any action, Reader can run
+# action names with special prefixes.
+cluster.grants.grant(rdb, action_clause="*",      to_clause="owner",  on_clause=f'node/{node_id}')
+cluster.grants.grant(rdb, action_clause="list-*", to_clause="reader", on_clause=f'node/{node_id}')
+cluster.grants.grant(rdb, action_clause="get-*",  to_clause="reader", on_clause=f'node/{node_id}')
+cluster.grants.grant(rdb, action_clause="show-*", to_clause="reader", on_clause=f'node/{node_id}')
+cluster.grants.grant(rdb, action_clause="read-*", to_clause="reader", on_clause=f'node/{node_id}')
+
+# Grant the owner role to cluster owners on the new module
+for userk in rdb.scan_iter('roles/*'):
+    user_auths = rdb.hgetall(userk)
+    if 'cluster' in user_auths and user_auths['cluster'] == 'owner':
+        cluster.grants.alter_user(rdb, user=userk[len('roles/'):], revoke=False, role='owner', on_clause=f'node/{node_id}')
+
+
+#
 # Return the new information to the caller
 #
 json.dump({
