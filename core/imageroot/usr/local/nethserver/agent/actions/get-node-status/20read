@@ -39,7 +39,7 @@ ret['cpu']['usage'] = psutil.cpu_percent(0.1)
 
 # parse cpuinfo to retrieve details about system CPUs
 with open("/proc/cpuinfo") as fp:
-    c = {}
+    cpu = {}
     for line in fp.readlines():
         # parse each line by breaking on ':' and remove useless space chars
         # parts[0] contains the field, parts[1] contains the value
@@ -47,17 +47,17 @@ with open("/proc/cpuinfo") as fp:
 
         # 'processor' field indicates data about a new CPU
         if parts[0] == 'processor':
-            if c:
-                ret['cpu']['info'].append(c)
-            c = {}
+            if cpu:
+                ret['cpu']['info'].append(cpu)
+            cpu = {}
         elif parts[0] == 'model name':
-            c['model'] = parts[1]
+            cpu['model'] = parts[1]
         elif parts[0] == 'vendor_id':
-            c['vendor'] = parts[1]
+            cpu['vendor'] = parts[1]
         elif parts[0] == 'cpu MHz':
-            c['clock'] = parts[1]
-    if c:
-        ret['cpu']['info'].append(c)
+            cpu['clock'] = parts[1]
+    if cpu:
+        ret['cpu']['info'].append(cpu)
 
 load = psutil.getloadavg()
 ret['load']['1min'] = load[0] / cpu_count * 100
