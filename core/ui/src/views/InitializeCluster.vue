@@ -173,13 +173,20 @@
         <div class="bx--col-lg-16">
           <cv-tile light class="content-tile">
             <cv-form @submit.prevent="joinCluster">
-              <cv-text-input
-                :label="$t('init.cluster_url')"
-                v-model.trim="clusterUrl"
-                :invalid-message="$t(error.clusterUrl)"
-                ref="clusterUrl"
+              <cv-text-area
+                :label="$t('common.join_code')"
+                v-model.trim="joinCode"
+                :invalid-message="$t(error.joinCode)"
+                :helper-text="$t('init.join_code_helper_text')"
+                class="join-code"
+                ref="joinCode"
               >
-              </cv-text-input>
+              </cv-text-area>
+              <cv-checkbox
+                :label="$t('init.tls_verify')"
+                v-model="tlsVerify"
+                value="checkTlsVerify"
+              />
               <NsButton kind="primary" :icon="Connect20">{{
                 $t("init.join_cluster")
               }}</NsButton>
@@ -203,13 +210,21 @@ import {
   IconService,
   StorageService,
   NsPasswordInput,
+  TaskService,
 } from "@nethserver/ns8-ui-lib";
 import { mapActions } from "vuex";
+import to from "await-to-js";
 
 export default {
   name: "InitializeCluster",
   components: { NsPasswordInput },
-  mixins: [UtilService, IconService, QueryParamService, StorageService],
+  mixins: [
+    UtilService,
+    IconService,
+    QueryParamService,
+    StorageService,
+    TaskService,
+  ],
   pageTitle() {
     return this.$t("init.welcome", { product: this.$root.config.PRODUCT_NAME });
   },
@@ -226,7 +241,11 @@ export default {
       vpnEndpointAddress: "",
       vpnEndpointPort: "",
       vpnCidr: "",
-      clusterUrl: "",
+      joinCode: "",
+      tlsVerify: true,
+      joinEndpoint: "",
+      joinPort: "",
+      joinToken: "",
       error: {
         currentPassword: "",
         newPassword: "",
@@ -234,19 +253,17 @@ export default {
         vpnEndpointAddress: "",
         vpnEndpointPort: "",
         vpnCidr: "",
-        clusterUrl: "",
+        joinCode: "",
       },
     };
   },
   beforeRouteEnter(to, from, next) {
     next((vm) => {
-      console.log("beforeRouteEnter", to, from); ////
       vm.watchQueryData(vm);
       vm.queryParamsToDataForCore(vm, to.query);
     });
   },
   beforeRouteUpdate(to, from, next) {
-    console.log("beforeRouteUpdate", to, from); ////
     this.queryParamsToDataForCore(this, to.query);
     next();
   },
@@ -261,7 +278,7 @@ export default {
     },
     selectJoinCluster() {
       this.$router.push("/init?page=join");
-      this.focusElement("clusterUrl");
+      this.focusElement("joinCode");
     },
     async checkPasswordChange() {
       const loginInfo = this.getFromStorage("loginInfo");
@@ -282,7 +299,7 @@ export default {
       // }
 
       //// use response
-      this.isPasswordChangeNeeded = true; //// remove
+      this.isPasswordChangeNeeded = false; //// remove
     },
     onPasswordValidation(passwordValidation) {
       this.passwordValidation = passwordValidation;
@@ -428,45 +445,151 @@ export default {
       }
       return isValidationOk;
     },
-    createCluster() {
+    async createCluster() {
       console.log("createCluster"); ////
 
       if (!this.validateCreateCluster()) {
         return;
       }
 
-      //// todo
+      const taskAction = "create-cluster";
+
+      // register to task completion
+      this.$root.$on(taskAction + "-completed", this.createClusterCompleted);
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          data: {
+            network: this.vpnCidr,
+            endpoint: this.vpnEndpointAddress,
+            listen_port: parseInt(this.vpnEndpointPort),
+          },
+          extra: {
+            title: this.$t("////"),
+            description: this.$t("////"),
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        this.createErrorNotification(
+          err,
+          this.$t("task.cannot_create_task", { action: taskAction })
+        );
+        return;
+      }
+    },
+    createClusterCompleted() {
+      console.log("createClusterCompleted"); ////
 
       this.setClusterInitializedInStore(true);
       this.$router.replace("/status");
-      console.log("done"); ////
     },
     validateJoinCluster() {
       this.clearErrors(this);
       let isValidationOk = true;
 
-      if (!this.clusterUrl) {
-        this.error.clusterUrl = "common.required";
+      if (!this.joinCode) {
+        this.error.joinCode = "common.required";
 
         if (isValidationOk) {
-          this.focusElement("clusterUrl");
+          this.focusElement("joinCode");
           isValidationOk = false;
         }
+      } else {
+        let decoded;
+
+        try {
+          decoded = atob(this.joinCode);
+        } catch (DOMException) {
+          this.error.joinCode = "init.invalid_join_code";
+
+          if (isValidationOk) {
+            this.focusElement("joinCode");
+            isValidationOk = false;
+          }
+        }
+
+        if (!decoded) {
+          this.error.joinCode = "init.invalid_join_code";
+
+          if (isValidationOk) {
+            this.focusElement("joinCode");
+            isValidationOk = false;
+          }
+        } else {
+          console.log("decoded", decoded); ////
+
+          let [endpoint, port, token] = decoded.split("|");
+
+          if (!(endpoint && port && token)) {
+            this.error.joinCode = "init.invalid_join_code";
+
+            if (isValidationOk) {
+              this.focusElement("joinCode");
+              isValidationOk = false;
+            }
+          } else {
+            console.log("endpoint", endpoint); ////
+            console.log("port", port); ////
+            console.log("token length", token.length); ////
+
+            this.joinEndpoint = endpoint;
+            this.joinPort = port;
+            this.joinToken = token;
+          }
+        }
       }
+
       return isValidationOk;
     },
-    joinCluster() {
+    async joinCluster() {
       console.log("joinCluster"); ////
 
       if (!this.validateJoinCluster()) {
         return;
       }
 
-      //// todo
+      console.log("join code ok, tls verify", this.tlsVerify); ////
 
-      this.setClusterInitializedInStore(true);
-      this.$router.replace("/status");
-      console.log("done"); ////
+      const taskAction = "join-cluster";
+
+      // register to task completion
+      this.$root.$on(taskAction + "-completed", this.joinClusterCompleted);
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          data: {
+            url: this.joinEndpoint,
+            jwt: this.joinToken,
+            listen_port: parseInt(this.joinPort),
+            tls_verify: this.tlsVerify,
+          },
+          extra: {
+            title: this.$t("////"),
+            description: this.$t("////"),
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        this.createErrorNotification(
+          err,
+          this.$t("task.cannot_create_task", { action: taskAction })
+        );
+        return;
+      }
+
+      // this.setClusterInitializedInStore(true); ////
+      // this.$router.replace("/status"); ////
+      // console.log("done"); ////
+    },
+    joinClusterCompleted() {
+      console.log("joinClusterCompleted"); ////
     },
   },
 };
@@ -494,5 +617,15 @@ export default {
 .tile-description {
   margin-top: $spacing-03;
   color: $text-02;
+}
+</style>
+
+<style lang="scss">
+@import "../styles/carbon-utils";
+
+// global styles
+
+.join-code textarea {
+  min-height: 5rem;
 }
 </style>

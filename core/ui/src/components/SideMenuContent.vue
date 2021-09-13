@@ -11,6 +11,13 @@
           <span class="green-badge right-badge"></span>
         </div>
       </cv-side-nav-link>
+      <cv-side-nav-link
+        @click="goTo('/nodes')"
+        :active="isLinkActive('/nodes')"
+      >
+        <template v-slot:nav-icon><Chip20 /></template>
+        <span>{{ $t("nodes.title") }}</span>
+      </cv-side-nav-link>
       <cv-side-nav-menu
         :title="$t('network.title')"
         :active="isLinkActive('/newtwork')"
@@ -79,6 +86,7 @@ import Settings20 from "@carbon/icons-vue/es/settings/20";
 import Catalog20 from "@carbon/icons-vue/es/catalog/20";
 import Application20 from "@carbon/icons-vue/es/application/20";
 import Activity20 from "@carbon/icons-vue/es/activity/20";
+import Chip20 from "@carbon/icons-vue/es/chip/20";
 import { mapActions, mapGetters } from "vuex";
 
 export default {
@@ -91,6 +99,7 @@ export default {
     Settings20,
     Application20,
     Activity20,
+    Chip20,
   },
   data() {
     return {};

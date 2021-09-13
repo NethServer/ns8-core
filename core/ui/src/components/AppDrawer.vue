@@ -182,9 +182,9 @@
               </div>
               <div v-if="csbListSelected">
                 <template v-if="favoriteApps.length && !isSearchActive">
-                  <h5 class="app-divider-list">
+                  <h6 class="app-divider-list">
                     {{ $t("app_drawer.favorites") }}
-                  </h5>
+                  </h6>
                   <cv-structured-list class="app-list">
                     <template slot="items">
                       <cv-structured-list-item
@@ -200,13 +200,13 @@
                       </cv-structured-list-item>
                     </template>
                   </cv-structured-list>
-                  <h5 class="app-divider-list">
+                  <h6 class="app-divider-list">
                     {{ $t("app_drawer.all_apps") }}
-                  </h5>
+                  </h6>
                 </template>
-                <h5 v-if="isSearchActive" class="app-divider-list">
+                <h6 v-if="isSearchActive" class="app-divider-list">
                   {{ $t("app_drawer.search_results") }}
-                </h5>
+                </h6>
                 <cv-structured-list class="app-list">
                   <template slot="items">
                     <cv-structured-list-item

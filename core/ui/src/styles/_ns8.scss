@@ -73,7 +73,7 @@ a {
   align-items: center;
 }
 
-.content-tile {
+.content-tile { //// remove
   margin-bottom: $spacing-05;
 }
 
@@ -292,7 +292,8 @@ a {
 .cv-text-input,
 .cv-form .bx--form-item,
 .cv-form .cv-multi-select,
-.ns-password-input {
+.ns-password-input,
+.cv-tile {
   margin-bottom: $spacing-05;
 }
 // end form
@@ -450,6 +451,12 @@ a {
 .bx--overflow-menu-options {
   z-index: 10000;
 }
+
+// NsNodeCard
+.node-card .warning {
+  color: $danger-01;
+}
+// end NsNodeCard
 
 // styles for large devices
 @media (min-width: $breakpoint-medium) {

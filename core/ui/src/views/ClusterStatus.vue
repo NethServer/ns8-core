@@ -44,7 +44,7 @@
           light
           :title="nodes.length.toString()"
           :description="$tc('common.nodes', nodes.length)"
-          :icon="EdgeNode32"
+          :icon="Chip32"
           class="content-tile min-height-card"
         />
       </div>

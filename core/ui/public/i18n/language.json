@@ -29,7 +29,8 @@
     "use_landscape_mode": "Rotate your device",
     "use_landscape_mode_description": "This page is optimized for landscape mode",
     "got_it": "Got it",
-    "global_shortcut": "Global shortcut"
+    "global_shortcut": "Global shortcut",
+    "join_code": "Join code"
   },
   "error": {
     "error": "Error",
@@ -92,7 +93,9 @@
     "vpn_cidr": "VPN CIDR",
     "join_cluster_instead": "Join an existing cluster instead",
     "create_cluster_instead": "Create a new cluster instead",
-    "cluster_url": "Cluster URL"
+    "join_code_helper_text": "You can obtain join code by accessing https://LEADER_NODE_IP/cluster-admin/#/nodes",
+    "invalid_join_code": "Invalid join code",
+    "tls_verify": "TLS certificate validation"
   },
   "shell": {
     "skip_to_content": "Skip to content",
@@ -261,5 +264,21 @@
   },
   "cluster_status": {
     "title": "Cluster status"
+  },
+  "nodes": {
+    "title": "Nodes",
+    "add_node_to_cluster": "Add node to cluster",
+    "add_node_to_cluster_step_1": "Copy join code in the box below",
+    "add_node_to_cluster_step_2": "Go to <strong>https://NEW_NODE_IP/cluster-admin/</strong>",
+    "add_node_to_cluster_step_3": "Select <strong>Join cluster</strong>",
+    "add_node_to_cluster_step_4": "Paste join code",
+    "leader": "leader",
+    "worker": "worker",
+    "cpu_usage": "CPU usage",
+    "cpu_load": "CPU load",
+    "cpu_load_tooltip": "CPU average load of last 1 / 5 / 15 minutes",
+    "memory_used": "Memory used",
+    "swap_used": "Swap used",
+    "used": "used"
   }
 }
