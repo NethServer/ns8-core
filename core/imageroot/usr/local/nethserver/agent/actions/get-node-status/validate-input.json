@@ -2,7 +2,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "get-node-status input",
     "$id": "http://schema.nethserver.org/agent/get-node-status-input.json",
-    "description": "The action does not accept any input",
+    "description": "The action expects a null value as input",
     "examples": [
         null
     ],
