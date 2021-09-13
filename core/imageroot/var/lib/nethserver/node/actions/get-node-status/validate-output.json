@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "get-node-status output",
-  "$id": "http://schema.nethserver.org/agent/get-cluster-node-output.json",
+  "$id": "http://schema.nethserver.org/node/get-node-status-output.json",
   "description": "Output schema of the get-node-status action",
   "examples": [
     {
