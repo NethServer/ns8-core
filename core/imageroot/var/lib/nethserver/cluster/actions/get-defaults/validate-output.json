@@ -7,7 +7,7 @@
     {
       "vpn": {
         "host": "server.nethserver.org",
-        "port": "55820",
+        "port": 55820,
         "network": "10.5.4.0/24"
       }
     }
