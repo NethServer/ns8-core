@@ -39,7 +39,7 @@ except Exception as e:
     sys.exit(2)
 
 if is_authenticated:
-    # On auhtentication success, switch to privileged connection to chang the password
+    # On auhtentication success, switch to privileged connection to change the password
     rdb = agent.redis_connect(privileged=True)
     rdb.acl_setuser(request['user'], passwords=[f'+{request["new_password"]}'], reset_passwords=True, enabled=True)
     json.dump({}, fp=sys.stdout)
