@@ -24,13 +24,23 @@ import sys
 import json
 import agent
 import redis
+import traceback
 
 request = json.load(sys.stdin)
 
 # Try to authenticate with user and password using unprivileged connection
 auth_db = redis.Redis(host='localhost', db=0, port=6379)
-if auth_db.execute_command('AUTH', request['user'], request['current_password']):
-    # On authentication success, switch to privileged connection to change the password
+try:
+    is_authenticated = auth_db.execute_command('AUTH', request['user'], request['current_password'])
+except:
+    # validation error
+    agent.set_status('validation-failed')
+    json.dump([{'field':'current_password', 'parameter':'current_password','value': 'xxx', 'error':'invalid_user_password'}], fp=sys.stdout)
+    traceback.print_exc(file=sys.stderr)
+    sys.exit(2)
+
+if is_authenticated:
+    # On auhtentication success, switch to privileged connection to chang the password
     rdb = agent.redis_connect(privileged=True)
     rdb.acl_setuser(request['user'], passwords=[f'+{request["new_password"]}'], reset_passwords=True, enabled=True)
     json.dump({}, fp=sys.stdout)
