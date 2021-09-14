@@ -30,7 +30,7 @@ request = json.load(sys.stdin)
 # Try to authenticate with user and password using unprivileged connection
 auth_db = redis.Redis(host='localhost', db=0, port=6379)
 if auth_db.execute_command('AUTH', request['user'], request['current_password']):
-    # On auhtentication success, switch to privileged connection to chang the password
+    # On authentication success, switch to privileged connection to change the password
     rdb = agent.redis_connect(privileged=True)
     rdb.acl_setuser(request['user'], passwords=[f'+{request["new_password"]}'], reset_passwords=True, enabled=True)
     json.dump({}, fp=sys.stdout)
