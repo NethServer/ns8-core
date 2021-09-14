@@ -35,6 +35,18 @@ def _urljoin(base_path, *args):
         parts.append(urllib.parse.quote(arg))
     return "/".join(part.strip("/") for part in parts)
 
+def _get_cached_logo_urls(rdb):
+    logos = {}
+    # Search for log inside all caches
+    for m in rdb.scan_iter('cluster/repository_cache/*'):
+        cache = rdb.hgetall(m)
+        if cache:
+            (prefix,sep,repo) = m.rpartition("/")
+            repository_url = rdb.hget(f'cluster/repository/{repo}', 'url')
+            for m in  _parse_repository_metadata(repo, repository_url, cache["updated"], cache["data"]):
+                logos[m["id"]] = m['logo']
+    return logos
+
 def _parse_repository_metadata(repository_name, repository_url, repository_updated, repodata):
     modules = []
 
@@ -102,14 +114,15 @@ def list_available(rdb):
 
 def list_installed(rdb):
     installed = {}
-
+    logos = _get_cached_logo_urls(rdb)
     # Search for installed modules
     for m in rdb.scan_iter('module/*/environment'):
         vars = rdb.hgetall(m)
         url, sep, tag = vars['IMAGE_URL'].partition(":")
+        logo = logos.get(url.rpartition('/')[2]) or ''
         if url not in installed.keys():
             installed[url] = []
-        installed[url].append({ 'id': vars["MODULE_ID"], 'node': vars['NODE_ID'], 'digest': vars["IMAGE_DIGEST"], 'source': url, 'version': tag })
+        installed[url].append({ 'id': vars["MODULE_ID"], 'node': vars['NODE_ID'], 'digest': vars["IMAGE_DIGEST"], 'source': url, 'version': tag, 'logo': logo })
 
     return installed
 

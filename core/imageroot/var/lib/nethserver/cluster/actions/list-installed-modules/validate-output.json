@@ -11,7 +11,8 @@
           "node": "1",
           "digest": "sha256:64a4ccd3c5ded935ac8d28d2bd534e1b305b80a131a3fe3fe5e123c03b4aa772",
           "source": "ghcr.io/nethserver/traefik",
-          "version": "latest"
+          "version": "latest",
+          "logo": "https://raw.githubusercontent.com/NethServer/ns8-repomd/repomd/dokuwiki/logo.png"
         }
       ],
       "ghcr.io/nethserver/dokuwiki": [
@@ -20,14 +21,16 @@
           "node": "1",
           "digest": "sha256:929465c177d9e40559b3fa838f2e429060ff7e8c3e4e1a12076b3304ad562982",
           "source": "ghcr.io/nethserver/dokuwiki",
-          "version": "0.0.1-alpha1"
+          "version": "0.0.1-alpha1",
+          "logo": "https://raw.githubusercontent.com/NethServer/ns8-repomd/repomd/dokuwiki/logo.png"
         },
         {
           "id": "dokuwiki1",
           "node": "1",
           "digest": "sha256:929465c177d9e40559b3fa838f2e429060ff7e8c3e4e1a12076b3304ad562982",
           "source": "ghcr.io/nethserver/dokuwiki",
-          "version": "0.0.1-alpha1"
+          "version": "0.0.1-alpha1",
+          "logo": "https://raw.githubusercontent.com/NethServer/ns8-repomd/repomd/dokuwiki/logo.png"
         }
       ]
     }
@@ -58,6 +61,10 @@
           "version": {
             "type": "string",
             "description": "A valid semantic version extracted from image tag"
+          },
+          "logo": {
+            "type": "string",
+            "description": "The logo URL from repository cache, it can be an empty string"
           }
         },
         "required": [
@@ -65,7 +72,8 @@
           "node",
           "digest",
           "source",
-          "version"
+          "version",
+          "logo"
         ]
       }
     }
