@@ -180,7 +180,7 @@ echo "Install Traefik:"
 add-module traefik 1
 
 echo "Setting default admin password:"
-add-user --role owner --password Nethesis,1234 admin
+add-user --role owner --password "${ADMIN_PASSWORD:-Nethesis,1234}" admin
 
 cat - <<EOF
 
