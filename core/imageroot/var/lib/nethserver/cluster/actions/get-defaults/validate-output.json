@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "get-defaults output",
+  "$id": "http://schema.nethserver.org/cluster/get-defaults-output.json",
+  "description": "Output schema of the get-defaults action",
+  "examples": [
+    {
+      "vpn": {
+        "host": "server.nethserver.org",
+        "port": 55820,
+        "network": "10.5.4.0/24"
+      }
+    }
+  ],
+  "type": "object",
+  "properties": {
+    "vpn": {
+      "type": "object",
+      "description": "WireGuard VPN defaults",
+      "properties": {
+        "host": {
+          "description": "WireGuard public endpoint name",
+          "type": "string"
+        },
+        "port": {
+          "description": "WireGuard listen port",
+          "type": "integer"
+        },
+        "network": {
+          "description": "Wireguard peer network",
+          "type": "string"
+        }
+      },
+      "required": [
+        "host",
+        "port",
+        "network"
+      ]
+    }
+  }
+}
