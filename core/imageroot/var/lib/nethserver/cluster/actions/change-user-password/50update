@@ -1,0 +1,45 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2021 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
+import sys
+import json
+import agent
+import redis
+
+request = json.load(sys.stdin)
+
+# Try to authenticate with user and password using unprivileged connection
+auth_db = redis.Redis(host='localhost', db=0, port=6379)
+try:
+    is_authenticated = auth_db.execute_command('AUTH', request['user'], request['current_password'])
+except Exception as e:
+    # validation error
+    agent.set_status('validation-failed')
+    json.dump([{'field':'current_password', 'parameter':'current_password','value': 'xxx', 'error':'invalid_user_password'}], fp=sys.stdout)
+    print(str(e), file=sys.stderr)
+    sys.exit(2)
+
+if is_authenticated:
+    # On auhtentication success, switch to privileged connection to change the password
+    rdb = agent.redis_connect(privileged=True)
+    rdb.acl_setuser(request['user'], passwords=[f'+{request["new_password"]}'], reset_passwords=True, enabled=True)
+    json.dump({}, fp=sys.stdout)
