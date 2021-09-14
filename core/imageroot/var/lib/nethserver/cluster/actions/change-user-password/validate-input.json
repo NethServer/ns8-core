@@ -29,4 +29,5 @@
     "user",
     "current_password",
     "new_password"
+  ]
 }
