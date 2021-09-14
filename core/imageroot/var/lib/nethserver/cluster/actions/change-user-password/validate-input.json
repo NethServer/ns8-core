@@ -21,7 +21,7 @@
       "type": "string"
     },
     "new_password": {
-      "description": "New password in plain text. The password will be updated only the authentication with 'user' and 'current_password' si valid.",
+      "description": "New password in plain text. The password will be updated only if the authentication with 'user' and 'current_password' is valid.",
       "type": "string"
     }
   },
