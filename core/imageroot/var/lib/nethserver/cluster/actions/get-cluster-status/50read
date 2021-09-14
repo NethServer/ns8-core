@@ -35,7 +35,7 @@ def get_ip(host):
 request = json.load(sys.stdin)
 rdb = agent.redis_connect(privileged=True)
 
-ret = { 'initialized': False, 'leader': False, 'nodes': [], 'leader_url': None, 'default_password': False }
+ret = { 'initialized': False, 'leader': False, 'nodes': [], 'leader_url': '', 'default_password': False }
 vpn = {}
 
 network = rdb.get('cluster/network')
