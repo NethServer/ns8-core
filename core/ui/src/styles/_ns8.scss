@@ -73,8 +73,19 @@ a {
   align-items: center;
 }
 
-.content-tile { //// remove
+.content-tile {
+  //// remove
   margin-bottom: $spacing-05;
+}
+
+.cv-tile {
+  margin-bottom: $spacing-07;
+}
+
+@media (max-width: $breakpoint-medium) {
+  .cv-tile {
+    margin-bottom: $spacing-05;
+  }
 }
 
 .title-description {
@@ -292,8 +303,7 @@ a {
 .cv-text-input,
 .cv-form .bx--form-item,
 .cv-form .cv-multi-select,
-.ns-password-input,
-.cv-tile {
+.ns-password-input {
   margin-bottom: $spacing-05;
 }
 // end form

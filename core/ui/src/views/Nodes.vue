@@ -143,6 +143,7 @@ import {
 } from "@nethserver/ns8-ui-lib";
 import to from "await-to-js";
 import NodeService from "@/mixins/node";
+import { mapState } from "vuex";
 
 export default {
   name: "Nodes",
@@ -174,6 +175,9 @@ export default {
       },
     };
   },
+  computed: {
+    ...mapState(["leaderListenPort"]),
+  },
   beforeRouteEnter(to, from, next) {
     next((vm) => {
       vm.watchQueryData(vm);
@@ -186,7 +190,6 @@ export default {
   },
   created() {
     this.retrieveClusterNodes();
-    this.retrieveJoinCode();
   },
   beforeDestroy() {
     clearInterval(this.nodesStatusInterval);
@@ -196,16 +199,23 @@ export default {
       const loginInfo = this.getFromStorage("loginInfo");
 
       if (loginInfo && loginInfo.token) {
-        const endpoint =
+        let endpoint = //// use const
           window.location.protocol + "//" + window.location.hostname;
-        console.log(endpoint + "|" + loginInfo.token); ////
 
-        //// todo retrieve listen port from cluster status api
-        const listenPort = "55820"; ////
+        //// remove
+        endpoint =
+          "https://fedora33-n1-andre.nethesis.it|" +
+          this.leaderListenPort +
+          "|" +
+          loginInfo.token;
 
-        // join code is obtained concatenating endpoint, pipe character and auth token
+        console.log(
+          endpoint + "|" + this.leaderListenPort + "|" + loginInfo.token
+        ); ////
+
+        // join code is obtained by concatenating endpoint, leader VPN port and auth token with pipe character
         this.joinCode = btoa(
-          endpoint + "|" + listenPort + "|" + loginInfo.token
+          endpoint + "|" + this.leaderListenPort + "|" + loginInfo.token
         );
 
         console.log("joinCode", this.joinCode); ////
@@ -242,6 +252,7 @@ export default {
       );
     },
     showAddNodeModal() {
+      this.retrieveJoinCode();
       this.isShownAddNodeModal = true;
       this.showCopyClipboardHint();
     },

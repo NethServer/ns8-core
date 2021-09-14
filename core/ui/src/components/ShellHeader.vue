@@ -13,9 +13,9 @@
     }}</cv-header-name>
     <cv-header-nav>
       <cv-header-menu-item @click="logout">Logout</cv-header-menu-item>
-      <cv-header-menu-item @click="isHintShown = !isHintShown"
+      <!-- <cv-header-menu-item @click="isHintShown = !isHintShown" //// remove
         >Toggle hint</cv-header-menu-item
-      >
+      > -->
     </cv-header-nav>
     <template slot="header-global">
       <cv-header-global-action
@@ -44,7 +44,7 @@
         ></span>
       </cv-header-global-action>
       <!-- //// show hint on first task/notification? -->
-      <!-- notification drawer hint -->
+      <!-- notification drawer hint //// -->
       <span class="hint hint-notifications">
         <cv-interactive-tooltip
           alignment="end"

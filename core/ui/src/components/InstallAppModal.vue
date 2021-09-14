@@ -128,6 +128,12 @@ export default {
       } else {
         version = "latest"; //// remove?
       }
+
+      ////
+      version = "latest"; //// remove!!
+
+      console.log("installing", this.app.source, "version", version); ////
+
       const taskAction = "add-module";
 
       // register to task completion

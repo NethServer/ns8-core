@@ -43,7 +43,6 @@
     "404": "Resource not found",
     "cannot_retrieve_task_status": "Cannot retrieve task status",
     "invalid_username_or_password": "Invalid username or password",
-    "cannot_retrieve_cluster_status": "Cannot retrieve cluster status",
     "invalid_port_number": "Invalid port number",
     "cannot_refresh_token": "Cannot refresh token",
     "cannot_retrieve_cluster_nodes": "Cannot retrieve cluster nodes",
@@ -155,7 +154,11 @@
     "alter-repository": "Alter repository",
     "remove-repository": "Remove repository",
     "list-modules": "List modules",
-    "list-updates": "List updates"
+    "list-installed-modules": "List installed modules",
+    "list-updates": "List updates",
+    "get-cluster-status": "Get cluster status",
+    "get-defaults": "Get defaults",
+    "create-cluster": "Create cluster"
   },
   "network": {
     "title": "Network"

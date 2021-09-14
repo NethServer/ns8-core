@@ -497,6 +497,9 @@ export default {
 
       this.loading.modules = false;
       let modules = taskResult.output;
+
+      console.log("modules", modules); ////
+
       let updates = [];
 
       for (const module of modules) {

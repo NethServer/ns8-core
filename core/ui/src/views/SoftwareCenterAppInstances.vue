@@ -351,6 +351,7 @@ export default {
       this.isUninstallModalShown = false;
     },
     removeModuleCompleted() {
+      this.$root.$off("remove-module-completed");
       this.listModules();
     },
     installInstance() {

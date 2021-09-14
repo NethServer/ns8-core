@@ -1,5 +1,6 @@
 <template>
   <div class="bx--grid">
+    <cv-loading :active="isCreatingCluster" :overlay="true"></cv-loading>
     <div class="bx--row">
       <div class="bx--col-lg-16">
         <div class="logo">
@@ -146,9 +147,12 @@
                 ref="vpnCidr"
               >
               </cv-text-input>
-              <NsButton kind="primary" :icon="EdgeCluster20">{{
-                $t("init.create_cluster")
-              }}</NsButton>
+              <NsButton
+                kind="primary"
+                :icon="EdgeCluster20"
+                :disabled="isCreatingCluster"
+                >{{ $t("init.create_cluster") }}</NsButton
+              >
               <div>
                 <cv-link @click="selectJoinCluster" class="mg-top">{{
                   $t("init.join_cluster_instead")
@@ -246,6 +250,7 @@ export default {
       joinEndpoint: "",
       joinPort: "",
       joinToken: "",
+      isCreatingCluster: false,
       error: {
         currentPassword: "",
         newPassword: "",
@@ -269,9 +274,47 @@ export default {
   },
   created() {
     this.checkPasswordChange();
+    this.getDefaults();
   },
   methods: {
     ...mapActions(["setClusterInitializedInStore"]),
+    async getDefaults() {
+      console.log("getDefaults"); ////
+
+      const taskAction = "get-defaults";
+
+      // register to task completion
+      this.$root.$on(taskAction + "-completed", this.getDefaultsCompleted);
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        this.createErrorNotification(
+          err,
+          this.$t("task.cannot_create_task", { action: taskAction })
+        );
+        return;
+      }
+    },
+    getDefaultsCompleted(taskContext, taskResult) {
+      console.log("getDefaultsCompleted"); ////
+      console.log("defaults", taskResult.output); ////
+
+      this.$root.$off("get-defaults-completed");
+      const defaults = taskResult.output;
+      this.vpnEndpointAddress = defaults.vpn.host;
+      this.vpnEndpointPort = defaults.vpn.port.toString();
+      this.vpnCidr = defaults.vpn.network;
+    },
     selectCreateCluster() {
       this.$router.push("/init?page=create");
       this.focusElement("vpnEndpointAddress");
@@ -466,8 +509,8 @@ export default {
             listen_port: parseInt(this.vpnEndpointPort),
           },
           extra: {
-            title: this.$t("////"),
-            description: this.$t("////"),
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
           },
         })
       );
@@ -480,11 +523,14 @@ export default {
         );
         return;
       }
+      this.isCreatingCluster = true;
     },
     createClusterCompleted() {
       console.log("createClusterCompleted"); ////
 
+      this.$root.$off("create-cluster-completed");
       this.setClusterInitializedInStore(true);
+      this.$root.$emit("clusterInitialized");
       this.$router.replace("/status");
     },
     validateJoinCluster() {
@@ -569,7 +615,7 @@ export default {
             tls_verify: this.tlsVerify,
           },
           extra: {
-            title: this.$t("////"),
+            title: this.$t("//// join"),
             description: this.$t("////"),
           },
         })
@@ -590,6 +636,11 @@ export default {
     },
     joinClusterCompleted() {
       console.log("joinClusterCompleted"); ////
+
+      this.$root.$off("join-cluster-completed");
+      this.setClusterInitializedInStore(true);
+      this.$root.$emit("clusterInitialized");
+      this.$router.replace("/status");
     },
   },
 };
@@ -626,6 +677,6 @@ export default {
 // global styles
 
 .join-code textarea {
-  min-height: 5rem;
+  min-height: 7rem;
 }
 </style>

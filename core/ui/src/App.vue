@@ -18,7 +18,7 @@ import axios from "axios";
 import WebSocketService from "@/mixins/websocket";
 import { mapState, mapActions } from "vuex";
 import to from "await-to-js";
-import LoginService from "@/mixins/login";
+import LoginService from "@/mixins/login"; //// needed?
 import TaskErrorModal from "@/components/TaskErrorModal";
 import NotificationService from "@/mixins/notification";
 import {
@@ -46,6 +46,11 @@ export default {
     NotificationService,
     UtilService,
   ],
+  data() {
+    return {
+      CLUSTER_STATUS_TIME_INTERVAL: 5000,
+    };
+  },
   computed: {
     ...mapState(["loggedUser", "isClusterInitialized"]),
   },
@@ -58,6 +63,7 @@ export default {
       "configureKeyboardShortcuts",
       this.configureKeyboardShortcuts
     );
+    this.$root.$on("clusterInitialized", this.onClusterInitialized);
 
     this.configureAxiosInterceptors();
     this.configureEventListeners();
@@ -90,6 +96,7 @@ export default {
       "setAppDrawerShownInStore",
       "toggleSearchExpandedInStore",
       "toggleAppDrawerShownInStore",
+      "setLeaderListenPortInStore",
     ]),
     configureKeyboardShortcuts(window) {
       window.addEventListener(
@@ -197,6 +204,7 @@ export default {
 
       this.deleteFromStorage("loginInfo");
       this.setLoggedUserInStore("");
+      clearInterval(this.clusterStatusInterval);
       this.closeWebSocket();
 
       // redirect to login page
@@ -207,8 +215,8 @@ export default {
     // invoked on webapp loading and after logging in
     initNs8() {
       this.initWebSocket();
-      this.retrieveClusterStatus();
       // this.retrieveClusterTasks(); ////
+      this.retrieveClusterStatus(true);
     },
     // async retrieveClusterTasks() { ////
     //   const [clusterTasksError, response] = await to(this.getClusterTasks());
@@ -223,37 +231,78 @@ export default {
 
     //   console.log("clusterTasks response", response); ////
     // },
-    async retrieveClusterStatus() {
-      const loginInfo = this.getFromStorage("loginInfo");
+    retrieveRecurringClusterStatus() {
+      this.retrieveClusterStatus(false);
+    },
+    async retrieveClusterStatus(initial) {
+      const taskAction = "get-cluster-status";
 
-      console.log("loginInfo", loginInfo); ////
+      const completedCallback = initial
+        ? this.getInitialClusterStatusCompleted
+        : this.getClusterStatusCompleted;
 
-      //// TEST
-      // const [clusterStatusError, response] = await to(
-      //   this.getClusterStatus(loginInfo.username, loginInfo.token)
-      // );
+      // register to task completion
+      this.$root.$on(taskAction + "-completed", completedCallback);
 
-      // if (clusterStatusError) {
-      //   this.createErrorNotification(
-      //     clusterStatusError,
-      //     this.$t("error.cannot_retrieve_cluster_status")
-      //   );
-      //   return;
-      // }
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+          },
+        })
+      );
+      const err = res[0];
 
-      const isClusterInitialized = true; //// use response
+      if (err) {
+        this.createErrorNotification(
+          err,
+          this.$t("task.cannot_create_task", { action: taskAction })
+        );
+        return;
+      }
+    },
+    onClusterInitialized() {
+      // check for software updates
+      this.listUpdates();
 
+      // periodically retrieve cluster status
+      this.clusterStatusInterval = setInterval(
+        this.retrieveRecurringClusterStatus,
+        this.CLUSTER_STATUS_TIME_INTERVAL
+      );
+    },
+    getInitialClusterStatusCompleted(taskContext, taskResult) {
+      console.log("getInitialClusterStatusCompleted"); ////
+
+      this.$root.$off("get-cluster-status-completed");
+      const clusterStatus = taskResult.output;
+      console.log("clusterStatus", clusterStatus); ////
+      const isClusterInitialized = clusterStatus.initialized;
       this.setClusterInitializedInStore(isClusterInitialized);
 
+      // leader listen port
+      if (clusterStatus.nodes.length) {
+        const leaderNode = clusterStatus.nodes.find((el) => el.local);
+        const leaderListenPort = leaderNode.vpn.listen_port;
+        console.log("leaderListenPort", leaderListenPort); ////
+        this.setLeaderListenPortInStore(leaderListenPort);
+      }
+
       if (this.isClusterInitialized) {
-        // check for software updates
-        this.listUpdates();
+        this.onClusterInitialized();
       } else {
         // redirect to cluster initialization page
         this.$router.replace("/init?page=welcome");
       }
-
       this.configureClusterInitializationRedirect();
+    },
+    getClusterStatusCompleted(taskContext, taskResult) {
+      console.log("getClusterStatusCompleted"); ////
+      console.log("taskResult", taskResult); ////
+
+      this.$root.$off("get-cluster-status-completed");
     },
     async listUpdates() {
       const taskAction = "list-updates";

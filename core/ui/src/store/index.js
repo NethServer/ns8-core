@@ -22,6 +22,7 @@ export default new Vuex.Store({
     // apps to update
     updates: [],
     isClusterInitialized: false,
+    leaderListenPort: null,
   },
   getters: {
     unreadNotifications: (state, getters) => {
@@ -143,6 +144,9 @@ export default new Vuex.Store({
     setClusterInitialized(state, value) {
       state.isClusterInitialized = value;
     },
+    setLeaderListenPort(state, value) {
+      state.leaderListenPort = value;
+    },
     markAllNotificationsRead(state, unreadNotifications) {
       for (let notification of unreadNotifications) {
         notification.isRead = true;
@@ -236,6 +240,9 @@ export default new Vuex.Store({
     },
     setClusterInitializedInStore(context, value) {
       context.commit("setClusterInitialized", value);
+    },
+    setLeaderListenPortInStore(context, value) {
+      context.commit("setLeaderListenPort", value);
     },
     markAllNotificationsReadInStore(context) {
       context.commit(
