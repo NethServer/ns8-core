@@ -179,6 +179,9 @@ EOF
 echo "Install Traefik:"
 add-module traefik 1
 
+echo "Setting default admin password:"
+add-user --role owner --password "${ADMIN_PASSWORD:-Nethesis,1234}" admin
+
 cat - <<EOF
 
 NethServer 8 Scratchpad

@@ -36,8 +36,6 @@ args = parser.parse_args()
 
 endpoint_host, endpoint_port = args.endpoint.split(":")
 
-subprocess.run(['add-user', '--role', 'owner', '--password', args.admin_pw, 'admin']).check_returncode()
-
 # Initialize a new cluster
 result = agent.tasks.run(
     agent_id='cluster',
