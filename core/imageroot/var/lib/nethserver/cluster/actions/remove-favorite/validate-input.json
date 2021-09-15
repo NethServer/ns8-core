@@ -1,0 +1,21 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "remove-favorite input",
+    "$id": "http://schema.nethserver.org/cluster/remove-favorite-input.json",
+    "description": "Input schema of the remove-favorite action",
+    "examples": [
+        {
+            "instance": "dokuwiki1"
+        }
+    ],
+    "type": "object",
+    "properties": {
+        "instance": {
+           "description": "Instance name",
+            "type": "string"
+        }
+    },
+    "required": [
+          "instance"
+    ]
+}

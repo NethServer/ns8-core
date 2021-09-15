@@ -1,0 +1,21 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "add-favorite input",
+    "$id": "http://schema.nethserver.org/cluster/add-favorite-input.json",
+    "description": "Input schema of the add-favorite action",
+    "examples": [
+        {
+            "instance": "dokuwiki1"
+        }
+    ],
+    "type": "object",
+    "properties": {
+        "instance": {
+           "description": "Instance name",
+            "type": "string"
+        }
+    },
+    "required": [
+          "instance"
+    ]
+}
