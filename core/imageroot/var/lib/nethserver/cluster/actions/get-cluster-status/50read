@@ -38,6 +38,12 @@ rdb = agent.redis_connect(privileged=True)
 ret = { 'initialized': False, 'leader': False, 'nodes': [], 'leader_url': '', 'default_password': False }
 vpn = {}
 
+default_password = hashlib.sha256(b'Nethesis,1234').hexdigest()
+admin = rdb.acl_getuser('admin')
+for p in admin['passwords']:
+    if p == default_password:
+        ret['default_password'] = True
+
 network = rdb.get('cluster/network')
 if network is not None:
     ret["initialized"] = True
@@ -79,11 +85,5 @@ for line in proc.stdout.readlines():
 
 for i in vpn.values():
     ret['nodes'].append(i)
-
-default_password = hashlib.sha256(b'Nethesis,1234').hexdigest()
-admin = rdb.acl_getuser('admin')
-for p in admin['passwords']:
-    if p == default_password:
-        ret['default_password'] = True
 
 json.dump(ret, fp=sys.stdout)
