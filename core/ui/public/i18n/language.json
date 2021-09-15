@@ -160,7 +160,8 @@
     "get-cluster-status": "Get cluster status",
     "get-defaults": "Get defaults",
     "create-cluster": "Create cluster",
-    "change-user-password": "Change user password"
+    "change-user-password": "Change user password",
+    "join-cluster": "Join cluster"
   },
   "network": {
     "title": "Network"

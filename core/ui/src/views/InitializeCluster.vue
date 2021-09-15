@@ -1,6 +1,9 @@
 <template>
   <div class="bx--grid">
-    <cv-loading :active="isCreatingCluster" :overlay="true"></cv-loading>
+    <cv-loading
+      :active="isCreatingCluster || isJoiningCluster"
+      :overlay="true"
+    ></cv-loading>
     <div class="bx--row">
       <div class="bx--col-lg-16">
         <div class="logo">
@@ -11,69 +14,7 @@
         </div>
       </div>
     </div>
-    <!-- //// loader while waiting api -->
-    <template v-if="isPasswordChangeNeeded">
-      <div class="bx--row">
-        <!-- password change needed -->
-        <div class="bx--col-lg-16 page-title">
-          <h2>
-            {{
-              $t("init.welcome", { product: this.$root.config.PRODUCT_NAME })
-            }}
-          </h2>
-        </div>
-      </div>
-      <div class="bx--row">
-        <div class="bx--col-lg-16">
-          <NsInlineNotification
-            kind="info"
-            :title="$t('init.change_admin_password')"
-            :description="$t('init.change_admin_password_description')"
-            :showCloseButton="false"
-          />
-        </div>
-      </div>
-      <div class="bx--row">
-        <div class="bx--col-lg-16">
-          <cv-tile light class="content-tile">
-            <cv-form @submit.prevent="changePassword">
-              <cv-text-input
-                :label="$t('init.current_password')"
-                v-model="currentPassword"
-                :invalid-message="$t(error.currentPassword)"
-                type="password"
-                ref="currentPassword"
-              >
-              </cv-text-input>
-              <NsPasswordInput
-                :newPasswordLabel="$t('init.new_password')"
-                :confirmPasswordLabel="$t('init.new_password_confirm')"
-                v-model="newPassword"
-                @passwordValidation="onPasswordValidation"
-                :newPasswordInvalidMessage="$t(error.newPassword)"
-                :confirmPasswordInvalidMessage="$t(error.confirmPassword)"
-                :passwordHideLabel="$t('password.hide_password')"
-                :passwordShowLabel="$t('password.show_password')"
-                :lengthLabel="$t('password.long_enough')"
-                :lowercaseLabel="$t('password.lowercase_letter')"
-                :uppercaseLabel="$t('password.uppercase_letter')"
-                :numberLabel="$t('password.number')"
-                :symbolLabel="$t('password.symbol')"
-                :equalLabel="$t('password.equal')"
-                :focus="focusPasswordField"
-              />
-              <NsButton
-                kind="primary"
-                :icon="Password20"
-                :disabled="isChangingPassword"
-                >{{ $t("init.change_password") }}</NsButton
-              >
-            </cv-form>
-          </cv-tile>
-        </div>
-      </div>
-    </template>
-    <div v-else-if="q.page === 'welcome'">
+    <div v-if="q.page === 'welcome'">
       <div class="bx--row">
         <div class="bx--col-lg-16 page-title">
           <h2>
@@ -116,55 +57,123 @@
       </div>
     </div>
     <div v-else-if="q.page === 'create'">
-      <!-- create cluster form -->
-      <div class="bx--row">
-        <div class="bx--col-lg-16 page-title">
-          <h2>{{ $t("init.create_cluster") }}</h2>
-          <div class="title-description">
-            {{ $t("init.create_cluster_description") }}
+      <template v-if="isPasswordChangeNeeded">
+        <div class="bx--row">
+          <!-- password change needed -->
+          <div class="bx--col-lg-16 page-title">
+            <h2>{{ $t("init.create_cluster") }}</h2>
+            <div class="title-description">
+              {{ $t("init.create_cluster_description") }}
+            </div>
           </div>
         </div>
-      </div>
-      <div class="bx--row">
-        <div class="bx--col-lg-16">
-          <cv-tile light class="content-tile">
-            <cv-form @submit.prevent="createCluster">
-              <cv-text-input
-                :label="$t('init.vpn_endpoint_address')"
-                v-model.trim="vpnEndpointAddress"
-                :invalid-message="$t(error.vpnEndpointAddress)"
-                ref="vpnEndpointAddress"
-              >
-              </cv-text-input>
-              <cv-text-input
-                :label="$t('init.vpn_endpoint_port')"
-                v-model.trim="vpnEndpointPort"
-                :invalid-message="$t(error.vpnEndpointPort)"
-                ref="vpnEndpointPort"
-              >
-              </cv-text-input>
-              <cv-text-input
-                :label="$t('init.vpn_cidr')"
-                v-model.trim="vpnCidr"
-                :invalid-message="$t(error.vpnCidr)"
-                ref="vpnCidr"
-              >
-              </cv-text-input>
-              <NsButton
-                kind="primary"
-                :icon="EdgeCluster20"
-                :disabled="isCreatingCluster"
-                >{{ $t("init.create_cluster") }}</NsButton
-              >
-              <div>
-                <cv-link @click="selectJoinCluster" class="mg-top">{{
-                  $t("init.join_cluster_instead")
-                }}</cv-link>
-              </div>
-            </cv-form>
-          </cv-tile>
+        <div class="bx--row">
+          <div class="bx--col-lg-16">
+            <NsInlineNotification
+              kind="info"
+              :title="$t('init.change_admin_password')"
+              :description="$t('init.change_admin_password_description')"
+              :showCloseButton="false"
+            />
+          </div>
         </div>
-      </div>
+        <div class="bx--row">
+          <div class="bx--col-lg-16">
+            <cv-tile light class="content-tile">
+              <cv-form @submit.prevent="changePassword">
+                <cv-text-input
+                  :label="$t('init.current_password')"
+                  v-model="currentPassword"
+                  :invalid-message="$t(error.currentPassword)"
+                  type="password"
+                  ref="currentPassword"
+                >
+                </cv-text-input>
+                <NsPasswordInput
+                  :newPasswordLabel="$t('init.new_password')"
+                  :confirmPasswordLabel="$t('init.new_password_confirm')"
+                  v-model="newPassword"
+                  @passwordValidation="onPasswordValidation"
+                  :newPasswordInvalidMessage="$t(error.newPassword)"
+                  :confirmPasswordInvalidMessage="$t(error.confirmPassword)"
+                  :passwordHideLabel="$t('password.hide_password')"
+                  :passwordShowLabel="$t('password.show_password')"
+                  :lengthLabel="$t('password.long_enough')"
+                  :lowercaseLabel="$t('password.lowercase_letter')"
+                  :uppercaseLabel="$t('password.uppercase_letter')"
+                  :numberLabel="$t('password.number')"
+                  :symbolLabel="$t('password.symbol')"
+                  :equalLabel="$t('password.equal')"
+                  :focus="focusPasswordField"
+                />
+                <NsButton
+                  kind="primary"
+                  :icon="Password20"
+                  :disabled="isChangingPassword"
+                  >{{ $t("init.change_password") }}</NsButton
+                >
+                <div>
+                  <cv-link @click="selectJoinCluster" class="mg-top">{{
+                    $t("init.join_cluster_instead")
+                  }}</cv-link>
+                </div>
+              </cv-form>
+            </cv-tile>
+          </div>
+        </div>
+      </template>
+      <!-- admin password was changed -->
+      <template v-else>
+        <!-- create cluster form -->
+        <div class="bx--row">
+          <div class="bx--col-lg-16 page-title">
+            <h2>{{ $t("init.create_cluster") }}</h2>
+            <div class="title-description">
+              {{ $t("init.create_cluster_description") }}
+            </div>
+          </div>
+        </div>
+        <div class="bx--row">
+          <div class="bx--col-lg-16">
+            <cv-tile light class="content-tile">
+              <cv-form @submit.prevent="createCluster">
+                <cv-text-input
+                  :label="$t('init.vpn_endpoint_address')"
+                  v-model.trim="vpnEndpointAddress"
+                  :invalid-message="$t(error.vpnEndpointAddress)"
+                  ref="vpnEndpointAddress"
+                >
+                </cv-text-input>
+                <cv-text-input
+                  :label="$t('init.vpn_endpoint_port')"
+                  v-model.trim="vpnEndpointPort"
+                  :invalid-message="$t(error.vpnEndpointPort)"
+                  ref="vpnEndpointPort"
+                >
+                </cv-text-input>
+                <cv-text-input
+                  :label="$t('init.vpn_cidr')"
+                  v-model.trim="vpnCidr"
+                  :invalid-message="$t(error.vpnCidr)"
+                  ref="vpnCidr"
+                >
+                </cv-text-input>
+                <NsButton
+                  kind="primary"
+                  :icon="EdgeCluster20"
+                  :disabled="isCreatingCluster"
+                  >{{ $t("init.create_cluster") }}</NsButton
+                >
+                <div>
+                  <cv-link @click="selectJoinCluster" class="mg-top">{{
+                    $t("init.join_cluster_instead")
+                  }}</cv-link>
+                </div>
+              </cv-form>
+            </cv-tile>
+          </div>
+        </div>
+      </template>
     </div>
     <div v-else-if="q.page === 'join'">
       <!-- join cluster form -->
@@ -254,6 +263,7 @@ export default {
       joinPort: "",
       joinToken: "",
       isCreatingCluster: false,
+      isJoiningCluster: false,
       isChangingPassword: false,
       error: {
         currentPassword: "",
@@ -283,8 +293,6 @@ export default {
   methods: {
     ...mapActions(["setClusterInitializedInStore"]),
     async getDefaults() {
-      console.log("getDefaults"); ////
-
       const taskAction = "get-defaults";
 
       // register to task completion
@@ -310,8 +318,7 @@ export default {
       }
     },
     getDefaultsCompleted(taskContext, taskResult) {
-      console.log("getDefaultsCompleted"); ////
-      console.log("defaults", taskResult.output); ////
+      console.log("getDefaultsCompleted", taskResult.output); ////
 
       this.$root.$off("get-defaults-completed");
       const defaults = taskResult.output;
@@ -321,7 +328,12 @@ export default {
     },
     selectCreateCluster() {
       this.$router.push("/init?page=create");
-      this.focusElement("vpnEndpointAddress");
+
+      if (this.isPasswordChangeNeeded) {
+        this.focusElement("currentPassword");
+      } else {
+        this.focusElement("vpnEndpointAddress");
+      }
     },
     selectJoinCluster() {
       this.$router.push("/init?page=join");
@@ -353,12 +365,10 @@ export default {
       }
     },
     getClusterStatusCompleted(taskContext, taskResult) {
-      console.log("getClusterStatusCompleted"); ////
+      console.log("getClusterStatusCompleted", taskResult.output); ////
 
       this.$root.$off("get-cluster-status-completed");
-
       const clusterStatus = taskResult.output;
-      console.log("clusterStatus", clusterStatus); ////
 
       if (clusterStatus.initialized) {
         // redirect to status page
@@ -497,8 +507,7 @@ export default {
       }
     },
     changeUserPasswordCompleted(taskContext, taskResult) {
-      console.log("changeUserPasswordCompleted"); ////
-      console.log("result", taskResult.output); ////
+      console.log("changeUserPasswordCompleted", taskResult.output); ////
 
       this.$root.$off("change-user-password-completed");
       this.isPasswordChangeNeeded = false;
@@ -566,8 +575,6 @@ export default {
       return isValidationOk;
     },
     async createCluster() {
-      console.log("createCluster"); ////
-
       if (!this.validateCreateCluster()) {
         return;
       }
@@ -576,6 +583,9 @@ export default {
 
       // register to task completion
       this.$root.$on(taskAction + "-completed", this.createClusterCompleted);
+
+      // register to task error
+      this.$root.$on(taskAction + "-aborted", this.createClusterAborted);
 
       const res = await to(
         this.createClusterTask({
@@ -609,6 +619,13 @@ export default {
       this.setClusterInitializedInStore(true);
       this.$root.$emit("clusterInitialized");
       this.$router.replace("/status");
+      this.isCreatingCluster = false;
+    },
+    createClusterAborted(taskResult) {
+      console.log("createClusterAborted", taskResult); ////
+
+      this.$root.$off("create-cluster-aborted");
+      this.isCreatingCluster = false;
     },
     validateJoinCluster() {
       this.clearErrors(this);
@@ -669,18 +686,17 @@ export default {
       return isValidationOk;
     },
     async joinCluster() {
-      console.log("joinCluster"); ////
-
       if (!this.validateJoinCluster()) {
         return;
       }
-
-      console.log("join code ok, tls verify", this.tlsVerify); ////
 
       const taskAction = "join-cluster";
 
       // register to task completion
       this.$root.$on(taskAction + "-completed", this.joinClusterCompleted);
+
+      // register to task error
+      this.$root.$on(taskAction + "-aborted", this.joinClusterAborted);
 
       const res = await to(
         this.createClusterTask({
@@ -692,8 +708,8 @@ export default {
             tls_verify: this.tlsVerify,
           },
           extra: {
-            title: this.$t("//// join"),
-            description: this.$t("////"),
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
           },
         })
       );
@@ -707,17 +723,23 @@ export default {
         return;
       }
 
-      // this.setClusterInitializedInStore(true); ////
-      // this.$router.replace("/status"); ////
-      // console.log("done"); ////
+      this.isJoiningCluster = true;
     },
     joinClusterCompleted() {
       console.log("joinClusterCompleted"); ////
 
       this.$root.$off("join-cluster-completed");
+      //// needed?
       this.setClusterInitializedInStore(true);
       this.$root.$emit("clusterInitialized");
       this.$router.replace("/status");
+      this.isJoiningCluster = false;
+    },
+    joinClusterAborted(taskResult) {
+      console.log("joinClusterAborted", taskResult); ////
+
+      this.$root.$off("join-cluster-aborted");
+      this.isJoiningCluster = false;
     },
   },
 };
