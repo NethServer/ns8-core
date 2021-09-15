@@ -48,7 +48,7 @@ export default {
   ],
   data() {
     return {
-      CLUSTER_STATUS_TIME_INTERVAL: 5000,
+      CLUSTER_STATUS_TIME_INTERVAL: 10000,
     };
   },
   computed: {

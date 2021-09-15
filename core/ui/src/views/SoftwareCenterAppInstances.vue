@@ -366,6 +366,7 @@ export default {
 
 .instance {
   border-bottom: 1px solid $ui-03;
+  margin-bottom: 0;
 }
 
 .instance-name {
