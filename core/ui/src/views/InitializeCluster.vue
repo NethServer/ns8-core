@@ -62,9 +62,12 @@
                 :equalLabel="$t('password.equal')"
                 :focus="focusPasswordField"
               />
-              <NsButton kind="primary" :icon="Password20">{{
-                $t("init.change_password")
-              }}</NsButton>
+              <NsButton
+                kind="primary"
+                :icon="Password20"
+                :disabled="isChangingPassword"
+                >{{ $t("init.change_password") }}</NsButton
+              >
             </cv-form>
           </cv-tile>
         </div>
@@ -251,6 +254,7 @@ export default {
       joinPort: "",
       joinToken: "",
       isCreatingCluster: false,
+      isChangingPassword: false,
       error: {
         currentPassword: "",
         newPassword: "",
@@ -273,7 +277,7 @@ export default {
     next();
   },
   created() {
-    this.checkPasswordChange();
+    this.retrieveClusterStatus();
     this.getDefaults();
   },
   methods: {
@@ -323,26 +327,50 @@ export default {
       this.$router.push("/init?page=join");
       this.focusElement("joinCode");
     },
-    async checkPasswordChange() {
-      const loginInfo = this.getFromStorage("loginInfo");
+    async retrieveClusterStatus() {
+      const taskAction = "get-cluster-status";
 
-      console.log("loginInfo", loginInfo); ////
+      // register to task completion
+      this.$root.$on(taskAction + "-completed", this.getClusterStatusCompleted);
 
-      //// TEST
-      // const [checkPasswordChangeError, response] = await to(
-      //   this.verifyPasswordChange(loginInfo.username, loginInfo.token)
-      // );
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+          },
+        })
+      );
+      const err = res[0];
 
-      // if (checkPasswordChangeError) {
-      //   this.createErrorNotification(
-      //     checkPasswordChangeError,
-      //     this.$t("init.???")
-      //   );
-      //   return;
-      // }
+      if (err) {
+        this.createErrorNotification(
+          err,
+          this.$t("task.cannot_create_task", { action: taskAction })
+        );
+        return;
+      }
+    },
+    getClusterStatusCompleted(taskContext, taskResult) {
+      console.log("getClusterStatusCompleted"); ////
 
-      //// use response
-      this.isPasswordChangeNeeded = false; //// remove
+      this.$root.$off("get-cluster-status-completed");
+
+      const clusterStatus = taskResult.output;
+      console.log("clusterStatus", clusterStatus); ////
+
+      if (clusterStatus.initialized) {
+        // redirect to status page
+        this.setClusterInitializedInStore(true);
+        this.$root.$emit("clusterInitialized");
+        this.$router.replace("/status");
+        return;
+      }
+      this.isPasswordChangeNeeded = clusterStatus.default_password;
+
+      //// remove mock
+      // this.isPasswordChangeNeeded = false; ////
     },
     onPasswordValidation(passwordValidation) {
       this.passwordValidation = passwordValidation;
@@ -414,32 +442,81 @@ export default {
       }
       return isValidationOk;
     },
-    changePassword() {
+    async changePassword() {
+      this.isChangingPassword = true;
+
       if (!this.validatePasswordChange()) {
+        this.isChangingPassword = false;
         return;
       }
 
-      //// todo call api
-
       const loginInfo = this.getFromStorage("loginInfo");
+      const taskAction = "change-user-password";
 
-      console.log("loginInfo", loginInfo); ////
+      // register to task completion
+      this.$root.$off(taskAction + "-completed");
+      this.$root.$on(
+        taskAction + "-completed",
+        this.changeUserPasswordCompleted
+      );
 
-      //// TEST
-      // const [changePasswordError, response] = await to(
-      //   this.changePasswordApi(loginInfo.username, loginInfo.token, this.currentPassword, this.newPassword)
-      // );
+      // register to task validation
+      this.$root.$off(taskAction + "-validation-ok");
+      this.$root.$on(
+        taskAction + "-validation-ok",
+        this.changeUserPasswordValidationOk
+      );
+      this.$root.$off(taskAction + "-validation-failed");
+      this.$root.$on(
+        taskAction + "-validation-failed",
+        this.changeUserPasswordValidationFailed
+      );
 
-      // if (changePasswordError) {
-      //   this.createErrorNotification(
-      //     changePasswordError,
-      //     this.$t("init.???")
-      //   );
-      //   return;
-      // }
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          data: {
+            user: loginInfo.username,
+            current_password: this.currentPassword,
+            new_password: this.newPassword,
+          },
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+          },
+        })
+      );
+      const err = res[0];
 
-      //// use response
-      this.isPasswordChangeNeeded = false; ////
+      if (err) {
+        this.createErrorNotification(
+          err,
+          this.$t("task.cannot_create_task", { action: taskAction })
+        );
+        return;
+      }
+    },
+    changeUserPasswordCompleted(taskContext, taskResult) {
+      console.log("changeUserPasswordCompleted"); ////
+      console.log("result", taskResult.output); ////
+
+      this.$root.$off("change-user-password-completed");
+      this.isPasswordChangeNeeded = false;
+    },
+    changeUserPasswordValidationOk() {
+      this.$root.$off("change-user-password-validation-ok");
+    },
+    changeUserPasswordValidationFailed(validationErrors) {
+      this.$root.$off("change-user-password-validation-failed");
+      this.isChangingPassword = false;
+
+      for (const validationError of validationErrors) {
+        console.log("validationError", validationError); ////
+
+        // set i18n error message
+        this.error.currentPassword = "password." + validationError.error;
+        this.focusElement("currentPassword");
+      }
     },
     validateCreateCluster() {
       this.clearErrors(this);

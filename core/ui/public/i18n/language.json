@@ -60,7 +60,8 @@
     "equal": "Equal",
     "old_new_passwords_must_be_different": "New password must be different from current password",
     "passwords_do_not_match": "Passwords do not match",
-    "password_not_secure": "Password must meet all security requirements below"
+    "password_not_secure": "Password must meet all security requirements below",
+    "invalid_user_password": "Wrong password"
   },
   "login": {
     "title": "Log in",
@@ -158,7 +159,8 @@
     "list-updates": "List updates",
     "get-cluster-status": "Get cluster status",
     "get-defaults": "Get defaults",
-    "create-cluster": "Create cluster"
+    "create-cluster": "Create cluster",
+    "change-user-password": "Change user password"
   },
   "network": {
     "title": "Network"

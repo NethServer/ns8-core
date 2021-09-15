@@ -346,6 +346,8 @@ export default {
   },
   methods: {
     addRepositoryValidationFailed(validationErrors) {
+      this.$root.$off("add-repository-validation-failed");
+
       // enable "Create repository" button
       this.loading.createRepository = false;
 
@@ -468,14 +470,14 @@ export default {
       }
     },
     addRepositoryValidationOk() {
+      // unregister from event
+      this.$root.$off("add-repository-validation-ok");
+
       // hide modal after validation
       this.q.isShownCreateRepoModal = false;
 
       // enable "Create repository" button
       this.loading.createRepository = false;
-
-      // unregister from event
-      this.$root.$off("add-repository-validation-ok");
     },
     alterRepositoryValidationOk() {
       // hide modal after validation

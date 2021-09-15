@@ -279,7 +279,11 @@ export default {
       this.$root.$off("get-cluster-status-completed");
       const clusterStatus = taskResult.output;
       console.log("clusterStatus", clusterStatus); ////
-      const isClusterInitialized = clusterStatus.initialized;
+      let isClusterInitialized = clusterStatus.initialized; //// use const
+
+      //// remove mock
+      // isClusterInitialized = false; ////
+
       this.setClusterInitializedInStore(isClusterInitialized);
 
       // leader listen port
@@ -303,6 +307,8 @@ export default {
       console.log("taskResult", taskResult); ////
 
       this.$root.$off("get-cluster-status-completed");
+
+      //// todo update cluster status in vuex store
     },
     async listUpdates() {
       const taskAction = "list-updates";
