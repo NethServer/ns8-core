@@ -228,8 +228,8 @@ Shortcuts will be available from the search bar inside the UI.
 Examples of shortcuts could be something like "Add a user" or "Show applicationX logs".
 
 Shortcuts are described inside a `shortcuts.json` file which must be inside the `ui` path:
-- core: `/var/lib/nethserver/cluster/ui/shortcuts.json`
-- applications: `/var/lib/nethserver/cluster/ui/apps/<app>/shortcuts.json`
+- core: `/var/lib/nethserver/cluster/ui/public/shortcuts.json`
+- applications: `/var/lib/nethserver/cluster/ui/apps/public/<app>/shortcuts.json`
 
 A `shorcuts.json` must always contain the following fields:
 - `name`: the action name
