@@ -221,6 +221,24 @@ Since core and modules UI share multiple components and features, these faciliti
 The reusable UI components included in the library are easily recognizable since their name starts with `Ns` prefix, e.g. `NsButton`, `NsInlineNotification`.
 The library also includes a set of VueJs mixins used by core and modules to access utility functions and perform common tasks.
 
+### Shortcuts
+
+The core and the applications can add quickly accessible actions called shortcuts.
+Shortcuts will be available from the search bar inside the UI.
+Examples of shortcuts could be something like "Add a user" or "Show applicationX logs".
+
+Shortcuts are described inside a `shortcuts.json` file which must be inside the `ui` path:
+- core: `/var/lib/nethserver/cluster/ui/shortcuts.json`
+- applications: `/var/lib/nethserver/cluster/ui/apps/<app>/shortcuts.json`
+
+A `shorcuts.json` must always contain the following fields:
+- `name`: the action name
+- `description`: a text which describes the action
+- `tags`: a list of tags to ease the research
+- `path`: the UI path to open when the shortcut has been selected. The path **must** be relative.
+
+The `list-shortcuts` API will read all `shortcuts.json` files and combine them on a single array and it will generate absolute UI paths.
+
 ## Package repository
 
 The systems supports a virtually infinite number of repositories. Each repository contains the list of available modules
