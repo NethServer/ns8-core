@@ -1,0 +1,27 @@
+[
+    {
+      "name": {
+        "en": "Change wiki URL",
+        "it": "Cambia URL wiki"
+      },
+      "description": {
+        "en": "Change the host name associated to the wiki",
+        "it": "Cambia il nome host associato al wiki"
+      },
+      "tags": {
+        "en": [
+          "wiki",
+          "dokuwiki",
+          "host",
+          "url"
+        ],
+        "it": [
+          "wiki",
+          "dokuwiki",
+          "host",
+          "url"
+        ]
+      },
+      "path": "edit"
+    }
+]
