@@ -77,8 +77,17 @@
                   :key="index"
                 >
                   <div class="app">
-                    <div @click="app.isFavorite = !app.isFavorite">
-                      <Rocket32 class="app-icon" />
+                    <div @click="toggleFavorite(app)">
+                      <div class="app-icon">
+                        <img
+                          :src="
+                            app.logo
+                              ? app.logo
+                              : require('@/assets/module_default_logo.png')
+                          "
+                          :alt="app.name + ' logo'"
+                        />
+                      </div>
                       <div>
                         {{ app.id }}
                       </div>
@@ -147,7 +156,16 @@
                       :key="index"
                     >
                       <div class="app" @click="openApp(app)">
-                        <Rocket32 class="app-icon" />
+                        <div class="app-icon">
+                          <img
+                            :src="
+                              app.logo
+                                ? app.logo
+                                : require('@/assets/module_default_logo.png')
+                            "
+                            :alt="app.name + ' logo'"
+                          />
+                        </div>
                         {{ app.id }}
                       </div>
                     </div>
@@ -174,7 +192,16 @@
                     :key="index"
                   >
                     <div class="app" @click="openApp(app)">
-                      <Rocket32 class="app-icon" />
+                      <div class="app-icon">
+                        <img
+                          :src="
+                            app.logo
+                              ? app.logo
+                              : require('@/assets/module_default_logo.png')
+                          "
+                          :alt="app.name + ' logo'"
+                        />
+                      </div>
                       {{ app.id }}
                     </div>
                   </div>
@@ -193,7 +220,16 @@
                       >
                         <cv-structured-list-data class="app-list-element">
                           <div class="app" @click="openApp(app)">
-                            <Rocket32 class="app-icon" />
+                            <div class="app-icon">
+                              <img
+                                :src="
+                                  app.logo
+                                    ? app.logo
+                                    : require('@/assets/module_default_logo.png')
+                                "
+                                :alt="app.name + ' logo'"
+                              />
+                            </div>
                             <span>{{ app.id }}</span>
                           </div></cv-structured-list-data
                         >
@@ -215,7 +251,16 @@
                     >
                       <cv-structured-list-data class="app-drawer-app">
                         <div class="app" @click="openApp(app)">
-                          <Rocket32 class="app-icon" />
+                          <div class="app-icon">
+                            <img
+                              :src="
+                                app.logo
+                                  ? app.logo
+                                  : require('@/assets/module_default_logo.png')
+                              "
+                              :alt="app.name + ' logo'"
+                            />
+                          </div>
                           <span>{{ app.id }}</span>
                         </div></cv-structured-list-data
                       >
@@ -232,7 +277,6 @@
 </template>
 
 <script>
-import Rocket32 from "@carbon/icons-vue/es/rocket/32";
 import { mapState, mapActions } from "vuex";
 import {
   StorageService,
@@ -244,7 +288,6 @@ import to from "await-to-js";
 
 export default {
   name: "AppDrawer",
-  components: { Rocket32 },
   mixins: [StorageService, IconService, UtilService, TaskService],
   data() {
     return {
@@ -311,7 +354,9 @@ export default {
 
       if (this.isAppDrawerShown) {
         // set focus on app search
-        this.focusElement("appSearch");
+        setTimeout(() => {
+          this.focusElement("appSearch");
+        }, 300);
       } else {
         // save favorite apps if user closes drawer while editing favorites
         if (this.isEditingFavoriteApps) {
@@ -411,15 +456,12 @@ export default {
         }
       }
 
-      // favorite apps
       for (let app of apps) {
-        //// mock
-        if (app.id == "dokuwiki1" || app.id == "traefik1") {
-          app.isFavorite = true;
-        } else {
-          app.isFavorite = false;
-        }
+        app.isFavorite = false;
       }
+
+      this.listFavorites();
+
       apps.sort(this.sortModuleInstances());
       this.apps = apps;
     },
@@ -466,6 +508,122 @@ export default {
       // needed to manage clear search button
       if (!this.searchQuery.length) {
         this.searchApp();
+      }
+    },
+    toggleFavorite(app) {
+      app.isFavorite = !app.isFavorite;
+
+      if (app.isFavorite) {
+        this.addFavorite(app);
+      } else {
+        this.removeFavorite(app);
+      }
+    },
+    async addFavorite(app) {
+      console.log("addFavorite", app.id); ////
+
+      const taskAction = "add-favorite";
+
+      // register to task events
+      this.$root.$once(taskAction + "-completed", this.addFavoriteCompleted);
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          data: {
+            instance: app.id,
+          },
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        this.error.apps = this.getErrorMessage(err);
+        this.createErrorNotification(
+          err,
+          this.$t("task.cannot_create_task", { action: taskAction })
+        );
+        return;
+      }
+    },
+    addFavoriteCompleted(taskContext, taskResult) {
+      console.log("addFavoriteCompleted", taskResult.output); ////
+    },
+    async removeFavorite(app) {
+      console.log("removeFavorite", app.id); ////
+
+      const taskAction = "remove-favorite";
+
+      // register to task events
+      this.$root.$once(taskAction + "-completed", this.removeFavoriteCompleted);
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          data: {
+            instance: app.id,
+          },
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        this.error.apps = this.getErrorMessage(err);
+        this.createErrorNotification(
+          err,
+          this.$t("task.cannot_create_task", { action: taskAction })
+        );
+        return;
+      }
+    },
+    removeFavoriteCompleted(taskContext, taskResult) {
+      console.log("removeFavoriteCompleted", taskResult.output); ////
+    },
+    async listFavorites() {
+      console.log("listFavorites"); ////
+
+      const taskAction = "list-favorites";
+
+      // register to task events
+      this.$root.$once(taskAction + "-completed", this.listFavoritesCompleted);
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        this.error.apps = this.getErrorMessage(err);
+        this.createErrorNotification(
+          err,
+          this.$t("task.cannot_create_task", { action: taskAction })
+        );
+        return;
+      }
+    },
+    listFavoritesCompleted(taskContext, taskResult) {
+      const favorites = taskResult.output;
+
+      for (const favorite of favorites) {
+        const favoriteApp = this.apps.find((app) => app.id === favorite.id);
+
+        if (favoriteApp) {
+          favoriteApp.isFavorite = true;
+        }
       }
     },
   },
@@ -586,7 +744,7 @@ export default {
   display: block;
   margin-left: auto;
   margin-right: auto;
-  margin-bottom: $spacing-03;
+  margin-bottom: $spacing-04;
 }
 
 .app-list .app {
@@ -602,8 +760,21 @@ export default {
 }
 
 .app-icon {
-  width: 32px;
-  height: 32px;
+  width: 4rem;
+  height: 4rem;
+  flex-shrink: 0;
+}
+
+@media (max-width: $breakpoint-medium) {
+  .app-icon {
+    width: 3rem;
+    height: 3rem;
+  }
+}
+
+.app-icon img {
+  width: 100%;
+  height: 100%;
 }
 
 .no-mg-top {

@@ -157,11 +157,6 @@ export default {
         this.pageNum++;
         this.recentNotificationsLoaded.push(...pageNotifications);
 
-        console.log(
-          "recentNotificationsLoaded length",
-          this.recentNotificationsLoaded.length
-        ); ////
-
         if ($state) {
           $state.loaded();
         }

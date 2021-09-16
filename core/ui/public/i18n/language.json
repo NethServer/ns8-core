@@ -161,7 +161,10 @@
     "get-defaults": "Get defaults",
     "create-cluster": "Create cluster",
     "change-user-password": "Change user password",
-    "join-cluster": "Join cluster"
+    "join-cluster": "Join cluster",
+    "add-favorite": "Add favorite",
+    "remove-favorite": "Remove favorite",
+    "list-favorites": "List favorites"
   },
   "network": {
     "title": "Network"
