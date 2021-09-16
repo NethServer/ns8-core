@@ -27,7 +27,7 @@ import os.path
 
 request = json.load(sys.stdin)
 
-core_shortcuts = '/var/lib/nethserver/cluster/ui/public/shortcuts.json'
+core_shortcuts = '/var/lib/nethserver/cluster/ui/shortcuts.json'
 ret = []
 
 # Prepare shortcuts from core
@@ -40,7 +40,7 @@ if os.path.isfile(core_shortcuts):
            ret.append(shortcut)
  
 # Prepare shortcuts from applications
-for f in glob.glob('/var/lib/nethserver/cluster/ui/apps/public/*/shortcuts.json'):
+for f in glob.glob('/var/lib/nethserver/cluster/ui/apps/*/shortcuts.json'):
     with open(f) as fp:
        shortcuts = json.load(fp)
        for shortcut in shortcuts:
