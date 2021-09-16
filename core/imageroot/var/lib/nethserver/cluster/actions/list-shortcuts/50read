@@ -46,7 +46,7 @@ for f in glob.glob('/var/lib/nethserver/cluster/ui/apps/*/shortcuts.json'):
        for shortcut in shortcuts:
            app = os.path.basename(f.rstrip('/shortcuts.json'))
            shortcut["source"] = app
-           shortcut["path"] = f'apps/{app}/{shortcut["path"]}'
+           shortcut["path"] = f'/apps/{app}/{shortcut["path"]}'
            ret.append(shortcut)
 
 json.dump(ret, fp=sys.stdout)
