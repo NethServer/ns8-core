@@ -87,10 +87,6 @@
                     "type": "string"
                 }
             }
-        },
-        "required": [
-            "id",
-            "module"
-        ]
+        }
     }
 }

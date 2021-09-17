@@ -104,7 +104,8 @@
     "app_launcher": "App launcher",
     "search_placeholder": "Search...",
     "no_search_results": "No results",
-    "no_search_results_description": "Try changing your search query"
+    "no_search_results_description": "Try changing your search query",
+    "open_app": "Open {app}"
   },
   "app_drawer": {
     "no_apps": "No apps",
@@ -164,7 +165,9 @@
     "join-cluster": "Join cluster",
     "add-favorite": "Add favorite",
     "remove-favorite": "Remove favorite",
-    "list-favorites": "List favorites"
+    "list-favorites": "List favorites",
+    "list-shortcuts": "List shortcuts",
+    "get-node-status": "Get node status"
   },
   "network": {
     "title": "Network"

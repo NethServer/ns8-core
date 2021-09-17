@@ -203,15 +203,10 @@ export default {
           window.location.protocol + "//" + window.location.hostname;
 
         //// remove
-        endpoint =
-          "https://fedora33-n1-andre.nethesis.it|" +
-          this.leaderListenPort +
-          "|" +
-          loginInfo.token;
+        endpoint = "https://192.168.122.220";
 
-        console.log(
-          endpoint + "|" + this.leaderListenPort + "|" + loginInfo.token
-        ); ////
+        console.log("endpoint", endpoint); ////
+        console.log("leaderListenPort", this.leaderListenPort); ////
 
         // join code is obtained by concatenating endpoint, leader VPN port and auth token with pipe character
         this.joinCode = btoa(
@@ -236,7 +231,7 @@ export default {
       this.loading.nodes = false;
 
       //// remove mock
-      this.nodes = ["1", "2", "3", "4", "5"];
+      // this.nodes = ["1", "2", "3", "4", "5"];
 
       console.log("this.nodes", this.nodes); ////
 
@@ -268,10 +263,40 @@ export default {
         }
       }, 1000);
     },
-    retrieveNodesStatus() {
+    async retrieveNodesStatus() {
       console.log("retrieveNodesStatus"); ////
 
       for (const nodeId of this.nodes) {
+        //// need to fix permission issue on get-node-status
+        // const taskAction = "get-node-status";
+
+        // // register to task events
+        // this.$root.$once(
+        //   taskAction + "-completed",
+        //   this.getNodeStatusCompleted
+        // );
+        // this.$root.$once(taskAction + "-aborted", this.getNodeStatusAborted);
+
+        // const res = await to(
+        //   this.createNodeTask(nodeId, {
+        //     action: taskAction,
+        //     extra: {
+        //       title: this.$t("action." + taskAction),
+        //       isNotificationHidden: true,
+        //       node: nodeId,
+        //     },
+        //   })
+        // );
+        // const err = res[0];
+
+        // if (err) {
+        //   this.createErrorNotification(
+        //     err,
+        //     this.$t("task.cannot_create_task", { action: taskAction })
+        //   );
+        //   return;
+        // }
+
         //// remove mock
         if (this.useNodesStatusMock) {
           const nodeStatus = {
@@ -300,6 +325,13 @@ export default {
           this.$set(this.nodesStatus, nodeId, nodeStatus);
         }
       }
+    },
+    getNodeStatusCompleted(taskContext, taskResult) {
+      console.log("getNodeStatusCompleted", taskResult.output); ////
+      console.log("taskContext", taskContext); ////
+    },
+    getNodeStatusAborted(taskContext, taskResult) {
+      console.log("getNodeStatusAborted", taskResult); ////
     },
     goToNodeDetails(nodeId) {
       console.log("goToNodeDetails", nodeId); ////

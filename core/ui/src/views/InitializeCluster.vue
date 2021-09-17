@@ -776,6 +776,6 @@ export default {
 // global styles
 
 .join-code textarea {
-  min-height: 7rem;
+  min-height: 5rem;
 }
 </style>
