@@ -29,6 +29,9 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"syscall"
+	"sync"
+	"os/signal"
 	"strconv"
 	"strings"
 	"time"
@@ -443,13 +446,28 @@ func main() {
 
 	queueName := agentPrefix + "/tasks"
 
+	var signalChannel = make(chan os.Signal, 1)
+	signal.Notify(signalChannel, syscall.SIGUSR1)
+	var brpopCtx, cancelBrpop = context.WithCancel(ctx)
+
+	var workersRegistry sync.WaitGroup
+
+	go func() {
+		xsig := <-signalChannel
+		signal.Stop(signalChannel)
+		log.Printf(SD_WARNING + "Signal \"%v\" caught: shutdown started.", xsig)
+		cancelBrpop()
+	}()
+
 	for {
 		var task models.Task
 
 		// Pop the task from the agent tasks queue
-		popResult, popErr := rdb.BRPop(ctx, pollingDuration, queueName).Result()
+		popResult, popErr := rdb.BRPop(brpopCtx, pollingDuration, queueName).Result()
 		if popErr == redis.Nil {
 			continue
+		} else if brpopCtx.Err() != nil {
+			break
 		} else if popErr != nil {
 			log.Print(SD_ERR+"Task queue pop error: ", popErr)
 			time.Sleep(pollingDuration)
@@ -467,12 +485,18 @@ func main() {
 			log.Print(SD_ERR+"Context set error: ", setErr)
 		}
 
+		workersRegistry.Add(1)
+
 		// run the Action required by the Task payload
-		switch task.Action {
-		case "list-actions":
-			go runListActions(&task)
-		default:
-			go runAction(&task)
-		}
+		go func(task models.Task) {
+			defer workersRegistry.Done()
+			switch task.Action {
+			case "list-actions":
+				runListActions(&task)
+			default:
+				runAction(&task)
+			}
+		}(task)
 	}
+	workersRegistry.Wait() // block until Action coroutines finish
 }
