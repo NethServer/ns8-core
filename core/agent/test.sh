@@ -20,8 +20,6 @@
 # along with NethServer.  If not, see COPYING.
 #
 
-set -e
-
 export AGENT_INSTALL_DIR=.
 
 container="gobuilder-agent"
@@ -34,13 +32,13 @@ fi
 
 buildah run "${container}" sh -c "cd /usr/src && CGO_ENABLED=0 go build -v ."
 
-podman run --volume=redis-data:/data --rm --network=host --name redis --detach $redis_image --port 6380 --save 5 1 --bind 127.0.0.1 ::1 --protected-mode no
-trap 'echo "Stopping processes..." ; kill $agentpid ; podman stop redis ; rm -f environment' EXIT
+podman run --rm --network=host --name redis --detach $redis_image --port 6380 --save 5 1 --bind 127.0.0.1 ::1 --protected-mode no
+trap 'echo "Stopping processes..." ; kill -SIGUSR1 $agentpid ; podman stop redis ; rm -f environment;' EXIT
 
 podman exec -i redis redis-cli -p 6380 <<EOF
 HSET t/environment MYVARIABLE MYVALUE
-LPUSH t/tasks '{"id":"l","action":"list-actions","data":""}'
-LPUSH t/tasks '{"id":"t","action":"test","data":${1:-\"OK\"}}'
+LPUSH t/tasks '{"id":"id-test","action":"test","data":${1:-\"OK\"}}'
+LPUSH t/tasks '{"id":"id-list","action":"list-actions","data":""}'
 EOF
 
 podman exec -i redis redis-cli -p 6380 monitor &
@@ -51,4 +49,4 @@ agentpid=$!
 
 sleep 3
 
-printf "Environment file contents:\n%s\n" "$(cat environment)"
+[[ -f environment ]] && printf "Environment file contents:\n%s\n" "$(cat environment)"
