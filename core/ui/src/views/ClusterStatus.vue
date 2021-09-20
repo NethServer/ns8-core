@@ -44,7 +44,7 @@
           light
           :title="nodes.length.toString()"
           :description="$tc('common.nodes', nodes.length)"
-          :icon="EdgeNode32"
+          :icon="Chip32"
           class="content-tile min-height-card"
         />
       </div>
@@ -77,7 +77,7 @@
         />
       </div>
     </div>
-    <div class="bx--row">
+    <!-- <div class="bx--row"> //// remove
       <div class="bx--col-md-4">
         <cv-tile :light="true" class="content-tile">
           <cv-text-input label="Label" v-model="q.testInput"> </cv-text-input>
@@ -141,10 +141,10 @@
           </div>
         </cv-tile>
       </div>
-    </div>
-    <div class="bx--row">
-      <div class="bx--col-md-4">
-        <!-- <div class="mg-top-bottom">
+    </div> -->
+    <!-- <div class="bx--row">
+      <div class="bx--col-md-4"> -->
+    <!-- <div class="mg-top-bottom">
           <cv-icon-button
             kind="secondary"
             :icon="Flash20"
@@ -154,7 +154,7 @@
           />
         </div> -->
 
-        <!-- <pictogram width="48" height="48" title="gear">
+    <!-- <pictogram width="48" height="48" title="gear">
           <gear />
         </pictogram>
 
@@ -175,19 +175,19 @@
           </div>
         </div> -->
 
-        <!-- <div class="mg-top-bottom">
+    <!-- <div class="mg-top-bottom">
           <cv-code-snippet :light="true">{{ snippet }}</cv-code-snippet>
         </div> -->
 
-        <!-- <div class="mg-top-bottom">
+    <!-- <div class="mg-top-bottom">
           <cv-date-picker kind="single" value="01/01/2020"></cv-date-picker>
         </div>
 
         <div class="mg-top-bottom">
           <cv-tag kind="blue" label="I am a tag"></cv-tag>
         </div> -->
-      </div>
-    </div>
+    <!-- </div>
+    </div> -->
     <!-- <div class="bx--row">
       <div class="bx--col-md-4">
         <div class="mg-top-bottom">

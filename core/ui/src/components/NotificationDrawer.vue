@@ -8,9 +8,10 @@
       <div class="notification-drawer__header">
         <h5>{{ $t("notification.notifications") }}</h5>
         <span v-if="unreadNotificationsCount > 0"
-          >{{ unreadNotificationsCount }} {{ $tc("notification.unread", unreadNotificationsCount) }}</span
+          >{{ unreadNotificationsCount }}
+          {{ $tc("notification.unread", unreadNotificationsCount) }}</span
         >
-        <cv-overflow-menu flip-menu>
+        <cv-overflow-menu flip-menu class="overflow-menu-dark-bg">
           <cv-overflow-menu-item @click="markAllRead" id="overflow-item">{{
             $t("notification.mark_all_read")
           }}</cv-overflow-menu-item>
@@ -156,11 +157,6 @@ export default {
         this.pageNum++;
         this.recentNotificationsLoaded.push(...pageNotifications);
 
-        console.log(
-          "recentNotificationsLoaded length",
-          this.recentNotificationsLoaded.length
-        ); ////
-
         if ($state) {
           $state.loaded();
         }
@@ -282,17 +278,17 @@ export default {
 }
 
 // overflow menu
-.cv-overflow-menu .bx--tooltip__trigger svg {
+.overflow-menu-dark-bg.cv-overflow-menu .bx--tooltip__trigger svg {
   fill: $ui-01 !important;
 }
 
-.cv-overflow-menu .bx--tooltip__trigger:hover svg,
-.cv-overflow-menu .bx--tooltip__trigger:focus svg {
+.overflow-menu-dark-bg.cv-overflow-menu .bx--tooltip__trigger:hover svg,
+.overflow-menu-dark-bg.cv-overflow-menu .bx--tooltip__trigger:focus svg {
   fill: $ui-01 !important;
 }
 
-.cv-overflow-menu.bx--overflow-menu:hover,
-.cv-overflow-menu.bx--overflow-menu__trigger:hover {
+.overflow-menu-dark-bg.cv-overflow-menu.bx--overflow-menu:hover,
+.overflow-menu-dark-bg.cv-overflow-menu.bx--overflow-menu__trigger:hover {
   background-color: #393939 !important;
 }
 // end overflow menu

@@ -2,7 +2,7 @@
 @import "./carbon-utils";
 
 body {
-  // height: calc(100vh - 3rem); //// remove
+  height: calc(100vh - 3rem);
   background-color: $ui-01;
 }
 
@@ -74,7 +74,18 @@ a {
 }
 
 .content-tile {
+  //// remove
   margin-bottom: $spacing-05;
+}
+
+.cv-tile {
+  margin-bottom: $spacing-07;
+}
+
+@media (max-width: $breakpoint-medium) {
+  .cv-tile {
+    margin-bottom: $spacing-05;
+  }
 }
 
 .title-description {
@@ -450,6 +461,12 @@ a {
 .bx--overflow-menu-options {
   z-index: 10000;
 }
+
+// NsNodeCard
+.node-card .warning {
+  color: $danger-01;
+}
+// end NsNodeCard
 
 // styles for large devices
 @media (min-width: $breakpoint-medium) {

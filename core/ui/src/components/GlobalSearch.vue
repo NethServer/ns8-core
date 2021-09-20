@@ -29,7 +29,7 @@
         :key="index"
         :class="[
           'search-result',
-          { 'selected-result': result.url === selectedResult.url },
+          { 'selected-result': result.path === selectedResult.path },
         ]"
         @click="openResult(result)"
         @mouseover="selectResult(result)"
@@ -52,12 +52,13 @@
 
 <script>
 import Settings20 from "@carbon/icons-vue/es/settings/20";
-import { UtilService } from "@nethserver/ns8-ui-lib";
+import { UtilService, TaskService } from "@nethserver/ns8-ui-lib";
+import to from "await-to-js";
 
 export default {
   name: "GlobalSearch",
   components: { Settings20 },
-  mixins: [UtilService],
+  mixins: [UtilService, TaskService],
   data() {
     return {
       query: "",
@@ -65,55 +66,26 @@ export default {
       results: [],
       selectedResult: {},
       lastSearchQuery: "",
-      searchFields: ["name", "description", "application", "tags"], ////
+      searchFields: ["name", "description", "source", "tags"],
       minChars: 1, //// 2
       maxResults: 10,
-      allResults: [
-        {
-          category: "Applications",
-          name: "Firewall",
-          description: "Launch Firewall application",
-          tags: "gateway,firewall,fw",
-          url: "/apps/firewall1",
-        },
-        {
-          category: "Firewall",
-          name: "Create port forward",
-          description: "Create port forward in Firewall app",
-          tags: "pf,port,port forward",
-          url: "/apps/firewall1?page=port_forward",
-        },
-        {
-          category: "System",
-          name: "Account",
-          description: "Configure your account",
-          tags: "user,password",
-          url: "/account",
-        },
-        {
-          category: "System",
-          name: "Cluster status",
-          description: "Monitor cluster status",
-          tags: "monitor,status",
-          url: "/status",
-        },
-        {
-          category: "Applications",
-          name: "Nextcloud",
-          description: "Content collaboration platform",
-          tags: "file,sharing",
-          url: "/apps/nextcloud1",
-        },
-        {
-          category: "System",
-          name: "Cluster nodes",
-          description: "Manage and deploy cluster nodes",
-          tags: "agent",
-          url: "/nodes",
-        },
-      ],
+      actionsResults: [],
+      openAppResults: [],
+      allResults: [],
       isClickOutsideEnabled: false,
     };
+  },
+  watch: {
+    actionsResults: function () {
+      this.allResults = this.actionsResults.concat(this.openAppResults);
+    },
+    openAppResults: function () {
+      this.allResults = this.actionsResults.concat(this.openAppResults);
+    },
+  },
+  created() {
+    this.listShortcuts();
+    this.listInstalledModules();
   },
   mounted() {
     this.focusElement("global-search");
@@ -124,6 +96,93 @@ export default {
     }, 200);
   },
   methods: {
+    async listShortcuts() {
+      //// refactor to vuex action?
+      const taskAction = "list-shortcuts";
+
+      // register to task completion
+      this.$root.$once(taskAction + "-completed", this.listShortcutsCompleted);
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        this.createErrorNotification(
+          err,
+          this.$t("task.cannot_create_task", { action: taskAction })
+        );
+        return;
+      }
+    },
+    listShortcutsCompleted(taskContext, taskResult) {
+      const actionsResults = [];
+
+      for (const searchResult of taskResult.output) {
+        actionsResults.push({
+          name: this.getI18nAttribute(searchResult, "name"),
+          description: this.getI18nAttribute(searchResult, "description"),
+          path: searchResult.path,
+          source: searchResult.source,
+          tags: this.getI18nAttribute(searchResult, "tags"),
+        });
+      }
+      this.actionsResults = actionsResults;
+    },
+    async listInstalledModules() {
+      const taskAction = "list-installed-modules";
+
+      // register to task completion
+      this.$root.$once(
+        taskAction + "-completed",
+        this.listInstalledModulesCompleted
+      );
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        this.error.apps = this.getErrorMessage(err);
+        this.createErrorNotification(
+          err,
+          this.$t("task.cannot_create_task", { action: taskAction })
+        );
+        return;
+      }
+    },
+    listInstalledModulesCompleted(taskContext, taskResult) {
+      let openAppResults = [];
+
+      for (let instanceList of Object.values(taskResult.output)) {
+        for (let instance of instanceList) {
+          const openAppResult = {
+            name: instance.id,
+            description: this.$t("shell.open_app", { app: instance.module }),
+            path: "/apps/" + instance.id,
+            source: instance.id,
+            tags: [],
+          };
+          openAppResults.push(openAppResult);
+        }
+      }
+
+      this.openAppResults = openAppResults;
+    },
     clickOutside() {
       if (this.isClickOutsideEnabled) {
         this.closeSearch();
@@ -153,10 +212,22 @@ export default {
       this.results = this.allResults.filter((option) => {
         // compare query text with all search fields of option
         return this.searchFields.some((searchField) => {
-          if (option[searchField]) {
-            return new RegExp(queryText, "i").test(
-              option[searchField].replace(cleanRegex, "")
-            );
+          const searchValue = option[searchField];
+
+          if (searchValue) {
+            if (Array.isArray(searchValue)) {
+              // search field is an array (e.g. tags)
+              return searchValue.some((elem) => {
+                return new RegExp(queryText, "i").test(
+                  elem.replace(cleanRegex, "")
+                );
+              });
+            } else {
+              // search field is a simple string
+              return new RegExp(queryText, "i").test(
+                searchValue.replace(cleanRegex, "")
+              );
+            }
           } else {
             return false;
           }
@@ -181,8 +252,8 @@ export default {
       }
     },
     openResult(result) {
-      if (result.url) {
-        this.$router.push(result.url);
+      if (result.path) {
+        this.$router.push(result.path);
         this.closeSearch();
       }
     },
@@ -191,7 +262,7 @@ export default {
     },
     selectNextResult() {
       const currentIndex = this.results.findIndex(
-        (result) => result.url === this.selectedResult.url
+        (result) => result.path === this.selectedResult.path
       );
 
       const newIndex = currentIndex + 1;
@@ -204,7 +275,7 @@ export default {
     },
     selectPreviousResult() {
       const currentIndex = this.results.findIndex(
-        (result) => result.url === this.selectedResult.url
+        (result) => result.path === this.selectedResult.path
       );
 
       const newIndex = currentIndex - 1;
@@ -214,6 +285,18 @@ export default {
       } else {
         this.selectedResult = this.results[this.results.length - 1];
       }
+    },
+    //// move to ui-lib
+    getI18nAttribute(obj, attribute) {
+      //// add vueContext param
+      const langCode = this.$root.$i18n.locale;
+      let attributeValue = obj[attribute][langCode];
+
+      if (!attributeValue) {
+        // fallback to english
+        attributeValue = obj[attribute].en;
+      }
+      return attributeValue;
     },
   },
 };

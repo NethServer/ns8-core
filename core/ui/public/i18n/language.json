@@ -29,7 +29,8 @@
     "use_landscape_mode": "Rotate your device",
     "use_landscape_mode_description": "This page is optimized for landscape mode",
     "got_it": "Got it",
-    "global_shortcut": "Global shortcut"
+    "global_shortcut": "Global shortcut",
+    "join_code": "Join code"
   },
   "error": {
     "error": "Error",
@@ -42,7 +43,6 @@
     "404": "Resource not found",
     "cannot_retrieve_task_status": "Cannot retrieve task status",
     "invalid_username_or_password": "Invalid username or password",
-    "cannot_retrieve_cluster_status": "Cannot retrieve cluster status",
     "invalid_port_number": "Invalid port number",
     "cannot_refresh_token": "Cannot refresh token",
     "cannot_retrieve_cluster_nodes": "Cannot retrieve cluster nodes",
@@ -60,7 +60,8 @@
     "equal": "Equal",
     "old_new_passwords_must_be_different": "New password must be different from current password",
     "passwords_do_not_match": "Passwords do not match",
-    "password_not_secure": "Password must meet all security requirements below"
+    "password_not_secure": "Password must meet all security requirements below",
+    "invalid_user_password": "Wrong password"
   },
   "login": {
     "title": "Log in",
@@ -92,7 +93,9 @@
     "vpn_cidr": "VPN CIDR",
     "join_cluster_instead": "Join an existing cluster instead",
     "create_cluster_instead": "Create a new cluster instead",
-    "cluster_url": "Cluster URL"
+    "join_code_helper_text": "You can obtain join code by accessing https://LEADER_NODE_IP/cluster-admin/#/nodes",
+    "invalid_join_code": "Invalid join code",
+    "tls_verify": "TLS certificate validation"
   },
   "shell": {
     "skip_to_content": "Skip to content",
@@ -101,7 +104,8 @@
     "app_launcher": "App launcher",
     "search_placeholder": "Search...",
     "no_search_results": "No results",
-    "no_search_results_description": "Try changing your search query"
+    "no_search_results_description": "Try changing your search query",
+    "open_app": "Open {app}"
   },
   "app_drawer": {
     "no_apps": "No apps",
@@ -152,7 +156,18 @@
     "alter-repository": "Alter repository",
     "remove-repository": "Remove repository",
     "list-modules": "List modules",
-    "list-updates": "List updates"
+    "list-installed-modules": "List installed modules",
+    "list-updates": "List updates",
+    "get-cluster-status": "Get cluster status",
+    "get-defaults": "Get defaults",
+    "create-cluster": "Create cluster",
+    "change-user-password": "Change user password",
+    "join-cluster": "Join cluster",
+    "add-favorite": "Add favorite",
+    "remove-favorite": "Remove favorite",
+    "list-favorites": "List favorites",
+    "list-shortcuts": "List shortcuts",
+    "get-node-status": "Get node status"
   },
   "network": {
     "title": "Network"
@@ -222,6 +237,12 @@
     "instance_installed_on_node": "{instance} installed on node {node}",
     "app_instances": "{app} instances",
     "app_instances_no_name": "App instances",
+    "app_uninstallation": "{app} uninstallation",
+    "instance_uninstallation": "{instance} uninstallation",
+    "about_to_uninstall_instance": "{instance} will be uninstalled from the system",
+    "uninstall_instance": "Uninstall instance",
+    "uninstalling": "Uninstalling...",
+    "no_instance_installed": "No instance installed",
     "app_categories": {
       "collaboration": "Collaboration",
       "system_administration": "System administration",
@@ -255,5 +276,21 @@
   },
   "cluster_status": {
     "title": "Cluster status"
+  },
+  "nodes": {
+    "title": "Nodes",
+    "add_node_to_cluster": "Add node to cluster",
+    "add_node_to_cluster_step_1": "Copy join code in the box below",
+    "add_node_to_cluster_step_2": "Go to <strong>https://NEW_NODE_IP/cluster-admin/</strong>",
+    "add_node_to_cluster_step_3": "Select <strong>Join cluster</strong>",
+    "add_node_to_cluster_step_4": "Paste join code",
+    "leader": "leader",
+    "worker": "worker",
+    "cpu_usage": "CPU usage",
+    "cpu_load": "CPU load",
+    "cpu_load_tooltip": "CPU average load of last 1 / 5 / 15 minutes",
+    "memory_used": "Memory used",
+    "swap_used": "Swap used",
+    "used": "used"
   }
 }

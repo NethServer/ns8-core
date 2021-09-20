@@ -346,6 +346,7 @@ export default {
       this.isLetsEncryptEnabled = config.lets_encrypt;
       this.isHttpToHttpsEnabled = config.http2https;
       this.loading.settings = false;
+      this.focusElement("wikiName");
     },
     saveSettingsCompleted() {
       // unregister from event

@@ -67,15 +67,15 @@
       "properties": {
         "1min": {
           "description": "1 minute",
-          "type": "integer"
+          "type": "number"
         },
         "5min": {
           "description": "5 minutes",
-          "type": "integer"
+          "type": "number"
         },
         "15min": {
           "description": "15 minutes",
-          "type": "integer"
+          "type": "number"
         }
       }
     },
@@ -89,7 +89,7 @@
         },
         "usage": {
           "description": "Global CPU percentage usage",
-          "type": "integer"
+          "type": "number"
         },
         "info": {
           "description": "CPU details",

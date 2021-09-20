@@ -450,14 +450,6 @@ export default {
       }
 
       let nodes = responseNodes.data.data.list;
-
-      //// remove
-      nodes.push("2");
-      nodes.push("3");
-      nodes.push("4");
-      nodes.push("5");
-      nodes.push("6");
-
       nodes = nodes.map((n) => {
         return { id: n, selected: false };
       });
@@ -497,6 +489,9 @@ export default {
 
       this.loading.modules = false;
       let modules = taskResult.output;
+
+      console.log("modules", modules); ////
+
       let updates = [];
 
       for (const module of modules) {

@@ -176,6 +176,8 @@ export default {
             taskContext.action + "-validation-failed",
             taskResult.output
           );
+        } else if (taskStatus === "aborted") {
+          this.$root.$emit(taskContext.action + "-aborted", taskResult);
         }
       }
 

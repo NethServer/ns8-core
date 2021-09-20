@@ -175,6 +175,7 @@
             :label="$t('settings_sw_repositories.name')"
             v-model.trim="q.newRepoName"
             :invalid-message="$t(error.name)"
+            ref="newRepoName"
           >
           </cv-text-input>
           <cv-text-input
@@ -321,6 +322,15 @@ export default {
       });
     },
   },
+  watch: {
+    "q.isShownCreateRepoModal": function () {
+      if (this.q.isShownCreateRepoModal) {
+        setTimeout(() => {
+          this.focusElement("newRepoName");
+        }, 200);
+      }
+    },
+  },
   beforeRouteEnter(to, from, next) {
     next((vm) => {
       vm.watchQueryData(vm);
@@ -336,6 +346,8 @@ export default {
   },
   methods: {
     addRepositoryValidationFailed(validationErrors) {
+      this.$root.$off("add-repository-validation-failed");
+
       // enable "Create repository" button
       this.loading.createRepository = false;
 
@@ -458,14 +470,14 @@ export default {
       }
     },
     addRepositoryValidationOk() {
+      // unregister from event
+      this.$root.$off("add-repository-validation-ok");
+
       // hide modal after validation
       this.q.isShownCreateRepoModal = false;
 
       // enable "Create repository" button
       this.loading.createRepository = false;
-
-      // unregister from event
-      this.$root.$off("add-repository-validation-ok");
     },
     alterRepositoryValidationOk() {
       // hide modal after validation
