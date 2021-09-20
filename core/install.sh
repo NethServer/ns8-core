@@ -110,7 +110,7 @@ cluster_pwhash=$(echo -n "${cluster_password}" | sha256sum | awk '{print $1}')
 echo "Generating api-server password:"
 apiserver_password=$(podman exec redis redis-cli ACL GENPASS)
 apiserver_pwhash=$(echo -n "${apiserver_password}" | sha256sum | awk '{print $1}')
-apiserver_jwt_secret=$(uuidgen | sha256sum | awk '{print $1}')
+apiserver_jwt_secret=$(uuidgen)
 (umask 0077; exec >/etc/nethserver/api-server.env
     printf "REDIS_PASSWORD=%s\n" "${apiserver_password}"
     printf "REDIS_USER=api-server\n"
