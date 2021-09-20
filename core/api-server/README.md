@@ -36,7 +36,7 @@ LISTEN_ADDRESS=0.0.0.0:8080 REDIS_ADDRESS=127.0.0.1:6379 REDIS_USER=my-user REDI
 ```
 
 ## APIs
-Each API is authenticated and authorized through a `JWT (JSON Web Token)`. In order to get access to the APIs you have to login before and get a JWT `token`. `SECRET` is used to get the JWT signature.
+Each API is authenticated and authorized through a `JWT (JSON Web Token)`. In order to get access to the APIs you have to login before and get a JWT `token`. `SECRET` is used to set the JWT signature.
 
 - `POST /login`
 ```bash
