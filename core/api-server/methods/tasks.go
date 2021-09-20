@@ -319,6 +319,20 @@ func createTask(c *gin.Context, queueName string) {
 		return
 	}
 
+	// init redis connection
+	redisConnection := redis.Instance()
+
+	// check redis role
+	redisRole := redisConnection.Do(ctx, "role").String()
+	if !strings.Contains(redisRole, "master") {
+		c.JSON(http.StatusForbidden, structs.Map(response.StatusBadRequest{
+			Code:    403,
+			Message: "current redis instance is not master",
+			Data:    "",
+		}))
+		return
+	}
+
 	// extract user info
 	info := jwt.ExtractClaims(c)
 
@@ -332,9 +346,6 @@ func createTask(c *gin.Context, queueName string) {
 	task.User = info["id"].(string)
 	task.Timestamp = time.Now().UTC()
 	task.Parent = jsonTask.Parent
-
-	// init redis connection
-	redisConnection := redis.Instance()
 
 	// convert json struct to json string
 	stringTask, errString := json.Marshal(task)
