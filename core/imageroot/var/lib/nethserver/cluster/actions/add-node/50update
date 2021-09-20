@@ -27,6 +27,7 @@ import agent
 import agent.tasks
 import ipcalc
 import uuid
+import cluster.grants
 
 # Action summary:
 # 1. allocate a VPN IP address for the node
@@ -139,23 +140,25 @@ additional_tasks = [
         'action': 'update-routes',
         'data': {},
     },
+    {
+        #
+        # Node API authorizations (call blocked on node/{node_id}/tasks queue)
+        #
+        'agent_id': 'cluster',
+        'action': 'grant-actions',
+        'data': [
+            {"action": "*", "to": "owner", "on": f'node/{node_id}'},
+            {"action": "list-*", "to": "reader", "on": f'node/{node_id}'},
+            {"action": "get-*", "to": "reader", "on": f'node/{node_id}'},
+            {"action": "show-*", "to": "reader", "on": f'node/{node_id}'},
+            {"action": "read-*", "to": "reader", "on": f'node/{node_id}'},
+        ]
+    },
 ]
 subtasks = agent.tasks.runp_nowait(
     additional_tasks,
     endpoint="redis://cluster-leader",
 )
-
-#
-# Node API authorizations
-#
-
-# Configure our builtin roles: "owner" and "reader". Owner can run any action, Reader can run
-# action names with special prefixes.
-cluster.grants.grant(rdb, action_clause="*",      to_clause="owner",  on_clause=f'node/{node_id}')
-cluster.grants.grant(rdb, action_clause="list-*", to_clause="reader", on_clause=f'node/{node_id}')
-cluster.grants.grant(rdb, action_clause="get-*",  to_clause="reader", on_clause=f'node/{node_id}')
-cluster.grants.grant(rdb, action_clause="show-*", to_clause="reader", on_clause=f'node/{node_id}')
-cluster.grants.grant(rdb, action_clause="read-*", to_clause="reader", on_clause=f'node/{node_id}')
 
 # Grant the owner role to cluster owners on the new module
 for userk in rdb.scan_iter('roles/*'):

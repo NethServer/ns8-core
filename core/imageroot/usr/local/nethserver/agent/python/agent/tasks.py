@@ -204,7 +204,7 @@ def runp_brief(tasks, **kwargs):
 
 async def _runp(tasks, nowait=False, **kwargs):
 
-    if 'progress_callback' in kwargs:
+    if 'progress_callback' in kwargs and nowait is False:
         # Equally distribute the progress weight of each task
         parent_cbk = kwargs['progress_callback']
         del kwargs['progress_callback']
@@ -231,9 +231,13 @@ async def _runp(tasks, nowait=False, **kwargs):
             task_cbk = create_task_cbk(idx)
         else:
             task_cbk = None
-        runfunc = _run if nowait is False else _run_nowait
-        otask = asyncio.create_task(runfunc(task['agent_id'], task['action'], data=task['data'], progress_callback=task_cbk, **kwargs), name=task['action'] + '@' + task['agent_id'])
-        runners.append(otask)
+
+        if nowait:
+            tcoro = _run_nowait(task['agent_id'], task['action'], data=task['data'], **kwargs)
+        else:
+            tcoro = _run(task['agent_id'], task['action'], data=task['data'], progress_callback=task_cbk, **kwargs)
+
+        runners.append(asyncio.create_task(tcoro, name=task['action'] + '@' + task['agent_id']))
 
     return await asyncio.gather(*runners, return_exceptions=(len(tasks) > 1))
 
