@@ -20,36 +20,36 @@
 # along with NethServer.  If not, see COPYING.
 #
 
+#
+# Load ACLs from cluster/acls key
+# This script must be executed on the worker server
+#
+
+import os
 import sys
 import agent
-import json
 
-#
-# Sample input
-#{
-#    "user": "admin",
-#    "set": {
-#       "display_name": "The Administrator"
-#       "email": "admin@example.com"
-#    },
-#    "revoke": [{"role":"owner",  "on":"*"}],
-#    "grant":  [{"role":"reader", "on":"cluster"}],
-#}
-#
+with open('/var/lib/nethserver/cluster/state/agent.env') as fp:
+    for l in fp.readlines():
+        (key,value) = l.strip().split("=")
+        os.environ[key] = value
 
-request = json.load(sys.stdin)
 rdb = agent.redis_connect(privileged=True)
 
-user = request['user']
+role = rdb.execute_command('ROLE')[0];
 
-if 'set' in request:
-    agent.assert_exp(rdb.hset(f'user/{user}', mapping=request['set']) >= 0)
+# copy ACLs to cluster/acl key
+if role == 'slave':
+    for user in rdb.acl_users():
+        if user != "cluster" and user != "default":
+            rdb.acl_deluser(user)
 
-for roledef in request['revoke']: # !!! revoke BEFORE grant
-    cluster.grants.alter_user(rdb, user, True, roledef['role'], roledef['on'])
+    # save acls
+    for acl in rdb.smembers('cluster/acls'):
+        rdb.execute_command(f'ACL set{acl}')
 
-for roledef in request['grant']:
-    cluster.grants.alter_user(rdb, user, False, roledef['role'], roledef['on'])
-
-# signal the acl-save event
-rdb.publish('cluster/event/acl-save', 'acl-save')
+    rdb.acl_save()
+    print("ACLs loaded")
+else:
+    print("This command should run only on worker node", file=sys.stderr)
+    sys.exit(1)

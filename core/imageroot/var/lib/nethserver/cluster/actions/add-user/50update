@@ -48,4 +48,7 @@ agent.assert_exp(rdb.execute_command('ACL', 'SAVE') == 'OK')
 for roledef in request['grant']:
     cluster.grants.alter_user(rdb, user, False, roledef['role'], roledef['on'])
 
+# signal the acl-save event
+rdb.publish('cluster/event/acl-save', 'acl-save')
+
 print("true")

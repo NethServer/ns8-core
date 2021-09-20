@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/bin/bash
 
 #
 # Copyright (C) 2021 Nethesis S.r.l.
@@ -20,33 +20,15 @@
 # along with NethServer.  If not, see COPYING.
 #
 
-import sys
-import agent
-import json
+exec 1>&2 # Do not touch the action stdout!
 
 #
-# Sample input
-#{
-#    "user": "admin"
-#}
+# Configure the worker node to handle cluster events
 #
 
-request = json.load(sys.stdin)
-user = request['user']
+mkdir -p /var/lib/nethserver/node/state/
+echo -e "[commands]\ncluster/event/acl-load = /usr/local/bin/acl-load\n" > /var/lib/nethserver/node/state/eventsgw.conf
+systemctl restart eventsgw@node
 
-rdb = agent.redis_connect(privileged=True)
-
-if rdb.execute_command('ACL', 'GETUSER', user) is None:
-    json.dump({"field": "user", "parameter": "user", "value": user, "error": "user_not_found"}, fp=sys.stdout) # XXX: implement library function
-    agent.set_status('validation-failed')
-    sys.exit(2)
-
-rdb.delete(f'roles/{user}')
-
-agent.assert_exp(rdb.execute_command('ACL', 'DELUSER', user) == 1)
-agent.assert_exp(rdb.execute_command('ACL', 'SAVE') == 'OK')
-
-# signal the acl-save event
-rdb.publish('cluster/event/acl-save', 'acl-save')
-
-print("true")
+# Ignore errors
+exit 0

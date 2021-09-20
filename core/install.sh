@@ -149,7 +149,7 @@ ACL SETUSER cluster ON #${cluster_pwhash} ~* &* +@all
 AUTH cluster "${cluster_password}"
 ACL SETUSER default ON nopass ~* &* nocommands +@read +@connection +subscribe +psubscribe +psync +replconf +ping
 ACL SETUSER api-server ON #${apiserver_pwhash} ~* &* nocommands +@read +@pubsub +lpush +@transaction +@connection +role
-ACL SETUSER node/1 ON #${node_pwhash} resetkeys ~node/1/* resetchannels &progress/node/1/* &node/1/event/* nocommands +@read +@write +@transaction +@connection +publish
+ACL SETUSER node/1 ON #${node_pwhash} resetkeys ~node/1/* resetchannels &progress/node/1/* &node/1/event/* nocommands +@read +@write +@transaction +@connection +publish +acl +role
 ACL SAVE
 SAVE
 EOF
@@ -183,6 +183,11 @@ add-module traefik 1
 
 echo "Setting default admin password:"
 add-user --role owner --password "${ADMIN_PASSWORD:-Nethesis,1234}" admin
+
+echo "Enable events gateway for the leader node:"
+mkdir -p /var/lib/nethserver/node/state/
+echo -e "[commands]\ncluster/event/acl-save = /usr/local/bin/acl-save\n" > /var/lib/nethserver/node/state/eventsgw.conf
+systemctl enable --now eventsgw@node
 
 cat - <<EOF
 

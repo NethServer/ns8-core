@@ -43,3 +43,7 @@ if is_authenticated:
     rdb = agent.redis_connect(privileged=True)
     rdb.acl_setuser(request['user'], passwords=[f'+{request["new_password"]}'], reset_passwords=True, enabled=True)
     json.dump({}, fp=sys.stdout)
+
+    # signal the acl-save event
+    rdb.publish('cluster/event/acl-save', 'acl-save')
+
