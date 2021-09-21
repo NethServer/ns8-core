@@ -49,6 +49,7 @@ export default {
   data() {
     return {
       CLUSTER_STATUS_TIME_INTERVAL: 10000,
+      isMaster: true,
     };
   },
   computed: {
@@ -256,11 +257,21 @@ export default {
       const err = res[0];
 
       if (err) {
-        this.createErrorNotification(
-          err,
-          this.$t("task.cannot_create_task", { action: taskAction })
-        );
-        return;
+        // check if node is a worker
+        if (err.response.status == 403) {
+          this.isMaster = false;
+          // redirect to worker page
+          this.$router.replace(
+            "/init?page=redirect&endpoint=" +
+              err.response.data.data.split(":")[0]
+          );
+        } else {
+          this.createErrorNotification(
+            err,
+            this.$t("task.cannot_create_task", { action: taskAction })
+          );
+          return;
+        }
       }
     },
     onClusterInitialized() {
@@ -276,31 +287,33 @@ export default {
     getInitialClusterStatusCompleted(taskContext, taskResult) {
       console.log("getInitialClusterStatusCompleted"); ////
 
-      this.$root.$off("get-cluster-status-completed");
-      const clusterStatus = taskResult.output;
-      console.log("clusterStatus", clusterStatus); ////
-      let isClusterInitialized = clusterStatus.initialized; //// use const
+      if (this.isMaster) {
+        this.$root.$off("get-cluster-status-completed");
+        const clusterStatus = taskResult.output;
+        console.log("clusterStatus", clusterStatus); ////
+        let isClusterInitialized = clusterStatus.initialized; //// use const
 
-      //// remove mock
-      // isClusterInitialized = false; ////
+        //// remove mock
+        // isClusterInitialized = false; ////
 
-      this.setClusterInitializedInStore(isClusterInitialized);
+        this.setClusterInitializedInStore(isClusterInitialized);
 
-      // leader listen port
-      if (clusterStatus.nodes.length) {
-        const leaderNode = clusterStatus.nodes.find((el) => el.local);
-        const leaderListenPort = leaderNode.vpn.listen_port;
-        console.log("leaderListenPort", leaderListenPort); ////
-        this.setLeaderListenPortInStore(leaderListenPort);
+        // leader listen port
+        if (clusterStatus.nodes.length) {
+          const leaderNode = clusterStatus.nodes.find((el) => el.local);
+          const leaderListenPort = leaderNode.vpn.listen_port;
+          console.log("leaderListenPort", leaderListenPort); ////
+          this.setLeaderListenPortInStore(leaderListenPort);
+        }
+
+        if (this.isClusterInitialized) {
+          this.onClusterInitialized();
+        } else {
+          // redirect to cluster initialization page
+          this.$router.replace("/init?page=welcome");
+        }
+        this.configureClusterInitializationRedirect();
       }
-
-      if (this.isClusterInitialized) {
-        this.onClusterInitialized();
-      } else {
-        // redirect to cluster initialization page
-        this.$router.replace("/init?page=welcome");
-      }
-      this.configureClusterInitializationRedirect();
     },
     getClusterStatusCompleted(taskContext, taskResult) {
       console.log("getClusterStatusCompleted"); ////
@@ -328,11 +341,21 @@ export default {
       const err = res[0];
 
       if (err) {
-        this.createErrorNotification(
-          err,
-          this.$t("task.cannot_create_task", { action: taskAction })
-        );
-        return;
+        // check if node is a worker
+        if (err.response.status == 403) {
+          this.isMaster = false;
+          // redirect to worker page
+          this.$router.replace(
+            "/init?page=redirect&endpoint=" +
+              err.response.data.data.split(":")[0]
+          );
+        } else {
+          this.createErrorNotification(
+            err,
+            this.$t("task.cannot_create_task", { action: taskAction })
+          );
+          return;
+        }
       }
     },
     listUpdatesCompleted(taskContext, taskResult) {

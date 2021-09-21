@@ -216,6 +216,31 @@
         </div>
       </div>
     </div>
+    <div v-else-if="q.page === 'redirect'">
+      <div class="bx--row">
+        <div class="bx--col-lg-16 page-title">
+          <h2>{{ $t("init.redirect_cluster") }}</h2>
+          <div class="title-description">
+            {{ $t("init.redirect_cluster_description") }}
+          </div>
+        </div>
+      </div>
+      <div class="bx--row">
+        <div class="bx--col-lg-16">
+          <cv-tile light class="content-tile">
+            <cv-form>
+              <div>
+                <a
+                  target="_blank"
+                  :href="this.joinEndpoint + '/cluster-admin/'"
+                  >{{ $t("init.redirect_cluster_link") }}</a
+                >
+              </div>
+            </cv-form>
+          </cv-tile>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -248,6 +273,7 @@ export default {
     return {
       q: {
         page: "welcome",
+        endpoint: null,
       },
       isPasswordChangeNeeded: false,
       currentPassword: "",
@@ -259,12 +285,15 @@ export default {
       vpnCidr: "",
       joinCode: "",
       tlsVerify: true,
-      joinEndpoint: "",
+      joinEndpoint: this.$route.query.endpoint
+        ? "https://" + this.$route.query.endpoint
+        : "",
       joinPort: "",
       joinToken: "",
       isCreatingCluster: false,
       isJoiningCluster: false,
       isChangingPassword: false,
+      isMaster: true,
       error: {
         currentPassword: "",
         newPassword: "",
@@ -310,11 +339,15 @@ export default {
       const err = res[0];
 
       if (err) {
-        this.createErrorNotification(
-          err,
-          this.$t("task.cannot_create_task", { action: taskAction })
-        );
-        return;
+        if (err.response.status == 403) {
+          this.isMaster = false;
+        } else {
+          this.createErrorNotification(
+            err,
+            this.$t("task.cannot_create_task", { action: taskAction })
+          );
+          return;
+        }
       }
     },
     getDefaultsCompleted(taskContext, taskResult) {
@@ -357,11 +390,15 @@ export default {
       const err = res[0];
 
       if (err) {
-        this.createErrorNotification(
-          err,
-          this.$t("task.cannot_create_task", { action: taskAction })
-        );
-        return;
+        if (err.response.status == 403) {
+          this.isMaster = false;
+        } else {
+          this.createErrorNotification(
+            err,
+            this.$t("task.cannot_create_task", { action: taskAction })
+          );
+          return;
+        }
       }
     },
     getClusterStatusCompleted(taskContext, taskResult) {
@@ -370,7 +407,7 @@ export default {
       this.$root.$off("get-cluster-status-completed");
       const clusterStatus = taskResult.output;
 
-      if (clusterStatus.initialized) {
+      if (clusterStatus.initialized && this.isMaster) {
         // redirect to status page
         this.setClusterInitializedInStore(true);
         this.$root.$emit("clusterInitialized");
@@ -499,11 +536,15 @@ export default {
       const err = res[0];
 
       if (err) {
-        this.createErrorNotification(
-          err,
-          this.$t("task.cannot_create_task", { action: taskAction })
-        );
-        return;
+        if (err.response.status == 403) {
+          this.isMaster = false;
+        } else {
+          this.createErrorNotification(
+            err,
+            this.$t("task.cannot_create_task", { action: taskAction })
+          );
+          return;
+        }
       }
     },
     changeUserPasswordCompleted(taskContext, taskResult) {
@@ -592,7 +633,7 @@ export default {
           action: taskAction,
           data: {
             network: this.vpnCidr,
-            endpoint: this.vpnEndpointAddress,
+            endpoint: this.vpnEndpointAddress + ":" + this.vpnEndpointPort,
             listen_port: parseInt(this.vpnEndpointPort),
           },
           extra: {
@@ -604,10 +645,14 @@ export default {
       const err = res[0];
 
       if (err) {
-        this.createErrorNotification(
-          err,
-          this.$t("task.cannot_create_task", { action: taskAction })
-        );
+        if (err.response.status == 403) {
+          this.isMaster = false;
+        } else {
+          this.createErrorNotification(
+            err,
+            this.$t("task.cannot_create_task", { action: taskAction })
+          );
+        }
         return;
       }
       this.isCreatingCluster = true;
@@ -716,24 +761,29 @@ export default {
       const err = res[0];
 
       if (err) {
-        this.createErrorNotification(
-          err,
-          this.$t("task.cannot_create_task", { action: taskAction })
-        );
-        return;
+        if (err.response.status == 403) {
+          this.isMaster = false;
+        } else {
+          this.createErrorNotification(
+            err,
+            this.$t("task.cannot_create_task", { action: taskAction })
+          );
+          return;
+        }
       }
 
-      this.isJoiningCluster = true;
+      this.joinClusterCompleted();
     },
     joinClusterCompleted() {
       console.log("joinClusterCompleted"); ////
 
       this.$root.$off("join-cluster-completed");
-      //// needed?
-      this.setClusterInitializedInStore(true);
-      this.$root.$emit("clusterInitialized");
-      this.$router.replace("/status");
       this.isJoiningCluster = false;
+      this.$router.push("/init?page=redirect");
+      //// needed?
+      //this.setClusterInitializedInStore(true);
+      //this.$root.$emit("clusterInitialized");
+      //this.$router.replace("/status");
     },
     joinClusterAborted(taskResult) {
       console.log("joinClusterAborted", taskResult); ////

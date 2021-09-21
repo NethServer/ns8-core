@@ -95,7 +95,10 @@
     "create_cluster_instead": "Create a new cluster instead",
     "join_code_helper_text": "You can obtain join code by accessing https://LEADER_NODE_IP/cluster-admin/#/nodes",
     "invalid_join_code": "Invalid join code",
-    "tls_verify": "TLS certificate validation"
+    "tls_verify": "TLS certificate validation",
+    "redirect_cluster": "Worker Node",
+    "redirect_cluster_description": "This node now is a worker of the cluster. Click on the link below to access the cluster administration page.",
+    "redirect_cluster_link": "Go to cluster administration page"
   },
   "shell": {
     "skip_to_content": "Skip to content",
