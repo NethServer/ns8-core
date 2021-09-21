@@ -38,17 +38,20 @@ rdb = agent.redis_connect(privileged=True)
 
 role = rdb.execute_command('ROLE')[0];
 
-# copy ACLs to cluster/acl key
+to_skip = ["default", "cluster", "api-server"]
 if role == 'master':
-    print("Saving ACLs")
+    # cleanup acl
+    rdb.delete("cluster/acls")
+
+    # skip ACLs which should be different on each node
     for acl in rdb.acl_list():
-        # skip 'cluster' because password should
-        # be different for every node
-        if acl.startswith('user cluster on '):
+        user = acl.split(" ",2)[1]
+        if user in to_skip:
             continue
         rdb.sadd("cluster/acls", acl)
-    rdb.publish('cluster/event/acl-load', 'sync')
+
     print("Signaling event: cluster/event/acl-load")
+    rdb.publish('cluster/event/acl-load', 'sync')
 else:
     print("This command should run only on leader node", file=sys.stderr)
     sys.exit(1)

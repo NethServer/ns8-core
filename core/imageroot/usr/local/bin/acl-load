@@ -38,14 +38,11 @@ rdb = agent.redis_connect(privileged=True)
 
 role = rdb.execute_command('ROLE')[0];
 
-# copy ACLs to cluster/acl key
 if role == 'slave':
-    for user in rdb.acl_users():
-        if user != "cluster" and user != "default":
-            rdb.acl_deluser(user)
-
-    # save acls
     for acl in rdb.smembers('cluster/acls'):
+        user = acl.split(" ",2)[1]
+        # replace existing user
+        rdb.acl_deluser(user)
         rdb.execute_command(f'ACL set{acl}')
 
     rdb.acl_save()
