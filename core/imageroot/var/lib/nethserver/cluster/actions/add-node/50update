@@ -102,7 +102,7 @@ agent.assert_exp(rdb.execute_command('ACL', 'SETUSER',
     f'node/{node_id}', 'ON', '#' + node_pwh,
     'resetkeys', f'~node/{node_id}/*',
     'resetchannels', f'&progress/node/{node_id}/*', f'&node/{node_id}/event/*',
-    'nocommands', '+@read', '+@write', '+@transaction', '+@connection', '+publish', '+acl', '+role',
+    'nocommands', '+@read', '+@write', '+@transaction', '+@connection', '+publish',
 ) == 'OK')
 
 #
