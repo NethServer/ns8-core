@@ -28,6 +28,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"sort"
 
 	"github.com/fatih/structs"
 	"github.com/gin-gonic/gin"
@@ -75,6 +76,7 @@ func getList(c *gin.Context, queueName string) {
 	}
 
 	// unique the list
+	sort.Strings(list)
 	unique.Strings(&list)
 
 	// close redis connection

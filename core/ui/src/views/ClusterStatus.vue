@@ -330,13 +330,7 @@ export default {
     next();
   },
   created() {
-    // check login
-    const loginInfo = this.getFromStorage("loginInfo");
-
-    if (loginInfo) {
-      this.retrieveClusterNodes();
-      this.listInstalledModules();
-    }
+    this.$root.$on("websocket-connected", this.getInitialData);
   },
   methods: {
     async retrieveClusterNodes() {
@@ -380,6 +374,17 @@ export default {
         this.loading.apps = false;
         return;
       }
+    },
+    getInitialData() {
+      var context = this;
+      setTimeout(function () {
+        const loginInfo = context.getFromStorage("loginInfo");
+
+        if (loginInfo) {
+          context.retrieveClusterNodes();
+          context.listInstalledModules();
+        }
+      }, 500);
     },
     listInstalledModulesCompleted(taskContext, taskResult) {
       // unregister from event

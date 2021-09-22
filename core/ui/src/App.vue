@@ -215,9 +215,12 @@ export default {
     },
     // invoked on webapp loading and after logging in
     initNs8() {
-      this.initWebSocket();
-      // this.retrieveClusterTasks(); ////
-      this.retrieveClusterStatus(true);
+      var context = this;
+      this.initWebSocket(function () {
+        setTimeout(function () {
+          context.retrieveClusterStatus(true);
+        }, 500);
+      });
     },
     // async retrieveClusterTasks() { ////
     //   const [clusterTasksError, response] = await to(this.getClusterTasks());
@@ -325,7 +328,6 @@ export default {
     },
     async listUpdates() {
       const taskAction = "list-updates";
-
       // register to task completion
       this.$root.$on(taskAction + "-completed", this.listUpdatesCompleted);
 

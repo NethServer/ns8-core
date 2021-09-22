@@ -6,7 +6,7 @@ export default {
   name: "WebSocketService",
   mixins: [NotificationService, TaskService, StorageService],
   methods: {
-    initWebSocket() {
+    initWebSocket(callback) {
       //// need to monitor this.$socket.readyState?
       var jwt =
         (this.getFromStorage("loginInfo") &&
@@ -15,11 +15,16 @@ export default {
       this.$connect(this.$root.config.WS_ENDPOINT + "?jwt=" + jwt);
 
       this.$options.sockets.onmessage = this.onMessage;
+      this.$options.sockets.onopen = this.onOpen(callback);
       this.$options.sockets.onclose = this.onClose;
-      console.log("websocket connected"); ////
     },
     closeWebSocket() {
       this.$disconnect();
+    },
+    onOpen(callback) {
+      console.log("websocket connected"); ////
+      this.$root.$emit("websocket-connected");
+      callback();
     },
     onMessage(message) {
       const messageData = JSON.parse(message.data);
@@ -39,6 +44,7 @@ export default {
     },
     onClose(event) {
       console.log("ws close", event);
+      this.$root.$emit("websocket-disconnected");
     },
   },
 };
