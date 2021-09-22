@@ -101,6 +101,7 @@ echo "Generating cluster password:"
 cluster_password=$(podman exec redis redis-cli ACL GENPASS)
 cluster_pwhash=$(echo -n "${cluster_password}" | sha256sum | awk '{print $1}')
 (umask 0077; exec >/var/lib/nethserver/cluster/state/agent.env
+    printf "AGENT_BASEACTIONS_DIR=\n"
     printf "AGENT_ID=cluster\n" # Override value from agent@.service
     printf "REDIS_USER=cluster\n"
     printf "REDIS_PASSWORD=%s\n" "${cluster_password}"
@@ -122,6 +123,7 @@ echo "Generating node password:"
 node_password=$(podman exec redis redis-cli ACL GENPASS)
 node_pwhash=$(echo -n "${node_password}" | sha256sum | awk '{print $1}')
 (umask 0077; exec >/var/lib/nethserver/node/state/agent.env
+    printf "AGENT_BASEACTIONS_DIR=\n"
     printf "AGENT_ID=node/1\n" # Override value from agent@.service
     printf "REDIS_USER=node/1\n"
     printf "REDIS_PASSWORD=%s\n" "${node_password}"
