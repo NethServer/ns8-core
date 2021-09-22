@@ -184,9 +184,7 @@ add-module traefik 1
 echo "Setting default admin password:"
 add-user --role owner --password "${ADMIN_PASSWORD:-Nethesis,1234}" admin
 
-echo "Enable events gateway for the leader node:"
-mkdir -p /var/lib/nethserver/node/state/
-echo -e "[commands]\ncluster/event/acl-changed = /usr/local/bin/acl-load\n" > /var/lib/nethserver/node/state/eventsgw.conf
+echo "Enable the events gateway for the node agent:"
 systemctl enable --now eventsgw@node
 
 cat - <<EOF
