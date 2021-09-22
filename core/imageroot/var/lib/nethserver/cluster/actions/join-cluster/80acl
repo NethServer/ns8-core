@@ -25,8 +25,4 @@ exec 1>&2 # Do not touch the action stdout!
 #
 # Reload ACLs
 #
-
 /usr/local/bin/acl-load
-
-# Ignore errors
-exit 0
