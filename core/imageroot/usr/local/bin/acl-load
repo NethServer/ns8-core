@@ -45,5 +45,5 @@ if role == 'slave':
     rdb.acl_save()
     print("ACLs loaded")
 else:
-    print("This command should run only on worker node", file=sys.stderr)
-    sys.exit(1)
+    print("This is a leader node, nothing to do", file=sys.stderr)
+    sys.exit(0)
