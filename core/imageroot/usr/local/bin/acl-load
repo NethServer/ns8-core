@@ -29,10 +29,7 @@ import os
 import sys
 import agent
 
-with open('/var/lib/nethserver/cluster/state/agent.env') as fp:
-    for l in fp.readlines():
-        (key,value) = l.strip().split("=")
-        os.environ[key] = value
+os.environ.update(agent.read_envfile('/var/lib/nethserver/cluster/state/agent.env'))
 
 rdb = agent.redis_connect(privileged=True)
 
