@@ -1,0 +1,95 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2021 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
+import os
+import sys
+import json
+import agent
+import subprocess
+import semver
+
+request = json.load(sys.stdin)
+core_url = request['core_url']
+
+try:
+    core_env = agent.read_envfile('/etc/nethserver/core.env')
+    aver = semver.parse_version_info(core_env['CORE_IMAGE'].split(':')[-1])
+    bver = semver.parse_version_info(core_url.split(':')[-1])
+except ValueError:
+    print(agent.SD_WARNING + 'Cannot parse semantic version information from core image tags. Assuming a "minor" update type is occurring', file=sys.stderr)
+    aver = semver.parse_version_info('0.0.0')
+    bver = semver.parse_version_info('0.1.0')
+
+if aver >= bver:
+    print('The new core image does not update the current one. Nothing to do.', file=sys.stderr)
+    sys.exit(0)
+
+if bver.major > aver.major:
+    update_type = "major"
+elif bver.minor > aver.minor:
+    update_type = "minor"
+else:
+    update_type = "patch"
+
+print(f'Running update type: {update_type}', file=sys.stderr)
+
+agent.run_helper('podman-pull-missing', core_url,
+    progress_callback=agent.get_progress_callback(0,40)
+).check_returncode()
+
+# Parse the image labels
+with subprocess.Popen(['podman', 'image', 'inspect', core_url], stdout=subprocess.PIPE, stderr=sys.stderr) as proc:
+    inspect = json.load(proc.stdout)
+    inspect_labels = inspect[0]['Labels']
+    inspect_image_id = inspect[0]['Id']
+    inspect_image_digest = inspect[0]['Digest']
+    inspect_image_repodigest = inspect[0]['RepoDigests'][0]
+
+if 'org.nethserver.images' in inspect_labels:
+    extra_images = inspect_labels['org.nethserver.images'].split()
+else:
+    extra_images = []
+
+print('Core image Id         : ', inspect_image_id, file=sys.stderr)
+print('Core image Digest     : ', inspect_image_digest, file=sys.stderr)
+print('Core image RepoDigest : ', inspect_image_repodigest, file=sys.stderr)
+print('Core image extras     : ', extra_images, file=sys.stderr)
+
+agent.run_helper('podman-pull-missing', *extra_images,
+    progress_callback=agent.get_progress_callback(41,70)
+).check_returncode()
+
+agent.run_helper('install-coreimage', core_url,
+    progress_callback=agent.get_progress_callback(71,90)
+).check_returncode()
+
+if update_type in ['major', 'minor']:
+    # Send graceful termination signal to agents
+    agent.run_helper('killall', '-q', '-s', 'USR1', '-r', '^agent$',
+        progress_callback=agent.get_progress_callback(91,94)
+    )
+    # Restart the api-server daemon
+    agent.run_helper('systemctl', 'restart', 'api-server.service',
+        progress_callback=agent.get_progress_callback(95,99)
+    )
+
+json.dump({}, fp=sys.stdout)

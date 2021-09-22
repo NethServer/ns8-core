@@ -11,7 +11,7 @@ shopt -s nullglob
 tmp_dirlist=$(mktemp)
 tmp_srclist=$(mktemp)
 
-cat /var/lib/nethserver/node/state/image.lst > ${tmp_srclist}
+cat /var/lib/nethserver/node/state/coreimage.lst > ${tmp_srclist}
 
 trap "rm -f ${tmp_dirlist} ${tmp_srclist}" EXIT
 
