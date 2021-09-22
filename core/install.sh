@@ -184,6 +184,9 @@ add-module traefik 1
 echo "Setting default admin password:"
 add-user --role owner --password "${ADMIN_PASSWORD:-Nethesis,1234}" admin
 
+echo "Enable the events gateway for the node agent:"
+systemctl enable --now eventsgw@node
+
 cat - <<EOF
 
 NethServer 8 Scratchpad

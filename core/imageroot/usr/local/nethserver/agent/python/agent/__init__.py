@@ -244,3 +244,28 @@ def assert_exp(exp, message='Assertion failed'):
             if message: print(message, file=sys.stderr)
             traceback.print_stack(sys.exc_info()[2].tb_frame.f_back, file=sys.stderr)
             sys.exit(2)
+
+def save_acls(rdb):
+    """
+    Copy current ACLs to cluster/acls key
+    This function can be executed only on the leader node
+    """
+
+    to_skip = ["default", "cluster", "api-server"]
+
+    acl_list = rdb.acl_list()
+
+    trx = rdb.pipeline()
+
+    # Cleanup ACLs
+    trx.delete("cluster/acls")
+
+    # Skip ACLs which should be different on each node
+    for acl in acl_list:
+        user = acl.split(" ",2)[1]
+        if user in to_skip:
+            continue
+        trx.sadd("cluster/acls", acl)
+
+    trx.publish('cluster/event/acl-changed', 'cluster/acls')
+    trx.execute()

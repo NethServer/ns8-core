@@ -50,3 +50,5 @@ for roledef in request['revoke']: # !!! revoke BEFORE grant
 
 for roledef in request['grant']:
     cluster.grants.alter_user(rdb, user, False, roledef['role'], roledef['on'])
+
+agent.save_acls(rdb)

@@ -20,31 +20,30 @@
 # along with NethServer.  If not, see COPYING.
 #
 
+#
+# Load ACLs from cluster/acls key
+# This script must be executed on the worker server
+#
+
+import os
 import sys
 import agent
-import json
 
-#
-# Sample input
-#{
-#    "user": "admin"
-#}
-#
-
-request = json.load(sys.stdin)
-user = request['user']
+os.environ.update(agent.read_envfile('/var/lib/nethserver/cluster/state/agent.env'))
 
 rdb = agent.redis_connect(privileged=True)
 
-if rdb.execute_command('ACL', 'GETUSER', user) is None:
-    json.dump({"field": "user", "parameter": "user", "value": user, "error": "user_not_found"}, fp=sys.stdout) # XXX: implement library function
-    agent.set_status('validation-failed')
-    sys.exit(2)
+role = rdb.execute_command('ROLE')[0]
 
-rdb.delete(f'roles/{user}')
+if role == 'slave':
+    for acl in rdb.smembers('cluster/acls'):
+        user = acl.split(" ",2)[1]
+        # replace existing user
+        rdb.acl_deluser(user)
+        rdb.execute_command(f'ACL set{acl}')
 
-agent.assert_exp(rdb.execute_command('ACL', 'DELUSER', user) == 1)
-agent.assert_exp(rdb.execute_command('ACL', 'SAVE') == 'OK')
-agent.save_acls(rdb)
-
-print("true")
+    rdb.acl_save()
+    print("ACLs loaded")
+else:
+    print("ACLs loading skipped on the leader node", file=sys.stderr)
+    sys.exit(0)
