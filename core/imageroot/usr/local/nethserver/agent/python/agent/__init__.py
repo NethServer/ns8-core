@@ -76,7 +76,7 @@ def read_envfile(file_path):
     for line in fo.readlines():
         lineno =+ 1
         try:
-            variable, value = line.split("=")
+            variable, value = line.strip().split("=", 1)
         except ValueError:
             warnings.warn(f'read_envfile: Cannot parse line {lineno} in {file_path}', stacklevel=2)
             continue
