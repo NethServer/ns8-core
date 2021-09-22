@@ -1,0 +1,26 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "update-core input",
+    "$id": "http://schema.nethserver.org/node/update-core-input.json",
+    "description": "Update the core module on the local node",
+    "examples": [
+        {
+            "core_url": "ghcr.io/nethserver/core:1.2.0"
+        }
+    ],
+    "type": "object",
+    "required": [
+        "core_url"
+    ],
+    "properties": {
+        "core_url": {
+            "type": "string",
+            "title": "Core image URL",
+            "description": "URL of the new core image",
+            "examples": [
+                "ghcr.io/nethserver/core:1.2.0"
+            ],
+            "minLength": 1
+        }
+    }
+}

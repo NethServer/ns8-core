@@ -1,0 +1,53 @@
+#!/bin/bash
+
+#
+# Copyright (C) 2021 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
+set -e
+
+cd /
+
+core_url=${1:?Usage $0 CORE_URL}
+lst_file="var/lib/nethserver/node/state/coreimage.lst"
+
+# Make a backup of the current index
+cp -af ${lst_file}{,~}
+
+cid=$(podman create "${core_url}")
+trap 'podman rm -f "${cid}" >/dev/null' EXIT
+
+# Extract the image contents, generating the new image index, and
+# unlinking existing files as it is necessary to properly replace
+# executables and libraries:
+podman export "${cid}" | tar --totals --no-overwrite-dir --no-same-owner -x -v -f - | sort | tee ${lst_file}
+
+dirs_list=()
+
+while read -r entry; do
+    if [[ -d "${entry}" ]]; then
+        dirs_list+=("${entry}")
+    else
+        rm -vf "${entry}"
+    fi
+done < <(diff ${lst_file}~ ${lst_file} | sed -n '/^</ {s/^< // ; p}')
+
+for dir_entry in "${dirs_list[@]}"; do
+    rmdir -v "${dir_entry}" || :
+done

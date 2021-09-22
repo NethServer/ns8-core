@@ -1,6 +1,8 @@
 #!/bin/bash
 
 set -e
+cleanup_list=()
+trap 'rm -rf "${cleanup_list[@]}"' EXIT
 images=()
 repobase="${REPOBASE:-ghcr.io/nethserver}"
 
@@ -30,6 +32,7 @@ buildah run nodebuilder-core sh -c "cd /usr/src/core/ui       && npm install && 
 
 echo "Download Logcli..."
 logcli_tmp_dir=$(mktemp -d)
+cleanup_list+=("${logcli_tmp_dir}")
 wget https://github.com/grafana/loki/releases/download/v2.2.1/logcli-linux-amd64.zip -P ${logcli_tmp_dir}
 unzip ${logcli_tmp_dir}/logcli-linux-amd64.zip -d ${logcli_tmp_dir}
 
@@ -37,13 +40,18 @@ echo "Building the Core image..."
 container=$(buildah from scratch)
 reponame="core"
 buildah add "${container}" imageroot /
-buildah add "${container}" ${logcli_tmp_dir}/logcli-linux-amd64 /usr/local/sbin/logcli
-rm -r ${logcli_tmp_dir}
-trap "rm -rf ${logcli_tmp_dir}" EXIT
+buildah add "${container}" "${logcli_tmp_dir}/logcli-linux-amd64" /usr/local/sbin/logcli
 buildah add "${container}" agent/agent /usr/local/bin/agent
 buildah add "${container}" api-server/api-server /usr/local/bin/api-server
 buildah add "${container}" ui/dist /var/lib/nethserver/cluster/ui
-buildah config --entrypoint=/ "${container}"
+core_env_file=$(mktemp)
+cleanup_list+=("${core_env_file}")
+printf "CORE_IMAGE=ghcr.io/nethserver/core:%s\n" "${IMAGETAG:-latest}" >> "${core_env_file}"
+printf "REDIS_IMAGE=ghcr.io/nethserver/redis:%s\n" "${IMAGETAG:-latest}" >> "${core_env_file}"
+buildah add "${container}" ${core_env_file} /etc/nethserver/core.env
+buildah config \
+    --label="org.nethserver.images=ghcr.io/nethserver/redis:${IMAGETAG:-latest}" \
+    --entrypoint=/ "${container}"
 buildah commit "${container}" "${repobase}/${reponame}"
 buildah rm "${container}"
 images+=("${repobase}/${reponame}")

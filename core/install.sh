@@ -58,7 +58,7 @@ fi
 echo "Extracting core sources:"
 mkdir -pv /var/lib/nethserver/node/state
 cid=$(podman create "ghcr.io/nethserver/core:latest")
-podman export ${cid} | tar -C / -x -v -f - | tee /var/lib/nethserver/node/state/image.lst
+podman export ${cid} | tar --totals -C / --no-overwrite-dir --no-same-owner -x -v -f - | sort | tee /var/lib/nethserver/node/state/coreimage.lst
 podman rm -f ${cid}
 
 if [[ ! -f ~/.ssh/id_rsa.pub ]] ; then

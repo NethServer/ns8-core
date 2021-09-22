@@ -71,7 +71,8 @@ async def _aread_status(client, agent_id, task_id, **npargs):
         jresp = await resp.json()
 
     return {
-        'id': task_id,
+        'path': f'{agent_id}/task/{task_id}',
+        'agent_id': agent_id,
         'output': jresp['data']['output'],
         'error': jresp['data']['error'],
         'exit_code': jresp['data']['exit_code'],
@@ -377,7 +378,8 @@ async def _run(agent_id, action, data={}, parent=None, tls_verify=False, endpoin
             error = await rdb.get(f'{agent_id}/task/{task_id}/error')
 
         return {
-            'id': task_id,
+            'path': f'{agent_id}/task/{task_id}',
+            'agent_id': agent_id,
             'output': output,
             'error': error,
             'exit_code': exit_code,

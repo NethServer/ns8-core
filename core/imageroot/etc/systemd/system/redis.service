@@ -5,6 +5,7 @@ Documentation=https://github.com/NethServer/ns8-scratchpad
 [Service]
 Environment=PODMAN_SYSTEMD_UNIT=%n
 EnvironmentFile=/etc/nethserver/agent.env
+EnvironmentFile=-/etc/nethserver/core.env
 Restart=always
 TimeoutStopSec=70
 ExecStartPre=/bin/rm -f %t/redis.pid %t/redis.cid
@@ -17,7 +18,7 @@ ExecStart=/usr/bin/podman run \
     --replace --name=%N \
     --network=host \
     --volume=redis-data:/data \
-    ghcr.io/nethserver/redis:latest
+    ${REDIS_IMAGE}
 
 ExecStartPost=/usr/bin/bash -c "while ! exec 3<>/dev/tcp/127.0.0.1/6379; do sleep 1 ; done"
 ExecStartPost=-/usr/local/bin/acl-load
