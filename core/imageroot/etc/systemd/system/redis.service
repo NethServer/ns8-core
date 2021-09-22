@@ -19,6 +19,7 @@ ExecStart=/usr/bin/podman run \
     ghcr.io/nethserver/redis:latest
 
 ExecStartPost=/usr/bin/bash -c "while ! exec 3<>/dev/tcp/127.0.0.1/6379; do sleep 1 ; done"
+ExecStartPost=-/usr/local/bin/acl-load
 ExecStop=/usr/bin/podman stop --ignore --cidfile %t/redis.cid -t 10
 ExecStopPost=/usr/bin/podman rm --ignore -f --cidfile %t/redis.cid
 PIDFile=%t/redis.pid
