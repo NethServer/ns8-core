@@ -33,7 +33,7 @@ os.environ.update(agent.read_envfile('/var/lib/nethserver/cluster/state/agent.en
 
 rdb = agent.redis_connect(privileged=True)
 
-role = rdb.execute_command('ROLE')[0];
+role = rdb.execute_command('ROLE')[0]
 
 if role == 'slave':
     for acl in rdb.smembers('cluster/acls'):
@@ -45,5 +45,5 @@ if role == 'slave':
     rdb.acl_save()
     print("ACLs loaded")
 else:
-    print("This is a leader node, nothing to do", file=sys.stderr)
+    print("ACLs loading skipped on the leader node", file=sys.stderr)
     sys.exit(0)
