@@ -51,5 +51,4 @@ for roledef in request['revoke']: # !!! revoke BEFORE grant
 for roledef in request['grant']:
     cluster.grants.alter_user(rdb, user, False, roledef['role'], roledef['on'])
 
-# signal the acl-save event
-rdb.publish('cluster/event/acl-save', 'acl-save')
+agent.save_acls()

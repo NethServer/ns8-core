@@ -151,8 +151,7 @@ agent.assert_exp(rdb.execute_command('ACL', 'SETUSER',
 # Persist ACLs to disk
 agent.assert_exp(rdb.execute_command('ACL', 'SAVE') == 'OK')
 
-# Signal the acl-save event
-rdb.publish('cluster/event/acl-save', 'acl-save')
+agent.save_acls()
 
 # Grant required authorizations to the new module
 for authz in authorizations:

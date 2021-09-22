@@ -244,3 +244,26 @@ def assert_exp(exp, message='Assertion failed'):
             if message: print(message, file=sys.stderr)
             traceback.print_stack(sys.exc_info()[2].tb_frame.f_back, file=sys.stderr)
             sys.exit(2)
+
+def save_acls():
+    """
+    Copy current ACLs to cluster/acls key
+    This function will be executed only on the leader node
+    """
+
+    rdb = redis_connect(privileged=True)
+    role = rdb.execute_command('ROLE')[0];
+
+    to_skip = ["default", "cluster", "api-server"]
+    if role == 'master':
+        # Cleanup ACLs
+        rdb.delete("cluster/acls")
+
+        # Skip ACLs which should be different on each node
+        for acl in rdb.acl_list():
+            user = acl.split(" ",2)[1]
+            if user in to_skip:
+                continue
+            rdb.sadd("cluster/acls", acl)
+
+        rdb.publish('cluster/event/acl-changed', 'cluster/acls')

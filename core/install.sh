@@ -186,7 +186,7 @@ add-user --role owner --password "${ADMIN_PASSWORD:-Nethesis,1234}" admin
 
 echo "Enable events gateway for the leader node:"
 mkdir -p /var/lib/nethserver/node/state/
-echo -e "[commands]\ncluster/event/acl-save = /usr/local/bin/acl-save\n" > /var/lib/nethserver/node/state/eventsgw.conf
+echo -e "[commands]\ncluster/event/acl-changed = /usr/local/bin/acl-load\n" > /var/lib/nethserver/node/state/eventsgw.conf
 systemctl enable --now eventsgw@node
 
 cat - <<EOF
