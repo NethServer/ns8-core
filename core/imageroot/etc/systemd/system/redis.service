@@ -4,6 +4,7 @@ Documentation=https://github.com/NethServer/ns8-scratchpad
 
 [Service]
 Environment=PODMAN_SYSTEMD_UNIT=%n
+EnvironmentFile=/etc/nethserver/agent.env
 Restart=always
 TimeoutStopSec=70
 ExecStartPre=/bin/rm -f %t/redis.pid %t/redis.cid
