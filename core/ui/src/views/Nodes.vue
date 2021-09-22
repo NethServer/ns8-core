@@ -203,7 +203,7 @@ export default {
           window.location.protocol + "//" + window.location.hostname;
 
         //// remove
-        endpoint = "https://192.168.122.220";
+        //endpoint = "https://192.168.122.220";
 
         console.log("endpoint", endpoint); ////
         console.log("leaderListenPort", this.leaderListenPort); ////

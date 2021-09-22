@@ -15,6 +15,7 @@ export default {
       this.$connect(this.$root.config.WS_ENDPOINT + "?jwt=" + jwt);
 
       this.$options.sockets.onmessage = this.onMessage;
+      this.$options.sockets.onclose = this.onClose;
       console.log("websocket connected"); ////
     },
     closeWebSocket() {
@@ -35,6 +36,9 @@ export default {
         const taskId = progressTaskMatch[2];
         this.handleProgressTaskMessage(taskPath, taskId, payload);
       }
+    },
+    onClose(event) {
+      console.log("ws close", event);
     },
   },
 };
