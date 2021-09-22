@@ -166,7 +166,7 @@ for userk in rdb.scan_iter('roles/*'):
     if 'cluster' in user_auths and user_auths['cluster'] == 'owner':
         cluster.grants.alter_user(rdb, user=userk[len('roles/'):], revoke=False, role='owner', on_clause=f'node/{node_id}')
 
-agent.save_acls()
+agent.save_acls(rdb)
 
 #
 # Return the new information to the caller

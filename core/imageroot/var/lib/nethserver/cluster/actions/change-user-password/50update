@@ -42,5 +42,5 @@ if is_authenticated:
     # On auhtentication success, switch to privileged connection to change the password
     rdb = agent.redis_connect(privileged=True)
     rdb.acl_setuser(request['user'], passwords=[f'+{request["new_password"]}'], reset_passwords=True, enabled=True)
-    agent.save_acls()
+    agent.save_acls(rdb)
     json.dump({}, fp=sys.stdout)
