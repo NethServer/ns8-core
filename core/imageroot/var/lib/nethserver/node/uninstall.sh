@@ -9,7 +9,11 @@
 shopt -s nullglob
 
 tmp_dirlist=$(mktemp)
-trap "rm -f ${tmp_dirlist}" EXIT
+tmp_srclist=$(mktemp)
+
+cat /var/lib/nethserver/node/state/image.lst > ${tmp_srclist}
+
+trap "rm -f ${tmp_dirlist} ${tmp_srclist}" EXIT
 
 for userhome in /home/*; do
     moduleid=$(basename $userhome)
@@ -20,12 +24,21 @@ for userhome in /home/*; do
 done
 
 echo "Stopping the core services"
-systemctl disable --now api-server.service redis.service wg-quick@wg0
+systemctl disable --now api-server.service redis.service wg-quick@wg0.service
 rm -vf /etc/systemd/system/redis.service.d/wireguard.conf
 userdel -r api-server
 
 echo "Wipe Redis DB"
 podman volume rm -f redis-data
+
+for modulehome in /var/lib/nethserver/*; do
+    if [[ ! -d ${modulehome} ]]; then
+      continue
+    fi
+    moduleid=$(basename $modulehome)
+    echo "Deleting rootfull module ${moduleid}..."
+    systemctl disable --now eventsgw@${moduleid} agent@${moduleid} && rm -rf "${modulehome}"
+done
 
 echo "Uninstalling the core image files"
 (
@@ -39,16 +52,7 @@ echo "Uninstalling the core image files"
 
     [[ -e ${image_entry} ]] && rm -vf ${image_entry}
   done
-) </var/lib/nethserver/node/state/image.lst
-
-for modulehome in /var/lib/nethserver/*; do
-    if [[ ! -d ${modulehome} ]]; then
-      continue
-    fi
-    moduleid=$(basename $modulehome)
-    echo "Deleting rootfull module ${moduleid}..."
-    systemctl disable --now agent@${moduleid} && rm -rf "${modulehome}"
-done
+) <${tmp_srclist}
 
 echo "Some files may be left in the following directories:"
 cat ${tmp_dirlist}
