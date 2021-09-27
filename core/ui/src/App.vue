@@ -76,6 +76,8 @@ export default {
     if (loginInfo && loginInfo.username) {
       // refresh authorization token
       this.refreshToken(loginInfo);
+    } else {
+      this.isLoaded = true;
     }
   },
   beforeDestroy() {
