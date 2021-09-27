@@ -94,7 +94,7 @@ leader_ip_address = payload['leader_ip_address']
 leader_public_key = payload['leader_public_key']
 leader_endpoint = payload['leader_endpoint']
 
-print(f"Leader response is successful: the cluster was joined as node/{node_id}! Remote task reference: cluster/task/{response['id']}", file=sys.stderr)
+print(f"Leader response is successful: the cluster was joined as node/{node_id}!", file=sys.stderr)
 
 # Reconfigure the node agent environment, preserving the original node password
 agent.run_helper('sed', '-i',
