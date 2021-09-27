@@ -4,7 +4,8 @@
     <SideMenu v-if="loggedUser && isClusterInitialized" />
     <MobileSideMenu v-if="loggedUser && isClusterInitialized" />
     <cv-content id="main-content">
-      <router-view />
+      <router-view v-if="isLoaded" />
+      <cv-loading :active="!isLoaded" :overlay="true"></cv-loading>
       <TaskErrorModal />
     </cv-content>
   </div>
@@ -50,6 +51,7 @@ export default {
     return {
       CLUSTER_STATUS_TIME_INTERVAL: 10000,
       isMaster: true,
+      isLoaded: false,
     };
   },
   computed: {
@@ -268,11 +270,13 @@ export default {
             "/init?page=redirect&endpoint=" +
               err.response.data.data.split(":")[0]
           );
+          this.isLoaded = true;
         } else {
           this.createErrorNotification(
             err,
             this.$t("task.cannot_create_task", { action: taskAction })
           );
+          this.isLoaded = true;
           return;
         }
       }
@@ -311,9 +315,11 @@ export default {
 
         if (this.isClusterInitialized) {
           this.onClusterInitialized();
+          this.isLoaded = true;
         } else {
           // redirect to cluster initialization page
           this.$router.replace("/init?page=welcome");
+          this.isLoaded = true;
         }
         this.configureClusterInitializationRedirect();
       }
@@ -351,11 +357,13 @@ export default {
             "/init?page=redirect&endpoint=" +
               err.response.data.data.split(":")[0]
           );
+          this.isLoaded = true;
         } else {
           this.createErrorNotification(
             err,
             this.$t("task.cannot_create_task", { action: taskAction })
           );
+          this.isLoaded = true;
           return;
         }
       }

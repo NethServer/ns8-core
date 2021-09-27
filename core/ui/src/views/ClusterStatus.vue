@@ -331,6 +331,7 @@ export default {
   },
   created() {
     this.$root.$on("websocket-connected", this.getInitialData);
+    this.getInitialData();
   },
   methods: {
     async retrieveClusterNodes() {
