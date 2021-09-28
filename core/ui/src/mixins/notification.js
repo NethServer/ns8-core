@@ -44,6 +44,9 @@ export default {
         this.showNotification(notification);
       }
     },
+    hideNotification(notificationId) {
+      this.$toast.dismiss(notificationId);
+    },
     showNotification(notification) {
       const toast = {
         component: NsToastNotification,
@@ -81,7 +84,7 @@ export default {
       console.log("notification.id", notification.id); ////
 
       const toastId = this.$toast(toast, {
-        timeout: toastTimeout,
+        timeout: notification.action.type == "execute" ? null : toastTimeout,
         id: notification.id,
       });
 
@@ -124,6 +127,8 @@ export default {
 
           this.$router.push(notification.action.url);
           break;
+        case "execute":
+          eval(notification.action.execute);
       }
 
       // set notification as read

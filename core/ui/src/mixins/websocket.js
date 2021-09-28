@@ -6,7 +6,7 @@ export default {
   name: "WebSocketService",
   mixins: [NotificationService, TaskService, StorageService],
   methods: {
-    initWebSocket(callback) {
+    initWebSocket() {
       //// need to monitor this.$socket.readyState?
       var jwt =
         (this.getFromStorage("loginInfo") &&
@@ -15,16 +15,31 @@ export default {
       this.$connect(this.$root.config.WS_ENDPOINT + "?jwt=" + jwt);
 
       this.$options.sockets.onmessage = this.onMessage;
-      this.$options.sockets.onopen = this.onOpen(callback);
+      this.$options.sockets.onopen = this.onOpen;
       this.$options.sockets.onclose = this.onClose;
     },
     closeWebSocket() {
       this.$disconnect();
     },
-    onOpen(callback) {
+    onOpen() {
       console.log("websocket connected"); ////
       this.$root.$emit("websocket-connected");
-      callback();
+
+      if (this.$options.sockets.notification) {
+        this.hideNotification(this.$options.sockets.notification.id);
+        const notification = {
+          title: "Websocket connected",
+          description: "The websocket connection is stable.",
+          type: "success",
+          actionLabel: null,
+          action: {
+            type: "execute",
+            execute: "window.location.reload()",
+          },
+        };
+        this.$options.sockets.notification = null;
+        this.createNotification(notification);
+      }
     },
     onMessage(message) {
       const messageData = JSON.parse(message.data);
@@ -45,6 +60,22 @@ export default {
     onClose(event) {
       console.log("ws close", event);
       this.$root.$emit("websocket-disconnected");
+
+      if (!this.$options.sockets.notification) {
+        const notification = {
+          title: "Websocket disconnected",
+          description:
+            "The websocket connection is unstable. Please wait until reconnection or reload page.",
+          type: "warning",
+          actionLabel: "Reload",
+          action: {
+            type: "execute",
+            execute: "window.location.reload()",
+          },
+        };
+        this.$options.sockets.notification = notification;
+        this.createNotification(notification);
+      }
     },
   },
 };

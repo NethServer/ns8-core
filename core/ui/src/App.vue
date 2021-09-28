@@ -220,11 +220,10 @@ export default {
     // invoked on webapp loading and after logging in
     initNs8() {
       var context = this;
-      this.initWebSocket(function () {
-        setTimeout(function () {
-          context.retrieveClusterStatus(true);
-        }, 500);
-      });
+      context.initWebSocket();
+      setTimeout(function () {
+        context.retrieveClusterStatus(true);
+      }, 500);
     },
     // async retrieveClusterTasks() { ////
     //   const [clusterTasksError, response] = await to(this.getClusterTasks());

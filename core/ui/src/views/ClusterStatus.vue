@@ -1,5 +1,5 @@
 <template>
-  <div class="bx--grid bx--grid--full-width">
+  <div class="bx--grid bx--grid--full-width" v-if="$store.state.isClusterInitialized">
     <div class="bx--row">
       <div class="bx--col-lg-16 page-title">
         <h2>
