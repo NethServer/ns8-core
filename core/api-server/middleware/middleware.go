@@ -75,6 +75,11 @@ func InitJWT() *jwt.GinJWTMiddleware {
 			username := loginVals.Username
 			password := loginVals.Password
 
+			// check if redis is running
+			if !methods.RedisLive() {
+				return nil, errors.New("redis is not running")
+			}
+
 			// check login with redis
 			err := methods.RedisAuthentication(username, password)
 			if err != nil {
@@ -196,6 +201,15 @@ func InitJWT() *jwt.GinJWTMiddleware {
 			return false
 		},
 		Unauthorized: func(c *gin.Context, code int, message string) {
+			if message == "redis is not running" {
+				c.JSON(503, structs.Map(response.StatusServiceUnavailable{
+					Code:    503,
+					Message: message,
+					Data:    nil,
+				}))
+				return
+			}
+
 			c.JSON(code, structs.Map(response.StatusUnauthorized{
 				Code:    code,
 				Message: message,

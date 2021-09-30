@@ -34,6 +34,19 @@ import (
 
 var ctx = context.Background()
 
+func RedisLive() bool {
+	// init redis connection
+	redisConnection := redis.Instance()
+
+	// check ping command
+	_, err := redisConnection.Ping(ctx).Result()
+	if err != nil {
+		return false
+	}
+
+	return true
+}
+
 // RedisAuthentication godoc
 // @Summary Login and get JWT token
 // @Description login and get JWT token
