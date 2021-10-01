@@ -120,6 +120,19 @@ agent.assert_exp(node_errors == 0)
 #
 additional_tasks = [
     {
+        # Remove the default traefik1 instance from the worker node. This
+        # task races against "add-module traefik", however it should
+        # always win because the latter has to download the Traefik image
+        # and in the worst case, the new Traefik instance will start a
+        # crash-loop until ports 80 and 443 are freed.
+        'agent_id': f'node/{node_id}',
+        'action': 'remove-module',
+        'data': {
+            "module_id": 'traefik1',
+            "preserve_data": False,
+        }
+    },
+    {
         'agent_id': 'cluster',
         'action': 'add-module',
         'data': {
