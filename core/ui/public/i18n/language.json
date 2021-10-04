@@ -30,7 +30,8 @@
     "use_landscape_mode_description": "This page is optimized for landscape mode",
     "got_it": "Got it",
     "global_shortcut": "Global shortcut",
-    "join_code": "Join code"
+    "join_code": "Join code",
+    "reload_page": "Reload page"
   },
   "error": {
     "error": "Error",
@@ -48,6 +49,12 @@
     "cannot_retrieve_cluster_nodes": "Cannot retrieve cluster nodes",
     "cannot_retrieve_installed_apps": "Cannot retrieve installed apps",
     "cannot_retrieve_cluster_tasks": "Cannot retrieve cluster tasks"
+  },
+  "websocket": {
+    "websocket_disconnected": "Websocket disconnected",
+    "websocket_disconnected_description": "Websocket connection is unstable. Please wait until reconnection or reload page",
+    "websocket_connected": "Websocket connected",
+    "websocket_connected_description": "Websocket connection established"
   },
   "password": {
     "hide_password": "Hide password",

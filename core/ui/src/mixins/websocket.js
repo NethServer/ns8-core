@@ -23,23 +23,7 @@ export default {
     },
     onOpen() {
       console.log("websocket connected"); ////
-      this.$root.$emit("websocket-connected");
-
-      if (this.$options.sockets.notification) {
-        this.hideNotification(this.$options.sockets.notification.id);
-        const notification = {
-          title: "Websocket connected",
-          description: "The websocket connection is stable.",
-          type: "success",
-          actionLabel: null,
-          action: {
-            type: "execute",
-            execute: "window.location.reload()",
-          },
-        };
-        this.$options.sockets.notification = null;
-        this.createNotification(notification);
-      }
+      this.$root.$emit("websocketConnected");
     },
     onMessage(message) {
       const messageData = JSON.parse(message.data);
@@ -59,23 +43,22 @@ export default {
     },
     onClose(event) {
       console.log("ws close", event);
-      this.$root.$emit("websocket-disconnected");
+      this.$root.$emit("websocketDisconnected");
 
-      if (!this.$options.sockets.notification) {
-        const notification = {
-          title: "Websocket disconnected",
-          description:
-            "The websocket connection is unstable. Please wait until reconnection or reload page.",
-          type: "warning",
-          actionLabel: "Reload",
-          action: {
-            type: "execute",
-            execute: "window.location.reload()",
-          },
-        };
-        this.$options.sockets.notification = notification;
-        this.createNotification(notification);
-      }
+      // if (!this.$options.sockets.notification) { ////
+      //   const notification = {
+      //     title: this.$t("websocket.websocket_disconnected"),
+      //     description: this.$t("websocket.websocket_disconnected_description"),
+      //     type: "warning",
+      //     actionLabel: this.$t("common.reload_page"),
+      //     action: {
+      //       type: "execute",
+      //       execute: "window.location.reload()",
+      //     },
+      //   };
+      //   this.$options.sockets.notification = notification;
+      //   this.createNotification(notification);
+      // }
     },
   },
 };

@@ -76,6 +76,12 @@ export default {
         )
       ) {
         toastTimeout = 3000;
+      } else if (
+        notification.action &&
+        notification.action.type === "execute"
+      ) {
+        // no timeout
+        toastTimeout = null;
       } else {
         // standard timeout
         toastTimeout = 5000;
@@ -84,7 +90,7 @@ export default {
       console.log("notification.id", notification.id); ////
 
       const toastId = this.$toast(toast, {
-        timeout: notification.action.type == "execute" ? null : toastTimeout,
+        timeout: toastTimeout,
         id: notification.id,
       });
 
