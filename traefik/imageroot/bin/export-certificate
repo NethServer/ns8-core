@@ -33,32 +33,32 @@ import os
 import json
 import agent
 import os.path
+import sys
 
-def _read_and_set():
-    module_id = os.environ['MODULE_ID']
-    node_id = os.environ['NODE_ID']
-    if os.path.getsize('./acme.json') == 0:
-        return
-    with open('./acme.json') as fp:
-        data = json.load(fp)
-        if not data or not data["letsencrypt"]["Certificates"]:
-            return
-        rdb = agent.redis_connect(privileged=True)
-        for info in data["letsencrypt"]["Certificates"]:
-            rkey = f'module/{module_id}/certificate/{info["domain"]["main"]}'
-            cur_cert = rdb.hget(rkey, 'cert')
-            cur_key = rdb.hget(rkey, 'key')
-            # save the certificate only if not exists or if has been changed
-            if (not cur_cert or cur_cert != info["certificate"]) or (not cur_key or cur_key != info["key"]):
-                print(f'Saving certificate and key to {rkey}')
-                rdb.hset(rkey, mapping={"cert": info["certificate"], "key":  info["key"]})
+module_id = os.environ['MODULE_ID']
+node_id = os.environ['NODE_ID']
+path = sys.argv[1]
 
-                # signal the certificate-update event
-                event_key = f'module/{module_id}/event/certificate-update'
-                print(f'Publishing event {event_key}')
-                event = {"certificate": info["certificate"], "key": info["key"], "node": node_id, "module": module_id, "domain": info["domain"]}
-                rdb.publish(event_key, json.dumps(event))
-    rdb.close()
+try:
+    data = json.load(open(path))
+    certificates = data["letsencrypt"].get("Certificates", [])
+except Exception as ex:
+    print(agent.SD_WARNING + f"Let's Encrypt TLS certificates for Traefik were not found in {path}: {ex}", file=sys.stderr)
+    sys.exit(0)
 
-if __name__ == "__main__":
-    _read_and_set()
+rdb = agent.redis_connect(privileged=True)
+
+for info in certificates:
+    rkey = f'module/{module_id}/certificate/{info["domain"]["main"]}'
+    cur_cert = rdb.hget(rkey, 'cert')
+    cur_key = rdb.hget(rkey, 'key')
+    # save the certificate only if not exists or if has been changed
+    if (not cur_cert or cur_cert != info["certificate"]) or (not cur_key or cur_key != info["key"]):
+        print(f'Saving certificate and key to {rkey}')
+        rdb.hset(rkey, mapping={"cert": info["certificate"], "key":  info["key"]})
+
+        # signal the certificate-update event
+        event_key = f'module/{module_id}/event/certificate-update'
+        print(f'Publishing event {event_key}')
+        event = {"certificate": info["certificate"], "key": info["key"], "node": node_id, "module": module_id, "domain": info["domain"]}
+        rdb.publish(event_key, json.dumps(event))

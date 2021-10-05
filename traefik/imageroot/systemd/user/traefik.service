@@ -1,7 +1,6 @@
 [Unit]
 Description=Traefik edge proxy
 Wants=certificate-exporter.path
-Before=certificate-exporter.path
 
 [Service]
 Environment=PODMAN_SYSTEMD_UNIT=%n
