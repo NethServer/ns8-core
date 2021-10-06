@@ -1,0 +1,36 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "update-module input",
+    "$id": "http://schema.nethserver.org/cluster/update-module-input.json",
+    "description": "Input schema of the update-module action",
+    "examples": [
+        {
+            "module_url": "ghcr.io/nethserver/mymodule:3.2.2",
+            "instances": [
+                "mymodule2",
+                "mymodule3"
+            ]
+        }
+    ],
+    "type": "object",
+    "required": [
+        "module_url",
+        "instances"
+    ],
+    "properties": {
+        "module_url": {
+            "description": "Module image URL to download and install",
+            "type": "string"
+        },
+        "instances": {
+            "description": "Instance identifiers where the selected image is installed",
+            "type": "array",
+            "items": {
+                "type": "string",
+                "minLength": 2,
+                "pattern": "^.+[0-9]+$"
+            },
+            "minItems": 1
+        }
+    }
+}
