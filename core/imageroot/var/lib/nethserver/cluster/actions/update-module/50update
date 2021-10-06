@@ -1,0 +1,118 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2021 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
+import json
+import agent
+import agent.tasks
+import sys, os
+
+request = json.load(sys.stdin)
+image_url= request['module_url']
+instances = request['instances']
+
+rdb = agent.redis_connect(privileged=True)
+
+# Modules sanity check: send a "list-actions" ping task and wait the result.
+# If any module fails abort the whole action.
+ping_errors = agent.tasks.runp_brief([{"agent_id": f"module/{mid}", "action": "list-actions"} for mid in instances],
+    endpoint="redis://cluster-leader",
+    progress_callback=agent.get_progress_callback(1, 30),
+)
+agent.assert_exp(ping_errors == 0)
+
+# Pull the image from the remote server, if not already available locally
+agent.run_helper('podman-pull-missing', image_url,
+    progress_callback=agent.get_progress_callback(0,30)
+).check_returncode()
+
+# Start the module update on each instance
+update_tasks = []
+for mid in instances:
+    update_tasks.append({
+        "agent_id": f"module/{mid}",
+        "action": "update-module",
+        "data": {
+            "module_url": image_url
+        }
+    })
+
+update_retvals = agent.tasks.runp(update_tasks,
+    endpoint = "redis://cluster-leader",
+    progress_callback = agent.get_progress_callback(31, 95),
+)
+
+grant_actions_data = []
+errors = 0
+appspath = '/var/lib/nethserver/cluster/ui/apps/'
+for idx, retval in enumerate(update_retvals):
+    mid = instances[idx]
+
+    if isinstance(retval, Exception):
+        print(agent.SD_ERR + f"Module instance \"{mid}\" task exception: {retval}", file=sys.stderr)
+        errors += 1
+        continue
+
+    # XXX Update permissions for the updated instance, even if the update could be failed
+    grant_actions_data.extend([
+        {"action": "*", "to": "owner", "on": f"module/{mid}"},
+        {"action": "list-*", "to": "reader", "on": f"module/{mid}"},
+        {"action": "get-*", "to": "reader", "on": f"module/{mid}"},
+        {"action": "show-*", "to": "reader", "on": f"module/{mid}"},
+        {"action": "read-*", "to": "reader", "on": f"module/{mid}"},
+    ])
+
+    if retval['exit_code'] != 0:
+        print(agent.SD_ERR + f"Module instance \"{mid}\" update failed with code {retval['exit_code']}", file=sys.stderr)
+        errors += 1
+        continue
+
+    # The update was successful. Now extract and install the new UI image in the leader node.
+    try:
+        # Temporary directory random-enough suffix:
+        dsfx = "." + os.getenv('AGENT_TASK_ID', str(os.getpid()))[:8]
+        # Extract the UI code into a temporary directory
+        os.mkdir(appspath + mid + dsfx)
+        os.chdir(appspath + mid + dsfx)
+        agent.run_helper('extract-ui', image_url).check_returncode()
+        # Replace the app UI directory. Cannot find a way to do this
+        # atomically and faster.
+        os.rename(appspath + mid, appspath + mid + dsfx + '~')
+        os.rename(appspath + mid + dsfx, appspath + mid)
+        agent.run_helper('rm', '-rf', appspath + mid + dsfx + '~')
+    except Exception as ex:
+        print(agent.SD_ERR + f"Module UI update failed for instance {mid}: {ex}", file=sys.stderr)
+        errors += 1
+        continue
+
+if grant_actions_data:
+    # Non-blocking task. Permissions refresh on completely updated
+    # instances:
+    agent.tasks.run_nowait(
+        agent_id = 'cluster',
+        action = 'grant-actions',
+        data = grant_actions_data,
+        endpoint = "redis://cluster-leader"
+    )
+
+agent.assert_exp(errors == 0)
+
+json.dump({}, fp=sys.stdout)

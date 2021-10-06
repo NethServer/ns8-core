@@ -1,0 +1,110 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2021 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
+import agent
+import json
+import sys
+import os
+import signal
+import subprocess
+
+agent_id = os.environ['AGENT_ID']
+
+os.chdir(os.environ['AGENT_INSTALL_DIR']) # fail fast!
+
+request = json.load(sys.stdin)
+image_url = request['module_url']
+
+if image_url == os.getenv('IMAGE_URL'):
+    print(agent.SD_WARNING + f"The module URL {image_url} is already installed", file=sys.stderr)
+    sys.exit(0)
+
+# Ask the agent to stop listening for new tasks and exit gracefully as
+# soon as this action terminates.
+os.kill(os.getppid(), signal.SIGUSR1)
+
+agent.set_weight('05pullimages', '5')
+
+# Download the requested image
+agent.run_helper('podman-pull-missing', image_url,
+    progress_callback = agent.get_progress_callback(1, 30)
+).check_returncode()
+
+# Parse the image labels
+with subprocess.Popen(['podman', 'image', 'inspect', image_url], stdout=subprocess.PIPE, stderr=sys.stderr) as proc:
+    inspect = json.load(proc.stdout)
+    inspect_labels = inspect[0]['Labels']
+    inspect_image_id = inspect[0]['Id']
+    inspect_image_digest = inspect[0]['Digest']
+    inspect_image_repodigest = inspect[0]['RepoDigests'][0]
+
+if 'org.nethserver.images' in inspect_labels:
+    extra_images = inspect_labels['org.nethserver.images'].split()
+else:
+    extra_images = []
+
+# Start the download of extra images
+agent.run_helper('podman-pull-missing', *extra_images,
+    progress_callback = agent.get_progress_callback(31, 80)
+).check_returncode()
+
+# Extract and install the imageroot contents. See chdir() at the beginning
+# of this script.
+agent.run_helper('extract-image', image_url,
+    progress_callback = agent.get_progress_callback(81, 95)
+).check_returncode()
+
+agent.run_helper('systemctl', '--system' if os.geteuid() == 0 else '--user' , 'daemon-reload',
+    progress_callback = agent.get_progress_callback(96, 98)
+)
+
+#
+# Update the module environment
+#
+env_patch = {
+    'IMAGE_ID': inspect_image_id,
+    'IMAGE_URL': image_url,
+    'IMAGE_DIGEST': inspect_image_digest,
+    'IMAGE_REOPODIGEST': inspect_image_repodigest,
+    'PREV_IMAGE_ID': os.getenv('IMAGE_ID'),
+    'PREV_IMAGE_URL': os.getenv('IMAGE_URL'),
+    'PREV_IMAGE_DIGEST': os.getenv('IMAGE_DIGEST'),
+    'PREV_IMAGE_REOPODIGEST': os.getenv('IMAGE_REOPODIGEST'),
+}
+
+for image_url in extra_images:
+    # Extract the image name from the last / to the last :
+    # For instance ghcr.io/nethserver/core:latest => core
+    image_repotag = image_url.rpartition('/')[2]
+    image_name = image_repotag.partition(':')[0]
+
+    # Transliterate the image name to an environment variable name
+    var_name = image_name.translate(str.maketrans('-.+ ', '____')).upper() + '_IMAGE'
+
+    env_patch['PREV_' + var_name] = os.getenv(var_name)
+    env_patch[var_name] = image_url
+
+for envk, envv in env_patch.items():
+    print(f'Update {agent_id} environment {envk}={envv}', file=sys.stderr)
+    agent.set_env(envk, envv)
+
+agent.dump_env()
