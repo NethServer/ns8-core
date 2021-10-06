@@ -24,15 +24,47 @@ image=${1:?missing image URL argument}
 
 set -e
 
-cid=$(podman create ${image})
-trap "podman rm ${cid}" EXIT
+lst_file=".imageroot.lst"
 
-imageroot=$(podman inspect ${cid} -f '{{index .Config.Labels "org.nethserver.imageroot"}}' | sed -r 's#(^/|/$)##')
+cid=$(podman create "${image}")
+trap 'rm -f "${lst_file}~" ; podman rm "${cid}"' EXIT
+
+if [[ -f "${lst_file}" ]]; then
+    cp -avf "${lst_file}"{,~}
+fi
+
+imageroot=$(podman inspect "${cid}" -f '{{index .Config.Labels "org.nethserver.imageroot"}}' | sed -r 's#(^/|/$)##')
 if [[ -z "${imageroot}" ]]; then
     imageroot="imageroot" # Set the default path for the module backend
 fi
 stripcount=$(awk -F/ '{ print NF }' <<<"${imageroot}")
 
 echo "Extracting container filesystem ${imageroot:-/} to ${PWD}"
-podman export ${cid} | tar -x -v -f - --exclude-caches-under --strip-components=${stripcount} "${imageroot}"
+podman export "${cid}" | tar \
+    --total \
+    --no-overwrite-dir \
+    --no-same-owner \
+    --exclude-caches-under \
+    --strip-components="${stripcount}" \
+    -x -v -f - "${imageroot}" \
+    | sort \
+    | tee ${lst_file}
+
+# Clean up old files that are no longer shipped with the image:
+if [[ -f "${lst_file}~" ]]; then
+    dirs_list=()
+
+    while read -r entry; do
+        if [[ -d "${entry}" ]]; then
+            dirs_list+=("${entry}")
+        else
+            rm -vf "${entry}"
+        fi
+    done < <(diff ${lst_file}~ ${lst_file} | sed -n '/^</ {s/^< // ; p}')
+
+    for dir_entry in "${dirs_list[@]}"; do
+        rmdir -v "${dir_entry}" || :
+    done
+fi
+
 chown -cR --reference=. .
