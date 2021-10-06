@@ -48,6 +48,7 @@ core_env_file=$(mktemp)
 cleanup_list+=("${core_env_file}")
 printf "CORE_IMAGE=ghcr.io/nethserver/core:%s\n" "${IMAGETAG:-latest}" >> "${core_env_file}"
 printf "REDIS_IMAGE=ghcr.io/nethserver/redis:%s\n" "${IMAGETAG:-latest}" >> "${core_env_file}"
+chmod -c 644 "${core_env_file}"
 buildah add "${container}" ${core_env_file} /etc/nethserver/core.env
 buildah config \
     --label="org.nethserver.images=ghcr.io/nethserver/redis:${IMAGETAG:-latest}" \
