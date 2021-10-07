@@ -253,7 +253,6 @@ export default {
     //   // var context = this;
     //   // context.initWebSocket();
     //   // setTimeout(function () { ////
-    //   //   //// asdf
     //   //   context.retrieveClusterStatus(true);
     //   // }, 500);
     // },
@@ -369,7 +368,7 @@ export default {
         }
       }
 
-      //// TODO later: update cluster status in vuex store
+      //// TODO later: update cluster status in vuex store?
     },
     async listUpdates() {
       console.log("listUpdates"); ////

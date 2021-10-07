@@ -26,52 +26,52 @@
         >
       </div>
     </div>
-    <div class="bx--row">
-      <div v-if="loading.nodes" class="bx--col-md-4 bx--col-max-4">
-        <cv-tile light>
-          <cv-skeleton-text
-            :paragraph="true"
-            :line-count="12"
-          ></cv-skeleton-text>
-        </cv-tile>
-      </div>
+    <div class="bx--row loader-large nodes-loader" v-if="!nodes.length"></div>
+    <div class="bx--row" v-else>
       <div
-        v-else
-        v-for="nodeId in nodes"
-        :key="nodeId"
+        v-for="node in nodes"
+        :key="node.id"
         class="bx--col-md-4 bx--col-max-4"
       >
+        <div v-if="!nodesStatus[node.id]">
+          <cv-tile light>
+            <cv-skeleton-text
+              :paragraph="true"
+              :line-count="12"
+            ></cv-skeleton-text>
+          </cv-tile>
+        </div>
         <NsNodeCard
-          v-if="nodesStatus[nodeId]"
-          :nodeId="nodeId"
+          v-else
+          :nodeId="node.id.toString()"
           :nodeLabel="$t('common.node')"
-          :isLeader="nodesStatus[nodeId].leader"
+          :isLeader="node.id == leaderNode.id"
           :leaderLabel="$t('nodes.leader')"
           :workerLabel="$t('nodes.worker')"
           :cpuUsageLabel="$t('nodes.cpu_usage')"
           :cpuLoadLabel="$t('nodes.cpu_load')"
           :cpuLoadTooltip="$t('nodes.cpu_load_tooltip')"
-          :memoryUsedLabel="$t('nodes.memory_used')"
-          :swapUsedLabel="$t('nodes.swap_used')"
-          :diskUsedLabel="$t('nodes.used')"
-          :cpuUsage="nodesStatus[nodeId].cpu.usage"
+          :memoryUsageLabel="$t('nodes.memory_usage')"
+          :swapUsageLabel="$t('nodes.swap_usage')"
+          :diskUsageLabel="$t('nodes.usage')"
+          :cpuUsage="nodesStatus[node.id].cpu.usage"
           :cpuUsageWarningTh="80"
-          :load1Min="nodesStatus[nodeId].load['1min']"
-          :load5Min="nodesStatus[nodeId].load['5min']"
-          :load15Min="nodesStatus[nodeId].load['15min']"
-          :cpuLoadWarningTh="1"
-          :memoryUsed="nodesStatus[nodeId].memoryUsed"
+          :load1Min="nodesStatus[node.id].load['1min']"
+          :load5Min="nodesStatus[node.id].load['5min']"
+          :load15Min="nodesStatus[node.id].load['15min']"
+          :cpuLoadWarningTh="90"
+          :memoryUsage="nodesStatus[node.id].memoryUsage"
           :memoryWarningTh="80"
-          :swapUsed="nodesStatus[nodeId].swapUsed"
+          :swapUsage="nodesStatus[node.id].swapUsage"
           :swapWarningTh="80"
-          :disksUsed="nodesStatus[nodeId].disksUsed"
+          :disksUsage="nodesStatus[node.id].disksUsage"
           :diskWarningTh="80"
           light
         >
           <NsButton
             kind="ghost"
             :icon="ZoomIn20"
-            @click="goToNodeDetails(nodeId)"
+            @click="goToNodeDetail(node.id)"
             >{{ $t("common.details") }}</NsButton
           >
         </NsNodeCard>
@@ -159,7 +159,7 @@ export default {
   },
   data() {
     return {
-      NODE_STATUS_TIME_INTERVAL: 3000,
+      NODE_STATUS_TIME_INTERVAL: 5000,
       isShownAddNodeModal: false,
       joinCode: "",
       isCopyClipboardHintShown: false,
@@ -177,6 +177,13 @@ export default {
   },
   computed: {
     ...mapState(["leaderListenPort"]),
+    leaderNode: function () {
+      if (!this.nodes) {
+        return null;
+      }
+
+      return this.nodes.find((node) => node.local);
+    },
   },
   beforeRouteEnter(to, from, next) {
     next((vm) => {
@@ -189,7 +196,7 @@ export default {
     next();
   },
   created() {
-    this.retrieveClusterNodes();
+    this.retrieveClusterStatus();
   },
   beforeDestroy() {
     clearInterval(this.nodesStatusInterval);
@@ -216,26 +223,41 @@ export default {
         console.log("joinCode", this.joinCode); ////
       }
     },
-    async retrieveClusterNodes() {
-      this.loading.nodes = true;
-      const [errNodes, responseNodes] = await to(this.getNodes());
+    async retrieveClusterStatus() {
+      const taskAction = "get-cluster-status";
+      const completedCallback = this.getClusterStatusCompleted;
 
-      if (errNodes) {
-        console.error("error retrieving cluster nodes", errNodes);
-        this.error.nodes = this.getErrorMessage(errNodes);
-        this.loading.nodes = false;
+      // register to task completion
+      this.$root.$once(taskAction + "-completed", completedCallback);
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        this.createErrorNotification(
+          err,
+          this.$t("task.cannot_create_task", { action: taskAction })
+        );
         return;
       }
+    },
+    getClusterStatusCompleted(taskContext, taskResult) {
+      console.log("getClusterStatusCompleted"); ////
+      console.log("taskResult", taskResult); ////
 
-      this.nodes = responseNodes.data.data.list;
+      const clusterStatus = taskResult.output;
+      console.log("clusterStatus", clusterStatus); ////
+
+      this.nodes = clusterStatus.nodes.sort(this.sortByProperty("id"));
       this.loading.nodes = false;
-
-      //// remove mock
-      // this.nodes = ["1", "2", "3", "4", "5"];
-
-      console.log("this.nodes", this.nodes); ////
-
-      // this.error.nodes = "asdf" ////
 
       // immediately retrieve nodes status
       this.retrieveNodesStatus();
@@ -266,75 +288,106 @@ export default {
     async retrieveNodesStatus() {
       console.log("retrieveNodesStatus"); ////
 
-      for (const nodeId of this.nodes) {
-        //// need to fix permission issue on get-node-status
-        // const taskAction = "get-node-status";
+      for (const node of this.nodes) {
+        const nodeId = node.id;
+        const taskAction = "get-node-status";
 
-        // // register to task events
-        // this.$root.$once(
-        //   taskAction + "-completed",
-        //   this.getNodeStatusCompleted
-        // );
-        // this.$root.$once(taskAction + "-aborted", this.getNodeStatusAborted);
+        // register to task events
+        this.$root.$once(
+          taskAction + "-completed-node-" + nodeId,
+          this.getNodeStatusCompleted
+        );
 
-        // const res = await to(
-        //   this.createNodeTask(nodeId, {
-        //     action: taskAction,
-        //     extra: {
-        //       title: this.$t("action." + taskAction),
-        //       isNotificationHidden: true,
-        //       node: nodeId,
-        //     },
-        //   })
-        // );
-        // const err = res[0];
-
-        // if (err) {
-        //   this.createErrorNotification(
-        //     err,
-        //     this.$t("task.cannot_create_task", { action: taskAction })
-        //   );
-        //   return;
-        // }
-
-        //// remove mock
-        if (this.useNodesStatusMock) {
-          const nodeStatus = {
-            leader: nodeId == "1",
-            cpu: { usage: Math.ceil(Math.random() * 100) },
-            load: {
-              "1min": Math.ceil(Math.random() * 200) / 100,
-              "5min": Math.ceil(Math.random() * 200) / 100,
-              "15min": Math.ceil(Math.random() * 200) / 100,
+        const res = await to(
+          this.createNodeTask(nodeId, {
+            action: taskAction,
+            extra: {
+              title: this.$t("action." + taskAction),
+              isNotificationHidden: true,
+              node: nodeId,
             },
-            memoryUsed: Math.ceil(Math.random() * 100),
-            swapUsed: Math.ceil(Math.random() * 100),
-            disksUsed: [
-              {
-                name: "/dev/vda1",
-                used: Math.ceil(Math.random() * 100),
-              },
-              {
-                name: "/dev/vda2",
-                used: Math.ceil(Math.random() * 100),
-              },
-            ],
-          };
+          })
+        );
+        const err = res[0];
 
-          // needed for reactivity (see https://vuejs.org/v2/guide/reactivity.html#For-Objects)
-          this.$set(this.nodesStatus, nodeId, nodeStatus);
+        if (err) {
+          this.createErrorNotification(
+            err,
+            this.$t("task.cannot_create_task", { action: taskAction })
+          );
         }
+
+        // //// remove mock
+        // if (this.useNodesStatusMock) {
+        //   const nodeStatus = {
+        //     leader: nodeId == "1",
+        //     cpu: { usage: Math.ceil(Math.random() * 100) },
+        //     load: {
+        //       "1min": Math.ceil(Math.random() * 200) / 100,
+        //       "5min": Math.ceil(Math.random() * 200) / 100,
+        //       "15min": Math.ceil(Math.random() * 200) / 100,
+        //     },
+        //     memoryUsage: Math.ceil(Math.random() * 100),
+        //     swapUsage: Math.ceil(Math.random() * 100),
+        //     disksUsage: [
+        //       {
+        //         name: "/dev/vda1",
+        //         usage: Math.ceil(Math.random() * 100),
+        //       },
+        //       {
+        //         name: "/dev/vda2",
+        //         usage: Math.ceil(Math.random() * 100),
+        //       },
+        //     ],
+        //   };
+
+        //   // needed for reactivity (see https://vuejs.org/v2/guide/reactivity.html#For-Objects)
+        //   this.$set(this.nodesStatus, nodeId, nodeStatus);
+        // }
       }
     },
     getNodeStatusCompleted(taskContext, taskResult) {
-      console.log("getNodeStatusCompleted", taskResult.output); ////
-      console.log("taskContext", taskContext); ////
+      console.log("getNodeStatusCompleted, nodeId", taskContext.extra.node); ////
+
+      const nodeId = taskContext.extra.node;
+      const nodeStatus = taskResult.output;
+
+      // round cpu load (sometimes it has roundoff error)
+      nodeStatus.load["1min"] = Math.round(nodeStatus.load["1min"]);
+      nodeStatus.load["5min"] = Math.round(nodeStatus.load["5min"]);
+      nodeStatus.load["15min"] = Math.round(nodeStatus.load["15min"]);
+
+      // memory and swap usage
+      nodeStatus.memoryUsage = Math.round(
+        (nodeStatus.memory.used / nodeStatus.memory.total) * 100
+      );
+      nodeStatus.swapUsage = Math.round(
+        (nodeStatus.swap.used / nodeStatus.swap.total) * 100
+      );
+
+      // disks usage
+      const disksUsage = [];
+      let diskIndex = 1;
+
+      for (const disk of nodeStatus.disks) {
+        const diskUsage = Math.round((disk.used / disk.total) * 100);
+        const diskId = this.$t("nodes.disk") + ` ${diskIndex}`;
+        disksUsage.push({ diskId: diskId, usage: diskUsage });
+        diskIndex++;
+      }
+      nodeStatus.disksUsage = disksUsage;
+
+      // needed for reactivity (see https://vuejs.org/v2/guide/reactivity.html#For-Objects)
+      this.$set(this.nodesStatus, nodeId, nodeStatus);
     },
-    getNodeStatusAborted(taskContext, taskResult) {
-      console.log("getNodeStatusAborted", taskResult); ////
-    },
-    goToNodeDetails(nodeId) {
-      console.log("goToNodeDetails", nodeId); ////
+    // getNodeStatusAborted(taskContext, taskResult) { ////
+    //   console.log("getNodeStatusAborted", taskResult); ////
+    // },
+    goToNodeDetail(nodeId) {
+      this.$router.push({
+        name: "NodeDetail",
+        params: { nodeId },
+      });
     },
   },
 };
@@ -342,6 +395,11 @@ export default {
 
 <style scoped lang="scss">
 @import "../styles/carbon-utils";
+
+.nodes-loader {
+  margin: $spacing-05 auto;
+  color: $interactive-01;
+}
 
 ol {
   list-style-type: decimal;

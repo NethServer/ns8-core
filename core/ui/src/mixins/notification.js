@@ -325,11 +325,14 @@ export default {
 
           if (taskStatus === "completed") {
             // emit an event so that the component that requested the task can handle the result
-            this.$root.$emit(
-              taskContext.action + "-completed",
-              taskContext,
-              taskResult
-            );
+
+            // get-node-status task is invoked in burst mode, need to distinguish events
+            const eventName =
+              taskContext.action == "get-node-status"
+                ? "get-node-status-completed-node-" + taskContext.extra.node
+                : taskContext.action + "-completed";
+
+            this.$root.$emit(eventName, taskContext, taskResult);
           }
 
           // set notification action

@@ -299,8 +299,14 @@
     "cpu_usage": "CPU usage",
     "cpu_load": "CPU load",
     "cpu_load_tooltip": "CPU average load of last 1 / 5 / 15 minutes",
-    "memory_used": "Memory used",
-    "swap_used": "Swap used",
-    "used": "used"
+    "memory_usage": "Memory usage",
+    "swap_usage": "Swap usage",
+    "disk": "Disk",
+    "usage": "usage"
+  },
+  "node_detail": {
+    "title": "Node detail",
+    "free": "Free",
+    "used": "Used"
   }
 }
