@@ -119,7 +119,7 @@ def list_installed(rdb):
     for m in rdb.scan_iter('module/*/environment'):
         vars = rdb.hgetall(m)
         url, sep, tag = vars['IMAGE_URL'].partition(":")
-        image = rdb.hget(f'module/{vars["MODULE_ID"]}', 'image')
+        image = url[url.rindex('/')+1:]
         logo = logos.get(image) or ''
         if url not in installed.keys():
             installed[url] = []

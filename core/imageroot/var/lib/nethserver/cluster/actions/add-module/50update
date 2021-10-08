@@ -88,12 +88,6 @@ else:
 # Increment the module sequence for image_id (e.g. traefik => traefik1)
 module_id = image_id + str(rdb.incr(f'cluster/module_sequence/{image_id}'))
 
-rdb.hset(f'module/{module_id}', mapping={
-    "image": image_id,
-    "image_url_override": "",
-    "redis_sha256": "",
-})
-
 # Allocate TCP ports
 if tcp_ports_demand > 0:
     allocate_tcp_ports_range(node_id, module_id, tcp_ports_demand)
@@ -135,10 +129,6 @@ add_module_result = agent.tasks.run(
 agent.assert_exp(add_module_result['exit_code'] == 0)
 
 outobj=add_module_result['output']
-
-rdb.hset(f'module/{module_id}', mapping={
-    "redis_sha256": outobj['redis_sha256'],
-})
 
 # Create a new Redis user for module_id and set the password and permissions
 agent.assert_exp(rdb.execute_command('ACL', 'SETUSER',
