@@ -40,13 +40,8 @@ agent.assert_exp(preserve_data is not None)
 
 rdb = agent.redis_connect(privileged=True)
 
-if rdb.exists(f'module/{module_id}') != 1:
-    json.dump({"field": "module_id", "parameter": "module_id", "value": module_id, "error": "module_not_found"}, fp=sys.stdout) # XXX: implement library function
-    agent.set_status('validation-failed')
-    sys.exit(2)
-
 node_id = int(rdb.hget(f'module/{module_id}/environment', 'NODE_ID'))
-
+agent.assert_exp(node_id > 0)
 
 # Invoke the module destructor, if defined. Rootfull modules must
 # implement one, to stop running services.
@@ -78,7 +73,7 @@ for kdef in rdb.scan_iter('*/default_instance/*'):
         rdb.delete(kdef)
 
 # Erase the module keyspace
-module_keys = list(rdb.scan_iter(f'module/{module_id}*'))
+module_keys = list(rdb.scan_iter(f'module/{module_id}/*'))
 if module_keys:
     rdb.delete(*module_keys)
 
