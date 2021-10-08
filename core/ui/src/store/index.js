@@ -14,7 +14,9 @@ export default new Vuex.Store({
     isSearchExpanded: false,
     taskErrorToShow: false,
     loggedUser: "",
+    isWebsocketConnected: false,
     socket: {
+      //// remove
       isConnected: false,
       message: "",
       reconnectError: false,
@@ -147,6 +149,9 @@ export default new Vuex.Store({
     setLeaderListenPort(state, value) {
       state.leaderListenPort = value;
     },
+    setWebsocketConnected(state, value) {
+      state.isWebsocketConnected = value;
+    },
     markAllNotificationsRead(state, unreadNotifications) {
       for (let notification of unreadNotifications) {
         notification.isRead = true;
@@ -243,6 +248,9 @@ export default new Vuex.Store({
     },
     setLeaderListenPortInStore(context, value) {
       context.commit("setLeaderListenPort", value);
+    },
+    setWebsocketConnectedInStore(context, value) {
+      context.commit("setWebsocketConnected", value);
     },
     markAllNotificationsReadInStore(context) {
       context.commit(

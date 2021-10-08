@@ -76,6 +76,12 @@ export default {
         )
       ) {
         toastTimeout = 3000;
+      } else if (
+        notification.action &&
+        notification.action.type === "execute"
+      ) {
+        // no timeout
+        toastTimeout = null;
       } else {
         // standard timeout
         toastTimeout = 5000;
@@ -84,7 +90,7 @@ export default {
       console.log("notification.id", notification.id); ////
 
       const toastId = this.$toast(toast, {
-        timeout: notification.action.type == "execute" ? null : toastTimeout,
+        timeout: toastTimeout,
         id: notification.id,
       });
 
@@ -148,14 +154,6 @@ export default {
         return;
       }
 
-      //// remove
-      if (payload.progress != 0 && payload.progress != 100) {
-        console.log("@@ PROGRESS", payload.progress); ////
-        console.log("@@ PAYLOAD", payload); ////
-        console.log("@@ taskPath", taskPath); ////
-        console.log("@@ taskId", taskId); ////
-      }
-
       const taskStatus = payload.status;
       const taskContext = contextResponse.data.data.context;
       let taskResult;
@@ -197,11 +195,6 @@ export default {
           (subTask) => subTask.context.id === taskContext.id
         );
 
-        //// remove
-        if (payload.progress != 0 && payload.progress != 100) {
-          console.log("@@ subtask! parent", taskContext.parent); ////
-        }
-
         if (!subTask) {
           // add subtask to subTasks list
 
@@ -227,17 +220,8 @@ export default {
             subTask.result = taskResult;
           }
         }
-
-        console.log("subtask status", taskStatus); ////
       } else {
         // root task
-
-        //// remove
-        if (payload.progress != 0 && payload.progress != 100) {
-          console.log("@@ root task"); ////
-        }
-
-        // console.log("ROOT TASK, PROGRESS", payload.progress); ////
 
         let notificationType;
 
@@ -319,11 +303,14 @@ export default {
 
           if (taskStatus === "completed") {
             // emit an event so that the component that requested the task can handle the result
-            this.$root.$emit(
-              taskContext.action + "-completed",
-              taskContext,
-              taskResult
-            );
+
+            // get-node-status task is invoked in burst mode, need to distinguish events
+            const eventName =
+              taskContext.action == "get-node-status"
+                ? "get-node-status-completed-node-" + taskContext.extra.node
+                : taskContext.action + "-completed";
+
+            this.$root.$emit(eventName, taskContext, taskResult);
           }
 
           // set notification action

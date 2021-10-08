@@ -29,9 +29,6 @@
         <cv-side-nav-menu-item href="javascript:void(0)">
           Menu item
         </cv-side-nav-menu-item>
-        <cv-side-nav-menu-item href="javascript:void(0)">
-          Menu item
-        </cv-side-nav-menu-item>
       </cv-side-nav-menu>
       <cv-side-nav-menu
         :title="$t('account_provider.title')"
@@ -42,9 +39,6 @@
           Menu item
         </cv-side-nav-menu-item>
         <cv-side-nav-menu-item href="javascript:void(0)" aria-current="page">
-          Menu item
-        </cv-side-nav-menu-item>
-        <cv-side-nav-menu-item href="javascript:void(0)">
           Menu item
         </cv-side-nav-menu-item>
       </cv-side-nav-menu>

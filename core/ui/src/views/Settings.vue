@@ -40,28 +40,6 @@
           <h6>Test</h6>
         </NsTile>
       </div>
-      <div class="bx--col-md-4 bx--col-lg-4">
-        <NsTile
-          :light="true"
-          class="content-tile"
-          kind="clickable"
-          @click="actionClick"
-          :icon="Cube32"
-        >
-          <h6>Test</h6>
-        </NsTile>
-      </div>
-      <div class="bx--col-md-4 bx--col-lg-4">
-        <NsTile
-          :light="true"
-          class="content-tile"
-          kind="clickable"
-          @click="actionClick"
-          :icon="Cube32"
-        >
-          <h6>Test</h6>
-        </NsTile>
-      </div>
     </div>
   </div>
 </template>

@@ -42,6 +42,12 @@ Vue.use(ns8Lib);
 import { PageTitleService } from "@nethserver/ns8-ui-lib";
 Vue.mixin(PageTitleService);
 
+// filters
+import { Filters } from "@nethserver/ns8-ui-lib";
+for (const f in Filters) {
+  Vue.filter(f, Filters[f]);
+}
+
 // i18n
 import VueI18n from "vue-i18n";
 Vue.use(VueI18n);

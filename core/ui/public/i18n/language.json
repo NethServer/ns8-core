@@ -30,7 +30,8 @@
     "use_landscape_mode_description": "This page is optimized for landscape mode",
     "got_it": "Got it",
     "global_shortcut": "Global shortcut",
-    "join_code": "Join code"
+    "join_code": "Join code",
+    "reload_page": "Reload page"
   },
   "error": {
     "error": "Error",
@@ -48,6 +49,12 @@
     "cannot_retrieve_cluster_nodes": "Cannot retrieve cluster nodes",
     "cannot_retrieve_installed_apps": "Cannot retrieve installed apps",
     "cannot_retrieve_cluster_tasks": "Cannot retrieve cluster tasks"
+  },
+  "websocket": {
+    "websocket_disconnected": "Websocket disconnected",
+    "websocket_disconnected_description": "Websocket connection is unstable. Please wait until reconnection or reload page",
+    "websocket_connected": "Websocket connected",
+    "websocket_connected_description": "Websocket connection established"
   },
   "password": {
     "hide_password": "Hide password",
@@ -292,8 +299,33 @@
     "cpu_usage": "CPU usage",
     "cpu_load": "CPU load",
     "cpu_load_tooltip": "CPU average load of last 1 / 5 / 15 minutes",
-    "memory_used": "Memory used",
-    "swap_used": "Swap used",
-    "used": "used"
+    "memory_usage": "Memory usage",
+    "swap_usage": "Swap usage",
+    "disk": "Disk",
+    "usage": "usage"
+  },
+  "node_detail": {
+    "title": "Node detail",
+    "cpu": "CPU",
+    "memory": "Memory",
+    "swap": "Swap",
+    "total": "Total",
+    "free": "Free",
+    "used": "Used",
+    "usage": "Usage",
+    "load": "Load",
+    "core": "Core",
+    "disk": "Disk",
+    "disks": "Disks",
+    "device": "Device",
+    "file_system": "File system",
+    "mount_point": "Mount point",
+    "vpn": "VPN",
+    "last_seen": "Last seen",
+    "endpoint": "Endpoint",
+    "ip_address": "IP address",
+    "listen_port": "Listen port",
+    "data_received": "Data received",
+    "data_sent": "Data sent"
   }
 }

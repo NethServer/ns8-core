@@ -49,7 +49,8 @@ export default {
   ],
   data() {
     return {
-      CLUSTER_STATUS_TIME_INTERVAL: 10000,
+      //// TODO later
+      // CLUSTER_STATUS_TIME_INTERVAL: 10000,
       isMaster: true,
       isLoaded: false,
     };
@@ -59,7 +60,7 @@ export default {
   },
   created() {
     // register to events
-    this.$root.$on("login", this.initNs8);
+    this.$root.$on("login", this.initWebSocket);
     this.$root.$on("logout", this.logout);
     this.$root.$on("createErrorNotification", this.createErrorNotification);
     this.$root.$on(
@@ -67,6 +68,8 @@ export default {
       this.configureKeyboardShortcuts
     );
     this.$root.$on("clusterInitialized", this.onClusterInitialized);
+    this.$root.$on("websocketConnected", this.onWebsocketConnected);
+    this.$root.$on("websocketDisconnected", this.onWebsocketDisconnected);
 
     this.configureAxiosInterceptors();
     this.configureEventListeners();
@@ -102,6 +105,7 @@ export default {
       "toggleSearchExpandedInStore",
       "toggleAppDrawerShownInStore",
       "setLeaderListenPortInStore",
+      "setWebsocketConnectedInStore",
     ]),
     configureKeyboardShortcuts(window) {
       window.addEventListener(
@@ -127,19 +131,16 @@ export default {
       }
     },
     async refreshToken(loginInfo) {
+      console.log("refreshToken, loginInfo", loginInfo); ////
+
       // invoke refresh token API
       const res = await to(this.executeRefreshToken());
       const refreshTokenError = res[0];
 
-      if (refreshTokenError) {
-        this.createErrorNotification(
-          refreshTokenError,
-          this.$t("error.cannot_refresh_token")
-        );
-        return;
+      if (!refreshTokenError) {
+        this.setLoggedUserInStore(loginInfo.username);
+        this.initWebSocket();
       }
-      this.setLoggedUserInStore(loginInfo.username);
-      this.initNs8();
     },
     configureEventListeners() {
       // needed to detect click outside mobile side menu, app drawer and
@@ -209,35 +210,17 @@ export default {
 
       this.deleteFromStorage("loginInfo");
       this.setLoggedUserInStore("");
-      clearInterval(this.clusterStatusInterval);
+
+      //// TODO later
+      // clearInterval(this.clusterStatusInterval);
       this.closeWebSocket();
+      this.isLoaded = true;
 
       // redirect to login page
       if (this.$route.name !== "Login") {
         this.$router.push("/login");
       }
     },
-    // invoked on webapp loading and after logging in
-    initNs8() {
-      var context = this;
-      context.initWebSocket();
-      setTimeout(function () {
-        context.retrieveClusterStatus(true);
-      }, 500);
-    },
-    // async retrieveClusterTasks() { ////
-    //   const [clusterTasksError, response] = await to(this.getClusterTasks());
-
-    //   if (clusterTasksError) {
-    //     this.createErrorNotification(
-    //       clusterTasksError,
-    //       this.$t("error.cannot_retrieve_cluster_tasks")
-    //     );
-    //     return;
-    //   }
-
-    //   console.log("clusterTasks response", response); ////
-    // },
     retrieveRecurringClusterStatus() {
       this.retrieveClusterStatus(false);
     },
@@ -249,7 +232,7 @@ export default {
         : this.getClusterStatusCompleted;
 
       // register to task completion
-      this.$root.$on(taskAction + "-completed", completedCallback);
+      this.$root.$once(taskAction + "-completed", completedCallback);
 
       const res = await to(
         this.createClusterTask({
@@ -283,20 +266,26 @@ export default {
       }
     },
     onClusterInitialized() {
+      this.setClusterInitializedInStore(true);
+
       // check for software updates
       this.listUpdates();
 
+      //// TODO later
+      // immediately retrieve cluster status
+      // this.retrieveRecurringClusterStatus();
+
+      //// TODO later
       // periodically retrieve cluster status
-      this.clusterStatusInterval = setInterval(
-        this.retrieveRecurringClusterStatus,
-        this.CLUSTER_STATUS_TIME_INTERVAL
-      );
+      // this.clusterStatusInterval = setInterval(
+      //   this.retrieveRecurringClusterStatus,
+      //   this.CLUSTER_STATUS_TIME_INTERVAL
+      // );
     },
     getInitialClusterStatusCompleted(taskContext, taskResult) {
       console.log("getInitialClusterStatusCompleted"); ////
 
       if (this.isMaster) {
-        this.$root.$off("get-cluster-status-completed");
         const clusterStatus = taskResult.output;
         console.log("clusterStatus", clusterStatus); ////
         let isClusterInitialized = clusterStatus.initialized; //// use const
@@ -329,11 +318,24 @@ export default {
       console.log("getClusterStatusCompleted"); ////
       console.log("taskResult", taskResult); ////
 
-      this.$root.$off("get-cluster-status-completed");
+      if (this.isMaster) {
+        const clusterStatus = taskResult.output;
+        console.log("clusterStatus", clusterStatus); ////
 
-      //// todo update cluster status in vuex store
+        // leader listen port
+        if (clusterStatus.nodes.length) {
+          const leaderNode = clusterStatus.nodes.find((el) => el.local);
+          const leaderListenPort = leaderNode.vpn.listen_port;
+          console.log("set leaderListenPort", leaderListenPort); ////
+          this.setLeaderListenPortInStore(leaderListenPort);
+        }
+      }
+
+      //// TODO later: update cluster status in vuex store?
     },
     async listUpdates() {
+      console.log("listUpdates"); ////
+
       const taskAction = "list-updates";
       // register to task completion
       this.$root.$on(taskAction + "-completed", this.listUpdatesCompleted);
@@ -358,13 +360,11 @@ export default {
             "/init?page=redirect&endpoint=" +
               err.response.data.data.split(":")[0]
           );
-          this.isLoaded = true;
         } else {
           this.createErrorNotification(
             err,
             this.$t("task.cannot_create_task", { action: taskAction })
           );
-          this.isLoaded = true;
           return;
         }
       }
@@ -388,6 +388,45 @@ export default {
       }); ////
 
       this.setUpdatesInStore(updates);
+    },
+    onWebsocketConnected() {
+      this.setWebsocketConnectedInStore(true);
+      this.retrieveClusterStatus(true);
+
+      if (this.$options.sockets.notification) {
+        this.hideNotification(this.$options.sockets.notification.id);
+        const notification = {
+          title: this.$t("websocket.websocket_connected"),
+          description: this.$t("websocket.websocket_connected_description"),
+          type: "success",
+          actionLabel: null,
+          action: {
+            type: "execute",
+            execute: "window.location.reload()",
+          },
+        };
+        this.$options.sockets.notification = null;
+        this.createNotification(notification);
+      }
+    },
+    onWebsocketDisconnected() {
+      this.setWebsocketConnectedInStore(false);
+
+      // do not show "websocket disconnected" notification when logged out
+      if (this.loggedUser && !this.$options.sockets.notification) {
+        const notification = {
+          title: this.$t("websocket.websocket_disconnected"),
+          description: this.$t("websocket.websocket_disconnected_description"),
+          type: "warning",
+          actionLabel: this.$t("common.reload_page"),
+          action: {
+            type: "execute",
+            execute: "window.location.reload()",
+          },
+        };
+        this.$options.sockets.notification = notification;
+        this.createNotification(notification);
+      }
     },
     createErrorNotification(err, message) {
       const notification = {

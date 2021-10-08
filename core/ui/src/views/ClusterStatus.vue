@@ -1,5 +1,5 @@
 <template>
-  <div class="bx--grid bx--grid--full-width" v-if="$store.state.isClusterInitialized">
+  <div class="bx--grid bx--grid--full-width" v-if="isClusterInitialized">
     <div class="bx--row">
       <div class="bx--col-lg-16 page-title">
         <h2>
@@ -312,10 +312,48 @@ export default {
     };
   },
   computed: {
-    ...mapState(["notifications"]),
+    ...mapState([
+      "notifications",
+      "loggedUser",
+      "isWebsocketConnected",
+      "isClusterInitialized",
+    ]),
     now() {
       return this.$date(new Date());
     },
+  },
+  watch: {
+    isWebsocketConnected: function () {
+      console.log("watch isWebsocketConnected", this.isWebsocketConnected); ////
+
+      if (this.isWebsocketConnected && this.loggedUser) {
+        // retrieve initial data
+        this.retrieveClusterNodes();
+        this.listInstalledModules();
+      }
+    },
+    loggedUser: function () {
+      console.log("watch loggedUser", this.loggedUser); ////
+
+      if (this.isWebsocketConnected && this.loggedUser) {
+        // retrieve initial data
+        this.retrieveClusterNodes();
+        this.listInstalledModules();
+      }
+    },
+  },
+  created() {
+    console.log(
+      "created, isWebsocketConnected, loggedUser",
+      this.isWebsocketConnected,
+      this.loggedUser
+    ); ////
+
+    if (this.isWebsocketConnected && this.loggedUser) {
+      // retrieve initial data
+      this.retrieveClusterNodes();
+      this.listInstalledModules();
+    }
   },
   beforeRouteEnter(to, from, next) {
     next((vm) => {
@@ -329,12 +367,9 @@ export default {
     this.queryParamsToDataForCore(this, to.query);
     next();
   },
-  created() {
-    this.$root.$on("websocket-connected", this.getInitialData);
-    this.getInitialData();
-  },
   methods: {
     async retrieveClusterNodes() {
+      //// retrieve cluster status instead of retrieveClusterNodes? It provides more info
       this.loading.nodes = true;
       const [errNodes, responseNodes] = await to(this.getNodes());
 
@@ -353,7 +388,7 @@ export default {
       const taskAction = "list-installed-modules";
 
       // register to task completion
-      this.$root.$on(
+      this.$root.$once(
         taskAction + "-completed",
         this.listInstalledModulesCompleted
       );
@@ -376,20 +411,7 @@ export default {
         return;
       }
     },
-    getInitialData() {
-      var context = this;
-      setTimeout(function () {
-        const loginInfo = context.getFromStorage("loginInfo");
-
-        if (loginInfo) {
-          context.retrieveClusterNodes();
-          context.listInstalledModules();
-        }
-      }, 500);
-    },
     listInstalledModulesCompleted(taskContext, taskResult) {
-      // unregister from event
-      this.$root.$off("list-installed-modules-completed");
       this.loading.apps = false;
       let apps = [];
 
