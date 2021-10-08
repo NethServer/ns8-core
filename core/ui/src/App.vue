@@ -58,22 +58,6 @@ export default {
   computed: {
     ...mapState(["loggedUser", "isClusterInitialized"]),
   },
-  // watch: { ////
-  //   isWebsocketConnected: function () {
-  //     console.log("watch isWebsocketConnected", this.isWebsocketConnected); ////
-
-  //     if (this.isWebsocketConnected && this.isClusterInitialized) {
-  //       this.retrieveClusterStatus(true);
-  //     }
-  //   },
-  //   isClusterInitialized: function () {
-  //     console.log("watch isClusterInitialized", this.isClusterInitialized); ////
-
-  //     if (this.isWebsocketConnected && this.isClusterInitialized) {
-  //       this.retrieveClusterStatus(true);
-  //     }
-  //   },
-  // },
   created() {
     // register to events
     this.$root.$on("login", this.initWebSocket);
@@ -153,19 +137,8 @@ export default {
       const res = await to(this.executeRefreshToken());
       const refreshTokenError = res[0];
 
-      // if (refreshTokenError) { //// remove
-      // console.log("cannot refresh token", refreshTokenError);
-      // logout;
-      // this.createErrorNotification(
-      //   refreshTokenError,
-      //   this.$t("error.cannot_refresh_token")
-      // );
-      // return;
-      // }
-
       if (!refreshTokenError) {
         this.setLoggedUserInStore(loginInfo.username);
-        // this.initNs8(); ////
         this.initWebSocket();
       }
     },
@@ -248,14 +221,6 @@ export default {
         this.$router.push("/login");
       }
     },
-    // invoked on webapp loading and after logging in
-    // initNs8() { ////
-    //   // var context = this;
-    //   // context.initWebSocket();
-    //   // setTimeout(function () { ////
-    //   //   context.retrieveClusterStatus(true);
-    //   // }, 500);
-    // },
     retrieveRecurringClusterStatus() {
       this.retrieveClusterStatus(false);
     },
@@ -283,8 +248,6 @@ export default {
       if (err) {
         // check if node is a worker
         if (err.response.status == 403) {
-          console.log("403, err", err); ////
-
           this.isMaster = false;
           // redirect to worker page
           this.$router.replace(
@@ -391,8 +354,6 @@ export default {
       if (err) {
         // check if node is a worker
         if (err.response.status == 403) {
-          console.log("403, err", err); ////
-
           this.isMaster = false;
           // redirect to worker page
           this.$router.replace(

@@ -25,15 +25,15 @@ Default.args = {
   swapUsageLabel: "Swap usage",
   diskUsageLabel: "usage",
   cpuUsage: 42,
-  cpuUsageWarningTh: 80,
+  cpuUsageWarningTh: 90,
   load1Min: 0.2,
   load5Min: 0.5,
   load15Min: 1.4,
-  cpuLoadWarningTh: 1,
+  cpuLoadWarningTh: 90,
   memoryUsage: 88,
-  memoryWarningTh: 80,
+  memoryWarningTh: 90,
   swapUsage: 23,
-  swapWarningTh: 80,
+  swapWarningTh: 90,
   disksUsage: [
     {
       diskId: "Disk 1",
@@ -44,7 +44,7 @@ Default.args = {
       usage: 93,
     },
   ],
-  diskWarningTh: 80,
+  diskWarningTh: 90,
   light: false,
   slotContent: "Slot content",
 };

@@ -306,7 +306,26 @@
   },
   "node_detail": {
     "title": "Node detail",
+    "cpu": "CPU",
+    "memory": "Memory",
+    "swap": "Swap",
+    "total": "Total",
     "free": "Free",
-    "used": "Used"
+    "used": "Used",
+    "usage": "Usage",
+    "load": "Load",
+    "core": "Core",
+    "disk": "Disk",
+    "disks": "Disks",
+    "device": "Device",
+    "file_system": "File system",
+    "mount_point": "Mount point",
+    "vpn": "VPN",
+    "last_seen": "Last seen",
+    "endpoint": "Endpoint",
+    "ip_address": "IP address",
+    "listen_port": "Listen port",
+    "data_received": "Data received",
+    "data_sent": "Data sent"
   }
 }

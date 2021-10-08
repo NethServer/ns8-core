@@ -340,8 +340,6 @@ export default {
 
       if (err) {
         if (err.response.status == 403) {
-          console.log("403, err", err); ////
-
           this.isMaster = false;
         } else {
           this.createErrorNotification(
@@ -393,8 +391,6 @@ export default {
 
       if (err) {
         if (err.response.status == 403) {
-          console.log("403, err", err); ////
-
           this.isMaster = false;
         } else {
           this.createErrorNotification(
@@ -541,8 +537,6 @@ export default {
 
       if (err) {
         if (err.response.status == 403) {
-          console.log("403, err", err); ////
-
           this.isMaster = false;
         } else {
           this.createErrorNotification(
@@ -652,8 +646,6 @@ export default {
 
       if (err) {
         if (err.response.status == 403) {
-          console.log("403, err", err); ////
-
           this.isMaster = false;
         } else {
           this.createErrorNotification(
@@ -770,8 +762,6 @@ export default {
 
       if (err) {
         if (err.response.status == 403) {
-          console.log("403, err", err); ////
-
           this.isMaster = false;
         } else {
           this.createErrorNotification(

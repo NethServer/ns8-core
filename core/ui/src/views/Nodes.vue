@@ -55,17 +55,17 @@
           :swapUsageLabel="$t('nodes.swap_usage')"
           :diskUsageLabel="$t('nodes.usage')"
           :cpuUsage="nodesStatus[node.id].cpu.usage"
-          :cpuUsageWarningTh="80"
+          :cpuUsageWarningTh="90"
           :load1Min="nodesStatus[node.id].load['1min']"
           :load5Min="nodesStatus[node.id].load['5min']"
           :load15Min="nodesStatus[node.id].load['15min']"
           :cpuLoadWarningTh="90"
           :memoryUsage="nodesStatus[node.id].memoryUsage"
-          :memoryWarningTh="80"
+          :memoryWarningTh="90"
           :swapUsage="nodesStatus[node.id].swapUsage"
-          :swapWarningTh="80"
+          :swapWarningTh="90"
           :disksUsage="nodesStatus[node.id].disksUsage"
-          :diskWarningTh="80"
+          :diskWarningTh="90"
           light
         >
           <NsButton
@@ -166,7 +166,6 @@ export default {
       nodes: [],
       nodesStatus: {},
       nodesStatusInterval: null,
-      useNodesStatusMock: true, //// remove
       loading: {
         nodes: true,
       },
@@ -225,10 +224,12 @@ export default {
     },
     async retrieveClusterStatus() {
       const taskAction = "get-cluster-status";
-      const completedCallback = this.getClusterStatusCompleted;
 
       // register to task completion
-      this.$root.$once(taskAction + "-completed", completedCallback);
+      this.$root.$once(
+        taskAction + "-completed",
+        this.getClusterStatusCompleted
+      );
 
       const res = await to(
         this.createClusterTask({
@@ -251,11 +252,8 @@ export default {
     },
     getClusterStatusCompleted(taskContext, taskResult) {
       console.log("getClusterStatusCompleted"); ////
-      console.log("taskResult", taskResult); ////
 
       const clusterStatus = taskResult.output;
-      console.log("clusterStatus", clusterStatus); ////
-
       this.nodes = clusterStatus.nodes.sort(this.sortByProperty("id"));
       this.loading.nodes = false;
 
@@ -286,8 +284,6 @@ export default {
       }, 1000);
     },
     async retrieveNodesStatus() {
-      console.log("retrieveNodesStatus"); ////
-
       for (const node of this.nodes) {
         const nodeId = node.id;
         const taskAction = "get-node-status";
@@ -316,34 +312,6 @@ export default {
             this.$t("task.cannot_create_task", { action: taskAction })
           );
         }
-
-        // //// remove mock
-        // if (this.useNodesStatusMock) {
-        //   const nodeStatus = {
-        //     leader: nodeId == "1",
-        //     cpu: { usage: Math.ceil(Math.random() * 100) },
-        //     load: {
-        //       "1min": Math.ceil(Math.random() * 200) / 100,
-        //       "5min": Math.ceil(Math.random() * 200) / 100,
-        //       "15min": Math.ceil(Math.random() * 200) / 100,
-        //     },
-        //     memoryUsage: Math.ceil(Math.random() * 100),
-        //     swapUsage: Math.ceil(Math.random() * 100),
-        //     disksUsage: [
-        //       {
-        //         name: "/dev/vda1",
-        //         usage: Math.ceil(Math.random() * 100),
-        //       },
-        //       {
-        //         name: "/dev/vda2",
-        //         usage: Math.ceil(Math.random() * 100),
-        //       },
-        //     ],
-        //   };
-
-        //   // needed for reactivity (see https://vuejs.org/v2/guide/reactivity.html#For-Objects)
-        //   this.$set(this.nodesStatus, nodeId, nodeStatus);
-        // }
       }
     },
     getNodeStatusCompleted(taskContext, taskResult) {
@@ -380,9 +348,6 @@ export default {
       // needed for reactivity (see https://vuejs.org/v2/guide/reactivity.html#For-Objects)
       this.$set(this.nodesStatus, nodeId, nodeStatus);
     },
-    // getNodeStatusAborted(taskContext, taskResult) { ////
-    //   console.log("getNodeStatusAborted", taskResult); ////
-    // },
     goToNodeDetail(nodeId) {
       this.$router.push({
         name: "NodeDetail",

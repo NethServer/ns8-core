@@ -10,6 +10,7 @@ import SettingsSoftwareRepositories from "../views/SettingsSoftwareRepositories"
 import SoftwareCenterAppInstances from "../views/SoftwareCenterAppInstances";
 import InitializeCluster from "../views/InitializeCluster";
 import Nodes from "../views/Nodes";
+import NodeDetail from "../views/NodeDetail";
 
 Vue.use(VueRouter);
 
@@ -64,6 +65,11 @@ const routes = [
     path: "/nodes",
     name: "Nodes",
     component: Nodes,
+  },
+  {
+    path: "/nodes/:nodeId",
+    name: "NodeDetail",
+    component: NodeDetail,
   },
 ];
 
