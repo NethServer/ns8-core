@@ -181,7 +181,7 @@ cluster.grants.grant(rdb, action_clause="read-*", to_clause="reader", on_clause=
 EOF
 
 echo "Install Traefik:"
-add-module traefik 1
+add-module ghcr.io/nethserver/traefik:latest 1
 
 echo "Setting default admin password:"
 add-user --role owner --password "${ADMIN_PASSWORD:-Nethesis,1234}" admin
