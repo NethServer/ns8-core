@@ -69,7 +69,7 @@ authorization.
 Some key rule examples:
 
 * `module/{module_id}/environment` The key type is HASH. It stores
-  environment variables for the module agent of *module_id*.
+  a copy environment variables from the module agent of *module_id*.
 
 * `node/{node_id}/vpn` The key type is HASH. It stores the cluster VPN
   configuration applied by the node agent *node_id*
@@ -499,9 +499,9 @@ The cluster also exposes a [`get-module-info`](../core/imageroot/var/lib/nethser
 
 ##### Environment variables
 
-Environment variables are saved inside Redis at `module/<module_id>/environment`.
+Environment variables are copied to Redis at `module/<module_id>/environment`.
 
-Each action has access to all environment variables:
+Each action has access to environment variables. They are:
 1. added by `add-module`
 2. defined from agent at runtime
 3. inherited by the agent
@@ -524,8 +524,9 @@ Other available variables:
 - `IMAGE_DIGEST`
 - `IMAGE_REPODIGEST`
 
-Environment variables added by the `add-module` are also saved inside `/home/<module_id>/.config/state/environment` file,
-i.e `/home/myapp1/.config/state/environment`.
+Environment variables added by the `add-module` and defined at runtime are
+saved inside `/home/<module_id>/.config/state/environment`, e.g.
+`/home/myapp1/.config/state/environment`.
 
 ##### Action commands
 

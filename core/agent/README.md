@@ -71,7 +71,10 @@ When all steps are executed successfully the action is considered `completed`. T
 - `<agent-id>/task/<task-id>/output`, collects data sent to FD 1 by all steps
 - `<agent-id>/task/<task-id>/error`, collects data sent to FD 2 by all steps
 - `<agent-id>/task/<task-id>/exit_code`, 0 if all steps were successful, otherwise the exit code of the failing step
-- `<agent-id>/environment`, additional environent variables passed to the action steps. The values are persisted to Redis if the action is completed
+- `<agent-id>/environment`, copy of additional environment variables passed
+  to the action steps. The values are stored in the local module
+  filesystem and copied to Redis if the action has completed successfully
+  or the `dump-env` command was called.
 
 The `validation-failed` status must be set manually with the `set-status` command, described below. When the `validation-failed`
 status is set, no more steps are invoked and the action exit code is set to 10 unless another non-zero exit code is returned by
@@ -100,7 +103,9 @@ An action step receives an additional file descriptor where it can write special
 A running action step receives the **current working directory** value and its operating system process environment from the agent. This environment consists of
 
 - variables inherited from the agent environment (e.g. PATH, PYTHONPATH...)
-- variables imported from the Redis DB, stored in the hash key `<AGENT_ID>/environment` (e.g. MODULE_ID, IMAGE_URL...)
+- variables loaded from the local filesystem (file `./environment`) and
+  copied to the Redis DB, under the hash key `<AGENT_ID>/environment`
+  (e.g. MODULE_ID, IMAGE_URL...)
 - runtime agent vars:
 
     * `AGENT_COMFD` (integer) The file descriptor number where **action commands** (see below) can be writte to
@@ -139,25 +144,32 @@ The same command in Python 3
 
 ### set-env
 
-The `set-env` command modifies an environment variable for subsequent steps.
-If the action is successful it persists the value in the Redis DB for future action invocations.
-For example
+The `set-env` command modifies an environment variable for subsequent
+steps. If the action is successful, it persists the value in the local
+filesystem `./environment` file for future action invocations. For example
 
     set-env FULLNAME "First User"
 
+The environment vars are also copied to the Redis DB under the
+`{agent_id}/environment` hash key.
+
 ### unset-env
 
-The `unset-env` command remove an environment variable for subsequent steps.
-If the action is successful it persists the value in the Redis DB for future action invocations.
+The `unset-env` command remove an environment variable for subsequent
+steps. If the action is successful, it persists the value in the local
+filesystem `./environment` file for future action invocations.
 For example
 
     unset-env FULLNAME
 
 ### dump-env
 
-The `dump-env` command writes to a special file all variables set using `set-env`. The file can be used for subsequent steps.
-The `dump-env` command is automatically called when the action is `completed`.
-The generated file is written to the agent current working directory as `./environment`.
+The `dump-env` command writes to a special file all variables set using
+`set-env`. The file can be used for subsequent steps. The `dump-env`
+command is automatically called when the action is `completed`. The
+generated file is written to the agent current working directory as
+`./environment`, and it is also copied to the Redis DB under the
+`{agent_id}/environment` hash key.
 
 For example
 
