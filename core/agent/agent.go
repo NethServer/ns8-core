@@ -64,17 +64,19 @@ var taskExpireDuration = 24 * time.Hour
 
 func prepareActionEnvironment() []string {
 	env := make([]string, 0)
-	key := agentPrefix + "/environment"
-	redisHash, err := rdb.HGetAll(ctx, key).Result()
-	if err == redis.Nil {
-		return env
-	}
+	content, err := os.ReadFile("./environment")
 	if err != nil {
-		log.Printf(SD_ERR+"Could not fetch Redis key %s: %v", key, err)
+		log.Printf(SD_ERR+"Cannot read ./environment file: %s", err)
 		return env
 	}
-	for key, value := range redisHash {
-		env = append(env, key+"="+value)
+	for _, line := range strings.Split(string(content), "\n") {
+		if line == "" {
+			continue
+		}
+		if strings.Contains(line, "=") == false {
+			continue
+		}
+		env = append(env, line)
 	}
 	return env
 }

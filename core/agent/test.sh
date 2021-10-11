@@ -36,7 +36,6 @@ podman run --rm --network=host --name redis --detach $redis_image --port 6380 --
 trap 'echo "Stopping processes..." ; kill -SIGUSR1 $agentpid ; podman stop redis ; rm -f environment;' EXIT
 
 podman exec -i redis redis-cli -p 6380 <<EOF
-HSET t/environment MYVARIABLE MYVALUE
 LPUSH t/tasks '{"id":"id-test","action":"test","data":${1:-\"OK\"}}'
 LPUSH t/tasks '{"id":"id-list","action":"list-actions","data":""}'
 EOF
@@ -44,6 +43,7 @@ EOF
 podman exec -i redis redis-cli -p 6380 monitor &
 sleep 1
 
+printf "MYVARIABLE=MYVALUE\n" > ./environment
 REDIS_ADDRESS=127.0.0.1:6380 ./agent t . &
 agentpid=$!
 
