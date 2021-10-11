@@ -136,7 +136,6 @@ printf "NODE_ID=1\n" > /var/lib/nethserver/node/state/environment
     cat <<EOF
 SET cluster/node_sequence 1
 SET node/1/tcp_ports_sequence 20000
-LPUSH cluster/tasks '{"id":"$(uuidgen)","action":"grant-actions","data":[{"action":"*","on":"cluster","to":"owner"}]}'
 EOF
 
     # Configure default module repository
