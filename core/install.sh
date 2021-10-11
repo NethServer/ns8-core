@@ -107,6 +107,7 @@ cluster_pwhash=$(echo -n "${cluster_password}" | sha256sum | awk '{print $1}')
     printf "REDIS_PASSWORD=%s\n" "${cluster_password}"
     printf "REDIS_ADDRESS=127.0.0.1:6379\n" # Override the cluster-leader /etc/hosts record
 )
+printf "NODE_ID=1\n" > /var/lib/nethserver/cluster/state/environment
 
 echo "Generating api-server password:"
 apiserver_password=$(podman exec redis redis-cli ACL GENPASS)
@@ -128,14 +129,13 @@ node_pwhash=$(echo -n "${node_password}" | sha256sum | awk '{print $1}')
     printf "REDIS_USER=node/1\n"
     printf "REDIS_PASSWORD=%s\n" "${node_password}"
 )
+printf "NODE_ID=1\n" > /var/lib/nethserver/node/state/environment
 
 (
     # Add the keys for the cluster bootstrap
     cat <<EOF
 SET cluster/node_sequence 1
 SET node/1/tcp_ports_sequence 20000
-HSET cluster/environment NODE_ID 1
-HSET node/1/environment NODE_ID 1
 LPUSH cluster/tasks '{"id":"$(uuidgen)","action":"grant-actions","data":[{"action":"*","on":"cluster","to":"owner"}]}'
 EOF
 
