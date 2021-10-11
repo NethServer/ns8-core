@@ -85,13 +85,6 @@ agent.assert_exp(rdb.hset(f'node/{node_id}/vpn', mapping={
     "listen_port": str(listen_port),
 }) >= 0)
 
-#
-# 1/d. Initialize the node agent environment
-#
-agent.assert_exp(rdb.hset(f'node/{node_id}/environment', mapping={
-    "NODE_ID": node_id
-}) >= 0)
-
 # Initialize the node ports sequence
 agent.assert_exp(rdb.set(f'node/{node_id}/tcp_ports_sequence', 20000) is True)
 
