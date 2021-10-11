@@ -27,6 +27,11 @@ import agent
 import uuid
 import hashlib
 
+def save_environment(env):
+    with open('state/environment', 'w') as envf:
+        for envk, envv in env.items():
+            envf.write(f"{envk}={envv}\n")
+
 def save_agent_env(module_id):
     """Generate and persist the Redis password for module_id
     """
@@ -39,9 +44,10 @@ def save_agent_env(module_id):
     return hashlib.sha256(redis_password.encode()).hexdigest()
 
 request = json.load(sys.stdin)
-image_url = request['image_url']
 module_id = request['module_id']
 is_rootfull = request['is_rootfull']
+module_environment = request['environment']
+image_url = module_environment['IMAGE_URL']
 
 # Launch the module agent (async)
 if is_rootfull:
@@ -50,6 +56,7 @@ if is_rootfull:
     os.mkdir(f'/var/lib/nethserver/{module_id}/state', mode=0o700)
     # Extract the module imageroot
     os.chdir(f'/var/lib/nethserver/{module_id}')
+    save_environment(module_environment)
     redis_sha256 = save_agent_env(module_id)
     agent.run_helper('extract-image', image_url).check_returncode()
     # Start the module agent
@@ -58,6 +65,7 @@ else: # rootless
     # Create the module dirs structure
     agent.run_helper('useradd', '-m', '-k', '/etc/nethserver/skel', '-s', '/bin/bash', module_id).check_returncode()
     os.chdir(f'/home/{module_id}/.config')
+    save_environment(module_environment)
     redis_sha256 = save_agent_env(module_id)
     # Extract the module imageroot and fix CWD permissions recursively
     agent.run_helper('extract-image', image_url).check_returncode()

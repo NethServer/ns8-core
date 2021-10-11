@@ -5,26 +5,40 @@
     "description": "Install a module on the worker node",
     "examples": [
         {
-            "image_url": "ghcr.io/nethserver/ldapproxy:latest",
-            "module_id": "ldapproxy2",
-            "is_rootfull": false
+            "module_id": "mymodule2",
+            "is_rootfull": false,
+            "environment": {
+                "IMAGE_URL": "ghcr.io/nethserver/mymodule:v2.3.2"
+            }
         }
     ],
     "type": "object",
     "required": [
-        "image_url",
         "module_id",
+        "environment",
         "is_rootfull"
     ],
     "properties": {
-        "image_url": {
-            "type": "string",
-            "title": "Image URL",
-            "description": "URL of the module root image",
-            "examples": [
-                "ghcr.io/nethserver/mymodule:v2.3.2"
-            ],
-            "minLength": 1
+        "environment": {
+            "type": "object",
+            "title": "Initial module environment",
+            "description": "Assign initial values to the module environment",
+            "properties": {
+                "IMAGE_URL": {
+                    "type": "string",
+                    "description": "URL of the module root image",
+                    "examples": [
+                        "ghcr.io/nethserver/mymodule:v2.3.2"
+                    ],
+                    "minLength": 1
+                }
+            },
+            "patternProperties": {
+                "^[^=]+$": {
+                    "type": "string"
+                }
+            },
+            "additionalProperties": false
         },
         "is_rootfull": {
             "type": "boolean",
