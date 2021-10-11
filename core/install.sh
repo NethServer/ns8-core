@@ -140,9 +140,8 @@ LPUSH cluster/tasks '{"id":"$(uuidgen)","action":"grant-actions","data":[{"actio
 EOF
 
     # Configure default module repository
-    # FIXME: remove testing flag before official release
     cat <<EOF
-HSET cluster/repository/default url https://raw.githubusercontent.com/NethServer/ns8-repomd/${REPOBRANCH:-repomd}/ status 1 testing 1
+HSET cluster/repository/default url https://raw.githubusercontent.com/NethServer/ns8-repomd/${REPOBRANCH:-repomd}/ status 1 testing 0
 EOF
 
     # Setup initial ACLs
