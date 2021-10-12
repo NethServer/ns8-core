@@ -21,6 +21,7 @@ fi
 
 echo "Build static UI files with node..."
 buildah run nodebuilder-dokuwiki sh -c "cd /usr/src/dokuwiki/ui       && npm install && npm run build"
+echo "//// nodebuilder result: $?"
 
 # Add imageroot directory to the container image
 buildah add "${container}" imageroot /imageroot
