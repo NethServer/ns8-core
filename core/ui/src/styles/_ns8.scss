@@ -227,6 +227,18 @@ h4 {
   background-color: $interactive-02;
 }
 
+.app-side-menu-content {
+  color: $ui-01 !important;
+}
+
+.app-side-menu-content .bx--side-nav__icon.bx--side-nav__icon--small {
+  color: $ui-01 !important;
+}
+
+.app-side-menu-content a.bx--side-nav__link > .bx--side-nav__link-text {
+  color: $ui-01 !important;
+}
+
 .app-side-menu-content .cv-side-nav-item-link.bx--side-nav__link:hover {
   background-color: $ui-05 !important;
 }
