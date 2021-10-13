@@ -30,6 +30,9 @@ buildah run gobuilder-core sh -c "cd /usr/src/core/api-server && go build -v -ld
 echo "Build static UI files with node..."
 buildah run nodebuilder-core sh -c "cd /usr/src/core/ui       && npm install && npm run build"
 
+echo "Provide core CSS style to external modules..."
+buildah run nodebuilder-core sh -c "cp -v /usr/src/core/ui/dist/css/app.*.css /usr/src/core/ui/dist/css/core.css"
+
 echo "Download Logcli..."
 logcli_tmp_dir=$(mktemp -d)
 cleanup_list+=("${logcli_tmp_dir}")

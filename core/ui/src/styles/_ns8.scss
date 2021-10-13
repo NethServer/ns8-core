@@ -227,6 +227,26 @@ h4 {
   background-color: $interactive-02;
 }
 
+.app-side-menu-content {
+  color: $ui-01 !important;
+}
+
+.app-side-menu-content .bx--side-nav__icon.bx--side-nav__icon--small {
+  color: $ui-01 !important;
+}
+
+.app-side-menu-content .bx--side-nav__icon > svg {
+  fill: $ui-01 !important;
+}
+
+.app-side-menu-content a.bx--side-nav__link {
+  height: 3rem !important;
+}
+
+.app-side-menu-content a.bx--side-nav__link > .bx--side-nav__link-text {
+  color: $ui-01 !important;
+}
+
 .app-side-menu-content .cv-side-nav-item-link.bx--side-nav__link:hover {
   background-color: $ui-05 !important;
 }
@@ -246,6 +266,10 @@ h4 {
 
 .app-side-menu-content .current-page {
   background-color: $ui-05;
+}
+
+.app-side-nav .bx--side-nav__item {
+  height: 3rem;
 }
 
 .app-side-menu-content .current-page a::before {
