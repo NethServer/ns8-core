@@ -1,0 +1,56 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2021 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
+import agent
+import agent.tasks
+import os
+import sys
+
+agent_id = os.environ['AGENT_ID']
+node_id = int(os.environ['NODE_ID'])
+domain = os.environ['REALM'].lower()
+base_dn = 'DC=' + domain.replace('.', ',DC=')
+svcpass = os.environ['SVCPASS']
+svcuser = os.environ['SVCUSER']
+hostname = os.environ['HOSTNAME']
+ip_address = os.environ['IPADDRESS']
+
+data={
+    "node": str(node_id),
+    "port": "636",
+    "host": ip_address,
+
+    "domain": domain,
+    "base_dn": base_dn,
+    "schema": "ad",
+    "tls": "on",
+    "tls_verify": "off",
+    "bind_dn": svcuser + "@" + domain,
+    "bind_password": svcpass,
+}
+
+# Advertise this new account provider service instance:
+rdb = agent.redis_connect(privileged=True)
+trx = rdb.pipeline()
+trx.hset(agent_id + '/srv/tcp/ldap', mapping=data)
+trx.publish(agent_id + '/event/account-provider-changed', agent_id + '/srv/tcp/ldap')
+trx.execute()
