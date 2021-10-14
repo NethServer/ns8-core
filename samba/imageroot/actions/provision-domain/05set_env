@@ -38,6 +38,7 @@ for ksamba in rdb.scan_iter(f'module/samba*/environment'):
     if penv.get('REALM', '') == realm:
         provision_type = 'join-domain'
         nbdomain = penv['NBDOMAIN']
+        svcpass = penv['SVCPASS']
         break
 else: # No DC found for the realm. Create a new AD domain
     provision_type = 'new-domain'
@@ -47,6 +48,10 @@ else: # No DC found for the realm. Create a new AD domain
         json.dump({"parameter": 'nbdomain', "value": None, "error": "missing_parameter"}, fp=sys.stdout)
         agent.set_status('validation-failed')
         sys.exit(7)
+
+    # Generate a random password for ldapservice
+    alphabet = string.ascii_letters + string.digits + '+-*/,.-_$%&?^'
+    svcpass = ''.join([secrets.choice(alphabet) for i in range(32)])
 
 if 'hostname' in request: # Use given hostname (short)
     hostname = request['hostname'].lower()
@@ -64,10 +69,6 @@ agent.set_env('HOSTNAME', hostname + '.' + realm.lower())
 agent.set_env('ADMINUSER', request['adminuser'])
 agent.set_env('ADMINPASS', request['adminpass'])
 agent.set_env('IPADDRESS', request['ipaddress'])
-
-# Generate a random password for ldapservice
-alphabet = string.ascii_letters + string.digits + '+-*/,.-_$%&?^'
-svcpass = ''.join([secrets.choice(alphabet) for i in range(32)])
 
 agent.set_env('SVCUSER', 'ldapservice')
 agent.set_env('SVCPASS', svcpass)

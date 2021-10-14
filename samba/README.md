@@ -15,8 +15,10 @@ exposed publicly. The IP address can be added to the cluster VPN routes,
 so DCs can see each other and perform replication.
 
 The LDAP service of Samba DCs does not allow clear-text LDAP binds: enable
-TLS or use Kerberos/GSSAPI authentication. The default node Ldapproxy
-instance is configured to enable TLS automatically.
+TLS or use Kerberos/GSSAPI authentication in external applications.
+Applications that run as cluster modules must connect to the LDAP service
+of Samba DCs through the Ldapproxy instance running on the local node; read
+the core documentation for more information about Ldapproxy.
 
 
 ## Provision
@@ -64,33 +66,5 @@ DC:
         "realm": "ad.$(hostname -d)",
         "ipaddress": "10.124.0.2",
         "use_cluster_vpn": true
-    }
-    EOF
-
-## Configure Ldapproxy
-
-When a Samba module is provisioned for the first time on a node, it checks
-if the node default Ldapproxy instance is not bound to another account
-provider. If so, Samba invokes the `set-backend` on Ldapproxy
-automatically.
-
-This command manually binds `ldapproxy3` with the `samba2` local account
-provider LDAP backend. TLS is required by Samba (clear-text LDAP binds are
-not allowed), however `tls_verify` is disabled because Samba has a
-self-signed certificate.
-
-    # retrieve the ldapservice password
-    redis-cli HGET module/samba1/environment SVCPASS
-    # output: "Random,1234"
-    api-cli run set-backend --agent module/ldapproxy3 --data - <<EOF
-    {
-        "backend": "samba1",
-        "schema": "ad",
-        "host": "127.0.0.1",
-        "port": 636,
-        "tls": true,
-        "tls_verify": false,
-        "bind_dn": "AD\\ldapservice",
-        "bind_password:": "Random,1234"
     }
     EOF
