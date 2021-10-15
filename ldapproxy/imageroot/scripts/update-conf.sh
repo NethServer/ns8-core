@@ -21,33 +21,32 @@
 #
 
 set -e
-exec 1>&2
+
+unset PODMAN_SYSTEMD_UNIT
+
+${AGENT_INSTALL_DIR}/bin/allocate-ports
+
+#
+# Create the nginx/ config directory and work inside it
+#
+
+mkdir -vp nginx
+cd nginx
 
 tmpconf=$(mktemp nginx.conf.XXXXXX)
-trap "rm -f ${tmpconf}" EXIT
+trap 'rm -f ${tmpconf}' EXIT
 
-export PROXY_SSL PROXY_SSL_VERIFY PROXY_SSL_VERIFY_DEPTH
+${AGENT_INSTALL_DIR}/bin/expand-template nginx.conf.j2 >${tmpconf}
 
-if [[ "${TLS}" == "1" ]]; then
-    PROXY_SSL="on"
-else
-    PROXY_SSL="off"
-fi
-
-if [[ "${TLS_VERIFY}" == "1" ]]; then
-    PROXY_SSL_VERIFY="on"
-else
-    PROXY_SSL_VERIFY="off"
-fi
-
-# Use default value "2", if not already set.
-PROXY_SSL_VERIFY_DEPTH=${PROXY_SSL_VERIFY_DEPTH:-2}
-
-envsubst >${tmpconf} <${AGENT_INSTALL_DIR}/nginx.conf.template
-
-# Restart ldapproxy if something has changed in the configuration
+# Check if something has changed in the configuration
+# before applying the new .conf file
 if ! diff -q nginx.conf ${tmpconf} ; then
+    # Syntax check of the new .conf file:
+    podman run \
+        --log-driver=none \
+        --env=NGINX_ENTRYPOINT_QUIET_LOGS=1 \
+        --volume=./:/srv:Z \
+        --rm "${NGINX_IMAGE}" \
+        nginx -t -c "/srv/${tmpconf}"
     mv -v ${tmpconf} nginx.conf
-    echo "Restart ldapproxy.service"
-    systemctl --user restart ldapproxy.service
 fi

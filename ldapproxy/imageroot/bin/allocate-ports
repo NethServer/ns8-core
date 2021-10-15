@@ -1,0 +1,68 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2021 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
+import agent
+import itertools
+import sys
+import os
+
+agent_id = os.environ['AGENT_ID']
+
+rbegin, rend = os.environ['TCP_PORTS_RANGE'].split('-')
+ports = set([int(port) for port in range(int(rbegin),int(rend)+1)])
+ports |= set([int(port) for port in os.environ['TCP_PORTS'].split(',')])
+
+rdb = agent.redis_connect()
+domain_port = rdb.hgetall(f'{agent_id}/data/domain_port')
+
+try:
+    allocated_ports = set(domain_port.values())
+except AttributeError:
+    allocated_ports = set()
+
+free_ports = ports - allocated_ports
+
+is_config_changed = False
+for ksrv in rdb.scan_iter('*/srv/tcp/ldap'):
+    domain = rdb.hget(ksrv, 'domain')
+    if not domain in domain_port:
+        try:
+            # Allocate the first available port number
+            nport = free_ports.pop()
+        except KeyError:
+            print(agent.SD_ERR + f"TCP ports range exhausted! {domain} was not allocated a port.")
+            break
+
+        domain_port[domain] = nport
+        is_config_changed = True
+        print(f"Allocating port {nport} for {domain}...")
+
+rdb.close() # close the read-only connection
+
+#
+# Save the new domain/port allocations
+#
+if is_config_changed:
+    rdb = agent.redis_connect(privileged=True)
+    rdb.hset(f'{agent_id}/data/domain_port', mapping=domain_port)
+    rdb.close()
+    print(f"Saved the new domain/port allocation map")
