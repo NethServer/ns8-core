@@ -1,0 +1,88 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2021 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
+import os
+import redis
+import agent
+import sys
+import itertools
+
+from jinja2 import Environment, FileSystemLoader, select_autoescape
+
+template_file = sys.argv[1]
+modulenv = agent.read_envfile(os.path.expanduser("~/.config/state/environment"))
+node_id = modulenv['NODE_ID']
+mid = modulenv['MODULE_ID']
+
+jenv = Environment(
+    loader=FileSystemLoader(os.path.expanduser("~/.config/templates")),
+    autoescape=select_autoescape(),
+    keep_trailing_newline=True,
+)
+
+# Connect to local Redis replica with read-only privileges, just to
+# discover the account providers configuration. The connection is local,
+# to avoid connection problems with the leader node. This command must
+# work even if the local node is disconnected. An old configuration is
+# still acceptable.
+rdb = redis.Redis(host='127.0.0.1', port=6379, username='default', password='default', decode_responses=True)
+
+domain_port = rdb.hgetall(f'module/{mid}/data/domain_port')
+
+#
+# Build the template data model (and store it in the "context" variable)
+#
+domains = {}
+for ksrv in rdb.scan_iter('*/srv/tcp/ldap'):
+    srvh = rdb.hgetall(ksrv)
+
+    listen_port = domain_port.get(srvh['domain'], '0')
+
+    if not listen_port.isnumeric() or int(listen_port) <= 0:
+        print(f"Domain {srvh['domain']} has no valid TCP port allocation", file=sys.stderr)
+        continue
+
+    domains.setdefault(srvh['domain'], {
+        'domain': srvh['domain'],
+        'base_dn': srvh['base_dn'],
+        'schema': srvh['schema'],
+        'tls': '1' if srvh['tls'] == 'on' else '0',
+        'tls_verify': '1' if srvh['tls_verify'] == 'on' else '0',
+        'bind_dn': srvh['bind_dn'],
+        'bind_password': srvh['bind_password'],
+        'listen_port': listen_port,
+        'servers': [],
+    })
+
+    domains[srvh['domain']]['servers'].append({
+        'origin': ksrv.removesuffix('/srv/tcp/ldap'),
+        'service': 'ldap',
+        'node': srvh['node'],
+        'is_local': node_id == srvh['node'],
+        'port': srvh['port'],
+        'host': srvh['host'] if node_id != srvh['node'] else '127.0.0.1',
+    })
+
+context = {"domains": list(domains.values())}
+
+tmpl = jenv.get_template(template_file)
+tmpl.stream(context).dump(sys.stdout)

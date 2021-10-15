@@ -1,0 +1,30 @@
+user nginx;
+worker_processes auto;
+
+error_log /var/log/nginx/error.log info;
+pid /var/run/nginx.pid;
+
+events {
+    worker_connections  1024;
+}
+
+# L4 proxy to LDAP account providers
+stream {
+{%- for item in domains %}
+    # Domain {{ item.domain }}
+    server {
+        proxy_pass {{ item.domain | replace('.', '_') }};
+        listen [::1]:{{ item.listen_port }};
+        listen 127.0.0.1:{{ item.listen_port }};
+
+        proxy_ssl {{ 'on' if item.tls == '1' else 'off' }};
+        proxy_ssl_verify {{ 'on' if item.tls_verify == '1' else 'off' }};
+        proxy_ssl_verify_depth {{ item.tls_verify_depth | default('2') }};
+    }
+    upstream {{ item.domain | replace('.', '_') }} {
+    {%- for server in item.servers %}
+        server {{ server.host + ':' + server.port + ('    backup' if not server.is_local else '') }}; # origin {{ server.origin }}
+    {%- endfor %}
+    }
+{% endfor %}
+}

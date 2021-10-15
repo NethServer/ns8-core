@@ -1,29 +1,39 @@
 [Unit]
 Description=%u LDAP account provider local proxy
 Documentation=man:podman-generate-systemd(1)
-ConditionPathExists=%S/state/nginx.conf
 
 [Service]
 Environment=PODMAN_SYSTEMD_UNIT=%n
+# Configure the Environment like an agent,
+# as the update-conf.sh script requires it.
+Environment=AGENT_ID=module/%u
+Environment=AGENT_INSTALL_DIR=%S
+Environment=AGENT_STATE_DIR=%S/state
+EnvironmentFile=/etc/nethserver/agent.env
 EnvironmentFile=%S/state/environment
+EnvironmentFile=%S/state/agent.env
+WorkingDirectory=%S/state
 Restart=always
 TimeoutStopSec=70
 ExecStartPre=/bin/rm -f %t/ldapproxy.pid %t/ldapproxy.ctr-id
+ExecStartPre=/bin/bash %S/scripts/update-conf.sh
 ExecStart=/usr/bin/podman run \
     --detach \
+    --env=NGINX_ENTRYPOINT_QUIET_LOGS=1 \
     --conmon-pidfile=%t/ldapproxy.pid \
     --cidfile=%t/ldapproxy.ctr-id \
     --cgroups=no-conmon \
     --network=host \
     --log-opt=tag=%u \
     --replace --name=%N \
-    --volume=./nginx.conf:/etc/nginx/nginx.conf:Z \
-    ${NGINX_IMAGE}
+    --volume=./nginx:/srv:Z \
+    ${NGINX_IMAGE} nginx -g "daemon off;" -c /srv/nginx.conf
+ExecReload=/bin/bash %S/scripts/update-conf.sh
+ExecReload=/usr/bin/podman exec %N nginx -s reload
 ExecStop=/usr/bin/podman stop --ignore --cidfile %t/ldapproxy.ctr-id -t 10
 ExecStopPost=/usr/bin/podman rm --ignore -f --cidfile %t/ldapproxy.ctr-id
 PIDFile=%t/ldapproxy.pid
 Type=forking
-WorkingDirectory=%S/state
 
 [Install]
 WantedBy=default.target
