@@ -134,6 +134,55 @@ The event is published under Redis channel `module/traefik<X>/event/certificate-
 
 See also [how to fire and handle events](#events).
 
+### Users and groups: Ldapproxy
+
+Users and groups are stored in an LDAP database, served by one **account
+provider module**. Multiple modules can work together to serve the same
+LDAP database as replicas of it. An LDAP database represents an account
+**domain**.
+
+A NS8 cluster can host multiple account domains from different
+implementations. It is possible to configure an external LDAP service as
+hosted ones. Supported LDAP schemas are
+
+1. Active Directory
+2. RFC2307
+
+A module can discover the list of available account domains with the
+`cluster.ldapproxy` Python module. The following command dumps a list of
+parameters required to connect with an LDAP database on cluster node 1.
+
+    NODE_ID=1 python -mcluster.ldapproxy
+
+Note that the environment variable `NODE_ID` must be defined. This is
+normally true when implementing agent actions (discussed in another section).
+
+Returned TCP endpoints are usually local (IP 127.0.0.1) and do not require
+TLS. The port number depends on the LDAP domain. The default Ldapproxy
+module is a L4 proxy that relays the TCP connection to an LDAP backend
+server, enabling TLS and handling backend failures as needed.
+
+Python code example
+
+```python
+from cluster.ldapproxy import Ldapproxy
+lp = Ldapproxy()
+domains = lp.get_domains_list()
+print(domains)
+domain = lp.get_domain("mydomain")
+print(domain)
+```
+
+The module can add the following settings to `eventsgw.conf` to listen to
+account provider changes:
+
+```ini
+[commands]
+*/event/account-provider-changed = systemctl --user reload mymodule.service
+```
+
+See also [how to fire and handle events](#events).
+
 ## Packages
 
 NethServer packages are container images which will be unpacked after download.
