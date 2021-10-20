@@ -268,6 +268,9 @@ export default {
     onClusterInitialized() {
       this.setClusterInitializedInStore(true);
 
+      // needed to set leader listen port in store
+      this.retrieveClusterStatus(false);
+
       // check for software updates
       this.listUpdates();
 
