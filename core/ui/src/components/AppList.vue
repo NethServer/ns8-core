@@ -8,7 +8,7 @@
             :key="index"
             class="bx--col-md-4 bx--col-max-4"
           >
-            <cv-tile kind="standard" class="app content-tile">
+            <cv-tile kind="standard" class="app">
               <cv-skeleton-text
                 :paragraph="true"
                 :line-count="9"
@@ -24,11 +24,7 @@
             :key="index"
             class="bx--col-md-4 bx--col-max-4"
           >
-            <cv-tile
-              kind="standard"
-              @click="showAppInfo(app)"
-              class="app content-tile"
-            >
+            <cv-tile kind="standard" @click="showAppInfo(app)" class="app">
               <div class="app-logo app-row">
                 <a @click="showAppInfo(app)">
                   <img

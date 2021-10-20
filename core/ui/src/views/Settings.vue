@@ -9,7 +9,6 @@
       <div class="bx--col-md-4 bx--col-lg-4">
         <NsTile
           :light="true"
-          class="content-tile"
           kind="clickable"
           @click="goToSettingsSoftwareRepositories"
           :icon="Application32"
@@ -21,7 +20,6 @@
       <div class="bx--col-md-4 bx--col-lg-4">
         <NsTile
           :light="true"
-          class="content-tile"
           kind="clickable"
           @click="actionClick"
           :icon="Cube32"
@@ -32,7 +30,6 @@
       <div class="bx--col-md-4 bx--col-lg-4">
         <NsTile
           :light="true"
-          class="content-tile"
           kind="clickable"
           @click="actionClick"
           :icon="Cube32"

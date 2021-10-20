@@ -51,7 +51,7 @@
       </div>
       <div class="bx--row">
         <div class="bx--col-lg-16">
-          <cv-tile :light="true" class="content-tile">
+          <cv-tile :light="true">
             <div v-if="!tableRows.length && !loading.repositories">
               <NsEmptyState
                 :title="$t('settings_sw_repositories.no_sw_repositories')"

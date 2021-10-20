@@ -79,7 +79,7 @@
         </div>
         <div class="bx--row">
           <div class="bx--col-lg-16">
-            <cv-tile light class="content-tile">
+            <cv-tile light>
               <cv-form @submit.prevent="changePassword">
                 <cv-text-input
                   :label="$t('init.current_password')"
@@ -135,7 +135,7 @@
         </div>
         <div class="bx--row">
           <div class="bx--col-lg-16">
-            <cv-tile light class="content-tile">
+            <cv-tile light>
               <cv-form @submit.prevent="createCluster">
                 <cv-text-input
                   :label="$t('init.vpn_endpoint_address')"
@@ -187,7 +187,7 @@
       </div>
       <div class="bx--row">
         <div class="bx--col-lg-16">
-          <cv-tile light class="content-tile">
+          <cv-tile light>
             <cv-form @submit.prevent="joinCluster">
               <cv-text-area
                 :label="$t('common.join_code')"
@@ -227,7 +227,7 @@
       </div>
       <div class="bx--row">
         <div class="bx--col-lg-16">
-          <cv-tile light class="content-tile">
+          <cv-tile light>
             <cv-form>
               <div>
                 <a
