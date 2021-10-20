@@ -17,9 +17,9 @@
           :title="status.instance"
           :description="$t('status.app_instance')"
           :icon="Application32"
-          class="content-tile min-height-card"
+          class="min-height-card"
         />
-        <cv-tile v-else light class="content-tile">
+        <cv-tile v-else light>
           <cv-skeleton-text
             :paragraph="true"
             :line-count="4"
@@ -33,9 +33,9 @@
           :title="$t('status.node') + ' ' + status.node"
           :description="$t('status.installation_node')"
           :icon="EdgeNode32"
-          class="content-tile min-height-card"
+          class="min-height-card"
         />
-        <cv-tile v-else light class="content-tile">
+        <cv-tile v-else light>
           <cv-skeleton-text
             :paragraph="true"
             :line-count="4"
@@ -51,7 +51,7 @@
     </div>
     <div v-if="!loading.status" class="bx--row">
       <div v-if="!status.services.length" class="bx--col-lg-16">
-        <cv-tile light class="content-tile">
+        <cv-tile light>
           <NsEmptyState :title="$t('status.no_services')"> </NsEmptyState>
         </cv-tile>
       </div>
@@ -63,7 +63,7 @@
       >
         <NsSystemdServiceCard
           light
-          class="content-tile min-height-card"
+          class="min-height-card"
           :serviceName="service.name"
           :active="service.active"
           :failed="service.failed"
@@ -74,7 +74,7 @@
     </div>
     <div v-else class="bx--row">
       <div class="bx--col-md-4 bx--col-max-4">
-        <cv-tile light class="content-tile">
+        <cv-tile light>
           <cv-skeleton-text
             :paragraph="true"
             :line-count="4"
@@ -90,7 +90,7 @@
     </div>
     <div class="bx--row">
       <div class="bx--col-lg-16">
-        <cv-tile light class="content-tile">
+        <cv-tile light>
           <div v-if="!loading.status">
             <NsEmptyState
               v-if="!status.images.length"
@@ -143,7 +143,7 @@
     </div>
     <div class="bx--row">
       <div class="bx--col-lg-16">
-        <cv-tile light class="content-tile">
+        <cv-tile light>
           <div v-if="!loading.status">
             <NsEmptyState
               v-if="!status.volumes.length"

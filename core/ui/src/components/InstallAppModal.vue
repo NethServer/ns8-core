@@ -44,7 +44,6 @@
             >
               <NsTile
                 :light="true"
-                class="content-tile"
                 kind="selectable"
                 v-model="node.selected"
                 value="nodeValue"

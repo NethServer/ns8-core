@@ -32,7 +32,7 @@
       </div>
       <div>
         <div>
-          <cv-tile :light="true" class="content-tile">
+          <cv-tile :light="true">
             <cv-search
               :label="$t('software_center.search_placeholder')"
               :placeholder="$t('software_center.search_placeholder')"

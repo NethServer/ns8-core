@@ -17,21 +17,13 @@
     </div>
     <div class="bx--row">
       <div class="bx--col-md-4 bx--col-max-4">
-        <cv-tile
-          v-if="loading.nodes"
-          light
-          class="content-tile min-height-card"
-        >
+        <cv-tile v-if="loading.nodes" light class="min-height-card">
           <cv-skeleton-text
             :paragraph="true"
             :line-count="4"
           ></cv-skeleton-text>
         </cv-tile>
-        <cv-tile
-          v-else-if="error.nodes"
-          light
-          class="content-tile min-height-card"
-        >
+        <cv-tile v-else-if="error.nodes" light class="min-height-card">
           <NsInlineNotification
             kind="error"
             :title="$t('error.cannot_retrieve_cluster_nodes')"
@@ -45,21 +37,17 @@
           :title="nodes.length.toString()"
           :description="$tc('common.nodes', nodes.length)"
           :icon="Chip32"
-          class="content-tile min-height-card"
+          class="min-height-card"
         />
       </div>
       <div class="bx--col-md-4 bx--col-max-4">
-        <cv-tile v-if="loading.apps" light class="content-tile min-height-card">
+        <cv-tile v-if="loading.apps" light class="min-height-card">
           <cv-skeleton-text
             :paragraph="true"
             :line-count="4"
           ></cv-skeleton-text>
         </cv-tile>
-        <cv-tile
-          v-else-if="error.apps"
-          light
-          class="content-tile min-height-card"
-        >
+        <cv-tile v-else-if="error.apps" light class="min-height-card">
           <NsInlineNotification
             kind="error"
             :title="$t('error.cannot_retrieve_installed_apps')"
@@ -73,13 +61,13 @@
           :title="apps.length.toString()"
           :description="$tc('common.installed_apps', apps.length)"
           :icon="Application32"
-          class="content-tile min-height-card"
+          class="min-height-card"
         />
       </div>
     </div>
     <!-- <div class="bx--row"> //// remove
       <div class="bx--col-md-4">
-        <cv-tile :light="true" class="content-tile">
+        <cv-tile :light="true">
           <cv-text-input label="Label" v-model="q.testInput"> </cv-text-input>
           <cv-toggle value="check-test" v-model="q.testToggle"> </cv-toggle>
           <div class="mg-top-bottom">

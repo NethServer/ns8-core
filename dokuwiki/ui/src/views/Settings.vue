@@ -7,7 +7,7 @@
     </div>
     <div class="bx--row">
       <div class="bx--col-lg-16">
-        <cv-tile :light="true" class="content-tile">
+        <cv-tile :light="true">
           <cv-form @submit.prevent="saveSettings">
             <cv-text-input
               :label="$t('settings.wiki_name')"

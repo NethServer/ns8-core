@@ -30,7 +30,7 @@
       </div>
       <div class="bx--row">
         <div class="bx--col-md-4 bx--col-max-4">
-          <cv-tile :light="true" class="content-tile same-height-tile">
+          <cv-tile :light="true" class="same-height-tile">
             <h4 class="mg-bottom-md">{{ $t("node_detail.cpu") }}</h4>
             <MeterChart
               :label="$t('node_detail.usage')"
@@ -94,7 +94,7 @@
           </cv-tile>
         </div>
         <div class="bx--col-md-4 bx--col-max-4">
-          <cv-tile :light="true" class="content-tile same-height-tile">
+          <cv-tile :light="true" class="same-height-tile">
             <h4 class="mg-bottom-md">{{ $t("node_detail.memory") }}</h4>
             <MeterChart
               :label="$t('node_detail.usage')"
@@ -122,7 +122,7 @@
           </cv-tile>
         </div>
         <div class="bx--col-md-4 bx--col-max-4">
-          <cv-tile :light="true" class="content-tile same-height-tile">
+          <cv-tile :light="true" class="same-height-tile">
             <h4 class="mg-bottom-md">{{ $t("node_detail.swap") }}</h4>
             <MeterChart
               :label="$t('node_detail.usage')"
@@ -150,7 +150,7 @@
           </cv-tile>
         </div>
         <div class="bx--col-md-4 bx--col-max-4">
-          <cv-tile :light="true" class="content-tile same-height-tile">
+          <cv-tile :light="true" class="same-height-tile">
             <h4 class="mg-bottom-md">{{ $t("node_detail.vpn") }}</h4>
             <template v-if="!loading.clusterStatus && vpnInfo.endpoint">
               <div class="mg-bottom-sm">
@@ -223,7 +223,7 @@
             :key="index"
             class="bx--col-md-4 bx--col-max-4"
           >
-            <cv-tile :light="true" class="content-tile">
+            <cv-tile :light="true">
               <h4 class="mg-bottom-md">
                 {{ $t("node_detail.disk") }} {{ index + 1 }}
               </h4>

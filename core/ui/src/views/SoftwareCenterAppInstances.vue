@@ -28,7 +28,7 @@
       </div>
       <div class="bx--row">
         <div class="bx--col-lg-16">
-          <cv-tile light class="content-tile">
+          <cv-tile light>
             <div
               v-if="app && app.installed && app.installed.length"
               class="toolbar"
@@ -40,7 +40,7 @@
                 >{{ $t("software_center.install_new_instance") }}
               </NsButton>
             </div>
-            <cv-tile v-if="loading.modules" class="content-tile">
+            <cv-tile v-if="loading.modules">
               <cv-skeleton-text
                 :paragraph="true"
                 :line-count="4"
