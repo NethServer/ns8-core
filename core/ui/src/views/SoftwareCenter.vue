@@ -462,7 +462,7 @@ export default {
       const taskAction = "list-modules";
 
       // register to task completion
-      this.$root.$on(taskAction + "-completed", this.listModulesCompleted);
+      this.$root.$once(taskAction + "-completed", this.listModulesCompleted);
 
       const res = await to(
         this.createClusterTask({
@@ -484,13 +484,11 @@ export default {
       }
     },
     listModulesCompleted(taskContext, taskResult) {
-      // unregister from event
-      this.$root.$off("list-modules-completed");
-
       this.loading.modules = false;
       let modules = taskResult.output;
 
       console.log("modules", modules); ////
+      modules.sort(this.sortByProperty("name"));
 
       let updates = [];
 
