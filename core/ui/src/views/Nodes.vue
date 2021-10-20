@@ -26,21 +26,24 @@
         >
       </div>
     </div>
-    <div class="bx--row loader-large nodes-loader" v-if="!nodes.length"></div>
+    <div
+      class="bx--row loader-large loader-theme nodes-loader"
+      v-if="loading.nodes"
+    ></div>
     <div class="bx--row" v-else>
       <div
         v-for="node in nodes"
         :key="node.id"
         class="bx--col-md-4 bx--col-max-4"
       >
-        <div v-if="!nodesStatus[node.id]">
-          <cv-tile light>
-            <cv-skeleton-text
-              :paragraph="true"
-              :line-count="12"
-            ></cv-skeleton-text>
-          </cv-tile>
-        </div>
+        <NsNodeCard
+          v-if="!nodesStatus[node.id]"
+          :nodeId="node.id.toString()"
+          :nodeLabel="$t('common.node')"
+          :isLeader="node.id == leaderNode.id"
+          light
+          loading
+        />
         <NsNodeCard
           v-else
           :nodeId="node.id.toString()"
@@ -363,7 +366,6 @@ export default {
 
 .nodes-loader {
   margin: $spacing-05 auto;
-  color: $interactive-01;
 }
 
 ol {

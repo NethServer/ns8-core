@@ -301,6 +301,10 @@ export default {
           const leaderListenPort = leaderNode.vpn.listen_port;
           console.log("leaderListenPort", leaderListenPort); ////
           this.setLeaderListenPortInStore(leaderListenPort);
+          console.log(
+            "(getInitialClusterStatusCompleted) SET LISTEN PORT TO STORE",
+            leaderListenPort
+          ); ////
         }
 
         if (this.isClusterInitialized) {
@@ -328,6 +332,10 @@ export default {
           const leaderListenPort = leaderNode.vpn.listen_port;
           console.log("set leaderListenPort", leaderListenPort); ////
           this.setLeaderListenPortInStore(leaderListenPort);
+          console.log(
+            "(getClusterStatusCompleted) SET LISTEN PORT TO STORE",
+            leaderListenPort
+          ); ////
         }
       }
 

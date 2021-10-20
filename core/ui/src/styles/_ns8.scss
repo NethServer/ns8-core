@@ -61,10 +61,6 @@ a {
   margin-bottom: $spacing-05;
 }
 
-h4 {
-  margin-bottom: $spacing-05;
-}
-
 .breadcrumb {
   margin-top: $spacing-06;
 }
@@ -416,6 +412,10 @@ h4 {
   border-right: 6px solid currentColor;
   border-bottom: 6px solid currentColor;
   animation: spin 0.5s linear infinite;
+}
+
+.loader-theme {
+  color: $interactive-01;
 }
 
 @keyframes spin {

@@ -31,7 +31,7 @@
       <div class="bx--row">
         <div class="bx--col-md-4 bx--col-max-4">
           <cv-tile :light="true" class="content-tile same-height-tile">
-            <h4>{{ $t("node_detail.cpu") }}</h4>
+            <h4 class="mg-bottom-md">{{ $t("node_detail.cpu") }}</h4>
             <MeterChart
               :label="$t('node_detail.usage')"
               :value="loading.nodeStatus ? 0 : nodeStatus.cpu.usage"
@@ -95,7 +95,7 @@
         </div>
         <div class="bx--col-md-4 bx--col-max-4">
           <cv-tile :light="true" class="content-tile same-height-tile">
-            <h4>{{ $t("node_detail.memory") }}</h4>
+            <h4 class="mg-bottom-md">{{ $t("node_detail.memory") }}</h4>
             <MeterChart
               :label="$t('node_detail.usage')"
               :value="loading.nodeStatus ? 0 : nodeStatus.memory.usage"
@@ -123,7 +123,7 @@
         </div>
         <div class="bx--col-md-4 bx--col-max-4">
           <cv-tile :light="true" class="content-tile same-height-tile">
-            <h4>{{ $t("node_detail.swap") }}</h4>
+            <h4 class="mg-bottom-md">{{ $t("node_detail.swap") }}</h4>
             <MeterChart
               :label="$t('node_detail.usage')"
               :value="loading.nodeStatus ? 0 : nodeStatus.swap.usage"
@@ -151,7 +151,7 @@
         </div>
         <div class="bx--col-md-4 bx--col-max-4">
           <cv-tile :light="true" class="content-tile same-height-tile">
-            <h4>{{ $t("node_detail.vpn") }}</h4>
+            <h4 class="mg-bottom-md">{{ $t("node_detail.vpn") }}</h4>
             <template v-if="!loading.clusterStatus && vpnInfo.endpoint">
               <div class="mg-bottom-sm">
                 <span class="label">{{ $t("node_detail.endpoint") }}</span>
@@ -205,7 +205,7 @@
       </div>
       <div class="bx--row">
         <div class="bx--col-lg-16">
-          <h4>{{ $t("node_detail.disks") }}</h4>
+          <h4 class="mg-bottom-md">{{ $t("node_detail.disks") }}</h4>
         </div>
       </div>
       <div class="bx--row">
@@ -224,7 +224,9 @@
             class="bx--col-md-4 bx--col-max-4"
           >
             <cv-tile :light="true" class="content-tile">
-              <h4>{{ $t("node_detail.disk") }} {{ index + 1 }}</h4>
+              <h4 class="mg-bottom-md">
+                {{ $t("node_detail.disk") }} {{ index + 1 }}
+              </h4>
               <MeterChart
                 :label="$t('node_detail.usage')"
                 :value="disk.usage"
