@@ -507,8 +507,8 @@ export default {
           action: taskAction,
           data: {
             name: this.q.editRepoName,
-            status: this.q.isEditRepoTesting,
-            testing: this.q.isEditRepoEnabled,
+            status: this.q.isEditRepoEnabled,
+            testing: this.q.isEditRepoTesting,
           },
           extra: {
             title: this.$t("action." + taskAction),
