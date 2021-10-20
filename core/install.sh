@@ -26,11 +26,11 @@ source /etc/os-release
 
 echo "Install dependencies:"
 if [[ ${ID} == "fedora" ]]; then
-    dnf install -y wireguard-tools podman jq
+    dnf install -y wireguard-tools podman jq openssl
 elif [[ ${ID} == "debian" ]]; then
 
     apt-get update
-    apt-get -y install gnupg2 python3-venv podman wireguard uuid-runtime jq
+    apt-get -y install gnupg2 python3-venv podman wireguard uuid-runtime jq openssl
 
     # Enable access to journalctl --user
     grep  -e "^#Storage=persistent" /etc/systemd/journald.conf || echo "Storage=persistent" >> /etc/systemd/journald.conf
