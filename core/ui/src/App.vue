@@ -268,7 +268,7 @@ export default {
     onClusterInitialized() {
       this.setClusterInitializedInStore(true);
 
-      // needed to set leader listen port in store
+      // needed to set leader listen port in store after cluster creation
       this.retrieveClusterStatus(false);
 
       // check for software updates
@@ -302,12 +302,7 @@ export default {
         if (clusterStatus.nodes.length) {
           const leaderNode = clusterStatus.nodes.find((el) => el.local);
           const leaderListenPort = leaderNode.vpn.listen_port;
-          console.log("leaderListenPort", leaderListenPort); ////
           this.setLeaderListenPortInStore(leaderListenPort);
-          console.log(
-            "(getInitialClusterStatusCompleted) SET LISTEN PORT TO STORE",
-            leaderListenPort
-          ); ////
         }
 
         if (this.isClusterInitialized) {
@@ -333,12 +328,7 @@ export default {
         if (clusterStatus.nodes.length) {
           const leaderNode = clusterStatus.nodes.find((el) => el.local);
           const leaderListenPort = leaderNode.vpn.listen_port;
-          console.log("set leaderListenPort", leaderListenPort); ////
           this.setLeaderListenPortInStore(leaderListenPort);
-          console.log(
-            "(getClusterStatusCompleted) SET LISTEN PORT TO STORE",
-            leaderListenPort
-          ); ////
         }
       }
 
