@@ -166,11 +166,14 @@ subtasks = agent.tasks.runp_nowait(
     endpoint="redis://cluster-leader",
 )
 
-# Grant the owner role to cluster owners on the new module
+# Grant the owner role to cluster owners on the new node.
+# cluster.grants.alter_user() cannot be invoked here because roles are
+# still not created by grant-actions.  However at this point node_id, role
+# and user are known so the relation can be fully established.
 for userk in rdb.scan_iter('roles/*'):
     user_auths = rdb.hgetall(userk)
     if 'cluster' in user_auths and user_auths['cluster'] == 'owner':
-        cluster.grants.alter_user(rdb, user=userk[len('roles/'):], revoke=False, role='owner', on_clause=f'node/{node_id}')
+        rdb.hset(userk, f'node/{node_id}', 'owner')
 
 agent.save_acls(rdb)
 
