@@ -737,11 +737,13 @@ export default {
 
       const taskAction = "join-cluster";
 
-      // register to task completion
-      this.$root.$on(taskAction + "-completed", this.joinClusterCompleted);
-
-      // register to task error
-      this.$root.$on(taskAction + "-aborted", this.joinClusterAborted);
+      // register to task events
+      this.$root.$once(taskAction + "-completed", this.joinClusterCompleted);
+      this.$root.$once(
+        taskAction + "-validation-failed",
+        this.joinClusterValidationFailed
+      );
+      this.$root.$once(taskAction + "-aborted", this.joinClusterAborted);
 
       const res = await to(
         this.createClusterTask({
@@ -777,7 +779,7 @@ export default {
     joinClusterCompleted() {
       console.log("joinClusterCompleted"); ////
 
-      this.$root.$off("join-cluster-completed");
+      // this.$root.$off("join-cluster-completed"); ////
       this.isJoiningCluster = false;
       this.$router.push("/init?page=redirect");
       //// needed?
@@ -788,8 +790,12 @@ export default {
     joinClusterAborted(taskResult) {
       console.log("joinClusterAborted", taskResult); ////
 
-      this.$root.$off("join-cluster-aborted");
+      // this.$root.$off("join-cluster-aborted"); ////
       this.isJoiningCluster = false;
+    },
+    joinClusterValidationFailed(validationErrors) {
+      //// needed?
+      console.error("validationErrors", validationErrors); //// asdf
     },
   },
 };
