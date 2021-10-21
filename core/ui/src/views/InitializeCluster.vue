@@ -351,8 +351,6 @@ export default {
       }
     },
     getDefaultsCompleted(taskContext, taskResult) {
-      console.log("getDefaultsCompleted", taskResult.output); ////
-
       this.$root.$off("get-defaults-completed");
       const defaults = taskResult.output;
       this.vpnEndpointAddress = defaults.vpn.host;
@@ -402,8 +400,6 @@ export default {
       }
     },
     getClusterStatusCompleted(taskContext, taskResult) {
-      console.log("getClusterStatusCompleted", taskResult.output); ////
-
       this.$root.$off("get-cluster-status-completed");
       const clusterStatus = taskResult.output;
 
@@ -548,8 +544,6 @@ export default {
       }
     },
     changeUserPasswordCompleted(taskContext, taskResult) {
-      console.log("changeUserPasswordCompleted", taskResult.output); ////
-
       this.$root.$off("change-user-password-completed");
       this.isPasswordChangeNeeded = false;
     },
@@ -561,8 +555,6 @@ export default {
       this.isChangingPassword = false;
 
       for (const validationError of validationErrors) {
-        console.log("validationError", validationError); ////
-
         // set i18n error message
         this.error.currentPassword = "password." + validationError.error;
         this.focusElement("currentPassword");
@@ -658,8 +650,6 @@ export default {
       this.isCreatingCluster = true;
     },
     createClusterCompleted() {
-      console.log("createClusterCompleted"); ////
-
       this.$root.$off("create-cluster-completed");
       this.setClusterInitializedInStore(true);
       this.$root.$emit("clusterInitialized");
@@ -667,8 +657,6 @@ export default {
       this.isCreatingCluster = false;
     },
     createClusterAborted(taskResult) {
-      console.log("createClusterAborted", taskResult); ////
-
       this.$root.$off("create-cluster-aborted");
       this.isCreatingCluster = false;
     },
@@ -786,13 +774,12 @@ export default {
       //this.$router.replace("/status");
     },
     joinClusterAborted(taskResult) {
-      console.log("joinClusterAborted", taskResult); ////
-
+      console.log("join cluster aborted", taskResult); ////
       this.isJoiningCluster = false;
     },
     joinClusterValidationFailed(validationErrors) {
-      //// needed?
-      console.error("validationErrors", validationErrors); //// asdf
+      console.error("validation errors", validationErrors);
+      this.isJoiningCluster = false;
     },
   },
 };
