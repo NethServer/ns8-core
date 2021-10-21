@@ -59,5 +59,13 @@ SET "${AGENT_ID}/kv/http/middlewares/http2https-redirectscheme/redirectScheme/pe
 SET "${AGENT_ID}/kv/http/middlewares/http2https-redirectscheme/redirectScheme/scheme" "https"
 EOF
 
+#
+# Configure default self-signed certificate
+#
+redis-exec <<EOF
+SET "${AGENT_ID}/kv/tls/stores/default/defaultCertificate/certFile" "/etc/traefik/selfsigned.crt"
+SET "${AGENT_ID}/kv/tls/stores/default/defaultCertificate/keyFile" "/etc/traefik/selfsigned.key"
+EOF
+
 # Enable and start the services
 systemctl --user enable --now traefik.service
