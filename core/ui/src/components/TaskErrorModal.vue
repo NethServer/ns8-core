@@ -136,4 +136,8 @@ export default {
   right: 2.3rem;
   float: right;
 }
+
+.task-error-modal .bx--modal-content {
+  margin-top: $spacing-05;
+}
 </style>
