@@ -417,7 +417,7 @@ export default {
       const taskAction = "list-installed-modules";
 
       // register to task completion
-      this.$root.$on(
+      this.$root.$once(
         taskAction + "-completed",
         this.listInstalledModulesCompleted
       );
@@ -443,8 +443,6 @@ export default {
       }
     },
     listInstalledModulesCompleted(taskContext, taskResult) {
-      // unregister from event
-      this.$root.$off("list-installed-modules-completed");
       this.loading.apps = false;
       let apps = [];
 

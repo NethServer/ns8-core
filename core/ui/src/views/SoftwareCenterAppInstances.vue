@@ -251,7 +251,7 @@ export default {
       const taskAction = "list-modules";
 
       // register to task completion
-      this.$root.$on(taskAction + "-completed", this.listModulesCompleted);
+      this.$root.$once(taskAction + "-completed", this.listModulesCompleted);
 
       const res = await to(
         this.createClusterTask({
@@ -273,9 +273,6 @@ export default {
       }
     },
     listModulesCompleted(taskContext, taskResult) {
-      // unregister from event
-      this.$root.$off("list-modules-completed");
-
       this.loading.modules = false;
       let modules = taskResult.output;
       let app = modules.find((module) => module.name === this.appName);
@@ -322,7 +319,7 @@ export default {
       const taskAction = "remove-module";
 
       // register to task completion
-      this.$root.$on(taskAction + "-completed", this.removeModuleCompleted);
+      this.$root.$once(taskAction + "-completed", this.removeModuleCompleted);
 
       const res = await to(
         this.createClusterTask({
@@ -351,7 +348,6 @@ export default {
       this.isUninstallModalShown = false;
     },
     removeModuleCompleted() {
-      this.$root.$off("remove-module-completed");
       this.listModules();
     },
     installInstance() {

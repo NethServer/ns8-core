@@ -213,7 +213,7 @@ export default {
       const taskAction = "get-module-info";
 
       // register to task completion
-      this.ns8Core.$root.$on(
+      this.ns8Core.$root.$once(
         taskAction + "-completed",
         this.getModuleInfoCompleted
       );
@@ -240,8 +240,6 @@ export default {
       }
     },
     getModuleInfoCompleted(taskContext, taskResult) {
-      // unregister from event
-      this.ns8Core.$root.$off("get-module-info-completed");
       this.app = taskResult.output;
       this.loading.moduleInfo = false;
     },
