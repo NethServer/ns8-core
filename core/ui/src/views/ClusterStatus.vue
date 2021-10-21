@@ -400,7 +400,6 @@ export default {
       }
     },
     listInstalledModulesCompleted(taskContext, taskResult) {
-      this.loading.apps = false;
       let apps = [];
 
       for (let instanceList of Object.values(taskResult.output)) {
@@ -408,7 +407,6 @@ export default {
           apps.push(instance);
         }
       }
-
       this.apps = apps;
       this.loading.apps = false;
     },

@@ -253,6 +253,7 @@
     "uninstall_instance": "Uninstall instance",
     "uninstalling": "Uninstalling...",
     "no_instance_installed": "No instance installed",
+    "instance": "Instance",
     "app_categories": {
       "collaboration": "Collaboration",
       "system_administration": "System administration",
