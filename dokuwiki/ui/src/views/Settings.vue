@@ -193,6 +193,7 @@ export default {
       );
       const err = res[0];
 
+      //// use inline error notification instead of toast
       if (err) {
         this.createErrorNotificationForApp(
           err,

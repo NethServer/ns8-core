@@ -7,10 +7,6 @@
     </div>
     <div class="bx--row">
       <div class="bx--col-md-4 bx--col-max-4">
-        <!-- //// delete -->
-        <!-- <cv-text-input label="test" v-model.trim="q.test" class="mg-bottom"> -->
-        <!-- </cv-text-input> -->
-        <!-- {{ formatDate(new Date(), "yyyy-MM-dd HH:mm:ss") }} -->
         <NsInfoCard
           v-if="!loading.status"
           light
@@ -211,7 +207,6 @@ export default {
     return {
       q: {
         page: "status",
-        test: "", ////
       },
       urlCheckInterval: null,
       isRedirectChecked: false,
@@ -292,6 +287,7 @@ export default {
       );
       const err = res[0];
 
+      //// use inline error notification instead of toast
       if (err) {
         this.createErrorNotificationForApp(
           err,
