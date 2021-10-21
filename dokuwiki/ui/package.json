@@ -11,7 +11,7 @@
   "dependencies": {
     "@carbon/icons-vue": "^10.35.0",
     "@carbon/vue": "^2.38.2",
-    "@nethserver/ns8-ui-lib": "^0.0.15",
+    "@nethserver/ns8-ui-lib": "^0.0.17",
     "await-to-js": "^3.0.0",
     "axios": "^0.21.2",
     "carbon-components": "^10.39.0",
