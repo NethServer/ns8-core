@@ -100,7 +100,6 @@ def run_command(args):
         token.rstrip("\n")
         kwargs['auth_token'] = token
 
-
     if args.endpoint:
         kwargs['endpoint'] = args.endpoint
     elif not 'auth_token' in kwargs and (os.getenv('AGENT_ID') == 'cluster' or os.getenv('REDIS_USER') == 'cluster'):
@@ -113,6 +112,12 @@ def run_command(args):
         data = json.loads(args.data)
     else:
         data = json.load(fp=sys.stdin)
+
+    kwargs.setdefault('extra', {
+        'title': f"{args.action}@{args.agent}",
+        'description': f"api-cli endpoint {kwargs['endpoint']}",
+        'isNotificationHidden': False,
+    })
 
     if args.nowait:
         response = agent.tasks.run_nowait(args.agent, args.action, data, **kwargs)

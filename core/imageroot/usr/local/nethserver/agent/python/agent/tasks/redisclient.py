@@ -42,6 +42,7 @@ async def run_redisclient_nowait(taskrq, **kwargs):
             "action": taskrq['action'],
             "data": taskrq['data'],
             "parent": taskrq['parent'],
+            'extra': taskrq.get('extra', {}),
         }
         await _retry_request(rdb.lpush, f'{taskrq["agent_id"]}/tasks', json.dumps(task_obj))
 

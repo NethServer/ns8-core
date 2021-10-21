@@ -98,6 +98,9 @@ async def _runp(tasks, **kwargs):
         if not 'parent' in taskrq:
             taskrq['parent'] = os.getenv("AGENT_TASK_ID", "")
 
+        if 'extra' in kwargs:
+            taskrq['extra'] = kwargs['extra']
+
         if parent_cbk:
             task_cbk = create_task_cbk(idx)
         else:

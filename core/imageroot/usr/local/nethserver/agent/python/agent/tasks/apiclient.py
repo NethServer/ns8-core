@@ -207,6 +207,7 @@ async def _apost_task(taskrq, **kwargs):
             'action': taskrq['action'],
             'data': taskrq['data'],
             'parent': taskrq['parent'],
+            'extra': taskrq.get('extra', {}),
         },
         ssl=kwargs['ssl_ctx'],
         headers=theaders,
