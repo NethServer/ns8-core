@@ -158,11 +158,19 @@ export default {
       const taskContext = contextResponse.data.data.context;
       let taskResult;
 
+      console.log(
+        "status, payload, context:",
+        taskStatus,
+        payload,
+        taskContext
+      ); ////
+
       if (["completed", "aborted", "validation-failed"].includes(taskStatus)) {
         // get output and error
         const [err, statusResponse] = await to(this.getTaskStatus(taskPath));
 
         if (err) {
+          console.error(err);
           const notification = {
             title: this.$t("error.cannot_retrieve_task_status"),
             description: this.getErrorMessage(err),
@@ -172,6 +180,8 @@ export default {
         }
 
         taskResult = statusResponse.data.data;
+
+        console.log("taskResult", taskResult); ////
 
         if (taskStatus === "validation-failed") {
           // show validation errors
@@ -190,34 +200,40 @@ export default {
 
         const parentTask = this.getTaskById(taskContext.parent);
 
-        // check if subTask has already been added to subTasks list
-        const subTask = parentTask.subTasks.find(
-          (subTask) => subTask.context.id === taskContext.id
-        );
-
-        if (!subTask) {
-          // add subtask to subTasks list
-
-          const subTask = {
-            context: taskContext,
-            status: taskStatus,
-            progress: payload.progress,
-            subTasks: [],
-          };
-
-          if (taskResult) {
-            subTask.result = taskResult;
-          }
-
-          parentTask.subTasks.push(subTask);
+        if (!parentTask) {
+          console.log("parentTask not found, ignoring");
+          console.log("  taskContext", taskContext);
+          console.log("  payload", payload);
         } else {
-          // update subtask in subtasks list
+          // check if subTask has already been added to subTasks list
+          const subTask = parentTask.subTasks.find(
+            (subTask) => subTask.context.id === taskContext.id
+          );
 
-          subTask.status = taskStatus;
-          subTask.progress = payload.progress;
+          if (!subTask) {
+            // add subtask to subTasks list
 
-          if (taskResult) {
-            subTask.result = taskResult;
+            const subTask = {
+              context: taskContext,
+              status: taskStatus,
+              progress: payload.progress,
+              subTasks: [],
+            };
+
+            if (taskResult) {
+              subTask.result = taskResult;
+            }
+
+            parentTask.subTasks.push(subTask);
+          } else {
+            // update subtask in subtasks list
+
+            subTask.status = taskStatus;
+            subTask.progress = payload.progress;
+
+            if (taskResult) {
+              subTask.result = taskResult;
+            }
           }
         }
       } else {

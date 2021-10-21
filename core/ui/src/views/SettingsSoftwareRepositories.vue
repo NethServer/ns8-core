@@ -346,8 +346,6 @@ export default {
   },
   methods: {
     addRepositoryValidationFailed(validationErrors) {
-      this.$root.$off("add-repository-validation-failed");
-
       // enable "Create repository" button
       this.loading.createRepository = false;
 
@@ -377,7 +375,10 @@ export default {
       const taskAction = "list-repositories";
 
       // register to task completion
-      this.$root.$on(taskAction + "-completed", this.listRepositoriesCompleted);
+      this.$root.$once(
+        taskAction + "-completed",
+        this.listRepositoriesCompleted
+      );
 
       const res = await to(
         this.createClusterTask({
@@ -399,9 +400,6 @@ export default {
       }
     },
     listRepositoriesCompleted(taskContext, taskResult) {
-      // unregister from event
-      this.$root.$off("list-repositories-completed");
-
       this.tableRows = taskResult.output;
       this.loading.repositories = false;
     },
@@ -432,17 +430,23 @@ export default {
       const taskAction = "add-repository";
 
       // register to task validation
-      this.$root.$on(
+      this.$root.$off(taskAction + "-validation-ok");
+      this.$root.$once(
         taskAction + "-validation-ok",
         this.addRepositoryValidationOk
       );
-      this.$root.$on(
+      this.$root.$off(taskAction + "-validation-failed");
+      this.$root.$once(
         taskAction + "-validation-failed",
         this.addRepositoryValidationFailed
       );
 
       // register to task completion
-      this.$root.$on(taskAction + "-completed", this.addRepositoriesCompleted);
+      this.$root.$off(taskAction + "-completed");
+      this.$root.$once(
+        taskAction + "-completed",
+        this.addRepositoriesCompleted
+      );
 
       const res = await to(
         this.createClusterTask({
@@ -470,9 +474,6 @@ export default {
       }
     },
     addRepositoryValidationOk() {
-      // unregister from event
-      this.$root.$off("add-repository-validation-ok");
-
       // hide modal after validation
       this.q.isShownCreateRepoModal = false;
 
@@ -485,22 +486,24 @@ export default {
 
       // enable "Edit repository" button
       this.loading.editRepository = false;
-
-      // unregister from event
-      this.$root.$off("alter-repository-validation-ok");
     },
     async editRepository() {
       this.loading.editRepository = true;
       const taskAction = "alter-repository";
 
       // register to task validation
-      this.$root.$on(
+      this.$root.$off(taskAction + "-validation-ok");
+      this.$root.$once(
         taskAction + "-validation-ok",
         this.alterRepositoryValidationOk
       );
 
       // register to task completion
-      this.$root.$on(taskAction + "-completed", this.alterRepositoryCompleted);
+      this.$root.$off(taskAction + "-completed");
+      this.$root.$once(
+        taskAction + "-completed",
+        this.alterRepositoryCompleted
+      );
 
       const res = await to(
         this.createClusterTask({
@@ -527,11 +530,9 @@ export default {
       }
     },
     addRepositoriesCompleted() {
-      this.$root.$off("add-repository-completed");
       this.listRepositories();
     },
     alterRepositoryCompleted() {
-      this.$root.$off("alter-repository-completed");
       this.listRepositories();
     },
     willDeleteRepository(repo) {
@@ -552,7 +553,10 @@ export default {
       const taskAction = "remove-repository";
 
       // register to task completion
-      this.$root.$on(taskAction + "-completed", this.removeRepositoryCompleted);
+      this.$root.$once(
+        taskAction + "-completed",
+        this.removeRepositoryCompleted
+      );
 
       const res = await to(
         this.createClusterTask({
@@ -577,7 +581,6 @@ export default {
       }
     },
     removeRepositoryCompleted() {
-      this.$root.$off("remove-repository-completed");
       this.listRepositories();
     },
     cancelDeleteRepository() {

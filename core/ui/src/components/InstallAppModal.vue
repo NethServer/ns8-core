@@ -128,7 +128,7 @@ export default {
       const taskAction = "add-module";
 
       // register to task completion
-      this.$root.$on(taskAction + "-completed", this.addModuleCompleted);
+      this.$root.$once(taskAction + "-completed", this.addModuleCompleted);
 
       const res = await to(
         this.createClusterTask({
@@ -162,9 +162,6 @@ export default {
       this.$emit("close");
     },
     addModuleCompleted() {
-      // unregister from event
-      this.$root.$off("add-module-completed");
-
       this.$emit("installationCompleted");
 
       // show new app in app drawer

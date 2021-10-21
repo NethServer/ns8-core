@@ -177,7 +177,7 @@ export default {
       const taskAction = "get-configuration";
 
       // register to task completion
-      this.ns8Core.$root.$on(
+      this.ns8Core.$root.$once(
         taskAction + "-completed",
         this.getConfigurationCompleted
       );
@@ -291,13 +291,15 @@ export default {
       const taskAction = "configure-module";
 
       // register to task validation
-      this.ns8Core.$root.$on(
+      this.ns8Core.$root.$off(taskAction + "-validation-failed");
+      this.ns8Core.$root.$once(
         taskAction + "-validation-failed",
         this.saveSettingsValidationFailed
       );
 
       // register to task completion
-      this.ns8Core.$root.$on(
+      this.ns8Core.$root.$off(taskAction + "-completed");
+      this.ns8Core.$root.$once(
         taskAction + "-completed",
         this.saveSettingsCompleted
       );
@@ -334,9 +336,6 @@ export default {
       }
     },
     getConfigurationCompleted(taskContext, taskResult) {
-      // unregister from event
-      this.ns8Core.$root.$off("get-configuration-completed");
-
       const config = taskResult.output;
       this.wikiName = config.wiki_name;
       this.username = config.username;
@@ -350,9 +349,6 @@ export default {
       this.focusElement("wikiName");
     },
     saveSettingsCompleted() {
-      // unregister from event
-      this.ns8Core.$root.$off("configure-module-completed");
-
       this.loading.settings = false;
 
       // reload configuration

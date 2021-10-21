@@ -271,7 +271,7 @@ export default {
       const taskAction = "get-status";
 
       // register to task completion
-      this.ns8Core.$root.$on(
+      this.ns8Core.$root.$once(
         taskAction + "-completed",
         this.getStatusCompleted
       );
@@ -297,8 +297,6 @@ export default {
       }
     },
     getStatusCompleted(taskContext, taskResult) {
-      // unregister from event
-      this.ns8Core.$root.$off("get-status-completed");
       this.status = taskResult.output;
       this.loading.status = false;
     },

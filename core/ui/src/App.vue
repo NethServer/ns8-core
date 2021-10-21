@@ -339,7 +339,7 @@ export default {
 
       const taskAction = "list-updates";
       // register to task completion
-      this.$root.$on(taskAction + "-completed", this.listUpdatesCompleted);
+      this.$root.$once(taskAction + "-completed", this.listUpdatesCompleted);
 
       const res = await to(
         this.createClusterTask({
@@ -371,9 +371,6 @@ export default {
       }
     },
     listUpdatesCompleted(taskContext, taskResult) {
-      // unregister from event
-      this.$root.$off("list-updates-completed");
-
       let updates = taskResult.output;
 
       //// add fake updates
