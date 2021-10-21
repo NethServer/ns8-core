@@ -543,7 +543,7 @@ export default {
         }
       }
     },
-    changeUserPasswordCompleted(taskContext, taskResult) {
+    changeUserPasswordCompleted() {
       this.$root.$off("change-user-password-completed");
       this.isPasswordChangeNeeded = false;
     },
@@ -657,6 +657,7 @@ export default {
       this.isCreatingCluster = false;
     },
     createClusterAborted(taskResult) {
+      console.error("create cluster aborted", taskResult);
       this.$root.$off("create-cluster-aborted");
       this.isCreatingCluster = false;
     },
