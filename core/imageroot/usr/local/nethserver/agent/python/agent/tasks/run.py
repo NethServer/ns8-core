@@ -119,8 +119,6 @@ async def _run(taskrq, **pconn):
     if pconn['endpoint'].startswith("redis://"):
         return await run_redisclient(taskrq, **pconn)
     else:
-        pconn.setdefault('auth_token', None)
-        pconn.setdefault('tls_verify', None)
         return await run_apiclient(taskrq, **pconn)
 
 async def _run_nowait(taskrq, **pconn):
@@ -128,6 +126,4 @@ async def _run_nowait(taskrq, **pconn):
     if pconn['endpoint'].startswith("redis://"):
         return await run_redisclient_nowait(taskrq, **pconn)
     else:
-        pconn.setdefault('auth_token', None)
-        pconn.setdefault('tls_verify', None)
         return await run_apiclient_nowait(taskrq, **pconn)
