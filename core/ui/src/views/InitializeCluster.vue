@@ -773,13 +773,11 @@ export default {
           return;
         }
       }
-
-      this.joinClusterCompleted();
+      this.isJoiningCluster = true;
     },
     joinClusterCompleted() {
       console.log("joinClusterCompleted"); ////
 
-      // this.$root.$off("join-cluster-completed"); ////
       this.isJoiningCluster = false;
       this.$router.push("/init?page=redirect");
       //// needed?
@@ -790,7 +788,6 @@ export default {
     joinClusterAborted(taskResult) {
       console.log("joinClusterAborted", taskResult); ////
 
-      // this.$root.$off("join-cluster-aborted"); ////
       this.isJoiningCluster = false;
     },
     joinClusterValidationFailed(validationErrors) {
