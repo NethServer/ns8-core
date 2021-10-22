@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/local/bin/runagent bash
 
 #
 #Set as default server of the cluster

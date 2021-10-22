@@ -11,7 +11,7 @@ Environment=AGENT_STATE_DIR=%S/state
 EnvironmentFile=/etc/nethserver/agent.env
 EnvironmentFile=-%S/state/agent.env
 WorkingDirectory=%S/state
-ExecStart=/usr/local/bin/eventsgw
+ExecStart=/usr/local/agent/bin/eventsgw
 Restart=always
 SyslogIdentifier=%u-eventsgw
 
