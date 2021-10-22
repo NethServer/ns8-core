@@ -34,6 +34,9 @@ leader_public_key = request['leader_public_key']
 leader_endpoint = request['leader_endpoint']
 listen_port = int(request['listen_port'])
 
+# Start the Redis client before changing sensible environment variables
+rdb = agent.redis_connect(privileged=True)
+
 #
 # !!! RACE CONDITION !!! This action races against join-cluster, which has
 # to terminate successfully and write its response to Redis before

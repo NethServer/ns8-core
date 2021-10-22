@@ -47,9 +47,6 @@ agent.assert_exp(tls_verify is not None)
 public_key = agent.slurp_file('/etc/nethserver/wg0.pub')
 agent.assert_exp(public_key)
 
-# Start the Redis client before changing sensible environment variables
-rdb = agent.redis_connect(privileged=True)
-
 # Import node agent configuration:
 node_env = agent.read_envfile('/var/lib/nethserver/node/state/agent.env')
 node_pw = node_env['REDIS_PASSWORD']
@@ -87,7 +84,7 @@ join_node_data.setdefault('listen_port', listen_port) # required by WG configura
 # Start the action that switches Redis to replica of the new leader.
 # join-node has to give us enough time to write our response back to the
 # UI caller.
-task_id = agent.tasks.run_nowait(
+agent.tasks.run_nowait(
     agent_id = 'cluster',
     action = 'join-node',
     data = join_node_data,
@@ -96,5 +93,4 @@ task_id = agent.tasks.run_nowait(
 
 json.dump({
     'node_id': node_id,
-    'join_task': task_id,
 }, fp=sys.stdout)
