@@ -753,7 +753,7 @@ export default {
           },
           extra: {
             title: this.$t("action." + taskAction),
-            isNotificationHidden: true,
+            description: this.$t("init.adding_node_to_cluster"),
           },
         })
       );
@@ -774,8 +774,8 @@ export default {
     },
     joinClusterCompleted(taskContext, taskResult) {
       console.log("joinClusterCompleted"); ////
-      console.log("  taskContext", taskContext); ////
-      console.log("  taskResult", taskResult); ////
+      console.log("taskContext", taskContext); ////
+      console.log("taskResult", taskResult); ////
 
       this.isJoiningCluster = false;
       this.$router.push("/init?page=redirect");
