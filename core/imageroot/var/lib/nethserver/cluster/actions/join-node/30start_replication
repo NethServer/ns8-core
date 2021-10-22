@@ -1,0 +1,90 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2021 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
+import agent
+import json
+import sys
+import time
+
+request = json.load(sys.stdin)
+
+ip_address = request['ip_address']
+node_id = int(request['node_id'])
+leader_ip_address = request['leader_ip_address']
+leader_public_key = request['leader_public_key']
+leader_endpoint = request['leader_endpoint']
+listen_port = int(request['listen_port'])
+
+#
+# !!! RACE CONDITION !!! This action races against join-cluster, which has
+# to terminate successfully and write its response to Redis before
+# switching it to replica.
+#
+time.sleep(2)
+
+# Action summary:
+# 1. Configure the node AGENT_ID/REDIS_USER with new node_id and restart it
+# 2. Configure WireGuard device and routing table
+# 3. Bind Redis to the VPN IP address
+# 4. Switch Redis to replica
+
+# Reconfigure the node agent environment, preserving the original node password
+agent.run_helper('sed', '-i',
+    '-e', f'/^AGENT_ID=/c\AGENT_ID=node/{node_id}',
+    '-e', f'/^REDIS_USER=/c\REDIS_USER=node/{node_id}',
+    '/var/lib/nethserver/node/state/agent.env').check_returncode()
+
+# VPN bootstrap
+agent.save_wgconf(ip_address, listen_port, {
+    "leader-node":{"ip_address": leader_ip_address, "public_key": leader_public_key, 'endpoint': leader_endpoint }
+})
+agent.run_helper(*'systemctl restart wg-quick@wg0'.split(' ')).check_returncode()
+
+# Fix cluster-leader and cluster-localnode addresses in /etc/hosts
+# !!! Warning !!! Full restart may be required by agents and podman containers to pick up this:
+agent.run_helper('sed', '-i',
+    '-e', f'/cluster-leader$/c\{leader_ip_address} cluster-leader',
+    '-e', f'/cluster-localnode$/c\{ip_address} cluster-localnode',
+    '/etc/hosts').check_returncode()
+
+# Initialize the new dynamic environment for the node agent
+with open("/var/lib/nethserver/node/state/environment", "w") as fenv:
+    fenv.write(f'NODE_ID={node_id}\n')
+
+# Restart the node agent to apply the new environment setup
+agent.run_helper('systemctl', 'restart', 'agent@node').check_returncode()
+
+# Bind Redis to the VPN ip_address
+agent.assert_exp(rdb.execute_command('CONFIG SET', 'bind', f'127.0.0.1 ::1 {ip_address}') is True)
+
+# Set this Redis instance read-only
+agent.assert_exp(rdb.execute_command('REPLICAOF', leader_ip_address, '6379') == 'OK')
+
+# Write configuration to disk. The node_pw is stored in clear-text, 
+# but the default volume directory permissions allows root-only access to it:
+agent.assert_exp(rdb.execute_command('CONFIG REWRITE') == 'OK')
+
+# Redis DB becomes read-only: the local cluster agent is now locked out!
+
+# Fix the cluster agent dynamic environment, in case of leader promotion:
+with open("/var/lib/nethserver/cluster/state/environment", "w") as fenv:
+    fenv.write(f'NODE_ID={node_id}\n')
