@@ -29,7 +29,7 @@ export default {
       const messageData = JSON.parse(message.data);
       const payload = messageData.payload;
 
-      console.log("ws data", messageData); ////
+      // console.log("ws data", messageData); ////
 
       const progressTaskMatch = /^progress\/(.+\/task\/(.+))$/.exec(
         messageData.name

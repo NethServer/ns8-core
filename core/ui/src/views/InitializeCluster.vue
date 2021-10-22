@@ -772,18 +772,16 @@ export default {
       }
       this.isJoiningCluster = true;
     },
-    joinClusterCompleted() {
+    joinClusterCompleted(taskContext, taskResult) {
       console.log("joinClusterCompleted"); ////
+      console.log("  taskContext", taskContext); ////
+      console.log("  taskResult", taskResult); ////
 
       this.isJoiningCluster = false;
       this.$router.push("/init?page=redirect");
-      //// needed?
-      //this.setClusterInitializedInStore(true);
-      //this.$root.$emit("clusterInitialized");
-      //this.$router.replace("/status");
     },
     joinClusterAborted(taskResult) {
-      console.log("join cluster aborted", taskResult); ////
+      console.error("join cluster aborted", taskResult);
       this.isJoiningCluster = false;
     },
     joinClusterValidationFailed(validationErrors) {

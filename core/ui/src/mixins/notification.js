@@ -158,12 +158,7 @@ export default {
       const taskContext = contextResponse.data.data.context;
       let taskResult;
 
-      console.log(
-        "status, payload, context:",
-        taskStatus,
-        payload,
-        taskContext
-      ); ////
+      console.log(taskPath, taskContext, payload); ////
 
       if (["completed", "aborted", "validation-failed"].includes(taskStatus)) {
         // get output and error

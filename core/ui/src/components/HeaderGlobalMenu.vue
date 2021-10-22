@@ -1,13 +1,17 @@
 <template>
   <div
     data-overflow-menu
-    :class="`cv-overflow-menu ${carbonPrefix}--overflow-menu`"
+    :class="[`cv-overflow-menu`, 'header-global-menu']"
     :id="uid"
   >
     <button
       :class="[
         `${carbonPrefix}--overflow-menu__trigger ${carbonPrefix}--tooltip__trigger`,
         `${carbonPrefix}--tooltip--a11y`,
+        'bx--btn--primary',
+        'bx--btn',
+        'bx--btn--icon-only',
+        'bx--header__action',
         {
           [`${this.carbonPrefix}--tooltip--${tipPosition}`]: label,
           [`${this.carbonPrefix}--tooltip--align-${tipAlignment}`]: label,
@@ -26,15 +30,11 @@
       @keydown.enter.prevent="doToggle"
       @keydown.tab="onOverflowMenuTab"
     >
-      <span :class="`${carbonPrefix}--assistive-text`" v-if="label">{{
+      <span :class="`${carbonPrefix}--assistive-text`" v-if="label && !open">{{
         label
       }}</span>
 
-      <slot name="trigger">
-        <OverflowMenuVertical16
-          :class="`${carbonPrefix}--overflow-menu__icon`"
-        />
-      </slot>
+      <slot name="trigger"> </slot>
     </button>
     <div
       :class="[
@@ -75,18 +75,10 @@
 
 <script>
 import { CvOverflowMenu } from "@carbon/vue";
-import OverflowMenuVertical16 from "@carbon/icons-vue/es/overflow-menu--vertical/16";
-// import { uidMixin, carbonPrefixMixin, methodsMixin } from "../../mixins"; ////
 
 export default {
   name: "HeaderGlobalMenu",
   extends: CvOverflowMenu,
-  components: { OverflowMenuVertical16 },
-  //   mixins: [
-  //     uidMixin,
-  //     carbonPrefixMixin,
-  //     methodsMixin({ trigger: ["blur", "focus"] }),
-  //   ],
   props: {
     label: String,
     flipMenu: Boolean,
@@ -95,7 +87,6 @@ export default {
       type: Object,
       validator(value) {
         return value && value.left !== undefined && value.top !== undefined;
-        // value.hasOwnProperty('left') && value.hasOwnProperty('top');
       },
     },
     tipPosition: {
@@ -111,3 +102,22 @@ export default {
   },
 };
 </script>
+
+<style scoped lang="scss">
+@import "../styles/carbon-utils";
+</style>
+
+<style lang="scss">
+@import "../styles/carbon-utils";
+
+// global styles
+
+.header-global-menu .bx--tooltip__trigger svg {
+  fill: currentColor !important;
+}
+
+.header-global-menu .bx--overflow-menu__trigger {
+  width: 3rem;
+  height: 3rem;
+}
+</style>

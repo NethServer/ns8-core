@@ -115,7 +115,8 @@
     "search_placeholder": "Search...",
     "no_search_results": "No results",
     "no_search_results_description": "Try changing your search query",
-    "open_app": "Open {app}"
+    "open_app": "Open {app}",
+    "logout": "Logout"
   },
   "app_drawer": {
     "no_apps": "No apps",
