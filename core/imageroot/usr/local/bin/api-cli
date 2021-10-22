@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/local/bin/runagent python3
 
 #
 # Copyright (C) 2021 Nethesis S.r.l.
@@ -115,7 +115,7 @@ def run_command(args):
 
     kwargs.setdefault('extra', {
         'title': f"{args.action}@{args.agent}",
-        'description': f"api-cli endpoint {kwargs['endpoint']}",
+        'description': f"api-cli endpoint {kwargs.get('endpoint', 'default')}",
         'isNotificationHidden': False,
     })
 

@@ -75,10 +75,11 @@ if ! id "api-server" &>/dev/null; then
     useradd -r -m -d /var/lib/nethserver/api-server api-server
 fi
 
-echo "Setup agent:"
-agent_dir=/usr/local/nethserver/agent
-python3 -mvenv ${agent_dir} --upgrade-deps
-${agent_dir}/bin/pip3 install -r /etc/nethserver/pythonreq.txt
+echo "Setup Python virtual environment for agents:"
+core_dir=/usr/local/agent/pyenv
+python3 -mvenv ${core_dir} --upgrade-deps
+${core_dir}/bin/pip3 install -r /etc/nethserver/pythonreq.txt
+echo "/usr/local/agent/pypkg" >$(${core_dir}/bin/python3 -c "import sys; print(sys.path[-1] + '/pypkg.pth')")
 
 echo "Setup registry:"
 if [[ ! -f /etc/nethserver/registry.json ]] ; then
@@ -160,10 +161,8 @@ EOF
 echo "Start API server and core agents:"
 systemctl enable --now api-server.service agent@cluster.service agent@node.service
 
-source /etc/profile.d/nethserver.sh
-
-echo "Grant default permissions on the cluster:"
-python <<'EOF'
+echo "Grant initial permissions:"
+runagent python3 <<'EOF'
 import agent
 import cluster.grants
 rdb = agent.redis_connect(privileged=True)
@@ -201,7 +200,7 @@ A. To join this node to an already existing cluster run:
 
    For instance:
 
-      source /etc/profile.d/nethserver.sh && join-cluster https://cluster.example.com eyJhbGc...NiIsInR5c
+      join-cluster https://cluster.example.com eyJhbGc...NiIsInR5c
 
 B. To initialize this node as a cluster leader run:
 
@@ -209,7 +208,7 @@ B. To initialize this node as a cluster leader run:
 
    For instance:
 
-      source /etc/profile.d/nethserver.sh && create-cluster $(hostname -f):55820 10.5.4.0/24 Nethesis,1234
+      create-cluster $(hostname -f):55820 10.5.4.0/24 Nethesis,1234
 
 Finally, access the administration UI at:
 

@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/local/bin/runagent python3
 
 #
 # Copyright (C) 2021 Nethesis S.r.l.
@@ -21,7 +21,6 @@
 #
 
 import sys
-import agent
 import argparse
 import agent.tasks
 

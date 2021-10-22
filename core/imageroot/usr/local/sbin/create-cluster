@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/local/bin/runagent python3
 
 #
 # Copyright (C) 2021 Nethesis S.r.l.
@@ -62,4 +62,4 @@ response.raise_for_status()
 payload = response.json()
 
 print("Copy the following command to a worker node to join this cluster with admin's credentials:\n")
-print(f"    source /etc/profile.d/nethserver.sh && join-cluster --no-tlsverify https://{endpoint_host} {payload['token']}")
+print(f"    join-cluster --no-tlsverify https://{endpoint_host} {payload['token']}")
