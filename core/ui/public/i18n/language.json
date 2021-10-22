@@ -262,7 +262,7 @@
     }
   },
   "logs": {
-    "title": "Logs",
+    "title": "Audit logs",
     "start_date": "Start date",
     "end_date": "End date",
     "search_logs": "Search logs",
