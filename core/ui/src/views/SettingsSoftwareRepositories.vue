@@ -158,6 +158,16 @@
         </div>
       </div>
     </div>
+
+    <!-- //// remove -->
+    <!-- <NsMenu flip-menu class="table-overflow-menu">
+      <template v-slot:trigger>
+        <Home16 class="bx--overflow-menu__icon" />
+      </template>
+      <cv-overflow-menu-item>Option 1</cv-overflow-menu-item>
+      <cv-overflow-menu-item>Option 2</cv-overflow-menu-item>
+    </NsMenu> -->
+
     <!-- new repository modal -->
     <cv-modal
       size="default"
@@ -273,9 +283,12 @@ import {
   IconService,
   DataTableService,
 } from "@nethserver/ns8-ui-lib";
+// import NsMenu from "@/components/NsMenu"; ////
+// import Home16 from "@carbon/icons-vue/es/home/16"; ////
 
 export default {
   name: "SettingsSoftwareRepositories",
+  // components: { NsMenu, Home16 }, ////
   mixins: [
     TaskService,
     UtilService,
