@@ -187,5 +187,4 @@ json.dump({
     "network": str(network), # required to set up route table
     "leader_ip_address": leader_ip_address, # required to rewrite /etc/hosts cluster-leader
     "leader_endpoint": leader_endpoint, # required to reach the WireGuard listen_port
-    "subtasks": subtasks,
 }, sys.stdout)

@@ -43,6 +43,14 @@
             "exclusiveMinimum": 1024,
             "title": "WireGuard listening UDP port",
             "description": "Listening UDP port for incoming WireGuard VPN packets"
+        },
+        "endpoint": {
+            "description": "The public WireGuard VPN endpoint in `hostname:port` form. The given port may differ from the @listen_port property as it depends on external configurations (i.e. port-forwards)",
+            "examples": [
+                "my.example.com:55820",
+                "1.2.3.4:60000"
+            ],
+            "type": "string"
         }
     }
 }
