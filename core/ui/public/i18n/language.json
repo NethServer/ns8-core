@@ -106,7 +106,7 @@
     "redirect_cluster": "Worker Node",
     "redirect_cluster_description": "This node now is a worker of the cluster. Click on the link below to access the cluster administration page.",
     "redirect_cluster_link": "Go to cluster administration page",
-    "adding_node_to_cluster": "Adding node to cluster..."
+    "node_added_to_cluster": "Node {nodeId} added to cluster"
   },
   "shell": {
     "skip_to_content": "Skip to content",

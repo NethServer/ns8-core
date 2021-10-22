@@ -255,6 +255,7 @@ import {
 } from "@nethserver/ns8-ui-lib";
 import { mapActions } from "vuex";
 import to from "await-to-js";
+import NotificationService from "@/mixins/notification";
 
 export default {
   name: "InitializeCluster",
@@ -265,6 +266,7 @@ export default {
     QueryParamService,
     StorageService,
     TaskService,
+    NotificationService,
   ],
   pageTitle() {
     return this.$t("init.welcome", { product: this.$root.config.PRODUCT_NAME });
@@ -753,7 +755,7 @@ export default {
           },
           extra: {
             title: this.$t("action." + taskAction),
-            description: this.$t("init.adding_node_to_cluster"),
+            isNotificationHidden: true,
           },
         })
       );
@@ -779,6 +781,17 @@ export default {
 
       this.isJoiningCluster = false;
       this.$router.push("/init?page=redirect");
+
+      const nodeId = taskResult.output.nodeId;
+
+      console.log("nodeId", nodeId); ////
+
+      const notification = {
+        title: this.$t("action.join-cluster"),
+        description: this.$t("init.node_added_to_cluster", { nodeId }),
+        type: "success",
+      };
+      this.createNotification(notification);
     },
     joinClusterAborted(taskResult) {
       console.error("join cluster aborted", taskResult);
