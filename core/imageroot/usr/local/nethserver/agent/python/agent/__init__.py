@@ -42,7 +42,7 @@ SD_NOTICE  = "<5>"  # normal but significant condition
 SD_INFO    = "<6>"  # informational
 SD_DEBUG   = "<7>"  # debug-level messages
 
-def redis_connect(privileged=False, decode_responses=True, **kwargs):
+def redis_connect(privileged=False, **kwargs):
     """Connect to the Redis DB with the right credentials
     """
     redis_host = os.getenv('REDIS_ADDRESS', '127.0.0.1:6379').split(':', 1)[0]
@@ -54,18 +54,17 @@ def redis_connect(privileged=False, decode_responses=True, **kwargs):
         redis_username = 'default'
         redis_password = 'nopass'
 
-    return redis.Redis(
-        host=redis_host,
-        port=redis_port,
-        db=0,
-        username=redis_username,
-        password=redis_password,
-        decode_responses=decode_responses,
-            #  we assume Redis keys and value strings are encoded UTF-8. Enabling this
-            #  option implicitly converts to UTF-8 strings instead of binary strings
-            #  (e.g. {b'key': b'value'} != {'key':'value'})
-        **kwargs
-    )
+    kwargs.setdefault('host', redis_host)
+    kwargs.setdefault('port', redis_port)
+    kwargs.setdefault('db', 0)
+    kwargs.setdefault('username', redis_username)
+    kwargs.setdefault('password', redis_password)
+    #  we assume Redis keys and value strings are encoded UTF-8. Enabling this
+    #  option implicitly converts to UTF-8 strings instead of binary strings
+    #  (e.g. {b'key': b'value'} != {'key':'value'})
+    kwargs.setdefault('decode_responses', True)
+
+    return redis.Redis(**kwargs)
 
 def read_envfile(file_path):
     """Read an environment file (e.g. agent.env) and return a dictionary of its contents
