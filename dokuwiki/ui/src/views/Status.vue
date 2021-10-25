@@ -5,6 +5,16 @@
         <h2>{{ $t("status.title") }}</h2>
       </div>
     </div>
+    <div v-if="error.getStatus" class="bx--row">
+      <div class="bx--col">
+        <NsInlineNotification
+          kind="error"
+          :title="$t('action.get-status')"
+          :description="error.getStatus"
+          :showCloseButton="false"
+        />
+      </div>
+    </div>
     <div class="bx--row">
       <div class="bx--col-md-4 bx--col-max-4">
         <NsInfoCard
@@ -28,7 +38,7 @@
           light
           :title="$t('status.node') + ' ' + status.node"
           :description="$t('status.installation_node')"
-          :icon="EdgeNode32"
+          :icon="Chip32"
           class="min-height-card"
         />
         <cv-tile v-else light>
@@ -215,6 +225,9 @@ export default {
       loading: {
         status: true,
       },
+      error: {
+        getStatus: "",
+      },
     };
   },
   computed: {
@@ -268,6 +281,7 @@ export default {
   methods: {
     async getStatus() {
       this.loading.status = true;
+      this.error.getStatus = "";
       const taskAction = "get-status";
 
       // register to task completion
@@ -287,12 +301,9 @@ export default {
       );
       const err = res[0];
 
-      //// use inline error notification instead of toast
       if (err) {
-        this.createErrorNotificationForApp(
-          err,
-          this.$t("task.cannot_create_task", { action: taskAction })
-        );
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.getStatus = this.getErrorMessage(err);
         return;
       }
     },

@@ -28,6 +28,26 @@
           <cv-tag v-else kind="blue" :label="$t('nodes.worker')"></cv-tag>
         </div>
       </div>
+      <div v-if="error.getClusterStatus" class="bx--row">
+        <div class="bx--col">
+          <NsInlineNotification
+            kind="error"
+            :title="$t('action.get-cluster-status')"
+            :description="error.getClusterStatus"
+            :showCloseButton="false"
+          />
+        </div>
+      </div>
+      <div v-if="error.getNodeStatus" class="bx--row">
+        <div class="bx--col">
+          <NsInlineNotification
+            kind="error"
+            :title="$t('action.get-node-status')"
+            :description="error.getNodeStatus"
+            :showCloseButton="false"
+          />
+        </div>
+      </div>
       <div class="bx--row">
         <div class="bx--col-lg-16">
           <h4 class="mg-bottom-md">{{ $t("node_detail.system") }}</h4>
@@ -311,6 +331,10 @@ export default {
         nodeStatus: true,
         clusterStatus: true,
       },
+      error: {
+        getNodeStatus: "",
+        getClusterStatus: "",
+      },
     };
   },
   beforeRouteEnter(to, from, next) {
@@ -346,6 +370,7 @@ export default {
   },
   methods: {
     async retrieveNodeStatus() {
+      this.error.getNodeStatus = "";
       const taskAction = "get-node-status";
 
       // register to task events
@@ -367,10 +392,9 @@ export default {
       const err = res[0];
 
       if (err) {
-        this.createErrorNotification(
-          err,
-          this.$t("task.cannot_create_task", { action: taskAction })
-        );
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.getNodeStatus = this.getErrorMessage(err);
+        return;
       }
     },
     getNodeStatusCompleted(taskContext, taskResult) {
@@ -397,6 +421,7 @@ export default {
       this.loading.nodeStatus = false;
     },
     async retrieveClusterStatus() {
+      this.error.getClusterStatus = "";
       const taskAction = "get-cluster-status";
 
       // register to task completion
@@ -417,16 +442,12 @@ export default {
       const err = res[0];
 
       if (err) {
-        this.createErrorNotification(
-          err,
-          this.$t("task.cannot_create_task", { action: taskAction })
-        );
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.getClusterStatus = this.getErrorMessage(err);
         return;
       }
     },
     getClusterStatusCompleted(taskContext, taskResult) {
-      console.log("getClusterStatusCompleted"); ////
-
       const clusterStatus = taskResult.output;
 
       const currentNode = clusterStatus.nodes.find(

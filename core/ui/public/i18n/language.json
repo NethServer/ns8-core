@@ -179,7 +179,8 @@
     "remove-favorite": "Remove favorite",
     "list-favorites": "List favorites",
     "list-shortcuts": "List shortcuts",
-    "get-node-status": "Get node status"
+    "get-node-status": "Get node status",
+    "remove-module": "Remove module"
   },
   "network": {
     "title": "Network"

@@ -32,6 +32,16 @@
           />
         </div>
       </div>
+      <div v-if="error.listRepositories" class="bx--row">
+        <div class="bx--col">
+          <NsInlineNotification
+            kind="error"
+            :title="$t('action.list-repositories')"
+            :description="error.listRepositories"
+            :showCloseButton="false"
+          />
+        </div>
+      </div>
       <div class="bx--row">
         <div class="bx--col-lg-16">
           <!-- repository being deleted -->
@@ -203,6 +213,13 @@
             <template slot="text-right">{{ $t("common.enabled") }}</template>
           </cv-toggle>
         </cv-form>
+        <NsInlineNotification
+          v-if="error.addRepository"
+          kind="error"
+          :title="$t('action.add-repository')"
+          :description="error.addRepository"
+          :showCloseButton="false"
+        />
       </template>
       <template slot="secondary-button">{{ $t("common.close") }}</template>
       <template slot="primary-button">{{
@@ -255,6 +272,16 @@
             <template slot="text-right">{{ $t("common.enabled") }}</template>
           </cv-toggle>
         </cv-form>
+        <div v-if="error.alterRepository" class="bx--row">
+          <div class="bx--col">
+            <NsInlineNotification
+              kind="error"
+              :title="$t('action.alter-repository')"
+              :description="error.alterRepository"
+              :showCloseButton="false"
+            />
+          </div>
+        </div>
       </template>
       <template slot="secondary-button">{{ $t("common.close") }}</template>
       <template slot="primary-button">{{
@@ -312,6 +339,9 @@ export default {
       error: {
         name: "",
         url: "",
+        listRepositories: "",
+        addRepository: "",
+        alterRepository: "",
       },
     };
   },
@@ -372,6 +402,7 @@ export default {
     },
     async listRepositories() {
       this.loading.repositories = true;
+      this.error.listRepositories = "";
       const taskAction = "list-repositories";
 
       // register to task completion
@@ -392,10 +423,8 @@ export default {
       const err = res[0];
 
       if (err) {
-        this.createErrorNotification(
-          err,
-          this.$t("task.cannot_create_task", { action: taskAction })
-        );
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.listRepositories = this.getErrorMessage(err);
         return;
       }
     },
@@ -421,6 +450,7 @@ export default {
     },
     async createRepository() {
       this.loading.createRepository = true;
+      this.error.addRepository = "";
 
       if (!this.validateNewRepository()) {
         this.loading.createRepository = false;
@@ -466,10 +496,9 @@ export default {
       const err = res[0];
 
       if (err) {
-        this.createErrorNotification(
-          err,
-          this.$t("task.cannot_create_task", { action: taskAction })
-        );
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.addRepository = this.getErrorMessage(err);
+        this.loading.createRepository = false;
         return;
       }
     },
@@ -489,6 +518,7 @@ export default {
     },
     async editRepository() {
       this.loading.editRepository = true;
+      this.error.alterRepository = "";
       const taskAction = "alter-repository";
 
       // register to task validation
@@ -522,10 +552,8 @@ export default {
       const err = res[0];
 
       if (err) {
-        this.createErrorNotification(
-          err,
-          this.$t("task.cannot_create_task", { action: taskAction })
-        );
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.alterRepository = this.getErrorMessage(err);
         return;
       }
     },

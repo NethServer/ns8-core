@@ -453,54 +453,6 @@ export default {
       };
       this.createNotification(notification);
     },
-    async createAddModuleTask() {
-      const taskAction = "add-module";
-
-      const res = await to(
-        this.createClusterTask({
-          action: taskAction,
-          data: {
-            image: "traefik",
-            node: 1,
-          },
-          extra: {
-            title: this.$t("action." + taskAction),
-            description:
-              "Installing... very very very very very very very long description",
-          },
-        })
-      );
-      const err = res[0];
-
-      if (err) {
-        this.createErrorNotification(
-          err,
-          this.$t("task.cannot_create_task", { action: taskAction })
-        );
-        return;
-      }
-    },
-    async createTestTask() {
-      const taskAction = "test-action-1";
-      const res = await to(
-        this.createClusterTask({
-          action: taskAction,
-          extra: {
-            title: this.$t("action." + taskAction),
-            description: "Doing stuff...",
-          },
-        })
-      );
-      const err = res[0];
-
-      if (err) {
-        this.createErrorNotification(
-          err,
-          this.$t("task.cannot_create_task", { action: taskAction })
-        );
-        return;
-      }
-    },
     createProgressTask() {
       const notification = {
         id: uuidv4(),
@@ -509,33 +461,6 @@ export default {
         task: { context: { id: uuidv4() }, status: "running", progress: 0 },
       };
       this.createNotification(notification);
-    },
-    async addModule() {
-      const module = this.q.moduleToAdd.trim();
-      const taskAction = "add-module";
-
-      const res = await to(
-        this.createClusterTask({
-          action: taskAction,
-          data: {
-            image: module,
-            node: 1,
-          },
-          extra: {
-            title: this.$t("action." + taskAction),
-            description: "Adding module...",
-          },
-        })
-      );
-      const err = res[0];
-
-      if (err) {
-        this.createErrorNotification(
-          err,
-          this.$t("task.cannot_create_task", { action: taskAction })
-        );
-        return;
-      }
     },
   },
 };

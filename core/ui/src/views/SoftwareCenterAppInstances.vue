@@ -26,6 +26,16 @@
           </h3>
         </div>
       </div>
+      <div v-if="error.listModules" class="bx--row">
+        <div class="bx--col">
+          <NsInlineNotification
+            kind="error"
+            :title="$t('action.list-modules')"
+            :description="error.listModules"
+            :showCloseButton="false"
+          />
+        </div>
+      </div>
       <div class="bx--row">
         <div class="bx--col-lg-16">
           <cv-tile light>
@@ -81,7 +91,7 @@
                   </div>
                   <div class="bx--col-sm-2 bx--col-md-2 mg-bottom-sm">
                     <div class="icon-and-text">
-                      <NsSvg :svg="EdgeNode20" class="icon" />
+                      <NsSvg :svg="Chip20" class="icon" />
                       <span>{{ $t("common.node") }} {{ instance.node }}</span>
                     </div>
                   </div>
@@ -190,6 +200,14 @@
             })
           }}
         </div>
+        <div v-if="error.removeModule">
+          <NsInlineNotification
+            kind="error"
+            :title="$t('action.remove-module')"
+            :description="error.removeModule"
+            :showCloseButton="false"
+          />
+        </div>
       </template>
       <template slot="secondary-button">{{ $t("common.cancel") }}</template>
       <template slot="primary-button">{{
@@ -228,6 +246,10 @@ export default {
       loading: {
         modules: true,
       },
+      error: {
+        listModules: "",
+        removeModule: "",
+      },
     };
   },
   beforeRouteEnter(to, from, next) {
@@ -248,6 +270,7 @@ export default {
     ...mapActions(["setAppDrawerShownInStore"]),
     async listModules() {
       this.loading.modules = true;
+      this.error.listModules = "";
       const taskAction = "list-modules";
 
       // register to task completion
@@ -265,10 +288,8 @@ export default {
       const err = res[0];
 
       if (err) {
-        this.createErrorNotification(
-          err,
-          this.$t("task.cannot_create_task", { action: taskAction })
-        );
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.listModules = this.getErrorMessage(err);
         return;
       }
     },
@@ -313,9 +334,11 @@ export default {
     showUninstallModal(app, instance) {
       this.appToUninstall = app;
       this.instanceToUninstall = instance;
+      this.error.removeModule = "";
       this.isUninstallModalShown = true;
     },
     async uninstallInstance() {
+      this.error.removeModule = "";
       const taskAction = "remove-module";
 
       // register to task completion
@@ -339,10 +362,8 @@ export default {
       const err = res[0];
 
       if (err) {
-        this.createErrorNotification(
-          err,
-          this.$t("task.cannot_create_task", { action: taskAction })
-        );
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.removeModule = this.getErrorMessage(err);
         return;
       }
       this.isUninstallModalShown = false;

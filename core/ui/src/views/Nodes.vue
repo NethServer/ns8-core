@@ -5,25 +5,31 @@
         <h2>{{ $t("nodes.title") }}</h2>
       </div>
     </div>
-    <div v-if="error.nodes" class="bx--row">
+    <div v-if="error.getClusterStatus" class="bx--row">
       <div class="bx--col">
         <NsInlineNotification
           kind="error"
-          :title="$t('error.cannot_retrieve_cluster_nodes')"
-          :description="error.nodes"
+          :title="$t('action.get-cluster-status')"
+          :description="error.getClusterStatus"
+          :showCloseButton="false"
+        />
+      </div>
+    </div>
+    <div v-if="error.getNodeStatus" class="bx--row">
+      <div class="bx--col">
+        <NsInlineNotification
+          kind="error"
+          :title="$t('action.get-node-status')"
+          :description="error.getNodeStatus"
           :showCloseButton="false"
         />
       </div>
     </div>
     <div class="bx--row">
       <div class="bx--col">
-        <NsButton
-          kind="secondary"
-          :icon="Add20"
-          @click="showAddNodeModal"
-          :disabled="!!error.nodes"
-          >{{ $t("nodes.add_node_to_cluster") }}</NsButton
-        >
+        <NsButton kind="secondary" :icon="Add20" @click="showAddNodeModal">{{
+          $t("nodes.add_node_to_cluster")
+        }}</NsButton>
       </div>
     </div>
     <div
@@ -173,7 +179,8 @@ export default {
         nodes: true,
       },
       error: {
-        nodes: "",
+        getClusterStatus: "",
+        getNodeStatus: "",
       },
     };
   },
@@ -226,6 +233,7 @@ export default {
       }
     },
     async retrieveClusterStatus() {
+      this.error.getClusterStatus = "";
       const taskAction = "get-cluster-status";
 
       // register to task completion
@@ -246,10 +254,8 @@ export default {
       const err = res[0];
 
       if (err) {
-        this.createErrorNotification(
-          err,
-          this.$t("task.cannot_create_task", { action: taskAction })
-        );
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.getClusterStatus = this.getErrorMessage(err);
         return;
       }
     },
@@ -287,6 +293,8 @@ export default {
       }, 1000);
     },
     async retrieveNodesStatus() {
+      this.error.getNodeStatus = "";
+
       for (const node of this.nodes) {
         const nodeId = node.id;
         const taskAction = "get-node-status";
@@ -310,10 +318,8 @@ export default {
         const err = res[0];
 
         if (err) {
-          this.createErrorNotification(
-            err,
-            this.$t("task.cannot_create_task", { action: taskAction })
-          );
+          console.error(`error creating task ${taskAction}`, err);
+          this.error.getNodeStatus = this.getErrorMessage(err);
         }
       }
     },

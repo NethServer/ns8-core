@@ -13,6 +13,16 @@
           >
         </div>
       </div>
+      <div v-if="error.listModules" class="bx--row">
+        <div class="bx--col">
+          <NsInlineNotification
+            kind="error"
+            :title="$t('action.list-modules')"
+            :description="error.listModules"
+            :showCloseButton="false"
+          />
+        </div>
+      </div>
       <div v-if="q.view !== 'updates'" class="bx--row">
         <div class="bx--col-lg-16">
           <NsInlineNotification
@@ -214,6 +224,9 @@ export default {
       appToInstall: null,
       loading: {
         modules: true,
+      },
+      error: {
+        listModules: "",
       },
       //// remove mock
       allApps: [
@@ -459,6 +472,7 @@ export default {
     },
     async listModules() {
       this.loading.modules = true;
+      this.error.listModules = "";
       const taskAction = "list-modules";
 
       // register to task completion
@@ -476,10 +490,8 @@ export default {
       const err = res[0];
 
       if (err) {
-        this.createErrorNotification(
-          err,
-          this.$t("task.cannot_create_task", { action: taskAction })
-        );
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.listModules = this.getErrorMessage(err);
         return;
       }
     },
