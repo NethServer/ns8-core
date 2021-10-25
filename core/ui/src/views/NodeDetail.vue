@@ -29,6 +29,11 @@
         </div>
       </div>
       <div class="bx--row">
+        <div class="bx--col-lg-16">
+          <h4 class="mg-bottom-md">{{ $t("node_detail.system") }}</h4>
+        </div>
+      </div>
+      <div class="bx--row">
         <div class="bx--col-md-4 bx--col-max-4">
           <cv-tile :light="true" class="same-height-tile">
             <h4 class="mg-bottom-md">{{ $t("node_detail.cpu") }}</h4>

@@ -329,6 +329,7 @@
     "ip_address": "IP address",
     "listen_port": "Listen port",
     "data_received": "Data received",
-    "data_sent": "Data sent"
+    "data_sent": "Data sent",
+    "system": "System"
   }
 }
