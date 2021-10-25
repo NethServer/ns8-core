@@ -291,11 +291,7 @@ export default {
       if (this.isMaster) {
         const clusterStatus = taskResult.output;
         console.log("clusterStatus", clusterStatus); ////
-        let isClusterInitialized = clusterStatus.initialized; //// use const
-
-        //// remove mock
-        // isClusterInitialized = false; ////
-
+        const isClusterInitialized = clusterStatus.initialized;
         this.setClusterInitializedInStore(isClusterInitialized);
 
         // leader listen port
@@ -372,19 +368,6 @@ export default {
     },
     listUpdatesCompleted(taskContext, taskResult) {
       let updates = taskResult.output;
-
-      //// add fake updates
-      updates.push({
-        id: "traefik77",
-        node: "1",
-        version: "1.2",
-      });
-      updates.push({
-        id: "traefik88",
-        node: "1",
-        version: "1.2",
-      }); ////
-
       this.setUpdatesInStore(updates);
     },
     onWebsocketConnected() {

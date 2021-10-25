@@ -293,30 +293,10 @@ export default {
     return {
       view: "grid",
       isTransitioning: false,
-      useMock: false, //// remove mock
       searchQuery: "",
       apps: [],
       searchResults: [],
       isSearchActive: false,
-      mockApps: [
-        "Firewall", ////
-        "Nextcloud",
-        "WebTop",
-        "NethVoice",
-        "NethCTI",
-        "dokuwiki1",
-        "Reports",
-        "Reports",
-        "Reports",
-        "Reports",
-        "Reports",
-        "Reports",
-        "Reports",
-        "Reports",
-        "Reports",
-        "Reports",
-        "Reports",
-      ],
       loading: {
         apps: true,
       },
@@ -367,15 +347,7 @@ export default {
   },
   created() {
     this.$root.$on("reloadAppDrawer", this.listInstalledModules);
-
-    //// remove mock
-    if (this.useMock) {
-      this.apps = this.mockApps;
-      this.loading.apps = false;
-    } else {
-      this.listInstalledModules();
-    }
-
+    this.listInstalledModules();
     this.loadAppDrawerViewFromStorage();
   },
   beforeDestroy() {

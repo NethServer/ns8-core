@@ -302,13 +302,6 @@ export default {
         app.installed.sort(this.sortModuleInstances());
         this.app = app;
       }
-
-      //// remove mock
-      this.app.updates.push({
-        id: "traefik1",
-        node: "1",
-        version: "9.2",
-      });
     },
     isInstanceUpgradable(app, instance) {
       return (

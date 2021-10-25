@@ -414,9 +414,6 @@ export default {
         return;
       }
       this.isPasswordChangeNeeded = clusterStatus.default_password;
-
-      //// remove mock
-      // this.isPasswordChangeNeeded = false; ////
     },
     onPasswordValidation(passwordValidation) {
       this.passwordValidation = passwordValidation;
