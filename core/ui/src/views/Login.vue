@@ -141,8 +141,6 @@ export default {
     }
   },
   mounted() {
-    console.log("mounted login page"); ////
-
     if (this.step === "username") {
       this.focusElement("usernameInput");
     } else {
@@ -192,7 +190,6 @@ export default {
         this.setLoggedUserInStore(this.username);
 
         if (this.rememberUsername) {
-          console.log("saving username to storage", this.username); ////
           this.saveToStorage("username", this.username);
         } else {
           this.deleteFromStorage("username");
@@ -202,9 +199,6 @@ export default {
 
         if (queryParams.redirect) {
           // redirect to initially requested URL
-
-          console.log("queryParams.redirect", queryParams.redirect); ////
-
           this.$router.replace(queryParams.redirect);
         } else {
           // go to NS8 home page

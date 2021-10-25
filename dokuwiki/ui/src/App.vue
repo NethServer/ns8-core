@@ -14,9 +14,6 @@ import AppMobileSideMenu from "./components/AppMobileSideMenu";
 import { mapActions } from "vuex";
 import { QueryParamService } from "@nethserver/ns8-ui-lib";
 
-//// package.json local ui lib:
-//// "@nethserver/ns8-ui-lib": "/home/andre/git/ns8-ui-lib",
-
 export default {
   name: "App",
   components: { AppSideMenu, AppMobileSideMenu },

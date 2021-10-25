@@ -36,21 +36,15 @@ export default {
   },
   beforeRouteEnter(to, from, next) {
     next((vm) => {
-      console.log("beforeRouteEnter", to, from); ////
       vm.watchQueryData(vm);
       vm.queryParamsToDataForCore(vm, to.query);
     });
   },
   beforeRouteUpdate(to, from, next) {
-    console.log("beforeRouteUpdate", to, from); ////
     this.queryParamsToDataForCore(this, to.query);
     next();
   },
   methods: {
-    ////
-    actionClick() {
-      console.log("actionClick //// remove"); ////
-    },
     goToSettingsSoftwareRepositories() {
       this.$router.push("/settings/software-repository");
     },

@@ -1,5 +1,5 @@
 import { NsIconMenu } from "@nethserver/ns8-ui-lib";
-import Star16 from "@carbon/icons-vue/es/star/16"; ////
+import Star16 from "@carbon/icons-vue/es/star/16";
 
 export default {
   title: "Components/NsIconMenu",

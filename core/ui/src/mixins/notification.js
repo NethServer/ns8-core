@@ -87,7 +87,7 @@ export default {
         toastTimeout = 5000;
       }
 
-      console.log("notification.id", notification.id); ////
+      // console.log("notification.id", notification.id); ////
 
       const toastId = this.$toast(toast, {
         timeout: toastTimeout,
@@ -115,11 +115,7 @@ export default {
       }
     },
     handleNotificationAction(notificationId) {
-      console.log("handleNotificationAction", notificationId); ////
-
       const notification = this.getNotificationById(notificationId);
-
-      console.log("notification", notification); ////
 
       switch (notification.action.type) {
         case "taskError":
@@ -128,9 +124,6 @@ export default {
           break;
         case "changeRoute":
           // go to url
-
-          console.log("navigating to", notification.action.url); ////
-
           this.$router.push(notification.action.url);
           break;
         case "execute":
@@ -355,8 +348,6 @@ export default {
     getActionParams(taskContext, taskStatus, taskResult) {
       let [actionLabel, action] = ["", {}];
 
-      // console.log("taskResult", taskResult); ////
-
       if (taskStatus === "aborted" || taskStatus === "validation-failed") {
         // task error
         actionLabel = this.$t("common.details");
@@ -369,7 +360,6 @@ export default {
             action = {
               type: "changeRoute",
               url: `/apps/${taskResult.output.module_id}?page=settings`,
-              // url: `/apps/ns8-app?appInput=fromAction`, ////
             };
             break;
         }

@@ -250,8 +250,6 @@ import {
   StorageService,
 } from "@nethserver/ns8-ui-lib";
 
-//// rename to Status?
-
 export default {
   name: "ClusterStatus",
   components: { Information16 },
@@ -331,12 +329,6 @@ export default {
     },
   },
   created() {
-    console.log(
-      "created, isWebsocketConnected, loggedUser",
-      this.isWebsocketConnected,
-      this.loggedUser
-    ); ////
-
     if (this.isWebsocketConnected && this.loggedUser) {
       // retrieve initial data
       this.retrieveClusterNodes();
@@ -345,13 +337,11 @@ export default {
   },
   beforeRouteEnter(to, from, next) {
     next((vm) => {
-      console.log("beforeRouteEnter", to, from); ////
       vm.watchQueryData(vm);
       vm.queryParamsToDataForCore(vm, to.query);
     });
   },
   beforeRouteUpdate(to, from, next) {
-    console.log("beforeRouteUpdate", to, from); ////
     this.queryParamsToDataForCore(this, to.query);
     next();
   },

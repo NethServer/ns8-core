@@ -103,7 +103,7 @@ import LoginService from "@/mixins/login";
 import WebSocketService from "@/mixins/websocket";
 import NotificationDrawer from "@/components/NotificationDrawer";
 import { StorageService } from "@nethserver/ns8-ui-lib";
-import HeaderGlobalMenu from "@/components/HeaderGlobalMenu"; ////
+import HeaderGlobalMenu from "@/components/HeaderGlobalMenu";
 
 export default {
   name: "ShellHeader",

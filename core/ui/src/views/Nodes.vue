@@ -215,11 +215,8 @@ export default {
       const loginInfo = this.getFromStorage("loginInfo");
 
       if (loginInfo && loginInfo.token) {
-        let endpoint = //// use const
+        const endpoint =
           window.location.protocol + "//" + window.location.hostname;
-
-        //// remove
-        //endpoint = "https://192.168.122.220";
 
         console.log("endpoint", endpoint); ////
         console.log("leaderListenPort", this.leaderListenPort); ////
@@ -228,8 +225,6 @@ export default {
         this.joinCode = btoa(
           endpoint + "|" + this.leaderListenPort + "|" + loginInfo.token
         );
-
-        console.log("joinCode", this.joinCode); ////
       }
     },
     async retrieveClusterStatus() {
@@ -260,8 +255,6 @@ export default {
       }
     },
     getClusterStatusCompleted(taskContext, taskResult) {
-      console.log("getClusterStatusCompleted"); ////
-
       const clusterStatus = taskResult.output;
       this.nodes = clusterStatus.nodes.sort(this.sortByProperty("id"));
       this.loading.nodes = false;

@@ -122,8 +122,6 @@ export default new Vuex.Store({
         (n) => n.id == notificationId
       );
 
-      console.log("set notification isRead", notification); ////
-
       if (notification) {
         notification.isRead = true;
       }
@@ -259,7 +257,6 @@ export default new Vuex.Store({
       );
     },
   },
-  modules: {}, ////
 });
 
 // helper functions

@@ -129,7 +129,7 @@ export default {
       if (this.app.versions.length) {
         version = this.app.versions[0].tag;
       } else {
-        version = "latest"; //// remove? fix before alpha
+        version = "latest"; //// remove?
       }
 
       console.log("installing", this.app.source, "version", version); ////

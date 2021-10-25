@@ -16,18 +16,6 @@
             $t("notification.mark_all_read")
           }}</cv-overflow-menu-item>
         </cv-overflow-menu>
-        <!-- <button //// remove
-          aria-label="close"
-          type="button"
-          data-notification-btn
-          class="
-            bx--toast-notification__close-button
-            close-notifications-button
-          "
-          @click="closeDrawer"
-        >
-          <Close20 class="bx--toast-notification__close-icon" />
-        </button> -->
       </div>
       <div v-if="ongoingNotifications.length" class="notification-divider">
         {{ $t("notification.ongoing") }}
@@ -254,7 +242,7 @@ export default {
 
 .Vue-Toastification__toast {
   border-radius: 0 !important;
-  min-width: 16rem !important; //// use variable of small-screen notif width
+  min-width: $notification-drawer-width-small-screen !important;
 }
 
 .Vue-Toastification__container.top-right.toastification-container {

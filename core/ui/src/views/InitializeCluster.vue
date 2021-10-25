@@ -504,13 +504,6 @@ export default {
       );
 
       // register to task validation
-
-      // this.$root.$off(taskAction + "-validation-ok"); ////
-      // this.$root.$once(
-      //   taskAction + "-validation-ok",
-      //   this.changeUserPasswordValidationOk
-      // );
-
       this.$root.$off(taskAction + "-validation-failed");
       this.$root.$once(
         taskAction + "-validation-failed",
@@ -546,14 +539,9 @@ export default {
       }
     },
     changeUserPasswordCompleted() {
-      // this.$root.$off("change-user-password-completed"); ////
       this.isPasswordChangeNeeded = false;
     },
-    // changeUserPasswordValidationOk() { ////
-    //   this.$root.$off("change-user-password-validation-ok");
-    // },
     changeUserPasswordValidationFailed(validationErrors) {
-      // this.$root.$off("change-user-password-validation-failed"); ////
       this.isChangingPassword = false;
 
       for (const validationError of validationErrors) {
@@ -696,8 +684,6 @@ export default {
             isValidationOk = false;
           }
         } else {
-          console.log("decoded", decoded); ////
-
           let [endpoint, port, token] = decoded.split("|");
 
           if (!(endpoint && port && token)) {
@@ -708,10 +694,6 @@ export default {
               isValidationOk = false;
             }
           } else {
-            console.log("endpoint", endpoint); ////
-            console.log("port", port); ////
-            console.log("token length", token.length); ////
-
             this.joinEndpoint = endpoint;
             this.joinPort = port;
             this.joinToken = token;

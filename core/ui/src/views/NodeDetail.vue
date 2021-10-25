@@ -398,8 +398,6 @@ export default {
       }
     },
     getNodeStatusCompleted(taskContext, taskResult) {
-      console.log("getNodeStatusCompleted", taskResult.output); ////
-
       const nodeStatus = taskResult.output;
 
       // round cpu load (sometimes it has roundoff error)

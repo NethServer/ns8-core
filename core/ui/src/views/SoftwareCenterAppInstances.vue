@@ -320,9 +320,35 @@ export default {
     setFavoriteApp(instance) {
       console.log("setFavoriteApp", instance); ////
 
-      //// todo call api to save favorite
-
+      //// fix before alpha
+      this.addFavorite(instance);
       this.setAppDrawerShownInStore(true);
+    },
+    async addFavorite(app) {
+      const taskAction = "add-favorite";
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          data: {
+            instance: app.id,
+          },
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        this.error.apps = this.getErrorMessage(err);
+        this.createErrorNotification(
+          err,
+          this.$t("task.cannot_create_task", { action: taskAction })
+        );
+        return;
+      }
     },
     showUninstallModal(app, instance) {
       this.appToUninstall = app;

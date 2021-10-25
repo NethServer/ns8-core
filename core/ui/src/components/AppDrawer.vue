@@ -418,8 +418,6 @@ export default {
       this.loading.apps = false;
       let apps = [];
 
-      console.log("list-installed-modules result", taskResult.output); ////
-
       for (let instanceList of Object.values(taskResult.output)) {
         for (let instance of instanceList) {
           apps.push(instance);
@@ -467,8 +465,6 @@ export default {
       this.setEditingFavoriteAppsInStore(true);
     },
     doneEditFavorites() {
-      //// todo call api to save favorites
-
       setTimeout(() => {
         this.setEditingFavoriteAppsInStore(false);
         this.loadAppDrawerViewFromStorage();
@@ -490,13 +486,8 @@ export default {
       }
     },
     async addFavorite(app) {
-      console.log("addFavorite", app.id); ////
-
       const taskAction = "add-favorite";
 
-      // register to task events
-      this.$root.$once(taskAction + "-completed", this.addFavoriteCompleted);
-
       const res = await to(
         this.createClusterTask({
           action: taskAction,
@@ -519,17 +510,9 @@ export default {
         );
         return;
       }
-    },
-    addFavoriteCompleted(taskContext, taskResult) {
-      console.log("addFavoriteCompleted", taskResult.output); ////
     },
     async removeFavorite(app) {
-      console.log("removeFavorite", app.id); ////
-
       const taskAction = "remove-favorite";
-
-      // register to task events
-      this.$root.$once(taskAction + "-completed", this.removeFavoriteCompleted);
 
       const res = await to(
         this.createClusterTask({
@@ -554,12 +537,7 @@ export default {
         return;
       }
     },
-    removeFavoriteCompleted(taskContext, taskResult) {
-      console.log("removeFavoriteCompleted", taskResult.output); ////
-    },
     async listFavorites() {
-      console.log("listFavorites"); ////
-
       const taskAction = "list-favorites";
 
       // register to task events

@@ -317,9 +317,6 @@ export default {
     listModulesCompleted(taskContext, taskResult) {
       this.loading.modules = false;
       let modules = taskResult.output;
-
-      console.log("modules", modules); ////
-
       modules.sort(this.sortByProperty("name"));
       let updates = [];
 

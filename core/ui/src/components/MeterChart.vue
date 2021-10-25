@@ -7,10 +7,6 @@ import Vue from "vue";
 import "@carbon/charts/styles.css";
 import chartsVue from "@carbon/charts-vue";
 
-// IBM Plex should either be imported in your project by using Carbon
-// or consumed manually through an import
-// import "../plex-and-carbon-components.css"; //// needed?
-
 Vue.use(chartsVue);
 
 //// move to ns8-ui-lib
@@ -33,9 +29,7 @@ export default {
     };
   },
   watch: {
-    ////
     value: function () {
-      console.log("watch value", this.value); ////
       this.data[0].value = this.value;
     },
   },
