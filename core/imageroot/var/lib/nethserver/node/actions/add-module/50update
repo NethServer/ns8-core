@@ -32,12 +32,15 @@ def save_environment(env):
         for envk, envv in env.items():
             envf.write(f"{envk}={envv}\n")
 
-def save_agent_env(module_id):
+def save_agent_env(module_id, bin_path=None):
     """Generate and persist the Redis password for module_id
     """
     oldmask = os.umask(0o77)
     redis_password = str(uuid.uuid4())
     with open('state/agent.env', 'w') as agentenv:
+        if bin_path:
+            system_path = os.getenv('PATH', '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin')
+            agentenv.write(f'PATH={bin_path}:{system_path}\n')
         agentenv.write(f'REDIS_USER=module/{module_id}\n')
         agentenv.write(f'REDIS_PASSWORD={redis_password}\n')
     os.umask(oldmask)
@@ -57,7 +60,7 @@ if is_rootfull:
     # Extract the module imageroot
     os.chdir(f'/var/lib/nethserver/{module_id}')
     save_environment(module_environment)
-    redis_sha256 = save_agent_env(module_id)
+    redis_sha256 = save_agent_env(module_id, f'/var/lib/nethserver/{module_id}/bin')
     agent.run_helper('extract-image', image_url).check_returncode()
     # Start the module agent
     agent.run_helper('systemctl', 'enable', '--now', f'agent@{module_id}.service').check_returncode()
@@ -66,7 +69,7 @@ else: # rootless
     agent.run_helper('useradd', '-m', '-k', '/etc/nethserver/skel', '-s', '/bin/bash', module_id).check_returncode()
     os.chdir(f'/home/{module_id}/.config')
     save_environment(module_environment)
-    redis_sha256 = save_agent_env(module_id)
+    redis_sha256 = save_agent_env(module_id, f'/home/{module_id}/.config/bin')
     # Extract the module imageroot and fix CWD permissions recursively
     agent.run_helper('extract-image', image_url).check_returncode()
     # Start the module agent
