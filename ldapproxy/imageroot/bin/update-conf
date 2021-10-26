@@ -24,7 +24,7 @@ set -e
 
 unset PODMAN_SYSTEMD_UNIT
 
-${AGENT_INSTALL_DIR}/bin/allocate-ports
+allocate-ports
 
 #
 # Create the nginx/ config directory and work inside it
@@ -36,7 +36,7 @@ cd nginx
 tmpconf=$(mktemp nginx.conf.XXXXXX)
 trap 'rm -f ${tmpconf}' EXIT
 
-${AGENT_INSTALL_DIR}/bin/expand-template nginx.conf.j2 >${tmpconf}
+expand-template nginx.conf.j2 >${tmpconf}
 
 # Check if something has changed in the configuration
 # before applying the new .conf file
@@ -45,7 +45,7 @@ if ! diff -q nginx.conf ${tmpconf} ; then
     podman run \
         --log-driver=none \
         --env=NGINX_ENTRYPOINT_QUIET_LOGS=1 \
-        --volume=./:/srv:Z \
+        --volume=./:/srv:z \
         --rm "${NGINX_IMAGE}" \
         nginx -t -c "/srv/${tmpconf}"
     mv -v ${tmpconf} nginx.conf
