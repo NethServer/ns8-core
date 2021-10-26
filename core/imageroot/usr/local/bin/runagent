@@ -22,21 +22,68 @@
 
 set -e
 
-hipriv="/var/lib/nethserver/cluster/state/agent.env"
-mypriv=~/.config/state/agent.env
+function usage()
+{
+    (
+        exec 1>&2
+        echo "Run COMMAND in the agent environment of MODULE_ID."
+        echo "runagent [-m MODULE_ID] COMMAND [ARG ...]"
+        echo "         MODULE_ID: \"cluster\", \"node\" (for the local node) or"
+        echo "         any other module identifier rootless or rootfull (e.g. traefik1)."
+        echo "         Only root can use the \"-m\" option"
+        echo ""
+    )
+}
 
-set -a
-
-source "/etc/nethserver/agent.env"
-
-# Attempt to get maximum privileges on Redis DB connection
-if [[ -r "${hipriv}" ]]; then
-    source "${hipriv}"
-elif [[ -r "${mypriv}" ]]; then
-    source "${mypriv}"
+#
+# Establish the default module id value. Can be overridden by -m
+#
+if [[ $EUID == 0 ]]; then
+    mid=cluster
 else
-    REDIS_USER=default
-    REDIS_PASSWORD=nopass
+    mid=$(id -un)
 fi
 
-exec "${@}"
+while getopts "hm:" arg; do
+  case $arg in
+    m)
+      mid=$OPTARG
+      [[ $EUID != 0 ]] && usage && exit 1
+      ;;
+    h)
+      usage
+      exit 0
+      ;;
+  esac
+done
+shift $((OPTIND-1))
+
+if (($# == 0)); then
+    usage
+    exit 1
+fi
+
+
+set -a # export any variable defined from here on
+if [[ $EUID != 0 ]]; then
+    # rootless module
+    source /etc/nethserver/agent.env
+    source ~/.config/state/agent.env
+    source ~/.config/state/environment
+    AGENT_INSTALL_DIR=~/.config
+    AGENT_STATE_DIR=~/.config/state
+elif [[ -d "/var/lib/nethserver/${mid}" ]]; then
+    # rootfull module
+    source /etc/nethserver/agent.env
+    source /var/lib/nethserver/${mid}/state/agent.env
+    source /var/lib/nethserver/${mid}/state/environment
+    AGENT_INSTALL_DIR=/var/lib/nethserver/${mid}
+    AGENT_STATE_DIR=/var/lib/nethserver/${mid}/state
+else
+    echo "[FATAL] Cannot find environment for module ${mid}" 1>&2
+    echo "[FATAL] Try to run the command as:   runuser -u ${mid} -- $0 $@" 1>&2
+    exit 1
+fi
+
+AGENT_ID="${REDIS_USER}"
+exec "$@"
