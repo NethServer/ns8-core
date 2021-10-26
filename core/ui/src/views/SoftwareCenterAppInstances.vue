@@ -36,6 +36,26 @@
           />
         </div>
       </div>
+      <div v-if="error.addFavorite" class="bx--row">
+        <div class="bx--col">
+          <NsInlineNotification
+            kind="error"
+            :title="$t('action.add-favorite')"
+            :description="error.addFavorite"
+            :showCloseButton="false"
+          />
+        </div>
+      </div>
+      <div v-if="error.removeFavorite" class="bx--row">
+        <div class="bx--col">
+          <NsInlineNotification
+            kind="error"
+            :title="$t('action.remove-favorite')"
+            :description="error.removeFavorite"
+            :showCloseButton="false"
+          />
+        </div>
+      </div>
       <div class="bx--row">
         <div class="bx--col-lg-16">
           <cv-tile light>
@@ -122,9 +142,17 @@
                           }}</cv-overflow-menu-item
                         >
                         <cv-overflow-menu-item
-                          @click="setFavoriteApp(instance)"
+                          v-if="!favoriteApps.includes(instance.id)"
+                          @click="addAppToFavorites(instance)"
                           >{{
-                            $t("software_center.set_as_favorite")
+                            $t("software_center.add_to_favorites")
+                          }}</cv-overflow-menu-item
+                        >
+                        <cv-overflow-menu-item
+                          v-if="favoriteApps.includes(instance.id)"
+                          @click="removeAppFromFavorites(instance)"
+                          >{{
+                            $t("software_center.remove_from_favorites")
                           }}</cv-overflow-menu-item
                         >
                         <cv-overflow-menu-item
@@ -152,9 +180,17 @@
                         class="overflow-menu"
                       >
                         <cv-overflow-menu-item
-                          @click="setFavoriteApp(instance)"
+                          v-if="!favoriteApps.includes(instance.id)"
+                          @click="addAppToFavorites(instance)"
                           >{{
-                            $t("software_center.set_as_favorite")
+                            $t("software_center.add_to_favorites")
+                          }}</cv-overflow-menu-item
+                        >
+                        <cv-overflow-menu-item
+                          v-if="favoriteApps.includes(instance.id)"
+                          @click="removeAppFromFavorites(instance)"
+                          >{{
+                            $t("software_center.remove_from_favorites")
                           }}</cv-overflow-menu-item
                         >
                         <cv-overflow-menu-item
@@ -226,7 +262,7 @@ import {
   TaskService,
   IconService,
 } from "@nethserver/ns8-ui-lib";
-import { mapActions } from "vuex";
+import { mapState, mapActions } from "vuex";
 
 export default {
   name: "SoftwareCenterAppInstances",
@@ -249,6 +285,8 @@ export default {
       error: {
         listModules: "",
         removeModule: "",
+        addFavorite: "",
+        removeFavorite: "",
       },
     };
   },
@@ -265,6 +303,9 @@ export default {
   created() {
     this.appName = this.$route.params.appName;
     this.listModules();
+  },
+  computed: {
+    ...mapState(["favoriteApps"]),
   },
   methods: {
     ...mapActions(["setAppDrawerShownInStore"]),
@@ -317,15 +358,22 @@ export default {
     updateInstance(instance) {
       console.log("updateInstance", instance); ////
     },
-    setFavoriteApp(instance) {
-      console.log("setFavoriteApp", instance); ////
-
-      //// fix before alpha
+    addAppToFavorites(instance) {
       this.addFavorite(instance);
+    },
+    removeAppFromFavorites(instance) {
+      this.removeFavorite(instance);
+    },
+    removeFavoriteCompleted() {
+      this.$root.$emit("reloadAppDrawer");
       this.setAppDrawerShownInStore(true);
     },
-    async addFavorite(app) {
-      const taskAction = "add-favorite";
+    async removeFavorite(app) {
+      this.error.removeFavorite = "";
+      const taskAction = "remove-favorite";
+
+      // register to task completion
+      this.$root.$once(taskAction + "-completed", this.removeFavoriteCompleted);
 
       const res = await to(
         this.createClusterTask({
@@ -342,11 +390,39 @@ export default {
       const err = res[0];
 
       if (err) {
-        this.error.apps = this.getErrorMessage(err);
-        this.createErrorNotification(
-          err,
-          this.$t("task.cannot_create_task", { action: taskAction })
-        );
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.removeFavorite = this.getErrorMessage(err);
+        return;
+      }
+    },
+    addFavoriteCompleted() {
+      this.$root.$emit("reloadAppDrawer");
+      this.setAppDrawerShownInStore(true);
+    },
+    async addFavorite(app) {
+      this.error.addFavorite = "";
+      const taskAction = "add-favorite";
+
+      // register to task completion
+      this.$root.$once(taskAction + "-completed", this.addFavoriteCompleted);
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          data: {
+            instance: app.id,
+          },
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.addFavorite = this.getErrorMessage(err);
         return;
       }
     },

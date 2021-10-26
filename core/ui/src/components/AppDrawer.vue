@@ -332,16 +332,23 @@ export default {
         this.isTransitioning = false;
       }, 300); // same duration as .slide-app-drawer transition
 
-      if (this.isAppDrawerShown) {
+      if (this.isAppDrawerShown && !this.loading.apps) {
         // set focus on app search
-        setTimeout(() => {
-          this.focusElement("appSearch");
-        }, 300);
+        this.focusElement("appSearch");
       } else {
         // save favorite apps if user closes drawer while editing favorites
         if (this.isEditingFavoriteApps) {
           this.doneEditFavorites();
         }
+
+        // reload app drawer on close to ensure consistency of favorite apps
+        this.listInstalledModules();
+      }
+    },
+    "loading.apps": function () {
+      if (!this.loading.apps && this.isAppDrawerShown) {
+        // set focus on app search
+        this.focusElement("appSearch");
       }
     },
   },
@@ -358,6 +365,7 @@ export default {
     ...mapActions([
       "setAppDrawerShownInStore",
       "setEditingFavoriteAppsInStore",
+      "setFavoriteAppsInStore",
     ]),
     loadAppDrawerViewFromStorage() {
       const appDrawerView = this.getFromStorage("appDrawerView");
@@ -488,6 +496,10 @@ export default {
     async addFavorite(app) {
       const taskAction = "add-favorite";
 
+      // register to task error
+      this.$root.$off(taskAction + "-aborted");
+      this.$root.$once(taskAction + "-aborted", this.addFavoriteAborted);
+
       const res = await to(
         this.createClusterTask({
           action: taskAction,
@@ -511,8 +523,18 @@ export default {
         return;
       }
     },
+    addFavoriteAborted(taskResult) {
+      console.error("add favorite aborted", taskResult);
+
+      // reload app drawer
+      this.listInstalledModules();
+    },
     async removeFavorite(app) {
       const taskAction = "remove-favorite";
+
+      // register to task error
+      this.$root.$off(taskAction + "-aborted");
+      this.$root.$once(taskAction + "-aborted", this.removeFavoriteAborted);
 
       const res = await to(
         this.createClusterTask({
@@ -536,6 +558,12 @@ export default {
         );
         return;
       }
+    },
+    removeFavoriteAborted(taskResult) {
+      console.error("remove favorite aborted", taskResult);
+
+      // reload app drawer
+      this.listInstalledModules();
     },
     async listFavorites() {
       const taskAction = "list-favorites";
@@ -565,6 +593,10 @@ export default {
     },
     listFavoritesCompleted(taskContext, taskResult) {
       const favorites = taskResult.output;
+
+      // save favorite apps in store
+      const favoritesForStore = favorites.map((fav) => fav.id);
+      this.setFavoriteAppsInStore(favoritesForStore);
 
       for (const favorite of favorites) {
         const favoriteApp = this.apps.find((app) => app.id === favorite.id);

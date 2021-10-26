@@ -11,6 +11,7 @@ export default new Vuex.Store({
     isMobileSideMenuShown: false,
     isAppDrawerShown: false,
     isEditingFavoriteApps: false,
+    favoriteApps: [],
     isSearchExpanded: false,
     taskErrorToShow: false,
     loggedUser: "",
@@ -155,6 +156,9 @@ export default new Vuex.Store({
         notification.isRead = true;
       }
     },
+    setFavoriteApps(state, favoriteApps) {
+      state.favoriteApps = favoriteApps;
+    },
     //// does it work?
     SOCKET_ONOPEN(state, event) {
       // Vue.prototype.$socket = event.currentTarget;
@@ -255,6 +259,9 @@ export default new Vuex.Store({
         "markAllNotificationsRead",
         context.getters.unreadNotifications
       );
+    },
+    setFavoriteAppsInStore(context, favoriteApps) {
+      context.commit("setFavoriteApps", favoriteApps);
     },
   },
 });
