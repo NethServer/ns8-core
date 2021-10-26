@@ -105,7 +105,8 @@
     "tls_verify": "TLS certificate validation",
     "redirect_cluster": "Worker Node",
     "redirect_cluster_description": "This node now is a worker of the cluster. Click on the link below to access the cluster administration page.",
-    "redirect_cluster_link": "Go to cluster administration page"
+    "redirect_cluster_link": "Go to cluster administration page",
+    "node_added_to_cluster": "Node {nodeId} added to cluster"
   },
   "shell": {
     "skip_to_content": "Skip to content",
@@ -115,7 +116,8 @@
     "search_placeholder": "Search...",
     "no_search_results": "No results",
     "no_search_results_description": "Try changing your search query",
-    "open_app": "Open {app}"
+    "open_app": "Open {app}",
+    "logout": "Logout"
   },
   "app_drawer": {
     "no_apps": "No apps",
@@ -177,7 +179,8 @@
     "remove-favorite": "Remove favorite",
     "list-favorites": "List favorites",
     "list-shortcuts": "List shortcuts",
-    "get-node-status": "Get node status"
+    "get-node-status": "Get node status",
+    "remove-module": "Remove module"
   },
   "network": {
     "title": "Network"
@@ -225,7 +228,8 @@
     "update": "Update",
     "update_all": "Update all apps",
     "update_will_start_in_a_moment": "Update will start in a moment...",
-    "set_as_favorite": "Set as favorite",
+    "add_to_favorites": "Add to favorites",
+    "remove_from_favorites": "Remove from favorites",
     "details": "Details",
     "uninstall": "Uninstall",
     "system_up_to_date": "Your system is up to date",
@@ -253,6 +257,7 @@
     "uninstall_instance": "Uninstall instance",
     "uninstalling": "Uninstalling...",
     "no_instance_installed": "No instance installed",
+    "instance": "Instance",
     "app_categories": {
       "collaboration": "Collaboration",
       "system_administration": "System administration",
@@ -261,7 +266,7 @@
     }
   },
   "logs": {
-    "title": "Logs",
+    "title": "Audit logs",
     "start_date": "Start date",
     "end_date": "End date",
     "search_logs": "Search logs",
@@ -326,6 +331,7 @@
     "ip_address": "IP address",
     "listen_port": "Listen port",
     "data_received": "Data received",
-    "data_sent": "Data sent"
+    "data_sent": "Data sent",
+    "system": "System"
   }
 }

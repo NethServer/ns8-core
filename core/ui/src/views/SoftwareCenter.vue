@@ -13,6 +13,16 @@
           >
         </div>
       </div>
+      <div v-if="error.listModules" class="bx--row">
+        <div class="bx--col">
+          <NsInlineNotification
+            kind="error"
+            :title="$t('action.list-modules')"
+            :description="error.listModules"
+            :showCloseButton="false"
+          />
+        </div>
+      </div>
       <div v-if="q.view !== 'updates'" class="bx--row">
         <div class="bx--col-lg-16">
           <NsInlineNotification
@@ -32,7 +42,7 @@
       </div>
       <div>
         <div>
-          <cv-tile :light="true" class="content-tile">
+          <cv-tile :light="true">
             <cv-search
               :label="$t('software_center.search_placeholder')"
               :placeholder="$t('software_center.search_placeholder')"
@@ -215,187 +225,9 @@ export default {
       loading: {
         modules: true,
       },
-      //// remove mock
-      allApps: [
-        {
-          name: "nextcloud",
-          description: {
-            en: "Nextcloud is a suite of client-server software for creating and using file hosting services. It is enterprise-ready with comprehensive support options. Being free and open-source software, anyone is allowed to install and operate it on their own private server devices. Auto-generated description for nextcloud sdfasdf Auto-generated description for nextcloud sdfasdf Auto-generated description for nextcloud sdfasdf Auto-generated description for nextcloud sdfasdf ",
-            it: "Nextcloud è una suite di software client-server per la creazione e l'utilizzo di servizi di file hosting, di cloud storage, di memorizzazione e sincronizzazione online.",
-          },
-          logo: "https://cdn.iconscout.com/icon/free/png-256/nextcloud-2752119-2284936.png",
-          screenshots: [
-            "https://upload.wikimedia.org/wikipedia/commons/7/7d/Nextcloud_18.0.2_Screenshot.png",
-            "https://upload.wikimedia.org/wikipedia/commons/a/ad/Nextcloud_Box_package.jpg",
-            "https://upload.wikimedia.org/wikipedia/commons/d/db/Mt_Herschel%2C_Antarctica%2C_Jan_2006.jpg",
-            "https://upload.wikimedia.org/wikipedia/commons/8/8f/Fryxellsee_Opt.jpg",
-          ],
-          categories: ["collaboration", "office"],
-          authors: [
-            {
-              name: "Foo Bar",
-              email: "info@nethserver.org",
-            },
-            {
-              name: "John Doe",
-              email: "info@johndoe.org",
-            },
-          ],
-          docs: {
-            documentation_url: "https://docs.nethserver.org",
-            bug_url: "https://github.com/NethServer/dev",
-            code_url: "https://github.com/NethServer/",
-          },
-          source: "ghcr.io/nethserver/nextcloud",
-          versions: [
-            {
-              tag: "0.0.2",
-              testing: false,
-              labels: {
-                "io.buildah.version": "1.19.6",
-                "org.nethserver.rootfull": "0",
-                "org.nethserver.tcp_ports_demand": "1",
-              },
-            },
-            {
-              tag: "0.0.1",
-              testing: false,
-              labels: {
-                "io.buildah.version": "1.19.6",
-                "org.nethserver/rootfull": "0",
-                "org.nethserver/tcp_ports_demand": "1",
-              },
-            },
-          ],
-          repository: "t1",
-          repository_updated: "Mon, 28 Jun 2021 13:35:04 GMT",
-          installed: [],
-          updates: [],
-        },
-        {
-          name: "traefik",
-          description: {
-            en: "Traefik is a leading modern reverse proxy and load balancer that makes deploying microservices easy. Traefik integrates with your existing infrastructure components and configures itself automatically and dynamically.",
-            it: "Traefik è un moderno reverse proxy e load balancer che semplifica il deploy di microservizi.",
-          },
-          logo: "https://symbols.getvecta.com/stencil_98/35_traefik-icon.290dcd6a8f.png",
-          screenshots: [],
-          categories: ["system_administration"],
-          authors: [
-            {
-              name: "Foo Bar",
-              email: "info@nethserver.org",
-            },
-          ],
-          docs: {
-            documentation_url: "https://docs.nethserver.org",
-            bug_url: "https://github.com/NethServer/dev",
-            code_url: "https://github.com/NethServer/",
-          },
-          source: "ghcr.io/nethserver/traefik",
-          versions: [
-            {
-              tag: "0.0.2",
-              testing: false,
-              labels: {
-                "io.buildah.version": "1.19.6",
-                "org.nethserver.rootfull": "0",
-                "org.nethserver.tcp_ports_demand": "1",
-              },
-            },
-            {
-              tag: "0.0.1",
-              testing: false,
-              labels: {
-                "io.buildah.version": "1.19.6",
-                "org.nethserver/rootfull": "0",
-                "org.nethserver/tcp_ports_demand": "1",
-              },
-            },
-          ],
-          repository: "t1",
-          repository_updated: "Mon, 28 Jun 2021 13:35:04 GMT",
-          installed: [
-            {
-              id: "traefik1",
-              node: "1",
-              version: "1.0",
-            },
-            {
-              id: "traefik2",
-              node: "2",
-              version: "1.2",
-            },
-          ],
-          updates: [
-            {
-              id: "traefik1",
-              node: "1",
-              version: "1.2",
-            },
-          ],
-        },
-        {
-          name: "dokuwiki",
-          description: {
-            en: "Simple wiki that doesn't require a database",
-            it: "DokuWiki è un'applicazione wiki scritta in PHP.",
-          },
-          logo: "https://upload.wikimedia.org/wikipedia/commons/9/9d/Dokuwiki_logo.svg",
-          screenshots: [
-            "https://upload.wikimedia.org/wikipedia/commons/7/7d/Nextcloud_18.0.2_Screenshot.png",
-          ],
-          categories: ["documentation"],
-          authors: [
-            {
-              name: "Foo Bar",
-              email: "info@nethserver.org",
-            },
-          ],
-          docs: {
-            documentation_url: "https://docs.nethserver.org",
-            bug_url: "https://github.com/NethServer/dev",
-            code_url: "https://github.com/NethServer/",
-          },
-          source: "ghcr.io/nethserver/traefik",
-          versions: [
-            {
-              tag: "0.0.2",
-              testing: false,
-              labels: {
-                "io.buildah.version": "1.19.6",
-                "org.nethserver.rootfull": "0",
-                "org.nethserver.tcp_ports_demand": "1",
-              },
-            },
-            {
-              tag: "0.0.1",
-              testing: false,
-              labels: {
-                "io.buildah.version": "1.19.6",
-                "org.nethserver/rootfull": "0",
-                "org.nethserver/tcp_ports_demand": "1",
-              },
-            },
-          ],
-          repository: "t1",
-          repository_updated: "Mon, 28 Jun 2021 13:35:04 GMT",
-          installed: [
-            {
-              id: "dokuwiki1",
-              node: "1",
-              version: "1.1",
-            },
-          ],
-          updates: [
-            {
-              id: "dokuwiki1",
-              node: "1",
-              version: "1.2",
-            },
-          ],
-        },
-      ],
+      error: {
+        listModules: "",
+      },
     };
   },
   computed: {
@@ -459,10 +291,11 @@ export default {
     },
     async listModules() {
       this.loading.modules = true;
+      this.error.listModules = "";
       const taskAction = "list-modules";
 
       // register to task completion
-      this.$root.$on(taskAction + "-completed", this.listModulesCompleted);
+      this.$root.$once(taskAction + "-completed", this.listModulesCompleted);
 
       const res = await to(
         this.createClusterTask({
@@ -476,49 +309,18 @@ export default {
       const err = res[0];
 
       if (err) {
-        this.createErrorNotification(
-          err,
-          this.$t("task.cannot_create_task", { action: taskAction })
-        );
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.listModules = this.getErrorMessage(err);
         return;
       }
     },
     listModulesCompleted(taskContext, taskResult) {
-      // unregister from event
-      this.$root.$off("list-modules-completed");
-
       this.loading.modules = false;
       let modules = taskResult.output;
-
-      console.log("modules", modules); ////
-
+      modules.sort(this.sortByProperty("name"));
       let updates = [];
 
       for (const module of modules) {
-        //// add fake updates
-        if (module.name === "traefik") {
-          module.installed.push({
-            id: "traefik77",
-            node: "1",
-            version: "1.2",
-          });
-          module.installed.push({
-            id: "traefik88",
-            node: "1",
-            version: "1.2",
-          });
-          module.updates.push({
-            id: "traefik77",
-            node: "1",
-            version: "1.2",
-          });
-          module.updates.push({
-            id: "traefik88",
-            node: "1",
-            version: "1.2",
-          });
-        } ////
-
         if (module.updates.length) {
           updates.push(module);
         }

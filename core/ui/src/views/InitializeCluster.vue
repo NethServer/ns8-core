@@ -79,7 +79,7 @@
         </div>
         <div class="bx--row">
           <div class="bx--col-lg-16">
-            <cv-tile light class="content-tile">
+            <cv-tile light>
               <cv-form @submit.prevent="changePassword">
                 <cv-text-input
                   :label="$t('init.current_password')"
@@ -135,7 +135,7 @@
         </div>
         <div class="bx--row">
           <div class="bx--col-lg-16">
-            <cv-tile light class="content-tile">
+            <cv-tile light>
               <cv-form @submit.prevent="createCluster">
                 <cv-text-input
                   :label="$t('init.vpn_endpoint_address')"
@@ -187,7 +187,7 @@
       </div>
       <div class="bx--row">
         <div class="bx--col-lg-16">
-          <cv-tile light class="content-tile">
+          <cv-tile light>
             <cv-form @submit.prevent="joinCluster">
               <cv-text-area
                 :label="$t('common.join_code')"
@@ -227,7 +227,7 @@
       </div>
       <div class="bx--row">
         <div class="bx--col-lg-16">
-          <cv-tile light class="content-tile">
+          <cv-tile light>
             <cv-form>
               <div>
                 <a
@@ -255,6 +255,7 @@ import {
 } from "@nethserver/ns8-ui-lib";
 import { mapActions } from "vuex";
 import to from "await-to-js";
+import NotificationService from "@/mixins/notification";
 
 export default {
   name: "InitializeCluster",
@@ -265,6 +266,7 @@ export default {
     QueryParamService,
     StorageService,
     TaskService,
+    NotificationService,
   ],
   pageTitle() {
     return this.$t("init.welcome", { product: this.$root.config.PRODUCT_NAME });
@@ -325,7 +327,7 @@ export default {
       const taskAction = "get-defaults";
 
       // register to task completion
-      this.$root.$on(taskAction + "-completed", this.getDefaultsCompleted);
+      this.$root.$once(taskAction + "-completed", this.getDefaultsCompleted);
 
       const res = await to(
         this.createClusterTask({
@@ -351,9 +353,6 @@ export default {
       }
     },
     getDefaultsCompleted(taskContext, taskResult) {
-      console.log("getDefaultsCompleted", taskResult.output); ////
-
-      this.$root.$off("get-defaults-completed");
       const defaults = taskResult.output;
       this.vpnEndpointAddress = defaults.vpn.host;
       this.vpnEndpointPort = defaults.vpn.port.toString();
@@ -376,7 +375,10 @@ export default {
       const taskAction = "get-cluster-status";
 
       // register to task completion
-      this.$root.$on(taskAction + "-completed", this.getClusterStatusCompleted);
+      this.$root.$once(
+        taskAction + "-completed",
+        this.getClusterStatusCompleted
+      );
 
       const res = await to(
         this.createClusterTask({
@@ -402,9 +404,6 @@ export default {
       }
     },
     getClusterStatusCompleted(taskContext, taskResult) {
-      console.log("getClusterStatusCompleted", taskResult.output); ////
-
-      this.$root.$off("get-cluster-status-completed");
       const clusterStatus = taskResult.output;
 
       if (clusterStatus.initialized && this.isMaster) {
@@ -415,9 +414,6 @@ export default {
         return;
       }
       this.isPasswordChangeNeeded = clusterStatus.default_password;
-
-      //// remove mock
-      // this.isPasswordChangeNeeded = false; ////
     },
     onPasswordValidation(passwordValidation) {
       this.passwordValidation = passwordValidation;
@@ -502,19 +498,14 @@ export default {
 
       // register to task completion
       this.$root.$off(taskAction + "-completed");
-      this.$root.$on(
+      this.$root.$once(
         taskAction + "-completed",
         this.changeUserPasswordCompleted
       );
 
       // register to task validation
-      this.$root.$off(taskAction + "-validation-ok");
-      this.$root.$on(
-        taskAction + "-validation-ok",
-        this.changeUserPasswordValidationOk
-      );
       this.$root.$off(taskAction + "-validation-failed");
-      this.$root.$on(
+      this.$root.$once(
         taskAction + "-validation-failed",
         this.changeUserPasswordValidationFailed
       );
@@ -547,22 +538,13 @@ export default {
         }
       }
     },
-    changeUserPasswordCompleted(taskContext, taskResult) {
-      console.log("changeUserPasswordCompleted", taskResult.output); ////
-
-      this.$root.$off("change-user-password-completed");
+    changeUserPasswordCompleted() {
       this.isPasswordChangeNeeded = false;
     },
-    changeUserPasswordValidationOk() {
-      this.$root.$off("change-user-password-validation-ok");
-    },
     changeUserPasswordValidationFailed(validationErrors) {
-      this.$root.$off("change-user-password-validation-failed");
       this.isChangingPassword = false;
 
       for (const validationError of validationErrors) {
-        console.log("validationError", validationError); ////
-
         // set i18n error message
         this.error.currentPassword = "password." + validationError.error;
         this.focusElement("currentPassword");
@@ -623,10 +605,12 @@ export default {
       const taskAction = "create-cluster";
 
       // register to task completion
-      this.$root.$on(taskAction + "-completed", this.createClusterCompleted);
+      this.$root.$off(taskAction + "-completed");
+      this.$root.$once(taskAction + "-completed", this.createClusterCompleted);
 
       // register to task error
-      this.$root.$on(taskAction + "-aborted", this.createClusterAborted);
+      this.$root.$off(taskAction + "-aborted");
+      this.$root.$once(taskAction + "-aborted", this.createClusterAborted);
 
       const res = await to(
         this.createClusterTask({
@@ -658,18 +642,13 @@ export default {
       this.isCreatingCluster = true;
     },
     createClusterCompleted() {
-      console.log("createClusterCompleted"); ////
-
-      this.$root.$off("create-cluster-completed");
       this.setClusterInitializedInStore(true);
       this.$root.$emit("clusterInitialized");
       this.$router.replace("/status");
       this.isCreatingCluster = false;
     },
     createClusterAborted(taskResult) {
-      console.log("createClusterAborted", taskResult); ////
-
-      this.$root.$off("create-cluster-aborted");
+      console.error("create cluster aborted", taskResult);
       this.isCreatingCluster = false;
     },
     validateJoinCluster() {
@@ -705,8 +684,6 @@ export default {
             isValidationOk = false;
           }
         } else {
-          console.log("decoded", decoded); ////
-
           let [endpoint, port, token] = decoded.split("|");
 
           if (!(endpoint && port && token)) {
@@ -717,10 +694,6 @@ export default {
               isValidationOk = false;
             }
           } else {
-            console.log("endpoint", endpoint); ////
-            console.log("port", port); ////
-            console.log("token length", token.length); ////
-
             this.joinEndpoint = endpoint;
             this.joinPort = port;
             this.joinToken = token;
@@ -737,11 +710,18 @@ export default {
 
       const taskAction = "join-cluster";
 
-      // register to task completion
-      this.$root.$on(taskAction + "-completed", this.joinClusterCompleted);
+      // register to task events
+      this.$root.$off(taskAction + "-completed");
+      this.$root.$once(taskAction + "-completed", this.joinClusterCompleted);
 
-      // register to task error
-      this.$root.$on(taskAction + "-aborted", this.joinClusterAborted);
+      this.$root.$off(taskAction + "-validation-failed");
+      this.$root.$once(
+        taskAction + "-validation-failed",
+        this.joinClusterValidationFailed
+      );
+
+      this.$root.$off(taskAction + "-aborted");
+      this.$root.$once(taskAction + "-aborted", this.joinClusterAborted);
 
       const res = await to(
         this.createClusterTask({
@@ -771,25 +751,36 @@ export default {
           return;
         }
       }
-
-      this.joinClusterCompleted();
+      this.isJoiningCluster = true;
     },
-    joinClusterCompleted() {
+    joinClusterCompleted(taskContext, taskResult) {
       console.log("joinClusterCompleted"); ////
+      console.log("taskContext", taskContext); ////
+      console.log("taskResult", taskResult); ////
 
-      this.$root.$off("join-cluster-completed");
       this.isJoiningCluster = false;
       this.$router.push("/init?page=redirect");
-      //// needed?
-      //this.setClusterInitializedInStore(true);
-      //this.$root.$emit("clusterInitialized");
-      //this.$router.replace("/status");
+
+      const nodeId = taskResult.output.nodeId;
+
+      console.log("nodeId", nodeId); ////
+
+      const notification = {
+        title: this.$t("action.join-cluster"),
+        description: this.$t("init.node_added_to_cluster", { nodeId }),
+        type: "success",
+      };
+      this.createNotification(notification);
     },
     joinClusterAborted(taskResult) {
-      console.log("joinClusterAborted", taskResult); ////
-
-      this.$root.$off("join-cluster-aborted");
+      console.error("join cluster aborted", taskResult);
       this.isJoiningCluster = false;
+    },
+    joinClusterValidationFailed(validationErrors) {
+      console.error("validation failed", validationErrors);
+      this.isJoiningCluster = false;
+      this.error.joinCode = "init.invalid_join_code";
+      this.focusElement("joinCode");
     },
   },
 };

@@ -28,11 +28,36 @@
           <cv-tag v-else kind="blue" :label="$t('nodes.worker')"></cv-tag>
         </div>
       </div>
+      <div v-if="error.getClusterStatus" class="bx--row">
+        <div class="bx--col">
+          <NsInlineNotification
+            kind="error"
+            :title="$t('action.get-cluster-status')"
+            :description="error.getClusterStatus"
+            :showCloseButton="false"
+          />
+        </div>
+      </div>
+      <div v-if="error.getNodeStatus" class="bx--row">
+        <div class="bx--col">
+          <NsInlineNotification
+            kind="error"
+            :title="$t('action.get-node-status')"
+            :description="error.getNodeStatus"
+            :showCloseButton="false"
+          />
+        </div>
+      </div>
+      <div class="bx--row">
+        <div class="bx--col-lg-16">
+          <h4 class="mg-bottom-md">{{ $t("node_detail.system") }}</h4>
+        </div>
+      </div>
       <div class="bx--row">
         <div class="bx--col-md-4 bx--col-max-4">
-          <cv-tile :light="true" class="content-tile same-height-tile">
-            <h4>{{ $t("node_detail.cpu") }}</h4>
-            <MeterChart
+          <cv-tile :light="true" class="same-height-tile">
+            <h4 class="mg-bottom-md">{{ $t("node_detail.cpu") }}</h4>
+            <NsMeterChart
               :label="$t('node_detail.usage')"
               :value="loading.nodeStatus ? 0 : nodeStatus.cpu.usage"
               class="mg-bottom-md"
@@ -94,9 +119,9 @@
           </cv-tile>
         </div>
         <div class="bx--col-md-4 bx--col-max-4">
-          <cv-tile :light="true" class="content-tile same-height-tile">
-            <h4>{{ $t("node_detail.memory") }}</h4>
-            <MeterChart
+          <cv-tile :light="true" class="same-height-tile">
+            <h4 class="mg-bottom-md">{{ $t("node_detail.memory") }}</h4>
+            <NsMeterChart
               :label="$t('node_detail.usage')"
               :value="loading.nodeStatus ? 0 : nodeStatus.memory.usage"
               class="mg-bottom-md"
@@ -122,9 +147,9 @@
           </cv-tile>
         </div>
         <div class="bx--col-md-4 bx--col-max-4">
-          <cv-tile :light="true" class="content-tile same-height-tile">
-            <h4>{{ $t("node_detail.swap") }}</h4>
-            <MeterChart
+          <cv-tile :light="true" class="same-height-tile">
+            <h4 class="mg-bottom-md">{{ $t("node_detail.swap") }}</h4>
+            <NsMeterChart
               :label="$t('node_detail.usage')"
               :value="loading.nodeStatus ? 0 : nodeStatus.swap.usage"
               class="mg-bottom-md"
@@ -150,8 +175,8 @@
           </cv-tile>
         </div>
         <div class="bx--col-md-4 bx--col-max-4">
-          <cv-tile :light="true" class="content-tile same-height-tile">
-            <h4>{{ $t("node_detail.vpn") }}</h4>
+          <cv-tile :light="true" class="same-height-tile">
+            <h4 class="mg-bottom-md">{{ $t("node_detail.vpn") }}</h4>
             <template v-if="!loading.clusterStatus && vpnInfo.endpoint">
               <div class="mg-bottom-sm">
                 <span class="label">{{ $t("node_detail.endpoint") }}</span>
@@ -205,7 +230,7 @@
       </div>
       <div class="bx--row">
         <div class="bx--col-lg-16">
-          <h4>{{ $t("node_detail.disks") }}</h4>
+          <h4 class="mg-bottom-md">{{ $t("node_detail.disks") }}</h4>
         </div>
       </div>
       <div class="bx--row">
@@ -223,9 +248,11 @@
             :key="index"
             class="bx--col-md-4 bx--col-max-4"
           >
-            <cv-tile :light="true" class="content-tile">
-              <h4>{{ $t("node_detail.disk") }} {{ index + 1 }}</h4>
-              <MeterChart
+            <cv-tile :light="true">
+              <h4 class="mg-bottom-md">
+                {{ $t("node_detail.disk") }} {{ index + 1 }}
+              </h4>
+              <NsMeterChart
                 :label="$t('node_detail.usage')"
                 :value="disk.usage"
                 class="mg-bottom-md"
@@ -270,13 +297,12 @@ import {
   IconService,
   DateTimeService,
 } from "@nethserver/ns8-ui-lib";
-import MeterChart from "@/components/MeterChart";
 import to from "await-to-js";
 import Information16 from "@carbon/icons-vue/es/information/16";
 
 export default {
   name: "NodeDetail",
-  components: { MeterChart, Information16 },
+  components: { Information16 },
   mixins: [
     TaskService,
     UtilService,
@@ -303,6 +329,10 @@ export default {
       loading: {
         nodeStatus: true,
         clusterStatus: true,
+      },
+      error: {
+        getNodeStatus: "",
+        getClusterStatus: "",
       },
     };
   },
@@ -339,6 +369,7 @@ export default {
   },
   methods: {
     async retrieveNodeStatus() {
+      this.error.getNodeStatus = "";
       const taskAction = "get-node-status";
 
       // register to task events
@@ -360,15 +391,12 @@ export default {
       const err = res[0];
 
       if (err) {
-        this.createErrorNotification(
-          err,
-          this.$t("task.cannot_create_task", { action: taskAction })
-        );
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.getNodeStatus = this.getErrorMessage(err);
+        return;
       }
     },
     getNodeStatusCompleted(taskContext, taskResult) {
-      console.log("getNodeStatusCompleted", taskResult.output); ////
-
       const nodeStatus = taskResult.output;
 
       // round cpu load (sometimes it has roundoff error)
@@ -390,6 +418,7 @@ export default {
       this.loading.nodeStatus = false;
     },
     async retrieveClusterStatus() {
+      this.error.getClusterStatus = "";
       const taskAction = "get-cluster-status";
 
       // register to task completion
@@ -410,16 +439,12 @@ export default {
       const err = res[0];
 
       if (err) {
-        this.createErrorNotification(
-          err,
-          this.$t("task.cannot_create_task", { action: taskAction })
-        );
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.getClusterStatus = this.getErrorMessage(err);
         return;
       }
     },
     getClusterStatusCompleted(taskContext, taskResult) {
-      console.log("getClusterStatusCompleted"); ////
-
       const clusterStatus = taskResult.output;
 
       const currentNode = clusterStatus.nodes.find(

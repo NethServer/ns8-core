@@ -5,9 +5,19 @@
         <h2>{{ $t("settings.title") }}</h2>
       </div>
     </div>
+    <div v-if="error.getConfiguration" class="bx--row">
+      <div class="bx--col">
+        <NsInlineNotification
+          kind="error"
+          :title="$t('action.get-configuration')"
+          :description="error.getConfiguration"
+          :showCloseButton="false"
+        />
+      </div>
+    </div>
     <div class="bx--row">
       <div class="bx--col-lg-16">
-        <cv-tile :light="true" class="content-tile">
+        <cv-tile :light="true">
           <cv-form @submit.prevent="saveSettings">
             <cv-text-input
               :label="$t('settings.wiki_name')"
@@ -96,6 +106,16 @@
                 $t("settings.enabled")
               }}</template>
             </cv-toggle>
+            <div v-if="error.configureModule" class="bx--row">
+              <div class="bx--col">
+                <NsInlineNotification
+                  kind="error"
+                  :title="$t('action.configure-module')"
+                  :description="error.configureModule"
+                  :showCloseButton="false"
+                />
+              </div>
+            </div>
             <NsButton
               kind="primary"
               :icon="Save20"
@@ -144,6 +164,8 @@ export default {
         settings: true,
       },
       error: {
+        getConfiguration: "",
+        configureModule: "",
         wiki_name: "",
         username: "",
         password: "",
@@ -174,10 +196,11 @@ export default {
   methods: {
     async getConfiguration() {
       this.loading.settings = true;
+      this.error.getConfiguration = "";
       const taskAction = "get-configuration";
 
       // register to task completion
-      this.ns8Core.$root.$on(
+      this.ns8Core.$root.$once(
         taskAction + "-completed",
         this.getConfigurationCompleted
       );
@@ -194,10 +217,8 @@ export default {
       const err = res[0];
 
       if (err) {
-        this.createErrorNotificationForApp(
-          err,
-          this.$t("task.cannot_create_task", { action: taskAction })
-        );
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.getConfiguration = this.getErrorMessage(err);
         return;
       }
     },
@@ -290,13 +311,15 @@ export default {
       const taskAction = "configure-module";
 
       // register to task validation
-      this.ns8Core.$root.$on(
+      this.ns8Core.$root.$off(taskAction + "-validation-failed");
+      this.ns8Core.$root.$once(
         taskAction + "-validation-failed",
         this.saveSettingsValidationFailed
       );
 
       // register to task completion
-      this.ns8Core.$root.$on(
+      this.ns8Core.$root.$off(taskAction + "-completed");
+      this.ns8Core.$root.$once(
         taskAction + "-completed",
         this.saveSettingsCompleted
       );
@@ -325,17 +348,13 @@ export default {
       const err = res[0];
 
       if (err) {
-        this.createErrorNotificationForApp(
-          err,
-          this.$t("task.cannot_create_task", { action: taskAction })
-        );
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.configureModule = this.getErrorMessage(err);
+        this.loading.settings = false;
         return;
       }
     },
     getConfigurationCompleted(taskContext, taskResult) {
-      // unregister from event
-      this.ns8Core.$root.$off("get-configuration-completed");
-
       const config = taskResult.output;
       this.wikiName = config.wiki_name;
       this.username = config.username;
@@ -349,9 +368,6 @@ export default {
       this.focusElement("wikiName");
     },
     saveSettingsCompleted() {
-      // unregister from event
-      this.ns8Core.$root.$off("configure-module-completed");
-
       this.loading.settings = false;
 
       // reload configuration

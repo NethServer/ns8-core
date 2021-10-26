@@ -137,3 +137,13 @@ export default {
   float: right;
 }
 </style>
+
+<style lang="scss">
+@import "../styles/carbon-utils";
+
+// global styles
+
+.task-error-modal .bx--modal-content {
+  margin-top: $spacing-05;
+}
+</style>

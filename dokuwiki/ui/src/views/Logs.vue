@@ -18,7 +18,7 @@
     </div> -->
     <div class="bx--row">
       <div class="bx--col-lg-16">
-        <cv-tile :light="true" class="content-tile">
+        <cv-tile :light="true">
           <NsEmptyState :title="$t('common.work_in_progress')">
             <template #pictogram>
               <Bulldozer />

@@ -19,7 +19,7 @@ import axios from "axios";
 import WebSocketService from "@/mixins/websocket";
 import { mapState, mapActions } from "vuex";
 import to from "await-to-js";
-import LoginService from "@/mixins/login"; //// needed?
+import LoginService from "@/mixins/login";
 import TaskErrorModal from "@/components/TaskErrorModal";
 import NotificationService from "@/mixins/notification";
 import {
@@ -27,9 +27,6 @@ import {
   TaskService,
   StorageService,
 } from "@nethserver/ns8-ui-lib";
-
-//// package.json local ui lib:
-//// "@nethserver/ns8-ui-lib": "/home/andre/git/ns8-ui-lib",
 
 export default {
   name: "App",
@@ -131,8 +128,6 @@ export default {
       }
     },
     async refreshToken(loginInfo) {
-      console.log("refreshToken, loginInfo", loginInfo); ////
-
       // invoke refresh token API
       const res = await to(this.executeRefreshToken());
       const refreshTokenError = res[0];
@@ -197,8 +192,6 @@ export default {
       );
     },
     async logout() {
-      console.log("logout"); ////
-
       // invoke logout API
       const res = await to(this.executeLogout());
       const logoutError = res[0];
@@ -268,11 +261,13 @@ export default {
     onClusterInitialized() {
       this.setClusterInitializedInStore(true);
 
+      // needed to set leader listen port in store after cluster creation
+      this.retrieveClusterStatus(false);
+
       // check for software updates
       this.listUpdates();
 
       //// TODO later
-      // immediately retrieve cluster status
       // this.retrieveRecurringClusterStatus();
 
       //// TODO later
@@ -283,23 +278,18 @@ export default {
       // );
     },
     getInitialClusterStatusCompleted(taskContext, taskResult) {
-      console.log("getInitialClusterStatusCompleted"); ////
-
       if (this.isMaster) {
         const clusterStatus = taskResult.output;
+
         console.log("clusterStatus", clusterStatus); ////
-        let isClusterInitialized = clusterStatus.initialized; //// use const
 
-        //// remove mock
-        // isClusterInitialized = false; ////
-
+        const isClusterInitialized = clusterStatus.initialized;
         this.setClusterInitializedInStore(isClusterInitialized);
 
         // leader listen port
         if (clusterStatus.nodes.length) {
           const leaderNode = clusterStatus.nodes.find((el) => el.local);
           const leaderListenPort = leaderNode.vpn.listen_port;
-          console.log("leaderListenPort", leaderListenPort); ////
           this.setLeaderListenPortInStore(leaderListenPort);
         }
 
@@ -315,18 +305,15 @@ export default {
       }
     },
     getClusterStatusCompleted(taskContext, taskResult) {
-      console.log("getClusterStatusCompleted"); ////
-      console.log("taskResult", taskResult); ////
-
       if (this.isMaster) {
         const clusterStatus = taskResult.output;
+
         console.log("clusterStatus", clusterStatus); ////
 
         // leader listen port
         if (clusterStatus.nodes.length) {
           const leaderNode = clusterStatus.nodes.find((el) => el.local);
           const leaderListenPort = leaderNode.vpn.listen_port;
-          console.log("set leaderListenPort", leaderListenPort); ////
           this.setLeaderListenPortInStore(leaderListenPort);
         }
       }
@@ -334,11 +321,9 @@ export default {
       //// TODO later: update cluster status in vuex store?
     },
     async listUpdates() {
-      console.log("listUpdates"); ////
-
       const taskAction = "list-updates";
       // register to task completion
-      this.$root.$on(taskAction + "-completed", this.listUpdatesCompleted);
+      this.$root.$once(taskAction + "-completed", this.listUpdatesCompleted);
 
       const res = await to(
         this.createClusterTask({
@@ -370,23 +355,7 @@ export default {
       }
     },
     listUpdatesCompleted(taskContext, taskResult) {
-      // unregister from event
-      this.$root.$off("list-updates-completed");
-
       let updates = taskResult.output;
-
-      //// add fake updates
-      updates.push({
-        id: "traefik77",
-        node: "1",
-        version: "1.2",
-      });
-      updates.push({
-        id: "traefik88",
-        node: "1",
-        version: "1.2",
-      }); ////
-
       this.setUpdatesInStore(updates);
     },
     onWebsocketConnected() {

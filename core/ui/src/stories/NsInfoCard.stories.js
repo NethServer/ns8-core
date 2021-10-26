@@ -9,7 +9,7 @@ export default {
 const Template = (args, { argTypes }) => ({
   props: Object.keys(argTypes),
   components: { NsInfoCard },
-  template: '<NsInfoCard v-bind="$props" />',
+  template: '<NsInfoCard v-bind="$props">{{ slotContent }}</NsInfoCard>',
 });
 
 export const Default = Template.bind({});
@@ -18,4 +18,5 @@ Default.args = {
   description: "Card description",
   light: false,
   icon: Application32,
+  slotContent: "Slot content",
 };

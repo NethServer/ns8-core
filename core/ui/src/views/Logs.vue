@@ -15,7 +15,7 @@
         />
       </div>
     </div>
-    <cv-tile :light="true" class="content-tile">
+    <cv-tile :light="true">
       <div class="bx--row">
         <div class="bx--col-md-8">
           <cv-form @submit.prevent="searchLogs">

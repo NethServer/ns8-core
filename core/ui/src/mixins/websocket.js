@@ -1,6 +1,5 @@
 import NotificationService from "@/mixins/notification";
 import { TaskService, StorageService } from "@nethserver/ns8-ui-lib";
-// import { v4 as uuidv4 } from "uuid"; ////
 
 export default {
   name: "WebSocketService",
@@ -29,7 +28,7 @@ export default {
       const messageData = JSON.parse(message.data);
       const payload = messageData.payload;
 
-      console.log("ws data", messageData); ////
+      // console.log("ws data", messageData); ////
 
       const progressTaskMatch = /^progress\/(.+\/task\/(.+))$/.exec(
         messageData.name
@@ -44,21 +43,6 @@ export default {
     onClose(event) {
       console.log("ws close", event);
       this.$root.$emit("websocketDisconnected");
-
-      // if (!this.$options.sockets.notification) { ////
-      //   const notification = {
-      //     title: this.$t("websocket.websocket_disconnected"),
-      //     description: this.$t("websocket.websocket_disconnected_description"),
-      //     type: "warning",
-      //     actionLabel: this.$t("common.reload_page"),
-      //     action: {
-      //       type: "execute",
-      //       execute: "window.location.reload()",
-      //     },
-      //   };
-      //   this.$options.sockets.notification = notification;
-      //   this.createNotification(notification);
-      // }
     },
   },
 };

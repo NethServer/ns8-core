@@ -7,13 +7,28 @@
     </div>
     <div class="bx--row">
       <div class="bx--col-lg-16">
-        <cv-tile :light="true" class="content-tile">
+        <cv-tile :light="true">
+          <NsInlineNotification
+            v-if="error.version"
+            kind="error"
+            :title="$t('error.cannot_retrieve_installed_modules')"
+            :description="error.version"
+            :showCloseButton="false"
+          />
           <cv-skeleton-text
             v-if="loading.moduleInfo"
             :paragraph="true"
             :line-count="12"
             width="80%"
           ></cv-skeleton-text>
+          <div v-else-if="error.moduleInfo">
+            <NsInlineNotification
+              kind="error"
+              :title="$t('error.cannot_retrieve_module_info')"
+              :description="error.moduleInfo"
+              :showCloseButton="false"
+            />
+          </div>
           <div v-else>
             <section>
               <div class="logo-and-name">
@@ -35,6 +50,22 @@
             <div class="description">
               {{ getApplicationDescription(app) }}
             </div>
+            <section>
+              <div>
+                <span class="section-title"
+                  >{{ ns8Core.$t("software_center.instance") }}:</span
+                >
+                {{ instanceName }}
+              </div>
+            </section>
+            <section>
+              <div>
+                <span class="section-title"
+                  >{{ ns8Core.$t("common.version") }}:</span
+                >
+                {{ version }}
+              </div>
+            </section>
             <section>
               <div>
                 <span class="section-title"
@@ -126,12 +157,16 @@
 <script>
 import to from "await-to-js";
 import { mapState } from "vuex";
-import { QueryParamService, TaskService } from "@nethserver/ns8-ui-lib";
+import {
+  QueryParamService,
+  TaskService,
+  UtilService,
+} from "@nethserver/ns8-ui-lib";
 
 export default {
   name: "About",
   components: {},
-  mixins: [TaskService, QueryParamService],
+  mixins: [TaskService, QueryParamService, UtilService],
   pageTitle() {
     return this.$t("about.title") + " - " + this.appName;
   },
@@ -142,16 +177,25 @@ export default {
       },
       urlCheckInterval: null,
       app: null,
+      version: "-",
+      error: {
+        moduleInfo: "",
+        version: "",
+      },
       loading: {
         moduleInfo: true,
+        version: true,
       },
     };
   },
   computed: {
-    ...mapState(["ns8Core", "appName"]),
+    ...mapState(["ns8Core", "appName", "instanceName"]),
   },
   created() {
     this.getModuleInfo();
+
+    // needed to retrieve module version
+    this.listInstalledModules();
   },
   beforeRouteEnter(to, from, next) {
     next((vm) => {
@@ -169,7 +213,7 @@ export default {
       const taskAction = "get-module-info";
 
       // register to task completion
-      this.ns8Core.$root.$on(
+      this.ns8Core.$root.$once(
         taskAction + "-completed",
         this.getModuleInfoCompleted
       );
@@ -189,16 +233,13 @@ export default {
       const err = res[0];
 
       if (err) {
-        this.createErrorNotificationForApp(
-          err,
-          this.$t("task.cannot_create_task", { action: taskAction })
-        );
+        console.error("error retrieving moodule info", err);
+        this.error.moduleInfo = this.getErrorMessage(err);
+        this.loading.moduleInfo = false;
         return;
       }
     },
     getModuleInfoCompleted(taskContext, taskResult) {
-      // unregister from event
-      this.ns8Core.$root.$off("get-module-info-completed");
       this.app = taskResult.output;
       this.loading.moduleInfo = false;
     },
@@ -207,6 +248,45 @@ export default {
     },
     getApplicationCategories(app) {
       return this.getAppCategories(app, this.ns8Core);
+    },
+    async listInstalledModules() {
+      const taskAction = "list-installed-modules";
+
+      // register to task completion
+      this.ns8Core.$root.$once(
+        taskAction + "-completed",
+        this.listInstalledModulesCompleted
+      );
+
+      const res = await to(
+        this.createClusterTaskForApp({
+          action: taskAction,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+          },
+        })
+      );
+      const errApps = res[0];
+
+      if (errApps) {
+        console.error("error retrieving installed apps", errApps);
+        this.error.version = this.getErrorMessage(errApps);
+        this.loading.version = false;
+        return;
+      }
+    },
+    listInstalledModulesCompleted(taskContext, taskResult) {
+      let apps = [];
+
+      for (let instanceList of Object.values(taskResult.output)) {
+        for (let instance of instanceList) {
+          apps.push(instance);
+        }
+      }
+      const app = apps.find((el) => (el.id = this.instanceName));
+      this.version = app.version;
+      this.loading.version = false;
     },
   },
 };

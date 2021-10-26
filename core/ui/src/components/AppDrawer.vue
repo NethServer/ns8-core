@@ -293,30 +293,10 @@ export default {
     return {
       view: "grid",
       isTransitioning: false,
-      useMock: false, //// remove mock
       searchQuery: "",
       apps: [],
       searchResults: [],
       isSearchActive: false,
-      mockApps: [
-        "Firewall", ////
-        "Nextcloud",
-        "WebTop",
-        "NethVoice",
-        "NethCTI",
-        "dokuwiki1",
-        "Reports",
-        "Reports",
-        "Reports",
-        "Reports",
-        "Reports",
-        "Reports",
-        "Reports",
-        "Reports",
-        "Reports",
-        "Reports",
-        "Reports",
-      ],
       loading: {
         apps: true,
       },
@@ -352,30 +332,29 @@ export default {
         this.isTransitioning = false;
       }, 300); // same duration as .slide-app-drawer transition
 
-      if (this.isAppDrawerShown) {
+      if (this.isAppDrawerShown && !this.loading.apps) {
         // set focus on app search
-        setTimeout(() => {
-          this.focusElement("appSearch");
-        }, 300);
+        this.focusElement("appSearch");
       } else {
         // save favorite apps if user closes drawer while editing favorites
         if (this.isEditingFavoriteApps) {
           this.doneEditFavorites();
         }
+
+        // reload app drawer on close to ensure consistency of favorite apps
+        this.listInstalledModules();
+      }
+    },
+    "loading.apps": function () {
+      if (!this.loading.apps && this.isAppDrawerShown) {
+        // set focus on app search
+        this.focusElement("appSearch");
       }
     },
   },
   created() {
     this.$root.$on("reloadAppDrawer", this.listInstalledModules);
-
-    //// remove mock
-    if (this.useMock) {
-      this.apps = this.mockApps;
-      this.loading.apps = false;
-    } else {
-      this.listInstalledModules();
-    }
-
+    this.listInstalledModules();
     this.loadAppDrawerViewFromStorage();
   },
   beforeDestroy() {
@@ -386,6 +365,7 @@ export default {
     ...mapActions([
       "setAppDrawerShownInStore",
       "setEditingFavoriteAppsInStore",
+      "setFavoriteAppsInStore",
     ]),
     loadAppDrawerViewFromStorage() {
       const appDrawerView = this.getFromStorage("appDrawerView");
@@ -417,7 +397,7 @@ export default {
       const taskAction = "list-installed-modules";
 
       // register to task completion
-      this.$root.$on(
+      this.$root.$once(
         taskAction + "-completed",
         this.listInstalledModulesCompleted
       );
@@ -443,12 +423,8 @@ export default {
       }
     },
     listInstalledModulesCompleted(taskContext, taskResult) {
-      // unregister from event
-      this.$root.$off("list-installed-modules-completed");
       this.loading.apps = false;
       let apps = [];
-
-      console.log("list-installed-modules result", taskResult.output); ////
 
       for (let instanceList of Object.values(taskResult.output)) {
         for (let instance of instanceList) {
@@ -497,8 +473,6 @@ export default {
       this.setEditingFavoriteAppsInStore(true);
     },
     doneEditFavorites() {
-      //// todo call api to save favorites
-
       setTimeout(() => {
         this.setEditingFavoriteAppsInStore(false);
         this.loadAppDrawerViewFromStorage();
@@ -520,12 +494,11 @@ export default {
       }
     },
     async addFavorite(app) {
-      console.log("addFavorite", app.id); ////
-
       const taskAction = "add-favorite";
 
-      // register to task events
-      this.$root.$once(taskAction + "-completed", this.addFavoriteCompleted);
+      // register to task error
+      this.$root.$off(taskAction + "-aborted");
+      this.$root.$once(taskAction + "-aborted", this.addFavoriteAborted);
 
       const res = await to(
         this.createClusterTask({
@@ -550,16 +523,18 @@ export default {
         return;
       }
     },
-    addFavoriteCompleted(taskContext, taskResult) {
-      console.log("addFavoriteCompleted", taskResult.output); ////
+    addFavoriteAborted(taskResult) {
+      console.error("add favorite aborted", taskResult);
+
+      // reload app drawer
+      this.listInstalledModules();
     },
     async removeFavorite(app) {
-      console.log("removeFavorite", app.id); ////
-
       const taskAction = "remove-favorite";
 
-      // register to task events
-      this.$root.$once(taskAction + "-completed", this.removeFavoriteCompleted);
+      // register to task error
+      this.$root.$off(taskAction + "-aborted");
+      this.$root.$once(taskAction + "-aborted", this.removeFavoriteAborted);
 
       const res = await to(
         this.createClusterTask({
@@ -584,12 +559,13 @@ export default {
         return;
       }
     },
-    removeFavoriteCompleted(taskContext, taskResult) {
-      console.log("removeFavoriteCompleted", taskResult.output); ////
+    removeFavoriteAborted(taskResult) {
+      console.error("remove favorite aborted", taskResult);
+
+      // reload app drawer
+      this.listInstalledModules();
     },
     async listFavorites() {
-      console.log("listFavorites"); ////
-
       const taskAction = "list-favorites";
 
       // register to task events
@@ -617,6 +593,10 @@ export default {
     },
     listFavoritesCompleted(taskContext, taskResult) {
       const favorites = taskResult.output;
+
+      // save favorite apps in store
+      const favoritesForStore = favorites.map((fav) => fav.id);
+      this.setFavoriteAppsInStore(favoritesForStore);
 
       for (const favorite of favorites) {
         const favoriteApp = this.apps.find((app) => app.id === favorite.id);

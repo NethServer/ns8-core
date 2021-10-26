@@ -32,6 +32,16 @@
           />
         </div>
       </div>
+      <div v-if="error.listRepositories" class="bx--row">
+        <div class="bx--col">
+          <NsInlineNotification
+            kind="error"
+            :title="$t('action.list-repositories')"
+            :description="error.listRepositories"
+            :showCloseButton="false"
+          />
+        </div>
+      </div>
       <div class="bx--row">
         <div class="bx--col-lg-16">
           <!-- repository being deleted -->
@@ -51,7 +61,7 @@
       </div>
       <div class="bx--row">
         <div class="bx--col-lg-16">
-          <cv-tile :light="true" class="content-tile">
+          <cv-tile :light="true">
             <div v-if="!tableRows.length && !loading.repositories">
               <NsEmptyState
                 :title="$t('settings_sw_repositories.no_sw_repositories')"
@@ -203,6 +213,13 @@
             <template slot="text-right">{{ $t("common.enabled") }}</template>
           </cv-toggle>
         </cv-form>
+        <NsInlineNotification
+          v-if="error.addRepository"
+          kind="error"
+          :title="$t('action.add-repository')"
+          :description="error.addRepository"
+          :showCloseButton="false"
+        />
       </template>
       <template slot="secondary-button">{{ $t("common.close") }}</template>
       <template slot="primary-button">{{
@@ -255,6 +272,16 @@
             <template slot="text-right">{{ $t("common.enabled") }}</template>
           </cv-toggle>
         </cv-form>
+        <div v-if="error.alterRepository" class="bx--row">
+          <div class="bx--col">
+            <NsInlineNotification
+              kind="error"
+              :title="$t('action.alter-repository')"
+              :description="error.alterRepository"
+              :showCloseButton="false"
+            />
+          </div>
+        </div>
       </template>
       <template slot="secondary-button">{{ $t("common.close") }}</template>
       <template slot="primary-button">{{
@@ -312,6 +339,9 @@ export default {
       error: {
         name: "",
         url: "",
+        listRepositories: "",
+        addRepository: "",
+        alterRepository: "",
       },
     };
   },
@@ -346,8 +376,6 @@ export default {
   },
   methods: {
     addRepositoryValidationFailed(validationErrors) {
-      this.$root.$off("add-repository-validation-failed");
-
       // enable "Create repository" button
       this.loading.createRepository = false;
 
@@ -374,10 +402,14 @@ export default {
     },
     async listRepositories() {
       this.loading.repositories = true;
+      this.error.listRepositories = "";
       const taskAction = "list-repositories";
 
       // register to task completion
-      this.$root.$on(taskAction + "-completed", this.listRepositoriesCompleted);
+      this.$root.$once(
+        taskAction + "-completed",
+        this.listRepositoriesCompleted
+      );
 
       const res = await to(
         this.createClusterTask({
@@ -391,17 +423,12 @@ export default {
       const err = res[0];
 
       if (err) {
-        this.createErrorNotification(
-          err,
-          this.$t("task.cannot_create_task", { action: taskAction })
-        );
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.listRepositories = this.getErrorMessage(err);
         return;
       }
     },
     listRepositoriesCompleted(taskContext, taskResult) {
-      // unregister from event
-      this.$root.$off("list-repositories-completed");
-
       this.tableRows = taskResult.output;
       this.loading.repositories = false;
     },
@@ -423,6 +450,7 @@ export default {
     },
     async createRepository() {
       this.loading.createRepository = true;
+      this.error.addRepository = "";
 
       if (!this.validateNewRepository()) {
         this.loading.createRepository = false;
@@ -432,17 +460,23 @@ export default {
       const taskAction = "add-repository";
 
       // register to task validation
-      this.$root.$on(
+      this.$root.$off(taskAction + "-validation-ok");
+      this.$root.$once(
         taskAction + "-validation-ok",
         this.addRepositoryValidationOk
       );
-      this.$root.$on(
+      this.$root.$off(taskAction + "-validation-failed");
+      this.$root.$once(
         taskAction + "-validation-failed",
         this.addRepositoryValidationFailed
       );
 
       // register to task completion
-      this.$root.$on(taskAction + "-completed", this.addRepositoriesCompleted);
+      this.$root.$off(taskAction + "-completed");
+      this.$root.$once(
+        taskAction + "-completed",
+        this.addRepositoriesCompleted
+      );
 
       const res = await to(
         this.createClusterTask({
@@ -462,17 +496,13 @@ export default {
       const err = res[0];
 
       if (err) {
-        this.createErrorNotification(
-          err,
-          this.$t("task.cannot_create_task", { action: taskAction })
-        );
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.addRepository = this.getErrorMessage(err);
+        this.loading.createRepository = false;
         return;
       }
     },
     addRepositoryValidationOk() {
-      // unregister from event
-      this.$root.$off("add-repository-validation-ok");
-
       // hide modal after validation
       this.q.isShownCreateRepoModal = false;
 
@@ -485,30 +515,33 @@ export default {
 
       // enable "Edit repository" button
       this.loading.editRepository = false;
-
-      // unregister from event
-      this.$root.$off("alter-repository-validation-ok");
     },
     async editRepository() {
       this.loading.editRepository = true;
+      this.error.alterRepository = "";
       const taskAction = "alter-repository";
 
       // register to task validation
-      this.$root.$on(
+      this.$root.$off(taskAction + "-validation-ok");
+      this.$root.$once(
         taskAction + "-validation-ok",
         this.alterRepositoryValidationOk
       );
 
       // register to task completion
-      this.$root.$on(taskAction + "-completed", this.alterRepositoryCompleted);
+      this.$root.$off(taskAction + "-completed");
+      this.$root.$once(
+        taskAction + "-completed",
+        this.alterRepositoryCompleted
+      );
 
       const res = await to(
         this.createClusterTask({
           action: taskAction,
           data: {
             name: this.q.editRepoName,
-            status: this.q.isEditRepoTesting,
-            testing: this.q.isEditRepoEnabled,
+            status: this.q.isEditRepoEnabled,
+            testing: this.q.isEditRepoTesting,
           },
           extra: {
             title: this.$t("action." + taskAction),
@@ -519,19 +552,15 @@ export default {
       const err = res[0];
 
       if (err) {
-        this.createErrorNotification(
-          err,
-          this.$t("task.cannot_create_task", { action: taskAction })
-        );
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.alterRepository = this.getErrorMessage(err);
         return;
       }
     },
     addRepositoriesCompleted() {
-      this.$root.$off("add-repository-completed");
       this.listRepositories();
     },
     alterRepositoryCompleted() {
-      this.$root.$off("alter-repository-completed");
       this.listRepositories();
     },
     willDeleteRepository(repo) {
@@ -552,7 +581,10 @@ export default {
       const taskAction = "remove-repository";
 
       // register to task completion
-      this.$root.$on(taskAction + "-completed", this.removeRepositoryCompleted);
+      this.$root.$once(
+        taskAction + "-completed",
+        this.removeRepositoryCompleted
+      );
 
       const res = await to(
         this.createClusterTask({
@@ -577,7 +609,6 @@ export default {
       }
     },
     removeRepositoryCompleted() {
-      this.$root.$off("remove-repository-completed");
       this.listRepositories();
     },
     cancelDeleteRepository() {

@@ -17,21 +17,13 @@
     </div>
     <div class="bx--row">
       <div class="bx--col-md-4 bx--col-max-4">
-        <cv-tile
-          v-if="loading.nodes"
-          light
-          class="content-tile min-height-card"
-        >
+        <cv-tile v-if="loading.nodes" light class="min-height-card">
           <cv-skeleton-text
             :paragraph="true"
             :line-count="4"
           ></cv-skeleton-text>
         </cv-tile>
-        <cv-tile
-          v-else-if="error.nodes"
-          light
-          class="content-tile min-height-card"
-        >
+        <cv-tile v-else-if="error.nodes" light class="min-height-card">
           <NsInlineNotification
             kind="error"
             :title="$t('error.cannot_retrieve_cluster_nodes')"
@@ -45,21 +37,17 @@
           :title="nodes.length.toString()"
           :description="$tc('common.nodes', nodes.length)"
           :icon="Chip32"
-          class="content-tile min-height-card"
+          class="min-height-card"
         />
       </div>
       <div class="bx--col-md-4 bx--col-max-4">
-        <cv-tile v-if="loading.apps" light class="content-tile min-height-card">
+        <cv-tile v-if="loading.apps" light class="min-height-card">
           <cv-skeleton-text
             :paragraph="true"
             :line-count="4"
           ></cv-skeleton-text>
         </cv-tile>
-        <cv-tile
-          v-else-if="error.apps"
-          light
-          class="content-tile min-height-card"
-        >
+        <cv-tile v-else-if="error.apps" light class="min-height-card">
           <NsInlineNotification
             kind="error"
             :title="$t('error.cannot_retrieve_installed_apps')"
@@ -73,13 +61,13 @@
           :title="apps.length.toString()"
           :description="$tc('common.installed_apps', apps.length)"
           :icon="Application32"
-          class="content-tile min-height-card"
+          class="min-height-card"
         />
       </div>
     </div>
     <!-- <div class="bx--row"> //// remove
       <div class="bx--col-md-4">
-        <cv-tile :light="true" class="content-tile">
+        <cv-tile :light="true">
           <cv-text-input label="Label" v-model="q.testInput"> </cv-text-input>
           <cv-toggle value="check-test" v-model="q.testToggle"> </cv-toggle>
           <div class="mg-top-bottom">
@@ -262,8 +250,6 @@ import {
   StorageService,
 } from "@nethserver/ns8-ui-lib";
 
-//// rename to Status?
-
 export default {
   name: "ClusterStatus",
   components: { Information16 },
@@ -343,12 +329,6 @@ export default {
     },
   },
   created() {
-    console.log(
-      "created, isWebsocketConnected, loggedUser",
-      this.isWebsocketConnected,
-      this.loggedUser
-    ); ////
-
     if (this.isWebsocketConnected && this.loggedUser) {
       // retrieve initial data
       this.retrieveClusterNodes();
@@ -357,13 +337,11 @@ export default {
   },
   beforeRouteEnter(to, from, next) {
     next((vm) => {
-      console.log("beforeRouteEnter", to, from); ////
       vm.watchQueryData(vm);
       vm.queryParamsToDataForCore(vm, to.query);
     });
   },
   beforeRouteUpdate(to, from, next) {
-    console.log("beforeRouteUpdate", to, from); ////
     this.queryParamsToDataForCore(this, to.query);
     next();
   },
@@ -412,7 +390,6 @@ export default {
       }
     },
     listInstalledModulesCompleted(taskContext, taskResult) {
-      this.loading.apps = false;
       let apps = [];
 
       for (let instanceList of Object.values(taskResult.output)) {
@@ -420,7 +397,6 @@ export default {
           apps.push(instance);
         }
       }
-
       this.apps = apps;
       this.loading.apps = false;
     },
@@ -467,54 +443,6 @@ export default {
       };
       this.createNotification(notification);
     },
-    async createAddModuleTask() {
-      const taskAction = "add-module";
-
-      const res = await to(
-        this.createClusterTask({
-          action: taskAction,
-          data: {
-            image: "traefik",
-            node: 1,
-          },
-          extra: {
-            title: this.$t("action." + taskAction),
-            description:
-              "Installing... very very very very very very very long description",
-          },
-        })
-      );
-      const err = res[0];
-
-      if (err) {
-        this.createErrorNotification(
-          err,
-          this.$t("task.cannot_create_task", { action: taskAction })
-        );
-        return;
-      }
-    },
-    async createTestTask() {
-      const taskAction = "test-action-1";
-      const res = await to(
-        this.createClusterTask({
-          action: taskAction,
-          extra: {
-            title: this.$t("action." + taskAction),
-            description: "Doing stuff...",
-          },
-        })
-      );
-      const err = res[0];
-
-      if (err) {
-        this.createErrorNotification(
-          err,
-          this.$t("task.cannot_create_task", { action: taskAction })
-        );
-        return;
-      }
-    },
     createProgressTask() {
       const notification = {
         id: uuidv4(),
@@ -523,33 +451,6 @@ export default {
         task: { context: { id: uuidv4() }, status: "running", progress: 0 },
       };
       this.createNotification(notification);
-    },
-    async addModule() {
-      const module = this.q.moduleToAdd.trim();
-      const taskAction = "add-module";
-
-      const res = await to(
-        this.createClusterTask({
-          action: taskAction,
-          data: {
-            image: module,
-            node: 1,
-          },
-          extra: {
-            title: this.$t("action." + taskAction),
-            description: "Adding module...",
-          },
-        })
-      );
-      const err = res[0];
-
-      if (err) {
-        this.createErrorNotification(
-          err,
-          this.$t("task.cannot_create_task", { action: taskAction })
-        );
-        return;
-      }
     },
   },
 };

@@ -2,7 +2,7 @@
   <cv-modal
     size="default"
     :visible="isShown"
-    @modal-hidden="$emit('close')"
+    @modal-hidden="onModalHidden"
     @primary-click="installInstance"
     class="no-pad-modal"
     :primary-button-disabled="!selectedNode"
@@ -44,15 +44,24 @@
             >
               <NsTile
                 :light="true"
-                class="content-tile"
                 kind="selectable"
                 v-model="node.selected"
                 value="nodeValue"
-                :footerIcon="EdgeNode20"
+                :footerIcon="Chip20"
                 @click="deselectOtherNodes(node)"
               >
                 <h6>{{ $t("common.node") }} {{ node.id }}</h6>
               </NsTile>
+            </div>
+          </div>
+          <div v-if="error.addModule" class="bx--row">
+            <div class="bx--col">
+              <NsInlineNotification
+                kind="error"
+                :title="$t('action.add-module')"
+                :description="error.addModule"
+                :showCloseButton="false"
+              />
             </div>
           </div>
         </div>
@@ -82,6 +91,7 @@ export default {
       nodes: [],
       error: {
         nodes: "",
+        addModule: "",
       },
     };
   },
@@ -113,6 +123,7 @@ export default {
       this.nodes = nodes;
     },
     async installInstance() {
+      this.error.addModule = "";
       let version;
 
       if (this.app.versions.length) {
@@ -121,15 +132,12 @@ export default {
         version = "latest"; //// remove?
       }
 
-      ////
-      version = "latest"; //// remove!!
-
       console.log("installing", this.app.source, "version", version); ////
 
       const taskAction = "add-module";
 
       // register to task completion
-      this.$root.$on(taskAction + "-completed", this.addModuleCompleted);
+      this.$root.$once(taskAction + "-completed", this.addModuleCompleted);
 
       const res = await to(
         this.createClusterTask({
@@ -152,10 +160,8 @@ export default {
       const err = res[0];
 
       if (err) {
-        this.createErrorNotification(
-          err,
-          this.$t("task.cannot_create_task", { action: taskAction })
-        );
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.addModule = this.getErrorMessage(err);
         return;
       }
 
@@ -163,9 +169,6 @@ export default {
       this.$emit("close");
     },
     addModuleCompleted() {
-      // unregister from event
-      this.$root.$off("add-module-completed");
-
       this.$emit("installationCompleted");
 
       // show new app in app drawer
@@ -177,6 +180,10 @@ export default {
           n.selected = false;
         }
       }
+    },
+    onModalHidden() {
+      this.clearErrors(this);
+      this.$emit("close");
     },
   },
 };

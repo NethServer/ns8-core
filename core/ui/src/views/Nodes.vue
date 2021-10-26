@@ -5,42 +5,51 @@
         <h2>{{ $t("nodes.title") }}</h2>
       </div>
     </div>
-    <div v-if="error.nodes" class="bx--row">
+    <div v-if="error.getClusterStatus" class="bx--row">
       <div class="bx--col">
         <NsInlineNotification
           kind="error"
-          :title="$t('error.cannot_retrieve_cluster_nodes')"
-          :description="error.nodes"
+          :title="$t('action.get-cluster-status')"
+          :description="error.getClusterStatus"
+          :showCloseButton="false"
+        />
+      </div>
+    </div>
+    <div v-if="error.getNodeStatus" class="bx--row">
+      <div class="bx--col">
+        <NsInlineNotification
+          kind="error"
+          :title="$t('action.get-node-status')"
+          :description="error.getNodeStatus"
           :showCloseButton="false"
         />
       </div>
     </div>
     <div class="bx--row">
       <div class="bx--col">
-        <NsButton
-          kind="secondary"
-          :icon="Add20"
-          @click="showAddNodeModal"
-          :disabled="!!error.nodes"
-          >{{ $t("nodes.add_node_to_cluster") }}</NsButton
-        >
+        <NsButton kind="secondary" :icon="Add20" @click="showAddNodeModal">{{
+          $t("nodes.add_node_to_cluster")
+        }}</NsButton>
       </div>
     </div>
-    <div class="bx--row loader-large nodes-loader" v-if="!nodes.length"></div>
+    <div
+      class="bx--row loader-large loader-theme nodes-loader"
+      v-if="loading.nodes"
+    ></div>
     <div class="bx--row" v-else>
       <div
         v-for="node in nodes"
         :key="node.id"
         class="bx--col-md-4 bx--col-max-4"
       >
-        <div v-if="!nodesStatus[node.id]">
-          <cv-tile light>
-            <cv-skeleton-text
-              :paragraph="true"
-              :line-count="12"
-            ></cv-skeleton-text>
-          </cv-tile>
-        </div>
+        <NsNodeCard
+          v-if="!nodesStatus[node.id]"
+          :nodeId="node.id.toString()"
+          :nodeLabel="$t('common.node')"
+          :isLeader="node.id == leaderNode.id"
+          light
+          loading
+        />
         <NsNodeCard
           v-else
           :nodeId="node.id.toString()"
@@ -170,7 +179,8 @@ export default {
         nodes: true,
       },
       error: {
-        nodes: "",
+        getClusterStatus: "",
+        getNodeStatus: "",
       },
     };
   },
@@ -205,11 +215,8 @@ export default {
       const loginInfo = this.getFromStorage("loginInfo");
 
       if (loginInfo && loginInfo.token) {
-        let endpoint = //// use const
+        const endpoint =
           window.location.protocol + "//" + window.location.hostname;
-
-        //// remove
-        //endpoint = "https://192.168.122.220";
 
         console.log("endpoint", endpoint); ////
         console.log("leaderListenPort", this.leaderListenPort); ////
@@ -218,11 +225,10 @@ export default {
         this.joinCode = btoa(
           endpoint + "|" + this.leaderListenPort + "|" + loginInfo.token
         );
-
-        console.log("joinCode", this.joinCode); ////
       }
     },
     async retrieveClusterStatus() {
+      this.error.getClusterStatus = "";
       const taskAction = "get-cluster-status";
 
       // register to task completion
@@ -243,16 +249,12 @@ export default {
       const err = res[0];
 
       if (err) {
-        this.createErrorNotification(
-          err,
-          this.$t("task.cannot_create_task", { action: taskAction })
-        );
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.getClusterStatus = this.getErrorMessage(err);
         return;
       }
     },
     getClusterStatusCompleted(taskContext, taskResult) {
-      console.log("getClusterStatusCompleted"); ////
-
       const clusterStatus = taskResult.output;
       this.nodes = clusterStatus.nodes.sort(this.sortByProperty("id"));
       this.loading.nodes = false;
@@ -284,6 +286,8 @@ export default {
       }, 1000);
     },
     async retrieveNodesStatus() {
+      this.error.getNodeStatus = "";
+
       for (const node of this.nodes) {
         const nodeId = node.id;
         const taskAction = "get-node-status";
@@ -307,10 +311,8 @@ export default {
         const err = res[0];
 
         if (err) {
-          this.createErrorNotification(
-            err,
-            this.$t("task.cannot_create_task", { action: taskAction })
-          );
+          console.error(`error creating task ${taskAction}`, err);
+          this.error.getNodeStatus = this.getErrorMessage(err);
         }
       }
     },
@@ -363,7 +365,6 @@ export default {
 
 .nodes-loader {
   margin: $spacing-05 auto;
-  color: $interactive-01;
 }
 
 ol {

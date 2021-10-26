@@ -55,5 +55,17 @@
     "get-configuration": "Get configuration",
     "configure-module": "Configure module",
     "get-module-info": "Get module info"
+  },
+  "error": {
+    "error": "Error",
+    "generic_error": "Something went wrong",
+    "validation_error": "Validation error",
+    "network_error": "Network error",
+    "network_timeout": "Network timeout",
+    "401": "Invalid authentication",
+    "403": "Operation not authorized",
+    "404": "Resource not found",
+    "cannot_retrieve_module_info": "Cannot retrieve module info",
+    "cannot_retrieve_installed_modules": "Cannot retrieve installed modules"
   }
 }

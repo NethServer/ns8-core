@@ -11,12 +11,7 @@
     <cv-header-name to="/" prefix="">{{
       $root.config.PRODUCT_NAME
     }}</cv-header-name>
-    <cv-header-nav>
-      <cv-header-menu-item @click="logout">Logout</cv-header-menu-item>
-      <!-- <cv-header-menu-item @click="isHintShown = !isHintShown" //// remove
-        >Toggle hint</cv-header-menu-item
-      > -->
-    </cv-header-nav>
+    <cv-header-nav> </cv-header-nav>
     <template slot="header-global">
       <cv-header-global-action
         v-if="!isSearchExpanded"
@@ -68,14 +63,19 @@
           </template>
         </cv-interactive-tooltip>
       </span>
-      <cv-header-global-action
+      <HeaderGlobalMenu
+        flip-menu
         :label="$t('shell.account')"
-        :aria-label="$t('shell.account')"
         tipPosition="bottom"
         tipAlignment="end"
       >
-        <user-avatar-20 />
-      </cv-header-global-action>
+        <template v-slot:trigger>
+          <UserAvatar20 />
+        </template>
+        <cv-overflow-menu-item @click="logout">{{
+          $t("shell.logout")
+        }}</cv-overflow-menu-item>
+      </HeaderGlobalMenu>
       <cv-header-global-action
         :label="$t('shell.app_launcher') + ' (CTRL+SHIFT+A)'"
         :aria-label="$t('shell.app_launcher')"
@@ -103,6 +103,7 @@ import LoginService from "@/mixins/login";
 import WebSocketService from "@/mixins/websocket";
 import NotificationDrawer from "@/components/NotificationDrawer";
 import { StorageService } from "@nethserver/ns8-ui-lib";
+import HeaderGlobalMenu from "@/components/HeaderGlobalMenu";
 
 export default {
   name: "ShellHeader",
@@ -114,6 +115,7 @@ export default {
     GlobalSearch,
     AppDrawer,
     NotificationDrawer,
+    HeaderGlobalMenu,
   },
   mixins: [StorageService, LoginService, WebSocketService],
   data() {

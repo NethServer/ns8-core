@@ -9,35 +9,11 @@
       <div class="bx--col-md-4 bx--col-lg-4">
         <NsTile
           :light="true"
-          class="content-tile"
           kind="clickable"
           @click="goToSettingsSoftwareRepositories"
           :icon="Application32"
         >
           <h6>{{ $t("settings.sw_repositories") }}</h6>
-        </NsTile>
-      </div>
-      <!-- //// remove fake tiles -->
-      <div class="bx--col-md-4 bx--col-lg-4">
-        <NsTile
-          :light="true"
-          class="content-tile"
-          kind="clickable"
-          @click="actionClick"
-          :icon="Cube32"
-        >
-          <h6>Test</h6>
-        </NsTile>
-      </div>
-      <div class="bx--col-md-4 bx--col-lg-4">
-        <NsTile
-          :light="true"
-          class="content-tile"
-          kind="clickable"
-          @click="actionClick"
-          :icon="Cube32"
-        >
-          <h6>Test</h6>
         </NsTile>
       </div>
     </div>
@@ -60,21 +36,15 @@ export default {
   },
   beforeRouteEnter(to, from, next) {
     next((vm) => {
-      console.log("beforeRouteEnter", to, from); ////
       vm.watchQueryData(vm);
       vm.queryParamsToDataForCore(vm, to.query);
     });
   },
   beforeRouteUpdate(to, from, next) {
-    console.log("beforeRouteUpdate", to, from); ////
     this.queryParamsToDataForCore(this, to.query);
     next();
   },
   methods: {
-    ////
-    actionClick() {
-      console.log("actionClick //// remove"); ////
-    },
     goToSettingsSoftwareRepositories() {
       this.$router.push("/settings/software-repository");
     },
