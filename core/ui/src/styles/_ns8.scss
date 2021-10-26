@@ -494,7 +494,8 @@ a {
 .bx--overflow-menu-options {
   z-index: 10000;
   width: auto !important;
-  max-width: 14rem !important;
+  min-width: 10rem;
+  max-width: 14rem;
 }
 
 // NsNodeCard
