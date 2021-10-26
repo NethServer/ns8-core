@@ -306,7 +306,7 @@ export default {
 @import "../styles/carbon-utils";
 
 .global-search {
-  width: 30rem;
+  width: 34rem;
   background-color: $ui-05;
   color: $ui-01;
 }

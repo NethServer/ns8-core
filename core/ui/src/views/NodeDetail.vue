@@ -57,7 +57,7 @@
         <div class="bx--col-md-4 bx--col-max-4">
           <cv-tile :light="true" class="same-height-tile">
             <h4 class="mg-bottom-md">{{ $t("node_detail.cpu") }}</h4>
-            <MeterChart
+            <NsMeterChart
               :label="$t('node_detail.usage')"
               :value="loading.nodeStatus ? 0 : nodeStatus.cpu.usage"
               class="mg-bottom-md"
@@ -121,7 +121,7 @@
         <div class="bx--col-md-4 bx--col-max-4">
           <cv-tile :light="true" class="same-height-tile">
             <h4 class="mg-bottom-md">{{ $t("node_detail.memory") }}</h4>
-            <MeterChart
+            <NsMeterChart
               :label="$t('node_detail.usage')"
               :value="loading.nodeStatus ? 0 : nodeStatus.memory.usage"
               class="mg-bottom-md"
@@ -149,7 +149,7 @@
         <div class="bx--col-md-4 bx--col-max-4">
           <cv-tile :light="true" class="same-height-tile">
             <h4 class="mg-bottom-md">{{ $t("node_detail.swap") }}</h4>
-            <MeterChart
+            <NsMeterChart
               :label="$t('node_detail.usage')"
               :value="loading.nodeStatus ? 0 : nodeStatus.swap.usage"
               class="mg-bottom-md"
@@ -252,7 +252,7 @@
               <h4 class="mg-bottom-md">
                 {{ $t("node_detail.disk") }} {{ index + 1 }}
               </h4>
-              <MeterChart
+              <NsMeterChart
                 :label="$t('node_detail.usage')"
                 :value="disk.usage"
                 class="mg-bottom-md"
@@ -297,13 +297,12 @@ import {
   IconService,
   DateTimeService,
 } from "@nethserver/ns8-ui-lib";
-import MeterChart from "@/components/MeterChart";
 import to from "await-to-js";
 import Information16 from "@carbon/icons-vue/es/information/16";
 
 export default {
   name: "NodeDetail",
-  components: { MeterChart, Information16 },
+  components: { Information16 },
   mixins: [
     TaskService,
     UtilService,
