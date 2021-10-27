@@ -23,7 +23,7 @@ stream {
     }
     upstream {{ item.domain | replace('.', '_') }} {
     {%- for server in item.servers %}
-        server {{ server.host + ':' + server.port + ('    backup' if not server.is_local else '') }}; # origin {{ server.origin }}
+        server {{ server.host + ':' + server.port + ('    backup' if not server.is_local and not loop.index0 == 0 else '') }}; # origin {{ server.origin }}
     {%- endfor %}
     }
 {% endfor %}
