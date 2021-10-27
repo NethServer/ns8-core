@@ -1,5 +1,5 @@
 [Unit]
-Description=Podman loki.service
+Description=Loki pod service
 Requires=loki-server.service traefik.service
 Before=loki-server.service traefik.service
 

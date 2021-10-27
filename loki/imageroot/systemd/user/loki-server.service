@@ -1,5 +1,5 @@
 [Unit]
-Description=Grafana Loki fully featured logging stack.
+Description=Loki server
 BindsTo=loki.service
 After=loki.service
 
@@ -14,7 +14,7 @@ ExecStart=/usr/bin/podman run \
     --cidfile=%t/loki-server.ctr-id \
     --cgroups=no-conmon \
     --pod-id-file %t/loki.pod-id \
-    --log-opt=tag=%u \
+    --log-opt=tag=%u-server \
     --replace \
     --name=%N \
     --volume=loki-server-data:/loki-server \
