@@ -85,18 +85,34 @@ agent.assert_exp(redis_rewrite_conf == 'OK')
 cluster.grants.grant(rdb, action_clause="update-routes", to_clause="accountprovider", on_clause='cluster')
 
 #
-# Install ldapproxy here
+# Install core modules
 #
-add_module_result = agent.tasks.run(
-    agent_id='cluster',
-    action='add-module',
-    data={
-        'image': 'ghcr.io/nethserver/ldapproxy:latest',
-        'node': NODE_ID,
-    },
-    endpoint="redis://cluster-leader",
+add1_module_failures = agent.tasks.runp_brief([
+        {"agent_id": "cluster", "action": "add-module", "data": {
+            'image': 'ghcr.io/nethserver/ldapproxy:latest',
+            'node': NODE_ID,
+        }},
+        {"agent_id": "cluster", "action": "add-module", "data": {
+            'image': 'ghcr.io/nethserver/loki:latest',
+            'node': NODE_ID,
+        }},
+    ],
+    endpoint = "redis://cluster-leader",
+    progress_callback = agent.get_progress_callback(25, 85),
 )
-agent.assert_exp(add_module_result['exit_code'] == 0)
+agent.assert_exp(add1_module_failures == 0)
+
+add2_module_failures = agent.tasks.runp_brief([
+        # promtail must be installed AFTER loki
+        {"agent_id": "cluster", "action": "add-module", "data": {
+            'image': 'ghcr.io/nethserver/promtail:latest',
+            'node': NODE_ID,
+        }},
+    ],
+    endpoint = "redis://cluster-leader",
+    progress_callback = agent.get_progress_callback(86, 95),
+)
+agent.assert_exp(add2_module_failures == 0)
 
 json.dump({
     "ip_address": ip_address,

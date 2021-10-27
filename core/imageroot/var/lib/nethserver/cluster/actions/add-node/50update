@@ -142,6 +142,14 @@ additional_tasks = [
         }
     },
     {
+        'agent_id': 'cluster',
+        'action': 'add-module',
+        'data': {
+            "image": f'ghcr.io/nethserver/promtail:latest',
+            "node": node_id,
+        }
+    },
+    {
         'agent_id': f'node/{node_id}',
         'action': 'update-routes',
         'data': {},
