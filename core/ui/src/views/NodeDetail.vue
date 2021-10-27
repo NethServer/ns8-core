@@ -60,6 +60,7 @@
             <NsMeterChart
               :label="$t('node_detail.usage')"
               :value="loading.nodeStatus ? 0 : nodeStatus.cpu.usage"
+              height="3rem"
               class="mg-bottom-md"
             />
             <div class="mg-bottom-sm">
@@ -124,6 +125,7 @@
             <NsMeterChart
               :label="$t('node_detail.usage')"
               :value="loading.nodeStatus ? 0 : nodeStatus.memory.usage"
+              height="3rem"
               class="mg-bottom-md"
             />
             <div class="mg-bottom-sm">
@@ -152,6 +154,7 @@
             <NsMeterChart
               :label="$t('node_detail.usage')"
               :value="loading.nodeStatus ? 0 : nodeStatus.swap.usage"
+              height="3rem"
               class="mg-bottom-md"
             />
             <div class="mg-bottom-sm">
@@ -255,6 +258,7 @@
               <NsMeterChart
                 :label="$t('node_detail.usage')"
                 :value="disk.usage"
+                height="3rem"
                 class="mg-bottom-md"
               />
               <div class="mg-bottom-sm">

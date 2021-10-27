@@ -317,8 +317,6 @@ export default {
       }
     },
     getNodeStatusCompleted(taskContext, taskResult) {
-      console.log("getNodeStatusCompleted, nodeId", taskContext.extra.node); ////
-
       const nodeId = taskContext.extra.node;
       const nodeStatus = taskResult.output;
 
