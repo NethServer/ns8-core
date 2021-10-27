@@ -73,14 +73,21 @@ for ksrv in rdb.scan_iter('*/srv/tcp/ldap'):
         'servers': [],
     })
 
-    domains[srvh['domain']]['servers'].append({
+    server = {
         'origin': ksrv.removesuffix('/srv/tcp/ldap'),
         'service': 'ldap',
         'node': srvh['node'],
         'is_local': node_id == srvh['node'],
         'port': srvh['port'],
         'host': srvh['host'] if node_id != srvh['node'] else '127.0.0.1',
-    })
+    }
+
+    if server['is_local']:
+        # local servers are prepended
+        domains[srvh['domain']]['servers'].insert(0, server)
+    else:
+        # remote servers are appended
+        domains[srvh['domain']]['servers'].append(server)
 
 context = {"domains": list(domains.values())}
 
