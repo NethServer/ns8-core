@@ -9,7 +9,7 @@ WorkingDirectory=%S/state
 Restart=always
 TimeoutStopSec=70
 ExecStartPre=/bin/rm -f %t/ldapproxy.pid %t/ldapproxy.ctr-id
-ExecStartPre=/usr/local/bin/runagent update-conf
+ExecStartPre=-/usr/local/bin/runagent update-conf
 ExecStart=/usr/bin/podman run \
     --detach \
     --env=NGINX_ENTRYPOINT_QUIET_LOGS=1 \
@@ -21,7 +21,7 @@ ExecStart=/usr/bin/podman run \
     --replace --name=%N \
     --volume=./nginx:/srv:z \
     ${NGINX_IMAGE} nginx -g "daemon off;" -c /srv/nginx.conf
-ExecReload=/usr/local/bin/runagent update-conf
+ExecReload=-/usr/local/bin/runagent update-conf
 ExecReload=/usr/bin/podman exec %N nginx -s reload
 ExecStop=/usr/bin/podman stop --ignore --cidfile %t/ldapproxy.ctr-id -t 10
 ExecStopPost=/usr/bin/podman rm --ignore -f --cidfile %t/ldapproxy.ctr-id
