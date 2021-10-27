@@ -36,8 +36,12 @@ buildah run nodebuilder-core sh -c "cp -v /usr/src/core/ui/dist/css/app.*.css /u
 echo "Download Logcli..."
 logcli_tmp_dir=$(mktemp -d)
 cleanup_list+=("${logcli_tmp_dir}")
-wget https://github.com/grafana/loki/releases/download/v2.2.1/logcli-linux-amd64.zip -P ${logcli_tmp_dir}
-unzip ${logcli_tmp_dir}/logcli-linux-amd64.zip -d ${logcli_tmp_dir}
+(
+    cd "${logcli_tmp_dir}"
+    curl -L -O https://github.com/grafana/loki/releases/download/v2.2.1/logcli-linux-amd64.zip
+    python -mzipfile -e logcli-linux-amd64.zip .
+    chmod -c 755 logcli-linux-amd64
+)
 
 echo "Building the Core image..."
 container=$(buildah from scratch)
