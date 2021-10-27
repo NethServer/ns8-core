@@ -5,28 +5,27 @@ Description=Promtail logs collector for Loki
 Type=forking
 Environment=PODMAN_SYSTEMD_UNIT=%n
 EnvironmentFile=/var/lib/nethserver/%N/state/environment
-Restart=on-failure
+Restart=always
 ExecStartPre=/bin/rm -f %t/%N.pid %t/%N.cid
-ExecStartPre=/var/lib/nethserver/%N/scripts/expandconfig
+ExecStartPre=/usr/local/bin/runagent -m %N expandconfig
 ExecStart=/usr/bin/podman run \
     --conmon-pidfile %t/%N.pid \
     --cidfile %t/%N.cid \
     --cgroups=no-conmon \
     --replace \
-    --log-opt=tag=promtail \
+    --log-opt=tag=%N \
     --name %N \
     --network=host \
     -d \
     -e LOKI_URL=${LOKI_URL} \
     -v /var/log/journal/:/var/log/journal/ \
     -v /etc/machine-id:/etc/machine-id \
-    -v ./promtail.yaml:/etc/promtail/config.yml \
+    -v /var/lib/nethserver/%N/state/promtail.yaml:/etc/promtail/config.yml:z \
     ${PROMTAIL_IMAGE} \
     -config.file=/etc/promtail/config.yml
 ExecStop=/usr/bin/podman stop --ignore --cidfile %t/%N.cid -t 10
 ExecStopPost=/usr/bin/podman rm --ignore -f --cidfile %t/%N.cid
 PIDFile=%t/%N.pid
-WorkingDirectory=/var/lib/nethserver/%N/state
 
 [Install]
 WantedBy=default.target
