@@ -63,6 +63,15 @@
           </template>
         </cv-interactive-tooltip>
       </span>
+      <cv-header-global-action
+        :label="$t('shell.app_launcher') + ' (CTRL+SHIFT+A)'"
+        :aria-label="$t('shell.app_launcher')"
+        @click="toggleAppDrawerShownInStore"
+        tipPosition="bottom"
+        tipAlignment="end"
+      >
+        <app-switcher-20 />
+      </cv-header-global-action>
       <HeaderGlobalMenu
         flip-menu
         :label="$t('shell.account')"
@@ -76,15 +85,6 @@
           $t("shell.logout")
         }}</cv-overflow-menu-item>
       </HeaderGlobalMenu>
-      <cv-header-global-action
-        :label="$t('shell.app_launcher') + ' (CTRL+SHIFT+A)'"
-        :aria-label="$t('shell.app_launcher')"
-        @click="toggleAppDrawerShownInStore"
-        tipPosition="bottom"
-        tipAlignment="end"
-      >
-        <app-switcher-20 />
-      </cv-header-global-action>
     </template>
     <AppDrawer />
     <NotificationDrawer />
