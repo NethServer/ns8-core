@@ -5,7 +5,7 @@ After=loki.service
 
 [Service]
 Environment=PODMAN_SYSTEMD_UNIT=%n
-EnvironmentFile=-%S/state/environment
+EnvironmentFile=%S/state/environment
 Restart=always
 ExecStartPre=/bin/rm -f %t/traefik.pid %t/traefik.ctr-id
 ExecStartPre=%S/scripts/expandconfig-traefik

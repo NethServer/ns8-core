@@ -5,7 +5,7 @@ After=loki.service
 
 [Service]
 Environment=PODMAN_SYSTEMD_UNIT=%n
-EnvironmentFile=-%S/state/environment
+EnvironmentFile=%S/state/environment
 Restart=always
 ExecStartPre=/bin/rm -f %t/loki-server.pid %t/loki-server.ctr-id
 ExecStart=/usr/bin/podman run \
