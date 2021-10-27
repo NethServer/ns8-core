@@ -27,10 +27,12 @@ function usage()
     (
         exec 1>&2
         echo "Run COMMAND in the agent environment of MODULE_ID."
-        echo "runagent [-m MODULE_ID] COMMAND [ARG ...]"
-        echo "         MODULE_ID: \"cluster\", \"node\" (for the local node) or"
-        echo "         any other module identifier rootless or rootfull (e.g. traefik1)."
-        echo "         Only root can use the \"-m\" option"
+        echo "runagent [-m MODULE_ID] [-d] COMMAND [ARG ...]"
+        echo "   -m MODULE_ID: \"cluster\", \"node\" (for the local node) or"
+        echo "      any other module identifier rootless or rootfull (e.g. traefik1)."
+        echo "      Only root can use the \"-m\" option"
+        echo "   -d: Run COMMAND in current directory (instead of changing"
+        echo "      to AGENT_STATE_DIR)."
         echo ""
     )
 }
@@ -44,8 +46,11 @@ else
     mid=$(id -un)
 fi
 
-while getopts "hm:" arg; do
+while getopts "hdm:" arg; do
   case $arg in
+    d)
+      dir_current=1
+      ;;
     m)
       mid=$OPTARG
       [[ $EUID != 0 ]] && usage && exit 1
@@ -83,6 +88,10 @@ else
     echo "[FATAL] Cannot find environment for module ${mid}" 1>&2
     echo "[FATAL] Try to run the command as:   runuser -u ${mid} -- $0 $@" 1>&2
     exit 1
+fi
+
+if [[ -z "${dir_current}" ]]; then
+    cd "${AGENT_STATE_DIR}"
 fi
 
 AGENT_ID="${REDIS_USER}"
