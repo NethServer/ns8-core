@@ -9,12 +9,12 @@
     "watch": "vue-cli-service build --watch"
   },
   "dependencies": {
-    "@carbon/icons-vue": "^10.35.0",
-    "@carbon/vue": "^2.38.2",
+    "@carbon/icons-vue": "^10.37.0",
+    "@carbon/vue": "^2.40.0",
     "@nethserver/ns8-ui-lib": "^0.0.17",
     "await-to-js": "^3.0.0",
     "axios": "^0.21.2",
-    "carbon-components": "^10.39.0",
+    "carbon-components": "^10.41.0",
     "core-js": "^3.6.5",
     "ns8-test-library": "0.0.2",
     "vue": "^2.6.11",

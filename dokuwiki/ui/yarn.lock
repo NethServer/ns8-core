@@ -903,10 +903,15 @@
     "@babel/helper-validator-identifier" "^7.14.5"
     to-fast-properties "^2.0.0"
 
-"@carbon/icon-helpers@^10.14.0", "@carbon/icon-helpers@^10.19.0":
+"@carbon/icon-helpers@^10.14.0":
   version "10.19.0"
   resolved "https://registry.yarnpkg.com/@carbon/icon-helpers/-/icon-helpers-10.19.0.tgz#f6b608b181b4ca4aeeadac72ec11b7cf530b4d1c"
   integrity sha512-2eIecDuoEEx+nORHtTBmj5lV/N4Q1kP7XCZUkF15WfXxZHx2RI6KhS4HnMPDoylguhavnRjSIK1gl6oG3Z3wSQ==
+
+"@carbon/icon-helpers@^10.24.0":
+  version "10.24.0"
+  resolved "https://registry.yarnpkg.com/@carbon/icon-helpers/-/icon-helpers-10.24.0.tgz#2f3fbc8b0b64090c21833cd81eabadc41d56b684"
+  integrity sha512-kmzN2Zjyp4EmCAlGu561+dJVABH96n5+RnjmsPdv4wrSx+FNyzbxnKYV1x2FYrTxtZ9LB+pd3EofEyVuQM6V0Q==
 
 "@carbon/icons-vue@10.27.0":
   version "10.27.0"
@@ -915,12 +920,12 @@
   dependencies:
     "@carbon/icon-helpers" "^10.14.0"
 
-"@carbon/icons-vue@^10.35.0":
-  version "10.35.0"
-  resolved "https://registry.yarnpkg.com/@carbon/icons-vue/-/icons-vue-10.35.0.tgz#096ab9323d6408ece3de9119d4fafc08681bcbf4"
-  integrity sha512-xHT7nAoSHFiv9vB4xUEXmX+K5PQRaxQOhVHaIZUy5z3lAzj3fiusgeLL/84xy74KIH9s22pmM6AcApsY68aCZg==
+"@carbon/icons-vue@^10.37.0":
+  version "10.41.0"
+  resolved "https://registry.yarnpkg.com/@carbon/icons-vue/-/icons-vue-10.41.0.tgz#154c1d1c5db5714ef4eacf301babc4adf0815f04"
+  integrity sha512-cS/nKIv/l92+r9E0Xrt2bG78WSdROYzt6D+AXnMwgwBPhCN7kJc4mKiKyYI7LScrwgsJ8y4Ay2PUrn5txebaxw==
   dependencies:
-    "@carbon/icon-helpers" "^10.19.0"
+    "@carbon/icon-helpers" "^10.24.0"
 
 "@carbon/telemetry@0.0.0-alpha.6", "@carbon/telemetry@^0.0.0-alpha.6":
   version "0.0.0-alpha.6"
@@ -938,10 +943,10 @@
     winston "^3.3.3"
     yargs "^16.1.1"
 
-"@carbon/vue@^2.38.2":
-  version "2.38.2"
-  resolved "https://registry.yarnpkg.com/@carbon/vue/-/vue-2.38.2.tgz#4f768e77bcadc893e5005bc60ca73af70e1da8d6"
-  integrity sha512-Zoi4lRQGsE+k6fE/mpxUunCYdMlIJ+EawG14MSXe2YKIAVjLUNx9j1K4q03ilhmA5BpCIJX4NePky1H7j5kK1g==
+"@carbon/vue@^2.40.0":
+  version "2.40.0"
+  resolved "https://registry.yarnpkg.com/@carbon/vue/-/vue-2.40.0.tgz#fbd5d05f42c2283dcd0d61d75afccc0d65e33604"
+  integrity sha512-2VvJKeh8CoiGv2v1J7iyMEmsaAcqPJih6VEcrPekX0qWqvJRY3xA7Rm+461HQMK8QBzDQi3n4uDdOEUvp0OFpA==
   dependencies:
     "@carbon/icons-vue" "10.27.0"
     "@carbon/telemetry" "^0.0.0-alpha.6"
@@ -2515,10 +2520,10 @@ carbon-components@10.30.0:
     lodash.debounce "^4.0.8"
     warning "^3.0.0"
 
-carbon-components@^10.39.0:
-  version "10.40.0"
-  resolved "https://registry.yarnpkg.com/carbon-components/-/carbon-components-10.40.0.tgz#59c339dd964624cd07802dc695ceed6f32a07ef7"
-  integrity sha512-tIc0qHVLilWCelkH56al4ILwZRA4AbbwJEFt0mnGtefmgQ3O1UJLm5/ybp7VnWeHwUnip7PljHSDwHUzQcj5zg==
+carbon-components@^10.41.0:
+  version "10.46.0"
+  resolved "https://registry.yarnpkg.com/carbon-components/-/carbon-components-10.46.0.tgz#f167baa23bbc08a0e53a312eca835a2414b67d21"
+  integrity sha512-BWO1d/CBGZgyMjGN+nOkjqlfRek56/uFpyKMs443IeaJGvhZ0r7SFC5aeipxlg/BCwhxl5dcruzQ9d0MykNxSw==
   dependencies:
     "@carbon/telemetry" "0.0.0-alpha.6"
     flatpickr "4.6.1"

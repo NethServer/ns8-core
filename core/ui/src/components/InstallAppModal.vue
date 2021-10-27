@@ -132,6 +132,8 @@ export default {
         version = "latest"; //// remove?
       }
 
+      version = "latest"; //// remove before alpha!
+
       console.log("installing", this.app.source, "version", version); ////
 
       const taskAction = "add-module";
