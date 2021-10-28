@@ -29,30 +29,46 @@
 import os
 import sys
 import json
+import time
 import agent
 import subprocess
 from cluster.ldapproxy import Ldapproxy
 
 # Execute occ command
-# All output is sent to standard error
-# It reurns the process exit code
+# It returns the process exit code and output
 def occ(args):
     cmd = ['podman', 'exec', '-ti', '--user', 'www-data', 'nextcloud-app', 'php', './occ']
-    p = subprocess.run(cmd + args, stdout=sys.stderr)
-    return p.returncode
+    p = subprocess.run(cmd + args, capture_output=True)
+    return (p.returncode, p.stdout)
 
 def set_ldap(k, v):
     return occ(["ldap:set-config", "s01", k, v])
 
 if len(sys.argv) < 2:
+    print("setup-ldap: no argument given", file=sys.stderr)
     sys.exit(1)
 
 data = json.loads(sys.argv[1])
 lp = Ldapproxy()
 domain = lp.get_domain(data["domain"])
 
+max_tries = 100
+i = 0
+while i < max_tries:
+    print(f"setup-ldap: waiting for nextcloud-app ({i})", file=sys.stederr)
+    time.sleep(1)
+    i = i+1
+    try:
+        ret, out = occ(["status", "--output", "json"])
+        status = json.loads(out)
+        if status["installed"]:
+            break
+    except Exception as e:
+        continue
+
 occ(["app:enable", "user_ldap"])
-if occ(["ldap:show-config", "s01"]) > 0:
+cret, coutput = occ(["ldap:show-config", "s01"])
+if cret > 0:
     occ(["ldap:create-empty-config"])
 
 
@@ -98,3 +114,5 @@ else:
     set_ldap("ldapUserFilterObjectclass", "inetOrgPerson")
     set_ldap("ldapEmailAttribute", "mail")
     set_ldap("useMemberOfToDetectMembership", "0")
+
+print("setup-ldap: configuration completed", file=sys.stederr)
