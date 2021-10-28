@@ -68,3 +68,10 @@ DC:
         "use_cluster_vpn": true
     }
     EOF
+
+## Create user
+
+To create a new user, just execute:
+```
+podman exec -ti samba1 samba-tool user create goofy Nethesis,1234 --given-name=Goofy --surname=Goof --mail=goofy@mail.org
+```
