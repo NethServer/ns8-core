@@ -55,7 +55,7 @@ domain = lp.get_domain(data["domain"])
 max_tries = 100
 i = 0
 while i < max_tries:
-    print(f"setup-ldap: waiting for nextcloud-app ({i})", file=sys.stederr)
+    print(f"setup-ldap: waiting for nextcloud-app ({i})", file=sys.stderr)
     time.sleep(1)
     i = i+1
     try:
@@ -115,4 +115,4 @@ else:
     set_ldap("ldapEmailAttribute", "mail")
     set_ldap("useMemberOfToDetectMembership", "0")
 
-print("setup-ldap: configuration completed", file=sys.stederr)
+print("setup-ldap: configuration completed", file=sys.stderr)
