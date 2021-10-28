@@ -33,8 +33,8 @@ import agent.tasks
 data = json.load(sys.stdin)
 
 # Setup default values
-host = data.get("host")
-le = data.get("lets_encrypt", True)
+host = data["host"]
+le = data["lets_encrypt"]
 
 # Talk with agent using file descriptor.
 # Setup configuration from user input.
