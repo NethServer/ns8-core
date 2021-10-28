@@ -20,40 +20,49 @@
 # along with NethServer.  If not, see COPYING.
 #
 
-# This step will configure official Nextcloud image: https://github.com/docker-library/docs/blob/master/nextcloud/README.md
+# Configure traefik route for Dokuwiki
 
-import json
+import os
 import sys
-import socket
+import json
 import agent
+import agent.tasks
 
 # Try to parse the stdin as JSON.
 # If parsing fails, output everything to stderr
 data = json.load(sys.stdin)
 
 # Setup default values
-username = data.get("username","admin")
-password = data.get("password","admin")
-host = data.get("host")
+host = data["host"]
+le = data["lets_encrypt"]
 
 # Talk with agent using file descriptor.
 # Setup configuration from user input.
-agent.set_env("NEXTCLOUD_ADMIN_USER", username)
-agent.set_env("NEXTCLOUD_ADMIN_PASSWORD", password)
-agent.set_env("NEXTCLOUD_TRUSTED_DOMAINS", host)
-
-# Setup environment for nextcloud app: DB ,Redis and PHP
-agent.set_env("PHP_ENABLE_OPCACHE", "1")
-agent.set_env("PHP_MEMORY_LIMIT", "1024M")
-agent.set_env("MYSQL_DATABASE", "nextcloud")
-agent.set_env("MYSQL_HOST", "127.0.0.1")
-agent.set_env("MYSQL_USER", "nextcloud")
-agent.set_env("MYSQL_PASSWORD", "nextcloud")
-agent.set_env("REDIS_HOST", "127.0.0.1")
-agent.set_env("REDIS_HOST_PORT", "6379")
-agent.set_env("MYSQL_ROOT_PASSWORD", "nextcloud")
-agent.set_env("OVERWRITEPROTOCOL", "https")
+agent.set_env("TRAEFIK_HOST", host)
+agent.set_env("TRAEFIK_HTTP2HTTPS", True)
+agent.set_env("TRAEFIK_LETS_ENCRYPT", le)
 
 # Make sure everything is saved inside the environment file
 # just before starting systemd unit
 agent.dump_env()
+
+# Find default traefik instance for current node
+default_traefik_id = agent.resolve_agent_id('traefik@node')
+if default_traefik_id is None:
+    sys.exit(2)
+
+# Configure traefik virtual host
+response = agent.tasks.run(
+    agent_id=default_traefik_id,
+    action='set-route',
+    data={
+        'instance': os.environ['MODULE_ID'],
+        'url': f'http://127.0.0.1:{os.environ["TCP_PORT"]}',
+        'host': host,
+        'lets_encrypt': le,
+        'http2https': True
+    },
+)
+
+# Check if traefik configuration has been successfull
+agent.assert_exp(response['exit_code'] == 0)

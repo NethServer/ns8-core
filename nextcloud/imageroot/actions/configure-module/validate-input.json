@@ -1,0 +1,48 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Configure nextcloud",
+  "$id": "http://nethserver.org/json-schema/task/input/nextcloud/configure",
+  "description": "Configure nextcloud",
+  "examples": [
+    {
+      "username": "admin",
+      "password": "admin",
+      "host": "nextcloud.myhost.local",
+      "lets_encrypt": true,
+      "domain": "ad.myhost.local"
+    }
+  ],
+  "type": "object",
+  "required": [
+    "username",
+    "password",
+    "host",
+    "lets_encrypt",
+    "domain"
+  ],
+  "properties": {
+    "username": {
+      "type": "string",
+      "description": "Administrator user name, usually set to 'admin'"
+    },
+    "password": {
+      "type": "string",
+      "description": "Default password for administrator user, it can be changed later"
+    },
+    "host": {
+      "description": "Host name for Nextcloud, like 'nextcloud.nethserver.org'",
+      "format": "idn-hostname",
+      "type": "string"
+    },
+    "lets_encrypt": {
+      "type": "boolean",
+      "title": "Let's Encrypt certificate",
+      "description": "Request a valid Let's Encrypt certificate."
+    },
+    "domain": {
+      "description": "LDAP domain configured inside ldapproxy",
+      "format": "idn-hostname",
+      "type": "string"
+    }
+  }
+}
