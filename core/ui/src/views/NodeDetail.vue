@@ -445,12 +445,10 @@ export default {
     },
     getNodeStatusCompleted(taskContext, taskResult) {
       const nodeStatus = taskResult.output;
-
-      // round cpu load (sometimes it has roundoff error)
+      nodeStatus.cpu.usage = Math.round(nodeStatus.cpu.usage);
       nodeStatus.load["1min"] = Math.round(nodeStatus.load["1min"]);
       nodeStatus.load["5min"] = Math.round(nodeStatus.load["5min"]);
       nodeStatus.load["15min"] = Math.round(nodeStatus.load["15min"]);
-
       nodeStatus.pressure["10sec"] = Math.round(nodeStatus.pressure["10sec"]);
       nodeStatus.pressure["1min"] = Math.round(nodeStatus.pressure["1min"]);
       nodeStatus.pressure["5min"] = Math.round(nodeStatus.pressure["5min"]);
