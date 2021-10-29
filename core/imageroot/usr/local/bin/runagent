@@ -47,7 +47,7 @@ else
 fi
 
 while getopts "hdm:" arg; do
-  case $arg in
+  case "$arg" in
     d)
       dir_current=1
       ;;
@@ -55,7 +55,7 @@ while getopts "hdm:" arg; do
       mid=$OPTARG
       [[ $EUID != 0 ]] && usage && exit 1
       ;;
-    h)
+    *)
       usage
       exit 0
       ;;
@@ -68,31 +68,49 @@ if (($# == 0)); then
     exit 1
 fi
 
+agent_env=()
 
-set -a # export any variable defined from here on
+function read_env()
+{
+    local env_file="$1"
+    mapfile -t -O "${#agent_env[@]}" agent_env < <(sed '/^#/d' "${env_file}")
+}
+
+function get_env()
+{
+    for env_item in "${agent_env[@]}"; do
+        if [[ "${env_item}" =~ ^"$1"= ]]; then
+            echo "${env_item#$1=}"
+            return 0
+        fi
+    done
+    return 1
+}
+
 if [[ $EUID != 0 ]]; then
     # rootless module
-    source /etc/nethserver/agent.env
-    source ~/.config/state/agent.env
-    source ~/.config/state/environment
-    AGENT_INSTALL_DIR=~/.config
-    AGENT_STATE_DIR=~/.config/state
+    home_dir=~
+    read_env /etc/nethserver/agent.env
+    read_env ~/.config/state/agent.env
+    read_env ~/.config/state/environment
+    agent_env+=(AGENT_INSTALL_DIR="${home_dir}/.config")
+    agent_env+=(AGENT_STATE_DIR="${home_dir}/.config/state")
 elif [[ -d "/var/lib/nethserver/${mid}" ]]; then
     # rootfull module
-    source /etc/nethserver/agent.env
-    source /var/lib/nethserver/${mid}/state/agent.env
-    source /var/lib/nethserver/${mid}/state/environment
-    AGENT_INSTALL_DIR=/var/lib/nethserver/${mid}
-    AGENT_STATE_DIR=/var/lib/nethserver/${mid}/state
+    read_env /etc/nethserver/agent.env
+    read_env "/var/lib/nethserver/${mid}/state/agent.env"
+    read_env "/var/lib/nethserver/${mid}/state/environment"
+    agent_env+=(AGENT_INSTALL_DIR="/var/lib/nethserver/${mid}")
+    agent_env+=(AGENT_STATE_DIR="/var/lib/nethserver/${mid}/state")
 else
     echo "[FATAL] Cannot find environment for module ${mid}" 1>&2
-    echo "[FATAL] Try to run the command as:   runuser -u ${mid} -- $0 $@" 1>&2
+    echo "[FATAL] Try to run the command as:   runuser -u ${mid} -- $0 $*" 1>&2
     exit 1
 fi
 
 if [[ -z "${dir_current}" ]]; then
-    cd "${AGENT_STATE_DIR}"
+    cd "$(get_env AGENT_STATE_DIR)"
 fi
 
-AGENT_ID="${REDIS_USER}"
-exec "$@"
+agent_env+=(AGENT_ID="$(get_env REDIS_USER)")
+exec /usr/bin/env "${agent_env[@]}" "$@"
