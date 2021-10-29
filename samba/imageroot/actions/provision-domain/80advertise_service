@@ -24,6 +24,7 @@ import agent
 import agent.tasks
 import os
 import sys
+import json
 
 agent_id = os.environ['AGENT_ID']
 node_id = int(os.environ['NODE_ID'])
@@ -52,5 +53,8 @@ data={
 rdb = agent.redis_connect(privileged=True)
 trx = rdb.pipeline()
 trx.hset(agent_id + '/srv/tcp/ldap', mapping=data)
-trx.publish(agent_id + '/event/account-provider-changed', agent_id + '/srv/tcp/ldap')
+trx.publish(agent_id + '/event/account-provider-changed', json.dumps({
+    'domain': domain,
+    'key': agent_id + '/srv/tcp/ldap',
+}))
 trx.execute()
