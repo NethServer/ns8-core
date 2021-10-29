@@ -325,8 +325,18 @@ Execute `createrepo.sh` to generate the `repodata.json`. The format is described
 
 Events are messages pulished on specific Redis channels. Modules must subscribe to the channel if they
 want to be notfied.
-
 Usually channel address is under a module name, something like `module/<module_id>/event/<event_name>`.
+
+Events should respect the following rules:
+- use past tense inside the name, like `account-provider-credentials-updated`
+- accept a parameter in JSON format
+- the parameter should contain minimal required info about the event
+- optionally, the parameter can contain extra data which can ease the event usage
+
+Well known events:
+- `account-provider-changed`: the event should be fired by account providers to inform about configuration changes
+- `account-provider-credentials-updated`: the event can be fired by account providers or LDAP proxies,
+  it notifies the change of LDAP credentials (eg. `ldapservice` user) to applications
 
 ### Signaling events
 
