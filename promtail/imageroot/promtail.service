@@ -15,6 +15,7 @@ ExecStart=/usr/bin/podman run \
     --replace \
     --log-opt=tag=%N \
     --name %N \
+    --privileged \
     --network=host \
     -d \
     -e LOKI_URL=${LOKI_URL} \
