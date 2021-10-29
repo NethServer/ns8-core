@@ -50,7 +50,7 @@ else: # No DC found for the realm. Create a new AD domain
         sys.exit(7)
 
     # Generate a random password for ldapservice
-    alphabet = string.ascii_letters + string.digits + '+-*/,.-_$%&?^'
+    alphabet = string.ascii_letters + string.digits + '+-/,.-_^'
     svcpass = ''.join([secrets.choice(alphabet) for i in range(32)])
 
 if 'hostname' in request: # Use given hostname (short)
