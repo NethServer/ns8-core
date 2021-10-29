@@ -6,10 +6,10 @@
         :active="isLinkActive('/status')"
       >
         <template v-slot:nav-icon><Activity20 /></template>
-        <div class="badge-container">
-          <span>{{ $t("cluster_status.title") }}</span>
-          <span class="green-badge right-badge"></span>
-        </div>
+        <!-- <div class="badge-container"> //// -->
+        <span>{{ $t("cluster_status.title") }}</span>
+        <!-- <span class="green-badge right-badge"></span> ////
+        </div> -->
       </cv-side-nav-link>
       <cv-side-nav-link
         @click="goTo('/nodes')"

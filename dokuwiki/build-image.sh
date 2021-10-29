@@ -16,7 +16,7 @@ container=$(buildah from scratch)
 # Reuse existing nodebuilder-dokuwiki container, to speed up builds
 if ! buildah containers --format "{{.ContainerName}}" | grep -q nodebuilder-dokuwiki; then
     echo "Pulling NodeJS runtime..."
-    buildah from --name nodebuilder-dokuwiki -v "${PWD}:/usr/src/dokuwiki:Z" docker.io/library/node:14
+    buildah from --name nodebuilder-dokuwiki -v "${PWD}:/usr/src/dokuwiki:Z" docker.io/library/node:lts
 fi
 
 echo "Build static UI files with node..."

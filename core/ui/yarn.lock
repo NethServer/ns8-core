@@ -1729,10 +1729,10 @@
     call-me-maybe "^1.0.1"
     glob-to-regexp "^0.3.0"
 
-"@nethserver/ns8-ui-lib@^0.0.20":
-  version "0.0.20"
-  resolved "https://registry.yarnpkg.com/@nethserver/ns8-ui-lib/-/ns8-ui-lib-0.0.20.tgz#1e67dd7a5f36985593a7ffc7a75fe5be0873f25f"
-  integrity sha512-2TgUvSeUeb0IArDHksAOSfOfKp8AeYp12nDRkE4CaIIC4bOwO3gFz/2os/HISNUYwms+YJA6hx5Y7sRLlBgcMA==
+"@nethserver/ns8-ui-lib@^0.0.23":
+  version "0.0.23"
+  resolved "https://registry.yarnpkg.com/@nethserver/ns8-ui-lib/-/ns8-ui-lib-0.0.23.tgz#e3423d5bfa18d7a41227a62b0b95a4ae2b8af4e4"
+  integrity sha512-2AwiGUyEdj0QG5FaMz8ZjUKK3PAT/AOyZ324AcwQUaJLbc5M8drHhYMt3ZQ7ovMMtQz2lfspK0WRx8KoP45wZA==
   dependencies:
     core-js "^3.15.2"
     date-fns "^2.23.0"

@@ -129,11 +129,8 @@ export default {
       if (this.app.versions.length) {
         version = this.app.versions[0].tag;
       } else {
-        version = "latest"; //// remove?
+        version = "latest";
       }
-
-      console.log("installing", this.app.source, "version", version); ////
-
       const taskAction = "add-module";
 
       // register to task completion

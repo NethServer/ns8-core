@@ -1,14 +1,14 @@
-import { NsNodeCard } from "@nethserver/ns8-ui-lib";
+import NodeCard from "../components/NodeCard";
 
 export default {
-  title: "Components/NsNodeCard",
-  component: NsNodeCard,
+  title: "Components/NodeCard",
+  component: NodeCard,
 };
 
 const Template = (args, { argTypes }) => ({
   props: Object.keys(argTypes),
-  components: { NsNodeCard },
-  template: '<NsNodeCard v-bind="$props">{{ slotContent }}</NsNodeCard>',
+  components: { NodeCard },
+  template: '<NodeCard v-bind="$props">{{ slotContent }}</NodeCard>',
 });
 
 export const Default = Template.bind({});
@@ -21,6 +21,9 @@ Default.args = {
   cpuUsageLabel: "CPU usage",
   cpuLoadLabel: "CPU load",
   cpuLoadTooltip: "CPU average load of last 1 / 5 / 15 minutes",
+  cpuPressureLabel: "CPU pressure",
+  cpuPressureTooltip:
+    "Percentage of tasks runnable but not executing on the CPU during last 10 seconds / 1 minute / 15 minutes",
   memoryUsageLabel: "Memory usage",
   swapUsageLabel: "Swap usage",
   diskUsageLabel: "usage",
@@ -29,7 +32,11 @@ Default.args = {
   load1Min: 40,
   load5Min: 55,
   load15Min: 14,
+  pressure10Sec: 7,
+  pressure1min: 11,
+  pressure5Min: 14,
   cpuLoadWarningTh: 90,
+  cpuPressureWarningTh: 50,
   memoryUsage: 88,
   memoryWarningTh: 90,
   swapUsage: 23,

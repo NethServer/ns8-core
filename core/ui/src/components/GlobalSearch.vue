@@ -39,10 +39,24 @@
             <Settings20 class="result-icon" />
             <span>{{ result.name }}</span>
           </div>
+          <div
+            v-if="result.source != 'core'"
+            class="source source-small-screen"
+          >
+            {{ result.source }}
+          </div>
         </div>
         <div class="search-result-column description">
           <div class="flex">
             <span>{{ result.description }}</span>
+          </div>
+        </div>
+        <div
+          v-if="result.source != 'core'"
+          class="search-result-column source source-large-screen"
+        >
+          <div class="flex">
+            <span>{{ result.source }}</span>
           </div>
         </div>
       </div>
@@ -306,7 +320,7 @@ export default {
 @import "../styles/carbon-utils";
 
 .global-search {
-  width: 34rem;
+  width: 50%;
   background-color: $ui-05;
   color: $ui-01;
 }
@@ -365,20 +379,23 @@ export default {
   align-items: center;
 }
 
-.search-result-column.description {
-  text-align: right;
+.search-result-column.name {
+  flex-direction: column;
+  align-items: stretch;
 }
 
 .search-result-column.description,
-.search-result-column.category {
+.search-result-column.category,
+.source {
   color: #c6c6c6;
 }
 
 .result-icon {
   margin-right: $spacing-03;
+  display: none; //// remove when icons will be implemented
 }
 
-@media (max-width: $breakpoint-medium) {
+@media (max-width: $breakpoint-large) {
   // hide result icon on smaller screens
   .result-icon {
     display: none;
@@ -388,14 +405,31 @@ export default {
 .selected-result {
   box-shadow: inset 0px 0px 0px 2px $focus;
 }
+
+.source-small-screen {
+  display: none;
+}
+
+@media (max-width: $breakpoint-medium) {
+  .source-small-screen {
+    display: inline-block;
+    margin-top: $spacing-03;
+  }
+
+  .source-large-screen {
+    display: none;
+  }
+
+  .search-result-column.description {
+    text-align: right;
+  }
+}
 </style>
 
 <style lang="scss">
 @import "../styles/carbon-utils";
 
 // global styles
-
-//// refactor and remove useless styles
 
 .global-search .bx--structured-list {
   margin-bottom: 0;
