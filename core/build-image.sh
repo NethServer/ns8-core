@@ -47,7 +47,7 @@ echo "Building the Core image..."
 container=$(buildah from scratch)
 reponame="core"
 buildah add "${container}" imageroot /
-buildah add "${container}" "${logcli_tmp_dir}/logcli-linux-amd64" /usr/local/sbin/logcli
+buildah add "${container}" "${logcli_tmp_dir}/logcli-linux-amd64" /usr/local/bin/logcli.bin
 buildah add "${container}" agent/agent /usr/local/bin/agent
 buildah add "${container}" api-server/api-server /usr/local/bin/api-server
 buildah add "${container}" ui/dist /var/lib/nethserver/cluster/ui
