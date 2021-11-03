@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/local/agent/pyenv/bin/python3
 
 #
 # Copyright (C) 2021 Nethesis S.r.l.
@@ -20,97 +20,58 @@
 # along with NethServer.  If not, see COPYING.
 #
 
-set -e
+import os
+import sys
+import argparse
+import agent
 
-function usage()
-{
-    (
-        exec 1>&2
-        echo "Run COMMAND in the agent environment of MODULE_ID."
-        echo "runagent [-m MODULE_ID] [-d] COMMAND [ARG ...]"
-        echo "   -m MODULE_ID: \"cluster\", \"node\" (for the local node) or"
-        echo "      any other module identifier rootless or rootfull (e.g. traefik1)."
-        echo "      Only root can use the \"-m\" option"
-        echo "   -d: Run COMMAND in current directory (instead of changing"
-        echo "      to AGENT_STATE_DIR)."
-        echo ""
-    )
-}
+argp = argparse.ArgumentParser(description="Run COMMAND in the agent environment of MODULE_ID")
+argp.add_argument("-m", "--module-id", help="MODULE_ID, a rootfull module identifier (e.g. \"promtail1\", \"node\"). Default is \"cluster\". Only root can use this flag")
+argp.add_argument("-c", "--current-dir", action="store_true", help="Run COMMAND in current directory, instead of changing directory to AGENT_STATE_DIR")
+argp.add_argument('COMMAND', help="Command to run in the agent environment")
+argp.add_argument('ARGS', nargs=argparse.REMAINDER, help="Additional arguments for COMMAND")
+args = argp.parse_args()
+
+def read_env(file_path):
+    env = agent.read_envfile(file_path)
+    os.environ.update(env)
 
 #
 # Establish the default module id value. Can be overridden by -m
 #
-if [[ $EUID == 0 ]]; then
-    mid=cluster
-else
-    mid=$(id -un)
-fi
+if os.geteuid() == 0:
+    if args.module_id:
+        mid = args.module_id
+    else:
+        mid = 'cluster'
+elif args.module_id:
+    # -m is not allowed for non-root users
+    argp.print_help()
+    sys.exit(1)
 
-while getopts "hdm:" arg; do
-  case "$arg" in
-    d)
-      dir_current=1
-      ;;
-    m)
-      mid=$OPTARG
-      [[ $EUID != 0 ]] && usage && exit 1
-      ;;
-    *)
-      usage
-      exit 0
-      ;;
-  esac
-done
-shift $((OPTIND-1))
-
-if (($# == 0)); then
-    usage
-    exit 1
-fi
-
-agent_env=()
-
-function read_env()
-{
-    local env_file="$1"
-    mapfile -t -O "${#agent_env[@]}" agent_env < <(sed '/^#/d' "${env_file}")
-}
-
-function get_env()
-{
-    for env_item in "${agent_env[@]}"; do
-        if [[ "${env_item}" =~ ^"$1"= ]]; then
-            echo "${env_item#$1=}"
-            return 0
-        fi
-    done
-    return 1
-}
-
-if [[ $EUID != 0 ]]; then
+if os.geteuid() != 0:
     # rootless module
-    home_dir=~
-    read_env /etc/nethserver/agent.env
-    read_env ~/.config/state/agent.env
-    read_env ~/.config/state/environment
-    agent_env+=(AGENT_INSTALL_DIR="${home_dir}/.config")
-    agent_env+=(AGENT_STATE_DIR="${home_dir}/.config/state")
-elif [[ -d "/var/lib/nethserver/${mid}" ]]; then
+    home_dir = os.path.expanduser("~")
+    read_env("/etc/nethserver/agent.env")
+    read_env(f"{home_dir}/.config/state/agent.env")
+    read_env(f"{home_dir}/.config/state/environment")
+    os.environ['AGENT_INSTALL_DIR'] = f"{home_dir}/.config"
+    os.environ['AGENT_STATE_DIR'] = f"{home_dir}/.config/state"
+elif os.path.isdir(f"/var/lib/nethserver/{mid}"):
     # rootfull module
-    read_env /etc/nethserver/agent.env
-    read_env "/var/lib/nethserver/${mid}/state/agent.env"
-    read_env "/var/lib/nethserver/${mid}/state/environment"
-    agent_env+=(AGENT_INSTALL_DIR="/var/lib/nethserver/${mid}")
-    agent_env+=(AGENT_STATE_DIR="/var/lib/nethserver/${mid}/state")
-else
-    echo "[FATAL] Cannot find environment for module ${mid}" 1>&2
-    echo "[FATAL] Try to run the command as:   runuser -u ${mid} -- $0 $*" 1>&2
-    exit 1
-fi
+    read_env("/etc/nethserver/agent.env")
+    read_env(f"/var/lib/nethserver/{mid}/state/agent.env")
+    read_env(f"/var/lib/nethserver/{mid}/state/environment")
+    os.environ['AGENT_INSTALL_DIR'] = f"/var/lib/nethserver/{mid}"
+    os.environ['AGENT_STATE_DIR'] = f"/var/lib/nethserver/{mid}/state"
+else:
+    print(f"[FATAL] Cannot find environment for module {mid}", file=sys.stderr)
+    print(f"[FATAL] Try to run the command as:   runuser -u {mid} -- {sys.argv[0]} {args.COMMAND} {' '.join(args.ARGS)}", file=sys.stderr)
+    sys.exit(1)
 
-if [[ -z "${dir_current}" ]]; then
-    cd "$(get_env AGENT_STATE_DIR)"
-fi
+if not args.current_dir:
+    os.chdir(os.environ['AGENT_STATE_DIR'])
 
-agent_env+=(AGENT_ID="$(get_env REDIS_USER)")
-exec /usr/bin/env "${agent_env[@]}" "$@"
+os.environ['AGENT_ID'] = os.environ['REDIS_USER']
+
+os.execvp(args.COMMAND, [args.COMMAND] + args.ARGS)
