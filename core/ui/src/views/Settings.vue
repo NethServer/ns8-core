@@ -10,7 +10,17 @@
         <NsTile
           :light="true"
           kind="clickable"
-          @click="goToSettingsSoftwareRepositories"
+          @click="goTo('/settings/cluster')"
+          :icon="EdgeCluster32"
+        >
+          <h6>{{ $t("settings.cluster") }}</h6>
+        </NsTile>
+      </div>
+      <div class="bx--col-md-4 bx--col-lg-4">
+        <NsTile
+          :light="true"
+          kind="clickable"
+          @click="goTo('/settings/software-repository')"
           :icon="Application32"
         >
           <h6>{{ $t("settings.sw_repositories") }}</h6>
@@ -45,8 +55,8 @@ export default {
     next();
   },
   methods: {
-    goToSettingsSoftwareRepositories() {
-      this.$router.push("/settings/software-repository");
+    goTo(path) {
+      this.$router.push(path);
     },
   },
 };

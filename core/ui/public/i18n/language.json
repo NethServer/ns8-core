@@ -31,7 +31,9 @@
     "got_it": "Got it",
     "global_shortcut": "Global shortcut",
     "join_code": "Join code",
-    "reload_page": "Reload page"
+    "reload_page": "Reload page",
+    "cluster_name": "Cluster name",
+    "save_settings": "Save settings"
   },
   "error": {
     "error": "Error",
@@ -106,7 +108,8 @@
     "redirect_cluster": "Worker Node",
     "redirect_cluster_description": "This node now is a worker of the cluster. Click on the link below to access the cluster administration page.",
     "redirect_cluster_link": "Go to cluster administration page",
-    "node_added_to_cluster": "Node {nodeId} added to cluster"
+    "node_added_to_cluster": "Node {nodeId} added to cluster",
+    "leader_node_name": "Leader node name"
   },
   "shell": {
     "skip_to_content": "Skip to content",
@@ -193,8 +196,10 @@
   },
   "settings": {
     "title": "Settings",
-    "sw_repositories": "Software repositories"
+    "sw_repositories": "Software repositories",
+    "cluster": "Cluster"
   },
+  "settings_cluster": {},
   "settings_sw_repositories": {
     "no_sw_repositories": "No software repositories",
     "no_sw_repositories_description": "You can create one by clicking on the button below",

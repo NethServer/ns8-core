@@ -158,6 +158,30 @@
                   ref="vpnCidr"
                 >
                 </cv-text-input>
+                <cv-text-input
+                  :label="
+                    $t('common.cluster_name') +
+                    ' (' +
+                    $t('common.optional') +
+                    ')'
+                  "
+                  v-model.trim="clusterName"
+                  :invalid-message="$t(error.clusterName)"
+                  ref="clusterName"
+                >
+                </cv-text-input>
+                <cv-text-input
+                  :label="
+                    $t('init.leader_node_name') +
+                    ' (' +
+                    $t('common.optional') +
+                    ')'
+                  "
+                  v-model.trim="leaderNodeName"
+                  :invalid-message="$t(error.leaderNodeName)"
+                  ref="leaderNodeName"
+                >
+                </cv-text-input>
                 <NsButton
                   kind="primary"
                   :icon="EdgeCluster20"
@@ -285,6 +309,8 @@ export default {
       vpnEndpointAddress: "",
       vpnEndpointPort: "",
       vpnCidr: "",
+      clusterName: "",
+      leaderNodeName: "",
       joinCode: "",
       tlsVerify: true,
       joinEndpoint: this.$route.query.endpoint
@@ -304,6 +330,8 @@ export default {
         vpnEndpointPort: "",
         vpnCidr: "",
         joinCode: "",
+        clusterName: "",
+        leaderNodeName: "",
       },
     };
   },
@@ -405,6 +433,9 @@ export default {
     },
     getClusterStatusCompleted(taskContext, taskResult) {
       const clusterStatus = taskResult.output;
+
+      //// remove mock
+      // clusterStatus.initialized = false; ////
 
       if (clusterStatus.initialized && this.isMaster) {
         // redirect to status page
@@ -595,6 +626,9 @@ export default {
           isValidationOk = false;
         }
       }
+
+      //// validate cluster name
+
       return isValidationOk;
     },
     async createCluster() {
@@ -619,6 +653,7 @@ export default {
             network: this.vpnCidr,
             endpoint: this.vpnEndpointAddress + ":" + this.vpnEndpointPort,
             listen_port: parseInt(this.vpnEndpointPort),
+            //// clusterName
           },
           extra: {
             title: this.$t("action." + taskAction),

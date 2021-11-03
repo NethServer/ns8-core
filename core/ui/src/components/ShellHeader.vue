@@ -8,9 +8,11 @@
     <cv-skip-to-content href="#main-content">{{
       $t("shell.skip_to_content")
     }}</cv-skip-to-content>
-    <cv-header-name to="/" prefix="">{{
-      $root.config.PRODUCT_NAME
-    }}</cv-header-name>
+    <cv-header-name to="/" prefix="">
+      <span class="cluster-or-product-name">{{
+        clusterName ? clusterName : $root.config.PRODUCT_NAME
+      }}</span></cv-header-name
+    >
     <cv-header-nav> </cv-header-nav>
     <template slot="header-global">
       <cv-header-global-action
@@ -124,7 +126,7 @@ export default {
     };
   },
   computed: {
-    ...mapState(["notifications", "isSearchExpanded"]),
+    ...mapState(["notifications", "isSearchExpanded", "clusterName"]),
     ...mapGetters(["unreadNotificationsCount", "ongoingNotificationsCount"]),
   },
   methods: {
@@ -194,5 +196,14 @@ export default {
 .hint-notifications {
   top: 1.8rem;
   right: 0.8rem;
+}
+
+@media (max-width: $breakpoint-medium) {
+  .cluster-or-product-name {
+    max-width: 23vw;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 }
 </style>

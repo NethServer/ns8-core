@@ -103,6 +103,7 @@ export default {
       "toggleAppDrawerShownInStore",
       "setLeaderListenPortInStore",
       "setWebsocketConnectedInStore",
+      "setClusterNameInStore",
     ]),
     configureKeyboardShortcuts(window) {
       window.addEventListener(
@@ -283,6 +284,9 @@ export default {
 
         console.log("clusterStatus", clusterStatus); ////
 
+        //// remove mock
+        // clusterStatus.initialized = false; ////
+
         const isClusterInitialized = clusterStatus.initialized;
         this.setClusterInitializedInStore(isClusterInitialized);
 
@@ -302,6 +306,12 @@ export default {
           this.isLoaded = true;
         }
         this.configureClusterInitializationRedirect();
+
+        // cluster name
+
+        clusterStatus.name = "MyCluster"; //// remove mock
+
+        this.setClusterNameInStore(clusterStatus.name);
       }
     },
     getClusterStatusCompleted(taskContext, taskResult) {

@@ -26,6 +26,7 @@ export default new Vuex.Store({
     updates: [],
     isClusterInitialized: false,
     leaderListenPort: null,
+    clusterName: "",
   },
   getters: {
     unreadNotifications: (state, getters) => {
@@ -159,6 +160,9 @@ export default new Vuex.Store({
     setFavoriteApps(state, favoriteApps) {
       state.favoriteApps = favoriteApps;
     },
+    setClusterName(state, clusterName) {
+      state.clusterName = clusterName;
+    },
     //// does it work?
     SOCKET_ONOPEN(state, event) {
       // Vue.prototype.$socket = event.currentTarget;
@@ -262,6 +266,9 @@ export default new Vuex.Store({
     },
     setFavoriteAppsInStore(context, favoriteApps) {
       context.commit("setFavoriteApps", favoriteApps);
+    },
+    setClusterNameInStore(context, clusterName) {
+      context.commit("setClusterName", clusterName);
     },
   },
 });
