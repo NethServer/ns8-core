@@ -19,6 +19,7 @@ resource "digitalocean_droplet" "vps" {
   ssh_keys = [
     data.digitalocean_ssh_key.terraform.id
   ]
+  tags = [digitalocean_tag.cluster.name]
 }
 
 resource "digitalocean_project_resources" "vps" {
@@ -35,3 +36,7 @@ resource "digitalocean_record" "vps_ipv4" {
   ttl      = 300
 }
 
+
+resource "digitalocean_tag" "cluster" {
+  name = format("%s-%s", var.project, terraform.workspace)
+}

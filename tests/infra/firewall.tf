@@ -1,7 +1,7 @@
 resource "digitalocean_firewall" "fw-ssh-only" {
   name = format("fw-%s-%s", var.project, terraform.workspace)
 
-  droplet_ids = [for hpx, rgn in var.nodes : digitalocean_droplet.vps[hpx].id]
+  tags = [digitalocean_tag.cluster.name]
 
   inbound_rule {
     protocol         = "tcp"
