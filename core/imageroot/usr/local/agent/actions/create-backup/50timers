@@ -1,0 +1,52 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2021 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
+import os
+import sys
+import json
+import agent
+import subprocess
+
+request = json.load(sys.stdin)
+is_rootfull = (os.getuid() == 0)
+
+if is_rootfull:
+   systemd_path = '/etc/systemd/system/'
+else:
+   systemd_path = f'{os.path.expanduser("~")}/.config/systemd/user/'
+
+with open(f'{systemd_path}backup-{request["name"]}.timer', 'w') as timer:
+    timer.write(f'[Unit]\nDescription=Backup timer for {request["name"]}\n\n')
+    timer.write(f'[Timer]\nOnCalendar={request["schedule"]}\n\n')
+    timer.write(f'[Install]\nWantedBy=timers.target\n')
+
+with open(f'{systemd_path}backup-{request["name"]}.service', 'w') as service:
+    service.write(f'[Unit]\nDescription=Backup {request["name"]}\n\n')
+    service.write(f'[Service]\nType=oneshot\nExecStart=/usr/local/bin/runagent backup {request["name"]}\n\n')
+    service.write(f'[Install]\nWantedBy=default.target\n')
+
+if is_rootfull:
+    subprocess.run(["systemctl", "daemon-reload"])
+    subprocess.run(["systemctl", "enable", f'backup-{request["name"]}.timer'])
+else:
+    subprocess.run(["systemctl", "--user", "daemon-reload"])
+    subprocess.run(["systemctl", "--user", "enable", f'backup-{request["name"]}.timer'])
