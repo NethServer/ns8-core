@@ -7,10 +7,14 @@ variable "domain" {
   default     = "nethserver.net"
 }
 
-variable "leader_nodes" {
-  description = "List of leader nodes"
+variable "leader_node" {
+  description = "Leader node"
   type        = map(string)
   default = {}
+  validation {
+    condition = length(var.leader_node) <= 1
+    error_message = "The leader node must be one or zero."
+  }
 }
 
 variable "worker_nodes" {

@@ -9,7 +9,7 @@ variable "images" {
 }
 
 resource "digitalocean_droplet" "leader" {
-  for_each           = var.leader_nodes
+  for_each           = var.leader_node
   image              = var.images[substr(each.key, 0, 2)]
   name               = format("%s.leader.%s.%s", each.key, terraform.workspace ,var.domain)
   region             = each.value
@@ -36,9 +36,9 @@ resource "digitalocean_droplet" "worker" {
   tags = [digitalocean_tag.cluster.name]
 }
 
-resource "digitalocean_project_resources" "leader_nodes" {
+resource "digitalocean_project_resources" "leader_node" {
   project   = data.digitalocean_project.default.id
-  resources = [for hpx, rgn in var.leader_nodes : digitalocean_droplet.leader[hpx].urn]
+  resources = [for hpx, rgn in var.leader_node : digitalocean_droplet.leader[hpx].urn]
 }
 
 resource "digitalocean_project_resources" "worker_nodes" {
@@ -48,7 +48,7 @@ resource "digitalocean_project_resources" "worker_nodes" {
 
 
 resource "digitalocean_record" "leader" {
-  for_each = var.leader_nodes
+  for_each = var.leader_node
   type     = "A"
   domain   = data.digitalocean_domain.default.name
   name     = format("%s.leader.%s", each.key, terraform.workspace)
