@@ -434,15 +434,14 @@ NethServer defines some conventions that should ease the creation of new modules
 
 #### Filesystem structure
 
-Each module has should be self-contained inside a directory named as the module itself.
+Each module should be self-contained inside a directory named as the module itself.
 Such directory should contain:
 
-- `imageroot` directory: it contains all module scripts and configuration, it's composed by two sub-directories:
-  - `systemd`: everything inside this directory is copied under `/home/<instance>/.config/systemd/` directory.
-  It should contains a sub-directory named `user` where systemd units are stored.
-  - `actions`: a list of directories, each directory implements an `action`
-- `ui` directory: it contains all UI source code of the module
-- `bin` directory: additional binaries for the module
+- `imageroot/`: it contains module scripts and configuration. Everything inside this directory is copied under `/home/<MODULE_ID>/.config/`. Common subdirs include:
+  * `systemd/user`: where Systemd units are stored.
+  * `actions/`: each subdirectory implements an *action*.
+  * `bin/`: it contains additional binaries for the module. It is added to PATH in the agent environment.
+- `ui/`: it contains all UI source code of the module
 - `build-image.sh`: a script to manually build the image of the module and push it inside the image registry.
 - `README.md`: a [Markdown](https://guides.github.com/features/mastering-markdown/) file describing the module purpose and implementation
 
@@ -493,14 +492,25 @@ Currently last allocated port is saved inside Redis at `'node/<node_id>/tcp_port
 
 #### Systemd units
 
-A module should always have at least one systemd unit to keep the service running.
-The systemd unit should:
-- make sure the environment is always set: `EnvironmentFile=%S/state/environment`
-- make sure the working directory is always set: `WorkingDirectory=%S/state`
+A module should have at least one Systemd unit to keep the service running.
+The Systemd unit should:
+- enable the service on boot
 - start and stop podman processes
 - ensure restart at least on failure
-- bind to the network with possible lowest privilege
-- enable the service on boot
+
+The Systemd unit can:
+- change the working directory to ease finding additional files: `WorkingDirectory=%S/state`
+- execute ancillary commands in `Exec*` steps with the `runagent` helper: `ExecStartPre=/usr/local/bin/runagent expand-templates`
+- import and use additional environment variables: `EnvironmentFile=%S/state/environment`
+
+When `EnvironmentFile=%S/state/environment` is used in Systemd service
+units, remember that the file syntax is not designed to be compatible with
+Systemd. Values are stored as raw values, i.e. special characters are not
+escaped or quoted:
+
+1. Limit the use of this technique to variables with controlled values, e.g. `IMAGE_URL`.
+2. Avoid storing and reading arbitrary strings, like randomly generated
+   tokens, and values coming from the user's input.
 
 See [Dokuwiki unit](../dokuwiki/imageroot/systemd/user/dokuwiki.service) as an example.
 
