@@ -7,9 +7,16 @@ variable "domain" {
   default     = "nethserver.net"
 }
 
-variable "nodes" {
-  description = "Host name for the VPS"
+variable "leader_nodes" {
+  description = "List of leader nodes"
   type        = map(string)
+  default = {}
+}
+
+variable "worker_nodes" {
+  description = "List of worker nodes"
+  type        = map(string)
+  default = {}
 }
 
 data "digitalocean_project" "default" {
