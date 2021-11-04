@@ -6,11 +6,11 @@ Supported distributions:
 
 Draft documentation for developers:
 
-- [Introduction](doc/intro.md)
-- [Design & Architecture](doc/design.md)
-- [Technical details](doc/details.md)
-- [Installation  & First steps](doc/installation.md)
-- [How to create a new module](doc/new_module.md)
+- [Introduction](docs/intro.md)
+- [Design & Architecture](docs/design.md)
+- [Technical details](docs/details.md)
+- [Installation  & First steps](docs/installation.md)
+- [How to create a new module](docs/new_module.md)
 
 Links:
 - [API documentation](https://github.com/NethServer/ns8-scratchpad/tree/apidoc)
