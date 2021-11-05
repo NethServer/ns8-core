@@ -35,6 +35,10 @@ elif [[ ${ID} == "debian" ]]; then
     # Enable access to journalctl --user
     grep  -e "^#Storage=persistent" /etc/systemd/journald.conf || echo "Storage=persistent" >> /etc/systemd/journald.conf
     systemctl restart systemd-journald
+
+else
+    echo "System not supported"
+    exit 1
 fi
 
 echo "Set kernel parameters:"
