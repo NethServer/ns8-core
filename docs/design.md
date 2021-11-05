@@ -15,7 +15,7 @@ Design goals:
 
 NS8 should run on a OS with the following features:
 
-- small footprint, x86_64 and aarch64
+- small footprint, x86_64 (and aarch64)
 - systemd to keeps things running
 - podman ≥ 2.2
 - support WireGuard VPN
@@ -46,10 +46,10 @@ List of things considered almost stable, with or without an existing prototype i
   - Samba AD and OpenLDAP account providers (both are LDAP)
   - Remote LDAP account provider
   - No Unix accounts for domain users
-- Node agent / Module agents
+- Cluster agent, Node agent, Module agents
 - Events and Actions
 - Container Registry as software repository for everything
-- Store environment variables for actions and containers in Redis
+- Store (a copy of) environment variables for actions and containers in Redis
 - Authenticated Redis access for write operations
 - Public Redis read only access
 - Encrypted secrets in Redis DB
@@ -70,23 +70,34 @@ The system is composed by two main components:
 The core purpose is managing the applications, providing the basics for their entire life cycle (install, upgrade, reconfigure, uninstall...). It runs the following components:
 
 - Redis instance running as rootfull container, bound to TCP port 6379. The Redis DB
-  stores the system and modules configuration and provides a signaling bus based on its PUB/SUB feature.
+  * exchanges messages among agents and the API server
+  * helps modules to discover information about the core and other modules
+  * provides a signaling bus based on its PUB/SUB feature
+  * stores (a copy of) the system and modules configuration
+  * is an authentication backend for the management UI and the agents
 
-- `node-agent.service` Systemd unit, running as root. The events are defined in `/usr/local/share/agent/node-events`
-   and `/var/local/node-events` (for local Sysadmin overrides).
+- `agent@cluster.service` Systemd system unit, running as root. Its
+  actions are defined in `/var/lib/nethserver/cluster/actions`
 
-- `module-agent.service` Systemd units, running in each module as non-privileged users. See the "Additional modules" section below for more details.
+- `agent@node.service` Systemd system unit, running as root. Its actions
+  are defined in `/var/lib/nethserver/node/actions`
+
+- `agent.service` Systemd user unit, running as non-privileged Unix user
+  for each rootless module instance. See the "Additional modules" section
+  below for more details
 
 - Edge proxy, for TLS termination and centralized certificates management (Traefik)
 
-- LDAP proxy, listening on 127.0.0.1 port 3890. It helps other modules to connect to the account provider LDAP service,
-  providing a fixed address and clear text connection.
+- LDAP proxy, a rootless module listening on 127.0.0.1. It helps other
+  modules to connect to account provider LDAP servers, with a clear text
+  connection
 
 - LDAP local account provider (Samba DC, OpenLDAP)
 
 - VPN, each node is connected to the leader using WireGuard in a star network topology
 
-- API server, it handles all UI requests and audits executed tasks
+- API server, it handles authentication and authorization for all UI
+  requests (and more...). It audits executed tasks
 
 - UI, it allows configuration of the cluster and applications
 
@@ -95,7 +106,7 @@ The core purpose is managing the applications, providing the basics for their en
 
 The core instantiates a set of *modules*. Each module instance
 runs an application (e.g. Webtop, Nextcloud) as a set of one or more Podman **rootless containers**. In exceptional
-cases a module can run also rootfull containers (i.e Samba, Promtail)
+cases a module can run rootfull containers (i.e Samba, Promtail)
 
 See [Modules architecture](details.md#module-architecture) for more info.
 
