@@ -15,7 +15,7 @@ cat /var/lib/nethserver/node/state/coreimage.lst > ${tmp_srclist}
 
 trap "rm -f ${tmp_dirlist} ${tmp_srclist}" EXIT
 
-for userhome in /home/*; do
+for userhome in /home/*[0-9]; do
     moduleid=$(basename $userhome)
     echo "Deleting rootless module ${moduleid}..."
     systemctl stop user@$(id -u $moduleid)
