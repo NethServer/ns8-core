@@ -87,7 +87,13 @@ api-cli run delete-route --agent module/traefik1 --data '{"instance": "module1"}
 
 ## set-certificate
 
-This action explicitly requests a Let's Encrypt certificate. It can be used when there is no hostname (or hostname + path) route configured on traefik module or if the service is not make accessible via traefik.
+Run this action to request a Let's Encrypt certificate if [HTTP-01
+challenge](https://letsencrypt.org/docs/challenge-types/#http-01-challenge)
+requirements are met.
+
+It can be used when there is no hostname (or hostname + path) route
+configured on traefik module or if the service is not make accessible via
+traefik.
 
 The action takes 1 parameter:
 - `fqdn`: the fqdn of the requested certificate
@@ -96,6 +102,7 @@ Example:
 ```
 api-cli run set-certificate --agent module/traefik1 --data "{\"fqdn\": \"$(hostname -f)\""
 ```
+
 ## delete-certificate
 
 This action deletes an existing route used for explicit request a certificate.

@@ -18,6 +18,29 @@ The agent accepts also some environment variables, so a complete invocation from
 
     REDIS_ADDRESS=127.0.0.1:6379 REDIS_PASSWORD= ./agent module/mail1 . ~/.config/actions
 
+## Task processing
+
+After startup, the agent process blocks and waits for incoming tasks on a
+Redis list (BRPOP). The list key is given by `<agent_prefix>/tasks`, e.g.
+`module/mail1/tasks`.
+
+Each list item represents a **task** to be processed by an **action**. It
+must be a string representing a valid JSON-encoded object with the
+following structure:
+
+```json
+{
+    "id": "UUID-STRING",
+    "action": "action-name",
+    "data": {},
+    "extra": {}
+}
+```
+
+When a task is popped the agent starts the action is execution in
+background and immediately blocks again waiting for more tasks on the
+Redis list.
+
 ## Actions execution model
 
 An **action** is defined by one or more directories with the same name under the root directories
@@ -94,9 +117,35 @@ Exit codes and their meaning:
 
 ## File descriptors
 
-Each action step receives the `task.data` string from FD 0 (INPUT). Any data sent to FD 1 (OUTPUT) constitutes the action output data, and any data sent to FD 2 (ERROR) is immediately copied to the agent error stream and appended to the action error data.
+Each action step receives the `task.data` contents in JSON representation
+from FD 0 (INPUT). Any data sent to FD 1 (OUTPUT) constitutes the action
+output data, and any data sent to FD 2 (ERROR) is immediately copied to
+the agent error stream and appended to the action error data.
 
 An action step receives an additional file descriptor where it can write special command strings. The file descriptor number can be obtained from the `AGENT_COMFD` environment variable.
+
+## Validation
+
+Validation of input and output can be enforced using [JSON
+Schema](https://json-schema.org/).
+
+To validate the input just drop a `validate-input.json` file inside the
+action directory, to validate the output just create a
+`validate-output.json` file.
+
+As general rule, schema files are loaded from special paths:
+- `${AGENT_INSTALL_DIR}/validator-definitions.json`: this is always picked
+  up by the agent from all actions. It can contain the common data format
+  definitions
+- `${AGENT_INSTALL_DIR}/actions/<action-name>/validate-input.json`: schema
+  applied to validate the input data
+- `${AGENT_INSTALL_DIR}/actions/<action-name>/validate-output.json`:
+  schema applied to validate the output data
+
+Additional validation logic can be implemented in an early step script
+like `01validation`. If the validation fails, the step must execute the
+[set-status](#set-status) command and return a non-zero exit code.
+
 
 ## Environment and working directory
 
