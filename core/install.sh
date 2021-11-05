@@ -25,7 +25,7 @@ set -e
 source /etc/os-release
 
 echo "Install dependencies:"
-if [[ ${ID} == "fedora" ]]; then
+if [[ ${ID} == "fedora" ]] || [[ ${ID} == "rhel" && ${PLATFORM_ID} == "platform:el9" ]]; then
     dnf install -y wireguard-tools podman jq openssl
 elif [[ ${ID} == "debian" ]]; then
 
