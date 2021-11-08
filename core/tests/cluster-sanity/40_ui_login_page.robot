@@ -31,7 +31,7 @@ Enter valid credentials
     Click        button.login-button
     Type Text    input[name="password"]    Nethesis,1234    delay=50 ms
     Click        button.login-button
-    Get Text     .page-title > h2    ==    Cluster status
+    Get Title   should be    Cluster status
 
 Enter invalid credentials
     New Page    https://${NODE_ADDR}/cluster-admin/
