@@ -28,6 +28,10 @@ echo "Install dependencies:"
 if [[ ${ID} == "fedora" ]]; then
     dnf install -y wireguard-tools podman jq openssl
     systemctl disable --now firewalld || :
+
+    if [[ ${VERSION_ID} == "35" ]]; then
+        dnf install gcc gcc-c++ python-devel libffi-devel
+    fi
 elif [[ ${ID} == "debian" ]]; then
 
     apt-get update
