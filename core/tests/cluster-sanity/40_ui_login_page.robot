@@ -22,11 +22,11 @@ Close the browser
 
 *** Test Cases ***
 Login page is reachable
-    New Page    http://127.0.0.1/cluster-admin/
+    New Page    https://${NODE_ADDR}/cluster-admin/
     Get Title   should be    Log in
 
 Enter valid credentials
-    New Page    http://127.0.0.1/cluster-admin/
+    New Page    https://${NODE_ADDR}/cluster-admin/
     Type Text    input[name="username"]    admin    delay=50 ms
     Click        button.login-button
     Type Text    input[name="password"]    Nethesis,1234    delay=50 ms
@@ -34,7 +34,7 @@ Enter valid credentials
     Get Text     .page-title > h2    ==    Cluster status
 
 Enter invalid credentials
-    New Page    http://127.0.0.1/cluster-admin/
+    New Page    https://${NODE_ADDR}/cluster-admin/
     Fill Text    input[name="username"]    Baaad
     Click        button.login-button
     Fill Text    input[name="password"]    S3cret!

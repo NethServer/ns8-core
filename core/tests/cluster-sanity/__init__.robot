@@ -6,7 +6,7 @@ ${SSH_KEYFILE}    %{HOME}/.ssh/id_ecdsa
 
 *** Keywords ***
 Connect to the node
-    Open Connection    127.0.0.1
+    Open Connection   ${NODE_ADDR}
     Login With Public Key    root    ${SSH_KEYFILE}
 
 Uninstall core and modules
