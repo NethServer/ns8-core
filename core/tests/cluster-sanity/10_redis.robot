@@ -12,5 +12,5 @@ Check redis-cli
     Should Be Equal     ${output}    PONG
 
 Check redis-exec
-    ${output} =    Execute Command    redis-exec PING
+    ${output} =    Execute Command    runagent redis-exec PING
     Should Be Equal     ${output}    True
