@@ -5,3 +5,8 @@ output "leader_node" {
 output "worker_nodes" {
   value = [for hpx, _ in digitalocean_droplet.worker : digitalocean_droplet.worker[hpx].name]
 }
+
+output "deploy-key" {
+  value = tls_private_key.deploy.private_key_pem
+  sensitive = true
+}

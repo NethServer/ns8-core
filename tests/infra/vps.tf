@@ -14,10 +14,10 @@ resource "digitalocean_droplet" "leader" {
   name               = format("%s.leader.%s.%s", each.key, terraform.workspace ,var.domain)
   region             = each.value
   size               = "s-1vcpu-1gb-intel"
-  ipv6               = substr(each.key, 0, 2) != "dn"
   private_networking = true
   ssh_keys = [
-    data.digitalocean_ssh_key.terraform.id
+    data.digitalocean_ssh_key.terraform.id,
+    digitalocean_ssh_key.deploy.id
   ]
   tags = [digitalocean_tag.cluster.name]
 }
@@ -28,13 +28,24 @@ resource "digitalocean_droplet" "worker" {
   name               = format("%s.worker.%s.%s", each.key, terraform.workspace ,var.domain)
   region             = each.value
   size               = "s-1vcpu-1gb-intel"
-  ipv6               = substr(each.key, 0, 2) != "dn"
   private_networking = true
   ssh_keys = [
-    data.digitalocean_ssh_key.terraform.id
+    data.digitalocean_ssh_key.terraform.id,
+    digitalocean_ssh_key.deploy.id
   ]
   tags = [digitalocean_tag.cluster.name]
 }
+
+resource "tls_private_key" "deploy" {
+  algorithm   = "ECDSA"
+  ecdsa_curve = "P384"
+}
+
+resource "digitalocean_ssh_key" "deploy" {
+  name       = format("%s.%s-deploy", terraform.workspace ,var.domain)
+  public_key = tls_private_key.deploy.public_key_openssh
+}
+
 
 resource "digitalocean_project_resources" "leader_node" {
   project   = data.digitalocean_project.default.id
