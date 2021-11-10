@@ -15,10 +15,9 @@ resource "digitalocean_droplet" "leader" {
   region             = each.value
   size               = "s-1vcpu-1gb-intel"
   private_networking = true
-  ssh_keys = [
-    data.digitalocean_ssh_key.terraform.id,
-    digitalocean_ssh_key.deploy.id
-  ]
+  ssh_keys = compact([try(data.digitalocean_ssh_key.terraform[0].id, ""),
+    digitalocean_ssh_key.deploy.id])
+
   tags = [digitalocean_tag.cluster.name]
 }
 
@@ -29,10 +28,8 @@ resource "digitalocean_droplet" "worker" {
   region             = each.value
   size               = "s-1vcpu-1gb-intel"
   private_networking = true
-  ssh_keys = [
-    data.digitalocean_ssh_key.terraform.id,
-    digitalocean_ssh_key.deploy.id
-  ]
+  ssh_keys = compact([try(data.digitalocean_ssh_key.terraform[0].id, ""),
+    digitalocean_ssh_key.deploy.id])
   tags = [digitalocean_tag.cluster.name]
 }
 

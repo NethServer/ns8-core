@@ -13,6 +13,7 @@ terraform {
 
 variable "sshkey" {
   description = "DigitalOcean SSH key name"
+  default = ""
 }
 
 provider "digitalocean" {
@@ -24,5 +25,6 @@ variable "do_token" {
 }
 
 data "digitalocean_ssh_key" "terraform" {
-  name = var.sshkey
+  count = var.sshkey == "" ? 0: 1
+  name  = var.sshkey
 }
