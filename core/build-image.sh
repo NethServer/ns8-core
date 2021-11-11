@@ -9,19 +9,28 @@ repobase="${REPOBASE:-ghcr.io/nethserver}"
 # Reuse existing gobuilder-core container, to speed up builds
 if ! buildah containers --format "{{.ContainerName}}" | grep -q gobuilder-core; then
     echo "Pulling Golang runtime..."
-    buildah from --name gobuilder-core -v "${PWD}:/usr/src/core:Z" docker.io/library/golang:1.16-alpine
-    buildah run gobuilder-core apk add g++ gcc
+    golang_cache_path="${PWD}/.golang-cache"
+    mkdir -vp "${golang_cache_path}/{mcache,bcache}"
+    buildah from --name gobuilder-tmp docker.io/library/golang:1.16-alpine
+    buildah run gobuilder-tmp apk add g++ gcc
+    buildah config --env GOCACHE=/var/lib/misc/bcache --env GOMODCACHE=/var/lib/misc/mcache gobuilder-tmp
+    buildah commit --rm gobuilder-tmp gobuilder-image
+    buildah from --name gobuilder-core \
+        -v "${golang_cache_path}:/var/lib/misc:z" \
+        -v "${PWD}:/usr/src/core:z" \
+        localhost/gobuilder-image
 fi
 
 # Reuse existing nodebuilder-core container, to speed up builds
 if ! buildah containers --format "{{.ContainerName}}" | grep -q nodebuilder-core; then
     echo "Pulling NodeJS runtime..."
-    buildah from --name nodebuilder-core -v "${PWD}:/usr/src/core:Z" docker.io/library/node:lts-slim
+    buildah from --name nodebuilder-core -v "${PWD}:/usr/src/core:z" docker.io/library/node:lts-slim
 fi
 
 echo "Build statically linked Go binaries based on Musl..."
 echo "1/2 agent..."
-buildah run gobuilder-core sh -c "cd /usr/src/core/agent      && CGO_ENABLED=0 go build -v ."
+buildah run gobuilder-core sh -c "cd /usr/src/core/agent && CGO_ENABLED=0 go build -v ."
+
 echo "2/2 api-server..."
 # Statically link libraries and disable Sqlite extensions that expect a dynamic loader (not portable across distros)
 # Ref https://www.arp242.net/static-go.html
