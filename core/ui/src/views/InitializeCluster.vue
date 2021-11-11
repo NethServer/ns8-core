@@ -160,14 +160,14 @@
                 </cv-text-input>
                 <cv-text-input
                   :label="
-                    $t('common.cluster_name') +
+                    $t('common.cluster_label') +
                     ' (' +
                     $t('common.optional') +
                     ')'
                   "
-                  v-model.trim="clusterName"
-                  :invalid-message="$t(error.clusterName)"
-                  ref="clusterName"
+                  v-model.trim="clusterLabel"
+                  :invalid-message="$t(error.clusterLabel)"
+                  ref="clusterLabel"
                 >
                 </cv-text-input>
                 <cv-text-input
@@ -326,7 +326,7 @@ export default {
       vpnEndpointAddress: "",
       vpnEndpointPort: "",
       vpnCidr: "",
-      clusterName: "",
+      clusterLabel: "",
       leaderNodeName: "",
       workerNodeName: "",
       joinCode: "",
@@ -348,7 +348,7 @@ export default {
         vpnEndpointPort: "",
         vpnCidr: "",
         joinCode: "",
-        clusterName: "",
+        clusterLabel: "",
         leaderNodeName: "",
         workerNodeName: "",
       },
@@ -672,7 +672,7 @@ export default {
             network: this.vpnCidr,
             endpoint: this.vpnEndpointAddress + ":" + this.vpnEndpointPort,
             listen_port: parseInt(this.vpnEndpointPort),
-            //// clusterName
+            //// clusterLabel
             //// leaderNodeName
           },
           extra: {

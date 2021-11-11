@@ -37,12 +37,12 @@
           <cv-form @submit.prevent="saveSettings">
             <cv-text-input
               :label="
-                $t('common.cluster_name') + ' (' + $t('common.optional') + ')'
+                $t('common.cluster_label') + ' (' + $t('common.optional') + ')'
               "
-              v-model.trim="clusterName"
-              :invalid-message="$t(error.clusterName)"
+              v-model.trim="clusterLabel"
+              :invalid-message="$t(error.clusterLabel)"
               :disabled="loading.getClusterStatus"
-              ref="clusterName"
+              ref="clusterLabel"
             >
             </cv-text-input>
             <NsButton
@@ -77,14 +77,14 @@ export default {
   data() {
     return {
       q: {},
-      clusterName: "",
+      clusterLabel: "",
       loading: {
         getClusterStatus: true,
         saveSettings: false,
       },
       error: {
         getClusterStatus: "",
-        clusterName: "",
+        clusterLabel: "",
       },
     };
   },
@@ -137,7 +137,7 @@ export default {
       //// remove mock
       clusterStatus.name = "MyCluster"; ////
 
-      this.clusterName = clusterStatus.name;
+      this.clusterLabel = clusterStatus.name;
       this.loading.getClusterStatus = false;
 
       console.log("clusterStatus", clusterStatus); ////

@@ -103,7 +103,7 @@ export default {
       "toggleAppDrawerShownInStore",
       "setLeaderListenPortInStore",
       "setWebsocketConnectedInStore",
-      "setClusterNameInStore",
+      "setClusterLabelInStore",
     ]),
     configureKeyboardShortcuts(window) {
       window.addEventListener(
@@ -311,7 +311,7 @@ export default {
 
         clusterStatus.name = "MyCluster"; //// remove mock
 
-        this.setClusterNameInStore(clusterStatus.name);
+        this.setClusterLabelInStore(clusterStatus.name);
       }
     },
     getClusterStatusCompleted(taskContext, taskResult) {

@@ -32,7 +32,7 @@
     "global_shortcut": "Global shortcut",
     "join_code": "Join code",
     "reload_page": "Reload page",
-    "cluster_name": "Cluster name",
+    "cluster_label": "Cluster label",
     "save_settings": "Save settings"
   },
   "error": {

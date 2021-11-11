@@ -10,7 +10,7 @@
     }}</cv-skip-to-content>
     <cv-header-name to="/" prefix="">
       <span class="cluster-or-product-name">{{
-        clusterName ? clusterName : $root.config.PRODUCT_NAME
+        clusterLabel ? clusterLabel : $root.config.PRODUCT_NAME
       }}</span></cv-header-name
     >
     <cv-header-nav> </cv-header-nav>
@@ -126,7 +126,7 @@ export default {
     };
   },
   computed: {
-    ...mapState(["notifications", "isSearchExpanded", "clusterName"]),
+    ...mapState(["notifications", "isSearchExpanded", "clusterLabel"]),
     ...mapGetters(["unreadNotificationsCount", "ongoingNotificationsCount"]),
   },
   methods: {

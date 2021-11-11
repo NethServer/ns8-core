@@ -26,7 +26,7 @@ export default new Vuex.Store({
     updates: [],
     isClusterInitialized: false,
     leaderListenPort: null,
-    clusterName: "",
+    clusterLabel: "",
   },
   getters: {
     unreadNotifications: (state, getters) => {
@@ -160,8 +160,8 @@ export default new Vuex.Store({
     setFavoriteApps(state, favoriteApps) {
       state.favoriteApps = favoriteApps;
     },
-    setClusterName(state, clusterName) {
-      state.clusterName = clusterName;
+    setClusterLabel(state, clusterLabel) {
+      state.clusterLabel = clusterLabel;
     },
     //// does it work?
     SOCKET_ONOPEN(state, event) {
@@ -267,8 +267,8 @@ export default new Vuex.Store({
     setFavoriteAppsInStore(context, favoriteApps) {
       context.commit("setFavoriteApps", favoriteApps);
     },
-    setClusterNameInStore(context, clusterName) {
-      context.commit("setClusterName", clusterName);
+    setClusterLabelInStore(context, clusterLabel) {
+      context.commit("setClusterLabel", clusterLabel);
     },
   },
 });
