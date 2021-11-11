@@ -21,6 +21,12 @@ jobs:
     steps:
       - id: checkout
         uses: actions/checkout@v2
+      - id: yarn-cache
+        uses: actions/cache@v2
+        with:
+          path: |
+            ${{ github.workflow }}/ui/node_modules
+          key: "yarn-${{ hashFiles(format('{0}/**/yarn.lock', github.workflow)) }}"
       - id: build
         name: "Build the images"
         run: "cd ${REPONAME} && bash build-image.sh"
