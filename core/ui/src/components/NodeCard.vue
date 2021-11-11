@@ -5,7 +5,7 @@
       <NsSvg :svg="Chip32" />
     </div>
     <div class="row">
-      <h3 class="title">{{ nodeLabel }} {{ nodeId }}</h3>
+      <h3 class="title">{{ nodeName }}</h3>
     </div>
     <div class="row">
       <cv-tag v-if="isLeader" kind="green" :label="leaderLabel"></cv-tag>
@@ -111,10 +111,9 @@ export default {
   //components added for storybook to work
   components: { CvTile, Information16 },
   props: {
-    nodeId: String,
-    nodeLabel: {
+    nodeName: {
       type: String,
-      default: "Node",
+      required: true,
     },
     isLeader: Boolean,
     leaderLabel: {

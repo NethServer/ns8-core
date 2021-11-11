@@ -217,7 +217,12 @@
                 :label="$t('common.join_code')"
                 v-model.trim="joinCode"
                 :invalid-message="$t(error.joinCode)"
-                :helper-text="$t('init.join_code_helper_text')"
+                :helper-text="
+                  $t(
+                    'init.join_code_helper_text' +
+                      ' https://LEADER_NODE_IP/cluster-admin/#/nodes?isShownAddNodeModal=true'
+                  )
+                "
                 class="join-code"
                 ref="joinCode"
               >
@@ -227,6 +232,18 @@
                 v-model="tlsVerify"
                 value="checkTlsVerify"
               />
+              <cv-text-input
+                :label="
+                  $t('init.worker_node_name') +
+                  ' (' +
+                  $t('common.optional') +
+                  ')'
+                "
+                v-model.trim="workerNodeName"
+                :invalid-message="$t(error.workerNodeName)"
+                ref="workerNodeName"
+              >
+              </cv-text-input>
               <NsButton kind="primary" :icon="Connect20">{{
                 $t("init.join_cluster")
               }}</NsButton>
@@ -311,6 +328,7 @@ export default {
       vpnCidr: "",
       clusterName: "",
       leaderNodeName: "",
+      workerNodeName: "",
       joinCode: "",
       tlsVerify: true,
       joinEndpoint: this.$route.query.endpoint
@@ -332,6 +350,7 @@ export default {
         joinCode: "",
         clusterName: "",
         leaderNodeName: "",
+        workerNodeName: "",
       },
     };
   },
@@ -654,6 +673,7 @@ export default {
             endpoint: this.vpnEndpointAddress + ":" + this.vpnEndpointPort,
             listen_port: parseInt(this.vpnEndpointPort),
             //// clusterName
+            //// leaderNodeName
           },
           extra: {
             title: this.$t("action." + taskAction),
@@ -766,6 +786,7 @@ export default {
             jwt: this.joinToken,
             listen_port: parseInt(this.joinPort),
             tls_verify: this.tlsVerify,
+            //// workerNodeName
           },
           extra: {
             title: this.$t("action." + taskAction),

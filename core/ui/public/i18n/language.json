@@ -102,14 +102,15 @@
     "vpn_cidr": "VPN CIDR",
     "join_cluster_instead": "Join an existing cluster instead",
     "create_cluster_instead": "Create a new cluster instead",
-    "join_code_helper_text": "You can obtain join code by accessing https://LEADER_NODE_IP/cluster-admin/#/nodes",
+    "join_code_helper_text": "You can obtain join code by accessing",
     "invalid_join_code": "Invalid join code",
     "tls_verify": "TLS certificate validation",
     "redirect_cluster": "Worker Node",
     "redirect_cluster_description": "This node now is a worker of the cluster. Click on the link below to access the cluster administration page.",
     "redirect_cluster_link": "Go to cluster administration page",
     "node_added_to_cluster": "Node {nodeId} added to cluster",
-    "leader_node_name": "Leader node name"
+    "leader_node_name": "Leader node name",
+    "worker_node_name": "Worker node name"
   },
   "shell": {
     "skip_to_content": "Skip to content",
@@ -314,7 +315,9 @@
     "memory_usage": "Memory usage",
     "swap_usage": "Swap usage",
     "disk": "Disk",
-    "usage": "usage"
+    "usage": "usage",
+    "edit_node_name": "Edit node name",
+    "node_name": "Node name"
   },
   "node_detail": {
     "title": "Node detail",

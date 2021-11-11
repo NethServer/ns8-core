@@ -97,6 +97,73 @@
         >
           <NsInfoCard light :title="instance.id" :icon="Application32">
             <div class="slot-content">
+              <!-- app is installed and can be updated -->
+              <template v-if="isInstanceUpgradable(app, instance)">
+                <cv-overflow-menu
+                  :flip-menu="true"
+                  tip-position="top"
+                  tip-alignment="end"
+                  class="top-right-overflow-menu"
+                >
+                  <cv-overflow-menu-item
+                    primary-focus
+                    @click="openInstance(instance)"
+                    >{{ $t("software_center.open") }}</cv-overflow-menu-item
+                  >
+                  <cv-overflow-menu-item
+                    v-if="!favoriteApps.includes(instance.id)"
+                    @click="addAppToFavorites(instance)"
+                    >{{
+                      $t("software_center.add_to_favorites")
+                    }}</cv-overflow-menu-item
+                  >
+                  <cv-overflow-menu-item
+                    v-if="favoriteApps.includes(instance.id)"
+                    @click="removeAppFromFavorites(instance)"
+                    >{{
+                      $t("software_center.remove_from_favorites")
+                    }}</cv-overflow-menu-item
+                  >
+                  <cv-overflow-menu-item
+                    danger
+                    @click="showUninstallModal(app, instance)"
+                    >{{
+                      $t("software_center.uninstall")
+                    }}</cv-overflow-menu-item
+                  >
+                </cv-overflow-menu>
+              </template>
+              <!-- app is installed, no update available -->
+              <template v-else>
+                <cv-overflow-menu
+                  :flip-menu="true"
+                  tip-position="top"
+                  tip-alignment="end"
+                  class="top-right-overflow-menu"
+                >
+                  <cv-overflow-menu-item
+                    v-if="!favoriteApps.includes(instance.id)"
+                    @click="addAppToFavorites(instance)"
+                    >{{
+                      $t("software_center.add_to_favorites")
+                    }}</cv-overflow-menu-item
+                  >
+                  <cv-overflow-menu-item
+                    v-if="favoriteApps.includes(instance.id)"
+                    @click="removeAppFromFavorites(instance)"
+                    >{{
+                      $t("software_center.remove_from_favorites")
+                    }}</cv-overflow-menu-item
+                  >
+                  <cv-overflow-menu-item
+                    danger
+                    @click="showUninstallModal(app, instance)"
+                    >{{
+                      $t("software_center.uninstall")
+                    }}</cv-overflow-menu-item
+                  >
+                </cv-overflow-menu>
+              </template>
               <div class="row">
                 {{ $t("common.version") }} {{ instance.version }}
               </div>
@@ -104,7 +171,7 @@
                 <NsSvg :svg="Chip20" class="icon" />
                 <span>{{ $t("common.node") }} {{ instance.node }}</span>
               </div>
-              <div class="actions">
+              <div class="row actions">
                 <!-- app is installed and can be updated -->
                 <template v-if="isInstanceUpgradable(app, instance)">
                   <NsButton
@@ -114,77 +181,16 @@
                     @click="updateInstance(instance)"
                     >{{ $t("software_center.update") }}</NsButton
                   >
-                  <cv-overflow-menu
-                    :flip-menu="true"
-                    tip-position="top"
-                    tip-alignment="end"
-                    class="overflow-menu"
-                  >
-                    <cv-overflow-menu-item
-                      primary-focus
-                      @click="openInstance(instance)"
-                      >{{ $t("software_center.open") }}</cv-overflow-menu-item
-                    >
-                    <cv-overflow-menu-item
-                      v-if="!favoriteApps.includes(instance.id)"
-                      @click="addAppToFavorites(instance)"
-                      >{{
-                        $t("software_center.add_to_favorites")
-                      }}</cv-overflow-menu-item
-                    >
-                    <cv-overflow-menu-item
-                      v-if="favoriteApps.includes(instance.id)"
-                      @click="removeAppFromFavorites(instance)"
-                      >{{
-                        $t("software_center.remove_from_favorites")
-                      }}</cv-overflow-menu-item
-                    >
-                    <cv-overflow-menu-item
-                      danger
-                      @click="showUninstallModal(app, instance)"
-                      >{{
-                        $t("software_center.uninstall")
-                      }}</cv-overflow-menu-item
-                    >
-                  </cv-overflow-menu>
                 </template>
                 <!-- app is installed, no update available -->
                 <template v-else>
                   <NsButton
-                    kind="secondary"
+                    kind="ghost"
                     size="field"
                     :icon="Launch20"
                     @click="openInstance(instance)"
                     >{{ $t("software_center.open") }}</NsButton
                   >
-                  <cv-overflow-menu
-                    :flip-menu="true"
-                    tip-position="top"
-                    tip-alignment="end"
-                    class="overflow-menu"
-                  >
-                    <cv-overflow-menu-item
-                      v-if="!favoriteApps.includes(instance.id)"
-                      @click="addAppToFavorites(instance)"
-                      >{{
-                        $t("software_center.add_to_favorites")
-                      }}</cv-overflow-menu-item
-                    >
-                    <cv-overflow-menu-item
-                      v-if="favoriteApps.includes(instance.id)"
-                      @click="removeAppFromFavorites(instance)"
-                      >{{
-                        $t("software_center.remove_from_favorites")
-                      }}</cv-overflow-menu-item
-                    >
-                    <cv-overflow-menu-item
-                      danger
-                      @click="showUninstallModal(app, instance)"
-                      >{{
-                        $t("software_center.uninstall")
-                      }}</cv-overflow-menu-item
-                    >
-                  </cv-overflow-menu>
                 </template>
               </div>
             </div>
@@ -463,15 +469,15 @@ export default {
   text-align: center;
 }
 
+.slot-content .row:last-child {
+  margin-bottom: 0;
+}
+
 .node-container {
   justify-content: center;
 }
 
 .actions {
   margin-top: $spacing-06;
-}
-
-.overflow-menu {
-  display: inline-block;
 }
 </style>

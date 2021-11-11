@@ -27,9 +27,12 @@
     </div>
     <div class="bx--row">
       <div class="bx--col">
-        <NsButton kind="secondary" :icon="Add20" @click="showAddNodeModal">{{
-          $t("nodes.add_node_to_cluster")
-        }}</NsButton>
+        <NsButton
+          kind="secondary"
+          :icon="Add20"
+          @click="q.isShownAddNodeModal = true"
+          >{{ $t("nodes.add_node_to_cluster") }}</NsButton
+        >
       </div>
     </div>
     <div
@@ -44,16 +47,18 @@
       >
         <NodeCard
           v-if="!nodesStatus[node.id]"
-          :nodeId="node.id.toString()"
-          :nodeLabel="$t('common.node')"
+          :nodeName="
+            node.name ? node.name : $t('common.node') + ' ' + node.id.toString()
+          "
           :isLeader="node.id == leaderNode.id"
           light
           loading
         />
         <NodeCard
           v-else
-          :nodeId="node.id.toString()"
-          :nodeLabel="$t('common.node')"
+          :nodeName="
+            node.name ? node.name : $t('common.node') + ' ' + node.id.toString()
+          "
           :isLeader="node.id == leaderNode.id"
           :leaderLabel="$t('nodes.leader')"
           :workerLabel="$t('nodes.worker')"
@@ -89,14 +94,24 @@
             @click="goToNodeDetail(node.id)"
             >{{ $t("common.details") }}</NsButton
           >
+          <cv-overflow-menu
+            :flip-menu="true"
+            tip-position="top"
+            tip-alignment="end"
+            class="top-right-overflow-menu"
+          >
+            <cv-overflow-menu-item @click="showSetNodeNameModal(node)">{{
+              $t("nodes.edit_node_name")
+            }}</cv-overflow-menu-item>
+          </cv-overflow-menu>
         </NodeCard>
       </div>
     </div>
     <!-- add node modal -->
     <cv-modal
       size="default"
-      :visible="isShownAddNodeModal"
-      @modal-hidden="isShownAddNodeModal = false"
+      :visible="q.isShownAddNodeModal"
+      @modal-hidden="q.isShownAddNodeModal = false"
     >
       <template slot="title">{{ $t("nodes.add_node_to_cluster") }}</template>
       <template slot="content">
@@ -146,6 +161,28 @@
       </template>
       <template slot="secondary-button">{{ $t("common.close") }}</template>
     </cv-modal>
+    <!-- set node name modal -->
+    <cv-modal
+      size="default"
+      :visible="q.isShownSetNodeNameModal"
+      @modal-hidden="hideSetNodeNameModal"
+      @primary-click="setNodeName"
+    >
+      <template slot="title">{{ $t("nodes.edit_node_name") }}</template>
+      <template slot="content">
+        <template v-if="currentNode">
+          <cv-text-input
+            :label="$t('nodes.node_name')"
+            v-model.trim="newNodeName"
+            ref="newNodeName"
+          >
+          </cv-text-input></template
+      ></template>
+      <template slot="secondary-button">{{ $t("common.cancel") }}</template>
+      <template slot="primary-button">{{
+        $t("nodes.edit_node_name")
+      }}</template>
+    </cv-modal>
   </div>
 </template>
 
@@ -177,12 +214,17 @@ export default {
   data() {
     return {
       NODE_STATUS_TIME_INTERVAL: 5000,
-      isShownAddNodeModal: false,
+      q: {
+        isShownAddNodeModal: false,
+        isShownSetNodeNameModal: false,
+      },
       joinCode: "",
       isCopyClipboardHintShown: false,
       nodes: [],
       nodesStatus: {},
       nodesStatusInterval: null,
+      currentNode: null,
+      newNodeName: "",
       loading: {
         nodes: true,
       },
@@ -200,6 +242,14 @@ export default {
       }
 
       return this.nodes.find((node) => node.local);
+    },
+  },
+  watch: {
+    "q.isShownAddNodeModal": function () {
+      if (this.q.isShownAddNodeModal) {
+        this.retrieveJoinCode();
+        this.showCopyClipboardHint();
+      }
     },
   },
   beforeRouteEnter(to, from, next) {
@@ -264,7 +314,15 @@ export default {
     },
     getClusterStatusCompleted(taskContext, taskResult) {
       const clusterStatus = taskResult.output;
-      this.nodes = clusterStatus.nodes.sort(this.sortByProperty("id"));
+      let nodes = clusterStatus.nodes.sort(this.sortByProperty("id"));
+
+      //// remove mock
+      for (const node of nodes) {
+        node.name = "Cool node " + node.id;
+      }
+
+      this.nodes = nodes;
+
       this.loading.nodes = false;
 
       // immediately retrieve nodes status
@@ -275,11 +333,6 @@ export default {
         this.retrieveNodesStatus,
         this.NODE_STATUS_TIME_INTERVAL
       );
-    },
-    showAddNodeModal() {
-      this.retrieveJoinCode();
-      this.isShownAddNodeModal = true;
-      this.showCopyClipboardHint();
     },
     showCopyClipboardHint() {
       setTimeout(() => {
@@ -364,6 +417,21 @@ export default {
         name: "NodeDetail",
         params: { nodeId },
       });
+    },
+    showSetNodeNameModal(node) {
+      this.currentNode = node;
+      this.newNodeName = node.name;
+      this.q.isShownSetNodeNameModal = true;
+    },
+    hideSetNodeNameModal() {
+      this.q.isShownSetNodeNameModal = false;
+    },
+    setNodeName() {
+      console.log("setNodeName"); ////
+
+      //// call api
+
+      //// reload nodes
     },
   },
 };
