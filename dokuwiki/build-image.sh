@@ -20,9 +20,6 @@ if ! buildah containers --format "{{.ContainerName}}" | grep -q nodebuilder-doku
 fi
 
 echo "Build static UI files with node..."
-
-echo "DELETE ME ////"
-
 buildah run nodebuilder-dokuwiki sh -c "cd /usr/src/dokuwiki/ui && yarn install && yarn build"
 
 # Add imageroot directory to the container image
