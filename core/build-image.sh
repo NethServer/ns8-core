@@ -28,7 +28,7 @@ echo "2/2 api-server..."
 buildah run gobuilder-core sh -c "cd /usr/src/core/api-server && go build -v -ldflags=\"-extldflags=-static\" -tags sqlite_omit_load_extension ."
 
 echo "Build static UI files with node..."
-buildah run nodebuilder-core sh -c "cd /usr/src/core/ui       && npm install && npm run build"
+buildah run nodebuilder-core sh -c "cd /usr/src/core/ui && yarn install && yarn build"
 
 echo "Provide core CSS style to external modules..."
 buildah run nodebuilder-core sh -c "cp -v /usr/src/core/ui/dist/css/app.*.css /usr/src/core/ui/dist/css/core.css"
