@@ -12,14 +12,14 @@
               <cv-link to="/nodes">{{ $t("nodes.title") }}</cv-link>
             </cv-breadcrumb-item>
             <cv-breadcrumb-item>
-              <span>{{ nodeName }}</span>
+              <span>{{ nodeLabel }}</span>
             </cv-breadcrumb-item>
           </cv-breadcrumb>
         </div>
       </div>
       <div class="bx--row">
         <div class="bx--col-lg-16 page-subtitle title-and-role">
-          <h3 class="title">{{ nodeName }}</h3>
+          <h3 class="title">{{ nodeLabel }}</h3>
           <cv-tag
             v-if="isLeader"
             kind="green"
@@ -373,7 +373,7 @@ export default {
       clusterStatusInterval: null,
       isLeader: false,
       vpnInfo: {},
-      nodeName: "-",
+      nodeLabel: "-",
       loading: {
         nodeStatus: true,
         clusterStatus: true,
@@ -504,7 +504,7 @@ export default {
       this.vpnInfo = currentNode.vpn;
 
       //// remove mock
-      this.nodeName = "Cool node " + this.nodeId;
+      this.nodeLabel = "Cool node " + this.nodeId;
 
       this.loading.clusterStatus = false;
     },

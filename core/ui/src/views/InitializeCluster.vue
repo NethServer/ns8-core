@@ -172,14 +172,14 @@
                 </cv-text-input>
                 <cv-text-input
                   :label="
-                    $t('init.leader_node_name') +
+                    $t('init.leader_node_label') +
                     ' (' +
                     $t('common.optional') +
                     ')'
                   "
-                  v-model.trim="leaderNodeName"
-                  :invalid-message="$t(error.leaderNodeName)"
-                  ref="leaderNodeName"
+                  v-model.trim="leaderNodeLabel"
+                  :invalid-message="$t(error.leaderNodeLabel)"
+                  ref="leaderNodeLabel"
                 >
                 </cv-text-input>
                 <NsButton
@@ -234,14 +234,14 @@
               />
               <cv-text-input
                 :label="
-                  $t('init.worker_node_name') +
+                  $t('init.worker_node_label') +
                   ' (' +
                   $t('common.optional') +
                   ')'
                 "
-                v-model.trim="workerNodeName"
-                :invalid-message="$t(error.workerNodeName)"
-                ref="workerNodeName"
+                v-model.trim="workerNodeLabel"
+                :invalid-message="$t(error.workerNodeLabel)"
+                ref="workerNodeLabel"
               >
               </cv-text-input>
               <NsButton kind="primary" :icon="Connect20">{{
@@ -327,8 +327,8 @@ export default {
       vpnEndpointPort: "",
       vpnCidr: "",
       clusterLabel: "",
-      leaderNodeName: "",
-      workerNodeName: "",
+      leaderNodeLabel: "",
+      workerNodeLabel: "",
       joinCode: "",
       tlsVerify: true,
       joinEndpoint: this.$route.query.endpoint
@@ -349,8 +349,8 @@ export default {
         vpnCidr: "",
         joinCode: "",
         clusterLabel: "",
-        leaderNodeName: "",
-        workerNodeName: "",
+        leaderNodeLabel: "",
+        workerNodeLabel: "",
       },
     };
   },
@@ -673,7 +673,7 @@ export default {
             endpoint: this.vpnEndpointAddress + ":" + this.vpnEndpointPort,
             listen_port: parseInt(this.vpnEndpointPort),
             //// clusterLabel
-            //// leaderNodeName
+            //// leaderNodeLabel
           },
           extra: {
             title: this.$t("action." + taskAction),
@@ -786,7 +786,7 @@ export default {
             jwt: this.joinToken,
             listen_port: parseInt(this.joinPort),
             tls_verify: this.tlsVerify,
-            //// workerNodeName
+            //// workerNodeLabel
           },
           extra: {
             title: this.$t("action." + taskAction),

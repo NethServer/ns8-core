@@ -109,8 +109,8 @@
     "redirect_cluster_description": "This node now is a worker of the cluster. Click on the link below to access the cluster administration page.",
     "redirect_cluster_link": "Go to cluster administration page",
     "node_added_to_cluster": "Node {nodeId} added to cluster",
-    "leader_node_name": "Leader node name",
-    "worker_node_name": "Worker node name"
+    "leader_node_label": "Leader node label",
+    "worker_node_label": "Worker node label"
   },
   "shell": {
     "skip_to_content": "Skip to content",
@@ -316,8 +316,8 @@
     "swap_usage": "Swap usage",
     "disk": "Disk",
     "usage": "usage",
-    "edit_node_name": "Edit node name",
-    "node_name": "Node name"
+    "edit_node_label": "Edit node label",
+    "node_label": "Node label"
   },
   "node_detail": {
     "title": "Node detail",

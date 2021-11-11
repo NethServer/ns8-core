@@ -47,7 +47,7 @@
       >
         <NodeCard
           v-if="!nodesStatus[node.id]"
-          :nodeName="
+          :nodeLabel="
             node.name ? node.name : $t('common.node') + ' ' + node.id.toString()
           "
           :isLeader="node.id == leaderNode.id"
@@ -56,7 +56,7 @@
         />
         <NodeCard
           v-else
-          :nodeName="
+          :nodeLabel="
             node.name ? node.name : $t('common.node') + ' ' + node.id.toString()
           "
           :isLeader="node.id == leaderNode.id"
@@ -100,8 +100,8 @@
             tip-alignment="end"
             class="top-right-overflow-menu"
           >
-            <cv-overflow-menu-item @click="showSetNodeNameModal(node)">{{
-              $t("nodes.edit_node_name")
+            <cv-overflow-menu-item @click="showSetNodeLabelModal(node)">{{
+              $t("nodes.edit_node_label")
             }}</cv-overflow-menu-item>
           </cv-overflow-menu>
         </NodeCard>
@@ -164,23 +164,23 @@
     <!-- set node name modal -->
     <cv-modal
       size="default"
-      :visible="q.isShownSetNodeNameModal"
-      @modal-hidden="hideSetNodeNameModal"
-      @primary-click="setNodeName"
+      :visible="q.isShownSetNodeLabelModal"
+      @modal-hidden="hideSetNodeLabelModal"
+      @primary-click="setNodeLabel"
     >
-      <template slot="title">{{ $t("nodes.edit_node_name") }}</template>
+      <template slot="title">{{ $t("nodes.edit_node_label") }}</template>
       <template slot="content">
         <template v-if="currentNode">
           <cv-text-input
-            :label="$t('nodes.node_name')"
-            v-model.trim="newNodeName"
-            ref="newNodeName"
+            :label="$t('nodes.node_label')"
+            v-model.trim="newNodeLabel"
+            ref="newNodeLabel"
           >
           </cv-text-input></template
       ></template>
       <template slot="secondary-button">{{ $t("common.cancel") }}</template>
       <template slot="primary-button">{{
-        $t("nodes.edit_node_name")
+        $t("nodes.edit_node_label")
       }}</template>
     </cv-modal>
   </div>
@@ -216,7 +216,7 @@ export default {
       NODE_STATUS_TIME_INTERVAL: 5000,
       q: {
         isShownAddNodeModal: false,
-        isShownSetNodeNameModal: false,
+        isShownSetNodeLabelModal: false,
       },
       joinCode: "",
       isCopyClipboardHintShown: false,
@@ -224,7 +224,7 @@ export default {
       nodesStatus: {},
       nodesStatusInterval: null,
       currentNode: null,
-      newNodeName: "",
+      newNodeLabel: "",
       loading: {
         nodes: true,
       },
@@ -418,16 +418,16 @@ export default {
         params: { nodeId },
       });
     },
-    showSetNodeNameModal(node) {
+    showSetNodeLabelModal(node) {
       this.currentNode = node;
-      this.newNodeName = node.name;
-      this.q.isShownSetNodeNameModal = true;
+      this.newNodeLabel = node.name;
+      this.q.isShownSetNodeLabelModal = true;
     },
-    hideSetNodeNameModal() {
-      this.q.isShownSetNodeNameModal = false;
+    hideSetNodeLabelModal() {
+      this.q.isShownSetNodeLabelModal = false;
     },
-    setNodeName() {
-      console.log("setNodeName"); ////
+    setNodeLabel() {
+      console.log("setNodeLabel"); ////
 
       //// call api
 
