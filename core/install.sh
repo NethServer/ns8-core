@@ -29,14 +29,8 @@ if [[ ${ID} == "fedora" ]]; then
     dnf install -y wireguard-tools podman jq openssl
     systemctl disable --now firewalld || :
 elif [[ ${ID} == "debian" ]]; then
-
     apt-get update
     apt-get -y install gnupg2 python3-venv podman wireguard uuid-runtime jq openssl
-
-    # Enable access to journalctl --user
-    grep  -e "^#Storage=persistent" /etc/systemd/journald.conf || echo "Storage=persistent" >> /etc/systemd/journald.conf
-    systemctl restart systemd-journald
-
 else
     echo "System not supported"
     exit 1
@@ -44,9 +38,6 @@ fi
 
 echo "Set kernel parameters:"
 sysctl -w net.ipv4.ip_unprivileged_port_start=23 -w user.max_user_namespaces=28633 -w net.ipv4.ip_forward=1 | tee /etc/sysctl.d/80-nethserver.conf
-if [[ ${ID} == "debian" ]]; then
-    sysctl -w kernel.unprivileged_userns_clone=1 | tee -a /etc/sysctl.d/80-nethserver.conf
-fi
 
 # Pull modules from the given development branch
 imagetag="$1"
