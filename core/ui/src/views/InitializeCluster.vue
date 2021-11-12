@@ -166,6 +166,7 @@
                     ')'
                   "
                   v-model.trim="clusterLabel"
+                  :helper-text="$t('common.cluster_label_tooltip')"
                   :invalid-message="$t(error.clusterLabel)"
                   ref="clusterLabel"
                 >
@@ -178,6 +179,7 @@
                     ')'
                   "
                   v-model.trim="leaderNodeLabel"
+                  :helper-text="$t('init.leader_node_label_tooltip')"
                   :invalid-message="$t(error.leaderNodeLabel)"
                   ref="leaderNodeLabel"
                 >
@@ -218,10 +220,8 @@
                 v-model.trim="joinCode"
                 :invalid-message="$t(error.joinCode)"
                 :helper-text="
-                  $t(
-                    'init.join_code_helper_text' +
-                      ' https://LEADER_NODE_IP/cluster-admin/#/nodes?isShownAddNodeModal=true'
-                  )
+                  $t('init.join_code_helper_text') +
+                  ' https://LEADER_NODE_IP/cluster-admin/#/nodes?isShownAddNodeModal=true'
                 "
                 class="join-code"
                 ref="joinCode"
@@ -240,6 +240,7 @@
                   ')'
                 "
                 v-model.trim="workerNodeLabel"
+                :helper-text="$t('init.worker_node_label_tooltip')"
                 :invalid-message="$t(error.workerNodeLabel)"
                 ref="workerNodeLabel"
               >
@@ -884,6 +885,10 @@ export default {
 .tile-description {
   margin-top: $spacing-03;
   color: $text-02;
+}
+
+.bx--form .bx--form-item {
+  margin-bottom: $spacing-06;
 }
 </style>
 

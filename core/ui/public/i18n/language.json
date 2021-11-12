@@ -33,6 +33,7 @@
     "join_code": "Join code",
     "reload_page": "Reload page",
     "cluster_label": "Cluster label",
+    "cluster_label_tooltip": "You can assign the cluster an easy to remember name",
     "save_settings": "Save settings"
   },
   "error": {
@@ -110,7 +111,9 @@
     "redirect_cluster_link": "Go to cluster administration page",
     "node_added_to_cluster": "Node {nodeId} added to cluster",
     "leader_node_label": "Leader node label",
-    "worker_node_label": "Worker node label"
+    "worker_node_label": "Worker node label",
+    "leader_node_label_tooltip": "You can assign the leader node an easy to remember name",
+    "worker_node_label_tooltip": "You can assign the worker node an easy to remember name"
   },
   "shell": {
     "skip_to_content": "Skip to content",
@@ -317,7 +320,8 @@
     "disk": "Disk",
     "usage": "usage",
     "edit_node_label": "Edit node label",
-    "node_label": "Node label"
+    "node_label": "Node label",
+    "node_label_tooltip": "You can assign the node an easy to remember name"
   },
   "node_detail": {
     "title": "Node detail",

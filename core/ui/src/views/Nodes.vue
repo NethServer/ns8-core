@@ -161,7 +161,7 @@
       </template>
       <template slot="secondary-button">{{ $t("common.close") }}</template>
     </cv-modal>
-    <!-- set node name modal -->
+    <!-- set node label modal -->
     <cv-modal
       size="default"
       :visible="q.isShownSetNodeLabelModal"
@@ -171,13 +171,17 @@
       <template slot="title">{{ $t("nodes.edit_node_label") }}</template>
       <template slot="content">
         <template v-if="currentNode">
-          <cv-text-input
-            :label="$t('nodes.node_label')"
-            v-model.trim="newNodeLabel"
-            ref="newNodeLabel"
-          >
-          </cv-text-input></template
-      ></template>
+          <cv-form @submit.prevent="setNodeLabel">
+            <cv-text-input
+              :label="$t('nodes.node_label')"
+              v-model.trim="newNodeLabel"
+              :helper-text="$t('nodes.node_label_tooltip')"
+              ref="newNodeLabel"
+            >
+            </cv-text-input>
+          </cv-form>
+        </template>
+      </template>
       <template slot="secondary-button">{{ $t("common.cancel") }}</template>
       <template slot="primary-button">{{
         $t("nodes.edit_node_label")
@@ -422,6 +426,9 @@ export default {
       this.currentNode = node;
       this.newNodeLabel = node.name;
       this.q.isShownSetNodeLabelModal = true;
+      setTimeout(() => {
+        this.focusElement("newNodeLabel");
+      }, 300);
     },
     hideSetNodeLabelModal() {
       this.q.isShownSetNodeLabelModal = false;

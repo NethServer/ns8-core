@@ -294,8 +294,6 @@ export default {
             // validation is ok (e.g.: close the modal that created the task)
             this.$root.$emit(taskContext.action + "-validation-ok", task);
             taskValidated = true;
-
-            console.log("validation ok!"); ////
           }
         }
 
