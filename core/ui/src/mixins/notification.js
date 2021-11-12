@@ -278,11 +278,14 @@ export default {
 
           if (
             (taskStatus === "running" || taskStatus === "completed") &&
+            payload.progress > 0 &&
             !task.validated
           ) {
             // validation is ok (e.g.: close the modal that created the task)
             this.$root.$emit(taskContext.action + "-validation-ok", task);
             taskValidated = true;
+
+            console.log("validation ok!", ); ////
           }
         }
 
