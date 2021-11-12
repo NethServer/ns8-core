@@ -19,14 +19,21 @@ jobs:
     name: 'Build ${{ github.workflow }}'
     runs-on: ubuntu-20.04
     steps:
+      - id: info
+        name: "Retrieve runtime information"
+        run: |
+          echo "::set-output name=images-dir::$(buildah info --format '{{.store.GraphRoot}}/overlay-images')"
+          echo "::set-output name=weekstamp::$(date +%YW%W)"
       - id: checkout
         uses: actions/checkout@v2
-      - id: yarn-cache
+      - id: corecache
         uses: actions/cache@v2
         with:
           path: |
+            ${{ steps.info.outputs.images-dir }}
+            ${{ github.workflow }}/.golang-cache
             ${{ github.workflow }}/ui/node_modules
-          key: "yarn-${{ hashFiles(format('{0}/**/yarn.lock', github.workflow)) }}"
+          key: "corecache-${{ steps.info.outputs.weekstamp }}-${{ hashFiles('core/ui/yarn.lock', 'core/agent/go.*', 'core/api-server/go.*', 'core/build-image.sh') }}"
       - id: build
         name: "Build the images"
         run: "cd ${REPONAME} && bash build-image.sh"
