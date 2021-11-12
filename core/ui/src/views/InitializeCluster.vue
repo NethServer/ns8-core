@@ -391,10 +391,14 @@ export default {
         if (err.response.status == 403) {
           this.isMaster = false;
         } else {
-          this.createErrorNotification(
-            err,
-            this.$t("task.cannot_create_task", { action: taskAction })
-          );
+          // persistent error notification
+          const notification = {
+            title: this.$t("task.cannot_create_task", { action: taskAction }),
+            description: this.getErrorMessage(err),
+            type: "error",
+            toastTimeout: 0,
+          };
+          this.createNotification(notification);
           return;
         }
       }
@@ -442,10 +446,14 @@ export default {
         if (err.response.status == 403) {
           this.isMaster = false;
         } else {
-          this.createErrorNotification(
-            err,
-            this.$t("task.cannot_create_task", { action: taskAction })
-          );
+          // persistent error notification
+          const notification = {
+            title: this.$t("task.cannot_create_task", { action: taskAction }),
+            description: this.getErrorMessage(err),
+            type: "error",
+            toastTimeout: 0,
+          };
+          this.createNotification(notification);
           return;
         }
       }
@@ -580,10 +588,14 @@ export default {
         if (err.response.status == 403) {
           this.isMaster = false;
         } else {
-          this.createErrorNotification(
-            err,
-            this.$t("task.cannot_create_task", { action: taskAction })
-          );
+          // persistent error notification
+          const notification = {
+            title: this.$t("task.cannot_create_task", { action: taskAction }),
+            description: this.getErrorMessage(err),
+            type: "error",
+            toastTimeout: 0,
+          };
+          this.createNotification(notification);
           return;
         }
       }
@@ -687,10 +699,14 @@ export default {
         if (err.response.status == 403) {
           this.isMaster = false;
         } else {
-          this.createErrorNotification(
-            err,
-            this.$t("task.cannot_create_task", { action: taskAction })
-          );
+          // persistent error notification
+          const notification = {
+            title: this.$t("task.cannot_create_task", { action: taskAction }),
+            description: this.getErrorMessage(err),
+            type: "error",
+            toastTimeout: 0,
+          };
+          this.createNotification(notification);
         }
         return;
       }
@@ -800,10 +816,14 @@ export default {
         if (err.response.status == 403) {
           this.isMaster = false;
         } else {
-          this.createErrorNotification(
-            err,
-            this.$t("task.cannot_create_task", { action: taskAction })
-          );
+          // persistent error notification
+          const notification = {
+            title: this.$t("task.cannot_create_task", { action: taskAction }),
+            description: this.getErrorMessage(err),
+            type: "error",
+            toastTimeout: 0,
+          };
+          this.createNotification(notification);
           return;
         }
       }
