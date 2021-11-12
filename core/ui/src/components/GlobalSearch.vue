@@ -80,7 +80,7 @@ export default {
       results: [],
       selectedResult: {},
       lastSearchQuery: "",
-      searchFields: ["name", "description", "source", "tags"],
+      searchFields: ["name", "description", "source", "tags", "label"],
       minChars: 1, //// 2
       maxResults: 10,
       actionsResults: [],
@@ -184,12 +184,16 @@ export default {
 
       for (let instanceList of Object.values(taskResult.output)) {
         for (let instance of instanceList) {
+          //// remove mock
+          instance.label = "My " + instance.id;
+
           const openAppResult = {
-            name: instance.id,
+            name: instance.label ? instance.label : instance.id,
             description: this.$t("shell.open_app", { app: instance.module }),
             path: "/apps/" + instance.id,
             source: instance.id,
             tags: [],
+            label: instance.label,
           };
           openAppResults.push(openAppResult);
         }

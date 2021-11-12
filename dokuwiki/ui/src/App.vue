@@ -11,19 +11,22 @@
 <script>
 import AppSideMenu from "./components/AppSideMenu";
 import AppMobileSideMenu from "./components/AppMobileSideMenu";
-import { mapActions } from "vuex";
+import { mapState, mapActions } from "vuex";
 import { QueryParamService } from "@nethserver/ns8-ui-lib";
 
 export default {
   name: "App",
   components: { AppSideMenu, AppMobileSideMenu },
   mixins: [QueryParamService],
+  computed: {
+    ...mapState(["instanceName", "instanceLabel"]),
+  },
   created() {
     const ns8Core = window.parent.ns8;
     this.setNs8CoreInStore(ns8Core);
-
-    const appInstance = /#\/apps\/(\w+)/.exec(window.parent.location.hash)[1];
-    this.setInstanceNameInStore(appInstance);
+    const instanceName = /#\/apps\/(\w+)/.exec(window.parent.location.hash)[1];
+    this.setInstanceNameInStore(instanceName);
+    this.getInstanceLabel();
 
     // listen to change route events
     const context = this;
@@ -47,7 +50,19 @@ export default {
     }
   },
   methods: {
-    ...mapActions(["setInstanceNameInStore", "setNs8CoreInStore"]),
+    ...mapActions([
+      "setInstanceNameInStore",
+      "setInstanceLabelInStore",
+      "setNs8CoreInStore",
+    ]),
+    getInstanceLabel() {
+      //// call api
+
+      //// remove mock
+      const instanceLabel = "My " + this.instanceName;
+
+      this.setInstanceLabelInStore(instanceLabel);
+    },
   },
 };
 </script>

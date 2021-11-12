@@ -164,7 +164,7 @@
     <!-- set node label modal -->
     <cv-modal
       size="default"
-      :visible="q.isShownSetNodeLabelModal"
+      :visible="isShownSetNodeLabelModal"
       @modal-hidden="hideSetNodeLabelModal"
       @primary-click="setNodeLabel"
     >
@@ -173,8 +173,11 @@
         <template v-if="currentNode">
           <cv-form @submit.prevent="setNodeLabel">
             <cv-text-input
-              :label="$t('nodes.node_label')"
+              :label="
+                $t('nodes.node_label') + ' (' + $t('common.optional') + ')'
+              "
               v-model.trim="newNodeLabel"
+              :placeholder="$t('common.no_label')"
               :helper-text="$t('nodes.node_label_tooltip')"
               ref="newNodeLabel"
             >
@@ -220,7 +223,6 @@ export default {
       NODE_STATUS_TIME_INTERVAL: 5000,
       q: {
         isShownAddNodeModal: false,
-        isShownSetNodeLabelModal: false,
       },
       joinCode: "",
       isCopyClipboardHintShown: false,
@@ -229,6 +231,7 @@ export default {
       nodesStatusInterval: null,
       currentNode: null,
       newNodeLabel: "",
+      isShownSetNodeLabelModal: false,
       loading: {
         nodes: true,
       },
@@ -425,13 +428,13 @@ export default {
     showSetNodeLabelModal(node) {
       this.currentNode = node;
       this.newNodeLabel = node.name;
-      this.q.isShownSetNodeLabelModal = true;
+      this.isShownSetNodeLabelModal = true;
       setTimeout(() => {
         this.focusElement("newNodeLabel");
       }, 300);
     },
     hideSetNodeLabelModal() {
-      this.q.isShownSetNodeLabelModal = false;
+      this.isShownSetNodeLabelModal = false;
     },
     setNodeLabel() {
       console.log("setNodeLabel"); ////

@@ -89,7 +89,7 @@
                         />
                       </div>
                       <div>
-                        {{ app.id }}
+                        {{ app.label ? app.label : app.id }}
                       </div>
                     </div>
                     <cv-toggle
@@ -166,7 +166,7 @@
                             :alt="app.name + ' logo'"
                           />
                         </div>
-                        {{ app.id }}
+                        {{ app.label ? app.label : app.id }}
                       </div>
                     </div>
                   </div>
@@ -202,7 +202,7 @@
                           :alt="app.name + ' logo'"
                         />
                       </div>
-                      {{ app.id }}
+                      {{ app.label ? app.label : app.id }}
                     </div>
                   </div>
                 </div>
@@ -230,7 +230,7 @@
                                 :alt="app.name + ' logo'"
                               />
                             </div>
-                            <span>{{ app.id }}</span>
+                            <span>{{ app.label ? app.label : app.id }}</span>
                           </div></cv-structured-list-data
                         >
                       </cv-structured-list-item>
@@ -261,7 +261,7 @@
                               :alt="app.name + ' logo'"
                             />
                           </div>
-                          <span>{{ app.id }}</span>
+                          <span>{{ app.label ? app.label : app.id }}</span>
                         </div></cv-structured-list-data
                       >
                     </cv-structured-list-item>
@@ -297,6 +297,7 @@ export default {
       apps: [],
       searchResults: [],
       isSearchActive: false,
+      searchFields: ["id", "label"],
       loading: {
         apps: true,
       },
@@ -428,6 +429,9 @@ export default {
 
       for (let instanceList of Object.values(taskResult.output)) {
         for (let instance of instanceList) {
+          //// remove mock
+          instance.label = "My " + instance.id;
+
           apps.push(instance);
         }
       }
@@ -457,8 +461,16 @@ export default {
 
       // search
       this.searchResults = this.apps.filter((app) => {
-        // standard string search field
-        return new RegExp(queryText, "i").test(app.id.replace(cleanRegex, ""));
+        // compare query text with all search fields of option
+        return this.searchFields.some((searchField) => {
+          const searchValue = app[searchField];
+
+          if (searchValue) {
+            return new RegExp(queryText, "i").test(
+              searchValue.replace(cleanRegex, "")
+            );
+          }
+        });
       }, this);
     },
     toggleEditFavorites() {

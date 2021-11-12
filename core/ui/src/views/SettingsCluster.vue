@@ -40,6 +40,7 @@
                 $t('common.cluster_label') + ' (' + $t('common.optional') + ')'
               "
               v-model.trim="clusterLabel"
+              :placeholder="$t('common.no_label')"
               :helper-text="$t('common.cluster_label_tooltip')"
               :invalid-message="$t(error.clusterLabel)"
               :disabled="loading.getClusterStatus"

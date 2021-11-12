@@ -1,7 +1,9 @@
 <template>
   <div class="app-side-menu-content">
     <div class="instance-name">
-      <span v-if="instanceName">{{ instanceName }}</span>
+      <span v-if="instanceName">{{
+        instanceLabel ? instanceLabel : instanceName
+      }}</span>
       <cv-skeleton-text
         v-else
         :width="instanceNameSkeletonWidth"
@@ -64,7 +66,7 @@ export default {
     };
   },
   computed: {
-    ...mapState(["instanceName", "ns8Core"]),
+    ...mapState(["instanceName", "instanceLabel", "ns8Core"]),
   },
   created() {
     // register to appNavigation event

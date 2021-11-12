@@ -20,11 +20,21 @@
       />
       <div v-if="nodes.length == 1">
         <div>
-          {{
-            $t("software_center.about_to_install_app", {
-              app: app.name,
-            })
-          }}
+          <cv-form @submit.prevent="installInstance">
+            <cv-text-input
+              :label="
+                $t('software_center.instance_label') +
+                ' (' +
+                $t('common.optional') +
+                ')'
+              "
+              v-model.trim="instanceLabel"
+              :placeholder="$t('common.no_label')"
+              :helper-text="$t('software_center.instance_label_tooltip')"
+              ref="instanceLabel"
+            >
+            </cv-text-input>
+          </cv-form>
         </div>
       </div>
       <div v-else>
@@ -35,36 +45,53 @@
             })
           }}
         </div>
-        <div class="bx--grid bx--grid--full-width nodes">
-          <div class="bx--row">
-            <div
-              v-for="(node, index) in nodes"
-              :key="index"
-              class="bx--col-sm-2 bx--col-md-2"
-            >
-              <NsTile
-                :light="true"
-                kind="selectable"
-                v-model="node.selected"
-                value="nodeValue"
-                :footerIcon="Chip20"
-                @click="deselectOtherNodes(node)"
+        <cv-form @submit.prevent="installInstance">
+          <div class="bx--grid bx--grid--full-width nodes">
+            <div class="bx--row">
+              <div
+                v-for="(node, index) in nodes"
+                :key="index"
+                class="bx--col-sm-2 bx--col-md-2"
               >
-                <h6>{{ $t("common.node") }} {{ node.id }}</h6>
-              </NsTile>
+                <NsTile
+                  :light="true"
+                  kind="selectable"
+                  v-model="node.selected"
+                  value="nodeValue"
+                  :footerIcon="Chip20"
+                  @click="deselectOtherNodes(node)"
+                >
+                  <h6>{{ $t("common.node") }} {{ node.id }}</h6>
+                </NsTile>
+              </div>
+            </div>
+            <div class="bx--row">
+              <cv-text-input
+                :label="
+                  $t('software_center.instance_label') +
+                  ' (' +
+                  $t('common.optional') +
+                  ')'
+                "
+                v-model.trim="instanceLabel"
+                :placeholder="$t('common.no_label')"
+                :helper-text="$t('software_center.instance_label_tooltip')"
+                ref="instanceLabel"
+              >
+              </cv-text-input>
+            </div>
+            <div v-if="error.addModule" class="bx--row">
+              <div class="bx--col">
+                <NsInlineNotification
+                  kind="error"
+                  :title="$t('action.add-module')"
+                  :description="error.addModule"
+                  :showCloseButton="false"
+                />
+              </div>
             </div>
           </div>
-          <div v-if="error.addModule" class="bx--row">
-            <div class="bx--col">
-              <NsInlineNotification
-                kind="error"
-                :title="$t('action.add-module')"
-                :description="error.addModule"
-                :showCloseButton="false"
-              />
-            </div>
-          </div>
-        </div>
+        </cv-form>
       </div>
     </template>
     <template slot="secondary-button">{{ $t("common.cancel") }}</template>
@@ -89,6 +116,7 @@ export default {
   data() {
     return {
       nodes: [],
+      instanceLabel: "",
       error: {
         nodes: "",
         addModule: "",
@@ -142,6 +170,7 @@ export default {
           data: {
             image: this.app.source + ":" + version,
             node: parseInt(this.selectedNode.id),
+            //// instanceLabel
           },
           extra: {
             title: this.$t("software_center.app_installation", {

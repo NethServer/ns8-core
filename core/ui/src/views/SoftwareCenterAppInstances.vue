@@ -95,75 +95,53 @@
           :key="index"
           class="bx--col-md-4 bx--col-max-4"
         >
-          <NsInfoCard light :title="instance.id" :icon="Application32">
+          <NsInfoCard
+            light
+            :title="instance.label ? instance.label : instance.id"
+            :icon="Application32"
+          >
             <div class="slot-content">
-              <!-- app is installed and can be updated -->
-              <template v-if="isInstanceUpgradable(app, instance)">
-                <cv-overflow-menu
-                  :flip-menu="true"
-                  tip-position="top"
-                  tip-alignment="end"
-                  class="top-right-overflow-menu"
+              <cv-overflow-menu
+                :flip-menu="true"
+                tip-position="top"
+                tip-alignment="end"
+                class="top-right-overflow-menu"
+              >
+                <cv-overflow-menu-item
+                  primary-focus
+                  v-if="isInstanceUpgradable(app, instance)"
+                  @click="openInstance(instance)"
+                  >{{ $t("software_center.open") }}</cv-overflow-menu-item
                 >
-                  <cv-overflow-menu-item
-                    primary-focus
-                    @click="openInstance(instance)"
-                    >{{ $t("software_center.open") }}</cv-overflow-menu-item
-                  >
-                  <cv-overflow-menu-item
-                    v-if="!favoriteApps.includes(instance.id)"
-                    @click="addAppToFavorites(instance)"
-                    >{{
-                      $t("software_center.add_to_favorites")
-                    }}</cv-overflow-menu-item
-                  >
-                  <cv-overflow-menu-item
-                    v-if="favoriteApps.includes(instance.id)"
-                    @click="removeAppFromFavorites(instance)"
-                    >{{
-                      $t("software_center.remove_from_favorites")
-                    }}</cv-overflow-menu-item
-                  >
-                  <cv-overflow-menu-item
-                    danger
-                    @click="showUninstallModal(app, instance)"
-                    >{{
-                      $t("software_center.uninstall")
-                    }}</cv-overflow-menu-item
-                  >
-                </cv-overflow-menu>
-              </template>
-              <!-- app is installed, no update available -->
-              <template v-else>
-                <cv-overflow-menu
-                  :flip-menu="true"
-                  tip-position="top"
-                  tip-alignment="end"
-                  class="top-right-overflow-menu"
+                <cv-overflow-menu-item
+                  v-if="!favoriteApps.includes(instance.id)"
+                  @click="addAppToFavorites(instance)"
+                  >{{
+                    $t("software_center.add_to_favorites")
+                  }}</cv-overflow-menu-item
                 >
-                  <cv-overflow-menu-item
-                    v-if="!favoriteApps.includes(instance.id)"
-                    @click="addAppToFavorites(instance)"
-                    >{{
-                      $t("software_center.add_to_favorites")
-                    }}</cv-overflow-menu-item
-                  >
-                  <cv-overflow-menu-item
-                    v-if="favoriteApps.includes(instance.id)"
-                    @click="removeAppFromFavorites(instance)"
-                    >{{
-                      $t("software_center.remove_from_favorites")
-                    }}</cv-overflow-menu-item
-                  >
-                  <cv-overflow-menu-item
-                    danger
-                    @click="showUninstallModal(app, instance)"
-                    >{{
-                      $t("software_center.uninstall")
-                    }}</cv-overflow-menu-item
-                  >
-                </cv-overflow-menu>
-              </template>
+                <cv-overflow-menu-item
+                  @click="showSetInstanceLabelModal(instance)"
+                  >{{
+                    $t("software_center.edit_instance_label")
+                  }}</cv-overflow-menu-item
+                >
+                <cv-overflow-menu-item
+                  v-if="favoriteApps.includes(instance.id)"
+                  @click="removeAppFromFavorites(instance)"
+                  >{{
+                    $t("software_center.remove_from_favorites")
+                  }}</cv-overflow-menu-item
+                >
+                <cv-overflow-menu-item
+                  danger
+                  @click="showUninstallModal(app, instance)"
+                  >{{ $t("software_center.uninstall") }}</cv-overflow-menu-item
+                >
+              </cv-overflow-menu>
+              <div v-if="instance.label" class="row">
+                {{ instance.id }}
+              </div>
               <div class="row">
                 {{ $t("common.version") }} {{ instance.version }}
               </div>
@@ -238,6 +216,40 @@
         $t("software_center.uninstall_instance")
       }}</template>
     </cv-modal>
+    <!-- set instance label modal -->
+    <cv-modal
+      size="default"
+      :visible="isShownEditInstanceLabel"
+      @modal-hidden="hideSetInstanceLabelModal"
+      @primary-click="setInstanceLabel"
+    >
+      <template slot="title">{{
+        $t("software_center.edit_instance_label")
+      }}</template>
+      <template slot="content">
+        <template v-if="currentInstance">
+          <cv-form @submit.prevent="setInstanceLabel">
+            <cv-text-input
+              :label="
+                $t('software_center.instance_label') +
+                ' (' +
+                $t('common.optional') +
+                ')'
+              "
+              v-model.trim="newInstanceLabel"
+              :placeholder="$t('common.no_label')"
+              :helper-text="$t('software_center.instance_label_tooltip')"
+              ref="newInstanceLabel"
+            >
+            </cv-text-input>
+          </cv-form>
+        </template>
+      </template>
+      <template slot="secondary-button">{{ $t("common.cancel") }}</template>
+      <template slot="primary-button">{{
+        $t("software_center.edit_instance_label")
+      }}</template>
+    </cv-modal>
   </div>
 </template>
 
@@ -264,9 +276,12 @@ export default {
       appName: "",
       app: null,
       isShownInstallModal: false,
+      isShownEditInstanceLabel: false,
       isUninstallModalShown: false,
       appToUninstall: null,
       instanceToUninstall: null,
+      currentInstance: null,
+      newInstanceLabel: "",
       loading: {
         modules: true,
       },
@@ -329,6 +344,12 @@ export default {
 
       if (app) {
         app.installed.sort(this.sortModuleInstances());
+
+        //// remove mock
+        app.installed.forEach((instance) => {
+          instance.label = "My " + instance.id;
+        });
+
         this.app = app;
       }
     },
@@ -456,6 +477,25 @@ export default {
     },
     installInstance() {
       this.isShownInstallModal = true;
+    },
+    showSetInstanceLabelModal(instance) {
+      console.log("showSetInstanceLabelModal", instance); ////
+      this.currentInstance = instance;
+      this.newInstanceLabel = instance.id;
+      this.isShownEditInstanceLabel = true;
+      setTimeout(() => {
+        this.focusElement("newInstanceLabel");
+      }, 300);
+    },
+    hideSetInstanceLabelModal() {
+      this.isShownEditInstanceLabel = false;
+    },
+    setInstanceLabel() {
+      console.log("setInstanceLabel"); ////
+
+      //// call api
+
+      //// reload instances
     },
   },
 };
