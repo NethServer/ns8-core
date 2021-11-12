@@ -260,6 +260,7 @@ func runAction(task *models.Task) {
 
 		// Create a pipe to read control commands from action steps
 		comReadFd, comWriteFd, _ := os.Pipe()
+		comReadLock := make(chan int)
 
 		cmd := exec.Command(step.Path)
 		cmd.Env = append(append(os.Environ(), environment...),
@@ -294,7 +295,7 @@ func runAction(task *models.Task) {
 			for {
 				record, err := rdr.Read()
 				if err == io.EOF {
-					return
+					break
 				}
 				if err != nil {
 					log.Printf(SD_ERR+"Parse error: %v", err)
@@ -349,6 +350,7 @@ func runAction(task *models.Task) {
 					log.Printf(SD_ERR+"Unknown command %s", cmd)
 				}
 			}
+			comReadLock <- 1
 		}()
 
 		log.Printf("%s/task/%s: %s/%s is starting", agentPrefix, task.ID, task.Action, step.Name)
@@ -364,6 +366,8 @@ func runAction(task *models.Task) {
 		// otherwise it blocks our thread.
 		comWriteFd.Close()
 
+		// Block until AGENT_COMFD / command channel is closed
+		<- comReadLock
 		if err := cmd.Wait(); err != nil {
 			exitCode = cmd.ProcessState.ExitCode()
 			if actionDescriptor.Status == "running" {
