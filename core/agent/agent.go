@@ -191,9 +191,11 @@ func runAction(task *models.Task) {
 	var actionError string = ""
 	var exitCode int = 0
 
+	lastStep := "{unknown}"
+
 	actionDescriptor := action.Create(task.Action, actionPaths)
 
-	publishStatus(rdb, progressChannel, actionDescriptor)
+	publishStatus(rdb, progressChannel, actionDescriptor) // publish pending status
 
 	if len(actionDescriptor.Steps) == 0 {
 		// If the action is not defined our exit code is returned
@@ -210,6 +212,7 @@ func runAction(task *models.Task) {
 	environment := dedupEnv(prepareActionEnvironment())
 
 	for stepIndex, step := range actionDescriptor.Steps {
+		lastStep = step.Name
 
 		// Special treatment for builtin validation steps
 		if step.Name == action.STEP_VALIDATE_INPUT {
@@ -249,6 +252,10 @@ func runAction(task *models.Task) {
 				break
 			}
 			continue
+
+		} else if actionDescriptor.Status == "pending" {
+			actionDescriptor.Status = "running"
+			publishStatus(rdb, progressChannel, actionDescriptor) // publish running status
 		}
 
 		// Create a pipe to read control commands from action steps
@@ -317,26 +324,25 @@ func runAction(task *models.Task) {
 					weight, err = strconv.Atoi(record[2])
 					if err != nil {
 						log.Printf(SD_ERR+"set-weight command failed: %v", err)
-						break
+						continue
 					}
 					err = actionDescriptor.SetStepWeight(record[1], weight)
 					if err != nil {
 						log.Printf(SD_ERR+"set-weight command failed: %v", err)
-						break
+						continue
 					}
-					publishStatus(rdb, progressChannel, actionDescriptor)
 				case "set-progress":
 					var progress int
 					var err error
 					progress, err = strconv.Atoi(record[1])
 					if err != nil {
 						log.Printf(SD_ERR+"set-progress command failed: %v", err)
-						break
+						continue
 					}
 					err = actionDescriptor.SetProgressAtStep(stepIndex, progress)
 					if err != nil {
 						log.Printf(SD_ERR+"set-progress command failed: %v", err)
-						break
+						continue
 					}
 					publishStatus(rdb, progressChannel, actionDescriptor)
 				default:
@@ -344,8 +350,6 @@ func runAction(task *models.Task) {
 				}
 			}
 		}()
-
-		actionDescriptor.Status = "running"
 
 		log.Printf("%s/task/%s: %s/%s is starting", agentPrefix, task.ID, task.Action, step.Name)
 		if err := cmd.Start(); err != nil {
@@ -365,11 +369,12 @@ func runAction(task *models.Task) {
 			if actionDescriptor.Status == "running" {
 				actionDescriptor.Status = "aborted"
 			}
-			log.Printf(SD_ERR+"Action %s %s at step %s: %v", task.Action, actionDescriptor.Status, step.Path, err)
 			break
-		} else if actionDescriptor.Status == "validation-failed" {
-			exitCode = 10 // validation-error forces a non-zero exit code
-			log.Printf(SD_ERR+"Action %s %s at step %s: %v", task.Action, actionDescriptor.Status, step.Path, err)
+		}
+
+		if actionDescriptor.Status == "validation-failed" {
+			exitCode = 10 // if no exit code was returned, validation-failed forces exit code 10
+			log.Printf(SD_WARNING+"Action \"%s\" validation-failed at step %s. Exit code is not set! Forced to 10", task.Action, step.Path)
 			break
 		}
 
@@ -405,7 +410,7 @@ func runAction(task *models.Task) {
 			dumpToFile(environment)
 		}
 	}
-	log.Printf("%s/task/%s: action \"%s\" status is \"%s\" (%d)", agentPrefix, task.ID, task.Action, actionDescriptor.Status, exitCode)
+	log.Printf("%s/task/%s: action \"%s\" status is \"%s\" (%d) at step %s", agentPrefix, task.ID, task.Action, actionDescriptor.Status, exitCode, lastStep)
 }
 
 func setClientNameCallback (ctx context.Context, cn *redis.Conn) error {
