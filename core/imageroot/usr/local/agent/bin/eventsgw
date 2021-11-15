@@ -87,6 +87,7 @@ async def _listener(tasks_map):
         password='default',
         decode_responses=True,
     ) as rdb:
+        await rdb.client_setname(os.getenv('AGENT_ID', 'default'))
         psubscribe_list = []
         subscribe_list = []
         for channel in tasks_map:
