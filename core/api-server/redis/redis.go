@@ -38,7 +38,12 @@ func Instance() *redis.Client {
 		Username: configuration.Config.RedisUser,
 		Password: configuration.Config.RedisPassword,
 		DB:       0, // redis database
+		OnConnect: setClientNameCallback,
 	})
 
 	return redisConnection
+}
+
+func setClientNameCallback (ctx context.Context, cn *redis.Conn) error {
+	return cn.ClientSetName(ctx, configuration.Config.RedisUser).Err()
 }
