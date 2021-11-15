@@ -481,7 +481,7 @@ export default {
     showSetInstanceLabelModal(instance) {
       console.log("showSetInstanceLabelModal", instance); ////
       this.currentInstance = instance;
-      this.newInstanceLabel = instance.id;
+      this.newInstanceLabel = instance.label;
       this.isShownEditInstanceLabel = true;
       setTimeout(() => {
         this.focusElement("newInstanceLabel");

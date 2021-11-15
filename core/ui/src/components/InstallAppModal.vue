@@ -18,35 +18,16 @@
         :description="error.nodes"
         :showCloseButton="false"
       />
-      <div v-if="nodes.length == 1">
-        <div>
-          <cv-form @submit.prevent="installInstance">
-            <cv-text-input
-              :label="
-                $t('software_center.instance_label') +
-                ' (' +
-                $t('common.optional') +
-                ')'
-              "
-              v-model.trim="instanceLabel"
-              :placeholder="$t('common.no_label')"
-              :helper-text="$t('software_center.instance_label_tooltip')"
-              ref="instanceLabel"
-            >
-            </cv-text-input>
-          </cv-form>
-        </div>
-      </div>
-      <div v-else>
-        <div>
-          {{
-            $t("software_center.choose_node_for_installation", {
-              app: app.name,
-            })
-          }}
-        </div>
-        <cv-form @submit.prevent="installInstance">
-          <div class="bx--grid bx--grid--full-width nodes">
+      <cv-form @submit.prevent="installInstance">
+        <template v-if="nodes.length > 1">
+          <div>
+            {{
+              $t("software_center.choose_node_for_installation", {
+                app: app.name,
+              })
+            }}
+          </div>
+          <div class="bx--grid bx--grid--full-width nodes mg-bottom-md">
             <div class="bx--row">
               <div
                 v-for="(node, index) in nodes"
@@ -65,34 +46,32 @@
                 </NsTile>
               </div>
             </div>
-            <div class="bx--row">
-              <cv-text-input
-                :label="
-                  $t('software_center.instance_label') +
-                  ' (' +
-                  $t('common.optional') +
-                  ')'
-                "
-                v-model.trim="instanceLabel"
-                :placeholder="$t('common.no_label')"
-                :helper-text="$t('software_center.instance_label_tooltip')"
-                ref="instanceLabel"
-              >
-              </cv-text-input>
-            </div>
-            <div v-if="error.addModule" class="bx--row">
-              <div class="bx--col">
-                <NsInlineNotification
-                  kind="error"
-                  :title="$t('action.add-module')"
-                  :description="error.addModule"
-                  :showCloseButton="false"
-                />
-              </div>
-            </div>
           </div>
-        </cv-form>
-      </div>
+        </template>
+        <div>
+          <cv-text-input
+            :label="
+              $t('software_center.instance_label') +
+              ' (' +
+              $t('common.optional') +
+              ')'
+            "
+            v-model.trim="instanceLabel"
+            :placeholder="$t('common.no_label')"
+            :helper-text="$t('software_center.instance_label_tooltip')"
+            ref="instanceLabel"
+          >
+          </cv-text-input>
+        </div>
+        <div v-if="error.addModule">
+          <NsInlineNotification
+            kind="error"
+            :title="$t('action.add-module')"
+            :description="error.addModule"
+            :showCloseButton="false"
+          />
+        </div>
+      </cv-form>
     </template>
     <template slot="secondary-button">{{ $t("common.cancel") }}</template>
     <template slot="primary-button">{{
@@ -159,6 +138,17 @@ export default {
       } else {
         version = "latest";
       }
+
+      //// remove mock
+      version = "latest";
+
+      console.log(
+        "installing version",
+        version,
+        "to node",
+        this.selectedNode.id
+      ); ////
+
       const taskAction = "add-module";
 
       // register to task completion
