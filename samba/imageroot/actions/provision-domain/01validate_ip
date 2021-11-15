@@ -20,7 +20,6 @@
 # along with NethServer.  If not, see COPYING.
 #
 
-exec 1>&2
 set -e
 
 cat >&"${AGENT_COMFD}" <<EOF
