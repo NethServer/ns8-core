@@ -89,6 +89,7 @@ async def _runp(tasks, **kwargs):
         parent_cbk = None
 
     nowait = kwargs.pop('nowait', False)
+    kwargs.setdefault('check_idle_time', 0 if nowait else 8) # Check the client connection is alive
 
     runners = []
     for idx, taskrq in enumerate(tasks):

@@ -29,3 +29,6 @@ class TaskStatusNotFound(Exception):
 
 class TaskRetryPubSubDisconnect(Exception):
     pass
+
+class TaskSubmissionCheckFailed(Exception):
+    pass
