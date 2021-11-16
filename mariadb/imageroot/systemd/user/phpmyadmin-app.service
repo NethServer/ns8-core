@@ -1,0 +1,20 @@
+
+[Unit]
+Description=Podman phpmyadmin-app.service
+BindsTo=mariadb.service
+After=mariadb.service
+
+[Service]
+Environment=PODMAN_SYSTEMD_UNIT=%n
+EnvironmentFile=%S/state/environment
+Restart=always
+TimeoutStopSec=70
+ExecStartPre=/bin/rm -f %t/phpmyadmin-app.pid %t/phpmyadmin-app.ctr-id
+ExecStart=/usr/bin/podman run --conmon-pidfile %t/phpmyadmin-app.pid --cidfile %t/phpmyadmin-app.ctr-id --cgroups=no-conmon --pod-id-file %t/mariadb.pod-id --replace -d --name phpmyadmin-app --env-file=%S/state/environment -e PMA_HOST=127.0.0.1 -e PMA_PORT=3306  -v config.user.inc.php:/etc/phpmyadmin/config.user.inc.php ${PHPMYADMIN_IMAGE}
+ExecStop=/usr/bin/podman stop --ignore --cidfile %t/phpmyadmin-app.ctr-id -t 10
+ExecStopPost=/usr/bin/podman rm --ignore -f --cidfile %t/phpmyadmin-app.ctr-id
+PIDFile=%t/phpmyadmin-app.pid
+Type=forking
+
+[Install]
+WantedBy=default.target

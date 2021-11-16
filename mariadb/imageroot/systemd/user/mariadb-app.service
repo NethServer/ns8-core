@@ -1,0 +1,19 @@
+[Unit]
+Description=Podman mariadb-app.service
+BindsTo=mariadb.service
+After=mariadb.service
+
+[Service]
+Environment=PODMAN_SYSTEMD_UNIT=%n
+EnvironmentFile=%S/state/environment
+Restart=always
+TimeoutStopSec=70
+ExecStartPre=/bin/rm -f %t/mariadb-app.pid %t/mariadb-app.ctr-id
+ExecStart=/usr/bin/podman run --conmon-pidfile %t/mariadb-app.pid --cidfile %t/mariadb-app.ctr-id --cgroups=no-conmon --pod-id-file %t/mariadb.pod-id --replace -d --name mariadb-app --env-file=%S/state/environment   -v mysql-data:/var/lib/mysql/:Z -v mysql-conf.d:/etc/mysql/conf.d:Z -e MARIADB_ROOT_PASSWORD=pass ${MARIADB_IMAGE} --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+ExecStop=/usr/bin/podman stop --ignore --cidfile %t/mariadb-app.ctr-id -t 10
+ExecStopPost=/usr/bin/podman rm --ignore -f --cidfile %t/mariadb-app.ctr-id
+PIDFile=%t/mariadb-app.pid
+Type=forking
+
+[Install]
+WantedBy=default.target
