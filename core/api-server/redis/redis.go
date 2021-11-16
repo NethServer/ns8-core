@@ -23,16 +23,18 @@
 package redis
 
 import (
+	"context"
+	"strings"
+	"strconv"
+	"fmt"
 	"github.com/NethServer/ns8-scratchpad/core/api-server/configuration"
 
 	"github.com/go-redis/redis/v8"
 )
 
-var redisConnection *redis.Client
-
 func Instance() *redis.Client {
 	// init client
-	redisConnection = redis.NewClient(&redis.Options{
+	return redis.NewClient(&redis.Options{
 		Network:  "tcp",
 		Addr:     configuration.Config.RedisAddress,
 		Username: configuration.Config.RedisUser,
@@ -40,8 +42,41 @@ func Instance() *redis.Client {
 		DB:       0, // redis database
 		OnConnect: setClientNameCallback,
 	})
+}
 
-	return redisConnection
+/*
+ * Check the client with name "searchName" has an idle time less than "limit"
+ */
+func CheckClientIdle(ctx context.Context, rdb *redis.Client, searchName string, limit int) (bool, error) {
+	// Consider only "normal" clients: agents are among them
+	val, err := rdb.Do(ctx, "CLIENT", "LIST", "TYPE", "normal").Result()
+	if err != nil {
+		return false, fmt.Errorf("Redis CLIENT LIST command failed (%v)", err)
+	}
+	// Split the CLIENT LIST output by lines and spaces
+	for _, line := range(strings.Split(val.(string), "\n")) {
+		var clientName string
+		var clientIdle int
+		var convError error
+		// Seek idle= and name= fields among the fields list
+		for _, field := range(strings.Split(line, " ")) {
+			if strings.HasPrefix(field, "idle=") {
+				clientIdle, convError = strconv.Atoi(field[5:])
+				if convError != nil {
+					return false, fmt.Errorf("Failed to parse Redis response (%v)", convError)
+				}
+			} else if strings.HasPrefix(field, "name=") {
+				clientName = field[5:]
+			}
+		}
+		if searchName == clientName {
+			// agent found: let's check its idle time
+			if clientIdle <= limit {
+				return true, nil
+			}
+		}
+	}
+	return false, fmt.Errorf("Client name %s not found", searchName)
 }
 
 func setClientNameCallback (ctx context.Context, cn *redis.Conn) error {
