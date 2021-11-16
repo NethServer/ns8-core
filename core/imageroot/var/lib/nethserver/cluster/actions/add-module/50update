@@ -181,6 +181,7 @@ create_module_result = agent.tasks.run(
         'images': extra_images,
     },
     endpoint="redis://cluster-leader",
+    check_idle_time=0, # disable idle check and wait until the agent is up
     progress_callback=agent.get_progress_callback(67,95),
 )
 agent.assert_exp(create_module_result['exit_code'] == 0) # Ensure create-module is successful
