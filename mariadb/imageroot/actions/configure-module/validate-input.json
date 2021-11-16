@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Configure mariadb",
+  "$id": "http://nethserver.org/json-schema/task/input/mariadb/configure",
+  "description": "Configure mariadb",
+  "examples": [
+    {
+      "mariadb_tcp_port": "3306"
+    }
+  ],
+  "type": "object",
+  "required": [
+    "mariadb_tcp_port"
+  ],
+  "properties": {
+    "mariadb_tcp_port": {
+      "type": "integer",
+      "exclusiveMinimum": 1024,
+      "exclusiveMaximum": 65535,
+      "description": "TCP port where mariadb is listening"
+    }
+  }
+}

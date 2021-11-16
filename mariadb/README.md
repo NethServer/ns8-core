@@ -41,7 +41,8 @@ Example:
 { 
 "host": "phpmyadmin.domain.com", 
 "http2https": true,
-"lets_encrypt": false
+"lets_encrypt": false,
+"mariadb_tcp_port":3306
 }
 EOF
 ```
