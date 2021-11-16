@@ -52,6 +52,7 @@ def _lookup_actions(rdb, agent_id):
         agent_id=agent_id,
         action='list-actions',
         data={},
+        check_idle_time=0, # disable idle check and wait until the agent is up
         endpoint="redis://cluster-leader", # require "cluster" credentials
     )
     if list_actions_result['exit_code'] != 0:
