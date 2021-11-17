@@ -325,7 +325,7 @@ func createTask(c *gin.Context, queueName string) {
 	redisConnection := redis.Instance()
 
 	// check the agent is connected and alive
-	if _, err := redis.CheckClientIdle(c, redisConnection, strings.TrimSuffix(queueName, "/tasks"), 8); err != nil {
+	if err := redis.CheckClientIdle(c, redisConnection, strings.TrimSuffix(queueName, "/tasks"), 8); err != nil {
 		c.JSON(http.StatusNotFound, structs.Map(response.StatusNotFound{
 			Code:    404,
 			Message: "client idle check failed",

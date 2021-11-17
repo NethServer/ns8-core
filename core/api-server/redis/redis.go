@@ -47,11 +47,11 @@ func Instance() *redis.Client {
 /*
  * Check the client with name "searchName" has an idle time less than "limit"
  */
-func CheckClientIdle(ctx context.Context, rdb *redis.Client, searchName string, limit int) (bool, error) {
+func CheckClientIdle(ctx context.Context, rdb *redis.Client, searchName string, limit int) error {
 	// Consider only "normal" clients: agents are among them
 	val, err := rdb.Do(ctx, "CLIENT", "LIST", "TYPE", "normal").Result()
 	if err != nil {
-		return false, fmt.Errorf("Redis CLIENT LIST command failed (%v)", err)
+		return fmt.Errorf("Redis CLIENT LIST command failed (%v)", err)
 	}
 	// Split the CLIENT LIST output by lines and spaces
 	for _, line := range(strings.Split(val.(string), "\n")) {
@@ -63,7 +63,7 @@ func CheckClientIdle(ctx context.Context, rdb *redis.Client, searchName string, 
 			if strings.HasPrefix(field, "idle=") {
 				clientIdle, convError = strconv.Atoi(field[5:])
 				if convError != nil {
-					return false, fmt.Errorf("Failed to parse Redis response (%v)", convError)
+					return fmt.Errorf("Failed to parse Redis response (%v)", convError)
 				}
 			} else if strings.HasPrefix(field, "name=") {
 				clientName = field[5:]
@@ -72,11 +72,11 @@ func CheckClientIdle(ctx context.Context, rdb *redis.Client, searchName string, 
 		if searchName == clientName {
 			// agent found: let's check its idle time
 			if clientIdle <= limit {
-				return true, nil
+				return nil
 			}
 		}
 	}
-	return false, fmt.Errorf("Client name %s not found", searchName)
+	return fmt.Errorf("Client name %s not found", searchName)
 }
 
 func setClientNameCallback (ctx context.Context, cn *redis.Conn) error {
