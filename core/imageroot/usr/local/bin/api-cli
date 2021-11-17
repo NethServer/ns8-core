@@ -113,6 +113,9 @@ def run_command(args):
     else:
         data = json.load(fp=sys.stdin)
 
+    if args.check_idle_time:
+        kwargs['check_idle_time'] = args.check_idle_time
+
     kwargs.setdefault('extra', {
         'title': f"{args.action}@{args.agent}",
         'description': f"api-cli endpoint {kwargs.get('endpoint', 'default')}",
@@ -158,6 +161,7 @@ auth_group.add_argument('-u', '--username')
 submit_parser.add_argument('-p', '--password', help="requires --username")
 submit_parser.add_argument('-a', '--agent', help='agent ID (e.g. "module/traefik1"). Defaults to "cluster"', default='cluster')
 submit_parser.add_argument('-d', '--data', help='string in JSON format, set as task input data. Special value "-" reads data from stdin', default='{}')
+submit_parser.add_argument('--check-idle-time', help='check the agent client idle time does not exceed the given number of seconds (0=disabled)', type=int)
 submit_parser.add_argument('--nowait', help='do not wait for task completion. Return immediately the task ID', action='store_true')
 submit_parser.add_argument('--raw', help='convert output with print() instead dumping it in JSON format', action='store_true')
 

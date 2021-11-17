@@ -27,6 +27,14 @@ import uuid
 import random
 from .exceptions import *
 
+async def _task_submission_check_client_idle(rdb, taskrq, max_idle_time):
+    for client_item in await rdb.client_list('normal'):
+        if client_item['name'] == taskrq['agent_id']:
+            if int(client_item['idle']) <= max_idle_time:
+                break
+    else:
+        raise TaskSubmissionCheckFailed(f"Client \"{taskrq['agent_id']}\" was not found")
+
 async def run_redisclient_nowait(taskrq, **kwargs):
     redis_username = os.environ['REDIS_USER'] # Fatal if missing!
     redis_password = os.environ['REDIS_PASSWORD'] # Fatal if missing!
@@ -36,6 +44,9 @@ async def run_redisclient_nowait(taskrq, **kwargs):
         password=redis_password,
         decode_responses=True
     ) as rdb:
+        if kwargs['check_idle_time'] > 0:
+            await _task_submission_check_client_idle(rdb, taskrq, kwargs['check_idle_time'])
+
         task_id = str(uuid.uuid4())
         task_obj = {
             "id": task_id,
@@ -57,6 +68,9 @@ async def run_redisclient(taskrq, **kwargs):
         password=redis_password,
         decode_responses=True,
     ) as rdb:
+        if kwargs['check_idle_time'] > 0:
+            await _task_submission_check_client_idle(rdb, taskrq, kwargs['check_idle_time'])
+
         task_id = str(uuid.uuid4())
         taskctx = {
             'id': task_id,
