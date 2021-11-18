@@ -36,7 +36,8 @@ import subprocess
 status = {}
 
 rdb = agent.redis_connect()
-status["instance"] = os.environ["MODULE_ID"];
+status["instance"] = os.environ["MODULE_ID"]
+status["ui_name"] = rdb.get(f'module/{os.environ["MODULE_ID"]}/ui_name') or ""
 status["node"] = rdb.hget(f'module/{os.environ["MODULE_ID"]}/environment', 'NODE_ID')
 
 status["services"] = []
