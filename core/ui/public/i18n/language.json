@@ -110,11 +110,7 @@
     "redirect_cluster": "Worker Node",
     "redirect_cluster_description": "This node is a worker of the cluster now. Click the link below to access the cluster administration page on the leader node.",
     "redirect_cluster_link": "Go to cluster administration page",
-    "node_added_to_cluster": "Node {nodeId} added to cluster",
-    "leader_node_label": "Leader node label",
-    "worker_node_label": "Worker node label",
-    "leader_node_label_tooltip": "You can assign the leader node an easy to remember name",
-    "worker_node_label_tooltip": "You can assign the worker node an easy to remember name"
+    "node_added_to_cluster": "Node {nodeId} added to cluster"
   },
   "shell": {
     "skip_to_content": "Skip to content",
@@ -188,7 +184,8 @@
     "list-favorites": "List favorites",
     "list-shortcuts": "List shortcuts",
     "get-node-status": "Get node status",
-    "remove-module": "Remove module"
+    "remove-module": "Remove module",
+    "set-name": "Set name"
   },
   "network": {
     "title": "Network"
@@ -204,7 +201,9 @@
     "sw_repositories": "Software repositories",
     "cluster": "Cluster"
   },
-  "settings_cluster": {},
+  "settings_cluster": {
+    "setting_cluster_name": "Setting cluster name"
+  },
   "settings_sw_repositories": {
     "no_sw_repositories": "No software repositories",
     "no_sw_repositories_description": "You can create one by clicking on the button below",
@@ -271,6 +270,7 @@
     "instance_label": "App instance label",
     "instance_label_tooltip": "You can assign the app instance an easy to remember name",
     "edit_instance_label": "Edit instance label",
+    "setting_instance_name": "Setting instance name",
     "app_categories": {
       "collaboration": "Collaboration",
       "system_administration": "System administration",

@@ -307,11 +307,8 @@ export default {
         }
         this.configureClusterInitializationRedirect();
 
-        // cluster name
-
-        clusterStatus.name = "MyCluster"; //// remove mock
-
-        this.setClusterLabelInStore(clusterStatus.name);
+        // cluster label
+        this.setClusterLabelInStore(clusterStatus.ui_name);
       }
     },
     getClusterStatusCompleted(taskContext, taskResult) {

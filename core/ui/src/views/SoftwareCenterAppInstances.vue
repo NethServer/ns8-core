@@ -97,7 +97,7 @@
         >
           <NsInfoCard
             light
-            :title="instance.label ? instance.label : instance.id"
+            :title="instance.ui_name ? instance.ui_name : instance.id"
             :icon="Application32"
           >
             <div class="slot-content">
@@ -139,7 +139,7 @@
                   >{{ $t("software_center.uninstall") }}</cv-overflow-menu-item
                 >
               </cv-overflow-menu>
-              <div v-if="instance.label" class="row">
+              <div v-if="instance.ui_name" class="row">
                 {{ instance.id }}
               </div>
               <div class="row">
@@ -242,6 +242,16 @@
               ref="newInstanceLabel"
             >
             </cv-text-input>
+            <div v-if="error.setInstanceLabel" class="bx--row">
+              <div class="bx--col">
+                <NsInlineNotification
+                  kind="error"
+                  :title="$t('action.set-name')"
+                  :description="error.setInstanceLabel"
+                  :showCloseButton="false"
+                />
+              </div>
+            </div>
           </cv-form>
         </template>
       </template>
@@ -284,12 +294,15 @@ export default {
       newInstanceLabel: "",
       loading: {
         modules: true,
+        setInstanceLabel: false,
       },
       error: {
         listModules: "",
         removeModule: "",
         addFavorite: "",
         removeFavorite: "",
+        setNodeLabel: "",
+        setInstanceLabel: "",
       },
     };
   },
@@ -344,12 +357,6 @@ export default {
 
       if (app) {
         app.installed.sort(this.sortModuleInstances());
-
-        //// remove mock
-        app.installed.forEach((instance) => {
-          instance.label = "My " + instance.id;
-        });
-
         this.app = app;
       }
     },
@@ -481,7 +488,7 @@ export default {
     showSetInstanceLabelModal(instance) {
       console.log("showSetInstanceLabelModal", instance); ////
       this.currentInstance = instance;
-      this.newInstanceLabel = instance.label;
+      this.newInstanceLabel = instance.ui_name;
       this.isShownEditInstanceLabel = true;
       setTimeout(() => {
         this.focusElement("newInstanceLabel");
@@ -490,12 +497,45 @@ export default {
     hideSetInstanceLabelModal() {
       this.isShownEditInstanceLabel = false;
     },
-    setInstanceLabel() {
-      console.log("setInstanceLabel"); ////
+    async setInstanceLabel() {
+      this.error.setInstanceLabel = "";
+      this.loading.setInstanceLabel = true;
+      const taskAction = "set-name";
 
-      //// call api
+      // register to task completion
+      this.$root.$once(
+        taskAction + "-completed",
+        this.setInstanceLabelCompleted
+      );
 
-      //// reload instances
+      const res = await to(
+        this.createModuleTaskForApp(this.currentInstance.id, {
+          action: taskAction,
+          data: {
+            name: this.newInstanceLabel,
+          },
+          extra: {
+            title: this.$t("action." + taskAction),
+            description: this.$t("software_center.setting_instance_name"),
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.setInstanceLabel = this.getErrorMessage(err);
+        this.loading.setInstanceLabel = false;
+        return;
+      }
+    },
+    setInstanceLabelCompleted() {
+      this.loading.setInstanceLabel = false;
+      this.hideSetInstanceLabelModal();
+      this.listModules();
+
+      // update instance label in app drawer
+      this.$root.$emit("reloadAppDrawer");
     },
   },
 };

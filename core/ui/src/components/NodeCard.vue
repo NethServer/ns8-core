@@ -5,7 +5,11 @@
       <NsSvg :svg="Chip32" />
     </div>
     <div class="row">
-      <h3 class="title">{{ nodeLabel }}</h3>
+      <h3 class="title">
+        {{
+          nodeLabel ? nodeLabel : $t("common.node") + " " + nodeId.toString()
+        }}
+      </h3>
     </div>
     <div class="row">
       <cv-tag v-if="isLeader" kind="green" :label="leaderLabel"></cv-tag>
@@ -16,6 +20,12 @@
     </div>
     <div v-else class="table-wrapper">
       <div class="table">
+        <div v-if="nodeLabel" class="tr">
+          <div class="td label">{{ $t("common.node") }}</div>
+          <div class="td">
+            {{ nodeId.toString() }}
+          </div>
+        </div>
         <div class="tr">
           <div class="td label">{{ cpuUsageLabel }}</div>
           <div :class="['td', { warning: cpuUsage >= cpuUsageWarningTh }]">
@@ -111,9 +121,13 @@ export default {
   //components added for storybook to work
   components: { CvTile, Information16 },
   props: {
+    nodeId: {
+      type: Number,
+      required: true,
+    },
     nodeLabel: {
       type: String,
-      required: true,
+      default: "",
     },
     isLeader: Boolean,
     leaderLabel: {

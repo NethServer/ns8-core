@@ -47,18 +47,16 @@
       >
         <NodeCard
           v-if="!nodesStatus[node.id]"
-          :nodeLabel="
-            node.name ? node.name : $t('common.node') + ' ' + node.id.toString()
-          "
+          :nodeId="node.id"
+          :nodeLabel="node.ui_name"
           :isLeader="node.id == leaderNode.id"
           light
           loading
         />
         <NodeCard
           v-else
-          :nodeLabel="
-            node.name ? node.name : $t('common.node') + ' ' + node.id.toString()
-          "
+          :nodeId="node.id"
+          :nodeLabel="node.ui_name"
           :isLeader="node.id == leaderNode.id"
           :leaderLabel="$t('nodes.leader')"
           :workerLabel="$t('nodes.worker')"
@@ -182,6 +180,16 @@
               ref="newNodeLabel"
             >
             </cv-text-input>
+            <div v-if="error.setNodeLabel" class="bx--row">
+              <div class="bx--col">
+                <NsInlineNotification
+                  kind="error"
+                  :title="$t('action.set-name')"
+                  :description="error.setNodeLabel"
+                  :showCloseButton="false"
+                />
+              </div>
+            </div>
           </cv-form>
         </template>
       </template>
@@ -234,10 +242,12 @@ export default {
       isShownSetNodeLabelModal: false,
       loading: {
         nodes: true,
+        setNodeLabel: false,
       },
       error: {
         getClusterStatus: "",
         getNodeStatus: "",
+        setNodeLabel: "",
       },
     };
   },
@@ -321,15 +331,7 @@ export default {
     },
     getClusterStatusCompleted(taskContext, taskResult) {
       const clusterStatus = taskResult.output;
-      let nodes = clusterStatus.nodes.sort(this.sortByProperty("id"));
-
-      //// remove mock
-      for (const node of nodes) {
-        node.name = "Cool node " + node.id;
-      }
-
-      this.nodes = nodes;
-
+      this.nodes = clusterStatus.nodes.sort(this.sortByProperty("id"));
       this.loading.nodes = false;
 
       // immediately retrieve nodes status
@@ -427,7 +429,7 @@ export default {
     },
     showSetNodeLabelModal(node) {
       this.currentNode = node;
-      this.newNodeLabel = node.name;
+      this.newNodeLabel = node.ui_name;
       this.isShownSetNodeLabelModal = true;
       setTimeout(() => {
         this.focusElement("newNodeLabel");
@@ -436,12 +438,41 @@ export default {
     hideSetNodeLabelModal() {
       this.isShownSetNodeLabelModal = false;
     },
-    setNodeLabel() {
-      console.log("setNodeLabel"); ////
+    async setNodeLabel() {
+      this.error.setNodeLabel = "";
+      this.loading.setNodeLabel = true;
+      const taskAction = "set-name";
 
-      //// call api
+      // register to task completion
+      this.$root.$once(taskAction + "-completed", this.setNodeLabelCompleted);
 
-      //// reload nodes
+      const res = await to(
+        this.createNodeTask(this.currentNode.id, {
+          action: taskAction,
+          data: {
+            name: this.newNodeLabel,
+          },
+          extra: {
+            title: this.$t("action." + taskAction),
+            description: this.$t(
+              "settings_sw_repositories.setting_cluster_name"
+            ),
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.setNodeLabel = this.getErrorMessage(err);
+        this.loading.setNodeLabel = false;
+        return;
+      }
+    },
+    setNodeLabelCompleted() {
+      this.loading.setNodeLabel = false;
+      this.hideSetNodeLabelModal();
+      this.retrieveClusterStatus();
     },
   },
 };

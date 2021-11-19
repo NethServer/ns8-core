@@ -89,7 +89,7 @@
                         />
                       </div>
                       <div>
-                        {{ app.label ? app.label : app.id }}
+                        {{ app.ui_name ? app.ui_name : app.id }}
                       </div>
                     </div>
                     <cv-toggle
@@ -166,7 +166,7 @@
                             :alt="app.name + ' logo'"
                           />
                         </div>
-                        {{ app.label ? app.label : app.id }}
+                        {{ app.ui_name ? app.ui_name : app.id }}
                       </div>
                     </div>
                   </div>
@@ -202,7 +202,7 @@
                           :alt="app.name + ' logo'"
                         />
                       </div>
-                      {{ app.label ? app.label : app.id }}
+                      {{ app.ui_name ? app.ui_name : app.id }}
                     </div>
                   </div>
                 </div>
@@ -230,7 +230,9 @@
                                 :alt="app.name + ' logo'"
                               />
                             </div>
-                            <span>{{ app.label ? app.label : app.id }}</span>
+                            <span>{{
+                              app.ui_name ? app.ui_name : app.id
+                            }}</span>
                           </div></cv-structured-list-data
                         >
                       </cv-structured-list-item>
@@ -261,7 +263,7 @@
                               :alt="app.name + ' logo'"
                             />
                           </div>
-                          <span>{{ app.label ? app.label : app.id }}</span>
+                          <span>{{ app.ui_name ? app.ui_name : app.id }}</span>
                         </div></cv-structured-list-data
                       >
                     </cv-structured-list-item>
@@ -429,9 +431,6 @@ export default {
 
       for (let instanceList of Object.values(taskResult.output)) {
         for (let instance of instanceList) {
-          //// remove mock
-          instance.label = "My " + instance.id;
-
           apps.push(instance);
         }
       }

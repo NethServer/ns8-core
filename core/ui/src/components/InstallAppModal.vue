@@ -12,10 +12,10 @@
     }}</template>
     <template v-if="app" slot="content">
       <NsInlineNotification
-        v-if="error.nodes"
+        v-if="error.getClusterStatus"
         kind="error"
-        :title="$t('error.cannot_retrieve_cluster_nodes')"
-        :description="error.nodes"
+        :title="$t('action.get-cluster-status')"
+        :description="error.getClusterStatus"
         :showCloseButton="false"
       />
       <cv-form @submit.prevent="installInstance">
@@ -32,7 +32,7 @@
               <div
                 v-for="(node, index) in nodes"
                 :key="index"
-                class="bx--col-sm-2 bx--col-md-2"
+                class="bx--col-md-4 bx--col-lg-4"
               >
                 <NsTile
                   :light="true"
@@ -42,26 +42,27 @@
                   :footerIcon="Chip20"
                   @click="deselectOtherNodes(node)"
                 >
-                  <h6>{{ $t("common.node") }} {{ node.id }}</h6>
+                  <h6>
+                    {{
+                      node.ui_name
+                        ? node.ui_name
+                        : $t("common.node") + " " + node.id
+                    }}
+                  </h6>
+                  <div v-if="node.ui_name" class="node-id">
+                    {{ $t("common.node") }} {{ node.id }}
+                  </div>
                 </NsTile>
               </div>
             </div>
           </div>
         </template>
-        <div>
-          <cv-text-input
-            :label="
-              $t('software_center.instance_label') +
-              ' (' +
-              $t('common.optional') +
-              ')'
-            "
-            v-model.trim="instanceLabel"
-            :placeholder="$t('common.no_label')"
-            :helper-text="$t('software_center.instance_label_tooltip')"
-            ref="instanceLabel"
-          >
-          </cv-text-input>
+        <div v-else>
+          {{
+            $t("software_center.about_to_install_app", {
+              app: app.name,
+            })
+          }}
         </div>
         <div v-if="error.addModule">
           <NsInlineNotification
@@ -82,12 +83,11 @@
 
 <script>
 import { UtilService, TaskService, IconService } from "@nethserver/ns8-ui-lib";
-import NodeService from "@/mixins/node";
 import to from "await-to-js";
 
 export default {
   name: "InstallAppModal",
-  mixins: [UtilService, TaskService, NodeService, IconService],
+  mixins: [UtilService, TaskService, IconService],
   props: {
     isShown: Boolean,
     app: { type: [Object, null] },
@@ -95,10 +95,12 @@ export default {
   data() {
     return {
       nodes: [],
-      instanceLabel: "",
+      loading: {
+        getClusterStatus: true,
+      },
       error: {
-        nodes: "",
         addModule: "",
+        getClusterStatus: "",
       },
     };
   },
@@ -108,26 +110,63 @@ export default {
     },
   },
   created() {
-    this.retrieveClusterNodes();
+    this.retrieveClusterStatus();
   },
   methods: {
-    async retrieveClusterNodes() {
-      // get cluster nodes
-      const [errNodes, responseNodes] = await to(this.getNodes());
+    async retrieveClusterStatus() {
+      this.error.getClusterStatus = "";
+      const taskAction = "get-cluster-status";
 
-      if (errNodes) {
-        console.error("error retrieving cluster nodes", errNodes);
-        this.error.nodes = this.getErrorMessage(errNodes);
+      // register to task completion
+      this.$root.$once(
+        taskAction + "-completed",
+        this.getClusterStatusCompleted
+      );
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.getClusterStatus = this.getErrorMessage(err);
         return;
       }
+    },
+    getClusterStatusCompleted(taskContext, taskResult) {
+      const clusterStatus = taskResult.output;
+      let nodes = clusterStatus.nodes.sort(this.sortByProperty("id"));
 
-      let nodes = responseNodes.data.data.list;
-      nodes = nodes.map((n) => {
-        return { id: n, selected: false };
-      });
+      //// remove mock
+      // nodes.push({
+      //   id: 2,
+      //   local: false,
+      //   ui_name: "my Second Node",
+      //   vpn: null,
+      // });
+      // nodes.push({
+      //   id: 3,
+      //   local: false,
+      //   ui_name: "my Third Node",
+      //   vpn: null,
+      // });
+
+      for (const node of nodes) {
+        node.selected = false;
+      }
       nodes[0].selected = true;
 
+      console.log("nodes", nodes); ////
+
       this.nodes = nodes;
+      this.loading.getClusterStatus = false;
     },
     async installInstance() {
       this.error.addModule = "";
@@ -160,7 +199,6 @@ export default {
           data: {
             image: this.app.source + ":" + version,
             node: parseInt(this.selectedNode.id),
-            //// instanceLabel
           },
           extra: {
             title: this.$t("software_center.app_installation", {
@@ -210,5 +248,9 @@ export default {
 
 .nodes {
   margin-top: $spacing-07;
+}
+
+.node-id {
+  margin-top: $spacing-05;
 }
 </style>

@@ -39,19 +39,29 @@
               :label="
                 $t('common.cluster_label') + ' (' + $t('common.optional') + ')'
               "
-              v-model.trim="clusterLabel"
+              v-model.trim="newClusterLabel"
               :placeholder="$t('common.no_label')"
               :helper-text="$t('common.cluster_label_tooltip')"
               :invalid-message="$t(error.clusterLabel)"
-              :disabled="loading.getClusterStatus"
+              :disabled="loading.getClusterStatus || loading.setClusterLabel"
               ref="clusterLabel"
             >
             </cv-text-input>
+            <div v-if="error.setClusterLabel" class="bx--row">
+              <div class="bx--col">
+                <NsInlineNotification
+                  kind="error"
+                  :title="$t('action.set-name')"
+                  :description="error.setClusterLabel"
+                  :showCloseButton="false"
+                />
+              </div>
+            </div>
             <NsButton
               kind="primary"
               :icon="Save20"
-              :loading="loading.saveSettings"
-              :disabled="loading.getClusterStatus"
+              :loading="isLoadingSettings"
+              :disabled="isLoadingSettings"
               >{{ $t("common.save_settings") }}</NsButton
             >
           </cv-form>
@@ -69,6 +79,7 @@ import {
   TaskService,
   IconService,
 } from "@nethserver/ns8-ui-lib";
+import { mapActions } from "vuex";
 
 export default {
   name: "SettingsCluster",
@@ -80,15 +91,22 @@ export default {
     return {
       q: {},
       clusterLabel: "",
+      newClusterLabel: "",
       loading: {
         getClusterStatus: true,
-        saveSettings: false,
+        setClusterLabel: false,
       },
       error: {
         getClusterStatus: "",
         clusterLabel: "",
+        setClusterLabel: "",
       },
     };
+  },
+  computed: {
+    isLoadingSettings() {
+      return this.loading.getClusterStatus || this.loading.setClusterLabel; //// || this.loading...;
+    },
   },
   beforeRouteEnter(to, from, next) {
     next((vm) => {
@@ -104,6 +122,7 @@ export default {
     this.getClusterStatus();
   },
   methods: {
+    ...mapActions(["setClusterLabelInStore"]),
     async getClusterStatus() {
       this.error.getClusterStatus = "";
       this.loading.getClusterStatus = true;
@@ -135,25 +154,57 @@ export default {
     },
     getClusterStatusCompleted(taskContext, taskResult) {
       const clusterStatus = taskResult.output;
-
-      //// remove mock
-      clusterStatus.name = "MyCluster"; ////
-
-      this.clusterLabel = clusterStatus.name;
+      this.clusterLabel = clusterStatus.ui_name;
+      this.newClusterLabel = this.clusterLabel;
       this.loading.getClusterStatus = false;
 
       console.log("clusterStatus", clusterStatus); ////
+
+      // update cluster label in shell header
+      this.setClusterLabelInStore(this.clusterLabel);
     },
     saveSettings() {
-      console.log("saveSettings"); ////
+      this.setClusterLabel();
+    },
+    async setClusterLabel() {
+      this.error.setClusterLabel = "";
+      this.loading.setClusterLabel = true;
+      const taskAction = "set-name";
 
-      //// validate cluster name
+      // register to task completion
+      this.$root.$once(
+        taskAction + "-completed",
+        this.setClusterLabelCompleted
+      );
 
-      //// call api
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          data: {
+            name: this.newClusterLabel,
+          },
+          extra: {
+            title: this.$t("action." + taskAction),
+            description: this.$t(
+              "settings_cluster.setting_cluster_name"
+            ),
+          },
+        })
+      );
+      const err = res[0];
 
-      //// update cluster name in shell header
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.setClusterLabel = this.getErrorMessage(err);
+        this.loading.setClusterLabel = false;
+        return;
+      }
+    },
+    setClusterLabelCompleted() {
+      this.loading.setClusterLabel = false;
 
-      this.loading.saveSettings = true;
+      //// don't do this at avery task completed
+      this.getClusterStatus();
     },
   },
 };

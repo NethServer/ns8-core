@@ -158,32 +158,6 @@
                   ref="vpnCidr"
                 >
                 </cv-text-input>
-                <cv-text-input
-                  :label="
-                    $t('common.cluster_label') +
-                    ' (' +
-                    $t('common.optional') +
-                    ')'
-                  "
-                  v-model.trim="clusterLabel"
-                  :helper-text="$t('common.cluster_label_tooltip')"
-                  :invalid-message="$t(error.clusterLabel)"
-                  ref="clusterLabel"
-                >
-                </cv-text-input>
-                <cv-text-input
-                  :label="
-                    $t('init.leader_node_label') +
-                    ' (' +
-                    $t('common.optional') +
-                    ')'
-                  "
-                  v-model.trim="leaderNodeLabel"
-                  :helper-text="$t('init.leader_node_label_tooltip')"
-                  :invalid-message="$t(error.leaderNodeLabel)"
-                  ref="leaderNodeLabel"
-                >
-                </cv-text-input>
                 <NsButton
                   kind="primary"
                   :icon="EdgeCluster20"
@@ -232,19 +206,6 @@
                 v-model="tlsVerify"
                 value="checkTlsVerify"
               />
-              <cv-text-input
-                :label="
-                  $t('init.worker_node_label') +
-                  ' (' +
-                  $t('common.optional') +
-                  ')'
-                "
-                v-model.trim="workerNodeLabel"
-                :helper-text="$t('init.worker_node_label_tooltip')"
-                :invalid-message="$t(error.workerNodeLabel)"
-                ref="workerNodeLabel"
-              >
-              </cv-text-input>
               <NsButton kind="primary" :icon="Connect20">{{
                 $t("init.join_cluster")
               }}</NsButton>
@@ -327,9 +288,6 @@ export default {
       vpnEndpointAddress: "",
       vpnEndpointPort: "",
       vpnCidr: "",
-      clusterLabel: "",
-      leaderNodeLabel: "",
-      workerNodeLabel: "",
       joinCode: "",
       tlsVerify: true,
       joinEndpoint: this.$route.query.endpoint
@@ -349,9 +307,6 @@ export default {
         vpnEndpointPort: "",
         vpnCidr: "",
         joinCode: "",
-        clusterLabel: "",
-        leaderNodeLabel: "",
-        workerNodeLabel: "",
       },
     };
   },
@@ -658,9 +613,6 @@ export default {
           isValidationOk = false;
         }
       }
-
-      //// validate cluster name
-
       return isValidationOk;
     },
     async createCluster() {
@@ -685,8 +637,6 @@ export default {
             network: this.vpnCidr,
             endpoint: this.vpnEndpointAddress + ":" + this.vpnEndpointPort,
             listen_port: parseInt(this.vpnEndpointPort),
-            //// clusterLabel
-            //// leaderNodeLabel
           },
           extra: {
             title: this.$t("action." + taskAction),
@@ -803,7 +753,6 @@ export default {
             jwt: this.joinToken,
             listen_port: parseInt(this.joinPort),
             tls_verify: this.tlsVerify,
-            //// workerNodeLabel
           },
           extra: {
             title: this.$t("action." + taskAction),
