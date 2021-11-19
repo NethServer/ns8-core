@@ -1,0 +1,256 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "list-user-domains output",
+    "description": "Quickly get the user domains list and their basic configuration",
+    "$id": "http://schema.nethserver.org/cluster/list-user-domains-output.json",
+    "examples": [
+        {
+            "unconfigured_providers": [
+                {
+                    "module_id": "samba1",
+                    "image_name": "samba",
+                    "image_url": "ghcr.io/nethserver/samba:latest"
+                }
+            ],
+            "domains": [
+                {
+                    "name": "sandbox.example",
+                    "location": "internal",
+                    "protocol": "ldap",
+                    "schema": "rfc2307",
+                    "base_dn": "dc=sandbox,dc=example",
+                    "bind_dn": "cn=ldapservice,dc=sandbox,dc=example",
+                    "bind_password": "S3cr3t!",
+                    "tls": false,
+                    "tls_verify": false,
+                    "providers": [
+                        {
+                            "id": "openldap1",
+                            "ui_name": "",
+                            "node": 1,
+                            "host": "10.110.32.2",
+                            "port": 20003
+                        },
+                        {
+                            "id": "openldap2",
+                            "ui_name": "",
+                            "node": 2,
+                            "host": "10.110.32.3",
+                            "port": 20002
+                        }
+                    ]
+                },
+                {
+                    "name": "company.org",
+                    "location": "external",
+                    "protocol": "ldap",
+                    "schema": "rfc2307",
+                    "base_dn": "dc=company,dc=org",
+                    "bind_dn": "cn=ns8cluster,dc=company,dc=org",
+                    "bind_password": "OtherS3cr3t!",
+                    "tls": true,
+                    "tls_verify": true,
+                    "providers": [
+                        {
+                            "id": "ldap-primary.company.org",
+                            "ui_name": "Company LDAP primary",
+                            "node": null,
+                            "host": "ldap-master.company.org",
+                            "port": 636
+                        },
+                        {
+                            "id": "ldap-replica.company.org",
+                            "ui_name": "Company LDAP replica",
+                            "node": null,
+                            "host": "ldap-replica.company.org",
+                            "port": 636
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "type": "object",
+    "required": [
+        "domains",
+        "unconfigured_providers"
+    ],
+    "properties": {
+        "unconfigured_providers": {
+            "type": "array",
+            "items": {
+                "$ref": "#/$defs/unconfigured-provider"
+            }
+        },
+        "domains": {
+            "type": "array",
+            "minItems": 0,
+            "items": {
+                "$ref": "#/$defs/user-domain"
+            }
+        }
+    },
+    "$defs": {
+        "user-domain": {
+            "title": "User domain",
+            "description": "Users (and also user groups) can be uniquely identified inside a domain. An application is ususally bound to just one user domain at a time, but mulitple domains can be configured in the same cluster.",
+            "type": "object",
+            "required": [
+                "name",
+                "location",
+                "protocol",
+                "providers"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "location": {
+                    "type": "string",
+                    "title": "Domain hosting location",
+                    "description": "Type of domain hosting. Set to `internal` if the domain is hosted by the cluster, `external` if the domain is provided by a remote service",
+                    "enum": [
+                        "internal",
+                        "external"
+                    ]
+                },
+                "protocol": {
+                    "type": "string",
+                    "title": "Provider protocol",
+                    "description": "Protocol used to communicate with the domain providers.",
+                    "enum": [
+                        "ldap"
+                    ]
+                },
+                "providers": {
+                    "title": "Account providers",
+                    "description": "Backend system and replicas providing the services of the user domain",
+                    "type": "array",
+                    "minItems": 1
+                }
+            },
+            "anyOf": [
+                {
+                    "not": {
+                        "type": "object",
+                        "title": "Protocol property is ldap",
+                        "properties": {
+                            "protocol": {
+                                "type": "string",
+                                "const": "ldap"
+                            }
+                        }
+                    }
+                },
+                {
+                    "$ref": "#/$defs/additional-properties-of-ldap"
+                }
+            ]
+        },
+        "unconfigured-provider": {
+            "type": "object",
+            "title": "Unconfigured provider",
+            "description": "An internal provider module instance that is not completely configured",
+            "required": [
+                "module_id",
+                "image_name",
+                "image_url"
+            ],
+            "properties": {
+                "module_id": {
+                    "title": "Module identifier",
+                    "description": "e.g. `samba1`",
+                    "type": "string"
+                },
+                "image_name": {
+                    "title": "Module image name",
+                    "description": "e.g. `samba`",
+                    "type": "string"
+                },
+                "image_url": {
+                    "title": "Image URL",
+                    "description": "ghcr.io/nethserver/samba:2.0.0",
+                    "type": "string"
+                }
+            }
+        },
+        "ldap-provider": {
+            "type": "object",
+            "title": "LDAP account provider",
+            "description": "An LDAP account provider is a database of users and groups that can also be used as an authentication backend. A user domain is composed by at least one LDAP account provider. Multiple replicas can be instantiated on different cluster nodes.",
+            "required": [
+                "id",
+                "ui_name",
+                "node",
+                "host",
+                "port"
+            ],
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "ui_name": {
+                    "type": "string"
+                },
+                "node": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "minimum": 1
+                },
+                "host": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "port": {
+                    "type": "integer",
+                    "minimum": 1
+                }
+            }
+        },
+        "additional-properties-of-ldap": {
+            "type": "object",
+            "title": "LDAP domain properties",
+            "description": "Additional required properties of LDAP-based domains",
+            "properties": {
+                "schema": {
+                    "type": "string",
+                    "title": "LDAP database schema",
+                    "enum": [
+                        "ad",
+                        "rfc2307"
+                    ]
+                },
+                "base_dn": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "bind_dn": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "bind_password": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "tls": {
+                    "type": "boolean"
+                },
+                "tls_verify": {
+                    "type": "boolean"
+                }
+            },
+            "required": [
+                "schema",
+                "base_dn",
+                "bind_dn",
+                "bind_password",
+                "tls",
+                "tls_verify"
+            ]
+        }
+    }
+}
