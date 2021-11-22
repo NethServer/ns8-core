@@ -1,0 +1,59 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2021 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
+import sys
+import json
+import agent
+import os
+import cluster.userdomains
+
+#
+# Sample request:
+# {
+# "domain":"example.com",
+# "protocol": "ldap",
+# "host":"18.19.20.21",
+# "port": 636,
+# "schema": "rfc2307",
+# "bind_dn": "cn=ldapservice,dc=example,dc=com",
+# "bind_password": "s3cret",
+# "base_dn": "dc=example,dc=com",
+# "tls": true,
+# "tls_verify": true
+# }
+request = json.load(sys.stdin)
+
+domain = request['domain']
+protocol = request['protocol']
+
+agent.set_weight(os.path.basename(__file__), 0) # Validation step, no task progress at all
+
+if protocol == 'ldap':
+    errors, logex = cluster.userdomains.validate_ldap(request)
+
+    if logex:
+        print(agent.SD_ERR + f"{logex.__class__.__name__}: {logex}", file=sys.stderr)
+
+    if errors:
+        agent.set_status('validation-failed')
+        json.dump(errors, fp=sys.stdout)
+        sys.exit(3)
