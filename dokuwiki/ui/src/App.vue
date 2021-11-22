@@ -12,14 +12,15 @@
 import AppSideMenu from "./components/AppSideMenu";
 import AppMobileSideMenu from "./components/AppMobileSideMenu";
 import { mapState, mapActions } from "vuex";
-import { QueryParamService } from "@nethserver/ns8-ui-lib";
+import { QueryParamService, TaskService } from "@nethserver/ns8-ui-lib";
+import to from "await-to-js";
 
 export default {
   name: "App",
   components: { AppSideMenu, AppMobileSideMenu },
-  mixins: [QueryParamService],
+  mixins: [QueryParamService, TaskService],
   computed: {
-    ...mapState(["instanceName", "instanceLabel"]),
+    ...mapState(["instanceName", "instanceLabel", "ns8Core"]),
   },
   created() {
     const ns8Core = window.parent.ns8;
@@ -55,13 +56,37 @@ export default {
       "setInstanceLabelInStore",
       "setNs8CoreInStore",
     ]),
-    getInstanceLabel() {
-      //// call api
+    async getInstanceLabel() {
+      const taskAction = "get-name";
 
-      //// remove mock
-      const instanceLabel = "My " + this.instanceName;
+      // register to task completion
+      this.ns8Core.$root.$once(
+        taskAction + "-completed",
+        this.getInstanceLabelCompleted
+      );
 
-      this.setInstanceLabelInStore(instanceLabel);
+      const res = await to(
+        this.createModuleTaskForApp(this.instanceName, {
+          action: taskAction,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.createErrorNotification(
+          err,
+          this.$t("task.cannot_create_task", { action: taskAction })
+        );
+        return;
+      }
+    },
+    getInstanceLabelCompleted(taskContext, taskResult) {
+      this.setInstanceLabelInStore(taskResult.output.name);
     },
   },
 };

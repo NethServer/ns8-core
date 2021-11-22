@@ -144,20 +144,6 @@ export default {
       const clusterStatus = taskResult.output;
       let nodes = clusterStatus.nodes.sort(this.sortByProperty("id"));
 
-      //// remove mock
-      // nodes.push({
-      //   id: 2,
-      //   local: false,
-      //   ui_name: "my Second Node",
-      //   vpn: null,
-      // });
-      // nodes.push({
-      //   id: 3,
-      //   local: false,
-      //   ui_name: "my Third Node",
-      //   vpn: null,
-      // });
-
       for (const node of nodes) {
         node.selected = false;
       }

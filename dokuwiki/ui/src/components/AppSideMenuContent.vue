@@ -1,9 +1,8 @@
 <template>
   <div class="app-side-menu-content">
     <div class="instance-name">
-      <span v-if="instanceName">{{
-        instanceLabel ? instanceLabel : instanceName
-      }}</span>
+      <span v-if="instanceLabel">{{ instanceLabel }}</span>
+      <span v-else-if="instanceName">{{ instanceName }}</span>
       <cv-skeleton-text
         v-else
         :width="instanceNameSkeletonWidth"
