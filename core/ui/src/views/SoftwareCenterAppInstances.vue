@@ -239,6 +239,7 @@
               v-model.trim="newInstanceLabel"
               :placeholder="$t('common.no_label')"
               :helper-text="$t('software_center.instance_label_tooltip')"
+              maxlength="24"
               ref="newInstanceLabel"
             >
             </cv-text-input>

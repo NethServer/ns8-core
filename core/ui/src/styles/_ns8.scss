@@ -111,6 +111,12 @@ a {
   margin-top: $spacing-05;
 }
 
+.ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 // top-right overflow menu
 .top-right-overflow-menu {
   position: absolute;

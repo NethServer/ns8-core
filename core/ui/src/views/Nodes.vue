@@ -177,6 +177,7 @@
               v-model.trim="newNodeLabel"
               :placeholder="$t('common.no_label')"
               :helper-text="$t('nodes.node_label_tooltip')"
+              maxlength="24"
               ref="newNodeLabel"
             >
             </cv-text-input>

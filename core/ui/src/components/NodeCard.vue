@@ -5,7 +5,7 @@
       <NsSvg :svg="Chip32" />
     </div>
     <div class="row">
-      <h3 class="title">
+      <h3 class="title ellipsis">
         {{
           nodeLabel ? nodeLabel : $t("common.node") + " " + nodeId.toString()
         }}

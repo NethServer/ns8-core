@@ -44,6 +44,7 @@
               :helper-text="$t('common.cluster_label_tooltip')"
               :invalid-message="$t(error.clusterLabel)"
               :disabled="loading.getClusterStatus || loading.setClusterLabel"
+              maxlength="24"
               ref="clusterLabel"
             >
             </cv-text-input>
@@ -185,9 +186,7 @@ export default {
           },
           extra: {
             title: this.$t("action." + taskAction),
-            description: this.$t(
-              "settings_cluster.setting_cluster_name"
-            ),
+            description: this.$t("settings_cluster.setting_cluster_name"),
           },
         })
       );

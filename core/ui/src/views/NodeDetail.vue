@@ -530,6 +530,15 @@ export default {
 
   .title {
     margin-right: $spacing-05;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: $breakpoint-medium) {
+  .title-and-role .title {
+    max-width: 15rem;
   }
 }
 
