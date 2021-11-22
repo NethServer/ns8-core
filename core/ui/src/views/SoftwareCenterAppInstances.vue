@@ -517,7 +517,7 @@ export default {
           },
           extra: {
             title: this.$t("action." + taskAction),
-            description: this.$t("software_center.setting_instance_name"),
+            isNotificationHidden: true,
           },
         })
       );

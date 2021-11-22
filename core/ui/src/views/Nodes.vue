@@ -455,9 +455,7 @@ export default {
           },
           extra: {
             title: this.$t("action." + taskAction),
-            description: this.$t(
-              "settings_sw_repositories.setting_cluster_name"
-            ),
+            isNotificationHidden: true,
           },
         })
       );

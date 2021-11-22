@@ -186,7 +186,7 @@ export default {
           },
           extra: {
             title: this.$t("action." + taskAction),
-            description: this.$t("settings_cluster.setting_cluster_name"),
+            isNotificationHidden: true,
           },
         })
       );
