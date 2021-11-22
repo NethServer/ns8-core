@@ -77,6 +77,9 @@ module_keys = list(rdb.scan_iter(f'module/{module_id}/*'))
 if module_keys:
     rdb.delete(*module_keys)
 
+# Delete module from favorites
+rdb.srem('cluster/favorites', module_id)
+
 # Delete the Redis account
 agent.assert_exp(rdb.execute_command('ACL', 'DELUSER', f'module/{module_id}') == 1)
 
