@@ -1,0 +1,59 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2021 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
+import sys
+import json
+import agent
+import cluster.userdomains
+
+unconfigured_providers={}
+
+rdb = agent.redis_connect()
+for kenv in rdb.scan_iter("module/*/environment"):
+    henv = rdb.hgetall(kenv)
+    module_id = henv['MODULE_ID']
+    node_id = int(henv['NODE_ID'])
+    image_name = agent.get_image_name_from_url(henv['IMAGE_URL'])
+    if image_name in ['samba', 'openldap']:
+        unconfigured_providers[module_id] = {
+            "module_id": module_id,
+            "node": node_id,
+            "image_name": image_name,
+            "image_url": henv['IMAGE_URL']
+        }
+
+internal_domains = cluster.userdomains.get_internal_domains(rdb) 
+external_domains = cluster.userdomains.get_external_domains(rdb)
+
+# Filter out already-configured providers:
+for idom in internal_domains:
+    for provider in internal_domains[idom]['providers']:
+        module_id = provider['id']
+        if module_id in unconfigured_providers:
+            del unconfigured_providers[module_id]
+
+domains = external_domains | internal_domains
+
+json.dump({
+    "domains": list(domains.values()),
+    "unconfigured_providers": list(unconfigured_providers.values())
+}, fp=sys.stdout)
