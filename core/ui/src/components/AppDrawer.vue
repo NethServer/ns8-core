@@ -131,6 +131,8 @@
             <NsEmptyState
               v-if="!appsToDisplay.length"
               :title="$t('app_drawer.no_search_results')"
+              :animationData="require('@/assets/ghost-dark-bg.json')"
+              animationTitle="ghost"
             >
               <template #description>
                 <div>{{ $t("app_drawer.no_search_results_description") }}</div>

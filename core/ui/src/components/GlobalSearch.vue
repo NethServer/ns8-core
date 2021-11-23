@@ -18,6 +18,8 @@
       <NsEmptyState
         v-if="!results.length"
         :title="$t('shell.no_search_results')"
+        :animationData="require('@/assets/ghost-dark-bg.json')"
+        animationTitle="ghost"
       >
         <template #description>
           {{ $t("shell.no_search_results_description") }}</template

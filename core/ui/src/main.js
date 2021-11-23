@@ -35,6 +35,9 @@ Vue.use(InfiniteLoading, {
   },
 });
 
+import LottieAnimation from "lottie-web-vue";
+Vue.use(LottieAnimation);
+
 import ns8Lib from "@nethserver/ns8-ui-lib";
 Vue.use(ns8Lib);
 
@@ -95,4 +98,4 @@ window.ns8 = new Vue({
     this.$root.apiUrl = this.config.API_SCHEME + this.config.API_ENDPOINT;
   },
   render: (h) => h(App),
-}).$mount("#ns8-core");
+}).$mount("#core");

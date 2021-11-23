@@ -39,3 +39,10 @@ export const CustomPictogram = CustomPictogramTemplate.bind({});
 CustomPictogram.args = {
   title: "No search results",
 };
+
+export const LottieAnimation = Template.bind({});
+LottieAnimation.args = {
+  title: "No search results",
+  animationTitle: "ghost",
+  animationData: require("./assets/ghost.json"),
+};

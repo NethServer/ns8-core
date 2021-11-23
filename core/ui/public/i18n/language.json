@@ -349,5 +349,11 @@
     "data_received": "Data received",
     "data_sent": "Data sent",
     "system": "System"
+  },
+  "footer": {
+    "by_company": "by",
+    "docs": "Docs",
+    "helpdesk": "Helpdesk",
+    "animated_icons_by": "Animated icons by"
   }
 }

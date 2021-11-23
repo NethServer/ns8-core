@@ -132,12 +132,10 @@
                 <NsEmptyState
                   v-if="!updates.length && !loading.modules"
                   :title="$t('software_center.system_up_to_date')"
+                  :animationData="require('@/assets/rocket.json')"
+                  animationTitle="rocket"
                   key="updates-empty-state"
-                >
-                  <template #pictogram>
-                    <Love />
-                  </template>
-                </NsEmptyState>
+                />
                 <AppList
                   v-else
                   :apps="updates"
