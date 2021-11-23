@@ -1,0 +1,21 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "set-name input",
+    "$id": "http://schema.nethserver.org/node/set-name-input.json",
+    "description": "Assign a user-defined name to the node instance. The name is shown in the UI.",
+    "examples": [
+        {
+            "name": "Milan0"
+        }
+    ],
+    "type": "object",
+    "required": [
+        "name"
+    ],
+    "properties": {
+        "name": {
+            "type": "string",
+            "maxLength": 24
+        }
+    }
+}

@@ -111,6 +111,27 @@ a {
   margin-top: $spacing-05;
 }
 
+.ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// top-right overflow menu
+.top-right-overflow-menu {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 3rem;
+  height: 3rem;
+}
+
+.top-right-overflow-menu .bx--overflow-menu__icon {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+// end top-right overflow menu
+
 // ghost button on dark background
 .ghost-button-dark-bg {
   color: $inverse-link;

@@ -1729,10 +1729,10 @@
     call-me-maybe "^1.0.1"
     glob-to-regexp "^0.3.0"
 
-"@nethserver/ns8-ui-lib@^0.0.23":
-  version "0.0.23"
-  resolved "https://registry.yarnpkg.com/@nethserver/ns8-ui-lib/-/ns8-ui-lib-0.0.23.tgz#e3423d5bfa18d7a41227a62b0b95a4ae2b8af4e4"
-  integrity sha512-2AwiGUyEdj0QG5FaMz8ZjUKK3PAT/AOyZ324AcwQUaJLbc5M8drHhYMt3ZQ7ovMMtQz2lfspK0WRx8KoP45wZA==
+"@nethserver/ns8-ui-lib@^0.0.25":
+  version "0.0.25"
+  resolved "https://registry.yarnpkg.com/@nethserver/ns8-ui-lib/-/ns8-ui-lib-0.0.25.tgz#5d59119d3268853246cee7296fb3de54eba45da7"
+  integrity sha512-Xe3Vl4/rW2k+8EnDLYGd6fYNkTyLLAPdYQiGHQrWHCzzlzw/vQXNv6hz9vbzo0AfZjfXxMV97vr1knvhxo8Esg==
   dependencies:
     core-js "^3.15.2"
     date-fns "^2.23.0"
@@ -9082,6 +9082,18 @@ loose-envify@^1.0.0, loose-envify@^1.1.0, loose-envify@^1.4.0:
   integrity sha512-lyuxPGr/Wfhrlem2CL/UcnUc1zcqKAImBDzukY7Y5F/yQiNdko6+fRLevlw1HgMySw7f611UIY408EtxRSoK3Q==
   dependencies:
     js-tokens "^3.0.0 || ^4.0.0"
+
+lottie-web-vue@^1.2.0:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/lottie-web-vue/-/lottie-web-vue-1.2.0.tgz#3570c6e5756b4be353dac59a3ec673434ce50bc8"
+  integrity sha512-DWxaA3Y93sRg/O003p9T88aUcVxM4DMamrQUYNVnbyy3ds+5CZzYYwci0FsoKUSqgV1+/JAXKXrARnHq4tVY7A==
+  dependencies:
+    lottie-web "^5.7.4"
+
+lottie-web@^5.7.4:
+  version "5.8.1"
+  resolved "https://registry.yarnpkg.com/lottie-web/-/lottie-web-5.8.1.tgz#807e0af0ad22b59bf867d964eb684cb3368da0ef"
+  integrity sha512-9gIizWADlaHC2GCt+D+yNpk5l2clZQFqnVWWIVdY0LnxC/uLa39dYltAe3fcmC/hrZ2IUQ8dLlY0O934Npjs7Q==
 
 lower-case@^1.1.1:
   version "1.1.4"

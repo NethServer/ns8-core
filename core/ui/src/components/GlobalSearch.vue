@@ -80,7 +80,7 @@ export default {
       results: [],
       selectedResult: {},
       lastSearchQuery: "",
-      searchFields: ["name", "description", "source", "tags"],
+      searchFields: ["name", "description", "source", "tags", "label"],
       minChars: 1, //// 2
       maxResults: 10,
       actionsResults: [],
@@ -185,11 +185,12 @@ export default {
       for (let instanceList of Object.values(taskResult.output)) {
         for (let instance of instanceList) {
           const openAppResult = {
-            name: instance.id,
+            name: instance.ui_name ? instance.ui_name : instance.id,
             description: this.$t("shell.open_app", { app: instance.module }),
             path: "/apps/" + instance.id,
             source: instance.id,
             tags: [],
+            label: instance.ui_name,
           };
           openAppResults.push(openAppResult);
         }

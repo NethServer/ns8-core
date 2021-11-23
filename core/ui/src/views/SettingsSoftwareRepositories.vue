@@ -357,7 +357,7 @@ export default {
       if (this.q.isShownCreateRepoModal) {
         setTimeout(() => {
           this.focusElement("newRepoName");
-        }, 200);
+        }, 300);
       }
     },
   },

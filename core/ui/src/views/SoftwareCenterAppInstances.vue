@@ -95,8 +95,53 @@
           :key="index"
           class="bx--col-md-4 bx--col-max-4"
         >
-          <NsInfoCard light :title="instance.id" :icon="Application32">
+          <NsInfoCard
+            light
+            :title="instance.ui_name ? instance.ui_name : instance.id"
+            :icon="Application32"
+          >
             <div class="slot-content">
+              <cv-overflow-menu
+                :flip-menu="true"
+                tip-position="top"
+                tip-alignment="end"
+                class="top-right-overflow-menu"
+              >
+                <cv-overflow-menu-item
+                  primary-focus
+                  v-if="isInstanceUpgradable(app, instance)"
+                  @click="openInstance(instance)"
+                  >{{ $t("software_center.open") }}</cv-overflow-menu-item
+                >
+                <cv-overflow-menu-item
+                  v-if="!favoriteApps.includes(instance.id)"
+                  @click="addAppToFavorites(instance)"
+                  >{{
+                    $t("software_center.add_to_favorites")
+                  }}</cv-overflow-menu-item
+                >
+                <cv-overflow-menu-item
+                  @click="showSetInstanceLabelModal(instance)"
+                  >{{
+                    $t("software_center.edit_instance_label")
+                  }}</cv-overflow-menu-item
+                >
+                <cv-overflow-menu-item
+                  v-if="favoriteApps.includes(instance.id)"
+                  @click="removeAppFromFavorites(instance)"
+                  >{{
+                    $t("software_center.remove_from_favorites")
+                  }}</cv-overflow-menu-item
+                >
+                <cv-overflow-menu-item
+                  danger
+                  @click="showUninstallModal(app, instance)"
+                  >{{ $t("software_center.uninstall") }}</cv-overflow-menu-item
+                >
+              </cv-overflow-menu>
+              <div v-if="instance.ui_name" class="row">
+                {{ instance.id }}
+              </div>
               <div class="row">
                 {{ $t("common.version") }} {{ instance.version }}
               </div>
@@ -104,7 +149,7 @@
                 <NsSvg :svg="Chip20" class="icon" />
                 <span>{{ $t("common.node") }} {{ instance.node }}</span>
               </div>
-              <div class="actions">
+              <div class="row actions">
                 <!-- app is installed and can be updated -->
                 <template v-if="isInstanceUpgradable(app, instance)">
                   <NsButton
@@ -114,77 +159,16 @@
                     @click="updateInstance(instance)"
                     >{{ $t("software_center.update") }}</NsButton
                   >
-                  <cv-overflow-menu
-                    :flip-menu="true"
-                    tip-position="top"
-                    tip-alignment="end"
-                    class="overflow-menu"
-                  >
-                    <cv-overflow-menu-item
-                      primary-focus
-                      @click="openInstance(instance)"
-                      >{{ $t("software_center.open") }}</cv-overflow-menu-item
-                    >
-                    <cv-overflow-menu-item
-                      v-if="!favoriteApps.includes(instance.id)"
-                      @click="addAppToFavorites(instance)"
-                      >{{
-                        $t("software_center.add_to_favorites")
-                      }}</cv-overflow-menu-item
-                    >
-                    <cv-overflow-menu-item
-                      v-if="favoriteApps.includes(instance.id)"
-                      @click="removeAppFromFavorites(instance)"
-                      >{{
-                        $t("software_center.remove_from_favorites")
-                      }}</cv-overflow-menu-item
-                    >
-                    <cv-overflow-menu-item
-                      danger
-                      @click="showUninstallModal(app, instance)"
-                      >{{
-                        $t("software_center.uninstall")
-                      }}</cv-overflow-menu-item
-                    >
-                  </cv-overflow-menu>
                 </template>
                 <!-- app is installed, no update available -->
                 <template v-else>
                   <NsButton
-                    kind="secondary"
+                    kind="ghost"
                     size="field"
                     :icon="Launch20"
                     @click="openInstance(instance)"
                     >{{ $t("software_center.open") }}</NsButton
                   >
-                  <cv-overflow-menu
-                    :flip-menu="true"
-                    tip-position="top"
-                    tip-alignment="end"
-                    class="overflow-menu"
-                  >
-                    <cv-overflow-menu-item
-                      v-if="!favoriteApps.includes(instance.id)"
-                      @click="addAppToFavorites(instance)"
-                      >{{
-                        $t("software_center.add_to_favorites")
-                      }}</cv-overflow-menu-item
-                    >
-                    <cv-overflow-menu-item
-                      v-if="favoriteApps.includes(instance.id)"
-                      @click="removeAppFromFavorites(instance)"
-                      >{{
-                        $t("software_center.remove_from_favorites")
-                      }}</cv-overflow-menu-item
-                    >
-                    <cv-overflow-menu-item
-                      danger
-                      @click="showUninstallModal(app, instance)"
-                      >{{
-                        $t("software_center.uninstall")
-                      }}</cv-overflow-menu-item
-                    >
-                  </cv-overflow-menu>
                 </template>
               </div>
             </div>
@@ -232,6 +216,51 @@
         $t("software_center.uninstall_instance")
       }}</template>
     </cv-modal>
+    <!-- set instance label modal -->
+    <cv-modal
+      size="default"
+      :visible="isShownEditInstanceLabel"
+      @modal-hidden="hideSetInstanceLabelModal"
+      @primary-click="setInstanceLabel"
+    >
+      <template slot="title">{{
+        $t("software_center.edit_instance_label")
+      }}</template>
+      <template slot="content">
+        <template v-if="currentInstance">
+          <cv-form @submit.prevent="setInstanceLabel">
+            <cv-text-input
+              :label="
+                $t('software_center.instance_label') +
+                ' (' +
+                $t('common.optional') +
+                ')'
+              "
+              v-model.trim="newInstanceLabel"
+              :placeholder="$t('common.no_label')"
+              :helper-text="$t('software_center.instance_label_tooltip')"
+              maxlength="24"
+              ref="newInstanceLabel"
+            >
+            </cv-text-input>
+            <div v-if="error.setInstanceLabel" class="bx--row">
+              <div class="bx--col">
+                <NsInlineNotification
+                  kind="error"
+                  :title="$t('action.set-name')"
+                  :description="error.setInstanceLabel"
+                  :showCloseButton="false"
+                />
+              </div>
+            </div>
+          </cv-form>
+        </template>
+      </template>
+      <template slot="secondary-button">{{ $t("common.cancel") }}</template>
+      <template slot="primary-button">{{
+        $t("software_center.edit_instance_label")
+      }}</template>
+    </cv-modal>
   </div>
 </template>
 
@@ -258,17 +287,23 @@ export default {
       appName: "",
       app: null,
       isShownInstallModal: false,
+      isShownEditInstanceLabel: false,
       isUninstallModalShown: false,
       appToUninstall: null,
       instanceToUninstall: null,
+      currentInstance: null,
+      newInstanceLabel: "",
       loading: {
         modules: true,
+        setInstanceLabel: false,
       },
       error: {
         listModules: "",
         removeModule: "",
         addFavorite: "",
         removeFavorite: "",
+        setNodeLabel: "",
+        setInstanceLabel: "",
       },
     };
   },
@@ -451,6 +486,58 @@ export default {
     installInstance() {
       this.isShownInstallModal = true;
     },
+    showSetInstanceLabelModal(instance) {
+      console.log("showSetInstanceLabelModal", instance); ////
+      this.currentInstance = instance;
+      this.newInstanceLabel = instance.ui_name;
+      this.isShownEditInstanceLabel = true;
+      setTimeout(() => {
+        this.focusElement("newInstanceLabel");
+      }, 300);
+    },
+    hideSetInstanceLabelModal() {
+      this.isShownEditInstanceLabel = false;
+    },
+    async setInstanceLabel() {
+      this.error.setInstanceLabel = "";
+      this.loading.setInstanceLabel = true;
+      const taskAction = "set-name";
+
+      // register to task completion
+      this.$root.$once(
+        taskAction + "-completed",
+        this.setInstanceLabelCompleted
+      );
+
+      const res = await to(
+        this.createModuleTaskForApp(this.currentInstance.id, {
+          action: taskAction,
+          data: {
+            name: this.newInstanceLabel,
+          },
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.setInstanceLabel = this.getErrorMessage(err);
+        this.loading.setInstanceLabel = false;
+        return;
+      }
+    },
+    setInstanceLabelCompleted() {
+      this.loading.setInstanceLabel = false;
+      this.hideSetInstanceLabelModal();
+      this.listModules();
+
+      // update instance label in app drawer
+      this.$root.$emit("reloadAppDrawer");
+    },
   },
 };
 </script>
@@ -463,15 +550,15 @@ export default {
   text-align: center;
 }
 
+.slot-content .row:last-child {
+  margin-bottom: 0;
+}
+
 .node-container {
   justify-content: center;
 }
 
 .actions {
   margin-top: $spacing-06;
-}
-
-.overflow-menu {
-  display: inline-block;
 }
 </style>

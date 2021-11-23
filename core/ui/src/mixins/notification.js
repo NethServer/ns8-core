@@ -67,24 +67,28 @@ export default {
         },
       };
 
-      let toastTimeout;
+      let toastTimeout = notification.toastTimeout;
 
-      if (
-        notification.task &&
-        !["completed", "aborted", "validation-failed"].includes(
-          notification.task.status
-        )
-      ) {
-        toastTimeout = 3000;
-      } else if (
-        notification.action &&
-        notification.action.type === "execute"
-      ) {
-        // no timeout
-        toastTimeout = null;
-      } else {
-        // standard timeout
-        toastTimeout = 5000;
+      console.log("toastTimeout", toastTimeout); ////
+
+      if (!toastTimeout && toastTimeout != 0) {
+        if (
+          notification.task &&
+          !["completed", "aborted", "validation-failed"].includes(
+            notification.task.status
+          )
+        ) {
+          toastTimeout = 3000;
+        } else if (
+          notification.action &&
+          notification.action.type === "execute"
+        ) {
+          // no timeout
+          toastTimeout = null;
+        } else {
+          // standard timeout
+          toastTimeout = 5000;
+        }
       }
 
       // console.log("notification.id", notification.id); ////
@@ -243,6 +247,7 @@ export default {
         }
 
         let notificationText = payload.description;
+        let toastTimeout = null;
 
         if (taskStatus === "completed") {
           if (taskContext.action === "add-module") {
@@ -259,6 +264,11 @@ export default {
           }
         } else if (taskStatus === "aborted") {
           notificationText = this.$t("error.generic_error");
+
+          // persistent error notification for create-cluster and join-cluster
+          if (["create-cluster", "join-cluster"].includes(taskContext.action)) {
+            toastTimeout = 0;
+          }
         } else if (taskStatus === "validation-failed") {
           notificationText = this.$t("error.validation_error");
         } else if (payload.description) {
@@ -278,6 +288,7 @@ export default {
 
           if (
             (taskStatus === "running" || taskStatus === "completed") &&
+            payload.progress > 0 &&
             !task.validated
           ) {
             // validation is ok (e.g.: close the modal that created the task)
@@ -293,6 +304,7 @@ export default {
           type: notificationType,
           timestamp: payload.timestamp, ////
           isHidden: taskContext.extra && taskContext.extra.isNotificationHidden,
+          toastTimeout,
           task: {
             context: taskContext,
             status: taskStatus,

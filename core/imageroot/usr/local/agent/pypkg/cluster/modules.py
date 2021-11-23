@@ -118,12 +118,13 @@ def list_installed(rdb):
     # Search for installed modules
     for m in rdb.scan_iter('module/*/environment'):
         vars = rdb.hgetall(m)
+        module_ui_name = rdb.get(m.removesuffix('/environment') + '/ui_name') or ""
         url, sep, tag = vars['IMAGE_URL'].partition(":")
         image = url[url.rindex('/')+1:]
         logo = logos.get(image) or ''
         if url not in installed.keys():
             installed[url] = []
-        installed[url].append({ 'id': vars["MODULE_ID"], 'node': vars['NODE_ID'], 'digest': vars["IMAGE_DIGEST"], 'source': url, 'version': tag, 'logo': logo, 'module': image })
+        installed[url].append({ 'id': vars["MODULE_ID"], 'ui_name': module_ui_name, 'node': vars['NODE_ID'], 'digest': vars["IMAGE_DIGEST"], 'source': url, 'version': tag, 'logo': logo, 'module': image })
 
     return installed
 

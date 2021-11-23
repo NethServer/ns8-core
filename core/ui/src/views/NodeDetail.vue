@@ -12,14 +12,18 @@
               <cv-link to="/nodes">{{ $t("nodes.title") }}</cv-link>
             </cv-breadcrumb-item>
             <cv-breadcrumb-item>
-              <span>{{ $t("common.node") }} {{ nodeId }}</span>
+              <span>{{
+                nodeLabel ? nodeLabel : $t("common.node") + " " + nodeId
+              }}</span>
             </cv-breadcrumb-item>
           </cv-breadcrumb>
         </div>
       </div>
       <div class="bx--row">
         <div class="bx--col-lg-16 page-subtitle title-and-role">
-          <h3 class="title">{{ $t("common.node") }} {{ nodeId }}</h3>
+          <h3 class="title">
+            {{ nodeLabel ? nodeLabel : $t("common.node") + " " + nodeId }}
+          </h3>
           <cv-tag
             v-if="isLeader"
             kind="green"
@@ -373,6 +377,7 @@ export default {
       clusterStatusInterval: null,
       isLeader: false,
       vpnInfo: {},
+      nodeLabel: "-",
       loading: {
         nodeStatus: true,
         clusterStatus: true,
@@ -501,6 +506,7 @@ export default {
       );
       this.isLeader = currentNode.local;
       this.vpnInfo = currentNode.vpn;
+      this.nodeLabel = currentNode.ui_name;
       this.loading.clusterStatus = false;
     },
   },
@@ -524,6 +530,15 @@ export default {
 
   .title {
     margin-right: $spacing-05;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: $breakpoint-medium) {
+  .title-and-role .title {
+    max-width: 15rem;
   }
 }
 

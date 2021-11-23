@@ -193,7 +193,10 @@
                 :label="$t('common.join_code')"
                 v-model.trim="joinCode"
                 :invalid-message="$t(error.joinCode)"
-                :helper-text="$t('init.join_code_helper_text')"
+                :helper-text="
+                  $t('init.join_code_helper_text') +
+                  ' https://LEADER_NODE_IP/cluster-admin/#/nodes?isShownAddNodeModal=true'
+                "
                 class="join-code"
                 ref="joinCode"
               >
@@ -344,10 +347,14 @@ export default {
         if (err.response.status == 403) {
           this.isMaster = false;
         } else {
-          this.createErrorNotification(
-            err,
-            this.$t("task.cannot_create_task", { action: taskAction })
-          );
+          // persistent error notification
+          const notification = {
+            title: this.$t("task.cannot_create_task", { action: taskAction }),
+            description: this.getErrorMessage(err),
+            type: "error",
+            toastTimeout: 0,
+          };
+          this.createNotification(notification);
           return;
         }
       }
@@ -395,16 +402,23 @@ export default {
         if (err.response.status == 403) {
           this.isMaster = false;
         } else {
-          this.createErrorNotification(
-            err,
-            this.$t("task.cannot_create_task", { action: taskAction })
-          );
+          // persistent error notification
+          const notification = {
+            title: this.$t("task.cannot_create_task", { action: taskAction }),
+            description: this.getErrorMessage(err),
+            type: "error",
+            toastTimeout: 0,
+          };
+          this.createNotification(notification);
           return;
         }
       }
     },
     getClusterStatusCompleted(taskContext, taskResult) {
       const clusterStatus = taskResult.output;
+
+      //// remove mock
+      // clusterStatus.initialized = false; ////
 
       if (clusterStatus.initialized && this.isMaster) {
         // redirect to status page
@@ -530,10 +544,14 @@ export default {
         if (err.response.status == 403) {
           this.isMaster = false;
         } else {
-          this.createErrorNotification(
-            err,
-            this.$t("task.cannot_create_task", { action: taskAction })
-          );
+          // persistent error notification
+          const notification = {
+            title: this.$t("task.cannot_create_task", { action: taskAction }),
+            description: this.getErrorMessage(err),
+            type: "error",
+            toastTimeout: 0,
+          };
+          this.createNotification(notification);
           return;
         }
       }
@@ -632,10 +650,14 @@ export default {
         if (err.response.status == 403) {
           this.isMaster = false;
         } else {
-          this.createErrorNotification(
-            err,
-            this.$t("task.cannot_create_task", { action: taskAction })
-          );
+          // persistent error notification
+          const notification = {
+            title: this.$t("task.cannot_create_task", { action: taskAction }),
+            description: this.getErrorMessage(err),
+            type: "error",
+            toastTimeout: 0,
+          };
+          this.createNotification(notification);
         }
         return;
       }
@@ -744,10 +766,14 @@ export default {
         if (err.response.status == 403) {
           this.isMaster = false;
         } else {
-          this.createErrorNotification(
-            err,
-            this.$t("task.cannot_create_task", { action: taskAction })
-          );
+          // persistent error notification
+          const notification = {
+            title: this.$t("task.cannot_create_task", { action: taskAction }),
+            description: this.getErrorMessage(err),
+            type: "error",
+            toastTimeout: 0,
+          };
+          this.createNotification(notification);
           return;
         }
       }
@@ -808,6 +834,10 @@ export default {
 .tile-description {
   margin-top: $spacing-03;
   color: $text-02;
+}
+
+.bx--form .bx--form-item {
+  margin-bottom: $spacing-06;
 }
 </style>
 
