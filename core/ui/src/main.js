@@ -98,4 +98,4 @@ window.ns8 = new Vue({
     this.$root.apiUrl = this.config.API_SCHEME + this.config.API_ENDPOINT;
   },
   render: (h) => h(App),
-}).$mount("#ns8-core");
+}).$mount("#core");

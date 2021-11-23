@@ -1,7 +1,10 @@
 window.CONFIG = {
   PRODUCT_NAME: "NethServer 8",
+  PRODUCT_URL: "https://www.nethserver.org/",
   DOCS_URL: "https://www.nethserver.org/documentation/",
-  COMPANY_NAME: "Nethesis",
+  HELPDESK_URL: "https://www.nethserver.org/documentation/", ////
+  COMPANY_NAME: "Nethesis", ////
+  COMPANY_URL: "https://www.nethesis.it/", ////
   // API_ENDPOINT: window.location.hostname + ":8081/api", ////
   API_ENDPOINT: "172.25.5.229/cluster-admin/api", //// leader node
   // API_ENDPOINT: "172.25.5.3/cluster-admin/api", //// worker node
