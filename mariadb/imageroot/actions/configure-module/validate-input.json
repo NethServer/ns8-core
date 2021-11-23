@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Configure mariadb",
+  "$id": "http://nethserver.org/json-schema/task/input/mariadb/configure",
+  "description": "Configure mariadb",
+  "examples": [
+    {
+      "mariadb_tcp_port": "3306"
+    }
+  ],
+  "type": "object",
+  "required": [
+    "mariadb_tcp_port",
+    "host",
+    "http2https",
+    "lets_encrypt"
+  ],
+  "properties": {
+    "mariadb_tcp_port": {
+      "type": "integer",
+      "exclusiveMinimum": 1024,
+      "exclusiveMaximum": 65535,
+      "description": "TCP port where mariadb is listening"
+    },
+    "host": {
+      "type": "string",
+      "description": "Host name for the wiki, like 'wiki.nethserver.org'",
+      "format": "idn-hostname"
+    },
+    "lets_encrypt": {
+      "type": "boolean",
+      "title": "Let's Encrypt certificate",
+      "description": "Request a valid Let's Encrypt certificate."
+    },
+    "http2https": {
+      "type": "boolean",
+      "title": "HTTP to HTTPS redirection",
+      "description": "Redirect all the HTTP requests to HTTPS"
+    }
+  }
+}

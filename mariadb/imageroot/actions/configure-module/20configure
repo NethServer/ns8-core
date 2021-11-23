@@ -1,0 +1,46 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2021 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
+# Configure mariadb and phpmyadmin env
+# Input example:
+#
+#  {"wiki_name": "mywiki", "username": "admin", "password": "admin", "email": "admin@test.local", "user_full_name": "Administrator"}
+
+import json
+import sys
+# agent is a NethServer library which provides function to communicate with the agent
+import agent
+
+# Try to parse the stdin as JSON.
+# If parsing fails, output everything to stderr
+data = json.load(sys.stdin)
+
+# Setup default values
+mariadb_tcp_port = data.get("mariadb_tcp_port","3306")
+
+# Talk with agent using file descriptor.
+# Setup configuration from user input.
+agent.set_env("MARIADB_TCP_PORT", mariadb_tcp_port)
+
+# Make sure everything is saved inside the environment file
+# just before starting systemd unit
+agent.dump_env()

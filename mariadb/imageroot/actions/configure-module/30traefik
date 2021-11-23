@@ -1,0 +1,69 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2021 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
+# Configure traefik route for Dokuwiki
+
+import os
+import sys
+import json
+import agent
+import agent.tasks
+
+# Try to parse the stdin as JSON.
+# If parsing fails, output everything to stderr
+data = json.load(sys.stdin)
+
+# Setup default values
+host = data.get("host")
+h2hs = data.get("http2https", True)
+le = data.get("lets_encrypt", True)
+
+# Talk with agent using file descriptor.
+# Setup configuration from user input.
+agent.set_env("TRAEFIK_HOST", host)
+agent.set_env("TRAEFIK_HTTP2HTTPS", h2hs)
+agent.set_env("TRAEFIK_LETS_ENCRYPT", le)
+
+# Make sure everything is saved inside the environment file
+# just before starting systemd unit
+agent.dump_env()
+
+# Find default traefik instance for current node
+default_traefik_id = agent.resolve_agent_id('traefik@node')
+if default_traefik_id is None:
+    sys.exit(2)
+
+# Configure traefik virtual host
+response = agent.tasks.run(
+    agent_id=default_traefik_id,
+    action='set-route',
+    data={
+        'instance': os.environ['MODULE_ID'],
+        'url': f'http://127.0.0.1:{os.environ["TCP_PORT"]}',
+        'host': host,
+        'lets_encrypt': le,
+        'http2https': h2hs
+    },
+)
+
+# Check if traefik configuration has been successfull
+agent.assert_exp(response['exit_code'] == 0)
