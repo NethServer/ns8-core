@@ -28,7 +28,7 @@ EOF
 
 read -r mariadb_tcp_port < <(jq -r '.mariadb_tcp_port')
 
-if [[ $(($MARIADB_TCP_PORT + 0)) -gt 1 ]]; then
+if [[ -n $MARIADB_TCP_PORT ]]; then
     if [[ $(($MARIADB_TCP_PORT + 0)) -eq $(($mariadb_tcp_port + 0)) ]]; then 
         exit 0
     # check if that different port is not already in use
