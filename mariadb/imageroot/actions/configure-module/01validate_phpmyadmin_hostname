@@ -32,16 +32,20 @@ if [[ -n $TRAEFIK_HOST ]]; then
     if [[ $TRAEFIK_HOST == $host ]]; then 
         exit 0
     # check if the hostname is already in use
-    elif  ping $host -c 2 > /dev/null 2>&1; then
+    else
+        if ! /usr/bin/curl -s -H Host:$host http://127.0.0.1 | grep '404' > /dev/null; then
+            jq -c -n --arg host "${host}" '[{"field":"host","parameter":"host","value":$host,"error":"hostname_already_used_in_traefik"}]'
+            echo "set-status validation-failed" >&"${AGENT_COMFD}"
+            exit 2
+        fi
+        exit 0
+    fi
+# check if the hostname is already in use
+else
+    if ! /usr/bin/curl -s -H Host:$host http://127.0.0.1 | grep '404' > /dev/null; then
         jq -c -n --arg host "${host}" '[{"field":"host","parameter":"host","value":$host,"error":"hostname_already_used_in_traefik"}]'
         echo "set-status validation-failed" >&"${AGENT_COMFD}"
         exit 2
     fi
-# check if the hostname is already in use
-elif  ping $host -c 2 > /dev/null 2>&1; then
-    jq -c -n --arg host "${host}" '[{"field":"host","parameter":"host","value":$host,"error":"hostname_already_used_in_traefik"}]'
-    echo "set-status validation-failed" >&"${AGENT_COMFD}"
-    exit 2
+    exit 0
 fi
-
-exit 0
