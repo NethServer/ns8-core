@@ -34,7 +34,8 @@ request = json.load(sys.stdin)
 #     "domain": "example.com",
 #     "protocol": "ldap",
 #     "host": "ldap2.example.com",
-#     "port": 636
+#     "port": 636,
+#     "ui_name": "Secondary"
 # }
 
 rdb = agent.redis_connect(privileged=True)
@@ -43,24 +44,10 @@ domain = request['domain']
 protocol = request['protocol']
 provider = request['host'] + ':' + str(request['port'])
 
-providers = rdb.lrange(f"cluster/user_domain/{protocol}/{domain}/providers", 0, 8)
-if len(providers) <= 1:
+if not rdb.exists(f"cluster/user_domain/{protocol}/{domain}/conf"):
     # validation error
     agent.set_status('validation-failed')
-    json.dump([{'field':'domain', 'parameter':'domain','value': domain, 'error':'providers_min_length_limit'}], fp=sys.stdout)
+    json.dump([{'field':'domain', 'parameter':'domain','value': domain, 'error':'domain_not_found'}], fp=sys.stdout)
     sys.exit(2)
 
-
-if not provider in providers:
-    # validation error
-    agent.set_status('validation-failed')
-    json.dump([{'field':'host', 'parameter':'host','value': host, 'error':'provider_not_found'}], fp=sys.stdout)
-    sys.exit(2)
-
-removed_elements = rdb.lrem(f"cluster/user_domain/{protocol}/{domain}/providers", 0, provider)
-if removed_elements > 0:
-    rdb.hdel(f"cluster/user_domain/{protocol}/{domain}/ui_names", provider)
-    rdb.publish(os.getenv('AGENT_ID') + '/event/account-provider-changed', json.dumps({
-        'domain': domain,
-        'key': f"cluster/user_domain/{protocol}/{domain}/providers",
-    }))
+rdb.hset(f"cluster/user_domain/{protocol}/{domain}/ui_names", provider, request['ui_name'])
