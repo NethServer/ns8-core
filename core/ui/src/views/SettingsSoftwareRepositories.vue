@@ -49,9 +49,9 @@
             v-if="repoToDelete"
             kind="warning"
             :title="
-              $t('settings_sw_repositories.repository_deleted', {
-                repo: repoToDelete.name,
-              })
+              $t('settings_sw_repositories.repository_deleted') +
+              ': ' +
+              repoToDelete.name
             "
             :actionLabel="$t('common.undo')"
             @action="cancelDeleteRepository()"
@@ -330,7 +330,7 @@ export default {
       tableColumns: ["name", "url", "status", "testing"],
       tableRows: [],
       repoToDelete: null,
-      deleteRepoDelay: 5000, // you have 5 seconds to undo repository deletion
+      deleteRepoDelay: 7000, // you have 7 seconds to undo repository deletion
       loading: {
         repositories: true,
         createRepository: false,

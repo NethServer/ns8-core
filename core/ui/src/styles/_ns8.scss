@@ -99,6 +99,10 @@ a {
   margin-bottom: $spacing-07;
 }
 
+.cv-inline-notification {
+  margin-bottom: $spacing-07;
+}
+
 @media (max-width: $breakpoint-medium) {
   .cv-tile {
     margin-bottom: $spacing-05;
@@ -120,7 +124,7 @@ a {
 }
 
 .empty-state-button {
-  margin-top: $spacing-05;
+  margin-top: $spacing-07;
 }
 
 .ellipsis {

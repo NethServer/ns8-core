@@ -217,7 +217,7 @@ export default {
       modules: [],
       updates: [],
       updateAllAppsTimeout: 0,
-      updateAllAppsDelay: 5000, // you have 5 seconds to cancel "Update all"
+      updateAllAppsDelay: 7000, // you have 7 seconds to cancel "Update all"
       isShownInstallModal: false,
       appToInstall: null,
       loading: {

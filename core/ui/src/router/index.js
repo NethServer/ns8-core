@@ -10,8 +10,10 @@ import SettingsSoftwareRepositories from "../views/SettingsSoftwareRepositories"
 import SettingsCluster from "../views/SettingsCluster";
 import SoftwareCenterAppInstances from "../views/SoftwareCenterAppInstances";
 import InitializeCluster from "../views/InitializeCluster";
+import Domains from "../views/Domains";
 import Nodes from "../views/Nodes";
 import NodeDetail from "../views/NodeDetail";
+import DomainDetail from "../views/DomainDetail";
 
 Vue.use(VueRouter);
 
@@ -68,6 +70,11 @@ const routes = [
     component: Logs,
   },
   {
+    path: "/domains",
+    name: "Domains",
+    component: Domains,
+  },
+  {
     path: "/nodes",
     name: "Nodes",
     component: Nodes,
@@ -76,6 +83,11 @@ const routes = [
     path: "/nodes/:nodeId",
     name: "NodeDetail",
     component: NodeDetail,
+  },
+  {
+    path: "/domains/:domainName",
+    name: "DomainDetail",
+    component: DomainDetail,
   },
 ];
 

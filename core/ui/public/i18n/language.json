@@ -35,7 +35,12 @@
     "cluster_label": "Cluster label",
     "cluster_label_tooltip": "You can assign the cluster an easy to remember name",
     "save_settings": "Save settings",
-    "no_label": "No label"
+    "no_label": "No label",
+    "next": "Next",
+    "previous": "Previous",
+    "please_read_carefully": "Please read carefully",
+    "type_to_to_confirm": "Type <strong>{name}</strong> to confirm deletion",
+    "understood_delete": "I understand, delete"
   },
   "error": {
     "error": "Error",
@@ -185,7 +190,8 @@
     "list-shortcuts": "List shortcuts",
     "get-node-status": "Get node status",
     "remove-module": "Remove module",
-    "set-name": "Set name"
+    "set-name": "Set name",
+    "list-user-domains": "List user domains"
   },
   "network": {
     "title": "Network"
@@ -204,7 +210,7 @@
   "settings_cluster": {},
   "settings_sw_repositories": {
     "no_sw_repositories": "No software repositories",
-    "no_sw_repositories_description": "You can create one by clicking on the button below",
+    "no_sw_repositories_description": "You can create one by clicking the button below",
     "create_repository": "Create repository",
     "name": "Name",
     "url": "URL",
@@ -214,7 +220,7 @@
     "repository_same_name_already_exists": "A repository with this name already exists",
     "repository_same_url_already_exists": "A repository with this URL already exists",
     "repository_not_accessible": "Repository not accessible",
-    "repository_deleted": "Repository {repo} deleted"
+    "repository_deleted": "Repository deleted"
   },
   "software_center": {
     "title": "Software center",
@@ -301,6 +307,44 @@
   },
   "cluster_status": {
     "title": "Cluster status"
+  },
+  "domains": {
+    "title": "Domains and users",
+    "no_domain_configured": "No domain configured",
+    "create_domain": "Create domain",
+    "internal": "Internal",
+    "external": "External",
+    "ldap": "LDAP",
+    "openldap": "OpenLDAP",
+    "samba": "Samba",
+    "providers": "provider | providers",
+    "empty_state_domains_description": "Create a domain to configure users and groups",
+    "select_domain_location": "Select domain location",
+    "internal_description": "Install an account provider on a cluster node",
+    "external_description": "Bind to an existent account provider",
+    "select_prodiver_module": "Select account provider",
+    "choose_node_for_account_provider_installation": "Choose node for account provider installation",
+    "location": "Location",
+    "account_provider": "Account provider",
+    "domain_summary": "Summary",
+    "delete_domain": "Delete domain",
+    "delete_internal_domain_confirm": "Delete internal domain <strong>{name}</strong>? All users, groups and account provider data will be deleted. This action is irreversible",
+    "delete_external_domain_confirm": "Delete external domain <strong>{name}</strong>? Account provider data will remain intact, but if you change your mind you'll have to bind the external domain again",
+    "unconfigured_domain": "Unconfigured domain",
+    "unconfigured_domains_title": "There are one or more unconfigured domains",
+    "unconfigured_domains_description": "You can resume their configuration or delete them",
+    "resume_configuration": "Resume configuration"
+  },
+  "domain_detail": {
+    "title": "Domain detail",
+    "domain": "Domain",
+    "settings": "Settings",
+    "providers": "Providers",
+    "add_provider": "Add provider",
+    "max_instances_reached": "No cluster nodes available to install a new provider. Every node can host only one provider per domain",
+    "provider_deleted": "Provider deleted",
+    "cannot_delete_provider": "Cannot delete provider",
+    "cannot_delete_provider_description": "You cannot delete the only provider of a domain. If that's your intention, you can delete the whole domain, and the provider will deleted as well"
   },
   "nodes": {
     "title": "Nodes",
