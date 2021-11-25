@@ -25,7 +25,7 @@ the core documentation for more information about Ldapproxy.
 
 Provision a new domain:
 
-    api-cli run provision-domain --agent module/samba1 --data - <<EOF
+    api-cli run configure-module --agent module/samba1 --data - <<EOF
     {
         "adminuser":"administrator",
         "adminpass":"Nethesis,1234",
@@ -38,7 +38,7 @@ Provision a new domain:
 Further Samba instances for the same `realm` are **joined** to the existing domain.
 The command is similar.
 
-    api-cli run provision-domain --agent module/samba2 --data - <<EOF
+    api-cli run configure-module --agent module/samba2 --data - <<EOF
     {
         "adminuser":"administrator",
         "adminpass":"Nethesis,1234",
@@ -47,8 +47,7 @@ The command is similar.
     }
     EOF
 
-Note that the `nbdomain` attribute is no longer required to provision
-additional DCs.
+Note that some attributes are not required to provision additional DCs.
 
 ## IP routing for the AD domain
 
