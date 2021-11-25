@@ -12,6 +12,13 @@
         </div> -->
       </cv-side-nav-link>
       <cv-side-nav-link
+        @click="goTo('/domains')"
+        :active="isLinkActive('/domains')"
+      >
+        <template v-slot:nav-icon><Events20 /></template>
+        <span>{{ $t("domains.title") }}</span>
+      </cv-side-nav-link>
+      <cv-side-nav-link
         @click="goTo('/nodes')"
         :active="isLinkActive('/nodes')"
       >
@@ -74,7 +81,7 @@
 
 <script>
 // import Network_220 from "@carbon/icons-vue/es/network--2/20"; ////
-// import Events20 from "@carbon/icons-vue/es/events/20";
+import Events20 from "@carbon/icons-vue/es/events/20";
 // import Save20 from "@carbon/icons-vue/es/save/20";
 import Settings20 from "@carbon/icons-vue/es/settings/20";
 import Catalog20 from "@carbon/icons-vue/es/catalog/20";
@@ -87,8 +94,8 @@ export default {
   name: "SideMenuContent",
   components: {
     // Network_220, ////
-    // Events20,
     // Save20,
+    Events20,
     Catalog20,
     Settings20,
     Application20,

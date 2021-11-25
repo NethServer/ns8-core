@@ -154,7 +154,6 @@
                 <template v-if="isInstanceUpgradable(app, instance)">
                   <NsButton
                     kind="primary"
-                    size="field"
                     :icon="Upgrade20"
                     @click="updateInstance(instance)"
                     >{{ $t("software_center.update") }}</NsButton
@@ -164,7 +163,6 @@
                 <template v-else>
                   <NsButton
                     kind="ghost"
-                    size="field"
                     :icon="Launch20"
                     @click="openInstance(instance)"
                     >{{ $t("software_center.open") }}</NsButton
