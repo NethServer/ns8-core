@@ -27,7 +27,7 @@ buildah add "${container}" imageroot /imageroot
 buildah add "${container}" ui/dist /ui
 # Setup the entrypoint, ask to reserve one TCP port with the label and set a rootless container
 buildah config --entrypoint=/ \
-    --label="org.nethserver.tcp-ports-demand=1" \
+    --label="org.nethserver.tcp-ports-demand=2" \
     --label="org.nethserver.rootfull=0" \
     --label="org.nethserver.authorizations=traefik@any:routeadm" \
     --label="org.nethserver.images=docker.io/mariadb:10.6.5 docker.io/phpmyadmin:5.1.1" \
