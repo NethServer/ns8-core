@@ -1,0 +1,63 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2021 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
+import os
+import sys
+import agent
+import json
+import ipaddress as ipm
+import subprocess
+import socket
+
+agent.set_weight(os.path.basename(__file__), 0) # Validation step, no task progress at all
+agent.set_weight("40start_provisioning", 5)
+
+request = json.load(sys.stdin)
+ipaddress = request['ipaddress']
+
+addr = ipm.ip_address(ipaddress)
+# See Python docs: https://docs.python.org/3.9/library/ipaddress.html#ip-addresses
+if not addr.is_private or addr.is_unspecified or addr.is_reserved or addr.is_loopback or addr.is_link_local:
+    agent.set_status('validation-failed')
+    json.dump([{"field":"ipaddress","parameter":"ipaddress","value": ipaddress,"error":"ipaddress_private_check_failed"}], fp=sys.stdout)
+    sys.exit(2)
+
+ipproc = subprocess.run(
+    ["ip", "-o", "address", "show", "to", f"{ipaddress}/32", "up"],
+    capture_output=True,
+    text=True,
+)
+
+if not ipaddress in ipproc.stdout:
+    agent.set_status('validation-failed')
+    json.dump([{"field":"ipaddress","parameter":"ipaddress","value": ipaddress,"error":"ipaddress_avail_check_failed"}], fp=sys.stdout)
+    sys.exit(3)
+
+for tcp_port in [53, 88, 636, 464, 445, 3268, 3269, 389, 135, 139]:
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sk:
+            sk.bind((ipaddress, tcp_port))
+    except Exception as ex:
+        print(f"TCP port {tcp_port} bind failed: {ex}", file=sys.stderr)
+        agent.set_status('validation-failed')
+        json.dump([{"field":"ipaddress","parameter":"ipaddress","value": ipaddress,"error":"ipaddress_bind_check_failed"}], fp=sys.stdout)
+        sys.exit(4)

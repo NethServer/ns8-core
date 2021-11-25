@@ -26,32 +26,38 @@ import sys
 import os
 import secrets
 import string
+import cluster.userdomains
 
 request = json.load(sys.stdin)
 realm = request['realm'].upper()
 
-rdb = agent.redis_connect()
+if 'REALM' in os.environ:
+    print(agent.SD_ERR + "This module is already configured!", file=sys.stderr)
+    sys.exit(1)
 
-# Lookup a DC for the given realm
-for ksamba in rdb.scan_iter(f'module/samba*/environment'):
-    penv = rdb.hgetall(ksamba)
-    if penv.get('REALM', '') == realm:
+
+with agent.redis_connect() as rdb:
+    domains = cluster.userdomains.get_internal_domains(rdb)
+    kdomain = realm.lower()
+
+    if kdomain in domains:
         provision_type = 'join-domain'
+        peer_instance = domains[kdomain]['providers'][0]['id']
+        penv = rdb.hgetall(f"module/{peer_instance}/environment")
         nbdomain = penv['NBDOMAIN']
         svcpass = penv['SVCPASS']
-        break
-else: # No DC found for the realm. Create a new AD domain
-    provision_type = 'new-domain'
-    try:
-        nbdomain = request['nbdomain'].upper()
-    except KeyError as ex:
-        json.dump({"parameter": 'nbdomain', "value": None, "error": "missing_parameter"}, fp=sys.stdout)
-        agent.set_status('validation-failed')
-        sys.exit(7)
+    else:
+        provision_type = 'new-domain'
+        try:
+            nbdomain = request['nbdomain'].upper()
+        except KeyError as ex:
+            json.dump([{"parameter": 'nbdomain', "value": None, "error": "nbdomain_missing_parameter"}], fp=sys.stdout)
+            agent.set_status('validation-failed')
+            sys.exit(8)
 
-    # Generate a random password for ldapservice
-    alphabet = string.ascii_letters + string.digits + '+-/,.-_^'
-    svcpass = ''.join([secrets.choice(alphabet) for i in range(32)])
+        # Generate a random password for ldapservice
+        alphabet = string.ascii_letters + string.digits + '+-/,.-_^'
+        svcpass = ''.join([secrets.choice(alphabet) for i in range(32)])
 
 if 'hostname' in request: # Use given hostname (short)
     hostname = request['hostname'].lower()

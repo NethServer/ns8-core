@@ -1,8 +1,8 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "provision-domain input",
-    "$id": "http://schema.nethserver.org/samba/provision-domain-input.json",
-    "description": "Provision a new Active Directory domain controller",
+    "title": "configure-module input",
+    "$id": "http://schema.nethserver.org/samba/configure-module-input.json",
+    "description": "Provision a Active Directory domain controller",
     "examples": [
         {
             "adminuser": "administrator",
