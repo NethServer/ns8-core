@@ -222,7 +222,7 @@ export default {
         this.createClusterTaskForApp({
           action: taskAction,
           data: {
-            id: "MODULE_NAME", // TODO
+            id: "mariadb", // TODO
           },
           extra: {
             title: this.$t("action." + taskAction),

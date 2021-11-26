@@ -5,7 +5,7 @@ Vue.use(Vuex);
 
 export default new Vuex.Store({
   state: {
-    appName: "MODULE_NAME", // TODO
+    appName: "mariadb", // TODO
     instanceName: "",
     ns8Core: null,
   },

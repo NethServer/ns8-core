@@ -8,27 +8,27 @@ Search and replace all "MODULE_" occurrences in this repository with the proper 
 
 A README.md template for your NethServer 8 module is the following:
 
-# <MODULE_NAME>
+# mariadb
 
-Start and configure <MODULE_NAME> instance.
+Start and configure mariadb instance.
 The module uses <MODULE_IMAGE>.
 
 ## Install
 
 Instantiate the module:
 ```
-add-module <MODULE_NAME> 1
+add-module mariadb 1
 ```
 
 The output of the command will return the instance name.
 Output example:
 ```
-{"module_id": "<MODULE_NAME>1", "image_name": "<MODULE_NAME>", "image_url": "<IMAGE_URL>:latest"}
+{"module_id": "mariadb1", "image_name": "mariadb", "image_url": "<IMAGE_URL>:latest"}
 ```
 
 ## Configure
 
-Let's assume that the <MODULE_NAME> istance is named `<MODULE_NAME>1`.
+Let's assume that the mariadb istance is named `mariadb1`.
 
 Then launch `configure-module`, by setting the following parameters:
 - `<MODULE_PARAM1_NAME>`: <MODULE_PARAM1_DESCRIPTION>
@@ -47,7 +47,7 @@ EOF
 ```
 
 The above command will:
-- start and configure the <MODULE_NAME> instance
+- start and configure the mariadb instance
 - (describe configuration process)
 - ...
 
@@ -55,7 +55,7 @@ The above command will:
 
 To uninstall the instance:
 ```
-remove-module <MODULE_NAME>1 --no-preserve
+remove-module mariadb1 --no-preserve
 ```
 # retrieve configuration
 ```
