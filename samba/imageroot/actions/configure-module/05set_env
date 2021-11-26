@@ -72,8 +72,6 @@ agent.set_env('REALM', realm)
 agent.set_env('HOSTNAME', hostname + '.' + realm.lower())
 
 # JSON Schema mandatory fields. We are sure they are present.
-agent.set_env('ADMINUSER', request['adminuser'])
-agent.set_env('ADMINPASS', request['adminpass'])
 agent.set_env('IPADDRESS', request['ipaddress'])
 
 agent.set_env('SVCUSER', 'ldapservice')
