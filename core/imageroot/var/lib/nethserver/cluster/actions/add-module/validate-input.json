@@ -15,11 +15,18 @@
         "node"
     ],
     "properties": {
+        "check_idle_time": {
+            "title": "Agent liveness check limit",
+            "description": "Change the default check limit value (default 8 seconds)",
+            "type": "integer"
+        },
         "image": {
+            "title": "Module image name",
             "description": "Name of the module image to install",
             "type": "string"
         },
         "node": {
+            "title": "Node ID",
             "description": "Node identifier where the module has to be installed",
             "type": "integer",
             "minimum": 1
