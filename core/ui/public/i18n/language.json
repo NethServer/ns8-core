@@ -333,7 +333,8 @@
     "unconfigured_domain": "Unconfigured domain",
     "unconfigured_domains_title": "There are one or more unconfigured domains",
     "unconfigured_domains_description": "You can resume their configuration or delete them",
-    "resume_configuration": "Resume configuration"
+    "resume_configuration": "Resume configuration",
+    "installing_account_provider": "Installing account provider, please wait..."
   },
   "domain_detail": {
     "title": "Domain detail",

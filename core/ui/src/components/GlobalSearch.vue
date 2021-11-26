@@ -18,8 +18,9 @@
       <NsEmptyState
         v-if="!results.length"
         :title="$t('shell.no_search_results')"
-        :animationData="require('@/assets/ghost-dark-bg.json')"
+        :animationData="GhostDarkBgLottie"
         animationTitle="ghost"
+        :loop="1"
       >
         <template #description>
           {{ $t("shell.no_search_results_description") }}</template
@@ -68,13 +69,17 @@
 
 <script>
 import Settings20 from "@carbon/icons-vue/es/settings/20";
-import { UtilService, TaskService } from "@nethserver/ns8-ui-lib";
+import {
+  UtilService,
+  TaskService,
+  LottieService,
+} from "@nethserver/ns8-ui-lib";
 import to from "await-to-js";
 
 export default {
   name: "GlobalSearch",
   components: { Settings20 },
-  mixins: [UtilService, TaskService],
+  mixins: [UtilService, TaskService, LottieService],
   data() {
     return {
       query: "",
