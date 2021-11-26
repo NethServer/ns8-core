@@ -132,8 +132,9 @@
                 <NsEmptyState
                   v-if="!updates.length && !loading.modules"
                   :title="$t('software_center.system_up_to_date')"
-                  :animationData="require('@/assets/rocket.json')"
+                  :animationData="RocketLottie"
                   animationTitle="rocket"
+                  :loop="1"
                   key="updates-empty-state"
                 />
                 <AppList
@@ -192,6 +193,7 @@ import {
   UtilService,
   TaskService,
   IconService,
+  LottieService,
 } from "@nethserver/ns8-ui-lib";
 
 export default {
@@ -200,7 +202,13 @@ export default {
     AppList,
     InstallAppModal,
   },
-  mixins: [IconService, QueryParamService, UtilService, TaskService],
+  mixins: [
+    IconService,
+    QueryParamService,
+    UtilService,
+    TaskService,
+    LottieService,
+  ],
   pageTitle() {
     return this.$t("software_center.title");
   },

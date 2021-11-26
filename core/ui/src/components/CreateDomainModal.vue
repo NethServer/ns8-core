@@ -6,6 +6,7 @@
     @primary-click="nextStep"
     @secondary-click="previousStep"
     @other-click="$emit('hide')"
+    :primary-button-disabled="step == 'installingProvider'"
     class="no-pad-modal"
   >
     <template slot="title">{{ $t("domains.create_domain") }}</template>
@@ -102,7 +103,7 @@
             <div
               v-for="(node, index) in nodes"
               :key="index"
-              class="bx--col-md-4 bx--col-lg-4"
+              class="bx--col-md-4 bx--col-max-4"
             >
               <NsTile
                 :light="true"
@@ -167,7 +168,9 @@
                   ")"
                 }}
               </span>
-              <span v-else>{{ $t("common.node") + selectedNode.id }}</span>
+              <span v-else>{{
+                $t("common.node") + " " + selectedNode.id
+              }}</span>
             </div>
           </template>
           <!-- external config parameters -->
@@ -177,9 +180,32 @@
           </div>
         </cv-tile>
       </template>
+      <template v-if="step == 'installingProvider'">
+        <NsInlineNotification
+          v-if="error.addModule"
+          kind="error"
+          :title="$t('action.add-module')"
+          :description="error.addModule"
+          :showCloseButton="false"
+        />
+        <NsEmptyState
+          :title="$t('domains.installing_account_provider')"
+          :animationData="GearsLottie"
+          animationTitle="gears"
+          :loop="true"
+        />
+        <NsProgressBar
+          :value="installProviderProgress"
+          :indeterminate="!installProviderProgress"
+          class="mg-bottom-md"
+        />
+      </template>
     </template>
     <template slot="other-button">{{ $t("common.cancel") }}</template>
-    <template slot="secondary-button">{{ $t("common.previous") }}</template>
+    <!-- //// previous button must disappear after provider installation/binding -->
+    <template v-if="step !== 'installingProvider'" slot="secondary-button">{{
+      $t("common.previous")
+    }}</template>
     <template slot="primary-button">{{
       step == "summary" ? $t("domains.create_domain") : $t("common.next")
     }}</template>
@@ -187,12 +213,17 @@
 </template>
 
 <script>
-import { UtilService, TaskService, IconService } from "@nethserver/ns8-ui-lib";
-// import to from "await-to-js"; ////
+import {
+  UtilService,
+  TaskService,
+  IconService,
+  LottieService,
+} from "@nethserver/ns8-ui-lib";
+import to from "await-to-js";
 
 export default {
   name: "CreateDomainModal",
-  mixins: [UtilService, TaskService, IconService],
+  mixins: [UtilService, TaskService, IconService, LottieService],
   props: {
     isShown: {
       type: Boolean,
@@ -210,6 +241,10 @@ export default {
       isExternalSelected: false,
       isOpenLdapSelected: true,
       isSambaSelected: false,
+      installProviderProgress: 0,
+      error: {
+        addModule: "",
+      },
     };
   },
   computed: {
@@ -252,6 +287,12 @@ export default {
         case "node":
           this.step = "summary";
           break;
+        case "summary":
+          if (this.isInternalSelected) {
+            this.step = "installingProvider";
+            this.installProvider();
+          }
+          break;
       }
     },
     previousStep() {
@@ -279,6 +320,61 @@ export default {
       console.log("isExternalConfigOk"); ////
       //// todo
       return true;
+    },
+    async installProvider() {
+      this.error.addModule = "";
+
+      //// todo select version
+      let version = "latest";
+      const moduleName = "samba";
+
+      const taskAction = "add-module";
+
+      // register to task completion
+      this.$root.$once(taskAction + "-completed", this.addModuleCompleted);
+
+      // register to task progress to update progress bar
+      this.$root.$on(taskAction + "-progress", this.addModuleProgress);
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          data: {
+            image: "ghcr.io/nethserver/samba:" + version, ////
+            node: parseInt(this.selectedNode.id),
+          },
+          extra: {
+            title: this.$t("software_center.app_installation", {
+              app: moduleName,
+            }),
+            description: this.$t("software_center.installing_on_node", {
+              node: this.selectedNode.id,
+            }),
+            node: this.selectedNode.id,
+            isNotificationHidden: true,
+            isProgressNotified: true,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.addModule = this.getErrorMessage(err);
+        return;
+      }
+    },
+    addModuleCompleted(taskContext, taskResult) {
+      console.log("addModuleCompleted", taskResult); ////
+
+      // unregister to task progress
+      this.$root.$off("add-module-progress");
+
+      // show new app in app drawer
+      this.$root.$emit("reloadAppDrawer");
+    },
+    addModuleProgress(progress) {
+      this.installProviderProgress = progress;
     },
   },
 };
