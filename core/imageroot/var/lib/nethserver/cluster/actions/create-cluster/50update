@@ -21,7 +21,7 @@
 #
 
 import sys
-import ipcalc
+import ipaddress
 import os
 import json
 import agent
@@ -42,7 +42,7 @@ public_key = agent.slurp_file('/etc/nethserver/wg0.pub')
 agent.assert_exp(public_key)
 
 NODE_ID = 1
-ip_address = str(ipcalc.Network(network).network() + NODE_ID)
+ip_address = str(ipaddress.ip_network(network).network_address + NODE_ID)
 
 # Get a Redis connection
 rdb = agent.redis_connect(privileged=True)

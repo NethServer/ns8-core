@@ -25,7 +25,7 @@ import sys
 import json
 import agent
 import agent.tasks
-import ipcalc
+import ipaddress
 import uuid
 import cluster.grants
 
@@ -63,9 +63,9 @@ agent.assert_exp(leader_endpoint)
 #
 # 1/b. Generate a new node_id and VPN IP address
 #
-network = ipcalc.Network(rdb.get('cluster/network'))
+network = ipaddress.ip_network(rdb.get('cluster/network'))
 node_id = int(rdb.incr(f'cluster/node_sequence'))
-ip_address = str(network.network() + node_id)
+ip_address = str(network.network_address + node_id)
 
 # Prepare a list of tasks to update VPN routes on existing nodes
 update_routes_tasks = [{
