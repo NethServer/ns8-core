@@ -131,6 +131,7 @@ additional_tasks = [
         'data': {
             "image": f'ghcr.io/nethserver/traefik:latest',
             "node": node_id,
+            "check_idle_time": 0,
         }
     },
     {
@@ -139,6 +140,7 @@ additional_tasks = [
         'data': {
             "image": f'ghcr.io/nethserver/ldapproxy:latest',
             "node": node_id,
+            "check_idle_time": 0,
         }
     },
     {
@@ -147,6 +149,7 @@ additional_tasks = [
         'data': {
             "image": f'ghcr.io/nethserver/promtail:latest',
             "node": node_id,
+            "check_idle_time": 0,
         }
     },
     {
