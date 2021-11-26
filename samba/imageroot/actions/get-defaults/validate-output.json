@@ -1,0 +1,64 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "get-defaults output",
+    "$id": "http://schema.nethserver.org/samba/get-defaults-output.json",
+    "description": "Return values that suit the configure-module action input",
+    "examples": [
+        {
+            "nbdomain": "AD",
+            "adminuser": "administrator",
+            "hostname": "dc2",
+            "realm": "ad.dp.nethserver.net",
+            "ipaddress_list": [
+                {
+                    "ipaddress": "10.18.0.5",
+                    "label": "eth0 (enp0s3, ens3)"
+                },
+                {
+                    "ipaddress": "10.110.16.2",
+                    "label": "eth1 (enp0s4, ens4)"
+                },
+                {
+                    "ipaddress": "10.5.4.1",
+                    "label": "wg0"
+                }
+            ]
+        }
+    ],
+    "type": "object",
+    "required": [
+        "adminuser",
+        "ipaddress_list",
+        "hostname",
+        "realm",
+        "nbdomain"
+    ],
+    "properties": {
+        "adminuser": {
+            "type": "string"
+        },
+        "hostname": {
+            "type": "string"
+        },
+        "realm": {
+            "type": "string"
+        },
+        "nbdomain": {
+            "type": "string"
+        },
+        "ipaddress_list": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "label": {
+                        "type": "string"
+                    },
+                    "ipaddress": {
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,54 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2021 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
+import os
+import sys
+import agent
+import json
+import ipaddress as ipm
+import subprocess
+import socket
+
+hostname, domain = socket.gethostname().lower().split(".", 1)
+
+response = {
+    "nbdomain": 'AD',
+    "adminuser": "administrator",
+    "hostname": os.getenv("MODULE_ID").replace("samba", "dc"),
+    "realm": "ad." + domain,
+    "ipaddress_list": [],
+}
+
+with subprocess.Popen(["ip", "-j", "-4", "address", "show"], stdout=subprocess.PIPE) as proc:
+    for iface in json.load(proc.stdout):
+        for ainfo in iface['addr_info']:
+            addr = ipm.ip_address(ainfo['local'])
+            if addr.is_private and not (addr.is_unspecified or addr.is_reserved or addr.is_loopback or addr.is_link_local):
+                altnames = ""
+                if 'altnames' in iface:
+                    altnames = f" ({', '.join(iface['altnames'])})"
+                response['ipaddress_list'].append({
+                    "ipaddress": ainfo['local'],
+                    "label": iface['ifname'] + altnames
+                })
+
+json.dump(response, fp=sys.stdout)
