@@ -5,23 +5,15 @@
   "description": "Configure mariadb",
   "examples": [
     {
-      "mariadb_tcp_port": "3306"
     }
   ],
   "type": "object",
   "required": [
-    "mariadb_tcp_port",
     "host",
     "http2https",
     "lets_encrypt"
   ],
   "properties": {
-    "mariadb_tcp_port": {
-      "type": "integer",
-      "exclusiveMinimum": 1024,
-      "exclusiveMaximum": 65535,
-      "description": "TCP port where mariadb is listening"
-    },
     "host": {
       "type": "string",
       "description": "Host name for the wiki, like 'wiki.nethserver.org'",

@@ -41,8 +41,7 @@ Example:
 { 
 "host": "phpmyadmin.domain.com", 
 "http2https": true,
-"lets_encrypt": false,
-"mariadb_tcp_port":3306
+"lets_encrypt": false
 }
 EOF
 ```
@@ -63,7 +62,6 @@ remove-module <MODULE_NAME>1 --no-preserve
 api-cli run get-configuration --agent module/mariadb12 --data null
 Warning: using user "cluster" credentials from the environment
 {
-    "mariadb_tcp_port": 3333, 
 "host": "nanatacha.domain.com", 
 "http2https": true, 
 "lets_encrypt": false

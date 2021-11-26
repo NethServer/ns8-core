@@ -9,7 +9,11 @@ EnvironmentFile=-%S/state/environment
 Restart=always
 TimeoutStopSec=70
 ExecStartPre=/bin/rm -f %t/mariadb.pid %t/mariadb.pod-id
-ExecStartPre=/usr/bin/podman pod create --infra-conmon-pidfile %t/mariadb.pid --pod-id-file %t/mariadb.pod-id --name mariadb -p 127.0.0.1:${TCP_PORT}:80 -p ${MARIADB_TCP_PORT}:3306 --replace
+ExecStartPre=/usr/bin/podman pod create --infra-conmon-pidfile %t/mariadb.pid \
+    --pod-id-file %t/mariadb.pod-id \
+    --name mariadb -p 127.0.0.1:${TRAEFIK_TCP_PORT}:80 \
+    -p ${MARIADB_TCP_PORT}:3306 \
+    --replace
 ExecStart=/usr/bin/podman pod start --pod-id-file %t/mariadb.pod-id
 ExecStop=/usr/bin/podman pod stop --ignore --pod-id-file %t/mariadb.pod-id -t 10
 ExecStopPost=/usr/bin/podman pod rm --ignore -f --pod-id-file %t/mariadb.pod-id

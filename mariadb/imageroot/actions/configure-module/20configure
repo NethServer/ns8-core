@@ -25,6 +25,7 @@
 #
 #  {"wiki_name": "mywiki", "username": "admin", "password": "admin", "email": "admin@test.local", "user_full_name": "Administrator"}
 
+import os
 import json
 import sys
 # agent is a NethServer library which provides function to communicate with the agent
@@ -34,12 +35,14 @@ import agent
 # If parsing fails, output everything to stderr
 data = json.load(sys.stdin)
 
-# Setup default values
-mariadb_tcp_port = data.get("mariadb_tcp_port","3306")
-
+# mariadb use the first random port, traefik the second one
+env_tcp_ports = os.environ["TCP_PORTS"].split(',')
+mariadb_tcp_port = env_tcp_ports[0]
+traefik_tcp_port = env_tcp_ports[1]
 # Talk with agent using file descriptor.
 # Setup configuration from user input.
 agent.set_env("MARIADB_TCP_PORT", mariadb_tcp_port)
+agent.set_env("TRAEFIK_TCP_PORT", traefik_tcp_port)
 
 # Make sure everything is saved inside the environment file
 # just before starting systemd unit
