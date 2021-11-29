@@ -57,6 +57,7 @@ image_url = request['image']
 image_name = get_image_name(image_url)
 node_id = int(request['node'])
 agent.assert_exp(node_id > 0)
+check_idle_time = request.get('check_idle_time')
 
 rdb = agent.redis_connect(privileged=True)
 agent.assert_exp(image_url)
@@ -132,6 +133,7 @@ add_module_result = agent.tasks.run(
     },
     endpoint="redis://cluster-leader",
     progress_callback=agent.get_progress_callback(34,66),
+    **({} if check_idle_time is None else {'check_idle_time': check_idle_time})
 )
 agent.assert_exp(add_module_result['exit_code'] == 0)
 

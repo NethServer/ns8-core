@@ -26,7 +26,7 @@ import uuid
 import time
 import json
 import tempfile
-import ipcalc
+import ipaddress
 import csv
 import traceback
 import shlex
