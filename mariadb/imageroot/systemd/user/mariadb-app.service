@@ -12,12 +12,13 @@ ExecStartPre=/bin/rm -f %t/mariadb-app.pid %t/mariadb-app.ctr-id
 ExecStart=/usr/bin/podman run --conmon-pidfile %t/mariadb-app.pid \
     --cidfile %t/mariadb-app.ctr-id --cgroups=no-conmon \
     --pod-id-file %t/mariadb.pod-id --replace -d --name mariadb-app \
-    --env-file=%S/state/environment   -v secrets:/run/secrets:Z \
+    --env-file=%S/state/environment \
     -v mysql-data:/var/lib/mysql/:Z -v mysql-conf.d:/etc/mysql/conf.d:Z \
     -v sql:/docker-entrypoint-initdb.d:Z \
     -v %S/scripts/create_admin_of_phpmyadmin.sql:/docker-entrypoint-initdb.d/create_admin.sql:Z \
     -e MARIADB_ROOT_PASSWORD_FILE=/run/secrets/root.secret -e MARIADB_DATABASE=phpmyadmin \
     -e MARIADB_USER=phpmyadmin -e MARIADB_PASSWORD_FILE=/run/secrets/phpmyadmin.secret \
+    --secret root.secret --secret phpmyadmin.secret \
     ${MARIADB_IMAGE} \
     --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
 ExecStartPost=/usr/bin/podman exec  mariadb-app /bin/bash -c 'printf "[client] \npassword=$(cat /run/secrets/root.secret)" > /root/.my.cnf'

@@ -15,7 +15,8 @@ ExecStart=/usr/bin/podman run --conmon-pidfile %t/phpmyadmin-app.pid \
     --env-file=%S/state/environment -e PMA_HOST=127.0.0.1 -e PMA_PORT=3306 \
     -e PMA_PMADB=phpmyadmin -e PMA_CONTROLUSER=phpmyadmin \
     -e PMA_CONTROLPASS_FILE=/run/secrets/phpmyadmin.secret \
-    -v secrets:/run/secrets:Z -v config.user.inc.php:/etc/phpmyadmin/config.user.inc.php:Z \
+    --secret phpmyadmin.secret \
+    -v config.user.inc.php:/etc/phpmyadmin/config.user.inc.php:Z \
     -v sql:/var/www/html/sql:Z \
     ${PHPMYADMIN_IMAGE}
 ExecStop=/usr/bin/podman stop --ignore --cidfile %t/phpmyadmin-app.ctr-id -t 10
