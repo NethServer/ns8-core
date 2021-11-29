@@ -260,7 +260,7 @@ func runAction(task *models.Task) {
 
 		// Create a pipe to read control commands from action steps
 		comReadFd, comWriteFd, _ := os.Pipe()
-		comReadLock := make(chan int)
+		comReadLock := make(chan int, 3)
 
 		cmd := exec.Command(step.Path)
 		cmd.Env = append(append(os.Environ(), environment...),
@@ -280,11 +280,13 @@ func runAction(task *models.Task) {
 		go func() {
 			bytes, _ := io.ReadAll(stderrReader)
 			actionError += string(bytes)
+			comReadLock <- 1
 		}()
 
 		go func() {
 			bytes, _ := io.ReadAll(stdoutReader)
 			actionOutput += string(bytes)
+			comReadLock <- 1
 		}()
 
 		go func() {
@@ -366,8 +368,10 @@ func runAction(task *models.Task) {
 		// otherwise it blocks our thread.
 		comWriteFd.Close()
 
-		// Block until AGENT_COMFD / command channel is closed
-		<- comReadLock
+		// Block until the three coroutines (stdout, stderr, comfd) finish
+		<- comReadLock // 1...
+		<- comReadLock // 2...
+		<- comReadLock // 3!
 		if err := cmd.Wait(); err != nil {
 			exitCode = cmd.ProcessState.ExitCode()
 			if actionDescriptor.Status == "running" {
