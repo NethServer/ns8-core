@@ -200,6 +200,9 @@
           class="mg-bottom-md"
         />
       </template>
+      <template v-if="step == 'internalConfig'">
+        //// internal config
+      </template>
     </template>
     <template slot="other-button">{{ $t("common.cancel") }}</template>
     <!-- //// previous button must disappear after provider installation/binding -->
@@ -305,7 +308,11 @@ export default {
           this.step = "instance";
           break;
         case "summary":
-          this.step = "node";
+          if (this.isInternalSelected) {
+            this.step = "node";
+          } else {
+            this.step = "externalConfig";
+          }
           break;
       }
     },
@@ -369,6 +376,8 @@ export default {
 
       // unregister to task progress
       this.$root.$off("add-module-progress");
+
+      this.step = "internalConfig";
 
       // show new app in app drawer
       this.$root.$emit("reloadAppDrawer");
