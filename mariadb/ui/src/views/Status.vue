@@ -5,8 +5,7 @@
         <h2>{{ $t("status.title") }}</h2>
       </div>
     </div>
-    <!-- sample status page -->
-    <!-- <div v-if="error.getStatus" class="bx--row">
+    <div v-if="error.getStatus" class="bx--row">
       <div class="bx--col">
         <NsInlineNotification
           kind="error"
@@ -49,9 +48,9 @@
           ></cv-skeleton-text>
         </cv-tile>
       </div>
-    </div> -->
+    </div>
     <!-- services -->
-    <!-- <div class="bx--row">
+    <div class="bx--row">
       <div class="bx--col-lg-16 page-subtitle">
         <h4>{{ $tc("status.services", 2) }}</h4>
       </div>
@@ -88,9 +87,9 @@
           ></cv-skeleton-text>
         </cv-tile>
       </div>
-    </div> -->
+    </div>
     <!-- images -->
-    <!-- <div class="bx--row">
+    <div class="bx--row">
       <div class="bx--col-lg-16 page-subtitle">
         <h4>{{ $tc("status.app_images", 2) }}</h4>
       </div>
@@ -141,9 +140,9 @@
           ></cv-skeleton-text>
         </cv-tile>
       </div>
-    </div> -->
+    </div>
     <!-- volumes -->
-    <!-- <div class="bx--row">
+    <div class="bx--row">
       <div class="bx--col-lg-16 page-subtitle">
         <h4>{{ $tc("status.app_volumes", 2) }}</h4>
       </div>
@@ -194,22 +193,23 @@
           ></cv-skeleton-text>
         </cv-tile>
       </div>
-    </div> -->
+    </div>
   </div>
 </template>
 
 <script>
-// import to from "await-to-js";
+import to from "await-to-js";
 import { mapState } from "vuex";
 import {
   QueryParamService,
   TaskService,
+  DateTimeService,
   IconService,
 } from "@nethserver/ns8-ui-lib";
 
 export default {
   name: "Status",
-  mixins: [TaskService, QueryParamService, IconService],
+  mixins: [TaskService, QueryParamService, DateTimeService, IconService],
   pageTitle() {
     return this.$t("status.title") + " - " + this.appName;
   },
@@ -232,9 +232,31 @@ export default {
   },
   computed: {
     ...mapState(["instanceName", "ns8Core", "appName"]),
+    failedServices() {
+      if (!this.status) {
+        return 0;
+      } else {
+        return this.status.services.filter((s) => s.failed).length;
+      }
+    },
+    activeServices() {
+      if (!this.status) {
+        return 0;
+      } else {
+        return this.status.services.filter((s) => s.active).length;
+      }
+    },
+    inactiveServices() {
+      if (!this.status) {
+        return 0;
+      } else {
+        return this.status.services.filter((s) => !s.active && !s.failed)
+          .length;
+      }
+    },
   },
   created() {
-    // this.getStatus();
+    this.getStatus();
   },
   beforeRouteEnter(to, from, next) {
     next((vm) => {
@@ -247,6 +269,7 @@ export default {
     next();
   },
   mounted() {
+    // show status page after a little delay to avoid page flickering when user directly access a page different from status
     this.redirectTimeout = setTimeout(
       () => (this.isRedirectChecked = true),
       200
@@ -256,35 +279,38 @@ export default {
     clearTimeout(this.redirectTimeout);
   },
   methods: {
-    // async getStatus() {
-    //   this.loading.status = true;
-    //   this.error.getStatus = "";
-    //   const taskAction = "get-status";
-    //   // register to task completion
-    //   this.ns8Core.$root.$once(
-    //     taskAction + "-completed",
-    //     this.getStatusCompleted
-    //   );
-    //   const res = await to(
-    //     this.createModuleTaskForApp(this.instanceName, {
-    //       action: taskAction,
-    //       extra: {
-    //         title: this.$t("action." + taskAction),
-    //         isNotificationHidden: true,
-    //       },
-    //     })
-    //   );
-    //   const err = res[0];
-    //   if (err) {
-    //     console.error(`error creating task ${taskAction}`, err);
-    //     this.error.getStatus = this.getErrorMessage(err);
-    //     return;
-    //   }
-    // },
-    // getStatusCompleted(taskContext, taskResult) {
-    //   this.status = taskResult.output;
-    //   this.loading.status = false;
-    // },
+    async getStatus() {
+      this.loading.status = true;
+      this.error.getStatus = "";
+      const taskAction = "get-status";
+
+      // register to task completion
+      this.ns8Core.$root.$once(
+        taskAction + "-completed",
+        this.getStatusCompleted
+      );
+
+      const res = await to(
+        this.createModuleTaskForApp(this.instanceName, {
+          action: taskAction,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.getStatus = this.getErrorMessage(err);
+        return;
+      }
+    },
+    getStatusCompleted(taskContext, taskResult) {
+      this.status = taskResult.output;
+      this.loading.status = false;
+    },
   },
 };
 </script>
@@ -292,8 +318,8 @@ export default {
 <style scoped lang="scss">
 @import "../styles/carbon-utils";
 
-// .break-word {
-//   word-wrap: break-word;
-//   max-width: 30vw;
-// }
+.break-word {
+  word-wrap: break-word;
+  max-width: 30vw;
+}
 </style>
