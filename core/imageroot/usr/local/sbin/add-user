@@ -48,6 +48,11 @@ result = agent.tasks.run(
         "set": {},
         "grant": [{"role":args.role,"on":"*"}],
     },
+    extra={
+        'title': "cluster/add-user",
+        'description': "add-user command",
+        'isNotificationHidden': False,
+    },
     endpoint="redis://cluster-leader",
 )
 

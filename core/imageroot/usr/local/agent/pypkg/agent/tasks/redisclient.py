@@ -143,6 +143,7 @@ async def _acontrol_task(rdb, taskctx, **kwargs):
                 "action": taskrq["action"],
                 "data": taskrq["data"],
                 "parent": taskrq["parent"],
+                "extra": taskrq.get("extra", {}),
             }
             await _retry_request(rdb.lpush, taskrq['agent_id'] + '/tasks', json.dumps(task_obj))
             taskctx['pushed'] = True

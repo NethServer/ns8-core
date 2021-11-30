@@ -84,6 +84,11 @@ result = agent.tasks.run(
         'image': image_url,
         'node': args.node,
     },
+    extra={
+        'title': "cluster/add-module",
+        'description': "add-module command",
+        'isNotificationHidden': False,
+    },
     endpoint="redis://cluster-leader",
 )
 

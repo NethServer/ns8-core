@@ -34,6 +34,11 @@ result = agent.tasks.run(
     agent_id='cluster',
     action='grant-actions',
     data=[{"on":args.on, "to":args.to, "action":args.action}],
+    extra={
+        'title': "cluster/grant-actions",
+        'description': "grant-actions command",
+        'isNotificationHidden': False,
+    },
     endpoint="redis://cluster-leader",
 )
 
