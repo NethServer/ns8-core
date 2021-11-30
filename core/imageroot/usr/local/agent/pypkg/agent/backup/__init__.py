@@ -21,26 +21,12 @@
 import os
 import sys
 import agent
+import os.path
+import tempfile
 import subprocess
 
 
-class Backup:
-
-    name = ""
-    module_id = ""
-    module_uuid = ""
-    module_name = ""
-    rootfull = False
-    config = None
-    volumes = []
-    paths = []
-    excludes = []
-
-    def _get_name_from_url(self, url):
-        url, sep, tag = url.rpartition(":")
-        base_url, sep, name = url.rpartition("/")
-        return name
-
+class Restic:
     def prepare_env(self):
         # Prepare restic environment
         restic_env = os.environ.copy()
@@ -64,6 +50,63 @@ class Backup:
 
         return restic_env
 
+
+class Restore(Restic):
+    config = dict()
+
+    def __init__(self, module, repository, password):
+        self.config['repository'] = repository
+        self.config['module'] = module
+        self.config['password'] = password
+        # The name is in the form <module_name>/<module_id>@<module_uuid>
+        self.config['name_name'] = os.path.basename(module)
+        self.config['module_id'], sep, self.config['module_uuid'] = self.config['name_name'].partition('@')
+
+    def restore(self, source, destination):
+        restic_env = self.prepare_env()
+        cache_dir = "/tmp/restore"
+        cmd = ["restic", "--cache-dir", cache_dir, "-r", f"{self.config['repository']}/{self.config['module']}"]
+        with tempfile.TemporaryDirectory() as cache_dir:
+            subprocess.run(cmd + ["restore", "latest", "--target", destination, "--include", source], env=restic_env)
+
+    def dump_env(self):
+        restic_env = self.prepare_env()
+        rootless_env = f'/home/{self.config["module_id"]}/.config/state/environment'
+        rootfool_env = f'/var/lib/nethserver/{self.config["module_id"]}/state/environment'
+        with tempfile.TemporaryDirectory() as cache_dir:
+            cmd = ["restic", "--cache-dir", cache_dir, "-r", f"{self.config['repository']}/{self.config['module']}"]
+            p_dump = None
+            env = dict()
+            # First try to access rootless env, if it fails, switch to rootfull one
+            try:
+                p_dump = subprocess.run(cmd + ["dump", "latest", rootless_env], env=restic_env, check=True, capture_output=True)
+            except:
+                p_dump = subprocess.run(cmd + ["dump", "latest", rootfool_env], env=restic_env, check=True, capture_output=True)
+            for line in p_dump.stdout.splitlines():
+                var, sep, val = line.decode().partition("=")
+                # Skip vars which will be replaced on install
+                if var not in ["NODE_ID", "TCP_PORT", "TCP_PORTS", "IMAGE_ID", "IMAGE_DIGEST", "IMAGE_REOPODIGEST", "MODULE_ID"]:
+                    env[var] = val
+
+        return env
+
+
+class Backup(Restic):
+
+    name = ""
+    module_id = ""
+    module_uuid = ""
+    module_name = ""
+    rootfull = False
+    config = None
+    volumes = []
+    paths = []
+    excludes = []
+
+    def _get_name_from_url(self, url):
+        url, sep, tag = url.rpartition(":")
+        base_url, sep, name = url.rpartition("/")
+        return name
 
     def add_volume(self, name):
         proc = subprocess.run(["podman", "volume", "inspect", "--format", "{{.Mountpoint}}", name], capture_output=True)
@@ -105,7 +148,7 @@ class Backup:
 
         # UUID will be used to create unique directory inside the repository
         self.module_uuid = os.environ['UUID']
-        self.directory = f"{self.module_name}@{self.module_uuid}"
+        self.directory = f"{self.module_name}/{self.module_id}@{self.module_uuid}"
 
         rdb = agent.redis_connect()
 
