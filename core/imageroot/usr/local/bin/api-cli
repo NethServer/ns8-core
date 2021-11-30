@@ -120,18 +120,26 @@ def run_command(args):
     if args.check_idle_time:
         kwargs['check_idle_time'] = args.check_idle_time
 
+    if '/' in args.action:
+        if args.agent != 'cluster':
+            print(f'Warning: ignoring the command-line flag "--agent {args.agent}"', file=sys.stderr)
+        pagent, paction = args.action.rsplit('/', 1)
+    else:
+        pagent = args.agent
+        paction = args.action
+
     kwargs.setdefault('extra', {
-        'title': f"{args.action}@{args.agent}",
+        'title': f"{pagent}/{paction}",
         'description': f"api-cli endpoint {kwargs.get('endpoint', 'default')}",
         'isNotificationHidden': False,
     })
 
     if args.nowait:
-        response = agent.tasks.run_nowait(args.agent, args.action, data, **kwargs)
+        response = agent.tasks.run_nowait(pagent, paction, data, **kwargs)
         print(response)
         return 0
     else:
-        response = agent.tasks.run(args.agent, args.action, data, **kwargs)
+        response = agent.tasks.run(pagent, paction, data, **kwargs)
         print(response['error'], file=sys.stderr, end='')
 
         if args.raw:
@@ -145,7 +153,7 @@ def run_command(args):
 
 root_parser = argparse.ArgumentParser(description='Invoke cluster APIs from the command line')
 root_parser.add_argument('--endpoint', help='override the library default endpoint URL')
-root_parser.add_argument('--no-tlsverify', dest='tlsverify', action='store_false', default=True, help="do not verify TLS certificate of HTTPS endpoint")
+root_parser.add_argument('--no-tlsverify', dest='tlsverify', action='store_false', default=True, help="do not verify the TLS certificate")
 
 subparsers = root_parser.add_subparsers(title="commands", required=True, dest='command')
 
@@ -157,7 +165,7 @@ login_parser.add_argument('-o', '--output', help="print the authorization token 
 login_parser = subparsers.add_parser('logout', help="clean up the authorization token disk cache")
 
 submit_parser = subparsers.add_parser('run', aliases=['submit'], help="submit a task to the remote server and print the results")
-submit_parser.add_argument('action', help='action name, e.g. "list-actions"', default='list-actions')
+submit_parser.add_argument('action', metavar='agent/action', help='action name, e.g. "list-actions" or agent/action qualifier, e.g. "node/1/list-actions"')
 
 auth_group = submit_parser.add_mutually_exclusive_group()
 auth_group.add_argument('-t', '--token', help='authorization token returned by the "login -o" command')
