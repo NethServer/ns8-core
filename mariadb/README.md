@@ -39,7 +39,7 @@ Example:
 ```
 [root@fedora mariadb]# api-cli run configure-module --agent module/mariadb7 --data - <<EOF
 { 
-"path": "/phpmyadmin", 
+"host": "phpmyadmin.domain.com", 
 "http2https": true,
 "lets_encrypt": false
 }
@@ -62,8 +62,7 @@ remove-module mariadb1 --no-preserve
 api-cli run get-configuration --agent module/mariadb12 --data null
 Warning: using user "cluster" credentials from the environment
 {
-"mariadb_tcp_port": 20025,
-"path": "/phpmyadmin", 
+"host": "nanatacha.domain.com", 
 "http2https": true, 
 "lets_encrypt": false
 }
