@@ -35,7 +35,7 @@ config = {}
 # Read current configuration from Redis
 env = f'module/{os.environ["MODULE_ID"]}/environment'
 rdb = agent.redis_connect()
-config["mariadb_tcp_port"] = int(rdb.hget(env, "MARIADB_TCP_PORT"));
+config["mariadb_tcp_port"] = int(rdb.hget(env, "MARIADB_TCP_PORT") == 0 );
 config["path"] =  rdb.hget(env, "TRAEFIK_PATH");
 config["http2https"] =  rdb.hget(env, "TRAEFIK_HTTP2HTTPS") == "True";
 config["lets_encrypt"] =  rdb.hget(env, "TRAEFIK_LETS_ENCRYPT") == "True";

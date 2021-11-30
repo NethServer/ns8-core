@@ -21,7 +21,7 @@
     "properties": {
       "mariadb_tcp_port": {
         "type": "integer",
-        "exclusiveMinimum": 1024,
+        "exclusiveMinimum": 0,
         "exclusiveMaximum": 65535,
         "description": "TCP port where mariadb is listening"
       },
