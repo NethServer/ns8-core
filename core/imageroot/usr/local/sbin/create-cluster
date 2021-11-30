@@ -45,6 +45,11 @@ result = agent.tasks.run(
         "endpoint": args.endpoint,
         "listen_port": int(endpoint_port),
     },
+    extra={
+        'title': "cluster/create-cluster",
+        'description': "create-cluster command",
+        'isNotificationHidden': False,
+    },
     endpoint="redis://cluster-leader",
 )
 if result['exit_code'] != 0:

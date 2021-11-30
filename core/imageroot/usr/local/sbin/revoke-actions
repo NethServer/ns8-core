@@ -34,6 +34,11 @@ result = agent.tasks.run(
     agent_id='cluster',
     action='revoke-actions',
     data=[{"on":args.on, "to":args.to, "action":args.action}],
+    extra={
+        'title': "cluster/revoke-actions",
+        'description': "revoke-actions command",
+        'isNotificationHidden': False,
+    },
     endpoint="redis://cluster-leader",
 )
 

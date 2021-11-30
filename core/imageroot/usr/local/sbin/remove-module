@@ -38,6 +38,11 @@ result = agent.tasks.run(
         'module_id': args.module,
         'preserve_data': bool(args.preserve_data),
     },
+    extra={
+        'title': "cluster/remove-module",
+        'description': "remove-module command",
+        'isNotificationHidden': False,
+    },
     endpoint="redis://cluster-leader",
 )
 
