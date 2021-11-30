@@ -28,6 +28,7 @@ import cluster.grants
 import subprocess
 import os
 import re
+import uuid
 
 def allocate_tcp_ports_range(node_id, module_environment, size):
     """Allocate in "node_id" a TCP port range of the given "size" for "module_id"
@@ -95,6 +96,7 @@ module_environment = {
     'IMAGE_REOPODIGEST': inspect_image_repodigest,
     'MODULE_ID': module_id,
     'NODE_ID': str(node_id),
+    'UUID': str(uuid.uuid4())
 }
 
 # Allocate TCP ports
