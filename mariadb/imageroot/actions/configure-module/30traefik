@@ -33,13 +33,13 @@ import agent.tasks
 data = json.load(sys.stdin)
 
 # Setup default values
-host = data.get("host")
+path = data.get("path")
 h2hs = data.get("http2https", True)
 le = data.get("lets_encrypt", True)
 
 # Talk with agent using file descriptor.
 # Setup configuration from user input.
-agent.set_env("TRAEFIK_HOST", host)
+agent.set_env("TRAEFIK_PATH", path)
 agent.set_env("TRAEFIK_HTTP2HTTPS", h2hs)
 agent.set_env("TRAEFIK_LETS_ENCRYPT", le)
 
@@ -52,14 +52,14 @@ default_traefik_id = agent.resolve_agent_id('traefik@node')
 if default_traefik_id is None:
     sys.exit(2)
 
-# Configure traefik virtual host
+# Configure traefik virtual path
 response = agent.tasks.run(
     agent_id=default_traefik_id,
     action='set-route',
     data={
         'instance': os.environ['MODULE_ID'],
         'url': f'http://127.0.0.1:{os.environ["TRAEFIK_TCP_PORT"]}',
-        'host': host,
+        'path': path,
         'lets_encrypt': le,
         'http2https': h2hs
     },

@@ -9,15 +9,15 @@
   ],
   "type": "object",
   "required": [
-    "host",
+    "path",
     "http2https",
     "lets_encrypt"
   ],
   "properties": {
-    "host": {
+    "path": {
       "type": "string",
-      "description": "Host name for the wiki, like 'wiki.nethserver.org'",
-      "format": "idn-hostname"
+      "description": "web path for the web application, like '/phpmyadmin'",
+      "pattern": "^/[a-zA-Z0-9]+"
     },
     "lets_encrypt": {
       "type": "boolean",

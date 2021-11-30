@@ -5,26 +5,26 @@
     "description": "Configure mariadb",
     "examples": [
       {
-    "    mariadb_tcp_port": "3306",
-        "host": "wiki.nethserver.org",
+        "mariadb_tcp_port": "3306",
+        "path": "/path",
         "http2https": true,
         "lets_encrypt": true
       }
     ],
     "type": "object",
     "required": [
-      "host",
+      "path",
       "http2https",
       "lets_encrypt",
       "mariadb_tcp_port"
     ],
     "properties": {
-    "mariadb_tcp_port": {
-      "type": "integer",
-      "exclusiveMinimum": 1024,
-      "exclusiveMaximum": 65535,
-      "description": "TCP port where mariadb is listening"
-    },
+      "mariadb_tcp_port": {
+        "type": "integer",
+        "exclusiveMinimum": 1024,
+        "exclusiveMaximum": 65535,
+        "description": "TCP port where mariadb is listening"
+      },
       "lets_encrypt": {
         "type": "boolean",
         "title": "Let's Encrypt certificate",
@@ -34,6 +34,11 @@
         "type": "boolean",
         "title": "HTTP to HTTPS redirection",
         "description": "Redirect all the HTTP requests to HTTPS"
+      },
+      "path": {
+        "type": "string",
+        "description": "web path for the web application, like '/phpmyadmin'",
+        "pattern": "^/[a-zA-Z0-9]+"
       }
     }
   }
