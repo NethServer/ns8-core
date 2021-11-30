@@ -5,7 +5,7 @@
     "description": "Configure mariadb",
     "examples": [
       {
-    "    mariadb_tcp_port": "3306",
+        "mariadb_tcp_port": "3306",
         "host": "wiki.nethserver.org",
         "http2https": true,
         "lets_encrypt": true
@@ -19,12 +19,6 @@
       "mariadb_tcp_port"
     ],
     "properties": {
-      "mariadb_tcp_port": {
-        "type": "integer",
-        "exclusiveMinimum": 0,
-        "exclusiveMaximum": 65535,
-        "description": "TCP port where mariadb is listening"
-      },
       "lets_encrypt": {
         "type": "boolean",
         "title": "Let's Encrypt certificate",
