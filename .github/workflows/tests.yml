@@ -1,0 +1,57 @@
+name: Test Core Modules
+on:
+  workflow_dispatch:
+
+jobs:
+  core:
+    name: "Test ${{ github.workflow }}"
+    runs-on: ubuntu-latest
+    env:
+      TF_VAR_project: "NS8-CI"
+      TF_VAR_domain: "ci.nethserver.net"
+      NS8_LEADER_NAME: "fc1"
+    steps:
+      - uses: actions/checkout@v2
+      - name: HashiCorp - Setup Terraform
+        uses: hashicorp/setup-terraform@v1.2.1
+        with:
+          terraform_wrapper: false
+      - name: Create the infrastructure
+        env:
+          TF_VAR_do_token: ${{ secrets.do_token }}
+        run: |
+          terraform init
+          terraform workspace new ${{ github.ref_name }}-${{ github.sha }}
+          terraform apply -var 'leader_node={"${{ env.NS8_LEADER_NAME }}":"ams3"}' -auto-approve
+        working-directory: ${{ github.workspace }}/tests/infra
+      - name: Setup ssh key
+        run: terraform output -raw deploy-key > ${{ github.workspace }}/id_ecdsa
+        working-directory: ${{ github.workspace }}/tests/infra
+      - name: Run tests
+        run: |
+          podman run -v ${{ github.workspace }}/:/home/pwuser/ns8-scratchpad:z -i --name rf-runner ghcr.io/marketsquare/robotframework-browser/rfbrowser-stable:v10.0.3 bash -l -s <<EOF
+          set -e -x
+          pip install -r /home/pwuser/ns8-scratchpad/core/tests/pythonreq.txt
+          mkdir ~/outputs
+          cd /home/pwuser/ns8-scratchpad/core/
+          robot -v NODE_ADDR:${{ env.NS8_LEADER_NAME }}.leader.${{ github.ref_name }}-${{ github.sha }}.S{{ env.TF_VAR_domain }} -v SSH_KEYFILE:/home/pwuser/ns8-scratchpad/id_ecdsa -d ~/outputs /home/pwuser/ns8-scratchpad/core/tests/
+          EOF
+      - name: export logs
+        if: always()
+        run: podman cp rf-runner:/home/pwuser/outputs ${{ github.workspace }}/
+        working-directory: ${{ github.workspace }}
+      - name: Archive production artifacts
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: logs
+          path: |
+             ${{ github.workspace }}/outputs/output.xml
+             ${{ github.workspace }}/outputs/log.html
+             ${{ github.workspace }}/outputs/report.html
+      - name: Destroy the infrastructure
+        if: always()
+        env:
+          TF_VAR_do_token: ${{ secrets.do_token }}
+        run: terraform apply -destroy -auto-approve
+        working-directory: ${{ github.workspace }}/tests/infra
