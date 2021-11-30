@@ -75,16 +75,19 @@ class Backup:
     def add_exclude(self, exclude):
         self.exclude.append(exclude)
 
-    #def add_key(self, key, name):
-    #    self._save_dump(self.rdb.dump(key))
-    #    return
+    def add_key(self, key, name = None):
+        rdb = agent.redis_connect(privileged=False, decode_responses=False)
+        dump = rdb.dump(key)
+        rdb.close()
 
-    #def _save_dump(dump, name):
-    #    os.makedirs(self.dump_dir, exist_ok=True)
-    #    path = f'{self.dump_dir}/{name}.dump'
-    #    with openp(path, 'wb') as f:
-    #        f.write(dump)
-    #    self.paths.append(paths)
+        os.makedirs(self.dump_dir, exist_ok=True)
+        if name == None:
+            (prefix, sep, name) = key.rpartition('/')
+
+        path = f'{self.dump_dir}/{name}.dump'
+        with open(path, 'wb') as f:
+            f.write(dump)
+        self.paths.append(path)
 
     def __init__(self):
         """Read arguments from command line and initialize the object. Exit 1 if something is wrong
