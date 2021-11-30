@@ -28,6 +28,12 @@ import requests
 import sys
 import getpass
 
+# Handled exceptions:
+from aiohttp import ClientError
+from aioredis import RedisError
+from agent.tasks.exceptions import TaskError
+from requests import RequestException
+
 def _get_cachefile_path():
     # Ensure there is a sane environment setup: fail if XDG_RUNTIME_DIR is
     # not set.
@@ -61,10 +67,6 @@ def login_command(args):
         data={'username': username, 'password': password},
         verify=args.tlsverify,
     )
-    if response.status_code == 401:
-        print("Invalid credentials", file=sys.stderr)
-        sys.exit(1)
-
     response.raise_for_status()
     token = response.json()['token']
 
@@ -76,12 +78,14 @@ def login_command(args):
             fo.write(token)
         os.umask(oldmask)
         print(f"User {username}, login successful.")
+    return 0
 
 def logout_command(args):
     try:
         os.unlink(_get_cachefile_path())
     except FileNotFoundError:
         pass
+    return 0
 
 def run_command(args):
     kwargs = {'tls_verify': args.tlsverify}
@@ -125,6 +129,7 @@ def run_command(args):
     if args.nowait:
         response = agent.tasks.run_nowait(args.agent, args.action, data, **kwargs)
         print(response)
+        return 0
     else:
         response = agent.tasks.run(args.agent, args.action, data, **kwargs)
         print(response['error'], file=sys.stderr, end='')
@@ -135,7 +140,7 @@ def run_command(args):
             json.dump(response['output'], fp=sys.stdout)
             print()
 
-        sys.exit(response['exit_code'])
+        return response['exit_code']
 
 
 root_parser = argparse.ArgumentParser(description='Invoke cluster APIs from the command line')
@@ -169,5 +174,15 @@ args = root_parser.parse_args()
 
 command = globals().get(args.command + '_command')
 
-command(args)
+try:
+    exit_code = command(args)
 
+except (ClientError, RedisError, TaskError, RequestException) as ex:
+    print(f'{ex.__class__.__name__}: {ex}', file=sys.stderr)
+    exit_code = 1
+
+except KeyboardInterrupt as ex:
+    print('Error: user keyboard interrupt!', file=sys.stderr)
+    exit_code = 1
+
+sys.exit(exit_code)
