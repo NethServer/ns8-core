@@ -36,19 +36,19 @@ else:
    systemd_path = f'{os.path.expanduser("~")}/.config/systemd/user/'
    command = f'/usr/local/bin/runagent backup {request["name"]}'
 
-with open(f'{systemd_path}backup-{os.environ["UUID"]}-{request["name"]}.timer', 'w') as timer:
-    timer.write(f'[Unit]\nDescription=Backup timer of {request["name"]}@{os.environ["UUID"]}\n\n')
+with open(f'{systemd_path}backup-{os.environ["MODULE_ID"]}-{request["name"]}.timer', 'w') as timer:
+    timer.write(f'[Unit]\nDescription=Backup timer of {request["name"]}@{os.environ["MODULE_ID"]}\n\n')
     timer.write(f'[Timer]\nOnCalendar={request["schedule"]}\n\n')
     timer.write(f'[Install]\nWantedBy=timers.target\n')
 
-with open(f'{systemd_path}backup-{os.environ["UUID"]}-{request["name"]}.service', 'w') as service:
-    service.write(f'[Unit]\nDescription=Backup of {request["name"]}@{os.environ["UUID"]}\n\n')
+with open(f'{systemd_path}backup-{os.environ["MODULE_ID"]}-{request["name"]}.service', 'w') as service:
+    service.write(f'[Unit]\nDescription=Backup of {request["name"]}@{os.environ["MODULE_ID"]}\n\n')
     service.write(f'[Service]\nType=oneshot\nExecStart={command}\n\n')
     service.write(f'[Install]\nWantedBy=default.target\n')
 
 if is_rootfull:
     subprocess.run(["systemctl", "daemon-reload"])
-    subprocess.run(["systemctl", "enable", f'backup-{os.environ["UUID"]}-{request["name"]}.timer'])
+    subprocess.run(["systemctl", "enable", f'backup-{os.environ["MODULE_ID"]}-{request["name"]}.timer'])
 else:
     subprocess.run(["systemctl", "--user", "daemon-reload"])
-    subprocess.run(["systemctl", "--user", "enable", f'backup-{os.environ["UUID"]}-{request["name"]}.timer'])
+    subprocess.run(["systemctl", "--user", "enable", f'backup-{os.environ["MODULE_ID"]}-{request["name"]}.timer'])
