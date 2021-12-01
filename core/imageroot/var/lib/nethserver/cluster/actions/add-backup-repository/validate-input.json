@@ -1,0 +1,27 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "add-backup-repository input",
+    "$id": "http://schema.nethserver.org/cluster/add-backup-repository-input.json",
+    "description": "Input schema of the add-backup-repository action",
+    "examples": [
+        {
+            "name": "repository1",
+            "url": "b2:mybackup"
+        }
+    ],
+    "type": "object",
+    "properties": {
+        "name": {
+           "description": "Unique backup repository name",
+            "type": "string"
+        },
+        "url": {
+            "description": "URL of the repository in restic format",
+            "type": "string"
+        }
+    },
+    "required": [
+          "name",
+          "url"
+    ]
+}
