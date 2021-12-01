@@ -141,7 +141,7 @@ class Backup(Restic):
 
         self.name = sys.argv[1]
 
-        self.rootfull = (os.getuid() == 0)
+        self.rootfull = (os.geteuid() == 0)
         self.module_id = os.environ['MODULE_ID']
 
         self.module_name = self._get_name_from_url(os.environ['IMAGE_URL'])

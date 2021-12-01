@@ -27,7 +27,7 @@ import agent
 import subprocess
 
 request = json.load(sys.stdin)
-is_rootfull = (os.getuid() == 0)
+is_rootfull = (os.geteuid() == 0)
 
 if is_rootfull:
    systemd_path = '/etc/systemd/system/'
