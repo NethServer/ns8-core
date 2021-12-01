@@ -35,6 +35,11 @@ m.update(uuid.uuid4().bytes)
 password = m.hexdigest()
 
 data = {'repository': request['repository'], 'schedule': request['schedule'], 'retention' : request['retention'], 'password': password}
+
+# Setup extra parameters for repository access
+for k in request['parameters']:
+    data[k] = request['parameters'][k]
+
 if not rdb.hset(f'module/{os.environ["MODULE_ID"]}/backup/{request["name"]}', mapping = data):
     sys.exit(1)
 
