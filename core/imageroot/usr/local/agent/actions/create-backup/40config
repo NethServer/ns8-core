@@ -23,42 +23,14 @@
 import os
 import sys
 import json
-import uuid
 import agent
-import hashlib
 
 request = json.load(sys.stdin)
 rdb = agent.redis_connect(privileged=True)
 
-m = hashlib.sha256()
-m.update(uuid.uuid4().bytes)
-password = m.hexdigest()
-
-data = {'repository': request['repository'], 'schedule': request['schedule'], 'retention' : request['retention'], 'password': password}
-
-# Setup extra parameters for repository access
-for k in request['parameters']:
-    data[k] = request['parameters'][k]
+data = {'repository': request['repository'], 'schedule': request['schedule'], 'retention' : request['retention']}
 
 if not rdb.hset(f'module/{os.environ["MODULE_ID"]}/backup/{request["name"]}', mapping = data):
     sys.exit(1)
-
-# Setup rclone
-is_rootfull = (os.geteuid() == 0)
-
-if is_rootfull:
-    config_path = f'/var/lib/nethserver/{os.environ["MODULE_ID"]}/rclone-{request["name"]}.conf'
-else:
-    config_path = f'{os.path.expanduser("~")}/rclone-{request["name"]}.conf'
-
-parts = request['repository'].split(":")
-# FIXME: support all other backends
-if parts[0] == "b2":
-    with open(config_path, 'w') as f:
-        f.write(f'[{request["name"]}]\n')
-        f.write(f'type = b2\n')
-        f.write(f'account = {data["b2_account_id"]}\n')
-        f.write(f'key = {data["b2_account_key"]}\n')
-        f.write(f'hard_delete = true\n')
 
 json.dump(True, fp=sys.stdout)

@@ -37,7 +37,7 @@ class Restic:
         # - SFTP on standard ports
         # - Backblaze B2
         # - Azure
-        parts = self.config['repository'].split(":")
+        parts = self.config['url'].split(":")
         if parts[0] == "s3":
             restic_env['AWS_ACCESS_KEY_ID'] = self.config['aws_access_key_id']
             restic_env['AWS_SECRET_ACCESS_KEY'] = self.config['aws_secret_access_key']
@@ -159,6 +159,9 @@ class Backup(Restic):
        
         # Retrieve backup configuration
         self.config = rdb.hgetall(f"module/{self.module_id}/backup/{self.name}")
+        repo_config = rdb.hgetall(f'cluster/backup_repository/{self.config["repository"]}')
+        for k in repo_config:
+            self.config[k] = repo_config[k]
 
         if self.rootfull:
             self.environment =  f"/var/lib/nethserver/{self.module_id}/state/environment"
@@ -185,7 +188,7 @@ class Backup(Restic):
         self.add_path(self.environment)
 
         # Prepare base command
-        cmd = ["restic", "--cache-dir", self.cache_dir, "-r", f"{self.config['repository']}/{self.directory}"]
+        cmd = ["restic", "--cache-dir", self.cache_dir, "-r", f"{self.config['url']}:{self.directory}"]
 
         # Check if repository has been already initialized, if not, just do it
         check_init = subprocess.run(cmd + ["snapshots"], env=restic_env, capture_output=True)
