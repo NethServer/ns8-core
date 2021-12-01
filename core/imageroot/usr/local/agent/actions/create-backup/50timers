@@ -31,10 +31,10 @@ is_rootfull = (os.geteuid() == 0)
 
 if is_rootfull:
    systemd_path = '/etc/systemd/system/'
-   command = f'/usr/local/bin/runagent -m {os.environ["MODULE_ID"]} backup {request["name"]}'
+   command = f'/usr/local/bin/runagent -m {os.environ["MODULE_ID"]} module-backup {request["name"]}'
 else:
    systemd_path = f'{os.path.expanduser("~")}/.config/systemd/user/'
-   command = f'/usr/local/bin/runagent backup {request["name"]}'
+   command = f'/usr/local/bin/runagent module-backup {request["name"]}'
 
 with open(f'{systemd_path}backup-{os.environ["MODULE_ID"]}-{request["name"]}.timer', 'w') as timer:
     timer.write(f'[Unit]\nDescription=Backup timer of {request["name"]}@{os.environ["MODULE_ID"]}\n\n')
