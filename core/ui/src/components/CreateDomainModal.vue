@@ -3,11 +3,7 @@
     size="default"
     :visible="isShown"
     @modal-hidden="$emit('hide')"
-    @primary-click="nextStep"
-    @secondary-click="previousStep"
-    @other-click="$emit('hide')"
-    :primary-button-disabled="step == 'installingProvider'"
-    class="no-pad-modal"
+    class="wizard-modal"
   >
     <template slot="title">{{ $t("domains.create_domain") }}</template>
     <template slot="content">
@@ -203,15 +199,35 @@
       <template v-if="step == 'internalConfig'">
         //// internal config
       </template>
+      <div class="wizard-buttons">
+        <NsButton
+          kind="secondary"
+          :icon="Close20"
+          @click="$emit('hide')"
+          class="wizard-button"
+          >{{ $t("common.cancel") }}
+        </NsButton>
+        <NsButton
+          kind="secondary"
+          :icon="ChevronLeft20"
+          @click="previousStep"
+          :disabled="
+            ['location', 'installingProvider', 'internalConfig'].includes(step)
+          "
+          class="wizard-button"
+          >{{ $t("common.previous") }}
+        </NsButton>
+        <NsButton
+          kind="primary"
+          :icon="ChevronRight20"
+          @click="nextStep"
+          :disabled="step == 'installingProvider'"
+          class="wizard-button"
+          ref="wizardNext"
+          >{{ $t("common.next") }}
+        </NsButton>
+      </div>
     </template>
-    <template slot="other-button">{{ $t("common.cancel") }}</template>
-    <!-- //// previous button must disappear after provider installation/binding -->
-    <template v-if="step !== 'installingProvider'" slot="secondary-button">{{
-      $t("common.previous")
-    }}</template>
-    <template slot="primary-button">{{
-      step == "summary" ? $t("domains.create_domain") : $t("common.next")
-    }}</template>
   </cv-modal>
 </template>
 
@@ -260,6 +276,14 @@ export default {
       if (this.isShown) {
         // reset to first step anytime the modal appears
         this.step = "location";
+
+        // set focus to next button
+        setTimeout(() => {
+          this.$nextTick(() => {
+            const element = this.$refs["wizardNext"].$el;
+            element.focus();
+          });
+        }, 300);
       }
     },
   },

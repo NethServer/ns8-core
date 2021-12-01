@@ -647,6 +647,7 @@ export default {
   overflow: auto;
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.5);
   z-index: 10000;
+  padding-bottom: 3rem;
 }
 
 .app-drawer-loader {
