@@ -44,7 +44,7 @@ if not rdb.hset(f'module/{os.environ["MODULE_ID"]}/backup/{request["name"]}', ma
     sys.exit(1)
 
 # Setup rclone
-is_rootfull = (os.getuid() == 0)
+is_rootfull = (os.geteuid() == 0)
 
 if is_rootfull:
     config_path = f'/var/lib/nethserver/{os.environ["MODULE_ID"]}/rclone-{request["name"]}.conf'
