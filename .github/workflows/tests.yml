@@ -1,22 +1,22 @@
 name: Test Core Modules
 on:
   workflow_dispatch:
+env:
+  TF_VAR_project: "NS8-CI"
+  TF_VAR_domain: "ci.nethserver.net"
+  NS8_LEADER_NAME: "fc1"
 
 jobs:
-  core:
-    name: "Test ${{ github.workflow }}"
+  infra_create:
+    name: "Create the infrastructure"
     runs-on: ubuntu-latest
-    env:
-      TF_VAR_project: "NS8-CI"
-      TF_VAR_domain: "ci.nethserver.net"
-      NS8_LEADER_NAME: "fc1"
     steps:
       - uses: actions/checkout@v2
       - name: HashiCorp - Setup Terraform
         uses: hashicorp/setup-terraform@v1.2.1
         with:
           terraform_wrapper: false
-      - name: Create the infrastructure
+      - name: HashiCorp - Terraform Apply
         env:
           TF_VAR_do_token: ${{ secrets.do_token }}
         run: |
@@ -24,9 +24,32 @@ jobs:
           terraform workspace new ${{ github.ref_name }}-${{ github.sha }}
           terraform apply -var 'leader_node={"${{ env.NS8_LEADER_NAME }}":"ams3"}' -auto-approve
         working-directory: ${{ github.workspace }}/tests/infra
-      - name: Setup ssh key
-        run: terraform output -raw deploy-key > ${{ github.workspace }}/id_ecdsa
+      - name: HashiCorp - Terraform Output Deploy Key
+        run: terraform output -raw deploy-key > ${{ github.workspace }}/key
         working-directory: ${{ github.workspace }}/tests/infra
+      - name: Save Deploy Key
+        uses: actions/upload-artifact@v2
+        with:
+          name: deploy-key
+          path: ${{ github.workspace }}/key
+          retention-days: 1
+      - name: Save Terraform State
+        uses: actions/upload-artifact@v2
+        with:
+          name: terraform.tfstate
+          path: ${{ github.workspace }}/tests/infra/terraform.tfstate.d/${{ github.ref_name }}-${{ github.sha }}/terraform.tfstate
+          retention-days: 1
+  core:
+    name: "Core tests"
+    runs-on: ubuntu-latest
+    needs: infra_create
+    steps:
+      - uses: actions/checkout@v2
+      - name: Get Deploy Key
+        uses: actions/download-artifact@v2
+        with:
+          name: deploy-key
+          path: ${{ github.workspace }}/
       - name: Run tests
         run: |
           podman run -v ${{ github.workspace }}/:/home/pwuser/ns8-scratchpad:z -i --name rf-runner ghcr.io/marketsquare/robotframework-browser/rfbrowser-stable:v10.0.3 bash -l -s <<EOF
@@ -34,24 +57,40 @@ jobs:
           pip install -r /home/pwuser/ns8-scratchpad/core/tests/pythonreq.txt
           mkdir ~/outputs
           cd /home/pwuser/ns8-scratchpad/core/
-          robot -v NODE_ADDR:${{ env.NS8_LEADER_NAME }}.leader.${{ github.ref_name }}-${{ github.sha }}.S{{ env.TF_VAR_domain }} -v SSH_KEYFILE:/home/pwuser/ns8-scratchpad/id_ecdsa -d ~/outputs /home/pwuser/ns8-scratchpad/core/tests/
+          robot -v NODE_ADDR:${{ env.NS8_LEADER_NAME }}.leader.${{ github.ref_name }}-${{ github.sha }}.${{ env.TF_VAR_domain }} -v SSH_KEYFILE:/home/pwuser/ns8-scratchpad/key -d ~/outputs /home/pwuser/ns8-scratchpad/core/tests/
           EOF
       - name: export logs
         if: always()
         run: podman cp rf-runner:/home/pwuser/outputs ${{ github.workspace }}/
         working-directory: ${{ github.workspace }}
-      - name: Archive production artifacts
+      - name: Save tests results
         if: always()
         uses: actions/upload-artifact@v2
         with:
-          name: logs
+          name: core-tests-logs
           path: |
              ${{ github.workspace }}/outputs/output.xml
              ${{ github.workspace }}/outputs/log.html
              ${{ github.workspace }}/outputs/report.html
+  infra_destroy:
+    name: "Destroy the infrastructure"
+    runs-on: ubuntu-latest
+    needs: core
+    if: always()
+    steps:
+      - uses: actions/checkout@v2
+      - name: HashiCorp - Setup Terraform
+        uses: hashicorp/setup-terraform@v1.2.1
+      - name: Get Terraform State
+        uses: actions/download-artifact@v2
+        with:
+          name: terraform.tfstate
+          path: |
+             ${{ github.workspace }}/tests/infra/
       - name: Destroy the infrastructure
-        if: always()
         env:
           TF_VAR_do_token: ${{ secrets.do_token }}
-        run: terraform apply -destroy -auto-approve
+        run: |
+          terraform init
+          terraform apply -destroy -auto-approve
         working-directory: ${{ github.workspace }}/tests/infra
