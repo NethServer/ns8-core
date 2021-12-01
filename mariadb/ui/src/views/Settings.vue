@@ -29,15 +29,41 @@
               ref="host"
             >
             </cv-text-input>
-            <cv-text-input
-              :label="$t('settings.mariadb_tcp_port')"
-              v-model.trim="mariadb_tcp_port"
-              class="mg-bottom"
-              :invalid-message="$t(error.mariadb_tcp_port)"
-              disabled
-              ref="host"
-            >
-            </cv-text-input>
+            <template v-if="mariadb_tcp_port">
+              <span class="mg-bottom"> 
+                {{ $t('settings.mariadb_tcp_port')}}
+                <cv-tooltip
+                  alignment="start"
+                  direction="bottom"
+                  :tip="$t('settings.mariadb_tcp_port_tips')"
+                  class="info mg-bottom"
+                >
+                </cv-tooltip>
+              </span>
+              <span>:</span>
+              <span  class="mg-bottom mg-left" > 
+                {{mariadb_tcp_port}} 
+              </span>
+            <section>
+              <span> {{$t('settings.phpmyadmin_url')}}
+                <cv-tooltip
+                  alignment="start"
+                  direction="bottom"
+                  :tip="$t('settings.admin_login_tips')"
+                  class="info mg-bottom"
+                >
+                </cv-tooltip>
+              </span>
+              <span>:</span>
+              <cv-link class="mg-bottom mg-left"
+                :href="'https://'+host"
+                target="_blank"
+                :inline= false
+                >
+                {{$t('settings.link')}}
+              </cv-link>
+            </section>
+            </template>
             <cv-toggle
               value="letsEncrypt"
               :label="$t('settings.lets_encrypt')"
@@ -269,5 +295,8 @@ export default {
 @import "../styles/carbon-utils";
 .mg-bottom {
   margin-bottom: $spacing-06;
+}
+.mg-left{
+    margin-left: $spacing-05;
 }
 </style>

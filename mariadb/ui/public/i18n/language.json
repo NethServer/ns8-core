@@ -20,7 +20,20 @@
     "no_volumes": "No volumes"
   },
   "settings": {
-    "title": "Settings"
+    "title": "Settings",
+    "phpmyadmin_fqdn": "Phpmyadmin FQDN",
+    "mariadb_tcp_port":"External mariadb TCP port",
+    "mariadb_tcp_port_tips":"This port is needed to connect a mysql client to the mysql server: mysql -u user -h host -P port -p",
+    "save": "Save",
+    "lets_encrypt": "Let's Encrypt",
+    "http_to_https": "HTTP to HTTPS",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "instance_configuration": "{instance} configuration",
+    "configuring": "Configuring...",
+    "phpmyadmin_url": "PhpMyAdmin web application",
+    "link": "Link",
+    "admin_login_tips": "The default login:password is admin:admin, you must change it at the first login"
   },
   "logs": {
     "title": "Logs"
