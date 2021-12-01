@@ -51,4 +51,4 @@ if is_rootfull:
     subprocess.run(["systemctl", "enable", f'backup-{os.environ["UUID"]}-{request["name"]}.timer'])
 else:
     subprocess.run(["systemctl", "--user", "daemon-reload"])
-    subprocess.run(["systemctl", "--user", "enable", f'backup-{request["name"]}.timer'])
+    subprocess.run(["systemctl", "--user", "enable", f'backup-{os.environ["UUID"]}-{request["name"]}.timer'])
