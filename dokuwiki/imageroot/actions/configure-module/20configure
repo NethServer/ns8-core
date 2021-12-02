@@ -47,7 +47,7 @@ agent.set_env("DOKUWIKI_WIKI_NAME", wiki_name)
 agent.set_env("DOKUWIKI_USERNAME", username)
 agent.set_env("DOKUWIKI_PASSWORD", password)
 agent.set_env("DOKUWIKI_EMAIL", email)
-agent.set_env("DOKUWIKI_FULL_NAME", "user_full_name")
+agent.set_env("DOKUWIKI_FULL_NAME", full_name)
 
 # Setup PHP with safe defaults
 agent.set_env("PHP_ENABLE_OPCACHE", "1")
