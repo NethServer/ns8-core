@@ -30,6 +30,7 @@ import cluster.userdomains
 
 request = json.load(sys.stdin)
 realm = request['realm'].upper()
+hostname = request['hostname'].lower()
 
 if 'REALM' in os.environ:
     print(agent.SD_ERR + "This module is already configured!", file=sys.stderr)
@@ -50,19 +51,14 @@ with agent.redis_connect() as rdb:
         provision_type = 'new-domain'
         try:
             nbdomain = request['nbdomain'].upper()
-        except KeyError as ex:
-            json.dump([{"parameter": 'nbdomain', "value": None, "error": "nbdomain_missing_parameter"}], fp=sys.stdout)
+        except AttributeError as ex:
+            json.dump([{"parameter": 'nbdomain', "value": None, "error": "nbdomain_string_required"}], fp=sys.stdout)
             agent.set_status('validation-failed')
             sys.exit(8)
 
         # Generate a random password for ldapservice
         alphabet = string.ascii_letters + string.digits + '+-/,.-_^'
         svcpass = ''.join([secrets.choice(alphabet) for i in range(32)])
-
-if 'hostname' in request: # Use given hostname (short)
-    hostname = request['hostname'].lower()
-else: # Build a default hostname for the DC
-    hostname = os.environ['MODULE_ID'].replace('samba', 'dc')
 
 agent.set_env('PROVISION_TYPE', provision_type)
 

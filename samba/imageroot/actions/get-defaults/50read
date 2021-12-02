@@ -28,10 +28,17 @@ import ipaddress as ipm
 import subprocess
 import socket
 
-hostname, domain = socket.gethostname().lower().split(".", 1)
+fqdn = socket.gethostname().lower()
+if '.' in fqdn:
+    hostname, domain = fqdn.split(".", 1)
+    nbdomain = domain.upper().split('.', 1)[0]
+else:
+    hostname = fqdn
+    domain = "test"
+    nbdomain = "TEST"
 
 response = {
-    "nbdomain": 'AD',
+    "nbdomain": nbdomain,
     "adminuser": "administrator",
     "hostname": os.getenv("MODULE_ID").replace("samba", "dc"),
     "realm": "ad." + domain,
