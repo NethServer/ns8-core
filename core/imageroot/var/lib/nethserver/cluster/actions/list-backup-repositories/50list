@@ -1,0 +1,59 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2021 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
+import json
+import sys
+
+brepos = [
+    {
+        "id": "4da89b00-e3a1-57d0-915f-9fb5592c7af8",
+        "name": "backblaze007",
+        "url": "b2:cluster007",
+        "password": "43875jk3htg98347tjk34h534895",
+        "parameters": {
+            "b2_account_id": "mybbid",
+            "b2_account_key": "mybbkey"
+        },
+    },
+    {
+        "id": "b656b44f-95b3-5938-ab2e-5985da86d2e1",
+        "name": "minio",
+        "url": "s3:http://localhost:9000/restic",
+        "password": "tre6wr5we67r5swe67r5we7tfwer",
+        "parameters": {
+            "aws_access_key_id": "awsk000",
+            "aws_secret_access_key": "000101010010001001111",
+        },
+    },
+    {
+        "id": "d72c200c-52d5-5171-ac9c-45f4e0b684df",
+        "name": "AWS",
+        "url": "s3:s3.amazonaws.com/bucket_name",
+        "password": "wjehfgef786sd7sftsdvsd7v6rts",
+        "parameters": {
+            "aws_access_key_id": "awsk001",
+            "aws_secret_access_key": "111101010010001001000",
+        },
+    },
+]
+
+json.dump(brepos, fp=sys.stdout)
