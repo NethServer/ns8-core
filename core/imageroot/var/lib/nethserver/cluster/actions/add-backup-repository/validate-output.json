@@ -4,7 +4,16 @@
     "$id": "http://schema.nethserver.org/cluster/add-backup-repository-output.json",
     "description": "Output schema of the add-backup-repository action",
     "examples": [
-        true
+        { "password": "55cdf59499dc1b5c625c8e20682f7c34302790767c2a13abd20d4289db0feca6" }
     ],
-    "type": "boolean"
+    "type": "object",
+    "properties": {
+      "password": {
+        "description": "Generated random password",
+        "type": "string"
+      }
+    },
+    "required": [
+      "password"
+    ]
 }

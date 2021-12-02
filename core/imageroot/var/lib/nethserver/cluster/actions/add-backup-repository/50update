@@ -62,4 +62,4 @@ if parts[0] == "b2":
         f.write(f'key = {data["b2_account_key"]}\n')
         f.write(f'hard_delete = true\n')
 
-json.dump(True, fp=sys.stdout)
+json.dump({'password': password}, fp=sys.stdout)
