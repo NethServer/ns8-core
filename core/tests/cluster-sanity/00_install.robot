@@ -1,13 +1,16 @@
 *** Settings ***
 Library    SSHLibrary
+Library    String
 
 *** Variables ***
-${COREBRANCH}     main
+${COREBRANCH}
+${COREMODULES}
 
 *** Test Cases ***
 Install the core
+    ${COREMODULES} =    Replace String    ${COREMODULES}    ,    ${SPACE}
     Put File    install.sh    .    mode=0644
-    ${rc} =    Execute Command    bash install.sh ${COREBRANCH}
+    ${rc} =    Execute Command    bash install.sh ${COREBRANCH} ${COREMODULES}
     ...            return_stdout=False
     ...            return_stderr=False
     ...            return_rc=True
