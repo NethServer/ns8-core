@@ -7,6 +7,11 @@
         {
             "name": "repository1",
             "url": "b2:mybackup"
+        },
+        {
+            "name": "repository2",
+            "url": "s3:usbackup",
+            "password": "45a1905ef8de3c03b05d47071754bd5ddbfec0edaa56d4c44f981386f3f24888" 
         }
     ],
     "type": "object",
@@ -17,6 +22,10 @@
         },
         "url": {
             "description": "URL of the repository in restic format",
+            "type": "string"
+        },
+        "password": {
+            "description": "Select the password for restic encryption. If this parameter is not specified, the API will generate a random password",
             "type": "string"
         }
     },
