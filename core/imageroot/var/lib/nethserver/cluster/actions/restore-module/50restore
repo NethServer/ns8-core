@@ -26,13 +26,13 @@ import agent.backup
 import os
 
 request = json.load(sys.stdin)
-restore = agent.backup.Restore(request['module'], request['repository'], request['password'])
+restore = agent.backup.Restore(request['module'], request['repository'])
+node_id = int(request['node'])
 env = restore.dump_env()
 image_url = env['IMAGE_URL']
 # Extract base URL using slice of image_url until the version separator ':', than retrieve the name of the image
 # which is the one after the last /
 image_id = os.path.basename(image_url[:image_url.index(":")])
-node_id = int(request['node'])
 
 # TODO: Mimic add module
 

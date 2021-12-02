@@ -54,18 +54,21 @@ class Restic:
 class Restore(Restic):
     config = dict()
 
-    def __init__(self, module, repository, password):
+    def __init__(self, module, repository):
         self.config['repository'] = repository
+        rdb = agent.redis_connect()
+        repo_config = rdb.hgetall(f'cluster/backup_repository/{self.config["repository"]}')
+        for k in repo_config:
+            self.config[k] = repo_config[k]
+        rdb.close()
         self.config['module'] = module
-        self.config['password'] = password
         # The name is in the form <module_name>/<module_id>@<module_uuid>
         self.config['name_name'] = os.path.basename(module)
         self.config['module_id'], sep, self.config['module_uuid'] = self.config['name_name'].partition('@')
 
     def restore(self, source, destination):
         restic_env = self.prepare_env()
-        cache_dir = "/tmp/restore"
-        cmd = ["restic", "--cache-dir", cache_dir, "-r", f"{self.config['repository']}/{self.config['module']}"]
+        cmd = ["restic", "--cache-dir", cache_dir, "-r", f"{self.config['url']}:{self.config['module']}"]
         with tempfile.TemporaryDirectory() as cache_dir:
             subprocess.run(cmd + ["restore", "latest", "--target", destination, "--include", source], env=restic_env)
 
@@ -74,7 +77,7 @@ class Restore(Restic):
         rootless_env = f'/home/{self.config["module_id"]}/.config/state/environment'
         rootfool_env = f'/var/lib/nethserver/{self.config["module_id"]}/state/environment'
         with tempfile.TemporaryDirectory() as cache_dir:
-            cmd = ["restic", "--cache-dir", cache_dir, "-r", f"{self.config['repository']}/{self.config['module']}"]
+            cmd = ["restic", "--cache-dir", cache_dir, "-r", f"{self.config['url']}:{self.config['module']}"]
             p_dump = None
             env = dict()
             # First try to access rootless env, if it fails, switch to rootfull one
