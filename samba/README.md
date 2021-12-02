@@ -30,7 +30,8 @@ Provision a new domain:
         "adminuser":"administrator",
         "adminpass":"Nethesis,1234",
         "realm":"ad.$(hostname -d)",
-        "nbdomain":"ad",
+        "nbdomain":"DP",
+        "hostname":"dc1",
         "ipaddress":"10.133.0.2"
     }
     EOF
@@ -43,11 +44,13 @@ The command is similar.
         "adminuser":"administrator",
         "adminpass":"Nethesis,1234",
         "realm":"ad.$(hostname -d)",
+        "nbdomain": null,
+        "hostname":"dc2",
         "ipaddress":"10.124.0.2"
     }
     EOF
 
-Note that some attributes are not required to provision additional DCs.
+Note that `nbdomain` can be `null` in this case.
 
 ## IP routing for the AD domain
 

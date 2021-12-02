@@ -15,6 +15,8 @@
     ],
     "type": "object",
     "required": [
+        "nbdomain",
+        "hostname",
         "realm",
         "adminuser",
         "adminpass",
@@ -46,7 +48,7 @@
             "minLength": 1
         },
         "nbdomain": {
-            "type": "string",
+            "type": ["string", "null"],
             "title": "NetBIOS domain name",
             "description": "This field is ignored if a DC for the domain is already provisioned",
             "pattern": "^[a-zA-Z][-a-zA-Z0-9]*$",
