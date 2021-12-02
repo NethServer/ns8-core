@@ -21,7 +21,9 @@
   },
   "settings": {
     "title": "Settings",
-    "phpmyadmin_fqdn": "Phpmyadmin FQDN",
+    "phpmyadmin_path": "Phpmyadmin web path",
+    "path_pattern": "Web path for the web application, like '/phpmyadmin'",
+    "webpath_already_used_in_traefik": "This web path is already used by another application in the web proxy.",
     "mariadb_tcp_port":"External mariadb TCP port",
     "mariadb_tcp_port_tips":"This port is needed to connect a mysql client to the mysql server: mysql -u user -h host -P port -p",
     "save": "Save",

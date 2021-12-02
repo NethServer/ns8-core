@@ -20,13 +20,13 @@
         <cv-tile :light="true">
           <cv-form @submit.prevent="saveSettings">
             <cv-text-input
-              :label="$t('settings.phpmyadmin_fqdn')"
-              placeholder="phpmyadmin.example.org"
-              v-model.trim="host"
+              :label="$t('settings.phpmyadmin_path')"
+              placeholder="/phpmyadmin"
+              v-model.trim="path"
               class="mg-bottom"
-              :invalid-message="$t(error.host)"
+              :invalid-message="$t(error.path)"
               :disabled="loading.settings"
-              ref="host"
+              ref="path"
             >
             </cv-text-input>
             <template v-if="mariadb_tcp_port">
@@ -56,7 +56,7 @@
               </span>
               <span>:</span>
               <cv-link class="mg-bottom mg-left"
-                :href="'https://'+host"
+                :href="'http://'+ hostname + path"
                 target="_blank"
                 :inline= false
                 >
@@ -64,7 +64,7 @@
               </cv-link>
             </section>
             </template>
-            <cv-toggle
+            <!-- <cv-toggle
               value="letsEncrypt"
               :label="$t('settings.lets_encrypt')"
               v-model="isLetsEncryptEnabled"
@@ -77,7 +77,7 @@
               <template slot="text-right">{{
                 $t("settings.enabled")
               }}</template>
-            </cv-toggle>
+            </cv-toggle> -->
             <cv-toggle
               value="httpToHttps"
               :label="$t('settings.http_to_https')"
@@ -137,10 +137,11 @@ export default {
       q: {
         page: "settings",
       },
+      hostname: location.hostname,
       urlCheckInterval: null,
-      host: "",
+      path: "",
       mariadb_tcp_port: "",
-      isLetsEncryptEnabled: false,
+      // isLetsEncryptEnabled: false,
       isHttpToHttpsEnabled: false,
       loading: {
         settings: true,
@@ -148,7 +149,7 @@ export default {
       error: {
         getConfiguration: "",
         configureModule: "",
-        host: "",
+        path: "",
         lets_encrypt: "",
         http2https: "",
       },
@@ -204,11 +205,11 @@ export default {
 
       let isValidationOk = true;
 
-      if (!this.host) {
-        this.error.host = "common.required";
+      if (!this.path) {
+        this.error.path = "common.required";
 
         if (isValidationOk) {
-          this.focusElement("host");
+          this.focusElement("path");
         }
         isValidationOk = false;
       }
@@ -251,8 +252,8 @@ export default {
         this.createModuleTaskForApp(this.instanceName, {
           action: taskAction,
           data: {
-            host: this.host,
-            lets_encrypt: this.isLetsEncryptEnabled,
+            path: this.path,
+            // lets_encrypt: this.isLetsEncryptEnabled,
             http2https: this.isHttpToHttpsEnabled,
           },
           extra: {
@@ -274,12 +275,12 @@ export default {
     },
     getConfigurationCompleted(taskContext, taskResult) {
       const config = taskResult.output;
-      this.host = config.host;
+      this.path = config.path;
       this.mariadb_tcp_port = config.mariadb_tcp_port;
-      this.isLetsEncryptEnabled = config.lets_encrypt;
+      // this.isLetsEncryptEnabled = config.lets_encrypt;
       this.isHttpToHttpsEnabled = config.http2https;
       this.loading.settings = false;
-      this.focusElement("host");
+      this.focusElement("path");
     },
     saveSettingsCompleted() {
       this.loading.settings = false;

@@ -9,20 +9,14 @@
   ],
   "type": "object",
   "required": [
-    "host",
-    "http2https",
-    "lets_encrypt"
+    "path",
+    "http2https"
   ],
   "properties": {
-    "host": {
+    "path": {
       "type": "string",
-      "description": "Host name for the wiki, like 'wiki.nethserver.org'",
-      "format": "idn-hostname"
-    },
-    "lets_encrypt": {
-      "type": "boolean",
-      "title": "Let's Encrypt certificate",
-      "description": "Request a valid Let's Encrypt certificate."
+      "description": "web path for the web application, like '/phpmyadmin'",
+      "pattern": "^/[a-zA-Z0-9]+"
     },
     "http2https": {
       "type": "boolean",

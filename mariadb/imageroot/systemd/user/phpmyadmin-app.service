@@ -16,9 +16,11 @@ ExecStart=/usr/bin/podman run --conmon-pidfile %t/phpmyadmin-app.pid \
     -e PMA_PMADB=phpmyadmin -e PMA_CONTROLUSER=phpmyadmin \
     -e PMA_CONTROLPASS_FILE=/run/secrets/phpmyadmin.secret \
     --secret phpmyadmin.secret \
+    -v %S/scripts/create_phpmyadmin_web_alias.sh:/docker-entrypoint.d/create_phpmyadmin_web_alias.sh:Z \
     -v config.user.inc.php:/etc/phpmyadmin/config.user.inc.php:Z \
     -v sql:/var/www/html/sql:Z \
     ${PHPMYADMIN_IMAGE}
+ExecStartPost=/usr/bin/podman exec  phpmyadmin-app /bin/bash /docker-entrypoint.d/create_phpmyadmin_web_alias.sh
 ExecStop=/usr/bin/podman stop --ignore --cidfile %t/phpmyadmin-app.ctr-id -t 10
 ExecStopPost=/usr/bin/podman rm --ignore -f --cidfile %t/phpmyadmin-app.ctr-id
 PIDFile=%t/phpmyadmin-app.pid

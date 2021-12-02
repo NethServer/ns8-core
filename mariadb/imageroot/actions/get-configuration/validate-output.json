@@ -6,28 +6,21 @@
     "examples": [
       {
         "mariadb_tcp_port": "3306",
-        "host": "wiki.nethserver.org",
-        "http2https": true,
-        "lets_encrypt": true
+        "path": "/phpmyadmin",
+        "http2https": true
       }
     ],
     "type": "object",
     "required": [
-      "host",
+      "path",
       "http2https",
-      "lets_encrypt",
       "mariadb_tcp_port"
     ],
     "properties": {
-      "lets_encrypt": {
-        "type": "boolean",
-        "title": "Let's Encrypt certificate",
-        "description": "Request a valid Let's Encrypt certificate."
-      },
       "http2https": {
         "type": "boolean",
         "title": "HTTP to HTTPS redirection",
         "description": "Redirect all the HTTP requests to HTTPS"
       }
     }
-  }
+}

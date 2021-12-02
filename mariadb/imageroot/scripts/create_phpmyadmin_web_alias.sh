@@ -1,5 +1,4 @@
-#!/usr/bin/env python3
-
+#!/bin/bash
 #
 # Copyright (C) 2021 Nethesis S.r.l.
 # http://www.nethesis.it - nethserver@nethesis.it
@@ -21,24 +20,16 @@
 #
 
 #
-# Read mariadb configuration
+# only used if we use a web path /phpmyadmin, exit if we use a vhost phpmyadmin.domain.com
 #
 
-import os
-import sys
-import json
-import agent
+if [[ -n ${TRAEFIK_HOST} ]]; then
+    exit 0
+fi
 
-# Prepare return variable
-config = {}
+mkdir -p /etc/apache2/sites-available/
 
-# Read current configuration from Redis
-env = f'module/{os.environ["MODULE_ID"]}/environment'
-rdb = agent.redis_connect()
-config["mariadb_tcp_port"] = rdb.hget(env, "MARIADB_TCP_PORT");
-config["path"] =  rdb.hget(env, "TRAEFIK_PATH");
-config["http2https"] =  rdb.hget(env, "TRAEFIK_HTTP2HTTPS") == "True";
-# config["lets_encrypt"] =  rdb.hget(env, "TRAEFIK_LETS_ENCRYPT") == "True";
+printf "Alias ${TRAEFIK_PATH}  /var/www/html\n<Directory  /var/www/html/>\n  Require all granted\n</Directory>\n" > /etc/apache2/sites-available/phpmyadmin.conf
 
-# Dump the configuratio to stdou
-json.dump(config, fp=sys.stdout)
+a2ensite phpmyadmin.conf
+service apache2 reload

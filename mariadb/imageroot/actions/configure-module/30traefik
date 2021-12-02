@@ -33,15 +33,13 @@ import agent.tasks
 data = json.load(sys.stdin)
 
 # Setup default values
-host = data.get("host")
+path = data.get("path")
 h2hs = data.get("http2https", True)
-le = data.get("lets_encrypt", True)
 
 # Talk with agent using file descriptor.
 # Setup configuration from user input.
-agent.set_env("TRAEFIK_HOST", host)
+agent.set_env("TRAEFIK_PATH", path)
 agent.set_env("TRAEFIK_HTTP2HTTPS", h2hs)
-agent.set_env("TRAEFIK_LETS_ENCRYPT", le)
 
 # Make sure everything is saved inside the environment file
 # just before starting systemd unit
@@ -59,8 +57,7 @@ response = agent.tasks.run(
     data={
         'instance': os.environ['MODULE_ID'],
         'url': f'http://127.0.0.1:{os.environ["TRAEFIK_TCP_PORT"]}',
-        'host': host,
-        'lets_encrypt': le,
+        'path': path,
         'http2https': h2hs
     },
 )
