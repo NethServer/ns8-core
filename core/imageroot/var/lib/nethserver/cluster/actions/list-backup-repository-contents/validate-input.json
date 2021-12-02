@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "remove-repository input",
+  "$id": "http://schema.nethserver.org/cluster/list-backup-repository-contents-input.json",
+  "description": "Input schema of the list-backup-repository-contents action",
+  "examples": [
+    {
+      "repository": "repository1"
+    }
+  ],
+  "type": "object",
+  "properties": {
+    "repository": {
+      "description": "Repository name",
+      "type": "string"
+    }
+  },
+  "required": [
+    "repository"
+  ]
+}
