@@ -36,11 +36,11 @@ elif [[ $provision_type == "new-domain" ]]; then
         "--option=bind interfaces only = yes" \
         "--option=interfaces = 127.0.0.1 ${IPADDRESS}"
     if [[ -z "${usebuiltinadmin}" ]]; then
-        samba-tool user add "${ADMINUSER}" <<<"${ADMINPASS}"$'\n'"${ADMINPASS}"
+        samba-tool user create "${ADMINUSER}" <<<"${ADMINPASS}"$'\n'"${ADMINPASS}"
         samba-tool user disable administrator
     fi
     samba-tool user setexpiry --noexpiry "${ADMINUSER}"
-    samba-tool user add "${SVCUSER}" <<<"${SVCPASS}"$'\n'"${SVCPASS}"
+    samba-tool user create "${SVCUSER}" <<<"${SVCPASS}"$'\n'"${SVCPASS}"
     samba-tool user setexpiry --noexpiry "${SVCUSER}"
 else
     echo "[WARNING] Provision type $provision_type is not recognized: now going to sleep +INF"
