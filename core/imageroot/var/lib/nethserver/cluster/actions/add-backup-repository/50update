@@ -30,13 +30,15 @@ import hashlib
 request = json.load(sys.stdin)
 rdb = agent.redis_connect(privileged=True)
 
-# Generate random password for backup encryption
-m = hashlib.sha256()
-m.update(uuid.uuid4().bytes)
-password = m.hexdigest()
-
 name = request['name']
 url = request['url']
+if 'password' in request:
+    password = request['password']
+else:
+    # Generate random password for backup encryption
+    m = hashlib.sha256()
+    m.update(uuid.uuid4().bytes)
+    password = m.hexdigest()
 
 data = {'url': url, 'password': password}
 
