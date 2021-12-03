@@ -5,6 +5,7 @@ env:
   TF_VAR_project: "NS8-CI"
   TF_VAR_domain: "ci.nethserver.net"
   NS8_LEADER_NAME: "fc1"
+  NS8_CORE_MODULES: "core traefik loki promtail ldapproxy"
 
 jobs:
   infra_create:
@@ -39,10 +40,40 @@ jobs:
           name: terraform.tfstate
           path: ${{ github.workspace }}/tests/infra/terraform.tfstate.d/${{ github.ref_name }}-${{ github.sha }}/terraform.tfstate
           retention-days: 1
+  ns8_modules:
+    name: Find modules to test
+    runs-on: ubuntu-latest
+    outputs:
+      list: ${{ steps.modules.outputs.list }}
+      tag: ${{ steps.modules.outputs.tag }}
+    steps:
+      - id: modules
+        run: |
+          if [ "${{ github.ref_name }}" = "main" ]
+          then
+            tag="latest"
+          else
+            tag="${{ github.ref_name }}"
+          fi
+
+          modules_list='[]'
+          for module in ${NS8_CORE_MODULES}
+          do
+            res=$(podman search --limit 150 --list-tags   --format json   ghcr.io/nethserver/traefik | jq 'any(.[].Tags[]; . == "${{ steps.tag.outputs.name }}")')
+            if [ "$res" = "true" ]
+            then
+              modules_list=$(echo "${modules_list}"  | jq -c --arg m ${module} ' . + [$m]')
+            fi
+          done
+
+          echo "::set-output name=list::${modules_list}"
+          echo "::set-output name=tag::${tag}"
   core:
     name: "Core tests"
     runs-on: ubuntu-latest
-    needs: infra_create
+    needs:
+      - infra_create
+      - ns8_modules
     steps:
       - uses: actions/checkout@v2
       - name: Get Deploy Key
@@ -57,7 +88,11 @@ jobs:
           pip install -r /home/pwuser/ns8-scratchpad/core/tests/pythonreq.txt
           mkdir ~/outputs
           cd /home/pwuser/ns8-scratchpad/core/
-          robot -v NODE_ADDR:${{ env.NS8_LEADER_NAME }}.leader.${{ github.ref_name }}-${{ github.sha }}.${{ env.TF_VAR_domain }} -v SSH_KEYFILE:/home/pwuser/ns8-scratchpad/key -d ~/outputs /home/pwuser/ns8-scratchpad/core/tests/
+          robot -v NODE_ADDR:${{ env.NS8_LEADER_NAME }}.leader.${{ github.ref_name }}-${{ github.sha }}.${{ env.TF_VAR_domain }} \
+            -v SSH_KEYFILE:/home/pwuser/ns8-scratchpad/key \
+            -v COREBRANCH:${{ needs.ns8_modules.outputs.tag }} \
+            -v COREMODULES:${{ join(fromJSON(needs.ns8_modules.outputs.list), ',' ) }} \
+            -d ~/outputs /home/pwuser/ns8-scratchpad/core/tests/
           EOF
       - name: export logs
         if: always()
