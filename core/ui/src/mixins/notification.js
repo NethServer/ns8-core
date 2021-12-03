@@ -345,7 +345,7 @@ export default {
         }
 
         // ad-hoc progress notification (e.g. account provider installation)
-        if (taskContext.extra.isProgressNotified) {
+        if (taskContext.extra && taskContext.extra.isProgressNotified) {
           this.$root.$emit(taskContext.action + "-progress", payload.progress);
         }
 

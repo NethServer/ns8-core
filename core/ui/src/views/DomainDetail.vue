@@ -97,7 +97,7 @@
         </div>
       </div>
       <div class="bx--row">
-        <div class="bx--col">
+        <div v-if="domain" class="bx--col">
           <NsButton
             v-if="
               domain.location == 'external' ||
@@ -123,7 +123,7 @@
           </cv-tooltip>
         </div>
       </div>
-      <div class="bx--row">
+      <div v-if="domain" class="bx--row">
         <div
           v-for="(provider, index) in domain.providers"
           :key="index"
@@ -240,69 +240,97 @@ export default {
     this.getClusterStatus();
   },
   methods: {
-    listUserDomains() {
-      //// call api
-
+    async listUserDomains() {
       //// remove mock
-      let domains = [
-        {
-          name: "sandbox.example",
-          location: "internal",
-          protocol: "ldap",
-          schema: "rfc2307",
-          base_dn: "dc=sandbox,dc=example",
-          bind_dn: "cn=ldapservice,dc=sandbox,dc=example",
-          bind_password: "S3cr3t!",
-          tls: false,
-          tls_verify: false,
-          providers: [
-            {
-              id: "openldap1",
-              ui_name: "",
-              node: 1,
-              host: "10.110.32.2",
-              port: 20003,
-            },
-            {
-              id: "openldap2",
-              ui_name: "",
-              node: 2,
-              host: "10.110.32.3",
-              port: 20002,
-            },
-          ],
-        },
-        {
-          name: "company.org",
-          location: "external",
-          protocol: "ldap",
-          schema: "rfc2307",
-          base_dn: "dc=company,dc=org",
-          bind_dn: "cn=ns8cluster,dc=company,dc=org",
-          bind_password: "OtherS3cr3t!",
-          tls: true,
-          tls_verify: true,
-          providers: [
-            {
-              id: "ldap-primary.company.org",
-              ui_name: "Company LDAP primary",
-              node: null,
-              host: "ldap-master.company.org",
-              port: 636,
-            },
-            {
-              id: "ldap-replica.company.org",
-              ui_name: "Company LDAP replica",
-              node: null,
-              host: "ldap-replica.company.org",
-              port: 636,
-            },
-          ],
-        },
-      ];
-      this.domain = domains.find((d) => d.name == this.domainName);
-      //// end mock
+      // let domains = [
+      //   {
+      //     name: "sandbox.example",
+      //     location: "internal",
+      //     protocol: "ldap",
+      //     schema: "rfc2307",
+      //     base_dn: "dc=sandbox,dc=example",
+      //     bind_dn: "cn=ldapservice,dc=sandbox,dc=example",
+      //     bind_password: "S3cr3t!",
+      //     tls: false,
+      //     tls_verify: false,
+      //     providers: [
+      //       {
+      //         id: "openldap1",
+      //         ui_name: "",
+      //         node: 1,
+      //         host: "10.110.32.2",
+      //         port: 20003,
+      //       },
+      //       {
+      //         id: "openldap2",
+      //         ui_name: "",
+      //         node: 2,
+      //         host: "10.110.32.3",
+      //         port: 20002,
+      //       },
+      //     ],
+      //   },
+      //   {
+      //     name: "company.org",
+      //     location: "external",
+      //     protocol: "ldap",
+      //     schema: "rfc2307",
+      //     base_dn: "dc=company,dc=org",
+      //     bind_dn: "cn=ns8cluster,dc=company,dc=org",
+      //     bind_password: "OtherS3cr3t!",
+      //     tls: true,
+      //     tls_verify: true,
+      //     providers: [
+      //       {
+      //         id: "ldap-primary.company.org",
+      //         ui_name: "Company LDAP primary",
+      //         node: null,
+      //         host: "ldap-master.company.org",
+      //         port: 636,
+      //       },
+      //       {
+      //         id: "ldap-replica.company.org",
+      //         ui_name: "Company LDAP replica",
+      //         node: null,
+      //         host: "ldap-replica.company.org",
+      //         port: 636,
+      //       },
+      //     ],
+      //   },
+      // ];
 
+      this.loading.listUserDomains = true;
+      this.error.listUserDomains = "";
+      const taskAction = "list-user-domains";
+
+      // register to task completion
+      this.$root.$once(
+        taskAction + "-completed",
+        this.listUserDomainsCompleted
+      );
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.listUserDomains = this.getErrorMessage(err);
+        return;
+      }
+    },
+    listUserDomainsCompleted(taskContext, taskResult) {
+      console.log("listUserDomainsCompleted", taskResult.output); ////
+      this.domain = taskResult.output.domains.find(
+        (d) => d.name == this.domainName
+      );
       this.loading.listUserDomains = false;
     },
     showAddProviderModal() {

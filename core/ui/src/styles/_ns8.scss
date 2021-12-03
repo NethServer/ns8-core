@@ -390,7 +390,8 @@ a {
 .cv-text-input,
 .cv-form .bx--form-item,
 .cv-form .cv-multi-select,
-.ns-password-input {
+.ns-password-input,
+.cv-combo-box {
   margin-bottom: $spacing-05;
 }
 // end form
@@ -567,7 +568,8 @@ a {
   // limit form fields width on large devices
   .bx--text-input,
   .bx--text-input__field-wrapper,
-  .cv-multi-select {
+  .cv-multi-select,
+  .cv-combo-box {
     max-width: 38rem;
   }
 }

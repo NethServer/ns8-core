@@ -194,6 +194,10 @@
     <CreateDomainModal
       :isShown="q.isShownCreateDomainModal"
       :nodes="nodes"
+      :isResumeConfiguration="createDomain.isResumeConfiguration"
+      :providerId="createDomain.providerId"
+      :isOpenLdap="createDomain.isOpenLdap"
+      :isSamba="createDomain.isSamba"
       @hide="hideCreateDomainModal"
     />
     <!-- delete domain modal -->
@@ -250,6 +254,12 @@ export default {
         name: "",
         location: "",
       },
+      createDomain: {
+        isResumeConfiguration: false,
+        isOpenLdap: true,
+        isSamba: false,
+        providerId: "",
+      },
       loading: {
         listUserDomains: true,
         getClusterStatus: true,
@@ -278,7 +288,34 @@ export default {
     goTo(path) {
       this.$router.push(path);
     },
-    listUserDomains() {
+    async listUserDomains() {
+      this.loading.listUserDomains = true;
+      this.error.listUserDomains = "";
+      const taskAction = "list-user-domains";
+
+      // register to task completion
+      this.$root.$once(
+        taskAction + "-completed",
+        this.listUserDomainsCompleted
+      );
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.listUserDomains = this.getErrorMessage(err);
+        return;
+      }
+
       //// call api
 
       //// remove mock
@@ -286,79 +323,94 @@ export default {
       // this.domains = []; ////
 
       ////
-      this.domains = [
-        {
-          name: "sandbox.example",
-          location: "internal",
-          protocol: "ldap",
-          schema: "rfc2307",
-          base_dn: "dc=sandbox,dc=example",
-          bind_dn: "cn=ldapservice,dc=sandbox,dc=example",
-          bind_password: "S3cr3t!",
-          tls: false,
-          tls_verify: false,
-          providers: [
-            {
-              id: "openldap1",
-              ui_name: "",
-              node: 1,
-              host: "10.110.32.2",
-              port: 20003,
-            },
-            {
-              id: "openldap2",
-              ui_name: "",
-              node: 2,
-              host: "10.110.32.3",
-              port: 20002,
-            },
-          ],
-        },
-        {
-          name: "company.org",
-          location: "external",
-          protocol: "ldap",
-          schema: "rfc2307",
-          base_dn: "dc=company,dc=org",
-          bind_dn: "cn=ns8cluster,dc=company,dc=org",
-          bind_password: "OtherS3cr3t!",
-          tls: true,
-          tls_verify: true,
-          providers: [
-            {
-              id: "ldap-primary.company.org",
-              ui_name: "Company LDAP primary",
-              node: null,
-              host: "ldap-master.company.org",
-              port: 636,
-            },
-            {
-              id: "ldap-replica.company.org",
-              ui_name: "Company LDAP replica",
-              node: null,
-              host: "ldap-replica.company.org",
-              port: 636,
-            },
-          ],
-        },
-      ];
+      // this.domains = [
+      //   {
+      //     name: "sandbox.example",
+      //     location: "internal",
+      //     protocol: "ldap",
+      //     schema: "rfc2307",
+      //     base_dn: "dc=sandbox,dc=example",
+      //     bind_dn: "cn=ldapservice,dc=sandbox,dc=example",
+      //     bind_password: "S3cr3t!",
+      //     tls: false,
+      //     tls_verify: false,
+      //     providers: [
+      //       {
+      //         id: "openldap1",
+      //         ui_name: "",
+      //         node: 1,
+      //         host: "10.110.32.2",
+      //         port: 20003,
+      //       },
+      //       {
+      //         id: "openldap2",
+      //         ui_name: "",
+      //         node: 2,
+      //         host: "10.110.32.3",
+      //         port: 20002,
+      //       },
+      //     ],
+      //   },
+      //   {
+      //     name: "company.org",
+      //     location: "external",
+      //     protocol: "ldap",
+      //     schema: "rfc2307",
+      //     base_dn: "dc=company,dc=org",
+      //     bind_dn: "cn=ns8cluster,dc=company,dc=org",
+      //     bind_password: "OtherS3cr3t!",
+      //     tls: true,
+      //     tls_verify: true,
+      //     providers: [
+      //       {
+      //         id: "ldap-primary.company.org",
+      //         ui_name: "Company LDAP primary",
+      //         node: null,
+      //         host: "ldap-master.company.org",
+      //         port: 636,
+      //       },
+      //       {
+      //         id: "ldap-replica.company.org",
+      //         ui_name: "Company LDAP replica",
+      //         node: null,
+      //         host: "ldap-replica.company.org",
+      //         port: 636,
+      //       },
+      //     ],
+      //   },
+      // ];
 
-      this.loading.listUserDomains = false;
+      // this.loading.listUserDomains = false; ////
 
       //// remove mock
-      this.unconfiguredProviders = [
-        {
-          module_id: "samba1",
-          image_name: "samba",
-          image_url: "ghcr.io/nethserver/samba:latest",
-        },
-      ];
+      // this.unconfiguredProviders = [ ////
+      //   {
+      //     module_id: "samba1",
+      //     image_name: "samba",
+      //     image_url: "ghcr.io/nethserver/samba:latest",
+      //   },
+      // ];
+    },
+    listUserDomainsCompleted(taskContext, taskResult) {
+      console.log("listUserDomainsCompleted", taskResult.output); ////
+
+      this.domains = taskResult.output.domains;
+      this.unconfiguredProviders =
+        taskResult.output.unconfigured_providers.sort(
+          this.sortByProperty("module_id")
+        );
+      this.loading.listUserDomains = false;
     },
     showCreateDomainModal() {
+      this.createDomain.isResumeConfiguration = false;
+      this.createDomain.providerId = "";
       this.q.isShownCreateDomainModal = true;
     },
     hideCreateDomainModal() {
       this.q.isShownCreateDomainModal = false;
+
+      // needed if the user cancels domain creation
+      this.listUserDomains();
     },
     showDeleteDomainModal(domain) {
       this.isShownDeleteDomainModal = true;
@@ -424,7 +476,20 @@ export default {
     },
     showUnconfiguredProviderModal(unconfiguredProvider) {
       console.log("showUnconfiguredProviderModal", unconfiguredProvider); ////
-      //// todo
+
+      if (unconfiguredProvider.image_name == "openldap") {
+        this.createDomain.isOpenLdap = true;
+        this.createDomain.isSamba = false;
+      } else if (unconfiguredProvider.image_name == "samba") {
+        this.createDomain.isOpenLdap = false;
+        this.createDomain.isSamba = true;
+      }
+      this.createDomain.isResumeConfiguration = true;
+      this.createDomain.providerId = unconfiguredProvider.module_id;
+
+      this.$nextTick(() => {
+        this.q.isShownCreateDomainModal = true;
+      });
     },
   },
 };

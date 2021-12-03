@@ -197,7 +197,91 @@
         />
       </template>
       <template v-if="step == 'internalConfig'">
-        //// internal config
+        <!-- openldap -->
+        <cv-form v-if="isOpenLdapSelected"> //// openldap config </cv-form>
+        <!-- samba -->
+        <template v-if="isSambaSelected">
+          <NsInlineNotification
+            v-if="error.samba.getDefaults"
+            kind="error"
+            :title="$t('action.get-defaults')"
+            :description="error.samba.getDefaults"
+            :showCloseButton="false"
+          />
+          <NsInlineNotification
+            v-if="error.samba.configureModule"
+            kind="error"
+            :title="$t('action.configure-module')"
+            :description="error.samba.configureModule"
+            :showCloseButton="false"
+          />
+          <cv-form>
+            <cv-text-input
+              :label="$t('samba.adminuser')"
+              v-model.trim="samba.adminuser"
+              :helper-text="$t('samba.adminuser_description')"
+              :invalid-message="$t(error.samba.adminuser)"
+              :disabled="
+                loading.samba.configureModule || loading.samba.getDefaults
+              "
+              ref="adminuser"
+            >
+            </cv-text-input>
+            <cv-text-input
+              :label="$t('samba.adminpass')"
+              v-model.trim="samba.adminpass"
+              :helper-text="$t('samba.adminpass_description')"
+              :invalid-message="$t(error.samba.adminpass)"
+              :disabled="
+                loading.samba.configureModule || loading.samba.getDefaults
+              "
+              ref="adminpass"
+            >
+            </cv-text-input>
+            <cv-combo-box
+              v-model="samba.ipaddress"
+              :options="samba.ipAddressOptions"
+              auto-highlight
+              :title="$t('samba.ipaddress')"
+              :invalid-message="$t(error.samba.ipaddress)"
+              :disabled="
+                loading.samba.configureModule || loading.samba.getDefaults
+              "
+              light
+            >
+            </cv-combo-box>
+            <cv-text-input
+              :label="$t('samba.hostname')"
+              v-model.trim="samba.hostname"
+              :invalid-message="$t(error.samba.hostname)"
+              :disabled="
+                loading.samba.configureModule || loading.samba.getDefaults
+              "
+              ref="hostname"
+            >
+            </cv-text-input>
+            <cv-text-input
+              :label="$t('samba.realm')"
+              v-model.trim="samba.realm"
+              :invalid-message="$t(error.samba.realm)"
+              :disabled="
+                loading.samba.configureModule || loading.samba.getDefaults
+              "
+              ref="realm"
+            >
+            </cv-text-input>
+            <cv-text-input
+              :label="$t('samba.nbdomain')"
+              v-model.trim="samba.nbdomain"
+              :invalid-message="$t(error.samba.nbdomain)"
+              :disabled="
+                loading.samba.configureModule || loading.samba.getDefaults
+              "
+              ref="nbdomain"
+            >
+            </cv-text-input>
+          </cv-form>
+        </template>
       </template>
       <div class="wizard-buttons">
         <NsButton
@@ -212,6 +296,7 @@
           :icon="ChevronLeft20"
           @click="previousStep"
           :disabled="
+            isResumeConfiguration ||
             ['location', 'installingProvider', 'internalConfig'].includes(step)
           "
           class="wizard-button"
@@ -221,7 +306,7 @@
           kind="primary"
           :icon="ChevronRight20"
           @click="nextStep"
-          :disabled="step == 'installingProvider'"
+          :disabled="isNextStepButtonDisabled()"
           class="wizard-button"
           ref="wizardNext"
           >{{ $t("common.next") }}
@@ -252,17 +337,65 @@ export default {
       type: Array,
       required: true,
     },
+    isResumeConfiguration: {
+      type: Boolean,
+      default: false,
+    },
+    providerId: {
+      type: String,
+      default: "",
+    },
+    isOpenLdap: {
+      type: Boolean,
+      default: true,
+    },
+    isSamba: {
+      type: Boolean,
+      default: false,
+    },
   },
   data() {
     return {
-      step: "location",
+      step: "",
       isInternalSelected: true,
       isExternalSelected: false,
-      isOpenLdapSelected: true,
+      newProviderId: "",
+      isOpenLdapSelected: false,
       isSambaSelected: false,
       installProviderProgress: 0,
+      samba: {
+        adminuser: "",
+        adminpass: "",
+        realm: "",
+        ipaddress: "",
+        ipAddressOptions: [],
+        hostname: "",
+        nbdomain: "",
+        // defaults: { ////
+        //   adminuser: "",
+        //   hostname: "",
+        //   nbdomain: "",
+        //   realm: "",
+        // },
+      },
+      loading: {
+        samba: {
+          getDefaults: false,
+          configureModule: false,
+        },
+      },
       error: {
         addModule: "",
+        samba: {
+          adminuser: "",
+          adminpass: "",
+          realm: "",
+          ipaddress: "",
+          hostname: "",
+          nbdomain: "",
+          configureModule: "",
+          getDefaults: "",
+        },
       },
     };
   },
@@ -274,18 +407,61 @@ export default {
   watch: {
     isShown: function () {
       if (this.isShown) {
-        // reset to first step anytime the modal appears
-        this.step = "location";
+        // this.clearOpenLdapErrors(); ////
+        this.clearSambaErrors();
+
+        if (!this.isResumeConfiguration) {
+          // start wizard from first step
+          this.step = "location";
+        } else {
+          // resume configuration
+          this.step = "internalConfig";
+
+          console.log("watch isShown, isSamba", this.isSamba); ////
+
+          if (this.isOpenLdap) {
+            // this.getOpenLdapDefaults(); ////
+          } else if (this.isSamba) {
+            this.getSambaDefaults();
+          }
+        }
 
         // set focus to next button
         setTimeout(() => {
-          this.$nextTick(() => {
-            const element = this.$refs["wizardNext"].$el;
-            element.focus();
-          });
+          const element = this.$refs["wizardNext"].$el;
+          element.focus();
         }, 300);
       }
     },
+    providerId: function () {
+      console.log("watch providerId", this.providerId); ////
+      this.newProviderId = this.providerId;
+      console.log("set newProviderId", this.newProviderId); ////
+    },
+    isOpenLdap: function () {
+      console.log("watch isOpenLdap", this.isOpenLdap); ////
+      this.isOpenLdapSelected = this.isOpenLdap;
+    },
+    isSamba: function () {
+      console.log("watch isSamba", this.isSamba); ////
+      this.isSambaSelected = this.isSamba;
+    },
+    step: function () {
+      if (this.step == "internalConfig") {
+        if (this.isOpenLdapSelected) {
+          //// focus first input field
+        } else if (this.isSambaSelected) {
+          setTimeout(() => {
+            this.focusElement("adminuser");
+          }, 500);
+        }
+      }
+    },
+  },
+  created() {
+    this.newProviderId = this.providerId;
+    this.isOpenLdapSelected = this.isOpenLdap;
+    this.isSambaSelected = this.isSamba;
   },
   methods: {
     nextStep() {
@@ -320,6 +496,13 @@ export default {
             this.installProvider();
           }
           break;
+        case "internalConfig":
+          if (this.isSambaSelected) {
+            this.configureSambaModule();
+          } else if (this.isOpenLdapSelected) {
+            this.configureOpenLdapModule();
+          }
+          break;
       }
     },
     previousStep() {
@@ -333,7 +516,11 @@ export default {
           break;
         case "summary":
           if (this.isInternalSelected) {
-            this.step = "node";
+            if (this.nodes.length > 1) {
+              this.step = "node";
+            } else {
+              this.step = "instance";
+            }
           } else {
             this.step = "externalConfig";
           }
@@ -396,18 +583,183 @@ export default {
       }
     },
     addModuleCompleted(taskContext, taskResult) {
-      console.log("addModuleCompleted", taskResult); ////
-
       // unregister to task progress
       this.$root.$off("add-module-progress");
 
       this.step = "internalConfig";
+
+      if (this.isSambaSelected) {
+        this.newProviderId = taskResult.output.module_id;
+        this.getSambaDefaults();
+      }
 
       // show new app in app drawer
       this.$root.$emit("reloadAppDrawer");
     },
     addModuleProgress(progress) {
       this.installProviderProgress = progress;
+    },
+    async getSambaDefaults() {
+      console.log("getSambaDefaults", this.newProviderId); ////
+
+      this.loading.samba.getDefaults = true;
+      this.error.samba.getDefaults = "";
+      const taskAction = "get-defaults";
+
+      // register to task completion
+      this.$root.$once(
+        taskAction + "-completed",
+        this.getSambaDefaultsCompleted
+      );
+
+      console.log("getSambaDefaults, newProviderId", this.newProviderId); ////
+
+      const res = await to(
+        this.createModuleTaskForApp(this.newProviderId, {
+          action: taskAction,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.samba.getDefaults = this.getErrorMessage(err);
+        return;
+      }
+    },
+    getSambaDefaultsCompleted(taskContext, taskResult) {
+      console.log("getSambaDefaultsCompleted", taskResult.output); ////
+      this.loading.samba.getDefaults = false;
+      const defaults = taskResult.output;
+
+      this.samba.adminuser = defaults.adminuser;
+      this.samba.hostname = defaults.hostname;
+      this.samba.nbdomain = defaults.nbdomain;
+      this.samba.realm = defaults.realm;
+
+      // ip address combo box
+      let index = 0;
+      for (const ipObject of defaults.ipaddress_list) {
+        const option = {
+          name: ipObject.ipaddress.replace(/\W/g, "_"),
+          label: ipObject.ipaddress + " - " + ipObject.label,
+          value: ipObject.ipaddress,
+        };
+        this.$set(this.samba.ipAddressOptions, index, option);
+        index++;
+      }
+
+      console.log("ipAddressOptions", this.samba.ipAddressOptions); ////
+    },
+    clearSambaErrors() {
+      this.error.samba.adminuser = "";
+      this.error.samba.adminpass = "";
+      this.error.samba.realm = "";
+      this.error.samba.ipaddress = ""; ////
+      this.error.samba.hostname = "";
+      this.error.samba.nbdomain = "";
+    },
+    validateConfigureSambaModule() {
+      this.clearSambaErrors();
+      console.log("validateConfigureSambaModule ////"); ////
+      return true; ////
+    },
+    async configureSambaModule() {
+      const isValidationOk = this.validateConfigureSambaModule();
+      if (!isValidationOk) {
+        return;
+      }
+
+      this.loading.samba.configureModule = true;
+      const taskAction = "configure-module";
+
+      // register to task validation
+      this.$root.$off(taskAction + "-validation-failed");
+      this.$root.$once(
+        taskAction + "-validation-failed",
+        this.configureSambaModuleValidationFailed
+      );
+
+      // register to task completion
+      this.$root.$off(taskAction + "-completed");
+      this.$root.$once(
+        taskAction + "-completed",
+        this.configureSambaModuleCompleted
+      );
+
+      // register to task error
+      this.$root.$off(taskAction + "-aborted");
+      this.$root.$once(
+        taskAction + "-aborted",
+        this.configureSambaModuleAborted
+      );
+
+      const res = await to(
+        this.createModuleTaskForApp(this.newProviderId, {
+          action: taskAction,
+          data: {
+            adminuser: this.samba.adminuser,
+            adminpass: this.samba.adminpass,
+            realm: this.samba.realm,
+            ipaddress: this.samba.ipaddress,
+            hostname: this.samba.hostname,
+            nbdomain: this.samba.nbdomain,
+          },
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.samba.configureModule = this.getErrorMessage(err);
+        this.loading.samba.configureModule = false;
+        return;
+      }
+    },
+    configureSambaModuleValidationFailed(validationErrors) {
+      this.loading.samba.configureModule = false;
+
+      for (const validationError of validationErrors) {
+        const param = validationError.parameter;
+        // set i18n error message
+        this.error.samba[param] = "domains." + validationError.error;
+      }
+    },
+    configureSambaModuleCompleted(taskContext, taskResult) {
+      console.log("configureSambaModuleCompleted", taskResult.output); ////
+
+      // hide modal
+      this.$emit("hide");
+    },
+    configureSambaModuleAborted(taskResult) {
+      console.log("configure samba module aborted", taskResult);
+      this.loading.samba.configureModule = false;
+
+      // hide modal so that user can see error notification
+      this.$emit("hide");
+    },
+    async configureOpenLdapModule() {
+      console.log("configureOpenLdapModule"); ////
+    },
+    isNextStepButtonDisabled() {
+      return (
+        this.step == "installingProvider" ||
+        (this.step == "location" &&
+          !this.isInternalSelected &&
+          !this.isExternalSelected) ||
+        (this.step == "instance" &&
+          !this.isOpenLdapSelected &&
+          !this.isSambaSelected) ||
+        (this.step == "node" && !this.selectedNode)
+      );
     },
   },
 };

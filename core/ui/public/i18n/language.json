@@ -191,7 +191,8 @@
     "get-node-status": "Get node status",
     "remove-module": "Remove module",
     "set-name": "Set name",
-    "list-user-domains": "List user domains"
+    "list-user-domains": "List user domains",
+    "configure-module": "Configure module"
   },
   "network": {
     "title": "Network"
@@ -334,7 +335,26 @@
     "unconfigured_domains_title": "There are one or more unconfigured domains",
     "unconfigured_domains_description": "You can resume their configuration or delete them",
     "resume_configuration": "Resume configuration",
-    "installing_account_provider": "Installing account provider, please wait..."
+    "installing_account_provider": "Installing account provider, please wait...",
+    "ipaddress_avail_check_failed": "IP address not available",
+    "ipaddress_private_check_failed": "Invalid IP address",
+    "ipaddress_bind_check_failed": "Cannot bind to one or more TCP ports",
+    "realm_pattern": "Invalid pattern",
+    "hostname_pattern": "Invalid pattern",
+    "nbdomain_pattern": "Invalid pattern",
+    "ipaddress_format": "Invalid IP address",
+    "adminuser_string_gte": "Required",
+    "adminpass_string_gte": "Required"
+  },
+  "samba": {
+    "adminuser": "Admin username",
+    "adminuser_description": "Choose admin username",
+    "adminpass": "Admin password",
+    "adminpass_description": "Choose a password for admin user",
+    "realm": "Realm",
+    "ipaddress": "IP address",
+    "hostname": "Hostname",
+    "nbdomain": "NBdomain"
   },
   "domain_detail": {
     "title": "Domain detail",
