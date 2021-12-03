@@ -109,15 +109,15 @@
                       >{{ $t("common.delete") }}</cv-overflow-menu-item
                     >
                   </cv-overflow-menu>
-                  <div class="row">
+                  <div class="row icon-and-text node-container">
+                    <NsSvg :svg="Application20" class="icon" />
                     <span>{{ unconfiguredProvider.module_id }}</span>
                   </div>
-                  <!-- //// node id -->
                   <div class="row icon-and-text node-container">
                     <NsSvg :svg="Chip20" class="icon" />
                     <span
                       >{{ $t("common.node") }}
-                      {{ unconfiguredProvider.node }} ////</span
+                      {{ unconfiguredProvider.node }}</span
                     >
                   </div>
                   <div class="row actions">
@@ -192,7 +192,7 @@
     </div>
     <!-- create domain modal -->
     <CreateDomainModal
-      :isShown="q.isShownCreateDomainModal"
+      :isShown="isShownCreateDomainModal"
       :nodes="nodes"
       :isResumeConfiguration="createDomain.isResumeConfiguration"
       :providerId="createDomain.providerId"
@@ -243,9 +243,8 @@ export default {
   },
   data() {
     return {
-      q: {
-        isShownCreateDomainModal: false,
-      },
+      q: {},
+      isShownCreateDomainModal: false,
       domains: [],
       unconfiguredProviders: [],
       nodes: [],
@@ -404,10 +403,10 @@ export default {
     showCreateDomainModal() {
       this.createDomain.isResumeConfiguration = false;
       this.createDomain.providerId = "";
-      this.q.isShownCreateDomainModal = true;
+      this.isShownCreateDomainModal = true;
     },
     hideCreateDomainModal() {
-      this.q.isShownCreateDomainModal = false;
+      this.isShownCreateDomainModal = false;
 
       // needed if the user cancels domain creation
       this.listUserDomains();
@@ -488,7 +487,7 @@ export default {
       this.createDomain.providerId = unconfiguredProvider.module_id;
 
       this.$nextTick(() => {
-        this.q.isShownCreateDomainModal = true;
+        this.isShownCreateDomainModal = true;
       });
     },
   },

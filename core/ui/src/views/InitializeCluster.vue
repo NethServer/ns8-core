@@ -283,7 +283,7 @@ export default {
       isPasswordChangeNeeded: false,
       currentPassword: "",
       newPassword: "",
-      passwordValidation: false,
+      passwordValidation: null,
       focusPasswordField: { element: "" },
       vpnEndpointAddress: "",
       vpnEndpointPort: "",

@@ -329,7 +329,7 @@
     "account_provider": "Account provider",
     "domain_summary": "Summary",
     "delete_domain": "Delete domain",
-    "delete_internal_domain_confirm": "Delete internal domain <strong>{name}</strong>? All users, groups and account provider data will be deleted. This action is irreversible",
+    "delete_internal_domain_confirm": "Delete internal domain <strong>{name}</strong>? All users, groups and account provider data will be deleted. This action is <strong>NOT</strong> reversible",
     "delete_external_domain_confirm": "Delete external domain <strong>{name}</strong>? Account provider data will remain intact, but if you change your mind you'll have to bind the external domain again",
     "unconfigured_domain": "Unconfigured domain",
     "unconfigured_domains_title": "There are one or more unconfigured domains",
@@ -349,8 +349,9 @@
   "samba": {
     "adminuser": "Admin username",
     "adminuser_description": "Choose admin username",
-    "adminpass": "Admin password",
-    "adminpass_description": "Choose a password for admin user",
+    "adminpass": "Samba admin password",
+    "adminpass_confirm": "Re-enter Samba admin password",
+    "adminpass_description": "Choose a password for Samba admin user",
     "realm": "Realm",
     "ipaddress": "IP address",
     "hostname": "Hostname",
@@ -365,7 +366,7 @@
     "max_instances_reached": "No cluster nodes available to install a new provider. Every node can host only one provider per domain",
     "provider_deleted": "Provider deleted",
     "cannot_delete_provider": "Cannot delete provider",
-    "cannot_delete_provider_description": "You cannot delete the only provider of a domain. If that's your intention, you can delete the whole domain, and the provider will deleted as well"
+    "cannot_delete_provider_description": "You cannot delete the only provider of a domain. You can delete the whole domain (if that's your intention) and the provider will be deleted as well"
   },
   "nodes": {
     "title": "Nodes",

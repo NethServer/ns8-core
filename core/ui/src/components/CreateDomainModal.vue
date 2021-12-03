@@ -227,17 +227,29 @@
               ref="adminuser"
             >
             </cv-text-input>
-            <cv-text-input
-              :label="$t('samba.adminpass')"
-              v-model.trim="samba.adminpass"
-              :helper-text="$t('samba.adminpass_description')"
-              :invalid-message="$t(error.samba.adminpass)"
+            <NsPasswordInput
+              :newPasswordLabel="$t('samba.adminpass')"
+              :confirmPasswordLabel="$t('samba.adminpass_confirm')"
+              v-model="samba.adminpass"
+              @passwordValidation="onNewSambaPasswordValidation"
+              :newPaswordHelperText="$t('samba.adminpass_description')"
+              :newPasswordInvalidMessage="$t(error.samba.adminpass)"
+              :confirmPasswordInvalidMessage="$t(error.samba.confirmPassword)"
+              :passwordHideLabel="$t('password.hide_password')"
+              :passwordShowLabel="$t('password.show_password')"
+              :lengthLabel="$t('password.long_enough')"
+              :lowercaseLabel="$t('password.lowercase_letter')"
+              :uppercaseLabel="$t('password.uppercase_letter')"
+              :numberLabel="$t('password.number')"
+              :symbolLabel="$t('password.symbol')"
+              :equalLabel="$t('password.equal')"
+              :focus="samba.focusPasswordField"
               :disabled="
                 loading.samba.configureModule || loading.samba.getDefaults
               "
-              ref="adminpass"
-            >
-            </cv-text-input>
+              light
+              class="new-samba-password"
+            />
             <cv-combo-box
               v-model="samba.ipaddress"
               :options="samba.ipAddressOptions"
@@ -248,6 +260,7 @@
                 loading.samba.configureModule || loading.samba.getDefaults
               "
               light
+              ref="ipaddress"
             >
             </cv-combo-box>
             <cv-text-input
@@ -307,6 +320,7 @@
           :icon="ChevronRight20"
           @click="nextStep"
           :disabled="isNextStepButtonDisabled()"
+          :loading="loading.samba.configureModule"
           class="wizard-button"
           ref="wizardNext"
           >{{ $t("common.next") }}
@@ -371,12 +385,8 @@ export default {
         ipAddressOptions: [],
         hostname: "",
         nbdomain: "",
-        // defaults: { ////
-        //   adminuser: "",
-        //   hostname: "",
-        //   nbdomain: "",
-        //   realm: "",
-        // },
+        passwordValidation: null,
+        focusPasswordField: { element: "" },
       },
       loading: {
         samba: {
@@ -389,6 +399,7 @@ export default {
         samba: {
           adminuser: "",
           adminpass: "",
+          confirmPassword: "",
           realm: "",
           ipaddress: "",
           hostname: "",
@@ -417,8 +428,6 @@ export default {
           // resume configuration
           this.step = "internalConfig";
 
-          console.log("watch isShown, isSamba", this.isSamba); ////
-
           if (this.isOpenLdap) {
             // this.getOpenLdapDefaults(); ////
           } else if (this.isSamba) {
@@ -426,36 +435,31 @@ export default {
           }
         }
 
-        // set focus to next button
-        setTimeout(() => {
-          const element = this.$refs["wizardNext"].$el;
-          element.focus();
-        }, 300);
+        if (this.step !== "internalConfig") {
+          // set focus to next button
+          setTimeout(() => {
+            const element = this.$refs["wizardNext"].$el;
+            element.focus();
+          }, 300);
+        } else {
+          if (this.isOpenLdapSelected) {
+            //// focus first input field
+          } else if (this.isSambaSelected) {
+            setTimeout(() => {
+              this.focusElement("adminuser");
+            }, 300);
+          }
+        }
       }
     },
     providerId: function () {
-      console.log("watch providerId", this.providerId); ////
       this.newProviderId = this.providerId;
-      console.log("set newProviderId", this.newProviderId); ////
     },
     isOpenLdap: function () {
-      console.log("watch isOpenLdap", this.isOpenLdap); ////
       this.isOpenLdapSelected = this.isOpenLdap;
     },
     isSamba: function () {
-      console.log("watch isSamba", this.isSamba); ////
       this.isSambaSelected = this.isSamba;
-    },
-    step: function () {
-      if (this.step == "internalConfig") {
-        if (this.isOpenLdapSelected) {
-          //// focus first input field
-        } else if (this.isSambaSelected) {
-          setTimeout(() => {
-            this.focusElement("adminuser");
-          }, 500);
-        }
-      }
     },
   },
   created() {
@@ -641,6 +645,9 @@ export default {
       this.samba.nbdomain = defaults.nbdomain;
       this.samba.realm = defaults.realm;
 
+      // clear password
+      this.samba.adminpass = "";
+
       // ip address combo box
       let index = 0;
       for (const ipObject of defaults.ipaddress_list) {
@@ -656,17 +663,116 @@ export default {
       console.log("ipAddressOptions", this.samba.ipAddressOptions); ////
     },
     clearSambaErrors() {
-      this.error.samba.adminuser = "";
-      this.error.samba.adminpass = "";
-      this.error.samba.realm = "";
-      this.error.samba.ipaddress = ""; ////
-      this.error.samba.hostname = "";
-      this.error.samba.nbdomain = "";
+      for (const key of Object.keys(this.error.samba)) {
+        this.error.samba[key] = "";
+      }
     },
     validateConfigureSambaModule() {
       this.clearSambaErrors();
-      console.log("validateConfigureSambaModule ////"); ////
-      return true; ////
+      let isValidationOk = true;
+
+      // samba admin user
+
+      if (!this.samba.adminuser) {
+        this.error.samba.adminuser = "common.required";
+
+        if (isValidationOk) {
+          this.focusElement("adminuser");
+          isValidationOk = false;
+        }
+      }
+
+      // samba admin password
+
+      if (!this.samba.adminpass) {
+        this.error.samba.adminpass = "common.required";
+
+        if (isValidationOk) {
+          this.samba.focusPasswordField = { element: "newPassword" };
+          isValidationOk = false;
+        }
+      } else {
+        if (
+          !this.samba.passwordValidation.isLengthOk ||
+          !this.samba.passwordValidation.isLowercaseOk ||
+          !this.samba.passwordValidation.isUppercaseOk ||
+          !this.samba.passwordValidation.isNumberOk ||
+          !this.samba.passwordValidation.isSymbolOk
+        ) {
+          if (!this.error.samba.adminpass) {
+            this.error.samba.adminpass = "password.password_not_secure";
+          }
+
+          if (isValidationOk) {
+            this.samba.focusPasswordField = { element: "newPassword" };
+            isValidationOk = false;
+          }
+        }
+
+        if (!this.samba.passwordValidation.isEqualOk) {
+          if (!this.error.samba.adminpass) {
+            this.error.samba.adminpass = "password.passwords_do_not_match";
+          }
+
+          if (!this.error.samba.confirmPassword) {
+            console.log(" ////"); ////
+
+            this.error.samba.confirmPassword =
+              "password.passwords_do_not_match";
+          }
+
+          if (isValidationOk) {
+            this.samba.focusPasswordField = { element: "confirmPassword" };
+            isValidationOk = false;
+          }
+        }
+      }
+
+      // samba ip address
+
+      if (!this.samba.ipaddress) {
+        this.error.samba.ipaddress = "common.required";
+
+        if (isValidationOk) {
+          this.focusElement("ipaddress");
+          isValidationOk = false;
+        }
+      }
+
+      // samba hostname
+
+      if (!this.samba.hostname) {
+        this.error.samba.hostname = "common.required";
+
+        if (isValidationOk) {
+          this.focusElement("hostname");
+          isValidationOk = false;
+        }
+      }
+
+      // samba realm
+
+      if (!this.samba.realm) {
+        this.error.samba.realm = "common.required";
+
+        if (isValidationOk) {
+          this.focusElement("realm");
+          isValidationOk = false;
+        }
+      }
+
+      // samba nbdomain
+
+      if (!this.samba.nbdomain) {
+        this.error.samba.nbdomain = "common.required";
+
+        if (isValidationOk) {
+          this.focusElement("nbdomain");
+          isValidationOk = false;
+        }
+      }
+
+      return isValidationOk;
     },
     async configureSambaModule() {
       const isValidationOk = this.validateConfigureSambaModule();
@@ -758,8 +864,12 @@ export default {
         (this.step == "instance" &&
           !this.isOpenLdapSelected &&
           !this.isSambaSelected) ||
-        (this.step == "node" && !this.selectedNode)
+        (this.step == "node" && !this.selectedNode) ||
+        this.loading.samba.configureModule
       );
+    },
+    onNewSambaPasswordValidation(passwordValidation) {
+      this.samba.passwordValidation = passwordValidation;
     },
   },
 };
@@ -788,5 +898,22 @@ export default {
 .summary {
   font-weight: bold;
   margin-bottom: $spacing-05;
+}
+
+.bx--form {
+  .bx--form-item,
+  .cv-combo-box {
+    margin-bottom: $spacing-06;
+  }
+}
+</style>
+
+<style lang="scss">
+@import "../styles/carbon-utils";
+
+// global styles
+
+.new-samba-password .new-password-container {
+  margin-bottom: $spacing-06 !important;
 }
 </style>

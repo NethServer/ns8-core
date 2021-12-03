@@ -37,6 +37,17 @@
       </div>
       <div class="bx--row">
         <div class="bx--col">
+          <NsInlineNotification
+            v-if="error.removeModule"
+            kind="error"
+            :title="$t('action.remove-module')"
+            :description="error.removeModule"
+            :showCloseButton="false"
+          />
+        </div>
+      </div>
+      <div class="bx--row">
+        <div class="bx--col">
           <h4 class="mg-bottom-md">{{ $t("domain_detail.settings") }}</h4>
         </div>
       </div>
@@ -187,6 +198,16 @@
       </template>
       <template slot="secondary-button">{{ $t("common.got_it") }}</template>
     </cv-modal>
+    <!-- add provider modal -->
+    <!-- <AddProviderModal
+      :isShown="isShownAddProviderModal"
+      :nodes="nodes"
+      :isResumeConfiguration="createDomain.isResumeConfiguration"
+      :providerId="createDomain.providerId"
+      :isOpenLdap="createDomain.isOpenLdap"
+      :isSamba="createDomain.isSamba"
+      @hide="hideCreateDomainModal"
+    /> -->
   </div>
 </template>
 
@@ -221,7 +242,11 @@ export default {
         listUserDomains: true,
         getClusterStatus: true,
       },
-      error: { listUserDomains: "", getClusterStatus: "" },
+      error: {
+        listUserDomains: "",
+        getClusterStatus: "",
+        removeModule: "",
+      },
     };
   },
   beforeRouteEnter(to, from, next) {
@@ -241,64 +266,6 @@ export default {
   },
   methods: {
     async listUserDomains() {
-      //// remove mock
-      // let domains = [
-      //   {
-      //     name: "sandbox.example",
-      //     location: "internal",
-      //     protocol: "ldap",
-      //     schema: "rfc2307",
-      //     base_dn: "dc=sandbox,dc=example",
-      //     bind_dn: "cn=ldapservice,dc=sandbox,dc=example",
-      //     bind_password: "S3cr3t!",
-      //     tls: false,
-      //     tls_verify: false,
-      //     providers: [
-      //       {
-      //         id: "openldap1",
-      //         ui_name: "",
-      //         node: 1,
-      //         host: "10.110.32.2",
-      //         port: 20003,
-      //       },
-      //       {
-      //         id: "openldap2",
-      //         ui_name: "",
-      //         node: 2,
-      //         host: "10.110.32.3",
-      //         port: 20002,
-      //       },
-      //     ],
-      //   },
-      //   {
-      //     name: "company.org",
-      //     location: "external",
-      //     protocol: "ldap",
-      //     schema: "rfc2307",
-      //     base_dn: "dc=company,dc=org",
-      //     bind_dn: "cn=ns8cluster,dc=company,dc=org",
-      //     bind_password: "OtherS3cr3t!",
-      //     tls: true,
-      //     tls_verify: true,
-      //     providers: [
-      //       {
-      //         id: "ldap-primary.company.org",
-      //         ui_name: "Company LDAP primary",
-      //         node: null,
-      //         host: "ldap-master.company.org",
-      //         port: 636,
-      //       },
-      //       {
-      //         id: "ldap-replica.company.org",
-      //         ui_name: "Company LDAP replica",
-      //         node: null,
-      //         host: "ldap-replica.company.org",
-      //         port: 636,
-      //       },
-      //     ],
-      //   },
-      // ];
-
       this.loading.listUserDomains = true;
       this.error.listUserDomains = "";
       const taskAction = "list-user-domains";
@@ -327,7 +294,6 @@ export default {
       }
     },
     listUserDomainsCompleted(taskContext, taskResult) {
-      console.log("listUserDomainsCompleted", taskResult.output); ////
       this.domain = taskResult.output.domains.find(
         (d) => d.name == this.domainName
       );
@@ -396,10 +362,40 @@ export default {
         return p.id != provider.id;
       });
     },
-    deleteProvider(provider) {
+    async deleteProvider(provider) {
       console.log("deleteProvider", provider); ////
 
-      //// reload listUserDomains
+      this.error.removeModule = "";
+      const taskAction = "remove-module";
+
+      // register to task completion
+      this.$root.$once(taskAction + "-completed", this.deleteProviderCompleted);
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          data: {
+            module_id: this.providerToDelete.id,
+            preserve_data: false,
+          },
+          extra: {
+            title: this.$t("software_center.instance_uninstallation", {
+              instance: this.providerToDelete.id,
+            }),
+            description: this.$t("software_center.uninstalling"),
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.removeModule = this.getErrorMessage(err);
+        return;
+      }
+    },
+    deleteProviderCompleted() {
+      this.listUserDomains();
     },
   },
 };
