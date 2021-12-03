@@ -112,7 +112,6 @@ class Backup(Restic):
     rootfull = False
     volumes = dict()
     paths = []
-    excludes = []
 
     def _get_name_from_url(self, url):
         url, sep, tag = url.rpartition(":")
@@ -125,9 +124,6 @@ class Backup(Restic):
 
     def add_path(self, path):
         self.paths.append(path)
-    
-    def add_exclude(self, exclude):
-        self.exclude.append(exclude)
 
     def add_key(self, key, name = None):
         rdb = agent.redis_connect(privileged=False, decode_responses=False)
@@ -207,10 +203,11 @@ class Backup(Restic):
             mount = self.volumes[volume]
             (prefix, sep, suffix) = mount.partition(volume)
             podman_cmd = podman_cmd + ["-v", f"{prefix}{volume}:/{volume}"]
-        ## TODO: add all volumes
-        restic_cmd = ["docker.io/restic/restic"]
-        cmd = podman_cmd + restic_cmd
 
+        for path in self.paths:
+            podman_cmd = podman_cmd + ["-v", f"{path}:/{os.path.basename(path)}"]
+
+        cmd = podman_cmd + ["docker.io/restic/restic"]
 
         # Check if repository has been already initialized, if not, just do it
         check_init = subprocess.run(cmd + ["snapshots"], capture_output=True)
@@ -218,13 +215,12 @@ class Backup(Restic):
             init = subprocess.run(cmd + ["init"], check=True, capture_output=True)
 
         # Run the backup
-        #for exclude in self.excludes:
-        #    cmd = cmd + ["--exclude", exclude]
-        # TODO: handle excludes and custom paths
-
         sub_cmd = ["backup"]
         for volume in self.volumes:
             sub_cmd.append(f"/{volume}")
+        for path in self.paths:
+            sub_cmd.append(f"/{os.path.basename(path)}")
+
         print(" ".join(cmd + sub_cmd))
 
         subprocess.run(cmd + sub_cmd)
