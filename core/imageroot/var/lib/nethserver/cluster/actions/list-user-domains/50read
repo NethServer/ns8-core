@@ -34,6 +34,7 @@ for kimage in rdb.scan_iter("module/*/image_name"):
         module_id = kimage.split('/', 2)[1]
         unconfigured_providers[module_id] = {
             "module_id": module_id,
+            "node": int(rdb.hget(f"module/{module_id}/environment", "NODE_ID")),
             "image_name": image_name,
             "image_url": rdb.hget(f"module/{module_id}/environment", "IMAGE_URL")
         }

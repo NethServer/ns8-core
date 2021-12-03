@@ -154,6 +154,7 @@
             "description": "An internal provider module instance that is not completely configured",
             "required": [
                 "module_id",
+                "node",
                 "image_name",
                 "image_url"
             ],
@@ -162,6 +163,12 @@
                     "title": "Module identifier",
                     "description": "e.g. `samba1`",
                     "type": "string"
+                },
+                "node": {
+                    "title": "Node identifier",
+                    "description": "The node number, e.g. `1`",
+                    "type": "integer",
+                    "minimum": 1
                 },
                 "image_name": {
                     "title": "Module image name",
