@@ -130,7 +130,6 @@ class Backup(Restic):
         dump = rdb.dump(key)
         rdb.close()
 
-        os.makedirs(self.dump_dir, exist_ok=True)
         if name == None:
             (prefix, sep, name) = key.rpartition('/')
 
@@ -181,6 +180,9 @@ class Backup(Restic):
             self.restic_dir = f"{os.path.expanduser('~')}/restic"
             self.cache_dir = f'{self.restic_dir}/{self.directory}'
 
+        # Make sure dump dir exists, it's always included inside the backup
+        os.makedirs(self.dump_dir, exist_ok=True)
+
         # Close unused Redis connection
         rdb.close()
 
@@ -196,9 +198,8 @@ class Backup(Restic):
         # Dump environment key
         self.add_path(self.environment)
 
-
         # Prepare base command
-        podman_cmd = ["podman", "run", "--rm", "--env-file", self.restic_env, "-v", f"{self.cache_dir}:/cache"]
+        podman_cmd = ["podman", "run", "--rm", "--env-file", self.restic_env, "-v", f"{self.cache_dir}:/cache", "-v", f"{self.dump_dir}:/dump"]
         for volume in self.volumes:
             mount = self.volumes[volume]
             (prefix, sep, suffix) = mount.partition(volume)
@@ -220,8 +221,7 @@ class Backup(Restic):
             sub_cmd.append(f"/{volume}")
         for path in self.paths:
             sub_cmd.append(f"/{os.path.basename(path)}")
-
-        print(" ".join(cmd + sub_cmd))
+        sub_cmd.append("/dump")
 
         subprocess.run(cmd + sub_cmd)
 
