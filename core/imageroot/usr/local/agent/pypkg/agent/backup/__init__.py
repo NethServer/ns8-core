@@ -27,32 +27,41 @@ import subprocess
 
 
 class Restic:
+    config = dict()
+    restic_dir = ""
+    restic_env = ""
+
     def prepare_env(self):
+        # Create working directories
+        os.makedirs(self.restic_dir, exist_ok=True)
+        os.makedirs(self.cache_dir, exist_ok=True)
+
         # Prepare restic environment
-        restic_env = os.environ.copy()
-        restic_env['RESTIC_PASSWORD'] = self.config['password']
+        self.restic_env = f'{self.restic_dir}/restic.env'
+        with open(self.restic_env, 'w') as efile:
+            efile.write(f"RESTIC_PASSWORD={self.config['password']}\n")
+            efile.write(f"RESTIC_CACHE_DIR=/cache\n")
+            efile.write(f"RESTIC_REPOSITORY={self.config['url']}:{self.directory}\n")
 
-        # Supported backend:
-        # - S3 compatible services
-        # - SFTP on standard ports
-        # - Backblaze B2
-        # - Azure
-        parts = self.config['url'].split(":")
-        if parts[0] == "s3":
-            restic_env['AWS_ACCESS_KEY_ID'] = self.config['aws_access_key_id']
-            restic_env['AWS_SECRET_ACCESS_KEY'] = self.config['aws_secret_access_key']
-        elif parts[0] == "b2":
-            restic_env['B2_ACCOUNT_ID'] = self.config['b2_account_id']
-            restic_env['B2_ACCOUNT_KEY'] = self.config['b2_account_key']
-        elif parts[0] == "azure":
-            restic_env['AZURE_ACCOUNT_NAME'] = self.config['azure_account_name']
-            restic_env['AZURE_ACCOUNT_KEY'] = self.config['azure_account_key']
+            # Supported backend:
+            # - S3 compatible services
+            # - SFTP on standard ports
+            # - Backblaze B2
+            # - Azure
 
-        return restic_env
+            parts = self.config['url'].split(":")
+            if parts[0] == "s3":
+                efile.write(f"AWS_ACCESS_KEY_ID={self.config['aws_access_key_id']}\n")
+                efile.write(f"AWS_SECRET_ACCESS_KEY={self.config['aws_secret_access_key']}\n")
+            elif parts[0] == "b2":
+                efile.write(f"B2_ACCOUNT_ID={self.config['b2_account_id']}\n")
+                efile.write(f"B2_ACCOUNT_KEY={self.config['b2_account_key']}\n")
+            elif parts[0] == "azure":
+                efile.write(f"AZURE_ACCOUNT_NAME={self.config['azure_account_name']}\n")
+                efile.write(f"AZURE_ACCOUNT_KEY={self.config['azure_account_key']}\n")
 
 
 class Restore(Restic):
-    config = dict()
 
     def __init__(self, module, repository):
         self.config['repository'] = repository
@@ -101,8 +110,7 @@ class Backup(Restic):
     module_uuid = ""
     module_name = ""
     rootfull = False
-    config = None
-    volumes = []
+    volumes = dict()
     paths = []
     excludes = []
 
@@ -113,7 +121,7 @@ class Backup(Restic):
 
     def add_volume(self, name):
         proc = subprocess.run(["podman", "volume", "inspect", "--format", "{{.Mountpoint}}", name], capture_output=True)
-        self.volumes.append(proc.stdout.decode().strip())
+        self.volumes[name] = proc.stdout.decode().strip()
 
     def add_path(self, path):
         self.paths.append(path)
@@ -169,11 +177,13 @@ class Backup(Restic):
         if self.rootfull:
             self.environment =  f"/var/lib/nethserver/{self.module_id}/state/environment"
             self.dump_dir = f"/var/lib/nethserver/{self.module_id}/dump/"
-            self.cache_dir = f"/var/lib/nethserver/cache/restic/{self.directory}"
+            self.restic_dir = f"/var/lib/nethserver/cache/restic"
+            self.cache_dir = f"{self.restic_dir}/{self.directory}"
         else:
             self.environment = f'{os.path.expanduser("~")}/.config/state/environment'
             self.dump_dir = f'{os.path.expanduser("~")}/dump/'
-            self.cache_dir = f'{os.path.expanduser("~")}/backup/cache/{self.directory}'
+            self.restic_dir = f"{os.path.expanduser('~')}/restic"
+            self.cache_dir = f'{self.restic_dir}/{self.directory}'
 
         # Close unused Redis connection
         rdb.close()
@@ -185,24 +195,39 @@ class Backup(Restic):
             print("No file to backup", file=sys.stderr)
             sys.exit(1)
 
-        restic_env = self.prepare_env()
+        self.prepare_env()
 
         # Dump environment key
         self.add_path(self.environment)
 
+
         # Prepare base command
-        cmd = ["restic", "--cache-dir", self.cache_dir, "-r", f"{self.config['url']}:{self.directory}"]
+        podman_cmd = ["podman", "run", "--rm", "--env-file", self.restic_env, "-v", f"{self.cache_dir}:/cache"]
+        for volume in self.volumes:
+            mount = self.volumes[volume]
+            (prefix, sep, suffix) = mount.partition(volume)
+            podman_cmd = podman_cmd + ["-v", f"{prefix}{volume}:/{volume}"]
+        ## TODO: add all volumes
+        restic_cmd = ["docker.io/restic/restic"]
+        cmd = podman_cmd + restic_cmd
+
 
         # Check if repository has been already initialized, if not, just do it
-        check_init = subprocess.run(cmd + ["snapshots"], env=restic_env, capture_output=True)
+        check_init = subprocess.run(cmd + ["snapshots"], capture_output=True)
         if check_init.returncode > 0:
-            init = subprocess.run(cmd + ["init"], env=restic_env, check=True, capture_output=True)
+            init = subprocess.run(cmd + ["init"], check=True, capture_output=True)
 
         # Run the backup
-        for exclude in self.excludes:
-            cmd = cmd + ["--exclude", exclude]
+        #for exclude in self.excludes:
+        #    cmd = cmd + ["--exclude", exclude]
+        # TODO: handle excludes and custom paths
 
-        subprocess.run(cmd + ["backup"] + self.volumes + self.paths, env=restic_env)
+        sub_cmd = ["backup"]
+        for volume in self.volumes:
+            sub_cmd.append(f"/{volume}")
+        print(" ".join(cmd + sub_cmd))
+
+        subprocess.run(cmd + sub_cmd)
 
         if prune and self.config['retention']:
-            subprocess.run(cmd + ["forget", "--prune", "--keep-within", self.config['retention']], env=restic_env)
+            subprocess.run(cmd + ["forget", "--prune", "--keep-within", self.config['retention']])
