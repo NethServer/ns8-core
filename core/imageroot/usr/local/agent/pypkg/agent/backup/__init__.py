@@ -138,14 +138,16 @@ class Backup(Restic):
             f.write(dump)
         self.paths.append(path)
 
-    def __init__(self):
-        """Read arguments from command line and initialize the object. Exit 1 if something is wrong
-        """
-        if len(sys.argv) < 2:
-            print("Missing backup name", file=sys.stderr)
-            sys.exit(1)
+    def __init__(self, name = None):
+        # Try to read the backup name from command line if it's not passed as argument
+        if name is None:
+            if len(sys.argv) < 2:
+                print("Missing backup name", file=sys.stderr)
+                sys.exit(1)
 
-        self.name = sys.argv[1]
+            self.name = sys.argv[1]
+        else:
+            self.name = name
 
         self.rootfull = (os.geteuid() == 0)
         self.module_id = os.environ['MODULE_ID']
