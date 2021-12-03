@@ -24,6 +24,7 @@ import os
 import sys
 import json
 import agent
+import uuid
 
 errors = []
 
@@ -34,15 +35,11 @@ agent.set_weight(os.path.basename(__file__), 0) # Validation step, no task progr
 
 name = request['name']
 url = request['url']
+id = str(uuid.uuid5(uuid.NAMESPACE_DNS, url))
 
 # check for duplicate names
-if rdb.hgetall(f'cluster/backup_repository/{name}'):
-    errors.append({'field':'name','parameter':'name','value':name,'error':'backup_repository_same_name_already_exists'})
-
-# check for duplicate urls
-for m in rdb.scan_iter('cluster/backup_repository/*'):
-    if rdb.hget(m, 'url') == url:
-        errors.append({'field':'url','parameter':'url','value':url,'error':'backup_repository_same_url_already_exists'})
+if rdb.exists(f'cluster/backup_repository/{id}'):
+    errors.append({'field':'id','parameter':'id','value': id,'error':'backup_repository_exists'})
 
 if errors:
     agent.set_status('validation-failed')

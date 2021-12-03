@@ -8,8 +8,12 @@
     ],
     "type": "object",
     "properties": {
+      "id": {
+        "title": "Identifier of the added repository",
+        "type": "string"
+      },
       "password": {
-        "description": "Generated random password",
+        "title": "Generated random password",
         "type": "string"
       }
     },
