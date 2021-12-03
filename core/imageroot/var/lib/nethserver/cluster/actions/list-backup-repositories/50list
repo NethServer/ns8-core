@@ -22,38 +22,22 @@
 
 import json
 import sys
+import agent
 
-brepos = [
-    {
-        "id": "4da89b00-e3a1-57d0-915f-9fb5592c7af8",
-        "name": "backblaze007",
-        "url": "b2:cluster007",
-        "password": "43875jk3htg98347tjk34h534895",
-        "parameters": {
-            "b2_account_id": "mybbid",
-            "b2_account_key": "mybbkey"
-        },
-    },
-    {
-        "id": "b656b44f-95b3-5938-ab2e-5985da86d2e1",
-        "name": "minio",
-        "url": "s3:http://localhost:9000/restic",
-        "password": "tre6wr5we67r5swe67r5we7tfwer",
-        "parameters": {
-            "aws_access_key_id": "awsk000",
-            "aws_secret_access_key": "000101010010001001111",
-        },
-    },
-    {
-        "id": "d72c200c-52d5-5171-ac9c-45f4e0b684df",
-        "name": "AWS",
-        "url": "s3:s3.amazonaws.com/bucket_name",
-        "password": "wjehfgef786sd7sftsdvsd7v6rts",
-        "parameters": {
-            "aws_access_key_id": "awsk001",
-            "aws_secret_access_key": "111101010010001001000",
-        },
-    },
-]
+rdb = agent.redis_connect()
+
+brepos = []
+
+for krepo in rdb.scan_iter('cluster/backup_repository/*'):
+    parameters = rdb.hgetall(krepo)
+    orepo = {
+        "id": krepo.removeprefix('cluster/backup_repository/'),
+        "name": parameters.pop('name', ''),
+        "url": parameters.pop('url'),
+        "password": parameters.pop('password'),
+        "parameters": parameters
+    }
+    brepos.append(orepo)
+
 
 json.dump(brepos, fp=sys.stdout)
