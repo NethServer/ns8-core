@@ -7,20 +7,25 @@ on:
 env:
   TF_VAR_project: "NS8-CI"
   TF_VAR_domain: "ci.nethserver.net"
-  NS8_LEADER_NAME: "fc1"
+  NS8_LEADER_NODES: "fc1 dn1"
   NS8_CORE_MODULES: "core traefik loki promtail ldapproxy"
 
 jobs:
-  ns8_modules:
+  ns8:
     if: |
       github.event_name == 'workflow_dispatch' ||
       github.event.label.name == 'testing'
-    name: Find modules to test
+    name: Find NS8 cluster informations
     runs-on: ubuntu-latest
     outputs:
-      list: ${{ steps.modules.outputs.list }}
+      nodes: ${{ steps.nodes.outputs.list }}
+      modules: ${{ steps.modules.outputs.list }}
       tag: ${{ steps.tag.outputs.name }}
     steps:
+      - id: nodes
+        run: |
+          nodes=$(jq -ncR '[inputs]' <<< "$(echo $NS8_LEADER_NODES | tr ' ' '\n')")
+          echo "::set-output name=list::${nodes}"
       - id: tag
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]
@@ -33,7 +38,7 @@ jobs:
           then
             tag="latest"
           fi
-          echo "::set-output name=name::${tag}"
+          echo "::set-output name=listt::${tag}"
       - id: modules
         run: |
           modules_list='[]'
@@ -49,6 +54,11 @@ jobs:
   infra_create:
     name: "Create the infrastructure"
     runs-on: ubuntu-latest
+    needs: ns8
+    strategy:
+      fail-fast: false
+      matrix:
+          node: ${{ fromJSON(needs.ns8.outputs.nodes) }}
     steps:
       - uses: actions/checkout@v2
       - name: HashiCorp - Setup Terraform
@@ -60,8 +70,8 @@ jobs:
           TF_VAR_do_token: ${{ secrets.do_token }}
         run: |
           terraform init
-          terraform workspace new ${{ github.sha }}
-          terraform apply -var 'leader_node={"${{ env.NS8_LEADER_NAME }}":"ams3"}' -auto-approve
+          terraform workspace new ${{ matrix.node }}-${{ github.sha }}
+          terraform apply -var 'leader_node={"${{ matrix.node }}":"ams3"}' -auto-approve
         working-directory: ${{ github.workspace }}/tests/infra
       - name: HashiCorp - Terraform Output Deploy Key
         run: terraform output -raw deploy-key > ${{ github.workspace }}/key
@@ -69,27 +79,31 @@ jobs:
       - name: Save Deploy Key
         uses: actions/upload-artifact@v2
         with:
-          name: deploy-key
+          name: deploy-key-${{ matrix.node }}
           path: ${{ github.workspace }}/key
           retention-days: 1
       - name: Save Terraform State
         uses: actions/upload-artifact@v2
         with:
-          name: terraform.tfstate
-          path: ${{ github.workspace }}/tests/infra/terraform.tfstate.d/${{ github.sha }}/terraform.tfstate
+          name: terraform.tfstate-${{ matrix.node }}
+          path: ${{ github.workspace }}/tests/infra/terraform.tfstate.d/${{ matrix.node }}-${{ github.sha }}/terraform.tfstate
           retention-days: 1
   core:
     name: "Core tests"
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ${{ fromJSON(needs.ns8.outputs.nodes) }}
     needs:
       - infra_create
-      - ns8_modules
+      - ns8
     steps:
       - uses: actions/checkout@v2
       - name: Get Deploy Key
         uses: actions/download-artifact@v2
         with:
-          name: deploy-key
+          name: deploy-key-${{ matrix.node }}
           path: ${{ github.workspace }}/
       - name: Run tests
         run: |
@@ -98,10 +112,10 @@ jobs:
           pip install -r /home/pwuser/ns8-scratchpad/core/tests/pythonreq.txt
           mkdir ~/outputs
           cd /home/pwuser/ns8-scratchpad/core/
-          robot -v NODE_ADDR:${{ env.NS8_LEADER_NAME }}.leader.${{ github.sha }}.${{ env.TF_VAR_domain }} \
+          robot -v NODE_ADDR:${{ matrix.node }}.leader.${{ matrix.node }}-${{ github.sha }}.${{ env.TF_VAR_domain }} \
             -v SSH_KEYFILE:/home/pwuser/ns8-scratchpad/key \
-            -v COREBRANCH:${{ needs.ns8_modules.outputs.tag }} \
-            -v COREMODULES:${{ join(fromJSON(needs.ns8_modules.outputs.list), ',' ) }} \
+            -v COREBRANCH:${{ needs.ns8.outputs.tag }} \
+            -v COREMODULES:${{ join(fromJSON(needs.ns8.outputs.modules), ',' ) }} \
             -d ~/outputs /home/pwuser/ns8-scratchpad/core/tests/
           EOF
       - name: export logs
@@ -112,7 +126,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v2
         with:
-          name: core-tests-logs
+          name: core-tests-logs-${{ matrix.node }}
           path: |
              ${{ github.workspace }}/outputs/output.xml
              ${{ github.workspace }}/outputs/log.html
@@ -120,7 +134,13 @@ jobs:
   infra_destroy:
     name: "Destroy the infrastructure"
     runs-on: ubuntu-latest
-    needs: core
+    needs:
+      - ns8
+      - core
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ${{ fromJSON(needs.ns8.outputs.nodes) }}
     if: always()
     steps:
       - uses: actions/checkout@v2
@@ -129,7 +149,7 @@ jobs:
       - name: Get Terraform State
         uses: actions/download-artifact@v2
         with:
-          name: terraform.tfstate
+          name: terraform.tfstate-${{ matrix.node }}
           path: |
              ${{ github.workspace }}/tests/infra/
       - name: Destroy the infrastructure
