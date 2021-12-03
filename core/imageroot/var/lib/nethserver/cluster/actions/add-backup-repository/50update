@@ -33,7 +33,7 @@ rdb = agent.redis_connect(privileged=True)
 
 name = request['name']
 url = request['url']
-id = str(uuid.uuid5(uuid.NAMESPACE_DNS, url))
+id = str(uuid.uuid5(uuid.NAMESPACE_URL, url))
 
 if 'password' in request:
     password = request['password']
