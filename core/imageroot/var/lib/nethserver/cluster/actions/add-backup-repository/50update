@@ -58,7 +58,7 @@ parts = request['url'].split(":")
 # FIXME: support all other backends
 if parts[0] == "b2":
     with open(f'{repo_path}/rclone.conf', 'w') as f:
-        f.write(f'[{request["name"]}]\n')
+        f.write(f'[{parts[1]}]\n')
         f.write(f'type = b2\n')
         f.write(f'account = {data["b2_account_id"]}\n')
         f.write(f'key = {data["b2_account_key"]}\n')
