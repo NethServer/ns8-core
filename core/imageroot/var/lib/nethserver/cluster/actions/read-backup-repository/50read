@@ -26,10 +26,19 @@ import agent
 import subprocess
 
 request = json.load(sys.stdin)
-rdb = agent.redis_connect(privileged=True)
+rdb = agent.redis_connect(privileged=False)
 
 name = request['repository']
+url = rdb.hget(f"cluster/backup_repository/{name}", "url").split(":")
 
-subprocess.run(["rclone", "--config", f'/var/lib/nethserver/backup_repository/{name}/rclone.conf', 'lsjson', f'{name}:/'])
+backups = dict()
+cmd = ["rclone", "--config", f'/var/lib/nethserver/backup_repository/{name}/rclone.conf', 'lsjson', '--no-mimetype', '--no-modtime' ]
+proc = subprocess.run(cmd + [f'{url[1]}:/{url[1]}'], capture_output=True)
+for d in json.loads(proc.stdout):
+    pdir = subprocess.run(cmd +  [f'{url[1]}:/{url[1]}/{d["Path"]}'], capture_output=True)
+    if d['Path'] not in backups:
+        backups[d['Path']] = []
+    for backup in json.loads(pdir.stdout):
+        backups[d['Path']].append(backup['Path'])
 
-json.dump(True, fp=sys.stdout)
+print(json.dumps(backups))
