@@ -28,14 +28,13 @@ import subprocess
 
 class Restic:
     config = dict()
+    volumes = dict()
+    paths = []
+    rootfull = False
     restic_dir = ""
     restic_env = ""
 
     def prepare_env(self):
-        # Create working directories
-        os.makedirs(self.restic_dir, exist_ok=True)
-        os.makedirs(self.cache_dir, exist_ok=True)
-
         # Prepare restic environment
         self.restic_env = f'{self.restic_dir}/restic.env'
         with open(self.restic_env, 'w') as efile:
@@ -60,6 +59,40 @@ class Restic:
                 efile.write(f"AZURE_ACCOUNT_NAME={self.config['azure_account_name']}\n")
                 efile.write(f"AZURE_ACCOUNT_KEY={self.config['azure_account_key']}\n")
 
+    def prepare_cmd(self):
+        # Prepare env file for podman
+        self.prepare_env()
+
+        # Prepare base command
+        podman_cmd = ["podman", "run", "--rm", "--env-file", self.restic_env, "-v", f"{self.cache_dir}:/cache", "-v", f"{self.dump_dir}:/dump"]
+        for volume in self.volumes:
+            mount = self.volumes[volume]
+            (prefix, sep, suffix) = mount.partition(volume)
+            podman_cmd = podman_cmd + ["-v", f"{prefix}{volume}:/{volume}"]
+
+        for path in self.paths:
+            podman_cmd = podman_cmd + ["-v", f"{path}:/{os.path.basename(path)}"]
+
+        return podman_cmd + ["docker.io/restic/restic"]
+
+    def prepare_dirs(self):
+        self.rootfull = (os.geteuid() == 0)
+        if self.rootfull:
+            self.environment =  f"/var/lib/nethserver/{self.module_id}/state/environment"
+            self.dump_dir = f"/var/lib/nethserver/{self.module_id}/dump/"
+            self.restic_dir = f"/var/lib/nethserver/cache/restic"
+            self.cache_dir = f"{self.restic_dir}/{self.directory}"
+        else:
+            self.environment = f'{os.path.expanduser("~")}/.config/state/environment'
+            self.dump_dir = f'{os.path.expanduser("~")}/dump/'
+            self.restic_dir = f"{os.path.expanduser('~')}/restic"
+            self.cache_dir = f'{self.restic_dir}/{self.directory}'
+
+        # Make sure dump dir exists, it's always included inside the backup
+        os.makedirs(self.dump_dir, exist_ok=True)
+        os.makedirs(self.restic_dir, exist_ok=True)
+        os.makedirs(self.cache_dir, exist_ok=True)
+
 
 class Restore(Restic):
 
@@ -72,35 +105,17 @@ class Restore(Restic):
         rdb.close()
         self.config['module'] = module
         # The name is in the form <module_name>/<module_id>@<module_uuid>
-        self.config['name_name'] = os.path.basename(module)
-        self.config['module_id'], sep, self.config['module_uuid'] = self.config['name_name'].partition('@')
+        self.config['module_name'] = os.path.basename(module)
+        self.config['module_id'], sep, self.config['module_uuid'] = self.config['module_name'].partition('@')
+        self.directory = module
 
-    def restore(self, source, destination):
-        restic_env = self.prepare_env()
-        cmd = ["restic", "--cache-dir", cache_dir, "-r", f"{self.config['url']}:{self.config['module']}"]
-        with tempfile.TemporaryDirectory() as cache_dir:
-            subprocess.run(cmd + ["restore", "latest", "--target", destination, "--include", source], env=restic_env)
+        self.prepare_dirs()
 
-    def dump_env(self):
-        restic_env = self.prepare_env()
-        rootless_env = f'/home/{self.config["module_id"]}/.config/state/environment'
-        rootfool_env = f'/var/lib/nethserver/{self.config["module_id"]}/state/environment'
-        with tempfile.TemporaryDirectory() as cache_dir:
-            cmd = ["restic", "--cache-dir", cache_dir, "-r", f"{self.config['url']}:{self.config['module']}"]
-            p_dump = None
-            env = dict()
-            # First try to access rootless env, if it fails, switch to rootfull one
-            try:
-                p_dump = subprocess.run(cmd + ["dump", "latest", rootless_env], env=restic_env, check=True, capture_output=True)
-            except:
-                p_dump = subprocess.run(cmd + ["dump", "latest", rootfool_env], env=restic_env, check=True, capture_output=True)
-            for line in p_dump.stdout.splitlines():
-                var, sep, val = line.decode().partition("=")
-                # Skip vars which will be replaced on install
-                if var not in ["NODE_ID", "TCP_PORT", "TCP_PORTS", "IMAGE_ID", "IMAGE_DIGEST", "IMAGE_REOPODIGEST", "MODULE_ID"]:
-                    env[var] = val
 
-        return env
+    def restore(self):
+        cmd = self.prepare_cmd()
+
+        subprocess.run(cmd + ["restore", "latest", "--target", "/"])
 
 
 class Backup(Restic):
@@ -109,9 +124,6 @@ class Backup(Restic):
     module_id = ""
     module_uuid = ""
     module_name = ""
-    rootfull = False
-    volumes = dict()
-    paths = []
 
     def _get_name_from_url(self, url):
         url, sep, tag = url.rpartition(":")
@@ -149,7 +161,6 @@ class Backup(Restic):
         else:
             self.name = name
 
-        self.rootfull = (os.geteuid() == 0)
         self.module_id = os.environ['MODULE_ID']
 
         self.module_name = self._get_name_from_url(os.environ['IMAGE_URL'])
@@ -171,22 +182,10 @@ class Backup(Restic):
         for k in repo_config:
             self.config[k] = repo_config[k]
 
-        if self.rootfull:
-            self.environment =  f"/var/lib/nethserver/{self.module_id}/state/environment"
-            self.dump_dir = f"/var/lib/nethserver/{self.module_id}/dump/"
-            self.restic_dir = f"/var/lib/nethserver/cache/restic"
-            self.cache_dir = f"{self.restic_dir}/{self.directory}"
-        else:
-            self.environment = f'{os.path.expanduser("~")}/.config/state/environment'
-            self.dump_dir = f'{os.path.expanduser("~")}/dump/'
-            self.restic_dir = f"{os.path.expanduser('~')}/restic"
-            self.cache_dir = f'{self.restic_dir}/{self.directory}'
-
-        # Make sure dump dir exists, it's always included inside the backup
-        os.makedirs(self.dump_dir, exist_ok=True)
-
         # Close unused Redis connection
         rdb.close()
+
+        self.prepare_dirs()
 
 
     def run(self, prune = True):
@@ -195,22 +194,10 @@ class Backup(Restic):
             print("No file to backup", file=sys.stderr)
             sys.exit(1)
 
-        self.prepare_env()
-
         # Dump environment key
         self.add_path(self.environment)
 
-        # Prepare base command
-        podman_cmd = ["podman", "run", "--rm", "--env-file", self.restic_env, "-v", f"{self.cache_dir}:/cache", "-v", f"{self.dump_dir}:/dump"]
-        for volume in self.volumes:
-            mount = self.volumes[volume]
-            (prefix, sep, suffix) = mount.partition(volume)
-            podman_cmd = podman_cmd + ["-v", f"{prefix}{volume}:/{volume}"]
-
-        for path in self.paths:
-            podman_cmd = podman_cmd + ["-v", f"{path}:/{os.path.basename(path)}"]
-
-        cmd = podman_cmd + ["docker.io/restic/restic"]
+        cmd = self.prepare_cmd()
 
         # Check if repository has been already initialized, if not, just do it
         check_init = subprocess.run(cmd + ["snapshots"], capture_output=True)
