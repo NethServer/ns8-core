@@ -139,3 +139,16 @@ jobs:
           terraform init
           terraform apply -destroy -auto-approve
         working-directory: ${{ github.workspace }}/tests/infra
+  remove_label:
+    name: "Cleaup PR label"
+    runs-on: ubuntu-latest
+    needs: infra_destroy
+    if: |
+      github.event.label.name == 'testing' &&
+      needs.infra_destroy.result == 'success' &&
+      always()
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-ecosystem/action-remove-labels@v1
+        with:
+          labels: testing
