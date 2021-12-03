@@ -49,7 +49,6 @@ jobs:
   infra_create:
     name: "Create the infrastructure"
     runs-on: ubuntu-latest
-    needs: ns8_modules
     steps:
       - uses: actions/checkout@v2
       - name: HashiCorp - Setup Terraform
@@ -61,7 +60,7 @@ jobs:
           TF_VAR_do_token: ${{ secrets.do_token }}
         run: |
           terraform init
-          terraform workspace new ${{ needs.ns8_modules.outputs.tag }}-${{ github.sha }}
+          terraform workspace new ${{ github.sha }}
           terraform apply -var 'leader_node={"${{ env.NS8_LEADER_NAME }}":"ams3"}' -auto-approve
         working-directory: ${{ github.workspace }}/tests/infra
       - name: HashiCorp - Terraform Output Deploy Key
@@ -77,7 +76,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: terraform.tfstate
-          path: ${{ github.workspace }}/tests/infra/terraform.tfstate.d/${{ needs.ns8_modules.outputs.tag }}-${{ github.sha }}/terraform.tfstate
+          path: ${{ github.workspace }}/tests/infra/terraform.tfstate.d/${{ github.sha }}/terraform.tfstate
           retention-days: 1
   core:
     name: "Core tests"
@@ -99,7 +98,7 @@ jobs:
           pip install -r /home/pwuser/ns8-scratchpad/core/tests/pythonreq.txt
           mkdir ~/outputs
           cd /home/pwuser/ns8-scratchpad/core/
-          robot -v NODE_ADDR:${{ env.NS8_LEADER_NAME }}.leader.${{ needs.ns8_modules.outputs.tag }}-${{ github.sha }}.${{ env.TF_VAR_domain }} \
+          robot -v NODE_ADDR:${{ env.NS8_LEADER_NAME }}.leader.${{ github.sha }}.${{ env.TF_VAR_domain }} \
             -v SSH_KEYFILE:/home/pwuser/ns8-scratchpad/key \
             -v COREBRANCH:${{ needs.ns8_modules.outputs.tag }} \
             -v COREMODULES:${{ join(fromJSON(needs.ns8_modules.outputs.list), ',' ) }} \
