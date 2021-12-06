@@ -580,11 +580,8 @@ export default {
     async deleteRepository(repo) {
       const taskAction = "remove-repository";
 
-      // register to task completion
-      this.$root.$once(
-        taskAction + "-completed",
-        this.removeRepositoryCompleted
-      );
+      // register to task completion (using $on instead of $once for multiple revertable deletions)
+      this.$root.$on(taskAction + "-completed", this.removeRepositoryCompleted);
 
       const res = await to(
         this.createClusterTask({

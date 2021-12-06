@@ -344,18 +344,26 @@
     "nbdomain_pattern": "Invalid pattern",
     "ipaddress_format": "Invalid IP address",
     "adminuser_string_gte": "Required",
-    "adminpass_string_gte": "Required"
+    "adminpass_string_gte": "Required",
+    "unconfigured_provider_deleted": "Unconfigured provider deleted",
+    "cannot_connect_to_domain_controller": "Cannot connect to domain controller",
+    "cannot_connect_to_domain_controller_description": "Try to route IP traffic of domain controllers through cluster VPN"
   },
   "samba": {
-    "adminuser": "Admin username",
-    "adminuser_description": "Choose admin username",
+    "adminuser": "Samba admin username",
+    "choose_samba_admin_username": "Choose Samba admin username",
     "adminpass": "Samba admin password",
     "adminpass_confirm": "Re-enter Samba admin password",
-    "adminpass_description": "Choose a password for Samba admin user",
+    "choose_samba_admin_password": "Choose a password for Samba admin user",
     "realm": "Realm",
     "ipaddress": "IP address",
     "hostname": "Hostname",
-    "nbdomain": "NBdomain"
+    "nbdomain": "NBdomain",
+    "enter_samba_admin_username": "Enter Samba admin username",
+    "enter_samba_admin_password": "Enter Samba admin password",
+    "base_dn": "Base DN",
+    "bind_dn": "Bind DN",
+    "schema": "Schema"
   },
   "domain_detail": {
     "title": "Domain detail",
@@ -365,8 +373,11 @@
     "add_provider": "Add provider",
     "max_instances_reached": "No cluster nodes available to install a new provider. Every node can host only one provider per domain",
     "provider_deleted": "Provider deleted",
+    "delete_provider": "Delete provider",
+    "delete_provider_confirm": "Delete provider <strong>{name}</strong>? This action is <strong>NOT</strong> reversible",
     "cannot_delete_provider": "Cannot delete provider",
-    "cannot_delete_provider_description": "You cannot delete the only provider of a domain. You can delete the whole domain (if that's your intention) and the provider will be deleted as well"
+    "cannot_delete_provider_description": "You cannot delete the only provider of a domain. You can delete the whole domain and the provider will be deleted as well (if that's your intention)",
+    "used_by_another_provider": "Used by another provider"
   },
   "nodes": {
     "title": "Nodes",

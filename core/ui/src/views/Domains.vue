@@ -28,27 +28,45 @@
           />
         </div>
       </div>
+      <div class="bx--row">
+        <div class="bx--col">
+          <NsInlineNotification
+            v-if="error.removeModule"
+            kind="error"
+            :title="$t('action.remove-module')"
+            :description="error.removeModule"
+            :showCloseButton="false"
+          />
+        </div>
+      </div>
+      <div class="bx--row">
+        <div class="bx--col">
+          <!-- repository being deleted -->
+          <NsInlineNotification
+            v-if="providerToDelete"
+            kind="warning"
+            :title="
+              $t('domains.unconfigured_provider_deleted') +
+              ': ' +
+              providerToDelete.module_id
+            "
+            :actionLabel="$t('common.undo')"
+            @action="cancelDeleteUnconfiguredProvider()"
+            :showCloseButton="false"
+          />
+        </div>
+      </div>
       <div v-if="loading.listUserDomains" class="bx--row">
-        <div class="bx--col-md-4 bx--col-max-4">
+        <div v-for="index in 2" :key="index" class="bx--col-md-4 bx--col-max-4">
           <cv-tile light>
             <cv-skeleton-text
               :paragraph="true"
-              :line-count="5"
+              :line-count="7"
             ></cv-skeleton-text>
           </cv-tile>
         </div>
       </div>
       <template v-else>
-        <!-- unconfigured providers -->
-        <div v-if="unconfiguredProviders.length" class="bx--row">
-          <div class="bx--col">
-            <NsInlineNotification
-              kind="warning"
-              :title="$t('domains.unconfigured_domains_title')"
-              :description="$t('domains.unconfigured_domains_description')"
-            />
-          </div>
-        </div>
         <!-- empty state -->
         <div
           v-if="!domains.length && !unconfiguredProviders.length"
@@ -105,7 +123,9 @@
                   >
                     <cv-overflow-menu-item
                       danger
-                      @click="deleteUnconfiguredProvider(unconfiguredProvider)"
+                      @click="
+                        willDeleteUnconfiguredProvider(unconfiguredProvider)
+                      "
                       >{{ $t("common.delete") }}</cv-overflow-menu-item
                     >
                   </cv-overflow-menu>
@@ -171,10 +191,6 @@
                     {{ domain.providers.length }}
                     {{ $tc("domains.providers", domain.providers.length) }}
                   </div>
-                  <!-- <div class="row icon-and-text node-container"> ////
-              <NsSvg :svg="Chip20" class="icon" />
-              <span>{{ $t("common.node") }} {{ instance.node }}</span>
-            </div> -->
                   <div class="row actions">
                     <NsButton
                       kind="ghost"
@@ -243,6 +259,7 @@ export default {
   },
   data() {
     return {
+      DELETE_DELAY: 7000, // you have 7 seconds to undo object deletion
       q: {},
       isShownCreateDomainModal: false,
       domains: [],
@@ -259,6 +276,7 @@ export default {
         isSamba: false,
         providerId: "",
       },
+      providerToDelete: null,
       loading: {
         listUserDomains: true,
         getClusterStatus: true,
@@ -266,6 +284,7 @@ export default {
       error: {
         listUserDomains: "",
         getClusterStatus: "",
+        removeModule: "",
       },
     };
   },
@@ -314,86 +333,13 @@ export default {
         this.error.listUserDomains = this.getErrorMessage(err);
         return;
       }
-
-      //// call api
-
-      //// remove mock
-
-      // this.domains = []; ////
-
-      ////
-      // this.domains = [
-      //   {
-      //     name: "sandbox.example",
-      //     location: "internal",
-      //     protocol: "ldap",
-      //     schema: "rfc2307",
-      //     base_dn: "dc=sandbox,dc=example",
-      //     bind_dn: "cn=ldapservice,dc=sandbox,dc=example",
-      //     bind_password: "S3cr3t!",
-      //     tls: false,
-      //     tls_verify: false,
-      //     providers: [
-      //       {
-      //         id: "openldap1",
-      //         ui_name: "",
-      //         node: 1,
-      //         host: "10.110.32.2",
-      //         port: 20003,
-      //       },
-      //       {
-      //         id: "openldap2",
-      //         ui_name: "",
-      //         node: 2,
-      //         host: "10.110.32.3",
-      //         port: 20002,
-      //       },
-      //     ],
-      //   },
-      //   {
-      //     name: "company.org",
-      //     location: "external",
-      //     protocol: "ldap",
-      //     schema: "rfc2307",
-      //     base_dn: "dc=company,dc=org",
-      //     bind_dn: "cn=ns8cluster,dc=company,dc=org",
-      //     bind_password: "OtherS3cr3t!",
-      //     tls: true,
-      //     tls_verify: true,
-      //     providers: [
-      //       {
-      //         id: "ldap-primary.company.org",
-      //         ui_name: "Company LDAP primary",
-      //         node: null,
-      //         host: "ldap-master.company.org",
-      //         port: 636,
-      //       },
-      //       {
-      //         id: "ldap-replica.company.org",
-      //         ui_name: "Company LDAP replica",
-      //         node: null,
-      //         host: "ldap-replica.company.org",
-      //         port: 636,
-      //       },
-      //     ],
-      //   },
-      // ];
-
-      // this.loading.listUserDomains = false; ////
-
-      //// remove mock
-      // this.unconfiguredProviders = [ ////
-      //   {
-      //     module_id: "samba1",
-      //     image_name: "samba",
-      //     image_url: "ghcr.io/nethserver/samba:latest",
-      //   },
-      // ];
     },
     listUserDomainsCompleted(taskContext, taskResult) {
       console.log("listUserDomainsCompleted", taskResult.output); ////
 
-      this.domains = taskResult.output.domains;
+      this.domains = taskResult.output.domains.sort(
+        this.sortByProperty("name")
+      );
       this.unconfiguredProviders =
         taskResult.output.unconfigured_providers.sort(
           this.sortByProperty("module_id")
@@ -465,17 +411,61 @@ export default {
     deleteDomain() {
       console.log("deleteDomain!"); ////
 
-      ////todo
+      //// todo
 
       this.isShownDeleteDomainModal = false;
     },
-    deleteUnconfiguredProvider(unconfiguredProvider) {
-      console.log("deleteUnconfiguredProvider", unconfiguredProvider); ////
-      //// todo call remove-module
+    willDeleteUnconfiguredProvider(provider) {
+      const timeout = setTimeout(() => {
+        this.deleteUnconfiguredProvider(provider);
+        this.providerToDelete = null;
+      }, this.DELETE_DELAY);
+
+      provider.timeout = timeout;
+      this.providerToDelete = provider;
+
+      // remove provider from list
+      this.unconfiguredProviders = this.unconfiguredProviders.filter((p) => {
+        return p.module_id != provider.module_id;
+      });
+    },
+    async deleteUnconfiguredProvider(provider) {
+      this.error.removeModule = "";
+      const taskAction = "remove-module";
+
+      // register to task completion (using $on instead of $once for multiple revertable deletions)
+      this.$root.$on(
+        taskAction + "-completed",
+        this.deleteUnconfiguredProviderCompleted
+      );
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          data: {
+            module_id: provider.module_id,
+            preserve_data: false,
+          },
+          extra: {
+            title: this.$t("software_center.instance_uninstallation", {
+              instance: provider.module_id,
+            }),
+            description: this.$t("software_center.uninstalling"),
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.removeModule = this.getErrorMessage(err);
+        return;
+      }
+    },
+    deleteUnconfiguredProviderCompleted() {
+      this.listUserDomains();
     },
     showUnconfiguredProviderModal(unconfiguredProvider) {
-      console.log("showUnconfiguredProviderModal", unconfiguredProvider); ////
-
       if (unconfiguredProvider.image_name == "openldap") {
         this.createDomain.isOpenLdap = true;
         this.createDomain.isSamba = false;
@@ -489,6 +479,11 @@ export default {
       this.$nextTick(() => {
         this.isShownCreateDomainModal = true;
       });
+    },
+    cancelDeleteUnconfiguredProvider() {
+      clearTimeout(this.providerToDelete.timeout);
+      this.providerToDelete = null;
+      this.listUserDomains();
     },
   },
 };

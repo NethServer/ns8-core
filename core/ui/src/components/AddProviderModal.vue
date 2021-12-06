@@ -5,9 +5,9 @@
     @modal-hidden="$emit('hide')"
     class="wizard-modal"
   >
-    <template slot="title">{{ $t("domains.create_domain") }}</template>
+    <template slot="title">{{ $t("domain_detail.add_provider") }}</template>
     <template slot="content">
-      <template v-if="step == 'location'">
+      <!-- <template v-if="step == 'location'"> ////
         <div class="mg-bottom-md">
           {{ $t("domains.select_domain_location") }}
         </div>
@@ -89,8 +89,9 @@
       </template>
       <template v-if="step == 'externalConfig'">
         //// external config
-      </template>
+      </template> -->
       <template v-if="step == 'node'">
+        <!-- //// disable unavailable nodes -->
         <div class="mg-bottom-md">
           {{ $t("domains.choose_node_for_account_provider_installation") }}
         </div>
@@ -108,7 +109,11 @@
                 value="nodeValue"
                 :footerIcon="Chip20"
                 @click="deselectOtherNodes(node)"
-                class="same-height-tile"
+                :class="[
+                  'same-height-tile',
+                  { 'disabled-node': node.unavailable },
+                ]"
+                :disabled="node.unavailable"
               >
                 <h6>
                   {{
@@ -117,7 +122,10 @@
                       : $t("common.node") + " " + node.id
                   }}
                 </h6>
-                <div v-if="node.ui_name" class="node-id">
+                <div v-if="node.unavailable" class="mg-top">
+                  {{ $t("domain_detail.used_by_another_provider") }}
+                </div>
+                <div v-else-if="node.ui_name" class="mg-top">
                   {{ $t("common.node") }} {{ node.id }}
                 </div>
               </NsTile>
@@ -125,12 +133,11 @@
           </div>
         </div>
       </template>
-      <template v-if="step == 'summary'">
+      <!-- <template v-if="step == 'summary'"> ////
         <div class="summary">
           {{ $t("domains.domain_summary") }}
         </div>
         <cv-tile light>
-          <!-- location -->
           <div class="row">
             <span class="label">{{ $t("domains.location") }}</span>
             <span>
@@ -140,7 +147,6 @@
               <span v-else>{{ $t("domains.external") }}</span>
             </span>
           </div>
-          <!-- openldap / samba -->
           <template v-if="isInternalSelected">
             <div class="row">
               <span class="label">{{ $t("domains.account_provider") }}</span>
@@ -151,7 +157,6 @@
                 <span v-else>{{ $t("domains.samba") }}</span>
               </span>
             </div>
-            <!-- node -->
             <div class="row">
               <span class="label">{{ $t("common.node") }}</span>
               <span v-if="selectedNode.ui_name">
@@ -169,13 +174,12 @@
               }}</span>
             </div>
           </template>
-          <!-- external config parameters -->
           <div v-else class="row">
             <span class="label">parameters...</span>
             <span>values...</span>
           </div>
         </cv-tile>
-      </template>
+      </template> -->
       <template v-if="step == 'installingProvider'">
         <NsInlineNotification
           v-if="error.addModule"
@@ -198,9 +202,9 @@
       </template>
       <template v-if="step == 'internalConfig'">
         <!-- openldap -->
-        <cv-form v-if="isOpenLdapSelected"> //// openldap config </cv-form>
+        <cv-form v-if="isOpenLdap"> //// openldap config </cv-form>
         <!-- samba -->
-        <template v-if="isSambaSelected">
+        <template v-if="isSamba">
           <NsInlineNotification
             v-if="error.samba.getDefaults"
             kind="error"
@@ -212,7 +216,7 @@
             <cv-text-input
               :label="$t('samba.adminuser')"
               v-model.trim="samba.adminuser"
-              :helper-text="$t('samba.choose_samba_admin_username')"
+              :helper-text="$t('samba.enter_samba_admin_username')"
               :invalid-message="$t(error.samba.adminuser)"
               :disabled="
                 loading.samba.configureModule || loading.samba.getDefaults
@@ -220,7 +224,23 @@
               ref="adminuser"
             >
             </cv-text-input>
-            <NsPasswordInput
+
+            <cv-text-input
+              :label="$t('samba.adminpass')"
+              type="password"
+              v-model="samba.adminpass"
+              :helper-text="$t('samba.enter_samba_admin_password')"
+              :invalid-message="$t(error.samba.adminpass)"
+              :disabled="
+                loading.samba.configureModule || loading.samba.getDefaults
+              "
+              :password-hide-label="$t('password.hide_password')"
+              :password-show-label="$t('password.show_password')"
+              ref="adminpass"
+              name="adminpass"
+            ></cv-text-input>
+
+            <!-- <NsPasswordInput ////
               :newPasswordLabel="$t('samba.adminpass')"
               :confirmPasswordLabel="$t('samba.adminpass_confirm')"
               v-model="samba.adminpass"
@@ -242,7 +262,8 @@
               "
               light
               class="new-samba-password"
-            />
+            /> -->
+
             <cv-combo-box
               v-model="samba.ipaddress"
               :options="samba.ipAddressOptions"
@@ -266,7 +287,7 @@
               ref="hostname"
             >
             </cv-text-input>
-            <cv-text-input
+            <!-- <cv-text-input ////
               :label="$t('samba.realm')"
               v-model.trim="samba.realm"
               :invalid-message="$t(error.samba.realm)"
@@ -275,8 +296,8 @@
               "
               ref="realm"
             >
-            </cv-text-input>
-            <cv-text-input
+            </cv-text-input> -->
+            <!-- <cv-text-input ////
               :label="$t('samba.nbdomain')"
               v-model.trim="samba.nbdomain"
               :invalid-message="$t(error.samba.nbdomain)"
@@ -285,7 +306,7 @@
               "
               ref="nbdomain"
             >
-            </cv-text-input>
+            </cv-text-input> -->
           </cv-form>
           <NsInlineNotification
             v-if="error.samba.configureModule"
@@ -313,7 +334,7 @@
           class="wizard-button"
           >{{ $t("common.cancel") }}
         </NsButton>
-        <NsButton
+        <!-- <NsButton
           kind="secondary"
           :icon="ChevronLeft20"
           @click="previousStep"
@@ -323,7 +344,7 @@
           "
           class="wizard-button"
           >{{ $t("common.previous") }}
-        </NsButton>
+        </NsButton> -->
         <NsButton
           kind="primary"
           :icon="ChevronRight20"
@@ -348,8 +369,10 @@ import {
 } from "@nethserver/ns8-ui-lib";
 import to from "await-to-js";
 
+//// review all (copy/paste)
+
 export default {
-  name: "CreateDomainModal",
+  name: "AddProviderModal",
   mixins: [UtilService, TaskService, IconService, LottieService],
   props: {
     isShown: {
@@ -360,42 +383,46 @@ export default {
       type: Array,
       required: true,
     },
-    isResumeConfiguration: {
-      type: Boolean,
-      default: false,
+    domain: {
+      type: Object,
+      required: true,
     },
-    providerId: {
-      type: String,
-      default: "",
-    },
-    isOpenLdap: {
-      type: Boolean,
-      default: true,
-    },
-    isSamba: {
-      type: Boolean,
-      default: false,
-    },
+    // isResumeConfiguration: { ////
+    //   type: Boolean,
+    //   default: false,
+    // },
+    // providerId: {
+    //   type: String,
+    //   default: "",
+    // },
+    // isOpenLdap: {
+    //   type: Boolean,
+    //   default: true,
+    // },
+    // isSamba: {
+    //   type: Boolean,
+    //   default: false,
+    // },
   },
   data() {
     return {
-      step: "",
-      isInternalSelected: true,
-      isExternalSelected: false,
-      newProviderId: "",
-      isOpenLdapSelected: false,
-      isSambaSelected: false,
+      step: "node",
+      // isInternalSelected: true, ////
+      // isExternalSelected: false,
+      // newProviderId: "",
+      // isOpenLdapSelected: false,
+      // isSambaSelected: false,
       installProviderProgress: 0,
       samba: {
         adminuser: "",
         adminpass: "",
-        realm: "",
+        // realm: "", ////
         ipaddress: "",
         ipAddressOptions: [],
         hostname: "",
         nbdomain: "",
-        passwordValidation: null,
-        focusPasswordField: { element: "" },
+        // passwordValidation: null, ////
+        // focusPasswordField: { element: "" }, ////
       },
       loading: {
         samba: {
@@ -409,7 +436,7 @@ export default {
           adminuser: "",
           adminpass: "",
           confirmPassword: "",
-          realm: "",
+          // realm: "", ////
           ipaddress: "",
           hostname: "",
           nbdomain: "",
@@ -424,6 +451,12 @@ export default {
     selectedNode() {
       return this.nodes.find((n) => n.selected);
     },
+    isOpenLdap() {
+      return this.domain.schema == "rfc2307";
+    },
+    isSamba() {
+      return this.domain.schema == "ad";
+    },
   },
   watch: {
     isShown: function () {
@@ -431,19 +464,19 @@ export default {
         // this.clearOpenLdapErrors(); ////
         this.clearSambaErrors();
 
-        if (!this.isResumeConfiguration) {
-          // start wizard from first step
-          this.step = "location";
-        } else {
-          // resume configuration
-          this.step = "internalConfig";
+        // if (!this.isResumeConfiguration) { ////
+        //   // start wizard from first step
+        //   this.step = "location";
+        // } else {
+        //   // resume configuration
+        //   this.step = "internalConfig";
 
-          if (this.isOpenLdap) {
-            // this.getOpenLdapDefaults(); ////
-          } else if (this.isSamba) {
-            this.getSambaDefaults();
-          }
-        }
+        //   if (this.isOpenLdap) {
+        //     // this.getOpenLdapDefaults(); ////
+        //   } else if (this.isSamba) {
+        //     this.getSambaDefaults();
+        //   }
+        // }
 
         if (this.step !== "internalConfig") {
           // set focus to next button
@@ -452,9 +485,9 @@ export default {
             element.focus();
           }, 300);
         } else {
-          if (this.isOpenLdapSelected) {
+          if (this.isOpenLdap) {
             //// focus first input field
-          } else if (this.isSambaSelected) {
+          } else if (this.isSamba) {
             setTimeout(() => {
               this.focusElement("adminuser");
             }, 300);
@@ -462,96 +495,97 @@ export default {
         }
       }
     },
-    providerId: function () {
-      this.newProviderId = this.providerId;
-    },
-    isOpenLdap: function () {
-      this.isOpenLdapSelected = this.isOpenLdap;
-    },
-    isSamba: function () {
-      this.isSambaSelected = this.isSamba;
-    },
     step: function () {
       if (this.step == "internalConfig") {
-        if (this.isOpenLdapSelected) {
+        if (this.isOpenLdap) {
           //// focus first input field
-        } else if (this.isSambaSelected) {
+        } else if (this.isSamba) {
           setTimeout(() => {
             this.focusElement("adminuser");
           }, 300);
         }
       }
     },
+    // providerId: function () { ////
+    //   this.newProviderId = this.providerId;
+    // },
+    // isOpenLdap: function () { ////
+    //   this.isOpenLdapSelected = this.isOpenLdap;
+    // },
+    // isSamba: function () {
+    //   this.isSambaSelected = this.isSamba;
+    // },
   },
-  created() {
-    this.newProviderId = this.providerId;
-    this.isOpenLdapSelected = this.isOpenLdap;
-    this.isSambaSelected = this.isSamba;
-  },
+  // created() { ////
+  //   this.newProviderId = this.providerId;
+  //   this.isOpenLdapSelected = this.isOpenLdap;
+  //   this.isSambaSelected = this.isSamba;
+  // },
   methods: {
     nextStep() {
       switch (this.step) {
-        case "location":
-          if (this.isInternalSelected) {
-            // internal
-            this.step = "instance";
-          } else {
-            // external
-            this.step = "externalConfig";
-          }
-          break;
-        case "instance":
-          if (this.nodes.length > 1) {
-            this.step = "node";
-          } else {
-            this.step = "summary";
-          }
-          break;
-        case "externalConfig":
-          if (this.isExternalConfigOk()) {
-            this.step = "summary";
-          }
-          break;
+        // case "location": ////
+        //   if (this.isInternalSelected) {
+        //     // internal
+        //     this.step = "instance";
+        //   } else {
+        //     // external
+        //     this.step = "externalConfig";
+        //   }
+        //   break;
+        // case "instance":
+        //   if (this.nodes.length > 1) {
+        //     this.step = "node";
+        //   } else {
+        //     this.step = "summary";
+        //   }
+        //   break;
+        // case "externalConfig":
+        //   if (this.isExternalConfigOk()) {
+        //     this.step = "summary";
+        //   }
+        //   break;
         case "node":
-          this.step = "summary";
+          this.step = "installingProvider";
+          this.installProvider();
           break;
-        case "summary":
-          if (this.isInternalSelected) {
-            this.step = "installingProvider";
-            this.installProvider();
-          }
-          break;
+        // case "summary": ////
+        //   if (this.isInternalSelected) {
+        //     this.step = "installingProvider";
+        //     this.installProvider();
+        //   }
+        //   break;
         case "internalConfig":
-          if (this.isSambaSelected) {
+          if (this.isSamba) {
             this.configureSambaModule();
-          } else if (this.isOpenLdapSelected) {
+          } else if (this.isOpenLdap) {
             this.configureOpenLdapModule();
           }
           break;
       }
     },
-    previousStep() {
-      switch (this.step) {
-        case "instance":
-        case "externalConfig":
-          this.step = "location";
-          break;
-        case "node":
-          this.step = "instance";
-          break;
-        case "summary":
-          if (this.isInternalSelected) {
-            if (this.nodes.length > 1) {
-              this.step = "node";
-            } else {
-              this.step = "instance";
-            }
-          } else {
-            this.step = "externalConfig";
-          }
-          break;
-      }
-    },
+    // previousStep() { ////
+    //   switch (this.step) {
+    //     case "instance":
+    //     case "externalConfig":
+    //       this.step = "location";
+    //       break;
+    //     case "node":
+    //       this.step = "instance";
+    //       break;
+    //     case "summary":
+    //       if (this.isInternalSelected) {
+    //         if (this.nodes.length > 1) {
+    //           this.step = "node";
+    //         } else {
+    //           this.step = "instance";
+    //         }
+    //       } else {
+    //         this.step = "externalConfig";
+    //       }
+    //       break;
+    //   }
+    // },
     deselectOtherNodes(node) {
       for (let n of this.nodes) {
         if (n.id !== node.id) {
@@ -559,11 +593,11 @@ export default {
         }
       }
     },
-    isExternalConfigOk() {
-      console.log("isExternalConfigOk"); ////
-      //// todo
-      return true;
-    },
+    // isExternalConfigOk() { ////
+    //   console.log("isExternalConfigOk"); ////
+    //   //// todo
+    //   return true;
+    // },
     async installProvider() {
       this.error.addModule = "";
 
@@ -613,7 +647,7 @@ export default {
 
       this.step = "internalConfig";
 
-      if (this.isSambaSelected) {
+      if (this.isSamba) {
         this.newProviderId = taskResult.output.module_id;
         this.getSambaDefaults();
       } //// else openldap
@@ -661,13 +695,15 @@ export default {
       this.loading.samba.getDefaults = false;
       const defaults = taskResult.output;
 
-      this.samba.adminuser = defaults.adminuser;
-      this.samba.hostname = defaults.hostname;
-      this.samba.nbdomain = defaults.nbdomain;
-      this.samba.realm = defaults.realm;
+      // this.samba.adminuser = defaults.adminuser; ////
 
-      // clear password
-      this.samba.adminpass = "";
+      this.samba.hostname = defaults.hostname;
+
+      // this.samba.nbdomain = defaults.nbdomain; ////
+      // this.samba.realm = defaults.realm; ////
+
+      // clear password ////
+      // this.samba.adminpass = ""; ////
 
       // ip address combo box
       let index = 0;
@@ -709,43 +745,8 @@ export default {
         this.error.samba.adminpass = "common.required";
 
         if (isValidationOk) {
-          this.samba.focusPasswordField = { element: "newPassword" };
+          this.focusElement("adminpass");
           isValidationOk = false;
-        }
-      } else {
-        if (
-          !this.samba.passwordValidation.isLengthOk ||
-          !this.samba.passwordValidation.isLowercaseOk ||
-          !this.samba.passwordValidation.isUppercaseOk ||
-          !this.samba.passwordValidation.isNumberOk ||
-          !this.samba.passwordValidation.isSymbolOk
-        ) {
-          if (!this.error.samba.adminpass) {
-            this.error.samba.adminpass = "password.password_not_secure";
-          }
-
-          if (isValidationOk) {
-            this.samba.focusPasswordField = { element: "newPassword" };
-            isValidationOk = false;
-          }
-        }
-
-        if (!this.samba.passwordValidation.isEqualOk) {
-          if (!this.error.samba.adminpass) {
-            this.error.samba.adminpass = "password.passwords_do_not_match";
-          }
-
-          if (!this.error.samba.confirmPassword) {
-            console.log(" ////"); ////
-
-            this.error.samba.confirmPassword =
-              "password.passwords_do_not_match";
-          }
-
-          if (isValidationOk) {
-            this.samba.focusPasswordField = { element: "confirmPassword" };
-            isValidationOk = false;
-          }
         }
       }
 
@@ -771,27 +772,27 @@ export default {
         }
       }
 
-      // samba realm
+      // samba realm ////
 
-      if (!this.samba.realm) {
-        this.error.samba.realm = "common.required";
+      // if (!this.samba.realm) { ////
+      //   this.error.samba.realm = "common.required";
 
-        if (isValidationOk) {
-          this.focusElement("realm");
-          isValidationOk = false;
-        }
-      }
+      //   if (isValidationOk) {
+      //     this.focusElement("realm");
+      //     isValidationOk = false;
+      //   }
+      // }
 
-      // samba nbdomain
+      // samba nbdomain ////
 
-      if (!this.samba.nbdomain) {
-        this.error.samba.nbdomain = "common.required";
+      // if (!this.samba.nbdomain) { ////
+      //   this.error.samba.nbdomain = "common.required";
 
-        if (isValidationOk) {
-          this.focusElement("nbdomain");
-          isValidationOk = false;
-        }
-      }
+      //   if (isValidationOk) {
+      //     this.focusElement("nbdomain");
+      //     isValidationOk = false;
+      //   }
+      // }
 
       return isValidationOk;
     },
@@ -831,10 +832,10 @@ export default {
           data: {
             adminuser: this.samba.adminuser,
             adminpass: this.samba.adminpass,
-            realm: this.samba.realm,
+            realm: this.domain.name,
             ipaddress: this.samba.ipaddress,
             hostname: this.samba.hostname,
-            nbdomain: this.samba.nbdomain,
+            nbdomain: null, // join provider requires null nbdomain
           },
           extra: {
             title: this.$t("action." + taskAction),
@@ -872,8 +873,6 @@ export default {
     configureSambaModuleCompleted(taskContext, taskResult) {
       console.log("configureSambaModuleCompleted", taskResult.output); ////
 
-      this.loading.samba.configureModule = false;
-
       // hide modal
       this.$emit("hide");
     },
@@ -890,19 +889,13 @@ export default {
     isNextStepButtonDisabled() {
       return (
         this.step == "installingProvider" ||
-        (this.step == "location" &&
-          !this.isInternalSelected &&
-          !this.isExternalSelected) ||
-        (this.step == "instance" &&
-          !this.isOpenLdapSelected &&
-          !this.isSambaSelected) ||
         (this.step == "node" && !this.selectedNode) ||
         this.loading.samba.configureModule
       );
     },
-    onNewSambaPasswordValidation(passwordValidation) {
-      this.samba.passwordValidation = passwordValidation;
-    },
+    // onNewSambaPasswordValidation(passwordValidation) { ////
+    //   this.samba.passwordValidation = passwordValidation;
+    // },
   },
 };
 </script>
@@ -914,7 +907,7 @@ export default {
   min-height: 9rem;
 }
 
-.node-id {
+.mg-top {
   margin-top: $spacing-05;
 }
 
@@ -927,10 +920,10 @@ export default {
   font-weight: bold;
 }
 
-.summary {
-  font-weight: bold;
-  margin-bottom: $spacing-05;
-}
+// .summary { ////
+//   font-weight: bold;
+//   margin-bottom: $spacing-05;
+// }
 
 .bx--form {
   .bx--form-item,
@@ -938,14 +931,8 @@ export default {
     margin-bottom: $spacing-06;
   }
 }
-</style>
 
-<style lang="scss">
-@import "../styles/carbon-utils";
-
-// global styles
-
-.new-samba-password .new-password-container {
-  margin-bottom: $spacing-06 !important;
+.disabled-node {
+  color: $disabled-02;
 }
 </style>

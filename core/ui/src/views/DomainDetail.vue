@@ -46,19 +46,42 @@
           />
         </div>
       </div>
+      <!-- domain settings -->
       <div class="bx--row">
         <div class="bx--col">
           <h4 class="mg-bottom-md">{{ $t("domain_detail.settings") }}</h4>
         </div>
       </div>
-      <div class="bx--row">
-        <!-- //// todo domain settings -->
+      <div v-if="!domain" class="bx--row">
         <div class="bx--col-md-4 bx--col-max-4">
           <cv-tile light>
             <cv-skeleton-text
               :paragraph="true"
               :line-count="5"
             ></cv-skeleton-text>
+          </cv-tile>
+        </div>
+      </div>
+      <div v-else class="bx--row">
+        <div class="bx--col-md-4 bx--col-max-4">
+          <cv-tile light>
+            <template v-if="domain.schema == 'rfc2307'">
+              <!-- //// todo openldap settings -->
+            </template>
+            <template v-else-if="domain.schema == 'ad'">
+              <div class="mg-bottom-md">
+                <span class="label">{{ $t("samba.base_dn") }}</span>
+                <span>{{ domain.base_dn }}</span>
+              </div>
+              <div class="mg-bottom-md">
+                <span class="label">{{ $t("samba.bind_dn") }}</span>
+                <span>{{ domain.bind_dn }}</span>
+              </div>
+              <div class="mg-bottom-md">
+                <span class="label">{{ $t("samba.schema") }}</span>
+                <span>{{ domain.schema }}</span>
+              </div>
+            </template>
           </cv-tile>
         </div>
       </div>
@@ -74,25 +97,6 @@
             kind="error"
             :title="$t('action.list-user-domains')"
             :description="error.listUserDomains"
-            :showCloseButton="false"
-          />
-        </div>
-      </div>
-      <div class="bx--row">
-        <div class="bx--col">
-          <!-- repository being deleted -->
-          <NsInlineNotification
-            v-if="providerToDelete"
-            kind="warning"
-            :title="
-              $t('domain_detail.provider_deleted') +
-              ': ' +
-              (providerToDelete.ui_name
-                ? providerToDelete.ui_name
-                : providerToDelete.id)
-            "
-            :actionLabel="$t('common.undo')"
-            @action="cancelDeleteProvider()"
             :showCloseButton="false"
           />
         </div>
@@ -154,7 +158,7 @@
               >
                 <cv-overflow-menu-item
                   danger
-                  @click="willDeleteProvider(provider)"
+                  @click="showDeleteProviderModal(provider)"
                   >{{ $t("common.delete") }}</cv-overflow-menu-item
                 >
                 <!-- //// set label? -->
@@ -164,11 +168,21 @@
               </div>
               <div
                 v-if="provider.node"
-                class="row icon-and-text node-container"
+                class="row icon-and-text center-content"
               >
                 <NsSvg :svg="Chip20" class="icon" />
                 <span>{{ $t("common.node") }} {{ provider.node }}</span>
               </div>
+
+              <div
+                v-if="provider.host"
+                class="row icon-and-text center-content"
+              >
+                <NsSvg :svg="Network_220" class="icon" />
+                <span>{{ provider.host }}</span>
+                <span v-if="provider.port">:{{ provider.port }}</span>
+              </div>
+
               <!-- <div class="row actions"> ////
                 <NsButton
                   kind="ghost"
@@ -199,15 +213,30 @@
       <template slot="secondary-button">{{ $t("common.got_it") }}</template>
     </cv-modal>
     <!-- add provider modal -->
-    <!-- <AddProviderModal
+    <AddProviderModal
+      v-if="domain"
       :isShown="isShownAddProviderModal"
       :nodes="nodes"
-      :isResumeConfiguration="createDomain.isResumeConfiguration"
-      :providerId="createDomain.providerId"
-      :isOpenLdap="createDomain.isOpenLdap"
-      :isSamba="createDomain.isSamba"
-      @hide="hideCreateDomainModal"
-    /> -->
+      :domain="domain"
+      @hide="hideAddProviderModal"
+    />
+    <!-- delete provider modal -->
+    <NsDangerDeleteModal
+      :isShown="isShownDeleteProviderModal"
+      :name="currentProvider.id"
+      :title="$t('domain_detail.delete_provider')"
+      :warning="$t('common.please_read_carefully')"
+      :description="
+        $t('domain_detail.delete_provider_confirm', {
+          name: currentProvider.id,
+        })
+      "
+      :typeToConfirm="
+        $t('common.type_to_to_confirm', { name: currentProvider.id })
+      "
+      @hide="hideDeleteProviderModal"
+      @confirmDelete="deleteProvider"
+    />
   </div>
 </template>
 
@@ -219,25 +248,27 @@ import {
   IconService,
 } from "@nethserver/ns8-ui-lib";
 import to from "await-to-js";
+import AddProviderModal from "@/components/AddProviderModal";
 
 export default {
   name: "DomainDetail",
+  components: { AddProviderModal },
   mixins: [TaskService, UtilService, QueryParamService, IconService],
   pageTitle() {
     return this.$t("domain_detail.title");
   },
   data() {
     return {
-      DELETE_PROVIDER_DELAY: 7000, // you have 7 seconds to undo provider deletion
-      q: {
-        isShownAddProviderModal: false,
-      },
+      q: {},
+      isShownAddProviderModal: false,
+      isShownDeleteProviderModal: false,
       domainName: "",
       domain: null,
-      providers: [],
       nodes: [],
-      providerToDelete: null,
       isShownLastProviderModal: false,
+      currentProvider: {
+        id: "",
+      },
       loading: {
         listUserDomains: true,
         getClusterStatus: true,
@@ -262,7 +293,6 @@ export default {
   created() {
     this.domainName = this.$route.params.domainName;
     this.listUserDomains();
-    this.getClusterStatus();
   },
   methods: {
     async listUserDomains() {
@@ -298,11 +328,13 @@ export default {
         (d) => d.name == this.domainName
       );
       this.loading.listUserDomains = false;
+
+      console.log("this.domain", this.domain); ////
+
+      this.getClusterStatus();
     },
     showAddProviderModal() {
-      console.log("showAddProviderModal"); ////
-
-      this.q.isShownAddProviderModal = true;
+      this.isShownAddProviderModal = true;
     },
     async getClusterStatus() {
       this.error.getClusterStatus = "";
@@ -335,36 +367,20 @@ export default {
     },
     getClusterStatusCompleted(taskContext, taskResult) {
       const clusterStatus = taskResult.output;
-      this.nodes = clusterStatus.nodes.sort(this.sortByProperty("id"));
+      let nodes = clusterStatus.nodes.sort(this.sortByProperty("id"));
+      let usedNodes = this.domain.providers.map((provider) => provider.node);
+
+      for (const node of nodes) {
+        if (usedNodes.includes(node.id)) {
+          node.unavailable = true;
+        } else {
+          node.unavailable = false;
+        }
+      }
+      this.nodes = nodes;
       this.loading.getClusterStatus = false;
     },
-    cancelDeleteProvider() {
-      clearTimeout(this.providerToDelete.timeout);
-      this.providerToDelete = null;
-      this.listUserDomains();
-    },
-    willDeleteProvider(provider) {
-      if (this.domain.providers.length == 1) {
-        this.isShownLastProviderModal = true;
-        return;
-      }
-
-      const timeout = setTimeout(() => {
-        this.deleteProvider(provider);
-        this.providerToDelete = null;
-      }, this.DELETE_PROVIDER_DELAY);
-
-      provider.timeout = timeout;
-      this.providerToDelete = provider;
-
-      // remove provider from list
-      this.domain.providers = this.domain.providers.filter((p) => {
-        return p.id != provider.id;
-      });
-    },
-    async deleteProvider(provider) {
-      console.log("deleteProvider", provider); ////
-
+    async deleteProvider() {
       this.error.removeModule = "";
       const taskAction = "remove-module";
 
@@ -375,12 +391,12 @@ export default {
         this.createClusterTask({
           action: taskAction,
           data: {
-            module_id: this.providerToDelete.id,
+            module_id: this.currentProvider.id,
             preserve_data: false,
           },
           extra: {
             title: this.$t("software_center.instance_uninstallation", {
-              instance: this.providerToDelete.id,
+              instance: this.currentProvider.id,
             }),
             description: this.$t("software_center.uninstalling"),
           },
@@ -393,9 +409,29 @@ export default {
         this.error.removeModule = this.getErrorMessage(err);
         return;
       }
+
+      this.isShownDeleteProviderModal = false;
     },
     deleteProviderCompleted() {
       this.listUserDomains();
+    },
+    hideAddProviderModal() {
+      this.isShownAddProviderModal = false;
+
+      // needed if the user cancels add provider process
+      // this.listUserDomains(); ////
+    },
+    showDeleteProviderModal(provider) {
+      if (this.domain.providers.length == 1) {
+        this.isShownLastProviderModal = true;
+        return;
+      }
+
+      this.isShownDeleteProviderModal = true;
+      this.currentProvider = provider;
+    },
+    hideDeleteProviderModal() {
+      this.isShownDeleteProviderModal = false;
     },
   },
 };
@@ -411,5 +447,14 @@ export default {
 
 .slot-content .row:last-child {
   margin-bottom: 0;
+}
+
+.label {
+  margin-right: 0.5rem;
+  font-weight: bold;
+}
+
+.center-content {
+  justify-content: center;
 }
 </style>
