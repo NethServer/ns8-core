@@ -377,7 +377,10 @@
     "delete_provider_confirm": "Delete provider <strong>{name}</strong>? This action is <strong>NOT</strong> reversible",
     "cannot_delete_provider": "Cannot delete provider",
     "cannot_delete_provider_description": "You cannot delete the only provider of a domain. You can delete the whole domain and the provider will be deleted as well (if that's your intention)",
-    "used_by_another_provider": "Used by another provider"
+    "used_by_another_provider": "Used by another provider",
+    "edit_provider_label": "Edit provider label",
+    "provider_label": "Provider label",
+    "provider_label_tooltip": "You can assign the provider an easy to remember name"
   },
   "nodes": {
     "title": "Nodes",

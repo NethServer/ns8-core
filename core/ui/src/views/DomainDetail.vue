@@ -101,6 +101,16 @@
           />
         </div>
       </div>
+      <div v-if="error.setProviderLabel" class="bx--row">
+        <div class="bx--col">
+          <NsInlineNotification
+            kind="error"
+            :title="$t('action.set-name')"
+            :description="error.setProviderLabel"
+            :showCloseButton="false"
+          />
+        </div>
+      </div>
       <div v-if="loading.listUserDomains" class="bx--row">
         <div class="bx--col-md-4 bx--col-max-4">
           <cv-tile light>
@@ -157,11 +167,16 @@
                 class="top-right-overflow-menu"
               >
                 <cv-overflow-menu-item
+                  @click="showSetProviderLabelModal(provider)"
+                  >{{
+                    $t("domain_detail.edit_provider_label")
+                  }}</cv-overflow-menu-item
+                >
+                <cv-overflow-menu-item
                   danger
                   @click="showDeleteProviderModal(provider)"
                   >{{ $t("common.delete") }}</cv-overflow-menu-item
                 >
-                <!-- //// set label? -->
               </cv-overflow-menu>
               <div v-if="provider.ui_name" class="row">
                 {{ provider.id }}
@@ -237,6 +252,51 @@
       @hide="hideDeleteProviderModal"
       @confirmDelete="deleteProvider"
     />
+    <!-- set provider label modal -->
+    <cv-modal
+      size="default"
+      :visible="isShownSetProviderLabelModal"
+      @modal-hidden="hideSetProviderLabelModal"
+      @primary-click="setProviderLabel"
+    >
+      <template slot="title">{{
+        $t("domain_detail.edit_provider_label")
+      }}</template>
+      <template slot="content">
+        <template v-if="currentProvider">
+          <cv-form @submit.prevent="setProviderLabel">
+            <cv-text-input
+              :label="
+                $t('domain_detail.provider_label') +
+                ' (' +
+                $t('common.optional') +
+                ')'
+              "
+              v-model.trim="newProviderLabel"
+              :placeholder="$t('common.no_label')"
+              :helper-text="$t('domain_detail.provider_label_tooltip')"
+              maxlength="24"
+              ref="newProviderLabel"
+            >
+            </cv-text-input>
+            <div v-if="error.setProviderLabel" class="bx--row">
+              <div class="bx--col">
+                <NsInlineNotification
+                  kind="error"
+                  :title="$t('action.set-name')"
+                  :description="error.setProviderLabel"
+                  :showCloseButton="false"
+                />
+              </div>
+            </div>
+          </cv-form>
+        </template>
+      </template>
+      <template slot="secondary-button">{{ $t("common.cancel") }}</template>
+      <template slot="primary-button">{{
+        $t("domain_detail.edit_provider_label")
+      }}</template>
+    </cv-modal>
   </div>
 </template>
 
@@ -269,14 +329,18 @@ export default {
       currentProvider: {
         id: "",
       },
+      isShownSetProviderLabelModal: false,
+      newProviderLabel: "",
       loading: {
         listUserDomains: true,
         getClusterStatus: true,
+        setProviderLabel: false,
       },
       error: {
         listUserDomains: "",
         getClusterStatus: "",
         removeModule: "",
+        setProviderLabel: "",
       },
     };
   },
@@ -432,6 +496,54 @@ export default {
     },
     hideDeleteProviderModal() {
       this.isShownDeleteProviderModal = false;
+    },
+    hideSetProviderLabelModal() {
+      this.isShownSetProviderLabelModal = false;
+    },
+    showSetProviderLabelModal(provider) {
+      this.currentProvider = provider;
+      this.newProviderLabel = provider.ui_name;
+      this.isShownSetProviderLabelModal = true;
+      setTimeout(() => {
+        this.focusElement("newProviderLabel");
+      }, 300);
+    },
+    async setProviderLabel() {
+      this.error.setProviderLabel = "";
+      this.loading.setProviderLabel = true;
+      const taskAction = "set-name";
+
+      // register to task completion
+      this.$root.$once(
+        taskAction + "-completed",
+        this.setProviderLabelCompleted
+      );
+
+      const res = await to(
+        this.createModuleTaskForApp(this.currentProvider.id, {
+          action: taskAction,
+          data: {
+            name: this.newProviderLabel,
+          },
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.setProviderLabel = this.getErrorMessage(err);
+        this.loading.setProviderLabel = false;
+        return;
+      }
+    },
+    setProviderLabelCompleted() {
+      this.loading.setProviderLabel = false;
+      this.hideSetProviderLabelModal();
+      this.listUserDomains();
     },
   },
 };
