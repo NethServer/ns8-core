@@ -178,7 +178,7 @@
                 "image_url": {
                     "title": "Image URL",
                     "description": "ghcr.io/nethserver/samba:2.0.0",
-                    "type": "string"
+                    "type": ["string", "null"]
                 }
             }
         },
