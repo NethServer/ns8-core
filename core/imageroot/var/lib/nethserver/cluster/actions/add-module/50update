@@ -89,12 +89,6 @@ else:
 # Increment the module sequence for image_id (e.g. traefik => traefik1)
 module_id = image_id + str(rdb.incr(f'cluster/module_sequence/{image_id}'))
 
-rdb.hset(f'module/{module_id}', mapping={
-    "image": image_id,
-    "image_url_override": "",
-    "redis_sha256": "",
-})
-
 # Initial module environment
 module_environment = {
     'IMAGE_ID': inspect_image_id,
