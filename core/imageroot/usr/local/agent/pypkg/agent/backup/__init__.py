@@ -80,12 +80,12 @@ class Restic:
         if self.rootfull:
             self.environment =  f"/var/lib/nethserver/{self.module_id}/state/environment"
             self.dump_dir = f"/var/lib/nethserver/{self.module_id}/dump/"
-            self.restic_dir = f"/var/lib/nethserver/cache/restic"
+            self.restic_dir = f"/var/lib/nethserver/{self.module_id}/restic"
             self.cache_dir = f"{self.restic_dir}/{self.directory}"
         else:
             self.environment = f'{os.path.expanduser("~")}/.config/state/environment'
-            self.dump_dir = f'{os.path.expanduser("~")}/dump/'
-            self.restic_dir = f"{os.path.expanduser('~')}/restic"
+            self.dump_dir = f'{os.path.expanduser("~")}/.config/dump/'
+            self.restic_dir = f"{os.path.expanduser('~')}/.config/restic"
             self.cache_dir = f'{self.restic_dir}/{self.directory}'
 
         # Make sure dump dir exists, it's always included inside the backup
