@@ -106,10 +106,22 @@ class Restore(Restic):
         self.config['module'] = module
         # The name is in the form <module_name>/<module_id>@<module_uuid>
         self.config['module_name'] = os.path.basename(module)
-        self.config['module_id'], sep, self.config['module_uuid'] = self.config['module_name'].partition('@')
+        self.module_id, sep, self.config['module_uuid'] = self.config['module_name'].partition('@')
         self.directory = module
 
         self.prepare_dirs()
+
+    def dump_env(self):
+        env = dict()
+        cmd = self.prepare_cmd()
+        p_dump = subprocess.run(cmd + ["--no-cache", "dump", "latest", "/environment"], capture_output=True)
+        for line in p_dump.stdout.splitlines():
+            var, sep, val = line.decode().partition("=")
+            # Skip vars which will be replaced on install
+            if var not in ["NODE_ID", "TCP_PORT", "TCP_PORTS", "IMAGE_ID", "IMAGE_DIGEST", "IMAGE_REOPODIGEST", "MODULE_ID"]:
+                env[var] = val
+
+        return env
 
 
     def restore(self):
