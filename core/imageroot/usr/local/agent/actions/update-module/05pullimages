@@ -92,10 +92,7 @@ env_patch = {
 }
 
 for image_url in extra_images:
-    # Extract the image name from the last / to the last :
-    # For instance ghcr.io/nethserver/core:latest => core
-    image_repotag = image_url.rpartition('/')[2]
-    image_name = image_repotag.partition(':')[0]
+    image_name = agent.get_image_name_from_url(image_url)
 
     # Transliterate the image name to an environment variable name
     var_name = image_name.translate(str.maketrans('-.+ ', '____')).upper() + '_IMAGE'
