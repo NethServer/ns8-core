@@ -30,8 +30,8 @@ rdb = agent.redis_connect(privileged=False)
 ret = []
 for f in rdb.smembers('cluster/favorites'):
     # skip non-existing instances
-    image_name = rdb.get(f'module/{f}/image_name')
-    if image_name:
-        ret.append({'id': f, 'module': image_name})
+    if rdb.exists(f'module/{f}'):
+        image = rdb.hget(f'module/{f}', 'image')
+        ret.append({'id': f, 'module': image})
 
 json.dump(ret, fp=sys.stdout)
