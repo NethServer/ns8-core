@@ -22,41 +22,35 @@
 
 import json
 import sys
+import agent
 
-backups = [
-    {
-        "id": 1,
-        "name": "Amazon S3",
-        "repository": "d72c200c-52d5-5171-ac9c-45f4e0b684df",
-        "schedule": "daily",
-        "retention": "30d",
-        "instances": [
-            {
-                "id": "dokuwiki1@b386425e-07bf-4313-8b55-c0e1ed5aa3ea",
-                "module": "dokuwiki",
-                "instance": "dokuwiki1",
-            },
-            {
-                "id": "nextcloud1@81270f75-16c8-4bef-a4a1-e6014346597a",
-                "module": "nextcloud",
-                "instance": "nextcloud1",
-            }
-        ],
-    },
-    {
-        "id": 2,
-        "name": "Backblaze 007",
-        "repository": "4da89b00-e3a1-57d0-915f-9fb5592c7af8",
-        "schedule": "daily",
-        "retention": "7d",
-        "instances": [
-            {
-                "id": "dokuwiki1@b386425e-07bf-4313-8b55-c0e1ed5aa3ea",
-                "module": "dokuwiki",
-                "instance": "dokuwiki1",
-            }
-        ],
-    },
-]
+rdb = agent.redis_connect()
 
-json.dump(backups, fp=sys.stdout)
+backups = {}
+
+for kbackup in rdb.scan_iter('cluster/backup/*'):
+    bid = kbackup.removeprefix('cluster/backup/')
+    battrs = rdb.hgetall(kbackup)
+
+    backups[bid] = {
+        "id": int(bid),
+        "name": battrs.pop("name"),
+        "repository": battrs.pop("repository"),
+        "schedule": battrs.pop("schedule"),
+        "retention": battrs.pop("retention"),
+        "instances": [],
+    }
+
+for mbackup in rdb.scan_iter('module/*/backups'):
+    for bid in rdb.sscan_iter(mbackup):
+        if bid in backups:
+            mid = mbackup.removeprefix('module/').removesuffix('/backups')
+            module_uuid = rdb.hget(f"module/{mid}/environment", "MODULE_UUID")
+            backups[bid]['instances'].append({
+                "module_id": mid,
+                "ui_name": rdb.get(f"module/{mid}/ui_name") or "",
+                "repository_path": f"{mid}@{module_uuid}",
+                "status": None,
+            })
+
+json.dump(list(backups.values()), fp=sys.stdout)
