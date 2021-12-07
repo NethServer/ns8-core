@@ -45,9 +45,7 @@ def allocate_tcp_ports_range(node_id, module_environment, size):
 
 request = json.load(sys.stdin)
 image_url = request['image']
-# Extract base URL using slice of image_url until the version separator ':', than retrieve the name of the image
-# which is the one after the last /
-image_id = os.path.basename(image_url[:image_url.index(":")])
+image_id = agent.get_image_name_from_url(image_url)
 node_id = int(request['node'])
 agent.assert_exp(node_id > 0)
 check_idle_time = request.get('check_idle_time')

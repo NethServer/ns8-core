@@ -271,3 +271,14 @@ def save_acls(rdb):
 
     trx.publish('cluster/event/acl-changed', 'cluster/acls')
     trx.execute()
+
+def get_image_name_from_url(image_url):
+    """Return the image name from its URL. e.g.:
+    ghcr.io/nethserver/samba:v1.0.0 => samba
+    ghcr.io/nethserver/dokuwiki@sha256:.... => dokuwiki
+    """
+    # Strip the leading url prefix
+    _, image_nametag = image_url.rsplit('/', 1)
+    # Strip the trailing tag or hash
+    image_name, _ = image_nametag.replace('@', ':', 1).split(':', 1)
+    return image_name
