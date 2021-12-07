@@ -178,7 +178,7 @@ class Backup(Restic):
         self.module_name = self._get_name_from_url(os.environ['IMAGE_URL'])
 
         # UUID will be used to create unique directory inside the repository
-        self.module_uuid = os.environ['UUID']
+        self.module_uuid = os.environ['MODULE_UUID']
         self.directory = f"{self.module_name}/{self.module_id}@{self.module_uuid}"
 
         rdb = agent.redis_connect()
