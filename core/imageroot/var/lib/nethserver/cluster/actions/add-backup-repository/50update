@@ -26,6 +26,7 @@ import json
 import uuid
 import agent
 import hashlib
+import agent.backup
 
 request = json.load(sys.stdin)
 rdb = agent.redis_connect(privileged=True)
@@ -51,7 +52,7 @@ if not rdb.hset(f'cluster/backup_repository/{name}', mapping=data):
     sys.exit(1)
 
 # Create repository path to store rclone configuration
-repo_path = f'/var/lib/nethserver/backup_repository/{name}'
+repo_path = f'/etc/nethserver/backup/{name}'
 os.makedirs(repo_path, exist_ok=True)
 
 parts = request['url'].split(":")
