@@ -28,10 +28,13 @@ request = json.load(sys.stdin)
 rdb = agent.redis_connect(privileged=False)
 
 ret = []
-for f in rdb.smembers('cluster/favorites'):
+for kfav in rdb.smembers('cluster/favorites'):
     # skip non-existing instances
-    if rdb.exists(f'module/{f}'):
-        image = rdb.hget(f'module/{f}', 'image')
-        ret.append({'id': f, 'module': image})
+    image_url = rdb.hget(f"module/{kfav}/environment", "IMAGE_URL")
+    if image_url:
+        ret.append({
+            'id': kfav,
+            'module': agent.get_image_name_from_url(image_url),
+        })
 
 json.dump(ret, fp=sys.stdout)
