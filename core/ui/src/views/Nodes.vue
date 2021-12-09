@@ -86,22 +86,26 @@
           :diskWarningTh="90"
           light
         >
-          <NsButton
-            kind="ghost"
-            :icon="ZoomIn20"
-            @click="goToNodeDetail(node.id)"
-            >{{ $t("common.details") }}</NsButton
-          >
-          <cv-overflow-menu
-            :flip-menu="true"
-            tip-position="top"
-            tip-alignment="end"
-            class="top-right-overflow-menu"
-          >
-            <cv-overflow-menu-item @click="showSetNodeLabelModal(node)">{{
-              $t("nodes.edit_node_label")
-            }}</cv-overflow-menu-item>
-          </cv-overflow-menu>
+          <template #menu>
+            <cv-overflow-menu
+              :flip-menu="true"
+              tip-position="top"
+              tip-alignment="end"
+              class="top-right-overflow-menu"
+            >
+              <cv-overflow-menu-item @click="showSetNodeLabelModal(node)">{{
+                $t("nodes.edit_node_label")
+              }}</cv-overflow-menu-item>
+            </cv-overflow-menu>
+          </template>
+          <template #content>
+            <NsButton
+              kind="ghost"
+              :icon="ZoomIn20"
+              @click="goToNodeDetail(node.id)"
+              >{{ $t("common.details") }}</NsButton
+            >
+          </template>
         </NodeCard>
       </div>
     </div>

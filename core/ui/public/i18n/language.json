@@ -192,7 +192,11 @@
     "remove-module": "Remove module",
     "set-name": "Set name",
     "list-user-domains": "List user domains",
-    "configure-module": "Configure module"
+    "configure-module": "Configure module",
+    "add-external-domain": "Add external domain",
+    "add-external-provider": "Add external provider",
+    "remove-external-provider": "Remove external provider",
+    "remove-external-domain": "Remove external domain"
   },
   "network": {
     "title": "Network"
@@ -328,6 +332,7 @@
     "location": "Location",
     "account_provider": "Account provider",
     "domain_summary": "Summary",
+    "install_provider": "Install provider",
     "delete_domain": "Delete domain",
     "delete_internal_domain_confirm": "Delete internal domain <strong>{name}</strong>? All users, groups and account provider data will be deleted. This action is <strong>NOT</strong> reversible",
     "delete_external_domain_confirm": "Delete external domain <strong>{name}</strong>? Account provider data will remain intact, but if you change your mind you'll have to bind the external domain again",
@@ -347,7 +352,27 @@
     "adminpass_string_gte": "Required",
     "unconfigured_provider_deleted": "Unconfigured provider deleted",
     "cannot_connect_to_domain_controller": "Cannot connect to domain controller",
-    "cannot_connect_to_domain_controller_description": "Try to route IP traffic of domain controllers through cluster VPN"
+    "cannot_connect_to_domain_controller_description": "Try to route IP traffic of domain controllers through cluster VPN",
+    "base_dn": "Base DN",
+    "bind_dn": "Bind DN",
+    "bind_password": "Bind password",
+    "schema": "Schema",
+    "domain": "Domain",
+    "enter_external_domain_name": "Enter external domain name",
+    "host": "Host",
+    "port": "Port",
+    "type": "Type",
+    "tls": "TLS",
+    "tls_verify": "TLS verify",
+    "invalid_tls_certificate": "Invalid TLS certificate",
+    "invalid_server_address": "Invalid server address",
+    "port_connection_error": "Port connection error",
+    "wrong_service_port_or_tls_setting": "Wrong service port or TLS settings",
+    "invalid_credentials": "Invalid credentials",
+    "tls_required_for_authentication": "TLS required for authentication",
+    "generic_host_connection_error": "Generic host connection error",
+    "domain_exists": "Domain already exists",
+    "provider_exists": "Provider already exists"
   },
   "samba": {
     "adminuser": "Samba admin username",
@@ -355,15 +380,12 @@
     "adminpass": "Samba admin password",
     "adminpass_confirm": "Re-enter Samba admin password",
     "choose_samba_admin_password": "Choose a password for Samba admin user",
-    "realm": "Realm",
+    "realm": "Domain",
     "ipaddress": "IP address",
     "hostname": "Hostname",
-    "nbdomain": "NBdomain",
-    "enter_samba_admin_username": "Enter Samba admin username",
-    "enter_samba_admin_password": "Enter Samba admin password",
-    "base_dn": "Base DN",
-    "bind_dn": "Bind DN",
-    "schema": "Schema"
+    "nbdomain": "NetBIOS domain",
+    "enter_samba_admin_username": "Login as Samba admin",
+    "enter_samba_admin_password": "Enter Samba admin password"
   },
   "domain_detail": {
     "title": "Domain detail",
@@ -380,7 +402,8 @@
     "used_by_another_provider": "Used by another provider",
     "edit_provider_label": "Edit provider label",
     "provider_label": "Provider label",
-    "provider_label_tooltip": "You can assign the provider an easy to remember name"
+    "provider_label_tooltip": "You can assign the provider an easy to remember name",
+    "adding_provider": "Adding provider..."
   },
   "nodes": {
     "title": "Nodes",

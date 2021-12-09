@@ -152,6 +152,12 @@ a {
   height: 4rem;
   box-shadow: -0.0625rem 0 0 0 #e0e0e0;
 }
+
+@media (max-width: $breakpoint-medium) {
+  .wizard-button {
+    width: 33%;
+  }
+}
 // end wizard
 
 // top-right overflow menu

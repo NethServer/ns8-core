@@ -88,7 +88,111 @@
         </div>
       </template>
       <template v-if="step == 'externalConfig'">
-        //// external config
+        <cv-form>
+          <cv-text-input
+            :label="$t('domains.domain')"
+            v-model.trim="external.domain"
+            :helper-text="$t('domains.enter_external_domain_name')"
+            :invalid-message="$t(error.external.domain)"
+            :disabled="loading.external.addExternalDomain"
+            ref="domain"
+          >
+          </cv-text-input>
+          <cv-text-input
+            :label="$t('domains.host')"
+            v-model.trim="external.host"
+            :invalid-message="$t(error.external.host)"
+            :disabled="loading.external.addExternalDomain"
+            ref="host"
+          >
+          </cv-text-input>
+          <cv-text-input
+            :label="$t('domains.port')"
+            v-model.trim="external.port"
+            :invalid-message="$t(error.external.port)"
+            :disabled="loading.external.addExternalDomain"
+            type="number"
+            ref="port"
+          >
+          </cv-text-input>
+          <!-- //// remove -->
+          <!-- <label class="bx--label">{{ $t("domains.type") }}</label>
+          <cv-radio-group :vertical="false" ref="schema">
+            <cv-radio-button
+              name="schema-group"
+              :label="$t('domains.openldap')"
+              value="rfc2307"
+              :checked="true"
+              v-model="external.schema"
+              :disabled="loading.external.addExternalDomain"
+            />
+            <cv-radio-button
+              name="schema-group"
+              :label="$t('domains.samba')"
+              value="ad"
+              v-model="external.schema"
+              :disabled="loading.external.addExternalDomain"
+            />
+          </cv-radio-group> -->
+          <cv-text-input
+            :label="$t('domains.bind_dn')"
+            v-model.trim="external.bind_dn"
+            :invalid-message="$t(error.external.bind_dn)"
+            :disabled="loading.external.addExternalDomain"
+            ref="bind_dn"
+          >
+          </cv-text-input>
+          <cv-text-input
+            :label="$t('domains.bind_password')"
+            v-model.trim="external.bind_password"
+            :invalid-message="$t(error.external.bind_password)"
+            :disabled="loading.external.addExternalDomain"
+            ref="bind_password"
+          >
+          </cv-text-input>
+          <cv-text-input
+            :label="$t('domains.base_dn')"
+            v-model.trim="external.base_dn"
+            :invalid-message="$t(error.external.base_dn)"
+            :disabled="loading.external.addExternalDomain"
+            ref="base_dn"
+          >
+          </cv-text-input>
+          <cv-toggle
+            :label="$t('domains.tls')"
+            value="tlsValue"
+            :form-item="true"
+            v-model="external.tls"
+            :disabled="loading.external.addExternalDomain"
+            ref="tls"
+          >
+            <template slot="text-left">{{ $t("common.disabled") }}</template>
+            <template slot="text-right">{{ $t("common.enabled") }}</template>
+          </cv-toggle>
+          <NsInlineNotification
+            v-if="error.external.tls"
+            kind="error"
+            :title="$t(error.external.tls)"
+            :showCloseButton="false"
+          />
+          <cv-toggle
+            :label="$t('domains.tls_verify')"
+            value="tls_verifyValue"
+            :form-item="true"
+            v-model="external.tls_verify"
+            :disabled="loading.external.addExternalDomain"
+            ref="tls_verify"
+          >
+            <template slot="text-left">{{ $t("common.disabled") }}</template>
+            <template slot="text-right">{{ $t("common.enabled") }}</template>
+          </cv-toggle>
+          <NsInlineNotification
+            v-if="error.external.tls_verify"
+            kind="error"
+            :title="$t(error.external.tls_verify)"
+            :showCloseButton="false"
+          />
+        </cv-form>
       </template>
       <template v-if="step == 'node'">
         <div class="mg-bottom-md">
@@ -125,12 +229,12 @@
           </div>
         </div>
       </template>
-      <template v-if="step == 'summary'">
+      <!-- //// remove -->
+      <!-- <template v-if="step == 'summary'">
         <div class="summary">
           {{ $t("domains.domain_summary") }}
         </div>
         <cv-tile light>
-          <!-- location -->
           <div class="row">
             <span class="label">{{ $t("domains.location") }}</span>
             <span>
@@ -140,7 +244,6 @@
               <span v-else>{{ $t("domains.external") }}</span>
             </span>
           </div>
-          <!-- openldap / samba -->
           <template v-if="isInternalSelected">
             <div class="row">
               <span class="label">{{ $t("domains.account_provider") }}</span>
@@ -151,7 +254,6 @@
                 <span v-else>{{ $t("domains.samba") }}</span>
               </span>
             </div>
-            <!-- node -->
             <div class="row">
               <span class="label">{{ $t("common.node") }}</span>
               <span v-if="selectedNode.ui_name">
@@ -169,13 +271,8 @@
               }}</span>
             </div>
           </template>
-          <!-- external config parameters -->
-          <div v-else class="row">
-            <span class="label">parameters...</span>
-            <span>values...</span>
-          </div>
         </cv-tile>
-      </template>
+      </template> -->
       <template v-if="step == 'installingProvider'">
         <NsInlineNotification
           v-if="error.addModule"
@@ -209,6 +306,26 @@
             :showCloseButton="false"
           />
           <cv-form>
+            <cv-text-input
+              :label="$t('samba.realm')"
+              v-model.trim="samba.realm"
+              :invalid-message="$t(error.samba.realm)"
+              :disabled="
+                loading.samba.configureModule || loading.samba.getDefaults
+              "
+              ref="realm"
+            >
+            </cv-text-input>
+            <cv-text-input
+              :label="$t('samba.nbdomain')"
+              v-model.trim="samba.nbdomain"
+              :invalid-message="$t(error.samba.nbdomain)"
+              :disabled="
+                loading.samba.configureModule || loading.samba.getDefaults
+              "
+              ref="nbdomain"
+            >
+            </cv-text-input>
             <cv-text-input
               :label="$t('samba.adminuser')"
               v-model.trim="samba.adminuser"
@@ -266,26 +383,6 @@
               ref="hostname"
             >
             </cv-text-input>
-            <cv-text-input
-              :label="$t('samba.realm')"
-              v-model.trim="samba.realm"
-              :invalid-message="$t(error.samba.realm)"
-              :disabled="
-                loading.samba.configureModule || loading.samba.getDefaults
-              "
-              ref="realm"
-            >
-            </cv-text-input>
-            <cv-text-input
-              :label="$t('samba.nbdomain')"
-              v-model.trim="samba.nbdomain"
-              :invalid-message="$t(error.samba.nbdomain)"
-              :disabled="
-                loading.samba.configureModule || loading.samba.getDefaults
-              "
-              ref="nbdomain"
-            >
-            </cv-text-input>
           </cv-form>
           <NsInlineNotification
             v-if="error.samba.configureModule"
@@ -319,6 +416,8 @@
           @click="previousStep"
           :disabled="
             isResumeConfiguration ||
+            loading.samba.configureModule ||
+            loading.external.addExternalDomain ||
             ['location', 'installingProvider', 'internalConfig'].includes(step)
           "
           class="wizard-button"
@@ -329,10 +428,12 @@
           :icon="ChevronRight20"
           @click="nextStep"
           :disabled="isNextStepButtonDisabled()"
-          :loading="loading.samba.configureModule"
+          :loading="
+            loading.samba.configureModule || loading.external.addExternalDomain
+          "
           class="wizard-button"
           ref="wizardNext"
-          >{{ $t("common.next") }}
+          >{{ nextStepLabel }}
         </NsButton>
       </div>
     </template>
@@ -397,10 +498,24 @@ export default {
         passwordValidation: null,
         focusPasswordField: { element: "" },
       },
+      external: {
+        domain: "al.nethserver.net", //// todo empty string
+        host: "ldap-server.al.nethserver.net", //// todo empty string
+        port: "636", //// todo empty string
+        // schema: "ad", //// todo remove
+        bind_dn: "cn=ldapservice,dc=directory,dc=nh", //// todo empty string
+        bind_password: "6cj3x_y_GOQUweEc", //// todo empty string
+        base_dn: "dc=directory,dc=nh", //// todo empty string
+        tls: true,
+        tls_verify: false, //// true
+      },
       loading: {
         samba: {
           getDefaults: false,
           configureModule: false,
+        },
+        external: {
+          addExternalDomain: false,
         },
       },
       error: {
@@ -415,7 +530,19 @@ export default {
           nbdomain: "",
           configureModule: "",
           getDefaults: "",
+          addExternalDomain: "",
           cannotReachDc: false,
+        },
+        external: {
+          domain: "",
+          host: "",
+          port: "",
+          // schema: "", ////
+          bind_dn: "",
+          bind_password: "",
+          base_dn: "",
+          tls: "",
+          tls_verify: "",
         },
       },
     };
@@ -423,6 +550,16 @@ export default {
   computed: {
     selectedNode() {
       return this.nodes.find((n) => n.selected);
+    },
+    nextStepLabel() {
+      if (
+        (this.nodes.length == 1 && this.step == "instance") ||
+        this.step == "node"
+      ) {
+        return this.$t("domains.install_provider");
+      } else {
+        return this.$t("common.next");
+      }
     },
   },
   watch: {
@@ -456,7 +593,7 @@ export default {
             //// focus first input field
           } else if (this.isSambaSelected) {
             setTimeout(() => {
-              this.focusElement("adminuser");
+              this.focusElement("realm");
             }, 300);
           }
         }
@@ -477,7 +614,7 @@ export default {
           //// focus first input field
         } else if (this.isSambaSelected) {
           setTimeout(() => {
-            this.focusElement("adminuser");
+            this.focusElement("realm");
           }, 300);
         }
       }
@@ -504,23 +641,25 @@ export default {
           if (this.nodes.length > 1) {
             this.step = "node";
           } else {
-            this.step = "summary";
-          }
-          break;
-        case "externalConfig":
-          if (this.isExternalConfigOk()) {
-            this.step = "summary";
-          }
-          break;
-        case "node":
-          this.step = "summary";
-          break;
-        case "summary":
-          if (this.isInternalSelected) {
+            // this.step = "summary"; ////
             this.step = "installingProvider";
             this.installProvider();
           }
           break;
+        case "externalConfig":
+          this.addExternalDomain();
+          break;
+        case "node":
+          // this.step = "summary";
+          this.step = "installingProvider";
+          this.installProvider();
+          break;
+        // case "summary": ////
+        //   if (this.isInternalSelected) {
+        //     this.step = "installingProvider";
+        //     this.installProvider();
+        //   }
+        //   break;
         case "internalConfig":
           if (this.isSambaSelected) {
             this.configureSambaModule();
@@ -539,17 +678,17 @@ export default {
         case "node":
           this.step = "instance";
           break;
-        case "summary":
-          if (this.isInternalSelected) {
-            if (this.nodes.length > 1) {
-              this.step = "node";
-            } else {
-              this.step = "instance";
-            }
-          } else {
-            this.step = "externalConfig";
-          }
-          break;
+        // case "summary": ////
+        //   if (this.isInternalSelected) {
+        //     if (this.nodes.length > 1) {
+        //       this.step = "node";
+        //     } else {
+        //       this.step = "instance";
+        //     }
+        //   } else {
+        //     this.step = "externalConfig";
+        //   }
+        //   break;
       }
     },
     deselectOtherNodes(node) {
@@ -692,6 +831,28 @@ export default {
       this.clearSambaErrors();
       let isValidationOk = true;
 
+      // samba realm
+
+      if (!this.samba.realm) {
+        this.error.samba.realm = "common.required";
+
+        if (isValidationOk) {
+          this.focusElement("realm");
+          isValidationOk = false;
+        }
+      }
+
+      // samba nbdomain
+
+      if (!this.samba.nbdomain) {
+        this.error.samba.nbdomain = "common.required";
+
+        if (isValidationOk) {
+          this.focusElement("nbdomain");
+          isValidationOk = false;
+        }
+      }
+
       // samba admin user
 
       if (!this.samba.adminuser) {
@@ -770,29 +931,6 @@ export default {
           isValidationOk = false;
         }
       }
-
-      // samba realm
-
-      if (!this.samba.realm) {
-        this.error.samba.realm = "common.required";
-
-        if (isValidationOk) {
-          this.focusElement("realm");
-          isValidationOk = false;
-        }
-      }
-
-      // samba nbdomain
-
-      if (!this.samba.nbdomain) {
-        this.error.samba.nbdomain = "common.required";
-
-        if (isValidationOk) {
-          this.focusElement("nbdomain");
-          isValidationOk = false;
-        }
-      }
-
       return isValidationOk;
     },
     async configureSambaModule() {
@@ -889,6 +1027,8 @@ export default {
     },
     isNextStepButtonDisabled() {
       return (
+        this.loading.samba.configureModule ||
+        this.loading.external.addExternalDomain ||
         this.step == "installingProvider" ||
         (this.step == "location" &&
           !this.isInternalSelected &&
@@ -896,12 +1036,85 @@ export default {
         (this.step == "instance" &&
           !this.isOpenLdapSelected &&
           !this.isSambaSelected) ||
-        (this.step == "node" && !this.selectedNode) ||
-        this.loading.samba.configureModule
+        (this.step == "node" && !this.selectedNode)
       );
     },
     onNewSambaPasswordValidation(passwordValidation) {
       this.samba.passwordValidation = passwordValidation;
+    },
+    async addExternalDomain() {
+      this.clearExternalDomainErrors();
+      this.loading.external.addExternalDomain = true;
+      const taskAction = "add-external-domain";
+
+      // register to task validation
+      this.$root.$off(taskAction + "-validation-failed");
+      this.$root.$once(
+        taskAction + "-validation-failed",
+        this.addExternalDomainValidationFailed
+      );
+
+      // register to task completion
+      this.$root.$off(taskAction + "-completed");
+      this.$root.$once(
+        taskAction + "-completed",
+        this.addExternalDomainCompleted
+      );
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          data: {
+            domain: this.external.domain,
+            protocol: "ldap",
+            host: this.external.host,
+            port: parseInt(this.external.port),
+            // schema: this.external.schema, //// remove
+            bind_dn: this.external.bind_dn,
+            bind_password: this.external.bind_password,
+            base_dn: this.external.base_dn,
+            tls: this.external.tls,
+            tls_verify: this.external.tls_verify,
+          },
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.addExternalDomain = this.getErrorMessage(err);
+        return;
+      }
+    },
+    addExternalDomainValidationFailed(validationErrors) {
+      this.loading.external.addExternalDomain = false;
+      let focusAlreadySet = false;
+
+      for (const validationError of validationErrors) {
+        const param = validationError.parameter;
+        // set i18n error message
+        this.error.external[param] = "domains." + validationError.error;
+
+        if (!focusAlreadySet) {
+          this.focusElement(param);
+          focusAlreadySet = true;
+        }
+      }
+    },
+    addExternalDomainCompleted() {
+      this.loading.external.addExternalDomain = false;
+
+      // hide modal
+      this.$emit("hide");
+    },
+    clearExternalDomainErrors() {
+      for (const key of Object.keys(this.error.external)) {
+        this.error.external[key] = "";
+      }
     },
   },
 };
@@ -927,10 +1140,10 @@ export default {
   font-weight: bold;
 }
 
-.summary {
-  font-weight: bold;
-  margin-bottom: $spacing-05;
-}
+// .summary { ////
+//   font-weight: bold;
+//   margin-bottom: $spacing-05;
+// }
 
 .bx--form {
   .bx--form-item,

@@ -99,8 +99,9 @@
             light
             :title="instance.ui_name ? instance.ui_name : instance.id"
             :icon="Application32"
+            :showOverflowMenu="true"
           >
-            <div class="slot-content">
+            <template #menu>
               <cv-overflow-menu
                 :flip-menu="true"
                 tip-position="top"
@@ -139,37 +140,41 @@
                   >{{ $t("software_center.uninstall") }}</cv-overflow-menu-item
                 >
               </cv-overflow-menu>
-              <div v-if="instance.ui_name" class="row">
-                {{ instance.id }}
+            </template>
+            <template #content>
+              <div class="instance-card-content">
+                <div v-if="instance.ui_name" class="row">
+                  {{ instance.id }}
+                </div>
+                <div class="row">
+                  {{ $t("common.version") }} {{ instance.version }}
+                </div>
+                <div class="row icon-and-text node-container">
+                  <NsSvg :svg="Chip20" class="icon" />
+                  <span>{{ $t("common.node") }} {{ instance.node }}</span>
+                </div>
+                <div class="row actions">
+                  <!-- app is installed and can be updated -->
+                  <template v-if="isInstanceUpgradable(app, instance)">
+                    <NsButton
+                      kind="primary"
+                      :icon="Upgrade20"
+                      @click="updateInstance(instance)"
+                      >{{ $t("software_center.update") }}</NsButton
+                    >
+                  </template>
+                  <!-- app is installed, no update available -->
+                  <template v-else>
+                    <NsButton
+                      kind="ghost"
+                      :icon="Launch20"
+                      @click="openInstance(instance)"
+                      >{{ $t("software_center.open") }}</NsButton
+                    >
+                  </template>
+                </div>
               </div>
-              <div class="row">
-                {{ $t("common.version") }} {{ instance.version }}
-              </div>
-              <div class="row icon-and-text node-container">
-                <NsSvg :svg="Chip20" class="icon" />
-                <span>{{ $t("common.node") }} {{ instance.node }}</span>
-              </div>
-              <div class="row actions">
-                <!-- app is installed and can be updated -->
-                <template v-if="isInstanceUpgradable(app, instance)">
-                  <NsButton
-                    kind="primary"
-                    :icon="Upgrade20"
-                    @click="updateInstance(instance)"
-                    >{{ $t("software_center.update") }}</NsButton
-                  >
-                </template>
-                <!-- app is installed, no update available -->
-                <template v-else>
-                  <NsButton
-                    kind="ghost"
-                    :icon="Launch20"
-                    @click="openInstance(instance)"
-                    >{{ $t("software_center.open") }}</NsButton
-                  >
-                </template>
-              </div>
-            </div>
+            </template>
           </NsInfoCard>
         </div>
       </div>
@@ -543,12 +548,12 @@ export default {
 <style scoped lang="scss">
 @import "../styles/carbon-utils";
 
-.slot-content .row {
+.instance-card-content .row {
   margin-bottom: $spacing-05;
   text-align: center;
 }
 
-.slot-content .row:last-child {
+.instance-card-content .row:last-child {
   margin-bottom: 0;
 }
 

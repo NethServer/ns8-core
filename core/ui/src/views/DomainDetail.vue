@@ -46,6 +46,17 @@
           />
         </div>
       </div>
+      <div class="bx--row">
+        <div class="bx--col">
+          <NsInlineNotification
+            v-if="error.removeExternalProvider"
+            kind="error"
+            :title="$t('action.remove-external-provider')"
+            :description="error.removeExternalProvider"
+            :showCloseButton="false"
+          />
+        </div>
+      </div>
       <!-- domain settings -->
       <div class="bx--row">
         <div class="bx--col">
@@ -53,7 +64,7 @@
         </div>
       </div>
       <div v-if="!domain" class="bx--row">
-        <div class="bx--col-md-4 bx--col-max-4">
+        <div class="bx--col-max-12">
           <cv-tile light>
             <cv-skeleton-text
               :paragraph="true"
@@ -63,22 +74,22 @@
         </div>
       </div>
       <div v-else class="bx--row">
-        <div class="bx--col-md-4 bx--col-max-4">
+        <div class="bx--col-max-12">
           <cv-tile light>
             <template v-if="domain.schema == 'rfc2307'">
               <!-- //// todo openldap settings -->
             </template>
             <template v-else-if="domain.schema == 'ad'">
               <div class="mg-bottom-md">
-                <span class="label">{{ $t("samba.base_dn") }}</span>
+                <span class="label">{{ $t("domains.base_dn") }}</span>
                 <span>{{ domain.base_dn }}</span>
               </div>
               <div class="mg-bottom-md">
-                <span class="label">{{ $t("samba.bind_dn") }}</span>
+                <span class="label">{{ $t("domains.bind_dn") }}</span>
                 <span>{{ domain.bind_dn }}</span>
               </div>
               <div class="mg-bottom-md">
-                <span class="label">{{ $t("samba.schema") }}</span>
+                <span class="label">{{ $t("domains.schema") }}</span>
                 <span>{{ domain.schema }}</span>
               </div>
             </template>
@@ -158,8 +169,9 @@
             light
             :title="provider.ui_name ? provider.ui_name : provider.id"
             :icon="domain.location == 'internal' ? Application32 : Link32"
+            :showOverflowMenu="true"
           >
-            <div class="slot-content">
+            <template #menu>
               <cv-overflow-menu
                 :flip-menu="true"
                 tip-position="top"
@@ -178,27 +190,28 @@
                   >{{ $t("common.delete") }}</cv-overflow-menu-item
                 >
               </cv-overflow-menu>
-              <div v-if="provider.ui_name" class="row">
-                {{ provider.id }}
-              </div>
-              <div
-                v-if="provider.node"
-                class="row icon-and-text center-content"
-              >
-                <NsSvg :svg="Chip20" class="icon" />
-                <span>{{ $t("common.node") }} {{ provider.node }}</span>
-              </div>
-
-              <div
-                v-if="provider.host"
-                class="row icon-and-text center-content"
-              >
-                <NsSvg :svg="Network_220" class="icon" />
-                <span>{{ provider.host }}</span>
-                <span v-if="provider.port">:{{ provider.port }}</span>
-              </div>
-
-              <!-- <div class="row actions"> ////
+            </template>
+            <template #content>
+              <div class="provider-card-content">
+                <div v-if="provider.ui_name" class="row">
+                  {{ provider.id }}
+                </div>
+                <div
+                  v-if="provider.node"
+                  class="row icon-and-text center-content"
+                >
+                  <NsSvg :svg="Chip20" class="icon" />
+                  <span>{{ $t("common.node") }} {{ provider.node }}</span>
+                </div>
+                <div
+                  v-if="provider.host"
+                  class="row icon-and-text center-content"
+                >
+                  <NsSvg :svg="Network_220" class="icon" />
+                  <span>{{ provider.host }}</span>
+                  <span v-if="provider.port">:{{ provider.port }}</span>
+                </div>
+                <!-- <div class="row actions"> ////
                 <NsButton
                   kind="ghost"
                   :icon="ZoomIn20"
@@ -206,7 +219,8 @@
                   >{{ $t("common.details") }}</NsButton
                 >
               </div> -->
-            </div>
+              </div>
+            </template>
           </NsInfoCard>
         </div>
       </div>
@@ -228,13 +242,21 @@
       <template slot="secondary-button">{{ $t("common.got_it") }}</template>
     </cv-modal>
     <!-- add provider modal -->
-    <AddProviderModal
-      v-if="domain"
-      :isShown="isShownAddProviderModal"
-      :nodes="nodes"
-      :domain="domain"
-      @hide="hideAddProviderModal"
-    />
+    <template v-if="domain">
+      <AddInternalProviderModal
+        v-if="domain.location == 'internal'"
+        :isShown="isShownAddInternalProviderModal"
+        :nodes="nodes"
+        :domain="domain"
+        @hide="hideAddInternalProviderModal"
+      />
+      <AddExternalProviderModal
+        v-else
+        :isShown="isShownAddExternalProviderModal"
+        :domain="domain"
+        @hide="hideAddExternalProviderModal"
+      />
+    </template>
     <!-- delete provider modal -->
     <NsDangerDeleteModal
       :isShown="isShownDeleteProviderModal"
@@ -308,11 +330,12 @@ import {
   IconService,
 } from "@nethserver/ns8-ui-lib";
 import to from "await-to-js";
-import AddProviderModal from "@/components/AddProviderModal";
+import AddInternalProviderModal from "@/components/AddInternalProviderModal";
+import AddExternalProviderModal from "@/components/AddExternalProviderModal";
 
 export default {
   name: "DomainDetail",
-  components: { AddProviderModal },
+  components: { AddInternalProviderModal, AddExternalProviderModal },
   mixins: [TaskService, UtilService, QueryParamService, IconService],
   pageTitle() {
     return this.$t("domain_detail.title");
@@ -320,7 +343,8 @@ export default {
   data() {
     return {
       q: {},
-      isShownAddProviderModal: false,
+      isShownAddInternalProviderModal: false,
+      isShownAddExternalProviderModal: false,
       isShownDeleteProviderModal: false,
       domainName: "",
       domain: null,
@@ -335,12 +359,14 @@ export default {
         listUserDomains: true,
         getClusterStatus: true,
         setProviderLabel: false,
+        addExternalProvider: false,
       },
       error: {
         listUserDomains: "",
         getClusterStatus: "",
         removeModule: "",
         setProviderLabel: "",
+        removeExternalProvider: "",
       },
     };
   },
@@ -398,7 +424,17 @@ export default {
       this.getClusterStatus();
     },
     showAddProviderModal() {
-      this.isShownAddProviderModal = true;
+      if (this.domain.location == "internal") {
+        this.showAddInternalProviderModal();
+      } else {
+        this.showAddExternalProviderModal();
+      }
+    },
+    showAddInternalProviderModal() {
+      this.isShownAddInternalProviderModal = true;
+    },
+    showAddExternalProviderModal() {
+      this.isShownAddExternalProviderModal = true;
     },
     async getClusterStatus() {
       this.error.getClusterStatus = "";
@@ -444,7 +480,14 @@ export default {
       this.nodes = nodes;
       this.loading.getClusterStatus = false;
     },
-    async deleteProvider() {
+    deleteProvider() {
+      if (this.domain.location == "internal") {
+        this.deleteInternalProvider();
+      } else {
+        this.deleteExternalProvider();
+      }
+    },
+    async deleteInternalProvider() {
       this.error.removeModule = "";
       const taskAction = "remove-module";
 
@@ -476,14 +519,52 @@ export default {
 
       this.isShownDeleteProviderModal = false;
     },
+    async deleteExternalProvider() {
+      this.error.removeExternalProvider = "";
+      const taskAction = "remove-external-provider";
+
+      // register to task completion
+      this.$root.$once(taskAction + "-completed", this.deleteProviderCompleted);
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          data: {
+            domain: this.domainName,
+            protocol: "ldap",
+            host: this.currentProvider.host,
+            port: this.currentProvider.port,
+          },
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.removeExternalProvider = this.getErrorMessage(err);
+        return;
+      }
+
+      this.isShownDeleteProviderModal = false;
+    },
     deleteProviderCompleted() {
       this.listUserDomains();
     },
-    hideAddProviderModal() {
-      this.isShownAddProviderModal = false;
+    hideAddInternalProviderModal() {
+      this.isShownAddInternalProviderModal = false;
 
-      // needed if the user cancels add provider process
-      // this.listUserDomains(); ////
+      // reload domains
+      this.listUserDomains();
+    },
+    hideAddExternalProviderModal() {
+      this.isShownAddExternalProviderModal = false;
+
+      // reload domains
+      this.listUserDomains();
     },
     showDeleteProviderModal(provider) {
       if (this.domain.providers.length == 1) {
@@ -508,7 +589,14 @@ export default {
         this.focusElement("newProviderLabel");
       }, 300);
     },
-    async setProviderLabel() {
+    setProviderLabel() {
+      if (this.domain.location == "internal") {
+        this.setInternalProviderLabel();
+      } else {
+        this.setExternalProviderLabel();
+      }
+    },
+    async setInternalProviderLabel() {
       this.error.setProviderLabel = "";
       this.loading.setProviderLabel = true;
       const taskAction = "set-name";
@@ -540,6 +628,42 @@ export default {
         return;
       }
     },
+    async setExternalProviderLabel() {
+      this.error.setProviderLabel = "";
+      this.loading.setProviderLabel = true;
+      const taskAction = "set-external-provider-name";
+
+      // register to task completion
+      this.$root.$once(
+        taskAction + "-completed",
+        this.setProviderLabelCompleted
+      );
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          data: {
+            domain: this.domainName,
+            protocol: "ldap",
+            host: this.currentProvider.host,
+            port: this.currentProvider.port,
+            ui_name: this.newProviderLabel,
+          },
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.setProviderLabel = this.getErrorMessage(err);
+        this.loading.setProviderLabel = false;
+        return;
+      }
+    },
     setProviderLabelCompleted() {
       this.loading.setProviderLabel = false;
       this.hideSetProviderLabelModal();
@@ -552,12 +676,12 @@ export default {
 <style scoped lang="scss">
 @import "../styles/carbon-utils";
 
-.slot-content .row {
+.provider-card-content .row {
   margin-bottom: $spacing-05;
   text-align: center;
 }
 
-.slot-content .row:last-child {
+.provider-card-content .row:last-child {
   margin-bottom: 0;
 }
 

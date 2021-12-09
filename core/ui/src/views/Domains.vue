@@ -41,6 +41,17 @@
       </div>
       <div class="bx--row">
         <div class="bx--col">
+          <NsInlineNotification
+            v-if="error.removeExternalDomain"
+            kind="error"
+            :title="$t('action.remove-external-domain')"
+            :description="error.removeExternalDomain"
+            :showCloseButton="false"
+          />
+        </div>
+      </div>
+      <div class="bx--row">
+        <div class="bx--col">
           <!-- repository being deleted -->
           <NsInlineNotification
             v-if="providerToDelete"
@@ -113,8 +124,9 @@
                 light
                 :title="$t('domains.unconfigured_domain')"
                 :icon="WarningAlt32"
+                :showOverflowMenu="true"
               >
-                <div class="slot-content">
+                <template #menu>
                   <cv-overflow-menu
                     :flip-menu="true"
                     tip-position="top"
@@ -129,28 +141,32 @@
                       >{{ $t("common.delete") }}</cv-overflow-menu-item
                     >
                   </cv-overflow-menu>
-                  <div class="row icon-and-text node-container">
-                    <NsSvg :svg="Application20" class="icon" />
-                    <span>{{ unconfiguredProvider.module_id }}</span>
+                </template>
+                <template #content>
+                  <div class="domain-card-content">
+                    <div class="row icon-and-text node-container">
+                      <NsSvg :svg="Application20" class="icon" />
+                      <span>{{ unconfiguredProvider.module_id }}</span>
+                    </div>
+                    <div class="row icon-and-text node-container">
+                      <NsSvg :svg="Chip20" class="icon" />
+                      <span
+                        >{{ $t("common.node") }}
+                        {{ unconfiguredProvider.node }}</span
+                      >
+                    </div>
+                    <div class="row actions">
+                      <NsButton
+                        kind="ghost"
+                        :icon="Tools32"
+                        @click="
+                          showUnconfiguredProviderModal(unconfiguredProvider)
+                        "
+                        >{{ $t("domains.resume_configuration") }}</NsButton
+                      >
+                    </div>
                   </div>
-                  <div class="row icon-and-text node-container">
-                    <NsSvg :svg="Chip20" class="icon" />
-                    <span
-                      >{{ $t("common.node") }}
-                      {{ unconfiguredProvider.node }}</span
-                    >
-                  </div>
-                  <div class="row actions">
-                    <NsButton
-                      kind="ghost"
-                      :icon="Tools32"
-                      @click="
-                        showUnconfiguredProviderModal(unconfiguredProvider)
-                      "
-                      >{{ $t("domains.resume_configuration") }}</NsButton
-                    >
-                  </div>
-                </div>
+                </template>
               </NsInfoCard>
             </div>
             <!-- domains -->
@@ -159,8 +175,13 @@
               :key="domain.name"
               class="bx--col-md-4 bx--col-max-4"
             >
-              <NsInfoCard light :title="domain.name" :icon="Events32">
-                <div class="slot-content">
+              <NsInfoCard
+                light
+                :title="domain.name"
+                :icon="Events32"
+                :showOverflowMenu="true"
+              >
+                <template #menu>
                   <cv-overflow-menu
                     :flip-menu="true"
                     tip-position="top"
@@ -173,33 +194,37 @@
                       >{{ $t("common.delete") }}</cv-overflow-menu-item
                     >
                   </cv-overflow-menu>
-                  <div class="row">
-                    <span>{{ $t("domains." + domain.location) }}</span>
-                    <template v-if="domain.location == 'internal'">
-                      <span v-if="domain.schema == 'rfc2307'">
-                        {{ $t("domains.openldap") }}
-                      </span>
-                      <span v-else-if="domain.schema == 'ad'">
-                        {{ $t("domains.samba") }}
-                      </span>
-                    </template>
-                    <template v-else>
-                      {{ $t("domains.ldap") }}
-                    </template>
+                </template>
+                <template #content>
+                  <div class="domain-card-content">
+                    <div class="row">
+                      <span>{{ $t("domains." + domain.location) }}</span>
+                      <template v-if="domain.location == 'internal'">
+                        <span v-if="domain.schema == 'rfc2307'">
+                          {{ $t("domains.openldap") }}
+                        </span>
+                        <span v-else-if="domain.schema == 'ad'">
+                          {{ $t("domains.samba") }}
+                        </span>
+                      </template>
+                      <template v-else>
+                        {{ $t("domains.ldap") }}
+                      </template>
+                    </div>
+                    <div class="row">
+                      {{ domain.providers.length }}
+                      {{ $tc("domains.providers", domain.providers.length) }}
+                    </div>
+                    <div class="row actions">
+                      <NsButton
+                        kind="ghost"
+                        :icon="ZoomIn20"
+                        @click="goToDomain(domain)"
+                        >{{ $t("common.details") }}</NsButton
+                      >
+                    </div>
                   </div>
-                  <div class="row">
-                    {{ domain.providers.length }}
-                    {{ $tc("domains.providers", domain.providers.length) }}
-                  </div>
-                  <div class="row actions">
-                    <NsButton
-                      kind="ghost"
-                      :icon="ZoomIn20"
-                      @click="goToDomain(domain)"
-                      >{{ $t("common.details") }}</NsButton
-                    >
-                  </div>
-                </div>
+                </template>
               </NsInfoCard>
             </div>
           </div>
@@ -235,7 +260,7 @@
         $t('common.type_to_to_confirm', { name: currentDomain.name })
       "
       @hide="hideDeleteDomainModal"
-      @confirmDelete="deleteDomain"
+      @confirmDelete="deleteDomain(currentDomain)"
     />
   </div>
 </template>
@@ -285,6 +310,7 @@ export default {
         listUserDomains: "",
         getClusterStatus: "",
         removeModule: "",
+        removeExternalDomain: "",
       },
     };
   },
@@ -408,12 +434,52 @@ export default {
       this.nodes = nodes;
       this.loading.getClusterStatus = false;
     },
-    deleteDomain() {
-      console.log("deleteDomain!"); ////
-
-      //// todo
-
+    deleteDomain(domain) {
       this.isShownDeleteDomainModal = false;
+
+      if (domain.location == "internal") {
+        this.removeInternalDomain(domain);
+      } else {
+        this.removeExternalDomain(domain);
+      }
+    },
+    removeInternalDomain(domain) {
+      console.log("removeInternalDomain", domain); ////
+    },
+    async removeExternalDomain(domain) {
+      console.log("removeExternalDomain"); ////
+
+      this.error.removeExternalDomain = "";
+      const taskAction = "remove-external-domain";
+
+      // register to task completion
+      this.$root.$once(
+        taskAction + "-completed",
+        this.removeExternalDomainCompleted
+      );
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          data: {
+            domain: domain.name,
+          },
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.removeExternalDomain = this.getErrorMessage(err);
+        return;
+      }
+    },
+    removeExternalDomainCompleted() {
+      this.listUserDomains();
     },
     willDeleteUnconfiguredProvider(provider) {
       const timeout = setTimeout(() => {
@@ -466,9 +532,11 @@ export default {
       this.listUserDomains();
     },
     showUnconfiguredProviderModal(unconfiguredProvider) {
+      //// todo use schema instead of image_name
       if (unconfiguredProvider.image_name == "openldap") {
         this.createDomain.isOpenLdap = true;
         this.createDomain.isSamba = false;
+        //// todo use schema instead of image_name
       } else if (unconfiguredProvider.image_name == "samba") {
         this.createDomain.isOpenLdap = false;
         this.createDomain.isSamba = true;
@@ -492,12 +560,12 @@ export default {
 <style scoped lang="scss">
 @import "../styles/carbon-utils";
 
-.slot-content .row {
+.domain-card-content .row {
   margin-bottom: $spacing-05;
   text-align: center;
 }
 
-.slot-content .row:last-child {
+.domain-card-content .row:last-child {
   margin-bottom: 0;
 }
 

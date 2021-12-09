@@ -372,7 +372,7 @@ import to from "await-to-js";
 //// review all (copy/paste)
 
 export default {
-  name: "AddProviderModal",
+  name: "AddInternalProviderModal",
   mixins: [UtilService, TaskService, IconService, LottieService],
   props: {
     isShown: {
