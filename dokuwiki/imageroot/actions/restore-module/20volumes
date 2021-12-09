@@ -1,0 +1,4 @@
+#!/bin/bash
+
+mv restore/dokuwiki-data .local/share/containers/storage/volumes/
+podman volume create dokuwiki-data
