@@ -22,19 +22,188 @@
 
 import sys
 import json
+import agent
+import agent.tasks
 import agent.backup
+import cluster.grants
+import subprocess
 import os
+import re
+import uuid
+
+def allocate_tcp_ports_range(node_id, module_environment, size):
+    """Allocate in "node_id" a TCP port range of the given "size" for "module_id"
+    """
+    global rdb
+    agent.assert_exp(size > 0)
+
+    seq = rdb.incrby(f'node/{int(node_id)}/tcp_ports_sequence', size)
+    agent.assert_exp(int(seq) > 0)
+    module_environment['TCP_PORT'] = f'{seq - 1}' # Always set the first port
+    if size > 1: # Multiple ports: always set the ports range variable
+        module_environment['TCP_PORTS_RANGE'] = f'{seq - size}-{seq - 1}'
+    if size <= 8: # Few ports: set also a comma-separated list of ports variable
+        module_environment['TCP_PORTS'] = ','.join(str(port) for port in range(seq-size, seq))
 
 request = json.load(sys.stdin)
 restore = agent.backup.Restore(request['module'], request['repository'])
-node_id = int(request['node'])
+image_id = os.path.dirname(request['module'])
 env = restore.dump_env()
 image_url = env['IMAGE_URL']
-# Extract base URL using slice of image_url until the version separator ':', than retrieve the name of the image
-# which is the one after the last /
-image_id = os.path.basename(image_url[:image_url.index(":")])
+node_id = int(request['node'])
+agent.assert_exp(node_id > 0)
 
-# TODO: Mimic add module
+rdb = agent.redis_connect(privileged=True)
+agent.assert_exp(image_url)
 
-# Fake output
-print(json.dumps(env))
+# Pull the image from the remote server, if not already available locally
+agent.run_helper('podman-pull-missing', image_url, progress_callback=agent.get_progress_callback(0,33)).check_returncode()
+
+# Parse the image labels
+with subprocess.Popen(['podman', 'image', 'inspect', image_url], stdout=subprocess.PIPE, stderr=sys.stderr) as proc:
+    inspect = json.load(proc.stdout)
+    inspect_labels = inspect[0]['Labels']
+    inspect_image_id = inspect[0]['Id']
+    inspect_image_digest = inspect[0]['Digest']
+    inspect_image_repodigest = inspect[0]['RepoDigests'][0]
+
+if 'org.nethserver.rootfull' in inspect_labels:
+    is_rootfull = int(inspect_labels['org.nethserver.rootfull']) == 1
+else:
+    is_rootfull = False
+
+if 'org.nethserver.tcp-ports-demand' in inspect_labels:
+    tcp_ports_demand = int(inspect_labels['org.nethserver.tcp-ports-demand'])
+else:
+    tcp_ports_demand = 0
+
+if 'org.nethserver.authorizations' in inspect_labels:
+    authorizations = inspect_labels['org.nethserver.authorizations'].split()
+else:
+    authorizations = []
+
+if 'org.nethserver.images' in inspect_labels:
+    extra_images = inspect_labels['org.nethserver.images'].split()
+else:
+    extra_images = []
+
+# Increment the module sequence for image_id (e.g. traefik => traefik1)
+module_id = image_id + str(rdb.incr(f'cluster/module_sequence/{image_id}'))
+
+rdb.hset(f'module/{module_id}', mapping={
+    "image": image_id,
+    "image_url_override": "",
+    "redis_sha256": "",
+})
+
+# Initial module environment
+module_environment = {
+    'IMAGE_ID': inspect_image_id,
+    'IMAGE_URL': image_url,
+    'IMAGE_DIGEST': inspect_image_digest,
+    'IMAGE_REOPODIGEST': inspect_image_repodigest,
+    'MODULE_ID': module_id,
+    'NODE_ID': str(node_id),
+    'UUID': str(uuid.uuid4())
+}
+
+# Allocate TCP ports
+if tcp_ports_demand > 0:
+    allocate_tcp_ports_range(node_id, module_environment, tcp_ports_demand)
+
+# Set the "default_instance" keys for cluster and node, if module_id is the first instance of image
+for kdefault_instance in [f'cluster/default_instance/{image_id}', f'node/{node_id}/default_instance/{image_id}']:
+    default_instance = rdb.get(kdefault_instance)
+    if default_instance is None:
+        rdb.set(kdefault_instance, module_id)
+
+# Extract the UI code to a new module home
+os.mkdir(f'/var/lib/nethserver/cluster/ui/apps/{module_id}')
+os.chdir(f'/var/lib/nethserver/cluster/ui/apps/{module_id}')
+agent.run_helper('extract-ui', image_url).check_returncode()
+
+# Wait for the module host to set up the module environment: it
+# has to return us the module password hash
+add_module_result = agent.tasks.run(
+    agent_id=f'node/{node_id}',
+    action='restore-module',
+    data={
+        "module_id": module_id,
+        "is_rootfull": is_rootfull,
+        "environment": module_environment,
+    },
+    endpoint="redis://cluster-leader",
+    progress_callback=agent.get_progress_callback(34,66),
+)
+agent.assert_exp(add_module_result['exit_code'] == 0)
+
+outobj=add_module_result['output']
+
+# Create a new Redis user for module_id and set the password and permissions
+agent.assert_exp(rdb.execute_command('ACL', 'SETUSER',
+                    f'module/{module_id}', 'ON',
+                    '#' + outobj['redis_sha256'],
+                    f'~module/{module_id}/*',
+                    'resetchannels', f'&progress/module/{module_id}/*', f'&module/{module_id}/event/*',
+                    '+@read', '+@write', '+@transaction', '+@connection', '+publish') == 'OK')
+
+# Persist ACLs to disk
+agent.assert_exp(rdb.execute_command('ACL', 'SAVE') == 'OK')
+
+agent.save_acls(rdb)
+
+# Grant required authorizations to the new module
+for authz in authorizations:
+    if '*' in authz:
+        print(agent.SD_WARNING + f'Cannot grant authorization "{authz}" to {module_id}. Wildcard is not allowed, use @any suffix instead.')
+        continue
+
+    xagent, xrole = authz.split(':') # e.g. traefik@node:routeadm
+
+    if xrole == 'owner':
+        print(agent.SD_WARNING + f'Cannot grant authorization "{authz}" to {module_id}. Role "{xrole}" is forbidden.')
+        continue
+
+    if xagent.endswith("@any"):
+        agent_selector = 'module/' + xagent[0:-len("@any")] + '*' # wildcard allowed in on_clause
+    else:
+        agent_selector = agent.resolve_agent_id(xagent, node_id=node_id)
+
+    cluster.grants.alter_user(rdb,
+        user=f'module/{module_id}',
+        revoke=False,
+        role=xrole,
+        on_clause=agent_selector,
+    )
+
+# Push the creation task for the new module.
+create_module_result = agent.tasks.run(
+    agent_id=f'module/{module_id}',
+    action="create-module",
+    data={
+        'images': extra_images,
+    },
+    endpoint="redis://cluster-leader",
+    progress_callback=agent.get_progress_callback(67,95),
+)
+agent.assert_exp(create_module_result['exit_code'] == 0) # Ensure create-module is successful
+
+# Configure our builtin roles: "owner" and "reader". Owner can run any action, Reader can run
+# action names with special prefixes.
+cluster.grants.grant(rdb, action_clause="*",      to_clause="owner",  on_clause=f'module/{module_id}')
+cluster.grants.grant(rdb, action_clause="list-*", to_clause="reader", on_clause=f'module/{module_id}')
+cluster.grants.grant(rdb, action_clause="get-*",  to_clause="reader", on_clause=f'module/{module_id}')
+cluster.grants.grant(rdb, action_clause="show-*", to_clause="reader", on_clause=f'module/{module_id}')
+cluster.grants.grant(rdb, action_clause="read-*", to_clause="reader", on_clause=f'module/{module_id}')
+
+# Grant the owner role to cluster owners on the new module
+for userk in rdb.scan_iter('roles/*'):
+    user_auths = rdb.hgetall(userk)
+    if 'cluster' in user_auths and user_auths['cluster'] == 'owner':
+        cluster.grants.alter_user(rdb, user=userk[len('roles/'):], revoke=False, role='owner', on_clause=f'module/{module_id}')
+
+json.dump({
+    "module_id": module_id,
+    "image_name": image_id,
+    "image_url": image_url,
+}, fp=sys.stdout)

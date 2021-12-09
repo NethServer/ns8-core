@@ -26,11 +26,11 @@ source /etc/os-release
 
 echo "Install dependencies:"
 if [[ ${ID} == "fedora" ]]; then
-    dnf install -y wireguard-tools podman jq openssl
+    dnf install -y wireguard-tools podman jq openssl rclone
     systemctl disable --now firewalld || :
 elif [[ ${ID} == "debian" ]]; then
     apt-get update
-    apt-get -y install gnupg2 python3-venv podman wireguard uuid-runtime jq openssl
+    apt-get -y install gnupg2 python3-venv podman wireguard uuid-runtime jq openssl rclone
 else
     echo "System not supported"
     exit 1
