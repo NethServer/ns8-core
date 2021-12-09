@@ -30,7 +30,7 @@ if [[ "${PLATFORM_ID}" == "platform:f34" || "${PLATFORM_ID}" == "platform:el9" ]
     systemctl disable --now firewalld || :
 elif [[ "${ID}" == "debian" && "${VERSION_ID}" == "11" ]]; then
     apt-get update
-    apt-get -y install gnupg2 python3-venv podman wireguard uuid-runtime jq openssl
+    apt-get -y install gnupg2 python3-venv podman wireguard uuid-runtime jq openssl rclone
 else
     echo "System not supported"
     exit 1
