@@ -97,15 +97,13 @@ rdb.hset(f'module/{module_id}', mapping={
 })
 
 # Initial module environment
-module_environment = {
-    'IMAGE_ID': inspect_image_id,
-    'IMAGE_URL': image_url,
-    'IMAGE_DIGEST': inspect_image_digest,
-    'IMAGE_REOPODIGEST': inspect_image_repodigest,
-    'MODULE_ID': module_id,
-    'NODE_ID': str(node_id),
-    'UUID': str(uuid.uuid4())
-}
+env['IMAGE_ID'] =  inspect_image_id
+env['IMAGE_URL'] =  image_url
+env['IMAGE_DIGEST'] =  inspect_image_digest
+env['IMAGE_REOPODIGEST'] = inspect_image_repodigest
+env['MODULE_ID'] = module_id
+env['NODE_ID'] =  str(node_id)
+module_environment = env
 
 # Allocate TCP ports
 if tcp_ports_demand > 0:
@@ -179,9 +177,11 @@ for authz in authorizations:
 # Push the creation task for the new module.
 create_module_result = agent.tasks.run(
     agent_id=f'module/{module_id}',
-    action="create-module",
+    action="restore-module",
     data={
         'images': extra_images,
+        'module': request['module'],
+        'repository': request['repository']
     },
     endpoint="redis://cluster-leader",
     progress_callback=agent.get_progress_callback(67,95),

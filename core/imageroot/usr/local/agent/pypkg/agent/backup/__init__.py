@@ -59,12 +59,13 @@ class Restic:
                 efile.write(f"AZURE_ACCOUNT_NAME={self.config['azure_account_name']}\n")
                 efile.write(f"AZURE_ACCOUNT_KEY={self.config['azure_account_key']}\n")
 
-    def prepare_cmd(self):
+    def prepare_backup_cmd(self):
         # Prepare env file for podman
         self.prepare_env()
 
         # Prepare base command
         podman_cmd = ["podman", "run", "--rm", "--env-file", self.restic_env, "-v", f"{self.cache_dir}:/cache", "-v", f"{self.dump_dir}:/dump"]
+
         for volume in self.volumes:
             mount = self.volumes[volume]
             (prefix, sep, suffix) = mount.partition(volume)
@@ -73,6 +74,21 @@ class Restic:
         for path in self.paths:
             podman_cmd = podman_cmd + ["-v", f"{path}:/{os.path.basename(path)}"]
 
+        return podman_cmd + ["docker.io/restic/restic"]
+
+    def prepare_restore_cmd(self):
+        # Prepare env file for podman
+        self.prepare_env()
+
+        if self.rootfull:
+            restore_dir = f'/var/lib/nethserver/{self.module_id}/restore'
+        else:
+            restore_dir = f'/home/{self.module_id}/restore'
+
+        os.makedirs(restore_dir, exist_ok=True)
+
+        # Prepare base command
+        podman_cmd = ["podman", "run", "--rm", "--env-file", self.restic_env, "-v", f"{self.cache_dir}:/cache", "-v", f"{restore_dir}:/restore"]
         return podman_cmd + ["docker.io/restic/restic"]
 
     def prepare_dirs(self):
@@ -93,6 +109,15 @@ class Restic:
         os.makedirs(self.restic_dir, exist_ok=True)
         os.makedirs(self.cache_dir, exist_ok=True)
 
+    def add_volume(self, name):
+        # Do not ask the mountpoint to podman because volumes are still not defined during restore
+        if self.rootfull:
+            mount = f'/var/lib/containers/storage/volumes/{name}'
+        else:
+            mount = f'/home/{self.module_id}/.local/share/containers/storage/volumes/{name}'
+
+        self.volumes[name] = mount
+
 
 class Restore(Restic):
 
@@ -106,14 +131,15 @@ class Restore(Restic):
         self.config['module'] = module
         # The name is in the form <module_name>/<module_id>@<module_uuid>
         self.config['module_name'] = os.path.basename(module)
-        self.module_id, sep, self.config['module_uuid'] = self.config['module_name'].partition('@')
+        self.old_module_id, sep, self.config['module_uuid'] = self.config['module_name'].partition('@')
+        self.module_id = os.environ['MODULE_ID']
         self.directory = module
 
         self.prepare_dirs()
 
     def dump_env(self):
         env = dict()
-        cmd = self.prepare_cmd()
+        cmd = self.prepare_restore_cmd()
         p_dump = subprocess.run(cmd + ["--no-cache", "dump", "latest", "/environment"], capture_output=True)
         for line in p_dump.stdout.splitlines():
             var, sep, val = line.decode().partition("=")
@@ -125,9 +151,9 @@ class Restore(Restic):
 
 
     def restore(self):
-        cmd = self.prepare_cmd()
+        cmd = self.prepare_restore_cmd()
 
-        subprocess.run(cmd + ["restore", "latest", "--target", "/"])
+        restore_p = subprocess.run(cmd + ["restore", "latest", "--target", "/restore"])
 
 
 class Backup(Restic):
@@ -141,10 +167,6 @@ class Backup(Restic):
         url, sep, tag = url.rpartition(":")
         base_url, sep, name = url.rpartition("/")
         return name
-
-    def add_volume(self, name):
-        proc = subprocess.run(["podman", "volume", "inspect", "--format", "{{.Mountpoint}}", name], capture_output=True)
-        self.volumes[name] = proc.stdout.decode().strip()
 
     def add_path(self, path):
         self.paths.append(path)
@@ -209,7 +231,7 @@ class Backup(Restic):
         # Dump environment key
         self.add_path(self.environment)
 
-        cmd = self.prepare_cmd()
+        cmd = self.prepare_backup_cmd()
 
         # Check if repository has been already initialized, if not, just do it
         check_init = subprocess.run(cmd + ["snapshots"], capture_output=True)

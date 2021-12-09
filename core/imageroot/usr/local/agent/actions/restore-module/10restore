@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env python3
 
 #
 # Copyright (C) 2021 Nethesis S.r.l.
@@ -20,11 +20,19 @@
 # along with NethServer.  If not, see COPYING.
 #
 
-# Make sure volume does not exists
-podman volume rm dokuwiki-data >/dev/null
+#
+# This script takes the backup key name as an argument
+# Example: runagent backup backup1
+#
 
-# Move restored data
-mv ~/restore/dokuwiki-data ~/.local/share/containers/storage/volumes/
+import os
+import sys
+import json
+import agent.backup
 
-# Inform podman about the new volume
-podman volume create dokuwiki-data >/dev/null
+
+request = json.load(sys.stdin)
+# Initialize the backup
+backup = agent.backup.Restore(request['module'], request['repository'])
+
+backup.restore()
