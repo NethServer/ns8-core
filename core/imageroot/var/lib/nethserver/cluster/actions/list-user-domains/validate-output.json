@@ -5,7 +5,7 @@
     "$id": "http://schema.nethserver.org/cluster/list-user-domains-output.json",
     "examples": [
         {
-            "unconfigured_providers": [
+            "unconfigured_domains": [
                 {
                     "module_id": "samba1",
                     "image_name": "samba",
@@ -73,13 +73,13 @@
     "type": "object",
     "required": [
         "domains",
-        "unconfigured_providers"
+        "unconfigured_domains"
     ],
     "properties": {
-        "unconfigured_providers": {
+        "unconfigured_domains": {
             "type": "array",
             "items": {
-                "$ref": "#/$defs/unconfigured-provider"
+                "$ref": "#/$defs/unconfigured-domain"
             }
         },
         "domains": {
@@ -127,6 +127,13 @@
                     "title": "Account providers",
                     "description": "Backend system and replicas providing the services of the user domain",
                     "type": "array",
+                    "items": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/$defs/ldap-provider"
+                            }
+                        ]
+                    },
                     "minItems": 1
                 }
             },
@@ -148,15 +155,16 @@
                 }
             ]
         },
-        "unconfigured-provider": {
+        "unconfigured-domain": {
             "type": "object",
-            "title": "Unconfigured provider",
-            "description": "An internal provider module instance that is not completely configured",
+            "title": "Unconfigured domain",
+            "description": "An account provider instance, installed as the first instance of a new domain",
             "required": [
                 "module_id",
                 "node",
-                "image_name",
-                "image_url"
+                "location",
+                "protocol",
+                "schema"
             ],
             "properties": {
                 "module_id": {
@@ -167,18 +175,36 @@
                 "node": {
                     "title": "Node identifier",
                     "description": "The node number, e.g. `1`",
-                    "type": ["integer", "null"],
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
                     "minimum": 1
                 },
-                "image_name": {
-                    "title": "Module image name",
-                    "description": "e.g. `samba`",
-                    "type": "string"
+                "location": {
+                    "type": "string",
+                    "title": "Domain hosting location",
+                    "description": "Type of domain hosting. Set to `internal` if the domain is hosted by the cluster, `external` if the domain is provided by a remote service",
+                    "enum": [
+                        "internal",
+                        "external"
+                    ]
                 },
-                "image_url": {
-                    "title": "Image URL",
-                    "description": "ghcr.io/nethserver/samba:2.0.0",
-                    "type": ["string", "null"]
+                "protocol": {
+                    "type": "string",
+                    "title": "Provider protocol",
+                    "description": "Protocol used to communicate with the domain providers.",
+                    "enum": [
+                        "ldap"
+                    ]
+                },
+                "schema": {
+                    "type": "string",
+                    "title": "LDAP database schema",
+                    "enum": [
+                        "ad",
+                        "rfc2307"
+                    ]
                 }
             }
         },
@@ -209,11 +235,21 @@
                     "minimum": 1
                 },
                 "host": {
-                    "type": "string",
+                    "title": "Host name or IP address",
+                    "description": "Can be `null` if the provider is not configured properly",
+                    "type": [
+                        "string",
+                        "null"
+                    ],
                     "minLength": 1
                 },
                 "port": {
-                    "type": "integer",
+                    "title": "TCP port number",
+                    "description": "Can be `null` if the provider is not configured properly",
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
                     "minimum": 1
                 }
             }

@@ -94,8 +94,11 @@ def get_internal_domains(rdb):
     """Read from Redis the internal user domains configuration
     """
     domains={}
+    configured_providers = set()
+
     for kldap in rdb.scan_iter("module/*/srv/tcp/ldap"):
         module_id = kldap.split('/', 2)[1]
+        configured_providers.add(module_id)
         conf = rdb.hgetall(kldap)
 
         if not conf['domain'] in domains:
@@ -118,6 +121,24 @@ def get_internal_domains(rdb):
             "node": int(conf['node']),
             "host": conf['host'],
             "port": int(conf['port']),
+        })
+
+    for kud in rdb.scan_iter("module/*/user_domain"):
+        module_id = kud.split('/', 2)[1]
+        if module_id in configured_providers:
+            continue
+
+        domain_name = rdb.get(kud)
+        if not domain_name in domains:
+            continue # skip new domain module instance
+
+        node_id = rdb.hget(f'module/{module_id}/environment', 'NODE_ID')
+        domains[domain_name]['providers'].append({
+            "id": module_id,
+            "ui_name": rdb.get(f'module/{module_id}/ui_name') or "",
+            "node": int(node_id),
+            "host": None,
+            "port": None,
         })
 
     return domains

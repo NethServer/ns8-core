@@ -25,35 +25,45 @@ import json
 import agent
 import cluster.userdomains
 
-unconfigured_providers={}
+unconfigured_domains = []
 
 rdb = agent.redis_connect()
-for kenv in rdb.scan_iter("module/*/environment"):
-    henv = rdb.hgetall(kenv)
-    module_id = henv['MODULE_ID']
-    node_id = int(henv['NODE_ID'])
-    image_name = agent.get_image_name_from_url(henv['IMAGE_URL'])
-    if image_name in ['samba', 'openldap']:
-        unconfigured_providers[module_id] = {
-            "module_id": module_id,
-            "node": node_id,
-            "image_name": image_name,
-            "image_url": henv['IMAGE_URL']
-        }
 
 internal_domains = cluster.userdomains.get_internal_domains(rdb) 
 external_domains = cluster.userdomains.get_external_domains(rdb)
 
-# Filter out already-configured providers:
-for idom in internal_domains:
-    for provider in internal_domains[idom]['providers']:
-        module_id = provider['id']
-        if module_id in unconfigured_providers:
-            del unconfigured_providers[module_id]
-
 domains = external_domains | internal_domains
+
+for kdom in rdb.scan_iter("module/*/user_domain"):
+    module_id = kdom.split('/', 2)[1]
+    user_domain = rdb.get(kdom)
+
+    if user_domain and user_domain in domains:
+        continue
+    elif rdb.hget(f'module/{module_id}/srv/tcp/ldap', 'domain'):
+        continue
+
+    henv = rdb.hgetall(f'module/{module_id}/environment')
+    image_name = agent.get_image_name_from_url(henv['IMAGE_URL'])
+    ucdom = {
+        "ui_name": rdb.get(f'module/{module_id}/ui_name') or "",
+        "location": "internal",
+        "module_id": module_id,
+        "node": int(henv['NODE_ID']),
+        "image_name": image_name,
+        "image_url": henv['IMAGE_URL']
+    }
+
+    if image_name == 'samba':
+        ucdom['protocol'] = 'ldap'
+        ucdom['schema'] = 'ad'
+    elif image_name == 'openldap':
+        ucdom['protocol'] = 'ldap'
+        ucdom['schema'] = 'rfc2307'
+
+    unconfigured_domains.append(ucdom)
 
 json.dump({
     "domains": list(domains.values()),
-    "unconfigured_providers": list(unconfigured_providers.values())
+    "unconfigured_domains": unconfigured_domains,
 }, fp=sys.stdout)
