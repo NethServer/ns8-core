@@ -2,7 +2,7 @@
 
 set -e
 images=()
-repobase="ghcr.io/nethserver"
+repobase="${REPOBASE:-ghcr.io/nethserver}"
 
 reponame="ldapproxy"
 container=$(buildah from scratch)

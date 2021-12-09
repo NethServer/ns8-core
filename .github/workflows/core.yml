@@ -13,7 +13,6 @@ on:
 jobs:
   push_image:
     env:
-      REPOBASE: ghcr.io/nethserver
       REPONAME: ${{ github.workflow }}
       IMAGETAG: ${{ github.head_ref }}
     name: 'Build ${{ github.workflow }}'
@@ -24,6 +23,7 @@ jobs:
         run: |
           echo "::set-output name=images-dir::$(buildah info --format '{{.store.GraphRoot}}/overlay-images')"
           echo "::set-output name=weekstamp::$(date +%YW%W)"
+          echo "::set-output name=org::$(dirname ${GITHUB_REPOSITORY} | tr '[:upper:]' '[:lower:]')"
       - id: checkout
         uses: actions/checkout@v2
       - id: corecache
@@ -37,6 +37,8 @@ jobs:
       - id: build
         name: "Build the images"
         run: "cd ${REPONAME} && bash build-image.sh"
+        env:
+          REPOBASE: ghcr.io/${{ steps.info.outputs.org }}
       - id: push
         name: "Push the images"
         run: |
