@@ -5,24 +5,60 @@
     "description": "Provision a Active Directory domain controller",
     "examples": [
         {
+            "provision": "new-domain",
             "adminuser": "administrator",
             "adminpass": "Nethesis,1234",
             "realm": "AD.EXAMPLE.COM",
             "ipaddress": "10.15.21.100",
             "hostname": "dc1",
             "nbdomain": "AD"
+        },
+        {
+            "provision": "join-domain",
+            "adminuser": "administrator",
+            "adminpass": "Nethesis,1234",
+            "realm": "AD.EXAMPLE.COM",
+            "ipaddress": "10.15.21.100",
+            "hostname": "dc1"
         }
     ],
     "type": "object",
-    "required": [
-        "nbdomain",
-        "hostname",
-        "realm",
-        "adminuser",
-        "adminpass",
-        "ipaddress"
+    "anyOf": [
+        {
+            "properties": {
+                "provision": {
+                    "const": "new-domain"
+                }
+            },
+            "required": [
+                "hostname",
+                "adminuser",
+                "adminpass",
+                "realm",
+                "nbdomain",
+                "ipaddress"
+            ]
+        },
+        {
+            "properties": {
+                "provision": {
+                    "const": "join-domain"
+                }
+            },
+            "required": [
+                "hostname",
+                "adminuser",
+                "adminpass",
+                "realm",
+                "ipaddress"
+            ]
+        }
     ],
     "properties": {
+        "provision": {
+            "type": "string",
+            "minLength": 1
+        },
         "adminuser": {
             "type": "string",
             "minLength": 1
@@ -48,9 +84,8 @@
             "minLength": 1
         },
         "nbdomain": {
-            "type": ["string", "null"],
+            "type": "string",
             "title": "NetBIOS domain name",
-            "description": "This field is ignored if a DC for the domain is already provisioned",
             "pattern": "^[a-zA-Z][-a-zA-Z0-9]*$",
             "maxLength": 15,
             "minLength": 1

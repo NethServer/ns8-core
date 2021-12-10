@@ -28,22 +28,49 @@ import ipaddress as ipm
 import subprocess
 import socket
 
-fqdn = socket.gethostname().lower()
-if '.' in fqdn:
-    hostname, domain = fqdn.split(".", 1)
-    nbdomain = domain.upper().split('.', 1)[0]
-else:
-    hostname = fqdn
-    domain = "test"
-    nbdomain = "TEST"
+def fqdn2dict(fqdn, domprefix=''):
+    if '.' in fqdn:
+        shortname, domain = fqdn.split(".", 1)
+        nbdomain = domain.upper().split('.', 1)[0]
+    else: # the host name is a single word
+        shortname = fqdn
+        domain = "test"
+        nbdomain = "TEST"
+
+    return {
+        "hostname": shortname,
+        "realm": domprefix + domain,
+        "nbdomain": nbdomain,
+    }
+
+request = json.load(sys.stdin)
 
 response = {
-    "nbdomain": nbdomain,
     "adminuser": "administrator",
-    "hostname": os.getenv("MODULE_ID").replace("samba", "dc"),
-    "realm": "ad." + domain,
+    "nbdomain": None,
+    "hostname": None,
+    "realm": None,
     "ipaddress_list": [],
 }
+
+shortname = os.getenv("MODULE_ID").replace("samba", "dc")
+
+if 'realm' in request:
+    fqdn = shortname + '.' + request['realm'].lower()
+    response.update(fqdn2dict(fqdn))
+else:
+    fqdn = socket.gethostname().lower()
+    response.update(fqdn2dict(fqdn, 'ad.'))
+
+if request['provision'] == 'new-domain':
+    response['hostname'] = shortname
+elif request['provision'] == 'join-domain':
+    response['adminuser'] = "" # do not make assumptions on the admin join credentials
+    response['nbdomain'] = ""
+else:
+    print(agent.SD_ERR + "Invalid provision value", file=sys.stderr)
+    sys.exit(1)
+
 
 with subprocess.Popen(["ip", "-j", "-4", "address", "show"], stdout=subprocess.PIPE) as proc:
     for iface in json.load(proc.stdout):

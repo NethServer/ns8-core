@@ -31,45 +31,35 @@ import cluster.userdomains
 request = json.load(sys.stdin)
 realm = request['realm'].upper()
 hostname = request['hostname'].lower()
+provision_type = request['provision']
 
 if 'REALM' in os.environ:
     print(agent.SD_ERR + "This module is already configured!", file=sys.stderr)
     sys.exit(1)
 
-
 with agent.redis_connect() as rdb:
     domains = cluster.userdomains.get_internal_domains(rdb)
     kdomain = realm.lower()
 
-    if kdomain in domains:
-        provision_type = 'join-domain'
+    if provision_type == 'join-domain':
         peer_instance = domains[kdomain]['providers'][0]['id']
         penv = rdb.hgetall(f"module/{peer_instance}/environment")
         nbdomain = penv['NBDOMAIN']
         svcpass = penv['SVCPASS']
-    else:
-        provision_type = 'new-domain'
-        try:
-            nbdomain = request['nbdomain'].upper()
-        except AttributeError as ex:
-            json.dump([{"parameter": 'nbdomain', "value": None, "error": "nbdomain_string_required"}], fp=sys.stdout)
-            agent.set_status('validation-failed')
-            sys.exit(8)
-
+    elif provision_type == 'new-domain':
+        nbdomain = request['nbdomain'].upper()
         # Generate a random password for ldapservice
         alphabet = string.ascii_letters + string.digits + '+-/,.-_^'
         svcpass = ''.join([secrets.choice(alphabet) for i in range(32)])
+    else:
+        print(agent.SD_ERR + "Bogus provision value! " + provision_type, file=sys.stderr)
+        sys.exit(1)
 
 agent.set_env('PROVISION_TYPE', provision_type)
-
-# Save values of optional parameters
 agent.set_env('NBDOMAIN', nbdomain)
 agent.set_env('REALM', realm)
 agent.set_env('HOSTNAME', hostname + '.' + realm.lower())
-
-# JSON Schema mandatory fields. We are sure they are present.
 agent.set_env('IPADDRESS', request['ipaddress'])
-
 agent.set_env('SVCUSER', 'ldapservice')
 agent.set_env('SVCPASS', svcpass)
 
