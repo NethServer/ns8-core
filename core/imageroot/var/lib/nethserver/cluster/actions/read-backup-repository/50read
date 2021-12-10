@@ -32,7 +32,7 @@ name = request['repository']
 url = rdb.hget(f"cluster/backup_repository/{name}", "url").split(":")
 
 backups = dict()
-cmd = ["rclone", "--config", f'/var/lib/nethserver/backup_repository/{name}/rclone.conf', 'lsjson', '--no-mimetype', '--no-modtime' ]
+cmd = ["rclone", "--config", f'/etc/nethserver/backup/{name}/rclone.conf', 'lsjson', '--no-mimetype', '--no-modtime']
 proc = subprocess.run(cmd + [f'{url[1]}:/{url[1]}'], capture_output=True)
 for d in json.loads(proc.stdout):
     pdir = subprocess.run(cmd +  [f'{url[1]}:/{url[1]}/{d["Path"]}'], capture_output=True)
