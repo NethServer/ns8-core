@@ -3,7 +3,7 @@
 set -e
 images=()
 
-repobase="ghcr.io/nethserver"
+repobase="${REPOBASE:-ghcr.io/nethserver}"
 reponame="ubuntu-samba"
 
 container="ubuntu-working-container"
