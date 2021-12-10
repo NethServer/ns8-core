@@ -94,6 +94,10 @@
             </template>
             <template v-else-if="domain.schema == 'ad'">
               <div class="mg-bottom-md">
+                <span class="setting-label">{{ $t("domains.schema") }}</span>
+                <span class="setting-value">{{ domain.schema }}</span>
+              </div>
+              <div class="mg-bottom-md">
                 <span class="setting-label">{{ $t("domains.base_dn") }}</span>
                 <span class="setting-value">{{ domain.base_dn }}</span>
               </div>
@@ -102,8 +106,20 @@
                 <span class="setting-value">{{ domain.bind_dn }}</span>
               </div>
               <div class="mg-bottom-md">
-                <span class="setting-label">{{ $t("domains.schema") }}</span>
-                <span class="setting-value">{{ domain.schema }}</span>
+                <span class="setting-label">{{
+                  $t("domains.bind_password")
+                }}</span>
+                <span class="setting-value">{{ domain.bind_password }}</span>
+              </div>
+              <div class="mg-bottom-md">
+                <span class="setting-label">{{ $t("domains.tls") }}</span>
+                <span class="setting-value">{{ domain.tls }}</span>
+              </div>
+              <div class="mg-bottom-md">
+                <span class="setting-label">{{
+                  $t("domains.tls_verify")
+                }}</span>
+                <span class="setting-value">{{ domain.tls_verify }}</span>
               </div>
             </template>
           </cv-tile>
@@ -323,9 +339,12 @@
         $t("domain_detail.cannot_delete_provider")
       }}</template>
       <template slot="content">
-        <div>
-          {{ $t("domain_detail.cannot_delete_provider_description") }}
-        </div>
+        <NsInlineNotification
+          kind="info"
+          :title="$t('domain_detail.cannot_delete_only_provider')"
+          :description="$t('domain_detail.cannot_delete_provider_description')"
+          :showCloseButton="false"
+        />
       </template>
       <template slot="secondary-button">{{ $t("common.got_it") }}</template>
     </cv-modal>
