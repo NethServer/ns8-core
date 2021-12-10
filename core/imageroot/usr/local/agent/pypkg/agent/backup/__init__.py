@@ -132,15 +132,19 @@ class Restore(Restic):
         # The name is in the form <module_name>/<module_id>@<module_uuid>
         self.config['module_name'] = os.path.basename(module)
         self.old_module_id, sep, self.config['module_uuid'] = self.config['module_name'].partition('@')
-        self.module_id = os.environ['MODULE_ID']
+        if 'MODULE_ID' in os.environ:
+            self.module_id = os.environ['MODULE_ID']
         self.directory = module
-
-        self.prepare_dirs()
 
     def dump_env(self):
         env = dict()
-        cmd = self.prepare_restore_cmd()
-        p_dump = subprocess.run(cmd + ["--no-cache", "dump", "latest", "/environment"], capture_output=True)
+        # Prepare env file for podman
+        self.prepare_env()
+
+        # Prepare base command
+        podman_cmd = ["podman", "run", "--rm", "--env-file", self.restic_env, "docker.io/restic/restic"]
+
+        p_dump = subprocess.run(podman_cmd + ["--no-cache", "dump", "latest", "/environment"], capture_output=True)
         for line in p_dump.stdout.splitlines():
             var, sep, val = line.decode().partition("=")
             # Skip vars which will be replaced on install
@@ -151,6 +155,7 @@ class Restore(Restic):
 
 
     def restore(self):
+        self.prepare_dirs()
         cmd = self.prepare_restore_cmd()
 
         restore_p = subprocess.run(cmd + ["restore", "latest", "--target", "/restore"])
