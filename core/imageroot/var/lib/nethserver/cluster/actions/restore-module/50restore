@@ -52,6 +52,8 @@ env = restore.dump_env()
 image_url = env['IMAGE_URL']
 node_id = int(request['node'])
 agent.assert_exp(node_id > 0)
+check_idle_time = request.get('check_idle_time')
+
 
 rdb = agent.redis_connect(privileged=True)
 agent.assert_exp(image_url)
@@ -132,6 +134,7 @@ add_module_result = agent.tasks.run(
     },
     endpoint="redis://cluster-leader",
     progress_callback=agent.get_progress_callback(34,66),
+    **({} if check_idle_time is None else {'check_idle_time': check_idle_time})
 )
 agent.assert_exp(add_module_result['exit_code'] == 0)
 
@@ -184,6 +187,7 @@ create_module_result = agent.tasks.run(
         'repository': request['repository']
     },
     endpoint="redis://cluster-leader",
+    check_idle_time=0, # disable idle check and wait until the agent is up
     progress_callback=agent.get_progress_callback(67,95),
 )
 agent.assert_exp(create_module_result['exit_code'] == 0) # Ensure create-module is successful
