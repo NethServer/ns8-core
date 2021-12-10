@@ -223,22 +223,14 @@ export default {
   data() {
     return {
       step: "node",
-      // isInternalSelected: true, ////
-      // isExternalSelected: false,
-      // newProviderId: "",
-      // isOpenLdapSelected: false,
-      // isSambaSelected: false,
       installProviderProgress: 0,
       samba: {
         adminuser: "",
         adminpass: "",
-        // realm: "", ////
         ipaddress: "",
         ipAddressOptions: [],
         hostname: "",
         nbdomain: "",
-        // passwordValidation: null, ////
-        // focusPasswordField: { element: "" }, ////
       },
       loading: {
         samba: {
@@ -252,7 +244,6 @@ export default {
           adminuser: "",
           adminpass: "",
           confirmPassword: "",
-          // realm: "", ////
           ipaddress: "",
           hostname: "",
           nbdomain: "",
@@ -334,17 +325,9 @@ export default {
     providerId: function () {
       this.newProviderId = this.providerId;
     },
-    // isOpenLdap: function () { ////
-    //   this.isOpenLdapSelected = this.isOpenLdap;
-    // },
-    // isSamba: function () {
-    //   this.isSambaSelected = this.isSamba;
-    // },
   },
   created() {
     this.newProviderId = this.providerId;
-    //   this.isOpenLdapSelected = this.isOpenLdap;
-    //   this.isSambaSelected = this.isSamba;
   },
   methods: {
     nextStep() {
@@ -362,28 +345,6 @@ export default {
           break;
       }
     },
-    // previousStep() { ////
-    //   switch (this.step) {
-    //     case "instance":
-    //     case "externalConfig":
-    //       this.step = "location";
-    //       break;
-    //     case "node":
-    //       this.step = "instance";
-    //       break;
-    //     case "summary":
-    //       if (this.isInternalSelected) {
-    //         if (this.nodes.length > 1) {
-    //           this.step = "node";
-    //         } else {
-    //           this.step = "instance";
-    //         }
-    //       } else {
-    //         this.step = "externalConfig";
-    //       }
-    //       break;
-    //   }
-    // },
     deselectOtherNodes(node) {
       for (let n of this.nodes) {
         if (n.id !== node.id) {
@@ -391,11 +352,6 @@ export default {
         }
       }
     },
-    // isExternalConfigOk() { ////
-    //   console.log("isExternalConfigOk"); ////
-    //   //// todo
-    //   return true;
-    // },
     async installProvider() {
       this.error.addInternalProvider = "";
 
@@ -477,8 +433,6 @@ export default {
       this.installProviderProgress = progress;
     },
     async getSambaDefaults() {
-      console.log("getSambaDefaults", this.newProviderId); ////
-
       this.loading.samba.getDefaults = true;
       this.error.samba.getDefaults = "";
       const taskAction = "get-defaults";
@@ -488,8 +442,6 @@ export default {
         taskAction + "-completed",
         this.getSambaDefaultsCompleted
       );
-
-      console.log("getSambaDefaults, newProviderId", this.newProviderId); ////
 
       const res = await to(
         this.createModuleTaskForApp(this.newProviderId, {
@@ -521,12 +473,6 @@ export default {
       this.samba.adminuser = defaults.adminuser;
       this.samba.hostname = defaults.hostname;
 
-      // this.samba.nbdomain = defaults.nbdomain; ////
-      // this.samba.realm = defaults.realm; ////
-
-      // clear password ////
-      // this.samba.adminpass = ""; ////
-
       // ip address combo box
       let index = 0;
       for (const ipObject of defaults.ipaddress_list) {
@@ -538,8 +484,6 @@ export default {
         this.$set(this.samba.ipAddressOptions, index, option);
         index++;
       }
-
-      console.log("ipAddressOptions", this.samba.ipAddressOptions); ////
     },
     clearSambaErrors() {
       for (const key of Object.keys(this.error.samba)) {
@@ -593,29 +537,6 @@ export default {
           isValidationOk = false;
         }
       }
-
-      // samba realm ////
-
-      // if (!this.samba.realm) { ////
-      //   this.error.samba.realm = "common.required";
-
-      //   if (isValidationOk) {
-      //     this.focusElement("realm");
-      //     isValidationOk = false;
-      //   }
-      // }
-
-      // samba nbdomain ////
-
-      // if (!this.samba.nbdomain) { ////
-      //   this.error.samba.nbdomain = "common.required";
-
-      //   if (isValidationOk) {
-      //     this.focusElement("nbdomain");
-      //     isValidationOk = false;
-      //   }
-      // }
-
       return isValidationOk;
     },
     async configureSambaModule() {
@@ -657,7 +578,6 @@ export default {
             realm: this.domain.name,
             ipaddress: this.samba.ipaddress,
             hostname: this.samba.hostname,
-            // nbdomain: null, // join provider requires null nbdomain ////
             provision: "join-domain",
           },
           extra: {
@@ -693,9 +613,7 @@ export default {
         }
       }
     },
-    configureSambaModuleCompleted(taskContext, taskResult) {
-      console.log("configureSambaModuleCompleted", taskResult.output); ////
-
+    configureSambaModuleCompleted() {
       this.loading.samba.configureModule = false;
 
       // hide modal
@@ -741,11 +659,6 @@ export default {
   padding-right: 0.5rem;
   font-weight: bold;
 }
-
-// .summary { ////
-//   font-weight: bold;
-//   margin-bottom: $spacing-05;
-// }
 
 .bx--form {
   .bx--form-item,

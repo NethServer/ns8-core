@@ -64,6 +64,7 @@
                 value="instanceValue"
                 @click="isSambaSelected = false"
                 class="same-height-tile"
+                disabled
               >
                 <h6 class="mg-bottom-md">
                   {{ $t("domains.openldap") }}
@@ -115,7 +116,7 @@
             ref="port"
           >
           </cv-text-input>
-          <!-- //// remove -->
+          <!-- //// remove, schema is automatically detected -->
           <!-- <label class="bx--label">{{ $t("domains.type") }}</label>
           <cv-radio-group :vertical="false" ref="schema">
             <cv-radio-button
@@ -427,11 +428,11 @@ export default {
     },
     isOpenLdap: {
       type: Boolean,
-      default: true,
+      default: false, //// true
     },
     isSamba: {
       type: Boolean,
-      default: false,
+      default: true, //// false
     },
   },
   data() {
@@ -455,15 +456,14 @@ export default {
         focusPasswordField: { element: "" },
       },
       external: {
-        domain: "al.nethserver.net", //// todo empty string
-        host: "ldap-server.al.nethserver.net", //// todo empty string
-        port: "636", //// todo empty string
-        // schema: "ad", //// todo remove
-        bind_dn: "cn=ldapservice,dc=directory,dc=nh", //// todo empty string
-        bind_password: "6cj3x_y_GOQUweEc", //// todo empty string
-        base_dn: "dc=directory,dc=nh", //// todo empty string
+        domain: "",
+        host: "",
+        port: "",
+        bind_dn: "",
+        bind_password: "",
+        base_dn: "",
         tls: true,
-        tls_verify: false, //// true
+        tls_verify: true,
       },
       loading: {
         samba: {
@@ -493,7 +493,6 @@ export default {
           domain: "",
           host: "",
           port: "",
-          // schema: "", ////
           bind_dn: "",
           bind_password: "",
           base_dn: "",
@@ -640,11 +639,6 @@ export default {
         }
       }
     },
-    isExternalConfigOk() {
-      console.log("isExternalConfigOk"); ////
-      //// todo
-      return true;
-    },
     async installProvider() {
       this.error.addInternalProvider = "";
 
@@ -725,8 +719,6 @@ export default {
       this.installProviderProgress = progress;
     },
     async getSambaDefaults() {
-      console.log("getSambaDefaults", this.newProviderId); ////
-
       this.loading.samba.getDefaults = true;
       this.error.samba.getDefaults = "";
       const taskAction = "get-defaults";
@@ -736,8 +728,6 @@ export default {
         taskAction + "-completed",
         this.getSambaDefaultsCompleted
       );
-
-      console.log("getSambaDefaults, newProviderId", this.newProviderId); ////
 
       const res = await to(
         this.createModuleTaskForApp(this.newProviderId, {
@@ -784,8 +774,6 @@ export default {
         this.$set(this.samba.ipAddressOptions, index, option);
         index++;
       }
-
-      console.log("ipAddressOptions", this.samba.ipAddressOptions); ////
     },
     clearSambaErrors() {
       for (const key of Object.keys(this.error.samba)) {
@@ -862,8 +850,6 @@ export default {
           }
 
           if (!this.error.samba.confirmPassword) {
-            console.log(" ////"); ////
-
             this.error.samba.confirmPassword =
               "password.passwords_do_not_match";
           }
@@ -973,9 +959,7 @@ export default {
         }
       }
     },
-    configureSambaModuleCompleted(taskContext, taskResult) {
-      console.log("configureSambaModuleCompleted", taskResult.output); ////
-
+    configureSambaModuleCompleted() {
       this.loading.samba.configureModule = false;
 
       // hide modal
@@ -1035,7 +1019,6 @@ export default {
             protocol: "ldap",
             host: this.external.host,
             port: parseInt(this.external.port),
-            // schema: this.external.schema, //// remove
             bind_dn: this.external.bind_dn,
             bind_password: this.external.bind_password,
             base_dn: this.external.base_dn,

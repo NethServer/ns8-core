@@ -314,14 +314,6 @@
                     <span>{{ provider.host }}</span>
                     <span v-if="provider.port">:{{ provider.port }}</span>
                   </div>
-                  <!-- <div class="row actions"> ////
-                <NsButton
-                  kind="ghost"
-                  :icon="ZoomIn20"
-                  @click="goToDomain(domain)"
-                  >{{ $t("common.details") }}</NsButton
-                >
-              </div> -->
                 </div>
               </template>
             </NsInfoCard>
@@ -537,9 +529,9 @@ export default {
       );
       this.loading.listUserDomains = false;
 
-      console.log("this.domain", this.domain); ////
+      console.log("domain", this.domain); ////
 
-      //// remove getClusterStatus?
+      //// remove getClusterStatus? available nodes will be retrieved in another way
       this.getClusterStatus();
     },
     showAddProviderModal() {
@@ -596,7 +588,7 @@ export default {
 
       for (const node of nodes) {
         if (usedNodes.includes(node.id)) {
-          //// mock
+          //// remove mock
           // node.unavailable = true; ////
           node.unavailable = false;
         } else {

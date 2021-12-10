@@ -110,8 +110,6 @@ export default {
       return isValidationOk;
     },
     async addExternalProvider() {
-      console.log("addExternalProvider"); ////
-
       if (!this.validateAddExternalProvider()) {
         return;
       }
@@ -169,9 +167,7 @@ export default {
         }
       }
     },
-    addExternalProviderCompleted(taskContext, taskResult) {
-      console.log("addExternalProviderCompleted", taskResult.output); ////
-
+    addExternalProviderCompleted() {
       // hide modal after validation
       this.$emit("hide");
     },

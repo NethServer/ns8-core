@@ -322,8 +322,8 @@ export default {
       },
       createDomain: {
         isResumeConfiguration: false,
-        isOpenLdap: true,
-        isSamba: false,
+        isOpenLdap: false,
+        isSamba: true,
         providerId: "",
       },
       providerToDelete: null,
@@ -502,8 +502,6 @@ export default {
       console.log("removeInternalDomain", domain); ////
     },
     async removeExternalDomain(domain) {
-      console.log("removeExternalDomain"); ////
-
       this.error.removeExternalDomain = "";
       const taskAction = "remove-external-domain";
 
@@ -587,12 +585,10 @@ export default {
       this.listUserDomains();
     },
     showUnconfiguredDomainModal(unconfiguredDomain) {
-      //// todo use schema instead of image_name
-      if (unconfiguredDomain.image_name == "openldap") {
+      if (unconfiguredDomain.schema == "rfc2307") {
         this.createDomain.isOpenLdap = true;
         this.createDomain.isSamba = false;
-        //// todo use schema instead of image_name
-      } else if (unconfiguredDomain.image_name == "samba") {
+      } else if (unconfiguredDomain.schema == "ad") {
         this.createDomain.isOpenLdap = false;
         this.createDomain.isSamba = true;
       }
