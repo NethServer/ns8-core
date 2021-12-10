@@ -7,89 +7,6 @@
   >
     <template slot="title">{{ $t("domain_detail.add_provider") }}</template>
     <template slot="content">
-      <!-- <template v-if="step == 'location'"> ////
-        <div class="mg-bottom-md">
-          {{ $t("domains.select_domain_location") }}
-        </div>
-        <div class="bx--grid">
-          <div class="bx--row">
-            <div class="bx--col-md-4">
-              <NsTile
-                :light="true"
-                kind="selectable"
-                v-model="isInternalSelected"
-                value="locationValue"
-                @click="isExternalSelected = false"
-                class="same-height-tile"
-              >
-                <h6 class="mg-bottom-md">
-                  {{ $t("domains.internal") }}
-                </h6>
-                <div>
-                  {{ $t("domains.internal_description") }}
-                </div>
-              </NsTile>
-            </div>
-            <div class="bx--col-md-4">
-              <NsTile
-                :light="true"
-                kind="selectable"
-                v-model="isExternalSelected"
-                value="locationValue"
-                @click="isInternalSelected = false"
-                class="same-height-tile"
-              >
-                <h6 class="mg-bottom-md">
-                  {{ $t("domains.external") }}
-                </h6>
-                <div>
-                  {{ $t("domains.external_description") }}
-                </div>
-              </NsTile>
-            </div>
-          </div>
-        </div>
-      </template>
-      <template v-if="step == 'instance'">
-        <div class="mg-bottom-md">
-          {{ $t("domains.select_prodiver_module") }}
-        </div>
-        <div class="bx--grid">
-          <div class="bx--row">
-            <div class="bx--col-md-4">
-              <NsTile
-                :light="true"
-                kind="selectable"
-                v-model="isOpenLdapSelected"
-                value="instanceValue"
-                @click="isSambaSelected = false"
-                class="same-height-tile"
-              >
-                <h6 class="mg-bottom-md">
-                  {{ $t("domains.openldap") }}
-                </h6>
-              </NsTile>
-            </div>
-            <div class="bx--col-md-4">
-              <NsTile
-                :light="true"
-                kind="selectable"
-                v-model="isSambaSelected"
-                value="instanceValue"
-                @click="isOpenLdapSelected = false"
-                class="same-height-tile"
-              >
-                <h6 class="mg-bottom-md">
-                  {{ $t("domains.samba") }}
-                </h6>
-              </NsTile>
-            </div>
-          </div>
-        </div>
-      </template>
-      <template v-if="step == 'externalConfig'">
-        //// external config
-      </template> -->
       <template v-if="step == 'node'">
         <!-- //// disable unavailable nodes -->
         <div class="mg-bottom-md">
@@ -133,59 +50,12 @@
           </div>
         </div>
       </template>
-      <!-- <template v-if="step == 'summary'"> ////
-        <div class="summary">
-          {{ $t("domains.domain_summary") }}
-        </div>
-        <cv-tile light>
-          <div class="row">
-            <span class="label">{{ $t("domains.location") }}</span>
-            <span>
-              <span v-if="isInternalSelected">{{
-                $t("domains.internal")
-              }}</span>
-              <span v-else>{{ $t("domains.external") }}</span>
-            </span>
-          </div>
-          <template v-if="isInternalSelected">
-            <div class="row">
-              <span class="label">{{ $t("domains.account_provider") }}</span>
-              <span>
-                <span v-if="isOpenLdapSelected">{{
-                  $t("domains.openldap")
-                }}</span>
-                <span v-else>{{ $t("domains.samba") }}</span>
-              </span>
-            </div>
-            <div class="row">
-              <span class="label">{{ $t("common.node") }}</span>
-              <span v-if="selectedNode.ui_name">
-                {{
-                  selectedNode.ui_name +
-                  " (" +
-                  $t("common.node") +
-                  " " +
-                  selectedNode.id +
-                  ")"
-                }}
-              </span>
-              <span v-else>{{
-                $t("common.node") + " " + selectedNode.id
-              }}</span>
-            </div>
-          </template>
-          <div v-else class="row">
-            <span class="label">parameters...</span>
-            <span>values...</span>
-          </div>
-        </cv-tile>
-      </template> -->
       <template v-if="step == 'installingProvider'">
         <NsInlineNotification
-          v-if="error.addModule"
+          v-if="error.addInternalProvider"
           kind="error"
-          :title="$t('action.add-module')"
-          :description="error.addModule"
+          :title="$t('action.add-internal-provider')"
+          :description="error.addInternalProvider"
           :showCloseButton="false"
         />
         <NsEmptyState
@@ -224,7 +94,6 @@
               ref="adminuser"
             >
             </cv-text-input>
-
             <cv-text-input
               :label="$t('samba.adminpass')"
               type="password"
@@ -239,31 +108,6 @@
               ref="adminpass"
               name="adminpass"
             ></cv-text-input>
-
-            <!-- <NsPasswordInput ////
-              :newPasswordLabel="$t('samba.adminpass')"
-              :confirmPasswordLabel="$t('samba.adminpass_confirm')"
-              v-model="samba.adminpass"
-              @passwordValidation="onNewSambaPasswordValidation"
-              :newPaswordHelperText="$t('samba.choose_samba_admin_password')"
-              :newPasswordInvalidMessage="$t(error.samba.adminpass)"
-              :confirmPasswordInvalidMessage="$t(error.samba.confirmPassword)"
-              :passwordHideLabel="$t('password.hide_password')"
-              :passwordShowLabel="$t('password.show_password')"
-              :lengthLabel="$t('password.long_enough')"
-              :lowercaseLabel="$t('password.lowercase_letter')"
-              :uppercaseLabel="$t('password.uppercase_letter')"
-              :numberLabel="$t('password.number')"
-              :symbolLabel="$t('password.symbol')"
-              :equalLabel="$t('password.equal')"
-              :focus="samba.focusPasswordField"
-              :disabled="
-                loading.samba.configureModule || loading.samba.getDefaults
-              "
-              light
-              class="new-samba-password"
-            /> -->
-
             <cv-combo-box
               v-model="samba.ipaddress"
               :options="samba.ipAddressOptions"
@@ -287,26 +131,6 @@
               ref="hostname"
             >
             </cv-text-input>
-            <!-- <cv-text-input ////
-              :label="$t('samba.realm')"
-              v-model.trim="samba.realm"
-              :invalid-message="$t(error.samba.realm)"
-              :disabled="
-                loading.samba.configureModule || loading.samba.getDefaults
-              "
-              ref="realm"
-            >
-            </cv-text-input> -->
-            <!-- <cv-text-input ////
-              :label="$t('samba.nbdomain')"
-              v-model.trim="samba.nbdomain"
-              :invalid-message="$t(error.samba.nbdomain)"
-              :disabled="
-                loading.samba.configureModule || loading.samba.getDefaults
-              "
-              ref="nbdomain"
-            >
-            </cv-text-input> -->
           </cv-form>
           <NsInlineNotification
             v-if="error.samba.configureModule"
@@ -353,7 +177,7 @@
           :loading="loading.samba.configureModule"
           class="wizard-button"
           ref="wizardNext"
-          >{{ $t("common.next") }}
+          >{{ nextStepLabel }}
         </NsButton>
       </div>
     </template>
@@ -387,22 +211,14 @@ export default {
       type: Object,
       required: true,
     },
-    // isResumeConfiguration: { ////
-    //   type: Boolean,
-    //   default: false,
-    // },
-    // providerId: {
-    //   type: String,
-    //   default: "",
-    // },
-    // isOpenLdap: {
-    //   type: Boolean,
-    //   default: true,
-    // },
-    // isSamba: {
-    //   type: Boolean,
-    //   default: false,
-    // },
+    isResumeConfiguration: {
+      type: Boolean,
+      default: false,
+    },
+    providerId: {
+      type: String,
+      default: "",
+    },
   },
   data() {
     return {
@@ -431,7 +247,7 @@ export default {
         },
       },
       error: {
-        addModule: "",
+        addInternalProvider: "",
         samba: {
           adminuser: "",
           adminpass: "",
@@ -457,6 +273,15 @@ export default {
     isSamba() {
       return this.domain.schema == "ad";
     },
+    nextStepLabel() {
+      if (this.step == "node") {
+        return this.$t("domains.install_provider");
+      } else if (this.step == "internalConfig") {
+        return this.$t("domains.configure_provider");
+      } else {
+        return this.$t("common.next");
+      }
+    },
   },
   watch: {
     isShown: function () {
@@ -464,19 +289,19 @@ export default {
         // this.clearOpenLdapErrors(); ////
         this.clearSambaErrors();
 
-        // if (!this.isResumeConfiguration) { ////
-        //   // start wizard from first step
-        //   this.step = "location";
-        // } else {
-        //   // resume configuration
-        //   this.step = "internalConfig";
+        if (!this.isResumeConfiguration) {
+          // start wizard from first step
+          this.step = "node";
+        } else {
+          // resume configuration
+          this.step = "internalConfig";
 
-        //   if (this.isOpenLdap) {
-        //     // this.getOpenLdapDefaults(); ////
-        //   } else if (this.isSamba) {
-        //     this.getSambaDefaults();
-        //   }
-        // }
+          if (this.isOpenLdap) {
+            // this.getOpenLdapDefaults(); ////
+          } else if (this.isSamba) {
+            this.getSambaDefaults();
+          }
+        }
 
         if (this.step !== "internalConfig") {
           // set focus to next button
@@ -506,9 +331,9 @@ export default {
         }
       }
     },
-    // providerId: function () { ////
-    //   this.newProviderId = this.providerId;
-    // },
+    providerId: function () {
+      this.newProviderId = this.providerId;
+    },
     // isOpenLdap: function () { ////
     //   this.isOpenLdapSelected = this.isOpenLdap;
     // },
@@ -516,45 +341,18 @@ export default {
     //   this.isSambaSelected = this.isSamba;
     // },
   },
-  // created() { ////
-  //   this.newProviderId = this.providerId;
-  //   this.isOpenLdapSelected = this.isOpenLdap;
-  //   this.isSambaSelected = this.isSamba;
-  // },
+  created() {
+    this.newProviderId = this.providerId;
+    //   this.isOpenLdapSelected = this.isOpenLdap;
+    //   this.isSambaSelected = this.isSamba;
+  },
   methods: {
     nextStep() {
       switch (this.step) {
-        // case "location": ////
-        //   if (this.isInternalSelected) {
-        //     // internal
-        //     this.step = "instance";
-        //   } else {
-        //     // external
-        //     this.step = "externalConfig";
-        //   }
-        //   break;
-        // case "instance":
-        //   if (this.nodes.length > 1) {
-        //     this.step = "node";
-        //   } else {
-        //     this.step = "summary";
-        //   }
-        //   break;
-        // case "externalConfig":
-        //   if (this.isExternalConfigOk()) {
-        //     this.step = "summary";
-        //   }
-        //   break;
         case "node":
           this.step = "installingProvider";
           this.installProvider();
           break;
-        // case "summary": ////
-        //   if (this.isInternalSelected) {
-        //     this.step = "installingProvider";
-        //     this.installProvider();
-        //   }
-        //   break;
         case "internalConfig":
           if (this.isSamba) {
             this.configureSambaModule();
@@ -599,19 +397,25 @@ export default {
     //   return true;
     // },
     async installProvider() {
-      this.error.addModule = "";
+      this.error.addInternalProvider = "";
 
       //// todo select version
       let version = "latest";
       const moduleName = "samba"; ////
 
-      const taskAction = "add-module";
+      const taskAction = "add-internal-provider";
 
       // register to task completion
-      this.$root.$once(taskAction + "-completed", this.addModuleCompleted);
+      this.$root.$once(
+        taskAction + "-completed",
+        this.addInternalProviderCompleted
+      );
 
       // register to task progress to update progress bar
-      this.$root.$on(taskAction + "-progress", this.addModuleProgress);
+      this.$root.$on(
+        taskAction + "-progress",
+        this.addInternalProviderProgress
+      );
 
       const res = await to(
         this.createClusterTask({
@@ -619,6 +423,7 @@ export default {
           data: {
             image: "ghcr.io/nethserver/samba:" + version, ////
             node: parseInt(this.selectedNode.id),
+            domain: this.domain.name,
           },
           extra: {
             title: this.$t("software_center.app_installation", {
@@ -637,13 +442,13 @@ export default {
 
       if (err) {
         console.error(`error creating task ${taskAction}`, err);
-        this.error.addModule = this.getErrorMessage(err);
+        this.error.addInternalProvider = this.getErrorMessage(err);
         return;
       }
     },
-    addModuleCompleted(taskContext, taskResult) {
+    addInternalProviderCompleted(taskContext, taskResult) {
       // unregister to task progress
-      this.$root.$off("add-module-progress");
+      this.$root.$off("add-internal-provider-progress");
 
       this.step = "internalConfig";
 
@@ -655,7 +460,7 @@ export default {
       // show new app in app drawer
       this.$root.$emit("reloadAppDrawer");
     },
-    addModuleProgress(progress) {
+    addInternalProviderProgress(progress) {
       this.installProviderProgress = progress;
     },
     async getSambaDefaults() {
@@ -873,6 +678,8 @@ export default {
     configureSambaModuleCompleted(taskContext, taskResult) {
       console.log("configureSambaModuleCompleted", taskResult.output); ////
 
+      this.loading.samba.configureModule = false;
+
       // hide modal
       this.$emit("hide");
     },
@@ -893,9 +700,6 @@ export default {
         this.loading.samba.configureModule
       );
     },
-    // onNewSambaPasswordValidation(passwordValidation) { ////
-    //   this.samba.passwordValidation = passwordValidation;
-    // },
   },
 };
 </script>

@@ -52,6 +52,19 @@
       </div>
       <div class="bx--row">
         <div class="bx--col">
+          <NsInlineNotification
+            v-if="hasUnconfiguredDomainsOrProviders"
+            kind="warning"
+            :title="$t('domains.unconfigured_domains_or_providers_title')"
+            :description="
+              $t('domains.unconfigured_domains_or_providers_description')
+            "
+            :showCloseButton="false"
+          />
+        </div>
+      </div>
+      <div class="bx--row">
+        <div class="bx--col">
           <!-- repository being deleted -->
           <NsInlineNotification
             v-if="providerToDelete"
@@ -62,7 +75,7 @@
               providerToDelete.module_id
             "
             :actionLabel="$t('common.undo')"
-            @action="cancelDeleteUnconfiguredProvider()"
+            @action="cancelDeleteUnconfiguredDomain()"
             :showCloseButton="false"
           />
         </div>
@@ -80,7 +93,7 @@
       <template v-else>
         <!-- empty state -->
         <div
-          v-if="!domains.length && !unconfiguredProviders.length"
+          v-if="!domains.length && !unconfiguredDomains.length"
           class="bx--row"
         >
           <div class="bx--col">
@@ -116,7 +129,7 @@
           <div class="bx--row">
             <!-- unconfigured providers -->
             <div
-              v-for="(unconfiguredProvider, index) in unconfiguredProviders"
+              v-for="(unconfiguredDomain, index) in unconfiguredDomains"
               :key="index"
               class="bx--col-md-4 bx--col-max-4"
             >
@@ -135,35 +148,38 @@
                   >
                     <cv-overflow-menu-item
                       danger
-                      @click="
-                        willDeleteUnconfiguredProvider(unconfiguredProvider)
-                      "
+                      @click="willDeleteUnconfiguredDomain(unconfiguredDomain)"
                       >{{ $t("common.delete") }}</cv-overflow-menu-item
                     >
                   </cv-overflow-menu>
                 </template>
                 <template #content>
                   <div class="domain-card-content">
-                    <div class="row icon-and-text node-container">
+                    <div class="row icon-and-text center-content">
                       <NsSvg :svg="Application20" class="icon" />
-                      <span>{{ unconfiguredProvider.module_id }}</span>
+                      <span>{{
+                        unconfiguredDomain.ui_name
+                          ? unconfiguredDomain.ui_name +
+                            " (" +
+                            unconfiguredDomain.module_id +
+                            ")"
+                          : unconfiguredDomain.module_id
+                      }}</span>
                     </div>
-                    <div class="row icon-and-text node-container">
+                    <div class="row icon-and-text center-content">
                       <NsSvg :svg="Chip20" class="icon" />
                       <span
                         >{{ $t("common.node") }}
-                        {{ unconfiguredProvider.node }}</span
+                        {{ unconfiguredDomain.node }}</span
                       >
                     </div>
                     <div class="row actions">
                       <NsButton
                         kind="ghost"
                         :icon="Tools32"
-                        @click="
-                          showUnconfiguredProviderModal(unconfiguredProvider)
-                        "
-                        >{{ $t("domains.resume_configuration") }}</NsButton
-                      >
+                        @click="showUnconfiguredDomainModal(unconfiguredDomain)"
+                        >{{ $t("domains.resume_configuration") }}
+                      </NsButton>
                     </div>
                   </div>
                 </template>
@@ -211,7 +227,16 @@
                         {{ $t("domains.ldap") }}
                       </template>
                     </div>
-                    <div class="row">
+                    <!-- unconfigured providers -->
+                    <div
+                      v-if="domain.hasUnconfiguredProviders"
+                      class="row icon-and-text center-content"
+                    >
+                      <NsSvg :svg="WarningAlt20" class="icon" />
+                      <span>{{ $t("domains.unconfigured_provider") }} </span>
+                    </div>
+                    <!-- number of providers -->
+                    <div v-else class="row">
                       {{ domain.providers.length }}
                       {{ $tc("domains.providers", domain.providers.length) }}
                     </div>
@@ -288,7 +313,7 @@ export default {
       q: {},
       isShownCreateDomainModal: false,
       domains: [],
-      unconfiguredProviders: [],
+      unconfiguredDomains: [],
       nodes: [],
       isShownDeleteDomainModal: false,
       currentDomain: {
@@ -313,6 +338,14 @@ export default {
         removeExternalDomain: "",
       },
     };
+  },
+  computed: {
+    hasUnconfiguredDomainsOrProviders() {
+      return (
+        this.unconfiguredDomains.length ||
+        this.domains.find((d) => d.hasUnconfiguredProviders)
+      );
+    },
   },
   beforeRouteEnter(to, from, next) {
     next((vm) => {
@@ -363,24 +396,46 @@ export default {
     listUserDomainsCompleted(taskContext, taskResult) {
       console.log("listUserDomainsCompleted", taskResult.output); ////
 
-      this.domains = taskResult.output.domains.sort(
-        this.sortByProperty("name")
-      );
-      this.unconfiguredProviders =
-        taskResult.output.unconfigured_providers.sort(
-          this.sortByProperty("module_id")
+      let domains = taskResult.output.domains;
+      if (domains.length) {
+        domains.sort(this.sortByProperty("name"));
+      }
+
+      // check for unconfigured providers
+      for (const domain of domains) {
+        const unconfiguredProvidersFound = domain.providers.find(
+          (p) => !p.host
         );
+
+        if (unconfiguredProvidersFound) {
+          domain.hasUnconfiguredProviders = true;
+        } else {
+          domain.hasUnconfiguredProviders = false;
+        }
+      }
+
+      this.domains = domains;
+
+      let unconfiguredDomains = taskResult.output.unconfigured_domains;
+      if (unconfiguredDomains.length) {
+        unconfiguredDomains.sort(this.sortByProperty("module_id"));
+      }
+      this.unconfiguredDomains = unconfiguredDomains;
+
       this.loading.listUserDomains = false;
     },
     showCreateDomainModal() {
       this.createDomain.isResumeConfiguration = false;
       this.createDomain.providerId = "";
-      this.isShownCreateDomainModal = true;
+
+      this.$nextTick(() => {
+        this.isShownCreateDomainModal = true;
+      });
     },
     hideCreateDomainModal() {
       this.isShownCreateDomainModal = false;
 
-      // needed if the user cancels domain creation
+      // reload domains
       this.listUserDomains();
     },
     showDeleteDomainModal(domain) {
@@ -481,9 +536,9 @@ export default {
     removeExternalDomainCompleted() {
       this.listUserDomains();
     },
-    willDeleteUnconfiguredProvider(provider) {
+    willDeleteUnconfiguredDomain(provider) {
       const timeout = setTimeout(() => {
-        this.deleteUnconfiguredProvider(provider);
+        this.deleteUnconfiguredDomain(provider);
         this.providerToDelete = null;
       }, this.DELETE_DELAY);
 
@@ -491,18 +546,18 @@ export default {
       this.providerToDelete = provider;
 
       // remove provider from list
-      this.unconfiguredProviders = this.unconfiguredProviders.filter((p) => {
+      this.unconfiguredDomains = this.unconfiguredDomains.filter((p) => {
         return p.module_id != provider.module_id;
       });
     },
-    async deleteUnconfiguredProvider(provider) {
+    async deleteUnconfiguredDomain(provider) {
       this.error.removeModule = "";
       const taskAction = "remove-module";
 
       // register to task completion (using $on instead of $once for multiple revertable deletions)
       this.$root.$on(
         taskAction + "-completed",
-        this.deleteUnconfiguredProviderCompleted
+        this.deleteUnconfiguredDomainCompleted
       );
 
       const res = await to(
@@ -528,27 +583,27 @@ export default {
         return;
       }
     },
-    deleteUnconfiguredProviderCompleted() {
+    deleteUnconfiguredDomainCompleted() {
       this.listUserDomains();
     },
-    showUnconfiguredProviderModal(unconfiguredProvider) {
+    showUnconfiguredDomainModal(unconfiguredDomain) {
       //// todo use schema instead of image_name
-      if (unconfiguredProvider.image_name == "openldap") {
+      if (unconfiguredDomain.image_name == "openldap") {
         this.createDomain.isOpenLdap = true;
         this.createDomain.isSamba = false;
         //// todo use schema instead of image_name
-      } else if (unconfiguredProvider.image_name == "samba") {
+      } else if (unconfiguredDomain.image_name == "samba") {
         this.createDomain.isOpenLdap = false;
         this.createDomain.isSamba = true;
       }
       this.createDomain.isResumeConfiguration = true;
-      this.createDomain.providerId = unconfiguredProvider.module_id;
+      this.createDomain.providerId = unconfiguredDomain.module_id;
 
       this.$nextTick(() => {
         this.isShownCreateDomainModal = true;
       });
     },
-    cancelDeleteUnconfiguredProvider() {
+    cancelDeleteUnconfiguredDomain() {
       clearTimeout(this.providerToDelete.timeout);
       this.providerToDelete = null;
       this.listUserDomains();
@@ -573,7 +628,7 @@ export default {
   margin-top: $spacing-06;
 }
 
-.node-container {
+.center-content {
   justify-content: center;
 }
 </style>

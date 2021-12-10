@@ -275,10 +275,10 @@
       </template> -->
       <template v-if="step == 'installingProvider'">
         <NsInlineNotification
-          v-if="error.addModule"
+          v-if="error.addInternalProvider"
           kind="error"
-          :title="$t('action.add-module')"
-          :description="error.addModule"
+          :title="$t('action.add-internal-provider')"
+          :description="error.addInternalProvider"
           :showCloseButton="false"
         />
         <NsEmptyState
@@ -519,7 +519,7 @@ export default {
         },
       },
       error: {
-        addModule: "",
+        addInternalProvider: "",
         samba: {
           adminuser: "",
           adminpass: "",
@@ -557,6 +557,11 @@ export default {
         this.step == "node"
       ) {
         return this.$t("domains.install_provider");
+      } else if (
+        this.step == "internalConfig" ||
+        this.step == "externalConfig"
+      ) {
+        return this.$t("domains.configure_domain");
       } else {
         return this.$t("common.next");
       }
@@ -704,19 +709,25 @@ export default {
       return true;
     },
     async installProvider() {
-      this.error.addModule = "";
+      this.error.addInternalProvider = "";
 
       //// todo select version
       let version = "latest";
       const moduleName = "samba"; ////
 
-      const taskAction = "add-module";
+      const taskAction = "add-internal-provider";
 
       // register to task completion
-      this.$root.$once(taskAction + "-completed", this.addModuleCompleted);
+      this.$root.$once(
+        taskAction + "-completed",
+        this.addInternalProviderCompleted
+      );
 
       // register to task progress to update progress bar
-      this.$root.$on(taskAction + "-progress", this.addModuleProgress);
+      this.$root.$on(
+        taskAction + "-progress",
+        this.addInternalProviderProgress
+      );
 
       const res = await to(
         this.createClusterTask({
@@ -742,13 +753,13 @@ export default {
 
       if (err) {
         console.error(`error creating task ${taskAction}`, err);
-        this.error.addModule = this.getErrorMessage(err);
+        this.error.addInternalProvider = this.getErrorMessage(err);
         return;
       }
     },
-    addModuleCompleted(taskContext, taskResult) {
+    addInternalProviderCompleted(taskContext, taskResult) {
       // unregister to task progress
-      this.$root.$off("add-module-progress");
+      this.$root.$off("add-internal-provider-progress");
 
       this.step = "internalConfig";
 
@@ -760,7 +771,7 @@ export default {
       // show new app in app drawer
       this.$root.$emit("reloadAppDrawer");
     },
-    addModuleProgress(progress) {
+    addInternalProviderProgress(progress) {
       this.installProviderProgress = progress;
     },
     async getSambaDefaults() {
