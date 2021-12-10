@@ -229,50 +229,6 @@
           </div>
         </div>
       </template>
-      <!-- //// remove -->
-      <!-- <template v-if="step == 'summary'">
-        <div class="summary">
-          {{ $t("domains.domain_summary") }}
-        </div>
-        <cv-tile light>
-          <div class="row">
-            <span class="label">{{ $t("domains.location") }}</span>
-            <span>
-              <span v-if="isInternalSelected">{{
-                $t("domains.internal")
-              }}</span>
-              <span v-else>{{ $t("domains.external") }}</span>
-            </span>
-          </div>
-          <template v-if="isInternalSelected">
-            <div class="row">
-              <span class="label">{{ $t("domains.account_provider") }}</span>
-              <span>
-                <span v-if="isOpenLdapSelected">{{
-                  $t("domains.openldap")
-                }}</span>
-                <span v-else>{{ $t("domains.samba") }}</span>
-              </span>
-            </div>
-            <div class="row">
-              <span class="label">{{ $t("common.node") }}</span>
-              <span v-if="selectedNode.ui_name">
-                {{
-                  selectedNode.ui_name +
-                  " (" +
-                  $t("common.node") +
-                  " " +
-                  selectedNode.id +
-                  ")"
-                }}
-              </span>
-              <span v-else>{{
-                $t("common.node") + " " + selectedNode.id
-              }}</span>
-            </div>
-          </template>
-        </cv-tile>
-      </template> -->
       <template v-if="step == 'installingProvider'">
         <NsInlineNotification
           v-if="error.addInternalProvider"
@@ -646,7 +602,6 @@ export default {
           if (this.nodes.length > 1) {
             this.step = "node";
           } else {
-            // this.step = "summary"; ////
             this.step = "installingProvider";
             this.installProvider();
           }
@@ -655,16 +610,9 @@ export default {
           this.addExternalDomain();
           break;
         case "node":
-          // this.step = "summary";
           this.step = "installingProvider";
           this.installProvider();
           break;
-        // case "summary": ////
-        //   if (this.isInternalSelected) {
-        //     this.step = "installingProvider";
-        //     this.installProvider();
-        //   }
-        //   break;
         case "internalConfig":
           if (this.isSambaSelected) {
             this.configureSambaModule();
@@ -683,17 +631,6 @@ export default {
         case "node":
           this.step = "instance";
           break;
-        // case "summary": ////
-        //   if (this.isInternalSelected) {
-        //     if (this.nodes.length > 1) {
-        //       this.step = "node";
-        //     } else {
-        //       this.step = "instance";
-        //     }
-        //   } else {
-        //     this.step = "externalConfig";
-        //   }
-        //   break;
       }
     },
     deselectOtherNodes(node) {
@@ -729,6 +666,13 @@ export default {
         this.addInternalProviderProgress
       );
 
+      // register to task error
+      this.$root.$off(taskAction + "-aborted");
+      this.$root.$once(
+        taskAction + "-aborted",
+        this.addInternalProviderAborted
+      );
+
       const res = await to(
         this.createClusterTask({
           action: taskAction,
@@ -756,6 +700,12 @@ export default {
         this.error.addInternalProvider = this.getErrorMessage(err);
         return;
       }
+    },
+    addInternalProviderAborted(taskResult) {
+      console.log("add internal provider aborted", taskResult);
+
+      // hide modal so that user can see error notification
+      this.$emit("hide");
     },
     addInternalProviderCompleted(taskContext, taskResult) {
       // unregister to task progress
@@ -792,6 +742,9 @@ export default {
       const res = await to(
         this.createModuleTaskForApp(this.newProviderId, {
           action: taskAction,
+          data: {
+            provision: "new-domain",
+          },
           extra: {
             title: this.$t("action." + taskAction),
             isNotificationHidden: true,
@@ -808,6 +761,7 @@ export default {
     },
     getSambaDefaultsCompleted(taskContext, taskResult) {
       console.log("getSambaDefaultsCompleted", taskResult.output); ////
+
       this.loading.samba.getDefaults = false;
       const defaults = taskResult.output;
 
@@ -984,6 +938,7 @@ export default {
             ipaddress: this.samba.ipaddress,
             hostname: this.samba.hostname,
             nbdomain: this.samba.nbdomain,
+            provision: "new-domain",
           },
           extra: {
             title: this.$t("action." + taskAction),
@@ -1150,11 +1105,6 @@ export default {
   padding-right: 0.5rem;
   font-weight: bold;
 }
-
-// .summary { ////
-//   font-weight: bold;
-//   margin-bottom: $spacing-05;
-// }
 
 .bx--form {
   .bx--form-item,

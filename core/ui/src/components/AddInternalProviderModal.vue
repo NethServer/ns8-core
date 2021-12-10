@@ -417,6 +417,13 @@ export default {
         this.addInternalProviderProgress
       );
 
+      // register to task error
+      this.$root.$off(taskAction + "-aborted");
+      this.$root.$once(
+        taskAction + "-aborted",
+        this.addInternalProviderAborted
+      );
+
       const res = await to(
         this.createClusterTask({
           action: taskAction,
@@ -445,6 +452,12 @@ export default {
         this.error.addInternalProvider = this.getErrorMessage(err);
         return;
       }
+    },
+    addInternalProviderAborted(taskResult) {
+      console.log("add internal provider aborted", taskResult);
+
+      // hide modal so that user can see error notification
+      this.$emit("hide");
     },
     addInternalProviderCompleted(taskContext, taskResult) {
       // unregister to task progress
@@ -481,6 +494,10 @@ export default {
       const res = await to(
         this.createModuleTaskForApp(this.newProviderId, {
           action: taskAction,
+          data: {
+            provision: "join-domain",
+            realm: this.domain.name,
+          },
           extra: {
             title: this.$t("action." + taskAction),
             isNotificationHidden: true,
@@ -497,11 +514,11 @@ export default {
     },
     getSambaDefaultsCompleted(taskContext, taskResult) {
       console.log("getSambaDefaultsCompleted", taskResult.output); ////
+
       this.loading.samba.getDefaults = false;
       const defaults = taskResult.output;
 
-      // this.samba.adminuser = defaults.adminuser; ////
-
+      this.samba.adminuser = defaults.adminuser;
       this.samba.hostname = defaults.hostname;
 
       // this.samba.nbdomain = defaults.nbdomain; ////
@@ -640,7 +657,8 @@ export default {
             realm: this.domain.name,
             ipaddress: this.samba.ipaddress,
             hostname: this.samba.hostname,
-            nbdomain: null, // join provider requires null nbdomain
+            // nbdomain: null, // join provider requires null nbdomain ////
+            provision: "join-domain",
           },
           extra: {
             title: this.$t("action." + taskAction),

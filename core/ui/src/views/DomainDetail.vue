@@ -531,15 +531,15 @@ export default {
       }
     },
     showAddInternalProviderModal() {
-      this.isShownAddInternalProviderModal = true;
-    },
-    showAddExternalProviderModal() {
       this.addProvider.isResumeConfiguration = false;
       this.addProvider.providerId = "";
 
       this.$nextTick(() => {
-        this.isShownAddExternalProviderModal = true;
+        this.isShownAddInternalProviderModal = true;
       });
+    },
+    showAddExternalProviderModal() {
+      this.isShownAddExternalProviderModal = true;
     },
     async getClusterStatus() {
       this.error.getClusterStatus = "";
