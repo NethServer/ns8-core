@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 
 #
 # Copyright (C) 2021 Nethesis S.r.l.
@@ -20,11 +20,14 @@
 # along with NethServer.  If not, see COPYING.
 #
 
+# Redirect any output to the journal (stderr)
+exec 1>&2
+
 # Make sure volume does not exists
-podman volume rm dokuwiki-data >/dev/null
+podman volume rm dokuwiki-data
 
 # Move restored data
-mv ~/restore/dokuwiki-data ~/.local/share/containers/storage/volumes/
+mv -v ~/restore/dokuwiki-data/ ~/.local/share/containers/storage/volumes/
 
 # Inform podman about the new volume
-podman volume create dokuwiki-data >/dev/null
+podman volume create dokuwiki-data
