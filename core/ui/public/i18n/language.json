@@ -40,7 +40,9 @@
     "previous": "Previous",
     "please_read_carefully": "Please read carefully",
     "type_to_to_confirm": "Type <strong>{name}</strong> to confirm deletion",
-    "understood_delete": "I understand, delete"
+    "understood_delete": "I understand, delete",
+    "show": "Show",
+    "hide": "Hide"
   },
   "error": {
     "error": "Error",
@@ -377,7 +379,9 @@
     "domain_exists": "Domain already exists",
     "provider_exists": "Provider already exists",
     "ipaddress_dc_conflict_check_failed": "A provider with this IP already exists",
-    "unconfigured_provider": "Unconfigured provider"
+    "unconfigured_provider": "Unconfigured provider",
+    "unconfigured_domains": "Unconfigured domains",
+    "configured_domains": "Configured domains"
   },
   "samba": {
     "adminuser": "Samba admin username",

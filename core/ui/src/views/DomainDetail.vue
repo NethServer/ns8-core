@@ -60,7 +60,7 @@
       <div class="bx--row">
         <div class="bx--col">
           <NsInlineNotification
-            v-if="hasUnconfiguredProviders"
+            v-if="unconfiguredProviders.length"
             kind="warning"
             :title="$t('domain_detail.unconfigured_providers_title')"
             :description="
@@ -89,39 +89,39 @@
       <div v-else class="bx--row">
         <div class="bx--col-md-4">
           <cv-tile light>
-            <template v-if="domain.schema == 'rfc2307'">
-              <!-- //// todo openldap settings -->
-            </template>
-            <template v-else-if="domain.schema == 'ad'">
-              <div class="mg-bottom-md">
-                <span class="setting-label">{{ $t("domains.schema") }}</span>
-                <span class="setting-value">{{ domain.schema }}</span>
-              </div>
-              <div class="mg-bottom-md">
-                <span class="setting-label">{{ $t("domains.base_dn") }}</span>
-                <span class="setting-value">{{ domain.base_dn }}</span>
-              </div>
-              <div class="mg-bottom-md">
-                <span class="setting-label">{{ $t("domains.bind_dn") }}</span>
-                <span class="setting-value">{{ domain.bind_dn }}</span>
-              </div>
-              <div class="mg-bottom-md">
-                <span class="setting-label">{{
-                  $t("domains.bind_password")
-                }}</span>
-                <span class="setting-value">{{ domain.bind_password }}</span>
-              </div>
-              <div class="mg-bottom-md">
-                <span class="setting-label">{{ $t("domains.tls") }}</span>
-                <span class="setting-value">{{ domain.tls }}</span>
-              </div>
-              <div class="mg-bottom-md">
-                <span class="setting-label">{{
-                  $t("domains.tls_verify")
-                }}</span>
-                <span class="setting-value">{{ domain.tls_verify }}</span>
-              </div>
-            </template>
+            <div class="mg-bottom-md">
+              <span class="setting-label">{{ $t("domains.schema") }}</span>
+              <span class="setting-value">{{ domain.schema }}</span>
+            </div>
+            <div class="mg-bottom-md">
+              <span class="setting-label">{{ $t("domains.base_dn") }}</span>
+              <span class="setting-value">{{ domain.base_dn }}</span>
+            </div>
+            <div class="mg-bottom-md">
+              <span class="setting-label">{{ $t("domains.bind_dn") }}</span>
+              <span class="setting-value">{{ domain.bind_dn }}</span>
+            </div>
+            <div class="mg-bottom-md">
+              <span class="setting-label">{{
+                $t("domains.bind_password")
+              }}</span>
+              <span class="setting-value">{{
+                isShownBindPassword ? domain.bind_password : "********"
+              }}</span>
+              <cv-link @click="toggleBindPassword" class="toggle-bind-password"
+                >{{
+                  isShownBindPassword ? $t("common.hide") : $t("common.show")
+                }}
+              </cv-link>
+            </div>
+            <div class="mg-bottom-md">
+              <span class="setting-label">{{ $t("domains.tls") }}</span>
+              <span class="setting-value">{{ domain.tls }}</span>
+            </div>
+            <div class="mg-bottom-md">
+              <span class="setting-label">{{ $t("domains.tls_verify") }}</span>
+              <span class="setting-value">{{ domain.tls_verify }}</span>
+            </div>
           </cv-tile>
         </div>
       </div>
@@ -197,12 +197,12 @@
           </div>
         </div>
         <div class="bx--row">
+          <!-- unconfigured providers -->
           <div
-            v-for="(provider, index) in domain.providers"
-            :key="index"
+            v-for="provider in unconfiguredProviders"
+            :key="provider.id"
             class="bx--col-md-4 bx--col-max-4"
           >
-            <!-- unconfigured provider -->
             <NsInfoCard
               v-if="!provider.host"
               light
@@ -266,9 +266,14 @@
                 </div>
               </template>
             </NsInfoCard>
-            <!-- configured provider -->
+          </div>
+          <!-- configured providers -->
+          <div
+            v-for="provider in configuredProviders"
+            :key="provider.id"
+            class="bx--col-md-4 bx--col-max-4"
+          >
             <NsInfoCard
-              v-else
               light
               :title="provider.ui_name ? provider.ui_name : provider.id"
               :icon="domain.location == 'internal' ? Application32 : Link32"
@@ -350,6 +355,7 @@
         :isResumeConfiguration="addProvider.isResumeConfiguration"
         :providerId="addProvider.providerId"
         @hide="hideAddInternalProviderModal"
+        @providerInstalled="listUserDomains"
       />
       <AddExternalProviderModal
         v-else
@@ -460,6 +466,7 @@ export default {
         isResumeConfiguration: false,
         providerId: "",
       },
+      isShownBindPassword: false,
       loading: {
         listUserDomains: true,
         getClusterStatus: true,
@@ -476,8 +483,17 @@ export default {
     };
   },
   computed: {
-    hasUnconfiguredProviders() {
-      return this.domain && this.domain.providers.find((p) => !p.host);
+    unconfiguredProviders() {
+      if (!this.domain) {
+        return [];
+      }
+      return this.domain.providers.filter((p) => !p.host);
+    },
+    configuredProviders() {
+      if (!this.domain) {
+        return [];
+      }
+      return this.domain.providers.filter((p) => p.host);
     },
   },
   beforeRouteEnter(to, from, next) {
@@ -795,6 +811,9 @@ export default {
         this.isShownAddInternalProviderModal = true;
       });
     },
+    toggleBindPassword() {
+      this.isShownBindPassword = !this.isShownBindPassword;
+    },
   },
 };
 </script>
@@ -824,5 +843,9 @@ export default {
 
 .center-content {
   justify-content: center;
+}
+
+.toggle-bind-password {
+  margin-left: $spacing-03;
 }
 </style>

@@ -426,6 +426,9 @@ export default {
         this.getSambaDefaults();
       } //// else openldap
 
+      // reload domains
+      this.$emit("providerInstalled");
+
       // show new app in app drawer
       this.$root.$emit("reloadAppDrawer");
     },
