@@ -21,13 +21,15 @@
 import redis
 import ldap3
 import ssl
+import sys
 
-def probe_ldap_basedn(config):
-    ldapconn = _open_ldap_connection(config, get_info=ldap3.DSA)
+def probe_ldap_basedn(config, ldapconn=None):
+    if ldapconn is None:
+        ldapconn = _open_ldap_connection(config, get_info=ldap3.DSA)
     try:
         return ldapconn.server.info.naming_contexts[0]
     except:
-        return None
+        return 'dc=' + config["domain"].lower().replace(".", ",dc=")
 
 def probe_ldap_schema(config):
     ldapconn = _open_ldap_connection(config, get_info=ldap3.DSA)
@@ -62,8 +64,9 @@ def _open_ldap_connection(config, get_info=None):
 def validate_ldap(config):
     logex = None
     errors = []
+    ldapconn = None
     try:
-        _open_ldap_connection(config)
+        ldapconn = _open_ldap_connection(config, get_info=ldap3.DSA)
     except ldap3.core.exceptions.LDAPSocketOpenError as ex:
         logex = ex
         if('socket ssl wrapping' in str(ex)):
@@ -87,6 +90,24 @@ def validate_ldap(config):
     except Exception as ex:
         logex = ex
         errors.append({'field':'host', 'parameter':'host','value': config['host'], 'error': 'generic_host_connection_error'})
+
+    if ldapconn:
+        if config['base_dn'] == "":
+            base_dn = probe_ldap_basedn(config, ldapconn)
+        else:
+            base_dn = config['base_dn']
+
+        try:
+            ldapconn.search(base_dn, '(objectClass=*)', search_scope=ldap3.BASE)
+        except ldap3.core.exceptions.LDAPNoSuchObjectResult as ex:
+            logex = ex
+            errors.append({'field':'base_dn', 'parameter':'base_dn','value': base_dn, 'error': 'base_dn_not_found'})
+        except ldap3.core.exceptions.LDAPInvalidDnError as ex:
+            logex = ex
+            errors.append({'field':'base_dn', 'parameter':'base_dn','value': base_dn, 'error': 'dn_syntax_error'})
+        except Exception as ex:
+            logex = ex
+            errors.append({'field':'base_dn', 'parameter':'base_dn','value': base_dn, 'error': 'generic_base_dn_check_error'})
 
     return (errors, logex)
 

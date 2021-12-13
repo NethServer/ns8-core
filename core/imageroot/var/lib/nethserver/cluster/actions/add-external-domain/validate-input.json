@@ -102,12 +102,8 @@
                 },
                 "base_dn": {
                     "title": "Base DN",
-                    "description": "The LDAP base DN is probed automatically if the value is `null` or the property is missing",
-                    "type": [
-                        "string",
-                        "null"
-                    ],
-                    "minLength": 1
+                    "description": "The LDAP base DN is probed automatically if the value is `\"\"` (empty string)",
+                    "type": "string"
                 },
                 "bind_dn": {
                     "type": "string",
@@ -125,6 +121,7 @@
                 }
             },
             "required": [
+                "base_dn",
                 "bind_dn",
                 "bind_password",
                 "tls",
