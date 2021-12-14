@@ -27,6 +27,7 @@ import os
 import requests
 import sys
 import getpass
+import agent
 
 # Handled exceptions:
 from aiohttp import ClientError
@@ -44,7 +45,6 @@ def _cachefile_exists():
         return os.path.exists(_get_cachefile_path())
     except KeyError:
         return False
-
 
 def login_command(args):
     if args.username:
@@ -150,6 +150,13 @@ def run_command(args):
 
         return response['exit_code']
 
+def list_actions_command(args):
+    rdb = agent.redis_connect()
+    for krole in rdb.scan_iter('*/roles/owner'):
+        agent_id = krole.removesuffix('/roles/owner')
+        for action in rdb.smembers(krole):
+            print(f"{agent_id}/{action}")
+    return 0
 
 root_parser = argparse.ArgumentParser(description='Invoke cluster APIs from the command line')
 root_parser.add_argument('--endpoint', help='override the library default endpoint URL')
@@ -178,9 +185,11 @@ submit_parser.add_argument('--check-idle-time', help='check the agent client idl
 submit_parser.add_argument('--nowait', help='do not wait for task completion. Return immediately the task ID', action='store_true')
 submit_parser.add_argument('--raw', help='convert output with print() instead dumping it in JSON format', action='store_true')
 
+list_actions_parser = subparsers.add_parser('list-actions', help='list actions granted to role "owner"')
+
 args = root_parser.parse_args()
 
-command = globals().get(args.command + '_command')
+command = globals().get(args.command.replace('-', '_') + '_command')
 
 try:
     exit_code = command(args)
