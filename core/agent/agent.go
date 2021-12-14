@@ -144,6 +144,71 @@ func publishStatus(client redis.Cmdable, progressChannel string, actionDescripto
 	}
 }
 
+func runCancelTask(task *models.Task, cancelFuncMap map[string]context.CancelFunc) {
+	// Redis key names where the action response is stored:
+	progressChannel := "progress/" + agentPrefix + "/task/" + task.ID
+	outputKey := agentPrefix + "/task/" + task.ID + "/output"
+	errorKey := agentPrefix + "/task/" + task.ID + "/error"
+	exitCodeKey := agentPrefix + "/task/" + task.ID + "/exit_code"
+
+	actionError := ""
+	actionOutput := ""
+
+	actionDescriptor := action.CreateBuiltin(task.Action)
+	publishStatus(rdb, progressChannel, actionDescriptor)
+
+	type CancelRequest struct {
+		Task 	string
+		Timeout int
+	}
+
+	var request CancelRequest
+	var exitCode int
+
+	payload, _ := json.Marshal(task.Data)
+	jsonErr := json.Unmarshal(payload, &request)
+
+	// STEP 1. builtin-validation.json
+	lastStep := "builtin-validation.json"
+	if jsonErr == nil && len(request.Task) > 0 {
+		actionDescriptor.Status = "running"
+		publishStatus(rdb, progressChannel, actionDescriptor)
+
+		// STEP 2. task-lookup
+		lastStep = "task-lookup"
+		if cancelFunc, hasTask := cancelFuncMap[request.Task]; hasTask == true {
+			log.Printf("%s/task/%s: %s/%s is starting", agentPrefix, task.ID, task.Action, lastStep)
+			cancelFunc() // STEP 3. task cancellation
+			lastStep = "cancellation"
+			exitCode = 0
+			actionDescriptor.SetProgressAtStep(0, 100)
+			actionDescriptor.Status = "completed"
+		} else {
+			exitCode = 2
+			actionDescriptor.Status = "validation-failed"
+			actionError = "Action cancel-task validation-failed at step task-lookup: task ID not found"
+			log.Printf(SD_ERR + actionError)
+		}
+	} else {
+		exitCode = 10
+		actionDescriptor.Status = "validation-failed"
+		actionError = "Action cancel-task validation-failed at step builtin-validation.json: invalid task ID or timeout value"
+		log.Printf(SD_ERR + actionError)
+	}
+
+	_, err := rdb.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
+		// Publish the action response
+		pipe.Set(ctx, outputKey, actionOutput, taskExpireDuration)
+		pipe.Set(ctx, errorKey, actionError, taskExpireDuration)
+		pipe.Set(ctx, exitCodeKey, exitCode, taskExpireDuration)
+		publishStatus(pipe, progressChannel, actionDescriptor)
+		return nil
+	})
+	if err != nil {
+		log.Print(SD_ERR + "Redis command failed: ", err)
+	}
+	log.Printf("%s/task/%s: action \"%s\" status is \"%s\" (%d) at step %s", agentPrefix, task.ID, task.Action, actionDescriptor.Status, exitCode, lastStep)
+}
 
 func runListActions(task *models.Task) {
 	// Redis key names where the action response is stored:
@@ -158,7 +223,13 @@ func runListActions(task *models.Task) {
 	actionDescriptor.Status = "running"
 	publishStatus(rdb, progressChannel, actionDescriptor)
 
-	actionOutput, _ := json.Marshal(action.ListActions(actionPaths))
+	// read the action list from disk
+	actions := action.ListActions(actionPaths)
+
+	// append agent builtin actions
+	actions = append(actions, "list-actions", "cancel-task")
+
+	actionOutput, _ := json.Marshal(actions)
 	actionError := ""
 	exitCode := 0
 
@@ -178,7 +249,7 @@ func runListActions(task *models.Task) {
 	}
 }
 
-func runAction(task *models.Task) {
+func runAction(actionCtx context.Context, task *models.Task) {
 
 	// Redis key names where the action response is stored:
 	progressChannel := "progress/" + agentPrefix + "/task/" + task.ID
@@ -370,10 +441,18 @@ func runAction(task *models.Task) {
 		// otherwise it blocks our thread.
 		comWriteFd.Close()
 
-		// Block until the three coroutines (stdout, stderr, comfd) finish
-		<- comReadLock // 1...
-		<- comReadLock // 2...
-		<- comReadLock // 3!
+		// Block until the three coroutines (stdout, stderr, comfd) finish,
+		// or the action is canceled
+		for chanCount := 0; chanCount < 3; {
+			select {
+			case <- comReadLock:
+				chanCount++
+			case <- actionCtx.Done():
+				if err := syscall.Kill(-cmd.Process.Pid, syscall.SIGTERM); err != nil {
+					log.Print(SD_ERR+"Kill failed: ", err)
+				}
+			}
+		}
 		if err := cmd.Wait(); err != nil {
 			exitCode = cmd.ProcessState.ExitCode()
 			if actionDescriptor.Status == "running" {
@@ -476,6 +555,8 @@ func main() {
 		cancelBrpop()
 	}()
 
+	taskCancelFunctions := make(map[string]context.CancelFunc)
+
 	for {
 		var task models.Task
 
@@ -502,16 +583,24 @@ func main() {
 			log.Print(SD_ERR+"Context set error: ", setErr)
 		}
 
+		taskCtx, taskCancelFunction := context.WithCancel(ctx)
+		taskCancelFunctions[task.ID] = taskCancelFunction
+
 		workersRegistry.Add(1)
 
 		// run the Action required by the Task payload
 		go func(task models.Task) {
-			defer workersRegistry.Done()
+			defer func() {
+				workersRegistry.Done()
+				delete(taskCancelFunctions, task.ID)
+			}()
 			switch task.Action {
 			case "list-actions":
 				runListActions(&task)
+			case "cancel-task":
+				runCancelTask(&task, taskCancelFunctions)
 			default:
-				runAction(&task)
+				runAction(taskCtx, &task)
 			}
 		}(task)
 	}

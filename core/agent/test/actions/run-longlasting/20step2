@@ -1,0 +1,6 @@
+#!/bin/bash
+
+for ((I=0 ; I<2000 ; I++)); do
+    echo $I
+    sleep 0.05
+done
