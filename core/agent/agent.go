@@ -271,6 +271,8 @@ func runAction(task *models.Task) {
 		inputData, _ := json.Marshal(task.Data)
 		cmd.Stdin = strings.NewReader(string(inputData))
 		cmd.ExtraFiles = []*os.File{comWriteFd}
+		// Run cmd in a new progress group (PG) to easily send termination signals
+		cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true, Pgid: 0}
 
 		stdoutReader, _ := cmd.StdoutPipe()
 		// Copy the command stderr to our stderr stream with a pipe tee
