@@ -91,11 +91,98 @@
         </div>
       </div>
       <template v-else>
+        <template v-if="unconfiguredDomains.length">
+          <div class="bx--row">
+            <div class="bx--col">
+              <h4 class="mg-bottom-md">
+                {{ $t("domains.unconfigured_domains") }}
+              </h4>
+            </div>
+          </div>
+          <!-- unconfigured domains -->
+          <div class="bx--row">
+            <div
+              v-for="(unconfiguredDomain, index) in unconfiguredDomains"
+              :key="index"
+              class="bx--col-md-4 bx--col-max-4"
+            >
+              <NsInfoCard
+                light
+                :title="$t('domains.unconfigured_domain')"
+                :icon="WarningAlt32"
+                :showOverflowMenu="true"
+              >
+                <template #menu>
+                  <cv-overflow-menu
+                    :flip-menu="true"
+                    tip-position="top"
+                    tip-alignment="end"
+                    class="top-right-overflow-menu"
+                  >
+                    <cv-overflow-menu-item
+                      danger
+                      @click="willDeleteUnconfiguredDomain(unconfiguredDomain)"
+                      >{{ $t("common.delete") }}</cv-overflow-menu-item
+                    >
+                  </cv-overflow-menu>
+                </template>
+                <template #content>
+                  <div class="domain-card-content">
+                    <div class="row">
+                      <span>{{
+                        $t("domains." + unconfiguredDomain.location)
+                      }}</span>
+                      <template
+                        v-if="unconfiguredDomain.location == 'internal'"
+                      >
+                        <span v-if="unconfiguredDomain.schema == 'rfc2307'">
+                          {{ $t("domains.openldap") }}
+                        </span>
+                        <span v-else-if="unconfiguredDomain.schema == 'ad'">
+                          {{ $t("domains.samba") }}
+                        </span>
+                      </template>
+                      <template v-else>
+                        {{ $t("domains.ldap") }}
+                      </template>
+                      <span>{{
+                        " (" +
+                        (unconfiguredDomain.ui_name
+                          ? unconfiguredDomain.ui_name
+                          : unconfiguredDomain.module_id) +
+                        ")"
+                      }}</span>
+                    </div>
+                    <div class="row icon-and-text center-content">
+                      <NsSvg :svg="Chip20" class="icon" />
+                      <span
+                        >{{ $t("common.node") }}
+                        {{ unconfiguredDomain.node }}</span
+                      >
+                    </div>
+                    <div class="row actions">
+                      <NsButton
+                        kind="ghost"
+                        :icon="Tools32"
+                        @click="showUnconfiguredDomainModal(unconfiguredDomain)"
+                        >{{ $t("domains.resume_configuration") }}
+                      </NsButton>
+                    </div>
+                  </div>
+                </template>
+              </NsInfoCard>
+            </div>
+          </div>
+          <div class="bx--row">
+            <div class="bx--col">
+              <h4 class="mg-bottom-md">
+                {{ $t("domains.configured_domains") }}
+              </h4>
+            </div>
+          </div>
+        </template>
         <!-- empty state -->
-        <div
-          v-if="!domains.length && !unconfiguredDomains.length"
-          class="bx--row"
-        >
+        <div v-if="!domains.length" class="bx--row">
           <div class="bx--col">
             <NsEmptyState :title="$t('domains.no_domain_configured')">
               <template #pictogram>
@@ -115,100 +202,6 @@
           </div>
         </div>
         <template v-else>
-          <template v-if="unconfiguredDomains.length">
-            <div class="bx--row">
-              <div class="bx--col">
-                <h4 class="mg-bottom-md">
-                  {{ $t("domains.unconfigured_domains") }}
-                </h4>
-              </div>
-            </div>
-            <!-- unconfigured domains -->
-            <div class="bx--row">
-              <div
-                v-for="(unconfiguredDomain, index) in unconfiguredDomains"
-                :key="index"
-                class="bx--col-md-4 bx--col-max-4"
-              >
-                <NsInfoCard
-                  light
-                  :title="$t('domains.unconfigured_domain')"
-                  :icon="WarningAlt32"
-                  :showOverflowMenu="true"
-                >
-                  <template #menu>
-                    <cv-overflow-menu
-                      :flip-menu="true"
-                      tip-position="top"
-                      tip-alignment="end"
-                      class="top-right-overflow-menu"
-                    >
-                      <cv-overflow-menu-item
-                        danger
-                        @click="
-                          willDeleteUnconfiguredDomain(unconfiguredDomain)
-                        "
-                        >{{ $t("common.delete") }}</cv-overflow-menu-item
-                      >
-                    </cv-overflow-menu>
-                  </template>
-                  <template #content>
-                    <div class="domain-card-content">
-                      <div class="row">
-                        <span>{{
-                          $t("domains." + unconfiguredDomain.location)
-                        }}</span>
-                        <template
-                          v-if="unconfiguredDomain.location == 'internal'"
-                        >
-                          <span v-if="unconfiguredDomain.schema == 'rfc2307'">
-                            {{ $t("domains.openldap") }}
-                          </span>
-                          <span v-else-if="unconfiguredDomain.schema == 'ad'">
-                            {{ $t("domains.samba") }}
-                          </span>
-                        </template>
-                        <template v-else>
-                          {{ $t("domains.ldap") }}
-                        </template>
-                        <span>{{
-                          " (" +
-                          (unconfiguredDomain.ui_name
-                            ? unconfiguredDomain.ui_name
-                            : unconfiguredDomain.module_id) +
-                          ")"
-                        }}</span>
-                      </div>
-                      <div class="row icon-and-text center-content">
-                        <NsSvg :svg="Chip20" class="icon" />
-                        <span
-                          >{{ $t("common.node") }}
-                          {{ unconfiguredDomain.node }}</span
-                        >
-                      </div>
-                      <div class="row actions">
-                        <NsButton
-                          kind="ghost"
-                          :icon="Tools32"
-                          @click="
-                            showUnconfiguredDomainModal(unconfiguredDomain)
-                          "
-                          >{{ $t("domains.resume_configuration") }}
-                        </NsButton>
-                      </div>
-                    </div>
-                  </template>
-                </NsInfoCard>
-              </div>
-            </div>
-            <div class="bx--row">
-              <div class="bx--col">
-                <h4 class="mg-bottom-md">
-                  {{ $t("domains.configured_domains") }}
-                </h4>
-              </div>
-            </div>
-          </template>
           <div class="bx--row">
             <div class="bx--col">
               <NsButton
