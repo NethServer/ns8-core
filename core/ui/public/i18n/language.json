@@ -232,7 +232,7 @@
     "repository_same_name_already_exists": "A repository with this name already exists",
     "repository_same_url_already_exists": "A repository with this URL already exists",
     "repository_not_accessible": "Repository not accessible",
-    "repository_deleted": "Repository deleted"
+    "repository_is_going_to_be_deleted": "Repository {repo} is going to be deleted..."
   },
   "software_center": {
     "title": "Software center",

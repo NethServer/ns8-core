@@ -49,13 +49,14 @@
             v-if="repoToDelete"
             kind="warning"
             :title="
-              $t('settings_sw_repositories.repository_deleted') +
-              ': ' +
-              repoToDelete.name
+              $t('settings_sw_repositories.repository_is_going_to_be_deleted', {
+                repo: repoToDelete.name,
+              })
             "
             :actionLabel="$t('common.undo')"
             @action="cancelDeleteRepository()"
             :showCloseButton="false"
+            :timer="deleteRepoDelay"
           />
         </div>
       </div>
