@@ -353,7 +353,7 @@ export default {
       createDomain: {
         isResumeConfiguration: false,
         isOpenLdap: false,
-        isSamba: true,
+        isSamba: false,
         providerId: "",
       },
       providerToDelete: null,

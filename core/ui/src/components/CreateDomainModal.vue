@@ -428,17 +428,17 @@ export default {
     },
     isOpenLdap: {
       type: Boolean,
-      default: false, //// true
+      default: false,
     },
     isSamba: {
       type: Boolean,
-      default: true, //// false
+      default: false,
     },
   },
   data() {
     return {
       step: "",
-      isInternalSelected: true,
+      isInternalSelected: false,
       isExternalSelected: false,
       newProviderId: "",
       isOpenLdapSelected: false,

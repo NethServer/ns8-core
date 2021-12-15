@@ -407,7 +407,7 @@
     "delete_provider": "Delete provider",
     "delete_provider_confirm": "Delete provider <strong>{name}</strong>? This action is <strong>NOT</strong> reversible",
     "cannot_delete_provider": "Cannot delete provider",
-    "cannot_delete_only_provider": "Cannot delete the only provider of a domain",
+    "cannot_delete_only_provider": "Cannot delete the only configured provider of a domain",
     "cannot_delete_provider_description": "You can delete the whole domain and the provider will be deleted as well (if that's your intention)",
     "used_by_another_provider": "Used by another provider",
     "edit_provider_label": "Edit provider label",

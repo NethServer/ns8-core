@@ -701,7 +701,8 @@ export default {
       this.listUserDomains();
     },
     showDeleteProviderModal(provider) {
-      if (this.domain.providers.length == 1) {
+      if (provider.host && this.configuredProviders.length == 1) {
+        // cannot delete the only configured provider
         this.isShownLastProviderModal = true;
         return;
       }
