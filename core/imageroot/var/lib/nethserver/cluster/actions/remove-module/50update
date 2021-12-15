@@ -75,8 +75,12 @@ for kdef in rdb.scan_iter('*/default_instance/*'):
     if rdb.get(kdef) == module_id:
         rdb.delete(kdef)
 
-# Erase the module keyspace
-module_keys = list(rdb.scan_iter(f'module/{module_id}/*'))
+# Erase the module keyspace, skipping the keys matching "module/*/task/*" pattern
+module_keys = []
+for kmodule in rdb.scan_iter(f'module/{module_id}/*'):
+    if not kmodule.startswith(f'module/{module_id}/task/'):
+        module_keys.append(kmodule)
+
 if module_keys:
     rdb.delete(*module_keys)
 
