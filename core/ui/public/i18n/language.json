@@ -199,7 +199,8 @@
     "add-external-provider": "Add external provider",
     "remove-external-provider": "Remove external provider",
     "remove-external-domain": "Remove external domain",
-    "add-internal-provider": "Add internal provider"
+    "add-internal-provider": "Add internal provider",
+    "set-external-provider-name": "Set external provider name"
   },
   "network": {
     "title": "Network"

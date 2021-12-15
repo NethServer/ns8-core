@@ -185,13 +185,14 @@
             :label="$t('settings_sw_repositories.name')"
             v-model.trim="q.newRepoName"
             :invalid-message="$t(error.name)"
-            ref="newRepoName"
+            ref="name"
           >
           </cv-text-input>
           <cv-text-input
             :label="$t('settings_sw_repositories.url')"
             v-model.trim="q.newRepoUrl"
             :invalid-message="$t(error.url)"
+            ref="url"
           >
           </cv-text-input>
           <cv-toggle
@@ -356,7 +357,7 @@ export default {
     "q.isShownCreateRepoModal": function () {
       if (this.q.isShownCreateRepoModal) {
         setTimeout(() => {
-          this.focusElement("newRepoName");
+          this.focusElement("name");
         }, 300);
       }
     },
@@ -382,10 +383,17 @@ export default {
       // enable "Edit repository" button
       this.loading.editRepository = false;
 
+      let focusAlreadySet = false;
+
       for (const validationError of validationErrors) {
         const param = validationError.parameter;
         // set i18n error message
         this.error[param] = "settings_sw_repositories." + validationError.error;
+
+        if (!focusAlreadySet) {
+          this.focusElement(param);
+          focusAlreadySet = true;
+        }
       }
     },
     showCreateRepoModal() {

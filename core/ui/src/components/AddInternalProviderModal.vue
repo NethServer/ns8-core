@@ -600,6 +600,7 @@ export default {
     },
     configureSambaModuleValidationFailed(validationErrors) {
       this.loading.samba.configureModule = false;
+      let focusAlreadySet = false;
 
       for (const validationError of validationErrors) {
         if (
@@ -613,6 +614,11 @@ export default {
           const param = validationError.parameter;
           // set i18n error message
           this.error.samba[param] = "domains." + validationError.error;
+
+          if (!focusAlreadySet) {
+            this.focusElement(param);
+            focusAlreadySet = true;
+          }
         }
       }
     },
