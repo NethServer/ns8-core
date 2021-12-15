@@ -65,14 +65,12 @@
       </div>
       <div class="bx--row">
         <div class="bx--col">
-          <!-- repository being deleted -->
+          <!-- unconfigured domain being deleted -->
           <NsInlineNotification
-            v-if="providerToDelete"
+            v-if="domainToDelete"
             kind="warning"
             :title="
-              $t('domains.unconfigured_provider_deleted') +
-              ': ' +
-              providerToDelete.module_id
+              $t('domains.domain_deleted') + ': ' + domainToDelete.module_id
             "
             :actionLabel="$t('common.undo')"
             @action="cancelDeleteUnconfiguredDomain()"
@@ -356,7 +354,7 @@ export default {
         isSamba: false,
         providerId: "",
       },
-      providerToDelete: null,
+      domainToDelete: null,
       loading: {
         listUserDomains: true,
         getClusterStatus: true,
@@ -564,21 +562,21 @@ export default {
     removeExternalDomainCompleted() {
       this.listUserDomains();
     },
-    willDeleteUnconfiguredDomain(provider) {
+    willDeleteUnconfiguredDomain(domain) {
       const timeout = setTimeout(() => {
-        this.deleteUnconfiguredDomain(provider);
-        this.providerToDelete = null;
+        this.deleteUnconfiguredDomain(domain);
+        this.domainToDelete = null;
       }, this.DELETE_DELAY);
 
-      provider.timeout = timeout;
-      this.providerToDelete = provider;
+      domain.timeout = timeout;
+      this.domainToDelete = domain;
 
-      // remove provider from list
-      this.unconfiguredDomains = this.unconfiguredDomains.filter((p) => {
-        return p.module_id != provider.module_id;
+      // remove domain from list
+      this.unconfiguredDomains = this.unconfiguredDomains.filter((d) => {
+        return d.module_id != domain.module_id;
       });
     },
-    async deleteUnconfiguredDomain(provider) {
+    async deleteUnconfiguredDomain(domain) {
       this.error.removeModule = "";
       const taskAction = "remove-module";
 
@@ -592,12 +590,12 @@ export default {
         this.createClusterTask({
           action: taskAction,
           data: {
-            module_id: provider.module_id,
+            module_id: domain.module_id,
             preserve_data: false,
           },
           extra: {
             title: this.$t("software_center.instance_uninstallation", {
-              instance: provider.module_id,
+              instance: domain.module_id,
             }),
             description: this.$t("software_center.uninstalling"),
           },
@@ -630,8 +628,8 @@ export default {
       });
     },
     cancelDeleteUnconfiguredDomain() {
-      clearTimeout(this.providerToDelete.timeout);
-      this.providerToDelete = null;
+      clearTimeout(this.domainToDelete.timeout);
+      this.domainToDelete = null;
       this.listUserDomains();
     },
   },

@@ -70,6 +70,21 @@
           />
         </div>
       </div>
+      <div class="bx--row">
+        <div class="bx--col">
+          <!-- unconfigured provider being deleted -->
+          <NsInlineNotification
+            v-if="providerToDelete"
+            kind="warning"
+            :title="
+              $t('domain_detail.provider_deleted') + ': ' + providerToDelete.id
+            "
+            :actionLabel="$t('common.undo')"
+            @action="cancelDeleteUnconfiguredProvider()"
+            :showCloseButton="false"
+          />
+        </div>
+      </div>
       <!-- domain settings -->
       <div class="bx--row">
         <div class="bx--col">
@@ -225,7 +240,7 @@
                   >
                   <cv-overflow-menu-item
                     danger
-                    @click="showDeleteProviderModal(provider)"
+                    @click="willDeleteUnconfiguredProvider(provider)"
                     >{{ $t("common.delete") }}</cv-overflow-menu-item
                   >
                 </cv-overflow-menu>
@@ -449,6 +464,7 @@ export default {
   },
   data() {
     return {
+      DELETE_DELAY: 7000, // you have 7 seconds to undo object deletion
       q: {},
       isShownAddInternalProviderModal: false,
       isShownAddExternalProviderModal: false,
@@ -467,6 +483,7 @@ export default {
         providerId: "",
       },
       isShownBindPassword: false,
+      providerToDelete: null,
       loading: {
         listUserDomains: true,
         getClusterStatus: true,
@@ -706,7 +723,6 @@ export default {
         this.isShownLastProviderModal = true;
         return;
       }
-
       this.isShownDeleteProviderModal = true;
       this.currentProvider = provider;
     },
@@ -814,6 +830,63 @@ export default {
     },
     toggleBindPassword() {
       this.isShownBindPassword = !this.isShownBindPassword;
+    },
+    willDeleteUnconfiguredProvider(provider) {
+      console.log("willDeleteUnconfiguredProvider", provider); ////
+
+      const timeout = setTimeout(() => {
+        this.deleteUnconfiguredProvider(provider);
+        this.providerToDelete = null;
+      }, this.DELETE_DELAY);
+
+      provider.timeout = timeout;
+      this.providerToDelete = provider;
+
+      // remove provider from list
+      this.domain.providers = this.domain.providers.filter((p) => {
+        return p.id != provider.id;
+      });
+    },
+    cancelDeleteUnconfiguredProvider() {
+      clearTimeout(this.providerToDelete.timeout);
+      this.providerToDelete = null;
+      this.listUserDomains();
+    },
+    async deleteUnconfiguredProvider(provider) {
+      this.error.removeModule = "";
+      const taskAction = "remove-module";
+
+      // register to task completion (using $on instead of $once for multiple revertable deletions)
+      this.$root.$on(
+        taskAction + "-completed",
+        this.deleteUnconfiguredProviderCompleted
+      );
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          data: {
+            module_id: provider.id,
+            preserve_data: false,
+          },
+          extra: {
+            title: this.$t("software_center.instance_uninstallation", {
+              instance: provider.id,
+            }),
+            description: this.$t("software_center.uninstalling"),
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.removeModule = this.getErrorMessage(err);
+        return;
+      }
+    },
+    deleteUnconfiguredProviderCompleted() {
+      this.listUserDomains();
     },
   },
 };
