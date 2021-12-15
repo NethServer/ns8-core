@@ -542,7 +542,7 @@ export default {
           },
           extra: {
             title: this.$t("action." + taskAction),
-            isNotificationHidden: false,
+            description: this.$t("common.processing"),
           },
         })
       );
@@ -575,7 +575,7 @@ export default {
           },
           extra: {
             title: this.$t("action." + taskAction),
-            isNotificationHidden: false,
+            description: this.$t("common.processing"),
           },
         })
       );

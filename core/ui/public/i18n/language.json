@@ -42,7 +42,8 @@
     "type_to_to_confirm": "Type <strong>{name}</strong> to confirm deletion",
     "understood_delete": "I understand, delete",
     "show": "Show",
-    "hide": "Hide"
+    "hide": "Hide",
+    "processing": "Processing"
   },
   "error": {
     "error": "Error",
@@ -417,7 +418,6 @@
     "edit_provider_label": "Edit provider label",
     "provider_label": "Provider label",
     "provider_label_tooltip": "You can assign the provider an easy to remember name",
-    "adding_provider": "Adding provider...",
     "unconfigured_provider": "Unconfigured provider",
     "unconfigured_providers_title": "There are one or more unconfigured providers",
     "unconfigured_providers_description": "You can resume their configuration or delete them"

@@ -644,7 +644,6 @@ export default {
 
       //// todo select version
       let version = "latest";
-      const moduleName = "samba"; ////
 
       const taskAction = "add-internal-provider";
 
@@ -675,12 +674,7 @@ export default {
             node: parseInt(this.selectedNode.id),
           },
           extra: {
-            title: this.$t("software_center.app_installation", {
-              app: moduleName,
-            }),
-            description: this.$t("software_center.installing_on_node", {
-              node: this.selectedNode.id,
-            }),
+            title: this.$t("action." + taskAction),
             node: this.selectedNode.id,
             isNotificationHidden: true,
             isProgressNotified: true,

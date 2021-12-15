@@ -140,7 +140,7 @@ export default {
           },
           extra: {
             title: this.$t("action." + taskAction),
-            description: this.$t("domain_detail.adding_provider"),
+            isNotificationHidden: true,
           },
         })
       );
