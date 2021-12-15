@@ -427,7 +427,7 @@ export default {
       } //// else openldap
 
       // reload domains
-      this.$emit("providerInstalled");
+      this.$emit("reloadDomains");
 
       // show new app in app drawer
       this.$root.$emit("reloadAppDrawer");
@@ -487,6 +487,11 @@ export default {
         this.$set(this.samba.ipAddressOptions, index, option);
         index++;
       }
+
+      // focus samba admin user
+      setTimeout(() => {
+        this.focusElement("adminuser");
+      }, 300);
     },
     clearSambaErrors() {
       for (const key of Object.keys(this.error.samba)) {

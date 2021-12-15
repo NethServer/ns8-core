@@ -152,7 +152,7 @@
           >
           </cv-text-input>
           <cv-text-input
-            :label="$t('domains.base_dn')"
+            :label="$t('domains.base_dn') + ' (' + $t('common.optional') + ')'"
             v-model.trim="external.base_dn"
             :invalid-message="$t(error.external.base_dn)"
             :disabled="loading.external.addExternalDomain"
@@ -713,7 +713,7 @@ export default {
       } //// else openldap
 
       // reload domains
-      this.$emit("providerInstalled");
+      this.$emit("reloadDomains");
 
       // show new app in app drawer
       this.$root.$emit("reloadAppDrawer");
@@ -753,8 +753,6 @@ export default {
       }
     },
     getSambaDefaultsCompleted(taskContext, taskResult) {
-      console.log("getSambaDefaultsCompleted", taskResult.output); ////
-
       this.loading.samba.getDefaults = false;
       const defaults = taskResult.output;
 
@@ -973,6 +971,9 @@ export default {
 
       // hide modal
       this.$emit("hide");
+
+      // reload domains
+      this.$emit("reloadDomains");
     },
     configureSambaModuleAborted(taskResult) {
       console.log("configure samba module aborted", taskResult);
@@ -1001,8 +1002,68 @@ export default {
     onNewSambaPasswordValidation(passwordValidation) {
       this.samba.passwordValidation = passwordValidation;
     },
-    async addExternalDomain() {
+    validateAddExternalDomain() {
       this.clearExternalDomainErrors();
+      let isValidationOk = true;
+
+      // domain
+      if (!this.external.domain) {
+        this.error.external.domain = "common.required";
+
+        if (isValidationOk) {
+          this.focusElement("domain");
+          isValidationOk = false;
+        }
+      }
+
+      // host
+      if (!this.external.host) {
+        this.error.external.host = "common.required";
+
+        if (isValidationOk) {
+          this.focusElement("host");
+          isValidationOk = false;
+        }
+      }
+
+      // port
+      if (!this.external.port) {
+        this.error.external.port = "common.required";
+
+        if (isValidationOk) {
+          this.focusElement("port");
+          isValidationOk = false;
+        }
+      }
+
+      // bind_dn
+      if (!this.external.bind_dn) {
+        this.error.external.bind_dn = "common.required";
+
+        if (isValidationOk) {
+          this.focusElement("bind_dn");
+          isValidationOk = false;
+        }
+      }
+
+      // bind_password
+      if (!this.external.bind_password) {
+        this.error.external.bind_password = "common.required";
+
+        if (isValidationOk) {
+          this.focusElement("bind_password");
+          isValidationOk = false;
+        }
+      }
+
+      return isValidationOk;
+    },
+    async addExternalDomain() {
+      const isValidationOk = this.validateAddExternalDomain();
+      if (!isValidationOk) {
+        return;
+      }
+
       this.loading.external.addExternalDomain = true;
       const taskAction = "add-external-domain";
 
@@ -1068,6 +1129,9 @@ export default {
 
       // hide modal
       this.$emit("hide");
+
+      // reload domains
+      this.$emit("reloadDomains");
     },
     clearExternalDomainErrors() {
       for (const key of Object.keys(this.error.external)) {

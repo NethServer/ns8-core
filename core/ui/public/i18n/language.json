@@ -198,7 +198,9 @@
     "add-external-domain": "Add external domain",
     "add-external-provider": "Add external provider",
     "remove-external-provider": "Remove external provider",
+    "remove-internal-provider": "Remove internal provider",
     "remove-external-domain": "Remove external domain",
+    "remove-internal-domain": "Remove internal domain",
     "add-internal-provider": "Add internal provider",
     "set-external-provider-name": "Set external provider name"
   },

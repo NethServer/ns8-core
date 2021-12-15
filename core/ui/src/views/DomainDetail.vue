@@ -35,56 +35,6 @@
           />
         </div>
       </div>
-      <div class="bx--row">
-        <div class="bx--col">
-          <NsInlineNotification
-            v-if="error.removeModule"
-            kind="error"
-            :title="$t('action.remove-module')"
-            :description="error.removeModule"
-            :showCloseButton="false"
-          />
-        </div>
-      </div>
-      <div class="bx--row">
-        <div class="bx--col">
-          <NsInlineNotification
-            v-if="error.removeExternalProvider"
-            kind="error"
-            :title="$t('action.remove-external-provider')"
-            :description="error.removeExternalProvider"
-            :showCloseButton="false"
-          />
-        </div>
-      </div>
-      <div class="bx--row">
-        <div class="bx--col">
-          <NsInlineNotification
-            v-if="unconfiguredProviders.length"
-            kind="warning"
-            :title="$t('domain_detail.unconfigured_providers_title')"
-            :description="
-              $t('domain_detail.unconfigured_providers_description')
-            "
-            :showCloseButton="false"
-          />
-        </div>
-      </div>
-      <div class="bx--row">
-        <div class="bx--col">
-          <!-- unconfigured provider being deleted -->
-          <NsInlineNotification
-            v-if="providerToDelete"
-            kind="warning"
-            :title="
-              $t('domain_detail.provider_deleted') + ': ' + providerToDelete.id
-            "
-            :actionLabel="$t('common.undo')"
-            @action="cancelDeleteUnconfiguredProvider()"
-            :showCloseButton="false"
-          />
-        </div>
-      </div>
       <!-- domain settings -->
       <div class="bx--row">
         <div class="bx--col">
@@ -96,7 +46,7 @@
           <cv-tile light>
             <cv-skeleton-text
               :paragraph="true"
-              :line-count="5"
+              :line-count="7"
             ></cv-skeleton-text>
           </cv-tile>
         </div>
@@ -166,12 +116,62 @@
           />
         </div>
       </div>
+      <div class="bx--row">
+        <div class="bx--col">
+          <NsInlineNotification
+            v-if="error.removeInternalProvider"
+            kind="error"
+            :title="$t('action.remove-internal-provider')"
+            :description="error.removeInternalProvider"
+            :showCloseButton="false"
+          />
+        </div>
+      </div>
+      <div class="bx--row">
+        <div class="bx--col">
+          <NsInlineNotification
+            v-if="error.removeExternalProvider"
+            kind="error"
+            :title="$t('action.remove-external-provider')"
+            :description="error.removeExternalProvider"
+            :showCloseButton="false"
+          />
+        </div>
+      </div>
+      <div class="bx--row">
+        <div class="bx--col">
+          <NsInlineNotification
+            v-if="unconfiguredProviders.length"
+            kind="warning"
+            :title="$t('domain_detail.unconfigured_providers_title')"
+            :description="
+              $t('domain_detail.unconfigured_providers_description')
+            "
+            :showCloseButton="false"
+          />
+        </div>
+      </div>
+      <div class="bx--row">
+        <div class="bx--col">
+          <!-- unconfigured provider being deleted -->
+          <NsInlineNotification
+            v-if="providerToDelete"
+            kind="warning"
+            :title="
+              $t('domain_detail.provider_deleted') + ': ' + providerToDelete.id
+            "
+            :actionLabel="$t('common.undo')"
+            @action="cancelDeleteUnconfiguredProvider()"
+            :showCloseButton="false"
+          />
+        </div>
+      </div>
       <div v-if="loading.listUserDomains" class="bx--row">
-        <div class="bx--col-md-4 bx--col-max-4">
+        <div v-for="index in 2" :key="index" class="bx--col-md-4 bx--col-max-4">
           <cv-tile light>
             <cv-skeleton-text
               :paragraph="true"
-              :line-count="5"
+              :line-count="7"
             ></cv-skeleton-text>
           </cv-tile>
         </div>
@@ -370,7 +370,7 @@
         :isResumeConfiguration="addProvider.isResumeConfiguration"
         :providerId="addProvider.providerId"
         @hide="hideAddInternalProviderModal"
-        @providerInstalled="listUserDomains"
+        @reloadDomains="listUserDomains"
       />
       <AddExternalProviderModal
         v-else
@@ -493,7 +493,7 @@ export default {
       error: {
         listUserDomains: "",
         getClusterStatus: "",
-        removeModule: "",
+        removeInternalProvider: "",
         setProviderLabel: "",
         removeExternalProvider: "",
       },
@@ -639,8 +639,8 @@ export default {
       }
     },
     async deleteInternalProvider() {
-      this.error.removeModule = "";
-      const taskAction = "remove-module";
+      this.error.removeInternalProvider = "";
+      const taskAction = "remove-internal-provider";
 
       // register to task completion
       this.$root.$once(taskAction + "-completed", this.deleteProviderCompleted);
@@ -650,13 +650,9 @@ export default {
           action: taskAction,
           data: {
             module_id: this.currentProvider.id,
-            preserve_data: false,
           },
           extra: {
-            title: this.$t("software_center.instance_uninstallation", {
-              instance: this.currentProvider.id,
-            }),
-            description: this.$t("software_center.uninstalling"),
+            title: this.$t("action." + taskAction),
           },
         })
       );
@@ -664,7 +660,7 @@ export default {
 
       if (err) {
         console.error(`error creating task ${taskAction}`, err);
-        this.error.removeModule = this.getErrorMessage(err);
+        this.error.removeInternalProvider = this.getErrorMessage(err);
         return;
       }
 
@@ -688,7 +684,7 @@ export default {
           },
           extra: {
             title: this.$t("action." + taskAction),
-            isNotificationHidden: true,
+            isNotificationHidden: false,
           },
         })
       );
@@ -707,15 +703,9 @@ export default {
     },
     hideAddInternalProviderModal() {
       this.isShownAddInternalProviderModal = false;
-
-      // reload providers
-      this.listUserDomains();
     },
     hideAddExternalProviderModal() {
       this.isShownAddExternalProviderModal = false;
-
-      // reload providers
-      this.listUserDomains();
     },
     showDeleteProviderModal(provider) {
       if (provider.host && this.configuredProviders.length == 1) {
@@ -853,8 +843,8 @@ export default {
       this.listUserDomains();
     },
     async deleteUnconfiguredProvider(provider) {
-      this.error.removeModule = "";
-      const taskAction = "remove-module";
+      this.error.removeInternalProvider = "";
+      const taskAction = "remove-internal-provider";
 
       // register to task completion (using $on instead of $once for multiple revertable deletions)
       this.$root.$on(
@@ -867,13 +857,9 @@ export default {
           action: taskAction,
           data: {
             module_id: provider.id,
-            preserve_data: false,
           },
           extra: {
-            title: this.$t("software_center.instance_uninstallation", {
-              instance: provider.id,
-            }),
-            description: this.$t("software_center.uninstalling"),
+            title: this.$t("action." + taskAction),
           },
         })
       );
@@ -881,7 +867,7 @@ export default {
 
       if (err) {
         console.error(`error creating task ${taskAction}`, err);
-        this.error.removeModule = this.getErrorMessage(err);
+        this.error.removeInternalProvider = this.getErrorMessage(err);
         return;
       }
     },

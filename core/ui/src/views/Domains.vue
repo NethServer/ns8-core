@@ -83,7 +83,7 @@
           <cv-tile light>
             <cv-skeleton-text
               :paragraph="true"
-              :line-count="7"
+              :line-count="8"
             ></cv-skeleton-text>
           </cv-tile>
         </div>
@@ -292,7 +292,7 @@
       :isOpenLdap="createDomain.isOpenLdap"
       :isSamba="createDomain.isSamba"
       @hide="hideCreateDomainModal"
-      @providerInstalled="listUserDomains"
+      @reloadDomains="listUserDomains"
     />
     <!-- delete domain modal -->
     <NsDangerDeleteModal
@@ -364,6 +364,7 @@ export default {
         getClusterStatus: "",
         removeModule: "",
         removeExternalDomain: "",
+        removeInternalDomain: "",
       },
     };
   },
@@ -462,9 +463,6 @@ export default {
     },
     hideCreateDomainModal() {
       this.isShownCreateDomainModal = false;
-
-      // reload domains
-      this.listUserDomains();
     },
     showDeleteDomainModal(domain) {
       this.isShownDeleteDomainModal = true;
@@ -526,8 +524,38 @@ export default {
         this.removeExternalDomain(domain);
       }
     },
-    removeInternalDomain(domain) {
-      console.log("removeInternalDomain", domain); ////
+    async removeInternalDomain(domain) {
+      this.error.removeInternalDomain = "";
+      const taskAction = "remove-internal-domain";
+
+      // register to task completion
+      this.$root.$once(
+        taskAction + "-completed",
+        this.removeInternalDomainCompleted
+      );
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          data: {
+            domain: domain.name,
+          },
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: false,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.removeInternalDomain = this.getErrorMessage(err);
+        return;
+      }
+    },
+    removeInternalDomainCompleted() {
+      this.listUserDomains();
     },
     async removeExternalDomain(domain) {
       this.error.removeExternalDomain = "";
@@ -547,7 +575,7 @@ export default {
           },
           extra: {
             title: this.$t("action." + taskAction),
-            isNotificationHidden: true,
+            isNotificationHidden: false,
           },
         })
       );
