@@ -1,0 +1,69 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2021 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
+import sys
+import json
+import agent
+import cluster.userdomains
+
+unconfigured_domains = []
+
+rdb = agent.redis_connect()
+
+internal_domains = cluster.userdomains.get_internal_domains(rdb) 
+external_domains = cluster.userdomains.get_external_domains(rdb)
+
+domains = external_domains | internal_domains
+
+for kdom in rdb.scan_iter("module/*/user_domain"):
+    module_id = kdom.split('/', 2)[1]
+    user_domain = rdb.get(kdom)
+
+    if user_domain and user_domain in domains:
+        continue
+    elif rdb.hget(f'module/{module_id}/srv/tcp/ldap', 'domain'):
+        continue
+
+    henv = rdb.hgetall(f'module/{module_id}/environment')
+    image_name = agent.get_image_name_from_url(henv['IMAGE_URL'])
+    ucdom = {
+        "ui_name": rdb.get(f'module/{module_id}/ui_name') or "",
+        "location": "internal",
+        "module_id": module_id,
+        "node": int(henv['NODE_ID']),
+        "image_name": image_name,
+        "image_url": henv['IMAGE_URL']
+    }
+
+    if image_name == 'samba':
+        ucdom['protocol'] = 'ldap'
+        ucdom['schema'] = 'ad'
+    elif image_name == 'openldap':
+        ucdom['protocol'] = 'ldap'
+        ucdom['schema'] = 'rfc2307'
+
+    unconfigured_domains.append(ucdom)
+
+json.dump({
+    "domains": list(domains.values()),
+    "unconfigured_domains": unconfigured_domains,
+}, fp=sys.stdout)

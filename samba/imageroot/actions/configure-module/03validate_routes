@@ -25,18 +25,29 @@ import json
 import sys
 import os
 import dns.resolver
+import cluster.userdomains
+
+agent.set_weight(os.path.basename(__file__), 0) # Validation step, no task progress at all
 
 request = json.load(sys.stdin)
-realm = request['realm'].upper()
+realm = request['realm'].lower()
+ipaddress = request['ipaddress']
+hostname = request['hostname'] # verify the given hostname is not in use
 
 rsv = dns.resolver.Resolver(configure=False)
 
 # Lookup a DC for the given realm
 with agent.redis_connect() as rdb:
-    for ksamba in rdb.scan_iter(f'module/samba*/environment'):
-        penv = rdb.hgetall(ksamba)
-        if penv.get('REALM') == realm and penv.get('IPADDRESS'):
-            rsv.nameservers.append(penv['IPADDRESS'])
+    domains = cluster.userdomains.get_internal_domains(rdb)
+    if realm in domains:
+        for provider in domains[realm]['providers']:
+            if provider['host'] == request['ipaddress']:
+                agent.set_status('validation-failed')
+                json.dump([{"parameter": "ipaddress", "field":"ipaddress", "value": ipaddress, "error": "ipaddress_dc_conflict_check_failed"}], fp=sys.stdout)
+                sys.exit(5)
+
+            if provider['host']:
+                rsv.nameservers.append(provider['host'])
 
 if not rsv.nameservers:
     # There are no DCs for the given realm. Nothing to do.
@@ -49,10 +60,22 @@ try:
     print("DNS authority", resolve_ret.response.authority, file=sys.stderr)
     print("Domain", resolve_ret.rrset.to_text(), file=sys.stderr)
 except dns.resolver.NoAnswer:
-    json.dump({"parameter": "realm", "value": realm, "error": "domain_controllers_notavailable"}, fp=sys.stdout)
+    json.dump([{"field": "realm", "parameter": "realm", "value": realm, "error": "realm_dc_avail_check_failed"}], fp=sys.stdout)
     agent.set_status('validation-failed')
-    sys.exit(3)
+    sys.exit(6)
 except dns.exception.Timeout:
-    json.dump({"parameter": "realm", "value": realm, "error": "domain_controllers_unreachable"}, fp=sys.stdout)
+    json.dump([{"field": "realm", "parameter": "realm", "value": realm, "error": "realm_dc_reachable_check_failed"}], fp=sys.stdout)
     agent.set_status('validation-failed')
-    sys.exit(4)
+    sys.exit(7)
+
+#
+# Check if the hostname is already registered in the DNS
+#
+try:
+    hostname_resolve_ret = rsv.resolve(hostname + '.' + realm)
+    print(agent.SD_ERR + f"DC hostname {hostname} is already in DNS!", hostname_resolve_ret.rrset.to_text(), file=sys.stderr)
+    json.dump([{"field": "hostname", "parameter": "hostname", "value": hostname, "error": "hostname_check_failed"}], fp=sys.stdout)
+    agent.set_status('validation-failed')
+    sys.exit(11)
+except dns.resolver.NXDOMAIN:
+    pass

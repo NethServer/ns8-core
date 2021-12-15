@@ -1,0 +1,71 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2021 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
+import sys
+import json
+import agent
+import os.path
+import cluster.userdomains
+
+rdb = agent.redis_connect()
+
+request = json.load(sys.stdin)
+
+#
+# Sample request:
+# {
+#     "domain": "example.com",
+#     "protocol": "ldap",
+#     "host": "ldap2.example.com",
+#     "port": 636
+# }
+
+domain = request['domain']
+protocol = request['protocol']
+
+domains = cluster.userdomains.get_external_domains(rdb)
+
+agent.set_weight(os.path.basename(__file__), 0) # Validation step, no task progress at all
+
+if not domain in domains:
+    # validation error
+    agent.set_status('validation-failed')
+    json.dump([{'field':'domain', 'parameter':'domain','value': domain, 'error':'domain_not_found'}], fp=sys.stdout)
+    sys.exit(2)
+
+if protocol == 'ldap':
+    # Build a config object to ensure the new provider accepts the same
+    # configuration used by the rest of the domain providers
+    config = domains[domain]
+    config['host'] = request['host']
+    config['port'] = request['port']
+
+    errors, logex = cluster.userdomains.validate_ldap(config)
+
+    if logex:
+        print(agent.SD_ERR + f"{logex.__class__.__name__}: {logex}", file=sys.stderr)
+
+    if errors:
+        agent.set_status('validation-failed')
+        json.dump(errors, fp=sys.stdout)
+        sys.exit(3)
+

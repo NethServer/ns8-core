@@ -32,7 +32,7 @@
               <div
                 v-for="(node, index) in nodes"
                 :key="index"
-                class="bx--col-md-4 bx--col-lg-4"
+                class="bx--col-md-4 bx--col-max-4"
               >
                 <NsTile
                   :light="true"

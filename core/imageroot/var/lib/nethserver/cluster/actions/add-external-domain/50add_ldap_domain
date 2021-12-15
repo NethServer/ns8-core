@@ -1,0 +1,68 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2021 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
+import sys
+import json
+import agent
+import cluster.userdomains
+import os
+
+#
+# Sample request:
+# {
+# "domain":"example.com",
+# "protocol": "ldap",
+# "host":"18.19.20.21",
+# "port": 636,
+# "schema": "rfc2307",
+# "bind_dn": "cn=ldapservice,dc=example,dc=com",
+# "bind_password": "s3cret",
+# "base_dn": "dc=example,dc=com",
+# "tls": true,
+# "tls_verify": true
+# }
+request = json.load(sys.stdin)
+domain = request['domain']
+protocol = request['protocol']
+
+rdb = agent.redis_connect(privileged=True)
+
+if protocol == 'ldap':
+    trx = rdb.pipeline()
+    trx.hset(f"cluster/user_domain/ldap/{domain}/conf", mapping={
+        'schema': request.get('schema') or cluster.userdomains.probe_ldap_schema(request),
+        'bind_dn': request['bind_dn'],
+        'bind_password': request['bind_password'],
+        'base_dn': request['base_dn'] or cluster.userdomains.probe_ldap_basedn(request),
+        'tls': 'on' if request['tls'] else 'off',
+        'tls_verify': 'on' if request['tls_verify'] else 'off',
+    })
+    trx.rpush(f"cluster/user_domain/ldap/{domain}/providers", f"{request['host']}:{request['port']}")
+
+    #
+    # Advertise new account provider setup
+    #
+    trx.publish(os.getenv('AGENT_ID') + '/event/account-provider-changed', json.dumps({
+        'domain': domain,
+        'key': f"cluster/user_domain/ldap/{domain}/providers",
+    }))
+    trx.execute()

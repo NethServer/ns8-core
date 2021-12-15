@@ -1,0 +1,66 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2021 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
+import sys
+import json
+import agent
+import agent.tasks
+import os
+import cluster.userdomains
+
+request = json.load(sys.stdin)
+
+#
+# Sample request:
+# {
+# "domain":"example.com",
+# }
+
+kdom = request['domain']
+
+domains = cluster.userdomains.get_internal_domains(agent.redis_connect())
+
+if not kdom in domains:
+    # validation error
+    agent.set_status('validation-failed')
+    json.dump([{'field':'domain', 'parameter':'domain','value': kdom, 'error':'domain_not_found'}], fp=sys.stdout)
+    sys.exit(2)
+
+remove_tasks = []
+for provider in domains[kdom]['providers']:
+    remove_tasks.append({
+        "agent_id": f"cluster",
+        "action": "remove-module",
+        "data": {
+            "module_id": provider['id'],
+            "preserve_data": False,
+        }
+    })
+
+errors = agent.tasks.runp_brief(remove_tasks,
+    endpoint = "redis://cluster-leader",
+    progress_callback = agent.get_progress_callback(31, 95),
+)
+
+if errors > 0:
+    print(agent.SD_ERR + f"There were errors during user domain {domk} removal. Check the subtasks for details.", file=sys.stderr)
+    sys.exit(1)

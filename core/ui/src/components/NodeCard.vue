@@ -1,5 +1,7 @@
 <template>
   <cv-tile kind="standard" :light="light" class="node-card">
+    <!-- overflow menu -->
+    <slot name="menu"></slot>
     <!-- icon -->
     <div class="row">
       <NsSvg :svg="Chip32" />
@@ -106,7 +108,7 @@
     </div>
     <div class="row slot">
       <!-- Extra content -->
-      <slot></slot>
+      <slot name="content"></slot>
     </div>
   </cv-tile>
 </template>
@@ -222,6 +224,8 @@ export default {
   flex-direction: column;
   justify-content: center;
   min-height: 7rem;
+  // needed for abosulute positioning of overflow menu
+  position: relative;
 }
 
 .row {

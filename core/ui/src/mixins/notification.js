@@ -344,6 +344,11 @@ export default {
           }
         }
 
+        // ad-hoc progress notification (e.g. account provider installation)
+        if (taskContext.extra && taskContext.extra.isProgressNotified) {
+          this.$root.$emit(taskContext.action + "-progress", payload.progress);
+        }
+
         this.putNotification(notification);
       }
     },

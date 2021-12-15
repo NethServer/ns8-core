@@ -23,14 +23,18 @@
 exec 1>&2
 set -e
 
+readarray -t input < <(jq -r '.adminuser, .adminpass')
+
+adminuser="${input[0]:?}"
+adminpass="${input[1]:?}"
+
 /usr/bin/podman run \
     --dns=none \
     --no-hosts \
     --network=host \
     --cap-drop=all \
     --cap-add=chown,dac_override,dac_read_search,fowner,setgid,setuid,sys_admin \
-    --env ADMINPASS \
-    --env ADMINUSER \
+    --interactive \
     --env NBDOMAIN \
     --env REALM \
     --env IPADDRESS \
@@ -44,4 +48,4 @@ set -e
     --volume=./hosts:/etc/hosts:Z \
     --volume=./resolv.conf:/etc/resolv.conf:Z \
     --volume=./krb5.conf:/etc/krb5.conf:Z \
-    "${SAMBA_DC_IMAGE:?}" "${PROVISION_TYPE:?}"
+    "${SAMBA_DC_IMAGE:?}" "${PROVISION_TYPE:?}" <<<"${adminuser}"$'\n'"${adminpass}"

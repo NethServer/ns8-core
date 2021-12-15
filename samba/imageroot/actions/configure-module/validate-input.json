@@ -1,0 +1,94 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "configure-module input",
+    "$id": "http://schema.nethserver.org/samba/configure-module-input.json",
+    "description": "Provision a Active Directory domain controller",
+    "examples": [
+        {
+            "provision": "new-domain",
+            "adminuser": "administrator",
+            "adminpass": "Nethesis,1234",
+            "realm": "AD.EXAMPLE.COM",
+            "ipaddress": "10.15.21.100",
+            "hostname": "dc1",
+            "nbdomain": "AD"
+        },
+        {
+            "provision": "join-domain",
+            "adminuser": "administrator",
+            "adminpass": "Nethesis,1234",
+            "realm": "AD.EXAMPLE.COM",
+            "ipaddress": "10.15.21.100",
+            "hostname": "dc1"
+        }
+    ],
+    "type": "object",
+    "anyOf": [
+        {
+            "properties": {
+                "provision": {
+                    "const": "new-domain"
+                }
+            },
+            "required": [
+                "hostname",
+                "adminuser",
+                "adminpass",
+                "realm",
+                "nbdomain",
+                "ipaddress"
+            ]
+        },
+        {
+            "properties": {
+                "provision": {
+                    "const": "join-domain"
+                }
+            },
+            "required": [
+                "hostname",
+                "adminuser",
+                "adminpass",
+                "realm",
+                "ipaddress"
+            ]
+        }
+    ],
+    "properties": {
+        "provision": {
+            "type": "string",
+            "minLength": 1
+        },
+        "adminuser": {
+            "type": "string",
+            "minLength": 1
+        },
+        "adminpass": {
+            "type": "string",
+            "minLength": 1
+        },
+        "ipaddress": {
+            "type": "string",
+            "format": "ipv4"
+        },
+        "hostname": {
+            "type": "string",
+            "pattern": "^[a-zA-Z][-a-zA-Z0-9]*$",
+            "maxLength": 15
+        },
+        "realm": {
+            "type": "string",
+            "title": "Domain name",
+            "pattern": "^[a-zA-Z][-a-zA-Z0-9]{0,62}(\\.[a-zA-Z][-a-zA-Z0-9]{0,62})+$",
+            "maxLength": 140,
+            "minLength": 1
+        },
+        "nbdomain": {
+            "type": "string",
+            "title": "NetBIOS domain name",
+            "pattern": "^[a-zA-Z][-a-zA-Z0-9]*$",
+            "maxLength": 15,
+            "minLength": 1
+        }
+    }
+}

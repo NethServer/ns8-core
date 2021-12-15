@@ -1,0 +1,22 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "remove-external-domain input",
+    "description": "Remove an external user domain and all its providers",
+    "$id": "http://schema.nethserver.org/cluster/remove-external-domain-input.json",
+    "examples": [
+        {
+            "domain": "example.com"
+        }
+    ],
+    "type": "object",
+    "required": [
+        "domain"
+    ],
+    "properties": {
+        "domain": {
+            "type": "string",
+            "title": "User domain name",
+            "minLength": 1
+        }
+    }
+}
