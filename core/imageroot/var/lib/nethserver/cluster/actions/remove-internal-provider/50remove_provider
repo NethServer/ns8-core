@@ -1,0 +1,90 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2021 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
+import sys
+import json
+import agent
+import agent.tasks
+import os
+import cluster.userdomains
+
+
+request = json.load(sys.stdin)
+
+#
+# Sample request:
+# {
+# "module_id":"samba1",
+# }
+
+module_id = request['module_id']
+
+# Check if module_id is in an internal domain among multiple providers.
+# If so, run the leave-domain action before actually remove the provider.
+leave_is_required = False
+for odomain in cluster.userdomains.get_internal_domains(agent.redis_connect()).values():
+    # Filter out unconfigured providers: they surely do not need leave-domain
+    providers = [xprov for xprov in odomain['providers'] if xprov['host'] and xprov['port']]
+    if len(providers) == 1 and providers[0]['id'] == module_id:
+        # Fail if this action is invoked to remove the last provider of a domain, use remove-internal-domain instead!
+        agent.set_status('validation-failed')
+        json.dump([{'field':'module_id', 'parameter':'module_id','value': module_id, 'error':'provider_not_removable'}], fp=sys.stdout)
+        sys.exit(2)
+
+    # Check if module_id is among configured providers:
+    if [xprov for xprov in providers if xprov['id'] == module_id]:
+        leave_is_required = True
+        break
+
+remove_progress_start = 2
+if leave_is_required:
+    remove_progress_start = 51
+    leave_retval = agent.tasks.run(
+        agent_id=f"module/{module_id}",
+        action="leave-domain",
+        data=None,
+        endpoint="redis://cluster-leader",
+        progress_callback=agent.get_progress_callback(2, 50),
+    )
+    if leave_retval['exit_code'] != 0:
+        print(agent.SD_ERR + f"There was an error in module/{module_id}/leave-domain. Check the subtask for details.", file=sys.stderr)
+        sys.exit(3)
+
+remove_retval = agent.tasks.run(
+    agent_id=f"cluster",
+    action="remove-module",
+    data={
+        "module_id": module_id,
+        "preserve_data": False,
+    },
+    endpoint="redis://cluster-leader",
+    progress_callback=agent.get_progress_callback(remove_progress_start, 98),
+)
+
+if remove_retval['exit_code'] != 0:
+    print(agent.SD_ERR + f"There was an error during {module_id} removal. Check the subtask for details.", file=sys.stderr)
+    sys.exit(4)
+
+
+
+
+
