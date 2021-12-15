@@ -40,8 +40,11 @@ agent.assert_exp(preserve_data is not None)
 
 rdb = agent.redis_connect(privileged=True)
 
-node_id = int(rdb.hget(f'module/{module_id}/environment', 'NODE_ID'))
-agent.assert_exp(node_id > 0)
+try:
+    node_id = int(rdb.hget(f'module/{module_id}/environment', 'NODE_ID'))
+except Exception as ex:
+    print(agent.SD_ERR + f"Cannot retrieve the NODE_ID of {module_id}", file=sys.stderr)
+    sys.exit(1)
 
 # Invoke the module destructor, if defined. Rootfull modules must
 # implement one, to stop running services.
