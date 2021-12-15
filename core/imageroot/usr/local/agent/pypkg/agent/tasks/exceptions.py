@@ -18,17 +18,23 @@
 # along with NethServer.  If not, see COPYING.
 #
 
-class TaskRetryAbort(Exception):
+class TaskError(Exception):
     pass
 
-class TaskRetryWsDisconnect(Exception):
+class TaskRetryError(TaskError):
     pass
 
-class TaskStatusNotFound(Exception):
+class TaskRetryAbort(TaskRetryError):
     pass
 
-class TaskRetryPubSubDisconnect(Exception):
+class TaskRetryWsDisconnect(TaskRetryError):
     pass
 
-class TaskSubmissionCheckFailed(Exception):
+class TaskStatusNotFound(TaskError):
+    pass
+
+class TaskRetryPubSubDisconnect(TaskRetryError):
+    pass
+
+class TaskSubmissionCheckFailed(TaskError):
     pass

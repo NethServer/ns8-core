@@ -99,6 +99,10 @@ a {
   margin-bottom: $spacing-07;
 }
 
+.cv-inline-notification {
+  margin-bottom: $spacing-07;
+}
+
 @media (max-width: $breakpoint-medium) {
   .cv-tile {
     margin-bottom: $spacing-05;
@@ -120,7 +124,7 @@ a {
 }
 
 .empty-state-button {
-  margin-top: $spacing-05;
+  margin-top: $spacing-07;
 }
 
 .ellipsis {
@@ -128,6 +132,33 @@ a {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+// wizard (e.g. CreateDomainModal)
+.wizard-modal .bx--modal-content {
+  padding-right: 1rem !important;
+  margin-bottom: 0;
+}
+
+.wizard-buttons {
+  display: flex;
+  justify-content: flex-end;
+  position: relative;
+  right: -1rem;
+  margin-top: 3rem;
+}
+
+.wizard-button {
+  width: 25%;
+  height: 4rem;
+  box-shadow: -0.0625rem 0 0 0 #e0e0e0;
+}
+
+@media (max-width: $breakpoint-medium) {
+  .wizard-button {
+    width: 33%;
+  }
+}
+// end wizard
 
 // top-right overflow menu
 .top-right-overflow-menu {
@@ -365,7 +396,8 @@ a {
 .cv-text-input,
 .cv-form .bx--form-item,
 .cv-form .cv-multi-select,
-.ns-password-input {
+.ns-password-input,
+.cv-combo-box {
   margin-bottom: $spacing-05;
 }
 // end form
@@ -542,7 +574,8 @@ a {
   // limit form fields width on large devices
   .bx--text-input,
   .bx--text-input__field-wrapper,
-  .cv-multi-select {
+  .cv-multi-select,
+  .cv-combo-box {
     max-width: 38rem;
   }
 }

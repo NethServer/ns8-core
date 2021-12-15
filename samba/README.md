@@ -20,35 +20,42 @@ Applications that run as cluster modules must connect to the LDAP service
 of Samba DCs through the Ldapproxy instance running on the local node; read
 the core documentation for more information about Ldapproxy.
 
+## Installation
+
+A Samba module instance is also an account provider. It must be installed
+with the specific `add-internal-provider` action:
+
+    api-cli run add-internal-provider --data '{"image":"ghcr.io/nethserver/samba:latest","node":1}'
 
 ## Provision
 
 Provision a new domain:
 
-    api-cli run provision-domain --agent module/samba1 --data - <<EOF
+    api-cli run configure-module --agent module/samba1 --data - <<EOF
     {
+        "provision":"new-domain",
         "adminuser":"administrator",
         "adminpass":"Nethesis,1234",
         "realm":"ad.$(hostname -d)",
-        "nbdomain":"ad",
+        "nbdomain":"DP",
+        "hostname":"dc1",
         "ipaddress":"10.133.0.2"
     }
     EOF
 
-Further Samba instances for the same `realm` are **joined** to the existing domain.
+Further Samba instances for the same `realm` can be **joined** to the existing domain.
 The command is similar.
 
-    api-cli run provision-domain --agent module/samba2 --data - <<EOF
+    api-cli run configure-module --agent module/samba2 --data - <<EOF
     {
+        "provision":"join-domain",
         "adminuser":"administrator",
         "adminpass":"Nethesis,1234",
         "realm":"ad.$(hostname -d)",
+        "hostname":"dc2",
         "ipaddress":"10.124.0.2"
     }
     EOF
-
-Note that the `nbdomain` attribute is no longer required to provision
-additional DCs.
 
 ## IP routing for the AD domain
 

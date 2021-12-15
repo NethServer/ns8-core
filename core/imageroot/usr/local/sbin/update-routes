@@ -35,6 +35,11 @@ update_routes_tasks = [{
 
 node_errors = agent.tasks.runp_brief(
     update_routes_tasks,
+    extra={
+        'title': "node/*/update-routes",
+        'description': "update-routes command",
+        'isNotificationHidden': False,
+    },
     endpoint="redis://cluster-leader",
 )
 agent.assert_exp(node_errors == 0)

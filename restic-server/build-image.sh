@@ -2,7 +2,7 @@
 
 set -e
 messages=("Publish the image with:" "")
-repobase="ghcr.io/nethserver"
+repobase="${REPOBASE:-ghcr.io/nethserver}"
 
 reponame="restic-server"
 container=$(buildah from scratch)

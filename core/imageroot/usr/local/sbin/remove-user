@@ -36,6 +36,11 @@ result = agent.tasks.run(
     data={
         "user": args.user,
     },
+    extra={
+        'title': "cluster/remove-user",
+        'description': "remove-user command",
+        'isNotificationHidden': False,
+    },
     endpoint="redis://cluster-leader",
 )
 

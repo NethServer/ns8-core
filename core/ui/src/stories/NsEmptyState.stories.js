@@ -44,5 +44,6 @@ export const LottieAnimation = Template.bind({});
 LottieAnimation.args = {
   title: "No search results",
   animationTitle: "ghost",
+  loop: 1,
   animationData: require("./assets/ghost.json"),
 };

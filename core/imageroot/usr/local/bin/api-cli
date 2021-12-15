@@ -27,6 +27,13 @@ import os
 import requests
 import sys
 import getpass
+import agent
+
+# Handled exceptions:
+from aiohttp import ClientError
+from aioredis import RedisError
+from agent.tasks.exceptions import TaskError
+from requests import RequestException
 
 def _get_cachefile_path():
     # Ensure there is a sane environment setup: fail if XDG_RUNTIME_DIR is
@@ -38,7 +45,6 @@ def _cachefile_exists():
         return os.path.exists(_get_cachefile_path())
     except KeyError:
         return False
-
 
 def login_command(args):
     if args.username:
@@ -61,10 +67,6 @@ def login_command(args):
         data={'username': username, 'password': password},
         verify=args.tlsverify,
     )
-    if response.status_code == 401:
-        print("Invalid credentials", file=sys.stderr)
-        sys.exit(1)
-
     response.raise_for_status()
     token = response.json()['token']
 
@@ -76,12 +78,14 @@ def login_command(args):
             fo.write(token)
         os.umask(oldmask)
         print(f"User {username}, login successful.")
+    return 0
 
 def logout_command(args):
     try:
         os.unlink(_get_cachefile_path())
     except FileNotFoundError:
         pass
+    return 0
 
 def run_command(args):
     kwargs = {'tls_verify': args.tlsverify}
@@ -116,17 +120,26 @@ def run_command(args):
     if args.check_idle_time:
         kwargs['check_idle_time'] = args.check_idle_time
 
+    if '/' in args.action:
+        if args.agent != 'cluster':
+            print(f'Warning: ignoring the command-line flag "--agent {args.agent}"', file=sys.stderr)
+        pagent, paction = args.action.rsplit('/', 1)
+    else:
+        pagent = args.agent
+        paction = args.action
+
     kwargs.setdefault('extra', {
-        'title': f"{args.action}@{args.agent}",
+        'title': f"{pagent}/{paction}",
         'description': f"api-cli endpoint {kwargs.get('endpoint', 'default')}",
         'isNotificationHidden': False,
     })
 
     if args.nowait:
-        response = agent.tasks.run_nowait(args.agent, args.action, data, **kwargs)
+        response = agent.tasks.run_nowait(pagent, paction, data, **kwargs)
         print(response)
+        return 0
     else:
-        response = agent.tasks.run(args.agent, args.action, data, **kwargs)
+        response = agent.tasks.run(pagent, paction, data, **kwargs)
         print(response['error'], file=sys.stderr, end='')
 
         if args.raw:
@@ -135,12 +148,19 @@ def run_command(args):
             json.dump(response['output'], fp=sys.stdout)
             print()
 
-        sys.exit(response['exit_code'])
+        return response['exit_code']
 
+def list_actions_command(args):
+    rdb = agent.redis_connect()
+    for krole in rdb.scan_iter('*/roles/owner'):
+        agent_id = krole.removesuffix('/roles/owner')
+        for action in rdb.smembers(krole):
+            print(f"{agent_id}/{action}")
+    return 0
 
 root_parser = argparse.ArgumentParser(description='Invoke cluster APIs from the command line')
 root_parser.add_argument('--endpoint', help='override the library default endpoint URL')
-root_parser.add_argument('--no-tlsverify', dest='tlsverify', action='store_false', default=True, help="do not verify TLS certificate of HTTPS endpoint")
+root_parser.add_argument('--no-tlsverify', dest='tlsverify', action='store_false', default=True, help="do not verify the TLS certificate")
 
 subparsers = root_parser.add_subparsers(title="commands", required=True, dest='command')
 
@@ -152,7 +172,7 @@ login_parser.add_argument('-o', '--output', help="print the authorization token 
 login_parser = subparsers.add_parser('logout', help="clean up the authorization token disk cache")
 
 submit_parser = subparsers.add_parser('run', aliases=['submit'], help="submit a task to the remote server and print the results")
-submit_parser.add_argument('action', help='action name, e.g. "list-actions"', default='list-actions')
+submit_parser.add_argument('action', metavar='agent/action', help='action name, e.g. "list-actions" or agent/action qualifier, e.g. "node/1/list-actions"')
 
 auth_group = submit_parser.add_mutually_exclusive_group()
 auth_group.add_argument('-t', '--token', help='authorization token returned by the "login -o" command')
@@ -160,14 +180,26 @@ auth_group.add_argument('-u', '--username')
 
 submit_parser.add_argument('-p', '--password', help="requires --username")
 submit_parser.add_argument('-a', '--agent', help='agent ID (e.g. "module/traefik1"). Defaults to "cluster"', default='cluster')
-submit_parser.add_argument('-d', '--data', help='string in JSON format, set as task input data. Special value "-" reads data from stdin', default='{}')
+submit_parser.add_argument('-d', '--data', help='string in JSON format, set as task input data. Special value "-" reads data from stdin', default="null")
 submit_parser.add_argument('--check-idle-time', help='check the agent client idle time does not exceed the given number of seconds (0=disabled)', type=int)
 submit_parser.add_argument('--nowait', help='do not wait for task completion. Return immediately the task ID', action='store_true')
 submit_parser.add_argument('--raw', help='convert output with print() instead dumping it in JSON format', action='store_true')
 
+list_actions_parser = subparsers.add_parser('list-actions', help='list actions granted to role "owner"')
+
 args = root_parser.parse_args()
 
-command = globals().get(args.command + '_command')
+command = globals().get(args.command.replace('-', '_') + '_command')
 
-command(args)
+try:
+    exit_code = command(args)
 
+except (ClientError, RedisError, TaskError, RequestException) as ex:
+    print(f'{ex.__class__.__name__}: {ex}', file=sys.stderr)
+    exit_code = 1
+
+except KeyboardInterrupt as ex:
+    print('Error: user keyboard interrupt!', file=sys.stderr)
+    exit_code = 1
+
+sys.exit(exit_code)

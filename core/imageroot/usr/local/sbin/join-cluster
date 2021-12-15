@@ -43,6 +43,11 @@ task_id = agent.tasks.run_nowait(
     agent_id='cluster',
     action='join-cluster',
     data=taskdata,
+    extra={
+        'title': "cluster/join-cluster",
+        'description': "join-cluster command",
+        'isNotificationHidden': False,
+    },
     endpoint="redis://cluster-leader",
 )
 

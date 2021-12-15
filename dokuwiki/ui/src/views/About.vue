@@ -262,7 +262,7 @@ export default {
         this.createClusterTaskForApp({
           action: taskAction,
           extra: {
-            title: this.$t("action." + taskAction),
+            title: this.ns8Core.$t("action." + taskAction),
             isNotificationHidden: true,
           },
         })

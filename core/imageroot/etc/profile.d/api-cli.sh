@@ -20,28 +20,32 @@
 # along with NethServer.  If not, see COPYING.
 #
 
-exec 1>&2
-set -e
+_apicli_wastyped()
+{
+    local xword checkword="$1"
+    for xword in "${COMP_WORDS[@]}"; do
+        if [[ "${xword}" == "${checkword}" ]]; then
+            return 0
+        fi
+    done
+    return 1
+}
 
-/usr/bin/podman run \
-    --dns=none \
-    --no-hosts \
-    --network=host \
-    --cap-drop=all \
-    --cap-add=chown,dac_override,dac_read_search,fowner,setgid,setuid,sys_admin \
-    --env ADMINPASS \
-    --env ADMINUSER \
-    --env NBDOMAIN \
-    --env REALM \
-    --env IPADDRESS \
-    --env SVCPASS \
-    --env SVCUSER \
-    --hostname=${HOSTNAME:?} \
-    --log-opt=tag=${MODULE_ID:?}-provision \
-    --rm --name=${MODULE_ID}-provision \
-    --volume=${MODULE_ID}-data:/var/lib/samba:Z \
-    --volume=${MODULE_ID}-config:/etc/samba:Z \
-    --volume=./hosts:/etc/hosts:Z \
-    --volume=./resolv.conf:/etc/resolv.conf:Z \
-    --volume=./krb5.conf:/etc/krb5.conf:Z \
-    "${SAMBA_DC_IMAGE:?}" "${PROVISION_TYPE:?}"
+_apicli_completions()
+{
+    local cword="$2"
+    local actions=()
+
+    if _apicli_wastyped "run"; then
+        actions+=($(api-cli list-actions))
+        COMPREPLY+=($(compgen -W "${actions[*]}" -- "${cword}"))
+    elif _apicli_wastyped "login"; then
+        COMPREPLY+=($(compgen -W "--username --password --output --help" -- "${cword}"))
+    elif _apicli_wastyped "logout"; then
+        :
+    else
+        COMPREPLY+=($(compgen -W "login logout run --help" -- "${cword}"))
+    fi
+}
+
+complete -F _apicli_completions api-cli

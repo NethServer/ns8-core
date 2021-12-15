@@ -1,0 +1,51 @@
+#!/bin/bash
+
+#
+# Copyright (C) 2021 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
+exec 1>&2
+set -e
+
+readarray -t input < <(jq -r '.adminuser, .adminpass')
+
+adminuser="${input[0]:?}"
+adminpass="${input[1]:?}"
+
+/usr/bin/podman run \
+    --dns=none \
+    --no-hosts \
+    --network=host \
+    --cap-drop=all \
+    --cap-add=chown,dac_override,dac_read_search,fowner,setgid,setuid,sys_admin \
+    --interactive \
+    --env NBDOMAIN \
+    --env REALM \
+    --env IPADDRESS \
+    --env SVCPASS \
+    --env SVCUSER \
+    --hostname=${HOSTNAME:?} \
+    --log-opt=tag=${MODULE_ID:?}-provision \
+    --rm --name=${MODULE_ID}-provision \
+    --volume=${MODULE_ID}-data:/var/lib/samba:Z \
+    --volume=${MODULE_ID}-config:/etc/samba:Z \
+    --volume=./hosts:/etc/hosts:Z \
+    --volume=./resolv.conf:/etc/resolv.conf:Z \
+    --volume=./krb5.conf:/etc/krb5.conf:Z \
+    "${SAMBA_DC_IMAGE:?}" "${PROVISION_TYPE:?}" <<<"${adminuser}"$'\n'"${adminpass}"

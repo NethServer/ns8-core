@@ -1,0 +1,46 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "add-internal-provider input",
+    "description": "Add a provider instance for a new or already existing internal user domain",
+    "$id": "http://schema.nethserver.org/cluster/add-internal-provider-input.json",
+    "examples": [
+        {
+            "image": "ghcr.io/nethserver/samba:v1.0.0",
+            "node": 2
+        },
+        {
+            "image": "ghcr.io/nethserver/samba:v1.0.0",
+            "node": 1,
+            "domain": "ad.example.com"
+        }
+    ],
+    "type": "object",
+    "required": [
+        "image",
+        "node"
+    ],
+    "properties": {
+        "image": {
+            "title": "Module image URL",
+            "description": "URL of the module image to install",
+            "type": "string",
+            "minLength": 1
+        },
+        "node": {
+            "title": "Node ID",
+            "description": "Node identifier where the module has to be installed",
+            "type": "integer",
+            "minimum": 1
+        },
+        "domain": {
+            "title": "Domain",
+            "description": "Add the instance to an already existing domain. This field is optional.",
+            "type": [
+                "string",
+                "null"
+            ],
+            "minLength": 1
+        }
+    },
+    "$defs": {}
+}

@@ -33,4 +33,5 @@ Default.args = {
   numberLabel: "Number",
   symbolLabel: "Symbol",
   equalLabel: "Equal",
+  disabled: false,
 };

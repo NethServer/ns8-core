@@ -13,12 +13,15 @@ on:
 jobs:
   push_image:
     env:
-      REPOBASE: ghcr.io/nethserver
       REPONAME: ${{ github.workflow }}
       IMAGETAG: ${{ github.head_ref }}
     name: 'Build ${{ github.workflow }}'
     runs-on: ubuntu-20.04
     steps:
+      - id: info
+        name: "Retrieve runtime information"
+        run: |
+          echo "::set-output name=org::$(dirname ${GITHUB_REPOSITORY} | tr '[:upper:]' '[:lower:]')"
       - id: checkout
         uses: actions/checkout@v2
       - id: yarn-cache
@@ -30,6 +33,9 @@ jobs:
       - id: build
         name: "Build the images"
         run: "cd ${REPONAME} && bash build-image.sh"
+        env:
+          REPOBASE: ghcr.io/${{ steps.info.outputs.org }}
+
       - id: push
         name: "Push the images"
         run: |

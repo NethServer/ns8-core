@@ -131,8 +131,9 @@
             <NsEmptyState
               v-if="!appsToDisplay.length"
               :title="$t('app_drawer.no_search_results')"
-              :animationData="require('@/assets/ghost-dark-bg.json')"
+              :animationData="GhostDarkBgLottie"
               animationTitle="ghost"
+              :loop="1"
             >
               <template #description>
                 <div>{{ $t("app_drawer.no_search_results_description") }}</div>
@@ -287,12 +288,19 @@ import {
   IconService,
   UtilService,
   TaskService,
+  LottieService,
 } from "@nethserver/ns8-ui-lib";
 import to from "await-to-js";
 
 export default {
   name: "AppDrawer",
-  mixins: [StorageService, IconService, UtilService, TaskService],
+  mixins: [
+    StorageService,
+    IconService,
+    UtilService,
+    TaskService,
+    LottieService,
+  ],
   data() {
     return {
       view: "grid",
@@ -639,6 +647,7 @@ export default {
   overflow: auto;
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.5);
   z-index: 10000;
+  padding-bottom: 3rem;
 }
 
 .app-drawer-loader {
