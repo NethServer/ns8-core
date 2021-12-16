@@ -64,7 +64,7 @@ class Restic:
         self.prepare_env()
 
         # Prepare base command
-        podman_cmd = ["podman", "run", "--rm", "--env-file", self.restic_env, "-v", f"{self.cache_dir}:/cache", "-v", f"{self.dump_dir}:/dump"]
+        podman_cmd = ["podman", "run", "--privileged", "--rm", "--env-file", self.restic_env, "-v", f"{self.cache_dir}:/cache", "-v", f"{self.dump_dir}:/dump"]
 
         for volume in self.volumes:
             mount = self.volumes[volume]
@@ -88,7 +88,7 @@ class Restic:
         os.makedirs(restore_dir, exist_ok=True)
 
         # Prepare base command
-        podman_cmd = ["podman", "run", "--rm", "--env-file", self.restic_env, "-v", f"{self.cache_dir}:/cache", "-v", f"{restore_dir}:/restore"]
+        podman_cmd = ["podman", "run", "--privileged", "--rm", "--env-file", self.restic_env, "-v", f"{self.cache_dir}:/cache", "-v", f"{restore_dir}:/restore"]
         return podman_cmd + ["docker.io/restic/restic"]
 
     def prepare_dirs(self):
@@ -142,7 +142,7 @@ class Restore(Restic):
         self.prepare_env()
 
         # Prepare base command
-        podman_cmd = ["podman", "run", "--rm", "--env-file", self.restic_env, "docker.io/restic/restic"]
+        podman_cmd = ["podman", "run", "--privileged", "--rm", "--env-file", self.restic_env, "docker.io/restic/restic"]
 
         p_dump = subprocess.run(podman_cmd + ["--no-cache", "dump", "latest", "/environment"], capture_output=True)
         for line in p_dump.stdout.splitlines():
