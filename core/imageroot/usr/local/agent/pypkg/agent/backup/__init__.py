@@ -40,7 +40,6 @@ class Restic:
         with open(self.restic_env, 'w') as efile:
             efile.write(f"RESTIC_PASSWORD={self.config['password']}\n")
             efile.write(f"RESTIC_CACHE_DIR=/cache\n")
-            efile.write(f"RESTIC_REPOSITORY={self.config['url']}:{self.directory}\n")
 
             # Supported backend:
             # - S3 compatible services
@@ -50,12 +49,15 @@ class Restic:
 
             parts = self.config['url'].split(":")
             if parts[0] == "s3":
+                efile.write(f"RESTIC_REPOSITORY={self.config['url']}/{self.directory}\n")
                 efile.write(f"AWS_ACCESS_KEY_ID={self.config['aws_access_key_id']}\n")
                 efile.write(f"AWS_SECRET_ACCESS_KEY={self.config['aws_secret_access_key']}\n")
             elif parts[0] == "b2":
+                efile.write(f"RESTIC_REPOSITORY={self.config['url']}:{self.directory}\n")
                 efile.write(f"B2_ACCOUNT_ID={self.config['b2_account_id']}\n")
                 efile.write(f"B2_ACCOUNT_KEY={self.config['b2_account_key']}\n")
             elif parts[0] == "azure":
+                efile.write(f"RESTIC_REPOSITORY={self.config['url']}:/{self.directory}\n")
                 efile.write(f"AZURE_ACCOUNT_NAME={self.config['azure_account_name']}\n")
                 efile.write(f"AZURE_ACCOUNT_KEY={self.config['azure_account_key']}\n")
 
