@@ -36,7 +36,6 @@ agent.set_weight(os.path.basename(__file__), 0) # Validation step, no task progr
 
 repository = request['repository']
 
-# check for duplicate names
 if not rdb.exists(f'cluster/backup_repository/{repository}'):
     errors.append({'field':'id','parameter':'id','value': repository,'error':'backup_repository_not_found'})
 

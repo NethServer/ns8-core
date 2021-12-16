@@ -25,6 +25,5 @@
     "type": "array",
     "items": {
         "type": "object"
-    },
-    "$defs": {}
+    }
 }

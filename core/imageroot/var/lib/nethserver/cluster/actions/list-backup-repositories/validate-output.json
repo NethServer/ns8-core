@@ -17,6 +17,5 @@
             }
         ]
     ],
-    "type": "array",
-    "$defs": {}
+    "type": "array"
 }
