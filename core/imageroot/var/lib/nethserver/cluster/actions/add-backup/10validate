@@ -25,6 +25,7 @@ import sys
 import json
 import agent
 import uuid
+import subprocess
 
 errors = []
 
@@ -33,13 +34,17 @@ rdb = agent.redis_connect(privileged=False)
 
 agent.set_weight(os.path.basename(__file__), 0) # Validation step, no task progress at all
 
-name = request['name']
-url = request['url']
-id = str(uuid.uuid5(uuid.NAMESPACE_URL, url))
+repository = request['repository']
 
-# check for duplicate names
-if rdb.exists(f'cluster/backup_repository/{id}'):
-    errors.append({'field':'id','parameter':'id','value': id,'error':'backup_repository_exists'})
+if not rdb.exists(f'cluster/backup_repository/{repository}'):
+    errors.append({'field':'id','parameter':'id','value': repository,'error':'backup_repository_not_found'})
+
+if subprocess.run(['/usr/bin/systemd-analyze', 'calendar', request['schedule']], stdout=subprocess.DEVNULL).returncode != 0:
+    errors.append({'field':'schedule','parameter':'schedule','value': request['schedule'],'error':'bad_schedule_format'})
+
+for mid in request['instances']:
+    if not rdb.exists(f'module/{mid}/environment'):
+        errors.append({'field':'instances','parameter':'instances','value': mid,'error':'module_not_found'})
 
 if errors:
     agent.set_status('validation-failed')

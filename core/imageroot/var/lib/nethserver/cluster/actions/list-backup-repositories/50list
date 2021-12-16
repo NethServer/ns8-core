@@ -20,28 +20,24 @@
 # along with NethServer.  If not, see COPYING.
 #
 
-import os
-import sys
 import json
+import sys
 import agent
-import uuid
 
-errors = []
+rdb = agent.redis_connect()
 
-request = json.load(sys.stdin)
-rdb = agent.redis_connect(privileged=False)
+brepos = []
 
-agent.set_weight(os.path.basename(__file__), 0) # Validation step, no task progress at all
+for krepo in rdb.scan_iter('cluster/backup_repository/*'):
+    parameters = rdb.hgetall(krepo)
+    orepo = {
+        "id": krepo.removeprefix('cluster/backup_repository/'),
+        "name": parameters.pop('name', ''),
+        "url": parameters.pop('url'),
+        "password": parameters.pop('password'),
+        "parameters": parameters
+    }
+    brepos.append(orepo)
 
-name = request['name']
-url = request['url']
-id = str(uuid.uuid5(uuid.NAMESPACE_URL, url))
 
-# check for duplicate names
-if rdb.exists(f'cluster/backup_repository/{id}'):
-    errors.append({'field':'id','parameter':'id','value': id,'error':'backup_repository_exists'})
-
-if errors:
-    agent.set_status('validation-failed')
-    json.dump(errors, fp=sys.stdout)
-    sys.exit(2)
+json.dump(brepos, fp=sys.stdout)
