@@ -32,6 +32,7 @@ for krepo in rdb.scan_iter('cluster/backup_repository/*'):
     parameters = rdb.hgetall(krepo)
     orepo = {
         "id": krepo.removeprefix('cluster/backup_repository/'),
+        "provider": parameters.pop('provider'),
         "name": parameters.pop('name', ''),
         "url": parameters.pop('url'),
         "password": parameters.pop('password'),

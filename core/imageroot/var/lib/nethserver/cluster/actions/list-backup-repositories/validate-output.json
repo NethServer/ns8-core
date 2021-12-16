@@ -7,6 +7,7 @@
         [
             {
                 "id": "48ce000a-79b7-5fe6-8558-177fd70c27b4",
+                "provider": "backblaze",
                 "name": "BackBlaze repo1",
                 "url": "b2:backupex1",
                 "password": "d59a90ec7ad2b2967257a7a308c82c96ac006efd138254bc1e58c8ea07c18400",

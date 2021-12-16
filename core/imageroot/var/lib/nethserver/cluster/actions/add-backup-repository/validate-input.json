@@ -6,7 +6,8 @@
     "examples": [
         {
             "name": "repository1",
-            "url": "b2:mybackup",
+            "provider": "backblaze",
+            "url": "b2:mybucket/mybackup",
             "parameters": {
                 "b2_account_id": "YEFYEIOEHGO",
                 "b2_account_key": "sdifjsiodv7sdv7suivyhsfv7fvyhdfvb7d"
@@ -14,16 +15,32 @@
         },
         {
             "name": "repository2",
-            "url": "s3:usbackup",
+            "provider": "aws",
+            "url": "s3:s3.amazonaws.com/mybucket/mybackup",
             "password": "45a1905ef8de3c03b05d47071754bd5ddbfec0edaa56d4c44f981386f3f24888",
             "parameters": {
+                "aws_default_region": "us-east-1",
                 "aws_access_key_id": "IEIEEHEHEW",
                 "aws_secret_access_key": "edfjksof798r7fsdfiougvf7df"
+            }
+        },
+        {
+            "name": "repository 3",
+            "provider": "digitalocean",
+            "url": "s3:ams3.digitaloceanspaces.com/mybucket/mybackup",
+            "parameters": {
+                "aws_access_key_id": "XJEMERNGRIWGN",
+                "aws_secret_access_key": "897wergjkegher987geriugheruiger789"
             }
         }
     ],
     "type": "object",
     "properties": {
+        "provider": {
+            "type": "string",
+            "title": "Repository provider",
+            "minLength": 1
+        },
         "name": {
             "title": "Backup repository name",
             "type": "string"
@@ -40,25 +57,56 @@
         },
         "parameters": {
             "type": "object",
-            "anyOf": [
-                {
-                    "$ref": "#/$defs/b2_parameters"
-                },
-                {
-                    "$ref": "#/$defs/s3_parameters"
-                }
-            ]
+            "title": "Connection parameters"
         }
     },
     "required": [
+        "provider",
         "name",
         "url",
         "parameters"
     ],
+    "anyOf": [
+        {
+            "allOf": [
+                {
+                    "title": "BackBlaze schema",
+                    "properties": {
+                        "provider": {
+                            "title": "BackBlaze provider",
+                            "const": "backblaze"
+                        },
+                        "parameters": {
+                            "$ref": "#/$defs/b2_parameters"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "allOf": [
+                {
+                    "title": "S3-based provider schema",
+                    "properties": {
+                        "provider": {
+                            "title": "S3 providers",
+                            "enum": ["aws", "digitalocean", "generic-s3"]
+                        },
+                        "parameters": {
+                            "$ref": "#/$defs/s3_parameters"
+                        }
+                    }
+                }
+            ]
+        }
+    ],
     "$defs": {
         "b2_parameters": {
             "title": "B2 (Backblaze) protocol parameters",
-            "required": ["b2_account_id", "b2_account_key"],
+            "required": [
+                "b2_account_id",
+                "b2_account_key"
+            ],
             "properties": {
                 "b2_account_id": {
                     "type": "string"
@@ -70,8 +118,14 @@
         },
         "s3_parameters": {
             "title": "S3 (Amazon AWS) protocol parameters",
-            "required": ["aws_access_key_id", "aws_secret_access_key"],
+            "required": [
+                "aws_access_key_id",
+                "aws_secret_access_key"
+            ],
             "properties": {
+                "aws_default_region": {
+                    "type": "string"
+                },
                 "aws_access_key_id": {
                     "type": "string"
                 },
