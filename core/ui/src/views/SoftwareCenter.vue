@@ -116,7 +116,7 @@
                   :actionLabel="$t('common.cancel')"
                   @action="cancelUpdateAll"
                   :showCloseButton="false"
-                  loading
+                  :timer="updateAllAppsDelay"
                 />
                 <div
                   v-if="updates.length && !updateAllAppsTimeout"

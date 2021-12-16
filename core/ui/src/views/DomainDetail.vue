@@ -158,11 +158,14 @@
             v-if="providerToDelete"
             kind="warning"
             :title="
-              $t('domain_detail.provider_deleted') + ': ' + providerToDelete.id
+              $t('domain_detail.provider_is_going_to_be_deleted', {
+                object: providerToDelete.id,
+              })
             "
-            :actionLabel="$t('common.undo')"
+            :actionLabel="$t('common.cancel')"
             @action="cancelDeleteUnconfiguredProvider()"
             :showCloseButton="false"
+            :timer="DELETE_DELAY"
           />
         </div>
       </div>
@@ -464,7 +467,6 @@ export default {
   },
   data() {
     return {
-      DELETE_DELAY: 7000, // you have 7 seconds to undo object deletion
       q: {},
       isShownAddInternalProviderModal: false,
       isShownAddExternalProviderModal: false,
@@ -653,6 +655,7 @@ export default {
           },
           extra: {
             title: this.$t("action." + taskAction),
+            description: this.$t("common.processing"),
           },
         })
       );
@@ -822,8 +825,6 @@ export default {
       this.isShownBindPassword = !this.isShownBindPassword;
     },
     willDeleteUnconfiguredProvider(provider) {
-      console.log("willDeleteUnconfiguredProvider", provider); ////
-
       const timeout = setTimeout(() => {
         this.deleteUnconfiguredProvider(provider);
         this.providerToDelete = null;
@@ -860,6 +861,7 @@ export default {
           },
           extra: {
             title: this.$t("action." + taskAction),
+            description: this.$t("common.processing"),
           },
         })
       );

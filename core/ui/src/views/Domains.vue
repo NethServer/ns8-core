@@ -70,11 +70,14 @@
             v-if="domainToDelete"
             kind="warning"
             :title="
-              $t('domains.domain_deleted') + ': ' + domainToDelete.module_id
+              $t('domains.domain_is_going_to_be_deleted', {
+                object: domainToDelete.module_id,
+              })
             "
-            :actionLabel="$t('common.undo')"
+            :actionLabel="$t('common.cancel')"
             @action="cancelDeleteUnconfiguredDomain()"
             :showCloseButton="false"
+            :timer="DELETE_DELAY"
           />
         </div>
       </div>
@@ -337,7 +340,6 @@ export default {
   },
   data() {
     return {
-      DELETE_DELAY: 7000, // you have 7 seconds to undo object deletion
       q: {},
       isShownCreateDomainModal: false,
       domains: [],
@@ -606,7 +608,7 @@ export default {
     },
     async deleteUnconfiguredDomain(domain) {
       this.error.removeModule = "";
-      const taskAction = "remove-module";
+      const taskAction = "remove-internal-provider";
 
       // register to task completion (using $on instead of $once for multiple revertable deletions)
       this.$root.$on(
@@ -619,13 +621,10 @@ export default {
           action: taskAction,
           data: {
             module_id: domain.module_id,
-            preserve_data: false,
           },
           extra: {
-            title: this.$t("software_center.instance_uninstallation", {
-              instance: domain.module_id,
-            }),
-            description: this.$t("software_center.uninstalling"),
+            title: this.$t("action." + taskAction),
+            description: this.$t("common.processing"),
           },
         })
       );

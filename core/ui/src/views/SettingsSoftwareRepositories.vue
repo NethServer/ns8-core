@@ -50,13 +50,13 @@
             kind="warning"
             :title="
               $t('settings_sw_repositories.repository_is_going_to_be_deleted', {
-                repo: repoToDelete.name,
+                object: repoToDelete.name,
               })
             "
-            :actionLabel="$t('common.undo')"
+            :actionLabel="$t('common.cancel')"
             @action="cancelDeleteRepository()"
             :showCloseButton="false"
-            :timer="deleteRepoDelay"
+            :timer="DELETE_DELAY"
           />
         </div>
       </div>
@@ -332,7 +332,6 @@ export default {
       tableColumns: ["name", "url", "status", "testing"],
       tableRows: [],
       repoToDelete: null,
-      deleteRepoDelay: 7000, // you have 7 seconds to undo repository deletion
       loading: {
         repositories: true,
         createRepository: false,
@@ -576,7 +575,7 @@ export default {
       const timeout = setTimeout(() => {
         this.deleteRepository(repo);
         this.repoToDelete = null;
-      }, this.deleteRepoDelay);
+      }, this.DELETE_DELAY);
 
       repo.timeout = timeout;
       this.repoToDelete = repo;
@@ -600,7 +599,7 @@ export default {
           },
           extra: {
             title: this.$t("action." + taskAction),
-            isNotificationHidden: true,
+            description: this.$t("common.processing"),
           },
         })
       );

@@ -60,7 +60,7 @@ export const Timer = Template.bind({});
 Timer.args = {
   title: "Hey there",
   description: "Something will happen in a moment...",
-  actionLabel: "Undo",
+  actionLabel: "Cancel",
   loading: false,
   kind: "info",
   showCloseButton: false,
