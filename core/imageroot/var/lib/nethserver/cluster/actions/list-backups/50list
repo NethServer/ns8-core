@@ -1,0 +1,56 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2021 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
+import json
+import sys
+import agent
+
+rdb = agent.redis_connect()
+
+backups = {}
+
+for kbackup in rdb.scan_iter('cluster/backup/*'):
+    bid = kbackup.removeprefix('cluster/backup/')
+    battrs = rdb.hgetall(kbackup)
+
+    backups[bid] = {
+        "id": int(bid),
+        "name": battrs.pop("name"),
+        "repository": battrs.pop("repository"),
+        "schedule": battrs.pop("schedule"),
+        "retention": battrs.pop("retention"),
+        "instances": [],
+    }
+
+for mbackup in rdb.scan_iter('module/*/backups'):
+    for bid in rdb.sscan_iter(mbackup):
+        if bid in backups:
+            mid = mbackup.removeprefix('module/').removesuffix('/backups')
+            module_uuid = rdb.hget(f"module/{mid}/environment", "MODULE_UUID")
+            backups[bid]['instances'].append({
+                "module_id": mid,
+                "ui_name": rdb.get(f"module/{mid}/ui_name") or "",
+                "repository_path": f"{mid}@{module_uuid}",
+                "status": None,
+            })
+
+json.dump(list(backups.values()), fp=sys.stdout)
