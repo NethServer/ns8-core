@@ -2,10 +2,10 @@
   <div class="bx--grid bx--grid--full-width">
     <div class="bx--row">
       <div class="bx--col-lg-16 page-title">
-        <h2>{{ $t("settings.title") }}</h2>
+        <h2>{{ $t("backup.title") }}</h2>
       </div>
     </div>
-    <div class="bx--row">
+    <!-- <div class="bx--row">
       <div class="bx--col-md-4 bx--col-lg-4">
         <NsTile
           :light="true"
@@ -26,7 +26,7 @@
           <h6>{{ $t("settings.sw_repositories") }}</h6>
         </NsTile>
       </div>
-    </div>
+    </div> -->
   </div>
 </template>
 
@@ -34,14 +34,20 @@
 import {
   QueryParamService,
   UtilService,
+  TaskService,
   IconService,
 } from "@nethserver/ns8-ui-lib";
 
 export default {
-  name: "Settings",
-  mixins: [UtilService, IconService, QueryParamService],
+  name: "Backup",
+  mixins: [TaskService, UtilService, IconService, QueryParamService],
   pageTitle() {
-    return this.$t("settings.title");
+    return this.$t("backup.title");
+  },
+  data() {
+    return {
+      q: {},
+    };
   },
   beforeRouteEnter(to, from, next) {
     next((vm) => {
@@ -53,9 +59,12 @@ export default {
     this.queryParamsToDataForCore(this, to.query);
     next();
   },
+  created() {
+    this.listBackupRepositories();
+  },
   methods: {
-    goTo(path) {
-      this.$router.push(path);
+    listBackupRepositories() {
+      console.log("listBackupRepositories"); ////
     },
   },
 };
