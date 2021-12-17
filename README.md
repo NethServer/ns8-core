@@ -3,6 +3,7 @@
 Supported distributions:
 - Fedora 34
 - Debian 11 (bullseye)
+- CentOS stream 9
 
 Draft documentation for developers:
 
