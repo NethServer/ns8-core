@@ -1,0 +1,30 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "remove-backup-repository input",
+    "description": "Remove a backup repository and any related backup object",
+    "$id": "http://schema.nethserver.org/cluster/remove-backup-repository-input.json",
+    "examples": [
+        {
+            "id": "183f7ae2-7649-5bb5-8742-9ee24d058b8b",
+            "password": "2d6f16f95762005e00d20d85c045fac12e3d2933b21a835460e0494d2983ba33"
+        }
+    ],
+    "type": "object",
+    "required": [
+        "id",
+        "password"
+    ],
+    "properties": {
+        "id": {
+            "type": "string",
+            "title": "Repository ID",
+            "minLength": 1
+        },
+        "password": {
+            "title": "Encryption token",
+            "description": "This field is required for confirm the repository removal",
+            "type": "string",
+            "minLength": 1
+        }
+    }
+}
