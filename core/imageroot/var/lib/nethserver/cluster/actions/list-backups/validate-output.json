@@ -4,26 +4,28 @@
     "$id": "http://schema.nethserver.org/cluster/list-backups-output.json",
     "description": "Get a list of backup configurations",
     "examples": [
-        [
-            {
-                "id": 1,
-                "name": "Daily",
-                "repository": "48ce000a-79b7-5fe6-8558-177fd70c27b4",
-                "schedule": "daily",
-                "retention": "7d",
-                "instances": [
-                    {
-                        "module_id": "dokuwiki1",
-                        "ui_name": "",
-                        "repository_path": "dokuwiki1@2f72561e-89b2-4cdc-b4e4-425ca23bbec9",
-                        "status": null
-                    }
-                ]
-            }
-        ]
+        {
+            "backups": [
+                {
+                    "id": 1,
+                    "name": "Daily",
+                    "repository": "48ce000a-79b7-5fe6-8558-177fd70c27b4",
+                    "schedule": "daily",
+                    "retention": "7d",
+                    "instances": [
+                        {
+                            "module_id": "dokuwiki1",
+                            "ui_name": "",
+                            "repository_path": "dokuwiki1@2f72561e-89b2-4cdc-b4e4-425ca23bbec9",
+                            "status": null
+                        }
+                    ]
+                }
+            ],
+            "unconfigured_instances": [
+                "nextcloud3"
+            ]
+        }
     ],
-    "type": "array",
-    "items": {
-        "type": "object"
-    }
+    "type": "object"
 }
