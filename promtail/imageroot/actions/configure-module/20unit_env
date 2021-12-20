@@ -59,7 +59,7 @@ if data.get("loki_instance") is not None:
 else:
     agent.set_env("LOKI_INSTANCE", "")
 
-if os.path.isdir('/run/log/journal'):
+if os.listdir('/run/log/journal'):
     agent.set_env("PROMTAIL_JOURNAL", "/run/log/journal")
 else:
     agent.set_env("PROMTAIL_JOURNAL", "/var/log/journal")
