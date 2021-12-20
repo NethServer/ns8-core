@@ -37,7 +37,7 @@ id = str(uuid.uuid5(uuid.NAMESPACE_URL, request['url']))
 
 # check for duplicate names
 if rdb.exists(f'cluster/backup_repository/{id}'):
-    errors.append({'field':'id','parameter':'id','value': id,'error':'backup_repository_exists'})
+    errors.append({'field':'url','parameter':'url','value':request['url'],'error':'backup_repository_exists'})
 
 if errors:
     agent.set_status('validation-failed')
