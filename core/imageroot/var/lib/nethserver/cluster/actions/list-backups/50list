@@ -41,6 +41,8 @@ for kbackup in rdb.scan_iter('cluster/backup/*'):
         "instances": [],
     }
 
+configured_instances = set()
+
 for mbackup in rdb.scan_iter('module/*/backups'):
     for bid in rdb.sscan_iter(mbackup):
         if bid in backups:
@@ -52,5 +54,21 @@ for mbackup in rdb.scan_iter('module/*/backups'):
                 "repository_path": f"{mid}@{module_uuid}",
                 "status": None,
             })
+            configured_instances.add(mid)
 
-json.dump(list(backups.values()), fp=sys.stdout)
+unconfigured_instances = []
+
+# XXX module blacklist -- this should be implemented elsewhere:
+skip_modules = ["promtail", "samba", "openldap", "loki", "ldapproxy", "traefik"]
+
+for xins in rdb.scan_iter('module/*/environment'):
+    mid = xins.removesuffix('/environment').removeprefix('module/')
+    if [mskip for mskip in skip_modules if mid.startswith(mskip)]:
+        continue
+    if not mid in configured_instances:
+        unconfigured_instances.append({
+            "id": mid,
+            "ui_name": rdb.get(f"module/{mid}/ui_name") or "",
+        })
+
+json.dump({"backups": list(backups.values()), "unconfigured_instances": unconfigured_instances}, fp=sys.stdout)
