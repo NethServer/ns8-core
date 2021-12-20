@@ -33,6 +33,7 @@ data = {
     "retention": request['retention'],
     "name": request['name'],
     "schedule": request['schedule'],
+    "enabled": "1" if request['enabled'] else "",
 }
 
 backup_id = int(rdb.incr('cluster/backup_sequence'))
