@@ -39,6 +39,7 @@ for kbackup in rdb.scan_iter('cluster/backup/*'):
         "schedule": battrs.pop("schedule"),
         "retention": battrs.pop("retention"),
         "instances": [],
+        "enabled": bool(battrs.pop("enabled")),
     }
 
 configured_instances = set()

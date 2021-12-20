@@ -19,7 +19,8 @@
                             "repository_path": "dokuwiki1@2f72561e-89b2-4cdc-b4e4-425ca23bbec9",
                             "status": null
                         }
-                    ]
+                    ],
+                    "enabled": true
                 }
             ],
             "unconfigured_instances": [
