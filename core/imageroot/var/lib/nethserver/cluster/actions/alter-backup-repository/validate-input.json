@@ -1,0 +1,79 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "alter-backup-repository input",
+    "$id": "http://schema.nethserver.org/cluster/alter-backup-repository-input.json",
+    "description": "Input schema of the alter-backup-repository action",
+    "examples": [
+        {
+            "id:": "ce712dfe-b1d0-47f1-a149-a14d1203aab8",
+            "name": "repository1",
+            "parameters": {
+                "b2_account_id": "YEFYEIOEHGO",
+                "b2_account_key": "sdifjsiodv7sdv7suivyhsfv7fvyhdfvb7d"
+            }
+        }
+    ],
+    "type": "object",
+    "properties": {
+        "id": {
+            "title": "Backup repository ID",
+            "type": "string",
+            "minLength": 1
+        },
+        "name": {
+            "title": "Backup repository name",
+            "type": "string"
+        },
+        "parameters": {
+            "type": "object",
+            "title": "Connection parameters",
+            "oneOf": [
+                {
+                    "$ref": "#/$defs/b2_parameters"
+                },
+                {
+                    "$ref": "#/$defs/s3_parameters"
+                }
+            ]
+        }
+    },
+    "required": [
+        "name",
+        "parameters"
+    ],
+    "$defs": {
+        "b2_parameters": {
+            "title": "B2 (Backblaze) protocol parameters",
+            "required": [
+                "b2_account_id",
+                "b2_account_key"
+            ],
+            "properties": {
+                "b2_account_id": {
+                    "type": "string"
+                },
+                "b2_account_key": {
+                    "type": "string"
+                }
+            }
+        },
+        "s3_parameters": {
+            "title": "S3 (Amazon AWS) protocol parameters",
+            "required": [
+                "aws_access_key_id",
+                "aws_secret_access_key"
+            ],
+            "properties": {
+                "aws_default_region": {
+                    "type": "string"
+                },
+                "aws_access_key_id": {
+                    "type": "string"
+                },
+                "aws_secret_access_key": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}
