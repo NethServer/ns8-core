@@ -46,6 +46,14 @@ a {
   margin-top: 3rem;
 }
 
+.mg-top-sm {
+  margin-top: $spacing-03 !important;
+}
+
+.mg-top-md {
+  margin-top: $spacing-05 !important;
+}
+
 .mg-bottom-md {
   margin-bottom: $spacing-05 !important;
 }
@@ -117,6 +125,7 @@ a {
 .icon-and-text {
   display: flex;
   align-items: center;
+  justify-content: center;
 }
 
 .icon-and-text .icon {
@@ -125,6 +134,10 @@ a {
 
 .empty-state-button {
   margin-top: $spacing-07;
+}
+
+.empty-state-button-no-description {
+  margin-top: $spacing-05;
 }
 
 .ellipsis {

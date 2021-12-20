@@ -149,7 +149,7 @@
                 <div class="row">
                   {{ $t("common.version") }} {{ instance.version }}
                 </div>
-                <div class="row icon-and-text node-container">
+                <div class="row icon-and-text">
                   <NsSvg :svg="Chip20" class="icon" />
                   <span>{{ $t("common.node") }} {{ instance.node }}</span>
                 </div>
@@ -555,10 +555,6 @@ export default {
 
 .instance-card-content .row:last-child {
   margin-bottom: 0;
-}
-
-.node-container {
-  justify-content: center;
 }
 
 .actions {

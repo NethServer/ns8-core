@@ -38,7 +38,7 @@
     "next": "Next",
     "previous": "Previous",
     "please_read_carefully": "Please read carefully",
-    "type_to_to_confirm": "Type <strong>{name}</strong> to confirm deletion",
+    "type_to_confirm": "Type <strong>{name}</strong> to confirm deletion",
     "understood_delete": "I understand, delete",
     "show": "Show",
     "hide": "Hide",
@@ -202,7 +202,10 @@
     "remove-external-domain": "Remove external domain",
     "remove-internal-domain": "Remove internal domain",
     "add-internal-provider": "Add internal provider",
-    "set-external-provider-name": "Set external provider name"
+    "set-external-provider-name": "Set external provider name",
+    "list-backup-repositories": "List backup repositories",
+    "list-backups": "List backups",
+    "add-backup-repository": "Add backup repository"
   },
   "network": {
     "title": "Network"
@@ -211,7 +214,29 @@
     "title": "Account provider"
   },
   "backup": {
-    "title": "Backup"
+    "title": "Backup",
+    "repositories": "Repositories",
+    "backups": "Backups",
+    "no_backup_repository": "No backup repository",
+    "empty_state_repository_description": "Add a repository to configure backup",
+    "no_backup_configured": "No backup configured",
+    "add_backup_repository": "Add backup repository",
+    "create_backup": "Create backup",
+    "edit_repository_name": "Edit repository name",
+    "backblaze": "Backblaze B2",
+    "amazon_s3": "Amazon S3",
+    "azure": "Microsoft Azure",
+    "instances": "instances",
+    "delete_backup_repository": "Delete backup repository",
+    "delete_repository_confirm": "Delete backup repository <strong>{name}</strong>?",
+    "delete_repo_explanation_1": "Any backups using this repository will be deleted as well. This action is <strong>NOT</strong> reversible.",
+    "delete_repo_explanation_2": "Ensure you have saved repository password in a safe place, or you won't be able to recover your backup data.",
+    "repository_password": "Repository password",
+    "type_repo_password_to_confirm": "Type repository password to confirm deletion",
+    "select_backup_provider": "Select backup provider",
+    "repository_name": "Repository name",
+    "repository_name_helper": "An easy to remember name for the repository",
+    "url": "URL"
   },
   "settings": {
     "title": "Settings",

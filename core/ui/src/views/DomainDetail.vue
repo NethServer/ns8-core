@@ -250,7 +250,7 @@
               </template>
               <template #content>
                 <div class="provider-card-content">
-                  <div class="row icon-and-text center-content">
+                  <div class="row icon-and-text">
                     <NsSvg :svg="Application20" class="icon" />
                     <span>{{
                       provider.ui_name
@@ -258,17 +258,11 @@
                         : provider.id
                     }}</span>
                   </div>
-                  <div
-                    v-if="provider.node"
-                    class="row icon-and-text center-content"
-                  >
+                  <div v-if="provider.node" class="row icon-and-text">
                     <NsSvg :svg="Chip20" class="icon" />
                     <span>{{ $t("common.node") }} {{ provider.node }}</span>
                   </div>
-                  <div
-                    v-if="provider.host"
-                    class="row icon-and-text center-content"
-                  >
+                  <div v-if="provider.host" class="row icon-and-text">
                     <NsSvg :svg="Network_220" class="icon" />
                     <span>{{ provider.host }}</span>
                     <span v-if="provider.port">:{{ provider.port }}</span>
@@ -276,7 +270,7 @@
                   <div class="row actions">
                     <NsButton
                       kind="ghost"
-                      :icon="Tools32"
+                      :icon="Tools20"
                       @click="showUnconfiguredProviderModal(provider)"
                       >{{ $t("domains.resume_configuration") }}
                     </NsButton>
@@ -322,17 +316,11 @@
                   <div v-if="provider.ui_name" class="row">
                     {{ provider.id }}
                   </div>
-                  <div
-                    v-if="provider.node"
-                    class="row icon-and-text center-content"
-                  >
+                  <div v-if="provider.node" class="row icon-and-text">
                     <NsSvg :svg="Chip20" class="icon" />
                     <span>{{ $t("common.node") }} {{ provider.node }}</span>
                   </div>
-                  <div
-                    v-if="provider.host"
-                    class="row icon-and-text center-content"
-                  >
+                  <div v-if="provider.host" class="row icon-and-text">
                     <NsSvg :svg="Network_220" class="icon" />
                     <span>{{ provider.host }}</span>
                     <span v-if="provider.port">:{{ provider.port }}</span>
@@ -394,7 +382,7 @@
         })
       "
       :typeToConfirm="
-        $t('common.type_to_to_confirm', { name: currentProvider.id })
+        $t('common.type_to_confirm', { name: currentProvider.id })
       "
       @hide="hideDeleteProviderModal"
       @confirmDelete="deleteProvider"
@@ -901,10 +889,6 @@ export default {
 
 .setting-value {
   word-wrap: break-word;
-}
-
-.center-content {
-  justify-content: center;
 }
 
 .toggle-bind-password {

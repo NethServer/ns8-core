@@ -154,7 +154,7 @@
                         ")"
                       }}</span>
                     </div>
-                    <div class="row icon-and-text center-content">
+                    <div class="row icon-and-text">
                       <NsSvg :svg="Chip20" class="icon" />
                       <span
                         >{{ $t("common.node") }}
@@ -164,7 +164,7 @@
                     <div class="row actions">
                       <NsButton
                         kind="ghost"
-                        :icon="Tools32"
+                        :icon="Tools20"
                         @click="showUnconfiguredDomainModal(unconfiguredDomain)"
                         >{{ $t("domains.resume_configuration") }}
                       </NsButton>
@@ -260,7 +260,7 @@
                     <!-- unconfigured providers -->
                     <div
                       v-if="domain.hasUnconfiguredProviders"
-                      class="row icon-and-text center-content"
+                      class="row icon-and-text"
                     >
                       <NsSvg :svg="WarningAlt20" class="icon" />
                       <span>{{ $t("domains.unconfigured_provider") }} </span>
@@ -313,7 +313,7 @@
             })
       "
       :typeToConfirm="
-        $t('common.type_to_to_confirm', { name: currentDomain.name })
+        $t('common.type_to_confirm', { name: currentDomain.name })
       "
       @hide="hideDeleteDomainModal"
       @confirmDelete="deleteDomain(currentDomain)"
@@ -677,9 +677,5 @@ export default {
 
 .actions {
   margin-top: $spacing-06;
-}
-
-.center-content {
-  justify-content: center;
 }
 </style>

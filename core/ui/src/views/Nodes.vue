@@ -158,8 +158,8 @@
           light
           expanded
           hideExpandButton
-          >{{ joinCode }}
-        </NsCodeSnippet>
+          >{{ joinCode }}</NsCodeSnippet
+        >
       </template>
       <template slot="secondary-button">{{ $t("common.close") }}</template>
     </cv-modal>
