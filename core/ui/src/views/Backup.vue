@@ -583,9 +583,10 @@ export default {
       }
     },
     listBackupsCompleted(taskContext, taskResult) {
-      let backups = taskResult.output;
+      let backups = taskResult.output.backups;
+      let unconfiguredInstances = taskResult.output.unconfigured_instances;
 
-      console.log("listBackupsCompleted", backups); ////
+      console.log("listBackupsCompleted", backups, unconfiguredInstances); ////
 
       // repository name
 

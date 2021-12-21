@@ -12,9 +12,12 @@
           {{ $t("backup.choose_app_instances_to_backup") }}
         </div>
         <!-- //// -->
-        <div>
-          {{ instances }}
-        </div>
+        <cv-text-input
+          v-model.trim="instances"
+          :disabled="loading.addBackup"
+          ref="instances"
+        >
+        </cv-text-input>
       </template>
       <template v-if="step == 'repository'">
         <div class="mg-bottom-md">
@@ -113,7 +116,7 @@ export default {
     return {
       step: "",
       steps: ["instances", "repository", "settings"],
-      instances: ["dokuwiki1", "dokuwiki2"], ////
+      instances: "dokuwiki1,dokuwiki2", ////
       name: "",
       repository: "",
       schedule: "daily", ////
@@ -152,7 +155,7 @@ export default {
   },
   methods: {
     clearWizardFields() {
-      this.instances = ["dokuwiki1", "dokuwiki2"]; ////
+      this.instances = "dokuwiki1,dokuwiki2"; ////
       this.name = "";
       this.repository = "";
       this.schedule = "daily"; ////
@@ -202,7 +205,8 @@ export default {
             repository: this.repository,
             schedule: this.schedule,
             retention: this.retention,
-            instances: this.instances,
+            instances: this.instances.split(","), ////
+            enabled: true,
           },
           extra: {
             title: this.$t("action." + taskAction),

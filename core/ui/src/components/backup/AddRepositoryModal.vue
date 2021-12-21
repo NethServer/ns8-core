@@ -65,33 +65,64 @@
         </div>
       </template>
       <template v-if="step == 'settings'">
+        <cv-text-input
+          :label="$t('backup.url')"
+          v-model.trim="url"
+          :invalid-message="$t(error.url)"
+          :disabled="loading.addBackupRepository"
+          ref="url"
+        >
+        </cv-text-input>
         <!-- backblaze -->
         <cv-form>
           <template v-if="isBackblazeSelected">
-            <!-- <cv-text-input ////
-            :label="$t('backup.domain')"
-            v-model.trim="external.domain"
-            :helper-text="$t('domains.enter_external_domain_name')"
-            :invalid-message="$t(error.external.domain)"
-            :disabled="loading.external.addExternalDomain"
-            ref="domain"
-          >
-          </cv-text-input> -->
-            backblaze ////
+            <cv-text-input
+              :label="$t('backup.b2_account_id')"
+              v-model.trim="backblaze.b2_account_id"
+              :invalid-message="$t(error.backblaze.b2_account_id)"
+              :disabled="loading.addBackupRepository"
+              ref="b2_account_id"
+            >
+            </cv-text-input>
+            <cv-text-input
+              :label="$t('backup.b2_account_key')"
+              v-model.trim="backblaze.b2_account_key"
+              :invalid-message="$t(error.backblaze.b2_account_key)"
+              :disabled="loading.addBackupRepository"
+              ref="b2_account_key"
+            >
+            </cv-text-input>
           </template>
           <!-- amazon s3 -->
-          <template v-if="isAmazonS3Selected"> amazon s3 //// </template>
+          <template v-if="isAmazonS3Selected">
+            <cv-text-input
+              :label="$t('backup.aws_access_key_id')"
+              v-model.trim="aws.aws_access_key_id"
+              :invalid-message="$t(error.aws.aws_access_key_id)"
+              :disabled="loading.addBackupRepository"
+              ref="aws_access_key_id"
+            >
+            </cv-text-input>
+            <cv-text-input
+              :label="$t('backup.aws_default_region')"
+              v-model.trim="aws.aws_default_region"
+              :invalid-message="$t(error.aws.aws_default_region)"
+              :disabled="loading.addBackupRepository"
+              ref="aws_default_region"
+            >
+            </cv-text-input>
+            <cv-text-input
+              :label="$t('backup.aws_secret_access_key')"
+              v-model.trim="aws.aws_secret_access_key"
+              :invalid-message="$t(error.aws.aws_secret_access_key)"
+              :disabled="loading.addBackupRepository"
+              ref="aws_secret_access_key"
+            >
+            </cv-text-input>
+          </template>
           <!-- azure -->
           <template v-if="isAzureSelected"> azure //// </template>
           <!-- //// handle ALL providers -->
-          <cv-text-input
-            :label="$t('backup.url')"
-            v-model.trim="url"
-            :invalid-message="$t(error.url)"
-            :disabled="loading.addBackupRepository"
-            ref="url"
-          >
-          </cv-text-input>
           <cv-text-input
             :label="$t('backup.repository_name')"
             v-model.trim="name"
@@ -163,6 +194,15 @@ export default {
       isAzureSelected: false,
       name: "",
       url: "",
+      backblaze: {
+        b2_account_id: "",
+        b2_account_key: "",
+      },
+      aws: {
+        aws_access_key_id: "",
+        aws_default_region: "",
+        aws_secret_access_key: "",
+      },
       loading: {
         addBackupRepository: false,
       },
@@ -170,6 +210,15 @@ export default {
         name: "",
         url: "",
         addBackupRepository: "",
+        backblaze: {
+          b2_account_id: "",
+          b2_account_key: "",
+        },
+        aws: {
+          aws_access_key_id: "",
+          aws_default_region: "",
+          aws_secret_access_key: "",
+        },
       },
     };
   },
@@ -212,7 +261,13 @@ export default {
       this.isAzureSelected = false;
       this.name = "";
       this.url = "";
-      ////
+
+      this.backblaze.b2_account_id = "";
+      this.backblaze.b2_account_key = "";
+
+      this.aws.aws_access_key_id = "";
+      this.aws.aws_default_region = "";
+      this.aws.aws_secret_access_key = "";
     },
     nextStep() {
       if (this.isLastStep) {
@@ -243,21 +298,20 @@ export default {
     },
     buildRepositoryParameters() {
       switch (this.selectedProvider) {
-        ////
         case "backblaze":
           return {
-            b2_account_id: "",
-            b2_account_key: "",
+            b2_account_id: this.backblaze.b2_account_id,
+            b2_account_key: this.backblaze.b2_account_key,
           };
         case "aws":
           return {
-            aws_default_region: "",
-            aws_access_key_id: "",
-            aws_secret_access_key: "",
+            aws_default_region: this.aws.aws_default_region,
+            aws_access_key_id: this.aws.aws_access_key_id,
+            aws_secret_access_key: this.aws.aws_secret_access_key,
           };
         case "azure":
           return {
-            azure_account_name: "",
+            azure_account_name: "", ////
             azure_account_key: "",
           };
       }
@@ -266,6 +320,7 @@ export default {
     async addBackupRepository() {
       //// validation
       this.error.addBackupRepository = "";
+      this.loading.addBackupRepository = true;
       const taskAction = "add-backup-repository";
 
       // register to task validation
@@ -327,7 +382,9 @@ export default {
     addBackupRepositoryCompleted(taskContext, taskResult) {
       console.log("addBackupRepositoryCompleted", taskResult.output); ////
 
+      this.loading.addBackupRepository = false;
       this.$emit("repoCreated");
+      this.$emit("hide");
 
       //// show repo password
     },

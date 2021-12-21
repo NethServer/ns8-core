@@ -141,15 +141,6 @@ export default {
       step: "",
       steps: ["settings"],
       name: "",
-      // backblaze: { ////
-      //   b2_account_id: "",
-      //   b2_account_key: "",
-      // },
-      // aws: {
-      //   aws_access_key_id: "",
-      //   aws_default_region: "",
-      //   aws_secret_access_key: "",
-      // },
       loading: {
         alterBackupRepository: false,
       },
