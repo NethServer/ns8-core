@@ -1,0 +1,69 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "configure-backup input",
+    "$id": "http://schema.nethserver.org/agent/configure-backup-input.json",
+    "description": "Input schema of the basic configure-backup action",
+    "examples": [
+        {
+            "optype": "add",
+            "id": 5,
+            "name": "BB daily",
+            "schedule": "daily",
+            "enabled": true
+        }
+    ],
+    "type": "object",
+    "anyOf": [
+        {
+            "title": "Add or alter the backup configuration",
+            "required": [
+                "optype",
+                "id",
+                "name",
+                "schedule",
+                "enabled"
+            ],
+            "properties": {
+                "optype": {
+                    "enum": [
+                        "add",
+                        "alter"
+                    ]
+                }
+            }
+        },
+        {
+            "title": "Remove the backup configuration",
+            "required": [
+                "optype",
+                "id"
+            ],
+            "properties": {
+                "optype": {
+                    "const": "remove"
+                }
+            }
+        }
+    ],
+    "properties": {
+        "optype": {
+            "type": "string",
+            "title": "Operation type"
+        },
+        "id": {
+            "title": "Backup ID",
+            "type": "integer",
+            "minimum": 1
+        },
+        "name": {
+            "title": "Backup name",
+            "type": "string"
+        },
+        "schedule": {
+            "type": "string"
+        },
+        "enabled": {
+            "type": "boolean"
+        }
+    }
+}

@@ -22,7 +22,7 @@
 
 import sys
 import json
-import agent
+import agent, agent.tasks
 import os
 
 request = json.load(sys.stdin)
@@ -38,7 +38,23 @@ if not rdb.exists(f"cluster/backup/{bid}"):
 #
 # Remove the backup and all its backward references in module keys
 #
+ptasks = []
 rdb.delete(f"cluster/backup/{bid}")
 for kbackups in rdb.scan_iter('module/*/backups'):
     if rdb.srem(kbackups, bid) > 0:
-        pass # TODO send a clean up task to the module
+        ptasks.append({
+            "agent_id": kbackups.removesuffix('/backups'),
+            "action": "configure-backup",
+            "data": {
+                "id": bid,
+                "optype": "remove",
+            }
+        })
+
+terrors = agent.tasks.runp_brief(ptasks,
+    endpoint="redis://cluster-leader",
+    progress_callback=agent.get_progress_callback(2,98)
+)
+if terrors:
+    print(terrors, file=sys.stderr)
+    sys.exit(1)
