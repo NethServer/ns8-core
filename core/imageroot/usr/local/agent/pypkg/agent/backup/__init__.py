@@ -20,6 +20,8 @@
 
 import os
 import sys
+import json
+import time
 import agent
 import os.path
 import tempfile
@@ -230,6 +232,9 @@ class Backup(Restic):
 
 
     def run(self, prune = True):
+        stats = {}
+        errors = 0
+
         # Check if there is something to backup
         if not self.paths and not self.volumes:
             print("No file to backup", file=sys.stderr)
@@ -253,7 +258,23 @@ class Backup(Restic):
             sub_cmd.append(f"/{os.path.basename(path)}")
         sub_cmd.append("/dump")
 
-        subprocess.run(cmd + sub_cmd)
+        start = int(time.time())
+        run_p = subprocess.run(cmd + sub_cmd)
+        errors = errors + run_p.returncode
 
         if prune and self.config['retention']:
-            subprocess.run(cmd + ["forget", "--prune", "--keep-within", self.config['retention']])
+            prune_p = subprocess.run(cmd + ["forget", "--prune", "--keep-within", self.config['retention']])
+            errors = errors + prune_p.returncode
+
+        end = int(time.time())
+        stats_p = subprocess.run(cmd + ["stats", "--json"], capture_output = True)
+        if stats_p.returncode == 0:
+            stats = json.loads(stats_p.stdout)
+
+        stats["start"] = start
+        stats["end"] = end
+        stats["errors"] = errors
+
+        rdb = agent.redis_connect(privileged = True)
+        rdb.hset(f"module/{self.module_id}/backup_status/{self.name}", mapping=stats)
+        rdb.close()
