@@ -213,12 +213,12 @@ class Backup(Restic):
         rdb = agent.redis_connect()
 
         # Check if backup exists
-        if not rdb.exists(f"module/{self.module_id}/backup/{self.name}"):
+        if not rdb.exists(f"cluster/backup/{self.name}"):
             print(f"Configuration for backup '{self.name}' not found", file=sys.stderr)
             sys.exit(1)
        
         # Retrieve backup configuration
-        self.config = rdb.hgetall(f"module/{self.module_id}/backup/{self.name}")
+        self.config = rdb.hgetall(f"cluster/backup/{self.name}")
         repo_config = rdb.hgetall(f'cluster/backup_repository/{self.config["repository"]}')
         for k in repo_config:
             self.config[k] = repo_config[k]

@@ -38,21 +38,26 @@ data = {
 
 backup_id = int(rdb.incr('cluster/backup_sequence'))
 rdb.hset(f'cluster/backup/{backup_id}', mapping=data)
+
 ptasks = []
 for target in request['instances']:
     rdb.sadd(f'module/{target}/backups', backup_id)
     ptasks.append({
-        "action": "add-backup",
+        "action": "configure-backup",
         "agent_id": f"module/{target}",
         "data": {
-            "name": f'backup{backup_id}',
-            "repository": data['repository'],
-            "retention": data['retention'],
-            "schedule": data['schedule'],
+            "optype": "add",
+            "id": backup_id,
+            "name": request["name"],
+            "schedule": request["schedule"],
+            "enabled": request["enabled"],
         },
     })
 
-terrors = agent.tasks.runp_brief(ptasks, endpoint="redis://cluster-leader")
+terrors = agent.tasks.runp_brief(ptasks,
+    endpoint="redis://cluster-leader",
+    progress_callback=agent.get_progress_callback(10,98)
+)
 if terrors:
     print(terrors, file=sys.stderr)
     sys.exit(1)
