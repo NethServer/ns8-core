@@ -41,7 +41,7 @@
               >
                 <!--  //// provider icon -->
                 <h6>
-                  {{ $t("backup.amazon_s3") }}
+                  {{ $t("backup.aws") }}
                 </h6>
               </NsTile>
             </div>
@@ -122,7 +122,7 @@
           kind="secondary"
           :icon="ChevronLeft20"
           @click="previousStep"
-          :disabled="loading.addBackupRepository || step == 'provider'"
+          :disabled="isFirstStep || loading.addBackupRepository"
           class="wizard-button"
           >{{ $t("common.previous") }}
         </NsButton>
@@ -134,7 +134,7 @@
           :loading="loading.addBackupRepository"
           class="wizard-button"
           ref="wizardNext"
-          >{{ nextStepLabel }}
+          >{{ isLastStep ? $t("common.finish") : $t("common.next") }}
         </NsButton>
       </div>
     </template>
@@ -146,7 +146,7 @@ import { UtilService, TaskService, IconService } from "@nethserver/ns8-ui-lib";
 import to from "await-to-js";
 
 export default {
-  name: "AddBackupRepositoryModal",
+  name: "AddRepositoryModal",
   mixins: [UtilService, TaskService, IconService],
   props: {
     isShown: {
@@ -156,7 +156,8 @@ export default {
   },
   data() {
     return {
-      step: "provider",
+      step: "",
+      steps: ["provider", "settings"],
       isBackblazeSelected: false,
       isAmazonS3Selected: false,
       isAzureSelected: false,
@@ -173,18 +174,20 @@ export default {
     };
   },
   computed: {
-    nextStepLabel() {
-      if (this.step == "settings") {
-        return this.$t("backup.add_backup_repository");
-      } else {
-        return this.$t("common.next");
-      }
+    stepIndex() {
+      return this.steps.indexOf(this.step);
+    },
+    isFirstStep() {
+      return this.stepIndex == 0;
+    },
+    isLastStep() {
+      return this.stepIndex == this.steps.length - 1;
     },
     selectedProvider() {
       if (this.isBackblazeSelected) {
         return "backblaze";
       } else if (this.isAmazonS3Selected) {
-        return "amazon";
+        return "aws";
       } else if (this.isAzureSelected) {
         return "azure";
       } else {
@@ -196,42 +199,31 @@ export default {
   watch: {
     isShown: function () {
       if (this.isShown) {
-        this.step = "provider";
+        // show first step
+        this.step = this.steps[0];
+        this.clearWizardFields();
       }
     },
-    step: function () {
-      // if (this.step == "internalConfig") { ////
-      //   if (this.isOpenLdapSelected) {
-      //     //// focus first input field
-      //   } else if (this.isSambaSelected) {
-      //     setTimeout(() => {
-      //       this.focusElement("realm");
-      //     }, 300);
-      //   }
-      // }
-    },
-  },
-  created() {
-    // this.newProviderId = this.providerId; ////
-    // this.isOpenLdapSelected = this.isOpenLdap;
-    // this.isSambaSelected = this.isSamba;
   },
   methods: {
+    clearWizardFields() {
+      this.isBackblazeSelected = false;
+      this.isAmazonS3Selected = false;
+      this.isAzureSelected = false;
+      this.name = "";
+      this.url = "";
+      ////
+    },
     nextStep() {
-      switch (this.step) {
-        case "provider":
-          this.step = "settings";
-          break;
-        case "settings":
-          this.addBackupRepository();
-          break;
+      if (this.isLastStep) {
+        this.addBackupRepository();
+      } else {
+        this.step = this.steps[this.stepIndex + 1];
       }
     },
     previousStep() {
-      switch (this.step) {
-        case "settings":
-          this.step = "provider";
-          break;
+      if (!this.isFirstStep) {
+        this.step = this.steps[this.stepIndex - 1];
       }
     },
     selectBackblaze() {
@@ -257,7 +249,7 @@ export default {
             b2_account_id: "",
             b2_account_key: "",
           };
-        case "amazon":
+        case "aws":
           return {
             aws_default_region: "",
             aws_access_key_id: "",
@@ -275,6 +267,13 @@ export default {
       //// validation
       this.error.addBackupRepository = "";
       const taskAction = "add-backup-repository";
+
+      // register to task validation
+      this.$root.$off(taskAction + "-validation-failed");
+      this.$root.$once(
+        taskAction + "-validation-failed",
+        this.addBackupRepositoryValidationFailed
+      );
 
       // register to task completion
       this.$root.$once(
@@ -296,7 +295,7 @@ export default {
           },
           extra: {
             title: this.$t("action." + taskAction),
-            description: this.$t("common.processing"),
+            isNotificationHidden: true,
           },
         })
       );
@@ -308,8 +307,27 @@ export default {
         return;
       }
     },
+    addBackupRepositoryValidationFailed(validationErrors) {
+      this.loading.addBackupRepository = false;
+      let focusAlreadySet = false;
+
+      for (const validationError of validationErrors) {
+        const param = validationError.parameter;
+        console.log("param", param); ////
+
+        // set i18n error message
+        this.error[param] = "backup." + validationError.error;
+
+        if (!focusAlreadySet) {
+          this.focusElement(param);
+          focusAlreadySet = true;
+        }
+      }
+    },
     addBackupRepositoryCompleted(taskContext, taskResult) {
       console.log("addBackupRepositoryCompleted", taskResult.output); ////
+
+      this.$emit("repoCreated");
 
       //// show repo password
     },
@@ -318,7 +336,7 @@ export default {
 </script>
 
 <style scoped lang="scss">
-@import "../styles/carbon-utils";
+@import "../../styles/carbon-utils";
 
 .min-height-card {
   min-height: 8rem;
