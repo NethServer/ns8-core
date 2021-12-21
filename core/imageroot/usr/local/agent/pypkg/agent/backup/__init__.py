@@ -35,6 +35,7 @@ class Restic:
     rootfull = False
     restic_dir = ""
     restic_env = ""
+    restic_image = "ghcr.io/nethserver/restic"
 
     def prepare_env(self):
         # Prepare restic environment
@@ -78,7 +79,7 @@ class Restic:
         for path in self.paths:
             podman_cmd = podman_cmd + ["-v", f"{path}:/{os.path.basename(path)}"]
 
-        return podman_cmd + ["docker.io/restic/restic"]
+        return podman_cmd + [self.restic_image]
 
     def prepare_restore_cmd(self):
         # Prepare env file for podman
@@ -93,7 +94,7 @@ class Restic:
 
         # Prepare base command
         podman_cmd = ["podman", "run", "--privileged", "--rm", "--env-file", self.restic_env, "-v", f"{self.cache_dir}:/cache", "-v", f"{restore_dir}:/restore"]
-        return podman_cmd + ["docker.io/restic/restic"]
+        return podman_cmd + [self.restic_image]
 
     def prepare_dirs(self):
         self.rootfull = (os.geteuid() == 0)
@@ -146,7 +147,7 @@ class Restore(Restic):
         self.prepare_env()
 
         # Prepare base command
-        podman_cmd = ["podman", "run", "--privileged", "--rm", "--env-file", self.restic_env, "docker.io/restic/restic"]
+        podman_cmd = ["podman", "run", "--privileged", "--rm", "--env-file", self.restic_env, self.restic_image]
 
         p_dump = subprocess.run(podman_cmd + ["--no-cache", "dump", "latest", "/environment"], capture_output=True)
         for line in p_dump.stdout.splitlines():
