@@ -42,11 +42,15 @@
       <template v-if="repository.provider == 'backblaze'">
         <div class="mg-bottom-sm">
           <span class="setting-label">{{ $t("backup.b2_account_id") }}</span>
-          <span class="setting-value">{{ repository.b2_account_id }}</span>
+          <span class="setting-value">{{
+            repository.parameters.b2_account_id
+          }}</span>
         </div>
         <div class="mg-bottom-sm">
           <span class="setting-label">{{ $t("backup.b2_account_key") }}</span>
-          <span class="setting-value">{{ repository.b2_account_key }}</span>
+          <span class="setting-value">{{
+            repository.parameters.b2_account_key
+          }}</span>
         </div>
       </template>
       <!-- amazon s3 -->
@@ -55,20 +59,24 @@
           <span class="setting-label">{{
             $t("backup.aws_access_key_id")
           }}</span>
-          <span class="setting-value">{{ repository.aws_access_key_id }}</span>
+          <span class="setting-value">{{
+            repository.parameters.aws_access_key_id
+          }}</span>
         </div>
         <div class="mg-bottom-sm">
           <span class="setting-label">{{
             $t("backup.aws_default_region")
           }}</span>
-          <span class="setting-value">{{ repository.aws_default_region }}</span>
+          <span class="setting-value">{{
+            repository.parameters.aws_default_region
+          }}</span>
         </div>
         <div class="mg-bottom-sm">
           <span class="setting-label">{{
             $t("backup.aws_secret_access_key")
           }}</span>
           <span class="setting-value">{{
-            repository.aws_secret_access_key
+            repository.parameters.aws_secret_access_key
           }}</span>
         </div>
       </template>
