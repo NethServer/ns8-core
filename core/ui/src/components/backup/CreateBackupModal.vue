@@ -7,29 +7,29 @@
   >
     <template slot="title">{{ $t("backup.schedule_backup") }}</template>
     <template slot="content">
-      <template v-if="step == 'instances'">
-        <div class="mg-bottom-md">
-          {{ $t("backup.choose_app_instances_to_backup") }}
-        </div>
-        <!-- //// -->
-        <cv-text-input
-          v-model.trim="instances"
-          :disabled="loading.addBackup"
-          ref="instances"
-        >
-        </cv-text-input>
-      </template>
-      <template v-if="step == 'repository'">
-        <div class="mg-bottom-md">
-          {{ $t("backup.choose_destination_repository") }}
-        </div>
-        <!-- //// -->
-        <div>
-          {{ repositories[0].id }}
-        </div>
-      </template>
-      <template v-if="step == 'settings'">
-        <cv-form>
+      <cv-form @submit.prevent="nextStep">
+        <template v-if="step == 'instances'">
+          <div class="mg-bottom-md">
+            {{ $t("backup.choose_app_instances_to_backup") }}
+          </div>
+          <!-- //// -->
+          <cv-text-input
+            v-model.trim="instances"
+            :disabled="loading.addBackup"
+            ref="instances"
+          >
+          </cv-text-input>
+        </template>
+        <template v-if="step == 'repository'">
+          <div class="mg-bottom-md">
+            {{ $t("backup.choose_destination_repository") }}
+          </div>
+          <!-- //// -->
+          <div>
+            {{ repositories[0].id }}
+          </div>
+        </template>
+        <template v-if="step == 'settings'">
           <cv-text-input
             :label="$t('backup.frequency')"
             v-model.trim="schedule"
@@ -63,43 +63,46 @@
             <template slot="text-left">{{ $t("common.disabled") }}</template>
             <template slot="text-right">{{ $t("common.enabled") }}</template>
           </cv-toggle>
-        </cv-form>
-        <NsInlineNotification
-          v-if="error.addBackup"
-          kind="error"
-          :title="$t('action.add-backup')"
-          :description="error.addBackup"
-          :showCloseButton="false"
-        />
-      </template>
-      <div class="wizard-buttons">
-        <NsButton
-          kind="secondary"
-          :icon="Close20"
-          @click="$emit('hide')"
-          class="wizard-button"
-          >{{ $t("common.cancel") }}
-        </NsButton>
-        <NsButton
-          kind="secondary"
-          :icon="ChevronLeft20"
-          @click="previousStep"
-          :disabled="isFirstStep || loading.addBackup"
-          class="wizard-button"
-          >{{ $t("common.previous") }}
-        </NsButton>
-        <!-- //// disable next button if no selection in current step -->
-        <NsButton
-          kind="primary"
-          :icon="ChevronRight20"
-          @click="nextStep"
-          :disabled="loading.addBackup"
-          :loading="loading.addBackup"
-          class="wizard-button"
-          ref="wizardNext"
-          >{{ isLastStep ? $t("common.finish") : $t("common.next") }}
-        </NsButton>
-      </div>
+          <NsInlineNotification
+            v-if="error.addBackup"
+            kind="error"
+            :title="$t('action.add-backup')"
+            :description="error.addBackup"
+            :showCloseButton="false"
+          />
+        </template>
+        <div class="wizard-buttons">
+          <NsButton
+            kind="secondary"
+            :icon="Close20"
+            @click="$emit('hide')"
+            type="button"
+            class="wizard-button"
+            >{{ $t("common.cancel") }}
+          </NsButton>
+          <NsButton
+            kind="secondary"
+            :icon="ChevronLeft20"
+            @click="previousStep"
+            :disabled="isFirstStep || loading.addBackup"
+            type="button"
+            class="wizard-button"
+            >{{ $t("common.previous") }}
+          </NsButton>
+          <!-- //// disable next button if no selection in current step -->
+          <NsButton
+            kind="primary"
+            :icon="ChevronRight20"
+            @click="nextStep"
+            :disabled="isNextStepDisabled"
+            :loading="loading.addBackup"
+            type="submit"
+            class="wizard-button"
+            ref="wizardNext"
+            >{{ isLastStep ? $t("common.finish") : $t("common.next") }}
+          </NsButton>
+        </div>
+      </cv-form>
     </template>
   </cv-modal>
 </template>
@@ -157,6 +160,9 @@ export default {
     isLastStep() {
       return this.stepIndex == this.steps.length - 1;
     },
+    isNextStepDisabled() {
+      return this.loading.addBackup;
+    },
   },
   watch: {
     isShown: function () {
@@ -177,6 +183,10 @@ export default {
       this.enabled = true;
     },
     nextStep() {
+      if (this.isNextStepDisabled) {
+        return;
+      }
+
       if (this.isLastStep) {
         this.addBackup();
       } else {

@@ -62,7 +62,7 @@
                 :icon="Add20"
                 @click="showAddRepoModal()"
                 class="empty-state-button"
-                >{{ $t("backup.add_backup_repository") }}
+                >{{ $t("backup.add_repository") }}
               </NsButton>
             </template>
           </NsEmptyState>
@@ -138,7 +138,7 @@
         <div class="bx--row">
           <div class="bx--col">
             <NsButton kind="secondary" :icon="Add20" @click="showAddRepoModal()"
-              >{{ $t("backup.add_backup_repository") }}
+              >{{ $t("backup.add_repository") }}
             </NsButton>
           </div>
         </div>
@@ -278,32 +278,34 @@
                 </template>
                 <template #content>
                   <div class="card-content">
-                    <div class="row icon-and-text">
-                      <NsSvg :svg="Application20" class="icon" />
-                      <span v-if="backup.instances.length == 1">
-                        {{
-                          backup.instances[0].ui_name
-                            ? backup.instances[0].ui_name
-                            : backup.instances[0].module_id
-                        }}
-                      </span>
-                      <span v-else>
-                        <!-- multiple instances -->
-                        {{
-                          backup.instances.length +
-                          " " +
-                          $tc("backup.instances", backup.instances.length)
-                        }}
-                      </span>
-                    </div>
-                    <!-- <div class="row icon-and-text backup-repo"> ////
-                      <NsSvg :svg="ArrowDown32" class="icon" />
-                    </div> -->
-                    <div class="row icon-and-text">
-                      <NsSvg :svg="DataBase20" class="icon" />
-                      <span :title="$t('backup.repository')">{{
-                        backup.repoName
-                      }}</span>
+                    <div class="row instance-to-repo">
+                      <div class="backup-source">
+                        <NsSvg :svg="Application20" class="icon" />
+                        <span v-if="backup.instances.length == 1">
+                          {{
+                            backup.instances[0].ui_name
+                              ? backup.instances[0].ui_name
+                              : backup.instances[0].module_id
+                          }}
+                        </span>
+                        <span v-else>
+                          <!-- multiple instances -->
+                          {{
+                            backup.instances.length +
+                            " " +
+                            $tc("backup.instances", backup.instances.length)
+                          }}
+                        </span>
+                      </div>
+                      <div class="arrow-right">
+                        <NsSvg :svg="ArrowRight20" />
+                      </div>
+                      <div class="backup-destination">
+                        <NsSvg :svg="DataBase20" class="icon" />
+                        <span :title="$t('backup.repository')">{{
+                          backup.repoName
+                        }}</span>
+                      </div>
                     </div>
                     <!-- <div class="row icon-and-text"> ////
                       <NsSvg :svg="Time20" class="icon" />
@@ -829,6 +831,11 @@ export default {
 <style scoped lang="scss">
 @import "../styles/carbon-utils";
 
+.card-content {
+  // let flex children use all horizontal space
+  flex-grow: 1;
+}
+
 .card-content .row {
   margin-bottom: $spacing-05;
   text-align: center;
@@ -836,5 +843,34 @@ export default {
 
 .card-content .row:last-child {
   margin-bottom: 0;
+}
+
+.instance-to-repo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.arrow-right {
+  margin-left: $spacing-05;
+  margin-right: $spacing-05;
+  flex-grow: 1;
+  flex-basis: 0;
+}
+
+.backup-source {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-grow: 4;
+  flex-basis: 0;
+}
+
+.backup-destination {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-grow: 4;
+  flex-basis: 0;
 }
 </style>

@@ -227,7 +227,7 @@
     "no_backup_repository": "No backup repository",
     "empty_state_repository_description": "Add a repository to configure backup",
     "no_backup_scheduled": "No backup scheduled",
-    "add_backup_repository": "Add backup repository",
+    "add_repository": "Add repository",
     "schedule_backup": "Schedule backup",
     "backblaze": "Backblaze B2",
     "aws": "Amazon S3",

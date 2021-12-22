@@ -5,76 +5,76 @@
     @modal-hidden="$emit('hide')"
     class="wizard-modal"
   >
-    <template slot="title">{{ $t("backup.add_backup_repository") }}</template>
+    <template slot="title">{{ $t("backup.add_repository") }}</template>
     <template slot="content">
-      <template v-if="step == 'provider'">
-        <div class="mg-bottom-md">
-          {{ $t("backup.select_backup_provider") }}
-        </div>
-        <div class="bx--grid">
-          <div class="bx--row">
-            <!-- backblaze -->
-            <div class="bx--col-md-4">
-              <NsTile
-                :light="true"
-                kind="selectable"
-                v-model="isBackblazeSelected"
-                value="providerValue"
-                @click="selectBackblaze()"
-                class="min-height-card"
-              >
-                <!--  //// provider icon -->
-                <h6>
-                  {{ $t("backup.backblaze") }}
-                </h6>
-              </NsTile>
-            </div>
-            <!-- amazon s3 -->
-            <div class="bx--col-md-4">
-              <NsTile
-                :light="true"
-                kind="selectable"
-                v-model="isAmazonS3Selected"
-                value="providerValue"
-                @click="selectAmazonS3()"
-                class="min-height-card"
-              >
-                <!--  //// provider icon -->
-                <h6>
-                  {{ $t("backup.aws") }}
-                </h6>
-              </NsTile>
-            </div>
-            <!-- azure -->
-            <div class="bx--col-md-4">
-              <NsTile
-                :light="true"
-                kind="selectable"
-                v-model="isAzureSelected"
-                value="providerValue"
-                @click="selectAzure()"
-                class="min-height-card"
-              >
-                <!--  //// provider icon -->
-                <h6>
-                  {{ $t("backup.azure") }}
-                </h6>
-              </NsTile>
+      <cv-form @submit.prevent="nextStep">
+        <template v-if="step == 'provider'">
+          <div class="mg-bottom-md">
+            {{ $t("backup.select_backup_provider") }}
+          </div>
+          <div class="bx--grid">
+            <div class="bx--row">
+              <!-- backblaze -->
+              <div class="bx--col-md-4">
+                <NsTile
+                  :light="true"
+                  kind="selectable"
+                  v-model="isBackblazeSelected"
+                  value="providerValue"
+                  @click="selectBackblaze()"
+                  class="min-height-card"
+                >
+                  <!--  //// provider icon -->
+                  <h6>
+                    {{ $t("backup.backblaze") }}
+                  </h6>
+                </NsTile>
+              </div>
+              <!-- amazon s3 -->
+              <div class="bx--col-md-4">
+                <NsTile
+                  :light="true"
+                  kind="selectable"
+                  v-model="isAmazonS3Selected"
+                  value="providerValue"
+                  @click="selectAmazonS3()"
+                  class="min-height-card"
+                >
+                  <!--  //// provider icon -->
+                  <h6>
+                    {{ $t("backup.aws") }}
+                  </h6>
+                </NsTile>
+              </div>
+              <!-- azure -->
+              <div class="bx--col-md-4">
+                <NsTile
+                  :light="true"
+                  kind="selectable"
+                  v-model="isAzureSelected"
+                  value="providerValue"
+                  @click="selectAzure()"
+                  class="min-height-card"
+                >
+                  <!--  //// provider icon -->
+                  <h6>
+                    {{ $t("backup.azure") }}
+                  </h6>
+                </NsTile>
+              </div>
             </div>
           </div>
-        </div>
-      </template>
-      <template v-if="step == 'settings'">
-        <cv-text-input
-          :label="$t('backup.url')"
-          v-model.trim="url"
-          :invalid-message="$t(error.url)"
-          :disabled="loading.addBackupRepository"
-          ref="url"
-        >
-        </cv-text-input>
-        <!-- backblaze -->
-        <cv-form>
+        </template>
+        <template v-if="step == 'settings'">
+          <cv-text-input
+            :label="$t('backup.url')"
+            v-model.trim="url"
+            :invalid-message="$t(error.url)"
+            :disabled="loading.addBackupRepository"
+            ref="url"
+          >
+          </cv-text-input>
+          <!-- backblaze -->
           <template v-if="isBackblazeSelected">
             <cv-text-input
               :label="$t('backup.b2_account_id')"
@@ -149,42 +149,44 @@
               </template>
             </cv-accordion-item>
           </cv-accordion>
-        </cv-form>
-        <NsInlineNotification
-          v-if="error.addBackupRepository"
-          kind="error"
-          :title="$t('action.add-backup-repository')"
-          :description="error.addBackupRepository"
-          :showCloseButton="false"
-        />
-      </template>
-      <div class="wizard-buttons">
-        <NsButton
-          kind="secondary"
-          :icon="Close20"
-          @click="$emit('hide')"
-          class="wizard-button"
-          >{{ $t("common.cancel") }}
-        </NsButton>
-        <NsButton
-          kind="secondary"
-          :icon="ChevronLeft20"
-          @click="previousStep"
-          :disabled="isFirstStep || loading.addBackupRepository"
-          class="wizard-button"
-          >{{ $t("common.previous") }}
-        </NsButton>
-        <NsButton
-          kind="primary"
-          :icon="ChevronRight20"
-          @click="nextStep"
-          :disabled="loading.addBackupRepository || !selectedProvider"
-          :loading="loading.addBackupRepository"
-          class="wizard-button"
-          ref="wizardNext"
-          >{{ isLastStep ? $t("common.finish") : $t("common.next") }}
-        </NsButton>
-      </div>
+          <NsInlineNotification
+            v-if="error.addBackupRepository"
+            kind="error"
+            :title="$t('action.add-backup-repository')"
+            :description="error.addBackupRepository"
+            :showCloseButton="false"
+          />
+        </template>
+        <div class="wizard-buttons">
+          <NsButton
+            kind="secondary"
+            :icon="Close20"
+            @click="$emit('hide')"
+            type="button"
+            class="wizard-button"
+            >{{ $t("common.cancel") }}
+          </NsButton>
+          <NsButton
+            kind="secondary"
+            :icon="ChevronLeft20"
+            @click="previousStep"
+            :disabled="isFirstStep || loading.addBackupRepository"
+            type="button"
+            class="wizard-button"
+            >{{ $t("common.previous") }}
+          </NsButton>
+          <NsButton
+            kind="primary"
+            :icon="ChevronRight20"
+            :disabled="isNextStepDisabled"
+            :loading="loading.addBackupRepository"
+            type="submit"
+            class="wizard-button"
+            ref="wizardNext"
+            >{{ isLastStep ? $t("common.finish") : $t("common.next") }}
+          </NsButton>
+        </div>
+      </cv-form>
     </template>
   </cv-modal>
 </template>
@@ -252,6 +254,9 @@ export default {
     isLastStep() {
       return this.stepIndex == this.steps.length - 1;
     },
+    isNextStepDisabled() {
+      return this.loading.addBackupRepository || !this.selectedProvider;
+    },
     selectedProvider() {
       if (this.isBackblazeSelected) {
         return "backblaze";
@@ -292,6 +297,10 @@ export default {
       //// handle ALL providers
     },
     nextStep() {
+      if (this.isNextStepDisabled) {
+        return;
+      }
+
       if (this.isLastStep) {
         this.addBackupRepository();
       } else {
@@ -366,7 +375,7 @@ export default {
             provider: this.selectedProvider,
             url: this.url,
             parameters: this.buildRepositoryParameters(),
-            password: this.password ? this.password : null,
+            password: this.password,
           },
           extra: {
             title: this.$t("action." + taskAction),
