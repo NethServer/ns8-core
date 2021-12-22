@@ -111,7 +111,7 @@ images+=("${repobase}/${reponame}")
 echo "Building the restic image..."
 container=$(buildah from alpine)
 reponame="restic"
-buildah run ${container} -- apk add restic
+buildah run ${container} -- apk add --no-cache restic
 buildah config --cmd [] ${container}
 buildah config --entrypoint '["/usr/bin/restic"]' ${container}
 buildah commit "${container}" "${repobase}/${reponame}"
