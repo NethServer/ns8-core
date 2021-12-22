@@ -52,7 +52,7 @@
         },
         "password": {
             "title": "Encryption token",
-            "description": "Select the password for restic encryption. If this parameter is not specified, the API will generate a random password",
+            "description": "Select the password for restic encryption. If this is empty the API will generate a random password",
             "type": "string"
         },
         "parameters": {
@@ -64,6 +64,7 @@
         "provider",
         "name",
         "url",
+        "password",
         "parameters"
     ],
     "anyOf": [
