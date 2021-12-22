@@ -138,4 +138,9 @@ export default {
 .ns8-side-nav .bx--side-nav--rail {
   width: $side-menu-collapsed-width;
 }
+
+// menu divider
+.ns8-side-nav .bx--side-nav__divider {
+  background-color: $inverse-02;
+}
 </style>
