@@ -12,28 +12,6 @@
           $t("backup." + repository.provider)
         }}</span>
       </div>
-      <!-- password -->
-      <div class="mg-bottom-sm">
-        <span class="setting-label">{{
-          $t("backup.repository_password")
-        }}</span>
-        <cv-link @click="togglePassword" class="toggle-password">
-          {{ isPasswordShown ? $t("common.hide") : $t("common.show") }}
-        </cv-link>
-        <NsCodeSnippet
-          v-if="isPasswordShown"
-          :copyTooltip="$t('common.copy_to_clipboard')"
-          :copy-feedback="$t('common.copied_to_clipboard')"
-          :feedback-aria-label="$t('common.copied_to_clipboard')"
-          :wrap-text="true"
-          :moreText="$t('common.show_more')"
-          :lessText="$t('common.show_less')"
-          light
-          hideExpandButton
-          class="mg-bottom-md"
-          >{{ repository.password }}</NsCodeSnippet
-        >
-      </div>
       <div class="mg-bottom-sm">
         <span class="setting-label">{{ $t("backup.url") }}</span>
         <span class="setting-value">{{ repository.url }}</span>
@@ -81,6 +59,27 @@
         </div>
       </template>
       <!-- //// handle all providers -->
+      <!-- password -->
+      <div class="mg-bottom-sm">
+        <span class="setting-label">{{
+          $t("backup.repository_password")
+        }}</span>
+        <cv-link @click="togglePassword" class="toggle-password">
+          {{ isPasswordShown ? $t("common.hide") : $t("common.show") }}
+        </cv-link>
+        <NsCodeSnippet
+          v-if="isPasswordShown"
+          :copyTooltip="$t('common.copy_to_clipboard')"
+          :copy-feedback="$t('common.copied_to_clipboard')"
+          :feedback-aria-label="$t('common.copied_to_clipboard')"
+          :wrap-text="true"
+          :moreText="$t('common.show_more')"
+          :lessText="$t('common.show_less')"
+          light
+          hideExpandButton
+          >{{ repository.password }}</NsCodeSnippet
+        >
+      </div>
     </template>
     <template slot="primary-button">{{ $t("common.close") }}</template>
   </cv-modal>

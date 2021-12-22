@@ -43,7 +43,9 @@
     "understood_delete": "I understand, delete",
     "show": "Show",
     "hide": "Hide",
-    "processing": "Processing..."
+    "processing": "Processing...",
+    "status": "Status",
+    "advanced": "Advanced"
   },
   "error": {
     "error": "Error",
@@ -227,11 +229,11 @@
     "no_backup_scheduled": "No backup scheduled",
     "add_backup_repository": "Add backup repository",
     "schedule_backup": "Schedule backup",
-    "edit_repository": "Edit repository",
     "backblaze": "Backblaze B2",
     "aws": "Amazon S3",
     "azure": "Microsoft Azure",
     "instances": "instance | instances",
+    "Instances": "Instance | Instances",
     "delete_backup_repository": "Delete backup repository",
     "delete_repository_confirm": "Delete backup repository <strong>{name}</strong>?",
     "delete_repo_explanation_1": "Any scheduled backup using this repository will be deleted as well, but your backed up data will be left intact on the original repository. This action is <strong>NOT</strong> reversible.",
@@ -242,7 +244,7 @@
     "repository_name": "Repository name",
     "repository_name_helper": "An easy to remember name for the repository",
     "url": "URL",
-    "backup_repository_exists": "This repository already exists",
+    "backup_repository_exists": "A repository with this URL already exists",
     "choose_app_instances_to_backup": "Choose application instances to backup",
     "choose_destination_repository": "Choose destination repository",
     "frequency": "Frequency",
@@ -263,7 +265,14 @@
     "aws_default_region": "AWS default region",
     "aws_secret_access_key": "AWS secret access key",
     "repository": "Repository",
-    "backup_details": "Backup details"
+    "backup_details": "Backup details",
+    "backup_enabled": "Backup enabled",
+    "backup_disabled": "Backup disabled",
+    "app_instances_not_backed_up": "Applications not backed up",
+    "app_instances_not_backed_up_description": "{numInstances} app instance has no backup configured | {numInstances} app instances have no backup configured",
+    "disabled_backups": "Disabled backups",
+    "disabled_backups_description": "There is {num} backup disabled | There are {num} backups disabled",
+    "repository_password_helper": "Enter password if repository has already been configured in the past"
   },
   "settings": {
     "title": "Settings",

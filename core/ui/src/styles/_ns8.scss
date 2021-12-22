@@ -367,43 +367,11 @@ a {
 }
 // end app side menu
 
-// accordion for technical details of task error
-.task-more-info {
-  margin-top: $spacing-04;
-}
-
-.task-more-info .bx--accordion__content {
+// accordion
+.cv-accordion .bx--accordion__content {
   padding-right: 1rem;
 }
-// end accordion for technical details of task error
-
-// task error modal
-.task-error-modal .bx--inline-notification__icon {
-  margin-top: 0;
-  margin-right: $spacing-02;
-  fill: $support-04; // info color (low contrast)
-}
-
-.task-error-modal .bx--inline-notification__icon.aborted,
-.task-error-modal .bx--inline-notification__icon.validation-failed {
-  fill: $danger-01; // error color (low contrast)
-}
-
-.task-error-modal .bx--inline-notification__icon.completed {
-  fill: $support-02; // success color (low contrast)
-}
-
-.task-error-modal .bx--inline-notification__icon.pending {
-  fill: $support-03; // warning color (low contrast)
-}
-
-.task-error-modal .task-item {
-  display: flex;
-  align-items: center;
-  padding-top: 0.5rem;
-  padding-bottom: 0.5rem;
-}
-// end task error modal
+// end accordion
 
 // form
 .cv-text-input,

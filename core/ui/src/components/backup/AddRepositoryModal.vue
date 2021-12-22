@@ -132,6 +132,23 @@
             ref="name"
           >
           </cv-text-input>
+          <!-- advanced options -->
+          <cv-accordion ref="accordion">
+            <cv-accordion-item :open="toggleAccordion[0]">
+              <template slot="title">{{ $t("common.advanced") }}</template>
+              <template slot="content">
+                <cv-text-input
+                  :label="$t('backup.repository_password')"
+                  v-model.trim="password"
+                  :helper-text="$t('backup.repository_password_helper')"
+                  :invalid-message="$t(error.password)"
+                  :disabled="loading.addBackupRepository"
+                  ref="password"
+                >
+                </cv-text-input>
+              </template>
+            </cv-accordion-item>
+          </cv-accordion>
         </cv-form>
         <NsInlineNotification
           v-if="error.addBackupRepository"
@@ -194,6 +211,7 @@ export default {
       isAzureSelected: false,
       name: "",
       url: "",
+      password: "",
       backblaze: {
         b2_account_id: "",
         b2_account_key: "",
@@ -203,6 +221,7 @@ export default {
         aws_default_region: "",
         aws_secret_access_key: "",
       },
+      //// handle all providers
       loading: {
         addBackupRepository: false,
       },
@@ -219,6 +238,7 @@ export default {
           aws_default_region: "",
           aws_secret_access_key: "",
         },
+        //// handle all providers
       },
     };
   },
@@ -250,12 +270,12 @@ export default {
       if (this.isShown) {
         // show first step
         this.step = this.steps[0];
-        this.clearWizardFields();
+        this.clearFields();
       }
     },
   },
   methods: {
-    clearWizardFields() {
+    clearFields() {
       this.isBackblazeSelected = false;
       this.isAmazonS3Selected = false;
       this.isAzureSelected = false;
@@ -268,6 +288,8 @@ export default {
       this.aws.aws_access_key_id = "";
       this.aws.aws_default_region = "";
       this.aws.aws_secret_access_key = "";
+
+      //// handle ALL providers
     },
     nextStep() {
       if (this.isLastStep) {
@@ -336,8 +358,6 @@ export default {
         this.addBackupRepositoryCompleted
       );
 
-      const parameters = this.buildRepositoryParameters();
-
       const res = await to(
         this.createClusterTask({
           action: taskAction,
@@ -345,8 +365,8 @@ export default {
             name: this.name,
             provider: this.selectedProvider,
             url: this.url,
-            parameters,
-            //// password
+            parameters: this.buildRepositoryParameters(),
+            password: this.password ? this.password : null,
           },
           extra: {
             title: this.$t("action." + taskAction),
@@ -385,8 +405,11 @@ export default {
       this.loading.addBackupRepository = false;
       this.$emit("repoCreated");
       this.$emit("hide");
-
-      //// show repo password
+    },
+    toggleAccordion(ev) {
+      this.$refs.accordion.state.map(
+        (item, index) => index === ev.changedIndex
+      );
     },
   },
 };

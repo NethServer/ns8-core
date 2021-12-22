@@ -21,7 +21,7 @@
           <template v-if="repository.provider == 'backblaze'">
             <cv-text-input
               :label="$t('backup.b2_account_id')"
-              v-model.trim="repository.b2_account_id"
+              v-model.trim="repository.parameters.b2_account_id"
               :invalid-message="$t(error.backblaze.b2_account_id)"
               :disabled="loading.alterBackupRepository"
               ref="b2_account_id"
@@ -29,7 +29,7 @@
             </cv-text-input>
             <cv-text-input
               :label="$t('backup.b2_account_key')"
-              v-model.trim="repository.b2_account_key"
+              v-model.trim="repository.parameters.b2_account_key"
               :invalid-message="$t(error.backblaze.b2_account_key)"
               :disabled="loading.alterBackupRepository"
               ref="b2_account_key"
@@ -40,7 +40,7 @@
           <template v-if="repository.provider == 'aws'">
             <cv-text-input
               :label="$t('backup.aws_access_key_id')"
-              v-model.trim="repository.aws_access_key_id"
+              v-model.trim="repository.parameters.aws_access_key_id"
               :invalid-message="$t(error.aws.aws_access_key_id)"
               :disabled="loading.alterBackupRepository"
               ref="aws_access_key_id"
@@ -48,7 +48,7 @@
             </cv-text-input>
             <cv-text-input
               :label="$t('backup.aws_default_region')"
-              v-model.trim="repository.aws_default_region"
+              v-model.trim="repository.parameters.aws_default_region"
               :invalid-message="$t(error.aws.aws_default_region)"
               :disabled="loading.alterBackupRepository"
               ref="aws_default_region"
@@ -56,7 +56,7 @@
             </cv-text-input>
             <cv-text-input
               :label="$t('backup.aws_secret_access_key')"
-              v-model.trim="repository.aws_secret_access_key"
+              v-model.trim="repository.parameters.aws_secret_access_key"
               :invalid-message="$t(error.aws.aws_secret_access_key)"
               :disabled="loading.alterBackupRepository"
               ref="aws_secret_access_key"
@@ -141,6 +141,16 @@ export default {
       step: "",
       steps: ["settings"],
       name: "",
+      backblaze: {
+        b2_account_id: "",
+        b2_account_key: "",
+      },
+      aws: {
+        aws_access_key_id: "",
+        aws_default_region: "",
+        aws_secret_access_key: "",
+      },
+      //// handle all providers
       loading: {
         alterBackupRepository: false,
       },
@@ -155,6 +165,7 @@ export default {
           aws_default_region: "",
           aws_secret_access_key: "",
         },
+        //// handle all providers
       },
     };
   },
@@ -174,15 +185,22 @@ export default {
       if (this.isShown) {
         // show first step
         this.step = this.steps[0];
-        this.clearWizardFields();
+        this.clearFields();
       }
     },
   },
   methods: {
-    clearWizardFields() {
+    clearFields() {
       this.name = "";
-      this.url = "";
-      ////
+
+      this.backblaze.b2_account_id = "";
+      this.backblaze.b2_account_key = "";
+
+      this.aws.aws_access_key_id = "";
+      this.aws.aws_default_region = "";
+      this.aws.aws_secret_access_key = "";
+
+      //// handle ALL providers
     },
     nextStep() {
       if (this.isLastStep) {
@@ -197,22 +215,21 @@ export default {
       }
     },
     buildRepositoryParameters() {
-      switch (this.selectedProvider) {
-        ////
+      switch (this.repository.provider) {
         case "backblaze":
           return {
-            b2_account_id: "",
-            b2_account_key: "",
+            b2_account_id: this.backblaze.b2_account_id,
+            b2_account_key: this.backblaze.b2_account_key,
           };
         case "aws":
           return {
-            aws_default_region: "",
-            aws_access_key_id: "",
-            aws_secret_access_key: "",
+            aws_default_region: this.aws.aws_default_region,
+            aws_access_key_id: this.aws.aws_access_key_id,
+            aws_secret_access_key: this.aws.aws_secret_access_key,
           };
         case "azure":
           return {
-            azure_account_name: "",
+            azure_account_name: "", ////
             azure_account_key: "",
           };
       }
@@ -220,6 +237,7 @@ export default {
     },
     async alterBackupRepository() {
       //// validation
+      this.loading.alterBackupRepository = true;
       this.error.alterBackupRepository = "";
       const taskAction = "alter-backup-repository";
 
@@ -236,16 +254,13 @@ export default {
         this.alterBackupRepositoryCompleted
       );
 
-      ////
-      const parameters = this.buildRepositoryParameters();
-
       const res = await to(
         this.createClusterTask({
           action: taskAction,
           data: {
             id: this.repository.id,
             name: this.name,
-            parameters,
+            parameters: this.buildRepositoryParameters(),
           },
           extra: {
             title: this.$t("action." + taskAction),
@@ -281,6 +296,7 @@ export default {
     alterBackupRepositoryCompleted(taskContext, taskResult) {
       console.log("alterBackupRepositoryCompleted", taskResult.output); ////
 
+      this.loading.alterBackupRepository = false;
       this.$emit("repoEdited");
     },
   },

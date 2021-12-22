@@ -6,19 +6,48 @@
           <h2>{{ $t("backup.title") }}</h2>
         </div>
       </div>
-      <div
-        v-if="loading.listBackupRepositories || loading.listBackups"
-        class="bx--row"
-      >
-        <div v-for="index in 2" :key="index" class="bx--col-md-4 bx--col-max-4">
-          <cv-tile light>
-            <cv-skeleton-text
-              :paragraph="true"
-              :line-count="8"
-            ></cv-skeleton-text>
-          </cv-tile>
+      <template v-if="loading.listBackupRepositories || loading.listBackups">
+        <!-- repositories skeleton -->
+        <div class="bx--row">
+          <div class="bx--col">
+            <cv-skeleton-text heading width="40%"></cv-skeleton-text>
+          </div>
         </div>
-      </div>
+        <div class="bx--row">
+          <div
+            v-for="index in 2"
+            :key="index"
+            class="bx--col-md-4 bx--col-max-4"
+          >
+            <cv-tile light>
+              <cv-skeleton-text
+                :paragraph="true"
+                :line-count="8"
+              ></cv-skeleton-text>
+            </cv-tile>
+          </div>
+        </div>
+        <!-- backups skeleton -->
+        <div class="bx--row">
+          <div class="bx--col">
+            <cv-skeleton-text heading width="40%"></cv-skeleton-text>
+          </div>
+        </div>
+        <div class="bx--row">
+          <div
+            v-for="index in 2"
+            :key="index"
+            class="bx--col-md-4 bx--col-max-4"
+          >
+            <cv-tile light>
+              <cv-skeleton-text
+                :paragraph="true"
+                :line-count="8"
+              ></cv-skeleton-text>
+            </cv-tile>
+          </div>
+        </div>
+      </template>
       <!-- empty state repositories -->
       <div v-else-if="!repositories.length" class="bx--row">
         <div class="bx--col">
@@ -40,6 +69,48 @@
         </div>
       </div>
       <template v-else>
+        <!-- disabled backups warning -->
+        <div class="bx--row">
+          <div class="bx--col">
+            <NsInlineNotification
+              v-if="!loading.listBackups && disabledBackups.length"
+              kind="warning"
+              :title="$t('backup.disabled_backups')"
+              :description="
+                $tc(
+                  'backup.disabled_backups_description',
+                  disabledBackups.length,
+                  {
+                    num: disabledBackups.length,
+                  }
+                )
+              "
+              :showCloseButton="false"
+            />
+          </div>
+        </div>
+        <!-- unconfigured instances warning -->
+        <div class="bx--row">
+          <div class="bx--col">
+            <NsInlineNotification
+              v-if="!loading.listBackups && unconfiguredInstances.length"
+              kind="warning"
+              :title="$t('backup.app_instances_not_backed_up')"
+              :description="
+                $tc(
+                  'backup.app_instances_not_backed_up_description',
+                  unconfiguredInstances.length,
+                  {
+                    numInstances: unconfiguredInstances.length,
+                  }
+                )
+              "
+              :actionLabel="$t('backup.schedule_backup')"
+              @action="showCreateBackupModal"
+              :showCloseButton="false"
+            />
+          </div>
+        </div>
         <!-- repositories -->
         <div class="bx--row">
           <div class="bx--col">
@@ -91,7 +162,7 @@
                   class="top-right-overflow-menu"
                 >
                   <cv-overflow-menu-item @click="showEditRepoModal(repo)">
-                    {{ $t("backup.edit_repository") }}
+                    {{ $t("common.edit") }}
                   </cv-overflow-menu-item>
                   <cv-overflow-menu-item
                     danger
@@ -156,7 +227,7 @@
                 <NsButton
                   kind="primary"
                   :icon="Add20"
-                  @click="showCreateBackupModal()"
+                  @click="showCreateBackupModal"
                   class="empty-state-button-no-description"
                   >{{ $t("backup.schedule_backup") }}
                 </NsButton>
@@ -170,7 +241,7 @@
               <NsButton
                 kind="secondary"
                 :icon="Add20"
-                @click="showCreateBackupModal()"
+                @click="showCreateBackupModal"
                 >{{ $t("backup.schedule_backup") }}
               </NsButton>
             </div>
@@ -234,11 +305,25 @@
                         backup.repoName
                       }}</span>
                     </div>
-                    <div class="row icon-and-text">
+                    <!-- <div class="row icon-and-text"> ////
                       <NsSvg :svg="Time20" class="icon" />
                       <span :title="$t('backup.frequency')">{{
                         $t("backup." + backup.schedule)
                       }}</span>
+                    </div> -->
+                    <div class="row">
+                      <cv-tag
+                        v-if="backup.enabled"
+                        kind="green"
+                        :label="$t('common.enabled')"
+                        :title="$t('backup.backup_enabled')"
+                      ></cv-tag>
+                      <cv-tag
+                        v-else
+                        kind="red"
+                        :label="$t('common.disabled')"
+                        :title="$t('backup.backup_disabled')"
+                      ></cv-tag>
                     </div>
                     <div class="row actions">
                       <NsButton
@@ -311,6 +396,7 @@
     <CreateBackupModal
       :isShown="q.isShownCreateBackupModal"
       :repositories="repositories"
+      :selectedInstaces="selectedInstancesForCreateBackupModal"
       @hide="hideCreateBackupModal"
       @backupCreated="listBackupRepositories"
     />
@@ -413,6 +499,7 @@ export default {
       isShownBackupDetailsModal: false,
       repositories: [],
       backups: [],
+      selectedInstancesForCreateBackupModal: "",
       currentRepo: {
         name: "",
         password: "",
@@ -432,6 +519,11 @@ export default {
         removeBackup: "",
       },
     };
+  },
+  computed: {
+    disabledBackups() {
+      return this.backups.filter((b) => !b.enabled);
+    },
   },
   beforeRouteEnter(to, from, next) {
     next((vm) => {
@@ -583,10 +675,10 @@ export default {
       }
     },
     listBackupsCompleted(taskContext, taskResult) {
+      this.unconfiguredInstances = taskResult.output.unconfigured_instances;
       let backups = taskResult.output.backups;
-      let unconfiguredInstances = taskResult.output.unconfigured_instances;
 
-      console.log("listBackupsCompleted", backups, unconfiguredInstances); ////
+      console.log("listBackupsCompleted", backups, this.unconfiguredInstances); ////
 
       // repository name
 
@@ -636,6 +728,10 @@ export default {
     },
     hideCreateBackupModal() {
       this.q.isShownCreateBackupModal = false;
+    },
+    createBackupForUnconfiguredInstances() {
+      this.selectedInstancesForCreateBackupModal = "unconfigured";
+      this.this.showCreateBackupModal();
     },
     showEditBackupModal(backup) {
       console.log("showEditRepoModal", backup); ////

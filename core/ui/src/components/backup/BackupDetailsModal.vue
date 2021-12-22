@@ -22,7 +22,7 @@
       </div>
       <div class="mg-bottom-sm instances">
         <span class="setting-label">{{
-          $tc("backup.instances", instances.length)
+          $tc("backup.Instances", instances.length)
         }}</span>
         <!-- one instance -->
         <span v-if="instances.length == 1" class="setting-value">

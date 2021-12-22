@@ -146,4 +146,34 @@ export default {
 .task-error-modal .bx--modal-content {
   margin-top: $spacing-05;
 }
+
+.task-more-info {
+  margin-top: $spacing-04;
+}
+
+.task-error-modal .bx--inline-notification__icon {
+  margin-top: 0;
+  margin-right: $spacing-02;
+  fill: $support-04; // info color (low contrast)
+}
+
+.task-error-modal .bx--inline-notification__icon.aborted,
+.task-error-modal .bx--inline-notification__icon.validation-failed {
+  fill: $danger-01; // error color (low contrast)
+}
+
+.task-error-modal .bx--inline-notification__icon.completed {
+  fill: $support-02; // success color (low contrast)
+}
+
+.task-error-modal .bx--inline-notification__icon.pending {
+  fill: $support-03; // warning color (low contrast)
+}
+
+.task-error-modal .task-item {
+  display: flex;
+  align-items: center;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+}
 </style>

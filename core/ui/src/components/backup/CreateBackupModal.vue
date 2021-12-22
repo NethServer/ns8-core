@@ -54,6 +54,15 @@
             ref="name"
           >
           </cv-text-input>
+          <cv-toggle
+            :label="$t('common.status')"
+            value="statusValue"
+            :form-item="true"
+            v-model="enabled"
+          >
+            <template slot="text-left">{{ $t("common.disabled") }}</template>
+            <template slot="text-right">{{ $t("common.enabled") }}</template>
+          </cv-toggle>
         </cv-form>
         <NsInlineNotification
           v-if="error.addBackup"
@@ -111,6 +120,10 @@ export default {
       type: Array,
       required: true,
     },
+    selectedInstaces: {
+      type: String,
+      default: "",
+    },
   },
   data() {
     return {
@@ -121,6 +134,7 @@ export default {
       repository: "",
       schedule: "daily", ////
       retention: "7d", ////
+      enabled: true,
       loading: {
         addBackup: false,
       },
@@ -149,17 +163,18 @@ export default {
       if (this.isShown) {
         // show first step
         this.step = this.steps[0];
-        this.clearWizardFields();
+        this.clearFields();
       }
     },
   },
   methods: {
-    clearWizardFields() {
+    clearFields() {
       this.instances = "dokuwiki1,dokuwiki2"; ////
       this.name = "";
       this.repository = "";
       this.schedule = "daily"; ////
       this.retention = "7d"; ////
+      this.enabled = true;
     },
     nextStep() {
       if (this.isLastStep) {
@@ -206,7 +221,7 @@ export default {
             schedule: this.schedule,
             retention: this.retention,
             instances: this.instances.split(","), ////
-            enabled: true,
+            enabled: this.enabled,
           },
           extra: {
             title: this.$t("action." + taskAction),
