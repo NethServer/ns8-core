@@ -8,6 +8,7 @@
             "name": "repository1",
             "provider": "backblaze",
             "url": "b2:mybucket/mybackup",
+            "password": "",
             "parameters": {
                 "b2_account_id": "YEFYEIOEHGO",
                 "b2_account_key": "sdifjsiodv7sdv7suivyhsfv7fvyhdfvb7d"
@@ -27,6 +28,7 @@
         {
             "name": "repository 3",
             "provider": "digitalocean",
+            "password": "",
             "url": "s3:ams3.digitaloceanspaces.com/mybucket/mybackup",
             "parameters": {
                 "aws_access_key_id": "XJEMERNGRIWGN",
@@ -104,10 +106,12 @@
     "$defs": {
         "b2_parameters": {
             "title": "B2 (Backblaze) protocol parameters",
+            "type": "object",
             "required": [
                 "b2_account_id",
                 "b2_account_key"
             ],
+            "additionalProperties": false,
             "properties": {
                 "b2_account_id": {
                     "type": "string"
@@ -119,10 +123,12 @@
         },
         "s3_parameters": {
             "title": "S3 (Amazon AWS) protocol parameters",
+            "type": "object",
             "required": [
                 "aws_access_key_id",
                 "aws_secret_access_key"
             ],
+            "additionalProperties": false,
             "properties": {
                 "aws_default_region": {
                     "type": "string"
