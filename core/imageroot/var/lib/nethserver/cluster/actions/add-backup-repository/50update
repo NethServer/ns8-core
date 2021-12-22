@@ -31,7 +31,6 @@ import agent.backup
 request = json.load(sys.stdin)
 rdb = agent.redis_connect(privileged=True)
 
-name = request['name']
 url = request['url']
 provider = request['provider']
 id = str(uuid.uuid5(uuid.NAMESPACE_URL, url))
@@ -43,6 +42,20 @@ else:
     m = hashlib.sha256()
     m.update(uuid.uuid4().bytes)
     password = m.hexdigest()
+
+if request['name']:
+    name = request['name']
+else:
+    try:
+        if provider == "aws":
+            name = "AWS " + url.split('/', 1)[1]
+        elif provider == "backblaze":
+            name = "Backblaze " + url.split('/', 1)[1]
+        elif provider == "digitalocean":
+            name = "DigitalOcean " + url.split('/', 1)[1]
+    finally:
+        if not name:
+            name = provider + " " + id[:4]
 
 data = {'url': url, 'password': password, 'name': name, 'provider': provider}
 

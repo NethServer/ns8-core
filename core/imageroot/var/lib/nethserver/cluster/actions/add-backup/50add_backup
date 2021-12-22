@@ -37,6 +37,8 @@ data = {
 }
 
 backup_id = int(rdb.incr('cluster/backup_sequence'))
+if not data['name']:
+    data['name'] = "Backup " + str(backup_id)
 rdb.hset(f'cluster/backup/{backup_id}', mapping=data)
 
 ptasks = []

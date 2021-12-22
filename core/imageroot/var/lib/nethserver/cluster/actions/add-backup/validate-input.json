@@ -57,8 +57,8 @@
         },
         "name": {
             "title": "Backup name",
-            "type": "string",
-            "minLength": 1
+            "description": "If set to empty, a default name is set (e.g. `Backup 3`)",
+            "type": "string"
         },
         "enabled": {
             "type": "boolean",
