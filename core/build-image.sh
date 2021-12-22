@@ -107,6 +107,16 @@ buildah commit "${container}" "${repobase}/${reponame}"
 buildah rm "${container}"
 images+=("${repobase}/${reponame}")
 
+echo "Building the restic image..."
+container=$(buildah from alpine)
+reponame="restic"
+buildah run ${container} -- apk add --no-cache restic
+buildah config --cmd [] ${container}
+buildah config --entrypoint '["/usr/bin/restic"]' ${container}
+buildah commit "${container}" "${repobase}/${reponame}"
+buildah rm "${container}"
+images+=("${repobase}/${reponame}")
+
 if [[ -n "${CI}" ]]; then
     # Set output value for Github Actions
     printf "::set-output name=images::%s\n" "${images[*]}"

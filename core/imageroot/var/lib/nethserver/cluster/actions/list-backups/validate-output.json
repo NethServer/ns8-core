@@ -17,7 +17,13 @@
                             "module_id": "dokuwiki1",
                             "ui_name": "",
                             "repository_path": "dokuwiki1@2f72561e-89b2-4cdc-b4e4-425ca23bbec9",
-                            "status": null
+                            "status": {
+                                "total_size": 4053660,
+                                "total_file_count": 21744,
+                                "start": 1640097808,
+                                "end": 1640097815,
+                                "success": true
+                            }
                         }
                     ],
                     "enabled": true
