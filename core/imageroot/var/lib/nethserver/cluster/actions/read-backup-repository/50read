@@ -24,21 +24,54 @@ import sys
 import json
 import agent
 import subprocess
+import os
 
 request = json.load(sys.stdin)
 rdb = agent.redis_connect(privileged=False)
 
-name = request['repository']
-url = rdb.hget(f"cluster/backup_repository/{name}", "url").split(":")
+orepo = rdb.hgetall('cluster/backup_repository/' + request['repository'])
+
+uscheme, upath = orepo['url'].split(':', 1)
+
+if uscheme == "b2":
+    rclone_path = ':b2:' + upath
+    rclone_env = {
+        'RCLONE_B2_ACCOUNT': orepo["b2_account_id"],
+        'RCLONE_B2_KEY': orepo["b2_account_key"],
+    }
+elif uscheme == "s3":
+    s3_endpoint, s3_path = upath.split('/', 1)
+    rclone_path = ':s3:' + s3_path
+    rclone_env = {
+        'RCLONE_S3_ENV_AUTH': 'true',
+        'RCLONE_S3_ACCESS_KEY_ID': orepo["aws_access_key_id"],
+        'RCLONE_S3_SECRET_ACCESS_KEY': orepo["aws_secret_access_key"],
+        'RCLONE_S3_ENDPOINT': s3_endpoint
+    }
+    if orepo['provider'] == 'aws':
+        rclone_env['RCLONE_S3_PROVIDER'] = 'AWS'
+    elif orepo['provider'] == 'digitalocean':
+        rclone_env['RCLONE_S3_PROVIDER'] = 'DigitalOcean'
+
+else:
+    raise Exception(f"Scheme {uscheme} not supported")
+
+def rclone_cmd(rcpath):
+    cmd = ['rclone', '-q', 'lsjson', rcpath, '--no-mimetype', '--no-modtime']
+    if os.getenv('DEBUG', 0):
+        print(*([f"{k}={v}" for k,v in rclone_env.items()] + cmd), file=sys.stderr)
+    return cmd
+
+popen_env = os.environ.copy()
+popen_env.update(rclone_env)
+popen_args={"env": popen_env, "encoding": 'utf-8', "stdout": subprocess.PIPE, "stderr": sys.stderr}
 
 backups = dict()
-cmd = ["rclone", "--config", f'/etc/nethserver/backup/{name}/rclone.conf', 'lsjson', '--no-mimetype', '--no-modtime']
-proc = subprocess.run(cmd + [f'{url[1]}:/{url[1]}'], capture_output=True)
-for d in json.loads(proc.stdout):
-    pdir = subprocess.run(cmd +  [f'{url[1]}:/{url[1]}/{d["Path"]}'], capture_output=True)
-    if d['Path'] not in backups:
-        backups[d['Path']] = []
-    for backup in json.loads(pdir.stdout):
-        backups[d['Path']].append(backup['Path'])
+proot = subprocess.Popen(rclone_cmd(rclone_path), **popen_args)
+for oroot in json.load(proot.stdout):
+    backups.setdefault(oroot['Path'], [])
+    pchild = subprocess.Popen(rclone_cmd(rclone_path + "/" + oroot['Path']), **popen_args)
+    for backup in json.load(pchild.stdout):
+        backups[oroot['Path']].append(backup['Path'])
 
 print(json.dumps(backups))

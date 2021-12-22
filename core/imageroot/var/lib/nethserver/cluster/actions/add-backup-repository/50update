@@ -67,18 +67,4 @@ for k in request['parameters']:
 if not rdb.hset(f'cluster/backup_repository/{id}', mapping=data):
     sys.exit(1)
 
-# Create repository path to store rclone configuration
-repo_path = f'/etc/nethserver/backup/{id}'
-os.makedirs(repo_path, exist_ok=True)
-
-parts = request['url'].split(":")
-# FIXME: support all other backends
-if parts[0] == "b2":
-    with open(f'{repo_path}/rclone.conf', 'w') as f:
-        f.write(f'[{parts[1]}]\n')
-        f.write(f'type = b2\n')
-        f.write(f'account = {data["b2_account_id"]}\n')
-        f.write(f'key = {data["b2_account_key"]}\n')
-        f.write(f'hard_delete = true\n')
-
 json.dump({'password': password, 'id': id}, fp=sys.stdout)
