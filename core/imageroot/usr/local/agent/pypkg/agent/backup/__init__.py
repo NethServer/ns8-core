@@ -20,6 +20,8 @@
 
 import os
 import sys
+import json
+import time
 import agent
 import os.path
 import tempfile
@@ -33,6 +35,7 @@ class Restic:
     rootfull = False
     restic_dir = ""
     restic_env = ""
+    restic_image = "ghcr.io/nethserver/restic"
 
     def prepare_env(self):
         # Prepare restic environment
@@ -76,7 +79,7 @@ class Restic:
         for path in self.paths:
             podman_cmd = podman_cmd + ["-v", f"{path}:/{os.path.basename(path)}"]
 
-        return podman_cmd + ["docker.io/restic/restic"]
+        return podman_cmd + [self.restic_image]
 
     def prepare_restore_cmd(self):
         # Prepare env file for podman
@@ -91,7 +94,7 @@ class Restic:
 
         # Prepare base command
         podman_cmd = ["podman", "run", "--privileged", "--rm", "--env-file", self.restic_env, "-v", f"{self.cache_dir}:/cache", "-v", f"{restore_dir}:/restore"]
-        return podman_cmd + ["docker.io/restic/restic"]
+        return podman_cmd + [self.restic_image]
 
     def prepare_dirs(self):
         self.rootfull = (os.geteuid() == 0)
@@ -144,7 +147,7 @@ class Restore(Restic):
         self.prepare_env()
 
         # Prepare base command
-        podman_cmd = ["podman", "run", "--privileged", "--rm", "--env-file", self.restic_env, "docker.io/restic/restic"]
+        podman_cmd = ["podman", "run", "--privileged", "--rm", "--env-file", self.restic_env, self.restic_image]
 
         p_dump = subprocess.run(podman_cmd + ["--no-cache", "dump", "latest", "/environment"], capture_output=True)
         for line in p_dump.stdout.splitlines():
@@ -230,6 +233,9 @@ class Backup(Restic):
 
 
     def run(self, prune = True):
+        stats = {}
+        errors = 0
+
         # Check if there is something to backup
         if not self.paths and not self.volumes:
             print("No file to backup", file=sys.stderr)
@@ -253,7 +259,23 @@ class Backup(Restic):
             sub_cmd.append(f"/{os.path.basename(path)}")
         sub_cmd.append("/dump")
 
-        subprocess.run(cmd + sub_cmd)
+        start = int(time.time())
+        run_p = subprocess.run(cmd + sub_cmd)
+        errors = errors + run_p.returncode
 
         if prune and self.config['retention']:
-            subprocess.run(cmd + ["forget", "--prune", "--keep-within", self.config['retention']])
+            prune_p = subprocess.run(cmd + ["forget", "--prune", "--keep-within", self.config['retention']])
+            errors = errors + prune_p.returncode
+
+        end = int(time.time())
+        stats_p = subprocess.run(cmd + ["stats", "--json"], capture_output = True)
+        if stats_p.returncode == 0:
+            stats = json.loads(stats_p.stdout)
+
+        stats["start"] = start
+        stats["end"] = end
+        stats["errors"] = errors
+
+        rdb = agent.redis_connect(privileged = True)
+        rdb.hset(f"module/{self.module_id}/backup_status/{self.name}", mapping=stats)
+        rdb.close()
