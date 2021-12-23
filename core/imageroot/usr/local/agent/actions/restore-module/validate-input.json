@@ -1,0 +1,74 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "restore-module input",
+    "$id": "http://schema.nethserver.org/module/restore-module-input.json",
+    "description": "Restore the module state from a remote backup",
+    "examples": [
+        {
+            "repository": "48ce000a-79b7-5fe6-8558-177fd70c27b4",
+            "path": "dokuwiki/dokuwiki1@f5d24fcd-819c-4b1d-98ad-a1b2ebcee8cf",
+            "snapshot": "",
+            "environment": {
+                "IMAGE_URL": "ghcr.io/nethserver/dokuwiki:latest",
+                "MODULE_UUID": "f5d24fcd-819c-4b1d-98ad-a1b2ebcee8cf",
+                "DOKUWIKI_IMAGE": "docker.io/bitnami/dokuwiki:20200729.0.0-debian-10-r299",
+                "DOKUWIKI_WIKI_NAME": "mywiki",
+                "DOKUWIKI_USERNAME": "admin",
+                "DOKUWIKI_PASSWORD": "pass",
+                "DOKUWIKI_EMAIL": "davidep@nethesis.it",
+                "DOKUWIKI_FULL_NAME": "Wiki Admin",
+                "PHP_ENABLE_OPCACHE": "1",
+                "PHP_MEMORY_LIMIT": "512M",
+                "TRAEFIK_HOST": "mywiki.dp.nethserver.net",
+                "TRAEFIK_HTTP2HTTPS": "False",
+                "TRAEFIK_LETS_ENCRYPT": "False"
+            }
+        }
+    ],
+    "type": "object",
+    "required": [
+        "repository",
+        "path",
+        "snapshot",
+        "environment"
+    ],
+    "properties": {
+        "environment": {
+            "type": "object",
+            "description": "Environment restored from the given backup",
+            "title": "Environment backup",
+            "properties": {
+                "IMAGE_URL": {
+                    "type": "string",
+                    "description": "URL of the module root image",
+                    "examples": [
+                        "ghcr.io/nethserver/mymodule:v2.3.2"
+                    ],
+                    "minLength": 1
+                }
+            },
+            "patternProperties": {
+                "^[^=]+$": {
+                    "type": "string"
+                }
+            },
+            "additionalProperties": false
+        },
+        "repository": {
+            "title": "Repository ID",
+            "description": "Backup source repository",
+            "type": "string",
+            "minLength": 1
+        },
+        "path": {
+            "title": "Backup path",
+            "description": "Path of the backup in the source repository",
+            "type": "string",
+            "minLength": 1
+        },
+        "snapshot": {
+            "title": "Snapshot ID",
+            "type": "string"
+        }
+    }
+}
