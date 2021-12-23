@@ -1,0 +1,72 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2022 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
+import agent
+import json
+import os
+import sys
+import subprocess
+
+request = json.load(sys.stdin)
+
+repository = request['repository']
+path = request['path']
+snapshot = request['snapshot'] or "latest"
+original_environment = request['environment']
+
+core_env = agent.read_envfile('/etc/nethserver/core.env') # Import URLs of core images
+rdb = agent.redis_connect(host='127.0.0.1') # Connect to local replica
+orepo = rdb.hgetall(f"cluster/backup_repository/{repository}")
+agent.assert_exp(len(orepo) > 0) # Check the repository exists
+
+# Build the environment to run Restic against the given repository+path
+restic_env = {}
+restic_env["RESTIC_PASSWORD"] = orepo['password']
+restic_env["RESTIC_CACHE_DIR"] = '/cache'
+
+uschema, upath = orepo['url'].split(':', 1)
+if uschema == 's3':
+    restic_env["RESTIC_REPOSITORY"] = orepo['url'] + "/" + path
+    restic_env["AWS_ACCESS_KEY"] = orepo['aws_access_key_id']
+    restic_env["AWS_SECRET_ACCESS_KEY"] = orepo['aws_secret_access_key']
+elif uschema == 'b2':
+    restic_env["RESTIC_REPOSITORY"] = orepo['url'] + ":" + path
+    restic_env["B2_ACCOUNT_ID"] = orepo['b2_account_id']
+    restic_env["B2_ACCOUNT_KEY"] = orepo['b2_account_key']
+else:
+    raise Exception(f"Schema {uschema} not supported")
+
+# Build the Podman command line to run Restic
+podman_cmd = ['podman', 'run', '-i', '--rm', '--privileged', '--network=host']
+
+for envvar in restic_env:
+    podman_cmd.extend(['-e', envvar]) # Import Restic environment variables
+
+podman_cmd.extend(sys.argv[1:]) # Any argument is appended to podman invocation
+podman_cmd.append(core_env.get("RESTIC_IMAGE", "ghcr.io/nethserver/restic:latest"))
+podman_cmd.extend(["restore", snapshot, "--target", "/data"])
+
+penv = os.environ.copy()
+penv.update(restic_env)
+if os.getenv('DEBUG', 0):
+    print(*podman_cmd, file=sys.stderr)
+subprocess.run(podman_cmd, encoding='utf-8', env=penv)
