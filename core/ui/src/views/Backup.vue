@@ -106,7 +106,7 @@
                 )
               "
               :actionLabel="$t('backup.schedule_backup')"
-              @action="showCreateBackupModal"
+              @action="showCreateBackupModal('notBackedUp')"
               :showCloseButton="false"
             />
           </div>
@@ -227,7 +227,7 @@
                 <NsButton
                   kind="primary"
                   :icon="Add20"
-                  @click="showCreateBackupModal"
+                  @click="showCreateBackupModal('')"
                   class="empty-state-button-no-description"
                   >{{ $t("backup.schedule_backup") }}
                 </NsButton>
@@ -241,7 +241,7 @@
               <NsButton
                 kind="secondary"
                 :icon="Add20"
-                @click="showCreateBackupModal"
+                @click="showCreateBackupModal('')"
                 >{{ $t("backup.schedule_backup") }}
               </NsButton>
             </div>
@@ -398,7 +398,8 @@
     <CreateBackupModal
       :isShown="q.isShownCreateBackupModal"
       :repositories="repositories"
-      :selectedInstaces="selectedInstancesForCreateBackupModal"
+      :instanceSelection="instanceSelection"
+      :instancesNotBackedUp="unconfiguredInstances"
       @hide="hideCreateBackupModal"
       @backupCreated="listBackupRepositories"
     />
@@ -501,7 +502,8 @@ export default {
       isShownBackupDetailsModal: false,
       repositories: [],
       backups: [],
-      selectedInstancesForCreateBackupModal: "",
+      unconfiguredInstances: [],
+      instanceSelection: "",
       currentRepo: {
         name: "",
         password: "",
@@ -725,15 +727,12 @@ export default {
     hideEditRepoModal() {
       this.isShownEditRepoModal = false;
     },
-    showCreateBackupModal() {
+    showCreateBackupModal(instanceSelection = "") {
+      this.instanceSelection = instanceSelection;
       this.q.isShownCreateBackupModal = true;
     },
     hideCreateBackupModal() {
       this.q.isShownCreateBackupModal = false;
-    },
-    createBackupForUnconfiguredInstances() {
-      this.selectedInstancesForCreateBackupModal = "unconfigured";
-      this.this.showCreateBackupModal();
     },
     showEditBackupModal(backup) {
       console.log("showEditRepoModal", backup); ////
@@ -858,11 +857,15 @@ export default {
   flex-basis: 0;
 }
 
+.instance-to-repo .icon {
+  margin-right: $spacing-02;
+}
+
 .backup-source {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  flex-grow: 4;
+  flex-grow: 6;
   flex-basis: 0;
 }
 
@@ -870,7 +873,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  flex-grow: 4;
+  flex-grow: 6;
   flex-basis: 0;
 }
 </style>

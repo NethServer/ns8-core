@@ -106,7 +106,6 @@
           <NsButton
             kind="primary"
             :icon="ChevronRight20"
-            @click="nextStep"
             :disabled="isNextStepDisabled"
             :loading="loading.alterBackupRepository"
             type="submit"

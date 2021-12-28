@@ -45,7 +45,14 @@
     "hide": "Hide",
     "processing": "Processing...",
     "status": "Status",
-    "advanced": "Advanced"
+    "advanced": "Advanced",
+    "select": "Select",
+    "all": "All",
+    "none": "None",
+    "x_of_y_selected": "{selected} of {total} selected",
+    "search": "Search",
+    "no_search_results": "No results",
+    "no_search_results_description": "Try changing your search query"
   },
   "error": {
     "error": "Error",
@@ -128,8 +135,6 @@
     "account": "Account",
     "app_launcher": "App launcher",
     "search_placeholder": "Search...",
-    "no_search_results": "No results",
-    "no_search_results_description": "Try changing your search query",
     "open_app": "Open {app}",
     "logout": "Logout"
   },
@@ -137,8 +142,6 @@
     "no_apps": "No apps",
     "no_apps_description": "To install apps go to Software center",
     "search_placeholder": "Search app...",
-    "no_search_results": "No results",
-    "no_search_results_description": "Try changing your search query",
     "edit_favorite_apps": "Edit favorite apps",
     "favorites": "Favorites",
     "favorite": "Favorite",
@@ -245,7 +248,7 @@
     "repository_name_helper": "An easy to remember name for the repository",
     "url": "URL",
     "backup_repository_exists": "A repository with this URL already exists",
-    "choose_app_instances_to_backup": "Choose application instances to backup",
+    "choose_app_instances_to_backup": "Choose app instances to backup",
     "choose_destination_repository": "Choose destination repository",
     "frequency": "Frequency",
     "retention": "Retention",
@@ -253,7 +256,7 @@
     "backup_name_helper": "An easy to remember name for the backup",
     "delete_scheduled_backup": "Delete scheduled backup",
     "delete_scheduled_backup_confirm": "Delete scheduled backup <strong>{name}</strong>?",
-    "delete_backup_explanation_1": "<strong>{instanceName}</strong> won't be backed up anymore. If you change your mind, you'll have to schedule a new backup. | <strong>{numInstances} application instances</strong> won't be backed up anymore. If you change your mind, you'll have to schedule a new backup.",
+    "delete_backup_explanation_1": "<strong>{instanceName}</strong> won't be backed up anymore. If you change your mind, you'll have to schedule a new backup. | <strong>{numInstances} app instances</strong> won't be backed up anymore. If you change your mind, you'll have to schedule a new backup.",
     "delete_backup_explanation_2": "Existing backed up data will be left intact on the original repository.",
     "edit_backup_repository": "Edit backup repository",
     "repository_details": "Repository details",
@@ -268,11 +271,14 @@
     "backup_details": "Backup details",
     "backup_enabled": "Backup enabled",
     "backup_disabled": "Backup disabled",
-    "app_instances_not_backed_up": "Applications not backed up",
+    "app_instances_not_backed_up": "Apps not backed up",
     "app_instances_not_backed_up_description": "{numInstances} app instance has no backup configured | {numInstances} app instances have no backup configured",
     "disabled_backups": "Disabled backups",
     "disabled_backups_description": "There is {num} backup disabled | There are {num} backups disabled",
-    "repository_password_helper": "Enter password if repository has already been configured in the past"
+    "repository_password_helper": "Enter password if repository has already been configured in the past",
+    "not_backed_up": "Not backed up",
+    "search_instances": "Search instances...",
+    "not_backed_up_instances_selected": "Not backed up instances are currently selected"
   },
   "settings": {
     "title": "Settings",

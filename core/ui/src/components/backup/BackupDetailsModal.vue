@@ -33,7 +33,7 @@
           }}
         </span>
         <!-- multiple instances -->
-        <div class="instance-list">
+        <div v-else class="instance-list">
           <div v-for="instance in instances" :key="instance.module_id">
             {{
               instance.ui_name

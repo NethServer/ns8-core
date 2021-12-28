@@ -12,13 +12,20 @@
           <div class="mg-bottom-md">
             {{ $t("backup.choose_app_instances_to_backup") }}
           </div>
+          <InstanceSelector
+            :instances="installedModules"
+            :selection="instanceSelection"
+            :instancesNotBackedUp="instancesNotBackedUp"
+            :loading="loading.listInstalledModules"
+            @select="onSelectInstances"
+          />
           <!-- //// -->
-          <cv-text-input
+          <!-- <cv-text-input
             v-model.trim="instances"
             :disabled="loading.addBackup"
             ref="instances"
           >
-          </cv-text-input>
+          </cv-text-input> -->
         </template>
         <template v-if="step == 'repository'">
           <div class="mg-bottom-md">
@@ -93,7 +100,6 @@
           <NsButton
             kind="primary"
             :icon="ChevronRight20"
-            @click="nextStep"
             :disabled="isNextStepDisabled"
             :loading="loading.addBackup"
             type="submit"
@@ -110,9 +116,11 @@
 <script>
 import { UtilService, TaskService, IconService } from "@nethserver/ns8-ui-lib";
 import to from "await-to-js";
+import InstanceSelector from "@/components/backup/InstanceSelector";
 
 export default {
   name: "CreateBackupModal",
+  components: { InstanceSelector },
   mixins: [UtilService, TaskService, IconService],
   props: {
     isShown: {
@@ -123,23 +131,29 @@ export default {
       type: Array,
       required: true,
     },
-    selectedInstaces: {
+    instanceSelection: {
       type: String,
       default: "",
+    },
+    instancesNotBackedUp: {
+      type: Array,
+      default: () => [],
     },
   },
   data() {
     return {
       step: "",
       steps: ["instances", "repository", "settings"],
-      instances: "dokuwiki1,dokuwiki2", ////
+      instances: [],
       name: "",
       repository: "",
       schedule: "daily", ////
       retention: "7d", ////
       enabled: true,
+      installedModules: [],
       loading: {
         addBackup: false,
+        listInstalledModules: true,
       },
       error: {
         name: "",
@@ -147,6 +161,7 @@ export default {
         schedule: "",
         retention: "",
         addBackup: "",
+        listInstalledModules: "",
       },
     };
   },
@@ -161,7 +176,11 @@ export default {
       return this.stepIndex == this.steps.length - 1;
     },
     isNextStepDisabled() {
-      return this.loading.addBackup;
+      return (
+        this.loading.addBackup ||
+        !this.installedModules.length ||
+        !this.instances.length
+      );
     },
   },
   watch: {
@@ -170,8 +189,20 @@ export default {
         // show first step
         this.step = this.steps[0];
         this.clearFields();
+
+        // load installed moudules
+        this.listInstalledModules();
       }
     },
+    instanceSelection: function () {
+      console.log("instanceSelection", this.instanceSelection); ////
+    },
+  },
+  created() {
+    console.log(
+      "created createbackupmodal, instanceSelection",
+      this.instanceSelection
+    ); ////
   },
   methods: {
     clearFields() {
@@ -230,7 +261,7 @@ export default {
             repository: this.repository,
             schedule: this.schedule,
             retention: this.retention,
-            instances: this.instances.split(","), ////
+            instances: this.instances,
             enabled: this.enabled,
           },
           extra: {
@@ -279,6 +310,57 @@ export default {
 
       // reload backup configuration
       this.$emit("backupCreated");
+    },
+    async listInstalledModules() {
+      this.loading.listInstalledModules = true;
+      const taskAction = "list-installed-modules";
+
+      // register to task completion
+      this.$root.$once(
+        taskAction + "-completed",
+        this.listInstalledModulesCompleted
+      );
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        this.error.listInstalledModules = this.getErrorMessage(err);
+        this.createErrorNotification(
+          err,
+          this.$t("task.cannot_create_task", { action: taskAction })
+        );
+        return;
+      }
+    },
+    listInstalledModulesCompleted(taskContext, taskResult) {
+      this.loading.listInstalledModules = false;
+      let apps = [];
+
+      for (let instanceList of Object.values(taskResult.output)) {
+        for (let instance of instanceList) {
+          apps.push(instance);
+        }
+      }
+
+      apps.sort(this.sortModuleInstances());
+
+      console.log("appsss", apps); ////
+
+      this.installedModules = apps;
+    },
+    onSelectInstances(instances) {
+      console.log("onSelectInstances", instances); ////
+
+      this.instances = instances;
     },
   },
 };
