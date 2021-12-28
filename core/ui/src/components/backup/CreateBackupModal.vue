@@ -8,7 +8,7 @@
     <template slot="title">{{ $t("backup.schedule_backup") }}</template>
     <template slot="content">
       <cv-form @submit.prevent="nextStep">
-        <template v-if="step == 'instances'">
+        <div v-show="step == 'instances'">
           <div class="mg-bottom-md">
             {{ $t("backup.choose_app_instances_to_backup") }}
           </div>
@@ -19,24 +19,42 @@
             :loading="loading.listInstalledModules"
             @select="onSelectInstances"
           />
-          <!-- //// -->
-          <!-- <cv-text-input
-            v-model.trim="instances"
-            :disabled="loading.addBackup"
-            ref="instances"
-          >
-          </cv-text-input> -->
-        </template>
-        <template v-if="step == 'repository'">
+        </div>
+        <div v-show="step == 'repository'">
           <div class="mg-bottom-md">
             {{ $t("backup.choose_destination_repository") }}
           </div>
-          <!-- //// -->
-          <div>
-            {{ repositories[0].id }}
+          <div class="bx--grid">
+            <div class="bx--row">
+              <div
+                v-for="repo in internalRepositories"
+                :key="'col-' + repo.id"
+                class="bx--col-md-4"
+              >
+                <NsTile
+                  :light="true"
+                  kind="selectable"
+                  :value="repo.id"
+                  :footerIcon="DataBase20"
+                  v-model="repo.selected"
+                  @click="deselectOtherRepos(repo)"
+                  class="same-height-tile"
+                >
+                  <h6>
+                    {{ repo.name }}
+                  </h6>
+                  <div class="mg-top-sm">
+                    {{ $t("backup." + repo.provider) }}
+                  </div>
+                  <div class="mg-top-sm ellipsis">
+                    {{ repo.url }}
+                  </div>
+                </NsTile>
+              </div>
+            </div>
           </div>
-        </template>
-        <template v-if="step == 'settings'">
+        </div>
+        <div v-show="step == 'settings'">
           <cv-text-input
             :label="$t('backup.frequency')"
             v-model.trim="schedule"
@@ -77,7 +95,7 @@
             :description="error.addBackup"
             :showCloseButton="false"
           />
-        </template>
+        </div>
         <div class="wizard-buttons">
           <NsButton
             kind="secondary"
@@ -96,7 +114,6 @@
             class="wizard-button"
             >{{ $t("common.previous") }}
           </NsButton>
-          <!-- //// disable next button if no selection in current step -->
           <NsButton
             kind="primary"
             :icon="ChevronRight20"
@@ -117,6 +134,7 @@
 import { UtilService, TaskService, IconService } from "@nethserver/ns8-ui-lib";
 import to from "await-to-js";
 import InstanceSelector from "@/components/backup/InstanceSelector";
+import _cloneDeep from "lodash/cloneDeep";
 
 export default {
   name: "CreateBackupModal",
@@ -146,11 +164,11 @@ export default {
       steps: ["instances", "repository", "settings"],
       instances: [],
       name: "",
-      repository: "",
       schedule: "daily", ////
       retention: "7d", ////
       enabled: true,
       installedModules: [],
+      internalRepositories: [],
       loading: {
         addBackup: false,
         listInstalledModules: true,
@@ -179,8 +197,12 @@ export default {
       return (
         this.loading.addBackup ||
         !this.installedModules.length ||
-        !this.instances.length
+        (this.step == "instances" && !this.instances.length) ||
+        (this.step == "repository" && !this.selectedRepo)
       );
+    },
+    selectedRepo() {
+      return this.internalRepositories.find((r) => r.selected);
     },
   },
   watch: {
@@ -194,24 +216,24 @@ export default {
         this.listInstalledModules();
       }
     },
-    instanceSelection: function () {
-      console.log("instanceSelection", this.instanceSelection); ////
+    repositories: function () {
+      this.updateInternalRepositories();
     },
   },
   created() {
-    console.log(
-      "created createbackupmodal, instanceSelection",
-      this.instanceSelection
-    ); ////
+    this.updateInternalRepositories();
   },
   methods: {
     clearFields() {
-      this.instances = "dokuwiki1,dokuwiki2"; ////
+      this.instances = [];
       this.name = "";
-      this.repository = "";
       this.schedule = "daily"; ////
       this.retention = "7d"; ////
       this.enabled = true;
+
+      for (let repo of this.internalRepositories) {
+        repo.selected = false;
+      }
     },
     nextStep() {
       if (this.isNextStepDisabled) {
@@ -228,6 +250,15 @@ export default {
       if (!this.isFirstStep) {
         this.step = this.steps[this.stepIndex - 1];
       }
+    },
+    updateInternalRepositories() {
+      // deep copy (needed to avoid reactivity issues)
+      let internalRepositories = _cloneDeep(this.repositories);
+
+      for (const repo of internalRepositories) {
+        repo.selected = false;
+      }
+      this.internalRepositories = internalRepositories;
     },
     async addBackup() {
       //// validation
@@ -250,15 +281,12 @@ export default {
       // register to task completion
       this.$root.$once(taskAction + "-completed", this.addBackupCompleted);
 
-      //// remove mock
-      this.repository = this.repositories[0].id;
-
       const res = await to(
         this.createClusterTask({
           action: taskAction,
           data: {
             name: this.name,
-            repository: this.repository,
+            repository: this.selectedRepo.id,
             schedule: this.schedule,
             retention: this.retention,
             instances: this.instances,
@@ -362,10 +390,21 @@ export default {
 
       this.instances = instances;
     },
+    deselectOtherRepos(repo) {
+      for (let r of this.internalRepositories) {
+        if (r.id !== repo.id) {
+          r.selected = false;
+        }
+      }
+    },
   },
 };
 </script>
 
 <style scoped lang="scss">
 @import "../../styles/carbon-utils";
+
+.same-height-tile {
+  min-height: 9rem;
+}
 </style>
