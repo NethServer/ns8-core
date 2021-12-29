@@ -53,7 +53,8 @@
     "search": "Search",
     "no_search_results": "No results",
     "no_search_results_description": "Try changing your search query",
-    "success": "Success"
+    "success": "Success",
+    "save": "Save"
   },
   "error": {
     "error": "Error",
