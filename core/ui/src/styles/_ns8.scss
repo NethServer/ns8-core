@@ -492,6 +492,48 @@ a {
 }
 // end branding colors for NsProgressBar
 
+// status colors
+.ns-success {
+  color: $support-02 !important;
+  fill: $support-02 !important;
+}
+
+.ns-error {
+  color: $danger-01 !important;
+  fill: $danger-01 !important;
+}
+
+.ns-warning {
+  color: #eb991e !important;
+  fill: #eb991e !important;
+}
+
+.ns-info {
+  color: $support-04 !important;
+  fill: $support-04 !important;
+}
+
+.ns-success-dark-bg {
+  color: $inverse-support-02 !important;
+  fill: $inverse-support-02 !important;
+}
+
+.ns-error-dark-bg {
+  color: $inverse-support-01 !important;
+  fill: $inverse-support-01 !important;
+}
+
+.ns-warning-dark-bg {
+  color: $inverse-support-03 !important;
+  fill: $inverse-support-03 !important;
+}
+
+.ns-info-dark-bg {
+  color: $inverse-support-04 !important;
+  fill: $inverse-support-04 !important;
+}
+// end status colors
+
 // colors for NsStatusCard and NsSystemdServiceCard
 .status-card .success-icon,
 .service-card .success-icon {
@@ -505,7 +547,7 @@ a {
 
 .status-card .warning-icon,
 .service-card .warning-icon {
-  color: $support-03;
+  color: #eb991e;
 }
 // end colors for NsStatusCard and NsSystemdServiceCard
 

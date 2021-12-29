@@ -52,7 +52,8 @@
     "x_of_y_selected": "{selected} of {total} selected",
     "search": "Search",
     "no_search_results": "No results",
-    "no_search_results_description": "Try changing your search query"
+    "no_search_results_description": "Try changing your search query",
+    "success": "Success"
   },
   "error": {
     "error": "Error",
@@ -215,7 +216,8 @@
     "add-backup": "Add backup",
     "remove-backup-repository": "Remove backup repository",
     "remove-backup": "Remove backup",
-    "alter-backup-repository": "Alter backup repository"
+    "alter-backup-repository": "Alter backup repository",
+    "run-backup": "Run backup"
   },
   "network": {
     "title": "Network"
@@ -278,7 +280,16 @@
     "repository_password_helper": "Enter password if repository has already been configured in the past",
     "not_backed_up": "Not backed up",
     "search_instances": "Search instances...",
-    "not_backed_up_instances_selected": "Not backed up instances are currently selected"
+    "not_backed_up_instances_selected": "Not backed up instances are currently selected",
+    "repo_password_tooltip": "This password is used to encrypt data in the repository. Store this password in a safe place, otherwise you won't be able to restore your backed up data",
+    "run_backup_now": "Run backup now",
+    "last_backup": "Last backup",
+    "result": "Result",
+    "backup_has_not_run_yet": "Backup has not run yet",
+    "total_size": "Total size",
+    "total_file_count": "Total file count",
+    "completed": "Completed",
+    "duration": "Duration"
   },
   "settings": {
     "title": "Settings",

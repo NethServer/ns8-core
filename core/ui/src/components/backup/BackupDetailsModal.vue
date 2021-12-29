@@ -24,22 +24,118 @@
         <span class="setting-label">{{
           $tc("backup.Instances", instances.length)
         }}</span>
-        <!-- one instance -->
-        <span v-if="instances.length == 1" class="setting-value">
-          {{
-            instances[0].ui_name
-              ? instances[0].ui_name + " (" + instances[0].module_id + ")"
-              : instances[0].module_id
-          }}
-        </span>
-        <!-- multiple instances -->
-        <div v-else class="instance-list">
-          <div v-for="instance in instances" :key="instance.module_id">
-            {{
-              instance.ui_name
-                ? instance.ui_name + " (" + instance.module_id + ")"
-                : instance.module_id
-            }}
+        <div class="instance-list">
+          <div
+            v-for="instance in instances"
+            :key="instance.module_id"
+            class="mg-bottom-sm"
+          >
+            <cv-interactive-tooltip
+              alignment="end"
+              direction="right"
+              class="backup-status-tooltip"
+            >
+              <template slot="trigger">
+                <span>
+                  {{
+                    instance.ui_name
+                      ? instance.ui_name + " (" + instance.module_id + ")"
+                      : instance.module_id
+                  }}
+                </span>
+                <NsSvg
+                  v-if="instance.status.success == true"
+                  :svg="CheckmarkFilled16"
+                  class="ns-success backup-status-icon"
+                />
+                <NsSvg
+                  v-else-if="instance.status.success == false"
+                  :svg="ErrorFilled16"
+                  class="ns-error backup-status-icon"
+                />
+                <NsSvg
+                  v-else
+                  :svg="Warning16"
+                  class="ns-warning backup-status-icon"
+                />
+              </template>
+              <template slot="content">
+                <h5 class="last-backup">{{ $t("backup.last_backup") }}</h5>
+                <div class="mg-bottom-sm">
+                  <span class="setting-label">
+                    {{ $t("backup.result") }}
+                  </span>
+                  <span class="setting-value">
+                    <span
+                      v-if="instance.status.success == true"
+                      class="ns-success-dark-bg"
+                    >
+                      {{ $t("common.success") }}
+                    </span>
+                    <span
+                      v-else-if="instance.status.success == false"
+                      class="ns-error-dark-bg"
+                    >
+                      {{ $t("error.error") }}
+                    </span>
+                    <span v-else class="ns-warning-dark-bg">
+                      {{ $t("backup.backup_has_not_run_yet") }}
+                    </span>
+                  </span>
+                </div>
+                <div class="mg-bottom-sm">
+                  <span class="setting-label">
+                    {{ $t("backup.completed") }}
+                  </span>
+                  <span class="setting-value">
+                    <span v-if="instance.status.end">
+                      <!-- //// format time and duration -->
+                      {{
+                        (instance.status.end * 1000) | date("yyyy-MM-dd HH:mm")
+                      }}
+                    </span>
+                    <span v-else>-</span>
+                  </span>
+                </div>
+                <div class="mg-bottom-sm">
+                  <span class="setting-label">
+                    {{ $t("backup.duration") }}
+                  </span>
+                  <span class="setting-value">
+                    <span v-if="instance.status.end && instance.status.start">
+                      {{
+                        (instance.status.end - instance.status.start)
+                          | secondsFormat
+                      }}
+                    </span>
+                    <span v-else>-</span>
+                  </span>
+                </div>
+                <div class="mg-bottom-sm">
+                  <span class="setting-label">
+                    {{ $t("backup.total_size") }}
+                  </span>
+                  <span class="setting-value">
+                    <span v-if="instance.status.total_size">
+                      {{ instance.status.total_size | byteFormat }}
+                    </span>
+                    <span v-else>-</span>
+                  </span>
+                </div>
+                <div class="mg-bottom-sm">
+                  <span class="setting-label">
+                    {{ $t("backup.total_file_count") }}
+                  </span>
+                  <span class="setting-value">
+                    <span v-if="instance.status.total_file_count">
+                      {{ instance.status.total_file_count | humanFormat }}
+                      ({{ instance.status.total_file_count }})
+                    </span>
+                    <span v-else>-</span>
+                  </span>
+                </div>
+              </template>
+            </cv-interactive-tooltip>
           </div>
         </div>
       </div>
@@ -49,11 +145,11 @@
 </template>
 
 <script>
-import { UtilService } from "@nethserver/ns8-ui-lib";
+import { UtilService, IconService } from "@nethserver/ns8-ui-lib";
 
 export default {
   name: "BackupDetailsModal",
-  mixins: [UtilService],
+  mixins: [UtilService, IconService],
   props: {
     isShown: {
       type: Boolean,
@@ -80,7 +176,6 @@ export default {
 .setting-label {
   display: inline-block;
   margin-right: $spacing-03;
-  margin-bottom: $spacing-02;
   font-weight: bold;
 }
 
@@ -94,5 +189,26 @@ export default {
 
 .instance-list {
   display: inline-block;
+}
+
+.backup-status-icon {
+  margin-left: $spacing-03;
+}
+
+.last-backup {
+  margin-bottom: $spacing-05;
+}
+</style>
+
+<style lang="scss">
+@import "../../styles/carbon-utils";
+
+// global styles
+
+.backup-status-tooltip .bx--tooltip__trigger {
+  margin-left: 0 !important;
+  font-size: 14px;
+  text-decoration: underline;
+  color: $interactive-01;
 }
 </style>

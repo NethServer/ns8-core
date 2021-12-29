@@ -1,5 +1,5 @@
 <template>
-  <!-- //// use standarm modal instead of wizard? (only one step) -->
+  <!-- //// use standard modal instead of wizard? (only one step) -->
   <cv-modal
     size="default"
     :visible="isShown"

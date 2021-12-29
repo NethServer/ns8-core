@@ -265,6 +265,9 @@
                     tip-alignment="end"
                     class="top-right-overflow-menu"
                   >
+                    <cv-overflow-menu-item @click="runBackup(backup)">
+                      {{ $t("backup.run_backup_now") }}
+                    </cv-overflow-menu-item>
                     <cv-overflow-menu-item @click="showEditBackupModal(backup)">
                       {{ $t("common.edit") }}
                     </cv-overflow-menu-item>
@@ -521,6 +524,7 @@ export default {
         listBackups: "",
         removeBackupRepository: "",
         removeBackup: "",
+        runBackup: "",
       },
     };
   },
@@ -544,38 +548,6 @@ export default {
   },
   methods: {
     async listBackupRepositories() {
-      //// remove mock
-      // this.repositories = [];
-      //   this.repositories = [
-      //     {
-      //       id: "48ce000a-79b7-5fe6-8558-177fd70c27b4",
-      //       name: "BackBlaze repo1",
-      //       provider: "backblaze",
-      //       url: "b2:backupex1",
-      //       password:
-      //         "d59a90ec7ad2b2967257a7a308c82c96ac006efd138254bc1e58c8ea07c18400",
-      //       parameters: {
-      //         b2_account_id: "xxxxxxxxxxxxxx",
-      //         b2_account_key: "yyyyyyyyyyyyyyyyyyyyyy",
-      //       },
-      //     },
-      //     {
-      //       id: "98ce000a-79b7-5fe6-8558-177fd70c27b4",
-      //       name: "S3 repo",
-      //       provider: "s3",
-      //       url: "s3:backupex1",
-      //       password:
-      //         "d59a90ec7ad2b2967257a7a308c82c96ac006efd138254bc1e58c8ea07c18400",
-      //       parameters: {
-      //         s3_account_id: "xxxxxxxxxxxxxx",
-      //         s3_account_key: "yyyyyyyyyyyyyyyyyyyyyy",
-      //       },
-      //     },
-      //   ];
-
-      //   this.loading.listBackupRepositories = false;
-      //   this.listBackups();
-
       this.loading.listBackupRepositories = true;
       this.error.listBackupRepositories = "";
       const taskAction = "list-backup-repositories";
@@ -611,49 +583,6 @@ export default {
       this.listBackups();
     },
     async listBackups() {
-      //// remove mock
-      // let backups = [];
-      // let backups = [
-      //   {
-      //     id: 1,
-      //     name: "Dokuwiki backup",
-      //     repository: "48ce000a-79b7-5fe6-8558-177fd70c27b4",
-      //     schedule: "daily",
-      //     retention: "7d",
-      //     instances: [
-      //       {
-      //         module_id: "dokuwiki1",
-      //         ui_name: "",
-      //         repository_path: "dokuwiki1@2f72561e-89b2-4cdc-b4e4-425ca23bbec9",
-      //         status: null,
-      //       },
-      //     ],
-      //   },
-      //   {
-      //     id: 2,
-      //     name: "Nextcloud backup",
-      //     repository: "98ce000a-79b7-5fe6-8558-177fd70c27b4",
-      //     schedule: "daily",
-      //     retention: "7d",
-      //     instances: [
-      //       {
-      //         module_id: "nextcloud1",
-      //         ui_name: "",
-      //         repository_path:
-      //           "nextcloud1@2f72561e-89b2-4cdc-b4e4-425ca23bbec9",
-      //         status: null,
-      //       },
-      //       {
-      //         module_id: "nextcloud2",
-      //         ui_name: "",
-      //         repository_path:
-      //           "nextcloud2@2f72561e-89b2-4cdc-b4e4-425ca23bbec9",
-      //         status: null,
-      //       },
-      //     ],
-      //   },
-      // ];
-
       this.loading.listBackups = true;
       this.error.listBackups = "";
       const taskAction = "list-backups";
@@ -747,6 +676,17 @@ export default {
       this.isShownDeleteBackupModal = false;
     },
     showBackupDetailsModal(backup) {
+      //// remove status mock
+      // for (const instance of backup.instances) {
+      //   instance.status = {
+      //     total_size: 4053660,
+      //     total_file_count: 21744,
+      //     start: 1640097808,
+      //     end: 1640097815,
+      //     success: true,
+      //   };
+      // }
+
       this.currentBackup = backup;
       this.isShownBackupDetailsModal = true;
     },
@@ -822,6 +762,38 @@ export default {
     removeBackupCompleted() {
       // reload backup configuration
       this.listBackupRepositories();
+    },
+    async runBackup(backup) {
+      this.error.runBackup = "";
+      const taskAction = "run-backup";
+
+      // register to task completion
+      this.$root.$once(taskAction + "-completed", this.runBackupCompleted);
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          data: {
+            id: backup.id,
+          },
+          extra: {
+            title: this.$t("action." + taskAction),
+            description: this.$t("common.processing"),
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.runBackup = this.getErrorMessage(err);
+        return;
+      }
+    },
+    runBackupCompleted(taskContext, taskResult) {
+      console.log("runBackupCompleted", taskResult); ////
+
+      //// include details in success notification?
     },
   },
 };

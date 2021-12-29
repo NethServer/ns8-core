@@ -272,13 +272,9 @@ export default {
         taskAction + "-validation-failed",
         this.addBackupValidationFailed
       );
-      this.$root.$off(taskAction + "-validation-ok");
-      this.$root.$once(
-        taskAction + "-validation-ok",
-        this.addBackupValidationOk
-      );
 
       // register to task completion
+      this.$root.$off(taskAction + "-completed");
       this.$root.$once(taskAction + "-completed", this.addBackupCompleted);
 
       const res = await to(
@@ -322,19 +318,13 @@ export default {
         }
       }
     },
-    addBackupValidationOk() {
-      console.log("addBackupValidationOk"); ////
-
-      // hide modal after validation
-      this.$emit("hide");
-    },
     addBackupCompleted(taskContext, taskResult) {
       console.log("addBackupRepositoryCompleted", taskResult.output); ////
 
       this.loading.addBackup = false;
 
       // hide modal
-      // this.$emit("hide"); ////
+      this.$emit("hide");
 
       // reload backup configuration
       this.$emit("backupCreated");

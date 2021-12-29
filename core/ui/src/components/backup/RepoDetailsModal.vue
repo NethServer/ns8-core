@@ -61,9 +61,17 @@
       <!-- //// handle all providers -->
       <!-- password -->
       <div class="mg-bottom-sm">
-        <span class="setting-label">{{
-          $t("backup.repository_password")
-        }}</span>
+        <span class="setting-label password-label">
+          {{ $t("backup.repository_password") }}
+          <cv-tooltip
+            alignment="center"
+            direction="top"
+            :tip="$t('backup.repo_password_tooltip')"
+            class="info"
+          >
+            <Information16 />
+          </cv-tooltip>
+        </span>
         <cv-link @click="togglePassword" class="toggle-password">
           {{ isPasswordShown ? $t("common.hide") : $t("common.show") }}
         </cv-link>
@@ -77,6 +85,7 @@
           :lessText="$t('common.show_less')"
           light
           hideExpandButton
+          class="password-snippet"
           >{{ repository.password }}</NsCodeSnippet
         >
       </div>
@@ -86,7 +95,10 @@
 </template>
 
 <script>
+import Information16 from "@carbon/icons-vue/es/information/16";
+
 export default {
+  components: { Information16 },
   name: "RepoDetailsModal",
   props: {
     isShown: {
@@ -131,5 +143,13 @@ export default {
 
 .setting-value {
   word-wrap: break-word;
+}
+
+.password-label {
+  margin-right: $spacing-05;
+}
+
+.password-snippet {
+  margin-bottom: $spacing-07;
 }
 </style>
