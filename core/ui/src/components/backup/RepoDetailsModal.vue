@@ -58,6 +58,12 @@
           }}</span>
         </div>
       </template>
+      <!-- generic s3 -->
+      <template v-if="repository.provider == 'genericS3'">
+        generic s3 ////
+      </template>
+      <!-- azure -->
+      <template v-if="repository.provider == 'azure'"> azure //// </template>
       <!-- //// handle all providers -->
       <!-- password -->
       <div class="mg-bottom-sm">

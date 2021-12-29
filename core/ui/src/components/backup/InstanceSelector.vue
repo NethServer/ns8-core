@@ -15,7 +15,10 @@
         <cv-overflow-menu-item @click="selectNone">
           {{ $t("common.none") }}
         </cv-overflow-menu-item>
-        <cv-overflow-menu-item @click="selectNotBackedUp">
+        <cv-overflow-menu-item
+          @click="selectNotBackedUp"
+          :disabled="!instancesNotBackedUp.length"
+        >
           {{ $t("backup.not_backed_up") }}
         </cv-overflow-menu-item>
       </NsDropdownAction>

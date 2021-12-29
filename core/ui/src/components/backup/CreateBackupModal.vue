@@ -43,7 +43,7 @@
                   <h6>
                     {{ repo.name }}
                   </h6>
-                  <div class="mg-top-sm">
+                  <div class="mg-top-md">
                     {{ $t("backup." + repo.provider) }}
                   </div>
                   <div class="mg-top-sm ellipsis">
@@ -260,8 +260,27 @@ export default {
       }
       this.internalRepositories = internalRepositories;
     },
+    validateAddBackup() {
+      this.clearErrors(this);
+      let isValidationOk = true;
+
+      //// todo validate frequency and retention
+
+      if (!this.name) {
+        this.error.name = "common.required";
+
+        if (isValidationOk) {
+          this.focusElement("name");
+          isValidationOk = false;
+        }
+      }
+
+      return isValidationOk;
+    },
     async addBackup() {
-      //// validation
+      if (!this.validateAddBackup()) {
+        return;
+      }
       this.error.addBackup = "";
       this.loading.addBackup = true;
       const taskAction = "add-backup";

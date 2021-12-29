@@ -63,6 +63,10 @@
             >
             </cv-text-input>
           </template>
+          <!-- generic s3 -->
+          <template v-if="repository.provider == 'genericS3'">
+            generic s3 ////
+          </template>
           <!-- azure -->
           <template v-if="repository.provider == 'azure'">
             azure ////
@@ -152,6 +156,8 @@ export default {
         aws_default_region: "",
         aws_secret_access_key: "",
       },
+      genericS3: {},
+      azure: {},
       //// handle all providers
       loading: {
         alterBackupRepository: false,
@@ -167,6 +173,8 @@ export default {
           aws_default_region: "",
           aws_secret_access_key: "",
         },
+        genericS3: {},
+        azure: {},
         //// handle all providers
       },
     };

@@ -236,6 +236,7 @@
     "schedule_backup": "Schedule backup",
     "backblaze": "Backblaze B2",
     "aws": "Amazon S3",
+    "generic_s3": "Generic S3 provider",
     "azure": "Microsoft Azure",
     "instances": "instance | instances",
     "Instances": "Instance | Instances",

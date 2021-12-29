@@ -22,28 +22,19 @@
                   v-model="isBackblazeSelected"
                   value="providerValue"
                   @click="selectBackblaze()"
-                  class="min-height-card"
+                  class="provider-card"
                 >
-                  <!--  //// provider icon -->
-                  <h6>
-                    {{ $t("backup.backblaze") }}
-                  </h6>
-                </NsTile>
-              </div>
-              <!-- amazon s3 -->
-              <div class="bx--col-md-4">
-                <NsTile
-                  :light="true"
-                  kind="selectable"
-                  v-model="isAmazonS3Selected"
-                  value="providerValue"
-                  @click="selectAmazonS3()"
-                  class="min-height-card"
-                >
-                  <!--  //// provider icon -->
-                  <h6>
-                    {{ $t("backup.aws") }}
-                  </h6>
+                  <div class="provider-card-content">
+                    <div class="provider-icon">
+                      <img
+                        :src="require('@/assets/backblaze.png')"
+                        alt="backblaze logo"
+                      />
+                    </div>
+                    <h6>
+                      {{ $t("backup.backblaze") }}
+                    </h6>
+                  </div>
                 </NsTile>
               </div>
               <!-- azure -->
@@ -54,12 +45,65 @@
                   v-model="isAzureSelected"
                   value="providerValue"
                   @click="selectAzure()"
-                  class="min-height-card"
+                  class="provider-card"
                 >
-                  <!--  //// provider icon -->
-                  <h6>
-                    {{ $t("backup.azure") }}
-                  </h6>
+                  <div class="provider-card-content">
+                    <div class="provider-icon">
+                      <img
+                        :src="require('@/assets/azure.png')"
+                        alt="azure logo"
+                      />
+                    </div>
+                    <h6>
+                      {{ $t("backup.azure") }}
+                    </h6>
+                  </div>
+                </NsTile>
+              </div>
+              <!-- amazon s3 -->
+              <div class="bx--col-md-4">
+                <NsTile
+                  :light="true"
+                  kind="selectable"
+                  v-model="isAmazonS3Selected"
+                  value="providerValue"
+                  @click="selectAmazonS3()"
+                  class="provider-card"
+                >
+                  <div class="provider-card-content">
+                    <div class="provider-icon">
+                      <img
+                        :src="require('@/assets/s3.png')"
+                        alt="amazon s3 logo"
+                      />
+                    </div>
+                    <h6>
+                      {{ $t("backup.aws") }}
+                    </h6>
+                  </div>
+                </NsTile>
+              </div>
+              <!-- generic s3 -->
+              <div class="bx--col-md-4">
+                <NsTile
+                  :light="true"
+                  kind="selectable"
+                  v-model="isGenericS3Selected"
+                  value="providerValue"
+                  @click="selectGenericS3()"
+                  class="provider-card"
+                >
+                  <div class="provider-card-content">
+                    <div class="provider-icon">
+                      <img
+                        :src="require('@/assets/s3-generic.png')"
+                        alt="generic s3 logo"
+                      />
+                    </div>
+                    <h6>
+                      {{ $t("backup.generic_s3") }}
+                    </h6>
+                  </div>
                 </NsTile>
               </div>
             </div>
@@ -122,6 +166,8 @@
           </template>
           <!-- azure -->
           <template v-if="isAzureSelected"> azure //// </template>
+          <!-- generic s3 -->
+          <template v-if="isGenericS3Selected"> generic s3 //// </template>
           <!-- //// handle ALL providers -->
           <cv-text-input
             :label="$t('backup.repository_name')"
@@ -209,8 +255,9 @@ export default {
       step: "",
       steps: ["provider", "settings"],
       isBackblazeSelected: false,
-      isAmazonS3Selected: false,
       isAzureSelected: false,
+      isAmazonS3Selected: false,
+      isGenericS3Selected: false,
       name: "",
       url: "",
       password: "",
@@ -223,6 +270,8 @@ export default {
         aws_default_region: "",
         aws_secret_access_key: "",
       },
+      genericS3: {},
+      azure: {},
       //// handle all providers
       loading: {
         addBackupRepository: false,
@@ -240,6 +289,8 @@ export default {
           aws_default_region: "",
           aws_secret_access_key: "",
         },
+        genericS3: {},
+        azure: {},
         //// handle all providers
       },
     };
@@ -262,6 +313,8 @@ export default {
         return "backblaze";
       } else if (this.isAmazonS3Selected) {
         return "aws";
+      } else if (this.isGenericS3Selected) {
+        return "genericS3";
       } else if (this.isAzureSelected) {
         return "azure";
       } else {
@@ -314,18 +367,27 @@ export default {
     },
     selectBackblaze() {
       //// handle ALL providers
-      this.isAmazonS3Selected = false;
       this.isAzureSelected = false;
+      this.isAmazonS3Selected = false;
+      this.isGenericS3Selected = false;
     },
     selectAmazonS3() {
       //// handle ALL providers
       this.isBackblazeSelected = false;
       this.isAzureSelected = false;
+      this.isGenericS3Selected = false;
+    },
+    selectGenericS3() {
+      //// handle ALL providers
+      this.isBackblazeSelected = false;
+      this.isAzureSelected = false;
+      this.isAmazonS3Selected = false;
     },
     selectAzure() {
       //// handle ALL providers
       this.isBackblazeSelected = false;
       this.isAmazonS3Selected = false;
+      this.isGenericS3Selected = false;
     },
     buildRepositoryParameters() {
       switch (this.selectedProvider) {
@@ -348,8 +410,136 @@ export default {
       }
       //// handle all providers
     },
+    validateAddBackblazeRepository() {
+      // clear errors
+      this.error.name = "";
+      this.error.url = ""; //// ?
+
+      this.error.backblaze.b2_account_id = "";
+      this.error.backblaze.b2_account_key = "";
+
+      let isValidationOk = true;
+
+      if (!this.url) {
+        this.error.url = "common.required";
+
+        if (isValidationOk) {
+          this.focusElement("url");
+          isValidationOk = false;
+        }
+      }
+
+      if (!this.backblaze.b2_account_id) {
+        this.error.backblaze.b2_account_id = "common.required";
+
+        if (isValidationOk) {
+          this.focusElement("b2_account_id");
+          isValidationOk = false;
+        }
+      }
+
+      if (!this.backblaze.b2_account_key) {
+        this.error.backblaze.b2_account_key = "common.required";
+
+        if (isValidationOk) {
+          this.focusElement("b2_account_key");
+          isValidationOk = false;
+        }
+      }
+
+      if (!this.name) {
+        this.error.name = "common.required";
+
+        if (isValidationOk) {
+          this.focusElement("name");
+          isValidationOk = false;
+        }
+      }
+      return isValidationOk;
+    },
+    validateAmazonS3Repository() {
+      // clear errors
+      this.error.name = "";
+      this.error.url = ""; //// ?
+
+      this.error.aws.aws_access_key_id = "";
+      this.error.aws.aws_default_region = "";
+      this.error.aws.aws_secret_access_key = "";
+
+      let isValidationOk = true;
+
+      if (!this.url) {
+        this.error.url = "common.required";
+
+        if (isValidationOk) {
+          this.focusElement("url");
+          isValidationOk = false;
+        }
+      }
+
+      if (!this.aws.aws_access_key_id) {
+        this.error.aws.aws_access_key_id = "common.required";
+
+        if (isValidationOk) {
+          this.focusElement("aws_access_key_id");
+          isValidationOk = false;
+        }
+      }
+
+      if (!this.aws.aws_default_region) {
+        this.error.aws.aws_default_region = "common.required";
+
+        if (isValidationOk) {
+          this.focusElement("aws_default_region");
+          isValidationOk = false;
+        }
+      }
+
+      if (!this.aws.aws_secret_access_key) {
+        this.error.aws.aws_secret_access_key = "common.required";
+
+        if (isValidationOk) {
+          this.focusElement("aws_secret_access_key");
+          isValidationOk = false;
+        }
+      }
+
+      if (!this.name) {
+        this.error.name = "common.required";
+
+        if (isValidationOk) {
+          this.focusElement("name");
+          isValidationOk = false;
+        }
+      }
+      return isValidationOk;
+    },
+    validateAddGenericS3Repository() {
+      ////
+      console.error("not implemented"); ////
+      return false;
+    },
+    validateAddAzureRepository() {
+      ////
+      console.error("not implemented"); ////
+      return false;
+    },
+    validateAddBackupRepository() {
+      switch (this.selectedProvider) {
+        case "backblaze":
+          return this.validateAddBackblazeRepository();
+        case "azure":
+          return this.validateAddAzureRepository();
+        case "aws":
+          return this.validateAmazonS3Repository();
+        case "genericS3":
+          return this.validateAddGenericS3Repository();
+      }
+    },
     async addBackupRepository() {
-      //// validation
+      if (!this.validateAddBackupRepository()) {
+        return;
+      }
       this.error.addBackupRepository = "";
       this.loading.addBackupRepository = true;
       const taskAction = "add-backup-repository";
@@ -427,7 +617,25 @@ export default {
 <style scoped lang="scss">
 @import "../../styles/carbon-utils";
 
-.min-height-card {
-  min-height: 8rem;
+.provider-card {
+  min-height: 9rem;
+  padding-right: $spacing-05;
+}
+
+.provider-card-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.provider-icon {
+  width: 3rem;
+  height: 3rem;
+  margin-bottom: $spacing-06;
+}
+
+.provider-icon img {
+  width: 100%;
+  height: 100%;
 }
 </style>
