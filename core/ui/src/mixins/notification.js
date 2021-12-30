@@ -250,14 +250,15 @@ export default {
         let toastTimeout = null;
 
         if (taskStatus === "completed") {
-          if (taskContext.action === "add-module") {
-            // completed description for add-module
-            notificationText = this.$t(
-              "software_center.instance_installed_on_node",
-              {
-                instance: taskResult.output.module_id,
-                node: taskContext.extra.node,
-              }
+          if (
+            taskContext.extra.completion &&
+            taskContext.extra.completion.i18nString
+          ) {
+            // custom completion description
+
+            notificationText = this.getCustomCompletionText(
+              taskContext.extra,
+              taskResult.output
             );
           } else {
             notificationText = this.$t("task.completed");
@@ -351,6 +352,23 @@ export default {
 
         this.putNotification(notification);
       }
+    },
+    getCustomCompletionText(taskExtra, taskOutput) {
+      let i18nParams = {};
+
+      if (taskExtra.completion.extraTextParams) {
+        for (const param of taskExtra.completion.extraTextParams) {
+          i18nParams[param] = taskExtra[param];
+        }
+      }
+
+      if (taskExtra.completion.outputTextParams) {
+        for (const param of taskExtra.completion.outputTextParams) {
+          i18nParams[param] = taskOutput[param];
+        }
+      }
+
+      return this.$t(taskExtra.completion.i18nString, i18nParams);
     },
     shouldShowNotification(notification, taskStatus) {
       // - show notification unless isNotificationHidden is true

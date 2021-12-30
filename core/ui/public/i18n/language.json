@@ -282,7 +282,7 @@
     "repository_password_helper": "Enter password if repository has already been configured in the past",
     "not_backed_up": "Not backed up",
     "search_instances": "Search instances...",
-    "not_backed_up_instances_selected": "Not backed up instances are currently selected",
+    "not_backed_up_instances_selected": "Instances not backed up are currently selected",
     "repo_password_tooltip": "This password is used to encrypt data in the repository. Store this password in a safe place, otherwise you won't be able to restore your backed up data",
     "run_backup_now": "Run backup now",
     "last_backup": "Last backup",
@@ -291,7 +291,8 @@
     "total_size": "Total size",
     "total_file_count": "Total file count",
     "completed": "Completed",
-    "duration": "Duration"
+    "duration": "Duration",
+    "backup_completed_successfully": "{backupName} completed successfully"
   },
   "settings": {
     "title": "Settings",
@@ -352,7 +353,7 @@
     "choose_node_for_installation": "Select the node where {app} will be installed",
     "about_to_install_app": "{app} will be installed on the system",
     "installing_on_node": "Installing on node {node}",
-    "instance_installed_on_node": "{instance} installed on node {node}",
+    "instance_installed_on_node": "{module_id} installed on node {node}",
     "app_instances": "{app} instances",
     "app_instances_no_name": "App instances",
     "app_uninstallation": "{app} uninstallation",

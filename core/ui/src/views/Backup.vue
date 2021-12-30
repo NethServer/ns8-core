@@ -648,9 +648,6 @@ export default {
     },
     showEditRepoModal(repo) {
       this.currentRepo = repo;
-
-      console.log("showEditRepoModal", repo); ////
-
       this.isShownEditRepoModal = true;
     },
     hideEditRepoModal() {
@@ -664,8 +661,9 @@ export default {
       this.q.isShownCreateBackupModal = false;
     },
     showEditBackupModal(backup) {
-      console.log("showEditRepoModal", backup); ////
+      console.log("showEditBackupModal", backup); ////
 
+      this.currentBackup = backup;
       this.isShownEditBackupModal = true;
     },
     showDeleteBackupModal(backup) {
@@ -676,17 +674,6 @@ export default {
       this.isShownDeleteBackupModal = false;
     },
     showBackupDetailsModal(backup) {
-      //// remove status mock
-      // for (const instance of backup.instances) {
-      //   instance.status = {
-      //     total_size: 4053660,
-      //     total_file_count: 21744,
-      //     start: 1640097808,
-      //     end: 1640097815,
-      //     success: true,
-      //   };
-      // }
-
       this.currentBackup = backup;
       this.isShownBackupDetailsModal = true;
     },
@@ -779,6 +766,11 @@ export default {
           extra: {
             title: this.$t("action." + taskAction),
             description: this.$t("common.processing"),
+            backupName: backup.name,
+            completion: {
+              i18nString: "backup.backup_completed_successfully",
+              extraTextParams: ["backupName"],
+            },
           },
         })
       );
@@ -790,10 +782,8 @@ export default {
         return;
       }
     },
-    runBackupCompleted(taskContext, taskResult) {
-      console.log("runBackupCompleted", taskResult); ////
-
-      //// include details in success notification?
+    runBackupCompleted() {
+      this.listBackups();
     },
   },
 };

@@ -194,6 +194,11 @@ export default {
               node: this.selectedNode.id,
             }),
             node: this.selectedNode.id,
+            completion: {
+              i18nString: "software_center.instance_installed_on_node",
+              extraTextParams: ["node"],
+              outputTextParams: ["module_id"],
+            },
           },
         })
       );

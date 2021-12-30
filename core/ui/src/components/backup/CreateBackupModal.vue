@@ -234,6 +234,11 @@ export default {
       for (let repo of this.internalRepositories) {
         repo.selected = false;
       }
+
+      // preselect if there is only one repo
+      if (this.internalRepositories.length == 1) {
+        this.internalRepositories[0].selected = true;
+      }
     },
     nextStep() {
       if (this.isNextStepDisabled) {
@@ -258,6 +263,12 @@ export default {
       for (const repo of internalRepositories) {
         repo.selected = false;
       }
+
+      // preselect if there is only one repo
+      if (internalRepositories.length == 1) {
+        internalRepositories[0].selected = true;
+      }
+
       this.internalRepositories = internalRepositories;
     },
     validateAddBackup() {

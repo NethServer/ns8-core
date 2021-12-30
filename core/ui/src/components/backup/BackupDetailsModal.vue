@@ -91,7 +91,8 @@
                     <span v-if="instance.status.end">
                       <!-- //// format time and duration -->
                       {{
-                        (instance.status.end * 1000) | date("yyyy-MM-dd HH:mm")
+                        (instance.status.end * 1000)
+                          | date("yyyy-MM-dd HH:mm:ss")
                       }}
                     </span>
                     <span v-else>-</span>
