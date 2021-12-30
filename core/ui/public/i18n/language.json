@@ -218,7 +218,8 @@
     "remove-backup-repository": "Remove backup repository",
     "remove-backup": "Remove backup",
     "alter-backup-repository": "Alter backup repository",
-    "run-backup": "Run backup"
+    "run-backup": "Run backup",
+    "alter-backup": "Alter backup"
   },
   "network": {
     "title": "Network"
@@ -292,7 +293,8 @@
     "total_file_count": "Total file count",
     "completed": "Completed",
     "duration": "Duration",
-    "backup_completed_successfully": "{backupName} completed successfully"
+    "backup_completed_successfully": "{backupName} completed successfully",
+    "edit_backup": "Edit backup"
   },
   "settings": {
     "title": "Settings",

@@ -27,7 +27,7 @@
                 :footerIcon="Chip20"
                 @click="deselectOtherNodes(node)"
                 :class="[
-                  'same-height-tile',
+                  'min-height-card',
                   { 'disabled-node': node.unavailable },
                 ]"
                 :disabled="node.unavailable"
@@ -650,11 +650,6 @@ export default {
 
 <style scoped lang="scss">
 @import "../styles/carbon-utils";
-
-.same-height-tile {
-  min-height: 9rem;
-}
-
 .mg-top {
   margin-top: $spacing-05;
 }

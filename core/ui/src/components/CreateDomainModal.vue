@@ -20,7 +20,7 @@
                 v-model="isInternalSelected"
                 value="locationValue"
                 @click="isExternalSelected = false"
-                class="same-height-tile"
+                class="min-height-card"
               >
                 <h6 class="mg-bottom-md">
                   {{ $t("domains.internal") }}
@@ -37,7 +37,7 @@
                 v-model="isExternalSelected"
                 value="locationValue"
                 @click="isInternalSelected = false"
-                class="same-height-tile"
+                class="min-height-card"
               >
                 <h6 class="mg-bottom-md">
                   {{ $t("domains.external") }}
@@ -63,7 +63,7 @@
                 v-model="isOpenLdapSelected"
                 value="instanceValue"
                 @click="isSambaSelected = false"
-                class="same-height-tile"
+                class="min-height-card"
                 disabled
               >
                 <h6 class="mg-bottom-md">
@@ -78,7 +78,7 @@
                 v-model="isSambaSelected"
                 value="instanceValue"
                 @click="isOpenLdapSelected = false"
-                class="same-height-tile"
+                class="min-height-card"
               >
                 <h6 class="mg-bottom-md">
                   {{ $t("domains.samba") }}
@@ -213,7 +213,7 @@
                 value="nodeValue"
                 :footerIcon="Chip20"
                 @click="deselectOtherNodes(node)"
-                class="same-height-tile"
+                class="min-height-card"
               >
                 <h6>
                   {{
@@ -1138,11 +1138,6 @@ export default {
 
 <style scoped lang="scss">
 @import "../styles/carbon-utils";
-
-.same-height-tile {
-  min-height: 9rem;
-}
-
 .node-id {
   margin-top: $spacing-05;
 }

@@ -406,6 +406,15 @@
       @hide="hideCreateBackupModal"
       @backupCreated="listBackupRepositories"
     />
+    <!-- edit backup modal -->
+    <EditBackupModal
+      :isShown="isShownEditBackupModal"
+      :backup="currentBackup"
+      :repositories="repositories"
+      :instancesNotBackedUp="unconfiguredInstances"
+      @hide="hideEditBackupModal"
+      @backupAltered="listBackupRepositories"
+    />
     <!-- delete repository modal -->
     <NsDangerDeleteModal
       :isShown="isShownDeleteBackupModal"
@@ -476,6 +485,7 @@ import CreateBackupModal from "@/components/backup/CreateBackupModal";
 import RepoDetailsModal from "@/components/backup/RepoDetailsModal";
 import BackupDetailsModal from "@/components/backup/BackupDetailsModal";
 import EditRepositoryModal from "@/components/backup/EditRepositoryModal";
+import EditBackupModal from "@/components/backup/EditBackupModal";
 import to from "await-to-js";
 
 export default {
@@ -486,6 +496,7 @@ export default {
     RepoDetailsModal,
     BackupDetailsModal,
     EditRepositoryModal,
+    EditBackupModal,
   },
   mixins: [TaskService, UtilService, IconService, QueryParamService],
   pageTitle() {
@@ -611,7 +622,11 @@ export default {
       this.unconfiguredInstances = taskResult.output.unconfigured_instances;
       let backups = taskResult.output.backups;
 
-      console.log("listBackupsCompleted", backups, this.unconfiguredInstances); ////
+      console.log("listBackupsCompleted, backups", backups); ////
+      console.log(
+        "listBackupsCompleted, unconfiguredInstances",
+        this.unconfiguredInstances
+      ); ////
 
       // repository name
 
@@ -665,6 +680,9 @@ export default {
 
       this.currentBackup = backup;
       this.isShownEditBackupModal = true;
+    },
+    hideEditBackupModal() {
+      this.isShownEditBackupModal = false;
     },
     showDeleteBackupModal(backup) {
       this.currentBackup = backup;
@@ -755,7 +773,12 @@ export default {
       const taskAction = "run-backup";
 
       // register to task completion
+      this.$root.$off(taskAction + "-completed");
       this.$root.$once(taskAction + "-completed", this.runBackupCompleted);
+
+      // register to task error
+      this.$root.$off(taskAction + "-aborted");
+      this.$root.$once(taskAction + "-aborted", this.runBackupAborted);
 
       const res = await to(
         this.createClusterTask({
@@ -783,6 +806,9 @@ export default {
       }
     },
     runBackupCompleted() {
+      this.listBackups();
+    },
+    runBackupAborted() {
       this.listBackups();
     },
   },

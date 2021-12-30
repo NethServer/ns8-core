@@ -106,7 +106,7 @@ export default {
       required: true,
     },
     selection: {
-      type: String,
+      type: [String, Array],
       default: "",
     },
     instancesNotBackedUp: {
@@ -179,23 +179,38 @@ export default {
         this.selectedList.push(id);
       }
     },
+    selectInstances() {
+      // select specific instances (used by EditBackupModal)
+
+      this.selectedList = [];
+
+      for (const instance of this.selection) {
+        //// align list-installed-modules and list-backups (id vs module_id)
+        this.selectedList.push(instance.module_id);
+      }
+    },
     getInstanceLabel(instance) {
       return instance.ui_name
         ? instance.ui_name + " (" + instance.id + ")"
         : instance.id;
     },
     updateSelection() {
-      switch (this.selection) {
-        case "all":
-          this.selectAll();
-          break;
-        case "none":
-        case "":
-          this.selectNone();
-          break;
-        case "notBackedUp":
-          this.selectNotBackedUp();
-          break;
+      if (typeof this.selection == "string") {
+        switch (this.selection) {
+          case "all":
+            this.selectAll();
+            break;
+          case "none":
+          case "":
+            this.selectNone();
+            break;
+          case "notBackedUp":
+            this.selectNotBackedUp();
+            break;
+        }
+      } else {
+        // selection is an array of instances
+        this.selectInstances();
       }
     },
     searchInstance() {

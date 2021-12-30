@@ -5,7 +5,7 @@
     @modal-hidden="$emit('hide')"
     class="wizard-modal"
   >
-    <template slot="title">{{ $t("backup.schedule_backup") }}</template>
+    <template slot="title">{{ $t("backup.edit_backup") }}</template>
     <template slot="content">
       <cv-form @submit.prevent="nextStep">
         <div v-show="step == 'instances'">
@@ -14,7 +14,7 @@
           </div>
           <InstanceSelector
             :instances="installedModules"
-            :selection="instanceSelection"
+            :selection="backup.instances"
             :instancesNotBackedUp="instancesNotBackedUp"
             :loading="loading.listInstalledModules"
             @select="onSelectInstances"
@@ -59,7 +59,7 @@
             :label="$t('backup.frequency')"
             v-model.trim="schedule"
             :invalid-message="$t(error.schedule)"
-            :disabled="loading.addBackup"
+            :disabled="loading.alterBackup"
             ref="schedule"
           >
           </cv-text-input>
@@ -67,7 +67,7 @@
             :label="$t('backup.retention')"
             v-model.trim="retention"
             :invalid-message="$t(error.retention)"
-            :disabled="loading.addBackup"
+            :disabled="loading.alterBackup"
             ref="retention"
           >
           </cv-text-input>
@@ -75,7 +75,7 @@
             :label="$t('backup.backup_name')"
             v-model.trim="name"
             :invalid-message="$t(error.name)"
-            :disabled="loading.addBackup"
+            :disabled="loading.alterBackup"
             ref="name"
           >
           </cv-text-input>
@@ -89,10 +89,10 @@
             <template slot="text-right">{{ $t("common.enabled") }}</template>
           </cv-toggle>
           <NsInlineNotification
-            v-if="error.addBackup"
+            v-if="error.alterBackup"
             kind="error"
-            :title="$t('action.add-backup')"
-            :description="error.addBackup"
+            :title="$t('action.alter-backup')"
+            :description="error.alterBackup"
             :showCloseButton="false"
           />
         </div>
@@ -109,7 +109,7 @@
             kind="secondary"
             :icon="ChevronLeft20"
             @click="previousStep"
-            :disabled="isFirstStep || loading.addBackup"
+            :disabled="isFirstStep || loading.alterBackup"
             type="button"
             class="wizard-button"
             >{{ $t("common.previous") }}
@@ -118,11 +118,11 @@
             kind="primary"
             :icon="ChevronRight20"
             :disabled="isNextStepDisabled"
-            :loading="loading.addBackup"
+            :loading="loading.alterBackup"
             type="submit"
             class="wizard-button"
             ref="wizardNext"
-            >{{ isLastStep ? $t("common.finish") : $t("common.next") }}
+            >{{ isLastStep ? $t("common.save") : $t("common.next") }}
           </NsButton>
         </div>
       </cv-form>
@@ -137,7 +137,7 @@ import InstanceSelector from "@/components/backup/InstanceSelector";
 import _cloneDeep from "lodash/cloneDeep";
 
 export default {
-  name: "CreateBackupModal",
+  name: "EditBackupModal",
   components: { InstanceSelector },
   mixins: [UtilService, TaskService, IconService],
   props: {
@@ -149,13 +149,13 @@ export default {
       type: Array,
       required: true,
     },
-    instanceSelection: {
-      type: String,
-      default: "",
-    },
     instancesNotBackedUp: {
       type: Array,
       default: () => [],
+    },
+    backup: {
+      type: Object,
+      required: true,
     },
   },
   data() {
@@ -164,13 +164,13 @@ export default {
       steps: ["instances", "repository", "settings"],
       instances: [],
       name: "",
-      schedule: "daily", ////
-      retention: "7d", ////
-      enabled: true,
+      schedule: "", ////
+      retention: "", ////
+      enabled: false,
       installedModules: [],
       internalRepositories: [],
       loading: {
-        addBackup: false,
+        alterBackup: false,
         listInstalledModules: true,
       },
       error: {
@@ -178,7 +178,7 @@ export default {
         repository: "",
         schedule: "",
         retention: "",
-        addBackup: "",
+        alterBackup: "",
         listInstalledModules: "",
       },
     };
@@ -195,7 +195,7 @@ export default {
     },
     isNextStepDisabled() {
       return (
-        this.loading.addBackup ||
+        this.loading.alterBackup ||
         !this.installedModules.length ||
         (this.step == "instances" && !this.instances.length) ||
         (this.step == "repository" && !this.selectedRepo)
@@ -210,7 +210,6 @@ export default {
       if (this.isShown) {
         // show first step
         this.step = this.steps[0];
-        this.clearFields();
 
         // load installed moudules
         this.listInstalledModules();
@@ -219,34 +218,25 @@ export default {
     repositories: function () {
       this.updateInternalRepositories();
     },
+    backup: function () {
+      this.name = this.backup.name;
+      this.schedule = this.backup.schedule;
+      this.retention = this.backup.retention;
+      this.enabled = this.backup.enabled;
+      this.updateInternalRepositories();
+    },
   },
   created() {
     this.updateInternalRepositories();
   },
   methods: {
-    clearFields() {
-      this.instances = [];
-      this.name = "";
-      this.schedule = "daily"; ////
-      this.retention = "7d"; ////
-      this.enabled = true;
-
-      for (let repo of this.internalRepositories) {
-        repo.selected = false;
-      }
-
-      // preselect if there is only one repo
-      if (this.internalRepositories.length == 1) {
-        this.internalRepositories[0].selected = true;
-      }
-    },
     nextStep() {
       if (this.isNextStepDisabled) {
         return;
       }
 
       if (this.isLastStep) {
-        this.addBackup();
+        this.alterBackup();
       } else {
         this.step = this.steps[this.stepIndex + 1];
       }
@@ -261,17 +251,16 @@ export default {
       let internalRepositories = _cloneDeep(this.repositories);
 
       for (const repo of internalRepositories) {
-        repo.selected = false;
-      }
-
-      // preselect if there is only one repo
-      if (internalRepositories.length == 1) {
-        internalRepositories[0].selected = true;
+        if (this.backup.repository == repo.id) {
+          repo.selected = true;
+        } else {
+          repo.selected = false;
+        }
       }
 
       this.internalRepositories = internalRepositories;
     },
-    validateAddBackup() {
+    validateAlterBackup() {
       this.clearErrors(this);
       let isValidationOk = true;
 
@@ -288,31 +277,32 @@ export default {
 
       return isValidationOk;
     },
-    async addBackup() {
-      if (!this.validateAddBackup()) {
+    async alterBackup() {
+      if (!this.validateAlterBackup()) {
         return;
       }
-      this.error.addBackup = "";
-      this.loading.addBackup = true;
-      const taskAction = "add-backup";
+      this.error.alterBackup = "";
+      this.loading.alterBackup = true;
+      const taskAction = "alter-backup";
 
       // register to task validation
       this.$root.$off(taskAction + "-validation-failed");
       this.$root.$once(
         taskAction + "-validation-failed",
-        this.addBackupValidationFailed
+        this.alterBackupValidationFailed
       );
 
       // register to task completion
       this.$root.$off(taskAction + "-completed");
-      this.$root.$once(taskAction + "-completed", this.addBackupCompleted);
+      this.$root.$once(taskAction + "-completed", this.alterBackupCompleted);
 
       const res = await to(
         this.createClusterTask({
           action: taskAction,
           data: {
+            id: this.backup.id,
             name: this.name,
-            repository: this.selectedRepo.id,
+            // repository: this.selectedRepo.id, //// ?
             schedule: this.schedule,
             retention: this.retention,
             instances: this.instances,
@@ -328,12 +318,12 @@ export default {
 
       if (err) {
         console.error(`error creating task ${taskAction}`, err);
-        this.error.addBackup = this.getErrorMessage(err);
+        this.error.alterBackup = this.getErrorMessage(err);
         return;
       }
     },
-    addBackupValidationFailed(validationErrors) {
-      this.loading.addBackup = false;
+    alterBackupValidationFailed(validationErrors) {
+      this.loading.alterBackup = false;
       let focusAlreadySet = false;
 
       for (const validationError of validationErrors) {
@@ -348,16 +338,14 @@ export default {
         }
       }
     },
-    addBackupCompleted(taskContext, taskResult) {
-      console.log("addBackupCompleted", taskResult.output); ////
-
-      this.loading.addBackup = false;
+    alterBackupCompleted() {
+      this.loading.alterBackup = false;
 
       // hide modal
       this.$emit("hide");
 
       // reload backup configuration
-      this.$emit("backupCreated");
+      this.$emit("backupAltered");
     },
     async listInstalledModules() {
       this.loading.listInstalledModules = true;
@@ -398,11 +386,7 @@ export default {
           apps.push(instance);
         }
       }
-
       apps.sort(this.sortModuleInstances());
-
-      console.log("appsss", apps); ////
-
       this.installedModules = apps;
     },
     onSelectInstances(instances) {
