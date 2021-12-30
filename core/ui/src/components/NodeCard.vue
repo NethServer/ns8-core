@@ -240,7 +240,7 @@ export default {
 }
 
 .label {
-  padding-right: 0.5rem;
+  padding-right: 0.75rem;
   font-weight: bold;
   text-align: right;
   padding-bottom: 0.5rem;

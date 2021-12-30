@@ -59,7 +59,6 @@
                     :label="$t('login.password')"
                     type="password"
                     v-model="password"
-                    class="bx--password-input mg-bottom-md"
                     :placeholder="$t('login.password_placeholder')"
                     :invalid-message="error.password"
                     :password-hide-label="$t('password.hide_password')"

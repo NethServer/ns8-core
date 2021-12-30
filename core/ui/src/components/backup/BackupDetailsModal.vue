@@ -63,7 +63,7 @@
                 <h5 class="last-backup">{{ $t("backup.last_backup") }}</h5>
                 <div class="mg-bottom-sm">
                   <span class="setting-label">
-                    {{ $t("backup.result") }}
+                    {{ $t("backup.status") }}
                   </span>
                   <span class="setting-value">
                     <span
@@ -175,7 +175,7 @@ export default {
 
 .setting-label {
   display: inline-block;
-  margin-right: $spacing-03;
+  margin-right: $spacing-04;
   font-weight: bold;
 }
 

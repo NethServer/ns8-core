@@ -130,12 +130,14 @@
             </cv-text-input>
             <cv-text-input
               :label="$t('backup.b2_account_key')"
+              type="password"
               v-model.trim="backblaze.b2_account_key"
-              :invalid-message="$t(error.backblaze.b2_account_key)"
               :disabled="loading.addBackupRepository"
+              :invalid-message="$t(error.backblaze.b2_account_key)"
+              :password-hide-label="$t('password.hide_password')"
+              :password-show-label="$t('password.show_password')"
               ref="b2_account_key"
-            >
-            </cv-text-input>
+            ></cv-text-input>
           </template>
           <!-- amazon s3 -->
           <template v-if="isAmazonS3Selected">
@@ -155,14 +157,26 @@
               ref="aws_default_region"
             >
             </cv-text-input>
-            <cv-text-input
+            <!-- //// remove -->
+            <!-- <cv-text-input
               :label="$t('backup.aws_secret_access_key')"
               v-model.trim="aws.aws_secret_access_key"
               :invalid-message="$t(error.aws.aws_secret_access_key)"
               :disabled="loading.addBackupRepository"
               ref="aws_secret_access_key"
             >
-            </cv-text-input>
+            </cv-text-input> -->
+
+            <cv-text-input
+              :label="$t('backup.aws_secret_access_key')"
+              type="password"
+              v-model.trim="aws.aws_secret_access_key"
+              :disabled="loading.addBackupRepository"
+              :invalid-message="$t(error.aws.aws_secret_access_key)"
+              :password-hide-label="$t('password.hide_password')"
+              :password-show-label="$t('password.show_password')"
+              ref="aws_secret_access_key"
+            ></cv-text-input>
           </template>
           <!-- azure -->
           <template v-if="isAzureSelected"> azure //// </template>

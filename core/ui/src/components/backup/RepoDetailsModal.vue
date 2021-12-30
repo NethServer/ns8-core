@@ -26,9 +26,24 @@
         </div>
         <div class="mg-bottom-sm">
           <span class="setting-label">{{ $t("backup.b2_account_key") }}</span>
-          <span class="setting-value">{{
-            repository.parameters.b2_account_key
-          }}</span>
+          <cv-link @click="toggleBackblazeAccountKey">
+            {{
+              isShownBackblazeAccountKey ? $t("common.hide") : $t("common.show")
+            }}
+          </cv-link>
+          <NsCodeSnippet
+            v-if="isShownBackblazeAccountKey"
+            :copyTooltip="$t('common.copy_to_clipboard')"
+            :copy-feedback="$t('common.copied_to_clipboard')"
+            :feedback-aria-label="$t('common.copied_to_clipboard')"
+            :wrap-text="true"
+            :moreText="$t('common.show_more')"
+            :lessText="$t('common.show_less')"
+            light
+            hideExpandButton
+            class="password-snippet"
+            >{{ repository.parameters.b2_account_key }}</NsCodeSnippet
+          >
         </div>
       </template>
       <!-- amazon s3 -->
@@ -50,12 +65,27 @@
           }}</span>
         </div>
         <div class="mg-bottom-sm">
-          <span class="setting-label">{{
-            $t("backup.aws_secret_access_key")
-          }}</span>
-          <span class="setting-value">{{
-            repository.parameters.aws_secret_access_key
-          }}</span>
+          <span class="setting-label">
+            {{ $t("backup.aws_secret_access_key") }}
+          </span>
+          <cv-link @click="toggleAwsSecretAccessKey">
+            {{
+              isShownAwsSecretAccessKey ? $t("common.hide") : $t("common.show")
+            }}
+          </cv-link>
+          <NsCodeSnippet
+            v-if="isShownAwsSecretAccessKey"
+            :copyTooltip="$t('common.copy_to_clipboard')"
+            :copy-feedback="$t('common.copied_to_clipboard')"
+            :feedback-aria-label="$t('common.copied_to_clipboard')"
+            :wrap-text="true"
+            :moreText="$t('common.show_more')"
+            :lessText="$t('common.show_less')"
+            light
+            hideExpandButton
+            class="password-snippet"
+            >{{ repository.parameters.aws_secret_access_key }}</NsCodeSnippet
+          >
         </div>
       </template>
       <!-- generic s3 -->
@@ -67,7 +97,7 @@
       <!-- //// handle all providers -->
       <!-- password -->
       <div class="mg-bottom-sm">
-        <span class="setting-label password-label">
+        <span class="setting-label">
           {{ $t("backup.repository_password") }}
           <cv-tooltip
             alignment="center"
@@ -78,11 +108,11 @@
             <Information16 />
           </cv-tooltip>
         </span>
-        <cv-link @click="togglePassword" class="toggle-password">
-          {{ isPasswordShown ? $t("common.hide") : $t("common.show") }}
+        <cv-link @click="togglePassword">
+          {{ isShownRepoPassword ? $t("common.hide") : $t("common.show") }}
         </cv-link>
         <NsCodeSnippet
-          v-if="isPasswordShown"
+          v-if="isShownRepoPassword"
           :copyTooltip="$t('common.copy_to_clipboard')"
           :copy-feedback="$t('common.copied_to_clipboard')"
           :feedback-aria-label="$t('common.copied_to_clipboard')"
@@ -118,20 +148,30 @@ export default {
   },
   data() {
     return {
-      isPasswordShown: false,
+      isShownRepoPassword: false,
+      isShownAwsSecretAccessKey: false,
+      isShownBackblazeAccountKey: false,
     };
   },
   watch: {
     isShown: function () {
       if (this.isShown) {
-        // hide password
-        this.isPasswordShown = false;
+        // hide secrets
+        this.isShownRepoPassword = false;
+        this.isShownAwsSecretAccessKey = false;
+        this.isShownBackblazeAccountKey = false;
       }
     },
   },
   methods: {
     togglePassword() {
-      this.isPasswordShown = !this.isPasswordShown;
+      this.isShownRepoPassword = !this.isShownRepoPassword;
+    },
+    toggleAwsSecretAccessKey() {
+      this.isShownAwsSecretAccessKey = !this.isShownAwsSecretAccessKey;
+    },
+    toggleBackblazeAccountKey() {
+      this.isShownBackblazeAccountKey = !this.isShownBackblazeAccountKey;
     },
   },
 };
@@ -142,17 +182,13 @@ export default {
 
 .setting-label {
   display: inline-block;
-  margin-right: $spacing-03;
+  margin-right: $spacing-04;
   margin-bottom: $spacing-02;
   font-weight: bold;
 }
 
 .setting-value {
   word-wrap: break-word;
-}
-
-.password-label {
-  margin-right: $spacing-05;
 }
 
 .password-snippet {

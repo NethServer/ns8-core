@@ -882,7 +882,7 @@ export default {
 
 .setting-label {
   display: inline-block;
-  margin-right: $spacing-03;
+  margin-right: $spacing-04;
   margin-bottom: $spacing-02;
   font-weight: bold;
 }
