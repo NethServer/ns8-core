@@ -148,9 +148,6 @@ export default {
         node.selected = false;
       }
       nodes[0].selected = true;
-
-      console.log("nodes", nodes); ////
-
       this.nodes = nodes;
       this.loading.getClusterStatus = false;
     },

@@ -587,8 +587,6 @@ export default {
       }
     },
     listBackupRepositoriesCompleted(taskContext, taskResult) {
-      console.log("listBackupRepositoriesCompleted", taskResult.output); ////
-
       this.repositories = taskResult.output;
       this.loading.listBackupRepositories = false;
       this.listBackups();
@@ -676,8 +674,6 @@ export default {
       this.q.isShownCreateBackupModal = false;
     },
     showEditBackupModal(backup) {
-      console.log("showEditBackupModal", backup); ////
-
       this.currentBackup = backup;
       this.isShownEditBackupModal = true;
     },

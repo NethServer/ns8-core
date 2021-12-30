@@ -390,8 +390,6 @@ export default {
       this.installedModules = apps;
     },
     onSelectInstances(instances) {
-      console.log("onSelectInstances", instances); ////
-
       this.instances = instances;
     },
     deselectOtherRepos(repo) {

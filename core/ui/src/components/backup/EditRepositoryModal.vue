@@ -213,7 +213,6 @@ export default {
 
       for (const validationError of validationErrors) {
         const param = validationError.parameter;
-        console.log("param", param); ////
 
         // set i18n error message
         this.error[param] = "backup." + validationError.error;

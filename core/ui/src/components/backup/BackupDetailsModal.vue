@@ -89,7 +89,6 @@
                   </span>
                   <span class="setting-value">
                     <span v-if="instance.status.end">
-                      <!-- //// format time and duration -->
                       {{
                         (instance.status.end * 1000)
                           | date("yyyy-MM-dd HH:mm:ss")

@@ -157,16 +157,6 @@
               ref="aws_default_region"
             >
             </cv-text-input>
-            <!-- //// remove -->
-            <!-- <cv-text-input
-              :label="$t('backup.aws_secret_access_key')"
-              v-model.trim="aws.aws_secret_access_key"
-              :invalid-message="$t(error.aws.aws_secret_access_key)"
-              :disabled="loading.addBackupRepository"
-              ref="aws_secret_access_key"
-            >
-            </cv-text-input> -->
-
             <cv-text-input
               :label="$t('backup.aws_secret_access_key')"
               type="password"
@@ -243,7 +233,7 @@
             type="submit"
             class="wizard-button"
             ref="wizardNext"
-            >{{ isLastStep ? $t("common.finish") : $t("common.next") }}
+            >{{ isLastStep ? $t("backup.add_repository") : $t("common.next") }}
           </NsButton>
         </div>
       </cv-form>
@@ -601,7 +591,6 @@ export default {
 
       for (const validationError of validationErrors) {
         const param = validationError.parameter;
-        console.log("param", param); ////
 
         // set i18n error message
         this.error[param] = "backup." + validationError.error;
@@ -612,9 +601,7 @@ export default {
         }
       }
     },
-    addBackupRepositoryCompleted(taskContext, taskResult) {
-      console.log("addBackupRepositoryCompleted", taskResult.output); ////
-
+    addBackupRepositoryCompleted() {
       this.loading.addBackupRepository = false;
       this.$emit("repoCreated");
       this.$emit("hide");

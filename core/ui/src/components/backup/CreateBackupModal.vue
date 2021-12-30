@@ -122,7 +122,7 @@
             type="submit"
             class="wizard-button"
             ref="wizardNext"
-            >{{ isLastStep ? $t("common.finish") : $t("common.next") }}
+            >{{ isLastStep ? $t("backup.schedule_backup") : $t("common.next") }}
           </NsButton>
         </div>
       </cv-form>
@@ -398,16 +398,10 @@ export default {
           apps.push(instance);
         }
       }
-
       apps.sort(this.sortModuleInstances());
-
-      console.log("appsss", apps); ////
-
       this.installedModules = apps;
     },
     onSelectInstances(instances) {
-      console.log("onSelectInstances", instances); ////
-
       this.instances = instances;
     },
     deselectOtherRepos(repo) {
