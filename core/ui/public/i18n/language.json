@@ -294,7 +294,8 @@
     "completed": "Completed",
     "duration": "Duration",
     "backup_completed_successfully": "{backupName} completed successfully",
-    "edit_backup": "Edit backup"
+    "edit_backup": "Edit backup",
+    "backup_to_repository": "Backup to {repository}"
   },
   "settings": {
     "title": "Settings",

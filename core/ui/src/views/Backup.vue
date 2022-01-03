@@ -403,6 +403,7 @@
       :repositories="repositories"
       :instanceSelection="instanceSelection"
       :instancesNotBackedUp="unconfiguredInstances"
+      :backups="backups"
       @hide="hideCreateBackupModal"
       @backupCreated="listBackupRepositories"
     />
@@ -587,7 +588,8 @@ export default {
       }
     },
     listBackupRepositoriesCompleted(taskContext, taskResult) {
-      this.repositories = taskResult.output;
+      let repositories = taskResult.output.sort(this.sortByProperty("name"));
+      this.repositories = repositories;
       this.loading.listBackupRepositories = false;
       this.listBackups();
     },
@@ -618,7 +620,9 @@ export default {
     },
     listBackupsCompleted(taskContext, taskResult) {
       this.unconfiguredInstances = taskResult.output.unconfigured_instances;
+
       let backups = taskResult.output.backups;
+      backups.sort(this.sortByProperty("name"));
 
       console.log("listBackupsCompleted, backups", backups); ////
       console.log(

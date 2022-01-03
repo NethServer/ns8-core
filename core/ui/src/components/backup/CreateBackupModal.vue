@@ -74,6 +74,7 @@
           <cv-text-input
             :label="$t('backup.backup_name')"
             v-model.trim="name"
+            :helper-text="$t('backup.backup_name_helper')"
             :invalid-message="$t(error.name)"
             :disabled="loading.addBackup"
             ref="name"
@@ -157,6 +158,10 @@ export default {
       type: Array,
       default: () => [],
     },
+    backups: {
+      type: Array,
+      required: true,
+    },
   },
   data() {
     return {
@@ -218,6 +223,34 @@ export default {
     },
     repositories: function () {
       this.updateInternalRepositories();
+    },
+    step: function () {
+      if (this.step == "settings") {
+        // prefill backup name
+
+        let backupName = this.$t("backup.backup_to_repository", {
+          repository: this.selectedRepo.name,
+        });
+
+        // ensure we don't generate an already existing backup name
+        let isBackupNameDuplicated = this.backups.find(
+          (b) => b.name == backupName
+        );
+        let backupNameSuffix = 2;
+
+        while (isBackupNameDuplicated) {
+          backupName = this.$t("backup.backup_to_repository", {
+            repository: `${this.selectedRepo.name} (${backupNameSuffix})`,
+          });
+
+          isBackupNameDuplicated = this.backups.find(
+            (b) => b.name == backupName
+          );
+          backupNameSuffix++;
+        }
+
+        this.name = backupName;
+      }
     },
   },
   created() {
