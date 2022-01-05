@@ -56,7 +56,7 @@
         </div>
         <div v-show="step == 'settings'">
           <cv-text-input
-            :label="$t('backup.frequency')"
+            :label="$t('backup.schedule')"
             v-model.trim="schedule"
             :invalid-message="$t(error.schedule)"
             :disabled="loading.alterBackup"
@@ -79,7 +79,7 @@
             ref="name"
           >
           </cv-text-input>
-          <cv-toggle
+          <!-- <cv-toggle ////
             :label="$t('common.status')"
             value="statusValue"
             :form-item="true"
@@ -87,7 +87,7 @@
           >
             <template slot="text-left">{{ $t("common.disabled") }}</template>
             <template slot="text-right">{{ $t("common.enabled") }}</template>
-          </cv-toggle>
+          </cv-toggle> -->
           <NsInlineNotification
             v-if="error.alterBackup"
             kind="error"
@@ -166,7 +166,7 @@ export default {
       name: "",
       schedule: "", ////
       retention: "", ////
-      enabled: false,
+      // enabled: false, ////
       installedModules: [],
       internalRepositories: [],
       loading: {
@@ -222,7 +222,7 @@ export default {
       this.name = this.backup.name;
       this.schedule = this.backup.schedule;
       this.retention = this.backup.retention;
-      this.enabled = this.backup.enabled;
+      // this.enabled = this.backup.enabled; ////
       this.updateInternalRepositories();
     },
   },
@@ -264,7 +264,7 @@ export default {
       this.clearErrors(this);
       let isValidationOk = true;
 
-      //// todo validate frequency and retention
+      //// todo validate schedule and retention
 
       if (!this.name) {
         this.error.name = "common.required";
@@ -306,7 +306,7 @@ export default {
             schedule: this.schedule,
             retention: this.retention,
             instances: this.instances,
-            enabled: this.enabled,
+            enabled: this.backup.enabled, ////
           },
           extra: {
             title: this.$t("action." + taskAction),

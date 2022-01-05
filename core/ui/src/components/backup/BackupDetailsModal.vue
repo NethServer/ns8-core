@@ -11,14 +11,13 @@
         <span class="setting-value">{{ backup.repoName }}</span>
       </div>
       <div class="mg-bottom-sm">
-        <!-- //// format schedule/frequency -->
-        <span class="setting-label">{{ $t("backup.frequency") }}</span>
+        <!-- //// format schedule/schedule -->
+        <span class="setting-label">{{ $t("backup.schedule") }}</span>
         <span class="setting-value">{{ backup.schedule }}</span>
       </div>
       <div class="mg-bottom-sm">
         <span class="setting-label">{{ $t("backup.retention") }}</span>
-        <!-- //// format retention -->
-        <span class="setting-value">{{ backup.retention }}</span>
+        <span class="setting-value">{{ retentionDescription }}</span>
       </div>
       <div class="mg-bottom-sm instances">
         <span class="setting-label">{{
@@ -165,6 +164,24 @@ export default {
       // sort function mutate the array, need to make a shallow copy. Cannot mutate backup.instances because it's a prop
       const backupInstances = [...this.backup.instances];
       return backupInstances.sort(this.sortByProperty("module_id"));
+    },
+    retentionDescription() {
+      if (this.backup) {
+        const num = this.backup.retention.slice(0, -1);
+        const period = this.backup.retention.slice(-1);
+
+        switch (period) {
+          case "d":
+            return this.$tc("calendar.num_days_c", num, { num });
+          case "m":
+            return this.$tc("calendar.num_months_c", num, { num });
+          case "y":
+            return this.$tc("calendar.num_years_c", num, { num });
+          default:
+            return this.backup.retention;
+        }
+      }
+      return null;
     },
   },
 };

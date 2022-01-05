@@ -606,11 +606,6 @@ export default {
       this.$emit("repoCreated");
       this.$emit("hide");
     },
-    toggleAccordion(ev) {
-      this.$refs.accordion.state.map(
-        (item, index) => index === ev.changedIndex
-      );
-    },
   },
 };
 </script>

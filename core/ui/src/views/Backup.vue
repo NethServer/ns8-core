@@ -219,6 +219,26 @@
             />
           </div>
         </div>
+        <div v-if="error.runBackup" class="bx--row">
+          <div class="bx--col">
+            <NsInlineNotification
+              kind="error"
+              :title="$t('action.run-backup')"
+              :description="error.runBackup"
+              :showCloseButton="false"
+            />
+          </div>
+        </div>
+        <div v-if="error.alterBackup" class="bx--row">
+          <div class="bx--col">
+            <NsInlineNotification
+              kind="error"
+              :title="$t('action.alter-backup')"
+              :description="error.alterBackup"
+              :showCloseButton="false"
+            />
+          </div>
+        </div>
         <!-- empty state backups -->
         <div v-if="!backups.length" class="bx--row">
           <div class="bx--col">
@@ -268,6 +288,16 @@
                     <cv-overflow-menu-item @click="runBackup(backup)">
                       {{ $t("backup.run_backup_now") }}
                     </cv-overflow-menu-item>
+                    <cv-overflow-menu-item
+                      @click="toggleBackupStatus(backup)"
+                      :disabled="loading.alterBackup"
+                    >
+                      {{
+                        backup.enabled
+                          ? $t("backup.disable_backup")
+                          : $t("backup.enable_backup")
+                      }}
+                    </cv-overflow-menu-item>
                     <cv-overflow-menu-item @click="showEditBackupModal(backup)">
                       {{ $t("common.edit") }}
                     </cv-overflow-menu-item>
@@ -310,12 +340,13 @@
                         }}</span>
                       </div>
                     </div>
-                    <!-- <div class="row icon-and-text"> ////
+                    <div class="row icon-and-text">
                       <NsSvg :svg="Time20" class="icon" />
-                      <span :title="$t('backup.frequency')">{{
+                      <!-- //// format schedule -->
+                      <span :title="$t('backup.schedule')">{{
                         $t("backup." + backup.schedule)
                       }}</span>
-                    </div> -->
+                    </div>
                     <div class="row">
                       <cv-tag
                         v-if="backup.enabled"
@@ -405,7 +436,7 @@
       :instancesNotBackedUp="unconfiguredInstances"
       :backups="backups"
       @hide="hideCreateBackupModal"
-      @backupCreated="listBackupRepositories"
+      @backupCreated="onBackupCreated"
     />
     <!-- edit backup modal -->
     <EditBackupModal
@@ -530,6 +561,7 @@ export default {
       loading: {
         listBackupRepositories: true,
         listBackups: true,
+        alterBackup: false,
       },
       error: {
         listBackupRepositories: "",
@@ -537,6 +569,7 @@ export default {
         removeBackupRepository: "",
         removeBackup: "",
         runBackup: "",
+        alterBackup: "",
       },
     };
   },
@@ -809,6 +842,56 @@ export default {
       this.listBackups();
     },
     runBackupAborted() {
+      this.listBackups();
+    },
+    onBackupCreated(runBackupOnFinish, createdBackup) {
+      this.listBackupRepositories();
+
+      if (runBackupOnFinish) {
+        // run created backup now
+        this.runBackup(createdBackup);
+      }
+    },
+    async toggleBackupStatus(backup) {
+      this.error.alterBackup = "";
+      this.loading.alterBackup = true;
+      const taskAction = "alter-backup";
+      const taskDescription = backup.enabled
+        ? this.$t("backup.disabling_backup", { backupName: backup.name })
+        : this.$t("backup.enabling_backup", { backupName: backup.name });
+
+      // register to task completion
+      this.$root.$off(taskAction + "-completed");
+      this.$root.$once(taskAction + "-completed", this.alterBackupCompleted);
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          data: {
+            id: backup.id,
+            name: backup.name,
+            // repository: backup.repository, //// ?
+            schedule: backup.schedule,
+            retention: backup.retention,
+            instances: backup.instances.map((i) => i.module_id),
+            enabled: !backup.enabled,
+          },
+          extra: {
+            title: this.$t("action." + taskAction),
+            description: taskDescription,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.alterBackup = this.getErrorMessage(err);
+        return;
+      }
+    },
+    alterBackupCompleted() {
+      this.loading.alterBackup = false;
       this.listBackups();
     },
   },

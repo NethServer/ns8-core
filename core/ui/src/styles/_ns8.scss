@@ -54,12 +54,20 @@ a {
   margin-top: $spacing-05 !important;
 }
 
+.mg-bottom-sm {
+  margin-bottom: $spacing-03 !important;
+}
+
 .mg-bottom-md {
   margin-bottom: $spacing-05 !important;
 }
 
-.mg-bottom-sm {
-  margin-bottom: $spacing-03 !important;
+.mg-bottom-lg {
+  margin-bottom: $spacing-06 !important;
+}
+
+.mg-bottom-xlg {
+  margin-bottom: $spacing-07 !important;
 }
 
 @media (max-width: $breakpoint-medium) {
@@ -376,10 +384,16 @@ a {
 // form
 .cv-text-input,
 .cv-form .bx--form-item,
+.cv-form .cv-select,
 .cv-form .cv-multi-select,
 .ns-password-input,
 .cv-combo-box {
   margin-bottom: $spacing-05;
+}
+
+.hide-label .bx--label {
+  // hide label for controls with mandatory label (e.g. CvSelect)
+  visibility: hidden;
 }
 // end form
 
@@ -597,6 +611,7 @@ a {
   // limit form fields width on large devices
   .bx--text-input,
   .bx--text-input__field-wrapper,
+  .cv-select,
   .cv-multi-select,
   .cv-combo-box {
     max-width: 38rem;

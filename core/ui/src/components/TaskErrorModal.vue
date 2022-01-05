@@ -99,11 +99,6 @@ export default {
       // use a delay to show a smooth animation for modal closing
       setTimeout(() => this.setTaskErrorToShowInStore(null), 300);
     },
-    toggleAccordion(ev) {
-      this.$refs.accordion.state.map(
-        (item, index) => index === ev.changedIndex
-      );
-    },
     showCopyClipboardHint() {
       setTimeout(() => {
         const isCopyClipboardHintShown = this.getFromStorage(
