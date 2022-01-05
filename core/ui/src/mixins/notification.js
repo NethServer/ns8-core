@@ -389,14 +389,24 @@ export default {
         action = { type: "taskError" };
       } else {
         // task completed successfully
-        switch (taskContext.action) {
-          case "add-module":
-            actionLabel = this.$t("task.configure");
-            action = {
-              type: "changeRoute",
-              url: `/apps/${taskResult.output.module_id}?page=settings`,
-            };
-            break;
+        if (
+          taskContext.extra.completion &&
+          taskContext.extra.completion.action
+        ) {
+          // action is defined inside extra
+          action = taskContext.extra.completion.action;
+          actionLabel = taskContext.extra.completion.actionLabel;
+        } else {
+          // special actions
+          switch (taskContext.action) {
+            case "add-module":
+              actionLabel = this.$t("task.configure");
+              action = {
+                type: "changeRoute",
+                url: `/apps/${taskResult.output.module_id}?page=settings`,
+              };
+              break;
+          }
         }
       }
       return [actionLabel, action];

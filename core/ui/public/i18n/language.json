@@ -285,7 +285,7 @@
     "app_instances_not_backed_up_description": "{numInstances} app instance has no backup configured | {numInstances} app instances have no backup configured",
     "disabled_backups": "Disabled backups",
     "disabled_backups_description": "There is {num} backup disabled | There are {num} backups disabled",
-    "repository_password_helper": "Enter password if repository has already been configured in the past",
+    "repository_password_helper": "Enter password if repository has already been configured previously",
     "not_backed_up": "Not backed up",
     "search_instances": "Search instances...",
     "not_backed_up_instances_selected": "Instances not backed up are currently selected",
@@ -325,7 +325,9 @@
     "enabling_backup": "Enabling {backupName}",
     "disabling_backup": "Disabling {backupName}",
     "retention_tooltip": "How long should the backup be stored before automatic deletion?",
-    "default_repository_name": "{provider} repo"
+    "default_repository_name": "{provider} repo",
+    "schedule_backup_for_instance": "Create a backup schedule for {instance}",
+    "schedule_action": "Schedule"
   },
   "calendar": {
     "days": "Days",

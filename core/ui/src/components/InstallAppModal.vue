@@ -84,10 +84,11 @@
 <script>
 import { UtilService, TaskService, IconService } from "@nethserver/ns8-ui-lib";
 import to from "await-to-js";
+import NotificationService from "@/mixins/notification";
 
 export default {
   name: "InstallAppModal",
-  mixins: [UtilService, TaskService, IconService],
+  mixins: [UtilService, TaskService, IconService, NotificationService],
   props: {
     isShown: Boolean,
     app: { type: [Object, null] },
@@ -213,11 +214,33 @@ export default {
       // emit event to close modal
       this.$emit("close");
     },
-    addModuleCompleted() {
+    addModuleCompleted(taskContext, taskResult) {
+      const moduleId = taskResult.output.module_id;
+
       this.$emit("installationCompleted");
 
       // show new app in app drawer
       this.$root.$emit("reloadAppDrawer");
+
+      // backup notification
+
+      setTimeout(() => {
+        //// todo: check if app is eligible for backup (i.e. not samba, traefik...)
+
+        const notification = {
+          title: this.$t("backup.schedule_backup"),
+          description: this.$t("backup.schedule_backup_for_instance", {
+            instance: moduleId,
+          }),
+          type: "info",
+          actionLabel: this.$t("backup.schedule_action"),
+          action: {
+            type: "changeRoute",
+            url: `/backup`,
+          },
+        };
+        this.createNotification(notification);
+      }, 30000);
     },
     deselectOtherNodes(node) {
       for (let n of this.nodes) {
