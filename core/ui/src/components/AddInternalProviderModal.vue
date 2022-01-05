@@ -12,7 +12,7 @@
         <div class="mg-bottom-md">
           {{ $t("domains.choose_node_for_account_provider_installation") }}
         </div>
-        <div class="bx--grid">
+        <div class="bx--grid no-padding">
           <div class="bx--row">
             <div
               v-for="(node, index) in nodes"

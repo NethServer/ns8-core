@@ -27,7 +27,7 @@
               })
             }}
           </div>
-          <div class="bx--grid bx--grid--full-width nodes mg-bottom-md">
+          <div class="bx--grid nodes mg-bottom-md no-padding">
             <div class="bx--row">
               <div
                 v-for="(node, index) in nodes"
@@ -143,6 +143,9 @@ export default {
     getClusterStatusCompleted(taskContext, taskResult) {
       const clusterStatus = taskResult.output;
       let nodes = clusterStatus.nodes.sort(this.sortByProperty("id"));
+
+      //// remove mock
+      // nodes.push({ id: 2, local: false, ui_name: "" }); ////
 
       for (const node of nodes) {
         node.selected = false;
