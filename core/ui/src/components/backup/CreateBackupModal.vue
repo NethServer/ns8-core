@@ -589,7 +589,7 @@ export default {
       if (this.step == "settings") {
         // prefill backup name
 
-        let backupName = this.$t("backup.backup_to_repository", {
+        let backupName = this.$t("backup.default_backup_name", {
           repository: this.selectedRepo.name,
         });
 
@@ -600,9 +600,10 @@ export default {
         let backupNameSuffix = 2;
 
         while (isBackupNameDuplicated) {
-          backupName = this.$t("backup.backup_to_repository", {
-            repository: `${this.selectedRepo.name} (${backupNameSuffix})`,
-          });
+          backupName =
+            this.$t("backup.default_backup_name", {
+              repository: `${this.selectedRepo.name}`,
+            }) + ` (${backupNameSuffix})`;
 
           isBackupNameDuplicated = this.backups.find(
             (b) => b.name == backupName

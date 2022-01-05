@@ -253,6 +253,10 @@ export default {
       type: Boolean,
       default: true,
     },
+    repositories: {
+      type: Array,
+      required: true,
+    },
   },
   data() {
     return {
@@ -333,6 +337,35 @@ export default {
         // show first step
         this.step = this.steps[0];
         this.clearFields();
+      }
+    },
+    step: function () {
+      if (this.step == "settings") {
+        // prefill repository name
+
+        let repoName = this.$t("backup.default_repository_name", {
+          provider: this.getProviderShortName(),
+        });
+
+        // ensure we don't generate an already existing repo name
+        let isRepoNameDuplicated = this.repositories.find(
+          (b) => b.name == repoName
+        );
+        let repoNameSuffix = 2;
+
+        while (isRepoNameDuplicated) {
+          repoName =
+            this.$t("backup.default_repository_name", {
+              provider: `${this.getProviderShortName()}`,
+            }) + ` (${repoNameSuffix})`;
+
+          isRepoNameDuplicated = this.repositories.find(
+            (b) => b.name == repoName
+          );
+          repoNameSuffix++;
+        }
+
+        this.name = repoName;
       }
     },
   },
@@ -605,6 +638,9 @@ export default {
       this.loading.addBackupRepository = false;
       this.$emit("repoCreated");
       this.$emit("hide");
+    },
+    getProviderShortName() {
+      return this.$t(`backup.${this.selectedProvider}_short`);
     },
   },
 };

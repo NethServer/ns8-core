@@ -425,6 +425,7 @@
     <!-- add repository modal -->
     <AddRepositoryModal
       :isShown="q.isShownAddRepoModal"
+      :repositories="repositories"
       @hide="hideAddRepoModal"
       @repoCreated="listBackupRepositories"
     />
