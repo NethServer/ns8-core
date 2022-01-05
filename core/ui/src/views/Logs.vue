@@ -37,7 +37,11 @@
                 :placeholder="time24HourPlaceholder"
                 :form-item="true"
                 class="interval-time"
-                :invalid-message="error.startTime"
+                :invalid-message="
+                  time24HourPattern.test(startTime)
+                    ? error.startTime
+                    : $t('error.invalid_24h_pattern')
+                "
               >
               </cv-time-picker>
             </div>
@@ -59,7 +63,11 @@
                 :placeholder="time24HourPlaceholder"
                 :form-item="true"
                 class="interval-time"
-                :invalid-message="error.endTime"
+                :invalid-message="
+                  time24HourPattern.test(endTime)
+                    ? error.endTime
+                    : $t('error.invalid_24h_pattern')
+                "
               >
               </cv-time-picker>
             </div>
