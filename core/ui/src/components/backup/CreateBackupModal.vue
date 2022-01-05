@@ -5,7 +5,9 @@
     @modal-hidden="$emit('hide')"
     class="wizard-modal"
   >
-    <template slot="title">{{ $t("backup.schedule_backup") }}</template>
+    <template slot="title">{{
+      isEditing ? $t("backup.edit_backup") : $t("backup.schedule_backup")
+    }}</template>
     <template slot="content">
       <cv-form @submit.prevent="nextStep">
         <div v-show="step == 'instances'">
@@ -14,7 +16,7 @@
           </div>
           <InstanceSelector
             :instances="installedModules"
-            :selection="instanceSelection"
+            :selection="isEditing ? backup.instances : instanceSelection"
             :instancesNotBackedUp="instancesNotBackedUp"
             :loading="loading.listInstalledModules"
             @select="onSelectInstances"
@@ -62,7 +64,7 @@
                 <cv-select
                   v-model="schedule.interval"
                   :label="$t('backup.schedule')"
-                  :disabled="loading.addBackup"
+                  :disabled="loading.addBackup || loading.alterBackup"
                   :invalid-message="$t(error.schedule)"
                   class="schedule-interval"
                 >
@@ -94,7 +96,7 @@
                   type="number"
                   min="0"
                   max="59"
-                  :disabled="loading.addBackup"
+                  :disabled="loading.addBackup || loading.alterBackup"
                   ref="schedule-minute"
                 >
                 </cv-text-input>
@@ -125,7 +127,7 @@
                   <cv-select
                     v-model="schedule.weekDay"
                     :label="$t('backup.on')"
-                    :disabled="loading.addBackup"
+                    :disabled="loading.addBackup || loading.alterBackup"
                   >
                     <cv-select-option value="monday">
                       {{ $t("calendar.monday") }}
@@ -176,7 +178,7 @@
                     type="number"
                     min="1"
                     max="31"
-                    :disabled="loading.addBackup"
+                    :disabled="loading.addBackup || loading.alterBackup"
                   >
                   </cv-text-input>
                 </div>
@@ -206,7 +208,7 @@
                   v-model.trim="schedule.custom"
                   :label="$t('backup.calendar_event_expression')"
                   :invalid-message="$t(error.schedule)"
-                  :disabled="loading.addBackup"
+                  :disabled="loading.addBackup || loading.alterBackup"
                   tooltipAlignment="center"
                   tooltipDirection="bottom"
                   ref="schedule-custom"
@@ -304,7 +306,7 @@
                 type="number"
                 min="1"
                 :invalid-message="$t(error.retention)"
-                :disabled="loading.addBackup"
+                :disabled="loading.addBackup || loading.alterBackup"
                 tooltipAlignment="end"
                 tooltipDirection="right"
                 ref="retention"
@@ -318,7 +320,7 @@
               <cv-select
                 v-model="retention.period"
                 label="hidden"
-                :disabled="loading.addBackup"
+                :disabled="loading.addBackup || loading.alterBackup"
                 class="hide-label"
               >
                 <cv-select-option value="d">
@@ -340,7 +342,7 @@
             v-model.trim="name"
             :helper-text="$t('backup.backup_name_helper')"
             :invalid-message="$t(error.name)"
-            :disabled="loading.addBackup"
+            :disabled="loading.addBackup || loading.alterBackup"
             class="mg-bottom-xlg"
             ref="name"
           >
@@ -350,7 +352,7 @@
             value="statusValue"
             :form-item="true"
             v-model="enabled"
-            :disabled="loading.addBackup"
+            :disabled="loading.addBackup || loading.alterBackup"
           >
             <template slot="text-left">{{ $t("common.disabled") }}</template>
             <template slot="text-right">{{ $t("common.enabled") }}</template>
@@ -359,7 +361,7 @@
           <cv-checkbox
             :label="$t('backup.run_backup_now')"
             v-model="runBackupOnFinish"
-            :disabled="loading.addBackup"
+            :disabled="loading.addBackup || loading.alterBackup"
             value="checkRunBackupOnFinish"
           />
           <NsInlineNotification
@@ -367,6 +369,13 @@
             kind="error"
             :title="$t('action.add-backup')"
             :description="error.addBackup"
+            :showCloseButton="false"
+          />
+          <NsInlineNotification
+            v-if="error.alterBackup"
+            kind="error"
+            :title="$t('action.alter-backup')"
+            :description="error.alterBackup"
             :showCloseButton="false"
           />
         </div>
@@ -396,7 +405,7 @@
             type="submit"
             class="wizard-button"
             ref="wizardNext"
-            >{{ isLastStep ? $t("backup.schedule_backup") : $t("common.next") }}
+            >{{ nextButtonLabel }}
           </NsButton>
         </div>
       </cv-form>
@@ -421,6 +430,10 @@ export default {
       type: Boolean,
       default: true,
     },
+    isEditing: {
+      type: Boolean,
+      default: false,
+    },
     repositories: {
       type: Array,
       required: true,
@@ -432,6 +445,10 @@ export default {
     instancesNotBackedUp: {
       type: Array,
       default: () => [],
+    },
+    backup: {
+      type: Object,
+      required: true,
     },
     backups: {
       type: Array,
@@ -462,6 +479,7 @@ export default {
       runBackupOnFinish: false,
       loading: {
         addBackup: false,
+        alterBackup: false,
         listInstalledModules: true,
       },
       error: {
@@ -470,6 +488,7 @@ export default {
         schedule: "",
         retention: "",
         addBackup: "",
+        alterBackup: "",
         listInstalledModules: "",
       },
     };
@@ -487,10 +506,22 @@ export default {
     isNextStepDisabled() {
       return (
         this.loading.addBackup ||
+        this.loading.alterBackup ||
         !this.installedModules.length ||
         (this.step == "instances" && !this.instances.length) ||
         (this.step == "repository" && !this.selectedRepo)
       );
+    },
+    nextButtonLabel() {
+      if (this.isLastStep) {
+        if (this.isEditing) {
+          return this.$t("common.save");
+        } else {
+          return this.$t("backup.schedule_backup");
+        }
+      } else {
+        return this.$t("common.next");
+      }
     },
     selectedRepo() {
       return this.internalRepositories.find((r) => r.selected);
@@ -542,7 +573,10 @@ export default {
       if (this.isShown) {
         // show first step
         this.step = this.steps[0];
-        this.clearFields();
+
+        if (!this.isEditing) {
+          this.clearFields();
+        }
 
         // load installed moudules
         this.listInstalledModules();
@@ -579,6 +613,16 @@ export default {
         this.name = backupName;
       }
     },
+    backup: function () {
+      this.name = this.backup.name;
+      this.schedule = this.backup.schedule;
+      this.retention = {
+        value: this.backup.retention.slice(0, -1),
+        period: this.backup.retention.slice(-1),
+      };
+      // this.enabled = this.backup.enabled; ////
+      this.updateInternalRepositories();
+    },
   },
   created() {
     this.updateInternalRepositories();
@@ -609,7 +653,11 @@ export default {
       }
 
       if (this.isLastStep) {
-        this.addBackup();
+        if (this.isEditing) {
+          this.alterBackup();
+        } else {
+          this.addBackup();
+        }
       } else {
         this.step = this.steps[this.stepIndex + 1];
       }
@@ -623,18 +671,30 @@ export default {
       // deep copy (needed to avoid reactivity issues)
       let internalRepositories = _cloneDeep(this.repositories);
 
-      for (const repo of internalRepositories) {
-        repo.selected = false;
-      }
+      if (this.isEditing) {
+        // edit backup
+        for (const repo of internalRepositories) {
+          if (this.backup.repository == repo.id) {
+            repo.selected = true;
+          } else {
+            repo.selected = false;
+          }
+        }
+      } else {
+        // create backup
+        for (const repo of internalRepositories) {
+          repo.selected = false;
+        }
 
-      // preselect if there is only one repo
-      if (internalRepositories.length == 1) {
-        internalRepositories[0].selected = true;
+        // preselect if there is only one repo
+        if (internalRepositories.length == 1) {
+          internalRepositories[0].selected = true;
+        }
       }
 
       this.internalRepositories = internalRepositories;
     },
-    validateAddBackup() {
+    validateBackup() {
       this.clearErrors(this);
       let isValidationOk = true;
 
@@ -652,7 +712,7 @@ export default {
       return isValidationOk;
     },
     async addBackup() {
-      if (!this.validateAddBackup()) {
+      if (!this.validateBackup()) {
         return;
       }
       this.error.addBackup = "";
@@ -731,6 +791,76 @@ export default {
 
       // reload backup configuration
       this.$emit("backupCreated", runBackupOnFinish, createdBackup);
+    },
+    async alterBackup() {
+      if (!this.validateBackup()) {
+        return;
+      }
+      this.error.alterBackup = "";
+      this.loading.alterBackup = true;
+      const taskAction = "alter-backup";
+
+      // register to task validation
+      this.$root.$off(taskAction + "-validation-failed");
+      this.$root.$once(
+        taskAction + "-validation-failed",
+        this.alterBackupValidationFailed
+      );
+
+      // register to task completion
+      this.$root.$off(taskAction + "-completed");
+      this.$root.$once(taskAction + "-completed", this.alterBackupCompleted);
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          data: {
+            id: this.backup.id,
+            name: this.name,
+            // repository: this.selectedRepo.id, //// ?
+            schedule: this.schedule,
+            retention: this.retention,
+            instances: this.instances,
+            enabled: this.backup.enabled, ////
+          },
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.alterBackup = this.getErrorMessage(err);
+        return;
+      }
+    },
+    alterBackupValidationFailed(validationErrors) {
+      this.loading.alterBackup = false;
+      let focusAlreadySet = false;
+
+      for (const validationError of validationErrors) {
+        const param = validationError.parameter;
+
+        // set i18n error message
+        this.error[param] = "backup." + validationError.error;
+
+        if (!focusAlreadySet) {
+          this.focusElement(param);
+          focusAlreadySet = true;
+        }
+      }
+    },
+    alterBackupCompleted() {
+      this.loading.alterBackup = false;
+
+      // hide modal
+      this.$emit("hide");
+
+      // reload backup configuration
+      this.$emit("backupAltered");
     },
     async listInstalledModules() {
       this.loading.listInstalledModules = true;

@@ -166,7 +166,7 @@ export default {
       return backupInstances.sort(this.sortByProperty("module_id"));
     },
     retentionDescription() {
-      if (this.backup) {
+      if (this.backup && this.backup.retention) {
         const num = this.backup.retention.slice(0, -1);
         const period = this.backup.retention.slice(-1);
 

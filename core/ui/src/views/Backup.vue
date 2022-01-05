@@ -430,21 +430,15 @@
     />
     <!-- create backup modal -->
     <CreateBackupModal
-      :isShown="q.isShownCreateBackupModal"
+      :isShown="isShownCreateBackupModal"
+      :isEditing="isEditingBackup"
       :repositories="repositories"
       :instanceSelection="instanceSelection"
       :instancesNotBackedUp="unconfiguredInstances"
+      :backup="currentBackup"
       :backups="backups"
       @hide="hideCreateBackupModal"
       @backupCreated="onBackupCreated"
-    />
-    <!-- edit backup modal -->
-    <EditBackupModal
-      :isShown="isShownEditBackupModal"
-      :backup="currentBackup"
-      :repositories="repositories"
-      :instancesNotBackedUp="unconfiguredInstances"
-      @hide="hideEditBackupModal"
       @backupAltered="listBackupRepositories"
     />
     <!-- delete repository modal -->
@@ -517,7 +511,6 @@ import CreateBackupModal from "@/components/backup/CreateBackupModal";
 import RepoDetailsModal from "@/components/backup/RepoDetailsModal";
 import BackupDetailsModal from "@/components/backup/BackupDetailsModal";
 import EditRepositoryModal from "@/components/backup/EditRepositoryModal";
-import EditBackupModal from "@/components/backup/EditBackupModal";
 import to from "await-to-js";
 
 export default {
@@ -528,7 +521,6 @@ export default {
     RepoDetailsModal,
     BackupDetailsModal,
     EditRepositoryModal,
-    EditBackupModal,
   },
   mixins: [TaskService, UtilService, IconService, QueryParamService],
   pageTitle() {
@@ -538,18 +530,18 @@ export default {
     return {
       q: {
         isShownAddRepoModal: false,
-        isShownCreateBackupModal: false,
       },
+      isShownCreateBackupModal: false,
       isShownDeleteRepoModal: false,
       isShownRepoDetailsModal: false,
       isShownEditRepoModal: false,
-      isShownEditBackupModal: false,
       isShownDeleteBackupModal: false,
       isShownBackupDetailsModal: false,
       repositories: [],
       backups: [],
       unconfiguredInstances: [],
       instanceSelection: "",
+      isEditingBackup: false,
       currentRepo: {
         name: "",
         password: "",
@@ -705,17 +697,16 @@ export default {
     },
     showCreateBackupModal(instanceSelection = "") {
       this.instanceSelection = instanceSelection;
-      this.q.isShownCreateBackupModal = true;
+      this.isEditingBackup = false;
+      this.isShownCreateBackupModal = true;
     },
     hideCreateBackupModal() {
-      this.q.isShownCreateBackupModal = false;
+      this.isShownCreateBackupModal = false;
     },
     showEditBackupModal(backup) {
       this.currentBackup = backup;
-      this.isShownEditBackupModal = true;
-    },
-    hideEditBackupModal() {
-      this.isShownEditBackupModal = false;
+      this.isEditingBackup = true;
+      this.isShownCreateBackupModal = true;
     },
     showDeleteBackupModal(backup) {
       this.currentBackup = backup;
