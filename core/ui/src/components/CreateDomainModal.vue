@@ -11,7 +11,7 @@
         <div class="mg-bottom-md">
           {{ $t("domains.select_domain_location") }}
         </div>
-        <div class="bx--grid">
+        <div class="bx--grid no-padding">
           <div class="bx--row">
             <div class="bx--col-md-4">
               <NsTile
@@ -54,7 +54,7 @@
         <div class="mg-bottom-md">
           {{ $t("domains.select_prodiver_module") }}
         </div>
-        <div class="bx--grid">
+        <div class="bx--grid no-padding">
           <div class="bx--row">
             <div class="bx--col-md-4">
               <NsTile

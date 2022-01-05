@@ -70,14 +70,23 @@
               <span class="setting-label">{{
                 $t("domains.bind_password")
               }}</span>
-              <span class="setting-value">{{
-                isShownBindPassword ? domain.bind_password : "********"
-              }}</span>
-              <cv-link @click="toggleBindPassword" class="toggle-bind-password"
-                >{{
+              <cv-link @click="toggleBindPassword">
+                {{
                   isShownBindPassword ? $t("common.hide") : $t("common.show")
                 }}
               </cv-link>
+              <NsCodeSnippet
+                v-if="isShownBindPassword"
+                :copyTooltip="$t('common.copy_to_clipboard')"
+                :copy-feedback="$t('common.copied_to_clipboard')"
+                :feedback-aria-label="$t('common.copied_to_clipboard')"
+                :wrap-text="true"
+                :moreText="$t('common.show_more')"
+                :lessText="$t('common.show_less')"
+                hideExpandButton
+                class="password-snippet"
+                >{{ domain.bind_password }}</NsCodeSnippet
+              >
             </div>
             <div class="mg-bottom-md">
               <span class="setting-label">{{ $t("domains.tls") }}</span>
@@ -891,7 +900,7 @@ export default {
   word-wrap: break-word;
 }
 
-.toggle-bind-password {
-  margin-left: $spacing-03;
+.password-snippet {
+  margin-bottom: $spacing-07;
 }
 </style>
