@@ -33,7 +33,7 @@ data = {
     "retention": request['retention'],
     "name": request['name'],
     "schedule": request['schedule'],
-    "schedule_hint": request.get("schedule_hint", ""),
+    "schedule_hint": json.dumps(request.get("schedule_hint", {})),
     "enabled": "1" if request['enabled'] else "",
 }
 

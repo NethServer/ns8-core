@@ -11,7 +11,7 @@
                     "name": "Daily",
                     "repository": "48ce000a-79b7-5fe6-8558-177fd70c27b4",
                     "schedule": "daily",
-                    "schedule_hint": "DAILY",
+                    "schedule_hint": {},
                     "retention": "7d",
                     "instances": [
                         {
@@ -123,8 +123,8 @@
                 },
                 "schedule_hint": {
                     "title": "Schedule expression hint for UI",
-                    "description": "Store arbitrary string to ease parsing of `schedule` value",
-                    "type": "string"
+                    "description": "Store arbitrary object to ease parsing of `schedule` value",
+                    "type": "object"
                 },
                 "retention": {
                     "title": "Backup retention time",
