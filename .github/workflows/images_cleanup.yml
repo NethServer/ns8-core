@@ -58,6 +58,7 @@ jobs:
           echo "::set-output name=list::${modules_list}"
   purge-image:
     needs: ns8
+    if: ${{ needs.ns8.outputs.modules != '[]' }}
     strategy:
       fail-fast: false
       matrix:
