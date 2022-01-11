@@ -20,6 +20,7 @@ const sharedProps = {
   totalSizeLabel: "Total size",
   totalFileCountLabel: "Total file count",
   backupDisabledLabel: "Disabled",
+  coreContext: {}, // coreContext is required
 };
 
 const sharedRepositories = [

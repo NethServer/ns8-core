@@ -565,6 +565,12 @@ a {
 }
 // end colors for NsStatusCard and NsSystemdServiceCard
 
+.tooltip-with-text-trigger {
+  font-size: 100% !important;
+  text-decoration: underline;
+  color: $interactive-01;
+}
+
 // hint tooltip
 .hint {
   width: 0;
