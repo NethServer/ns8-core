@@ -37,6 +37,7 @@ for kbackup in rdb.scan_iter('cluster/backup/*'):
         "name": battrs.pop("name"),
         "repository": battrs.pop("repository"),
         "schedule": battrs.pop("schedule"),
+        "schedule_hint": battrs.pop("schedule_hint", ""),
         "retention": battrs.pop("retention"),
         "instances": [],
         "enabled": bool(battrs.pop("enabled")),

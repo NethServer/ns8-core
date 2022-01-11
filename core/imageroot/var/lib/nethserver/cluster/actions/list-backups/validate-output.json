@@ -11,6 +11,7 @@
                     "name": "Daily",
                     "repository": "48ce000a-79b7-5fe6-8558-177fd70c27b4",
                     "schedule": "daily",
+                    "schedule_hint": "DAILY",
                     "retention": "7d",
                     "instances": [
                         {
