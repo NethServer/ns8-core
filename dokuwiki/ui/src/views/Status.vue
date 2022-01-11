@@ -48,6 +48,31 @@
           ></cv-skeleton-text>
         </cv-tile>
       </div>
+      <div class="bx--col-md-4 bx--col-max-4">
+        <NsBackupCard
+          :title="ns8Core.$t('backup.title')"
+          :noBackupMessage="ns8Core.$t('backup.no_backup_configured')"
+          :scheduleBackupLabel="ns8Core.$t('backup.configure')"
+          :goToBackupLabel="ns8Core.$t('backup.go_to_backup')"
+          :repositoryLabel="ns8Core.$t('backup.repository')"
+          :statusLabel="ns8Core.$t('common.status')"
+          :statusSuccessLabel="ns8Core.$t('common.success')"
+          :statusNotRunLabel="ns8Core.$t('backup.backup_has_not_run_yet')"
+          :statusErrorLabel="ns8Core.$t('error.error')"
+          :completedLabel="ns8Core.$t('backup.completed')"
+          :durationLabel="ns8Core.$t('backup.duration')"
+          :totalSizeLabel="ns8Core.$t('backup.total_size')"
+          :totalFileCountLabel="ns8Core.$t('backup.total_file_count')"
+          :backupDisabledLabel="ns8Core.$t('common.disabled')"
+          :moduleId="instanceName"
+          :moduleUiName="instanceLabel"
+          :repositories="backupRepositories"
+          :backups="backups"
+          :loading="loading.listBackupRepositories || loading.listBackups"
+          :coreContext="ns8Core"
+          light
+        />
+      </div>
     </div>
     <!-- services -->
     <div class="bx--row">
@@ -222,8 +247,12 @@ export default {
       isRedirectChecked: false,
       redirectTimeout: 0,
       status: null,
+      backupRepositories: [],
+      backups: [],
       loading: {
         status: true,
+        listBackupRepositories: true,
+        listBackups: true,
       },
       error: {
         getStatus: "",
@@ -231,7 +260,7 @@ export default {
     };
   },
   computed: {
-    ...mapState(["instanceName", "ns8Core", "appName"]),
+    ...mapState(["instanceName", "instanceLabel", "ns8Core", "appName"]),
     failedServices() {
       if (!this.status) {
         return 0;
@@ -257,6 +286,7 @@ export default {
   },
   created() {
     this.getStatus();
+    this.listBackupRepositories();
   },
   beforeRouteEnter(to, from, next) {
     next((vm) => {
@@ -310,6 +340,89 @@ export default {
     getStatusCompleted(taskContext, taskResult) {
       this.status = taskResult.output;
       this.loading.status = false;
+    },
+    async listBackupRepositories() {
+      this.loading.listBackupRepositories = true;
+      this.error.listBackupRepositories = "";
+      const taskAction = "list-backup-repositories";
+
+      // register to task completion
+      this.ns8Core.$root.$once(
+        taskAction + "-completed",
+        this.listBackupRepositoriesCompleted
+      );
+
+      const res = await to(
+        this.createClusterTaskForApp({
+          action: taskAction,
+          extra: {
+            title: this.ns8Core.$t("action." + taskAction),
+            isNotificationHidden: true,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.listBackupRepositories = this.getErrorMessage(err);
+        return;
+      }
+    },
+    listBackupRepositoriesCompleted(taskContext, taskResult) {
+      let backupRepositories = taskResult.output.sort(
+        this.sortByProperty("name")
+      );
+      this.backupRepositories = backupRepositories;
+      this.loading.listBackupRepositories = false;
+      this.listBackups();
+    },
+    async listBackups() {
+      this.loading.listBackups = true;
+      this.error.listBackups = "";
+      const taskAction = "list-backups";
+
+      // register to task completion
+      this.ns8Core.$root.$once(
+        taskAction + "-completed",
+        this.listBackupsCompleted
+      );
+
+      const res = await to(
+        this.createClusterTaskForApp({
+          action: taskAction,
+          extra: {
+            title: this.ns8Core.$t("action." + taskAction),
+            isNotificationHidden: true,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.listBackups = this.getErrorMessage(err);
+        return;
+      }
+    },
+    listBackupsCompleted(taskContext, taskResult) {
+      let backups = taskResult.output.backups;
+      backups.sort(this.sortByProperty("name"));
+
+      // repository name
+
+      for (const backup of backups) {
+        const repo = this.backupRepositories.find(
+          (r) => r.id == backup.repository
+        );
+
+        if (repo) {
+          backup.repoName = repo.name;
+        }
+      }
+      this.backups = backups;
+
+      this.loading.listBackups = false;
     },
   },
 };

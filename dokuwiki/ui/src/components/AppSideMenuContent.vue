@@ -80,6 +80,7 @@ export default {
       return this.getPage() === page;
     },
     goToPath(path) {
+      //// remove method
       if (this.ns8Core.$route.fullPath != path) {
         this.ns8Core.$router.push(path);
       }

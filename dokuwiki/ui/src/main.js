@@ -23,6 +23,18 @@ Vue.mixin(PageTitleService);
 // i18n
 import VueI18n from "vue-i18n";
 
+import VueDateFns from "vue-date-fns";
+Vue.use(VueDateFns);
+
+import LottieAnimation from "lottie-web-vue";
+Vue.use(LottieAnimation);
+
+// filters
+import { Filters } from "@nethserver/ns8-ui-lib";
+for (const f in Filters) {
+  Vue.filter(f, Filters[f]);
+}
+
 Vue.use(VueI18n);
 const i18n = new VueI18n();
 const messages = require("../public/i18n/language.json");
