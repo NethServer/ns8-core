@@ -50,8 +50,8 @@ for mbackup in rdb.scan_iter('module/*/backups'):
         if bid in backups:
             mid = mbackup.removeprefix('module/').removesuffix('/backups')
             module_uuid = rdb.hget(f"module/{mid}/environment", "MODULE_UUID")
-            status = rdb.hgetall(f"module/{mid}/backup_status/{bid}")
-            if status:
+            status = rdb.hgetall(f"module/{mid}/backup_status/{bid}") or None
+            if not status is None:
                 for k in status.keys():
                     status[k] = int(status[k])
                 status["success"] = status["errors"] == 0
