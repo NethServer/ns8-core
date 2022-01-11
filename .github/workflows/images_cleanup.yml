@@ -1,0 +1,92 @@
+name: 'Clean up containers from GHR'
+
+on:
+  pull_request:
+    types: [closed]
+  workflow_dispatch:
+env:
+  NS8_MODULES: "core dokuwiki ldapproxy loki netdata nextcloud promtail redis samba samba-dc traefik"
+
+jobs:
+  ns8:
+    name: Find NS8 cluster informations
+    runs-on: ubuntu-latest
+    outputs:
+      modules: ${{ steps.modules.outputs.list }}
+      tag: ${{ steps.tag.outputs.name }}
+      gh_user: ${{ steps.gh_user.outputs.name }}
+      gh_user_or_org: ${{ steps.gh_user_or_org.outputs.value }}
+    steps:
+      - id: gh_user
+        name: "Retrieve user or organization name"
+        run: |
+          echo "::set-output name=name::$(dirname ${GITHUB_REPOSITORY} | tr '[:upper:]' '[:lower:]')"
+      - id: gh_user_or_org
+        name: "Check if repo owner is a user or an organization"
+        run: |
+          resp=$(curl -s -H "Accept: application/vnd.github.v3+json" \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/orgs/${{ steps.outputs.gh_user.name }}" \
+            | jq '.message == "Not Found"' )
+          if [ "${resp}" == "true" ]; then
+            echo "::set-output name=value::users"
+          else
+            echo "::set-output name=value::orgs"
+          fi
+      - id: tag
+        name: "Retrieve the name of the containers tag"
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]
+          then
+            tag=${{ github.head_ref }}
+          else
+            tag="${{ github.ref_name }}"
+          fi
+          echo "::set-output name=name::${tag}"
+      - id: modules
+        name: "Retrieve the list of the PR's containers"
+        run: |
+          modules_list='[]'
+          for module in ${NS8_MODULES}
+          do
+            res=$(podman search --limit 150 --list-tags   --format json   ghcr.io/${{ steps.gh_user.outputs.name }}/${module} | jq 'any(.[].Tags[]; . == "${{ steps.tag.outputs.name }}")')
+            if [ "$res" = "true" ]
+            then
+              modules_list=$(echo "${modules_list}"  | jq -c --arg m ${module} ' . + [$m]')
+            fi
+          done
+          echo "::set-output name=list::${modules_list}"
+  purge-image:
+    needs: ns8
+    strategy:
+      fail-fast: false
+      matrix:
+        module: ${{ fromJSON(needs.ns8.outputs.modules) }}
+    name: Remove tag from ghcr.io
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          #Check if there is more than one page
+          headers=$(curl -Isf -D - -o /dev/null -H "Accept: application/vnd.github.v3+json" \
+                                                -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+                                                "${base_url}?per_page=100")
+          last_page=$(echo "$headers" | grep '^link:' | sed -e 's/^link:.*page=//g' -e 's/>.*$//g')
+          last_page=${last_page:-1}
+
+          #Loop trough the versions list
+          for i in $(seq 1 $last_page); do
+            # check if the tag is present
+            id=$(curl -f -s -H "Accept: application/vnd.github.v3+json" \
+                            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+                            "${base_url}?per_page=100&page=${i}" \
+                            | jq '.[] | select(.metadata.container.tags[] | index("${{ needs.ns8.outputs.tag }}")) | .id')
+            if [ "${id}" != "" ]; then
+              #Remove the package version associate to the tag
+              curl -f -v  -H "Accept: application/vnd.github.v3+json" \
+                         -H "Authorization: token ${{ secrets.IMAGES_CLEANUP_TOKEN }}" \
+                         -X DELETE "${base_url}/${id}"
+                         exit 0
+            fi
+          done
+        env:
+          base_url: "https://api.github.com/${{ needs.ns8.outputs.gh_user_or_org }}/${{ needs.ns8.outputs.gh_user }}/packages/container/${{ matrix.module }}/versions"
