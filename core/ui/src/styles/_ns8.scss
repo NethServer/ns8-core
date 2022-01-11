@@ -115,14 +115,14 @@ a {
   margin-bottom: $spacing-07;
 }
 
-.cv-inline-notification {
-  margin-bottom: $spacing-07;
-}
-
 @media (max-width: $breakpoint-medium) {
   .cv-tile {
     margin-bottom: $spacing-05;
   }
+}
+
+.cv-inline-notification {
+  margin-bottom: $spacing-07;
 }
 
 .title-description {

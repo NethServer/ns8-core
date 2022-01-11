@@ -64,7 +64,7 @@
                   <span class="setting-label">
                     {{ $t("backup.status") }}
                   </span>
-                  <span class="setting-value">
+                  <span class="setting-value status">
                     <span
                       v-if="instance.status.success == true"
                       class="ns-success-dark-bg"
@@ -214,6 +214,10 @@ export default {
 
 .last-backup {
   margin-bottom: $spacing-05;
+}
+
+.status {
+  font-weight: bold;
 }
 </style>
 

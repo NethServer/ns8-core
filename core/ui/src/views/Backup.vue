@@ -862,7 +862,6 @@ export default {
           data: {
             id: backup.id,
             name: backup.name,
-            // repository: backup.repository, //// ?
             schedule: backup.schedule,
             retention: backup.retention,
             instances: backup.instances.map((i) => i.module_id),

@@ -458,7 +458,6 @@ export default {
   data() {
     return {
       step: "",
-      steps: ["instances", "repository", "settings", "name"],
       instances: [],
       name: "",
       schedule: {
@@ -521,6 +520,14 @@ export default {
         }
       } else {
         return this.$t("common.next");
+      }
+    },
+    steps() {
+      if (this.isEditing) {
+        // cannot change repository
+        return ["instances", "settings", "name"];
+      } else {
+        return ["instances", "repository", "settings", "name"];
       }
     },
     selectedRepo() {
@@ -818,7 +825,7 @@ export default {
           data: {
             id: this.backup.id,
             name: this.name,
-            // repository: this.selectedRepo.id, //// ?
+            repository: this.backup.repository,
             schedule: this.schedule,
             retention: this.retention,
             instances: this.instances,

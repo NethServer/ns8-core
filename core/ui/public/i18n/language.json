@@ -327,7 +327,10 @@
     "retention_tooltip": "How long should the backup be stored before automatic deletion?",
     "default_repository_name": "{provider} repo",
     "schedule_backup_for_instance": "Create a backup schedule for {instance}",
-    "schedule_action": "Schedule"
+    "schedule_action": "Schedule",
+    "no_backup_configured": "No backup configured",
+    "configure": "Configure",
+    "go_to_backup": "Go to Backup"
   },
   "calendar": {
     "days": "Days",

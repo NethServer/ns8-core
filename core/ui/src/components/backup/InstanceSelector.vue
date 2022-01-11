@@ -185,8 +185,11 @@ export default {
       this.selectedList = [];
 
       for (const instance of this.selection) {
-        //// align list-installed-modules and list-backups (id vs module_id)
-        this.selectedList.push(instance.module_id);
+        // list-installed-modules and list-backups use different attributes for module id
+        const instanceId = instance.module_id
+          ? instance.module_id
+          : instance.id;
+        this.selectedList.push(instanceId);
       }
     },
     getInstanceLabel(instance) {
