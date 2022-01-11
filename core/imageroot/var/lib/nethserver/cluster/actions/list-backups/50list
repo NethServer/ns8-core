@@ -32,12 +32,17 @@ for kbackup in rdb.scan_iter('cluster/backup/*'):
     bid = kbackup.removeprefix('cluster/backup/')
     battrs = rdb.hgetall(kbackup)
 
+    try:
+        schedule_hint = json.loads(battrs.pop("schedule_hint", "{}"))
+    except:
+        schedule_hint = {}
+
     backups[bid] = {
         "id": int(bid),
         "name": battrs.pop("name"),
         "repository": battrs.pop("repository"),
         "schedule": battrs.pop("schedule"),
-        "schedule_hint": battrs.pop("schedule_hint", ""),
+        "schedule_hint": schedule_hint,
         "retention": battrs.pop("retention"),
         "instances": [],
         "enabled": bool(battrs.pop("enabled")),
