@@ -8,6 +8,7 @@
             "id": 5,
             "name": "BB daily",
             "schedule": "daily",
+            "schedule_hint": "DAILY",
             "retention": "7d",
             "instances": [
                 "dokuwiki1",
@@ -46,6 +47,11 @@
             "type": "string",
             "minLength": 1,
             "maxLength": 64
+        },
+        "schedule_hint": {
+            "title": "Schedule expression hint for UI",
+            "description": "Store arbitrary string to ease parsing of `schedule` value",
+            "type": "string"
         },
         "retention": {
             "title": "Backup retention time",
