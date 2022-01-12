@@ -127,12 +127,10 @@
                     "type": "object"
                 },
                 "retention": {
-                    "title": "Backup retention time",
-                    "description": "The string format must be comptible with Restic `--keep-within` parameter syntax",
-                    "type": "string",
-                    "pattern": "^([0-9]+[ymdh])+$",
-                    "minLength": 1,
-                    "maxLength": 16
+                    "title": "Backup retention",
+                    "description": "Number of backup snapshots to store before automatic deletion",
+                    "type": "integer",
+                    "minimum": 1
                 },
                 "name": {
                     "title": "Backup name",
