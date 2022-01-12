@@ -1,188 +1,112 @@
 <template>
-  <cv-modal
-    size="default"
-    :visible="isShown"
-    @modal-hidden="$emit('hide')"
-    class="wizard-modal"
-  >
-    <template slot="title">{{
-      isEditing ? $t("backup.edit_backup") : $t("backup.schedule_backup")
-    }}</template>
-    <template slot="content">
-      <cv-form @submit.prevent="nextStep">
-        <div v-show="step == 'instances'">
-          <div class="mg-bottom-md">
-            {{ $t("backup.choose_app_instances_to_backup") }}
+  <div class="create-backup-modal">
+    <cv-modal
+      size="default"
+      :visible="isShown"
+      @modal-hidden="$emit('hide')"
+      class="wizard-modal"
+    >
+      <template slot="title">{{
+        isEditing ? $t("backup.edit_backup") : $t("backup.schedule_backup")
+      }}</template>
+      <template slot="content">
+        <cv-form @submit.prevent="nextStep">
+          <div v-show="step == 'instances'">
+            <div class="mg-bottom-md">
+              {{ $t("backup.choose_app_instances_to_backup") }}
+            </div>
+            <InstanceSelector
+              :instances="installedModules"
+              :selection="isEditing ? backup.instances : instanceSelection"
+              :instancesNotBackedUp="instancesNotBackedUp"
+              :loading="loading.listInstalledModules"
+              @select="onSelectInstances"
+            />
           </div>
-          <InstanceSelector
-            :instances="installedModules"
-            :selection="isEditing ? backup.instances : instanceSelection"
-            :instancesNotBackedUp="instancesNotBackedUp"
-            :loading="loading.listInstalledModules"
-            @select="onSelectInstances"
-          />
-        </div>
-        <div v-show="step == 'repository'">
-          <div class="mg-bottom-md">
-            {{ $t("backup.choose_destination_repository") }}
-          </div>
-          <div class="bx--grid no-padding">
-            <div class="bx--row">
-              <div
-                v-for="repo in internalRepositories"
-                :key="'col-' + repo.id"
-                class="bx--col-md-4"
-              >
-                <NsTile
-                  :light="true"
-                  kind="selectable"
-                  :value="repo.id"
-                  :footerIcon="DataBase20"
-                  v-model="repo.selected"
-                  @click="deselectOtherRepos(repo)"
-                  class="min-height-card"
+          <div v-show="step == 'repository'">
+            <div class="mg-bottom-md">
+              {{ $t("backup.choose_destination_repository") }}
+            </div>
+            <div class="bx--grid no-padding">
+              <div class="bx--row">
+                <div
+                  v-for="repo in internalRepositories"
+                  :key="'col-' + repo.id"
+                  class="bx--col-md-4"
                 >
-                  <h6>
-                    {{ repo.name }}
-                  </h6>
-                  <div class="mg-top-md">
-                    {{ $t("backup." + repo.provider) }}
-                  </div>
-                  <div class="mg-top-sm ellipsis">
-                    {{ repo.url }}
-                  </div>
-                </NsTile>
+                  <NsTile
+                    :light="true"
+                    kind="selectable"
+                    :value="repo.id"
+                    :footerIcon="DataBase20"
+                    v-model="repo.selected"
+                    @click="deselectOtherRepos(repo)"
+                    class="min-height-card"
+                  >
+                    <h6>
+                      {{ repo.name }}
+                    </h6>
+                    <div class="mg-top-md">
+                      {{ $t("backup." + repo.provider) }}
+                    </div>
+                    <div class="mg-top-sm ellipsis">
+                      {{ repo.url }}
+                    </div>
+                  </NsTile>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-        <div v-show="step == 'settings'">
-          <div class="schedule-container bx--grid no-padding">
-            <div class="bx--row">
-              <div class="bx--col-md-2 bx--col-max-4">
-                <!-- schedule interval -->
-                <cv-select
-                  v-model="schedule.interval"
-                  :label="$t('backup.schedule')"
-                  :disabled="loading.addBackup || loading.alterBackup"
-                  :invalid-message="$t(error.schedule)"
-                  class="schedule-interval"
-                >
-                  <cv-select-option value="hourly">
-                    {{ $t("backup.hourly") }}
-                  </cv-select-option>
-                  <cv-select-option value="daily">
-                    {{ $t("backup.daily") }}
-                  </cv-select-option>
-                  <cv-select-option value="weekly">
-                    {{ $t("backup.weekly") }}
-                  </cv-select-option>
-                  <cv-select-option value="monthly">
-                    {{ $t("backup.monthly") }}
-                  </cv-select-option>
-                  <cv-select-option value="custom">
-                    {{ $t("backup.custom") }}
-                  </cv-select-option>
-                </cv-select>
-              </div>
-              <div
-                v-if="schedule.interval == 'hourly'"
-                class="bx--col-md-2 bx--col-max-4"
-              >
-                <!-- hourly schedule -->
-                <cv-text-input
-                  :label="$t('backup.minute')"
-                  v-model.trim="schedule.minute"
-                  type="number"
-                  min="0"
-                  max="59"
-                  :disabled="loading.addBackup || loading.alterBackup"
-                  ref="schedule-minute"
-                >
-                </cv-text-input>
-              </div>
-              <!-- daily schedule -->
-              <div
-                v-if="schedule.interval == 'daily'"
-                class="bx--col-md-2 bx--col-max-4"
-              >
-                <cv-time-picker
-                  :label="$t('backup.at')"
-                  :time.sync="schedule.time"
-                  ampm="24"
-                  :pattern="time24HourPatternString"
-                  :invalid-message="
-                    time24HourPattern.test(schedule.time)
-                      ? ''
-                      : $t('error.invalid_24h_pattern')
-                  "
-                  :placeholder="time24HourPlaceholder"
-                  :form-item="true"
-                >
-                </cv-time-picker>
-              </div>
-              <!-- weekly schedule -->
-              <template v-if="schedule.interval == 'weekly'">
+          <div v-show="step == 'settings'">
+            <div class="schedule-container bx--grid no-padding">
+              <div class="bx--row">
                 <div class="bx--col-md-2 bx--col-max-4">
+                  <!-- schedule interval -->
                   <cv-select
-                    v-model="schedule.weekDay"
-                    :label="$t('backup.on')"
+                    v-model="schedule.interval"
+                    :label="$t('backup.schedule')"
                     :disabled="loading.addBackup || loading.alterBackup"
+                    :invalid-message="$t(error.schedule)"
+                    class="schedule-interval"
                   >
-                    <cv-select-option value="monday">
-                      {{ $t("calendar.monday") }}
+                    <cv-select-option value="hourly">
+                      {{ $t("backup.hourly") }}
                     </cv-select-option>
-                    <cv-select-option value="tuesday">
-                      {{ $t("calendar.tuesday") }}
+                    <cv-select-option value="daily">
+                      {{ $t("backup.daily") }}
                     </cv-select-option>
-                    <cv-select-option value="wednesday">
-                      {{ $t("calendar.wednesday") }}
+                    <cv-select-option value="weekly">
+                      {{ $t("backup.weekly") }}
                     </cv-select-option>
-                    <cv-select-option value="thursday">
-                      {{ $t("calendar.thursday") }}
+                    <cv-select-option value="monthly">
+                      {{ $t("backup.monthly") }}
                     </cv-select-option>
-                    <cv-select-option value="friday">
-                      {{ $t("calendar.friday") }}
-                    </cv-select-option>
-                    <cv-select-option value="saturday">
-                      {{ $t("calendar.saturday") }}
-                    </cv-select-option>
-                    <cv-select-option value="sunday">
-                      {{ $t("calendar.sunday") }}
-                    </cv-select-option>
+                    <!-- <cv-select-option value="custom"> ////
+                      {{ $t("backup.custom") }}
+                    </cv-select-option> -->
                   </cv-select>
                 </div>
-                <div class="bx--col-md-2 bx--col-max-4">
-                  <cv-time-picker
-                    :label="$t('backup.at')"
-                    :time.sync="schedule.time"
-                    ampm="24"
-                    :pattern="time24HourPatternString"
-                    :invalid-message="
-                      time24HourPattern.test(schedule.time)
-                        ? ''
-                        : $t('error.invalid_24h_pattern')
-                    "
-                    :placeholder="time24HourPlaceholder"
-                    :form-item="true"
-                  >
-                  </cv-time-picker>
-                </div>
-              </template>
-              <!-- monthly schedule -->
-              <template v-if="schedule.interval == 'monthly'">
-                <div class="bx--col-md-2 bx--col-max-4">
+                <div
+                  v-if="schedule.interval == 'hourly'"
+                  class="bx--col-md-2 bx--col-max-4"
+                >
+                  <!-- hourly schedule -->
                   <cv-text-input
-                    :label="$t('backup.on_day')"
-                    v-model.trim="schedule.monthDay"
+                    :label="$t('backup.minute')"
+                    v-model.trim="schedule.minute"
                     type="number"
-                    min="1"
-                    max="31"
+                    min="0"
+                    max="59"
                     :disabled="loading.addBackup || loading.alterBackup"
+                    ref="schedule-minute"
                   >
                   </cv-text-input>
                 </div>
-                <div class="bx--col-md-2 bx--col-max-4">
+                <!-- daily schedule -->
+                <div
+                  v-if="schedule.interval == 'daily'"
+                  class="bx--col-md-2 bx--col-max-4"
+                >
                   <cv-time-picker
                     :label="$t('backup.at')"
                     :time.sync="schedule.time"
@@ -198,156 +122,216 @@
                   >
                   </cv-time-picker>
                 </div>
-              </template>
-              <div
-                v-if="schedule.interval == 'custom'"
-                class="bx--col-md-6 bx--col-max-12"
-              >
-                <!-- custom schedule -->
-                <NsTextInput
-                  v-model.trim="schedule.custom"
-                  :label="$t('backup.calendar_event_expression')"
-                  :invalid-message="$t(error.schedule)"
-                  :disabled="loading.addBackup || loading.alterBackup"
-                  tooltipAlignment="center"
-                  tooltipDirection="bottom"
-                  ref="schedule-custom"
+                <!-- weekly schedule -->
+                <template v-if="schedule.interval == 'weekly'">
+                  <div class="bx--col-md-2 bx--col-max-4">
+                    <cv-select
+                      v-model="schedule.weekDay"
+                      :label="$t('backup.on')"
+                      :disabled="loading.addBackup || loading.alterBackup"
+                    >
+                      <cv-select-option value="monday">
+                        {{ $t("calendar.monday") }}
+                      </cv-select-option>
+                      <cv-select-option value="tuesday">
+                        {{ $t("calendar.tuesday") }}
+                      </cv-select-option>
+                      <cv-select-option value="wednesday">
+                        {{ $t("calendar.wednesday") }}
+                      </cv-select-option>
+                      <cv-select-option value="thursday">
+                        {{ $t("calendar.thursday") }}
+                      </cv-select-option>
+                      <cv-select-option value="friday">
+                        {{ $t("calendar.friday") }}
+                      </cv-select-option>
+                      <cv-select-option value="saturday">
+                        {{ $t("calendar.saturday") }}
+                      </cv-select-option>
+                      <cv-select-option value="sunday">
+                        {{ $t("calendar.sunday") }}
+                      </cv-select-option>
+                    </cv-select>
+                  </div>
+                  <div class="bx--col-md-2 bx--col-max-4">
+                    <cv-time-picker
+                      :label="$t('backup.at')"
+                      :time.sync="schedule.time"
+                      ampm="24"
+                      :pattern="time24HourPatternString"
+                      :invalid-message="
+                        time24HourPattern.test(schedule.time)
+                          ? ''
+                          : $t('error.invalid_24h_pattern')
+                      "
+                      :placeholder="time24HourPlaceholder"
+                      :form-item="true"
+                    >
+                    </cv-time-picker>
+                  </div>
+                </template>
+                <!-- monthly schedule -->
+                <template v-if="schedule.interval == 'monthly'">
+                  <div class="bx--col-md-2 bx--col-max-4">
+                    <cv-text-input
+                      :label="$t('backup.on_day')"
+                      v-model.trim="schedule.monthDay"
+                      type="number"
+                      min="1"
+                      max="31"
+                      :disabled="loading.addBackup || loading.alterBackup"
+                    >
+                    </cv-text-input>
+                  </div>
+                  <div class="bx--col-md-2 bx--col-max-4">
+                    <cv-time-picker
+                      :label="$t('backup.at')"
+                      :time.sync="schedule.time"
+                      ampm="24"
+                      :pattern="time24HourPatternString"
+                      :invalid-message="
+                        time24HourPattern.test(schedule.time)
+                          ? ''
+                          : $t('error.invalid_24h_pattern')
+                      "
+                      :placeholder="time24HourPlaceholder"
+                      :form-item="true"
+                    >
+                    </cv-time-picker>
+                  </div>
+                </template>
+                <div
+                  v-if="schedule.interval == 'custom'"
+                  class="bx--col-md-6 bx--col-max-12"
                 >
-                  <template #tooltip>
-                    <div class="mg-bottom-sm">
-                      {{ $t("backup.custom_schedule_tooltip_description") }}
-                    </div>
-                    <div class="mg-bottom-sm">
-                      {{ $t("backup.custom_schedule_tooltip_more_info") }}
-                      <cv-link
-                        href="https://www.freedesktop.org/software/systemd/man/systemd.time.html#Calendar%20Events"
-                        target="_blank"
-                      >
-                        {{
-                          $t(
-                            "backup.custom_schedule_tooltip_systemd_time_documentation"
-                          )
-                        }}
-                      </cv-link>
-                    </div>
+                  <!-- custom schedule -->
+                  <NsTextInput
+                    v-model.trim="schedule.custom"
+                    :label="$t('backup.calendar_event_expression')"
+                    :invalid-message="$t(error.schedule)"
+                    :disabled="loading.addBackup || loading.alterBackup"
+                    tooltipAlignment="center"
+                    tooltipDirection="bottom"
+                    ref="schedule-custom"
+                  >
+                    <template #tooltip>
+                      <div class="mg-bottom-sm">
+                        {{ $t("backup.custom_schedule_tooltip_description") }}
+                      </div>
+                      <div class="mg-bottom-sm">
+                        {{ $t("backup.custom_schedule_tooltip_more_info") }}
+                        <cv-link
+                          href="https://www.freedesktop.org/software/systemd/man/systemd.time.html#Calendar%20Events"
+                          target="_blank"
+                        >
+                          {{
+                            $t(
+                              "backup.custom_schedule_tooltip_systemd_time_documentation"
+                            )
+                          }}
+                        </cv-link>
+                      </div>
+                    </template>
+                  </NsTextInput>
+                </div>
+              </div>
+              <div
+                v-if="schedule.interval !== 'custom'"
+                class="bx--row mg-bottom-xlg"
+              >
+                <!-- schedule description -->
+                <div class="bx--col schedule-description">
+                  <template v-if="schedule.interval == 'hourly'">
+                    {{
+                      schedule.minute == 0
+                        ? $t("backup.every_hour")
+                        : $tc("backup.minutes_past_the_hour", schedule.minute, {
+                            minutes: schedule.minute,
+                          })
+                    }}
                   </template>
+                  <template v-else-if="schedule.interval == 'daily'">
+                    <span v-if="time24HourPattern.test(schedule.time)">
+                      {{ $t("backup.every_day_at", { time: schedule.time }) }}
+                    </span>
+                    <span v-else>-</span>
+                  </template>
+                  <template v-else-if="schedule.interval == 'weekly'">
+                    <span v-if="time24HourPattern.test(schedule.time)">
+                      {{
+                        $t("backup.every_weekday_at_hour", {
+                          weekDay: $t("calendar." + schedule.weekDay),
+                          time: schedule.time,
+                        })
+                      }}
+                    </span>
+                    <span v-else>-</span>
+                  </template>
+                  <template v-else-if="schedule.interval == 'monthly'">
+                    <!-- show description only if time pattern is valid -->
+                    <span v-if="time24HourPattern.test(schedule.time)">
+                      {{
+                        $t("backup.every_month_at_time", {
+                          dayNum: schedule.monthDay,
+                          time: schedule.time,
+                        })
+                      }}
+                    </span>
+                    <span v-else>-</span>
+                  </template>
+                  <!-- calendar event expression -->
+                  <cv-interactive-tooltip
+                    v-if="isScheduleValid"
+                    alignment="start"
+                    direction="right"
+                    class="calendar-event-expression-tooltip"
+                  >
+                    <template slot="trigger">
+                      <Information16 />
+                    </template>
+                    <template slot="content">
+                      <h6 class="calendar-event-expression-tooltip-title">
+                        {{ $t("backup.calendar_event_expression") }}
+                      </h6>
+                      <code>{{ scheduleExpression }}</code>
+                    </template>
+                  </cv-interactive-tooltip>
+                </div>
+              </div>
+            </div>
+            <div class="bx--row">
+              <div class="bx--col-md-2 bx--col-max-4">
+                <NsTextInput
+                  :label="$t('backup.retention')"
+                  v-model.trim="retention"
+                  type="number"
+                  min="1"
+                  :invalid-message="$t(error.retention)"
+                  :disabled="loading.addBackup || loading.alterBackup"
+                  tooltipAlignment="end"
+                  tooltipDirection="right"
+                  ref="retention"
+                  class="retention"
+                >
+                  <template #tooltip>{{
+                    $t("backup.retention_tooltip")
+                  }}</template>
                 </NsTextInput>
               </div>
             </div>
-            <div
-              v-if="schedule.interval !== 'custom'"
-              class="bx--row mg-bottom-xlg"
+          </div>
+          <div v-show="step == 'name'">
+            <cv-text-input
+              :label="$t('backup.backup_name')"
+              v-model.trim="name"
+              :helper-text="$t('backup.backup_name_helper')"
+              :invalid-message="$t(error.name)"
+              :disabled="loading.addBackup || loading.alterBackup"
+              class="mg-bottom-xlg"
+              ref="name"
             >
-              <!-- schedule description -->
-              <div class="bx--col schedule-description">
-                <template v-if="schedule.interval == 'hourly'">
-                  {{
-                    schedule.minute == 0
-                      ? $t("backup.every_hour")
-                      : $tc("backup.minutes_past_the_hour", schedule.minute, {
-                          minutes: schedule.minute,
-                        })
-                  }}
-                </template>
-                <template v-else-if="schedule.interval == 'daily'">
-                  <span v-if="time24HourPattern.test(schedule.time)">
-                    {{ $t("backup.every_day_at", { time: schedule.time }) }}
-                  </span>
-                  <span v-else>-</span>
-                </template>
-                <template v-else-if="schedule.interval == 'weekly'">
-                  <span v-if="time24HourPattern.test(schedule.time)">
-                    {{
-                      $t("backup.every_weekday_at_hour", {
-                        weekDay: $t("calendar." + schedule.weekDay),
-                        time: schedule.time,
-                      })
-                    }}
-                  </span>
-                  <span v-else>-</span>
-                </template>
-                <template v-else-if="schedule.interval == 'monthly'">
-                  <!-- show description only if time pattern is valid -->
-                  <span v-if="time24HourPattern.test(schedule.time)">
-                    {{
-                      $t("backup.every_month_at_time", {
-                        dayNum: schedule.monthDay,
-                        time: schedule.time,
-                      })
-                    }}
-                  </span>
-                  <span v-else>-</span>
-                </template>
-                <!-- calendar event expression -->
-                <cv-interactive-tooltip
-                  v-if="isScheduleValid"
-                  alignment="start"
-                  direction="right"
-                  class="calendar-event-expression-tooltip"
-                >
-                  <template slot="trigger">
-                    <Information16 />
-                  </template>
-                  <template slot="content">
-                    <h6 class="calendar-event-expression-tooltip-title">
-                      {{ $t("backup.calendar_event_expression") }}
-                    </h6>
-                    <code>{{ scheduleExpression }}</code>
-                  </template>
-                </cv-interactive-tooltip>
-              </div>
-            </div>
-          </div>
-          <div class="bx--row">
-            <div class="bx--col-md-2 bx--col-max-4">
-              <NsTextInput
-                :label="$t('backup.retention')"
-                v-model.trim="retention.value"
-                type="number"
-                min="1"
-                :invalid-message="$t(error.retention)"
-                :disabled="loading.addBackup || loading.alterBackup"
-                tooltipAlignment="end"
-                tooltipDirection="right"
-                ref="retention"
-              >
-                <template #tooltip>{{
-                  $t("backup.retention_tooltip")
-                }}</template>
-              </NsTextInput>
-            </div>
-            <div class="bx--col-md-2 bx--col-max-4">
-              <cv-select
-                v-model="retention.period"
-                label="hidden"
-                :disabled="loading.addBackup || loading.alterBackup"
-                class="hide-label"
-              >
-                <cv-select-option value="d">
-                  {{ $t("calendar.days") }}
-                </cv-select-option>
-                <cv-select-option value="m">
-                  {{ $t("calendar.months") }}
-                </cv-select-option>
-                <cv-select-option value="y">
-                  {{ $t("calendar.years") }}
-                </cv-select-option>
-              </cv-select>
-            </div>
-          </div>
-        </div>
-        <div v-show="step == 'name'">
-          <cv-text-input
-            :label="$t('backup.backup_name')"
-            v-model.trim="name"
-            :helper-text="$t('backup.backup_name_helper')"
-            :invalid-message="$t(error.name)"
-            :disabled="loading.addBackup || loading.alterBackup"
-            class="mg-bottom-xlg"
-            ref="name"
-          >
-          </cv-text-input>
-          <!-- <cv-toggle ////
+            </cv-text-input>
+            <!-- <cv-toggle ////
             :label="$t('common.status')"
             value="statusValue"
             :form-item="true"
@@ -357,60 +341,61 @@
             <template slot="text-left">{{ $t("common.disabled") }}</template>
             <template slot="text-right">{{ $t("common.enabled") }}</template>
           </cv-toggle> -->
-          <!-- run backup on finish -->
-          <cv-checkbox
-            :label="$t('backup.run_backup_now')"
-            v-model="runBackupOnFinish"
-            :disabled="loading.addBackup || loading.alterBackup"
-            value="checkRunBackupOnFinish"
-          />
-          <NsInlineNotification
-            v-if="error.addBackup"
-            kind="error"
-            :title="$t('action.add-backup')"
-            :description="error.addBackup"
-            :showCloseButton="false"
-          />
-          <NsInlineNotification
-            v-if="error.alterBackup"
-            kind="error"
-            :title="$t('action.alter-backup')"
-            :description="error.alterBackup"
-            :showCloseButton="false"
-          />
-        </div>
-        <div class="wizard-buttons">
-          <NsButton
-            kind="secondary"
-            :icon="Close20"
-            @click="$emit('hide')"
-            type="button"
-            class="wizard-button"
-            >{{ $t("common.cancel") }}
-          </NsButton>
-          <NsButton
-            kind="secondary"
-            :icon="ChevronLeft20"
-            @click="previousStep"
-            :disabled="isFirstStep || loading.addBackup"
-            type="button"
-            class="wizard-button"
-            >{{ $t("common.previous") }}
-          </NsButton>
-          <NsButton
-            kind="primary"
-            :icon="ChevronRight20"
-            :disabled="isNextStepDisabled"
-            :loading="loading.addBackup"
-            type="submit"
-            class="wizard-button"
-            ref="wizardNext"
-            >{{ nextButtonLabel }}
-          </NsButton>
-        </div>
-      </cv-form>
-    </template>
-  </cv-modal>
+            <!-- run backup on finish -->
+            <cv-checkbox
+              :label="$t('backup.run_backup_now')"
+              v-model="runBackupOnFinish"
+              :disabled="loading.addBackup || loading.alterBackup"
+              value="checkRunBackupOnFinish"
+            />
+            <NsInlineNotification
+              v-if="error.addBackup"
+              kind="error"
+              :title="$t('action.add-backup')"
+              :description="error.addBackup"
+              :showCloseButton="false"
+            />
+            <NsInlineNotification
+              v-if="error.alterBackup"
+              kind="error"
+              :title="$t('action.alter-backup')"
+              :description="error.alterBackup"
+              :showCloseButton="false"
+            />
+          </div>
+          <div class="wizard-buttons">
+            <NsButton
+              kind="secondary"
+              :icon="Close20"
+              @click="$emit('hide')"
+              type="button"
+              class="wizard-button"
+              >{{ $t("common.cancel") }}
+            </NsButton>
+            <NsButton
+              kind="secondary"
+              :icon="ChevronLeft20"
+              @click="previousStep"
+              :disabled="isFirstStep || loading.addBackup"
+              type="button"
+              class="wizard-button"
+              >{{ $t("common.previous") }}
+            </NsButton>
+            <NsButton
+              kind="primary"
+              :icon="ChevronRight20"
+              :disabled="isNextStepDisabled"
+              :loading="loading.addBackup"
+              type="submit"
+              class="wizard-button"
+              ref="wizardNext"
+              >{{ nextButtonLabel }}
+            </NsButton>
+          </div>
+        </cv-form>
+      </template>
+    </cv-modal>
+  </div>
 </template>
 
 <script>
@@ -468,10 +453,7 @@ export default {
         monthDay: "1",
         custom: "",
       },
-      retention: {
-        value: "7",
-        period: "d",
-      },
+      retention: "5",
       // enabled: true, ////
       installedModules: [],
       internalRepositories: [],
@@ -623,11 +605,8 @@ export default {
     },
     backup: function () {
       this.name = this.backup.name;
-      this.schedule = this.backup.schedule;
-      this.retention = {
-        value: this.backup.retention.slice(0, -1),
-        period: this.backup.retention.slice(-1),
-      };
+      // this.schedule = this.backup.schedule; //// fix
+      this.retention = this.backup.retention.toString();
       // this.enabled = this.backup.enabled; ////
       this.updateInternalRepositories();
     },
@@ -639,10 +618,10 @@ export default {
     clearFields() {
       this.instances = [];
       this.name = "";
+      // this.schedule = {}; //// fix
       this.schedule.interval = "daily";
       this.schedule.custom = "";
-      this.retention.value = "7";
-      this.retention.period = "d";
+      this.retention = "5"; //// do not repeat default values
       this.runBackupOnFinish = false;
       // this.enabled = true; ////
 
@@ -657,6 +636,10 @@ export default {
     },
     nextStep() {
       if (this.isNextStepDisabled) {
+        return;
+      }
+
+      if (!this.validateStep()) {
         return;
       }
 
@@ -702,11 +685,26 @@ export default {
 
       this.internalRepositories = internalRepositories;
     },
-    validateBackup() {
-      this.clearErrors(this);
+    validateSettingsStep() {
       let isValidationOk = true;
+      this.error.retention = "";
 
-      //// todo validate schedule and retention
+      //// todo validate schedule
+
+      if (!this.retention) {
+        this.error.retention = "common.required";
+
+        if (isValidationOk) {
+          this.focusElement("retention");
+          isValidationOk = false;
+        }
+      }
+
+      return isValidationOk;
+    },
+    validateNameStep() {
+      let isValidationOk = true;
+      this.error.name = "";
 
       if (!this.name) {
         this.error.name = "common.required";
@@ -719,10 +717,19 @@ export default {
 
       return isValidationOk;
     },
-    async addBackup() {
-      if (!this.validateBackup()) {
-        return;
+    validateStep() {
+      switch (this.step) {
+        case "settings":
+          return this.validateSettingsStep();
+        case "name":
+          return this.validateNameStep();
+        default:
+          return true;
       }
+    },
+    async addBackup() {
+      // validation has already been performed by validateStep
+
       this.error.addBackup = "";
       this.loading.addBackup = true;
       const taskAction = "add-backup";
@@ -745,7 +752,8 @@ export default {
             name: this.name,
             repository: this.selectedRepo.id,
             schedule: this.scheduleExpression,
-            retention: this.retention.value + this.retention.period,
+            // schedule_hint: this.schedule, //// not working
+            retention: parseInt(this.retention),
             instances: this.instances,
             // enabled: this.enabled, ////
             enabled: true,
@@ -801,9 +809,8 @@ export default {
       this.$emit("backupCreated", runBackupOnFinish, createdBackup);
     },
     async alterBackup() {
-      if (!this.validateBackup()) {
-        return;
-      }
+      // validation has already been performed by validateStep
+
       this.error.alterBackup = "";
       this.loading.alterBackup = true;
       const taskAction = "alter-backup";
@@ -827,7 +834,7 @@ export default {
             name: this.name,
             repository: this.backup.repository,
             schedule: this.schedule,
-            retention: this.retention,
+            retention: parseInt(this.retention),
             instances: this.instances,
             enabled: this.backup.enabled, ////
           },

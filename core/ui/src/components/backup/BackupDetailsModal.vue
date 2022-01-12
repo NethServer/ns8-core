@@ -17,7 +17,11 @@
       </div>
       <div class="mg-bottom-sm">
         <span class="setting-label">{{ $t("backup.retention") }}</span>
-        <span class="setting-value">{{ retentionDescription }}</span>
+        <span class="setting-value">{{
+          $tc("backup.backup_versions", backup.retention, {
+            num: backup.retention,
+          })
+        }}</span>
       </div>
       <div class="mg-bottom-sm instances">
         <span class="setting-label">{{
@@ -43,12 +47,14 @@
                   }}
                 </span>
                 <NsSvg
-                  v-if="instance.status.success == true"
+                  v-if="instance.status && instance.status.success == true"
                   :svg="CheckmarkFilled16"
                   class="ns-success backup-status-icon"
                 />
                 <NsSvg
-                  v-else-if="instance.status.success == false"
+                  v-else-if="
+                    instance.status && instance.status.success == false
+                  "
                   :svg="ErrorFilled16"
                   class="ns-error backup-status-icon"
                 />
@@ -66,13 +72,15 @@
                   </span>
                   <span class="setting-value status">
                     <span
-                      v-if="instance.status.success == true"
+                      v-if="instance.status && instance.status.success == true"
                       class="ns-success-dark-bg"
                     >
                       {{ $t("common.success") }}
                     </span>
                     <span
-                      v-else-if="instance.status.success == false"
+                      v-else-if="
+                        instance.status && instance.status.success == false
+                      "
                       class="ns-error-dark-bg"
                     >
                       {{ $t("error.error") }}
@@ -87,7 +95,7 @@
                     {{ $t("backup.completed") }}
                   </span>
                   <span class="setting-value">
-                    <span v-if="instance.status.end">
+                    <span v-if="instance.status && instance.status.end">
                       {{
                         (instance.status.end * 1000)
                           | date("yyyy-MM-dd HH:mm:ss")
@@ -101,7 +109,13 @@
                     {{ $t("backup.duration") }}
                   </span>
                   <span class="setting-value">
-                    <span v-if="instance.status.end && instance.status.start">
+                    <span
+                      v-if="
+                        instance.status &&
+                        instance.status.end &&
+                        instance.status.start
+                      "
+                    >
                       {{
                         (instance.status.end - instance.status.start)
                           | secondsFormat
@@ -115,7 +129,7 @@
                     {{ $t("backup.total_size") }}
                   </span>
                   <span class="setting-value">
-                    <span v-if="instance.status.total_size">
+                    <span v-if="instance.status && instance.status.total_size">
                       {{ instance.status.total_size | byteFormat }}
                     </span>
                     <span v-else>-</span>
@@ -126,7 +140,9 @@
                     {{ $t("backup.total_file_count") }}
                   </span>
                   <span class="setting-value">
-                    <span v-if="instance.status.total_file_count">
+                    <span
+                      v-if="instance.status && instance.status.total_file_count"
+                    >
                       {{ instance.status.total_file_count | humanFormat }}
                       ({{ instance.status.total_file_count }})
                     </span>
@@ -164,24 +180,6 @@ export default {
       // sort function mutate the array, need to make a shallow copy. Cannot mutate backup.instances because it's a prop
       const backupInstances = [...this.backup.instances];
       return backupInstances.sort(this.sortByProperty("module_id"));
-    },
-    retentionDescription() {
-      if (this.backup && this.backup.retention) {
-        const num = this.backup.retention.slice(0, -1);
-        const period = this.backup.retention.slice(-1);
-
-        switch (period) {
-          case "d":
-            return this.$tc("calendar.num_days_c", num, { num });
-          case "m":
-            return this.$tc("calendar.num_months_c", num, { num });
-          case "y":
-            return this.$tc("calendar.num_years_c", num, { num });
-          default:
-            return this.backup.retention;
-        }
-      }
-      return null;
     },
   },
 };
