@@ -54,8 +54,7 @@
             "title": "Unconfigured module instances",
             "description": "List of module instances that are not included in any backup",
             "items": {
-                "type": "string",
-                "minLength": 1
+                "type": "object"
             }
         }
     },
