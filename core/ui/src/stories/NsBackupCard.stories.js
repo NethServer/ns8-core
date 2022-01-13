@@ -28,12 +28,11 @@ const sharedRepositories = [
     id: "16ec9b76-6d42-56c0-9541-fc1df7616d27",
     name: "S3 repo",
     parameters: {
-      aws_access_key_id: "AKIAV5ZGZQIBHGUHS5HZ",
+      aws_access_key_id: "XXXXXXXXXXX",
       aws_default_region: "us-east-1",
-      aws_secret_access_key: "hq98a/1piM2nwMLOTeDeEGAkO2+JzqNyYpFLogjk",
+      aws_secret_access_key: "XXXXXXXXXXXXXXXXXXXXXXX",
     },
-    password:
-      "905bb1a1e0146781aef544a069edb56d19143340651de16f875913bb483c80c9",
+    password: "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
     provider: "aws",
     url: "s3:s3.amazonaws.com/ns8-backup-test",
   },
@@ -41,12 +40,11 @@ const sharedRepositories = [
     id: "92ec9b76-6d42-56c0-9541-fc1df7616d83",
     name: "Other S3 repo",
     parameters: {
-      aws_access_key_id: "BKIAV5ZGZQIBHGUHS5HU",
+      aws_access_key_id: "XXXXXXXXXXX",
       aws_default_region: "us-east-1",
-      aws_secret_access_key: "zw98a/1piM2nwMLOTeDeEGAkO2+JzqNyYpFLogiu",
+      aws_secret_access_key: "XXXXXXXXXXXXXXXXXXXXXXX",
     },
-    password:
-      "765bb1a1e0146781aef544a069edb56d19143340651de16f875913bb483c80ed",
+    password: "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
     provider: "aws",
     url: "s3:s3.amazonaws.com/ns8-backup-test-other",
   },
