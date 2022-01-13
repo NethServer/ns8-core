@@ -1,9 +1,16 @@
 <template>
-  <cv-modal
+  <NsWizard
     size="default"
     :visible="isShown"
+    :cancelLabel="$t('common.cancel')"
+    :previousLabel="$t('common.previous')"
+    :nextLabel="nextButtonLabel"
+    :isPreviousDisabled="true"
+    :isNextDisabled="isNextButtonDisabled"
+    :isNextLoading="loading.samba.configureModule"
     @modal-hidden="$emit('hide')"
-    class="wizard-modal"
+    @cancel="$emit('hide')"
+    @nextStep="nextStep"
   >
     <template slot="title">{{ $t("domain_detail.add_provider") }}</template>
     <template slot="content">
@@ -150,38 +157,8 @@
           />
         </template>
       </template>
-      <div class="wizard-buttons">
-        <NsButton
-          kind="secondary"
-          :icon="Close20"
-          @click="$emit('hide')"
-          class="wizard-button"
-          >{{ $t("common.cancel") }}
-        </NsButton>
-        <!-- <NsButton
-          kind="secondary"
-          :icon="ChevronLeft20"
-          @click="previousStep"
-          :disabled="
-            isResumeConfiguration ||
-            ['location', 'installingProvider', 'internalConfig'].includes(step)
-          "
-          class="wizard-button"
-          >{{ $t("common.previous") }}
-        </NsButton> -->
-        <NsButton
-          kind="primary"
-          :icon="ChevronRight20"
-          @click="nextStep"
-          :disabled="isNextStepButtonDisabled()"
-          :loading="loading.samba.configureModule"
-          class="wizard-button"
-          ref="wizardNext"
-          >{{ nextStepLabel }}
-        </NsButton>
-      </div>
     </template>
-  </cv-modal>
+  </NsWizard>
 </template>
 
 <script>
@@ -264,7 +241,7 @@ export default {
     isSamba() {
       return this.domain.schema == "ad";
     },
-    nextStepLabel() {
+    nextButtonLabel() {
       if (this.step == "node") {
         return this.$t("domains.install_provider");
       } else if (this.step == "internalConfig") {
@@ -272,6 +249,13 @@ export default {
       } else {
         return this.$t("common.next");
       }
+    },
+    isNextButtonDisabled() {
+      return (
+        this.step == "installingProvider" ||
+        (this.step == "node" && !this.selectedNode) ||
+        this.loading.samba.configureModule
+      );
     },
   },
   watch: {
@@ -295,11 +279,11 @@ export default {
         }
 
         if (this.step !== "internalConfig") {
-          // set focus to next button
-          setTimeout(() => {
-            const element = this.$refs["wizardNext"].$el;
-            element.focus();
-          }, 300);
+          // // set focus to next button //// not working with NsWizard
+          // setTimeout(() => {
+          //   const element = this.$refs["wizardNext"].$el;
+          //   element.focus();
+          // }, 300);
         } else {
           if (this.isOpenLdap) {
             //// focus first input field
@@ -636,13 +620,6 @@ export default {
     },
     async configureOpenLdapModule() {
       console.log("configureOpenLdapModule"); ////
-    },
-    isNextStepButtonDisabled() {
-      return (
-        this.step == "installingProvider" ||
-        (this.step == "node" && !this.selectedNode) ||
-        this.loading.samba.configureModule
-      );
     },
   },
 };

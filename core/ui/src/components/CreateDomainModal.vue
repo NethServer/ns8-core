@@ -1,9 +1,19 @@
 <template>
-  <cv-modal
+  <NsWizard
     size="default"
     :visible="isShown"
+    :cancelLabel="$t('common.cancel')"
+    :previousLabel="$t('common.previous')"
+    :nextLabel="nextButtonLabel"
+    :isPreviousDisabled="isPreviousButtonDisabled"
+    :isNextDisabled="isNextButtonDisabled"
+    :isNextLoading="
+      loading.samba.configureModule || loading.external.addExternalDomain
+    "
     @modal-hidden="$emit('hide')"
-    class="wizard-modal"
+    @cancel="$emit('hide')"
+    @previousStep="previousStep"
+    @nextStep="nextStep"
   >
     <template slot="title">{{ $t("domains.create_domain") }}</template>
     <template slot="content">
@@ -359,42 +369,8 @@
           />
         </template>
       </template>
-      <div class="wizard-buttons">
-        <NsButton
-          kind="secondary"
-          :icon="Close20"
-          @click="$emit('hide')"
-          class="wizard-button"
-          >{{ $t("common.cancel") }}
-        </NsButton>
-        <NsButton
-          kind="secondary"
-          :icon="ChevronLeft20"
-          @click="previousStep"
-          :disabled="
-            isResumeConfiguration ||
-            loading.samba.configureModule ||
-            loading.external.addExternalDomain ||
-            ['location', 'installingProvider', 'internalConfig'].includes(step)
-          "
-          class="wizard-button"
-          >{{ $t("common.previous") }}
-        </NsButton>
-        <NsButton
-          kind="primary"
-          :icon="ChevronRight20"
-          @click="nextStep"
-          :disabled="isNextStepButtonDisabled()"
-          :loading="
-            loading.samba.configureModule || loading.external.addExternalDomain
-          "
-          class="wizard-button"
-          ref="wizardNext"
-          >{{ nextStepLabel }}
-        </NsButton>
-      </div>
     </template>
-  </cv-modal>
+  </NsWizard>
 </template>
 
 <script>
@@ -506,7 +482,7 @@ export default {
     selectedNode() {
       return this.nodes.find((n) => n.selected);
     },
-    nextStepLabel() {
+    nextButtonLabel() {
       if (
         (this.nodes.length == 1 && this.step == "instance") ||
         this.step == "node"
@@ -520,6 +496,28 @@ export default {
       } else {
         return this.$t("common.next");
       }
+    },
+    isNextButtonDisabled() {
+      return (
+        this.loading.samba.configureModule ||
+        this.loading.external.addExternalDomain ||
+        this.step == "installingProvider" ||
+        (this.step == "location" &&
+          !this.isInternalSelected &&
+          !this.isExternalSelected) ||
+        (this.step == "instance" &&
+          !this.isOpenLdapSelected &&
+          !this.isSambaSelected) ||
+        (this.step == "node" && !this.selectedNode)
+      );
+    },
+    isPreviousButtonDisabled() {
+      return (
+        this.isResumeConfiguration ||
+        this.loading.samba.configureModule ||
+        this.loading.external.addExternalDomain ||
+        ["location", "installingProvider", "internalConfig"].includes(this.step)
+      );
     },
   },
   watch: {
@@ -543,11 +541,12 @@ export default {
         }
 
         if (this.step !== "internalConfig") {
-          // set focus to next button
-          setTimeout(() => {
-            const element = this.$refs["wizardNext"].$el;
-            element.focus();
-          }, 300);
+          // // set focus to next button //// not working with NsWizard
+          // setTimeout(() => {
+          //   console.log("this.$refs", this.$refs); ////
+          //   const element = this.$refs["wizardNext"].$el;
+          //   element.focus();
+          // }, 300);
         } else {
           if (this.isOpenLdapSelected) {
             //// focus first input field
@@ -978,20 +977,6 @@ export default {
     },
     async configureOpenLdapModule() {
       console.log("configureOpenLdapModule"); ////
-    },
-    isNextStepButtonDisabled() {
-      return (
-        this.loading.samba.configureModule ||
-        this.loading.external.addExternalDomain ||
-        this.step == "installingProvider" ||
-        (this.step == "location" &&
-          !this.isInternalSelected &&
-          !this.isExternalSelected) ||
-        (this.step == "instance" &&
-          !this.isOpenLdapSelected &&
-          !this.isSambaSelected) ||
-        (this.step == "node" && !this.selectedNode)
-      );
     },
     onNewSambaPasswordValidation(passwordValidation) {
       this.samba.passwordValidation = passwordValidation;
