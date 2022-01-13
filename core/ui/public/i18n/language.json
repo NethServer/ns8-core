@@ -72,7 +72,8 @@
     "cannot_retrieve_cluster_nodes": "Cannot retrieve cluster nodes",
     "cannot_retrieve_installed_apps": "Cannot retrieve installed apps",
     "cannot_retrieve_cluster_tasks": "Cannot retrieve cluster tasks",
-    "invalid_24h_pattern": "Invalid 24-hour pattern"
+    "invalid_24h_pattern": "Invalid 24-hour pattern",
+    "invalid_value": "Invalid value"
   },
   "websocket": {
     "websocket_disconnected": "Websocket disconnected",
@@ -324,14 +325,15 @@
     "disable_backup": "Disable backup",
     "enabling_backup": "Enabling {backupName}",
     "disabling_backup": "Disabling {backupName}",
-    "retention_tooltip": "Number of backup snapshots to store before automatic deletion",
+    "retention_tooltip": "Number of backup snapshots stored before automatic deletion",
     "default_repository_name": "{provider} repo",
     "schedule_backup_for_instance": "Create a backup schedule for {instance}",
     "schedule_action": "Schedule",
     "no_backup_configured": "No backup configured",
     "configure": "Configure",
     "go_to_backup": "Go to Backup",
-    "backup_versions": "{num} backup snapshot | {num} backup snapshots"
+    "num_backup_snapshots": "{num} backup snapshot | {num} backup snapshots",
+    "backup_snapshots": "Backup snapshots"
   },
   "calendar": {
     "days": "Days",

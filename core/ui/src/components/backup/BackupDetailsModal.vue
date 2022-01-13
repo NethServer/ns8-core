@@ -18,7 +18,7 @@
       <div class="mg-bottom-sm">
         <span class="setting-label">{{ $t("backup.retention") }}</span>
         <span class="setting-value">{{
-          $tc("backup.backup_versions", backup.retention, {
+          $tc("backup.num_backup_snapshots", backup.retention, {
             num: backup.retention,
           })
         }}</span>

@@ -154,20 +154,6 @@ a {
   white-space: nowrap;
 }
 
-// wizard (e.g. CreateDomainModal)
-.wizard-modal .bx--modal-content {
-  padding-right: 1rem !important;
-  margin-bottom: 0;
-}
-
-.wizard-buttons {
-  display: flex;
-  justify-content: flex-end;
-  position: relative;
-  right: -1rem;
-  margin-top: 3rem;
-}
-
 .wizard-button {
   width: 25%;
   height: 4rem;
@@ -381,11 +367,11 @@ a {
 }
 // end accordion
 
-// form
+// form elements
 .cv-text-input,
-.cv-form .bx--form-item,
-.cv-form .cv-select,
-.cv-form .cv-multi-select,
+.bx--form-item,
+.cv-select,
+.cv-multi-select,
 .ns-password-input,
 .cv-combo-box {
   margin-bottom: $spacing-05;

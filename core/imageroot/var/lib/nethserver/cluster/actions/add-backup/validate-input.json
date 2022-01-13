@@ -55,7 +55,7 @@
         },
         "retention": {
             "title": "Backup retention",
-            "description": "Number of backup snapshots to store before automatic deletion",
+            "description": "Number of backup snapshots stored before automatic deletion",
             "type": "integer",
             "minimum": 1
         },
