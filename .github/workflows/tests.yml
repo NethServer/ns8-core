@@ -21,6 +21,7 @@ jobs:
       nodes: ${{ steps.nodes.outputs.list }}
       modules: ${{ steps.modules.outputs.list }}
       tag: ${{ steps.tag.outputs.name }}
+      short_sha: ${{ steps.short_sha.outputs.value }}
     steps:
       - id: nodes
         run: |
@@ -39,6 +40,8 @@ jobs:
             tag="latest"
           fi
           echo "::set-output name=listt::${tag}"
+      - id: short_sha
+        run: echo "::set-output name=value::$( echo ${{ github.sha }} | cut -c1-8 )"
       - id: modules
         run: |
           modules_list='[]'
@@ -70,7 +73,7 @@ jobs:
           TF_VAR_do_token: ${{ secrets.do_token }}
         run: |
           terraform init
-          terraform workspace new ${{ matrix.node }}-${{ github.sha }}
+          terraform workspace new ${{ matrix.node }}-${{ needs.ns8.outputs.short_sha }}
           terraform apply -var 'leader_node={"${{ matrix.node }}":"ams3"}' -auto-approve
         working-directory: ${{ github.workspace }}/tests/infra
       - name: HashiCorp - Terraform Output Deploy Key
@@ -86,7 +89,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: terraform.tfstate-${{ matrix.node }}
-          path: ${{ github.workspace }}/tests/infra/terraform.tfstate.d/${{ matrix.node }}-${{ github.sha }}/terraform.tfstate
+          path: ${{ github.workspace }}/tests/infra/terraform.tfstate.d/${{ matrix.node }}-${{ needs.ns8.outputs.short_sha }}/terraform.tfstate
           retention-days: 1
   core:
     name: "Core tests"
@@ -112,7 +115,7 @@ jobs:
           pip install -r /home/pwuser/ns8-scratchpad/core/tests/pythonreq.txt
           mkdir ~/outputs
           cd /home/pwuser/ns8-scratchpad/core/
-          robot -v NODE_ADDR:${{ matrix.node }}.leader.${{ matrix.node }}-${{ github.sha }}.${{ env.TF_VAR_domain }} \
+          robot -v NODE_ADDR:${{ matrix.node }}.leader.${{ matrix.node }}-${{ needs.ns8.outputs.short_sha }}.${{ env.TF_VAR_domain }} \
             -v SSH_KEYFILE:/home/pwuser/ns8-scratchpad/key \
             -v COREBRANCH:${{ needs.ns8.outputs.tag }} \
             -v COREMODULES:${{ join(fromJSON(needs.ns8.outputs.modules), ',' ) }} \
