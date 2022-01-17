@@ -64,6 +64,7 @@
           :totalSizeLabel="ns8Core.$t('backup.total_size')"
           :totalFileCountLabel="ns8Core.$t('backup.total_file_count')"
           :backupDisabledLabel="ns8Core.$t('common.disabled')"
+          :showMoreLabel="ns8Core.$t('common.show_more')"
           :moduleId="instanceName"
           :moduleUiName="instanceLabel"
           :repositories="backupRepositories"

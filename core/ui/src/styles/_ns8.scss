@@ -551,10 +551,12 @@ a {
 }
 // end colors for NsStatusCard and NsSystemdServiceCard
 
-.tooltip-with-text-trigger {
-  font-size: 100% !important;
+// tooltip with text trigger
+.tooltip-with-text-trigger .bx--tooltip__trigger:not(.bx--btn--icon-only) {
+  font-size: 14px !important;
   text-decoration: underline;
   color: $interactive-01;
+  margin-left: 0 !important;
 }
 
 // hint tooltip

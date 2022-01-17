@@ -36,7 +36,7 @@
             <cv-interactive-tooltip
               alignment="end"
               direction="right"
-              class="backup-status-tooltip"
+              class="tooltip-with-text-trigger"
             >
               <template slot="trigger">
                 <span>
@@ -216,18 +216,5 @@ export default {
 
 .status {
   font-weight: bold;
-}
-</style>
-
-<style lang="scss">
-@import "../../styles/carbon-utils";
-
-// global styles
-
-.backup-status-tooltip .bx--tooltip__trigger {
-  margin-left: 0 !important;
-  font-size: 14px;
-  text-decoration: underline;
-  color: $interactive-01;
 }
 </style>
