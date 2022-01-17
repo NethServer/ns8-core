@@ -4,14 +4,18 @@
       <div class="bx--col-lg-16 page-title">
         <h2>
           {{ $t("cluster_status.title") }}
-          <cv-tooltip
+          <cv-interactive-tooltip
             alignment="center"
             direction="bottom"
-            :tip="$t('common.global_shortcut') + ': CTRL+SHIFT+S'"
             class="info"
           >
-            <Information16 />
-          </cv-tooltip>
+            <template slot="trigger">
+              <Information16 />
+            </template>
+            <template slot="content">
+              {{ $t("common.global_shortcut") + ": CTRL+SHIFT+S" }}
+            </template>
+          </cv-interactive-tooltip>
         </h2>
       </div>
     </div>

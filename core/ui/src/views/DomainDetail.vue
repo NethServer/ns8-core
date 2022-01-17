@@ -210,17 +210,21 @@
             >{{ $t("domain_detail.add_provider") }}
           </NsButton> -->
             <!-- disabled button with tooltip (no nodes available) -->
-            <!-- <cv-tooltip ////
+            <!-- <cv-interactive-tooltip
             v-else
             alignment="center"
             direction="right"
-            :tip="$t('domain_detail.max_instances_reached')"
             class="info"
           >
-            <NsButton kind="secondary" :icon="Add20" disabled
-              >{{ $t("domain_detail.add_provider") }}
-            </NsButton>
-          </cv-tooltip> -->
+            <template slot="trigger">
+              <NsButton kind="secondary" :icon="Add20" disabled
+                >{{ $t("domain_detail.add_provider") }}
+              </NsButton>
+            </template>
+            <template slot="content">
+              {{ $t('domain_detail.max_instances_reached') }}
+            </template>
+          </cv-interactive-tooltip> -->
           </div>
         </div>
         <div class="bx--row">

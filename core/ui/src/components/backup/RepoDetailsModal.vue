@@ -99,14 +99,18 @@
       <div class="mg-bottom-sm">
         <span class="setting-label">
           {{ $t("backup.repository_password") }}
-          <cv-tooltip
+          <cv-interactive-tooltip
             alignment="center"
             direction="top"
-            :tip="$t('backup.repo_password_tooltip')"
             class="info"
           >
-            <Information16 />
-          </cv-tooltip>
+            <template slot="trigger">
+              <Information16 />
+            </template>
+            <template slot="content">
+              <div>{{ $t("backup.repo_password_tooltip") }}</div>
+            </template>
+          </cv-interactive-tooltip>
         </span>
         <cv-link @click="togglePassword">
           {{ isShownRepoPassword ? $t("common.hide") : $t("common.show") }}

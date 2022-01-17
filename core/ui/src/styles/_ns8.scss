@@ -545,14 +545,36 @@ a {
 }
 // end colors for NsStatusCard and NsSystemdServiceCard
 
-// tooltip with text trigger
+// interactive tooltip start
+.cv-interactive-tooltip {
+  display: inline-block;
+
+  .bx--tooltip__label .bx--tooltip__trigger {
+    margin-left: 0 !important;
+  }
+}
+
 .tooltip-with-text-trigger .bx--tooltip__trigger:not(.bx--btn--icon-only) {
   font-size: 14px !important;
   color: $interactive-01;
-  margin-left: 0 !important;
 }
 
-// hint tooltip
+.bx--tooltip .bx--tooltip__content {
+  line-height: 1.28572;
+}
+
+// info tooltip
+.info.bx--tooltip__trigger svg,
+.info.bx--tooltip__trigger:hover svg,
+.info.bx--tooltip__trigger:focus svg,
+.info .bx--tooltip__trigger svg,
+.info .bx--tooltip__trigger:hover svg,
+.info .bx--tooltip__trigger:focus svg {
+  fill: $support-04;
+}
+// interactive tooltip end
+
+// hint tooltip start
 .hint {
   width: 0;
   height: 0;
@@ -567,14 +589,7 @@ a {
   outline: none;
   fill: none;
 }
-// end hint tooltip
-
-// info tooltip
-.info.bx--tooltip__trigger svg,
-.info.bx--tooltip__trigger:hover svg,
-.bx--tooltip__trigger:focus svg {
-  fill: $support-04;
-}
+// hint tooltip end
 
 .min-height-card {
   min-height: 9rem;
