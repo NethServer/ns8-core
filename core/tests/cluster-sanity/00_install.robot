@@ -20,5 +20,3 @@ Basic post install sanity checks
     File Should Exist    /etc/nethserver/wg0.key
     File Should Exist    /etc/nethserver/wg0.pub
     File Should Exist    /etc/nethserver/api-server.env
-    ${output} =     Execute Command    systemctl --failed
-    Should Contain    ${output}    0 loaded units listed.
