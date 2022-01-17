@@ -47,6 +47,8 @@
 </template>
 
 <script>
+//// delete file?
+
 export default {
   name: "ShellFooter",
   data() {

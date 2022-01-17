@@ -608,9 +608,10 @@
     "data_sent": "Data sent",
     "system": "System"
   },
-  "footer": {
+  "about": {
+    "title": "About",
     "by_company": "by",
-    "docs": "Docs",
+    "documentation": "Documentation",
     "helpdesk": "Helpdesk",
     "animated_icons_by": "Animated icons by"
   }

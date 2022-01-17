@@ -77,6 +77,13 @@
         <template v-slot:nav-icon><Settings20 /></template>
         {{ $t("settings.title") }}
       </cv-side-nav-link>
+      <cv-side-nav-link
+        @click="goTo('/about')"
+        :active="isLinkActive('/about')"
+      >
+        <template v-slot:nav-icon><Information20 /></template>
+        {{ $t("about.title") }}
+      </cv-side-nav-link>
     </cv-side-nav-items>
   </div>
 </template>
@@ -90,6 +97,7 @@ import Catalog20 from "@carbon/icons-vue/es/catalog/20";
 import Application20 from "@carbon/icons-vue/es/application/20";
 import Activity20 from "@carbon/icons-vue/es/activity/20";
 import Chip20 from "@carbon/icons-vue/es/chip/20";
+import Information20 from "@carbon/icons-vue/es/information/20";
 import { mapActions, mapGetters } from "vuex";
 import CvSideNavDivider from "@carbon/vue/src/components/cv-ui-shell/cv-side-nav-divider.vue";
 
@@ -104,6 +112,7 @@ export default {
     Application20,
     Activity20,
     Chip20,
+    Information20,
     CvSideNavDivider,
   },
   data() {

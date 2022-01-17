@@ -16,16 +16,20 @@ body {
 }
 
 // footer position
-#core {
-  display: flex;
-  flex-direction: column;
-  min-height: 100%;
-}
+// #core { //// remove?
+//   display: flex;
+//   flex-direction: column;
+//   min-height: 100%;
+// }
 
-#main-content {
-  flex: 1;
-}
+// #main-content {
+//   flex: 1;
+// }
 // end footer position
+
+#core .bx--content {
+  padding-bottom: $spacing-05;
+}
 
 @media (max-width: $breakpoint-large) {
   // remove left margin because side menu is not shown on smaller screens
@@ -192,6 +196,11 @@ a {
   color: $inverse-link;
 }
 // end ghost button on dark background
+
+// used for buttons with external links
+.text-decoration-none {
+  text-decoration: none !important;
+}
 
 // status badges
 .badge-container {
@@ -554,7 +563,6 @@ a {
 // tooltip with text trigger
 .tooltip-with-text-trigger .bx--tooltip__trigger:not(.bx--btn--icon-only) {
   font-size: 14px !important;
-  text-decoration: underline;
   color: $interactive-01;
   margin-left: 0 !important;
 }
