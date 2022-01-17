@@ -8,7 +8,6 @@
       <cv-loading :active="!isLoaded" :overlay="true"></cv-loading>
       <TaskErrorModal />
     </cv-content>
-    <!-- <ShellFooter v-if="loggedUser && isClusterInitialized" /> //// -->
   </div>
 </template>
 
@@ -28,7 +27,6 @@ import {
   TaskService,
   StorageService,
 } from "@nethserver/ns8-ui-lib";
-// import ShellFooter from "./components/ShellFooter"; ////
 
 export default {
   name: "App",

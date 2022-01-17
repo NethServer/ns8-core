@@ -8,27 +8,12 @@ body {
 
 .bx--content {
   background-color: $ui-01;
+  padding-bottom: $spacing-03 !important;
 }
 
 .bx--grid.no-padding {
   padding-left: 0;
   padding-right: 0;
-}
-
-// footer position
-// #core { //// remove?
-//   display: flex;
-//   flex-direction: column;
-//   min-height: 100%;
-// }
-
-// #main-content {
-//   flex: 1;
-// }
-// end footer position
-
-#core .bx--content {
-  padding-bottom: $spacing-05;
 }
 
 @media (max-width: $breakpoint-large) {

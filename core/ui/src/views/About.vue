@@ -44,19 +44,7 @@
           </template>
         </div>
       </div>
-      <!-- product url -->
       <div>
-        <!-- <div v-if="$root.config.PRODUCT_URL" class="bx--col-md-2 mg-bottom-xlg"> ////
-        <a
-          :href="$root.config.PRODUCT_URL"
-          target="_blank"
-          class="text-decoration-none"
-        >
-          <NsButton kind="tertiary" :icon="Launch20">
-            {{ $root.config.PRODUCT_NAME }}
-          </NsButton>
-        </a>
-      </div> -->
         <!-- documentation url -->
         <span v-if="$root.config.DOCS_URL" class="docs-button">
           <a
