@@ -626,7 +626,7 @@ export default {
 </script>
 
 <style scoped lang="scss">
-@import "../styles/carbon-utils";
+@import "../../styles/carbon-utils";
 .mg-top {
   margin-top: $spacing-05;
 }

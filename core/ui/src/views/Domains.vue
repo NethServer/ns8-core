@@ -6,10 +6,9 @@
           <h2>{{ $t("domains.title") }}</h2>
         </div>
       </div>
-      <div class="bx--row">
+      <div v-if="error.listUserDomains" class="bx--row">
         <div class="bx--col">
           <NsInlineNotification
-            v-if="error.listUserDomains"
             kind="error"
             :title="$t('action.list-user-domains')"
             :description="error.listUserDomains"
@@ -17,10 +16,9 @@
           />
         </div>
       </div>
-      <div class="bx--row">
+      <div v-if="error.getClusterStatus" class="bx--row">
         <div class="bx--col">
           <NsInlineNotification
-            v-if="error.getClusterStatus"
             kind="error"
             :title="$t('action.get-cluster-status')"
             :description="error.getClusterStatus"
@@ -28,10 +26,9 @@
           />
         </div>
       </div>
-      <div class="bx--row">
+      <div v-if="error.removeModule" class="bx--row">
         <div class="bx--col">
           <NsInlineNotification
-            v-if="error.removeModule"
             kind="error"
             :title="$t('action.remove-module')"
             :description="error.removeModule"
@@ -39,10 +36,9 @@
           />
         </div>
       </div>
-      <div class="bx--row">
+      <div v-if="error.removeExternalDomain" class="bx--row">
         <div class="bx--col">
           <NsInlineNotification
-            v-if="error.removeExternalDomain"
             kind="error"
             :title="$t('action.remove-external-domain')"
             :description="error.removeExternalDomain"
@@ -50,10 +46,9 @@
           />
         </div>
       </div>
-      <div class="bx--row">
+      <div v-if="hasUnconfiguredDomainsOrProviders" class="bx--row">
         <div class="bx--col">
           <NsInlineNotification
-            v-if="hasUnconfiguredDomainsOrProviders"
             kind="warning"
             :title="$t('domains.unconfigured_domains_or_providers_title')"
             :description="
@@ -63,11 +58,10 @@
           />
         </div>
       </div>
-      <div class="bx--row">
+      <div v-if="domainToDelete" class="bx--row">
         <div class="bx--col">
           <!-- unconfigured domain being deleted -->
           <NsInlineNotification
-            v-if="domainToDelete"
             kind="warning"
             :title="
               $t('domains.domain_is_going_to_be_deleted', {
@@ -328,7 +322,7 @@ import {
   TaskService,
   IconService,
 } from "@nethserver/ns8-ui-lib";
-import CreateDomainModal from "@/components/CreateDomainModal";
+import CreateDomainModal from "@/components/domains/CreateDomainModal";
 import to from "await-to-js";
 
 export default {

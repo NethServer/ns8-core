@@ -24,10 +24,9 @@
           </h3>
         </div>
       </div>
-      <div class="bx--row">
+      <div v-if="error.getClusterStatus" class="bx--row">
         <div class="bx--col">
           <NsInlineNotification
-            v-if="error.getClusterStatus"
             kind="error"
             :title="$t('action.get-cluster-status')"
             :description="error.getClusterStatus"
@@ -104,10 +103,9 @@
           <h4 class="mg-bottom-md">{{ $t("domain_detail.providers") }}</h4>
         </div>
       </div>
-      <div class="bx--row">
+      <div v-if="error.listUserDomains" class="bx--row">
         <div class="bx--col">
           <NsInlineNotification
-            v-if="error.listUserDomains"
             kind="error"
             :title="$t('action.list-user-domains')"
             :description="error.listUserDomains"
@@ -125,10 +123,9 @@
           />
         </div>
       </div>
-      <div class="bx--row">
+      <div v-if="error.removeInternalProvider" class="bx--row">
         <div class="bx--col">
           <NsInlineNotification
-            v-if="error.removeInternalProvider"
             kind="error"
             :title="$t('action.remove-internal-provider')"
             :description="error.removeInternalProvider"
@@ -136,10 +133,9 @@
           />
         </div>
       </div>
-      <div class="bx--row">
+      <div v-if="error.removeExternalProvider" class="bx--row">
         <div class="bx--col">
           <NsInlineNotification
-            v-if="error.removeExternalProvider"
             kind="error"
             :title="$t('action.remove-external-provider')"
             :description="error.removeExternalProvider"
@@ -147,10 +143,9 @@
           />
         </div>
       </div>
-      <div class="bx--row">
+      <div v-if="unconfiguredProviders.length" class="bx--row">
         <div class="bx--col">
           <NsInlineNotification
-            v-if="unconfiguredProviders.length"
             kind="warning"
             :title="$t('domain_detail.unconfigured_providers_title')"
             :description="
@@ -160,11 +155,10 @@
           />
         </div>
       </div>
-      <div class="bx--row">
+      <div v-if="providerToDelete" class="bx--row">
         <div class="bx--col">
           <!-- unconfigured provider being deleted -->
           <NsInlineNotification
-            v-if="providerToDelete"
             kind="warning"
             :title="
               $t('domain_detail.provider_is_going_to_be_deleted', {
@@ -456,8 +450,8 @@ import {
   IconService,
 } from "@nethserver/ns8-ui-lib";
 import to from "await-to-js";
-import AddInternalProviderModal from "@/components/AddInternalProviderModal";
-import AddExternalProviderModal from "@/components/AddExternalProviderModal";
+import AddInternalProviderModal from "@/components/domains/AddInternalProviderModal";
+import AddExternalProviderModal from "@/components/domains/AddExternalProviderModal";
 
 export default {
   name: "DomainDetail",
