@@ -93,9 +93,9 @@
               tip-alignment="end"
               class="top-right-overflow-menu"
             >
-              <cv-overflow-menu-item @click="showSetNodeLabelModal(node)">{{
-                $t("nodes.edit_node_label")
-              }}</cv-overflow-menu-item>
+              <cv-overflow-menu-item @click="showSetNodeLabelModal(node)">
+                <NsMenuItem icon="edit" :label="$t('nodes.edit_node_label')" />
+              </cv-overflow-menu-item>
             </cv-overflow-menu>
           </template>
           <template #content>

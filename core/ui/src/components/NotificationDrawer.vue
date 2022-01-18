@@ -12,9 +12,13 @@
           {{ $tc("notification.unread", unreadNotificationsCount) }}</span
         >
         <cv-overflow-menu flip-menu class="overflow-menu-dark-bg">
-          <cv-overflow-menu-item @click="markAllRead" id="overflow-item">{{
-            $t("notification.mark_all_read")
-          }}</cv-overflow-menu-item>
+          <cv-overflow-menu-item @click="markAllRead" id="overflow-item">
+            <NsMenuItem :label="$t('notification.mark_all_read')">
+              <template slot="icon">
+                <Checkmark20 />
+              </template>
+            </NsMenuItem>
+          </cv-overflow-menu-item>
         </cv-overflow-menu>
       </div>
       <div v-if="ongoingNotifications.length" class="notification-divider">
@@ -74,9 +78,11 @@
 <script>
 import { mapState, mapActions, mapGetters } from "vuex";
 import NotificationService from "@/mixins/notification";
+import Checkmark20 from "@carbon/icons-vue/es/checkmark/20";
 
 export default {
   name: "NotificationDrawer",
+  components: { Checkmark20 },
   mixins: [NotificationService],
   data() {
     return {

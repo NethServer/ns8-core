@@ -244,15 +244,19 @@
                 >
                   <cv-overflow-menu-item
                     @click="showSetProviderLabelModal(provider)"
-                    >{{
-                      $t("domain_detail.edit_provider_label")
-                    }}</cv-overflow-menu-item
                   >
+                    <NsMenuItem
+                      icon="edit"
+                      :label="$t('domain_detail.edit_provider_label')"
+                    />
+                  </cv-overflow-menu-item>
+                  <NsMenuDivider />
                   <cv-overflow-menu-item
                     danger
                     @click="willDeleteUnconfiguredProvider(provider)"
-                    >{{ $t("common.delete") }}</cv-overflow-menu-item
                   >
+                    <NsMenuItem icon="trash" :label="$t('common.delete')" />
+                  </cv-overflow-menu-item>
                 </cv-overflow-menu>
               </template>
               <template #content>
@@ -307,15 +311,19 @@
                 >
                   <cv-overflow-menu-item
                     @click="showSetProviderLabelModal(provider)"
-                    >{{
-                      $t("domain_detail.edit_provider_label")
-                    }}</cv-overflow-menu-item
                   >
+                    <NsMenuItem
+                      icon="edit"
+                      :label="$t('domain_detail.edit_provider_label')"
+                    />
+                  </cv-overflow-menu-item>
+                  <NsMenuDivider />
                   <cv-overflow-menu-item
                     danger
                     @click="showDeleteProviderModal(provider)"
-                    >{{ $t("common.delete") }}</cv-overflow-menu-item
                   >
+                    <NsMenuItem icon="trash" :label="$t('common.delete')" />
+                  </cv-overflow-menu-item>
                 </cv-overflow-menu>
               </template>
               <template #content>

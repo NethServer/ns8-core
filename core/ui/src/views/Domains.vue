@@ -117,8 +117,9 @@
                     <cv-overflow-menu-item
                       danger
                       @click="willDeleteUnconfiguredDomain(unconfiguredDomain)"
-                      >{{ $t("common.delete") }}</cv-overflow-menu-item
                     >
+                      <NsMenuItem icon="trash" :label="$t('common.delete')" />
+                    </cv-overflow-menu-item>
                   </cv-overflow-menu>
                 </template>
                 <template #content>
@@ -231,8 +232,9 @@
                     <cv-overflow-menu-item
                       danger
                       @click="showDeleteDomainModal(domain)"
-                      >{{ $t("common.delete") }}</cv-overflow-menu-item
                     >
+                      <NsMenuItem icon="trash" :label="$t('common.delete')" />
+                    </cv-overflow-menu-item>
                   </cv-overflow-menu>
                 </template>
                 <template #content>

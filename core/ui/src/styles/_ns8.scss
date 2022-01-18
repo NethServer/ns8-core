@@ -156,6 +156,19 @@ a {
 }
 // end wizard
 
+// overflow menu start
+.bx--overflow-menu-options {
+  z-index: 10000;
+  width: auto !important;
+  min-width: 10rem;
+  max-width: 18rem;
+}
+
+.bx--overflow-menu-options__btn {
+  max-width: none;
+}
+// overflow menu end
+
 // top-right overflow menu
 .top-right-overflow-menu {
   position: absolute;
@@ -593,13 +606,6 @@ a {
 
 .min-height-card {
   min-height: 9rem;
-}
-
-.bx--overflow-menu-options {
-  z-index: 10000;
-  width: auto !important;
-  min-width: 10rem;
-  max-width: 14rem;
 }
 
 // NsNodeCard

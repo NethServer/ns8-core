@@ -150,20 +150,23 @@
                     >
                     <cv-data-table-cell>
                       <cv-overflow-menu flip-menu class="table-overflow-menu">
-                        <cv-overflow-menu-item
-                          @click="showEditRepoModal(row)"
-                          >{{ $t("common.edit") }}</cv-overflow-menu-item
-                        >
+                        <cv-overflow-menu-item @click="showEditRepoModal(row)">
+                          <NsMenuItem icon="edit" :label="$t('common.edit')" />
+                        </cv-overflow-menu-item>
+                        <NsMenuDivider />
                         <cv-overflow-menu-item
                           danger
                           @click="willDeleteRepository(row)"
-                          >{{ $t("common.delete") }}</cv-overflow-menu-item
                         >
+                          <NsMenuItem
+                            icon="trash"
+                            :label="$t('common.delete')"
+                          />
+                        </cv-overflow-menu-item>
                       </cv-overflow-menu>
                     </cv-data-table-cell>
-                  </cv-data-table-row>
-                </template></cv-data-table
-              >
+                  </cv-data-table-row> </template
+              ></cv-data-table>
             </div>
           </cv-tile>
         </div>

@@ -162,13 +162,14 @@
                   class="top-right-overflow-menu"
                 >
                   <cv-overflow-menu-item @click="showEditRepoModal(repo)">
-                    {{ $t("common.edit") }}
+                    <NsMenuItem icon="edit" :label="$t('common.edit')" />
                   </cv-overflow-menu-item>
+                  <NsMenuDivider />
                   <cv-overflow-menu-item
                     danger
                     @click="showDeleteRepoModal(repo)"
                   >
-                    {{ $t("common.delete") }}
+                    <NsMenuItem icon="trash" :label="$t('common.delete')" />
                   </cv-overflow-menu-item>
                 </cv-overflow-menu>
               </template>
@@ -286,26 +287,33 @@
                     class="top-right-overflow-menu"
                   >
                     <cv-overflow-menu-item @click="runBackup(backup)">
-                      {{ $t("backup.run_backup_now") }}
+                      <NsMenuItem
+                        icon="rocket"
+                        :label="$t('backup.run_backup')"
+                      />
                     </cv-overflow-menu-item>
                     <cv-overflow-menu-item
                       @click="toggleBackupStatus(backup)"
                       :disabled="loading.alterBackup"
                     >
-                      {{
-                        backup.enabled
-                          ? $t("backup.disable_backup")
-                          : $t("backup.enable_backup")
-                      }}
+                      <NsMenuItem
+                        icon="power"
+                        :label="
+                          backup.enabled
+                            ? $t('common.disable')
+                            : $t('common.enable')
+                        "
+                      />
                     </cv-overflow-menu-item>
                     <cv-overflow-menu-item @click="showEditBackupModal(backup)">
-                      {{ $t("common.edit") }}
+                      <NsMenuItem icon="edit" :label="$t('common.edit')" />
                     </cv-overflow-menu-item>
+                    <NsMenuDivider />
                     <cv-overflow-menu-item
                       danger
                       @click="showDeleteBackupModal(backup)"
                     >
-                      {{ $t("common.delete") }}
+                      <NsMenuItem icon="trash" :label="$t('common.delete')" />
                     </cv-overflow-menu-item>
                   </cv-overflow-menu>
                 </template>
