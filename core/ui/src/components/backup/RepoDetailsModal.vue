@@ -2,30 +2,26 @@
   <cv-modal size="default" :visible="isShown" @modal-hidden="$emit('hide')">
     <template slot="title">{{ $t("backup.repository_details") }}</template>
     <template slot="content">
-      <div class="mg-bottom-sm">
-        <span class="setting-label">{{ $t("backup.name") }}</span>
-        <span class="setting-value">{{ repository.name }}</span>
+      <div class="key-value-setting">
+        <span class="label">{{ $t("backup.name") }}</span>
+        <span class="value">{{ repository.name }}</span>
       </div>
-      <div class="mg-bottom-sm">
-        <span class="setting-label">{{ $t("backup.provider") }}</span>
-        <span class="setting-value">{{
-          $t("backup." + repository.provider)
-        }}</span>
+      <div class="key-value-setting">
+        <span class="label">{{ $t("backup.provider") }}</span>
+        <span class="value">{{ $t("backup." + repository.provider) }}</span>
       </div>
-      <div class="mg-bottom-sm">
-        <span class="setting-label">{{ $t("backup.url") }}</span>
-        <span class="setting-value">{{ repository.url }}</span>
+      <div class="key-value-setting">
+        <span class="label">{{ $t("backup.url") }}</span>
+        <span class="value">{{ repository.url }}</span>
       </div>
       <!-- backblaze -->
       <template v-if="repository.provider == 'backblaze'">
-        <div class="mg-bottom-sm">
-          <span class="setting-label">{{ $t("backup.b2_account_id") }}</span>
-          <span class="setting-value">{{
-            repository.parameters.b2_account_id
-          }}</span>
+        <div class="key-value-setting">
+          <span class="label">{{ $t("backup.b2_account_id") }}</span>
+          <span class="value">{{ repository.parameters.b2_account_id }}</span>
         </div>
-        <div class="mg-bottom-sm">
-          <span class="setting-label">{{ $t("backup.b2_account_key") }}</span>
+        <div class="key-value-setting">
+          <span class="label">{{ $t("backup.b2_account_key") }}</span>
           <cv-link @click="toggleBackblazeAccountKey">
             {{
               isShownBackblazeAccountKey ? $t("common.hide") : $t("common.show")
@@ -48,24 +44,20 @@
       </template>
       <!-- amazon s3 -->
       <template v-if="repository.provider == 'aws'">
-        <div class="mg-bottom-sm">
-          <span class="setting-label">{{
-            $t("backup.aws_access_key_id")
-          }}</span>
-          <span class="setting-value">{{
+        <div class="key-value-setting">
+          <span class="label">{{ $t("backup.aws_access_key_id") }}</span>
+          <span class="value">{{
             repository.parameters.aws_access_key_id
           }}</span>
         </div>
-        <div class="mg-bottom-sm">
-          <span class="setting-label">{{
-            $t("backup.aws_default_region")
-          }}</span>
-          <span class="setting-value">{{
+        <div class="key-value-setting">
+          <span class="label">{{ $t("backup.aws_default_region") }}</span>
+          <span class="value">{{
             repository.parameters.aws_default_region
           }}</span>
         </div>
-        <div class="mg-bottom-sm">
-          <span class="setting-label">
+        <div class="key-value-setting">
+          <span class="label">
             {{ $t("backup.aws_secret_access_key") }}
           </span>
           <cv-link @click="toggleAwsSecretAccessKey">
@@ -96,8 +88,8 @@
       <template v-if="repository.provider == 'azure'"> azure //// </template>
       <!-- //// handle all providers -->
       <!-- password -->
-      <div class="mg-bottom-sm">
-        <span class="setting-label">
+      <div class="key-value-setting">
+        <span class="label">
           {{ $t("backup.repository_password") }}
           <cv-interactive-tooltip
             alignment="center"
@@ -183,17 +175,6 @@ export default {
 
 <style scoped lang="scss">
 @import "../../styles/carbon-utils";
-
-.setting-label {
-  display: inline-block;
-  margin-right: $spacing-04;
-  margin-bottom: $spacing-02;
-  font-weight: bold;
-}
-
-.setting-value {
-  word-wrap: break-word;
-}
 
 .password-snippet {
   margin-bottom: $spacing-07;

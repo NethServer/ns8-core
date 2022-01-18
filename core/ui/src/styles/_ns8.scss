@@ -188,7 +188,7 @@ a {
 }
 // end top-right overflow menu
 
-// ghost button on dark background
+// ghost button on dark background start
 .ghost-button-dark-bg {
   color: $inverse-link;
 }
@@ -197,11 +197,27 @@ a {
   background-color: $hover-secondary;
   color: $inverse-link;
 }
-// end ghost button on dark background
+// ghost button on dark background end
 
 // used for buttons with external links
 .text-decoration-none {
   text-decoration: none !important;
+}
+
+// key/value settings
+.key-value-setting {
+  margin-bottom: $spacing-05;
+
+  .label {
+    display: inline-block;
+    margin-right: $spacing-04;
+    font-weight: bold;
+  }
+
+  .value {
+    // wrap long values like urls
+    word-wrap: break-word;
+  }
 }
 
 // status badges
@@ -376,9 +392,8 @@ a {
 .cv-accordion .bx--accordion__content {
   padding-right: 1rem;
 }
-// end accordion
 
-// form elements
+// form elements start
 .cv-form {
   .cv-text-input,
   .bx--form-item,
@@ -394,14 +409,14 @@ a {
   // hide label for controls with mandatory label (e.g. CvSelect)
   visibility: hidden;
 }
-// end form
+// form elements start end
 
 // fix padding of number input
 .bx--number input[type="number"] {
   padding-right: 5rem;
 }
 
-// data table
+// data table start
 .bx--toolbar-search-container-expandable .bx--search {
   position: static;
   width: 3rem;
@@ -442,7 +457,7 @@ a {
 .cv-data-table .bx--pagination__right .bx--pagination__text {
   display: inline-block !important;
 }
-// end data table
+// data table end
 
 // loader
 .loader {

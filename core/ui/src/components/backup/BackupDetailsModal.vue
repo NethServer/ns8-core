@@ -2,29 +2,29 @@
   <cv-modal size="default" :visible="isShown" @modal-hidden="$emit('hide')">
     <template slot="title">{{ $t("backup.backup_details") }}</template>
     <template slot="content">
-      <div class="mg-bottom-sm">
-        <span class="setting-label">{{ $t("backup.name") }}</span>
-        <span class="setting-value">{{ backup.name }}</span>
+      <div class="key-value-setting">
+        <span class="label">{{ $t("backup.name") }}</span>
+        <span class="value">{{ backup.name }}</span>
       </div>
-      <div class="mg-bottom-sm">
-        <span class="setting-label">{{ $t("backup.repository") }}</span>
-        <span class="setting-value">{{ backup.repoName }}</span>
+      <div class="key-value-setting">
+        <span class="label">{{ $t("backup.repository") }}</span>
+        <span class="value">{{ backup.repoName }}</span>
       </div>
-      <div class="mg-bottom-sm">
+      <div class="key-value-setting">
         <!-- //// format schedule/schedule -->
-        <span class="setting-label">{{ $t("backup.schedule") }}</span>
-        <span class="setting-value">{{ backup.schedule }}</span>
+        <span class="label">{{ $t("backup.schedule") }}</span>
+        <span class="value">{{ backup.schedule }}</span>
       </div>
-      <div class="mg-bottom-sm">
-        <span class="setting-label">{{ $t("backup.retention") }}</span>
-        <span class="setting-value">{{
+      <div class="key-value-setting">
+        <span class="label">{{ $t("backup.retention") }}</span>
+        <span class="value">{{
           $tc("backup.num_backup_snapshots", backup.retention, {
             num: backup.retention,
           })
         }}</span>
       </div>
-      <div class="mg-bottom-sm instances">
-        <span class="setting-label">{{
+      <div class="setting instances">
+        <span class="label">{{
           $tc("backup.Instances", instances.length)
         }}</span>
         <div class="instance-list">
@@ -66,11 +66,11 @@
               </template>
               <template slot="content">
                 <h5 class="last-backup">{{ $t("backup.last_backup") }}</h5>
-                <div class="mg-bottom-sm">
-                  <span class="setting-label">
+                <div class="key-value-setting">
+                  <span class="label">
                     {{ $t("backup.status") }}
                   </span>
-                  <span class="setting-value status">
+                  <span class="value status">
                     <span
                       v-if="instance.status && instance.status.success == true"
                       class="ns-success-dark-bg"
@@ -90,11 +90,11 @@
                     </span>
                   </span>
                 </div>
-                <div class="mg-bottom-sm">
-                  <span class="setting-label">
+                <div class="key-value-setting">
+                  <span class="label">
                     {{ $t("backup.completed") }}
                   </span>
-                  <span class="setting-value">
+                  <span class="value">
                     <span v-if="instance.status && instance.status.end">
                       {{
                         (instance.status.end * 1000)
@@ -104,11 +104,11 @@
                     <span v-else>-</span>
                   </span>
                 </div>
-                <div class="mg-bottom-sm">
-                  <span class="setting-label">
+                <div class="key-value-setting">
+                  <span class="label">
                     {{ $t("backup.duration") }}
                   </span>
-                  <span class="setting-value">
+                  <span class="value">
                     <span
                       v-if="
                         instance.status &&
@@ -124,22 +124,22 @@
                     <span v-else>-</span>
                   </span>
                 </div>
-                <div class="mg-bottom-sm">
-                  <span class="setting-label">
+                <div class="key-value-setting">
+                  <span class="label">
                     {{ $t("backup.total_size") }}
                   </span>
-                  <span class="setting-value">
+                  <span class="value">
                     <span v-if="instance.status && instance.status.total_size">
                       {{ instance.status.total_size | byteFormat }}
                     </span>
                     <span v-else>-</span>
                   </span>
                 </div>
-                <div class="mg-bottom-sm">
-                  <span class="setting-label">
+                <div class="key-value-setting">
+                  <span class="label">
                     {{ $t("backup.total_file_count") }}
                   </span>
-                  <span class="setting-value">
+                  <span class="value">
                     <span
                       v-if="instance.status && instance.status.total_file_count"
                     >
@@ -187,16 +187,6 @@ export default {
 
 <style scoped lang="scss">
 @import "../../styles/carbon-utils";
-
-.setting-label {
-  display: inline-block;
-  margin-right: $spacing-04;
-  font-weight: bold;
-}
-
-.setting-value {
-  word-wrap: break-word;
-}
 
 .instances {
   display: flex;

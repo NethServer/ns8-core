@@ -53,22 +53,20 @@
       <div v-else class="bx--row">
         <div class="bx--col-md-4">
           <cv-tile light>
-            <div class="mg-bottom-md">
-              <span class="setting-label">{{ $t("domains.schema") }}</span>
-              <span class="setting-value">{{ domain.schema }}</span>
+            <div class="key-value-setting">
+              <span class="label">{{ $t("domains.schema") }}</span>
+              <span class="value">{{ domain.schema }}</span>
             </div>
-            <div class="mg-bottom-md">
-              <span class="setting-label">{{ $t("domains.base_dn") }}</span>
-              <span class="setting-value">{{ domain.base_dn }}</span>
+            <div class="key-value-setting">
+              <span class="label">{{ $t("domains.base_dn") }}</span>
+              <span class="value">{{ domain.base_dn }}</span>
             </div>
-            <div class="mg-bottom-md">
-              <span class="setting-label">{{ $t("domains.bind_dn") }}</span>
-              <span class="setting-value">{{ domain.bind_dn }}</span>
+            <div class="key-value-setting">
+              <span class="label">{{ $t("domains.bind_dn") }}</span>
+              <span class="value">{{ domain.bind_dn }}</span>
             </div>
-            <div class="mg-bottom-md">
-              <span class="setting-label">{{
-                $t("domains.bind_password")
-              }}</span>
+            <div class="key-value-setting">
+              <span class="label">{{ $t("domains.bind_password") }}</span>
               <cv-link @click="toggleBindPassword">
                 {{
                   isShownBindPassword ? $t("common.hide") : $t("common.show")
@@ -87,9 +85,9 @@
                 >{{ domain.bind_password }}</NsCodeSnippet
               >
             </div>
-            <div class="mg-bottom-md">
-              <span class="setting-label">{{ $t("domains.tls") }}</span>
-              <span class="setting-value">
+            <div class="key-value-setting">
+              <span class="label">{{ $t("domains.tls") }}</span>
+              <span class="value">
                 <cv-tag
                   v-if="domain.tls"
                   kind="green"
@@ -106,9 +104,9 @@
                 ></cv-tag>
               </span>
             </div>
-            <div class="mg-bottom-md">
-              <span class="setting-label">{{ $t("domains.tls_verify") }}</span>
-              <span class="setting-value">
+            <div class="key-value-setting">
+              <span class="label">{{ $t("domains.tls_verify") }}</span>
+              <span class="value">
                 <cv-tag
                   v-if="domain.tls_verify"
                   kind="green"
@@ -923,17 +921,6 @@ export default {
 
 .provider-card-content .row:last-child {
   margin-bottom: 0;
-}
-
-.setting-label {
-  display: inline-block;
-  margin-right: $spacing-04;
-  margin-bottom: $spacing-02;
-  font-weight: bold;
-}
-
-.setting-value {
-  word-wrap: break-word;
 }
 
 .password-snippet {

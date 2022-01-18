@@ -9,7 +9,7 @@
       <template slot="title">{{ $t("software_center.app_info") }}</template>
       <!-- v-if="isShown" is needed to reset modal scroll to top -->
       <template v-if="isShown" slot="content">
-        <section>
+        <div class="mg-bottom-md">
           <div class="logo-and-name">
             <div class="app-logo">
               <img
@@ -25,76 +25,80 @@
               <h3>{{ app.name }}</h3>
             </div>
           </div>
-        </section>
-        <section v-if="app.screenshots.length">
+        </div>
+        <div v-if="app.screenshots.length" class="mg-bottom-md">
           <div class="screenshots">
             <ImageGallery :fullScreen="true" :images="app.screenshots" />
           </div>
-        </section>
+        </div>
         <div class="description">
           {{ getApplicationDescription(app) }}
         </div>
-        <section>
+        <div class="key-value-setting">
           <div>
-            <span class="section-title"
-              >{{
-                $tc("software_center.categories", app.categories.length)
-              }}:</span
-            >
-            {{ getApplicationCategories(app) }}
-          </div>
-        </section>
-        <section>
-          <div>
-            <span class="section-title"
-              >{{ $t("software_center.latest_version") }}:</span
-            >
-            {{ app.versions.length ? app.versions[0].tag : "-" }}
-          </div>
-        </section>
-        <section>
-          <div>
-            <span class="section-title"
-              >{{ $t("software_center.documentation") }}:
+            <span class="label">{{
+              $tc("software_center.categories", app.categories.length)
+            }}</span>
+            <span class="value">
+              {{ getApplicationCategories(app) }}
             </span>
-            <cv-link :href="app.docs.documentation_url" target="_blank">
-              {{ app.docs.documentation_url }}
-            </cv-link>
           </div>
-        </section>
-        <section>
+        </div>
+        <div class="key-value-setting">
           <div>
-            <span class="section-title"
-              >{{ $t("software_center.bugs") }}:
+            <span class="label">
+              {{ $t("software_center.latest_version") }}
             </span>
+            <span class="value">
+              {{ app.versions.length ? app.versions[0].tag : "-" }}
+            </span>
+          </div>
+        </div>
+        <div class="key-value-setting">
+          <div>
+            <span class="label"
+              >{{ $t("software_center.documentation") }}
+            </span>
+            <span class="value">
+              <cv-link :href="app.docs.documentation_url" target="_blank">
+                {{ app.docs.documentation_url }}
+              </cv-link>
+            </span>
+          </div>
+        </div>
+        <div class="key-value-setting">
+          <span class="label">{{ $t("software_center.bugs") }}</span>
+          <span class="value">
             <cv-link :href="app.docs.bug_url" target="_blank">
               {{ app.docs.bug_url }}
             </cv-link>
-          </div>
-        </section>
-        <section>
+          </span>
+        </div>
+        <div class="key-value-setting">
           <div>
-            <span class="section-title"
-              >{{ $t("software_center.source_code") }}:
+            <span class="label">{{ $t("software_center.source_code") }}</span>
+            <span class="value">
+              <cv-link :href="app.docs.code_url" target="_blank">
+                {{ app.docs.code_url }}
+              </cv-link>
             </span>
-            <cv-link :href="app.docs.code_url" target="_blank">
-              {{ app.docs.code_url }}
-            </cv-link>
           </div>
-        </section>
-        <section>
+        </div>
+        <div class="key-value-setting">
           <div>
-            <span class="section-title"
-              >{{ $t("software_center.source_package") }}:
+            <span class="label"
+              >{{ $t("software_center.source_package") }}
             </span>
-            {{ app.source }}
+            <span class="value">
+              {{ app.source }}
+            </span>
           </div>
-        </section>
-        <section>
-          <div>
-            <span class="section-title"
-              >{{ $tc("software_center.authors", app.authors.length) }}:
-            </span>
+        </div>
+        <div class="key-value-setting">
+          <span class="label"
+            >{{ $tc("software_center.authors", app.authors.length) }}
+          </span>
+          <span class="value">
             <span v-if="app.authors.length == 1"
               >{{ app.authors[0].name }}
               <cv-link :href="'mailto:' + app.authors[0].email" target="_blank">
@@ -113,8 +117,8 @@
                 </cv-link>
               </li>
             </ul>
-          </div>
-        </section>
+          </span>
+        </div>
       </template>
       <template slot="secondary-button">{{ $t("common.close") }}</template>
     </cv-modal>
@@ -168,14 +172,6 @@ export default {
 
 .description {
   margin-bottom: $spacing-06;
-}
-
-section {
-  margin-bottom: $spacing-05;
-}
-
-.section-title {
-  font-weight: bold;
 }
 
 .author {
