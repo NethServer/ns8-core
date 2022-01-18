@@ -288,7 +288,7 @@
     "app_instances_not_backed_up_description": "{numInstances} app instance has no backup configured | {numInstances} app instances have no backup configured",
     "disabled_backups": "Disabled backups",
     "disabled_backups_description": "There is {num} backup disabled | There are {num} backups disabled",
-    "repository_password_helper": "Enter password if repository has already been configured previously",
+    "repository_password_helper": "Enter password if repository was configured previously",
     "not_backed_up": "Not backed up",
     "search_instances": "Search instances...",
     "not_backed_up_instances_selected": "Instances not backed up are currently selected",

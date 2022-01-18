@@ -375,13 +375,15 @@ a {
 // end accordion
 
 // form elements
-.cv-text-input,
-.bx--form-item,
-.cv-select,
-.cv-multi-select,
-.ns-password-input,
-.cv-combo-box {
-  margin-bottom: $spacing-05;
+.cv-form {
+  .cv-text-input,
+  .bx--form-item,
+  .cv-select,
+  .cv-multi-select,
+  .ns-password-input,
+  .cv-combo-box {
+    margin-bottom: $spacing-05;
+  }
 }
 
 .hide-label .bx--label {
@@ -563,7 +565,7 @@ a {
   display: inline-block;
 
   .bx--tooltip__label .bx--tooltip__trigger {
-    margin-left: 0 !important;
+    margin-left: 0;
   }
 }
 

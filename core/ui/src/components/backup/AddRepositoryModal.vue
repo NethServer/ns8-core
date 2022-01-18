@@ -15,205 +15,207 @@
   >
     <template slot="title">{{ $t("backup.add_repository") }}</template>
     <template slot="content">
-      <template v-if="step == 'provider'">
-        <div class="mg-bottom-md">
-          {{ $t("backup.select_backup_provider") }}
-        </div>
-        <div class="bx--grid">
-          <div class="bx--row">
-            <!-- backblaze -->
-            <div class="bx--col-md-4">
-              <NsTile
-                :light="true"
-                kind="selectable"
-                v-model="isBackblazeSelected"
-                value="providerValue"
-                @click="selectBackblaze()"
-                class="provider-card"
-              >
-                <div class="provider-card-content">
-                  <div class="provider-icon">
-                    <img
-                      :src="require('@/assets/backblaze.png')"
-                      alt="backblaze logo"
-                    />
+      <cv-form>
+        <template v-if="step == 'provider'">
+          <div class="mg-bottom-md">
+            {{ $t("backup.select_backup_provider") }}
+          </div>
+          <div class="bx--grid">
+            <div class="bx--row">
+              <!-- backblaze -->
+              <div class="bx--col-md-4">
+                <NsTile
+                  :light="true"
+                  kind="selectable"
+                  v-model="isBackblazeSelected"
+                  value="providerValue"
+                  @click="selectBackblaze()"
+                  class="provider-card"
+                >
+                  <div class="provider-card-content">
+                    <div class="provider-icon">
+                      <img
+                        :src="require('@/assets/backblaze.png')"
+                        alt="backblaze logo"
+                      />
+                    </div>
+                    <h6>
+                      {{ $t("backup.backblaze") }}
+                    </h6>
                   </div>
-                  <h6>
-                    {{ $t("backup.backblaze") }}
-                  </h6>
-                </div>
-              </NsTile>
-            </div>
-            <!-- azure -->
-            <div class="bx--col-md-4">
-              <NsTile
-                :light="true"
-                kind="selectable"
-                v-model="isAzureSelected"
-                value="providerValue"
-                @click="selectAzure()"
-                class="provider-card"
-              >
-                <div class="provider-card-content">
-                  <div class="provider-icon">
-                    <img
-                      :src="require('@/assets/azure.png')"
-                      alt="azure logo"
-                    />
+                </NsTile>
+              </div>
+              <!-- azure -->
+              <div class="bx--col-md-4">
+                <NsTile
+                  :light="true"
+                  kind="selectable"
+                  v-model="isAzureSelected"
+                  value="providerValue"
+                  @click="selectAzure()"
+                  class="provider-card"
+                >
+                  <div class="provider-card-content">
+                    <div class="provider-icon">
+                      <img
+                        :src="require('@/assets/azure.png')"
+                        alt="azure logo"
+                      />
+                    </div>
+                    <h6>
+                      {{ $t("backup.azure") }}
+                    </h6>
                   </div>
-                  <h6>
-                    {{ $t("backup.azure") }}
-                  </h6>
-                </div>
-              </NsTile>
-            </div>
-            <!-- amazon s3 -->
-            <div class="bx--col-md-4">
-              <NsTile
-                :light="true"
-                kind="selectable"
-                v-model="isAmazonS3Selected"
-                value="providerValue"
-                @click="selectAmazonS3()"
-                class="provider-card"
-              >
-                <div class="provider-card-content">
-                  <div class="provider-icon">
-                    <img
-                      :src="require('@/assets/s3.png')"
-                      alt="amazon s3 logo"
-                    />
+                </NsTile>
+              </div>
+              <!-- amazon s3 -->
+              <div class="bx--col-md-4">
+                <NsTile
+                  :light="true"
+                  kind="selectable"
+                  v-model="isAmazonS3Selected"
+                  value="providerValue"
+                  @click="selectAmazonS3()"
+                  class="provider-card"
+                >
+                  <div class="provider-card-content">
+                    <div class="provider-icon">
+                      <img
+                        :src="require('@/assets/s3.png')"
+                        alt="amazon s3 logo"
+                      />
+                    </div>
+                    <h6>
+                      {{ $t("backup.aws") }}
+                    </h6>
                   </div>
-                  <h6>
-                    {{ $t("backup.aws") }}
-                  </h6>
-                </div>
-              </NsTile>
-            </div>
-            <!-- generic s3 -->
-            <div class="bx--col-md-4">
-              <NsTile
-                :light="true"
-                kind="selectable"
-                v-model="isGenericS3Selected"
-                value="providerValue"
-                @click="selectGenericS3()"
-                class="provider-card"
-              >
-                <div class="provider-card-content">
-                  <div class="provider-icon">
-                    <img
-                      :src="require('@/assets/s3-generic.png')"
-                      alt="generic s3 logo"
-                    />
+                </NsTile>
+              </div>
+              <!-- generic s3 -->
+              <div class="bx--col-md-4">
+                <NsTile
+                  :light="true"
+                  kind="selectable"
+                  v-model="isGenericS3Selected"
+                  value="providerValue"
+                  @click="selectGenericS3()"
+                  class="provider-card"
+                >
+                  <div class="provider-card-content">
+                    <div class="provider-icon">
+                      <img
+                        :src="require('@/assets/s3-generic.png')"
+                        alt="generic s3 logo"
+                      />
+                    </div>
+                    <h6>
+                      {{ $t("backup.generic_s3") }}
+                    </h6>
                   </div>
-                  <h6>
-                    {{ $t("backup.generic_s3") }}
-                  </h6>
-                </div>
-              </NsTile>
+                </NsTile>
+              </div>
             </div>
           </div>
-        </div>
-      </template>
-      <template v-if="step == 'settings'">
-        <cv-text-input
-          :label="$t('backup.url')"
-          v-model.trim="url"
-          :invalid-message="$t(error.url)"
-          :disabled="loading.addBackupRepository"
-          ref="url"
-        >
-        </cv-text-input>
-        <!-- backblaze -->
-        <template v-if="isBackblazeSelected">
-          <cv-text-input
-            :label="$t('backup.b2_account_id')"
-            v-model.trim="backblaze.b2_account_id"
-            :invalid-message="$t(error.backblaze.b2_account_id)"
-            :disabled="loading.addBackupRepository"
-            ref="b2_account_id"
-          >
-          </cv-text-input>
-          <cv-text-input
-            :label="$t('backup.b2_account_key')"
-            type="password"
-            v-model.trim="backblaze.b2_account_key"
-            :disabled="loading.addBackupRepository"
-            :invalid-message="$t(error.backblaze.b2_account_key)"
-            :password-hide-label="$t('password.hide_password')"
-            :password-show-label="$t('password.show_password')"
-            ref="b2_account_key"
-          ></cv-text-input>
         </template>
-        <!-- amazon s3 -->
-        <template v-if="isAmazonS3Selected">
+        <template v-if="step == 'settings'">
           <cv-text-input
-            :label="$t('backup.aws_access_key_id')"
-            v-model.trim="aws.aws_access_key_id"
-            :invalid-message="$t(error.aws.aws_access_key_id)"
+            :label="$t('backup.url')"
+            v-model.trim="url"
+            :invalid-message="$t(error.url)"
             :disabled="loading.addBackupRepository"
-            ref="aws_access_key_id"
+            ref="url"
           >
           </cv-text-input>
+          <!-- backblaze -->
+          <template v-if="isBackblazeSelected">
+            <cv-text-input
+              :label="$t('backup.b2_account_id')"
+              v-model.trim="backblaze.b2_account_id"
+              :invalid-message="$t(error.backblaze.b2_account_id)"
+              :disabled="loading.addBackupRepository"
+              ref="b2_account_id"
+            >
+            </cv-text-input>
+            <cv-text-input
+              :label="$t('backup.b2_account_key')"
+              type="password"
+              v-model.trim="backblaze.b2_account_key"
+              :disabled="loading.addBackupRepository"
+              :invalid-message="$t(error.backblaze.b2_account_key)"
+              :password-hide-label="$t('password.hide_password')"
+              :password-show-label="$t('password.show_password')"
+              ref="b2_account_key"
+            ></cv-text-input>
+          </template>
+          <!-- amazon s3 -->
+          <template v-if="isAmazonS3Selected">
+            <cv-text-input
+              :label="$t('backup.aws_access_key_id')"
+              v-model.trim="aws.aws_access_key_id"
+              :invalid-message="$t(error.aws.aws_access_key_id)"
+              :disabled="loading.addBackupRepository"
+              ref="aws_access_key_id"
+            >
+            </cv-text-input>
+            <cv-text-input
+              :label="$t('backup.aws_default_region')"
+              v-model.trim="aws.aws_default_region"
+              :invalid-message="$t(error.aws.aws_default_region)"
+              :disabled="loading.addBackupRepository"
+              ref="aws_default_region"
+            >
+            </cv-text-input>
+            <cv-text-input
+              :label="$t('backup.aws_secret_access_key')"
+              type="password"
+              v-model.trim="aws.aws_secret_access_key"
+              :disabled="loading.addBackupRepository"
+              :invalid-message="$t(error.aws.aws_secret_access_key)"
+              :password-hide-label="$t('password.hide_password')"
+              :password-show-label="$t('password.show_password')"
+              ref="aws_secret_access_key"
+            ></cv-text-input>
+          </template>
+          <!-- azure -->
+          <template v-if="isAzureSelected"> azure //// </template>
+          <!-- generic s3 -->
+          <template v-if="isGenericS3Selected"> generic s3 //// </template>
+          <!-- //// handle ALL providers -->
           <cv-text-input
-            :label="$t('backup.aws_default_region')"
-            v-model.trim="aws.aws_default_region"
-            :invalid-message="$t(error.aws.aws_default_region)"
+            :label="$t('backup.repository_name')"
+            v-model.trim="name"
+            :helper-text="$t('backup.repository_name_helper')"
+            :invalid-message="$t(error.name)"
             :disabled="loading.addBackupRepository"
-            ref="aws_default_region"
+            ref="name"
           >
           </cv-text-input>
-          <cv-text-input
-            :label="$t('backup.aws_secret_access_key')"
-            type="password"
-            v-model.trim="aws.aws_secret_access_key"
-            :disabled="loading.addBackupRepository"
-            :invalid-message="$t(error.aws.aws_secret_access_key)"
-            :password-hide-label="$t('password.hide_password')"
-            :password-show-label="$t('password.show_password')"
-            ref="aws_secret_access_key"
-          ></cv-text-input>
+          <!-- advanced options -->
+          <cv-accordion ref="accordion">
+            <cv-accordion-item :open="toggleAccordion[0]">
+              <template slot="title">{{ $t("common.advanced") }}</template>
+              <template slot="content">
+                <cv-text-input
+                  :label="$t('backup.repository_password')"
+                  v-model.trim="password"
+                  :helper-text="$t('backup.repository_password_helper')"
+                  :invalid-message="$t(error.password)"
+                  :disabled="loading.addBackupRepository"
+                  ref="password"
+                >
+                </cv-text-input>
+              </template>
+            </cv-accordion-item>
+          </cv-accordion>
+          <NsInlineNotification
+            v-if="error.addBackupRepository"
+            kind="error"
+            :title="$t('action.add-backup-repository')"
+            :description="error.addBackupRepository"
+            :showCloseButton="false"
+          />
         </template>
-        <!-- azure -->
-        <template v-if="isAzureSelected"> azure //// </template>
-        <!-- generic s3 -->
-        <template v-if="isGenericS3Selected"> generic s3 //// </template>
-        <!-- //// handle ALL providers -->
-        <cv-text-input
-          :label="$t('backup.repository_name')"
-          v-model.trim="name"
-          :helper-text="$t('backup.repository_name_helper')"
-          :invalid-message="$t(error.name)"
-          :disabled="loading.addBackupRepository"
-          ref="name"
-        >
-        </cv-text-input>
-        <!-- advanced options -->
-        <cv-accordion ref="accordion">
-          <cv-accordion-item :open="toggleAccordion[0]">
-            <template slot="title">{{ $t("common.advanced") }}</template>
-            <template slot="content">
-              <cv-text-input
-                :label="$t('backup.repository_password')"
-                v-model.trim="password"
-                :helper-text="$t('backup.repository_password_helper')"
-                :invalid-message="$t(error.password)"
-                :disabled="loading.addBackupRepository"
-                ref="password"
-              >
-              </cv-text-input>
-            </template>
-          </cv-accordion-item>
-        </cv-accordion>
-        <NsInlineNotification
-          v-if="error.addBackupRepository"
-          kind="error"
-          :title="$t('action.add-backup-repository')"
-          :description="error.addBackupRepository"
-          :showCloseButton="false"
-        />
-      </template>
+      </cv-form>
     </template>
   </NsWizard>
 </template>
