@@ -125,7 +125,19 @@
                       row.url
                     }}</cv-data-table-cell>
                     <cv-data-table-cell>
-                      <div class="badge-container">
+                      <cv-tag
+                        v-if="row.status"
+                        kind="green"
+                        :label="$t('common.enabled')"
+                        class="no-margin"
+                      ></cv-tag>
+                      <cv-tag
+                        v-else
+                        kind="gray"
+                        :label="$t('common.disabled')"
+                        class="no-margin"
+                      ></cv-tag>
+                      <!-- <div class="badge-container"> ////
                         <template v-if="row.status"
                           ><span class="green-badge left-badge"></span>
                           {{ $t("common.enabled") }}</template
@@ -134,10 +146,22 @@
                           ><span class="gray-badge left-badge"></span
                           >{{ $t("common.disabled") }}</template
                         >
-                      </div>
+                      </div> -->
                     </cv-data-table-cell>
-                    <cv-data-table-cell
-                      ><div class="badge-container">
+                    <cv-data-table-cell>
+                      <cv-tag
+                        v-if="row.testing"
+                        kind="green"
+                        :label="$t('common.enabled')"
+                        class="no-margin"
+                      ></cv-tag>
+                      <cv-tag
+                        v-else
+                        kind="gray"
+                        :label="$t('common.disabled')"
+                        class="no-margin"
+                      ></cv-tag>
+                      <!-- <div class="badge-container"> ////
                         <template v-if="row.testing"
                           ><span class="green-badge left-badge"></span>
                           {{ $t("common.enabled") }}</template
@@ -146,8 +170,8 @@
                           ><span class="gray-badge left-badge"></span
                           >{{ $t("common.disabled") }}</template
                         >
-                      </div></cv-data-table-cell
-                    >
+                      </div> -->
+                    </cv-data-table-cell>
                     <cv-data-table-cell>
                       <cv-overflow-menu flip-menu class="table-overflow-menu">
                         <cv-overflow-menu-item @click="showEditRepoModal(row)">

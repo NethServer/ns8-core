@@ -89,11 +89,41 @@
             </div>
             <div class="mg-bottom-md">
               <span class="setting-label">{{ $t("domains.tls") }}</span>
-              <span class="setting-value">{{ domain.tls }}</span>
+              <span class="setting-value">
+                <cv-tag
+                  v-if="domain.tls"
+                  kind="green"
+                  :label="$t('common.enabled')"
+                  size="sm"
+                  class="no-margin"
+                ></cv-tag>
+                <cv-tag
+                  v-else
+                  kind="gray"
+                  :label="$t('common.disabled')"
+                  size="sm"
+                  class="no-margin"
+                ></cv-tag>
+              </span>
             </div>
             <div class="mg-bottom-md">
               <span class="setting-label">{{ $t("domains.tls_verify") }}</span>
-              <span class="setting-value">{{ domain.tls_verify }}</span>
+              <span class="setting-value">
+                <cv-tag
+                  v-if="domain.tls_verify"
+                  kind="green"
+                  :label="$t('common.enabled')"
+                  size="sm"
+                  class="no-margin"
+                ></cv-tag>
+                <cv-tag
+                  v-else
+                  kind="gray"
+                  :label="$t('common.disabled')"
+                  size="sm"
+                  class="no-margin"
+                ></cv-tag>
+              </span>
             </div>
           </cv-tile>
         </div>
