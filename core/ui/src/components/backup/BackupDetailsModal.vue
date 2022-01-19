@@ -23,7 +23,7 @@
           })
         }}</span>
       </div>
-      <div class="setting instances">
+      <div class="setting instances key-value-setting">
         <span class="label">{{
           $tc("backup.Instances", instances.length)
         }}</span>
@@ -66,7 +66,7 @@
               </template>
               <template slot="content">
                 <h5 class="last-backup">{{ $t("backup.last_backup") }}</h5>
-                <div class="key-value-setting">
+                <div class="key-value-setting narrow">
                   <span class="label">
                     {{ $t("backup.status") }}
                   </span>
@@ -90,7 +90,7 @@
                     </span>
                   </span>
                 </div>
-                <div class="key-value-setting">
+                <div class="key-value-setting narrow">
                   <span class="label">
                     {{ $t("backup.completed") }}
                   </span>
@@ -104,7 +104,7 @@
                     <span v-else>-</span>
                   </span>
                 </div>
-                <div class="key-value-setting">
+                <div class="key-value-setting narrow">
                   <span class="label">
                     {{ $t("backup.duration") }}
                   </span>
@@ -124,7 +124,7 @@
                     <span v-else>-</span>
                   </span>
                 </div>
-                <div class="key-value-setting">
+                <div class="key-value-setting narrow">
                   <span class="label">
                     {{ $t("backup.total_size") }}
                   </span>
@@ -135,7 +135,7 @@
                     <span v-else>-</span>
                   </span>
                 </div>
-                <div class="key-value-setting">
+                <div class="key-value-setting narrow">
                   <span class="label">
                     {{ $t("backup.total_file_count") }}
                   </span>

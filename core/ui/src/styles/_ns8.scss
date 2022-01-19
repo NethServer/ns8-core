@@ -220,6 +220,10 @@ a {
   }
 }
 
+.key-value-setting.narrow {
+  margin-bottom: $spacing-03;
+}
+
 // status badges
 .badge-container {
   display: flex;
@@ -411,9 +415,29 @@ a {
 }
 // form elements start end
 
+// styles for large devices
+@media (min-width: $breakpoint-medium) {
+  // limit form fields width on large devices
+  .bx--text-input,
+  .bx--text-input__field-wrapper,
+  .cv-select,
+  .cv-multi-select,
+  .cv-combo-box {
+    max-width: 38rem;
+  }
+}
+
 // fix padding of number input
 .bx--number input[type="number"] {
   padding-right: 5rem;
+}
+
+// fix cv-combo-box clear button overlapping invalid badge
+.cv-combo-box
+  .bx--list-box__invalid-icon
+  + .bx--list-box__field
+  .bx--list-box__selection {
+  right: 4rem !important;
 }
 
 // data table start
@@ -634,18 +658,6 @@ a {
   color: $danger-01;
 }
 // end NsNodeCard
-
-// styles for large devices
-@media (min-width: $breakpoint-medium) {
-  // limit form fields width on large devices
-  .bx--text-input,
-  .bx--text-input__field-wrapper,
-  .cv-select,
-  .cv-multi-select,
-  .cv-combo-box {
-    max-width: 38rem;
-  }
-}
 
 // warning for pages optimized for landscape mode (e.g. pages containing tables)
 .landscape-warning {
