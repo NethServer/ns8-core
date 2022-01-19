@@ -1,4 +1,4 @@
-import { NsEmptyState, Gear } from "@nethserver/ns8-ui-lib";
+import { NsEmptyState, GearPictogram } from "@nethserver/ns8-ui-lib";
 
 export default {
   title: "Components/NsEmptyState",
@@ -23,11 +23,11 @@ Default.args = {
 
 const CustomPictogramTemplate = (args, { argTypes }) => ({
   props: Object.keys(argTypes),
-  components: { NsEmptyState, Gear },
+  components: { NsEmptyState, GearPictogram },
   template:
     '<NsEmptyState v-bind="$props">\
       <template v-slot:pictogram>\
-        <Gear />\
+        <GearPictogram />\
       </template>\
       <template v-slot:description>\
         Try changing your search criteria\

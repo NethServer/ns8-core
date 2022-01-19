@@ -53,7 +53,7 @@
         <div class="bx--col">
           <NsEmptyState :title="$t('backup.no_backup_repository')">
             <template #pictogram>
-              <HardDrive />
+              <HardDrivePictogram />
             </template>
             <template #description>
               <div>{{ $t("backup.empty_state_repository_description") }}</div>

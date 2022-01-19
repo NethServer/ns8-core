@@ -182,7 +182,7 @@
           <div class="bx--col">
             <NsEmptyState :title="$t('domains.no_domain_configured')">
               <template #pictogram>
-                <Group />
+                <GroupPictogram />
               </template>
               <template #description>
                 <div>{{ $t("domains.empty_state_domains_description") }}</div>
