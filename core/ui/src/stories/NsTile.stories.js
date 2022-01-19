@@ -27,10 +27,11 @@ Default.args = {
   slotContent: `Tile title`,
   // required for selectable kind
   value: "selectedValue",
-  light: false,
+  light: true,
   selected: false,
   centered: false,
   large: false,
+  disabled: false,
 };
 
 export const Icon = Template.bind({});
@@ -39,11 +40,12 @@ Icon.args = {
   kind: "standard",
   // required for selectable kind
   value: "selectedValue",
-  light: false,
+  light: true,
   selected: false,
   icon: EdgeCluster32,
   centered: true,
   large: false,
+  disabled: false,
 };
 
 export const FooterIcon = Template.bind({});
@@ -52,9 +54,10 @@ FooterIcon.args = {
   kind: "standard",
   // required for selectable kind
   value: "selectedValue",
-  light: false,
+  light: true,
   selected: false,
   footerIcon: Notification20,
   centered: false,
   large: false,
+  disabled: false,
 };

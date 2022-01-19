@@ -173,7 +173,7 @@ export default {
 
         taskResult = statusResponse.data.data;
 
-        console.log("taskResult", taskResult); ////
+        console.log("taskResult", taskContext.action, taskResult); ////
 
         if (taskStatus === "validation-failed") {
           // show validation errors
