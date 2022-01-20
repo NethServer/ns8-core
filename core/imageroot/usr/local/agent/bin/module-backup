@@ -1,0 +1,133 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2022 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
+import agent
+import json
+import sys
+import os
+import os.path
+import subprocess
+import time
+
+backup_id = int(sys.argv[1])
+
+try:
+    subprocess.run(["pre-module-backup"] + sys.argv[1:], check=True)
+except FileNotFoundError:
+    pass
+except PermissionError:
+    print("[WARNING] pre-module-backup is not executable: ignored.", file=sys.stderr)
+except Exception as ex:
+    print("[ERROR] pre-module-backup failed.", ex, file=sys.stderr)
+    print("[ERROR] module-backup aborted.", file=sys.stderr)
+    sys.exit(1)
+
+rdb = agent.redis_connect(host='127.0.0.1') # Connect to local replica
+
+obackup = rdb.hgetall(f'cluster/backup/{backup_id}')
+agent.assert_exp(len(obackup) > 0) # The backup object must exist
+repository = obackup['repository']
+module_id = os.environ['MODULE_ID']
+install_dir = os.environ['AGENT_INSTALL_DIR']
+module_is_rootfull = os.geteuid() == 0
+repopath = agent.get_image_name_from_url(os.environ['IMAGE_URL']) + "/" + module_id + "@" + os.environ['MODULE_UUID']
+
+if obackup['enabled'] != '1':
+    print(f"Backup {backup_id} is not enabled, exit now.", file=sys.stderr)
+    sys.exit(0)
+
+podman_args = [
+    "--workdir=/srv",
+    f"--volume={install_dir}:/srv", # install directory is always mounted as working directory
+]
+
+# Map all module volumes into the restic container
+with subprocess.Popen(["podman", "volume", "ls", "--format={{.Name}}"], stdout=subprocess.PIPE, stderr=sys.stderr, text=True, encoding='utf-8') as volumes_reader:
+    for svolume in volumes_reader.stdout:
+        svolume = svolume.rstrip()
+
+        if svolume.startswith('restic-'):
+            continue # skip mounting restic volumes
+
+        if module_is_rootfull and svolume.startswith(module_id + '-'):
+            dvolume = svolume.removeprefix(module_id + '-') # Rootfull volume names are translated!
+        else:
+            dvolume = svolume # Rootless volume names are preserved as they are.
+
+        podman_args.append(f"--volume={svolume}:/srv/volumes/{dvolume}")
+
+# This file is always required by the restore procedure
+# See the cluster/restore-module action for details
+backup_args = ["state/environment"]
+
+# Configure include/exclude pattern lists:
+for spath in [
+    "etc/state-include.conf",
+    "etc/state-exclude.conf",
+    ]:
+    if os.path.isfile(install_dir + "/" + spath):
+        backup_args.append("--files-from=" + spath)
+
+# Ensure the restic repository has been initialized
+if agent.run_restic(rdb, repository, repopath, [], ["snapshots"], stdout=subprocess.DEVNULL).returncode == 0:
+    print(f"Repository {repository} is present", file=sys.stderr)
+else:
+    print(f"Initializing repository {repository}", file=sys.stderr)
+    agent.run_restic(rdb, repository, repopath, [], ["init"]).check_returncode()
+
+time_start = int(time.time())
+errors = 0
+try:
+    # Run the backup
+    agent.run_restic(rdb, repository, repopath, podman_args, ["backup"] + backup_args).check_returncode()
+
+    # Apply retention policy
+    agent.run_restic(rdb, repository, repopath, [], ["forget", "--prune", "--keep-last=" + obackup['retention']]).check_returncode()
+
+except subprocess.CalledProcessError as ex:
+    errors = 1
+
+# Advertise the backup status
+time_end = int(time.time())
+wrdb = agent.redis_connect(privileged = True)
+backup_status = {}
+stats_proc = agent.run_restic(rdb, repository, repopath, [], ["stats", "--json"], text=True, stdout=subprocess.PIPE)
+if stats_proc.returncode == 0:
+    backup_status = json.loads(stats_proc.stdout)
+    backup_status['start'] = time_start
+    backup_status['end'] = time_end
+    backup_status['errors'] = errors
+    wrdb.hset(f"module/{module_id}/backup_status/{backup_id}", mapping=backup_status)
+wrdb.close()
+
+try:
+    subprocess.run(["post-module-backup"] + sys.argv[1:], check=True)
+except FileNotFoundError:
+    pass
+except PermissionError:
+    print("[WARNING] post-module-backup is not executable: ignored.", file=sys.stderr)
+except Exception as ex:
+    print("[ERROR] post-module-backup failed.", ex, file=sys.stderr)
+    errors += 1
+
+if errors > 0:
+    sys.exit(1)
