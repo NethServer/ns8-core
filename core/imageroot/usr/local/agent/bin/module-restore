@@ -22,51 +22,51 @@
 
 import agent
 import json
-import os
 import sys
-import subprocess
+import os, os.path
 
 request = json.load(sys.stdin)
 
 repository = request['repository']
-path = request['path']
+repopath = request['path']
 snapshot = request['snapshot'] or "latest"
 original_environment = request['environment']
 
-core_env = agent.read_envfile('/etc/nethserver/core.env') # Import URLs of core images
 rdb = agent.redis_connect(host='127.0.0.1') # Connect to local replica
-orepo = rdb.hgetall(f"cluster/backup_repository/{repository}")
-agent.assert_exp(len(orepo) > 0) # Check the repository exists
+podman_args = ["--workdir=/srv"]
 
-# Build the environment to run Restic against the given repository+path
-restic_env = {}
-restic_env["RESTIC_PASSWORD"] = orepo['password']
-restic_env["RESTIC_CACHE_DIR"] = '/cache'
+def get_default_volume_mounts():
+    volume_args = []
+    install_dir = os.environ['AGENT_INSTALL_DIR']
+    module_is_rootfull = os.geteuid() == 0
+    module_id = os.environ['MODULE_ID']
 
-uschema, upath = orepo['url'].split(':', 1)
-if uschema == 's3':
-    restic_env["RESTIC_REPOSITORY"] = orepo['url'] + "/" + path
-    restic_env["AWS_ACCESS_KEY"] = orepo['aws_access_key_id']
-    restic_env["AWS_SECRET_ACCESS_KEY"] = orepo['aws_secret_access_key']
-elif uschema == 'b2':
-    restic_env["RESTIC_REPOSITORY"] = orepo['url'] + ":" + path
-    restic_env["B2_ACCOUNT_ID"] = orepo['b2_account_id']
-    restic_env["B2_ACCOUNT_KEY"] = orepo['b2_account_key']
+    if os.path.isfile(install_dir + 'etc/state-include.conf'):
+        # Mount Podman volumes by finding their names in the include file:
+        with open(install_dir + 'etc/state-include.conf', 'r') as incfile:
+            for iline in incfile:
+                if iline.startswith('volumes/'):
+                    sstart = len('volumes/')
+                    send = iline.find('/', sstart)
+                    svolume = iline[sstart:send]
+                if svolume:
+                    if module_is_rootfull:
+                        dvolume = module_id + '-' + svolume
+                    else:
+                        dvolume = svolume
+
+                    volume_args.append(f"--volume={dvolume}:/srv/{svolume}")
+    else:
+        # TODO: As alternative default strategy,
+        #       we could mount already existing volumes
+        pass
+
+    return volume_args
+
+if sys.argv[1:]:
+    podman_args.extend(sys.argv[1:]) # forward command arguments to Podman
 else:
-    raise Exception(f"Schema {uschema} not supported")
+    podman_args.extend(get_default_volume_mounts()) # mount volumes from state-include.conf
 
-# Build the Podman command line to run Restic
-podman_cmd = ['podman', 'run', '-i', '--rm', '--privileged', '--network=host']
-
-for envvar in restic_env:
-    podman_cmd.extend(['-e', envvar]) # Import Restic environment variables
-
-podman_cmd.extend(sys.argv[1:]) # Any argument is appended to podman invocation
-podman_cmd.append(core_env.get("RESTIC_IMAGE", "ghcr.io/nethserver/restic:latest"))
-podman_cmd.extend(["restore", snapshot, "--target", "/data"])
-
-penv = os.environ.copy()
-penv.update(restic_env)
-if os.getenv('DEBUG', 0):
-    print(*podman_cmd, file=sys.stderr)
-subprocess.run(podman_cmd, encoding='utf-8', env=penv)
+restic_args = ["restore", snapshot, "--target", "."] # workdir should be /srv
+agent.run_restic(rdb, repository, repopath, podman_args, restic_args).check_returncode()

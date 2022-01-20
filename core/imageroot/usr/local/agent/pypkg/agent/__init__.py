@@ -126,6 +126,52 @@ def run_helper(*args, log_command=True, **kwargs):
 
     return subprocess.CompletedProcess(args, proc.returncode)
 
+def run_restic(rdb, repository, repo_path, podman_args, restic_args, **kwargs):
+    core_env = read_envfile('/etc/nethserver/core.env') # Import URLs of core images
+    orepo = rdb.hgetall(f"cluster/backup_repository/{repository}")
+    assert_exp(len(orepo) > 0) # Check the repository exists
+
+    # Build the environment to run Restic against the given repository+repo_path
+    restic_env = {}
+    restic_env["RESTIC_PASSWORD"] = orepo['password']
+    restic_env["RESTIC_CACHE_DIR"] = '/var/cache/restic'
+
+    uschema, upath = orepo['url'].split(':', 1)
+    if uschema == 's3':
+        restic_env["RESTIC_REPOSITORY"] = orepo['url'] + "/" + repo_path
+        restic_env["AWS_ACCESS_KEY"] = orepo['aws_access_key_id']
+        restic_env["AWS_SECRET_ACCESS_KEY"] = orepo['aws_secret_access_key']
+    elif uschema == 'b2':
+        restic_env["RESTIC_REPOSITORY"] = orepo['url'] + ":" + repo_path
+        restic_env["B2_ACCOUNT_ID"] = orepo['b2_account_id']
+        restic_env["B2_ACCOUNT_KEY"] = orepo['b2_account_key']
+    else:
+        raise Exception(f"Schema {uschema} not supported")
+
+    # Build the Podman command line to run Restic
+    podman_cmd = ['podman', 'run', '-i', '--rm', '--privileged', '--network=host', '--volume=restic-cache:/var/cache/restic']
+
+    for envvar in restic_env:
+        podman_cmd.extend(['-e', envvar]) # Import Restic environment variables
+
+    podman_cmd.extend(podman_args) # Any argument is appended to podman invocation
+    podman_cmd.append(core_env.get("RESTIC_IMAGE", "ghcr.io/nethserver/restic:latest"))
+    podman_cmd.extend(restic_args)
+
+    penv = os.environ.copy()
+    penv.update(restic_env)
+    if os.getenv('DEBUG', False):
+        print(*([f"{k}={v}" for k,v in restic_env.items()] + podman_cmd), file=sys.stderr)
+    else:
+        print("restic", *restic_args, file=sys.stderr)
+
+    kwargs.setdefault('encoding', 'utf-8')
+    kwargs.setdefault('env', penv)
+    kwargs.setdefault('stdout', sys.stdout)
+    kwargs.setdefault('stderr', sys.stderr)
+
+    return subprocess.run(podman_cmd, **kwargs)
+
 def __action(*args):
     # write to stderr if AGENT file descriptor is not available:
     # this is usefull when developing new actions
