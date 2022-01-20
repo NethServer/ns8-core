@@ -56,7 +56,8 @@
     "no_search_results": "No results",
     "no_search_results_description": "Try changing your search query",
     "success": "Success",
-    "save": "Save"
+    "save": "Save",
+    "all_good": "All good"
   },
   "error": {
     "error": "Error",
@@ -67,13 +68,14 @@
     "401": "Invalid authentication",
     "403": "Operation not authorized",
     "404": "Resource not found",
-    "cannot_retrieve_task_status": "Cannot retrieve task status",
-    "invalid_username_or_password": "Invalid username or password",
-    "invalid_port_number": "Invalid port number",
     "cannot_refresh_token": "Cannot refresh token",
+    "cannot_retrieve_task_status": "Cannot retrieve task status",
     "cannot_retrieve_cluster_nodes": "Cannot retrieve cluster nodes",
     "cannot_retrieve_installed_apps": "Cannot retrieve installed apps",
     "cannot_retrieve_cluster_tasks": "Cannot retrieve cluster tasks",
+    "cannot_retrieve_backups": "Cannot retrieve backups",
+    "invalid_username_or_password": "Invalid username or password",
+    "invalid_port_number": "Invalid port number",
     "invalid_24h_pattern": "Invalid 24-hour pattern",
     "invalid_value": "Invalid value"
   },
@@ -336,7 +338,10 @@
     "configure": "Configure",
     "go_to_backup": "Go to Backup",
     "num_backup_snapshots": "{num} backup snapshot | {num} backup snapshots",
-    "backup_snapshots": "Backup snapshots"
+    "backup_snapshots": "Backup snapshots",
+    "backup_of_instances_failed_c": "{instance} failed | {num} instances failed",
+    "errored_backups_c": "{num} backup failed | {num} backups failed",
+    "errored_backups_description": "Check out <strong>Backup scheduler</strong> below"
   },
   "calendar": {
     "days": "Days",
@@ -461,7 +466,10 @@
   "cluster_status": {
     "title": "Cluster status",
     "go_to_nodes": "Go to Nodes",
-    "go_to_software_center": "Go to Software center"
+    "go_to_software_center": "Go to Software center",
+    "go_to_backup": "Go to Backup",
+    "backups_failed_c": "{num} backup failed | {num} backups failed",
+    "instances_not_backed_up_c": "{num} app not backed up | {num} apps not backed up"
   },
   "domains": {
     "title": "Domains and users",

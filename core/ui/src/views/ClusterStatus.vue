@@ -66,6 +66,75 @@
           </template>
         </NsInfoCard>
       </div>
+      <div class="bx--col-md-4 bx--col-max-4">
+        <NsInfoCard
+          light
+          :title="$t('backup.title')"
+          description=""
+          :icon="Save32"
+          :loading="loading.listBackups"
+          :isErrorShown="error.listBackups"
+          :errorTitle="$t('error.cannot_retrieve_backups')"
+          :errorDescription="error.listBackups"
+          class="min-height-card"
+        >
+          <template slot="content">
+            <cv-skeleton-text
+              v-if="loading.listBackups"
+              :paragraph="true"
+              :line-count="3"
+            ></cv-skeleton-text>
+            <div v-else-if="!error.listBackups" class="mg-top-sm">
+              <template
+                v-if="erroredBackups.length || instancesNotBackedUp.length"
+              >
+                <template v-if="erroredBackups.length">
+                  <div class="card-row icon-and-text">
+                    <NsSvg :svg="ErrorFilled16" class="icon ns-error" />
+                    <span>
+                      {{
+                        $tc(
+                          "cluster_status.backups_failed_c",
+                          erroredBackups.length,
+                          { num: erroredBackups.length }
+                        )
+                      }}
+                    </span>
+                  </div>
+                </template>
+
+                <template v-if="instancesNotBackedUp.length">
+                  <div class="card-row icon-and-text">
+                    <NsSvg :svg="Warning16" class="icon ns-warning" />
+                    <span>
+                      {{
+                        $tc(
+                          "cluster_status.instances_not_backed_up_c",
+                          instancesNotBackedUp.length,
+                          { num: instancesNotBackedUp.length }
+                        )
+                      }}
+                    </span>
+                  </div>
+                </template>
+              </template>
+              <template v-else>
+                <NsSvg :svg="CheckmarkFilled16" class="icon ns-success" />
+                <span>{{ $t("common.all_good") }}</span>
+              </template>
+              <div class="card-row">
+                <NsButton
+                  kind="ghost"
+                  :icon="ArrowRight20"
+                  @click="$router.push('/backup')"
+                >
+                  {{ $t("cluster_status.go_to_backup") }}
+                </NsButton>
+              </div>
+            </div>
+          </template>
+        </NsInfoCard>
+      </div>
     </div>
     <!-- <div class="bx--row"> //// remove
       <div class="bx--col-md-4">
@@ -243,7 +312,7 @@ import { mapState } from "vuex";
 import { formatRelative, subDays } from "date-fns";
 import to from "await-to-js";
 import WebSocketService from "@/mixins/websocket";
-import { v4 as uuidv4 } from "uuid";
+// import { v4 as uuidv4 } from "uuid"; ////
 import {
   QueryParamService,
   UtilService,
@@ -279,15 +348,19 @@ export default {
       },
       nodes: [],
       apps: [],
+      backups: [],
+      instancesNotBackedUp: [],
       loading: {
         nodes: true,
         apps: true,
+        listBackups: true,
       },
       error: {
         name: "",
         email: "",
         nodes: "",
         apps: "",
+        listBackups: "",
       },
       toastVisible: true,
       toastTitle: "Toast title",
@@ -307,9 +380,12 @@ export default {
       "isWebsocketConnected",
       "isClusterInitialized",
     ]),
-    now() {
-      return this.$date(new Date());
+    erroredBackups() {
+      return this.backups.filter((b) => b.errorInstances.length);
     },
+    // now() { ////
+    //   return this.$date(new Date());
+    // },
   },
   watch: {
     isWebsocketConnected: function () {
@@ -317,8 +393,7 @@ export default {
 
       if (this.isWebsocketConnected && this.loggedUser) {
         // retrieve initial data
-        this.retrieveClusterNodes();
-        this.listInstalledModules();
+        this.retrieveData();
       }
     },
     loggedUser: function () {
@@ -326,16 +401,14 @@ export default {
 
       if (this.isWebsocketConnected && this.loggedUser) {
         // retrieve initial data
-        this.retrieveClusterNodes();
-        this.listInstalledModules();
+        this.retrieveData();
       }
     },
   },
   created() {
     if (this.isWebsocketConnected && this.loggedUser) {
       // retrieve initial data
-      this.retrieveClusterNodes();
-      this.listInstalledModules();
+      this.retrieveData();
     }
   },
   beforeRouteEnter(to, from, next) {
@@ -349,6 +422,11 @@ export default {
     next();
   },
   methods: {
+    retrieveData() {
+      this.retrieveClusterNodes();
+      this.listInstalledModules();
+      this.listBackups();
+    },
     async retrieveClusterNodes() {
       //// retrieve cluster status instead of retrieveClusterNodes? It provides more info
       this.loading.nodes = true;
@@ -429,32 +507,72 @@ export default {
       };
       this.createNotification(notification);
     },
-    createSuccessToast() {
-      const notification = {
-        title: "Backup completed",
-        description: "Backup data has completed succesfully",
-        type: "success",
-        app: "Backup manager",
-      };
-      this.createNotification(notification);
+    async listBackups() {
+      this.loading.listBackups = true;
+      this.error.listBackups = "";
+      const taskAction = "list-backups";
+
+      // register to task completion
+      this.$root.$once(taskAction + "-completed", this.listBackupsCompleted);
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.listBackups = this.getErrorMessage(err);
+        return;
+      }
     },
-    createErrorToast() {
-      const notification = {
-        title: "Network error",
-        description: "Cannot retrieve cluster info. Check your connection",
-        type: "error",
-      };
-      this.createNotification(notification);
+    listBackupsCompleted(taskContext, taskResult) {
+      this.instancesNotBackedUp = taskResult.output.unconfigured_instances;
+      let backups = taskResult.output.backups;
+
+      for (const backup of backups) {
+        backup.errorInstances = backup.instances.filter(
+          (i) => i.status == false
+        );
+
+        //// remove mock
+        // backup.errorInstances.push(backup.instances[0]); ////
+      }
+      this.backups = backups;
+      this.loading.listBackups = false;
     },
-    createProgressTask() {
-      const notification = {
-        id: uuidv4(),
-        title: "Task in progress",
-        description: "Please wait...",
-        task: { context: { id: uuidv4() }, status: "running", progress: 0 },
-      };
-      this.createNotification(notification);
-    },
+    // createSuccessToast() { ////
+    //   const notification = {
+    //     title: "Backup completed",
+    //     description: "Backup data has completed succesfully",
+    //     type: "success",
+    //     app: "Backup manager",
+    //   };
+    //   this.createNotification(notification);
+    // },
+    // createErrorToast() {
+    //   const notification = {
+    //     title: "Network error",
+    //     description: "Cannot retrieve cluster info. Check your connection",
+    //     type: "error",
+    //   };
+    //   this.createNotification(notification);
+    // },
+    // createProgressTask() {
+    //   const notification = {
+    //     id: uuidv4(),
+    //     title: "Task in progress",
+    //     description: "Please wait...",
+    //     task: { context: { id: uuidv4() }, status: "running", progress: 0 },
+    //   };
+    //   this.createNotification(notification);
+    // },
   },
 };
 </script>
@@ -462,9 +580,11 @@ export default {
 <style scoped lang="scss">
 @import "../styles/carbon-utils";
 
-//// remove
-.mg-top-bottom {
-  margin-top: $spacing-05;
+.card-row {
   margin-bottom: $spacing-05;
+}
+
+.card-row:last-child {
+  margin-bottom: 0;
 }
 </style>

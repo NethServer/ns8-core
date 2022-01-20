@@ -732,7 +732,7 @@ export default {
             name: this.name,
             repository: this.selectedRepo.id,
             schedule: this.scheduleExpression,
-            // schedule_hint: this.schedule, //// not working
+            schedule_hint: this.schedule,
             retention: parseInt(this.retention),
             instances: this.instances,
             // enabled: this.enabled, ////

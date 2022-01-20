@@ -69,11 +69,31 @@
         </div>
       </div>
       <template v-else>
-        <!-- disabled backups warning -->
-        <div class="bx--row">
+        <!-- errored backups -->
+        <div
+          v-if="!loading.listBackups && erroredBackups.length"
+          class="bx--row"
+        >
           <div class="bx--col">
             <NsInlineNotification
-              v-if="!loading.listBackups && disabledBackups.length"
+              kind="error"
+              :title="
+                $tc('backup.errored_backups_c', erroredBackups.length, {
+                  num: erroredBackups.length,
+                })
+              "
+              :description="$t('backup.errored_backups_description')"
+              :showCloseButton="false"
+            />
+          </div>
+        </div>
+        <!-- disabled backups warning -->
+        <div
+          v-if="!loading.listBackups && disabledBackups.length"
+          class="bx--row"
+        >
+          <div class="bx--col">
+            <NsInlineNotification
               kind="warning"
               :title="$t('backup.disabled_backups')"
               :description="
@@ -90,10 +110,12 @@
           </div>
         </div>
         <!-- unconfigured instances warning -->
-        <div class="bx--row">
+        <div
+          v-if="!loading.listBackups && unconfiguredInstances.length"
+          class="bx--row"
+        >
           <div class="bx--col">
             <NsInlineNotification
-              v-if="!loading.listBackups && unconfiguredInstances.length"
               kind="warning"
               :title="$t('backup.app_instances_not_backed_up')"
               :description="
@@ -117,17 +139,19 @@
             <h4 class="mg-bottom-md">{{ $t("backup.repositories") }}</h4>
           </div>
         </div>
-        <div class="bx--row">
+        <div v-if="error.listBackupRepositories" class="bx--row">
           <div class="bx--col">
             <NsInlineNotification
-              v-if="error.listBackupRepositories"
               kind="error"
               :title="$t('action.list-backup-repositories')"
               :description="error.listBackupRepositories"
               :showCloseButton="false"
             />
+          </div>
+        </div>
+        <div v-if="error.removeBackupRepository" class="bx--row">
+          <div class="bx--col">
             <NsInlineNotification
-              v-if="error.removeBackupRepository"
               kind="error"
               :title="$t('action.remove-backup-repository')"
               :description="error.removeBackupRepository"
@@ -338,13 +362,13 @@
                         }}</span>
                       </div>
                     </div>
-                    <div class="row icon-and-text">
+                    <!-- <div class="row icon-and-text"> ////
                       <NsSvg :svg="Time20" class="icon" />
-                      <!-- //// format schedule -->
+                      //// format schedule
                       <span :title="$t('backup.schedule')">{{
                         $t("backup." + backup.schedule)
                       }}</span>
-                    </div>
+                    </div> -->
                     <div class="row">
                       <cv-tag
                         v-if="backup.enabled"
@@ -358,6 +382,26 @@
                         :label="$t('common.disabled')"
                         :title="$t('backup.backup_disabled')"
                       ></cv-tag>
+                    </div>
+                    <div
+                      v-if="backup.errorInstances.length"
+                      class="row icon-and-text"
+                    >
+                      <NsSvg :svg="ErrorFilled16" class="icon ns-error" />
+                      <span>
+                        {{
+                          $tc(
+                            "backup.backup_of_instances_failed_c",
+                            backup.errorInstances.length,
+                            {
+                              instance: backup.errorInstances[0].ui_name
+                                ? backup.errorInstances[0].ui_name
+                                : backup.errorInstances[0].module_id,
+                              num: backup.errorInstances.length,
+                            }
+                          )
+                        }}
+                      </span>
                     </div>
                     <div class="row actions">
                       <NsButton
@@ -568,6 +612,9 @@ export default {
     disabledBackups() {
       return this.backups.filter((b) => !b.enabled);
     },
+    erroredBackups() {
+      return this.backups.filter((b) => b.errorInstances.length);
+    },
   },
   beforeRouteEnter(to, from, next) {
     next((vm) => {
@@ -648,23 +695,22 @@ export default {
       let backups = taskResult.output.backups;
       backups.sort(this.sortByProperty("name"));
 
-      console.log("listBackupsCompleted, backups", backups); ////
-      console.log(
-        "listBackupsCompleted, unconfiguredInstances",
-        this.unconfiguredInstances
-      ); ////
-
-      // repository name
-
       for (const backup of backups) {
+        // repository name
         const repo = this.repositories.find((r) => r.id == backup.repository);
-
         if (repo) {
           backup.repoName = repo.name;
         }
+
+        // error instances
+        backup.errorInstances = backup.instances.filter(
+          (i) => i.status == false
+        );
+
+        //// remove mock
+        // backup.errorInstances.push(backup.instances[0]); ////
       }
       this.backups = backups;
-
       this.loading.listBackups = false;
     },
     showAddRepoModal() {
