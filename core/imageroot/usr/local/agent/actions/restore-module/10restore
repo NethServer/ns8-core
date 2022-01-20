@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/bin/bash -x
 
 #
 # Copyright (C) 2021 Nethesis S.r.l.
@@ -20,23 +20,9 @@
 # along with NethServer.  If not, see COPYING.
 #
 
-#
-# This script takes the backup key name as an argument
-# Example: runagent backup backup1
-#
+# Redirect any output to the journal (stderr)
+exec 1>&2
 
-import os
-import sys
-import agent.backup
+exec 1>&2 # Redirect any output to the journal (stderr)
 
-# Initialize the backup
-backup = agent.backup.Backup()
-
-# Add podman volumes to backup
-backup.add_volume('dokuwiki-data')
-
-# To add a specific path use:
-# agent.backup.add_path()
-
-# Execute the backup
-backup.run()
+exec module-restore
