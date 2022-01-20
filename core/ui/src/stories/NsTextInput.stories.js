@@ -24,10 +24,10 @@ const Template = (args, { argTypes }) => ({
   components: { NsTextInput },
   template:
     '<NsTextInput v-bind="$props">\
-  <template #tooltip>\
-    <div v-html="slotContent"></div>\
-  </template>\
-  </NsTextInput>',
+        <template slot="tooltip">\
+          <div v-html="slotTooltip"></div>\
+        </template>\
+    </NsTextInput>',
 });
 
 export const Default = Template.bind({});
@@ -43,5 +43,5 @@ Default.args = {
   tooltipAlignment: "start",
   tooltipDirection: "bottom",
   light: true,
-  slotContent: "<h6>Tooltip title</h6><p>Tooltip description</p>",
+  slotTooltip: "<h6>Tooltip title</h6><p>Tooltip description</p>",
 };

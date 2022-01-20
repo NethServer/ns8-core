@@ -105,7 +105,6 @@
                 light
                 :title="$t('domains.unconfigured_domain')"
                 :icon="WarningAlt32"
-                :showOverflowMenu="true"
               >
                 <template #menu>
                   <cv-overflow-menu
@@ -216,12 +215,7 @@
               :key="domain.name"
               class="bx--col-md-4 bx--col-max-4"
             >
-              <NsInfoCard
-                light
-                :title="domain.name"
-                :icon="Events32"
-                :showOverflowMenu="true"
-              >
+              <NsInfoCard light :title="domain.name" :icon="Events32">
                 <template #menu>
                   <cv-overflow-menu
                     :flip-menu="true"

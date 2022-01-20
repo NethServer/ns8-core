@@ -261,7 +261,6 @@
               light
               :title="$t('domain_detail.unconfigured_provider')"
               :icon="WarningAlt32"
-              :showOverflowMenu="true"
             >
               <template #menu>
                 <cv-overflow-menu
@@ -328,7 +327,6 @@
               light
               :title="provider.ui_name ? provider.ui_name : provider.id"
               :icon="domain.location == 'internal' ? Application32 : Link32"
-              :showOverflowMenu="true"
             >
               <template #menu>
                 <cv-overflow-menu

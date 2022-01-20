@@ -148,12 +148,7 @@
             :key="repo.id"
             class="bx--col-md-4 bx--col-max-4"
           >
-            <NsInfoCard
-              light
-              :title="repo.name"
-              :icon="DataBase32"
-              :showOverflowMenu="true"
-            >
+            <NsInfoCard light :title="repo.name" :icon="DataBase32">
               <template #menu>
                 <cv-overflow-menu
                   :flip-menu="true"
@@ -273,12 +268,7 @@
               :key="backup.id"
               class="bx--col-md-4 bx--col-max-4"
             >
-              <NsInfoCard
-                light
-                :title="backup.name"
-                :icon="Save32"
-                :showOverflowMenu="true"
-              >
+              <NsInfoCard light :title="backup.name" :icon="Save32">
                 <template #menu>
                   <cv-overflow-menu
                     :flip-menu="true"

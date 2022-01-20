@@ -99,7 +99,6 @@
             light
             :title="instance.ui_name ? instance.ui_name : instance.id"
             :icon="Application32"
-            :showOverflowMenu="true"
           >
             <template #menu>
               <cv-overflow-menu

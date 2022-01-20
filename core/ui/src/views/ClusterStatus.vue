@@ -21,52 +21,50 @@
     </div>
     <div class="bx--row">
       <div class="bx--col-md-4 bx--col-max-4">
-        <cv-tile v-if="loading.nodes" light class="min-height-card">
-          <cv-skeleton-text
-            :paragraph="true"
-            :line-count="4"
-          ></cv-skeleton-text>
-        </cv-tile>
-        <cv-tile v-else-if="error.nodes" light class="min-height-card">
-          <NsInlineNotification
-            kind="error"
-            :title="$t('error.cannot_retrieve_cluster_nodes')"
-            :description="error.nodes"
-            :showCloseButton="false"
-          />
-        </cv-tile>
         <NsInfoCard
-          v-else
-          light
-          :title="nodes.length.toString()"
-          :description="$tc('common.nodes', nodes.length)"
-          :icon="Chip32"
-          class="min-height-card"
-        />
-      </div>
-      <div class="bx--col-md-4 bx--col-max-4">
-        <cv-tile v-if="loading.apps" light class="min-height-card">
-          <cv-skeleton-text
-            :paragraph="true"
-            :line-count="4"
-          ></cv-skeleton-text>
-        </cv-tile>
-        <cv-tile v-else-if="error.apps" light class="min-height-card">
-          <NsInlineNotification
-            kind="error"
-            :title="$t('error.cannot_retrieve_installed_apps')"
-            :description="error.apps"
-            :showCloseButton="false"
-          />
-        </cv-tile>
-        <NsInfoCard
-          v-else
           light
           :title="apps.length.toString()"
           :description="$tc('common.installed_apps', apps.length)"
           :icon="Application32"
+          :loading="loading.apps"
+          :isErrorShown="error.apps"
+          :errorTitle="$t('error.cannot_retrieve_installed_apps')"
+          :errorDescription="error.apps"
           class="min-height-card"
-        />
+        >
+          <template slot="content">
+            <NsButton
+              kind="ghost"
+              :icon="ArrowRight20"
+              @click="$router.push('/software-center?search=&view=installed')"
+            >
+              {{ $t("cluster_status.go_to_software_center") }}
+            </NsButton>
+          </template>
+        </NsInfoCard>
+      </div>
+      <div class="bx--col-md-4 bx--col-max-4">
+        <NsInfoCard
+          light
+          :title="nodes.length.toString()"
+          :description="$tc('common.nodes', nodes.length)"
+          :icon="Chip32"
+          :loading="loading.nodes"
+          :isErrorShown="error.nodes"
+          :errorTitle="$t('error.cannot_retrieve_cluster_nodes')"
+          :errorDescription="error.nodes"
+          class="min-height-card"
+        >
+          <template slot="content">
+            <NsButton
+              kind="ghost"
+              :icon="ArrowRight20"
+              @click="$router.push('/nodes')"
+            >
+              {{ $t("cluster_status.go_to_nodes") }}
+            </NsButton>
+          </template>
+        </NsInfoCard>
       </div>
     </div>
     <!-- <div class="bx--row"> //// remove
@@ -280,6 +278,7 @@ export default {
         email: "",
       },
       nodes: [],
+      apps: [],
       loading: {
         nodes: true,
         apps: true,

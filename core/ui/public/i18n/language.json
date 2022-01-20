@@ -459,7 +459,9 @@
     "invalid_interval": "Invalid time interval"
   },
   "cluster_status": {
-    "title": "Cluster status"
+    "title": "Cluster status",
+    "go_to_nodes": "Go to Nodes",
+    "go_to_software_center": "Go to Software center"
   },
   "domains": {
     "title": "Domains and users",
