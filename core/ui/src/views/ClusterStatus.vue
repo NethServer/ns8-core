@@ -79,17 +79,18 @@
           class="min-height-card"
         >
           <template slot="content">
-            <cv-skeleton-text
-              v-if="loading.listBackups"
-              :paragraph="true"
-              :line-count="3"
-            ></cv-skeleton-text>
-            <div v-else-if="!error.listBackups" class="mg-top-sm">
-              <template
-                v-if="erroredBackups.length || instancesNotBackedUp.length"
+            <div>
+              <div
+                v-if="!loading.listBackups && !error.listBackups"
+                class="card-row mg-top-sm"
               >
-                <template v-if="erroredBackups.length">
-                  <div class="card-row icon-and-text">
+                <template
+                  v-if="erroredBackups.length || instancesNotBackedUp.length"
+                >
+                  <div
+                    v-if="erroredBackups.length"
+                    class="card-row icon-and-text"
+                  >
                     <NsSvg :svg="ErrorFilled16" class="icon ns-error" />
                     <span>
                       {{
@@ -101,10 +102,10 @@
                       }}
                     </span>
                   </div>
-                </template>
-
-                <template v-if="instancesNotBackedUp.length">
-                  <div class="card-row icon-and-text">
+                  <div
+                    v-if="instancesNotBackedUp.length"
+                    class="card-row icon-and-text"
+                  >
                     <NsSvg :svg="Warning16" class="icon ns-warning" />
                     <span>
                       {{
@@ -117,11 +118,11 @@
                     </span>
                   </div>
                 </template>
-              </template>
-              <template v-else>
-                <NsSvg :svg="CheckmarkFilled16" class="icon ns-success" />
-                <span>{{ $t("common.all_good") }}</span>
-              </template>
+                <template v-else>
+                  <NsSvg :svg="CheckmarkFilled16" class="icon ns-success" />
+                  <span>{{ $t("common.all_good") }}</span>
+                </template>
+              </div>
               <div class="card-row">
                 <NsButton
                   kind="ghost"

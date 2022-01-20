@@ -249,7 +249,8 @@
               >
                 <!-- schedule description -->
                 <div class="bx--col schedule-description">
-                  <template v-if="schedule.interval == 'hourly'">
+                  {{ getBackupScheduleDescription(schedule) }}
+                  <!-- <template v-if="schedule.interval == 'hourly'"> ////
                     {{
                       schedule.minute == 0
                         ? $t("backup.every_hour")
@@ -276,7 +277,6 @@
                     <span v-else>-</span>
                   </template>
                   <template v-else-if="schedule.interval == 'monthly'">
-                    <!-- show description only if time pattern is valid -->
                     <span v-if="time24HourPattern.test(schedule.time)">
                       {{
                         $t("backup.every_month_at_time", {
@@ -286,7 +286,7 @@
                       }}
                     </span>
                     <span v-else>-</span>
-                  </template>
+                  </template> -->
                   <!-- calendar event expression -->
                   <cv-interactive-tooltip
                     v-if="isScheduleValid"
@@ -386,6 +386,14 @@ import _cloneDeep from "lodash/cloneDeep";
 import Information16 from "@carbon/icons-vue/es/information/16";
 import _capitalize from "lodash/capitalize";
 
+const DEFAULT_SCHEDULE_INTERVAL = "daily";
+const DEFAULT_SCHEDULE_MINUTE = "0";
+const DEFAULT_SCHEDULE_TIME = "00:00";
+const DEFAULT_SCHEDULE_WEEK_DAY = "sunday";
+const DEFAULT_SCHEDULE_MONTH_DAY = "1";
+const DEFAULT_SCHEDULE_CUSTOM = "";
+const DEFAULT_RETENTION = "5";
+
 export default {
   name: "CreateBackupModal",
   components: { InstanceSelector, Information16 },
@@ -426,14 +434,14 @@ export default {
       instances: [],
       name: "",
       schedule: {
-        interval: "daily",
-        minute: "0",
-        time: "00:00",
-        weekDay: "sunday",
-        monthDay: "1",
-        custom: "",
+        interval: DEFAULT_SCHEDULE_INTERVAL,
+        minute: DEFAULT_SCHEDULE_MINUTE,
+        time: DEFAULT_SCHEDULE_TIME,
+        weekDay: DEFAULT_SCHEDULE_WEEK_DAY,
+        monthDay: DEFAULT_SCHEDULE_MONTH_DAY,
+        custom: DEFAULT_SCHEDULE_CUSTOM,
       },
-      retention: "5",
+      retention: DEFAULT_RETENTION,
       // enabled: true, ////
       installedModules: [],
       internalRepositories: [],
@@ -543,9 +551,18 @@ export default {
         // show first step
         this.step = this.steps[0];
 
-        if (!this.isEditing) {
-          this.clearFields();
-        }
+        // ensure backup prop is updated as well
+        this.$nextTick(() => {
+          if (this.isEditing) {
+            this.name = this.backup.name;
+            this.schedule = _cloneDeep(this.backup.schedule);
+            this.retention = this.backup.retention.toString();
+            // this.enabled = this.backup.enabled; ////
+            this.updateInternalRepositories();
+          } else {
+            this.clearFields();
+          }
+        });
 
         // load installed moudules
         this.listInstalledModules();
@@ -583,13 +600,13 @@ export default {
         this.name = backupName;
       }
     },
-    backup: function () {
-      this.name = this.backup.name;
-      // this.schedule = this.backup.schedule; //// fix
-      this.retention = this.backup.retention.toString();
-      // this.enabled = this.backup.enabled; ////
-      this.updateInternalRepositories();
-    },
+    // backup: function () { ////
+    //   this.name = this.backup.name;
+    //   this.schedule = this.backup.schedule;
+    //   this.retention = this.backup.retention.toString();
+    //   // this.enabled = this.backup.enabled; ////
+    //   this.updateInternalRepositories();
+    // },
   },
   created() {
     this.updateInternalRepositories();
@@ -598,10 +615,13 @@ export default {
     clearFields() {
       this.instances = [];
       this.name = "";
-      // this.schedule = {}; //// fix
-      this.schedule.interval = "daily";
-      this.schedule.custom = "";
-      this.retention = "5"; //// do not repeat default values
+      this.schedule.interval = DEFAULT_SCHEDULE_INTERVAL;
+      this.schedule.minute = DEFAULT_SCHEDULE_MINUTE;
+      this.schedule.time = DEFAULT_SCHEDULE_TIME;
+      this.schedule.weekDay = DEFAULT_SCHEDULE_WEEK_DAY;
+      this.schedule.monthDay = DEFAULT_SCHEDULE_MONTH_DAY;
+      this.schedule.custom = DEFAULT_SCHEDULE_CUSTOM;
+      this.retention = DEFAULT_RETENTION;
       this.runBackupOnFinish = false;
       // this.enabled = true; ////
 

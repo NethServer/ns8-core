@@ -702,6 +702,10 @@ export default {
           backup.repoName = repo.name;
         }
 
+        // schedule
+        backup.scheduleExpression = backup.schedule;
+        backup.schedule = backup.schedule_hint;
+
         // error instances
         backup.errorInstances = backup.instances.filter(
           (i) => i.status == false

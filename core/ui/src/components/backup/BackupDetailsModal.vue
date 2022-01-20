@@ -11,9 +11,10 @@
         <span class="value">{{ backup.repoName }}</span>
       </div>
       <div class="key-value-setting">
-        <!-- //// format schedule/schedule -->
         <span class="label">{{ $t("backup.schedule") }}</span>
-        <span class="value">{{ backup.schedule }}</span>
+        <span class="value">
+          {{ getBackupScheduleDescription(backup.schedule) }}
+        </span>
       </div>
       <div class="key-value-setting">
         <span class="label">{{ $t("backup.retention") }}</span>
