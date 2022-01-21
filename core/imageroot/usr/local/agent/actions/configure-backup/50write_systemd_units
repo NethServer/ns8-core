@@ -73,6 +73,6 @@ else:
     with open(service_path, 'w', encoding='utf-8') as service:
         service.write(service_unit)
 
-    subprocess.run(["systemctl", "enable" if request["enabled"] else "disable", os.path.basename(timer_path)] + systemctl_options)
+    subprocess.run(["systemctl", "enable" if request["enabled"] else "disable", "--now", os.path.basename(timer_path)] + systemctl_options).check_returncode()
 
-subprocess.run(["systemctl", "daemon-reload"] + systemctl_options)
+subprocess.run(["systemctl", "daemon-reload"] + systemctl_options).check_returncode()
