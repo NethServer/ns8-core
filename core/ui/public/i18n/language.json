@@ -174,14 +174,14 @@
     "mark_all_read": "Mark all as read"
   },
   "task": {
-    "task_failed": "Task <strong>{action}</strong> failed",
-    "task_completed": "Task <strong>{action}</strong> completed",
-    "task_pending": "Task <strong>{action}</strong> is pending",
-    "task_failed_validation": "Task <strong>{action}</strong> failed validation",
-    "subtask_failed": "Subtask <strong>{action}</strong> failed",
-    "subtask_completed": "Subtask <strong>{action}</strong> completed",
-    "subtask_pending": "Subtask <strong>{action}</strong> is pending",
-    "subtask_failed_validation": "Subtask <strong>{action}</strong> failed validation",
+    "task_failed": "Task <strong>{task}</strong> failed",
+    "task_completed": "Task <strong>{task}</strong> completed",
+    "task_pending": "Task <strong>{task}</strong> is pending",
+    "task_failed_validation": "Task <strong>{task}</strong> failed validation",
+    "subtask_failed": "Subtask <strong>{task}</strong> failed",
+    "subtask_completed": "Subtask <strong>{task}</strong> completed",
+    "subtask_pending": "Subtask <strong>{task}</strong> is pending",
+    "subtask_failed_validation": "Subtask <strong>{task}</strong> failed validation",
     "completed": "Completed",
     "configure": "Configure",
     "cannot_create_task": "Cannot create task {action}"
