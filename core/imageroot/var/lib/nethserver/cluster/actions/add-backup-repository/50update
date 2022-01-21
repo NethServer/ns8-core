@@ -26,7 +26,6 @@ import json
 import uuid
 import agent
 import hashlib
-import agent.backup
 
 request = json.load(sys.stdin)
 rdb = agent.redis_connect(privileged=True)
