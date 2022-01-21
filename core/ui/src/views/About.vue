@@ -1,6 +1,6 @@
 <template>
   <div class="about">
-    <div class="bx--grid">
+    <div class="bx--grid bx--grid--full-width">
       <div class="bx--row">
         <div class="bx--col-lg-16 page-title">
           <h2>{{ $t("about.title") }}</h2>

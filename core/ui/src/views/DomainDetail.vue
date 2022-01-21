@@ -535,13 +535,15 @@ export default {
       if (!this.domain) {
         return [];
       }
-      return this.domain.providers.filter((p) => !p.host);
+      let unconfiguredProviders = this.domain.providers.filter((p) => !p.host);
+      return unconfiguredProviders.sort(this.sortModuleInstances());
     },
     configuredProviders() {
       if (!this.domain) {
         return [];
       }
-      return this.domain.providers.filter((p) => p.host);
+      let configuredProviders = this.domain.providers.filter((p) => p.host);
+      return configuredProviders.sort(this.sortModuleInstances());
     },
   },
   beforeRouteEnter(to, from, next) {

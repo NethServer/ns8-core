@@ -610,6 +610,9 @@ export default {
 
       // hide modal
       this.$emit("hide");
+
+      // reload domains
+      this.$emit("reloadDomains");
     },
     configureSambaModuleAborted(taskResult) {
       console.log("configure samba module aborted", taskResult);
