@@ -21,7 +21,6 @@
 #
 
 import agent
-import agent.backup
 import sys
 import os
 import agent.tasks
