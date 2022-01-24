@@ -65,10 +65,12 @@ core_env_file=$(mktemp)
 cleanup_list+=("${core_env_file}")
 printf "CORE_IMAGE=ghcr.io/nethserver/core:%s\n" "${IMAGETAG:-latest}" >> "${core_env_file}"
 printf "REDIS_IMAGE=ghcr.io/nethserver/redis:%s\n" "${IMAGETAG:-latest}" >> "${core_env_file}"
+printf "RCLONE_IMAGE=docker.io/rclone/rclone:1.57\n" >> "${core_env_file}"
 chmod -c 644 "${core_env_file}"
+source "${core_env_file}"
 buildah add "${container}" ${core_env_file} /etc/nethserver/core.env
 buildah config \
-    --label="org.nethserver.images=ghcr.io/nethserver/redis:${IMAGETAG:-latest}" \
+    --label="org.nethserver.images=${REDIS_IMAGE} ${RCLONE_IMAGE}" \
     --entrypoint=/ "${container}"
 buildah commit "${container}" "${repobase}/${reponame}"
 buildah rm "${container}"
