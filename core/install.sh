@@ -25,10 +25,10 @@ set -e
 source /etc/os-release
 
 echo "Install dependencies:"
-if [[ ${ID} == "fedora" ]]; then
+if [[ "${PLATFORM_ID}" == "platform:f34" || "${PLATFORM_ID}" == "platform:el9" ]]; then
     dnf install -y wireguard-tools podman jq openssl
     systemctl disable --now firewalld || :
-elif [[ ${ID} == "debian" ]]; then
+elif [[ "${ID}" == "debian" && "${VERSION_ID}" == "11" ]]; then
     apt-get update
     apt-get -y install gnupg2 python3-venv podman wireguard uuid-runtime jq openssl
 else

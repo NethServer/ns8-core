@@ -23,6 +23,7 @@
 import agent
 import json
 import sys
+import os
 
 data = json.load(sys.stdin)
 
@@ -57,5 +58,10 @@ if data.get("loki_instance") is not None:
     agent.unset_env("LOKI_AUTH_PASSWORD")
 else:
     agent.set_env("LOKI_INSTANCE", "")
+
+if os.listdir('/run/log/journal'):
+    agent.set_env("PROMTAIL_JOURNAL", "/run/log/journal")
+else:
+    agent.set_env("PROMTAIL_JOURNAL", "/var/log/journal")
 
 agent.dump_env()
