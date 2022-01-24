@@ -40,7 +40,7 @@ node_id = int(request['node'])
 rdb = agent.redis_connect()
 
 with tempfile.NamedTemporaryFile() as fenv:
-    agent.run_restic(rdb, repository, path, ["--workdir=/srv"], ["dump", snapshot, "state/environment"], text=True, encoding='utf-8', stdout=fenv)
+    agent.run_restic(rdb, repository, path, ["--workdir=/srv"], ["dump", snapshot, "state/environment"], text=True, encoding='utf-8', stdout=fenv, check=True)
     fenv.seek(0)
     original_environment = agent.read_envfile(fenv.name)
 
