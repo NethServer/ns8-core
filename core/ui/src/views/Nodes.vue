@@ -35,10 +35,16 @@
         >
       </div>
     </div>
-    <div
-      class="bx--row loader-large loader-theme nodes-loader"
-      v-if="loading.nodes"
-    ></div>
+    <div class="bx--row" v-if="loading.nodes">
+      <div v-for="index in 2" :key="index" class="bx--col-md-4 bx--col-max-4">
+        <cv-tile light>
+          <cv-skeleton-text
+            :paragraph="true"
+            :line-count="11"
+          ></cv-skeleton-text>
+        </cv-tile>
+      </div>
+    </div>
     <div class="bx--row" v-else>
       <div
         v-for="node in nodes"
@@ -483,10 +489,6 @@ export default {
 
 <style scoped lang="scss">
 @import "../styles/carbon-utils";
-
-.nodes-loader {
-  margin: $spacing-05 auto;
-}
 
 ol {
   list-style-type: decimal;
