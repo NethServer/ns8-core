@@ -119,8 +119,10 @@
                   </div>
                 </template>
                 <template v-else>
-                  <NsSvg :svg="CheckmarkFilled16" class="icon ns-success" />
-                  <span>{{ $t("common.all_good") }}</span>
+                  <div class="card-row icon-and-text">
+                    <NsSvg :svg="CheckmarkFilled16" class="icon ns-success" />
+                    <span>{{ $t("common.all_good") }}</span>
+                  </div>
                 </template>
               </div>
               <div class="card-row">
