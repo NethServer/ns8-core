@@ -1,0 +1,91 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2022 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
+import sys
+import agent
+import os
+
+core_env = agent.read_envfile("/etc/nethserver/core.env")
+rclone_image = core_env["RCLONE_IMAGE"]
+
+rdb = agent.redis_connect(privileged=False, host="127.0.0.1")
+try:
+    repository_id = sys.argv[1]
+except IndexError:
+    print("Usage:", file=sys.stderr)
+    print("   rclone-wrapper {REPOSITORY_ID|BACKUP_ID} [rclone args...]", file=sys.stderr)
+    print("", file=sys.stderr)
+    print("The string \"REMOTE_PATH\" is replaced with the value defined by REPOSITORY_ID", file=sys.stderr)
+    print("e.g.: rclone-wrapper 1 ls REMOTE_PATH/dokuwiki", file=sys.stderr)
+    sys.exit(33)
+
+if repository_id.isnumeric():
+    # Assume a backup ID has been issued. Translate it to a repository ID.
+    repository_id = rdb.hget(f"cluster/backup/{repository_id}", "repository")
+
+orepo = rdb.hgetall(f"cluster/backup_repository/{repository_id}")
+if not orepo:
+    print(f"Could not find any repo with {sys.argv[1]}", file=sys.stderr)
+    sys.exit(34)
+
+# Parse URL and prepare RCLONE_* environment variables
+uscheme, upath = orepo['url'].split(':', 1)
+
+if uscheme == "b2":
+    rclone_path = ':b2:' + upath
+    rclone_env = {
+        'RCLONE_B2_ACCOUNT': orepo["b2_account_id"],
+        'RCLONE_B2_KEY': orepo["b2_account_key"],
+    }
+elif uscheme == "s3":
+    s3_endpoint, s3_path = upath.split('/', 1)
+    rclone_path = ':s3:' + s3_path
+    rclone_env = {
+        'RCLONE_S3_ENV_AUTH': 'true',
+        'RCLONE_S3_ACCESS_KEY_ID': orepo["aws_access_key_id"],
+        'RCLONE_S3_SECRET_ACCESS_KEY': orepo["aws_secret_access_key"],
+        'RCLONE_S3_ENDPOINT': s3_endpoint
+    }
+    if orepo['provider'] == 'aws':
+        rclone_env['RCLONE_S3_PROVIDER'] = 'AWS'
+    elif orepo['provider'] == 'digitalocean':
+        rclone_env['RCLONE_S3_PROVIDER'] = 'DigitalOcean'
+
+else:
+    raise Exception(f"Scheme {uscheme} not supported")
+
+# Build the Podman+Rclone command line
+exec_args = [
+    "podman", "run",
+    "-i", "--attach=stdin", "--attach=stdout", "--attach=stderr",
+    "--env=RCLONE*", "--network=host",
+    rclone_image,
+    ] + sys.argv[2:]
+
+# Substitute REMOTE_PATH placeholder in Rclone args
+exec_args = [rarg.replace('REMOTE_PATH', rclone_path) for rarg in exec_args]
+
+if os.getenv('DEBUG', 0):
+    print(*([f"{k}={v}" for k,v in rclone_env.items()] + exec_args), file=sys.stderr)
+
+os.environ.update(rclone_env)
+os.execvp("podman", exec_args)

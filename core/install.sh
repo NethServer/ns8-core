@@ -30,7 +30,7 @@ if [[ "${PLATFORM_ID}" == "platform:f34" || "${PLATFORM_ID}" == "platform:el9" ]
     systemctl disable --now firewalld || :
 elif [[ "${ID}" == "debian" && "${VERSION_ID}" == "11" ]]; then
     apt-get update
-    apt-get -y install gnupg2 python3-venv podman wireguard uuid-runtime jq openssl rclone
+    apt-get -y install gnupg2 python3-venv podman wireguard uuid-runtime jq openssl
 else
     echo "System not supported"
     exit 1
@@ -56,6 +56,11 @@ mkdir -pv /var/lib/nethserver/node/state
 cid=$(podman create "ghcr.io/nethserver/core:latest")
 podman export ${cid} | tar --totals -C / --no-overwrite-dir --no-same-owner -x -v -f - | sort | tee /var/lib/nethserver/node/state/coreimage.lst
 podman rm -f ${cid}
+
+echo "Pulling rclone image ${RCLONE_IMAGE}:"
+source /etc/nethserver/core.env
+podman pull "${RCLONE_IMAGE}"
+
 
 if [[ ! -f ~/.ssh/id_rsa.pub ]] ; then
     echo "Generating a new RSA key pair for SSH:"
