@@ -178,7 +178,7 @@ export default {
     };
   },
   computed: {
-    ...mapState(["instanceName", "ns8Core", "appName"]),
+    ...mapState(["instanceName", "core", "appName"]),
   },
   created() {
     this.getConfiguration();
@@ -200,7 +200,7 @@ export default {
       const taskAction = "get-configuration";
 
       // register to task completion
-      this.ns8Core.$root.$once(
+      this.core.$root.$once(
         taskAction + "-completed",
         this.getConfigurationCompleted
       );
@@ -317,15 +317,15 @@ export default {
       const taskAction = "configure-module";
 
       // register to task validation
-      this.ns8Core.$root.$off(taskAction + "-validation-failed");
-      this.ns8Core.$root.$once(
+      this.core.$root.$off(taskAction + "-validation-failed");
+      this.core.$root.$once(
         taskAction + "-validation-failed",
         this.saveSettingsValidationFailed
       );
 
       // register to task completion
-      this.ns8Core.$root.$off(taskAction + "-completed");
-      this.ns8Core.$root.$once(
+      this.core.$root.$off(taskAction + "-completed");
+      this.core.$root.$once(
         taskAction + "-completed",
         this.saveSettingsCompleted
       );

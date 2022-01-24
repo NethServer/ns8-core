@@ -200,7 +200,7 @@ export default {
           // redirect to initially requested URL
           this.$router.replace(queryParams.redirect);
         } else {
-          // go to NS8 home page
+          // go to Cluster status page
 
           this.$router.replace("/status");
         }

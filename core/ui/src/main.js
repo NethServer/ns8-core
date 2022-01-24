@@ -89,7 +89,7 @@ Vue.directive("click-outside", {
 
 Vue.config.productionTip = false;
 
-window.ns8 = new Vue({
+window.core = new Vue({
   router,
   store,
   i18n,

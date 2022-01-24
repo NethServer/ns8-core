@@ -305,7 +305,7 @@
 
 <script>
 // import AreaChart from "@/components/AreaChart"; ////
-import Flash20 from "@carbon/icons-vue/es/flash/20";
+// import Flash20 from "@carbon/icons-vue/es/flash/20"; ////
 import NotificationService from "@/mixins/notification";
 import NodeService from "@/mixins/node";
 import Information16 from "@carbon/icons-vue/es/information/16";
@@ -369,9 +369,8 @@ export default {
       toastCaption: "Toast caption",
       lowContrast: false,
       snippet: 'printf("A short bit of code.");',
-      Flash20, //// use mixin
-      formatRelative, //// use mixin
-      subDays,
+      formatRelative, //// remove
+      subDays, //// remove
     };
   },
   computed: {
@@ -482,32 +481,6 @@ export default {
       this.apps = apps;
       this.loading.apps = false;
     },
-    closeToast() {
-      console.log("closeToast"); ////
-    },
-    createWarningToast() {
-      const notification = {
-        title: "Low disk space",
-        description: "You are running out of disk space",
-        type: "warning",
-        app: "System manager",
-      };
-      this.createNotification(notification);
-    },
-    createInfoToast() {
-      const notification = {
-        title: "Software updates",
-        description: "You have 7 new updates",
-        type: "info",
-        app: "System manager",
-        actionLabel: "Update",
-        action: {
-          type: "changeRoute",
-          url: `/apps/ns8-app?appInput=fromAction`,
-        },
-      };
-      this.createNotification(notification);
-    },
     async listBackups() {
       this.loading.listBackups = true;
       this.error.listBackups = "";
@@ -548,7 +521,33 @@ export default {
       this.backups = backups;
       this.loading.listBackups = false;
     },
-    // createSuccessToast() { ////
+    // closeToast() { //// remove
+    //   console.log("closeToast"); ////
+    // },
+    // createWarningToast() {
+    //   const notification = {
+    //     title: "Low disk space",
+    //     description: "You are running out of disk space",
+    //     type: "warning",
+    //     app: "System manager",
+    //   };
+    //   this.createNotification(notification);
+    // },
+    // createInfoToast() {
+    //   const notification = {
+    //     title: "Software updates",
+    //     description: "You have 7 new updates",
+    //     type: "info",
+    //     app: "System manager",
+    //     actionLabel: "Update",
+    //     action: {
+    //       type: "changeRoute",
+    //       url: `/apps/test-app?appInput=fromAction`,
+    //     },
+    //   };
+    //   this.createNotification(notification);
+    // },
+    // createSuccessToast() {
     //   const notification = {
     //     title: "Backup completed",
     //     description: "Backup data has completed succesfully",

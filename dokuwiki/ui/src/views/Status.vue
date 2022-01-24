@@ -50,27 +50,27 @@
       </div>
       <div class="bx--col-md-4 bx--col-max-4">
         <NsBackupCard
-          :title="ns8Core.$t('backup.title')"
-          :noBackupMessage="ns8Core.$t('backup.no_backup_configured')"
-          :scheduleBackupLabel="ns8Core.$t('backup.configure')"
-          :goToBackupLabel="ns8Core.$t('backup.go_to_backup')"
-          :repositoryLabel="ns8Core.$t('backup.repository')"
-          :statusLabel="ns8Core.$t('common.status')"
-          :statusSuccessLabel="ns8Core.$t('common.success')"
-          :statusNotRunLabel="ns8Core.$t('backup.backup_has_not_run_yet')"
-          :statusErrorLabel="ns8Core.$t('error.error')"
-          :completedLabel="ns8Core.$t('backup.completed')"
-          :durationLabel="ns8Core.$t('backup.duration')"
-          :totalSizeLabel="ns8Core.$t('backup.total_size')"
-          :totalFileCountLabel="ns8Core.$t('backup.total_file_count')"
-          :backupDisabledLabel="ns8Core.$t('common.disabled')"
-          :showMoreLabel="ns8Core.$t('common.show_more')"
+          :title="core.$t('backup.title')"
+          :noBackupMessage="core.$t('backup.no_backup_configured')"
+          :scheduleBackupLabel="core.$t('backup.configure')"
+          :goToBackupLabel="core.$t('backup.go_to_backup')"
+          :repositoryLabel="core.$t('backup.repository')"
+          :statusLabel="core.$t('common.status')"
+          :statusSuccessLabel="core.$t('common.success')"
+          :statusNotRunLabel="core.$t('backup.backup_has_not_run_yet')"
+          :statusErrorLabel="core.$t('error.error')"
+          :completedLabel="core.$t('backup.completed')"
+          :durationLabel="core.$t('backup.duration')"
+          :totalSizeLabel="core.$t('backup.total_size')"
+          :totalFileCountLabel="core.$t('backup.total_file_count')"
+          :backupDisabledLabel="core.$t('common.disabled')"
+          :showMoreLabel="core.$t('common.show_more')"
           :moduleId="instanceName"
           :moduleUiName="instanceLabel"
           :repositories="backupRepositories"
           :backups="backups"
           :loading="loading.listBackupRepositories || loading.listBackups"
-          :coreContext="ns8Core"
+          :coreContext="core"
           light
         />
       </div>
@@ -261,7 +261,7 @@ export default {
     };
   },
   computed: {
-    ...mapState(["instanceName", "instanceLabel", "ns8Core", "appName"]),
+    ...mapState(["instanceName", "instanceLabel", "core", "appName"]),
     failedServices() {
       if (!this.status) {
         return 0;
@@ -316,7 +316,7 @@ export default {
       const taskAction = "get-status";
 
       // register to task completion
-      this.ns8Core.$root.$once(
+      this.core.$root.$once(
         taskAction + "-completed",
         this.getStatusCompleted
       );
@@ -348,7 +348,7 @@ export default {
       const taskAction = "list-backup-repositories";
 
       // register to task completion
-      this.ns8Core.$root.$once(
+      this.core.$root.$once(
         taskAction + "-completed",
         this.listBackupRepositoriesCompleted
       );
@@ -357,7 +357,7 @@ export default {
         this.createClusterTaskForApp({
           action: taskAction,
           extra: {
-            title: this.ns8Core.$t("action." + taskAction),
+            title: this.core.$t("action." + taskAction),
             isNotificationHidden: true,
           },
         })
@@ -384,7 +384,7 @@ export default {
       const taskAction = "list-backups";
 
       // register to task completion
-      this.ns8Core.$root.$once(
+      this.core.$root.$once(
         taskAction + "-completed",
         this.listBackupsCompleted
       );
@@ -393,7 +393,7 @@ export default {
         this.createClusterTaskForApp({
           action: taskAction,
           extra: {
-            title: this.ns8Core.$t("action." + taskAction),
+            title: this.core.$t("action." + taskAction),
             isNotificationHidden: true,
           },
         })
