@@ -20,7 +20,4 @@ Most NS8 core files reside in `/etc/nethserver`,
 
 See `/var/lib/nethserver/node/state/coreimage.lst` for a complete list.
 
-Other relevant paths:
-- VPN 
-- TODO
-
+Rootless containers are totally contained inside UNIX user home directory, like `/home/trafeik1`.

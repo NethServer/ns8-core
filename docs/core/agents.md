@@ -7,6 +7,13 @@ parent: Core
 
 # Agents
 
+Agents are daemons that listens to Redis queues and execute tasks inside the system.
+
+* TOC
+{:toc}
+
+## Agent types
+
 The core `cluster` and `node` agent, and every module instance run their
 own `agent` process. The process is started by the `agent.service` Systemd
 user unit and the `agent@.service` Systemd system template unit provided
@@ -155,7 +162,7 @@ print(agent.tasks.run(agent_id=os.environ['AGENT_ID'], action='list-actions'))
 The next section explains how to authorize agents to run actions through
 roles assignment.
 
-### Roles and authorizations
+## Roles and authorizations
 
 In normal conditions module actions must be assigned to `roles`, and roles
 must be granted to agents and users.
@@ -225,4 +232,3 @@ print(agent.resolve_agent_id('traefik@node', node_id=os.getenv('NODE_ID', 1)))
 ```
 
 The `node_id` argument is optional.
-
