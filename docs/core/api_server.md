@@ -11,6 +11,9 @@ The API server is a daemon implemented using [Go](https://golang.org) and listen
 
 This component is used to send command from UI to Redis, using HTTP Rest API and Redis Pub/Sub protocol.
 
+* TOC
+{:toc}
+
 ## API Paths
 
 APIs are documented using a [swagger.json file](https://raw.githubusercontent.com/NethServer/ns8-scratchpad/swagdoc/swagger.json).
@@ -20,8 +23,6 @@ API flow:
 - autenticate the user using the `login` API
 - extract the JWT token from the login API response
 - use the token to execute all next API calls
-
-### Example
 
 Authentication:
 ```bash
@@ -63,7 +64,7 @@ Response:
 }
 ```
 
-## Audit
+## Audit log
 
 Every request made to the server, using its APIs or WebSocket, is logged inside an audit db.
 The audit db is store in a file using a SQLite database schema. Each record is composed by:
