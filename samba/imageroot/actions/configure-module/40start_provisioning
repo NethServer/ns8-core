@@ -44,8 +44,8 @@ adminpass="${input[1]:?}"
     --log-opt=tag=${MODULE_ID:?}-provision \
     --rm --name=${MODULE_ID}-provision \
     --volume=${MODULE_ID}-data:/var/lib/samba:Z \
-    --volume=${MODULE_ID}-config:/etc/samba:Z \
-    --volume=./hosts:/etc/hosts:Z \
-    --volume=./resolv.conf:/etc/resolv.conf:Z \
-    --volume=./krb5.conf:/etc/krb5.conf:Z \
+    --volume=${MODULE_ID}-config:/etc/samba:z \
+    --volume=./hosts:/etc/hosts:z \
+    --volume=./resolv.conf:/etc/resolv.conf:z \
+    --volume=./krb5.conf:/etc/krb5.conf:z \
     "${SAMBA_DC_IMAGE:?}" "${PROVISION_TYPE:?}" <<<"${adminuser}"$'\n'"${adminpass}"
