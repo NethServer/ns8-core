@@ -4,7 +4,6 @@ variable "images" {
   default = {
     "fc" = "fedora-34-x64",
     "dn" = "debian-11-x64",
-    "ub" = "ubuntu-21-04-x64"
   }
 }
 
