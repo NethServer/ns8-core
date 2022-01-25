@@ -9,6 +9,9 @@ parent: Core
 
 NS8 user interface is a web application developed with [VueJs](https://vuejs.org/) and based on [Carbon Design System](https://www.carbondesignsystem.com/).
 
+* TOC
+{:toc}
+
 NS8 UI can be accessed at `https://leader_node/cluster-admin/`. Default username is `admin` and default password is `Nethesis,1234`.
 
 The web application source is composed by multiple VueJs projects:

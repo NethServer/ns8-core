@@ -7,6 +7,11 @@ has_children: true
 
 # Modules: implementation details
 
+A module is a NS 8 application which is usually composed by a backend and a frontend.
+
+* TOC
+{:toc}
+
 Every time a module instance is added to the cluster, the new instance
 is named as the module itself followed by a progressive number
 starting from 1. Given a module named `myapp`, instances will be named
