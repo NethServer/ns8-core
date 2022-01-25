@@ -1,15 +1,19 @@
-
-variable "images" {
-  description = "Map host name code to OS image"
-  default = {
+locals {
+  //Map host name code to OS image
+  images = {
     "fc" = "fedora-34-x64",
     "dn" = "debian-11-x64",
+    "cs" = data.digitalocean_image.centos.id
   }
+}
+
+data "digitalocean_image" "centos" {
+  name = "CentOS-Stream-GenericCloud-9-20220121.1"
 }
 
 resource "digitalocean_droplet" "leader" {
   for_each           = var.leader_node
-  image              = var.images[substr(each.key, 0, 2)]
+  image              = local.images[substr(each.key, 0, 2)]
   name               = format("%s.leader.%s.%s", each.key, terraform.workspace ,var.domain)
   region             = each.value
   size               = "s-1vcpu-1gb-intel"
@@ -22,7 +26,7 @@ resource "digitalocean_droplet" "leader" {
 
 resource "digitalocean_droplet" "worker" {
   for_each           = var.worker_nodes
-  image              = var.images[substr(each.key, 0, 2)]
+  image              = local.images[substr(each.key, 0, 2)]
   name               = format("%s.worker.%s.%s", each.key, terraform.workspace ,var.domain)
   region             = each.value
   size               = "s-1vcpu-1gb-intel"
