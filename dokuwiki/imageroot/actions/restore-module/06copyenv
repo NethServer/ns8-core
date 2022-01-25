@@ -1,7 +1,7 @@
-#!/bin/bash
+#!/usr/bin/env python3
 
 #
-# Copyright (C) 2021 Nethesis S.r.l.
+# Copyright (C) 2022 Nethesis S.r.l.
 # http://www.nethesis.it - nethserver@nethesis.it
 #
 # This script is part of NethServer.
@@ -20,10 +20,27 @@
 # along with NethServer.  If not, see COPYING.
 #
 
-set -e
+import sys
+import json
+import agent
 
-# Redirect any output to the journal (stderr)
-exec 1>&2
+request = json.load(sys.stdin)
 
-# Enable and restart the service
-systemctl --user enable --now dokuwiki.service
+original_environment = request['environment']
+
+for evar in [
+        "DOKUWIKI_EMAIL",
+        "DOKUWIKI_FULL_NAME",
+        "DOKUWIKI_IMAGE",
+        "DOKUWIKI_PASSWORD",
+        "DOKUWIKI_USERNAME",
+        "DOKUWIKI_WIKI_NAME",
+        "PHP_ENABLE_OPCACHE",
+        "PHP_MEMORY_LIMIT",
+        "TRAEFIK_HOST",
+        "TRAEFIK_HTTP2HTTPS",
+        "TRAEFIK_LETS_ENCRYPT",
+    ]:
+    agent.set_env(evar, original_environment[evar])
+
+agent.dump_env()
