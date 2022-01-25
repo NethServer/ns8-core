@@ -26,7 +26,7 @@ Hardware requirements for a single node installation:
 - 20GB disk
 
 More nodes can be added later. When adding a new node, you should use
-similar hardware and the same distribution installed on the main node.
+similar hardware and the same distribution installed on the leader node.
 
 Always install NethServer 8 on a clean server machine, do not install it on a desktop.
 
