@@ -7,8 +7,16 @@ parent: Core
 
 # Database: Redis
 
-The Redis database runs as a Podman rootfull container. Get the Redis
-service status:
+The Redis database runs as a Podman rootfull container, bound to TCP port 6379.
+
+Redis is not used only as a database:
+  * it exchanges messages among agents and the API server
+  * it helps modules to discover information about the core and other modules
+  * it provides a signaling bus based on its PUB/SUB feature
+  * it stores (a copy of) the system and modules configuration
+  * it is an authentication backend for the management UI and the agents
+
+Get the Redis service status:
 
     systemctl status redis
 

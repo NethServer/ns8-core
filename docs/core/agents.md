@@ -12,10 +12,22 @@ own `agent` process. The process is started by the `agent.service` Systemd
 user unit and the `agent@.service` Systemd system template unit provided
 by the core.
 
+Systemd units for agents are:
+
+- `agent@cluster.service` running as root. Its
+  actions are defined in `/var/lib/nethserver/cluster/actions`
+
+- `agent@node.service` running as root. Its actions
+  are defined in `/var/lib/nethserver/node/actions`
+
+- `agent.service` running as non-privileged Unix user
+  for each rootless module instance. See the "Additional modules" section
+  below for more details
+
 See also the [Agent documentation](https://github.com/NethServer/ns8-scratchpad/blob/main/core/agent/README.md).
 
 Similarly `eventsgw.service` and `eventsgw@.service` units are provided by
-the core to run event handler services. See 
+the core to run event handler services.
 
 ## Tasks processing
 

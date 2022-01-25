@@ -110,39 +110,18 @@ The system is composed by two main components:
 
 ### Core
 
-The core purpose is managing the applications, providing the basics for their entire life cycle (install, upgrade, reconfigure, uninstall...). It runs the following components:
+The core purpose is managing the applications, providing the basics for their entire life cycle (install, upgrade, reconfigure, uninstall...).
+It runs the following components:
 
-- Redis instance running as rootfull container, bound to TCP port 6379. The Redis DB
-  * exchanges messages among agents and the API server
-  * helps modules to discover information about the core and other modules
-  * provides a signaling bus based on its PUB/SUB feature
-  * stores (a copy of) the system and modules configuration
-  * is an authentication backend for the management UI and the agents
-
-- `agent@cluster.service` Systemd system unit, running as root. Its
-  actions are defined in `/var/lib/nethserver/cluster/actions`
-
-- `agent@node.service` Systemd system unit, running as root. Its actions
-  are defined in `/var/lib/nethserver/node/actions`
-
-- `agent.service` Systemd user unit, running as non-privileged Unix user
-  for each rootless module instance. See the "Additional modules" section
-  below for more details
-
-- Edge proxy, for TLS termination and centralized certificates management (Traefik)
-
-- LDAP proxy, a rootless module listening on 127.0.0.1. It helps other
-  modules to connect to account provider LDAP servers, with a clear text
-  connection
-
-- LDAP local account provider (Samba DC, OpenLDAP)
-
-- VPN, each node is connected to the leader using WireGuard in a star network topology
-
-- API server, it handles authentication and authorization for all UI
-  requests (and more...). It audits executed tasks
-
-- UI, it allows configuration of the cluster and applications
+- Redis [database and message bus](/core/database)
+- Node, cluster and module [agents](/core/agents) written in Golang
+- Traefik as [edge proxy](/core/proxy_certificates), for TLS termination and centralized certificates management
+- [LDAP proxy](/core/user_domains), a rootless module listening on 127.0.0.1. It helps other
+  modules to connect to account provider LDAP servers, with a clear text connection for local containers
+- LDAP local account provider: [Samba DC](https://github.com/NethServer/ns8-scratchpad/blob/main/samba/README.md), OpenLDAP (not implemented yet)
+- [VPN](/core/vpn), each node is connected to the leader using WireGuard in a star network topology
+- [API server](/core/api_server), it handles authentication and authorization for UI and cli requests, it also audits executed tasks
+- [UI](/core/ui), it allows configuration of the cluster and applications
 
 
 ### Modules
