@@ -7,7 +7,7 @@ has_children: true
 
 # Modules: implementation details
 
-A module is a NS 8 application which is usually composed by a backend and a frontend.
+A module is a NS8 application which is usually composed by a backend and a frontend.
 
 * TOC
 {:toc}

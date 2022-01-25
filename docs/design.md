@@ -11,7 +11,7 @@ nav_order: 3
 
 ## Goals
 
-The design of NS 8 should fulfill these goals:
+The design of NethServer 8 (NS8) should fulfill these goals:
 
 - solve sysadmin daily problems, like:
   - no-brain software installation
