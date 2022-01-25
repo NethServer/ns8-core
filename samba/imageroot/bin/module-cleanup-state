@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #
-# Copyright (C) 2021 Nethesis S.r.l.
+# Copyright (C) 2022 Nethesis S.r.l.
 # http://www.nethesis.it - nethserver@nethesis.it
 #
 # This script is part of NethServer.
@@ -20,12 +20,5 @@
 # along with NethServer.  If not, see COPYING.
 #
 
-exec 1>&2 # Send any output to stderr, to not alter the action response protocol
-set -e
-
-# Include our additional Python packages in the interpreter search path
-echo "set-env PYTHONPATH ${AGENT_INSTALL_DIR}/pypkg" >&${AGENT_COMFD}
-
-# Install the Systemd unit for this module instance
-install -m 644 "${AGENT_INSTALL_DIR}/etc/samba-dc.service" "/etc/systemd/system/${MODULE_ID}.service"
-systemctl daemon-reload
+echo "Cleaning up Samba DC state:"
+podman exec -w /var/lib/samba/ -i "${MODULE_ID}" find . -name "*.bak" -print -delete
