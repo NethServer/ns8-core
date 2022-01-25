@@ -38,6 +38,3 @@ Example:
 ```
 
 The event is published under Redis channel `module/traefik<X>/event/certificate-update`.
-
-See also [how to fire and handle events](#events).
-

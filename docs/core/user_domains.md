@@ -62,6 +62,3 @@ account provider changes:
 */event/account-provider-changed = mycommand && systemctl --user reload mymodule.service
 ```
 
-See also [how to fire and handle events](#events).
-
-
