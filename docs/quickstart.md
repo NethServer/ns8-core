@@ -2,6 +2,10 @@
 
 **NOTE**: this is just a prototype, *do not* use in production.
 
+Supported distributions:
+- Debian 11 (bullseye)
+- CentOS stream 9
+
 ## Core installation
 
 Pick your preferred distribution between Fedora 34+ and Debian 11, install
