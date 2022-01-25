@@ -36,32 +36,32 @@ rdb = agent.redis_connect(host='127.0.0.1') # Connect to local replica
 podman_args = ["--workdir=/srv"]
 
 def get_default_volume_mounts():
-    volume_args = []
+    volume_args = {}
     install_dir = os.environ['AGENT_INSTALL_DIR']
     module_is_rootfull = os.geteuid() == 0
     module_id = os.environ['MODULE_ID']
-
-    if os.path.isfile(install_dir + 'etc/state-include.conf'):
+    if os.path.isfile(install_dir + '/etc/state-include.conf'):
         # Mount Podman volumes by finding their names in the include file:
-        with open(install_dir + 'etc/state-include.conf', 'r') as incfile:
+        with open(install_dir + '/etc/state-include.conf', 'r') as incfile:
             for iline in incfile:
                 if iline.startswith('volumes/'):
                     sstart = len('volumes/')
                     send = iline.find('/', sstart)
                     svolume = iline[sstart:send]
-                if svolume:
-                    if module_is_rootfull:
+                    if not svolume:
+                        continue
+                    elif module_is_rootfull:
                         dvolume = module_id + '-' + svolume
                     else:
                         dvolume = svolume
 
-                    volume_args.append(f"--volume={dvolume}:/srv/{svolume}")
+                    volume_args[dvolume] = f"--volume={dvolume}:/srv/volumes/{svolume}"
     else:
         # TODO: As alternative default strategy,
         #       we could mount already existing volumes
         pass
 
-    return volume_args
+    return list(volume_args.values())
 
 if sys.argv[1:]:
     podman_args.extend(sys.argv[1:]) # forward command arguments to Podman

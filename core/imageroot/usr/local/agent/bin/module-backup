@@ -31,13 +31,13 @@ import time
 backup_id = int(sys.argv[1])
 
 try:
-    subprocess.run(["pre-module-backup"] + sys.argv[1:], check=True)
+    subprocess.run(["module-dump-state"] + sys.argv[1:], check=True)
 except FileNotFoundError:
     pass
 except PermissionError:
-    print("[WARNING] pre-module-backup is not executable: ignored.", file=sys.stderr)
+    print("[WARNING] module-dump-state is not executable: ignored.", file=sys.stderr)
 except Exception as ex:
-    print("[ERROR] pre-module-backup failed.", ex, file=sys.stderr)
+    print("[ERROR] module-dump-state failed.", ex, file=sys.stderr)
     print("[ERROR] module-backup aborted.", file=sys.stderr)
     sys.exit(1)
 
@@ -67,11 +67,12 @@ with subprocess.Popen(["podman", "volume", "ls", "--format={{.Name}}"], stdout=s
 
         if svolume.startswith('restic-'):
             continue # skip mounting restic volumes
-
-        if module_is_rootfull and svolume.startswith(module_id + '-'):
+        elif not module_is_rootfull:
+            dvolume = svolume # Rootless volume names are preserved as they are.
+        elif svolume.startswith(module_id + '-'):
             dvolume = svolume.removeprefix(module_id + '-') # Rootfull volume names are translated!
         else:
-            dvolume = svolume # Rootless volume names are preserved as they are.
+            continue
 
         podman_args.append(f"--volume={svolume}:/srv/volumes/{dvolume}")
 
@@ -120,13 +121,13 @@ if stats_proc.returncode == 0:
 wrdb.close()
 
 try:
-    subprocess.run(["post-module-backup"] + sys.argv[1:], check=True)
+    subprocess.run(["module-cleanup-state"] + sys.argv[1:], check=True)
 except FileNotFoundError:
     pass
 except PermissionError:
-    print("[WARNING] post-module-backup is not executable: ignored.", file=sys.stderr)
+    print("[WARNING] module-cleanup-state is not executable: ignored.", file=sys.stderr)
 except Exception as ex:
-    print("[ERROR] post-module-backup failed.", ex, file=sys.stderr)
+    print("[ERROR] module-cleanup-state failed.", ex, file=sys.stderr)
     errors += 1
 
 if errors > 0:
