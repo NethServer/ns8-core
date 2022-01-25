@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash
 
 #
 # Copyright (C) 2021 Nethesis S.r.l.
@@ -19,9 +19,6 @@
 # You should have received a copy of the GNU General Public License
 # along with NethServer.  If not, see COPYING.
 #
-
-# Redirect any output to the journal (stderr)
-exec 1>&2
 
 exec 1>&2 # Redirect any output to the journal (stderr)
 
