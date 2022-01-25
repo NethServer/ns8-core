@@ -6,6 +6,9 @@ nav_order: 3
 
 # Design & Architecture
 
+* TOC
+{:toc}
+
 ## Goals
 
 The design of NS 8 should fulfill these goals:
@@ -16,7 +19,7 @@ The design of NS 8 should fulfill these goals:
   - easy and effective data backup and restore
   - prepare a machine in a lab, deploy at customer's office
 - limit upstream dependency, increase upstream independence
-- NS7 migration (better, upgrade) path
+- NS 7 migration (better, upgrade) path
 - centralized management portal, installable on premise and as SaaS service
 
 ## Assumptions
@@ -55,6 +58,26 @@ Design goals:
 - the configuration should be readable for any module inside the system, sensitive data (like passwords) should be store encrypted
 - security as first class citizen: rootless container modules with SELinux / AppArmor, rootfull allowed too
 
+List of things considered almost stable, with or without an existing prototype implementation:
+
+- Systemd & Podman foundations
+- Unix users for rootless modules
+- WireGuard VPN among nodes
+- Account providers:
+  - Samba AD and OpenLDAP account providers (both are LDAP)
+  - Remote LDAP account provider
+  - No Unix accounts for domain users
+- Cluster agent, Node agent, Module agents
+- Events and Actions
+- Container Registry as software repository for everything
+- Authenticated Redis access for write operations
+- Public Redis read only access
+- Edge proxies with TLS termination
+- Centralized certificate management
+- FHS compliant
+- API server
+- UI structure
+
 ### Operating System (OS) requirements
 
 NS8 should run on a OS with the following features:
@@ -79,35 +102,13 @@ Applications will be able to access users from the same account provider availab
 Account providers will be accessible using a LDAP proxy.
 Each module instance can eventually select a different account provider.
 
-### Prototype validation
-
-List of things considered almost stable, with or without an existing prototype implementation:
-
-- Systemd & Podman foundations
-- Unix users for rootless modules
-- WireGuard VPN among nodes
-- Account providers:
-  - Samba AD and OpenLDAP account providers (both are LDAP)
-  - Remote LDAP account provider
-  - No Unix accounts for domain users
-- Cluster agent, Node agent, Module agents
-- Events and Actions
-- Container Registry as software repository for everything
-- Authenticated Redis access for write operations
-- Public Redis read only access
-- Edge proxies with TLS termination
-- Centralized certificate management
-- FHS compliant
-- API server
-- UI structure
-
 ## Components
 
 The system is composed by two main components:
 - core
 - modules
 
-### Core components
+### Core
 
 The core purpose is managing the applications, providing the basics for their entire life cycle (install, upgrade, reconfigure, uninstall...). It runs the following components:
 
@@ -150,5 +151,5 @@ The core instantiates a set of *modules*. Each module instance
 runs an application (e.g. Webtop, Nextcloud) as a set of one or more Podman **rootless containers**. In exceptional
 cases a module can run rootfull containers (i.e Samba, Promtail)
 
-See [Modules architecture](details.md#module-architecture) for more info.
+See [Modules architecture](/modules) for more info.
 
