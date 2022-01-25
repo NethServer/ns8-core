@@ -1,4 +1,11 @@
-# Modules
+---
+layout: default
+title: Modules
+nav_order: 5
+has_children: true
+---
+
+# Modules: implementation details
 
 Every time a module instance is added to the cluster, the new instance
 is named as the module itself followed by a progressive number
@@ -341,16 +348,3 @@ To enable automatic builds, create a yaml file like `.github/workflows/<module>.
 Use [dokuwki Github workflow](../.github/workflows/dokuwiki.yaml) as a template, make sure to replace all occurrences of `dokuwiki`
 with the name of the new module.
 
-## API doc generation
-
-If an action has JSON schema validators, the schema file is converted to
-Markdown format and published in the `apidoc` branch. Browse it at
-
-https://github.com/NethServer/ns8-scratchpad/tree/apidoc
-
-Pull requests are assigned a dedicated branch. If the PR source branch is
-`newfeature` the resulting documentation branch is `apidoc-newfeature`.
-The branch lives as long as the PR is merged, or closed.
-
----
-Next: [How to create a new module](new_module.md)

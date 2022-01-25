@@ -1,3 +1,10 @@
+---
+layout: default
+title: Filesystem
+nav_order: 1
+parent: Core
+---
+
 # Filesystem locations
 
 The core executable scripts and binaries are installed under
@@ -13,5 +20,3 @@ Most NS8 core files reside in `/etc/nethserver`,
 
 See `/var/lib/nethserver/node/state/coreimage.lst` for a complete list.
 
----
-Next: [Database](database.md)

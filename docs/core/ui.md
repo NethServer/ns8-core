@@ -1,3 +1,10 @@
+---
+layout: default
+title: User Interface
+nav_order: 8
+parent: Core
+---
+
 # User Interface
 
 NS8 user interface is a web application developed with [VueJs](https://vuejs.org/) and based on [Carbon Design System](https://www.carbondesignsystem.com/).

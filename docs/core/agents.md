@@ -1,3 +1,10 @@
+---
+layout: default
+title: Agents
+nav_order: 3
+parent: Core
+---
+
 # Agents
 
 The core `cluster` and `node` agent, and every module instance run their

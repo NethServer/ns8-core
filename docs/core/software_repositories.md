@@ -1,3 +1,10 @@
+---
+layout: default
+title: Software repositories
+nav_order: 7
+parent: Core
+---
+
 # Software repositories
 
 Module packages are pulled from software repositories. Multiple

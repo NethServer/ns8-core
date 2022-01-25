@@ -1,3 +1,10 @@
+---
+layout: default
+title: API server
+nav_order: 4
+parent: Core
+---
+
 # API server
 
 The API server is a daemon implemented using [Go](https://golang.org).

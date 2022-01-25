@@ -1,3 +1,10 @@
+---
+layout: default
+title: Database
+nav_order: 2
+parent: Core
+---
+
 # Database: Redis
 
 The Redis database runs as a Podman rootfull container. Get the Redis
@@ -81,5 +88,3 @@ implement the observer pattern, for instance in the following situations:
    channel name in this case could be like
    `module/{module_id}/event/{event_name}`
 
----
-Next: [Proxy and certificates](proxy_certificates.md)

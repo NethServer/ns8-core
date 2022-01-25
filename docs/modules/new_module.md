@@ -1,3 +1,10 @@
+---
+layout: default
+title: New module tutorial
+nav_order: 2
+parent: Modules
+---
+
 # How to create a rootless module
 
 Each module is distributed using a container image.

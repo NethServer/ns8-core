@@ -1,3 +1,9 @@
+---
+layout: default
+title: Quickstart
+nav_order: 2
+---
+
 # Installation & First steps
 
 **NOTE**: this is just a prototype, *do not* use in production.
@@ -86,5 +92,3 @@ additional modules. Handle it with care because it erases everything under `/hom
 
     bash /var/lib/nethserver/node/uninstall.sh
 
----
-Next: [Technical details](details.md)

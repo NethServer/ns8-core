@@ -1,8 +1,10 @@
+---
+layout: default
+title: Design & Architecture
+nav_order: 3
+---
+
 # Design & Architecture
-
-# NethServer 8: cloud in a box
-
-NethServer 8 (NS8), is the evolution of NethServer 7 (NS7).
 
 ## Goals
 
@@ -150,5 +152,3 @@ cases a module can run rootfull containers (i.e Samba, Promtail)
 
 See [Modules architecture](details.md#module-architecture) for more info.
 
----
-Next: [Installation](installation.md)
