@@ -9,7 +9,7 @@ parent: Modules
 
 Every time a commit is pushed to the repository, a new build can
 be automatically started.
-To enable automatic builds, create a yaml file like `.github/workflows/<module>.yaml`.
+To enable automatic builds, create a YAML file like `.github/workflows/<module>.yaml`.
 
 Use [dokuwki Github workflow](../.github/workflows/dokuwiki.yaml) as a template, make sure to replace all occurrences of `dokuwiki`
 with the name of the new module.

@@ -48,7 +48,7 @@ Environment variables are copied to Redis at `module/<module_id>/environment`.
 
 Each action has access to environment variables. They are:
 1. initialized by `add-module`
-2. changed by the agent at runtime
+2. changed by the agent at run time
 3. inherited from the agent environment
 
 Main environment variables are:
@@ -69,7 +69,7 @@ Other available variables:
 - `IMAGE_DIGEST`
 - `IMAGE_REPODIGEST`
 
-Environment variables added by the `add-module` and defined at runtime are
+Environment variables added by the `add-module` and defined at run time are
 saved inside `/home/<module_id>/.config/state/environment`, e.g.
 `/home/myapp1/.config/state/environment`.
 

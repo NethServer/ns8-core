@@ -38,9 +38,9 @@ Whenever possible, containers should always use volumes to avoid SELinux issues 
 
 Includes can be added to the `state-include.conf` file saved inside the `AGENT_INSTALL_DIR`.
 In the [source tree](modules/images/#source-tree), the file should be placed under `<module>/imageroot/etc/state-include.conf`.
-On installed modules, the file will appear on differenet paths:
+On installed modules, the file will appear on different paths:
 - rootless containers, eg. `dokuwiki1`, full path will be `/home/dokuwiki1/.config/etc/state-include.conf`
-- rootfull containers, eg. `samba1`,  fulle path will be  `/var/lib/nethserver/samba1/etc/stae-include.conf`
+- rootfull containers, eg. `samba1`,  full path will be  `/var/lib/nethserver/samba1/etc/stae-include.conf`
 
 Lines starting with `volumes/` will be translated to volume name. Example:
 ```

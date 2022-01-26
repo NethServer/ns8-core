@@ -9,7 +9,7 @@ parent: Core
 
 Almost everything is logged inside journalctl.
 As root use `journalctl` to see messages from agents, rootfull and rootless modules.
-As rootless unix user (eg. `traefik1`), use `journalctl --user` to see messages only from systemd user session.
+As rootless UNIX user (eg. `traefik1`), use `journalctl --user` to see messages only from systemd user session.
 
 By default, [Grafana Loki](https://grafana.com/oss/loki/) is installed inside the leader node, it collects the logs
 from all cluster nodes.

@@ -11,7 +11,7 @@ Each node is connected to the leader using [WireGuard](https://www.wireguard.com
 
 The VPN has its own network, the default is `10.5.4.0/24` and it listens on port 55820.
 Make sure this address is not already used inside your existing network and the UDP port 55820 is open on your firewall.
-You can change both configurations during cluster intialization.
+You can change both configurations during cluster initialization.
 
 To inspect the VPN status you can use both `systemctl status wg-quick@wg0.service` and `wg show` commands.
 When the VPN is correctly configured, the leader now always takes the first IP for the above CIDR.

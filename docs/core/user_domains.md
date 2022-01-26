@@ -14,7 +14,7 @@ LDAP database as replicas of it. An LDAP database represents an account
 
 A NS8 cluster can host multiple account domains from different
 implementations. It is possible to configure external LDAP services as
-hosted ones. Supported LDAP schemas are
+hosted ones. Supported LDAP schema are
 
 1. Active Directory
 2. RFC2307

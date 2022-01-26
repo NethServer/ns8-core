@@ -20,7 +20,7 @@ APIs are documented using a [swagger.json file](https://raw.githubusercontent.co
 To browse all existing APIs, use the [Swagger UI](https://petstore.swagger.io/?url=https://raw.githubusercontent.com/NethServer/ns8-scratchpad/swagdoc/swagger.json).
 
 API flow:
-- autenticate the user using the `login` API
+- authenticate the user using the `login` API
 - extract the JWT token from the login API response
 - use the token to execute all next API calls
 
@@ -76,7 +76,7 @@ The audit db is store in a file using a SQLite database schema. Each record is c
 
 Audit database is saved inside `AUDIT_FILE` variable, default path is `/var/lib/nethserver/api-server/audit.db`.
 
-The audit logs can be access usign the `audit` API or directly from command line.
+The audit logs can be access using the `audit` API or directly from command line.
 Example:
 ```
 sqlite3 /var/lib/nethserver/api-server/audit.db "SELECT * FROM audit LIMIT 10;" ".exit"

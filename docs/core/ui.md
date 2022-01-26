@@ -35,7 +35,7 @@ Core UI includes the following components:
 - Cluster settings
 
 Core UI also includes a [Storybook](https://storybook.js.org/) to explore and test the reusable components included in the UI library.
-To launch Storybook webapp:
+To launch Storybook web app:
 
 ```bash
 cd core/ui
@@ -60,7 +60,7 @@ Source code of UI library is provided here: [https://github.com/NethServer/ns8-u
 
 The core and the applications can add quickly accessible actions called shortcuts.
 Shortcuts will be available from the search bar inside the UI.
-Examples of shortcuts could be something like "Add a user" or "Show applicationX logs".
+Examples of shortcuts could be something like "Add a user" or "Show application X logs".
 
 Shortcuts are described inside a `shortcuts.json` file which must be inside the `ui` path:
 - core: `/var/lib/nethserver/cluster/ui/shortcuts.json`
@@ -77,7 +77,7 @@ The `list-shortcuts` API will read all `shortcuts.json` files and combine them o
 ## Tasks and notifications
 
 Core and modules can submit tasks to the cluster, to a node or to a module.
-NS8 provides automatic toast notifications for task creation, progress, completion and abortion; task events are sent from API server to UI through websocket.
+NS8 provides automatic toast notifications for task creation, progress, completion and abortion; task events are sent from API server to UI through web-socket.
 Validation errors can be intercepted as well, in order to highlight invalid input fields or do something after validation is successful (e.g. close a modal).
 
 To execute a task silently and prevent automatic notifications on task events, set the following attribute in task object:
@@ -105,7 +105,7 @@ Errors are notified to the user using inline notifications (`NsInlineNotificatio
 You can sync the state of some components inside page URL. This is useful in the following cases:
 
 - You share the URL you are visiting with someone (they will see the same UI state)
-- You want to link to a specific point and state of the webapp, so that you can browse to a page and prefill some input fields, or open a modal automatically. Global shortcuts rely on this feature
+- You want to link to a specific point and state of the web app, so that you can browse to a page and prefill some input fields, or open a modal automatically. Global shortcuts rely on this feature
 
 Do not use query parameters for data that is not under user control, e.g. data retrieved by the backend.
 

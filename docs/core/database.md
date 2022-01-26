@@ -139,9 +139,9 @@ Legend:
 |---|----|-----------|
 |node/{id}/vpn                      |HASH||
 |node/{id}/vpn ip_address           |STRING     |IP address in cluster/network|
-|node/{id}/vpn public_key           |STRUBG     |Public WireGuard VPN key|
+|node/{id}/vpn public_key           |STRING     |Public WireGuard VPN key|
 |node/{id}/vpn destinations         |STRING     |List of networks in CIDR notation, routed through the VPN|
-|node/{id}/vpn endpoint             |STRING     |Public IP or hostname of the VPN endpoint with :port suffix|
+|node/{id}/vpn endpoint             |STRING     |Public IP or host name of the VPN endpoint with :port suffix|
 |node/{id}/vpn listen_port          |INTEGER    |Public UDP port of the VPN endpoint, default: `55820`|
 |node/{id}/vpn hub_id               |INTEGER    |node ID (for nodes without a public endpoint address)|
 |node/{id}/tasks                    |QUEUE      |see [Task queue item](#task-queue-item)|
