@@ -54,12 +54,27 @@
             "title": "Unconfigured module instances",
             "description": "List of module instances that are not included in any backup",
             "items": {
-                "type": "string",
-                "minLength": 1
+                "$ref": "#/$defs/uinstance-item"
             }
         }
     },
     "$defs": {
+        "uinstance-item": {
+            "title": "Unconfigured module instance",
+            "description": "Instance with no backup configured",
+            "type": "object",
+            "properties": {
+                "id": {
+                    "title": "Module ID",
+                    "type": "string",
+                    "minLength": 1
+                },
+                "ui_name": {
+                    "title": "Module UI name",
+                    "type": "string"
+                }
+            }
+        },
         "instance-item": {
             "title": "Backup of a module instance",
             "type": "object",

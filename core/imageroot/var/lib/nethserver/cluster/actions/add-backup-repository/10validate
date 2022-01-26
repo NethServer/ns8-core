@@ -33,10 +33,10 @@ rdb = agent.redis_connect(privileged=False)
 
 agent.set_weight(os.path.basename(__file__), 0) # Validation step, no task progress at all
 
-id = str(uuid.uuid5(uuid.NAMESPACE_URL, request['url']))
+rid = str(uuid.uuid5(uuid.NAMESPACE_URL, request['url']))
 
 # check for duplicate names
-if rdb.exists(f'cluster/backup_repository/{id}'):
+if rdb.exists(f'cluster/backup_repository/{rid}'):
     errors.append({'field':'url','parameter':'url','value':request['url'],'error':'backup_repository_exists'})
 
 if errors:
