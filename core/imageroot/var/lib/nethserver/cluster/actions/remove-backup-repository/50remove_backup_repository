@@ -28,7 +28,6 @@ import os
 
 request = json.load(sys.stdin)
 rid = request['id']
-password = request['password']
 
 rdb = agent.redis_connect(privileged=True)
 
@@ -37,11 +36,6 @@ if not orepo:
     agent.set_status('validation-failed')
     json.dump([{'field':'id', 'parameter':'id','value': rid, 'error':'backup_repository_not_found'}], fp=sys.stdout)
     sys.exit(2)
-
-if orepo['password'] != password:
-    agent.set_status('validation-failed')
-    json.dump([{'field':'password', 'parameter':'password','value': '***', 'error':'backup_repository_password_mismatch'}], fp=sys.stdout)
-    sys.exit(3)
 
 trx = rdb.pipeline()
 
