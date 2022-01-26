@@ -1,7 +1,7 @@
 ---
 layout: default
 title: New module tutorial
-nav_order: 3
+nav_order: 12
 parent: Modules
 ---
 
@@ -81,7 +81,7 @@ Feel free to use `dokuwiki` as scaffold module: just copy it and change it accor
 
 ### User Interface
 
-TODO
+See [Modules UI](/modules/ui).
 
 ## Step 2: push the image to registry
 
