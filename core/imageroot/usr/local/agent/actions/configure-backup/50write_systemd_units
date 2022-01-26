@@ -61,6 +61,7 @@ Description={description_text}
 [Service]
 Type=oneshot
 ExecStart={command}
+SyslogIdentifier=%N
 """
 
 if request['optype'] == "remove":
