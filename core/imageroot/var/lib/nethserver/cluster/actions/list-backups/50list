@@ -72,7 +72,7 @@ for mbackup in rdb.scan_iter('module/*/backups'):
 unconfigured_instances = []
 
 # XXX module blacklist -- this should be implemented elsewhere:
-skip_modules = ["promtail", "samba", "openldap", "loki", "ldapproxy", "traefik"]
+skip_modules = ["promtail", "loki", "ldapproxy", "traefik"]
 
 for xins in rdb.scan_iter('module/*/environment'):
     mid = xins.removesuffix('/environment').removeprefix('module/')

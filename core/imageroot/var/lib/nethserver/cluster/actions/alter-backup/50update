@@ -1,0 +1,114 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2022 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
+import os
+import sys
+import json
+import agent
+import agent.tasks
+import cluster.backup
+
+request = json.load(sys.stdin)
+rdb = agent.redis_connect(privileged=True)
+backup_id = request['id']
+
+if not rdb.exists(f'cluster/backup/{backup_id}'):
+    agent.set_status('validation-failed')
+    json.dump([{'field':'id','parameter':'id','value': backup_id,'error':'backup_object_not_found'}], fp=sys.stdout)
+    sys.exit(2)
+
+if cluster.backup.validate_schedule(request['schedule']):
+    agent.set_status('validation-failed')
+    json.dump([{'field':'schedule','parameter':'schedule','value': request['schedule'],'error':'bad_schedule_format'}], fp=sys.stdout)
+    sys.exit(3)
+
+data = {
+    "retention": request['retention'],
+    "name": request['name'],
+    "schedule": request['schedule'],
+    "schedule_hint": json.dumps(request.get("schedule_hint", {})),
+    "enabled": "1" if request['enabled'] else "",
+}
+if not data['name']:
+    data['name'] = "Backup " + str(backup_id)
+
+# Save the object attribute new values:
+rdb.hset(f'cluster/backup/{backup_id}', mapping=data)
+
+currinst = set() # current set of modules using backup_id
+for mkey in rdb.scan_iter('module/*/backups'):
+    mbackups = set(rdb.smembers(mkey))
+    if str(backup_id) in mbackups:
+        currinst.add(mkey.removeprefix('module/').removesuffix('/backups'))
+
+ptasks = []
+
+# 1/3 Iterate over the modules we want to REMOVE
+for mid in currinst - set(request['instances']):
+    rdb.srem(f'module/{mid}/backups', backup_id)
+    ptasks.append({
+        "action": "configure-backup",
+        "agent_id": f"module/{mid}",
+        "data": {
+            "optype": "remove",
+            "id": backup_id,
+        },
+    })
+
+# 2/3 Iterate over the modules we want to ADD
+for mid in set(request['instances']) - currinst:
+    rdb.sadd(f'module/{mid}/backups', backup_id)
+    ptasks.append({
+        "action": "configure-backup",
+        "agent_id": f"module/{mid}",
+        "data": {
+            "optype": "add",
+            "id": backup_id,
+            "name": request["name"],
+            "schedule": request["schedule"],
+            "enabled": request["enabled"],
+        },
+    })
+
+# 3/3 Iterate over the modules we want to ALTER
+for mid in set(request['instances']) & currinst:
+    ptasks.append({
+        "action": "configure-backup",
+        "agent_id": f"module/{mid}",
+        "data": {
+            "optype": "alter",
+            "id": backup_id,
+            "name": request["name"],
+            "schedule": request["schedule"],
+            "enabled": request["enabled"],
+        },
+    })
+
+print(ptasks, file=sys.stderr)
+
+terrors = agent.tasks.runp_brief(ptasks,
+    endpoint="redis://cluster-leader",
+    progress_callback=agent.get_progress_callback(10,98)
+)
+if terrors:
+    print(terrors, file=sys.stderr)
+    sys.exit(1)

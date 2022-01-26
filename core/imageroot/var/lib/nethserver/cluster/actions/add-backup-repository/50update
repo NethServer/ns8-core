@@ -26,13 +26,14 @@ import json
 import uuid
 import agent
 import hashlib
+import cluster.backup
 
 request = json.load(sys.stdin)
 rdb = agent.redis_connect(privileged=True)
 
 url = request['url']
 provider = request['provider']
-id = str(uuid.uuid5(uuid.NAMESPACE_URL, url))
+rid = str(uuid.uuid5(uuid.NAMESPACE_URL, url))
 
 if request['password']:
     password = request['password']
@@ -45,16 +46,7 @@ else:
 if request['name']:
     name = request['name']
 else:
-    try:
-        if provider == "aws":
-            name = "AWS " + url.split('/', 1)[1]
-        elif provider == "backblaze":
-            name = "Backblaze " + url.split('/', 1)[1]
-        elif provider == "digitalocean":
-            name = "DigitalOcean " + url.split('/', 1)[1]
-    finally:
-        if not name:
-            name = provider + " " + id[:4]
+    name = cluster.backup.get_default_backup_repository_name(provider, url, rid)
 
 data = {'url': url, 'password': password, 'name': name, 'provider': provider}
 
@@ -63,7 +55,7 @@ for k in request['parameters']:
     data[k] = request['parameters'][k]
 
 # Add the repository key
-if not rdb.hset(f'cluster/backup_repository/{id}', mapping=data):
+if not rdb.hset(f'cluster/backup_repository/{rid}', mapping=data):
     sys.exit(1)
 
-json.dump({'password': password, 'id': id}, fp=sys.stdout)
+json.dump({'password': password, 'id': rid}, fp=sys.stdout)

@@ -26,6 +26,7 @@ import json
 import agent
 import uuid
 import subprocess
+import cluster.backup
 
 errors = []
 
@@ -39,7 +40,7 @@ repository = request['repository']
 if not rdb.exists(f'cluster/backup_repository/{repository}'):
     errors.append({'field':'id','parameter':'id','value': repository,'error':'backup_repository_not_found'})
 
-if subprocess.run(['/usr/bin/systemd-analyze', 'calendar', request['schedule']], stdout=subprocess.DEVNULL).returncode != 0:
+if cluster.backup.validate_schedule(request['schedule']):
     errors.append({'field':'schedule','parameter':'schedule','value': request['schedule'],'error':'bad_schedule_format'})
 
 for mid in request['instances']:
