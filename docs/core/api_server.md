@@ -64,6 +64,15 @@ Response:
 }
 ```
 
+You can also use the shortcut command called `api-cli`.
+Usage example:
+```
+# api-cli list-actions
+node/1/update-routes
+node/1/get-node-status
+...
+```
+
 ## Audit log
 
 Every request made to the server, using its APIs or WebSocket, is logged inside an audit db.
