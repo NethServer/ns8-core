@@ -141,6 +141,8 @@ def run_restic(rdb, repository, repo_path, podman_args, restic_args, **kwargs):
         restic_env["RESTIC_REPOSITORY"] = orepo['url'] + "/" + repo_path
         restic_env["AWS_ACCESS_KEY"] = orepo['aws_access_key_id']
         restic_env["AWS_SECRET_ACCESS_KEY"] = orepo['aws_secret_access_key']
+        if orepo['provider'] == 'aws':
+            restic_env['AWS_DEFAULT_REGION'] = orepo.get('aws_default_region', '')
     elif uschema == 'b2':
         restic_env["RESTIC_REPOSITORY"] = orepo['url'] + ":" + repo_path
         restic_env["B2_ACCOUNT_ID"] = orepo['b2_account_id']
