@@ -29,18 +29,6 @@ import subprocess
 import time
 
 backup_id = int(sys.argv[1])
-
-try:
-    subprocess.run(["module-dump-state"] + sys.argv[1:], check=True)
-except FileNotFoundError:
-    pass
-except PermissionError:
-    print("[WARNING] module-dump-state is not executable: ignored.", file=sys.stderr)
-except Exception as ex:
-    print("[ERROR] module-dump-state failed.", ex, file=sys.stderr)
-    print("[ERROR] module-backup aborted.", file=sys.stderr)
-    sys.exit(1)
-
 rdb = agent.redis_connect(host='127.0.0.1') # Connect to local replica
 
 obackup = rdb.hgetall(f'cluster/backup/{backup_id}')
@@ -54,6 +42,17 @@ repopath = agent.get_image_name_from_url(os.environ['IMAGE_URL']) + "/" + module
 if obackup['enabled'] != '1':
     print(f"Backup {backup_id} is not enabled, exit now.", file=sys.stderr)
     sys.exit(0)
+
+try:
+    subprocess.run(["module-dump-state"] + sys.argv[1:], check=True)
+except FileNotFoundError:
+    pass
+except PermissionError:
+    print("[WARNING] module-dump-state is not executable: ignored.", file=sys.stderr)
+except Exception as ex:
+    print("[ERROR] module-dump-state failed.", ex, file=sys.stderr)
+    print("[ERROR] module-backup aborted.", file=sys.stderr)
+    sys.exit(1)
 
 podman_args = [
     "--workdir=/srv",
@@ -80,13 +79,13 @@ with subprocess.Popen(["podman", "volume", "ls", "--format={{.Name}}"], stdout=s
 # See the cluster/restore-module action for details
 backup_args = ["state/environment"]
 
-# Configure include/exclude pattern lists:
-for spath in [
-    "etc/state-include.conf",
-    "etc/state-exclude.conf",
-    ]:
-    if os.path.isfile(install_dir + "/" + spath):
-        backup_args.append("--files-from=" + spath)
+# Configure include pattern list:
+if os.path.isfile(install_dir + "/etc/state-include.conf"):
+    backup_args.append("--files-from=etc/state-include.conf")
+
+# Configure exclude pattern list:
+if os.path.isfile(install_dir + "/etc/state-exclude.conf"):
+    backup_args.append("--exclude-file=etc/state-exclude.conf")
 
 # Ensure the restic repository has been initialized
 if agent.run_restic(rdb, repository, repopath, [], ["snapshots"], stdout=subprocess.DEVNULL).returncode == 0:
