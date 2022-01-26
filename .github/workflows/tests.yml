@@ -75,10 +75,10 @@ jobs:
           terraform init
           terraform workspace new ${{ matrix.node }}-${{ needs.ns8.outputs.short_sha }}
           terraform apply -var 'leader_node={"${{ matrix.node }}":"ams3"}' -auto-approve
-        working-directory: ${{ github.workspace }}/tests/infra
+        working-directory: ${{ github.workspace }}/infra
       - name: HashiCorp - Terraform Output Deploy Key
         run: terraform output -raw deploy-key > ${{ github.workspace }}/key
-        working-directory: ${{ github.workspace }}/tests/infra
+        working-directory: ${{ github.workspace }}/infra
       - name: Save Deploy Key
         uses: actions/upload-artifact@v2
         with:
@@ -89,7 +89,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: terraform.tfstate-${{ matrix.node }}
-          path: ${{ github.workspace }}/tests/infra/terraform.tfstate.d/${{ matrix.node }}-${{ needs.ns8.outputs.short_sha }}/terraform.tfstate
+          path: ${{ github.workspace }}/infra/terraform.tfstate.d/${{ matrix.node }}-${{ needs.ns8.outputs.short_sha }}/terraform.tfstate
           retention-days: 1
   core:
     name: "Core tests"
@@ -154,14 +154,14 @@ jobs:
         with:
           name: terraform.tfstate-${{ matrix.node }}
           path: |
-             ${{ github.workspace }}/tests/infra/
+             ${{ github.workspace }}/infra/
       - name: Destroy the infrastructure
         env:
           TF_VAR_do_token: ${{ secrets.do_token }}
         run: |
           terraform init
           terraform apply -destroy -auto-approve
-        working-directory: ${{ github.workspace }}/tests/infra
+        working-directory: ${{ github.workspace }}/infra
   remove_label:
     name: "Cleaup PR label"
     runs-on: ubuntu-latest
