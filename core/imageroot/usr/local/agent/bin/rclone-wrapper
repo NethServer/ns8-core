@@ -67,6 +67,7 @@ elif uscheme == "s3":
     }
     if orepo['provider'] == 'aws':
         rclone_env['RCLONE_S3_PROVIDER'] = 'AWS'
+        rclone_env['RCLONE_S3_REGION'] = orepo.get("aws_default_region", "")
     elif orepo['provider'] == 'digitalocean':
         rclone_env['RCLONE_S3_PROVIDER'] = 'DigitalOcean'
 
