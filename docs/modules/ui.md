@@ -7,12 +7,14 @@ parent: Modules
 
 # Modules User Interface
 
-The core already provides some already baked functions available to modules:
+The core already provides some already baked functions available to modules.
 
 - [UI library](/core/ui/#ui-library)
 - [Tasks and notifications](/core/ui/#tasks-and-notifications)
 - [Error notifications](/core/ui/#error-notifications)
 - [Shortcuts](/core/ui/#shortcuts)
+
+Just like the core, every module can use components and functions provided by the UI library (npm package @nethserver/ns8-ui-lib).
 
 ## Guidelines
 
