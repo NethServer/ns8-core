@@ -69,8 +69,8 @@
       <div class="bx--col-md-4 bx--col-max-4">
         <NsInfoCard
           light
-          :title="$t('backup.title')"
-          description=""
+          :title="backups.length.toString()"
+          :description="$tc('backup.backups_scheduled_c', backups.length)"
           :icon="Save32"
           :loading="loading.listBackups"
           :isErrorShown="error.listBackups"

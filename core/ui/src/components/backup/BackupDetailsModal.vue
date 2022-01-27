@@ -144,8 +144,7 @@
                     <span
                       v-if="instance.status && instance.status.total_file_count"
                     >
-                      {{ instance.status.total_file_count | humanFormat }}
-                      ({{ instance.status.total_file_count }})
+                      {{ instance.status.total_file_count }}
                     </span>
                     <span v-else>-</span>
                   </span>

@@ -341,7 +341,8 @@
     "backup_snapshots": "Backup snapshots",
     "backup_of_instances_failed_c": "{instance} failed | {num} instances failed",
     "errored_backups_c": "{num} backup failed | {num} backups failed",
-    "errored_backups_description": "Check out <strong>Backup scheduler</strong> below"
+    "errored_backups_description": "Check out <strong>Backup scheduler</strong> below",
+    "backups_scheduled_c": "Backup scheduled | Backups scheduled"
   },
   "calendar": {
     "days": "Days",

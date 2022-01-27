@@ -352,6 +352,7 @@
           </cv-toggle> -->
             <!-- run backup on finish -->
             <cv-checkbox
+              v-if="!isEditing"
               :label="$t('backup.run_backup_now')"
               v-model="runBackupOnFinish"
               :disabled="loading.addBackup || loading.alterBackup"
@@ -572,7 +573,7 @@ export default {
       this.updateInternalRepositories();
     },
     step: function () {
-      if (this.step == "settings") {
+      if (this.step == "settings" && !this.isEditing) {
         // prefill backup name
 
         let backupName = this.$t("backup.default_backup_name", {
@@ -833,10 +834,11 @@ export default {
             id: this.backup.id,
             name: this.name,
             repository: this.backup.repository,
-            schedule: this.schedule,
+            schedule: this.scheduleExpression,
+            schedule_hint: this.schedule,
             retention: parseInt(this.retention),
             instances: this.instances,
-            enabled: this.backup.enabled, ////
+            enabled: this.backup.enabled,
           },
           extra: {
             title: this.$t("action." + taskAction),

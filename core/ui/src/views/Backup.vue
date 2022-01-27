@@ -532,6 +532,7 @@
       :isShown="isShownEditRepoModal"
       :repository="currentRepo"
       @hide="hideEditRepoModal"
+      @repoAltered="listBackupRepositories"
     />
     <!-- backup details modal -->
     <BackupDetailsModal

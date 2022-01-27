@@ -20,7 +20,7 @@
         <template v-if="repository.provider == 'backblaze'">
           <cv-text-input
             :label="$t('backup.b2_account_id')"
-            v-model.trim="repository.parameters.b2_account_id"
+            v-model.trim="backblaze.b2_account_id"
             :invalid-message="$t(error.backblaze.b2_account_id)"
             :disabled="loading.alterBackupRepository"
             ref="b2_account_id"
@@ -28,7 +28,7 @@
           </cv-text-input>
           <cv-text-input
             :label="$t('backup.b2_account_key')"
-            v-model.trim="repository.parameters.b2_account_key"
+            v-model.trim="backblaze.b2_account_key"
             :invalid-message="$t(error.backblaze.b2_account_key)"
             :disabled="loading.alterBackupRepository"
             ref="b2_account_key"
@@ -39,7 +39,7 @@
         <template v-if="repository.provider == 'aws'">
           <cv-text-input
             :label="$t('backup.aws_access_key_id')"
-            v-model.trim="repository.parameters.aws_access_key_id"
+            v-model.trim="aws.aws_access_key_id"
             :invalid-message="$t(error.aws.aws_access_key_id)"
             :disabled="loading.alterBackupRepository"
             ref="aws_access_key_id"
@@ -47,7 +47,7 @@
           </cv-text-input>
           <cv-text-input
             :label="$t('backup.aws_default_region')"
-            v-model.trim="repository.parameters.aws_default_region"
+            v-model.trim="aws.aws_default_region"
             :invalid-message="$t(error.aws.aws_default_region)"
             :disabled="loading.alterBackupRepository"
             ref="aws_default_region"
@@ -55,7 +55,7 @@
           </cv-text-input>
           <cv-text-input
             :label="$t('backup.aws_secret_access_key')"
-            v-model.trim="repository.parameters.aws_secret_access_key"
+            v-model.trim="aws.aws_secret_access_key"
             :invalid-message="$t(error.aws.aws_secret_access_key)"
             :disabled="loading.alterBackupRepository"
             ref="aws_secret_access_key"
@@ -71,7 +71,7 @@
         <!-- //// handle ALL providers -->
         <cv-text-input
           :label="$t('backup.repository_name')"
-          v-model.trim="repository.name"
+          v-model.trim="name"
           :helper-text="$t('backup.repository_name_helper')"
           :invalid-message="$t(error.name)"
           :disabled="loading.alterBackupRepository"
@@ -144,6 +144,34 @@ export default {
       },
     };
   },
+  watch: {
+    isShown: function () {
+      if (this.isShown) {
+        // ensure repository prop is updated as well
+        this.$nextTick(() => {
+          this.name = this.repository.name;
+
+          switch (this.repository.provider) {
+            case "backblaze":
+              this.backblaze.b2_account_id =
+                this.repository.parameters.b2_account_id;
+              this.backblaze.b2_account_key =
+                this.repository.parameters.b2_account_key;
+              break;
+            case "aws":
+              this.aws.aws_access_key_id =
+                this.repository.parameters.aws_access_key_id;
+              this.aws.aws_default_region =
+                this.repository.parameters.aws_default_region;
+              this.aws.aws_secret_access_key =
+                this.repository.parameters.aws_secret_access_key;
+              break;
+            //// handle ALL providers
+          }
+        });
+      }
+    },
+  },
   methods: {
     buildRepositoryParameters() {
       switch (this.repository.provider) {
@@ -166,8 +194,116 @@ export default {
       }
       //// handle all providers
     },
+    validateAlterBackblazeRepository() {
+      // clear errors
+      this.error.name = "";
+
+      this.error.backblaze.b2_account_id = "";
+      this.error.backblaze.b2_account_key = "";
+
+      let isValidationOk = true;
+
+      if (!this.backblaze.b2_account_id) {
+        this.error.backblaze.b2_account_id = "common.required";
+
+        if (isValidationOk) {
+          this.focusElement("b2_account_id");
+          isValidationOk = false;
+        }
+      }
+
+      if (!this.backblaze.b2_account_key) {
+        this.error.backblaze.b2_account_key = "common.required";
+
+        if (isValidationOk) {
+          this.focusElement("b2_account_key");
+          isValidationOk = false;
+        }
+      }
+
+      if (!this.name) {
+        this.error.name = "common.required";
+
+        if (isValidationOk) {
+          this.focusElement("name");
+          isValidationOk = false;
+        }
+      }
+      return isValidationOk;
+    },
+    validateAmazonS3Repository() {
+      // clear errors
+      this.error.name = "";
+
+      this.error.aws.aws_access_key_id = "";
+      this.error.aws.aws_default_region = "";
+      this.error.aws.aws_secret_access_key = "";
+
+      let isValidationOk = true;
+
+      if (!this.aws.aws_access_key_id) {
+        this.error.aws.aws_access_key_id = "common.required";
+
+        if (isValidationOk) {
+          this.focusElement("aws_access_key_id");
+          isValidationOk = false;
+        }
+      }
+
+      if (!this.aws.aws_default_region) {
+        this.error.aws.aws_default_region = "common.required";
+
+        if (isValidationOk) {
+          this.focusElement("aws_default_region");
+          isValidationOk = false;
+        }
+      }
+
+      if (!this.aws.aws_secret_access_key) {
+        this.error.aws.aws_secret_access_key = "common.required";
+
+        if (isValidationOk) {
+          this.focusElement("aws_secret_access_key");
+          isValidationOk = false;
+        }
+      }
+
+      if (!this.name) {
+        this.error.name = "common.required";
+
+        if (isValidationOk) {
+          this.focusElement("name");
+          isValidationOk = false;
+        }
+      }
+      return isValidationOk;
+    },
+    validateAlterGenericS3Repository() {
+      ////
+      console.error("not implemented"); ////
+      return false;
+    },
+    validateAlterAzureRepository() {
+      ////
+      console.error("not implemented"); ////
+      return false;
+    },
+    validateAlterBackupRepository() {
+      switch (this.repository.provider) {
+        case "backblaze":
+          return this.validateAlterBackblazeRepository();
+        case "azure":
+          return this.validateAlterAzureRepository();
+        case "aws":
+          return this.validateAmazonS3Repository();
+        case "genericS3":
+          return this.validateAlterGenericS3Repository();
+      }
+    },
     async alterBackupRepository() {
-      //// validation
+      if (!this.validateAlterBackupRepository()) {
+        return;
+      }
       this.loading.alterBackupRepository = true;
       this.error.alterBackupRepository = "";
       const taskAction = "alter-backup-repository";
@@ -191,6 +327,7 @@ export default {
           data: {
             id: this.repository.id,
             name: this.name,
+            provider: this.repository.provider,
             parameters: this.buildRepositoryParameters(),
           },
           extra: {
@@ -223,11 +360,10 @@ export default {
         }
       }
     },
-    alterBackupRepositoryCompleted(taskContext, taskResult) {
-      console.log("alterBackupRepositoryCompleted", taskResult.output); ////
-
+    alterBackupRepositoryCompleted() {
       this.loading.alterBackupRepository = false;
-      this.$emit("repoEdited");
+      this.$emit("repoAltered");
+      this.$emit("hide");
     },
   },
 };
