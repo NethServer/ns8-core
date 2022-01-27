@@ -127,8 +127,9 @@ It runs the following components:
 ### Modules
 
 The core instantiates a set of *modules*. Each module instance
-runs an application (e.g. Webtop, Nextcloud) as a set of one or more Podman **rootless containers**. In exceptional
-cases a module can run rootfull containers (i.e Samba, Promtail)
+runs an application (e.g. Webtop, Nextcloud) or it can be just a part of it (e.g. Promtail and Loki are parts/components of Log).
+In any case a module instance is made of one or more Podman rootless containers.
+In exceptional cases a module can run rootfull containers (i.e Samba, Promtail).
 
 See [Modules architecture](/modules) for more info.
 

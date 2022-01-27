@@ -10,5 +10,3 @@ has_children: true
 Before reading this chapter, make sure to take a look at [Design & Architecture](design.md).
 
 NS8 relies on default Linux distribution configurations as much as possible.
-All logs are available using `journalctl` and services can be inspected using `systemctl` command.
-

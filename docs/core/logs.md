@@ -8,6 +8,7 @@ parent: Core
 # Logs
 
 Almost everything is logged inside journalctl.
+Recent logs are available using `journalctl` and services can be inspected using `systemctl` command.
 As root use `journalctl` to see messages from agents, rootfull and rootless modules.
 As rootless UNIX user (eg. `traefik1`), use `journalctl --user` to see messages only from systemd user session.
 
