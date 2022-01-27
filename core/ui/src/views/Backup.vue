@@ -787,7 +787,6 @@ export default {
           action: taskAction,
           data: {
             id: repo.id,
-            password: repo.password,
           },
           extra: {
             title: this.$t("action." + taskAction),
