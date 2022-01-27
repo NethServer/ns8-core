@@ -32,7 +32,7 @@ import json
 import time
 import agent
 import subprocess
-from cluster.ldapproxy import Ldapproxy
+from agent.ldapproxy import Ldapproxy
 
 # Execute occ command
 # It returns the process exit code and output

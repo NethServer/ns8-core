@@ -11,14 +11,14 @@ node.
 
 The consumer module runs on the same node where the Ldapproxy instance is
 running. See how to connect with Ldapproxy with the [Python
-`cluster.ldapproxy`
+`agent.ldapproxy`
 package](https://github.com/NethServer/ns8-scratchpad/blob/main/doc/details.md#users-and-groups-ldapproxy).
 
 
 ## Test with ldapsearch
 
 Annotate the TCP port and bind credentials from the output of `runagent
-python3 -mcluster.ldapproxy`:
+python3 -magent.ldapproxy`:
 
     export TCP_PORT=20000 BIND_DN=ldapservice@ad.dp.nethserver.net BIND_PASSWORD=xxx
 
