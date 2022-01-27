@@ -20,10 +20,10 @@ hosted ones. Supported LDAP schema are
 2. RFC2307
 
 A module can discover the list of available account domains with the
-`cluster.ldapproxy` Python module. The following command dumps a list of
+`agent.ldapproxy` Python module. The following command dumps a list of
 parameters required to connect with an LDAP database on cluster node 1.
 
-    runagent python3 -mcluster.ldapproxy
+    runagent python3 -magent.ldapproxy
 
 Returned TCP endpoints are local (`host` is `127.0.0.1`) and do not
 require TLS. The port number depends on the LDAP domain.
@@ -46,7 +46,7 @@ network namespace.
 Python code example:
 
 ```python
-from cluster.ldapproxy import Ldapproxy
+from agent.ldapproxy import Ldapproxy
 lp = Ldapproxy()
 domains = lp.get_domains_list()
 print(domains)
