@@ -25,6 +25,7 @@ import sys
 import json
 import agent
 import cluster.backup
+import subprocess
 
 request = json.load(sys.stdin)
 rdb = agent.redis_connect(privileged=True)
@@ -43,6 +44,19 @@ if rprovider != rdb.hget(f'cluster/backup_repository/{rid}', 'provider'):
     agent.set_status('validation-failed')
     json.dump([{'field':'provider','parameter':'provider','value': rprovider,'error':'backup_provider_mismatch'}], fp=sys.stdout)
     sys.exit(3)
+
+# validate repository credentials
+renv = dict(os.environ) # copy the environment
+renv.update(request['parameters']) # merge parameters
+renv['url'] = url # add url
+pvalidate = subprocess.run(['rclone-wrapper', '0', 'size', '--json', 'REMOTE_PATH'], text=True, capture_output=True, env=renv)
+if pvalidate.returncode != 0:
+    agent.set_status('validation-failed')
+    if 'failed to authorize' in pvalidate.stderr:
+        json.dump([{'field':'parameters','parameter':'parameters','value':'','error':'backup_repository_auth_error'}], fp=sys.stdout)
+    else:
+        json.dump([{'field':'url','parameter':'url','value':request['url'], 'error':'backup_repository_not_accessible'}], fp=sys.stdout)
+    sys.exit(4)
 
 if 'name' in request:
     rname = request['name']
