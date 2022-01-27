@@ -90,3 +90,28 @@ Example:
 ```
 sqlite3 /var/lib/nethserver/api-server/audit.db "SELECT * FROM audit LIMIT 10;" ".exit"
 ```
+
+## api-cli
+
+You can also use the shortcut command called api-cli. Usage example:
+```
+# api-cli login
+username: admin
+password:
+```
+
+If authentication is successful the `login` subcommand stores a JWT token in `$XDG_RUNTIME_DIR/.api-cli.cache`. With such token the `run` subcommand sends API calls to `api-server`. To destroy the token run
+```
+api-cli logout
+```
+
+If the token is missing `api-cli` tries to talk directly with Redis. In any case to run an action use the `run` subcommand, e.g.:
+```
+api-cli run list-actions
+```
+
+Shell auto-complete is available. It is possible to type `TAB` key to automatically complete the action name:
+```
+api-cli run <TAB><TAB>
+```
+
