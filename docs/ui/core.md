@@ -1,25 +1,16 @@
 ---
 layout: default
-title: User Interface
-nav_order: 8
-parent: Core
+title: Core UI
+nav_order: 2
+parent: User Interface
 ---
 
 # Core User Interface
 
-NS8 user interface is a web application developed with [VueJs](https://vuejs.org/) and based on [Carbon Design System](https://www.carbondesignsystem.com/).
-
 * TOC
 {:toc}
 
-NS8 UI can be accessed at `https://leader_node/cluster-admin/`. Default username is `admin` and default password is `Nethesis,1234`.
-
-The web application source is composed by multiple VueJs projects:
-- Core UI
-- A distinct UI project for every module (e.g. Dokuwiki)
-- A UI library that includes a set of reusable UI components and functions (VueJs mixins) used by core and modules UI
-
-## Core UI
+## Components
 
 Core UI includes the following components:
 - Login page
@@ -49,14 +40,6 @@ Application routing is implemented with [Vue Router](https://router.vuejs.org/).
 Core UI uses [Vuex](https://vuex.vuejs.org/) to handle the global state of the application. See `core/ui/src/store/index.js`.
 
 Source code of core UI is provided here: [https://github.com/NethServer/ns8-scratchpad/tree/main/core/ui](https://github.com/NethServer/ns8-scratchpad/tree/main/core/ui)
-
-## UI library
-
-Since core and modules UI share multiple components and features, these facilities have been aggregated into NPM package `@nethserver/ns8-ui-lib`.
-The reusable UI components included in the library are easily recognizable since their name starts with `Ns` prefix, e.g. `NsButton`, `NsInlineNotification`.
-The library also includes a set of VueJs mixins used by core and modules to access utility functions and perform common tasks.
-
-Source code of UI library is provided here: [https://github.com/NethServer/ns8-ui-lib](https://github.com/NethServer/ns8-ui-lib)
 
 ## Shortcuts
 
@@ -94,14 +77,6 @@ Tasks that only read data should always be silent.
 
 Errors are notified to the user using inline notifications (`NsInlineNotification` component) or toast notifications (`NsToastNotification` component). Use inline notifications whenever possible, showing the error message in the exact place of the UI where the error occurred. Use toast notifications when there is no proper place to display the error (e.g. background or long running tasks).
 
-## UI design
-
-[Carbon grid system](https://www.carbondesignsystem.com/guidelines/2x-grid/implementation/) promotes responsive design. A simple way to develop a responsive layout is to organize content by placing [tiles](https://www.carbondesignsystem.com/components/tile/usage) inside grid columns, using:
-
-- Carbon `CvTile` component
-- UI library `NsTile`
-- UI library `Ns*Card` components (e.g. `NsInfoCard`, `NsStatusCard`, ...)
-
 ## Query string parameters
 
 You can sync the state of some components inside page URL. This is useful in the following cases:
@@ -127,8 +102,4 @@ Follow the steps below to prepare the development environment for coding core UI
   - `cd core/ui`
   - `yarn install` (needed only the first time)
   - `yarn serve`
-
-## Module UI
-
-See [modules UI](/modules/ui).
 

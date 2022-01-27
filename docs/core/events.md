@@ -54,4 +54,5 @@ Example:
 [actions]
 # Execute an action on the module when the event is received. The event data is passed to the action `data` argument.
 module/traefik*/event/certificate-renew = renew-certificate
+
 ```

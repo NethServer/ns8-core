@@ -1,26 +1,20 @@
 ---
 layout: default
-title: User Interface
-nav_order: 11
-parent: Modules
+title: Modules UI
+nav_order: 4
+parent: User Interface
 ---
 
 # Modules User Interface
 
-The core already provides some already baked functions available to modules.
-
-- [UI library](/core/ui/#ui-library)
-- [Tasks and notifications](/core/ui/#tasks-and-notifications)
-- [Error notifications](/core/ui/#error-notifications)
-- [Shortcuts](/core/ui/#shortcuts)
-
-Just like the core, every module can use components and functions provided by the UI library (npm package @nethserver/ns8-ui-lib).
+* TOC
+{:toc}
 
 ## Guidelines
 
 Users can open modules UI from the App drawer or using Global search.
 
-Every NS8 module follows the same [UI guidelines](/core/ui/#ui-design) in order to provide a uniform user experience. Almost every module has at least these standard pages:
+Every NS8 module follows the same UI guidelines in order to provide a uniform user experience. Almost every module has at least these standard pages:
 - Status
 - Settings
 - Logs
