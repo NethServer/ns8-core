@@ -45,7 +45,7 @@ NS8 is composed by many parts, let's explain the main terminology.
 - *Core*: set of fundamental software which is usually installed on all cluster nodes
 - *Module*: additional software that can be installed on one or more cluster nodes, like Mail server, Nextcloud, Webtop.
 - *Instance*: a running instance of a module with a specific configuration. Each instance runs inside an isolated environment and constituted by one or more Podman containers.
-- *Application*: speaking in UI terms, it corresponds to a module and its instances.
+- *Application*: speaking in UI terms, it corresponds to one or more instances.
 
 ## Design choices
 
@@ -53,7 +53,7 @@ NS8 is composed by many parts, let's explain the main terminology.
 
 Design goals:
 
-- store the configuration on a reliable cluster-ready database: one read-write Redis master node for the whole cluster, multiple read-only nodes
+- store the configuration on a reliable cluster-ready database: one read-write Redis master node for the whole cluster, multiple read-only replica nodes
 - use TLS terminator whenever possible to simplify module configuration
 - the configuration should be readable for any module inside the system, sensitive data (like passwords) should be store encrypted
 - security as first class citizen: rootless container modules with SELinux / AppArmor, rootfull allowed too
