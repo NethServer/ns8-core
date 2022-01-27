@@ -1,17 +1,19 @@
-# NS8 - NethServer 8 prototype
+---
+layout: default
+title: Home
+nav_order: 1
+---
 
-Supported distributions:
-- Fedora 34
-- Debian 11 (bullseye)
+# NethServer 8: cloud in a box
 
-Draft documentation for developers:
+NethServer 8 (NS8), is the evolution of NethServer 7 (NS7).
 
-- [Introduction](intro.md)
-- [Design & Architecture](design.md)
-- [Technical details](details.md)
-- [Installation  & First steps](installation.md)
-- [How to create a new module](new_module.md)
+Give it a try: [Quickstart](quickstart.md)!
 
-Links:
-- [API documentation](https://github.com/NethServer/ns8-scratchpad/tree/apidoc)
+Or explore [core internals](core), [modules architecture](modules) or the [UI](ui).
+
+External links:
 - [Project roadmap](https://trello.com/b/R58gtZ8I/ns8-prototype)
+- [API documentation](https://github.com/NethServer/ns8-scratchpad/tree/apidoc)
+
+Do you need help? Ask the [community](https://community.nethserver.org/)

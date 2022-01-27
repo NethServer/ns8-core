@@ -1,16 +1,14 @@
-# NS8 - NethServer 8 prototype
+# NethServer 8: cloud in a box
 
-Supported distributions:
-- Fedora 34
-- Debian 11 (bullseye)
-- CentOS stream 9
+NethServer 8 (NS8), is the evolution of NethServer 7 (NS7).
 
-Draft documentation for developers:
+Give it a try: [Quickstart](docs/quickstart.md)!
 
-- [Introduction](docs/intro.md)
+
+Documentation for developers:
+
 - [Design & Architecture](docs/design.md)
 - [Technical details](docs/details.md)
-- [Installation  & First steps](docs/installation.md)
 - [How to create a new module](docs/new_module.md)
 
 Links:
