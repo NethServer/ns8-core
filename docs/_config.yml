@@ -17,7 +17,7 @@ title: NethServer 8
 description: NS8 - cloud in a box
 remote_theme: pmarsceill/just-the-docs
 
-baseurl: ns8-scratchpad
+baseurl: /ns8-scratchpad
 
 permalink: pretty
 exclude: [vendor]
