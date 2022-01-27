@@ -29,10 +29,12 @@ In both cases the module UI is extracted to
 
 The sources repository of a module can be structured as follow:
 
-- `imageroot/`: it contains module scripts and configuration. Everything inside this directory is copied under the module installion directory. Common subdirs include:
+- `imageroot/`: it contains module scripts and configuration. Everything inside this directory is copied under the module installation directory. Common subdirs include:
   * `systemd/user`: where Systemd units are stored.
   * `actions/`: each subdirectory implements an *action*.
   * `bin/`: it contains additional binaries for the module. It is added to PATH in the agent environment.
+  * `etc/`: to store additional configuration for Backup and Restore
+  * `pypkg/`: path for module Python packages, added to `PYTHONPATH`
 - `ui/`: it contains all UI source code of the module
 - `build-image.sh`: a script to manually build the image of the module and push it inside the image registry.
 - `README.md`: a [Markdown](https://guides.github.com/features/mastering-markdown/) file describing the module purpose and implementation
