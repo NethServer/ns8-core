@@ -90,7 +90,7 @@ its URL.
 
 Example to install Dokuwiki directly from the image registry:
 ```
-add-module ghrc.io/nethserver/dokuwiki:mydev 1
+add-module ghcr.io/nethserver/dokuwiki:mydev 1
 ```
 
 Many applications need a configuration step after install, for more info, 
