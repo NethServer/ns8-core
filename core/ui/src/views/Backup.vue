@@ -304,6 +304,7 @@
                       <NsMenuItem
                         icon="rocket"
                         :label="$t('backup.run_backup')"
+                        :disabled="!backup.enabled"
                       />
                     </cv-overflow-menu-item>
                     <cv-overflow-menu-item
@@ -910,7 +911,8 @@ export default {
           data: {
             id: backup.id,
             name: backup.name,
-            schedule: backup.schedule,
+            schedule: backup.scheduleExpression,
+            schedule_hint: backup.schedule,
             retention: backup.retention,
             instances: backup.instances.map((i) => i.module_id),
             enabled: !backup.enabled,
