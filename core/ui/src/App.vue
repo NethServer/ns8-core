@@ -8,7 +8,6 @@
       <cv-loading :active="!isLoaded" :overlay="true"></cv-loading>
       <TaskErrorModal />
     </cv-content>
-    <ShellFooter v-if="loggedUser && isClusterInitialized" />
   </div>
 </template>
 
@@ -28,7 +27,6 @@ import {
   TaskService,
   StorageService,
 } from "@nethserver/ns8-ui-lib";
-import ShellFooter from "./components/ShellFooter";
 
 export default {
   name: "App",
@@ -37,7 +35,6 @@ export default {
     SideMenu,
     MobileSideMenu,
     TaskErrorModal,
-    ShellFooter,
   },
   mixins: [
     StorageService,
@@ -143,10 +140,10 @@ export default {
     },
     configureEventListeners() {
       // needed to detect click outside mobile side menu, app drawer and
-      // notification drawer when the user is on an external NS8 app
+      // notification drawer when the user is on an external app
       window.addEventListener("blur", this.clickOutsideDrawers);
 
-      // NS8 global shortcuts
+      // global shortcuts
       this.configureKeyboardShortcuts(window);
     },
     clickOutsideDrawers() {
@@ -420,5 +417,5 @@ export default {
 </script>
 
 <style lang="scss">
-@import "./styles/ns8";
+@import "./styles/core";
 </style>

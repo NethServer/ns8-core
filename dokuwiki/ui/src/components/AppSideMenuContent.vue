@@ -65,7 +65,7 @@ export default {
     };
   },
   computed: {
-    ...mapState(["instanceName", "instanceLabel", "ns8Core"]),
+    ...mapState(["instanceName", "instanceLabel", "core"]),
   },
   created() {
     // register to appNavigation event
@@ -80,16 +80,17 @@ export default {
       return this.getPage() === page;
     },
     goToPath(path) {
-      if (this.ns8Core.$route.fullPath != path) {
-        this.ns8Core.$router.push(path);
+      //// remove method
+      if (this.core.$route.fullPath != path) {
+        this.core.$router.push(path);
       }
       this.$forceUpdate();
     },
     goToPage(page) {
       const path = `/apps/${this.instanceName}?page=${page}`;
 
-      if (this.ns8Core.$route.fullPath != path) {
-        this.ns8Core.$router.push(path);
+      if (this.core.$route.fullPath != path) {
+        this.core.$router.push(path);
       }
     },
     onAppNavigation() {

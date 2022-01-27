@@ -32,17 +32,18 @@ def save_environment(env):
         for envk, envv in env.items():
             envf.write(f"{envk}={envv}\n")
 
-def save_agent_env(module_id, bin_path=None):
+def save_agent_env(module_id):
     """Generate and persist the Redis password for module_id
     """
     oldmask = os.umask(0o77)
     redis_password = str(uuid.uuid4())
+    base_path = os.getcwd()
     with open('state/agent.env', 'w') as agentenv:
-        if bin_path:
-            system_path = os.getenv('PATH', '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin')
-            agentenv.write(f'PATH={bin_path}:{system_path}\n')
+        system_path = os.getenv('PATH', '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin')
+        agentenv.write(f'PATH={base_path}/bin:{system_path}\n')
         agentenv.write(f'REDIS_USER=module/{module_id}\n')
         agentenv.write(f'REDIS_PASSWORD={redis_password}\n')
+        agentenv.write(f'PYTHONPATH={base_path}/pypkg\n')
     os.umask(oldmask)
     return hashlib.sha256(redis_password.encode()).hexdigest()
 
@@ -60,7 +61,7 @@ if is_rootfull:
     # Extract the module imageroot
     os.chdir(f'/var/lib/nethserver/{module_id}')
     save_environment(module_environment)
-    redis_sha256 = save_agent_env(module_id, f'/var/lib/nethserver/{module_id}/bin')
+    redis_sha256 = save_agent_env(module_id)
     agent.run_helper('extract-image', image_url).check_returncode()
     # Start the module agent
     agent.run_helper('systemctl', 'enable', '--now', f'agent@{module_id}.service').check_returncode()
@@ -69,7 +70,7 @@ else: # rootless
     agent.run_helper('useradd', '-m', '-k', '/etc/nethserver/skel', '-s', '/bin/bash', module_id).check_returncode()
     os.chdir(f'/home/{module_id}/.config')
     save_environment(module_environment)
-    redis_sha256 = save_agent_env(module_id, f'/home/{module_id}/.config/bin')
+    redis_sha256 = save_agent_env(module_id)
     # Extract the module imageroot and fix CWD permissions recursively
     agent.run_helper('extract-image', image_url).check_returncode()
     # Start the module agent

@@ -20,11 +20,11 @@ export default {
   components: { AppSideMenu, AppMobileSideMenu },
   mixins: [QueryParamService, TaskService],
   computed: {
-    ...mapState(["instanceName", "instanceLabel", "ns8Core"]),
+    ...mapState(["instanceName", "instanceLabel", "core"]),
   },
   created() {
-    const ns8Core = window.parent.ns8;
-    this.setNs8CoreInStore(ns8Core);
+    const core = window.parent.core;
+    this.setCoreInStore(core);
     const instanceName = /#\/apps\/(\w+)/.exec(window.parent.location.hash)[1];
     this.setInstanceNameInStore(instanceName);
     this.getInstanceLabel();
@@ -40,8 +40,8 @@ export default {
       false
     );
 
-    // configure NS8 global shortcuts
-    ns8Core.$root.$emit("configureKeyboardShortcuts", window);
+    // configure global shortcuts
+    core.$root.$emit("configureKeyboardShortcuts", window);
 
     const queryParams = this.getQueryParamsForApp();
     const requestedPage = queryParams.page || "status";
@@ -54,13 +54,13 @@ export default {
     ...mapActions([
       "setInstanceNameInStore",
       "setInstanceLabelInStore",
-      "setNs8CoreInStore",
+      "setCoreInStore",
     ]),
     async getInstanceLabel() {
       const taskAction = "get-name";
 
       // register to task completion
-      this.ns8Core.$root.$once(
+      this.core.$root.$once(
         taskAction + "-completed",
         this.getInstanceLabelCompleted
       );
@@ -93,7 +93,7 @@ export default {
 </script>
 
 <style lang="scss">
-//// DO NOT IMPORT CARBON STYLES, THEY OVERRIDE NS8 CORE THEME
+//// DO NOT IMPORT CARBON STYLES, THEY OVERRIDE CORE THEME
 // @import "./styles/carbon";
 
 @import "styles/carbon-utils";

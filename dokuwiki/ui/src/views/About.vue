@@ -53,7 +53,7 @@
             <section>
               <div>
                 <span class="section-title"
-                  >{{ ns8Core.$t("software_center.instance") }}:</span
+                  >{{ core.$t("software_center.instance") }}:</span
                 >
                 {{ instanceName }}
               </div>
@@ -61,7 +61,7 @@
             <section>
               <div>
                 <span class="section-title"
-                  >{{ ns8Core.$t("common.version") }}:</span
+                  >{{ core.$t("common.version") }}:</span
                 >
                 {{ version }}
               </div>
@@ -70,7 +70,7 @@
               <div>
                 <span class="section-title"
                   >{{
-                    ns8Core.$tc(
+                    core.$tc(
                       "software_center.categories",
                       app.categories.length
                     )
@@ -82,7 +82,7 @@
             <section>
               <div>
                 <span class="section-title"
-                  >{{ ns8Core.$t("software_center.documentation") }}:
+                  >{{ core.$t("software_center.documentation") }}:
                 </span>
                 <cv-link :href="app.docs.documentation_url" target="_blank">
                   {{ app.docs.documentation_url }}
@@ -92,7 +92,7 @@
             <section>
               <div>
                 <span class="section-title"
-                  >{{ ns8Core.$t("software_center.bugs") }}:
+                  >{{ core.$t("software_center.bugs") }}:
                 </span>
                 <cv-link :href="app.docs.bug_url" target="_blank">
                   {{ app.docs.bug_url }}
@@ -102,7 +102,7 @@
             <section>
               <div>
                 <span class="section-title"
-                  >{{ ns8Core.$t("software_center.source_code") }}:
+                  >{{ core.$t("software_center.source_code") }}:
                 </span>
                 <cv-link :href="app.docs.code_url" target="_blank">
                   {{ app.docs.code_url }}
@@ -112,7 +112,7 @@
             <section>
               <div>
                 <span class="section-title"
-                  >{{ ns8Core.$t("software_center.source_package") }}:
+                  >{{ core.$t("software_center.source_package") }}:
                 </span>
                 {{ app.source }}
               </div>
@@ -121,7 +121,7 @@
               <div>
                 <span class="section-title"
                   >{{
-                    ns8Core.$tc("software_center.authors", app.authors.length)
+                    core.$tc("software_center.authors", app.authors.length)
                   }}:
                 </span>
                 <span v-if="app.authors.length == 1"
@@ -189,7 +189,7 @@ export default {
     };
   },
   computed: {
-    ...mapState(["ns8Core", "appName", "instanceName"]),
+    ...mapState(["core", "appName", "instanceName"]),
   },
   created() {
     this.getModuleInfo();
@@ -213,7 +213,7 @@ export default {
       const taskAction = "get-module-info";
 
       // register to task completion
-      this.ns8Core.$root.$once(
+      this.core.$root.$once(
         taskAction + "-completed",
         this.getModuleInfoCompleted
       );
@@ -244,16 +244,16 @@ export default {
       this.loading.moduleInfo = false;
     },
     getApplicationDescription(app) {
-      return this.getAppDescription(app, this.ns8Core);
+      return this.getAppDescription(app, this.core);
     },
     getApplicationCategories(app) {
-      return this.getAppCategories(app, this.ns8Core);
+      return this.getAppCategories(app, this.core);
     },
     async listInstalledModules() {
       const taskAction = "list-installed-modules";
 
       // register to task completion
-      this.ns8Core.$root.$once(
+      this.core.$root.$once(
         taskAction + "-completed",
         this.listInstalledModulesCompleted
       );
@@ -262,7 +262,7 @@ export default {
         this.createClusterTaskForApp({
           action: taskAction,
           extra: {
-            title: this.ns8Core.$t("action." + taskAction),
+            title: this.core.$t("action." + taskAction),
             isNotificationHidden: true,
           },
         })

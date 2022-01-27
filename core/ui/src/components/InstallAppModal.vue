@@ -27,7 +27,7 @@
               })
             }}
           </div>
-          <div class="bx--grid bx--grid--full-width nodes mg-bottom-md">
+          <div class="bx--grid nodes mg-bottom-md no-padding">
             <div class="bx--row">
               <div
                 v-for="(node, index) in nodes"
@@ -84,10 +84,11 @@
 <script>
 import { UtilService, TaskService, IconService } from "@nethserver/ns8-ui-lib";
 import to from "await-to-js";
+import NotificationService from "@/mixins/notification";
 
 export default {
   name: "InstallAppModal",
-  mixins: [UtilService, TaskService, IconService],
+  mixins: [UtilService, TaskService, IconService, NotificationService],
   props: {
     isShown: Boolean,
     app: { type: [Object, null] },
@@ -144,13 +145,13 @@ export default {
       const clusterStatus = taskResult.output;
       let nodes = clusterStatus.nodes.sort(this.sortByProperty("id"));
 
+      //// remove mock
+      // nodes.push({ id: 2, local: false, ui_name: "" }); ////
+
       for (const node of nodes) {
         node.selected = false;
       }
       nodes[0].selected = true;
-
-      console.log("nodes", nodes); ////
-
       this.nodes = nodes;
       this.loading.getClusterStatus = false;
     },
@@ -194,6 +195,11 @@ export default {
               node: this.selectedNode.id,
             }),
             node: this.selectedNode.id,
+            completion: {
+              i18nString: "software_center.instance_installed_on_node",
+              extraTextParams: ["node"],
+              outputTextParams: ["module_id"],
+            },
           },
         })
       );
@@ -208,11 +214,33 @@ export default {
       // emit event to close modal
       this.$emit("close");
     },
-    addModuleCompleted() {
+    addModuleCompleted(taskContext, taskResult) {
+      const moduleId = taskResult.output.module_id;
+
       this.$emit("installationCompleted");
 
       // show new app in app drawer
       this.$root.$emit("reloadAppDrawer");
+
+      // backup notification
+
+      setTimeout(() => {
+        //// todo: check if app is eligible for backup (i.e. not samba, traefik...)
+
+        const notification = {
+          title: this.$t("backup.schedule_backup"),
+          description: this.$t("backup.schedule_backup_for_instance", {
+            instance: moduleId,
+          }),
+          type: "info",
+          actionLabel: this.$t("backup.schedule_action"),
+          action: {
+            type: "changeRoute",
+            url: `/backup`,
+          },
+        };
+        this.createNotification(notification);
+      }, 30000);
     },
     deselectOtherNodes(node) {
       for (let n of this.nodes) {

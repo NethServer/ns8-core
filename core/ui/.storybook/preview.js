@@ -1,10 +1,23 @@
 // global styles
-import "!style-loader!css-loader!sass-loader!../src/styles/_ns8.scss";
+import "!style-loader!css-loader!sass-loader!../src/styles/_core.scss";
 
 // carbon components
 import Vue from "vue";
 import CarbonComponentsVue from "@carbon/vue";
 Vue.use(CarbonComponentsVue);
+
+// ns8-ui-lib components
+import ns8Lib from "@nethserver/ns8-ui-lib";
+Vue.use(ns8Lib);
+
+// ns8-ui-lib filters
+import { Filters } from "@nethserver/ns8-ui-lib";
+for (const f in Filters) {
+  Vue.filter(f, Filters[f]);
+}
+
+import VueDateFns from "vue-date-fns";
+Vue.use(VueDateFns);
 
 export const parameters = {
   actions: { argTypesRegex: "^on[A-Z].*" },

@@ -17,13 +17,13 @@
     <div v-if="showResults" class="search-results">
       <NsEmptyState
         v-if="!results.length"
-        :title="$t('shell.no_search_results')"
+        :title="$t('common.no_search_results')"
         :animationData="GhostDarkBgLottie"
         animationTitle="ghost"
         :loop="1"
       >
         <template #description>
-          {{ $t("shell.no_search_results_description") }}</template
+          {{ $t("common.no_search_results_description") }}</template
         >
       </NsEmptyState>
       <div

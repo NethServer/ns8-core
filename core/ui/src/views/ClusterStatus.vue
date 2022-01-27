@@ -4,65 +4,139 @@
       <div class="bx--col-lg-16 page-title">
         <h2>
           {{ $t("cluster_status.title") }}
-          <cv-tooltip
+          <cv-interactive-tooltip
             alignment="center"
             direction="bottom"
-            :tip="$t('common.global_shortcut') + ': CTRL+SHIFT+S'"
             class="info"
           >
-            <Information16 />
-          </cv-tooltip>
+            <template slot="trigger">
+              <Information16 />
+            </template>
+            <template slot="content">
+              {{ $t("common.global_shortcut") + ": CTRL+SHIFT+S" }}
+            </template>
+          </cv-interactive-tooltip>
         </h2>
       </div>
     </div>
     <div class="bx--row">
       <div class="bx--col-md-4 bx--col-max-4">
-        <cv-tile v-if="loading.nodes" light class="min-height-card">
-          <cv-skeleton-text
-            :paragraph="true"
-            :line-count="4"
-          ></cv-skeleton-text>
-        </cv-tile>
-        <cv-tile v-else-if="error.nodes" light class="min-height-card">
-          <NsInlineNotification
-            kind="error"
-            :title="$t('error.cannot_retrieve_cluster_nodes')"
-            :description="error.nodes"
-            :showCloseButton="false"
-          />
-        </cv-tile>
         <NsInfoCard
-          v-else
-          light
-          :title="nodes.length.toString()"
-          :description="$tc('common.nodes', nodes.length)"
-          :icon="Chip32"
-          class="min-height-card"
-        />
-      </div>
-      <div class="bx--col-md-4 bx--col-max-4">
-        <cv-tile v-if="loading.apps" light class="min-height-card">
-          <cv-skeleton-text
-            :paragraph="true"
-            :line-count="4"
-          ></cv-skeleton-text>
-        </cv-tile>
-        <cv-tile v-else-if="error.apps" light class="min-height-card">
-          <NsInlineNotification
-            kind="error"
-            :title="$t('error.cannot_retrieve_installed_apps')"
-            :description="error.apps"
-            :showCloseButton="false"
-          />
-        </cv-tile>
-        <NsInfoCard
-          v-else
           light
           :title="apps.length.toString()"
           :description="$tc('common.installed_apps', apps.length)"
           :icon="Application32"
+          :loading="loading.apps"
+          :isErrorShown="error.apps"
+          :errorTitle="$t('error.cannot_retrieve_installed_apps')"
+          :errorDescription="error.apps"
           class="min-height-card"
-        />
+        >
+          <template slot="content">
+            <NsButton
+              kind="ghost"
+              :icon="ArrowRight20"
+              @click="$router.push('/software-center?search=&view=installed')"
+            >
+              {{ $t("cluster_status.go_to_software_center") }}
+            </NsButton>
+          </template>
+        </NsInfoCard>
+      </div>
+      <div class="bx--col-md-4 bx--col-max-4">
+        <NsInfoCard
+          light
+          :title="nodes.length.toString()"
+          :description="$tc('common.nodes', nodes.length)"
+          :icon="Chip32"
+          :loading="loading.nodes"
+          :isErrorShown="error.nodes"
+          :errorTitle="$t('error.cannot_retrieve_cluster_nodes')"
+          :errorDescription="error.nodes"
+          class="min-height-card"
+        >
+          <template slot="content">
+            <NsButton
+              kind="ghost"
+              :icon="ArrowRight20"
+              @click="$router.push('/nodes')"
+            >
+              {{ $t("cluster_status.go_to_nodes") }}
+            </NsButton>
+          </template>
+        </NsInfoCard>
+      </div>
+      <div class="bx--col-md-4 bx--col-max-4">
+        <NsInfoCard
+          light
+          :title="backups.length.toString()"
+          :description="$tc('backup.backups_scheduled_c', backups.length)"
+          :icon="Save32"
+          :loading="loading.listBackups"
+          :isErrorShown="error.listBackups"
+          :errorTitle="$t('error.cannot_retrieve_backups')"
+          :errorDescription="error.listBackups"
+          class="min-height-card"
+        >
+          <template slot="content">
+            <div>
+              <div
+                v-if="!loading.listBackups && !error.listBackups"
+                class="card-row mg-top-sm"
+              >
+                <template
+                  v-if="erroredBackups.length || instancesNotBackedUp.length"
+                >
+                  <div
+                    v-if="erroredBackups.length"
+                    class="card-row icon-and-text"
+                  >
+                    <NsSvg :svg="ErrorFilled16" class="icon ns-error" />
+                    <span>
+                      {{
+                        $tc(
+                          "cluster_status.backups_failed_c",
+                          erroredBackups.length,
+                          { num: erroredBackups.length }
+                        )
+                      }}
+                    </span>
+                  </div>
+                  <div
+                    v-if="instancesNotBackedUp.length"
+                    class="card-row icon-and-text"
+                  >
+                    <NsSvg :svg="Warning16" class="icon ns-warning" />
+                    <span>
+                      {{
+                        $tc(
+                          "cluster_status.instances_not_backed_up_c",
+                          instancesNotBackedUp.length,
+                          { num: instancesNotBackedUp.length }
+                        )
+                      }}
+                    </span>
+                  </div>
+                </template>
+                <template v-else>
+                  <div class="card-row icon-and-text">
+                    <NsSvg :svg="CheckmarkFilled16" class="icon ns-success" />
+                    <span>{{ $t("common.all_good") }}</span>
+                  </div>
+                </template>
+              </div>
+              <div class="card-row">
+                <NsButton
+                  kind="ghost"
+                  :icon="ArrowRight20"
+                  @click="$router.push('/backup')"
+                >
+                  {{ $t("cluster_status.go_to_backup") }}
+                </NsButton>
+              </div>
+            </div>
+          </template>
+        </NsInfoCard>
       </div>
     </div>
     <!-- <div class="bx--row"> //// remove
@@ -233,7 +307,7 @@
 
 <script>
 // import AreaChart from "@/components/AreaChart"; ////
-import Flash20 from "@carbon/icons-vue/es/flash/20";
+// import Flash20 from "@carbon/icons-vue/es/flash/20"; ////
 import NotificationService from "@/mixins/notification";
 import NodeService from "@/mixins/node";
 import Information16 from "@carbon/icons-vue/es/information/16";
@@ -241,7 +315,7 @@ import { mapState } from "vuex";
 import { formatRelative, subDays } from "date-fns";
 import to from "await-to-js";
 import WebSocketService from "@/mixins/websocket";
-import { v4 as uuidv4 } from "uuid";
+// import { v4 as uuidv4 } from "uuid"; ////
 import {
   QueryParamService,
   UtilService,
@@ -276,15 +350,20 @@ export default {
         email: "",
       },
       nodes: [],
+      apps: [],
+      backups: [],
+      instancesNotBackedUp: [],
       loading: {
         nodes: true,
         apps: true,
+        listBackups: true,
       },
       error: {
         name: "",
         email: "",
         nodes: "",
         apps: "",
+        listBackups: "",
       },
       toastVisible: true,
       toastTitle: "Toast title",
@@ -292,9 +371,8 @@ export default {
       toastCaption: "Toast caption",
       lowContrast: false,
       snippet: 'printf("A short bit of code.");',
-      Flash20, //// use mixin
-      formatRelative, //// use mixin
-      subDays,
+      formatRelative, //// remove
+      subDays, //// remove
     };
   },
   computed: {
@@ -304,9 +382,12 @@ export default {
       "isWebsocketConnected",
       "isClusterInitialized",
     ]),
-    now() {
-      return this.$date(new Date());
+    erroredBackups() {
+      return this.backups.filter((b) => b.errorInstances.length);
     },
+    // now() { ////
+    //   return this.$date(new Date());
+    // },
   },
   watch: {
     isWebsocketConnected: function () {
@@ -314,8 +395,7 @@ export default {
 
       if (this.isWebsocketConnected && this.loggedUser) {
         // retrieve initial data
-        this.retrieveClusterNodes();
-        this.listInstalledModules();
+        this.retrieveData();
       }
     },
     loggedUser: function () {
@@ -323,16 +403,14 @@ export default {
 
       if (this.isWebsocketConnected && this.loggedUser) {
         // retrieve initial data
-        this.retrieveClusterNodes();
-        this.listInstalledModules();
+        this.retrieveData();
       }
     },
   },
   created() {
     if (this.isWebsocketConnected && this.loggedUser) {
       // retrieve initial data
-      this.retrieveClusterNodes();
-      this.listInstalledModules();
+      this.retrieveData();
     }
   },
   beforeRouteEnter(to, from, next) {
@@ -346,6 +424,11 @@ export default {
     next();
   },
   methods: {
+    retrieveData() {
+      this.retrieveClusterNodes();
+      this.listInstalledModules();
+      this.listBackups();
+    },
     async retrieveClusterNodes() {
       //// retrieve cluster status instead of retrieveClusterNodes? It provides more info
       this.loading.nodes = true;
@@ -400,58 +483,98 @@ export default {
       this.apps = apps;
       this.loading.apps = false;
     },
-    closeToast() {
-      console.log("closeToast"); ////
+    async listBackups() {
+      this.loading.listBackups = true;
+      this.error.listBackups = "";
+      const taskAction = "list-backups";
+
+      // register to task completion
+      this.$root.$once(taskAction + "-completed", this.listBackupsCompleted);
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.listBackups = this.getErrorMessage(err);
+        return;
+      }
     },
-    createWarningToast() {
-      const notification = {
-        title: "Low disk space",
-        description: "You are running out of disk space",
-        type: "warning",
-        app: "System manager",
-      };
-      this.createNotification(notification);
+    listBackupsCompleted(taskContext, taskResult) {
+      this.instancesNotBackedUp = taskResult.output.unconfigured_instances;
+      let backups = taskResult.output.backups;
+
+      for (const backup of backups) {
+        backup.errorInstances = backup.instances.filter(
+          (i) => i.status == false
+        );
+
+        //// remove mock
+        // backup.errorInstances.push(backup.instances[0]); ////
+      }
+      this.backups = backups;
+      this.loading.listBackups = false;
     },
-    createInfoToast() {
-      const notification = {
-        title: "Software updates",
-        description: "You have 7 new updates",
-        type: "info",
-        app: "System manager",
-        actionLabel: "Update",
-        action: {
-          type: "changeRoute",
-          url: `/apps/ns8-app?appInput=fromAction`,
-        },
-      };
-      this.createNotification(notification);
-    },
-    createSuccessToast() {
-      const notification = {
-        title: "Backup completed",
-        description: "Backup data has completed succesfully",
-        type: "success",
-        app: "Backup manager",
-      };
-      this.createNotification(notification);
-    },
-    createErrorToast() {
-      const notification = {
-        title: "Network error",
-        description: "Cannot retrieve cluster info. Check your connection",
-        type: "error",
-      };
-      this.createNotification(notification);
-    },
-    createProgressTask() {
-      const notification = {
-        id: uuidv4(),
-        title: "Task in progress",
-        description: "Please wait...",
-        task: { context: { id: uuidv4() }, status: "running", progress: 0 },
-      };
-      this.createNotification(notification);
-    },
+    // closeToast() { //// remove
+    //   console.log("closeToast"); ////
+    // },
+    // createWarningToast() {
+    //   const notification = {
+    //     title: "Low disk space",
+    //     description: "You are running out of disk space",
+    //     type: "warning",
+    //     app: "System manager",
+    //   };
+    //   this.createNotification(notification);
+    // },
+    // createInfoToast() {
+    //   const notification = {
+    //     title: "Software updates",
+    //     description: "You have 7 new updates",
+    //     type: "info",
+    //     app: "System manager",
+    //     actionLabel: "Update",
+    //     action: {
+    //       type: "changeRoute",
+    //       url: `/apps/test-app?appInput=fromAction`,
+    //     },
+    //   };
+    //   this.createNotification(notification);
+    // },
+    // createSuccessToast() {
+    //   const notification = {
+    //     title: "Backup completed",
+    //     description: "Backup data has completed succesfully",
+    //     type: "success",
+    //     app: "Backup manager",
+    //   };
+    //   this.createNotification(notification);
+    // },
+    // createErrorToast() {
+    //   const notification = {
+    //     title: "Network error",
+    //     description: "Cannot retrieve cluster info. Check your connection",
+    //     type: "error",
+    //   };
+    //   this.createNotification(notification);
+    // },
+    // createProgressTask() {
+    //   const notification = {
+    //     id: uuidv4(),
+    //     title: "Task in progress",
+    //     description: "Please wait...",
+    //     task: { context: { id: uuidv4() }, status: "running", progress: 0 },
+    //   };
+    //   this.createNotification(notification);
+    // },
   },
 };
 </script>
@@ -459,9 +582,11 @@ export default {
 <style scoped lang="scss">
 @import "../styles/carbon-utils";
 
-//// remove
-.mg-top-bottom {
-  margin-top: $spacing-05;
+.card-row {
   margin-bottom: $spacing-05;
+}
+
+.card-row:last-child {
+  margin-bottom: 0;
 }
 </style>

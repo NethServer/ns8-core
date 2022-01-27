@@ -173,7 +173,7 @@ export default {
 
         taskResult = statusResponse.data.data;
 
-        console.log("taskResult", taskResult); ////
+        console.log("taskResult", taskContext.action, taskResult); ////
 
         if (taskStatus === "validation-failed") {
           // show validation errors
@@ -250,14 +250,15 @@ export default {
         let toastTimeout = null;
 
         if (taskStatus === "completed") {
-          if (taskContext.action === "add-module") {
-            // completed description for add-module
-            notificationText = this.$t(
-              "software_center.instance_installed_on_node",
-              {
-                instance: taskResult.output.module_id,
-                node: taskContext.extra.node,
-              }
+          if (
+            taskContext.extra.completion &&
+            taskContext.extra.completion.i18nString
+          ) {
+            // custom completion description
+
+            notificationText = this.getCustomCompletionText(
+              taskContext.extra,
+              taskResult.output
             );
           } else {
             notificationText = this.$t("task.completed");
@@ -352,6 +353,23 @@ export default {
         this.putNotification(notification);
       }
     },
+    getCustomCompletionText(taskExtra, taskOutput) {
+      let i18nParams = {};
+
+      if (taskExtra.completion.extraTextParams) {
+        for (const param of taskExtra.completion.extraTextParams) {
+          i18nParams[param] = taskExtra[param];
+        }
+      }
+
+      if (taskExtra.completion.outputTextParams) {
+        for (const param of taskExtra.completion.outputTextParams) {
+          i18nParams[param] = taskOutput[param];
+        }
+      }
+
+      return this.$t(taskExtra.completion.i18nString, i18nParams);
+    },
     shouldShowNotification(notification, taskStatus) {
       // - show notification unless isNotificationHidden is true
       // - error notifications are shown even if isNotificationHidden is true
@@ -371,14 +389,24 @@ export default {
         action = { type: "taskError" };
       } else {
         // task completed successfully
-        switch (taskContext.action) {
-          case "add-module":
-            actionLabel = this.$t("task.configure");
-            action = {
-              type: "changeRoute",
-              url: `/apps/${taskResult.output.module_id}?page=settings`,
-            };
-            break;
+        if (
+          taskContext.extra.completion &&
+          taskContext.extra.completion.action
+        ) {
+          // action is defined inside extra
+          action = taskContext.extra.completion.action;
+          actionLabel = taskContext.extra.completion.actionLabel;
+        } else {
+          // special actions
+          switch (taskContext.action) {
+            case "add-module":
+              actionLabel = this.$t("task.configure");
+              action = {
+                type: "changeRoute",
+                url: `/apps/${taskResult.output.module_id}?page=settings`,
+              };
+              break;
+          }
         }
       }
       return [actionLabel, action];

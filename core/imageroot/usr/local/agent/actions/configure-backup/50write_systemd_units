@@ -1,0 +1,79 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2021 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
+import os, os.path
+import sys
+import json
+import agent
+import subprocess
+
+request = json.load(sys.stdin)
+
+backup_name = "backup" + str(request["id"])
+backup_description = request.get("name", "") or backup_name
+
+is_rootfull = (os.geteuid() == 0)
+if is_rootfull:
+    timer_path = f'/etc/systemd/system/{backup_name}-{os.environ["MODULE_ID"]}.timer'
+    service_path = f'/etc/systemd/system/{backup_name}-{os.environ["MODULE_ID"]}.service'
+    description_text = backup_description + " " + os.environ["MODULE_ID"]
+    command = f'/usr/local/bin/runagent -m {os.environ["MODULE_ID"]} module-backup {request["id"]}'
+    systemctl_options = []
+else:
+    timer_path = f"{os.environ['AGENT_INSTALL_DIR']}/systemd/user/{backup_name}.timer"
+    service_path = f"{os.environ['AGENT_INSTALL_DIR']}/systemd/user/{backup_name}.service"
+    description_text = backup_description
+    command = f'/usr/local/bin/runagent module-backup {request["id"]}'
+    systemctl_options = ["--user"]
+
+timer_unit = f"""[Unit]
+Description={description_text}
+
+[Timer]
+OnCalendar={request.get("schedule", "")}
+
+[Install]
+WantedBy=timers.target
+"""
+
+service_unit = f"""[Unit]
+Description={description_text}
+
+[Service]
+Type=oneshot
+ExecStart={command}
+SyslogIdentifier=%N
+"""
+
+if request['optype'] == "remove":
+    os.unlink(timer_path)
+    os.unlink(service_path)
+else:
+    with open(timer_path, 'w', encoding='utf-8') as timer:
+        timer.write(timer_unit)
+
+    with open(service_path, 'w', encoding='utf-8') as service:
+        service.write(service_unit)
+
+    subprocess.run(["systemctl", "enable" if request["enabled"] else "disable", "--now", os.path.basename(timer_path)] + systemctl_options).check_returncode()
+
+subprocess.run(["systemctl", "daemon-reload"] + systemctl_options).check_returncode()

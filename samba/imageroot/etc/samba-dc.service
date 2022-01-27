@@ -30,10 +30,10 @@ ExecStart=/usr/bin/podman run \
     --log-opt=tag=samba-dc \
     --replace --name=%N \
     --volume=%N-data:/var/lib/samba:Z \
-    --volume=%N-config:/etc/samba:Z \
-    --volume=./hosts:/etc/hosts:Z \
-    --volume=./resolv.conf:/etc/resolv.conf:Z \
-    --volume=./krb5.conf:/etc/krb5.conf:Z \
+    --volume=%N-config:/etc/samba:z \
+    --volume=./hosts:/etc/hosts:z \
+    --volume=./resolv.conf:/etc/resolv.conf:z \
+    --volume=./krb5.conf:/etc/krb5.conf:z \
     ${SAMBA_DC_IMAGE} run-dc
 ExecStop=/usr/bin/podman stop --ignore --cidfile %t/%N.cid -t 10
 ExecStopPost=/usr/bin/podman rm --ignore -f --cidfile %t/%N.cid

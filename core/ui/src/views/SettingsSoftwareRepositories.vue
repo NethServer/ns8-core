@@ -49,13 +49,14 @@
             v-if="repoToDelete"
             kind="warning"
             :title="
-              $t('settings_sw_repositories.repository_deleted') +
-              ': ' +
-              repoToDelete.name
+              $t('settings_sw_repositories.repository_is_going_to_be_deleted', {
+                object: repoToDelete.name,
+              })
             "
-            :actionLabel="$t('common.undo')"
+            :actionLabel="$t('common.cancel')"
             @action="cancelDeleteRepository()"
             :showCloseButton="false"
+            :timer="DELETE_DELAY"
           />
         </div>
       </div>
@@ -124,7 +125,19 @@
                       row.url
                     }}</cv-data-table-cell>
                     <cv-data-table-cell>
-                      <div class="badge-container">
+                      <cv-tag
+                        v-if="row.status"
+                        kind="green"
+                        :label="$t('common.enabled')"
+                        class="no-margin"
+                      ></cv-tag>
+                      <cv-tag
+                        v-else
+                        kind="gray"
+                        :label="$t('common.disabled')"
+                        class="no-margin"
+                      ></cv-tag>
+                      <!-- <div class="badge-container"> ////
                         <template v-if="row.status"
                           ><span class="green-badge left-badge"></span>
                           {{ $t("common.enabled") }}</template
@@ -133,10 +146,22 @@
                           ><span class="gray-badge left-badge"></span
                           >{{ $t("common.disabled") }}</template
                         >
-                      </div>
+                      </div> -->
                     </cv-data-table-cell>
-                    <cv-data-table-cell
-                      ><div class="badge-container">
+                    <cv-data-table-cell>
+                      <cv-tag
+                        v-if="row.testing"
+                        kind="green"
+                        :label="$t('common.enabled')"
+                        class="no-margin"
+                      ></cv-tag>
+                      <cv-tag
+                        v-else
+                        kind="gray"
+                        :label="$t('common.disabled')"
+                        class="no-margin"
+                      ></cv-tag>
+                      <!-- <div class="badge-container"> ////
                         <template v-if="row.testing"
                           ><span class="green-badge left-badge"></span>
                           {{ $t("common.enabled") }}</template
@@ -145,24 +170,27 @@
                           ><span class="gray-badge left-badge"></span
                           >{{ $t("common.disabled") }}</template
                         >
-                      </div></cv-data-table-cell
-                    >
+                      </div> -->
+                    </cv-data-table-cell>
                     <cv-data-table-cell>
                       <cv-overflow-menu flip-menu class="table-overflow-menu">
-                        <cv-overflow-menu-item
-                          @click="showEditRepoModal(row)"
-                          >{{ $t("common.edit") }}</cv-overflow-menu-item
-                        >
+                        <cv-overflow-menu-item @click="showEditRepoModal(row)">
+                          <NsMenuItem icon="edit" :label="$t('common.edit')" />
+                        </cv-overflow-menu-item>
+                        <NsMenuDivider />
                         <cv-overflow-menu-item
                           danger
                           @click="willDeleteRepository(row)"
-                          >{{ $t("common.delete") }}</cv-overflow-menu-item
                         >
+                          <NsMenuItem
+                            icon="trash"
+                            :label="$t('common.delete')"
+                          />
+                        </cv-overflow-menu-item>
                       </cv-overflow-menu>
                     </cv-data-table-cell>
-                  </cv-data-table-row>
-                </template></cv-data-table
-              >
+                  </cv-data-table-row> </template
+              ></cv-data-table>
             </div>
           </cv-tile>
         </div>
@@ -331,7 +359,6 @@ export default {
       tableColumns: ["name", "url", "status", "testing"],
       tableRows: [],
       repoToDelete: null,
-      deleteRepoDelay: 7000, // you have 7 seconds to undo repository deletion
       loading: {
         repositories: true,
         createRepository: false,
@@ -575,7 +602,7 @@ export default {
       const timeout = setTimeout(() => {
         this.deleteRepository(repo);
         this.repoToDelete = null;
-      }, this.deleteRepoDelay);
+      }, this.DELETE_DELAY);
 
       repo.timeout = timeout;
       this.repoToDelete = repo;
@@ -599,7 +626,7 @@ export default {
           },
           extra: {
             title: this.$t("action." + taskAction),
-            isNotificationHidden: true,
+            description: this.$t("common.processing"),
           },
         })
       );

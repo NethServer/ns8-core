@@ -24,40 +24,25 @@ import os
 import sys
 import agent
 import json
-import ipaddress as ipm
-import subprocess
-import socket
+import samba
 
 agent.set_weight(os.path.basename(__file__), 0) # Validation step, no task progress at all
 
 request = json.load(sys.stdin)
 ipaddress = request['ipaddress']
 
-addr = ipm.ip_address(ipaddress)
-# See Python docs: https://docs.python.org/3.9/library/ipaddress.html#ip-addresses
-if not addr.is_private or addr.is_unspecified or addr.is_reserved or addr.is_loopback or addr.is_link_local:
+try:
+    samba.ipaddress_check(ipaddress)
+except samba.IpNotPrivate:
     agent.set_status('validation-failed')
     json.dump([{"field":"ipaddress","parameter":"ipaddress","value": ipaddress,"error":"ipaddress_private_check_failed"}], fp=sys.stdout)
     sys.exit(2)
-
-ipproc = subprocess.run(
-    ["ip", "-o", "address", "show", "to", f"{ipaddress}/32", "up"],
-    capture_output=True,
-    text=True,
-)
-
-if not ipaddress in ipproc.stdout:
+except samba.IpNotAvailable:
     agent.set_status('validation-failed')
     json.dump([{"field":"ipaddress","parameter":"ipaddress","value": ipaddress,"error":"ipaddress_avail_check_failed"}], fp=sys.stdout)
     sys.exit(3)
-
-for xipaddr in [ipaddress, '127.0.0.1']:
-    for tcp_port in [53, 88, 636, 464, 445, 3268, 3269, 389, 135, 139]:
-        try:
-            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sk:
-                sk.bind((xipaddr, tcp_port))
-        except Exception as ex:
-            print(f"Address {xipaddr}:{tcp_port} bind failed: {ex}", file=sys.stderr)
-            agent.set_status('validation-failed')
-            json.dump([{"field":"ipaddress","parameter":"ipaddress","value": xipaddr,"error":"ipaddress_bind_check_failed"}], fp=sys.stdout)
-            sys.exit(4)
+except samba.IpBindError as ex:
+    print(ex, file=sys.stderr)
+    agent.set_status('validation-failed')
+    json.dump([{"field":"ipaddress","parameter":"ipaddress","value": ex.ipaddr,"error":"ipaddress_bind_check_failed"}], fp=sys.stdout)
+    sys.exit(4)

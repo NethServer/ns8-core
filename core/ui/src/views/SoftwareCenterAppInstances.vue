@@ -99,7 +99,6 @@
             light
             :title="instance.ui_name ? instance.ui_name : instance.id"
             :icon="Application32"
-            :showOverflowMenu="true"
           >
             <template #menu>
               <cv-overflow-menu
@@ -112,33 +111,48 @@
                   primary-focus
                   v-if="isInstanceUpgradable(app, instance)"
                   @click="openInstance(instance)"
-                  >{{ $t("software_center.open") }}</cv-overflow-menu-item
                 >
+                  <NsMenuItem
+                    icon="launch"
+                    :label="$t('software_center.open')"
+                  />
+                </cv-overflow-menu-item>
                 <cv-overflow-menu-item
                   v-if="!favoriteApps.includes(instance.id)"
                   @click="addAppToFavorites(instance)"
-                  >{{
-                    $t("software_center.add_to_favorites")
-                  }}</cv-overflow-menu-item
                 >
+                  <NsMenuItem
+                    icon="star"
+                    :label="$t('software_center.add_to_favorites')"
+                  />
+                </cv-overflow-menu-item>
                 <cv-overflow-menu-item
                   @click="showSetInstanceLabelModal(instance)"
-                  >{{
-                    $t("software_center.edit_instance_label")
-                  }}</cv-overflow-menu-item
                 >
+                  <NsMenuItem
+                    icon="edit"
+                    :label="$t('software_center.edit_instance_label')"
+                  />
+                </cv-overflow-menu-item>
                 <cv-overflow-menu-item
                   v-if="favoriteApps.includes(instance.id)"
                   @click="removeAppFromFavorites(instance)"
-                  >{{
-                    $t("software_center.remove_from_favorites")
-                  }}</cv-overflow-menu-item
                 >
+                  <NsMenuItem
+                    icon="star"
+                    :label="$t('software_center.remove_from_favorites')"
+                  />
+                </cv-overflow-menu-item>
+                <NsMenuDivider />
                 <cv-overflow-menu-item
                   danger
                   @click="showUninstallModal(app, instance)"
-                  >{{ $t("software_center.uninstall") }}</cv-overflow-menu-item
                 >
+                  <NsMenuItem
+                    icon="trash"
+                    :label="$t('software_center.uninstall')"
+                  />
+                </cv-overflow-menu-item>
               </cv-overflow-menu>
             </template>
             <template #content>
@@ -149,7 +163,7 @@
                 <div class="row">
                   {{ $t("common.version") }} {{ instance.version }}
                 </div>
-                <div class="row icon-and-text node-container">
+                <div class="row icon-and-text">
                   <NsSvg :svg="Chip20" class="icon" />
                   <span>{{ $t("common.node") }} {{ instance.node }}</span>
                 </div>
@@ -555,10 +569,6 @@ export default {
 
 .instance-card-content .row:last-child {
   margin-bottom: 0;
-}
-
-.node-container {
-  justify-content: center;
 }
 
 .actions {

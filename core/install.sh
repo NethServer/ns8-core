@@ -57,6 +57,11 @@ cid=$(podman create "ghcr.io/nethserver/core:latest")
 podman export ${cid} | tar --totals -C / --no-overwrite-dir --no-same-owner -x -v -f - | sort | tee /var/lib/nethserver/node/state/coreimage.lst
 podman rm -f ${cid}
 
+echo "Pulling rclone image ${RCLONE_IMAGE}:"
+source /etc/nethserver/core.env
+podman pull "${RCLONE_IMAGE}"
+
+
 if [[ ! -f ~/.ssh/id_rsa.pub ]] ; then
     echo "Generating a new RSA key pair for SSH:"
     ssh-keygen -t rsa -N '' -f ~/.ssh/id_rsa

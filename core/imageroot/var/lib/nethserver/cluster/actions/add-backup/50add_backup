@@ -1,0 +1,68 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2021 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
+import sys
+import json
+import agent
+import agent.tasks
+
+request = json.load(sys.stdin)
+rdb = agent.redis_connect(privileged=True)
+
+data = {
+    "repository": request['repository'],
+    "retention": request['retention'],
+    "name": request['name'],
+    "schedule": request['schedule'],
+    "schedule_hint": json.dumps(request.get("schedule_hint", {})),
+    "enabled": "1" if request['enabled'] else "",
+}
+
+backup_id = int(rdb.incr('cluster/backup_sequence'))
+if not data['name']:
+    data['name'] = "Backup " + str(backup_id)
+rdb.hset(f'cluster/backup/{backup_id}', mapping=data)
+
+ptasks = []
+for target in request['instances']:
+    rdb.sadd(f'module/{target}/backups', backup_id)
+    ptasks.append({
+        "action": "configure-backup",
+        "agent_id": f"module/{target}",
+        "data": {
+            "optype": "add",
+            "id": backup_id,
+            "name": request["name"],
+            "schedule": request["schedule"],
+            "enabled": request["enabled"],
+        },
+    })
+
+terrors = agent.tasks.runp_brief(ptasks,
+    endpoint="redis://cluster-leader",
+    progress_callback=agent.get_progress_callback(10,98)
+)
+if terrors:
+    print(terrors, file=sys.stderr)
+    sys.exit(1)
+
+print(backup_id, file=sys.stdout)

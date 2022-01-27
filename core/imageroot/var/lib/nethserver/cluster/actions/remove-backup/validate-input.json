@@ -1,0 +1,21 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "remove-backup input",
+    "description": "Remove a backup object",
+    "$id": "http://schema.nethserver.org/cluster/remove-backup-input.json",
+    "examples": [
+        {
+            "id": 7
+        }
+    ],
+    "type": "object",
+    "required": [
+        "id"
+    ],
+    "properties": {
+        "id": {
+            "type": "integer",
+            "title": "Backup ID"
+        }
+    }
+}

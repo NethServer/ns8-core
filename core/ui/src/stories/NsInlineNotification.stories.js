@@ -27,6 +27,7 @@ Default.args = {
   closeAriaLabel: "Dismiss notification",
   lowContrast: false,
   loading: false,
+  timer: null,
 };
 
 export const Action = Template.bind({});
@@ -39,6 +40,7 @@ Action.args = {
   closeAriaLabel: "Dismiss notification",
   lowContrast: false,
   loading: false,
+  timer: null,
 };
 
 export const Loading = Template.bind({});
@@ -51,4 +53,18 @@ Loading.args = {
   showCloseButton: false,
   closeAriaLabel: "Dismiss notification",
   lowContrast: false,
+  timer: null,
+};
+
+export const Timer = Template.bind({});
+Timer.args = {
+  title: "Hey there",
+  description: "Something will happen in a moment...",
+  actionLabel: "Cancel",
+  loading: false,
+  kind: "info",
+  showCloseButton: false,
+  closeAriaLabel: "Dismiss notification",
+  lowContrast: false,
+  timer: 5000,
 };

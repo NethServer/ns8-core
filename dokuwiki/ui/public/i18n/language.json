@@ -54,7 +54,8 @@
     "get-status": "Get status",
     "get-configuration": "Get configuration",
     "configure-module": "Configure module",
-    "get-module-info": "Get module info"
+    "get-module-info": "Get module info",
+    "get-name": "Get name"
   },
   "error": {
     "error": "Error",

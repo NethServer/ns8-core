@@ -1,9 +1,19 @@
 <template>
-  <cv-modal
+  <NsWizard
     size="default"
     :visible="isShown"
+    :cancelLabel="$t('common.cancel')"
+    :previousLabel="$t('common.previous')"
+    :nextLabel="nextButtonLabel"
+    :isPreviousDisabled="isPreviousButtonDisabled"
+    :isNextDisabled="isNextButtonDisabled"
+    :isNextLoading="
+      loading.samba.configureModule || loading.external.addExternalDomain
+    "
     @modal-hidden="$emit('hide')"
-    class="wizard-modal"
+    @cancel="$emit('hide')"
+    @previousStep="previousStep"
+    @nextStep="nextStep"
   >
     <template slot="title">{{ $t("domains.create_domain") }}</template>
     <template slot="content">
@@ -11,7 +21,7 @@
         <div class="mg-bottom-md">
           {{ $t("domains.select_domain_location") }}
         </div>
-        <div class="bx--grid">
+        <div class="bx--grid no-padding">
           <div class="bx--row">
             <div class="bx--col-md-4">
               <NsTile
@@ -20,7 +30,7 @@
                 v-model="isInternalSelected"
                 value="locationValue"
                 @click="isExternalSelected = false"
-                class="same-height-tile"
+                class="min-height-card"
               >
                 <h6 class="mg-bottom-md">
                   {{ $t("domains.internal") }}
@@ -37,7 +47,7 @@
                 v-model="isExternalSelected"
                 value="locationValue"
                 @click="isInternalSelected = false"
-                class="same-height-tile"
+                class="min-height-card"
               >
                 <h6 class="mg-bottom-md">
                   {{ $t("domains.external") }}
@@ -54,7 +64,7 @@
         <div class="mg-bottom-md">
           {{ $t("domains.select_prodiver_module") }}
         </div>
-        <div class="bx--grid">
+        <div class="bx--grid no-padding">
           <div class="bx--row">
             <div class="bx--col-md-4">
               <NsTile
@@ -63,7 +73,7 @@
                 v-model="isOpenLdapSelected"
                 value="instanceValue"
                 @click="isSambaSelected = false"
-                class="same-height-tile"
+                class="min-height-card"
                 disabled
               >
                 <h6 class="mg-bottom-md">
@@ -78,7 +88,7 @@
                 v-model="isSambaSelected"
                 value="instanceValue"
                 @click="isOpenLdapSelected = false"
-                class="same-height-tile"
+                class="min-height-card"
               >
                 <h6 class="mg-bottom-md">
                   {{ $t("domains.samba") }}
@@ -199,7 +209,7 @@
         <div class="mg-bottom-md">
           {{ $t("domains.choose_node_for_account_provider_installation") }}
         </div>
-        <div class="bx--grid">
+        <div class="bx--grid no-padding">
           <div class="bx--row">
             <div
               v-for="(node, index) in nodes"
@@ -213,7 +223,7 @@
                 value="nodeValue"
                 :footerIcon="Chip20"
                 @click="deselectOtherNodes(node)"
-                class="same-height-tile"
+                class="min-height-card"
               >
                 <h6>
                   {{
@@ -359,42 +369,8 @@
           />
         </template>
       </template>
-      <div class="wizard-buttons">
-        <NsButton
-          kind="secondary"
-          :icon="Close20"
-          @click="$emit('hide')"
-          class="wizard-button"
-          >{{ $t("common.cancel") }}
-        </NsButton>
-        <NsButton
-          kind="secondary"
-          :icon="ChevronLeft20"
-          @click="previousStep"
-          :disabled="
-            isResumeConfiguration ||
-            loading.samba.configureModule ||
-            loading.external.addExternalDomain ||
-            ['location', 'installingProvider', 'internalConfig'].includes(step)
-          "
-          class="wizard-button"
-          >{{ $t("common.previous") }}
-        </NsButton>
-        <NsButton
-          kind="primary"
-          :icon="ChevronRight20"
-          @click="nextStep"
-          :disabled="isNextStepButtonDisabled()"
-          :loading="
-            loading.samba.configureModule || loading.external.addExternalDomain
-          "
-          class="wizard-button"
-          ref="wizardNext"
-          >{{ nextStepLabel }}
-        </NsButton>
-      </div>
     </template>
-  </cv-modal>
+  </NsWizard>
 </template>
 
 <script>
@@ -506,7 +482,7 @@ export default {
     selectedNode() {
       return this.nodes.find((n) => n.selected);
     },
-    nextStepLabel() {
+    nextButtonLabel() {
       if (
         (this.nodes.length == 1 && this.step == "instance") ||
         this.step == "node"
@@ -520,6 +496,28 @@ export default {
       } else {
         return this.$t("common.next");
       }
+    },
+    isNextButtonDisabled() {
+      return (
+        this.loading.samba.configureModule ||
+        this.loading.external.addExternalDomain ||
+        this.step == "installingProvider" ||
+        (this.step == "location" &&
+          !this.isInternalSelected &&
+          !this.isExternalSelected) ||
+        (this.step == "instance" &&
+          !this.isOpenLdapSelected &&
+          !this.isSambaSelected) ||
+        (this.step == "node" && !this.selectedNode)
+      );
+    },
+    isPreviousButtonDisabled() {
+      return (
+        this.isResumeConfiguration ||
+        this.loading.samba.configureModule ||
+        this.loading.external.addExternalDomain ||
+        ["location", "installingProvider", "internalConfig"].includes(this.step)
+      );
     },
   },
   watch: {
@@ -543,11 +541,12 @@ export default {
         }
 
         if (this.step !== "internalConfig") {
-          // set focus to next button
-          setTimeout(() => {
-            const element = this.$refs["wizardNext"].$el;
-            element.focus();
-          }, 300);
+          // // set focus to next button //// not working with NsWizard
+          // setTimeout(() => {
+          //   console.log("this.$refs", this.$refs); ////
+          //   const element = this.$refs["wizardNext"].$el;
+          //   element.focus();
+          // }, 300);
         } else {
           if (this.isOpenLdapSelected) {
             //// focus first input field
@@ -979,20 +978,6 @@ export default {
     async configureOpenLdapModule() {
       console.log("configureOpenLdapModule"); ////
     },
-    isNextStepButtonDisabled() {
-      return (
-        this.loading.samba.configureModule ||
-        this.loading.external.addExternalDomain ||
-        this.step == "installingProvider" ||
-        (this.step == "location" &&
-          !this.isInternalSelected &&
-          !this.isExternalSelected) ||
-        (this.step == "instance" &&
-          !this.isOpenLdapSelected &&
-          !this.isSambaSelected) ||
-        (this.step == "node" && !this.selectedNode)
-      );
-    },
     onNewSambaPasswordValidation(passwordValidation) {
       this.samba.passwordValidation = passwordValidation;
     },
@@ -1137,12 +1122,7 @@ export default {
 </script>
 
 <style scoped lang="scss">
-@import "../styles/carbon-utils";
-
-.same-height-tile {
-  min-height: 9rem;
-}
-
+@import "../../styles/carbon-utils";
 .node-id {
   margin-top: $spacing-05;
 }
@@ -1165,7 +1145,7 @@ export default {
 </style>
 
 <style lang="scss">
-@import "../styles/carbon-utils";
+@import "../../styles/carbon-utils";
 
 // global styles
 

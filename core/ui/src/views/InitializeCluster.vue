@@ -1,5 +1,5 @@
 <template>
-  <div class="bx--grid">
+  <div class="bx--grid bx--grid--full-width">
     <cv-loading
       :active="isCreatingCluster || isJoiningCluster"
       :overlay="true"

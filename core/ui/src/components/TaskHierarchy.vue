@@ -6,11 +6,18 @@
           :is="getTaskIcon(subTask)"
           :class="`bx--inline-notification__icon ${subTask.status}`"
         />
-        <span v-html="getTaskStatusDescription(subTask, false)"></span>
+        <span>
+          <span v-html="getTaskStatusDescription(subTask, false)"></span>
+          <span v-if="isMoreInfoShown">
+            (ID: <strong>{{ subTask.context.id }}</strong
+            >)
+          </span>
+        </span>
       </div>
       <TaskHierarchy
         v-if="subTask.subTasks.length"
         :subTasks="subTask.subTasks"
+        :isMoreInfoShown="isMoreInfoShown"
       />
     </li>
   </ul>
@@ -28,6 +35,7 @@ export default {
       type: Array,
       required: true,
     },
+    isMoreInfoShown: Boolean,
   },
 };
 </script>

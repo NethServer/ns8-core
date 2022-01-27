@@ -48,6 +48,32 @@
           ></cv-skeleton-text>
         </cv-tile>
       </div>
+      <div class="bx--col-md-4 bx--col-max-4">
+        <NsBackupCard
+          :title="core.$t('backup.title')"
+          :noBackupMessage="core.$t('backup.no_backup_configured')"
+          :scheduleBackupLabel="core.$t('backup.configure')"
+          :goToBackupLabel="core.$t('backup.go_to_backup')"
+          :repositoryLabel="core.$t('backup.repository')"
+          :statusLabel="core.$t('common.status')"
+          :statusSuccessLabel="core.$t('common.success')"
+          :statusNotRunLabel="core.$t('backup.backup_has_not_run_yet')"
+          :statusErrorLabel="core.$t('error.error')"
+          :completedLabel="core.$t('backup.completed')"
+          :durationLabel="core.$t('backup.duration')"
+          :totalSizeLabel="core.$t('backup.total_size')"
+          :totalFileCountLabel="core.$t('backup.total_file_count')"
+          :backupDisabledLabel="core.$t('common.disabled')"
+          :showMoreLabel="core.$t('common.show_more')"
+          :moduleId="instanceName"
+          :moduleUiName="instanceLabel"
+          :repositories="backupRepositories"
+          :backups="backups"
+          :loading="loading.listBackupRepositories || loading.listBackups"
+          :coreContext="core"
+          light
+        />
+      </div>
     </div>
     <!-- services -->
     <div class="bx--row">
@@ -222,8 +248,12 @@ export default {
       isRedirectChecked: false,
       redirectTimeout: 0,
       status: null,
+      backupRepositories: [],
+      backups: [],
       loading: {
         status: true,
+        listBackupRepositories: true,
+        listBackups: true,
       },
       error: {
         getStatus: "",
@@ -231,7 +261,7 @@ export default {
     };
   },
   computed: {
-    ...mapState(["instanceName", "ns8Core", "appName"]),
+    ...mapState(["instanceName", "instanceLabel", "core", "appName"]),
     failedServices() {
       if (!this.status) {
         return 0;
@@ -257,6 +287,7 @@ export default {
   },
   created() {
     this.getStatus();
+    this.listBackupRepositories();
   },
   beforeRouteEnter(to, from, next) {
     next((vm) => {
@@ -285,7 +316,7 @@ export default {
       const taskAction = "get-status";
 
       // register to task completion
-      this.ns8Core.$root.$once(
+      this.core.$root.$once(
         taskAction + "-completed",
         this.getStatusCompleted
       );
@@ -310,6 +341,89 @@ export default {
     getStatusCompleted(taskContext, taskResult) {
       this.status = taskResult.output;
       this.loading.status = false;
+    },
+    async listBackupRepositories() {
+      this.loading.listBackupRepositories = true;
+      this.error.listBackupRepositories = "";
+      const taskAction = "list-backup-repositories";
+
+      // register to task completion
+      this.core.$root.$once(
+        taskAction + "-completed",
+        this.listBackupRepositoriesCompleted
+      );
+
+      const res = await to(
+        this.createClusterTaskForApp({
+          action: taskAction,
+          extra: {
+            title: this.core.$t("action." + taskAction),
+            isNotificationHidden: true,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.listBackupRepositories = this.getErrorMessage(err);
+        return;
+      }
+    },
+    listBackupRepositoriesCompleted(taskContext, taskResult) {
+      let backupRepositories = taskResult.output.sort(
+        this.sortByProperty("name")
+      );
+      this.backupRepositories = backupRepositories;
+      this.loading.listBackupRepositories = false;
+      this.listBackups();
+    },
+    async listBackups() {
+      this.loading.listBackups = true;
+      this.error.listBackups = "";
+      const taskAction = "list-backups";
+
+      // register to task completion
+      this.core.$root.$once(
+        taskAction + "-completed",
+        this.listBackupsCompleted
+      );
+
+      const res = await to(
+        this.createClusterTaskForApp({
+          action: taskAction,
+          extra: {
+            title: this.core.$t("action." + taskAction),
+            isNotificationHidden: true,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.listBackups = this.getErrorMessage(err);
+        return;
+      }
+    },
+    listBackupsCompleted(taskContext, taskResult) {
+      let backups = taskResult.output.backups;
+      backups.sort(this.sortByProperty("name"));
+
+      // repository name
+
+      for (const backup of backups) {
+        const repo = this.backupRepositories.find(
+          (r) => r.id == backup.repository
+        );
+
+        if (repo) {
+          backup.repoName = repo.name;
+        }
+      }
+      this.backups = backups;
+
+      this.loading.listBackups = false;
     },
   },
 };

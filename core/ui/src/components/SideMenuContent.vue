@@ -1,6 +1,7 @@
 <template>
   <div>
     <cv-side-nav-items>
+      <!-- cluster status -->
       <cv-side-nav-link
         @click="goTo('/status')"
         :active="isLinkActive('/status')"
@@ -11,13 +12,7 @@
         <!-- <span class="green-badge right-badge"></span> ////
         </div> -->
       </cv-side-nav-link>
-      <cv-side-nav-link
-        @click="goTo('/domains')"
-        :active="isLinkActive('/domains')"
-      >
-        <template v-slot:nav-icon><Events20 /></template>
-        <span>{{ $t("domains.title") }}</span>
-      </cv-side-nav-link>
+      <!-- nodes -->
       <cv-side-nav-link
         @click="goTo('/nodes')"
         :active="isLinkActive('/nodes')"
@@ -25,6 +20,39 @@
         <template v-slot:nav-icon><Chip20 /></template>
         <span>{{ $t("nodes.title") }}</span>
       </cv-side-nav-link>
+      <!-- divider -->
+      <cv-side-nav-divider />
+      <!-- domains and users -->
+      <cv-side-nav-link
+        @click="goTo('/domains')"
+        :active="isLinkActive('/domains')"
+      >
+        <template v-slot:nav-icon><Events20 /></template>
+        <span>{{ $t("domains.title") }}</span>
+      </cv-side-nav-link>
+      <!-- software center -->
+      <cv-side-nav-link
+        @click="goTo('/software-center')"
+        :active="isLinkActive('/software-center')"
+      >
+        <template v-slot:nav-icon><Application20 /></template>
+        <div v-if="getUpdatesCount > 0" class="badge-container">
+          <span>{{ $t("software_center.title") }}</span>
+          <span class="yellow-badge right-badge"></span>
+        </div>
+        <span v-else>{{ $t("software_center.title") }}</span>
+      </cv-side-nav-link>
+      <!-- backup -->
+      <cv-side-nav-link
+        @click="goTo('/backup')"
+        :active="isLinkActive('/backup')"
+      >
+        <template v-slot:nav-icon><Save20 /></template>
+        {{ $t("backup.title") }}
+      </cv-side-nav-link>
+      <!-- divider -->
+      <cv-side-nav-divider />
+
       <!-- <cv-side-nav-menu ////
         :title="$t('network.title')"
         :active="isLinkActive('/newtwork')"
@@ -37,33 +65,7 @@
           Menu item
         </cv-side-nav-menu-item>
       </cv-side-nav-menu> -->
-      <!-- <cv-side-nav-menu ////
-        :title="$t('account_provider.title')"
-        :active="isLinkActive('/account-provider')"
-      >
-        <template v-slot:nav-icon><Events20 /></template>
-        <cv-side-nav-menu-item href="javascript:void(0)">
-          Menu item
-        </cv-side-nav-menu-item>
-        <cv-side-nav-menu-item href="javascript:void(0)" aria-current="page">
-          Menu item
-        </cv-side-nav-menu-item>
-      </cv-side-nav-menu> -->
-      <cv-side-nav-link
-        @click="goTo('/software-center')"
-        :active="isLinkActive('/software-center')"
-      >
-        <template v-slot:nav-icon><Application20 /></template>
-        <div v-if="getUpdatesCount > 0" class="badge-container">
-          <span>{{ $t("software_center.title") }}</span>
-          <span class="yellow-badge right-badge"></span>
-        </div>
-        <span v-else>{{ $t("software_center.title") }}</span>
-      </cv-side-nav-link>
-      <!-- <cv-side-nav-link href="javascript:void(0)"> ////
-        <template v-slot:nav-icon><Save20 /></template>
-        {{ $t("backup.title") }}
-      </cv-side-nav-link> -->
+
       <cv-side-nav-link @click="goTo('/logs')" :active="isLinkActive('/logs')">
         <template v-slot:nav-icon><Catalog20 /></template>
         {{ $t("logs.title") }}
@@ -75,6 +77,13 @@
         <template v-slot:nav-icon><Settings20 /></template>
         {{ $t("settings.title") }}
       </cv-side-nav-link>
+      <cv-side-nav-link
+        @click="goTo('/about')"
+        :active="isLinkActive('/about')"
+      >
+        <template v-slot:nav-icon><Information20 /></template>
+        {{ $t("about.title") }}
+      </cv-side-nav-link>
     </cv-side-nav-items>
   </div>
 </template>
@@ -82,25 +91,29 @@
 <script>
 // import Network_220 from "@carbon/icons-vue/es/network--2/20"; ////
 import Events20 from "@carbon/icons-vue/es/events/20";
-// import Save20 from "@carbon/icons-vue/es/save/20";
+import Save20 from "@carbon/icons-vue/es/save/20";
 import Settings20 from "@carbon/icons-vue/es/settings/20";
 import Catalog20 from "@carbon/icons-vue/es/catalog/20";
 import Application20 from "@carbon/icons-vue/es/application/20";
 import Activity20 from "@carbon/icons-vue/es/activity/20";
 import Chip20 from "@carbon/icons-vue/es/chip/20";
+import Information20 from "@carbon/icons-vue/es/information/20";
 import { mapActions, mapGetters } from "vuex";
+import CvSideNavDivider from "@carbon/vue/src/components/cv-ui-shell/cv-side-nav-divider.vue";
 
 export default {
   name: "SideMenuContent",
   components: {
     // Network_220, ////
-    // Save20,
+    Save20,
     Events20,
     Catalog20,
     Settings20,
     Application20,
     Activity20,
     Chip20,
+    Information20,
+    CvSideNavDivider,
   },
   data() {
     return {};

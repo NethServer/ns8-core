@@ -1,0 +1,61 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2021 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
+import os
+import sys
+import json
+import uuid
+import agent
+import hashlib
+import cluster.backup
+
+request = json.load(sys.stdin)
+rdb = agent.redis_connect(privileged=True)
+
+url = request['url']
+provider = request['provider']
+rid = str(uuid.uuid5(uuid.NAMESPACE_URL, url))
+
+if request['password']:
+    password = request['password']
+else:
+    # Generate random password for backup encryption
+    m = hashlib.sha256()
+    m.update(uuid.uuid4().bytes)
+    password = m.hexdigest()
+
+if request['name']:
+    name = request['name']
+else:
+    name = cluster.backup.get_default_backup_repository_name(provider, url, rid)
+
+data = {'url': url, 'password': password, 'name': name, 'provider': provider}
+
+# Setup extra parameters for repository access
+for k in request['parameters']:
+    data[k] = request['parameters'][k]
+
+# Add the repository key
+if not rdb.hset(f'cluster/backup_repository/{rid}', mapping=data):
+    sys.exit(1)
+
+json.dump({'password': password, 'id': rid}, fp=sys.stdout)

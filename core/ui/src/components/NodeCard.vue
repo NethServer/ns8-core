@@ -37,14 +37,18 @@
         <div class="tr">
           <div class="td label">
             {{ cpuLoadLabel }}
-            <cv-tooltip
+            <cv-interactive-tooltip
               alignment="center"
               direction="bottom"
-              :tip="cpuLoadTooltip"
               class="info"
             >
-              <Information16 />
-            </cv-tooltip>
+              <template slot="trigger">
+                <Information16 />
+              </template>
+              <template slot="content">
+                {{ cpuLoadTooltip }}
+              </template>
+            </cv-interactive-tooltip>
           </div>
           <div class="td">
             <span :class="{ warning: load1Min >= cpuLoadWarningTh }"
@@ -63,14 +67,18 @@
         <div class="tr">
           <div class="td label">
             {{ cpuPressureLabel }}
-            <cv-tooltip
+            <cv-interactive-tooltip
               alignment="center"
               direction="bottom"
-              :tip="cpuPressureTooltip"
               class="info"
             >
-              <Information16 />
-            </cv-tooltip>
+              <template slot="trigger">
+                <Information16 />
+              </template>
+              <template slot="content">
+                {{ cpuPressureTooltip }}
+              </template>
+            </cv-interactive-tooltip>
           </div>
           <div class="td">
             <span :class="{ warning: pressure10Sec >= cpuPressureWarningTh }"
@@ -240,7 +248,7 @@ export default {
 }
 
 .label {
-  padding-right: 0.5rem;
+  padding-right: 0.75rem;
   font-weight: bold;
   text-align: right;
   padding-bottom: 0.5rem;

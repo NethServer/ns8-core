@@ -14,6 +14,8 @@ import Domains from "../views/Domains";
 import Nodes from "../views/Nodes";
 import NodeDetail from "../views/NodeDetail";
 import DomainDetail from "../views/DomainDetail";
+import Backup from "../views/Backup";
+import About from "../views/About";
 
 Vue.use(VueRouter);
 
@@ -88,6 +90,16 @@ const routes = [
     path: "/domains/:domainName",
     name: "DomainDetail",
     component: DomainDetail,
+  },
+  {
+    path: "/backup",
+    name: "Backup",
+    component: Backup,
+  },
+  {
+    path: "/about",
+    name: "About",
+    component: About,
   },
 ];
 

@@ -6,10 +6,9 @@
           <h2>{{ $t("domains.title") }}</h2>
         </div>
       </div>
-      <div class="bx--row">
+      <div v-if="error.listUserDomains" class="bx--row">
         <div class="bx--col">
           <NsInlineNotification
-            v-if="error.listUserDomains"
             kind="error"
             :title="$t('action.list-user-domains')"
             :description="error.listUserDomains"
@@ -17,10 +16,9 @@
           />
         </div>
       </div>
-      <div class="bx--row">
+      <div v-if="error.getClusterStatus" class="bx--row">
         <div class="bx--col">
           <NsInlineNotification
-            v-if="error.getClusterStatus"
             kind="error"
             :title="$t('action.get-cluster-status')"
             :description="error.getClusterStatus"
@@ -28,10 +26,9 @@
           />
         </div>
       </div>
-      <div class="bx--row">
+      <div v-if="error.removeModule" class="bx--row">
         <div class="bx--col">
           <NsInlineNotification
-            v-if="error.removeModule"
             kind="error"
             :title="$t('action.remove-module')"
             :description="error.removeModule"
@@ -39,10 +36,9 @@
           />
         </div>
       </div>
-      <div class="bx--row">
+      <div v-if="error.removeExternalDomain" class="bx--row">
         <div class="bx--col">
           <NsInlineNotification
-            v-if="error.removeExternalDomain"
             kind="error"
             :title="$t('action.remove-external-domain')"
             :description="error.removeExternalDomain"
@@ -50,10 +46,9 @@
           />
         </div>
       </div>
-      <div class="bx--row">
+      <div v-if="hasUnconfiguredDomainsOrProviders" class="bx--row">
         <div class="bx--col">
           <NsInlineNotification
-            v-if="hasUnconfiguredDomainsOrProviders"
             kind="warning"
             :title="$t('domains.unconfigured_domains_or_providers_title')"
             :description="
@@ -63,18 +58,20 @@
           />
         </div>
       </div>
-      <div class="bx--row">
+      <div v-if="domainToDelete" class="bx--row">
         <div class="bx--col">
           <!-- unconfigured domain being deleted -->
           <NsInlineNotification
-            v-if="domainToDelete"
             kind="warning"
             :title="
-              $t('domains.domain_deleted') + ': ' + domainToDelete.module_id
+              $t('domains.domain_is_going_to_be_deleted', {
+                object: domainToDelete.module_id,
+              })
             "
-            :actionLabel="$t('common.undo')"
+            :actionLabel="$t('common.cancel')"
             @action="cancelDeleteUnconfiguredDomain()"
             :showCloseButton="false"
+            :timer="DELETE_DELAY"
           />
         </div>
       </div>
@@ -108,7 +105,6 @@
                 light
                 :title="$t('domains.unconfigured_domain')"
                 :icon="WarningAlt32"
-                :showOverflowMenu="true"
               >
                 <template #menu>
                   <cv-overflow-menu
@@ -120,8 +116,9 @@
                     <cv-overflow-menu-item
                       danger
                       @click="willDeleteUnconfiguredDomain(unconfiguredDomain)"
-                      >{{ $t("common.delete") }}</cv-overflow-menu-item
                     >
+                      <NsMenuItem icon="trash" :label="$t('common.delete')" />
+                    </cv-overflow-menu-item>
                   </cv-overflow-menu>
                 </template>
                 <template #content>
@@ -151,7 +148,7 @@
                         ")"
                       }}</span>
                     </div>
-                    <div class="row icon-and-text center-content">
+                    <div class="row icon-and-text">
                       <NsSvg :svg="Chip20" class="icon" />
                       <span
                         >{{ $t("common.node") }}
@@ -161,7 +158,7 @@
                     <div class="row actions">
                       <NsButton
                         kind="ghost"
-                        :icon="Tools32"
+                        :icon="Tools20"
                         @click="showUnconfiguredDomainModal(unconfiguredDomain)"
                         >{{ $t("domains.resume_configuration") }}
                       </NsButton>
@@ -184,7 +181,7 @@
           <div class="bx--col">
             <NsEmptyState :title="$t('domains.no_domain_configured')">
               <template #pictogram>
-                <Group />
+                <GroupPictogram />
               </template>
               <template #description>
                 <div>{{ $t("domains.empty_state_domains_description") }}</div>
@@ -218,12 +215,7 @@
               :key="domain.name"
               class="bx--col-md-4 bx--col-max-4"
             >
-              <NsInfoCard
-                light
-                :title="domain.name"
-                :icon="Events32"
-                :showOverflowMenu="true"
-              >
+              <NsInfoCard light :title="domain.name" :icon="Events32">
                 <template #menu>
                   <cv-overflow-menu
                     :flip-menu="true"
@@ -234,8 +226,9 @@
                     <cv-overflow-menu-item
                       danger
                       @click="showDeleteDomainModal(domain)"
-                      >{{ $t("common.delete") }}</cv-overflow-menu-item
                     >
+                      <NsMenuItem icon="trash" :label="$t('common.delete')" />
+                    </cv-overflow-menu-item>
                   </cv-overflow-menu>
                 </template>
                 <template #content>
@@ -257,7 +250,7 @@
                     <!-- unconfigured providers -->
                     <div
                       v-if="domain.hasUnconfiguredProviders"
-                      class="row icon-and-text center-content"
+                      class="row icon-and-text"
                     >
                       <NsSvg :svg="WarningAlt20" class="icon" />
                       <span>{{ $t("domains.unconfigured_provider") }} </span>
@@ -310,7 +303,7 @@
             })
       "
       :typeToConfirm="
-        $t('common.type_to_to_confirm', { name: currentDomain.name })
+        $t('common.type_to_confirm', { name: currentDomain.name })
       "
       @hide="hideDeleteDomainModal"
       @confirmDelete="deleteDomain(currentDomain)"
@@ -325,7 +318,7 @@ import {
   TaskService,
   IconService,
 } from "@nethserver/ns8-ui-lib";
-import CreateDomainModal from "@/components/CreateDomainModal";
+import CreateDomainModal from "@/components/domains/CreateDomainModal";
 import to from "await-to-js";
 
 export default {
@@ -337,7 +330,6 @@ export default {
   },
   data() {
     return {
-      DELETE_DELAY: 7000, // you have 7 seconds to undo object deletion
       q: {},
       isShownCreateDomainModal: false,
       domains: [],
@@ -606,7 +598,7 @@ export default {
     },
     async deleteUnconfiguredDomain(domain) {
       this.error.removeModule = "";
-      const taskAction = "remove-module";
+      const taskAction = "remove-internal-provider";
 
       // register to task completion (using $on instead of $once for multiple revertable deletions)
       this.$root.$on(
@@ -619,13 +611,10 @@ export default {
           action: taskAction,
           data: {
             module_id: domain.module_id,
-            preserve_data: false,
           },
           extra: {
-            title: this.$t("software_center.instance_uninstallation", {
-              instance: domain.module_id,
-            }),
-            description: this.$t("software_center.uninstalling"),
+            title: this.$t("action." + taskAction),
+            description: this.$t("common.processing"),
           },
         })
       );
@@ -678,9 +667,5 @@ export default {
 
 .actions {
   margin-top: $spacing-06;
-}
-
-.center-content {
-  justify-content: center;
 }
 </style>

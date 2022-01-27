@@ -12,59 +12,74 @@
           :is="getTaskIcon(taskErrorToShow)"
           :class="`bx--inline-notification__icon ${taskErrorToShow.status} task-icon`"
         />
-        <span v-html="getTaskStatusDescription(taskErrorToShow, true)"></span>
+        <div>
+          <span v-html="getTaskStatusDescription(taskErrorToShow, true)"></span>
+          <span v-if="isMoreInfoShown">
+            (ID: <strong>{{ taskErrorToShow.context.id }}</strong
+            >)
+          </span>
+        </div>
       </div>
       <div v-if="subTasks.length">
-        <TaskHierarchy :subTasks="subTasks" class="task-hierarchy" />
+        <TaskHierarchy
+          :subTasks="subTasks"
+          :isMoreInfoShown="isMoreInfoShown"
+          class="task-hierarchy"
+        />
       </div>
-      <div @click="showCopyClipboardHint">
-        <cv-accordion ref="accordion" class="task-more-info">
-          <cv-accordion-item :open="toggleAccordion[0]">
-            <template slot="title">{{ $t("common.more_info") }}</template>
-            <template slot="content">
-              <!-- copy to clipboard hint -->
-              <span class="hint hint-copy-to-clipboard">
-                <cv-interactive-tooltip
-                  alignment="end"
-                  direction="bottom"
-                  :visible="isCopyClipboardHintShown"
-                >
-                  <template slot="trigger">
-                    <span></span>
-                  </template>
-                  <template slot="content">
-                    <p>
-                      {{ $t("hint.copy_to_clipboard") }}
-                    </p>
-                    <NsButton
-                      kind="primary"
-                      size="small"
-                      @click="isCopyClipboardHintShown = false"
-                      class="hint-button"
-                      >{{ $t("common.got_it") }}</NsButton
-                    >
-                  </template>
-                </cv-interactive-tooltip>
-              </span>
-              <div class="code-snippet-wrapper">
-                <NsCodeSnippet
-                  :copyTooltip="$t('common.copy_to_clipboard')"
-                  :copy-feedback="$t('common.copied_to_clipboard')"
-                  :feedback-aria-label="$t('common.copied_to_clipboard')"
-                  :wrap-text="true"
-                  :moreText="$t('common.show_more')"
-                  :lessText="$t('common.show_less')"
-                  light
-                  expanded
-                  >{{ taskErrorToShow }}</NsCodeSnippet
-                >
-              </div>
+
+      <cv-toggle
+        value="moreInfoValue"
+        :form-item="true"
+        v-model="isMoreInfoShown"
+        hide-label
+        class="mg-bottom-md"
+      >
+        <template slot="text-left">{{ $t("common.more_info") }}</template>
+        <template slot="text-right">{{ $t("common.more_info") }}</template>
+      </cv-toggle>
+
+      <template v-if="isMoreInfoShown">
+        <!-- copy to clipboard hint -->
+        <span class="hint hint-copy-to-clipboard">
+          <cv-interactive-tooltip
+            alignment="end"
+            direction="bottom"
+            :visible="isCopyClipboardHintShown"
+          >
+            <template slot="trigger">
+              <span></span>
             </template>
-          </cv-accordion-item>
-        </cv-accordion>
-      </div>
+            <template slot="content">
+              <p>
+                {{ $t("hint.copy_to_clipboard") }}
+              </p>
+              <NsButton
+                kind="primary"
+                size="small"
+                @click="isCopyClipboardHintShown = false"
+                class="hint-button"
+                >{{ $t("common.got_it") }}</NsButton
+              >
+            </template>
+          </cv-interactive-tooltip>
+        </span>
+        <div class="code-snippet-wrapper">
+          <NsCodeSnippet
+            :copyTooltip="$t('common.copy_to_clipboard')"
+            :copy-feedback="$t('common.copied_to_clipboard')"
+            :feedback-aria-label="$t('common.copied_to_clipboard')"
+            :wrap-text="true"
+            :moreText="$t('common.show_more')"
+            :lessText="$t('common.show_less')"
+            light
+            expanded
+            >{{ taskErrorToShow }}</NsCodeSnippet
+          >
+        </div>
+      </template>
     </template>
-    <template slot="secondary-button">{{ $t("common.close") }}</template>
+    <template slot="primary-button">{{ $t("common.close") }}</template>
   </cv-modal>
 </template>
 
@@ -81,6 +96,7 @@ export default {
   data() {
     return {
       isCopyClipboardHintShown: false,
+      isMoreInfoShown: false,
     };
   },
   computed: {
@@ -93,16 +109,24 @@ export default {
       }
     },
   },
+  watch: {
+    isMoreInfoShown: function () {
+      if (this.isMoreInfoShown) {
+        this.showCopyClipboardHint();
+      }
+    },
+    taskErrorToShow: function () {
+      if (this.taskErrorToShow) {
+        // more info is initially hidden
+        this.isMoreInfoShown = false;
+      }
+    },
+  },
   methods: {
     ...mapActions(["setTaskErrorToShowInStore"]),
     taskErrorModalHidden() {
       // use a delay to show a smooth animation for modal closing
       setTimeout(() => this.setTaskErrorToShowInStore(null), 300);
-    },
-    toggleAccordion(ev) {
-      this.$refs.accordion.state.map(
-        (item, index) => index === ev.changedIndex
-      );
     },
     showCopyClipboardHint() {
       setTimeout(() => {
@@ -145,5 +169,31 @@ export default {
 
 .task-error-modal .bx--modal-content {
   margin-top: $spacing-05;
+}
+
+.task-error-modal .bx--inline-notification__icon {
+  margin-top: 0;
+  margin-right: $spacing-02;
+  fill: $support-04; // info color (low contrast)
+}
+
+.task-error-modal .bx--inline-notification__icon.aborted,
+.task-error-modal .bx--inline-notification__icon.validation-failed {
+  fill: $danger-01; // error color (low contrast)
+}
+
+.task-error-modal .bx--inline-notification__icon.completed {
+  fill: $support-02; // success color (low contrast)
+}
+
+.task-error-modal .bx--inline-notification__icon.pending {
+  fill: $support-03; // warning color (low contrast)
+}
+
+.task-error-modal .task-item {
+  display: flex;
+  align-items: center;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
 }
 </style>

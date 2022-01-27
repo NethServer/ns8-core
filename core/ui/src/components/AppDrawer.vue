@@ -130,13 +130,13 @@
             </cv-content-switcher>
             <NsEmptyState
               v-if="!appsToDisplay.length"
-              :title="$t('app_drawer.no_search_results')"
+              :title="$t('common.no_search_results')"
               :animationData="GhostDarkBgLottie"
               animationTitle="ghost"
               :loop="1"
             >
               <template #description>
-                <div>{{ $t("app_drawer.no_search_results_description") }}</div>
+                <div>{{ $t("common.no_search_results_description") }}</div>
               </template>
             </NsEmptyState>
             <section v-else>

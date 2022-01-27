@@ -35,10 +35,16 @@
         >
       </div>
     </div>
-    <div
-      class="bx--row loader-large loader-theme nodes-loader"
-      v-if="loading.nodes"
-    ></div>
+    <div class="bx--row" v-if="loading.nodes">
+      <div v-for="index in 2" :key="index" class="bx--col-md-4 bx--col-max-4">
+        <cv-tile light>
+          <cv-skeleton-text
+            :paragraph="true"
+            :line-count="11"
+          ></cv-skeleton-text>
+        </cv-tile>
+      </div>
+    </div>
     <div class="bx--row" v-else>
       <div
         v-for="node in nodes"
@@ -93,9 +99,9 @@
               tip-alignment="end"
               class="top-right-overflow-menu"
             >
-              <cv-overflow-menu-item @click="showSetNodeLabelModal(node)">{{
-                $t("nodes.edit_node_label")
-              }}</cv-overflow-menu-item>
+              <cv-overflow-menu-item @click="showSetNodeLabelModal(node)">
+                <NsMenuItem icon="edit" :label="$t('nodes.edit_node_label')" />
+              </cv-overflow-menu-item>
             </cv-overflow-menu>
           </template>
           <template #content>
@@ -158,8 +164,8 @@
           light
           expanded
           hideExpandButton
-          >{{ joinCode }}
-        </NsCodeSnippet>
+          >{{ joinCode }}</NsCodeSnippet
+        >
       </template>
       <template slot="secondary-button">{{ $t("common.close") }}</template>
     </cv-modal>
@@ -483,10 +489,6 @@ export default {
 
 <style scoped lang="scss">
 @import "../styles/carbon-utils";
-
-.nodes-loader {
-  margin: $spacing-05 auto;
-}
 
 ol {
   list-style-type: decimal;

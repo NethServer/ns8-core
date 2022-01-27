@@ -24,10 +24,9 @@
           </h3>
         </div>
       </div>
-      <div class="bx--row">
+      <div v-if="error.getClusterStatus" class="bx--row">
         <div class="bx--col">
           <NsInlineNotification
-            v-if="error.getClusterStatus"
             kind="error"
             :title="$t('action.get-cluster-status')"
             :description="error.getClusterStatus"
@@ -54,38 +53,75 @@
       <div v-else class="bx--row">
         <div class="bx--col-md-4">
           <cv-tile light>
-            <div class="mg-bottom-md">
-              <span class="setting-label">{{ $t("domains.schema") }}</span>
-              <span class="setting-value">{{ domain.schema }}</span>
+            <div class="key-value-setting">
+              <span class="label">{{ $t("domains.schema") }}</span>
+              <span class="value">{{ domain.schema }}</span>
             </div>
-            <div class="mg-bottom-md">
-              <span class="setting-label">{{ $t("domains.base_dn") }}</span>
-              <span class="setting-value">{{ domain.base_dn }}</span>
+            <div class="key-value-setting">
+              <span class="label">{{ $t("domains.base_dn") }}</span>
+              <span class="value">{{ domain.base_dn }}</span>
             </div>
-            <div class="mg-bottom-md">
-              <span class="setting-label">{{ $t("domains.bind_dn") }}</span>
-              <span class="setting-value">{{ domain.bind_dn }}</span>
+            <div class="key-value-setting">
+              <span class="label">{{ $t("domains.bind_dn") }}</span>
+              <span class="value">{{ domain.bind_dn }}</span>
             </div>
-            <div class="mg-bottom-md">
-              <span class="setting-label">{{
-                $t("domains.bind_password")
-              }}</span>
-              <span class="setting-value">{{
-                isShownBindPassword ? domain.bind_password : "********"
-              }}</span>
-              <cv-link @click="toggleBindPassword" class="toggle-bind-password"
-                >{{
+            <div class="key-value-setting">
+              <span class="label">{{ $t("domains.bind_password") }}</span>
+              <cv-link @click="toggleBindPassword">
+                {{
                   isShownBindPassword ? $t("common.hide") : $t("common.show")
                 }}
               </cv-link>
+              <NsCodeSnippet
+                v-if="isShownBindPassword"
+                :copyTooltip="$t('common.copy_to_clipboard')"
+                :copy-feedback="$t('common.copied_to_clipboard')"
+                :feedback-aria-label="$t('common.copied_to_clipboard')"
+                :wrap-text="true"
+                :moreText="$t('common.show_more')"
+                :lessText="$t('common.show_less')"
+                hideExpandButton
+                class="password-snippet"
+                >{{ domain.bind_password }}</NsCodeSnippet
+              >
             </div>
-            <div class="mg-bottom-md">
-              <span class="setting-label">{{ $t("domains.tls") }}</span>
-              <span class="setting-value">{{ domain.tls }}</span>
+            <div class="key-value-setting">
+              <span class="label">{{ $t("domains.tls") }}</span>
+              <span class="value">
+                <cv-tag
+                  v-if="domain.tls"
+                  kind="green"
+                  :label="$t('common.enabled')"
+                  size="sm"
+                  class="no-margin"
+                ></cv-tag>
+                <cv-tag
+                  v-else
+                  kind="gray"
+                  :label="$t('common.disabled')"
+                  size="sm"
+                  class="no-margin"
+                ></cv-tag>
+              </span>
             </div>
-            <div class="mg-bottom-md">
-              <span class="setting-label">{{ $t("domains.tls_verify") }}</span>
-              <span class="setting-value">{{ domain.tls_verify }}</span>
+            <div class="key-value-setting">
+              <span class="label">{{ $t("domains.tls_verify") }}</span>
+              <span class="value">
+                <cv-tag
+                  v-if="domain.tls_verify"
+                  kind="green"
+                  :label="$t('common.enabled')"
+                  size="sm"
+                  class="no-margin"
+                ></cv-tag>
+                <cv-tag
+                  v-else
+                  kind="gray"
+                  :label="$t('common.disabled')"
+                  size="sm"
+                  class="no-margin"
+                ></cv-tag>
+              </span>
             </div>
           </cv-tile>
         </div>
@@ -95,10 +131,9 @@
           <h4 class="mg-bottom-md">{{ $t("domain_detail.providers") }}</h4>
         </div>
       </div>
-      <div class="bx--row">
+      <div v-if="error.listUserDomains" class="bx--row">
         <div class="bx--col">
           <NsInlineNotification
-            v-if="error.listUserDomains"
             kind="error"
             :title="$t('action.list-user-domains')"
             :description="error.listUserDomains"
@@ -116,10 +151,9 @@
           />
         </div>
       </div>
-      <div class="bx--row">
+      <div v-if="error.removeInternalProvider" class="bx--row">
         <div class="bx--col">
           <NsInlineNotification
-            v-if="error.removeInternalProvider"
             kind="error"
             :title="$t('action.remove-internal-provider')"
             :description="error.removeInternalProvider"
@@ -127,10 +161,9 @@
           />
         </div>
       </div>
-      <div class="bx--row">
+      <div v-if="error.removeExternalProvider" class="bx--row">
         <div class="bx--col">
           <NsInlineNotification
-            v-if="error.removeExternalProvider"
             kind="error"
             :title="$t('action.remove-external-provider')"
             :description="error.removeExternalProvider"
@@ -138,10 +171,9 @@
           />
         </div>
       </div>
-      <div class="bx--row">
+      <div v-if="unconfiguredProviders.length" class="bx--row">
         <div class="bx--col">
           <NsInlineNotification
-            v-if="unconfiguredProviders.length"
             kind="warning"
             :title="$t('domain_detail.unconfigured_providers_title')"
             :description="
@@ -151,18 +183,20 @@
           />
         </div>
       </div>
-      <div class="bx--row">
+      <div v-if="providerToDelete" class="bx--row">
         <div class="bx--col">
           <!-- unconfigured provider being deleted -->
           <NsInlineNotification
-            v-if="providerToDelete"
             kind="warning"
             :title="
-              $t('domain_detail.provider_deleted') + ': ' + providerToDelete.id
+              $t('domain_detail.provider_is_going_to_be_deleted', {
+                object: providerToDelete.id,
+              })
             "
-            :actionLabel="$t('common.undo')"
+            :actionLabel="$t('common.cancel')"
             @action="cancelDeleteUnconfiguredProvider()"
             :showCloseButton="false"
+            :timer="DELETE_DELAY"
           />
         </div>
       </div>
@@ -198,17 +232,21 @@
             >{{ $t("domain_detail.add_provider") }}
           </NsButton> -->
             <!-- disabled button with tooltip (no nodes available) -->
-            <!-- <cv-tooltip ////
+            <!-- <cv-interactive-tooltip
             v-else
             alignment="center"
             direction="right"
-            :tip="$t('domain_detail.max_instances_reached')"
             class="info"
           >
-            <NsButton kind="secondary" :icon="Add20" disabled
-              >{{ $t("domain_detail.add_provider") }}
-            </NsButton>
-          </cv-tooltip> -->
+            <template slot="trigger">
+              <NsButton kind="secondary" :icon="Add20" disabled
+                >{{ $t("domain_detail.add_provider") }}
+              </NsButton>
+            </template>
+            <template slot="content">
+              {{ $t('domain_detail.max_instances_reached') }}
+            </template>
+          </cv-interactive-tooltip> -->
           </div>
         </div>
         <div class="bx--row">
@@ -223,7 +261,6 @@
               light
               :title="$t('domain_detail.unconfigured_provider')"
               :icon="WarningAlt32"
-              :showOverflowMenu="true"
             >
               <template #menu>
                 <cv-overflow-menu
@@ -234,20 +271,24 @@
                 >
                   <cv-overflow-menu-item
                     @click="showSetProviderLabelModal(provider)"
-                    >{{
-                      $t("domain_detail.edit_provider_label")
-                    }}</cv-overflow-menu-item
                   >
+                    <NsMenuItem
+                      icon="edit"
+                      :label="$t('domain_detail.edit_provider_label')"
+                    />
+                  </cv-overflow-menu-item>
+                  <NsMenuDivider />
                   <cv-overflow-menu-item
                     danger
                     @click="willDeleteUnconfiguredProvider(provider)"
-                    >{{ $t("common.delete") }}</cv-overflow-menu-item
                   >
+                    <NsMenuItem icon="trash" :label="$t('common.delete')" />
+                  </cv-overflow-menu-item>
                 </cv-overflow-menu>
               </template>
               <template #content>
                 <div class="provider-card-content">
-                  <div class="row icon-and-text center-content">
+                  <div class="row icon-and-text">
                     <NsSvg :svg="Application20" class="icon" />
                     <span>{{
                       provider.ui_name
@@ -255,17 +296,11 @@
                         : provider.id
                     }}</span>
                   </div>
-                  <div
-                    v-if="provider.node"
-                    class="row icon-and-text center-content"
-                  >
+                  <div v-if="provider.node" class="row icon-and-text">
                     <NsSvg :svg="Chip20" class="icon" />
                     <span>{{ $t("common.node") }} {{ provider.node }}</span>
                   </div>
-                  <div
-                    v-if="provider.host"
-                    class="row icon-and-text center-content"
-                  >
+                  <div v-if="provider.host" class="row icon-and-text">
                     <NsSvg :svg="Network_220" class="icon" />
                     <span>{{ provider.host }}</span>
                     <span v-if="provider.port">:{{ provider.port }}</span>
@@ -273,7 +308,7 @@
                   <div class="row actions">
                     <NsButton
                       kind="ghost"
-                      :icon="Tools32"
+                      :icon="Tools20"
                       @click="showUnconfiguredProviderModal(provider)"
                       >{{ $t("domains.resume_configuration") }}
                     </NsButton>
@@ -292,7 +327,6 @@
               light
               :title="provider.ui_name ? provider.ui_name : provider.id"
               :icon="domain.location == 'internal' ? Application32 : Link32"
-              :showOverflowMenu="true"
             >
               <template #menu>
                 <cv-overflow-menu
@@ -303,15 +337,19 @@
                 >
                   <cv-overflow-menu-item
                     @click="showSetProviderLabelModal(provider)"
-                    >{{
-                      $t("domain_detail.edit_provider_label")
-                    }}</cv-overflow-menu-item
                   >
+                    <NsMenuItem
+                      icon="edit"
+                      :label="$t('domain_detail.edit_provider_label')"
+                    />
+                  </cv-overflow-menu-item>
+                  <NsMenuDivider />
                   <cv-overflow-menu-item
                     danger
                     @click="showDeleteProviderModal(provider)"
-                    >{{ $t("common.delete") }}</cv-overflow-menu-item
                   >
+                    <NsMenuItem icon="trash" :label="$t('common.delete')" />
+                  </cv-overflow-menu-item>
                 </cv-overflow-menu>
               </template>
               <template #content>
@@ -319,17 +357,11 @@
                   <div v-if="provider.ui_name" class="row">
                     {{ provider.id }}
                   </div>
-                  <div
-                    v-if="provider.node"
-                    class="row icon-and-text center-content"
-                  >
+                  <div v-if="provider.node" class="row icon-and-text">
                     <NsSvg :svg="Chip20" class="icon" />
                     <span>{{ $t("common.node") }} {{ provider.node }}</span>
                   </div>
-                  <div
-                    v-if="provider.host"
-                    class="row icon-and-text center-content"
-                  >
+                  <div v-if="provider.host" class="row icon-and-text">
                     <NsSvg :svg="Network_220" class="icon" />
                     <span>{{ provider.host }}</span>
                     <span v-if="provider.port">:{{ provider.port }}</span>
@@ -391,7 +423,7 @@
         })
       "
       :typeToConfirm="
-        $t('common.type_to_to_confirm', { name: currentProvider.id })
+        $t('common.type_to_confirm', { name: currentProvider.id })
       "
       @hide="hideDeleteProviderModal"
       @confirmDelete="deleteProvider"
@@ -452,8 +484,8 @@ import {
   IconService,
 } from "@nethserver/ns8-ui-lib";
 import to from "await-to-js";
-import AddInternalProviderModal from "@/components/AddInternalProviderModal";
-import AddExternalProviderModal from "@/components/AddExternalProviderModal";
+import AddInternalProviderModal from "@/components/domains/AddInternalProviderModal";
+import AddExternalProviderModal from "@/components/domains/AddExternalProviderModal";
 
 export default {
   name: "DomainDetail",
@@ -464,7 +496,6 @@ export default {
   },
   data() {
     return {
-      DELETE_DELAY: 7000, // you have 7 seconds to undo object deletion
       q: {},
       isShownAddInternalProviderModal: false,
       isShownAddExternalProviderModal: false,
@@ -504,13 +535,15 @@ export default {
       if (!this.domain) {
         return [];
       }
-      return this.domain.providers.filter((p) => !p.host);
+      let unconfiguredProviders = this.domain.providers.filter((p) => !p.host);
+      return unconfiguredProviders.sort(this.sortModuleInstances());
     },
     configuredProviders() {
       if (!this.domain) {
         return [];
       }
-      return this.domain.providers.filter((p) => p.host);
+      let configuredProviders = this.domain.providers.filter((p) => p.host);
+      return configuredProviders.sort(this.sortModuleInstances());
     },
   },
   beforeRouteEnter(to, from, next) {
@@ -653,6 +686,7 @@ export default {
           },
           extra: {
             title: this.$t("action." + taskAction),
+            description: this.$t("common.processing"),
           },
         })
       );
@@ -822,8 +856,6 @@ export default {
       this.isShownBindPassword = !this.isShownBindPassword;
     },
     willDeleteUnconfiguredProvider(provider) {
-      console.log("willDeleteUnconfiguredProvider", provider); ////
-
       const timeout = setTimeout(() => {
         this.deleteUnconfiguredProvider(provider);
         this.providerToDelete = null;
@@ -860,6 +892,7 @@ export default {
           },
           extra: {
             title: this.$t("action." + taskAction),
+            description: this.$t("common.processing"),
           },
         })
       );
@@ -890,22 +923,7 @@ export default {
   margin-bottom: 0;
 }
 
-.setting-label {
-  display: inline-block;
-  margin-right: $spacing-03;
-  margin-bottom: $spacing-02;
-  font-weight: bold;
-}
-
-.setting-value {
-  word-wrap: break-word;
-}
-
-.center-content {
-  justify-content: center;
-}
-
-.toggle-bind-password {
-  margin-left: $spacing-03;
+.password-snippet {
+  margin-bottom: $spacing-07;
 }
 </style>

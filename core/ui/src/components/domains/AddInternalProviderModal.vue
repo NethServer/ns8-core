@@ -1,9 +1,16 @@
 <template>
-  <cv-modal
+  <NsWizard
     size="default"
     :visible="isShown"
+    :cancelLabel="$t('common.cancel')"
+    :previousLabel="$t('common.previous')"
+    :nextLabel="nextButtonLabel"
+    :isPreviousDisabled="true"
+    :isNextDisabled="isNextButtonDisabled"
+    :isNextLoading="loading.samba.configureModule"
     @modal-hidden="$emit('hide')"
-    class="wizard-modal"
+    @cancel="$emit('hide')"
+    @nextStep="nextStep"
   >
     <template slot="title">{{ $t("domain_detail.add_provider") }}</template>
     <template slot="content">
@@ -12,7 +19,7 @@
         <div class="mg-bottom-md">
           {{ $t("domains.choose_node_for_account_provider_installation") }}
         </div>
-        <div class="bx--grid">
+        <div class="bx--grid no-padding">
           <div class="bx--row">
             <div
               v-for="(node, index) in nodes"
@@ -27,7 +34,7 @@
                 :footerIcon="Chip20"
                 @click="deselectOtherNodes(node)"
                 :class="[
-                  'same-height-tile',
+                  'min-height-card',
                   { 'disabled-node': node.unavailable },
                 ]"
                 :disabled="node.unavailable"
@@ -150,38 +157,8 @@
           />
         </template>
       </template>
-      <div class="wizard-buttons">
-        <NsButton
-          kind="secondary"
-          :icon="Close20"
-          @click="$emit('hide')"
-          class="wizard-button"
-          >{{ $t("common.cancel") }}
-        </NsButton>
-        <!-- <NsButton
-          kind="secondary"
-          :icon="ChevronLeft20"
-          @click="previousStep"
-          :disabled="
-            isResumeConfiguration ||
-            ['location', 'installingProvider', 'internalConfig'].includes(step)
-          "
-          class="wizard-button"
-          >{{ $t("common.previous") }}
-        </NsButton> -->
-        <NsButton
-          kind="primary"
-          :icon="ChevronRight20"
-          @click="nextStep"
-          :disabled="isNextStepButtonDisabled()"
-          :loading="loading.samba.configureModule"
-          class="wizard-button"
-          ref="wizardNext"
-          >{{ nextStepLabel }}
-        </NsButton>
-      </div>
     </template>
-  </cv-modal>
+  </NsWizard>
 </template>
 
 <script>
@@ -264,7 +241,7 @@ export default {
     isSamba() {
       return this.domain.schema == "ad";
     },
-    nextStepLabel() {
+    nextButtonLabel() {
       if (this.step == "node") {
         return this.$t("domains.install_provider");
       } else if (this.step == "internalConfig") {
@@ -272,6 +249,13 @@ export default {
       } else {
         return this.$t("common.next");
       }
+    },
+    isNextButtonDisabled() {
+      return (
+        this.step == "installingProvider" ||
+        (this.step == "node" && !this.selectedNode) ||
+        this.loading.samba.configureModule
+      );
     },
   },
   watch: {
@@ -295,11 +279,11 @@ export default {
         }
 
         if (this.step !== "internalConfig") {
-          // set focus to next button
-          setTimeout(() => {
-            const element = this.$refs["wizardNext"].$el;
-            element.focus();
-          }, 300);
+          // // set focus to next button //// not working with NsWizard
+          // setTimeout(() => {
+          //   const element = this.$refs["wizardNext"].$el;
+          //   element.focus();
+          // }, 300);
         } else {
           if (this.isOpenLdap) {
             //// focus first input field
@@ -626,6 +610,9 @@ export default {
 
       // hide modal
       this.$emit("hide");
+
+      // reload domains
+      this.$emit("reloadDomains");
     },
     configureSambaModuleAborted(taskResult) {
       console.log("configure samba module aborted", taskResult);
@@ -637,24 +624,12 @@ export default {
     async configureOpenLdapModule() {
       console.log("configureOpenLdapModule"); ////
     },
-    isNextStepButtonDisabled() {
-      return (
-        this.step == "installingProvider" ||
-        (this.step == "node" && !this.selectedNode) ||
-        this.loading.samba.configureModule
-      );
-    },
   },
 };
 </script>
 
 <style scoped lang="scss">
-@import "../styles/carbon-utils";
-
-.same-height-tile {
-  min-height: 9rem;
-}
-
+@import "../../styles/carbon-utils";
 .mg-top {
   margin-top: $spacing-05;
 }

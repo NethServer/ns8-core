@@ -1,0 +1,75 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2021 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
+import agent
+import sys
+import os
+import agent.tasks
+import json
+import tempfile
+
+request = json.load(sys.stdin)
+
+# source
+repository = request['repository']
+path = request['path']
+snapshot = request['snapshot'] or "latest"
+
+# destination
+node_id = int(request['node'])
+
+rdb = agent.redis_connect()
+
+with tempfile.NamedTemporaryFile() as fenv:
+    agent.run_restic(rdb, repository, path, ["--workdir=/srv"], ["dump", snapshot, "state/environment"], text=True, encoding='utf-8', stdout=fenv, check=True)
+    fenv.seek(0)
+    original_environment = agent.read_envfile(fenv.name)
+
+image_url = original_environment['IMAGE_URL']
+
+add_module_result = agent.tasks.run("cluster", "add-module",
+    data={
+        "image": image_url,
+        "node": node_id,
+    }, 
+    endpoint="redis://cluster-leader",
+    progress_callback=agent.get_progress_callback(2, 50)
+)
+agent.assert_exp(add_module_result['exit_code'] == 0)
+omodule = add_module_result['output']
+
+module_id = add_module_result['output']['module_id']
+
+restore_task_result = agent.tasks.run("module/" + module_id, "restore-module",
+    data={
+        "repository": repository,
+        "path": path,
+        "snapshot": snapshot,
+        "environment": original_environment,
+    },
+    endpoint="redis://cluster-leader",
+    progress_callback=agent.get_progress_callback(51, 98)
+)
+
+agent.assert_exp(restore_task_result['exit_code'] == 0)
+
+json.dump(add_module_result['output'], fp=sys.stdout)

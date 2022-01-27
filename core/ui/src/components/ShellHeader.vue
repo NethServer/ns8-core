@@ -83,9 +83,13 @@
         <template v-slot:trigger>
           <UserAvatar20 />
         </template>
-        <cv-overflow-menu-item @click="logout">{{
-          $t("shell.logout")
-        }}</cv-overflow-menu-item>
+        <cv-overflow-menu-item @click="logout">
+          <NsMenuItem :label="$t('shell.logout')">
+            <template slot="icon">
+              <Logout20 />
+            </template>
+          </NsMenuItem>
+        </cv-overflow-menu-item>
       </HeaderGlobalMenu>
     </template>
     <AppDrawer />
@@ -98,6 +102,7 @@ import Notification20 from "@carbon/icons-vue/es/notification/20";
 import UserAvatar20 from "@carbon/icons-vue/es/user--avatar/20";
 import AppSwitcher20 from "@carbon/icons-vue/es/app-switcher/20";
 import Search20 from "@carbon/icons-vue/es/search/20";
+import Logout20 from "@carbon/icons-vue/es/logout/20";
 import { mapState, mapActions, mapGetters } from "vuex";
 import GlobalSearch from "@/components/GlobalSearch";
 import AppDrawer from "@/components/AppDrawer";
@@ -114,6 +119,7 @@ export default {
     UserAvatar20,
     AppSwitcher20,
     Search20,
+    Logout20,
     GlobalSearch,
     AppDrawer,
     NotificationDrawer,

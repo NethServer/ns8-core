@@ -70,14 +70,18 @@
             <div class="mg-bottom-sm">
               <span class="label"
                 >{{ $t("node_detail.load") }}
-                <cv-tooltip
+                <cv-interactive-tooltip
                   alignment="start"
                   direction="bottom"
-                  :tip="$t('nodes.cpu_load_tooltip')"
                   class="info"
                 >
-                  <Information16 />
-                </cv-tooltip>
+                  <template slot="trigger">
+                    <Information16 />
+                  </template>
+                  <template slot="content">
+                    {{ $t("nodes.cpu_load_tooltip") }}
+                  </template>
+                </cv-interactive-tooltip>
               </span>
               <span v-if="loading.nodeStatus">- / - / -</span>
               <template v-else>
@@ -109,14 +113,18 @@
             <div class="mg-bottom-sm">
               <span class="label"
                 >{{ $t("node_detail.pressure") }}
-                <cv-tooltip
+                <cv-interactive-tooltip
                   alignment="start"
                   direction="bottom"
-                  :tip="$t('nodes.cpu_pressure_tooltip')"
                   class="info"
                 >
-                  <Information16 />
-                </cv-tooltip>
+                  <template slot="trigger">
+                    <Information16 />
+                  </template>
+                  <template slot="content">
+                    <div>{{ $t("nodes.cpu_pressure_tooltip") }}</div>
+                  </template>
+                </cv-interactive-tooltip>
               </span>
               <span v-if="loading.nodeStatus">- / - / -</span>
               <template v-else>

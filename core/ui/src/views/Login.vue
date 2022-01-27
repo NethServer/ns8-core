@@ -59,7 +59,6 @@
                     :label="$t('login.password')"
                     type="password"
                     v-model="password"
-                    class="bx--password-input mg-bottom-md"
                     :placeholder="$t('login.password_placeholder')"
                     :invalid-message="error.password"
                     :password-hide-label="$t('password.hide_password')"
@@ -201,7 +200,7 @@ export default {
           // redirect to initially requested URL
           this.$router.replace(queryParams.redirect);
         } else {
-          // go to NS8 home page
+          // go to Cluster status page
 
           this.$router.replace("/status");
         }

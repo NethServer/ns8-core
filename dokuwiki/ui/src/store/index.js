@@ -8,7 +8,7 @@ export default new Vuex.Store({
     appName: "Dokuwiki",
     instanceName: "",
     instanceLabel: "",
-    ns8Core: null,
+    core: null,
   },
   mutations: {
     setInstanceName(state, instanceName) {
@@ -17,8 +17,8 @@ export default new Vuex.Store({
     setInstanceLabel(state, instanceLabel) {
       state.instanceLabel = instanceLabel;
     },
-    setNs8Core(state, ns8Core) {
-      state.ns8Core = ns8Core;
+    setCore(state, core) {
+      state.core = core;
     },
   },
   actions: {
@@ -28,8 +28,8 @@ export default new Vuex.Store({
     setInstanceLabelInStore(context, instanceLabel) {
       context.commit("setInstanceLabel", instanceLabel);
     },
-    setNs8CoreInStore(context, ns8Core) {
-      context.commit("setNs8Core", ns8Core);
+    setCoreInStore(context, core) {
+      context.commit("setCore", core);
     },
   },
   modules: {},

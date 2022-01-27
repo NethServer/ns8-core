@@ -1,0 +1,162 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "list-backups output",
+    "$id": "http://schema.nethserver.org/cluster/list-backups-output.json",
+    "description": "Get a list of backup configurations",
+    "examples": [
+        {
+            "backups": [
+                {
+                    "id": 1,
+                    "name": "Daily",
+                    "repository": "48ce000a-79b7-5fe6-8558-177fd70c27b4",
+                    "schedule": "daily",
+                    "schedule_hint": {},
+                    "retention": "7d",
+                    "instances": [
+                        {
+                            "module_id": "dokuwiki1",
+                            "ui_name": "",
+                            "repository_path": "dokuwiki1@2f72561e-89b2-4cdc-b4e4-425ca23bbec9",
+                            "status": {
+                                "total_size": 4053660,
+                                "total_file_count": 21744,
+                                "start": 1640097808,
+                                "end": 1640097815,
+                                "success": true
+                            }
+                        }
+                    ],
+                    "enabled": true
+                }
+            ],
+            "unconfigured_instances": [
+                "nextcloud3"
+            ]
+        }
+    ],
+    "type": "object",
+    "required": [
+        "backups",
+        "unconfigured_instances"
+    ],
+    "properties": {
+        "backups": {
+            "type": "array",
+            "title": "Backups",
+            "description": "List of configured backup objects",
+            "items": {
+                "$ref": "#/$defs/backup-item"
+            }
+        },
+        "unconfigured_instances": {
+            "type": "array",
+            "title": "Unconfigured module instances",
+            "description": "List of module instances that are not included in any backup",
+            "items": {
+                "$ref": "#/$defs/uinstance-item"
+            }
+        }
+    },
+    "$defs": {
+        "uinstance-item": {
+            "title": "Unconfigured module instance",
+            "description": "Instance with no backup configured",
+            "type": "object",
+            "properties": {
+                "id": {
+                    "title": "Module ID",
+                    "type": "string",
+                    "minLength": 1
+                },
+                "ui_name": {
+                    "title": "Module UI name",
+                    "type": "string"
+                }
+            }
+        },
+        "instance-item": {
+            "title": "Backup of a module instance",
+            "type": "object",
+            "properties": {
+                "module_id": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "ui_name": {
+                    "type": "string"
+                },
+                "repository_path": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "status": {
+                    "$ref": "#/$defs/backup-status"
+                }
+            }
+        },
+        "backup-status": {
+            "title": "Last backup run status",
+            "type": [
+                "null",
+                "object"
+            ]
+        },
+        "backup-item": {
+            "title": "Backup object",
+            "type": "object",
+            "required": [
+                "id",
+                "instances",
+                "schedule",
+                "schedule_hint",
+                "repository",
+                "retention",
+                "name",
+                "enabled"
+            ],
+            "properties": {
+                "id": {
+                    "title": "Backup ID",
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "instances": {
+                    "title": "Module instances",
+                    "description": "Identifiers of module instances included in the backup",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/instance-item"
+                    }
+                },
+                "schedule": {
+                    "title": "Time schedule expression",
+                    "description": "The string format must be compatible with Calendar Events, described in `systemd.timer` man page",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 64
+                },
+                "schedule_hint": {
+                    "title": "Schedule expression hint for UI",
+                    "description": "Store arbitrary object to ease parsing of `schedule` value",
+                    "type": "object"
+                },
+                "retention": {
+                    "title": "Backup retention",
+                    "description": "Number of backup snapshots to store before automatic deletion",
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "name": {
+                    "title": "Backup name",
+                    "type": "string",
+                    "minLength": 1
+                },
+                "enabled": {
+                    "type": "boolean",
+                    "title": "Enabled/disabled status. If `false` the backup is stopped."
+                }
+            }
+        }
+    }
+}

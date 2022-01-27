@@ -8,24 +8,13 @@ body {
 
 .bx--content {
   background-color: $ui-01;
+  padding-bottom: $spacing-03 !important;
 }
 
 .bx--grid.no-padding {
   padding-left: 0;
   padding-right: 0;
 }
-
-// footer position
-#core {
-  display: flex;
-  flex-direction: column;
-  min-height: 100%;
-}
-
-#main-content {
-  flex: 1;
-}
-// end footer position
 
 @media (max-width: $breakpoint-large) {
   // remove left margin because side menu is not shown on smaller screens
@@ -46,12 +35,32 @@ a {
   margin-top: 3rem;
 }
 
-.mg-bottom-md {
-  margin-bottom: $spacing-05 !important;
+.no-margin {
+  margin: 0;
+}
+
+.mg-top-sm {
+  margin-top: $spacing-03 !important;
+}
+
+.mg-top-md {
+  margin-top: $spacing-05 !important;
 }
 
 .mg-bottom-sm {
   margin-bottom: $spacing-03 !important;
+}
+
+.mg-bottom-md {
+  margin-bottom: $spacing-05 !important;
+}
+
+.mg-bottom-lg {
+  margin-bottom: $spacing-06 !important;
+}
+
+.mg-bottom-xlg {
+  margin-bottom: $spacing-07 !important;
 }
 
 @media (max-width: $breakpoint-medium) {
@@ -99,14 +108,14 @@ a {
   margin-bottom: $spacing-07;
 }
 
-.cv-inline-notification {
-  margin-bottom: $spacing-07;
-}
-
 @media (max-width: $breakpoint-medium) {
   .cv-tile {
     margin-bottom: $spacing-05;
   }
+}
+
+.cv-inline-notification {
+  margin-bottom: $spacing-07;
 }
 
 .title-description {
@@ -117,6 +126,7 @@ a {
 .icon-and-text {
   display: flex;
   align-items: center;
+  justify-content: center;
 }
 
 .icon-and-text .icon {
@@ -127,40 +137,37 @@ a {
   margin-top: $spacing-07;
 }
 
+.empty-state-button-no-description {
+  margin-top: $spacing-05;
+}
+
 .ellipsis {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-// wizard (e.g. CreateDomainModal)
-.wizard-modal .bx--modal-content {
-  padding-right: 1rem !important;
-  margin-bottom: 0;
-}
-
-.wizard-buttons {
-  display: flex;
-  justify-content: flex-end;
-  position: relative;
-  right: -1rem;
-  margin-top: 3rem;
-}
-
-.wizard-button {
-  width: 25%;
-  height: 4rem;
-  box-shadow: -0.0625rem 0 0 0 #e0e0e0;
-}
-
+// reduce width of wizard buttons on small screens
 @media (max-width: $breakpoint-medium) {
-  .wizard-button {
+  .bx--btn-set .bx--btn.wizard-button {
     width: 33%;
   }
 }
-// end wizard
 
-// top-right overflow menu
+// overflow menu start
+.bx--overflow-menu-options {
+  z-index: 10000;
+  width: auto !important;
+  min-width: 10rem;
+  max-width: 18rem;
+}
+
+.bx--overflow-menu-options__btn {
+  max-width: none;
+}
+// overflow menu end
+
+// top-right overflow menu start
 .top-right-overflow-menu {
   position: absolute;
   top: 0;
@@ -173,9 +180,9 @@ a {
   width: 1.25rem;
   height: 1.25rem;
 }
-// end top-right overflow menu
+// top-right overflow menu end
 
-// ghost button on dark background
+// ghost button on dark background start
 .ghost-button-dark-bg {
   color: $inverse-link;
 }
@@ -184,9 +191,35 @@ a {
   background-color: $hover-secondary;
   color: $inverse-link;
 }
-// end ghost button on dark background
+// ghost button on dark background end
 
-// status badges
+// used for buttons with external links
+.text-decoration-none {
+  text-decoration: none !important;
+}
+
+// key/value settings start
+.key-value-setting {
+  margin-bottom: $spacing-05;
+
+  .label {
+    display: inline-block;
+    margin-right: $spacing-04;
+    font-weight: bold;
+  }
+
+  .value {
+    // wrap long values like urls
+    word-wrap: break-word;
+  }
+}
+
+.key-value-setting.narrow {
+  margin-bottom: $spacing-03;
+}
+// key/value settings end
+
+// status badges start
 .badge-container {
   display: flex;
   align-items: center;
@@ -223,9 +256,9 @@ a {
 .right-badge {
   margin-left: $spacing-04;
 }
-// end status badges
+// status badges end
 
-// global search, app drawer search
+// global search, app drawer search start
 .global-search input,
 .app-drawer-search input {
   background-color: $ui-05 !important;
@@ -257,7 +290,7 @@ a {
 .app-drawer-search .bx--search-button:hover {
   background-color: $hover-secondary;
 }
-// end global search, app drawer search
+// global search, app drawer search end
 
 // fix cv-search icon
 .cv-search.bx--form-item > div > svg {
@@ -265,7 +298,7 @@ a {
   left: 1rem;
 }
 
-// app side menu
+// app side menu start
 #ns8-app .app-content {
   margin-left: $side-menu-width;
 }
@@ -352,62 +385,57 @@ a {
     display: none !important;
   }
 }
-// end app side menu
+// app side menu end
 
-// accordion for technical details of task error
-.task-more-info {
-  margin-top: $spacing-04;
-}
-
-.task-more-info .bx--accordion__content {
+// accordion
+.cv-accordion .bx--accordion__content {
   padding-right: 1rem;
 }
-// end accordion for technical details of task error
 
-// task error modal
-.task-error-modal .bx--inline-notification__icon {
-  margin-top: 0;
-  margin-right: $spacing-02;
-  fill: $support-04; // info color (low contrast)
+// form elements start
+.cv-form {
+  .cv-text-input,
+  .bx--form-item,
+  .cv-select,
+  .cv-multi-select,
+  .ns-password-input,
+  .cv-combo-box {
+    margin-bottom: $spacing-05;
+  }
 }
 
-.task-error-modal .bx--inline-notification__icon.aborted,
-.task-error-modal .bx--inline-notification__icon.validation-failed {
-  fill: $danger-01; // error color (low contrast)
+.hide-label .bx--label {
+  // hide label for controls with mandatory label (e.g. CvSelect)
+  visibility: hidden;
 }
 
-.task-error-modal .bx--inline-notification__icon.completed {
-  fill: $support-02; // success color (low contrast)
+// fix cv-combo-box clear button overlapping invalid badge
+.cv-combo-box
+  .bx--list-box__invalid-icon
+  + .bx--list-box__field
+  .bx--list-box__selection {
+  right: 4rem !important;
 }
 
-.task-error-modal .bx--inline-notification__icon.pending {
-  fill: $support-03; // warning color (low contrast)
+// styles for large devices
+@media (min-width: $breakpoint-medium) {
+  // limit form fields width on large devices
+  .bx--text-input,
+  .bx--text-input__field-wrapper,
+  .cv-select,
+  .cv-multi-select,
+  .cv-combo-box {
+    max-width: 38rem;
+  }
 }
-
-.task-error-modal .task-item {
-  display: flex;
-  align-items: center;
-  padding-top: 0.5rem;
-  padding-bottom: 0.5rem;
-}
-// end task error modal
-
-// form
-.cv-text-input,
-.cv-form .bx--form-item,
-.cv-form .cv-multi-select,
-.ns-password-input,
-.cv-combo-box {
-  margin-bottom: $spacing-05;
-}
-// end form
 
 // fix padding of number input
 .bx--number input[type="number"] {
   padding-right: 5rem;
 }
+// form elements end
 
-// data table
+// data table start
 .bx--toolbar-search-container-expandable .bx--search {
   position: static;
   width: 3rem;
@@ -448,9 +476,9 @@ a {
 .cv-data-table .bx--pagination__right .bx--pagination__text {
   display: inline-block !important;
 }
-// end data table
+// data table end
 
-// loader
+// loader start
 .loader {
   width: 1rem;
   height: 1rem;
@@ -485,9 +513,9 @@ a {
     transform: rotate(360deg);
   }
 }
-// end loader
+// loader end
 
-// animation for expandable chevron
+// animation for expandable chevron start
 .toggle-expand > svg {
   transition: transform 110ms;
 }
@@ -495,23 +523,65 @@ a {
 .toggle-expand.expanded > svg {
   transform: rotate(180deg);
 }
-// end animation for expandable chevron
+// animation for expandable chevron end
 
 // modal with full-width content
 .no-pad-modal .bx--modal-content {
   padding-right: 1rem !important;
 }
 
-// branding colors for NsProgressBar
+// branding colors for NsProgressBar start
 .progress-bar-container .line,
 .progress-bar-container .progress-line,
 .progress-bar-container .indeterminate-line,
 .progress-bar-container .indeterminate-subline {
   background: $interactive-01;
 }
-// end branding colors for NsProgressBar
+// branding colors for NsProgressBar end
 
-// colors for NsStatusCard and NsSystemdServiceCard
+// status colors start
+.ns-success {
+  color: $support-02 !important;
+  fill: $support-02 !important;
+}
+
+.ns-error {
+  color: $danger-01 !important;
+  fill: $danger-01 !important;
+}
+
+.ns-warning {
+  color: #eb991e !important;
+  fill: #eb991e !important;
+}
+
+.ns-info {
+  color: $support-04 !important;
+  fill: $support-04 !important;
+}
+
+.ns-success-dark-bg {
+  color: $inverse-support-02 !important;
+  fill: $inverse-support-02 !important;
+}
+
+.ns-error-dark-bg {
+  color: $inverse-support-01 !important;
+  fill: $inverse-support-01 !important;
+}
+
+.ns-warning-dark-bg {
+  color: $inverse-support-03 !important;
+  fill: $inverse-support-03 !important;
+}
+
+.ns-info-dark-bg {
+  color: $inverse-support-04 !important;
+  fill: $inverse-support-04 !important;
+}
+// status colors end
+
+// colors for NsStatusCard and NsSystemdServiceCard start
 .status-card .success-icon,
 .service-card .success-icon {
   color: $support-02;
@@ -524,11 +594,40 @@ a {
 
 .status-card .warning-icon,
 .service-card .warning-icon {
-  color: $support-03;
+  color: #eb991e;
 }
-// end colors for NsStatusCard and NsSystemdServiceCard
+// colors for NsStatusCard and NsSystemdServiceCard end
 
-// hint tooltip
+// interactive tooltip start
+.cv-interactive-tooltip {
+  display: inline-block;
+
+  .bx--tooltip__label .bx--tooltip__trigger {
+    margin-left: 0;
+  }
+}
+
+.tooltip-with-text-trigger .bx--tooltip__trigger:not(.bx--btn--icon-only) {
+  font-size: 14px !important;
+  color: $interactive-01;
+}
+
+.bx--tooltip .bx--tooltip__content {
+  line-height: 1.28572;
+}
+
+// info tooltip
+.info.bx--tooltip__trigger svg,
+.info.bx--tooltip__trigger:hover svg,
+.info.bx--tooltip__trigger:focus svg,
+.info .bx--tooltip__trigger svg,
+.info .bx--tooltip__trigger:hover svg,
+.info .bx--tooltip__trigger:focus svg {
+  fill: $support-04;
+}
+// interactive tooltip end
+
+// hint tooltip start
 .hint {
   width: 0;
   height: 0;
@@ -543,42 +642,17 @@ a {
   outline: none;
   fill: none;
 }
-// end hint tooltip
-
-// info tooltip
-.info.bx--tooltip__trigger svg,
-.info.bx--tooltip__trigger:hover svg,
-.bx--tooltip__trigger:focus svg {
-  fill: $support-04;
-}
+// hint tooltip end
 
 .min-height-card {
   min-height: 9rem;
 }
 
-.bx--overflow-menu-options {
-  z-index: 10000;
-  width: auto !important;
-  min-width: 10rem;
-  max-width: 14rem;
-}
-
-// NsNodeCard
+// NsNodeCard start
 .node-card .warning {
   color: $danger-01;
 }
-// end NsNodeCard
-
-// styles for large devices
-@media (min-width: $breakpoint-medium) {
-  // limit form fields width on large devices
-  .bx--text-input,
-  .bx--text-input__field-wrapper,
-  .cv-multi-select,
-  .cv-combo-box {
-    max-width: 38rem;
-  }
-}
+// NsNodeCard end
 
 // warning for pages optimized for landscape mode (e.g. pages containing tables)
 .landscape-warning {

@@ -34,13 +34,12 @@
 import {
   QueryParamService,
   UtilService,
-  TaskService,
   IconService,
 } from "@nethserver/ns8-ui-lib";
 
 export default {
   name: "Settings",
-  mixins: [TaskService, UtilService, IconService, QueryParamService],
+  mixins: [UtilService, IconService, QueryParamService],
   pageTitle() {
     return this.$t("settings.title");
   },

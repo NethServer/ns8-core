@@ -28,6 +28,7 @@ import secrets
 import string
 import cluster.userdomains
 
+module_id = os.environ['MODULE_ID']
 request = json.load(sys.stdin)
 realm = request['realm'].upper()
 hostname = request['hostname'].lower()
@@ -54,6 +55,9 @@ with agent.redis_connect() as rdb:
     else:
         print(agent.SD_ERR + "Bogus provision value! " + provision_type, file=sys.stderr)
         sys.exit(1)
+
+with agent.redis_connect(privileged=True) as prdb:
+    prdb.set(f'module/{module_id}/ui_name', hostname)
 
 agent.set_env('PROVISION_TYPE', provision_type)
 agent.set_env('NBDOMAIN', nbdomain)

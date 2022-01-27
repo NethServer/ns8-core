@@ -1492,15 +1492,16 @@
     call-me-maybe "^1.0.1"
     glob-to-regexp "^0.3.0"
 
-"@nethserver/ns8-ui-lib@^0.0.34":
-  version "0.0.34"
-  resolved "https://registry.yarnpkg.com/@nethserver/ns8-ui-lib/-/ns8-ui-lib-0.0.34.tgz#0a2085cc2368128a019c53265ef97ea88a37977d"
-  integrity sha512-fTsQVkJW0IZrfgNxHT0DPwYUioRWGRxXcBtjI60E3fKEUZ6tNIC1eu+B9KX49IPKwfXoemMgwsDnBySTDud8Jg==
+"@nethserver/ns8-ui-lib@^0.0.54":
+  version "0.0.54"
+  resolved "https://registry.yarnpkg.com/@nethserver/ns8-ui-lib/-/ns8-ui-lib-0.0.54.tgz#c6f44e8d0c9db7c25d093dc7fe1e4ee60a6a7679"
+  integrity sha512-aZdx4ULxkydK0boaczN6pe/EnhpNRJy2jaojE+ewLaMNX0KvM2ZETYPD8yXLFxMFfuiymW3GeVv0FPTHjG3ojg==
   dependencies:
     "@rollup/plugin-json" "^4.1.0"
     core-js "^3.15.2"
     date-fns "^2.23.0"
     date-fns-tz "^1.1.6"
+    vue-date-fns "^2.0.1"
 
 "@nodelib/fs.scandir@2.1.5":
   version "2.1.5"

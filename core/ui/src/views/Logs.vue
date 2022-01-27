@@ -26,18 +26,22 @@
                 :date-label="$t('logs.start_date')"
                 v-model="startDateString"
                 class="interval-date"
-                :invalid-message="error.timeInterval"
+                :invalid-message="error.startDate"
               >
               </cv-date-picker>
               <cv-time-picker
                 :label="$t('logs.start_time_label')"
                 :time.sync="startTime"
                 ampm="24"
-                :pattern="timePattern"
-                :placeholder="timePlaceholder"
+                :pattern="time24HourPatternString"
+                :placeholder="time24HourPlaceholder"
                 :form-item="true"
                 class="interval-time"
-                :invalid-message="error.timeInterval"
+                :invalid-message="
+                  time24HourPattern.test(startTime)
+                    ? error.startTime
+                    : $t('error.invalid_24h_pattern')
+                "
               >
               </cv-time-picker>
             </div>
@@ -48,18 +52,22 @@
                 :date-label="$t('logs.end_date')"
                 v-model="endDateString"
                 class="interval-date"
-                :invalid-message="error.timeInterval"
+                :invalid-message="error.endDate"
               >
               </cv-date-picker>
               <cv-time-picker
                 :label="$t('logs.end_time_label')"
                 :time.sync="endTime"
                 ampm="24"
-                :pattern="timePattern"
-                :placeholder="timePlaceholder"
+                :pattern="time24HourPatternString"
+                :placeholder="time24HourPlaceholder"
                 :form-item="true"
                 class="interval-time"
-                :invalid-message="error.timeInterval"
+                :invalid-message="
+                  time24HourPattern.test(endTime)
+                    ? error.endTime
+                    : $t('error.invalid_24h_pattern')
+                "
               >
               </cv-time-picker>
             </div>
@@ -245,8 +253,6 @@ export default {
       endDateString: "",
       startTime: "",
       endTime: "",
-      timePattern: "([01]\\d|2[0-3]):?([0-5]\\d)",
-      timePlaceholder: "hh:mm",
       calOptions: {
         dateFormat: "Y-m-d",
       },
@@ -264,7 +270,10 @@ export default {
         auditUsers: "",
         auditActions: "",
         auditLogs: "",
-        timeInterval: "",
+        startDate: "",
+        startTime: "",
+        endDate: "",
+        endTime: "",
       },
     };
   },
@@ -301,8 +310,7 @@ export default {
   },
   methods: {
     initFilters() {
-      this.error.auditLogs = "";
-      this.error.timeInterval = "";
+      this.clearErrors(this);
 
       // set time interval
       this.startDateString = this.formatDate(
@@ -378,27 +386,42 @@ export default {
       };
     },
     validateSearchLogs() {
-      // using Date constructor: new Date('1995-12-17T03:24:00')
-      const startLocal = new Date(
-        this.startDateString + "T" + this.startTime + ":00"
-      );
-      const endLocal = new Date(
-        this.endDateString + "T" + this.endTime + ":59"
-      );
+      this.clearErrors(this);
+      let isValidationOk = true;
 
-      if (this.dateIsBefore(endLocal, startLocal)) {
-        this.error.timeInterval = this.$t("logs.invalid_interval");
-        return false;
+      if (!this.startTime) {
+        this.error.startTime = this.$t("common.required");
+        isValidationOk = false;
       }
 
-      return true;
+      if (!this.endTime) {
+        this.error.endTime = this.$t("common.required");
+        isValidationOk = false;
+      }
+
+      if (this.startTime && this.endTime) {
+        // using Date constructor: new Date('1995-12-17T03:24:00')
+        const startLocal = new Date(
+          this.startDateString + "T" + this.startTime + ":00"
+        );
+        const endLocal = new Date(
+          this.endDateString + "T" + this.endTime + ":59"
+        );
+
+        if (this.dateIsBefore(endLocal, startLocal)) {
+          this.error.startDate = this.$t("logs.invalid_interval");
+          this.error.startTime = this.$t("logs.invalid_interval");
+          this.error.endDate = this.$t("logs.invalid_interval");
+          this.error.endTime = this.$t("logs.invalid_interval");
+
+          isValidationOk = false;
+        }
+      }
+
+      return isValidationOk;
     },
     async searchLogs() {
-      this.error.auditLogs = "";
-      this.error.timeInterval = "";
-      const validationOk = this.validateSearchLogs();
-
-      if (!validationOk) {
+      if (!this.validateSearchLogs()) {
         return;
       }
 
