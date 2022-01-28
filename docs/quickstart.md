@@ -98,9 +98,8 @@ please refer to the README of each application.
 
 Partial list of available applications:
 
-- [Dokuwiki](https://github.com/NethServer/ns8-scratchpad/blob/main/dokuwiki/README.md)
-- [Nextcloud](https://github.com/NethServer/ns8-scratchpad/blob/main/nextcloud/README.md)
-- [Mail](https://github.com/NethServer/ns8-scratchpad/blob/main/netdata/README.md)
+- [Dokuwiki](https://github.com/NethServer/ns8-dokuwiki/blob/main/README.md)
+- [Nextcloud](https://github.com/NethServer/ns8-core/blob/main/nextcloud/README.md)
 
 ## Uninstall
 
