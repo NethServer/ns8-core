@@ -324,6 +324,7 @@ export default {
         // show first step
         this.step = this.steps[0];
         this.clearFields();
+        this.clearErrors();
       }
     },
     step: function () {
@@ -372,6 +373,22 @@ export default {
       this.aws.aws_secret_access_key = "";
 
       //// handle ALL providers
+    },
+    clearErrors() {
+      this.clearStrings(this.error);
+    },
+    clearStrings(obj) {
+      //// move method to ui-lib
+      for (const key of Object.keys(obj)) {
+        if (typeof obj[key] == "string") {
+          obj[key] = "";
+        } else if (typeof obj[key] == "object") {
+          // recursion
+          this.clearStrings(obj[key]);
+        } else {
+          console.error("unexpected object type:", typeof obj[key]);
+        }
+      }
     },
     nextStep() {
       if (this.isNextButtonDisabled) {
@@ -620,9 +637,6 @@ export default {
     addBackupRepositoryValidationFailed(validationErrors) {
       this.loading.addBackupRepository = false;
       let focusAlreadySet = false;
-
-      // go to settings step
-      this.step = "settings";
 
       for (const validationError of validationErrors) {
         const param = validationError.parameter;
