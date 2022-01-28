@@ -28,6 +28,14 @@ Each variable is a map and each item represents a cluster node.
 
 The variable `leader_node` represents the leader node and the `worker_nodes` represents the worker nodes.
 
+#### Centos Stream 9 nodes
+
+Because CentOS Stream 9 is not present on DigitalOcean, a custom image must be created:
+
+1. Upload the official [CentOS Cloud image](https://cloud.centos.org/centos/9-stream/x86_64/images/CentOS-Stream-GenericCloud-9-20220121.1.x86_64.qcow2),
+   following the [DigitalOcean documentation](https://docs.digitalocean.com/products/images/custom-images/how-to/upload/#image-requirements)
+1. Set the name of the image to `CentOS-Stream-GenericCloud-9-20220121.1`
+
 ## Examples
 
 1. Create a `configs.auto.tfvars` file, like the following:
