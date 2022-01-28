@@ -1,0 +1,177 @@
+name: Test Core Modules
+on:
+  pull_request:
+    types:
+      - "labeled"
+  workflow_dispatch:
+env:
+  TF_VAR_project: "NS8-CI"
+  TF_VAR_domain: "ci.nethserver.net"
+  NS8_LEADER_NODES: "fc1 dn1 cs1"
+  NS8_CORE_MODULES: "core traefik loki promtail ldapproxy"
+
+jobs:
+  ns8:
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      github.event.label.name == 'testing'
+    name: Find NS8 cluster informations
+    runs-on: ubuntu-latest
+    outputs:
+      nodes: ${{ steps.nodes.outputs.list }}
+      modules: ${{ steps.modules.outputs.list }}
+      tag: ${{ steps.tag.outputs.name }}
+      short_sha: ${{ steps.short_sha.outputs.value }}
+    steps:
+      - id: nodes
+        run: |
+          nodes=$(jq -ncR '[inputs]' <<< "$(echo $NS8_LEADER_NODES | tr ' ' '\n')")
+          echo "::set-output name=list::${nodes}"
+      - id: tag
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]
+          then
+            tag=${{ github.head_ref }}
+          else
+            tag="${{ github.ref_name }}"
+          fi
+          if [ "$tag" = "main" ]
+          then
+            tag="latest"
+          fi
+          echo "::set-output name=listt::${tag}"
+      - id: short_sha
+        run: echo "::set-output name=value::$( echo ${{ github.sha }} | cut -c1-8 )"
+      - id: modules
+        run: |
+          modules_list='[]'
+          for module in ${NS8_CORE_MODULES}
+          do
+            res=$(podman search --limit 150 --list-tags   --format json   ghcr.io/nethserver/traefik | jq 'any(.[].Tags[]; . == "${{ steps.tag.outputs.name }}")')
+            if [ "$res" = "true" ]
+            then
+              modules_list=$(echo "${modules_list}"  | jq -c --arg m ${module} ' . + [$m]')
+            fi
+          done
+          echo "::set-output name=list::${modules_list}"
+  infra_create:
+    name: "Create the infrastructure"
+    runs-on: ubuntu-latest
+    needs: ns8
+    strategy:
+      fail-fast: false
+      matrix:
+          node: ${{ fromJSON(needs.ns8.outputs.nodes) }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: HashiCorp - Setup Terraform
+        uses: hashicorp/setup-terraform@v1.2.1
+        with:
+          terraform_wrapper: false
+      - name: HashiCorp - Terraform Apply
+        env:
+          TF_VAR_do_token: ${{ secrets.do_token }}
+        run: |
+          terraform init
+          terraform workspace new ${{ matrix.node }}-${{ needs.ns8.outputs.short_sha }}
+          terraform apply -var 'leader_node={"${{ matrix.node }}":"ams3"}' -auto-approve
+        working-directory: ${{ github.workspace }}/infra
+      - name: HashiCorp - Terraform Output Deploy Key
+        run: terraform output -raw deploy-key > ${{ github.workspace }}/key
+        working-directory: ${{ github.workspace }}/infra
+      - name: Save Deploy Key
+        uses: actions/upload-artifact@v2
+        with:
+          name: deploy-key-${{ matrix.node }}
+          path: ${{ github.workspace }}/key
+          retention-days: 1
+      - name: Save Terraform State
+        uses: actions/upload-artifact@v2
+        with:
+          name: terraform.tfstate-${{ matrix.node }}
+          path: ${{ github.workspace }}/infra/terraform.tfstate.d/${{ matrix.node }}-${{ needs.ns8.outputs.short_sha }}/terraform.tfstate
+          retention-days: 1
+  core:
+    name: "Core tests"
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ${{ fromJSON(needs.ns8.outputs.nodes) }}
+    needs:
+      - infra_create
+      - ns8
+    steps:
+      - uses: actions/checkout@v2
+      - name: Get Deploy Key
+        uses: actions/download-artifact@v2
+        with:
+          name: deploy-key-${{ matrix.node }}
+          path: ${{ github.workspace }}/
+      - name: Run tests
+        run: |
+          podman run -v ${{ github.workspace }}/:/home/pwuser/ns8-scratchpad:z -i --name rf-runner ghcr.io/marketsquare/robotframework-browser/rfbrowser-stable:v10.0.3 bash -l -s <<EOF
+          set -e -x
+          pip install -r /home/pwuser/ns8-scratchpad/core/tests/pythonreq.txt
+          mkdir ~/outputs
+          cd /home/pwuser/ns8-scratchpad/core/
+          robot -v NODE_ADDR:${{ matrix.node }}.leader.${{ matrix.node }}-${{ needs.ns8.outputs.short_sha }}.${{ env.TF_VAR_domain }} \
+            -v SSH_KEYFILE:/home/pwuser/ns8-scratchpad/key \
+            -v COREBRANCH:${{ needs.ns8.outputs.tag }} \
+            -v COREMODULES:${{ join(fromJSON(needs.ns8.outputs.modules), ',' ) }} \
+            -d ~/outputs /home/pwuser/ns8-scratchpad/core/tests/
+          EOF
+      - name: export logs
+        if: always()
+        run: podman cp rf-runner:/home/pwuser/outputs ${{ github.workspace }}/
+        working-directory: ${{ github.workspace }}
+      - name: Save tests results
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: core-tests-logs-${{ matrix.node }}
+          path: |
+             ${{ github.workspace }}/outputs/output.xml
+             ${{ github.workspace }}/outputs/log.html
+             ${{ github.workspace }}/outputs/report.html
+  infra_destroy:
+    name: "Destroy the infrastructure"
+    runs-on: ubuntu-latest
+    needs:
+      - ns8
+      - core
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ${{ fromJSON(needs.ns8.outputs.nodes) }}
+    if: always()
+    steps:
+      - uses: actions/checkout@v2
+      - name: HashiCorp - Setup Terraform
+        uses: hashicorp/setup-terraform@v1.2.1
+      - name: Get Terraform State
+        uses: actions/download-artifact@v2
+        with:
+          name: terraform.tfstate-${{ matrix.node }}
+          path: |
+             ${{ github.workspace }}/infra/
+      - name: Destroy the infrastructure
+        env:
+          TF_VAR_do_token: ${{ secrets.do_token }}
+        run: |
+          terraform init
+          terraform apply -destroy -auto-approve
+        working-directory: ${{ github.workspace }}/infra
+  remove_label:
+    name: "Cleaup PR label"
+    runs-on: ubuntu-latest
+    needs: infra_destroy
+    if: |
+      github.event.label.name == 'testing' &&
+      needs.infra_destroy.result == 'success' &&
+      always()
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-ecosystem/action-remove-labels@v1
+        with:
+          labels: testing
