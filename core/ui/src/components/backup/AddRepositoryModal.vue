@@ -54,6 +54,7 @@
                   value="providerValue"
                   @click="selectAzure()"
                   class="provider-card"
+                  disabled
                 >
                   <div class="provider-card-content">
                     <div class="provider-icon">
@@ -100,6 +101,7 @@
                   value="providerValue"
                   @click="selectGenericS3()"
                   class="provider-card"
+                  disabled
                 >
                   <div class="provider-card-content">
                     <div class="provider-icon">
@@ -374,11 +376,12 @@ export default {
 
       //// handle ALL providers
     },
+    //// move method to ui-lib
     clearErrors() {
       this.clearStrings(this.error);
     },
+    //// move method to ui-lib
     clearStrings(obj) {
-      //// move method to ui-lib
       for (const key of Object.keys(obj)) {
         if (typeof obj[key] == "string") {
           obj[key] = "";
@@ -641,7 +644,7 @@ export default {
       for (const validationError of validationErrors) {
         const param = validationError.parameter;
 
-        if (validationError.error == "backup_repository_auth_error") {
+        if (validationError.error == "backup_repository_not_accessible") {
           // show error nontification
           this.error.repoConnection = "error";
         } else {
