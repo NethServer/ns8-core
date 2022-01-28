@@ -300,12 +300,20 @@
                     tip-alignment="end"
                     class="top-right-overflow-menu"
                   >
-                    <cv-overflow-menu-item @click="runBackup(backup)">
+                    <cv-overflow-menu-item
+                      @click="runBackup(backup)"
+                      :disabled="!backup.enabled"
+                    >
                       <NsMenuItem
-                        icon="rocket"
-                        :label="$t('backup.run_backup')"
-                        :disabled="!backup.enabled"
+                        icon="save"
+                        :label="$t('backup.run_backup_now')"
                       />
+                    </cv-overflow-menu-item>
+                    <cv-overflow-menu-item
+                      @click="showRestoreModal(backup)"
+                      :disabled="!isRestoreEnabled"
+                    >
+                      <NsMenuItem icon="reset" :label="$t('backup.restore')" />
                     </cv-overflow-menu-item>
                     <cv-overflow-menu-item
                       @click="toggleBackupStatus(backup)"
@@ -541,6 +549,13 @@
       :backup="currentBackup"
       @hide="hideBackupDetailsModal"
     />
+    <!-- restore modal -->
+    <RestoreModal
+      :isShown="isShownRestoreModal"
+      :repositoryId="restoreRepoId"
+      @hide="hideRestoreModal"
+      @enableRestore="enableRestore"
+    />
   </div>
 </template>
 
@@ -556,6 +571,7 @@ import CreateBackupModal from "@/components/backup/CreateBackupModal";
 import RepoDetailsModal from "@/components/backup/RepoDetailsModal";
 import BackupDetailsModal from "@/components/backup/BackupDetailsModal";
 import EditRepositoryModal from "@/components/backup/EditRepositoryModal";
+import RestoreModal from "@/components/backup/RestoreModal";
 import to from "await-to-js";
 
 export default {
@@ -566,6 +582,7 @@ export default {
     RepoDetailsModal,
     BackupDetailsModal,
     EditRepositoryModal,
+    RestoreModal,
   },
   mixins: [TaskService, UtilService, IconService, QueryParamService],
   pageTitle() {
@@ -582,11 +599,14 @@ export default {
       isShownEditRepoModal: false,
       isShownDeleteBackupModal: false,
       isShownBackupDetailsModal: false,
+      isShownRestoreModal: false,
       repositories: [],
       backups: [],
       unconfiguredInstances: [],
       instanceSelection: "",
       isEditingBackup: false,
+      restoreRepoId: "",
+      isRestoreEnabled: true,
       currentRepo: {
         name: "",
         password: "",
@@ -773,6 +793,13 @@ export default {
     hideBackupDetailsModal() {
       this.isShownBackupDetailsModal = false;
     },
+    showRestoreModal(backup) {
+      this.restoreRepoId = backup.repository;
+      this.isShownRestoreModal = true;
+    },
+    hideRestoreModal() {
+      this.isShownRestoreModal = false;
+    },
     async deleteRepo(repo) {
       this.error.removeBackupRepository = "";
       const taskAction = "remove-backup-repository";
@@ -862,7 +889,9 @@ export default {
           },
           extra: {
             title: this.$t("action." + taskAction),
-            description: this.$t("common.processing"),
+            description: this.$t("backup.running_backup_name", {
+              backupName: backup.name,
+            }),
             backupName: backup.name,
             completion: {
               i18nString: "backup.backup_completed_successfully",
@@ -934,6 +963,9 @@ export default {
     alterBackupCompleted() {
       this.loading.alterBackup = false;
       this.listBackups();
+    },
+    enableRestore(value) {
+      this.isRestoreEnabled = value;
     },
   },
 };

@@ -54,6 +54,7 @@
                   value="providerValue"
                   @click="selectAzure()"
                   class="provider-card"
+                  disabled
                 >
                   <div class="provider-card-content">
                     <div class="provider-icon">
@@ -100,6 +101,7 @@
                   value="providerValue"
                   @click="selectGenericS3()"
                   class="provider-card"
+                  disabled
                 >
                   <div class="provider-card-content">
                     <div class="provider-icon">
@@ -118,6 +120,13 @@
           </div>
         </template>
         <template v-if="step == 'settings'">
+          <NsInlineNotification
+            v-if="error.repoConnection"
+            kind="error"
+            :title="$t('backup.backup_repository_auth_error')"
+            :description="$t('backup.backup_repository_auth_error_description')"
+            :showCloseButton="false"
+          />
           <cv-text-input
             :label="$t('backup.url')"
             v-model.trim="url"
@@ -267,6 +276,7 @@ export default {
         name: "",
         url: "",
         addBackupRepository: "",
+        repoConnection: "",
         backblaze: {
           b2_account_id: "",
           b2_account_key: "",
@@ -316,6 +326,7 @@ export default {
         // show first step
         this.step = this.steps[0];
         this.clearFields();
+        this.clearErrors();
       }
     },
     step: function () {
@@ -364,6 +375,23 @@ export default {
       this.aws.aws_secret_access_key = "";
 
       //// handle ALL providers
+    },
+    //// move method to ui-lib
+    clearErrors() {
+      this.clearStrings(this.error);
+    },
+    //// move method to ui-lib
+    clearStrings(obj) {
+      for (const key of Object.keys(obj)) {
+        if (typeof obj[key] == "string") {
+          obj[key] = "";
+        } else if (typeof obj[key] == "object") {
+          // recursion
+          this.clearStrings(obj[key]);
+        } else {
+          console.error("unexpected object type:", typeof obj[key]);
+        }
+      }
     },
     nextStep() {
       if (this.isNextButtonDisabled) {
@@ -430,6 +458,7 @@ export default {
       // clear errors
       this.error.name = "";
       this.error.url = ""; //// ?
+      this.error.repoConnection = "";
 
       this.error.backblaze.b2_account_id = "";
       this.error.backblaze.b2_account_key = "";
@@ -477,6 +506,7 @@ export default {
       // clear errors
       this.error.name = "";
       this.error.url = ""; //// ?
+      this.error.repoConnection = "";
 
       this.error.aws.aws_access_key_id = "";
       this.error.aws.aws_default_region = "";
@@ -531,11 +561,21 @@ export default {
       return isValidationOk;
     },
     validateAddGenericS3Repository() {
+      // clear errors
+      this.error.name = "";
+      this.error.url = ""; //// ?
+      this.error.repoConnection = "";
+
       ////
       console.error("not implemented"); ////
       return false;
     },
     validateAddAzureRepository() {
+      // clear errors
+      this.error.name = "";
+      this.error.url = ""; //// ?
+      this.error.repoConnection = "";
+
       ////
       console.error("not implemented"); ////
       return false;
@@ -604,12 +644,17 @@ export default {
       for (const validationError of validationErrors) {
         const param = validationError.parameter;
 
-        // set i18n error message
-        this.error[param] = "backup." + validationError.error;
+        if (validationError.error == "backup_repository_not_accessible") {
+          // show error nontification
+          this.error.repoConnection = "error";
+        } else {
+          // set i18n error message
+          this.error[param] = "backup." + validationError.error;
 
-        if (!focusAlreadySet) {
-          this.focusElement(param);
-          focusAlreadySet = true;
+          if (!focusAlreadySet) {
+            this.focusElement(param);
+            focusAlreadySet = true;
+          }
         }
       }
     },

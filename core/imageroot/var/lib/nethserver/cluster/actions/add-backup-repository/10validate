@@ -29,6 +29,11 @@ import subprocess
 
 errors = []
 
+def exit_errors(errors):
+    agent.set_status('validation-failed')
+    json.dump(errors, fp=sys.stdout)
+    sys.exit(2)
+
 request = json.load(sys.stdin)
 rdb = agent.redis_connect(privileged=False)
 
@@ -39,19 +44,16 @@ rid = str(uuid.uuid5(uuid.NAMESPACE_URL, request['url']))
 # check for duplicate names
 if rdb.exists(f'cluster/backup_repository/{rid}'):
     errors.append({'field':'url','parameter':'url','value':request['url'],'error':'backup_repository_exists'})
+    exit_errors(errors)
 
 # validate repository credentials
 renv = dict(os.environ) # copy the environment
 renv.update(request['parameters']) # merge parameters
 renv['url'] = request['url'] # add url
-pvalidate = subprocess.run(['rclone-wrapper', '0', 'size', '--json', 'REMOTE_PATH'], text=True, capture_output=True, env=renv)
+renv['provider'] = request['provider'] # add provider
+pvalidate = subprocess.run(['rclone-wrapper', '0', 'size', '-q', '--json', 'REMOTE_PATH'], text=True, capture_output=True, env=renv)
 if pvalidate.returncode != 0:
-    if 'failed to authorize' in pvalidate.stderr:
-        errors.append({'field':'parameters','parameter':'parameters','value':'','error':'backup_repository_auth_error'})
-    else:
-        errors.append({'field':'url','parameter':'url','value':request['url'], 'error':'backup_repository_not_accessible'})
+    errors.append({'field':'parameters','parameter':'parameters','value':pvalidate.stderr,'error':'backup_repository_not_accessible'})
 
 if errors:
-    agent.set_status('validation-failed')
-    json.dump(errors, fp=sys.stdout)
-    sys.exit(2)
+    exit_errors(errors)

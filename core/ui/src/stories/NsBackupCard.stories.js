@@ -7,7 +7,7 @@ export default {
 
 const sharedProps = {
   title: "Backup",
-  noBackupMessage: "No backup configured",
+  noBackupMessage: "No backup",
   scheduleBackupLabel: "Configure",
   goToBackupLabel: "Go to Backup",
   repositoryLabel: "Repository",

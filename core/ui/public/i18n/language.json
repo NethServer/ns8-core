@@ -224,8 +224,10 @@
     "remove-backup-repository": "Remove backup repository",
     "remove-backup": "Remove backup",
     "alter-backup-repository": "Alter backup repository",
+    "alter-backup": "Alter backup",
     "run-backup": "Run backup",
-    "alter-backup": "Alter backup"
+    "restore-module": "Restore module",
+    "read-backup-repository": "Read backup repository"
   },
   "network": {
     "title": "Network"
@@ -304,6 +306,7 @@
     "total_file_count": "Total file count",
     "completed": "Completed",
     "duration": "Duration",
+    "running_backup_name": "Running {backupName}",
     "backup_completed_successfully": "{backupName} completed successfully",
     "edit_backup": "Edit backup",
     "default_backup_name": "Backup to {repository}",
@@ -334,7 +337,7 @@
     "default_repository_name": "{provider} repo",
     "schedule_backup_for_instance": "Create a backup schedule for {instance}",
     "schedule_action": "Schedule",
-    "no_backup_configured": "No backup configured",
+    "no_backup": "No backup",
     "configure": "Configure",
     "go_to_backup": "Go to Backup",
     "num_backup_snapshots": "{num} backup snapshot | {num} backup snapshots",
@@ -342,7 +345,16 @@
     "backup_of_instances_failed_c": "{instance} failed | {num} instances failed",
     "errored_backups_c": "{num} backup failed | {num} backups failed",
     "errored_backups_description": "Check out <strong>Backup scheduler</strong> below",
-    "backups_scheduled_c": "Backup scheduled | Backups scheduled"
+    "backups_scheduled_c": "Backup scheduled | Backups scheduled",
+    "restore": "Restore",
+    "select_instance_to_restore": "Select instance to restore",
+    "select_restore_node": "Select the node where the instance will be restored",
+    "restoring_app_to_node": "Restoring {app} to {node}",
+    "instance_restored_to_node": "{module_id} restored to {node}",
+    "open_app": "Open app",
+    "backup_repository_not_accessible": "Cannot access reposiory",
+    "backup_repository_auth_error": "Cannot authenticate",
+    "backup_repository_auth_error_description": "Check repository settings"
   },
   "calendar": {
     "days": "Days",

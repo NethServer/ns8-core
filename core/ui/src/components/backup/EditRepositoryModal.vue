@@ -9,6 +9,13 @@
     <template slot="title">{{ $t("backup.edit_backup_repository") }}</template>
     <template slot="content">
       <cv-form @submit.prevent="alterBackupRepository">
+        <NsInlineNotification
+          v-if="error.repoConnection"
+          kind="error"
+          :title="$t('backup.backup_repository_auth_error')"
+          :description="$t('backup.backup_repository_auth_error_description')"
+          :showCloseButton="false"
+        />
         <cv-text-input
           :label="$t('backup.url')"
           v-model.trim="repository.url"
@@ -129,6 +136,7 @@ export default {
       },
       error: {
         name: "",
+        repoConnection: "",
         backblaze: {
           b2_account_id: "",
           b2_account_key: "",
@@ -149,6 +157,7 @@ export default {
       if (this.isShown) {
         // ensure repository prop is updated as well
         this.$nextTick(() => {
+          this.clearErrors();
           this.name = this.repository.name;
 
           switch (this.repository.provider) {
@@ -173,6 +182,23 @@ export default {
     },
   },
   methods: {
+    //// move method to ui-lib
+    clearErrors() {
+      this.clearStrings(this.error);
+    },
+    //// move method to ui-lib
+    clearStrings(obj) {
+      for (const key of Object.keys(obj)) {
+        if (typeof obj[key] == "string") {
+          obj[key] = "";
+        } else if (typeof obj[key] == "object") {
+          // recursion
+          this.clearStrings(obj[key]);
+        } else {
+          console.error("unexpected object type:", typeof obj[key]);
+        }
+      }
+    },
     buildRepositoryParameters() {
       switch (this.repository.provider) {
         case "backblaze":
@@ -197,6 +223,7 @@ export default {
     validateAlterBackblazeRepository() {
       // clear errors
       this.error.name = "";
+      this.error.repoConnection = "";
 
       this.error.backblaze.b2_account_id = "";
       this.error.backblaze.b2_account_key = "";
@@ -234,6 +261,7 @@ export default {
     validateAmazonS3Repository() {
       // clear errors
       this.error.name = "";
+      this.error.repoConnection = "";
 
       this.error.aws.aws_access_key_id = "";
       this.error.aws.aws_default_region = "";
@@ -279,11 +307,19 @@ export default {
       return isValidationOk;
     },
     validateAlterGenericS3Repository() {
+      // clear errors
+      this.error.name = "";
+      this.error.repoConnection = "";
+
       ////
       console.error("not implemented"); ////
       return false;
     },
     validateAlterAzureRepository() {
+      // clear errors
+      this.error.name = "";
+      this.error.repoConnection = "";
+
       ////
       console.error("not implemented"); ////
       return false;
@@ -351,12 +387,17 @@ export default {
       for (const validationError of validationErrors) {
         const param = validationError.parameter;
 
-        // set i18n error message
-        this.error[param] = "backup." + validationError.error;
+        if (validationError.error == "backup_repository_not_accessible") {
+          // show error nontification
+          this.error.repoConnection = "error";
+        } else {
+          // set i18n error message
+          this.error[param] = "backup." + validationError.error;
 
-        if (!focusAlreadySet) {
-          this.focusElement(param);
-          focusAlreadySet = true;
+          if (!focusAlreadySet) {
+            this.focusElement(param);
+            focusAlreadySet = true;
+          }
         }
       }
     },
