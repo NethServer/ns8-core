@@ -47,7 +47,7 @@ Because CentOS Stream 9 is not present on DigitalOcean, a custom image must be c
 
 2. Create and select a new workspace `cluster0`
 
-       terraform workspace create cluster0
+       terraform workspace new cluster0
 
 3. Create two nodes for `cluster0`
 
