@@ -38,4 +38,4 @@ Then, search for the logs of a node (`leader` in this example):
 ```
 {% endraw %}
 
-See also [Loki](https://github.com/NethServer/ns8-scratchpad/tree/main/loki) and [Promtail](https://github.com/NethServer/ns8-scratchpad/tree/main/promtail) READMEs.
+See also [Loki](https://github.com/NethServer/ns8-core/tree/main/loki) and [Promtail](https://github.com/NethServer/ns8-core/tree/main/promtail) READMEs.

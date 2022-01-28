@@ -17,7 +17,7 @@ title: NethServer 8
 description: NS8 - cloud in a box
 remote_theme: pmarsceill/just-the-docs
 
-baseurl: /ns8-scratchpad
+baseurl: /ns8-core
 
 permalink: pretty
 exclude: [vendor]
@@ -37,7 +37,7 @@ heading_anchors: true
 # Aux links for the upper right navigation
 aux_links:
   "NS8 on GitHub":
-    - "//github.com/nethserver/ns8-scratchpad"
+    - "//github.com/nethserver/ns8-core"
 
 # Footer content appears at the bottom of every page's main content
 footer_content: ""
@@ -45,7 +45,7 @@ footer_content: ""
 # Footer "Edit this page on GitHub" link text
 gh_edit_link: true
 gh_edit_link_text: "Edit this page on GitHub."
-gh_edit_repository: "https://github.com/NethServer/ns8-scratchpad"
+gh_edit_repository: "https://github.com/NethServer/ns8-core"
 gh_edit_branch: "master"
 gh_edit_source: docs
 gh_edit_view_mode: "tree"

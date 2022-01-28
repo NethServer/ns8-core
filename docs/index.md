@@ -14,6 +14,6 @@ Or explore [core internals](core), [modules architecture](modules) or the [UI](u
 
 External links:
 - [Project roadmap](https://trello.com/b/R58gtZ8I/ns8-prototype)
-- [API documentation](https://github.com/NethServer/ns8-scratchpad/tree/apidoc)
+- [API documentation](https://github.com/NethServer/ns8-core/tree/apidoc)
 
 Do you need help? Ask the [community](https://community.nethserver.org/)

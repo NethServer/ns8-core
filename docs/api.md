@@ -9,7 +9,7 @@ nav_order: 7
 If an action has JSON schema validators, the schema file is converted to
 Markdown format and published in the `apidoc` branch. Browse it at
 
-[API doc tree](https://github.com/NethServer/ns8-scratchpad/tree/apidoc)
+[API doc tree](https://github.com/NethServer/ns8-core/tree/apidoc)
 
 Pull requests are assigned a dedicated branch. If the PR source branch is
 `newfeature` the resulting documentation branch is `apidoc-newfeature`.

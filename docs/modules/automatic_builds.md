@@ -11,9 +11,9 @@ Every time a commit is pushed to the repository, a new build can
 be automatically started.
 To enable automatic builds, create a YAML file like `.github/workflows/<module>.yaml`.
 
-Use [dokuwki Github workflow](https://github.com/NethServer/ns8-scratchpad/tree/master/.github/workflows/dokuwiki.yaml) as a template, make sure to replace all occurrences of `dokuwiki`
+Use [dokuwki Github workflow](https://github.com/NethServer/ns8-core/tree/master/.github/workflows/dokuwiki.yaml) as a template, make sure to replace all occurrences of `dokuwiki`
 with the name of the new module.
 
 Upon merging into the master branch, also the following automatic actions will be started:
 - metadata build on [ns8-repomd](https://github.com/NethServer/ns8-repomd/)
-- api documentation build on [apidoc branch](https://github.com/NethServer/ns8-scratchpad/tree/apidoc) (see also [API](/api)) 
+- api documentation build on [apidoc branch](https://github.com/NethServer/ns8-core/tree/apidoc) (see also [API](/api)) 

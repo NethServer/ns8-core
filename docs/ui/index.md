@@ -16,7 +16,7 @@ The web application source is composed by multiple VueJs projects:
 - A distinct UI project for every module (e.g. Dokuwiki)
 - A UI library that includes a set of reusable UI components and functions (VueJs mixins) used by core and modules UI
 
-Source code of core UI is provided here: [https://github.com/NethServer/ns8-scratchpad/tree/main/core/ui](https://github.com/NethServer/ns8-scratchpad/tree/main/core/ui)
+Source code of core UI is provided here: [https://github.com/NethServer/ns8-core/tree/main/core/ui](https://github.com/NethServer/ns8-core/tree/main/core/ui)
 
 ## UI design
 

@@ -39,5 +39,5 @@ The directory should contain:
 See [dokuwiki directory](https://github.com/NethServer/ns8-repomd/tree/main/dokuwiki) for an example of a complete module
 metadata directory.
 
-Execute `createrepo.sh` to generate the `repodata.json`. The format is described [here](https://github.com/NethServer/ns8-scratchpad/blob/main/core/imageroot/var/lib/nethserver/cluster/repodata-schema.json).
+Execute `createrepo.sh` to generate the `repodata.json`. The format is described [here](https://github.com/NethServer/ns8-core/blob/main/core/imageroot/var/lib/nethserver/cluster/repodata-schema.json).
 

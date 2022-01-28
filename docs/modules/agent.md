@@ -14,7 +14,7 @@ parent: Modules
 
 Agent task processing is defined by actions. An `action` is a directory
 containing one ore more executable scripts called `steps`. See [the agent
-README](https://github.com/NethServer/ns8-scratchpad/blob/main/core/agent/README.md#agent)
+README](https://github.com/NethServer/ns8-core/blob/main/core/agent/README.md#agent)
 for the complete story.
 
 The core provides a set of base actions defined in
@@ -36,10 +36,10 @@ As a convention, all modules with a UI should also implement the following actio
 
 - `configure-module`: it validates the user input and applies the
   configuration, see [Dokuwiki
-  example](https://github.com/NethServer/ns8-scratchpad/blob/main/dokuwiki/imageroot/actions/configure-module)
+  example](https://github.com/NethServer/ns8-core/blob/main/dokuwiki/imageroot/actions/configure-module)
 - `get-configuration`: it should return current configuration, the output
   should be equal or similar to configure-module input, see [Dokuwiki
-  example](https://github.com/NethServer/ns8-scratchpad/blob/main/dokuwiki/imageroot/actions/get-configuration)
+  example](https://github.com/NethServer/ns8-core/blob/main/dokuwiki/imageroot/actions/get-configuration)
 
 
 ## Agent environment
@@ -84,7 +84,7 @@ this command prints the agent environment of the rootfull module `promtail1`.
 During the action execution, action steps can talk to the agent using a simple protocol.
 It is possible to set/unset environment variables, dump the environment to a well known file, etc.
 
-See all [available action commands](https://github.com/NethServer/ns8-scratchpad/blob/main/core/agent/README.md#action-commands).
+See all [available action commands](https://github.com/NethServer/ns8-core/blob/main/core/agent/README.md#action-commands).
 
 The protocol is implemented by the Python `agent` package.
 

@@ -37,7 +37,7 @@ Also ensure that the system firewall is not blocking any connection.
 
 Start the installation procedure as `root`:
 ```
-curl https://raw.githubusercontent.com/NethServer/ns8-scratchpad/main/core/install.sh | bash
+curl https://raw.githubusercontent.com/NethServer/ns8-core/main/core/install.sh | bash
 ```
 
 At the end of the install script the UI is available at **https://\<server_ip_or_fqdn\>/cluster-admin/**:
@@ -61,13 +61,13 @@ arguments the module names to be pulled from that branch.
 ## Applications
 
 Core applications installed by default:
-- [Traefik](https://github.com/NethServer/ns8-scratchpad/blob/main/traefik/README.md) -- see how to request a Let's Encrypt [certificate for the FQDN](https://github.com/NethServer/ns8-scratchpad/blob/main/traefik/README.md#set-certificate)
-- [Loki](https://github.com/NethServer/ns8-scratchpad/blob/main/loki/REDME.md) (only on the leader node)
-- [Promtail](https://github.com/NethServer/ns8-scratchpad/blob/main/promtail/README.md)
-- [LDAP proxy](https://github.com/NethServer/ns8-scratchpad/blob/main/ldapproxy/README.md)
+- [Traefik](https://github.com/NethServer/ns8-core/blob/main/traefik/README.md) -- see how to request a Let's Encrypt [certificate for the FQDN](https://github.com/NethServer/ns8-core/blob/main/traefik/README.md#set-certificate)
+- [Loki](https://github.com/NethServer/ns8-core/blob/main/loki/REDME.md) (only on the leader node)
+- [Promtail](https://github.com/NethServer/ns8-core/blob/main/promtail/README.md)
+- [LDAP proxy](https://github.com/NethServer/ns8-core/blob/main/ldapproxy/README.md)
 
 Other available core applications:
-- [Samba](https://github.com/NethServer/ns8-scratchpad/blob/main/samba/README.md)
+- [Samba](https://github.com/NethServer/ns8-core/blob/main/samba/README.md)
 
 
 ### Application installation
@@ -98,9 +98,9 @@ please refer to the README of each application.
 
 Partial list of available applications:
 
-- [Dokuwiki](https://github.com/NethServer/ns8-scratchpad/blob/main/dokuwiki/README.md)
-- [Nextcloud](https://github.com/NethServer/ns8-scratchpad/blob/main/nextcloud/README.md)
-- [Mail](https://github.com/NethServer/ns8-scratchpad/blob/main/netdata/README.md)
+- [Dokuwiki](https://github.com/NethServer/ns8-core/blob/main/dokuwiki/README.md)
+- [Nextcloud](https://github.com/NethServer/ns8-core/blob/main/nextcloud/README.md)
+- [Mail](https://github.com/NethServer/ns8-core/blob/main/netdata/README.md)
 
 ## Uninstall
 

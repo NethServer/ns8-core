@@ -31,7 +31,7 @@ Systemd units for agents are:
   for each rootless module instance. See the "Additional modules" section
   below for more details
 
-See also the [Agent documentation](https://github.com/NethServer/ns8-scratchpad/blob/main/core/agent/README.md).
+See also the [Agent documentation](https://github.com/NethServer/ns8-core/blob/main/core/agent/README.md).
 
 Similarly `eventsgw.service` and `eventsgw@.service` units are provided by
 the core to run event handler services.

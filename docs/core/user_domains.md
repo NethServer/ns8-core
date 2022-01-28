@@ -29,7 +29,7 @@ Returned TCP endpoints are local (`host` is `127.0.0.1`) and do not
 require TLS. The port number depends on the LDAP domain.
 
 Those ports are held by the [Ldapproxy
-module](https://github.com/NethServer/ns8-scratchpad/blob/main/ldapproxy/README.md).
+module](https://github.com/NethServer/ns8-core/blob/main/ldapproxy/README.md).
 It is a L4 proxy that relays the TCP connection to an LDAP backend server,
 enabling TLS and handling backend failures as needed.
 

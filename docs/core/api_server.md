@@ -16,8 +16,8 @@ This component is used to send command from UI to Redis, using HTTP Rest API and
 
 ## API Paths
 
-APIs are documented using a [swagger.json file](https://raw.githubusercontent.com/NethServer/ns8-scratchpad/swagdoc/swagger.json).
-To browse all existing APIs, use the [Swagger UI](https://petstore.swagger.io/?url=https://raw.githubusercontent.com/NethServer/ns8-scratchpad/swagdoc/swagger.json).
+APIs are documented using a [swagger.json file](https://raw.githubusercontent.com/NethServer/ns8-core/swagdoc/swagger.json).
+To browse all existing APIs, use the [Swagger UI](https://petstore.swagger.io/?url=https://raw.githubusercontent.com/NethServer/ns8-core/swagdoc/swagger.json).
 
 API flow:
 - authenticate the user using the `login` API

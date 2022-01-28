@@ -25,7 +25,7 @@ Core UI includes the following components:
 - Cluster logs (auditing)
 - Cluster settings
 
-Source code of core UI is provided [here](https://github.com/NethServer/ns8-scratchpad/tree/main/core/ui).
+Source code of core UI is provided [here](https://github.com/NethServer/ns8-core/tree/main/core/ui).
 
 Core UI also includes a [Storybook](https://storybook.js.org/) to explore and test the reusable components included in the UI library.
 To launch Storybook web app:
@@ -39,7 +39,7 @@ Application routing is implemented with [Vue Router](https://router.vuejs.org/).
 
 Core UI uses [Vuex](https://vuex.vuejs.org/) to handle the global state of the application. See `core/ui/src/store/index.js`.
 
-Source code of core UI is provided here: [https://github.com/NethServer/ns8-scratchpad/tree/main/core/ui](https://github.com/NethServer/ns8-scratchpad/tree/main/core/ui)
+Source code of core UI is provided here: [https://github.com/NethServer/ns8-core/tree/main/core/ui](https://github.com/NethServer/ns8-core/tree/main/core/ui)
 
 ## Shortcuts
 

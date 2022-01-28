@@ -118,7 +118,7 @@ It runs the following components:
 - Traefik as [edge proxy](/core/proxy_certificates), for TLS termination and centralized certificates management
 - [LDAP proxy](/core/user_domains), a rootless module listening on 127.0.0.1. It helps other
   modules to connect to account provider LDAP servers, with a clear text connection for local containers
-- LDAP local account provider: [Samba DC](https://github.com/NethServer/ns8-scratchpad/blob/main/samba/README.md), OpenLDAP (not implemented yet)
+- LDAP local account provider: [Samba DC](https://github.com/NethServer/ns8-core/blob/main/samba/README.md), OpenLDAP (not implemented yet)
 - [VPN](/core/vpn), each node is connected to the leader using WireGuard in a star network topology
 - [API server](/core/api_server), it handles authentication and authorization for UI and cli requests, it also audits executed tasks
 - [UI](/core/ui), it allows configuration of the cluster and applications
