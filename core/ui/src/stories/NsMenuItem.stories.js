@@ -7,7 +7,17 @@ export default {
   component: NsMenuItem,
   argTypes: {
     icon: {
-      options: ["", "edit", "trash", "power", "rocket", "launch", "star"],
+      options: [
+        "",
+        "edit",
+        "trash",
+        "power",
+        "rocket",
+        "launch",
+        "star",
+        "reset",
+        "save",
+      ],
       control: { type: "select" },
     },
   },

@@ -406,6 +406,13 @@ export default {
                 url: `/apps/${taskResult.output.module_id}?page=settings`,
               };
               break;
+            case "restore-module":
+              actionLabel = this.$t("backup.open_app");
+              action = {
+                type: "changeRoute",
+                url: `/apps/${taskResult.output.module_id}`,
+              };
+              break;
           }
         }
       }
