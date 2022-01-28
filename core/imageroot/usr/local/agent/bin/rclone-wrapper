@@ -38,11 +38,18 @@ except IndexError:
     print("e.g.: rclone-wrapper 1 ls REMOTE_PATH/dokuwiki", file=sys.stderr)
     sys.exit(33)
 
-if repository_id.isnumeric():
+if repository_id == "0":
+    # Read orepo attributes directly from the environment.
+    print(f"Reading orepo from the environment", file=sys.stderr)
+    orepo = os.environ
+elif repository_id.isnumeric():
     # Assume a backup ID has been issued. Translate it to a repository ID.
     repository_id = rdb.hget(f"cluster/backup/{repository_id}", "repository")
+    orepo = rdb.hgetall(f"cluster/backup_repository/{repository_id}")
+else:
+    # Read orepo from Redis.
+    orepo = rdb.hgetall(f"cluster/backup_repository/{repository_id}")
 
-orepo = rdb.hgetall(f"cluster/backup_repository/{repository_id}")
 if not orepo:
     print(f"Could not find any repo with {sys.argv[1]}", file=sys.stderr)
     sys.exit(34)
