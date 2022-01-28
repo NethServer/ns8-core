@@ -5,7 +5,7 @@ on:
     types: [closed]
   workflow_dispatch:
 env:
-  NS8_MODULES: "core dokuwiki ldapproxy loki netdata nextcloud promtail redis samba samba-dc traefik"
+  NS8_MODULES: "core ldapproxy loki netdata nextcloud promtail redis samba samba-dc traefik"
 
 jobs:
   ns8:
