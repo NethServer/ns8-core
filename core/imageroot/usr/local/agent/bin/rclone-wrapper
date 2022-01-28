@@ -40,7 +40,6 @@ except IndexError:
 
 if repository_id == "0":
     # Read orepo attributes directly from the environment.
-    print(f"Reading orepo from the environment", file=sys.stderr)
     orepo = os.environ
 elif repository_id.isnumeric():
     # Assume a backup ID has been issued. Translate it to a repository ID.
