@@ -38,6 +38,8 @@ Because CentOS Stream 9 is not present on DigitalOcean, a custom image must be c
 
 ## Examples
 
+Download and install [Terraform](https://www.terraform.io/downloads), then follow below steps.
+
 1. Create a `configs.auto.tfvars` file, like the following:
 
        sshkey   = "davidep"
@@ -45,22 +47,26 @@ Because CentOS Stream 9 is not present on DigitalOcean, a custom image must be c
        project  = "davidep"
        domain   = "dp.nethserver.net"
 
-2. Create and select a new workspace `cluster0`
+2. Install required plugins
+
+       terraform init
+
+3. Create and select a new workspace `cluster0`
 
        terraform workspace new cluster0
 
-3. Create two nodes for `cluster0`
+4. Create two nodes for `cluster0`
 
        terraform apply -var 'leader_node={"dn1":"ams3"}' -var 'worker_nodes={"fc1":"sfo3"}'
        # -> dn1.leader.cluster0.dp.nethserver.net
        # -> fc1.worker.cluster0.dp.nethserver.net
 
-4. Add another node to it:
+5. Add another node to it:
 
        terraform apply -var 'leader_node={"dn1":"ams3"}' -var 'worker_nodes={"fc1":"sfo3","fc2:"lon1"}'
        # -> fc2.worker.cluster0.dp.nethserver.net
 
-5. Destroy the cluster
+6. Destroy the cluster
 
        terraform destroy
 
