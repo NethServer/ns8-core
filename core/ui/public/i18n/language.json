@@ -337,7 +337,7 @@
     "default_repository_name": "{provider} repo",
     "schedule_backup_for_instance": "Create a backup schedule for {instance}",
     "schedule_action": "Schedule",
-    "no_backup_configured": "No backup configured",
+    "no_backup": "No backup",
     "configure": "Configure",
     "go_to_backup": "Go to Backup",
     "num_backup_snapshots": "{num} backup snapshot | {num} backup snapshots",
@@ -351,7 +351,10 @@
     "select_restore_node": "Select the node where the instance will be restored",
     "restoring_app_to_node": "Restoring {app} to {node}",
     "instance_restored_to_node": "{module_id} restored to {node}",
-    "open_app": "Open app"
+    "open_app": "Open app",
+    "backup_repository_not_accessible": "Cannot access reposiory",
+    "backup_repository_auth_error": "Cannot authenticate",
+    "backup_repository_auth_error_description": "Check repository settings"
   },
   "calendar": {
     "days": "Days",
