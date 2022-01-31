@@ -39,7 +39,7 @@ jobs:
           then
             tag="latest"
           fi
-          echo "::set-output name=listt::${tag}"
+          echo "::set-output name=name::${tag}"
       - id: short_sha
         run: echo "::set-output name=value::$( echo ${{ github.sha }} | cut -c1-8 )"
       - id: modules
