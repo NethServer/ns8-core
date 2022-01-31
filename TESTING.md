@@ -80,4 +80,4 @@ To access the leader and the nodes with the generated key, use:
 Given a domain named `test.nethserver.org`, running on CentOS Stream 9 on `cluster0` workspace, the command to launch the test suites
 should be:
 
-   SSH_KEYFILE=../infra/key ./test-module.sh cs1.leader.cluster0.test.nethserver.org
+    SSH_KEYFILE=../infra/key ./test-module.sh cs1.leader.cluster0.test.nethserver.org
