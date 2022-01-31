@@ -530,6 +530,11 @@ a {
   padding-right: 1rem !important;
 }
 
+// remove colored outline when clicking modal content
+.bx--modal-content:focus {
+  outline: none !important;
+}
+
 // branding colors for NsProgressBar start
 .progress-bar-container .line,
 .progress-bar-container .progress-line,

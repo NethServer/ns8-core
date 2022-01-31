@@ -38,6 +38,9 @@ Vue.use(InfiniteLoading, {
 import LottieAnimation from "lottie-web-vue";
 Vue.use(LottieAnimation);
 
+import VueClipboard from "vue-clipboard2";
+Vue.use(VueClipboard);
+
 import ns8Lib from "@nethserver/ns8-ui-lib";
 Vue.use(ns8Lib);
 
