@@ -6,7 +6,7 @@ nav_order: 2
 
 # Installation & First steps
 
-This is just a prototype, **do not** use in production.
+This is just a prototype, **do not** yet use in production.
 {: .label .label-yellow}
 
 * TOC
