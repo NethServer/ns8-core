@@ -8,6 +8,8 @@ but the NS8 system must be installed and configured manually.
 
 * `do_token`: DigitalOcean token.
 * `sshkey`: DigitalOcean ssh public key to use (optional).
+   If your private key is password-protected, do not set this variable and use the SSH automatically generated
+   by terraform.
 * `project`: DigitalOcean project where to create the droplets.
 * `domain`: DigitalOcean domain where to create the DNS records.
 * `leader_node`: The leader node (optional).
@@ -90,3 +92,4 @@ A pair of public and private key will be crated and installed on the cluster, fo
 and use it:
 
     terraform output -raw deploy-key  > key
+    chmod 0600 key

@@ -7,3 +7,4 @@ Documentation for developers: [https://nethserver.github.io/ns8-core/](https://n
 Links:
 - [API documentation](https://github.com/NethServer/ns8-scratchpad/tree/apidoc)
 - [Project roadmap](https://trello.com/b/R58gtZ8I/ns8-prototype)
+- [Automated testing](TESTING.md)
