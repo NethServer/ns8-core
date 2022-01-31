@@ -37,7 +37,8 @@ for modulehome in /var/lib/nethserver/*; do
     fi
     moduleid=$(basename $modulehome)
     echo "Deleting rootfull module ${moduleid}..."
-    systemctl disable --now eventsgw@${moduleid} agent@${moduleid} && rm -rf "${modulehome}"
+    systemctl disable --now eventsgw@${moduleid} agent@${moduleid} ${moduleid} && rm -rf "${modulehome}"
+    rm -f /etc/systemd/system/${moduleid}.service
 done
 
 echo "Uninstalling the core image files"
