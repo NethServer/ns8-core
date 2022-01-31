@@ -240,7 +240,7 @@ export default {
           },
         };
         this.createNotification(notification);
-      }, 30000);
+      }, 15000);
     },
     deselectOtherNodes(node) {
       for (let n of this.nodes) {

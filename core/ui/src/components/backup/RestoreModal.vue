@@ -44,6 +44,13 @@
                   ></cv-skeleton-text>
                 </cv-tile>
               </cv-column>
+              <cv-column v-else-if="!instances.length" :lg="16">
+                <NsEmptyState :title="$t('backup.no_instance_to_restore')">
+                  <template #description>{{
+                    $t("backup.no_instance_to_restore_description")
+                  }}</template>
+                </NsEmptyState>
+              </cv-column>
               <cv-column
                 v-else
                 v-for="(instance, index) in instances"
