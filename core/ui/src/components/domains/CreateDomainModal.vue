@@ -206,39 +206,14 @@
         </cv-form>
       </template>
       <template v-if="step == 'node'">
-        <div class="mg-bottom-md">
+        <div>
           {{ $t("domains.choose_node_for_account_provider_installation") }}
         </div>
-        <div class="bx--grid no-padding">
-          <div class="bx--row">
-            <div
-              v-for="(node, index) in nodes"
-              :key="index"
-              class="bx--col-md-4 bx--col-max-4"
-            >
-              <NsTile
-                :light="true"
-                kind="selectable"
-                v-model="node.selected"
-                value="nodeValue"
-                :footerIcon="Chip20"
-                @click="deselectOtherNodes(node)"
-                class="min-height-card"
-              >
-                <h6>
-                  {{
-                    node.ui_name
-                      ? node.ui_name
-                      : $t("common.node") + " " + node.id
-                  }}
-                </h6>
-                <div v-if="node.ui_name" class="node-id">
-                  {{ $t("common.node") }} {{ node.id }}
-                </div>
-              </NsTile>
-            </div>
-          </div>
-        </div>
+        <NodeSelector
+          :nodes="nodes"
+          class="mg-top-lg"
+          @selectNode="onSelectNode"
+        />
       </template>
       <template v-if="step == 'installingProvider'">
         <NsInlineNotification
@@ -381,9 +356,11 @@ import {
   LottieService,
 } from "@nethserver/ns8-ui-lib";
 import to from "await-to-js";
+import NodeSelector from "@/components/NodeSelector";
 
 export default {
   name: "CreateDomainModal",
+  components: { NodeSelector },
   mixins: [UtilService, TaskService, IconService, LottieService],
   props: {
     isShown: {
@@ -420,6 +397,7 @@ export default {
       isOpenLdapSelected: false,
       isSambaSelected: false,
       installProviderProgress: 0,
+      selectedNode: null,
       samba: {
         adminuser: "",
         adminpass: "",
@@ -479,9 +457,6 @@ export default {
     };
   },
   computed: {
-    selectedNode() {
-      return this.nodes.find((n) => n.selected);
-    },
     nextButtonLabel() {
       if (
         (this.nodes.length == 1 && this.step == "instance") ||
@@ -629,13 +604,6 @@ export default {
         case "node":
           this.step = "instance";
           break;
-      }
-    },
-    deselectOtherNodes(node) {
-      for (let n of this.nodes) {
-        if (n.id !== node.id) {
-          n.selected = false;
-        }
       }
     },
     async installProvider() {
@@ -1117,16 +1085,15 @@ export default {
         this.error.external[key] = "";
       }
     },
+    onSelectNode(selectedNode) {
+      this.selectedNode = selectedNode;
+    },
   },
 };
 </script>
 
 <style scoped lang="scss">
 @import "../../styles/carbon-utils";
-.node-id {
-  margin-top: $spacing-05;
-}
-
 .row {
   margin-bottom: $spacing-03;
 }

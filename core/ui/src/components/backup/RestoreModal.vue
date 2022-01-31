@@ -74,38 +74,14 @@
           </cv-grid>
         </template>
         <template v-if="step == 'node'">
-          <div class="mg-bottom-md">
+          <div>
             {{ $t("backup.select_restore_node") }}
           </div>
-          <div class="bx--grid nodes mg-bottom-md no-padding">
-            <div class="bx--row">
-              <div
-                v-for="(node, index) in nodes"
-                :key="index"
-                class="bx--col-md-4 bx--col-max-4"
-              >
-                <NsTile
-                  :light="true"
-                  kind="selectable"
-                  v-model="node.selected"
-                  value="nodeValue"
-                  :footerIcon="Chip20"
-                  @click="deselectOtherNodes(node)"
-                >
-                  <h6>
-                    {{
-                      node.ui_name
-                        ? node.ui_name
-                        : $t("common.node") + " " + node.id
-                    }}
-                  </h6>
-                  <div v-if="node.ui_name" class="node-id">
-                    {{ $t("common.node") }} {{ node.id }}
-                  </div>
-                </NsTile>
-              </div>
-            </div>
-          </div>
+          <NodeSelector
+            :nodes="nodes"
+            @selectNode="onSelectNode"
+            class="mg-top-lg"
+          />
           <NsInlineNotification
             v-if="error.restoreModule"
             kind="error"
@@ -122,9 +98,11 @@
 <script>
 import { UtilService, TaskService, IconService } from "@nethserver/ns8-ui-lib";
 import to from "await-to-js";
+import NodeSelector from "@/components/NodeSelector";
 
 export default {
   name: "RestoreModal",
+  components: { NodeSelector },
   mixins: [UtilService, TaskService, IconService],
   props: {
     isShown: {
@@ -140,9 +118,9 @@ export default {
     return {
       step: "",
       steps: ["instance", "node"],
-      instance: {}, //// check var type
       nodes: [],
       instances: [],
+      selectedNode: null,
       loading: {
         getClusterStatus: true,
         readBackupRepository: true,
@@ -174,9 +152,6 @@ export default {
     },
     selectedInstance() {
       return this.instances.find((i) => i.selected);
-    },
-    selectedNode() {
-      return this.nodes.find((n) => n.selected);
     },
   },
   watch: {
@@ -317,13 +292,6 @@ export default {
       this.$root.$off(taskAction + "-aborted");
       this.$root.$once(taskAction + "-aborted", this.restoreModuleAborted);
 
-      // register to task validation
-      // this.$root.$off(taskAction + "-validation-ok"); ////
-      // this.$root.$once(
-      //   taskAction + "-validation-ok",
-      //   this.restoreModuleValidationOk
-      // );
-
       // register to task completion
       this.$root.$off(taskAction + "-completed");
       this.$root.$once(taskAction + "-completed", this.restoreModuleCompleted);
@@ -371,10 +339,6 @@ export default {
       // close modal immediately, no validation needed
       this.$emit("hide");
     },
-    // restoreModuleValidationOk() { ////
-    //   // hide modal after validation
-    //   this.$emit("hide");
-    // },
     restoreModuleAborted(taskResult) {
       console.error("restore-module aborted", taskResult);
       this.loading.restoreModule = false;
@@ -392,12 +356,8 @@ export default {
       // show restored instance in app drawer
       this.$root.$emit("reloadAppDrawer");
     },
-    deselectOtherNodes(node) {
-      for (let n of this.nodes) {
-        if (n.id !== node.id) {
-          n.selected = false;
-        }
-      }
+    onSelectNode(selectedNode) {
+      this.selectedNode = selectedNode;
     },
     deselectOtherInstances(instance) {
       for (let i of this.instances) {
@@ -415,13 +375,5 @@ export default {
 
 .instances {
   margin-top: $spacing-07;
-}
-
-.nodes {
-  margin-top: $spacing-07;
-}
-
-.node-id {
-  margin-top: $spacing-05;
 }
 </style>
