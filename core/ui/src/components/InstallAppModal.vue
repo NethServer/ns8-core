@@ -125,6 +125,12 @@ export default {
       for (const node of nodes) {
         node.selected = false;
       }
+
+      if (nodes.length == 1) {
+        nodes[0].selected = true;
+        this.selectedNode = nodes[0];
+      }
+
       this.nodes = nodes;
       this.loading.getClusterStatus = false;
     },
@@ -153,6 +159,10 @@ export default {
       // register to task completion
       this.$root.$once(taskAction + "-completed", this.addModuleCompleted);
 
+      const nodeName =
+        this.selectedNode.ui_name ||
+        this.$t("common.node_lc") + ` ${this.selectedNode.id}`;
+
       const res = await to(
         this.createClusterTask({
           action: taskAction,
@@ -164,11 +174,10 @@ export default {
             title: this.$t("software_center.app_installation", {
               app: this.app.name,
             }),
-            //// use node label if available
             description: this.$t("software_center.installing_on_node", {
-              node: this.selectedNode.id,
+              node: nodeName,
             }),
-            node: this.selectedNode.id,
+            node: nodeName,
             completion: {
               i18nString: "software_center.instance_installed_on_node",
               extraTextParams: ["node"],
