@@ -40,16 +40,21 @@ ret['cpu']['count'] = cpu_count
 ret['cpu']['usage'] = psutil.cpu_percent(1)
 
 # parse cpu pressure
-with open("/proc/pressure/cpu") as fp:
-    pattern = re.compile(r'some avg10=(.+) avg60=(.+) avg300=(.+) total')
+try:
+    with open("/proc/pressure/cpu") as fp:
+        pattern = re.compile(r'some avg10=(.+) avg60=(.+) avg300=(.+) total')
 
-    for line in fp.readlines():
-        m = re.match(pattern, line)
+        for line in fp.readlines():
+            m = re.match(pattern, line)
 
-        if (m):
-            ret['pressure']['10sec'] = m.group(1)
-            ret['pressure']['1min'] = m.group(2)
-            ret['pressure']['5min'] = m.group(3)
+            if (m):
+                ret['pressure']['10sec'] = m.group(1)
+                ret['pressure']['1min'] = m.group(2)
+                ret['pressure']['5min'] = m.group(3)
+except:
+    ret['pressure']['10sec'] = -1
+    ret['pressure']['1min'] = -1
+    ret['pressure']['5min'] = -1
 
 # parse cpuinfo to retrieve details about system CPUs
 with open("/proc/cpuinfo") as fp:
