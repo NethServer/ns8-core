@@ -128,7 +128,16 @@ Legend:
 |cluster/repository_cache/{repo}        |HASH   |Cache of remote repo metadata, with a TTL|
 |cluster/repository_cache/{repo} data   |STRING |It contains a JSON string from repodata.json|
 |cluster/repository_cache/{repo} updates|STRING |Most recent modification date and time of remote repodata.json|
-
+|cluster/backup_repository/{repo}                       |HASH   |A backup repository UUID|
+|cluster/backup_repository/{repo} url                   |STRING |Restic URL of repository, eg. `b2:<bucket>`, `s3:s3.amazonaws.com/<bucket>`|
+|cluster/backup_repository/{repo} password              |STRING |Restic encrypt password|
+|cluster/backup_repository/{repo} name                  |STRING |Custom repository name|
+|cluster/backup_repository/{repo} provider              |STRING |Provider name, can be: `backblaze`, `aws`|
+|cluster/backup_repository/{repo} b2_account_id         |STRING |Backblaze B2 account ID, present only if provider is `backblaze`|
+|cluster/backup_repository/{repo} b2_account_key        |STRING |Backblaze B2 account KEY, present only if provider is `backblaze`|
+|cluster/backup_repository/{repo} aws_access_key_id     |STRING |AWS S3 access key, present only if provider is `aws`|
+|cluster/backup_repository/{repo} aws_secret_access_key |STRING |AWS S3 secret key, present only if provider is `aws`|
+|cluster/backup_repository/{repo} aws_access_key_id     |STRING |AWS S3 region, present only if provider is `aws`|
 
 ### node
 
