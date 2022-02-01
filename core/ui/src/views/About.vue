@@ -50,7 +50,7 @@
           <a
             :href="$root.config.DOCS_URL"
             target="_blank"
-            class="text-decoration-none"
+            class="external-link-button"
           >
             <NsButton kind="tertiary" :icon="Launch20">
               {{ $t("about.documentation") }}
@@ -62,7 +62,7 @@
           <a
             :href="$root.config.HELPDESK_URL"
             target="_blank"
-            class="text-decoration-none"
+            class="external-link-button"
           >
             <NsButton kind="tertiary" :icon="Launch20">
               {{ $t("about.helpdesk") }}
