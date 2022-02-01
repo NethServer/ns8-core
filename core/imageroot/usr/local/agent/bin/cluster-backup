@@ -1,0 +1,92 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2022 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
+import agent
+import json
+
+#
+# Dump cluster configuration in JSON format and print it to stdout
+#
+
+rdb = agent.redis_connect(host='127.0.0.1')
+
+VERSION = "1"
+
+dump = { 'version': VERSION, 'modules': {}, 'vpn': {}, 'cluster': { 'repository': {}, 'backup': {}, 'backup_repository': {}, 'user_domain': { 'ldap': {} } } }
+
+# cluster: software repositories
+for r in rdb.scan_iter('cluster/repository/*'):
+    k = r.removeprefix('cluster/repository/')
+    dump['cluster']['repository'][k] = rdb.hgetall(r)
+
+# cluster: backup repositories
+for r in rdb.scan_iter('cluster/backup_repository/*'):
+    k = r.removeprefix('cluster/backup_repository/')
+    dump['cluster']['backup_repository'][k] = rdb.hgetall(r)
+
+# cluster: backups
+for r in rdb.scan_iter('cluster/backup/*'):
+    k = r.removeprefix('cluster/backup/')
+    dump['cluster']['backup'][k] = rdb.hgetall(r)
+
+# cluster ldap user domains
+for d in rdb.scan_iter('cluster/user_domain/ldap/*/conf'):
+    k = d.removeprefix('cluster/user_domain/ldap/')
+    k = k.removesuffix('/conf')
+    dump['cluster']['user_domain']['ldap'][k] = { 'conf' : None, 'providers': None }
+    dump['cluster']['user_domain']['ldap'][k]['conf'] = rdb.hgetall(d)
+    dump['cluster']['user_domain']['ldap'][k]['providers'] = rdb.lrange(f'cluster/user_domain/ldap/{k}/providers', 0, -1)
+    if rdb.exists(f'cluster/user_domain/ldap/{k}/ui_names'):
+        dump['cluster']['user_domain']['ldap'][k]['ui_names'] = rdb.hgetall(f'cluster/user_domain/ldap/{k}/ui_names')
+
+# cluster: vpn network, label
+for k in ['network', 'ui_name']:
+    dump['cluster'][k] = rdb.get(f'cluster/{k}')
+
+# cluster: favorite apps
+dump['cluster']['favorites'] = list(rdb.smembers(f'cluster/favorites'))
+
+# modules: basic environment, label, backups
+for m in rdb.scan_iter('module/*/environment'):
+    k = m.removeprefix('module/')
+    k = k.removesuffix('/environment')
+    ui_name = ""
+    backups = []
+    if rdb.exists(f'module/{k}/ui_name'):
+        ui_name = rdb.get(f'module/{k}/ui_name')
+    if rdb.exists(f'module/{k}/backups'):
+        backups = list(rdb.smembers(f'module/{k}/backups'))
+
+    if ui_name or backups:
+        dump['modules'][rdb.hget(m, 'MODULE_UUID')] = {'ui_name': ui_name, 'backups': backups}
+
+# nodes: vpn, label
+for v in rdb.scan_iter('node/*/vpn'):
+    k = v.removeprefix('node/')
+    k = k.removesuffix('/vpn')
+    if rdb.hexists(v, 'endpoint'):
+        for f in ['endpoint', 'listen_port', 'destinations']:
+            dump['vpn'][f] = rdb.hget(v, f)
+
+
+# dump to JSON
+print(json.dumps(dump))
