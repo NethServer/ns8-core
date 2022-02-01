@@ -35,6 +35,10 @@ Always install NethServer 8 on a clean server machine, do not install it on a de
 Pick your preferred distribution between supported ones and make sure it's up to date. 
 Also ensure that the system firewall is not blocking any connection.
 
+First, ensure `curl` is installed:
+- for Debian: `apt-get install -y curl`
+- for CentOS: `dnf install -y curl`
+
 Start the installation procedure as `root`:
 ```
 curl https://raw.githubusercontent.com/NethServer/ns8-core/main/core/install.sh | bash
