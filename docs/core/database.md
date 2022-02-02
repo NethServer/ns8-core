@@ -121,6 +121,12 @@ Legend:
 |cluster/task/{id}/exit_code            |INTEGER    |action exit code|
 |cluster/roles/{role}                   |SET        |actions that {role} can run. {role} is one of "owner", "reader"...|
 |cluster/environment                    |HASH       |Cluster environment variables|
+|cluster/ui_name                        |STRING     |UI label for the cluster|
+
+#### software repositories
+
+|key|type|description|
+|---|----|-----------|
 |cluster/repository/{repo}              |HASH   |A software {repo}|
 |cluster/repository/{repo} url          |STRING |HTTPS URL of repository|
 |cluster/repository/{repo} status       |0\|1   |(0 disabled, 1 enabled)|
@@ -128,6 +134,11 @@ Legend:
 |cluster/repository_cache/{repo}        |HASH   |Cache of remote repo metadata, with a TTL|
 |cluster/repository_cache/{repo} data   |STRING |It contains a JSON string from repodata.json|
 |cluster/repository_cache/{repo} updates|STRING |Most recent modification date and time of remote repodata.json|
+
+#### backup
+
+|key|type|description|
+|---|----|-----------|
 |cluster/backup_repository/{repo}                       |HASH   |A backup repository UUID|
 |cluster/backup_repository/{repo} url                   |STRING |Restic URL of repository, eg. `b2:<bucket>`, `s3:s3.amazonaws.com/<bucket>`|
 |cluster/backup_repository/{repo} password              |STRING |Restic encrypt password|
@@ -138,6 +149,14 @@ Legend:
 |cluster/backup_repository/{repo} aws_access_key_id     |STRING |AWS S3 access key, present only if provider is `aws`|
 |cluster/backup_repository/{repo} aws_secret_access_key |STRING |AWS S3 secret key, present only if provider is `aws`|
 |cluster/backup_repository/{repo} aws_access_key_id     |STRING |AWS S3 region, present only if provider is `aws`|
+|cluster/backup/{id}                       |HASH    |A backup repository numeric ID|
+|cluster/backup/{id} name                  |STRING  |Backup name|
+|cluster/backup/{id} enabled               |0\|1    |(0 disabled, 1 enabled)|
+|cluster/backup/{id} repository            |STRING  |UUID of backup_repository|
+|cluster/backup/{id} retention             |INTEGER |Number of snapshots to keep|
+|cluster/backup/{id} schedule              |STRING  |Schedule time using `onCalendar` systemd syntax|
+|cluster/backup/{id} schedule_hint         |STRING  |Schedule in JSON format for the UI|
+
 
 ### node
 
@@ -159,6 +178,7 @@ Legend:
 |node/{id}/tcp_ports_sequence       |INTEGER    |Lower boundary for the next TCP_PORTS_RANGE allocation, default: `2000`|
 |node/{id}/default_instance/{image} |STRING     |A module ID for the given image ID|
 |node/{id}/environment              |HASH       |Node environment variables|
+|node/{id}/ui_name                  |STRING     |UI label for the node|
 
 
 ### module
@@ -172,6 +192,7 @@ Legend:
 |module/{id}/task/{id}/output       |STRING     |output JSON data|
 |module/{id}/task/{id}/exit_code    |INTEGER    |action exit code|
 |module/{id}/roles/{role}           |SET        |Actions that {role} can run. {role} is one of "owner", "reader"...|
+|module/{id}/backups                |SET        |List of backup numeric IDs|
 
 ### task queue item
 
@@ -192,18 +213,6 @@ Legend:
 |key|type|description|
 |---|----|-----------|
 |{agent_id}/event/{id}  |CHANNEL NAME   |e.g. `module/traefik1/event/certificate-updated`|
-
-
-### backup
-
-|key|type|description|
-|---|----|-----------|
-|backup/{id}                    |HASH       ||
-|backup/{id} password           |STRING     |Restic encryption password|
-|backup/{id} base_repository    |STRING     |Restic repository URL, like `rest:http://127.0.0.1:8383`|
-|backup/{id} status             |0\|\1      |(0 disabled, 1 enabled)|
-|backup/{id} retention          |INTEGER    |Number of snapshots to keep|
-|backup/{id} schedule           |STRING     |systemd OnCalendar syntax|
 
 
 ### user
