@@ -110,7 +110,8 @@ jobs:
           path: ${{ github.workspace }}/
       - name: Run tests
         run: |
-          podman run -v ${{ github.workspace }}/:/home/pwuser/ns8-scratchpad:z -i --name rf-runner ghcr.io/marketsquare/robotframework-browser/rfbrowser-stable:v10.0.3 bash -l -s <<EOF
+          wget -nv https://raw.githubusercontent.com/microsoft/playwright/master/utils/docker/seccomp_profile.json
+          podman run -v ${{ github.workspace }}/:/home/pwuser/ns8-scratchpad:z -i --security-opt seccomp=seccomp_profile.json --ipc=host --name rf-runner ghcr.io/marketsquare/robotframework-browser/rfbrowser-stable:v10.0.3 bash -l -s <<EOF
           set -e -x
           pip install -r /home/pwuser/ns8-scratchpad/core/tests/pythonreq.txt
           mkdir ~/outputs
