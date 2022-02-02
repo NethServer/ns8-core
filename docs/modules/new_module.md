@@ -41,11 +41,11 @@ buildah login ghcr.io
 
 A module is usually composed by 2 main parts:
 - `imageroot` directory, contains all scripts to configure the module
-- `build-image.sh`, a script to generate the container image and push it to the image registry
+- `build-images.sh`, a script to manually build one or more images of the module and push them inside the image registry.
 - `ui` directory, contains all user interface files
 - `README.md` describes module implementation and usage
 
-### build-image.sh
+### build-images.sh
 
 The script creates an empty container image and publish it to the registry on user request.
 
@@ -59,7 +59,7 @@ The main parts to look for are:
   - `org.nethserver.images=docker.io/bitnami/dokuwiki:20200729.0.0-debian-10-r299`: use a specific upstream image
     to make sure all installations will use the same software version
 
-See [Dokuwiki build image script](../dokuwiki/buildimage.sh).
+See [Dokuwiki build images script](https://github.com/NethServer/ns8-dokuwiki/blob/main/build-images.sh).
 
 ### imageroot
 
@@ -85,7 +85,8 @@ See [Modules UI](/modules/ui).
 
 ## Step 2: push the image to registry
 
-The `build-image.sh` script will output the command to push the image to registry. Example:
+The `build-images.sh` script will output the command to push the images to
+the registry. Example:
 ```
 buildah push ghcr.io/nethserver/dokuwiki docker://ghcr.io/nethserver/dokuwiki:latest
 ```

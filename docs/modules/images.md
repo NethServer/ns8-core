@@ -36,7 +36,7 @@ The sources repository of a module can be structured as follow:
   * `etc/`: to store additional configuration for Backup and Restore
   * `pypkg/`: path for module Python packages, added to `PYTHONPATH`
 - `ui/`: it contains all UI source code of the module
-- `build-image.sh`: a script to manually build the image of the module and push it inside the image registry.
+- `build-images.sh`: a script to manually build one or more images of the module and push them inside the image registry.
 - `README.md`: a [Markdown](https://guides.github.com/features/mastering-markdown/) file describing the module purpose and implementation
 
 ## Image labels
@@ -50,7 +50,7 @@ Module images can use a list of well-known labels to configure the system:
 - `org.nethserver.authorizations`: allowed action to be executed on other modules, like `traefik@any:routeadm` to add traefik routes.
   See [Roles and authorizations]({{site.baseurl}}/core/agents/#roles-and-authorizations).
 
-Labels are set by `build-image.sh`, when the image is built.
+Labels are set by `build-images.sh`, when the images are built.
 
 ## Service images
 
