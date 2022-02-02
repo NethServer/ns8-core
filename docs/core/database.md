@@ -157,6 +157,19 @@ Legend:
 |cluster/backup/{id} schedule              |STRING  |Schedule time using `onCalendar` systemd syntax|
 |cluster/backup/{id} schedule_hint         |STRING  |Schedule in JSON format for the UI|
 
+#### domains
+
+|key|type|description|
+|---|----|-----------|
+|cluster/user_domain/ldap/{domain}/conf                 |HASH   |An external LDAP domain|
+|cluster/user_domain/ldap/{domain}/conf schema          |STRING |It can be `ad` or `rfc2307`|
+|cluster/user_domain/ldap/{domain}/conf bindnd          |STRING |LDAP bind DN|
+|cluster/user_domain/ldap/{domain}/conf bind_password   |STRING |LDAP bind password|
+|cluster/user_domain/ldap/{domain}/conf base_dn         |STRING |LDAP base DN|
+|cluster/user_domain/ldap/{domain}/conf tls             |STRING |Can be `on` or `off`|
+|cluster/user_domain/ldap/{domain}/conf tls_verify      |STRING |Can be `on` or `off`|
+|cluster/user_domain/ldap/{domain}/providers            |LIST   |List of domain provider hosts|
+
 
 ### node
 
