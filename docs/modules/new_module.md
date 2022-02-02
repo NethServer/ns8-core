@@ -24,7 +24,7 @@ For Debian:
 apt-get install buildah
 ```
 
-For Fedora:
+For CentOS:
 ```
 dnf install buildah
 ```

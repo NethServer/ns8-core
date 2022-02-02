@@ -25,7 +25,7 @@ set -e
 source /etc/os-release
 
 echo "Install dependencies:"
-if [[ "${PLATFORM_ID}" == "platform:f34" || "${PLATFORM_ID}" == "platform:el9" ]]; then
+if [[ ${ID} == "centos" && "${PLATFORM_ID}" == "platform:el9" ]]; then
     dnf install -y wireguard-tools podman jq openssl
     systemctl disable --now firewalld || :
 elif [[ "${ID}" == "debian" && "${VERSION_ID}" == "11" ]]; then
