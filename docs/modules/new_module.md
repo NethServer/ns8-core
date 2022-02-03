@@ -70,8 +70,8 @@ using the [actions]({{site.baseurl}}/modules/agent/) from the module.
 The `imageroot` directory will be extracted to the system during the module install.
 It contains 2 main paths:
 
-- `imageroot/actions` contains all actions for the module agent, the directory will be copied to `/home/mymodule1/.config/actions/`
-- `imageroot/systemd/user/` contains all systemd `.service` files, the directory will be copied to `/home/mymodule1/.config/systemd/user/`
+- `actions` contains all actions for the module agent, the directory will be copied to `/home/mymodule1/.config/actions/`
+- `systemd/user/` contains all systemd `.service` files, the directory will be copied to `/home/mymodule1/.config/systemd/user/`
 
 Usually, a module contains also a `configure-module` action to gather user input and configure the module accordingly.
 The `configure-module` action should:
