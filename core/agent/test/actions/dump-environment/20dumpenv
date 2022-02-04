@@ -1,0 +1,7 @@
+#!/bin/bash
+
+echo -n $VAR1 #First time output: echo of the input
+
+# Create the environment file at the end
+# of this step. 
+echo 'dump-env' >&${AGENT_COMFD} 

@@ -1,3 +1,0 @@
-#!/bin/sh
-
-echo ull # Append to generate the expected output payload, in JSON format

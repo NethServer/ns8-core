@@ -1,0 +1,15 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "test",
+    "$id": "urn:uuid:9a7fe320-cf46-4054-968f-0d059f35733c",
+    "description": "Input schema of the validate-schema action",
+    "examples": [
+        "INPUT-OK",
+        "OUTPUT-OK"
+    ],
+    "type": "string",
+    "enum": [
+        "INPUT-OK",
+        "OUTPUT-OK"
+    ]
+}

@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# Try to store XXX but...
+echo 'set-env VAR1 XXX' >&${AGENT_COMFD}
+
+# Abort action. The agent does not write the environment file in this case and
+# the value set by step 10setenv wins.
+exit 1

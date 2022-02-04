@@ -1,0 +1,6 @@
+#!/bin/sh
+
+echo "set-progress 25"  >&$AGENT_COMFD
+echo "set-progress 50"  >&$AGENT_COMFD
+echo "set-progress 75"  >&$AGENT_COMFD
+echo "set-progress 99" >&$AGENT_COMFD

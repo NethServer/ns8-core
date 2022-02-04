@@ -2,9 +2,10 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "test",
     "$id": "urn:uuid:33bede0b-a84b-41b9-ac61-552265802be6",
-    "description": "Input schema of the test action",
+    "description": "Output schema of the validate-schema action",
     "examples": [
-        null
+        "OUTPUT-OK"
     ],
-    "type": "null"
+    "type": "string",
+    "const": "OUTPUT-OK"
 }

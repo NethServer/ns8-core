@@ -1,9 +1,0 @@
-#!/bin/sh
-
-
-exec 1>&2
-printf "\nAction input is\n"
-cat -
-
-printf "\nEnvironment is\n"
-env | grep ^ABC

@@ -1,0 +1,6 @@
+#!/bin/bash
+
+input=$(cat)
+echo "set-status validation-failed" >&$AGENT_COMFD
+echo "This is the offending input: ${input}"
+exit 2
