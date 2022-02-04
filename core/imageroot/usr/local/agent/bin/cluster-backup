@@ -21,9 +21,11 @@
 #
 
 import os
-import agent
+import sys
 import json
+import agent
 import subprocess
+from datetime import datetime, timezone
 
 #
 # Dump cluster configuration in JSON format and print it to stdout
@@ -34,8 +36,10 @@ output_dir = f'{os.environ["AGENT_STATE_DIR"]}/backup'
 rdb = agent.redis_connect(host='127.0.0.1')
 
 VERSION = "1"
+# pythonic wat to retrieve current timestamp on UTC timezone
+now = int(datetime.now(timezone.utc).replace(tzinfo=timezone.utc).timestamp())
 
-dump = { 'version': VERSION, 'modules': {}, 'vpn': {}, 'cluster': { 'repository': {}, 'backup': {}, 'backup_repository': {}, 'user_domain': { 'ldap': {} } } }
+dump = { 'version': VERSION, 'timestamp': now, 'modules': {}, 'vpn': {}, 'cluster': { 'repository': {}, 'backup': {}, 'backup_repository': {}, 'user_domain': { 'ldap': {} } } }
 
 # cluster: software repositories
 for r in rdb.scan_iter('cluster/repository/*'):
@@ -91,6 +95,7 @@ for v in rdb.scan_iter('node/*/vpn'):
         for f in ['endpoint', 'listen_port', 'destinations']:
             dump['vpn'][f] = rdb.hget(v, f)
 
+rdb.close()
 
 # dump to JSON
 os.makedirs(output_dir, exist_ok=True)
@@ -98,6 +103,19 @@ os.makedirs(output_dir, exist_ok=True)
 with open(f'{output_dir}/dump.json', 'w') as fp:
     fp.write(json.dumps(dump))
 
+# compress the JSON dump
 subprocess.run(['gzip', '-f', f'{output_dir}/dump.json'], check = True)
 
+# if the passhprase does not exists, use the sha256 of admin password
+if not os.path.isfile(f'{output_dir}/passphrase'):
+    rdb = agent.redis_connect(host='127.0.0.1', privileged = True)
+    admin = rdb.acl_getuser('admin')
+    rdb.close()
+
+    with open(f'{output_dir}/passphrase', 'w') as fp:
+        fp.write(admin['passwords'][0])
+
+# remove existing gpg file, otherwise gpg will fail
+os.remove(f'{output_dir}/dump.json.gz.gpg')
+# encrypt the backup
 subprocess.run(['gpg', '--batch', '-c', '--pinentry-mode', 'loopback', '--passphrase-file', f'{output_dir}/passphrase', f'{output_dir}/dump.json.gz'], check = True)
