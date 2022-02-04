@@ -1,0 +1,4 @@
+#!/bin/bash
+
+# overwrite environment
+echo 'unset-env VAR1 VAL1' >&${AGENT_COMFD}

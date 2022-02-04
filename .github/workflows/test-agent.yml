@@ -1,0 +1,23 @@
+name: test-agent
+on:
+  push:
+    paths:
+      - core/agent/**
+      - .github/workflows/test-agent.yml
+
+jobs:
+  test-agent:
+    name: Test agent
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: bash test-agent.sh
+        working-directory: core/agent
+      - run: |
+          # Export test output
+          mkdir -p tstate
+          podman volume export tstate | tar -C tstate -v -x -f -
+      - uses: actions/upload-artifact@v2
+        with:
+          name: test-agent
+          path: tstate/

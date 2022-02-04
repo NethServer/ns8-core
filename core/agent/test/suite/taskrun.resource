@@ -1,0 +1,108 @@
+*** Settings ***
+Library            RedisLibrary
+Library            Process
+Library            OperatingSystem
+Library            Telnet
+
+*** Keywords ***
+Start the agent
+    Create File    /srv/state/environment
+    Create File    /srv/log/agent.log
+    Start Process    /usr/src/agent
+    ...    ${AGENT_ID}    /usr/src/test/actions
+    ...    cwd=/srv/state    shell=False
+    ...    stderr=STDOUT    stdout=/srv/log/agent.log
+    ${redis_conn} =     Connect To Redis    127.0.0.1
+    Set Suite Variable    ${RDB}    ${redis_conn}
+
+Stop the agent and cleanup
+    Terminate All Processes
+    Flush All    ${RDB}
+
+Start command monitoring
+    Open Connection    127.0.0.1
+    ...    port=6379    newline=CRLF    default_log_level=TRACE    prompt=+
+    Write Bare    MONITOR\r\n
+    Read Until Regexp  \\+OK
+
+Stop command monitoring
+    Close All Connections
+
+Wait until the agent log contains
+    [Arguments]    ${pattern}
+    Wait Until Keyword Succeeds    ${2.0}    ${0.125}    Grep in the agent log  ${pattern}
+
+Grep in the agent log
+    [Arguments]    ${pattern}
+    ${matches} =     Grep File    /srv/log/agent.log    ${pattern}
+    Should Not Be Empty    ${matches}    msg=${pattern} not found in the agent log
+
+The agent environment contains
+    [Arguments]    ${pattern}
+    ${matches} =     Grep File    /srv/state/environment    ${pattern}
+    Should Not Be Empty    ${matches}    msg=${pattern} not found in the environment
+
+The agent environment does not contain
+    [Arguments]    ${pattern}
+    ${matches} =     Grep File    /srv/state/environment    ${pattern}
+    Should Be Empty    ${matches}    msg=${pattern} was found in the environment
+
+The task is submitted
+    [Arguments]    ${action_name}    ${task_data}=""
+    Set Test Variable    ${LAST_TASK_ID}    id-${action_name}
+    Push Item To First Index In List Redis    ${RDB}
+    ...   ${AGENT_ID}/tasks
+    ...   {"id":"id-${action_name}","action":"${action_name}","data":${task_data}}
+The task has exit code
+    [Arguments]    ${expected_exit_code}
+    Redis Key Should Be Exist    ${RDB}    ${AGENT_ID}/task/${LAST_TASK_ID}/exit_code
+    ${bexit_code} =    Get From Redis    ${RDB}    ${AGENT_ID}/task/${LAST_TASK_ID}/exit_code
+    ${sexit_code} =    Convert To String    ${bexit_code}
+    Should Be Equal    ${sexit_code}    ${expected_exit_code}
+
+The command is received
+    [Arguments]    @{args}
+    ${regexp} =    Catenate    SEPARATOR=.+    @{args}
+    Read Until Regexp    ${regexp}
+
+The task output should contain
+    [Arguments]    ${substr}
+    Redis Key Should Be Exist    ${RDB}    ${AGENT_ID}/task/${LAST_TASK_ID}/output
+    ${boutput} =    Get From Redis    ${RDB}    ${AGENT_ID}/task/${LAST_TASK_ID}/output
+    ${soutput} =    Convert To String    ${boutput}
+    Should contain    ${soutput}    ${substr}
+
+The task output should not contain
+    [Arguments]    ${substr}
+    Redis Key Should Be Exist    ${RDB}    ${AGENT_ID}/task/${LAST_TASK_ID}/output
+    ${boutput} =    Get From Redis    ${RDB}    ${AGENT_ID}/task/${LAST_TASK_ID}/output
+    ${soutput} =    Convert To String    ${boutput}
+    Should not contain    ${soutput}    ${substr}
+
+The task output should be equal to
+    [Arguments]    ${substr}
+    Redis Key Should Be Exist    ${RDB}    ${AGENT_ID}/task/${LAST_TASK_ID}/output
+    ${boutput} =    Get From Redis    ${RDB}    ${AGENT_ID}/task/${LAST_TASK_ID}/output
+    ${soutput} =    Convert To String    ${boutput}
+    Should Be Equal As Strings    ${soutput}    ${substr}
+
+The task error should contain
+    [Arguments]    ${substr}
+    Redis Key Should Be Exist    ${RDB}    ${AGENT_ID}/task/${LAST_TASK_ID}/error
+    ${berror} =    Get From Redis    ${RDB}    ${AGENT_ID}/task/${LAST_TASK_ID}/error
+    ${serror} =    Convert To String    ${berror}
+    Should contain    ${serror}    ${substr}
+
+The task error should not contain
+    [Arguments]    ${substr}
+    Redis Key Should Be Exist    ${RDB}    ${AGENT_ID}/task/${LAST_TASK_ID}/error
+    ${berror} =    Get From Redis    ${RDB}    ${AGENT_ID}/task/${LAST_TASK_ID}/error
+    ${serror} =    Convert To String    ${berror}
+    Should not contain    ${serror}    ${substr}
+
+The task error should be equal to
+    [Arguments]    ${substr}
+    Redis Key Should Be Exist    ${RDB}    ${AGENT_ID}/task/${LAST_TASK_ID}/error
+    ${berror} =    Get From Redis    ${RDB}    ${AGENT_ID}/task/${LAST_TASK_ID}/error
+    ${serror} =    Convert To String    ${berror}
+    Should Be Equal As Strings    ${serror}    ${substr}
