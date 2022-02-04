@@ -5,11 +5,11 @@ SSH_KEYFILE=${SSH_KEYFILE:-$HOME/.ssh/id_rsa}
 
 ssh_key="$(cat $SSH_KEYFILE)"
 
-wget -nv https://raw.githubusercontent.com/microsoft/playwright/master/utils/docker/seccomp_profile.json
+wget -nv -P /tmp/ https://raw.githubusercontent.com/microsoft/playwright/master/utils/docker/seccomp_profile.json
 
 podman run -i \
     -v ..:/home/pwuser/ns8-scratchpad:z \
-    --security-opt seccomp=seccomp_profile.json \
+    --security-opt seccomp=/tmp/seccomp_profile.json \
     --ipc=host \
     --name rf-core-runner ghcr.io/marketsquare/robotframework-browser/rfbrowser-stable:v10.0.3 \
     bash -l -s <<EOF
@@ -28,4 +28,4 @@ EOF
 podman cp rf-core-runner:/home/pwuser/outputs tests/
 podman stop rf-core-runner
 podman rm rf-core-runner
-rm -f seccomp_profile.json
+rm -f /tmp/seccomp_profile.json
