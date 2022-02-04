@@ -17,7 +17,7 @@ ExecStart=/usr/bin/podman run \
     --log-opt=tag=%u-server \
     --replace \
     --name=%N \
-    --volume=loki-server-data:/loki-server \
+    --volume=loki-server-data:/loki \
     ${LOKI_IMAGE} \
     -config.file=/etc/loki/local-config.yaml \
     -log.level warn
