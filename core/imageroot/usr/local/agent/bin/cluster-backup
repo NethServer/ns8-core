@@ -20,12 +20,16 @@
 # along with NethServer.  If not, see COPYING.
 #
 
+import os
 import agent
 import json
+import subprocess
 
 #
 # Dump cluster configuration in JSON format and print it to stdout
 #
+
+output_dir = f'{os.environ["AGENT_STATE_DIR"]}/backup'
 
 rdb = agent.redis_connect(host='127.0.0.1')
 
@@ -89,4 +93,11 @@ for v in rdb.scan_iter('node/*/vpn'):
 
 
 # dump to JSON
-print(json.dumps(dump))
+os.makedirs(output_dir, exist_ok=True)
+
+with open(f'{output_dir}/dump.json', 'w') as fp:
+    fp.write(json.dumps(dump))
+
+subprocess.run(['gzip', '-f', f'{output_dir}/dump.json'], check = True)
+
+subprocess.run(['gpg', '--batch', '-c', '--pinentry-mode', 'loopback', '--passphrase-file', f'{output_dir}/passphrase', f'{output_dir}/dump.json.gz'], check = True)
