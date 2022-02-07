@@ -250,45 +250,8 @@
                 <!-- schedule description -->
                 <div class="bx--col schedule-description">
                   {{ getBackupScheduleDescription(schedule) }}
-                  <!-- <template v-if="schedule.interval == 'hourly'"> ////
-                    {{
-                      schedule.minute == 0
-                        ? $t("backup.every_hour")
-                        : $tc("backup.minutes_past_the_hour", schedule.minute, {
-                            minutes: schedule.minute,
-                          })
-                    }}
-                  </template>
-                  <template v-else-if="schedule.interval == 'daily'">
-                    <span v-if="time24HourPattern.test(schedule.time)">
-                      {{ $t("backup.every_day_at", { time: schedule.time }) }}
-                    </span>
-                    <span v-else>-</span>
-                  </template>
-                  <template v-else-if="schedule.interval == 'weekly'">
-                    <span v-if="time24HourPattern.test(schedule.time)">
-                      {{
-                        $t("backup.every_weekday_at_hour", {
-                          weekDay: $t("calendar." + schedule.weekDay),
-                          time: schedule.time,
-                        })
-                      }}
-                    </span>
-                    <span v-else>-</span>
-                  </template>
-                  <template v-else-if="schedule.interval == 'monthly'">
-                    <span v-if="time24HourPattern.test(schedule.time)">
-                      {{
-                        $t("backup.every_month_at_time", {
-                          dayNum: schedule.monthDay,
-                          time: schedule.time,
-                        })
-                      }}
-                    </span>
-                    <span v-else>-</span>
-                  </template> -->
-                  <!-- calendar event expression -->
-                  <cv-interactive-tooltip
+                  <!-- calendar event expression //// -->
+                  <!-- <cv-interactive-tooltip
                     v-if="isScheduleValid"
                     alignment="start"
                     direction="right"
@@ -303,7 +266,7 @@
                       </h6>
                       <code>{{ scheduleExpression }}</code>
                     </template>
-                  </cv-interactive-tooltip>
+                  </cv-interactive-tooltip> -->
                 </div>
               </div>
             </div>
@@ -384,7 +347,7 @@ import { UtilService, TaskService, IconService } from "@nethserver/ns8-ui-lib";
 import to from "await-to-js";
 import InstanceSelector from "@/components/backup/InstanceSelector";
 import _cloneDeep from "lodash/cloneDeep";
-import Information16 from "@carbon/icons-vue/es/information/16";
+// import Information16 from "@carbon/icons-vue/es/information/16"; ////
 import _capitalize from "lodash/capitalize";
 
 const DEFAULT_SCHEDULE_INTERVAL = "daily";
@@ -397,7 +360,7 @@ const DEFAULT_RETENTION = "5";
 
 export default {
   name: "CreateBackupModal",
-  components: { InstanceSelector, Information16 },
+  components: { InstanceSelector },
   mixins: [UtilService, TaskService, IconService],
   props: {
     isShown: {

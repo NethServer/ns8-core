@@ -12,7 +12,7 @@
             (ID:
             <cv-tooltip
               alignment="center"
-              direction="bottom"
+              direction="top"
               :tip="
                 justCopied
                   ? $t('common.copied_to_clipboard')
