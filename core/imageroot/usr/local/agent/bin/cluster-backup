@@ -24,6 +24,7 @@ import os
 import sys
 import json
 import agent
+import tempfile
 import subprocess
 from datetime import datetime, timezone
 
@@ -106,16 +107,24 @@ with open(f'{output_dir}/dump.json', 'w') as fp:
 # compress the JSON dump
 subprocess.run(['gzip', '-f', f'{output_dir}/dump.json'], check = True)
 
+# remove existing gpg file, otherwise gpg will fail
+try:
+   os.remove(f'{output_dir}/dump.json.gz.gpg')
+except:
+    pass
+
 # if the passhprase does not exists, use the sha256 of admin password
-if not os.path.isfile(f'{output_dir}/passphrase'):
+if os.path.isfile(f'{output_dir}/passphrase'):
+    subprocess.run(['gpg', '--batch', '-c', '--pinentry-mode', 'loopback', '--passphrase-file', f'{output_dir}/passphrase', f'{output_dir}/dump.json.gz'], check = True)
+else:
     rdb = agent.redis_connect(host='127.0.0.1', privileged = True)
     admin = rdb.acl_getuser('admin')
     rdb.close()
 
-    with open(f'{output_dir}/passphrase', 'w') as fp:
-        fp.write(admin['passwords'][0])
-
-# remove existing gpg file, otherwise gpg will fail
-os.remove(f'{output_dir}/dump.json.gz.gpg')
-# encrypt the backup
-subprocess.run(['gpg', '--batch', '-c', '--pinentry-mode', 'loopback', '--passphrase-file', f'{output_dir}/passphrase', f'{output_dir}/dump.json.gz'], check = True)
+    fp = tempfile.NamedTemporaryFile(mode="w", delete=False)
+    fp.write(admin['passwords'][0])
+    fp.close()
+    try:
+        subprocess.run(['gpg', '--batch', '-c', '--pinentry-mode', 'loopback', '--passphrase-file', fp.name, f'{output_dir}/dump.json.gz'], check = True)
+    finally:
+        os.remove(fp.name)
