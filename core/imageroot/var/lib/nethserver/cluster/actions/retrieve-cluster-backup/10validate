@@ -1,0 +1,96 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2022 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
+import os
+import sys
+import json
+import agent
+import base64
+import hashlib
+import tempfile
+import requests
+import subprocess
+
+errors = []
+
+agent.set_weight(os.path.basename(__file__), 0) # Validation step, no task progress at all
+request = json.load(sys.stdin)
+
+output_dir = './backup'
+os.makedirs(output_dir, exist_ok=True)
+tmp_pass = f'{output_dir}/passphrase.tmp'
+tmp_dump = f'{output_dir}/dump.tmp'
+
+utype = request['type']
+passphrase = request.get('password', '') 
+
+if passphrase:
+   # generate sha256 from passphrase and store to a temporary file
+    h = hashlib.new('sha256')
+    h.update(passphrase.encode('utf-8'))
+    with open(tmp_pass, 'w') as fp:
+        fp.write(h.hexdigest())
+else:
+    # use admin password from redis
+    rdb = agent.redis_connect(host='127.0.0.1', privileged = True)
+    admin = rdb.acl_getuser('admin')
+    rdb.close()
+    
+    fp = tempfile.NamedTemporaryFile(mode="w", delete=False)
+    fp.write(admin['passwords'][0])
+    fp.close()
+    tmp_pass = fp.name
+
+
+if utype == "file":
+    # decode base64 and save to a temporary file
+    with open(tmp_dump, 'wb') as fp:
+        fp.write(base64.b64decode(request['file']))
+else:
+    # download file from URL
+    req = requests.get(request['url'], verify=request['tls_verify'], allow_redirects=True)
+    with open(tmp_dump, 'wb') as fp:
+        fp.write(req.content)
+
+# check if the file is a valid gpg file
+pf = subprocess.run(['file', '-b0', tmp_dump], env={"LANG": "C"}, capture_output = True)
+if not 'GPG' in pf.stdout.decode('ASCII'):
+    errors.append('not_valid_gpg_file')
+
+# skip check if not a valid gpg file
+if not errors:
+    # check if the passphrase is good
+    pg = subprocess.run(['gpg', '--batch', '-d', '--pinentry-mode', 'loopback', '--passphrase-file', tmp_pass, '-o', '/dev/null', tmp_dump])
+    if pg.returncode > 0:
+        errors.append('invalid_passphrase')
+
+# if everything is ok, keep temporary files to be reused on next step
+if errors:
+    try:
+        os.remove(tmp_dump)
+        os.remove(tmp_pass)
+    except:
+        pass
+    agent.set_status('validation-failed')
+    json.dump(errors, fp=sys.stdout)
+    sys.exit(2)
+

@@ -1,0 +1,78 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2022 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
+import os
+import sys
+import json
+import gzip
+import agent
+import tempfile
+import subprocess
+
+errors = []
+output_dir = './backup'
+tmp_pass = f'{output_dir}/passphrase.tmp'
+tmp_dump = f'{output_dir}/dump.tmp'
+
+request = json.load(sys.stdin)
+
+# rename temporary files
+if os.path.isfile(tmp_pass):
+    os.rename(tmp_pass, f'{output_dir}/passphrase')
+os.rename(tmp_dump, f'{output_dir}/dump.json.gz.gpg')
+
+# make sure destination decrypted file doesn't already exists
+try:
+    os.remove(f'{output_dir}/dump.json.gz')
+except:
+    pass
+
+# decrypt the backup file
+# if the passhprase does not exists, use the sha256 of admin password
+pass_file = ""
+cmd = ['gpg', '--batch', '-d', '--pinentry-mode', 'loopback', '-o', f'{output_dir}/dump.json.gz', '--passphrase-file']
+
+# passhprase file has the precedence
+if os.path.isfile(f'{output_dir}/passphrase'):
+    pg = subprocess.run(cmd + [f'{output_dir}/passphrase', f'{output_dir}/dump.json.gz.gpg'], check = True)
+else:
+    rdb = agent.redis_connect(host='127.0.0.1', privileged = True)
+    admin = rdb.acl_getuser('admin')
+    rdb.close()
+
+    fp = tempfile.NamedTemporaryFile(mode="w", delete=False)
+    fp.write(admin['passwords'][0])
+    fp.close()
+
+    try:
+        pg = subprocess.run(cmd + [fp.name, f'{output_dir}/dump.json.gz.gpg'], check = True)
+    finally:
+        os.remove(fp.name)
+
+# load json from gzip file
+fgz = gzip.open(f'{output_dir}/dump.json.gz', mode='r')
+dump = json.loads(fgz.read())
+fgz.close()
+
+result = {'timestamp': dump['timestamp'], 'cluster': dump['cluster']['ui_name'], 'modules': len(dump['modules']), "vpn": dump['vpn']['endpoint'], 'domains': len(dump['cluster']['user_domain']), 'backup_repositories': len(dump['cluster']['backup_repository'])}
+
+json.dump(result, fp=sys.stdout)
