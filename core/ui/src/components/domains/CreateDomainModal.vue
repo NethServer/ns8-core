@@ -633,16 +633,20 @@ export default {
         this.addInternalProviderAborted
       );
 
+      const selectedNodeId = this.selectedNode
+        ? parseInt(this.selectedNode.id)
+        : 1;
+
       const res = await to(
         this.createClusterTask({
           action: taskAction,
           data: {
             image: "ghcr.io/nethserver/samba:" + version, ////
-            node: parseInt(this.selectedNode.id),
+            node: selectedNodeId,
           },
           extra: {
             title: this.$t("action." + taskAction),
-            node: this.selectedNode.id,
+            node: selectedNodeId,
             isNotificationHidden: true,
             isProgressNotified: true,
           },
