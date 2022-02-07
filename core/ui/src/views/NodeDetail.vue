@@ -110,52 +110,6 @@
                 >
               </template>
             </div>
-            <div class="mg-bottom-sm">
-              <span class="label"
-                >{{ $t("node_detail.pressure") }}
-                <cv-interactive-tooltip
-                  alignment="start"
-                  direction="bottom"
-                  class="info"
-                >
-                  <template slot="trigger">
-                    <Information16 />
-                  </template>
-                  <template slot="content">
-                    <div>{{ $t("nodes.cpu_pressure_tooltip") }}</div>
-                  </template>
-                </cv-interactive-tooltip>
-              </span>
-              <span v-if="loading.nodeStatus">- / - / -</span>
-              <template v-else>
-                <span
-                  :class="{
-                    warning:
-                      nodeStatus.pressure['10sec'] >=
-                      this.CPU_PRESSURE_WARNING_TH,
-                  }"
-                  >{{ nodeStatus.pressure["10sec"] }}%</span
-                >
-                /
-                <span
-                  :class="{
-                    warning:
-                      nodeStatus.pressure['1min'] >=
-                      this.CPU_PRESSURE_WARNING_TH,
-                  }"
-                  >{{ nodeStatus.pressure["1min"] }}%</span
-                >
-                /
-                <span
-                  :class="{
-                    warning:
-                      nodeStatus.pressure['5min'] >=
-                      this.CPU_PRESSURE_WARNING_TH,
-                  }"
-                  >{{ nodeStatus.pressure["5min"] }}%</span
-                >
-              </template>
-            </div>
             <template v-if="!loading.nodeStatus">
               <div
                 v-for="(core, index) in nodeStatus.cpu.info"
@@ -377,7 +331,6 @@ export default {
       NODE_STATUS_TIME_INTERVAL: 5000,
       CLUSTER_STATUS_TIME_INTERVAL: 5000,
       CPU_LOAD_WARNING_TH: 90,
-      CPU_PRESSURE_WARNING_TH: 50,
       LAST_SEEN_WARNING_TH: 5 * 60 * 1000, // milliseconds: 5 minutes
       nodeId: "",
       nodeStatus: {},
@@ -462,9 +415,6 @@ export default {
       nodeStatus.load["1min"] = Math.round(nodeStatus.load["1min"]);
       nodeStatus.load["5min"] = Math.round(nodeStatus.load["5min"]);
       nodeStatus.load["15min"] = Math.round(nodeStatus.load["15min"]);
-      nodeStatus.pressure["10sec"] = Math.round(nodeStatus.pressure["10sec"]);
-      nodeStatus.pressure["1min"] = Math.round(nodeStatus.pressure["1min"]);
-      nodeStatus.pressure["5min"] = Math.round(nodeStatus.pressure["5min"]);
 
       nodeStatus.memory.usage = Math.round(
         (nodeStatus.memory.used / nodeStatus.memory.total) * 100
