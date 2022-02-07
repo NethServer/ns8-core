@@ -351,8 +351,8 @@ export default {
         return;
       }
     },
-    addInternalProviderAborted(taskResult) {
-      console.log("add internal provider aborted", taskResult);
+    addInternalProviderAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
 
       // hide modal so that user can see error notification
       this.$emit("hide");
@@ -578,8 +578,8 @@ export default {
       // reload domains
       this.$emit("reloadDomains");
     },
-    configureSambaModuleAborted(taskResult) {
-      console.log("configure samba module aborted", taskResult);
+    configureSambaModuleAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
       this.loading.samba.configureModule = false;
 
       // hide modal so that user can see error notification

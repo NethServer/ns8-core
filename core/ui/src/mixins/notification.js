@@ -182,7 +182,11 @@ export default {
             taskResult.output
           );
         } else if (taskStatus === "aborted") {
-          this.$root.$emit(taskContext.action + "-aborted", taskResult);
+          this.$root.$emit(
+            taskContext.action + "-aborted",
+            taskResult,
+            taskContext
+          );
         }
       }
 

@@ -339,8 +339,8 @@ export default {
       // close modal immediately, no validation needed
       this.$emit("hide");
     },
-    restoreModuleAborted(taskResult) {
-      console.error("restore-module aborted", taskResult);
+    restoreModuleAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
       this.loading.restoreModule = false;
       this.$emit("hide");
 

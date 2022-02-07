@@ -660,8 +660,8 @@ export default {
         return;
       }
     },
-    addInternalProviderAborted(taskResult) {
-      console.log("add internal provider aborted", taskResult);
+    addInternalProviderAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
 
       // hide modal so that user can see error notification
       this.$emit("hide");
@@ -940,8 +940,8 @@ export default {
       // reload domains
       this.$emit("reloadDomains");
     },
-    configureSambaModuleAborted(taskResult) {
-      console.log("configure samba module aborted", taskResult);
+    configureSambaModuleAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
       this.loading.samba.configureModule = false;
 
       // hide modal so that user can see error notification
@@ -1025,6 +1025,10 @@ export default {
         this.addExternalDomainValidationFailed
       );
 
+      // register to task error
+      this.$root.$off(taskAction + "-aborted");
+      this.$root.$once(taskAction + "-aborted", this.addExternalDomainAborted);
+
       // register to task completion
       this.$root.$off(taskAction + "-completed");
       this.$root.$once(
@@ -1074,6 +1078,11 @@ export default {
           focusAlreadySet = true;
         }
       }
+    },
+    addExternalDomainAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.loading.external.addExternalDomain = false;
+      this.$emit("hide");
     },
     addExternalDomainCompleted() {
       this.loading.external.addExternalDomain = false;

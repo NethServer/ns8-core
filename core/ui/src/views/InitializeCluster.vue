@@ -670,8 +670,8 @@ export default {
       this.$router.replace("/status");
       this.isCreatingCluster = false;
     },
-    createClusterAborted(taskResult) {
-      console.error("create cluster aborted", taskResult);
+    createClusterAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
       this.isCreatingCluster = false;
     },
     validateJoinCluster() {
@@ -799,8 +799,8 @@ export default {
       };
       this.createNotification(notification);
     },
-    joinClusterAborted(taskResult) {
-      console.error("join cluster aborted", taskResult);
+    joinClusterAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
       this.isJoiningCluster = false;
     },
     joinClusterValidationFailed(validationErrors) {
