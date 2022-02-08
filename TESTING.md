@@ -2,15 +2,15 @@
 
 ## Requisites
 
-The are create using [Robot Framework](https://robotframework.org/) and the execution is made inside a Podman container. The only dependences required
+The tests have been created using [Robot Framework](https://robotframework.org/) and the execution happens inside a Podman container. The only dependency required
 in the host system is Podman (https://podman.io/getting-started/installation).
 
 ## Tests structure
 
-All test are in the `tests` directory of each NS8 module, in the root of the `tests` directory the file `pythonreq.txt`
-specify the dependences required and each subdirectory contains a test suite whit the relative tests.
+All tests are in the `tests` directory of each NS8 module, in the root of the `tests` directory the file `pythonreq.txt`
+specifies the dependencies required and each subdirectory contains a test suite with the related tests.
 
-The test suite and the relative tests are executed in alphabetical order, the `__init__.robot` can be used for the suite
+The test suite and the related tests are executed in alphabetical order, the `__init__.robot` can be used for the suite
 initialization. More details in the [Robot Framework documentation](https://robotframework.org/robotframework/latest/RobotFrameworkUserGuide.html#files-and-directories)
 
 ```
@@ -36,13 +36,14 @@ initialization. More details in the [Robot Framework documentation](https://robo
 ├── pythonreq.txt
 └── __init__.robot
 ```
+
 ## Tests execution
 
-Every module have a script named `test-module.sh` that can be used to setup and launch the tests relative to the module. All the tests logs can be found in the directory `tests/outputs`.
+Every module has a script named `test-module.sh` that can be used to setup and launch the tests related to the module. All the tests logs can be found in the directory `tests/outputs`.
 
 ### Usage
 
-All the scripts have a some common way to customize the execution.
+All the scripts have a common way to customize the execution.
 
     ./test-module.sh <leader_node> <worker_node1,worker_node2,...>
 
@@ -52,15 +53,50 @@ to remote host will fail.
 #### Parameters
 
 * `<leader_node>`: The host of the leader node.
-* `<worker_node1,worker_node2,...>`: A list of comma separated workers hosts.
+* `<worker_node1,worker_node2,...>`: A list of comma separated worker hosts.
 
-#### Environments variables
+#### Environment variables
 
-* `SSH_KEYFILE`: SSH private key to use for connection to the NS8 cluster, default  `~/.ssh/id_rsa`.
+* `SSH_KEYFILE`: SSH private key to use for connection to the NS8 cluster, default `~/.ssh/id_rsa`.
 * `COREBRANCH`: NS8 branch name
 * `COREMODULES`: Comma separated list of modules to install from the selected branch.
 
-The `COREBRANCH` and `COREMODULES` have the same meaning of the [`install.sh`](docs/quickstart.md#install-a-development-branch) parameters.
+The `COREBRANCH` and `COREMODULES` have the same meaning as the [`install.sh`](docs/quickstart.md#install-a-development-branch) parameters.
+
+#### Include/exclude test cases
+
+Test cases can be marked with [Robot Framework tags](https://robotframework.org/robotframework/latest/RobotFrameworkUserGuide.html#tagging-test-cases) to allow the inclusion and/or exclusion of test cases during tests execution.
+
+Core test suites `10_cluster_sanity` and `20_cluster_ui` are marked respectively with `backend` and `frontend` tags. To execute only backend tests (those included in `10_cluster_sanity`) you can edit `robot` command provided in `test-module.sh`, adding `include` parameter:
+
+    podman run ... robot ... --include backend ...
+
+The same goes for executing only frontend tests:
+
+    podman run ... robot ... --include frontend ...
+
+Some test cases of core module are marked with `install` or `uninstall` tag. More precisely:
+
+- test cases related to NS8 installation and cluster creation are marked with `install` tag
+- test cases related to NS8 uninstallation are marked with `uninstall` tag
+
+This pair of tags make it easy to quickly execute tests on a machine with NS8 already installed and configured. Skipping installation, cluster creation and uninstallation drastically reduces tests execution time. To skip NS8 installation, configuration and uninstallation you can edit `robot` command provided in `test-module.sh`:
+
+    podman run ... robot ... --exclude install --exclude uninstall ...
+
+#### Headful mode
+
+The execution of UI tests normally happens in headless mode, i.e. without showing the browser window. Anyway, for tests development and debug purposes, seeing test execution in the browser can be very helpful.
+
+At the moment, the only way to do this is to run the tests on your host machine, outside a podman container. Robot Framework installation on your machine is required, then you can run `robot` command with `HEADLESS` variable set to `false`, e.g.:
+
+    cd ns8-core
+    robot -v NODE_ADDR:<LEADER_IP_ADDR> -v HEADLESS:false -v SSH_KEYFILE:$HOME/.ssh/id_rsa -d $HOME/ns8-test-outputs tests/
+
+In the command above we are assuming that:
+
+- `$HOME/.ssh/id_rsa` is the SSH identity file to access you NS8 leader machine
+- `$HOME/ns8-test-outputs` is the location where test report and logs will be written
 
 ## Testing environment
 
