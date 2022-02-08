@@ -1,0 +1,57 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2022 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
+import sys
+import json
+import agent
+import subprocess
+import os
+from datetime import datetime, timezone
+
+request = json.load(sys.stdin)
+
+popen_args={"encoding": 'utf-8', "stdout": subprocess.PIPE, "stderr": sys.stderr}
+
+rdb = agent.redis_connect(privileged=False)
+
+backups = list()
+for krepo in rdb.scan_iter('cluster/backup_repository/*'):
+    repo_uuid = krepo.removeprefix('cluster/backup_repository/')
+    rclone_cmd = ['rclone-wrapper', repo_uuid, 'lsjson']
+    repo = rdb.hgetall(krepo)
+
+    proot = subprocess.Popen(rclone_cmd + ["REMOTE_PATH"], **popen_args)
+    for oroot in json.load(proot.stdout):
+        if oroot["IsDir"] is False:
+            continue # skip non-dir entries
+        pchild = subprocess.Popen(rclone_cmd + ["REMOTE_PATH/" + oroot['Path']], **popen_args)
+        for backup in json.load(pchild.stdout):
+            # parse ISO 8601 date but remove ending Z (UTC timezone)
+            mod_time = datetime.fromisoformat(backup['ModTime'][0:-1])
+            mod_time = mod_time.replace(tzinfo=timezone.utc).timestamp()
+
+            if not '@' in backup["Path"] or backup["IsDir"] is False:
+                continue # skip non-repo entries
+            parts = backup['Path'].split('@')
+            backups.append({'name': oroot['Path'], 'path': f'{oroot["Path"]}/{backup["Path"]}', 'instance': parts[0], 'uuid': parts[1], 'timestamp': int(mod_time), 'repository_id' : repo_uuid, 'repository_name': repo['name'], 'repository_provider': repo['provider'], 'repository_url': repo['url']})
+
+print(json.dumps(backups))
