@@ -9,7 +9,23 @@
         <span>
           <span v-html="getTaskStatusDescription(subTask, false)"></span>
           <span v-if="isMoreInfoShown">
-            (ID: <strong>{{ subTask.context.id }}</strong
+            (ID:
+            <cv-tooltip
+              alignment="center"
+              direction="top"
+              :tip="
+                justCopied
+                  ? $t('common.copied_to_clipboard')
+                  : $t('common.copy_to_clipboard')
+              "
+            >
+              <cv-link
+                v-clipboard:copy="subTask.context.id"
+                v-clipboard:success="onCopy"
+                v-clipboard:error="onCopyError"
+              >
+                {{ subTask.context.id }}
+              </cv-link></cv-tooltip
             >)
           </span>
         </span>
@@ -36,6 +52,23 @@ export default {
       required: true,
     },
     isMoreInfoShown: Boolean,
+  },
+  data() {
+    return {
+      justCopied: false,
+    };
+  },
+  methods: {
+    onCopy() {
+      this.justCopied = true;
+
+      setTimeout(() => {
+        this.justCopied = false;
+      }, 3000);
+    },
+    onCopyError() {
+      console.error("cannot copy to clipboard");
+    },
   },
 };
 </script>

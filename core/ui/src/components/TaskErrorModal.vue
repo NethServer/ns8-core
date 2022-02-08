@@ -15,7 +15,23 @@
         <div>
           <span v-html="getTaskStatusDescription(taskErrorToShow, true)"></span>
           <span v-if="isMoreInfoShown">
-            (ID: <strong>{{ taskErrorToShow.context.id }}</strong
+            (ID:
+            <cv-tooltip
+              alignment="center"
+              direction="bottom"
+              :tip="
+                justCopied
+                  ? $t('common.copied_to_clipboard')
+                  : $t('common.copy_to_clipboard')
+              "
+            >
+              <cv-link
+                v-clipboard:copy="taskErrorToShow.context.id"
+                v-clipboard:success="onCopy"
+                v-clipboard:error="onCopyError"
+              >
+                {{ taskErrorToShow.context.id }}
+              </cv-link></cv-tooltip
             >)
           </span>
         </div>
@@ -97,6 +113,7 @@ export default {
     return {
       isCopyClipboardHintShown: false,
       isMoreInfoShown: false,
+      justCopied: false,
     };
   },
   computed: {
@@ -139,6 +156,16 @@ export default {
           this.saveToStorage("isCopyClipboardHintShown", true);
         }
       }, 400);
+    },
+    onCopy() {
+      this.justCopied = true;
+
+      setTimeout(() => {
+        this.justCopied = false;
+      }, 3000);
+    },
+    onCopyError() {
+      console.error("cannot copy to clipboard");
     },
   },
 };

@@ -544,8 +544,8 @@ export default {
         return;
       }
     },
-    addFavoriteAborted(taskResult) {
-      console.error("add favorite aborted", taskResult);
+    addFavoriteAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
 
       // reload app drawer
       this.listInstalledModules();
@@ -580,8 +580,8 @@ export default {
         return;
       }
     },
-    removeFavoriteAborted(taskResult) {
-      console.error("remove favorite aborted", taskResult);
+    removeFavoriteAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
 
       // reload app drawer
       this.listInstalledModules();

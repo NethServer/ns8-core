@@ -47,6 +47,10 @@ a {
   margin-top: $spacing-05 !important;
 }
 
+.mg-top-lg {
+  margin-top: $spacing-07 !important;
+}
+
 .mg-bottom-sm {
   margin-bottom: $spacing-03 !important;
 }
@@ -193,8 +197,7 @@ a {
 }
 // ghost button on dark background end
 
-// used for buttons with external links
-.text-decoration-none {
+.external-link-button {
   text-decoration: none !important;
 }
 
@@ -528,6 +531,11 @@ a {
 // modal with full-width content
 .no-pad-modal .bx--modal-content {
   padding-right: 1rem !important;
+}
+
+// remove colored outline when clicking modal content
+.bx--modal-content:focus {
+  outline: none !important;
 }
 
 // branding colors for NsProgressBar start

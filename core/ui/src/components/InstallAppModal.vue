@@ -27,35 +27,11 @@
               })
             }}
           </div>
-          <div class="bx--grid nodes mg-bottom-md no-padding">
-            <div class="bx--row">
-              <div
-                v-for="(node, index) in nodes"
-                :key="index"
-                class="bx--col-md-4 bx--col-max-4"
-              >
-                <NsTile
-                  :light="true"
-                  kind="selectable"
-                  v-model="node.selected"
-                  value="nodeValue"
-                  :footerIcon="Chip20"
-                  @click="deselectOtherNodes(node)"
-                >
-                  <h6>
-                    {{
-                      node.ui_name
-                        ? node.ui_name
-                        : $t("common.node") + " " + node.id
-                    }}
-                  </h6>
-                  <div v-if="node.ui_name" class="node-id">
-                    {{ $t("common.node") }} {{ node.id }}
-                  </div>
-                </NsTile>
-              </div>
-            </div>
-          </div>
+          <NodeSelector
+            :nodes="nodes"
+            @selectNode="onSelectNode"
+            class="mg-top-lg"
+          />
         </template>
         <div v-else>
           {{
@@ -85,9 +61,11 @@
 import { UtilService, TaskService, IconService } from "@nethserver/ns8-ui-lib";
 import to from "await-to-js";
 import NotificationService from "@/mixins/notification";
+import NodeSelector from "@/components/NodeSelector";
 
 export default {
   name: "InstallAppModal",
+  components: { NodeSelector },
   mixins: [UtilService, TaskService, IconService, NotificationService],
   props: {
     isShown: Boolean,
@@ -96,6 +74,7 @@ export default {
   data() {
     return {
       nodes: [],
+      selectedNode: null,
       loading: {
         getClusterStatus: true,
       },
@@ -104,11 +83,6 @@ export default {
         getClusterStatus: "",
       },
     };
-  },
-  computed: {
-    selectedNode() {
-      return this.nodes.find((n) => n.selected);
-    },
   },
   created() {
     this.retrieveClusterStatus();
@@ -151,7 +125,12 @@ export default {
       for (const node of nodes) {
         node.selected = false;
       }
-      nodes[0].selected = true;
+
+      if (nodes.length == 1) {
+        nodes[0].selected = true;
+        this.selectedNode = nodes[0];
+      }
+
       this.nodes = nodes;
       this.loading.getClusterStatus = false;
     },
@@ -180,6 +159,10 @@ export default {
       // register to task completion
       this.$root.$once(taskAction + "-completed", this.addModuleCompleted);
 
+      const nodeName =
+        this.selectedNode.ui_name ||
+        this.$t("common.node_lc") + ` ${this.selectedNode.id}`;
+
       const res = await to(
         this.createClusterTask({
           action: taskAction,
@@ -192,9 +175,9 @@ export default {
               app: this.app.name,
             }),
             description: this.$t("software_center.installing_on_node", {
-              node: this.selectedNode.id,
+              node: nodeName,
             }),
-            node: this.selectedNode.id,
+            node: nodeName,
             completion: {
               i18nString: "software_center.instance_installed_on_node",
               extraTextParams: ["node"],
@@ -240,18 +223,14 @@ export default {
           },
         };
         this.createNotification(notification);
-      }, 30000);
-    },
-    deselectOtherNodes(node) {
-      for (let n of this.nodes) {
-        if (n.id !== node.id) {
-          n.selected = false;
-        }
-      }
+      }, 15000);
     },
     onModalHidden() {
       this.clearErrors(this);
       this.$emit("close");
+    },
+    onSelectNode(selectedNode) {
+      this.selectedNode = selectedNode;
     },
   },
 };
@@ -259,12 +238,4 @@ export default {
 
 <style scoped lang="scss">
 @import "../styles/carbon-utils";
-
-.nodes {
-  margin-top: $spacing-07;
-}
-
-.node-id {
-  margin-top: $spacing-05;
-}
 </style>

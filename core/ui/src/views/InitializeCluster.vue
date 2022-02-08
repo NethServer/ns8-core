@@ -1,5 +1,5 @@
 <template>
-  <div class="bx--grid bx--grid--full-width">
+  <div class="bx--grid">
     <cv-loading
       :active="isCreatingCluster || isJoiningCluster"
       :overlay="true"
@@ -223,24 +223,25 @@
       <div class="bx--row">
         <div class="bx--col-lg-16 page-title">
           <h2>{{ $t("init.redirect_cluster") }}</h2>
+        </div>
+      </div>
+      <div class="bx--row">
+        <div class="bx--col-lg-16">
           <div class="title-description">
             {{ $t("init.redirect_cluster_description") }}
           </div>
         </div>
       </div>
-      <div class="bx--row">
+      <div class="bx--row mg-top-lg">
         <div class="bx--col-lg-16">
-          <cv-tile light>
-            <cv-form>
-              <div>
-                <a
-                  target="_blank"
-                  :href="this.joinEndpoint + '/cluster-admin/'"
-                  >{{ $t("init.redirect_cluster_link") }}</a
-                >
-              </div>
-            </cv-form>
-          </cv-tile>
+          <a
+            :href="this.joinEndpoint + '/cluster-admin/'"
+            class="external-link-button"
+          >
+            <NsButton kind="primary" :icon="Launch20">
+              {{ $t("init.redirect_cluster_link") }}
+            </NsButton>
+          </a>
         </div>
       </div>
     </div>
@@ -669,8 +670,8 @@ export default {
       this.$router.replace("/status");
       this.isCreatingCluster = false;
     },
-    createClusterAborted(taskResult) {
-      console.error("create cluster aborted", taskResult);
+    createClusterAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
       this.isCreatingCluster = false;
     },
     validateJoinCluster() {
@@ -798,8 +799,8 @@ export default {
       };
       this.createNotification(notification);
     },
-    joinClusterAborted(taskResult) {
-      console.error("join cluster aborted", taskResult);
+    joinClusterAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
       this.isJoiningCluster = false;
     },
     joinClusterValidationFailed(validationErrors) {
@@ -832,7 +833,6 @@ export default {
 }
 
 .tile-description {
-  margin-top: $spacing-03;
   color: $text-02;
 }
 

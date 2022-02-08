@@ -130,7 +130,8 @@
           <cv-text-input
             :label="$t('backup.url')"
             v-model.trim="url"
-            :invalid-message="$t(error.url)"
+            :invalid-message="error.url"
+            :placeholder="urlPlaceholder"
             :disabled="loading.addBackupRepository"
             ref="url"
           >
@@ -140,7 +141,7 @@
             <cv-text-input
               :label="$t('backup.b2_account_id')"
               v-model.trim="backblaze.b2_account_id"
-              :invalid-message="$t(error.backblaze.b2_account_id)"
+              :invalid-message="error.backblaze.b2_account_id"
               :disabled="loading.addBackupRepository"
               ref="b2_account_id"
             >
@@ -150,7 +151,7 @@
               type="password"
               v-model.trim="backblaze.b2_account_key"
               :disabled="loading.addBackupRepository"
-              :invalid-message="$t(error.backblaze.b2_account_key)"
+              :invalid-message="error.backblaze.b2_account_key"
               :password-hide-label="$t('password.hide_password')"
               :password-show-label="$t('password.show_password')"
               ref="b2_account_key"
@@ -161,7 +162,7 @@
             <cv-text-input
               :label="$t('backup.aws_access_key_id')"
               v-model.trim="aws.aws_access_key_id"
-              :invalid-message="$t(error.aws.aws_access_key_id)"
+              :invalid-message="error.aws.aws_access_key_id"
               :disabled="loading.addBackupRepository"
               ref="aws_access_key_id"
             >
@@ -169,7 +170,7 @@
             <cv-text-input
               :label="$t('backup.aws_default_region')"
               v-model.trim="aws.aws_default_region"
-              :invalid-message="$t(error.aws.aws_default_region)"
+              :invalid-message="error.aws.aws_default_region"
               :disabled="loading.addBackupRepository"
               ref="aws_default_region"
             >
@@ -179,7 +180,7 @@
               type="password"
               v-model.trim="aws.aws_secret_access_key"
               :disabled="loading.addBackupRepository"
-              :invalid-message="$t(error.aws.aws_secret_access_key)"
+              :invalid-message="error.aws.aws_secret_access_key"
               :password-hide-label="$t('password.hide_password')"
               :password-show-label="$t('password.show_password')"
               ref="aws_secret_access_key"
@@ -194,7 +195,7 @@
             :label="$t('backup.repository_name')"
             v-model.trim="name"
             :helper-text="$t('backup.repository_name_helper')"
-            :invalid-message="$t(error.name)"
+            :invalid-message="error.name"
             :disabled="loading.addBackupRepository"
             ref="name"
           >
@@ -208,7 +209,7 @@
                   :label="$t('backup.repository_password')"
                   v-model.trim="password"
                   :helper-text="$t('backup.repository_password_helper')"
-                  :invalid-message="$t(error.password)"
+                  :invalid-message="error.password"
                   :disabled="loading.addBackupRepository"
                   ref="password"
                 >
@@ -248,6 +249,9 @@ export default {
   },
   data() {
     return {
+      BACKBLAZE_PROTOCOL: "b2:",
+      AWS_PROTOCOL: "s3:",
+      AZURE_PROTOCOL: "azure:",
       step: "",
       steps: ["provider", "settings"],
       isBackblazeSelected: false,
@@ -318,6 +322,19 @@ export default {
         return null;
       }
       //// handle all providers
+    },
+    urlPlaceholder() {
+      const suffix = this.$t("backup.url_placeholder");
+
+      if (this.isBackblazeSelected) {
+        return this.BACKBLAZE_PROTOCOL + suffix;
+      } else if (this.isAmazonS3Selected || this.isGenericS3Selected) {
+        return this.AWS_PROTOCOL + suffix;
+      } else if (this.isAzureSelected) {
+        return this.AZURE_PROTOCOL + suffix;
+      } else {
+        return "";
+      }
     },
   },
   watch: {
@@ -466,7 +483,17 @@ export default {
       let isValidationOk = true;
 
       if (!this.url) {
-        this.error.url = "common.required";
+        this.error.url = this.$t("common.required");
+
+        if (isValidationOk) {
+          this.focusElement("url");
+          isValidationOk = false;
+        }
+      } else if (!this.url.startsWith(this.BACKBLAZE_PROTOCOL)) {
+        // wrong url protocol
+        this.error.url = this.$t("backup.invalid_url_protocol", {
+          protocol: this.BACKBLAZE_PROTOCOL,
+        });
 
         if (isValidationOk) {
           this.focusElement("url");
@@ -475,7 +502,7 @@ export default {
       }
 
       if (!this.backblaze.b2_account_id) {
-        this.error.backblaze.b2_account_id = "common.required";
+        this.error.backblaze.b2_account_id = this.$t("common.required");
 
         if (isValidationOk) {
           this.focusElement("b2_account_id");
@@ -484,7 +511,7 @@ export default {
       }
 
       if (!this.backblaze.b2_account_key) {
-        this.error.backblaze.b2_account_key = "common.required";
+        this.error.backblaze.b2_account_key = this.$t("common.required");
 
         if (isValidationOk) {
           this.focusElement("b2_account_key");
@@ -493,7 +520,7 @@ export default {
       }
 
       if (!this.name) {
-        this.error.name = "common.required";
+        this.error.name = this.$t("common.required");
 
         if (isValidationOk) {
           this.focusElement("name");
@@ -515,7 +542,17 @@ export default {
       let isValidationOk = true;
 
       if (!this.url) {
-        this.error.url = "common.required";
+        this.error.url = this.$t("common.required");
+
+        if (isValidationOk) {
+          this.focusElement("url");
+          isValidationOk = false;
+        }
+      } else if (!this.url.startsWith(this.AWS_PROTOCOL)) {
+        // wrong url protocol
+        this.error.url = this.$t("backup.invalid_url_protocol", {
+          protocol: this.AWS_PROTOCOL,
+        });
 
         if (isValidationOk) {
           this.focusElement("url");
@@ -524,7 +561,7 @@ export default {
       }
 
       if (!this.aws.aws_access_key_id) {
-        this.error.aws.aws_access_key_id = "common.required";
+        this.error.aws.aws_access_key_id = this.$t("common.required");
 
         if (isValidationOk) {
           this.focusElement("aws_access_key_id");
@@ -533,7 +570,7 @@ export default {
       }
 
       if (!this.aws.aws_default_region) {
-        this.error.aws.aws_default_region = "common.required";
+        this.error.aws.aws_default_region = this.$t("common.required");
 
         if (isValidationOk) {
           this.focusElement("aws_default_region");
@@ -542,7 +579,7 @@ export default {
       }
 
       if (!this.aws.aws_secret_access_key) {
-        this.error.aws.aws_secret_access_key = "common.required";
+        this.error.aws.aws_secret_access_key = this.$t("common.required");
 
         if (isValidationOk) {
           this.focusElement("aws_secret_access_key");
@@ -551,7 +588,7 @@ export default {
       }
 
       if (!this.name) {
-        this.error.name = "common.required";
+        this.error.name = this.$t("common.required");
 
         if (isValidationOk) {
           this.focusElement("name");
@@ -649,7 +686,7 @@ export default {
           this.error.repoConnection = "error";
         } else {
           // set i18n error message
-          this.error[param] = "backup." + validationError.error;
+          this.error[param] = this.$t("backup." + validationError.error);
 
           if (!focusAlreadySet) {
             this.focusElement(param);

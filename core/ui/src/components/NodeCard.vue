@@ -65,36 +65,6 @@
           </div>
         </div>
         <div class="tr">
-          <div class="td label">
-            {{ cpuPressureLabel }}
-            <cv-interactive-tooltip
-              alignment="center"
-              direction="bottom"
-              class="info"
-            >
-              <template slot="trigger">
-                <Information16 />
-              </template>
-              <template slot="content">
-                {{ cpuPressureTooltip }}
-              </template>
-            </cv-interactive-tooltip>
-          </div>
-          <div class="td">
-            <span :class="{ warning: pressure10Sec >= cpuPressureWarningTh }"
-              >{{ pressure10Sec }}%</span
-            >
-            /
-            <span :class="{ warning: pressure1min >= cpuPressureWarningTh }"
-              >{{ pressure1min }}%</span
-            >
-            /
-            <span :class="{ warning: pressure5Min >= cpuPressureWarningTh }"
-              >{{ pressure5Min }}%</span
-            >
-          </div>
-        </div>
-        <div class="tr">
           <div class="td label">{{ memoryUsageLabel }}</div>
           <div :class="['td', { warning: memoryUsage >= memoryWarningTh }]">
             {{ memoryUsage }}%
@@ -160,15 +130,6 @@ export default {
       type: String,
       default: "CPU average load of last 1 / 5 / 15 minutes",
     },
-    cpuPressureLabel: {
-      type: String,
-      default: "CPU pressure",
-    },
-    cpuPressureTooltip: {
-      type: String,
-      default:
-        "Percentage of tasks runnable but not executing on the CPU during last 10 seconds / 1 minute / 15 minutes",
-    },
     memoryUsageLabel: {
       type: String,
       default: "Memory usage",
@@ -189,16 +150,9 @@ export default {
     load1Min: Number,
     load5Min: Number,
     load15Min: Number,
-    pressure10Sec: Number,
-    pressure1min: Number,
-    pressure5Min: Number,
     cpuLoadWarningTh: {
       type: Number,
       default: 90,
-    },
-    cpuPressureWarningTh: {
-      type: Number,
-      default: 50,
     },
     memoryUsage: Number,
     memoryWarningTh: {

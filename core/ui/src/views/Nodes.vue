@@ -68,9 +68,7 @@
           :workerLabel="$t('nodes.worker')"
           :cpuUsageLabel="$t('nodes.cpu_usage')"
           :cpuLoadLabel="$t('nodes.cpu_load')"
-          :cpuPressureLabel="$t('nodes.cpu_pressure')"
           :cpuLoadTooltip="$t('nodes.cpu_load_tooltip')"
-          :cpuPressureTooltip="$t('nodes.cpu_pressure_tooltip')"
           :memoryUsageLabel="$t('nodes.memory_usage')"
           :swapUsageLabel="$t('nodes.swap_usage')"
           :diskUsageLabel="$t('nodes.usage')"
@@ -79,11 +77,7 @@
           :load1Min="nodesStatus[node.id].load['1min']"
           :load5Min="nodesStatus[node.id].load['5min']"
           :load15Min="nodesStatus[node.id].load['15min']"
-          :pressure10Sec="nodesStatus[node.id].pressure['10sec']"
-          :pressure1min="nodesStatus[node.id].pressure['1min']"
-          :pressure5Min="nodesStatus[node.id].pressure['5min']"
           :cpuLoadWarningTh="90"
-          :cpuPressureWarningTh="90"
           :memoryUsage="nodesStatus[node.id].memoryUsage"
           :memoryWarningTh="90"
           :swapUsage="nodesStatus[node.id].swapUsage"
@@ -405,9 +399,6 @@ export default {
       nodeStatus.load["1min"] = Math.round(nodeStatus.load["1min"]);
       nodeStatus.load["5min"] = Math.round(nodeStatus.load["5min"]);
       nodeStatus.load["15min"] = Math.round(nodeStatus.load["15min"]);
-      nodeStatus.pressure["10sec"] = Math.round(nodeStatus.pressure["10sec"]);
-      nodeStatus.pressure["1min"] = Math.round(nodeStatus.pressure["1min"]);
-      nodeStatus.pressure["5min"] = Math.round(nodeStatus.pressure["5min"]);
 
       // memory and swap usage
       nodeStatus.memoryUsage = Math.round(

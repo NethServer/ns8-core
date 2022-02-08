@@ -28,7 +28,6 @@ import re
 # Prepare return variable
 ret = {
         'load': { '1min': -1, '5min': -1, '15min': -1 },
-        'pressure': { '10sec': -1, '1min': -1, '5min': -1 },
         'cpu': { 'count': -1, 'usage': -1, 'info': [] },
         'memory':{ 'total': -1, 'used': -1, 'free': -1 },
         'swap': { 'total': -1, 'used': -1, 'free': -1 },
@@ -38,23 +37,6 @@ ret = {
 cpu_count = psutil.cpu_count()
 ret['cpu']['count'] = cpu_count
 ret['cpu']['usage'] = psutil.cpu_percent(1)
-
-# parse cpu pressure
-try:
-    with open("/proc/pressure/cpu") as fp:
-        pattern = re.compile(r'some avg10=(.+) avg60=(.+) avg300=(.+) total')
-
-        for line in fp.readlines():
-            m = re.match(pattern, line)
-
-            if (m):
-                ret['pressure']['10sec'] = m.group(1)
-                ret['pressure']['1min'] = m.group(2)
-                ret['pressure']['5min'] = m.group(3)
-except:
-    ret['pressure']['10sec'] = -1
-    ret['pressure']['1min'] = -1
-    ret['pressure']['5min'] = -1
 
 # parse cpuinfo to retrieve details about system CPUs
 with open("/proc/cpuinfo") as fp:

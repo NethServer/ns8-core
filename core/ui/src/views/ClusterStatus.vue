@@ -47,7 +47,7 @@
         <NsInfoCard
           light
           :title="nodes.length.toString()"
-          :description="$tc('common.nodes', nodes.length)"
+          :description="$tc('common.nodes_c', nodes.length)"
           :icon="Chip32"
           :loading="loading.nodes"
           :isErrorShown="error.nodes"

@@ -16,46 +16,14 @@
     <template slot="content">
       <template v-if="step == 'node'">
         <!-- //// disable unavailable nodes -->
-        <div class="mg-bottom-md">
+        <div>
           {{ $t("domains.choose_node_for_account_provider_installation") }}
         </div>
-        <div class="bx--grid no-padding">
-          <div class="bx--row">
-            <div
-              v-for="(node, index) in nodes"
-              :key="index"
-              class="bx--col-md-4 bx--col-max-4"
-            >
-              <NsTile
-                :light="true"
-                kind="selectable"
-                v-model="node.selected"
-                value="nodeValue"
-                :footerIcon="Chip20"
-                @click="deselectOtherNodes(node)"
-                :class="[
-                  'min-height-card',
-                  { 'disabled-node': node.unavailable },
-                ]"
-                :disabled="node.unavailable"
-              >
-                <h6>
-                  {{
-                    node.ui_name
-                      ? node.ui_name
-                      : $t("common.node") + " " + node.id
-                  }}
-                </h6>
-                <div v-if="node.unavailable" class="mg-top">
-                  {{ $t("domain_detail.used_by_another_provider") }}
-                </div>
-                <div v-else-if="node.ui_name" class="mg-top">
-                  {{ $t("common.node") }} {{ node.id }}
-                </div>
-              </NsTile>
-            </div>
-          </div>
-        </div>
+        <NodeSelector
+          :nodes="nodes"
+          @selectNode="onSelectNode"
+          class="mg-top-lg"
+        />
       </template>
       <template v-if="step == 'installingProvider'">
         <NsInlineNotification
@@ -169,11 +137,13 @@ import {
   LottieService,
 } from "@nethserver/ns8-ui-lib";
 import to from "await-to-js";
+import NodeSelector from "@/components/NodeSelector";
 
 //// review all (copy/paste)
 
 export default {
   name: "AddInternalProviderModal",
+  components: { NodeSelector },
   mixins: [UtilService, TaskService, IconService, LottieService],
   props: {
     isShown: {
@@ -201,6 +171,7 @@ export default {
     return {
       step: "node",
       installProviderProgress: 0,
+      selectedNode: null,
       samba: {
         adminuser: "",
         adminpass: "",
@@ -232,9 +203,6 @@ export default {
     };
   },
   computed: {
-    selectedNode() {
-      return this.nodes.find((n) => n.selected);
-    },
     isOpenLdap() {
       return this.domain.schema == "rfc2307";
     },
@@ -329,12 +297,8 @@ export default {
           break;
       }
     },
-    deselectOtherNodes(node) {
-      for (let n of this.nodes) {
-        if (n.id !== node.id) {
-          n.selected = false;
-        }
-      }
+    onSelectNode(selectedNode) {
+      this.selectedNode = selectedNode;
     },
     async installProvider() {
       this.error.addInternalProvider = "";
@@ -387,8 +351,8 @@ export default {
         return;
       }
     },
-    addInternalProviderAborted(taskResult) {
-      console.log("add internal provider aborted", taskResult);
+    addInternalProviderAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
 
       // hide modal so that user can see error notification
       this.$emit("hide");
@@ -614,8 +578,8 @@ export default {
       // reload domains
       this.$emit("reloadDomains");
     },
-    configureSambaModuleAborted(taskResult) {
-      console.log("configure samba module aborted", taskResult);
+    configureSambaModuleAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
       this.loading.samba.configureModule = false;
 
       // hide modal so that user can see error notification
@@ -648,9 +612,5 @@ export default {
   .cv-combo-box {
     margin-bottom: $spacing-06;
   }
-}
-
-.disabled-node {
-  color: $disabled-02;
 }
 </style>

@@ -657,8 +657,10 @@ export default {
           //// remove mock
           // node.unavailable = true; ////
           node.unavailable = false;
+          node.selected = false;
         } else {
           node.unavailable = false;
+          node.selected = false;
         }
       }
       this.nodes = nodes;
