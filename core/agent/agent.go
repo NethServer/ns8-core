@@ -313,8 +313,8 @@ func runAction(task *models.Task) {
 						}
 					}
 				case "dump-env":
-					rdb.HSet(ctx, agentPrefix+"/environment", exportToRedis(environment)...).Result()
 					dumpToFile(environment)
+					rdb.HSet(ctx, agentPrefix+"/environment", exportToRedis(environment)...).Result()
 				case "set-status":
 					if record[1] == "validation-failed" {
 						actionDescriptor.Status = "validation-failed"
@@ -392,6 +392,10 @@ func runAction(task *models.Task) {
 		environment = dedupEnv(environment)
 	}
 
+	if exitCode == 0 {
+		dumpToFile(environment)
+	}
+
 	_, err := rdb.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
 		if exitCode == 0 {
 			if actionDescriptor.Status == "running" {
@@ -413,10 +417,6 @@ func runAction(task *models.Task) {
 	})
 	if err != nil {
 		log.Print(SD_ERR+"Redis command failed: ", err)
-	} else {
-		if exitCode == 0 {
-			dumpToFile(environment)
-		}
 	}
 	log.Printf("%s/task/%s: action \"%s\" status is \"%s\" (%d) at step %s", agentPrefix, task.ID, task.Action, actionDescriptor.Status, exitCode, lastStep)
 }
