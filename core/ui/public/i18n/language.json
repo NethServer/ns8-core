@@ -134,7 +134,7 @@
     "invalid_join_code": "Invalid join code",
     "tls_verify": "TLS certificate validation",
     "redirect_cluster": "Worker Node",
-    "redirect_cluster_description": "This node is a worker of the cluster now. Click the link below to access the cluster administration page on the leader node.",
+    "redirect_cluster_description": "This node is a worker of the cluster now. Click the button below to access cluster administration page on the leader node.",
     "redirect_cluster_link": "Go to cluster administration",
     "node_added_to_cluster": "Node {nodeId} added to cluster"
   },
