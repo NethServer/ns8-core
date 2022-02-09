@@ -39,6 +39,8 @@ node_id = int(request['node'])
 
 rdb = agent.redis_connect()
 
+# Write the output to a named temporary file, 
+# to parse it with the existing read_envfile() function
 with tempfile.NamedTemporaryFile() as fenv:
     agent.run_restic(rdb, repository, path, ["--workdir=/srv"], ["dump", snapshot, "state/environment"], text=True, encoding='utf-8', stdout=fenv, check=True)
     fenv.seek(0)
