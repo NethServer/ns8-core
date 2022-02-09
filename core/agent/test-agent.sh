@@ -48,6 +48,13 @@ if ! podman container exists test-agent-redis; then
         --port 6379 --save 5 1 --protected-mode no --loglevel debug
 fi
 
+#
+# Hint: run the following command on a separate terminal to receive a detailed
+# Redis command trace:
+#
+#     podman exec -ti test-agent-redis nc 127.0.0.1 6379 <<<$'MONITOR\r\n'
+#
+
 set +e
 
 # Start the test suite by joining the Redis network namespace. Script

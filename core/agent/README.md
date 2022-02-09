@@ -18,6 +18,41 @@ The agent accepts also some environment variables, so a complete invocation from
 
     REDIS_ADDRESS=127.0.0.1:6379 REDIS_PASSWORD= ./agent module/mail1 . ~/.config/actions
 
+## Agent behavior test suite
+
+During development it is useful to test code changes quickly. The
+`test-agent.sh` build the Golang `agent` binary and starts a
+Robotframework test suite:
+
+    bash test-agent.sh
+
+The test suite aims to describe the commands sent to Redis by the agent
+and the expected results in the agent log and environment file.
+
+- The `test-agent.sh` script starts a detached Podman container that runs
+  a Redis DB instance: `test-agent-redis`. Run the following command on a
+  separate terminal to receive a detailed Redis command trace:
+
+      podman exec -ti test-agent-redis nc 127.0.0.1 6379 <<<$'MONITOR\r\n'
+
+- The test suite runs in a foreground container, `test-agent-suite`. On
+  each run, the test suite starts and stops the `agent` process and deals
+  with Redis DB setup/cleanup. Additional script arguments are forwarded
+  to the Robotframework command. For example to invoke `robot` help:
+
+      bash test-agent.sh --help
+
+- Test results are written to the persistent `tstate` volume. To export
+  its contents run:
+
+      mkdir tstate
+      podman volume export tstate | tar -C tstate -v -x -f -
+
+When testing is finished, stop and destroy the Redis container with:
+
+    podman stop test-agent-redis
+
+
 ## Task processing
 
 After startup, the agent process blocks and waits for incoming tasks on a
