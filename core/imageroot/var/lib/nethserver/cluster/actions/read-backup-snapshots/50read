@@ -1,0 +1,48 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2022 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
+import os
+import sys
+import json
+import agent
+import subprocess
+from datetime import datetime, timezone
+
+request = json.load(sys.stdin)
+
+# source
+repository = request['repository']
+path = request['path']
+
+rdb = agent.redis_connect()
+
+snapshots = []
+pret = agent.run_restic(rdb, repository, path, ["--workdir=/srv"], ["snapshots", "--json"], text=True, encoding='utf-8', stdout=subprocess.PIPE, check=True)
+for el in json.loads(pret.stdout):
+    # transform time like "2022-02-05T05:00:13.028068843Z" to a UTC timestamp
+    sec_index = el['time'].rfind('.')
+    # remove seconds and timezone before parsing
+    time = datetime.strptime(el['time'][0:sec_index],'%Y-%m-%dT%H:%M:%S')
+    time = int(time.replace(tzinfo=timezone.utc).timestamp())
+    snapshots.append({'timestamp': time, 'id': el['id']})
+
+print(json.dumps(snapshots))
