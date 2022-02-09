@@ -1,32 +1,32 @@
 <template>
-  <div class="bx--grid">
+  <cv-grid>
     <cv-loading
       :active="isCreatingCluster || isJoiningCluster"
       :overlay="true"
     ></cv-loading>
-    <div class="bx--row">
-      <div class="bx--col-lg-16">
+    <cv-row>
+      <cv-column>
         <div class="logo">
           <img
             :src="require('@/assets/logo.png')"
             :alt="this.$root.config.PRODUCT_NAME + ' logo'"
           />
         </div>
-      </div>
-    </div>
-    <div v-if="q.page === 'welcome'">
-      <div class="bx--row">
-        <div class="bx--col-lg-16 page-title">
+      </cv-column>
+    </cv-row>
+    <template v-if="q.page === 'welcome'">
+      <cv-row>
+        <cv-column class="welcome">
           <h2>
             {{
               $t("init.welcome", { product: this.$root.config.PRODUCT_NAME })
             }}
           </h2>
-        </div>
-      </div>
+        </cv-column>
+      </cv-row>
       <!-- create / join cluster -->
-      <div class="bx--row">
-        <div class="bx--col-md-4">
+      <cv-row>
+        <cv-column :md="4">
           <NsTile
             :light="true"
             kind="clickable"
@@ -34,13 +34,13 @@
             @click="selectCreateCluster"
             large
           >
-            <h6>{{ $t("init.create_cluster") }}</h6>
+            <h6 class="mg-bottom-sm">{{ $t("init.create_cluster") }}</h6>
             <div class="tile-description">
               {{ $t("init.create_cluster_description") }}
             </div>
           </NsTile>
-        </div>
-        <div class="bx--col-md-4">
+        </cv-column>
+        <cv-column :md="4">
           <NsTile
             :light="true"
             kind="clickable"
@@ -48,37 +48,37 @@
             @click="selectJoinCluster"
             large
           >
-            <h6>{{ $t("init.join_cluster") }}</h6>
+            <h6 class="mg-bottom-sm">{{ $t("init.join_cluster") }}</h6>
             <div class="tile-description">
               {{ $t("init.join_cluster_description") }}
             </div>
           </NsTile>
-        </div>
-      </div>
-    </div>
-    <div v-else-if="q.page === 'create'">
+        </cv-column>
+      </cv-row>
+    </template>
+    <template v-else-if="q.page === 'create'">
       <template v-if="isPasswordChangeNeeded">
-        <div class="bx--row">
+        <cv-row>
           <!-- password change needed -->
-          <div class="bx--col-lg-16 page-title">
+          <cv-column class="welcome">
             <h2>{{ $t("init.create_cluster") }}</h2>
             <div class="title-description">
               {{ $t("init.create_cluster_description") }}
             </div>
-          </div>
-        </div>
-        <div class="bx--row">
-          <div class="bx--col-lg-16">
+          </cv-column>
+        </cv-row>
+        <cv-row>
+          <cv-column>
             <NsInlineNotification
               kind="info"
               :title="$t('init.change_admin_password')"
               :description="$t('init.change_admin_password_description')"
               :showCloseButton="false"
             />
-          </div>
-        </div>
-        <div class="bx--row">
-          <div class="bx--col-lg-16">
+          </cv-column>
+        </cv-row>
+        <cv-row>
+          <cv-column>
             <cv-tile light>
               <cv-form @submit.prevent="changePassword">
                 <cv-text-input
@@ -113,28 +113,28 @@
                   >{{ $t("init.change_password") }}</NsButton
                 >
                 <div>
-                  <cv-link @click="selectJoinCluster" class="mg-top">{{
+                  <cv-link @click="selectJoinCluster" class="mg-top-lg">{{
                     $t("init.join_cluster_instead")
                   }}</cv-link>
                 </div>
               </cv-form>
             </cv-tile>
-          </div>
-        </div>
+          </cv-column>
+        </cv-row>
       </template>
       <!-- admin password was changed -->
       <template v-else>
         <!-- create cluster form -->
-        <div class="bx--row">
-          <div class="bx--col-lg-16 page-title">
+        <cv-row>
+          <cv-column class="welcome">
             <h2>{{ $t("init.create_cluster") }}</h2>
             <div class="title-description">
               {{ $t("init.create_cluster_description") }}
             </div>
-          </div>
-        </div>
-        <div class="bx--row">
-          <div class="bx--col-lg-16">
+          </cv-column>
+        </cv-row>
+        <cv-row>
+          <cv-column>
             <cv-tile light>
               <cv-form @submit.prevent="createCluster">
                 <cv-text-input
@@ -165,28 +165,28 @@
                   >{{ $t("init.create_cluster") }}</NsButton
                 >
                 <div>
-                  <cv-link @click="selectJoinCluster" class="mg-top">{{
+                  <cv-link @click="selectJoinCluster" class="mg-top-lg">{{
                     $t("init.join_cluster_instead")
                   }}</cv-link>
                 </div>
               </cv-form>
             </cv-tile>
-          </div>
-        </div>
+          </cv-column>
+        </cv-row>
       </template>
-    </div>
-    <div v-else-if="q.page === 'join'">
+    </template>
+    <template v-else-if="q.page === 'join'">
       <!-- join cluster form -->
-      <div class="bx--row">
-        <div class="bx--col-lg-16 page-title">
+      <cv-row>
+        <cv-column class="welcome">
           <h2>{{ $t("init.join_cluster") }}</h2>
           <div class="title-description">
             {{ $t("init.join_cluster_description") }}
           </div>
-        </div>
-      </div>
-      <div class="bx--row">
-        <div class="bx--col-lg-16">
+        </cv-column>
+      </cv-row>
+      <cv-row>
+        <cv-column>
           <cv-tile light>
             <cv-form @submit.prevent="joinCluster">
               <cv-text-area
@@ -210,30 +210,30 @@
                 $t("init.join_cluster")
               }}</NsButton>
               <div>
-                <cv-link @click="selectCreateCluster" class="mg-top">{{
+                <cv-link @click="selectCreateCluster" class="mg-top-lg">{{
                   $t("init.create_cluster_instead")
                 }}</cv-link>
               </div>
             </cv-form>
           </cv-tile>
-        </div>
-      </div>
-    </div>
-    <div v-else-if="q.page === 'redirect'">
-      <div class="bx--row">
-        <div class="bx--col-lg-16 page-title">
+        </cv-column>
+      </cv-row>
+    </template>
+    <template v-else-if="q.page === 'redirect'">
+      <cv-row>
+        <cv-column class="welcome">
           <h2>{{ $t("init.redirect_cluster") }}</h2>
-        </div>
-      </div>
-      <div class="bx--row">
-        <div class="bx--col-lg-16">
+        </cv-column>
+      </cv-row>
+      <cv-row>
+        <cv-column>
           <div class="title-description">
             {{ $t("init.redirect_cluster_description") }}
           </div>
-        </div>
-      </div>
-      <div class="bx--row mg-top-lg">
-        <div class="bx--col-lg-16">
+        </cv-column>
+      </cv-row>
+      <cv-row class="mg-top-lg">
+        <cv-column>
           <a
             :href="this.joinEndpoint + '/cluster-admin/'"
             class="external-link-button"
@@ -242,10 +242,10 @@
               {{ $t("init.redirect_cluster_link") }}
             </NsButton>
           </a>
-        </div>
-      </div>
-    </div>
-  </div>
+        </cv-column>
+      </cv-row>
+    </template>
+  </cv-grid>
 </template>
 
 <script>
@@ -828,8 +828,9 @@ export default {
   height: 100%;
 }
 
-.mg-top {
-  margin-top: $spacing-07;
+.welcome {
+  margin-top: 2rem;
+  margin-bottom: 4rem;
 }
 
 .tile-description {
