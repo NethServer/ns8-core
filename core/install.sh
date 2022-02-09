@@ -31,6 +31,9 @@ if [[ ${ID} == "centos" && "${PLATFORM_ID}" == "platform:el9" ]]; then
 elif [[ "${ID}" == "debian" && "${VERSION_ID}" == "11" ]]; then
     apt-get update
     apt-get -y install gnupg2 python3-venv podman wireguard uuid-runtime jq openssl
+elif [[ "${ID}" == "ubuntu" && "${VERSION_ID}" == "20.04" && "${CI}" == "true" && "${GITHUB_ACTIONS}" == "true" ]]; then
+    apt-get update
+    apt-get -y install wireguard
 else
     echo "System not supported"
     exit 1
