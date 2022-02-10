@@ -59,7 +59,7 @@ var agentPrefix = os.Args[1]
 var actionPaths = os.Args[2:]
 var rdb *redis.Client
 
-var pollingDuration = 5 * time.Second
+var pollingDuration = 5000 * time.Millisecond
 var taskExpireDuration = 24 * time.Hour
 
 func prepareActionEnvironment() []string {
@@ -451,6 +451,8 @@ func runAction(actionCtx context.Context, task *models.Task) {
 				if err := syscall.Kill(-cmd.Process.Pid, syscall.SIGTERM); err != nil {
 					log.Print(SD_ERR+"Kill failed: ", err)
 				}
+			case <- time.After(pollingDuration):
+				publishStatus(rdb, progressChannel, actionDescriptor)
 			}
 		}
 		if err := cmd.Wait(); err != nil {
@@ -520,6 +522,15 @@ func main() {
 	redisAddress := os.Getenv("REDIS_ADDRESS")
 	if redisAddress == "" {
 		redisAddress = "127.0.0.1:6379"
+	}
+
+	// Override default lenght of polling interval (5000ms)
+	ePollingDuration := os.Getenv("AGENT_POLLING_INTERVAL")
+	if ePollingDuration != "" {
+		oValue, convError := time.ParseDuration(ePollingDuration)
+		if convError == nil {
+			pollingDuration = oValue
+		}
 	}
 
 	// If we have a REDIS_PASSWORD the default redis username is the agentPrefix string
