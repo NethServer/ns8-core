@@ -40,6 +40,7 @@
     "no_label": "No label",
     "next": "Next",
     "previous": "Previous",
+    "go_back": "Go back",
     "finish": "Finish",
     "please_read_carefully": "Please read carefully",
     "type_to_confirm": "Type <strong>{name}</strong> to confirm deletion",
@@ -58,7 +59,9 @@
     "no_search_results_description": "Try changing your search query",
     "success": "Success",
     "save": "Save",
-    "all_good": "All good"
+    "all_good": "All good",
+    "upload_drop_target_text": "Click or drag and drop file here",
+    "remove": "Remove"
   },
   "error": {
     "error": "Error",
@@ -136,7 +139,16 @@
     "redirect_cluster": "Worker Node",
     "redirect_cluster_description": "This node is a worker of the cluster now. Click the button below to access cluster administration page on the leader node.",
     "redirect_cluster_link": "Go to cluster administration",
-    "node_added_to_cluster": "Node {nodeId} added to cluster"
+    "node_added_to_cluster": "Node {nodeId} added to cluster",
+    "restore_cluster": "Restore cluster",
+    "restore_cluster_description": "Restore a NethServer 8 core backup and restore backed up apps",
+    "restore_from_core_backup_file": "Restore from core backup file",
+    "restore_from_remote_url": "Restore from remote URL",
+    "remote_url": "Remote URL",
+    "backup_password": "Backup password",
+    "use_admin_password": "Use admin password",
+    "backup_password_tooltip": "Password used to decipher backup. If empty, <strong>admin</strong> user password is used",
+    "upload_core_backup_file": "Upload core backup file"
   },
   "shell": {
     "skip_to_content": "Skip to content",

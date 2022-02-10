@@ -1,5 +1,5 @@
 <template>
-  <cv-grid>
+  <cv-grid class="welcome-grid">
     <cv-loading
       :active="isCreatingCluster || isJoiningCluster"
       :overlay="true"
@@ -24,35 +24,66 @@
           </h2>
         </cv-column>
       </cv-row>
-      <!-- create / join cluster -->
+      <!-- create / join / restore cluster -->
       <cv-row>
-        <cv-column :md="4">
-          <NsTile
-            :light="true"
-            kind="clickable"
-            :icon="EdgeCluster32"
-            @click="selectCreateCluster"
-            large
-          >
-            <h6 class="mg-bottom-sm">{{ $t("init.create_cluster") }}</h6>
-            <div class="tile-description">
-              {{ $t("init.create_cluster_description") }}
-            </div>
-          </NsTile>
-        </cv-column>
-        <cv-column :md="4">
-          <NsTile
-            :light="true"
-            kind="clickable"
-            :icon="Connect32"
-            @click="selectJoinCluster"
-            large
-          >
-            <h6 class="mg-bottom-sm">{{ $t("init.join_cluster") }}</h6>
-            <div class="tile-description">
-              {{ $t("init.join_cluster_description") }}
-            </div>
-          </NsTile>
+        <cv-column>
+          <cv-tile light>
+            <cv-grid fullWidth class="mg-top-lg">
+              <cv-row>
+                <cv-column :md="4">
+                  <NsTile
+                    kind="clickable"
+                    :icon="EdgeCluster32"
+                    @click="selectCreateCluster"
+                    large
+                  >
+                    <h6 class="mg-bottom-sm">
+                      {{ $t("init.create_cluster") }}
+                    </h6>
+                    <div class="tile-description">
+                      {{ $t("init.create_cluster_description") }}
+                    </div>
+                  </NsTile>
+                </cv-column>
+                <cv-column :md="4">
+                  <NsTile
+                    kind="clickable"
+                    :icon="Connect32"
+                    @click="selectJoinCluster"
+                    large
+                  >
+                    <h6 class="mg-bottom-sm">
+                      {{ $t("init.join_cluster") }}
+                    </h6>
+                    <div class="tile-description">
+                      {{ $t("init.join_cluster_description") }}
+                    </div>
+                  </NsTile>
+                </cv-column>
+              </cv-row>
+              <cv-row>
+                <cv-column class="horizontal-divider"> </cv-column>
+              </cv-row>
+              <cv-row>
+                <cv-column>
+                  <NsTile
+                    kind="clickable"
+                    :icon="Reset32"
+                    @click="selectRestoreCluster"
+                    large
+                    class="restore-card"
+                  >
+                    <h6 class="mg-bottom-sm">
+                      {{ $t("init.restore_cluster") }}
+                    </h6>
+                    <div class="tile-description">
+                      {{ $t("init.restore_cluster_description") }}
+                    </div>
+                  </NsTile>
+                </cv-column>
+              </cv-row>
+            </cv-grid>
+          </cv-tile>
         </cv-column>
       </cv-row>
     </template>
@@ -106,17 +137,24 @@
                   :equalLabel="$t('password.equal')"
                   :focus="focusPasswordField"
                 />
-                <NsButton
-                  kind="primary"
-                  :icon="Password20"
-                  :disabled="isChangingPassword"
-                  >{{ $t("init.change_password") }}</NsButton
-                >
-                <div>
-                  <cv-link @click="selectJoinCluster" class="mg-top-lg">{{
-                    $t("init.join_cluster_instead")
-                  }}</cv-link>
-                </div>
+                <cv-button-set class="footer-buttons">
+                  <NsButton
+                    type="button"
+                    kind="secondary"
+                    :icon="ChevronLeft20"
+                    size="lg"
+                    @click="goToWelcomePage"
+                    >{{ $t("common.go_back") }}
+                  </NsButton>
+                  <NsButton
+                    kind="primary"
+                    :loading="isChangingPassword"
+                    :disabled="isChangingPassword"
+                    :icon="Password20"
+                    size="lg"
+                    >{{ $t("init.change_password") }}
+                  </NsButton>
+                </cv-button-set>
               </cv-form>
             </cv-tile>
           </cv-column>
@@ -148,6 +186,8 @@
                   :label="$t('init.vpn_endpoint_port')"
                   v-model.trim="vpnEndpointPort"
                   :invalid-message="$t(error.vpnEndpointPort)"
+                  type="number"
+                  class="narrow"
                   ref="vpnEndpointPort"
                 >
                 </cv-text-input>
@@ -155,20 +195,28 @@
                   :label="$t('init.vpn_cidr')"
                   v-model.trim="vpnCidr"
                   :invalid-message="$t(error.vpnCidr)"
+                  class="narrow"
                   ref="vpnCidr"
                 >
                 </cv-text-input>
-                <NsButton
-                  kind="primary"
-                  :icon="EdgeCluster20"
-                  :disabled="isCreatingCluster"
-                  >{{ $t("init.create_cluster") }}</NsButton
-                >
-                <div>
-                  <cv-link @click="selectJoinCluster" class="mg-top-lg">{{
-                    $t("init.join_cluster_instead")
-                  }}</cv-link>
-                </div>
+                <cv-button-set class="footer-buttons">
+                  <NsButton
+                    type="button"
+                    kind="secondary"
+                    :icon="ChevronLeft20"
+                    size="lg"
+                    @click="goToWelcomePage"
+                    >{{ $t("common.go_back") }}
+                  </NsButton>
+                  <NsButton
+                    kind="primary"
+                    :loading="isCreatingCluster"
+                    :disabled="isCreatingCluster"
+                    :icon="EdgeCluster20"
+                    size="lg"
+                    >{{ $t("init.create_cluster") }}
+                  </NsButton>
+                </cv-button-set>
               </cv-form>
             </cv-tile>
           </cv-column>
@@ -206,18 +254,300 @@
                 v-model="tlsVerify"
                 value="checkTlsVerify"
               />
-              <NsButton kind="primary" :icon="Connect20">{{
-                $t("init.join_cluster")
-              }}</NsButton>
-              <div>
-                <cv-link @click="selectCreateCluster" class="mg-top-lg">{{
-                  $t("init.create_cluster_instead")
-                }}</cv-link>
-              </div>
+              <cv-button-set class="footer-buttons">
+                <NsButton
+                  type="button"
+                  kind="secondary"
+                  :icon="ChevronLeft20"
+                  size="lg"
+                  @click="goToWelcomePage"
+                  >{{ $t("common.go_back") }}
+                </NsButton>
+                <NsButton
+                  kind="primary"
+                  :loading="isJoiningCluster"
+                  :disabled="isJoiningCluster"
+                  :icon="Connect20"
+                  size="lg"
+                  >{{ $t("init.join_cluster") }}
+                </NsButton>
+              </cv-button-set>
             </cv-form>
           </cv-tile>
         </cv-column>
       </cv-row>
+    </template>
+    <template v-else-if="q.page === 'restore'">
+      <template v-if="isPasswordChangeNeeded">
+        <cv-row>
+          <!-- password change needed -->
+          <cv-column class="welcome">
+            <h2>{{ $t("init.restore_cluster") }}</h2>
+            <div class="title-description">
+              {{ $t("init.restore_cluster_description") }}
+            </div>
+          </cv-column>
+        </cv-row>
+        <cv-row>
+          <cv-column>
+            <NsInlineNotification
+              kind="info"
+              :title="$t('init.change_admin_password')"
+              :description="$t('init.change_admin_password_description')"
+              :showCloseButton="false"
+            />
+          </cv-column>
+        </cv-row>
+        <cv-row>
+          <cv-column>
+            <cv-tile light>
+              <cv-form @submit.prevent="changePassword">
+                <cv-text-input
+                  :label="$t('init.current_password')"
+                  v-model="currentPassword"
+                  :invalid-message="$t(error.currentPassword)"
+                  type="password"
+                  ref="currentPassword"
+                >
+                </cv-text-input>
+                <NsPasswordInput
+                  :newPasswordLabel="$t('init.new_password')"
+                  :confirmPasswordLabel="$t('init.new_password_confirm')"
+                  v-model="newPassword"
+                  @passwordValidation="onPasswordValidation"
+                  :newPasswordInvalidMessage="$t(error.newPassword)"
+                  :confirmPasswordInvalidMessage="$t(error.confirmPassword)"
+                  :passwordHideLabel="$t('password.hide_password')"
+                  :passwordShowLabel="$t('password.show_password')"
+                  :lengthLabel="$t('password.long_enough')"
+                  :lowercaseLabel="$t('password.lowercase_letter')"
+                  :uppercaseLabel="$t('password.uppercase_letter')"
+                  :numberLabel="$t('password.number')"
+                  :symbolLabel="$t('password.symbol')"
+                  :equalLabel="$t('password.equal')"
+                  :focus="focusPasswordField"
+                />
+                <cv-button-set class="footer-buttons">
+                  <NsButton
+                    type="button"
+                    kind="secondary"
+                    :icon="ChevronLeft20"
+                    size="lg"
+                    @click="goToWelcomePage"
+                    >{{ $t("common.go_back") }}
+                  </NsButton>
+                  <NsButton
+                    kind="primary"
+                    :loading="isChangingPassword"
+                    :disabled="isChangingPassword"
+                    :icon="Password20"
+                    size="lg"
+                    >{{ $t("init.change_password") }}
+                  </NsButton>
+                </cv-button-set>
+              </cv-form>
+            </cv-tile>
+          </cv-column>
+        </cv-row>
+      </template>
+      <!-- admin password was changed -->
+      <template v-else>
+        <cv-row>
+          <cv-column class="welcome">
+            <h2>{{ $t("init.restore_cluster") }}</h2>
+            <div class="title-description">
+              {{ $t("init.restore_cluster_description") }}
+            </div>
+          </cv-column>
+        </cv-row>
+        <!-- restore cluster -->
+        <template v-if="!restore.type">
+          <!-- restore from file / url -->
+          <cv-row>
+            <cv-column>
+              <cv-tile light>
+                <cv-grid fullWidth class="mg-top-lg no-padding">
+                  <cv-row>
+                    <cv-column :md="4">
+                      <NsTile
+                        kind="clickable"
+                        :icon="Link32"
+                        @click="selectRestoreFromUrl"
+                        large
+                      >
+                        <h6>
+                          {{ $t("init.restore_from_remote_url") }}
+                        </h6>
+                      </NsTile>
+                    </cv-column>
+                    <cv-column :md="4">
+                      <NsTile
+                        kind="clickable"
+                        :icon="Document32"
+                        @click="selectRestoreFromFile"
+                        large
+                      >
+                        <h6>
+                          {{ $t("init.restore_from_core_backup_file") }}
+                        </h6>
+                      </NsTile>
+                    </cv-column>
+                  </cv-row>
+                </cv-grid>
+                <cv-button-set class="footer-buttons">
+                  <NsButton
+                    type="button"
+                    kind="secondary"
+                    :icon="ChevronLeft20"
+                    size="lg"
+                    @click="goToWelcomePage"
+                    >{{ $t("common.go_back") }}
+                  </NsButton>
+                </cv-button-set>
+              </cv-tile>
+            </cv-column>
+          </cv-row>
+        </template>
+        <template v-else-if="restore.type == 'url'">
+          <!-- restore from url -->
+          <cv-row>
+            <cv-column>
+              <cv-tile light>
+                <cv-form @submit.prevent="retrieveClusterBackup">
+                  <NsTextInput
+                    v-model.trim="restore.url"
+                    :label="$t('init.remote_url')"
+                    placeholder="https://myserver/core-backup.json.gz.gpg"
+                    :invalid-message="error.restore.url"
+                    :disabled="loading.retrieveClusterBackup"
+                    class="mg-bottom-sm"
+                    ref="remoteUrl"
+                  />
+                  <cv-checkbox
+                    :label="$t('init.tls_verify')"
+                    v-model="restore.tlsVerify"
+                    value="checkTlsVerify"
+                  />
+                  <!-- advanced options -->
+                  <cv-accordion ref="accordion" class="mg-top-lg">
+                    <cv-accordion-item :open="toggleAccordion[0]">
+                      <template slot="title">{{
+                        $t("common.advanced")
+                      }}</template>
+                      <template slot="content">
+                        <NsTextInput
+                          v-model.trim="restore.backupPassword"
+                          :label="$t('init.backup_password')"
+                          :placeholder="$t('init.use_admin_password')"
+                          :invalid-message="error.restore.backupPassword"
+                          :disabled="loading.retrieveClusterBackup"
+                          tooltipAlignment="center"
+                          tooltipDirection="right"
+                          ref="backupPassword"
+                          class="mg-top-md"
+                        >
+                          <template #tooltip>
+                            <span
+                              v-html="$t('init.backup_password_tooltip')"
+                            ></span>
+                          </template>
+                        </NsTextInput>
+                      </template>
+                    </cv-accordion-item>
+                  </cv-accordion>
+                  <cv-button-set class="footer-buttons">
+                    <NsButton
+                      type="button"
+                      kind="secondary"
+                      :icon="ChevronLeft20"
+                      size="lg"
+                      @click="restore.type = ''"
+                      >{{ $t("common.go_back") }}
+                    </NsButton>
+                    <NsButton
+                      kind="primary"
+                      :loading="loading.retrieveClusterBackup"
+                      :disabled="loading.retrieveClusterBackup"
+                      :icon="ChevronRight20"
+                      size="lg"
+                      >{{ $t("common.next") }}
+                    </NsButton>
+                  </cv-button-set>
+                </cv-form>
+              </cv-tile>
+            </cv-column>
+          </cv-row>
+        </template>
+        <template v-else-if="restore.type == 'file'">
+          <!-- restore from file -->
+          <cv-row>
+            <cv-column>
+              <cv-tile light>
+                <cv-form @submit.prevent="retrieveClusterBackup">
+                  <div>
+                    {{ $t("init.upload_core_backup_file") }}
+                  </div>
+                  <cv-file-uploader
+                    :drop-target-label="$t('common.upload_drop_target_text')"
+                    accept=".gpg"
+                    :clear-on-reselect="true"
+                    :multiple="false"
+                    :removable="true"
+                    :remove-aria-label="$t('common.remove')"
+                    ref="fileUploader"
+                  >
+                  </cv-file-uploader>
+                  <!-- advanced options -->
+                  <cv-accordion ref="accordion" class="mg-top-lg">
+                    <cv-accordion-item :open="toggleAccordion[0]">
+                      <template slot="title">{{
+                        $t("common.advanced")
+                      }}</template>
+                      <template slot="content">
+                        <NsTextInput
+                          v-model.trim="restore.backupPassword"
+                          :label="$t('init.backup_password')"
+                          :placeholder="$t('init.use_admin_password')"
+                          :invalid-message="error.restore.backupPassword"
+                          :disabled="loading.retrieveClusterBackup"
+                          tooltipAlignment="center"
+                          tooltipDirection="right"
+                          ref="backupPassword"
+                          class="mg-top-md"
+                        >
+                          <template #tooltip>
+                            <span
+                              v-html="$t('init.backup_password_tooltip')"
+                            ></span>
+                          </template>
+                        </NsTextInput>
+                      </template>
+                    </cv-accordion-item>
+                  </cv-accordion>
+                  <cv-button-set class="footer-buttons">
+                    <NsButton
+                      type="button"
+                      kind="secondary"
+                      :icon="ChevronLeft20"
+                      size="lg"
+                      @click="restore.type = ''"
+                      >{{ $t("common.go_back") }}
+                    </NsButton>
+                    <NsButton
+                      kind="primary"
+                      :loading="loading.retrieveClusterBackup"
+                      :disabled="loading.retrieveClusterBackup"
+                      :icon="ChevronRight20"
+                      size="lg"
+                      >{{ $t("common.next") }}
+                    </NsButton>
+                  </cv-button-set>
+                </cv-form>
+              </cv-tile>
+            </cv-column>
+          </cv-row>
+        </template>
+      </template>
     </template>
     <template v-else-if="q.page === 'redirect'">
       <cv-row>
@@ -300,6 +630,15 @@ export default {
       isJoiningCluster: false,
       isChangingPassword: false,
       isMaster: true,
+      restore: {
+        type: "",
+        url: "",
+        tlsVerify: true,
+        backupPassword: "",
+      },
+      loading: {
+        retrieveClusterBackup: false,
+      },
       error: {
         currentPassword: "",
         newPassword: "",
@@ -308,6 +647,10 @@ export default {
         vpnEndpointPort: "",
         vpnCidr: "",
         joinCode: "",
+        restore: {
+          url: "",
+          backupPassword: "",
+        },
       },
     };
   },
@@ -367,7 +710,7 @@ export default {
       this.vpnCidr = defaults.vpn.network;
     },
     selectCreateCluster() {
-      this.$router.push("/init?page=create");
+      this.$router.push({ path: "/init", query: { page: "create" } });
 
       if (this.isPasswordChangeNeeded) {
         this.focusElement("currentPassword");
@@ -376,8 +719,24 @@ export default {
       }
     },
     selectJoinCluster() {
-      this.$router.push("/init?page=join");
+      this.$router.push({ path: "/init", query: { page: "join" } });
       this.focusElement("joinCode");
+    },
+    selectRestoreCluster() {
+      this.$router.push({ path: "/init", query: { page: "restore" } });
+
+      if (this.isPasswordChangeNeeded) {
+        this.focusElement("currentPassword");
+      }
+    },
+    selectRestoreFromFile() {
+      this.restore.type = "file";
+    },
+    selectRestoreFromUrl() {
+      this.restore.type = "url";
+    },
+    goToWelcomePage() {
+      this.$router.push({ path: "/init", query: { page: "welcome" } });
     },
     async retrieveClusterStatus() {
       const taskAction = "get-cluster-status";
@@ -809,12 +1168,19 @@ export default {
       this.error.joinCode = "init.invalid_join_code";
       this.focusElement("joinCode");
     },
+    retrieveClusterBackup() {
+      console.log("retrieveClusterBackup"); ////
+    },
   },
 };
 </script>
 
 <style scoped lang="scss">
 @import "../styles/carbon-utils";
+
+.welcome-grid {
+  max-width: 70rem;
+}
 
 .logo {
   width: 4rem;
@@ -839,6 +1205,34 @@ export default {
 
 .bx--form .bx--form-item {
   margin-bottom: $spacing-06;
+}
+
+.horizontal-divider {
+  margin-top: 0rem;
+  margin-bottom: 2rem;
+  height: 1px;
+  background-color: $ui-04;
+  max-width: 40rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.restore-card {
+  max-width: 20rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.footer-buttons {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: $spacing-07;
+}
+
+@media (max-width: $breakpoint-medium) {
+  .footer-buttons.bx--btn-set .bx--btn {
+    max-width: 9rem;
+  }
 }
 </style>
 

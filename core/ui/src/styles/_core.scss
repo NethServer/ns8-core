@@ -420,6 +420,15 @@ a {
   right: 4rem !important;
 }
 
+// narrow fields
+.narrow .bx--text-input,
+.narrow .bx--text-input__field-wrapper,
+.cv-select.narrow,
+.cv-multi-select.narrow,
+.cv-combo-box.narrow {
+  max-width: 12rem;
+}
+
 // styles for large devices
 @media (min-width: $breakpoint-medium) {
   // limit form fields width on large devices
