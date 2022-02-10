@@ -3,9 +3,6 @@ Resource         taskrun.resource
 Test Setup       Start the command monitoring and the agent
 Test Teardown    Stop command monitoring and flush the database
 
-*** Variables ***
-${AGENT_ID}    %{AGENT_ID}
-
 *** Test Cases ***
 Stop an idle agent gracefully
     Given The command is received    brpop    module/t1000/tasks

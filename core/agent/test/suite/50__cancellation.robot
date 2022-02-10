@@ -5,9 +5,6 @@ Suite Teardown   Stop the agent and cleanup
 Test Setup       Start command monitoring
 Test Teardown    Stop command monitoring and flush the database
 
-*** Variables ***
-${AGENT_ID}    %{AGENT_ID}
-
 *** Test Cases ***
 Cancel a long running task
     Given The task is submitted    run-longlasting

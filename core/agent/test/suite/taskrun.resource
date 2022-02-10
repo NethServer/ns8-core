@@ -4,6 +4,9 @@ Library            Process
 Library            OperatingSystem
 Library            Telnet
 
+*** Variables ***
+${AGENT_ID}    %{AGENT_ID}
+
 *** Keywords ***
 Start the agent
     Create File    /srv/state/environment
@@ -42,17 +45,17 @@ Wait until the agent log contains
 Grep in the agent log
     [Arguments]    ${pattern}
     ${matches} =     Grep File    /srv/log/agent.log    ${pattern}
-    Should Not Be Empty    ${matches}    msg=${pattern} not found in the agent log
+    Should Not Be Empty    ${matches}    msg="${pattern}" not found in the agent log
 
 The agent environment contains
     [Arguments]    ${pattern}
     ${matches} =     Grep File    /srv/state/environment    ${pattern}
-    Should Not Be Empty    ${matches}    msg=${pattern} not found in the environment
+    Should Not Be Empty    ${matches}    msg="${pattern}" not found in the environment
 
 The agent environment does not contain
     [Arguments]    ${pattern}
     ${matches} =     Grep File    /srv/state/environment    ${pattern}
-    Should Be Empty    ${matches}    msg=${pattern} was found in the environment
+    Should Be Empty    ${matches}    msg="${pattern}" was found in the environment
 
 The task is submitted
     [Arguments]    ${action_name}    ${task_data}=""

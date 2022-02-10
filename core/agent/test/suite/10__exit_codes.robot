@@ -6,9 +6,6 @@ Suite Teardown   Stop the agent and cleanup
 Test Setup       Start command monitoring
 Test Teardown    Stop command monitoring
 
-*** Variables ***
-${AGENT_ID}    %{AGENT_ID}
-
 *** Test Cases ***
 Action completes succesfully
     Given The task is submitted    run-success

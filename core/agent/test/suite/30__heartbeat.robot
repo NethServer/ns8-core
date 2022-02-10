@@ -5,9 +5,6 @@ Suite Teardown   Set Environment Variable    AGENT_POLLING_INTERVAL    5s
 Test Setup       Start the command monitoring and the agent
 Test Teardown    Stop command monitoring the agent and flush the database
 
-*** Variables ***
-${AGENT_ID}    %{AGENT_ID}
-
 *** Test Cases ***
 Long-running action sends progress heartbeat
     Given The task is submitted    run-longlasting
