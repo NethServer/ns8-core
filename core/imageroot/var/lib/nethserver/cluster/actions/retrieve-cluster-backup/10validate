@@ -74,14 +74,14 @@ else:
 # check if the file is a valid gpg file
 pf = subprocess.run(['file', '-b0', tmp_dump], env={"LANG": "C"}, capture_output = True)
 if not 'GPG' in pf.stdout.decode('ASCII'):
-    errors.append('not_valid_gpg_file')
+    errors.append({'field':'backup_file', 'parameter':'backup_file', 'value': request['file'], 'error':'not_valid_gpg_file'})
 
 # skip check if not a valid gpg file
 if not errors:
     # check if the passphrase is good
     pg = subprocess.run(['gpg', '--batch', '-d', '--pinentry-mode', 'loopback', '--passphrase-file', tmp_pass, '-o', '/dev/null', tmp_dump])
     if pg.returncode > 0:
-        errors.append('invalid_passphrase')
+        errors.append({'field':'backup_password', 'parameter':'backup_password', 'value': passphrase, 'error':'invalid_passphrase'})
 
 # if everything is ok, keep temporary files to be reused on next step
 if errors:
