@@ -141,14 +141,17 @@
     "redirect_cluster_link": "Go to cluster administration",
     "node_added_to_cluster": "Node {nodeId} added to cluster",
     "restore_cluster": "Restore cluster",
-    "restore_cluster_description": "Restore a NethServer 8 core backup and restore backed up apps",
-    "restore_from_core_backup_file": "Restore from core backup file",
+    "restore_cluster_description": "Restore a cluster backup and backed up apps",
+    "restore_from_cluster_backup_file": "Restore from cluster backup file",
     "restore_from_remote_url": "Restore from remote URL",
     "remote_url": "Remote URL",
     "backup_password": "Backup password",
     "use_admin_password": "Use admin password",
     "backup_password_tooltip": "Password used to decipher backup. If empty, <strong>admin</strong> user password is used",
-    "upload_core_backup_file": "Upload core backup file"
+    "upload_cluster_backup_file": "Upload cluster backup file",
+    "invalid_passphrase": "Invalid password. Enter the password used to cipher cluster backup (by default it's the admin password of the old cluster)",
+    "not_valid_gpg_file": "Invalid GPG file",
+    "url_format": "Invalid URL"
   },
   "shell": {
     "skip_to_content": "Skip to content",
@@ -240,7 +243,8 @@
     "alter-backup": "Alter backup",
     "run-backup": "Run backup",
     "restore-module": "Restore module",
-    "read-backup-repository": "Read backup repository"
+    "read-backup-repository": "Read backup repository",
+    "retrieve-cluster-backup": "Retrieve cluster backup"
   },
   "network": {
     "title": "Network"

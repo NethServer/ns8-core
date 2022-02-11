@@ -388,7 +388,7 @@
                         large
                       >
                         <h6>
-                          {{ $t("init.restore_from_core_backup_file") }}
+                          {{ $t("init.restore_from_cluster_backup_file") }}
                         </h6>
                       </NsTile>
                     </cv-column>
@@ -413,7 +413,7 @@
           <cv-row>
             <cv-column>
               <cv-tile light>
-                <cv-form @submit.prevent="retrieveClusterBackup">
+                <cv-form @submit.prevent="retrieveClusterBackupFromUrl">
                   <NsTextInput
                     v-model.trim="restore.url"
                     :label="$t('init.remote_url')"
@@ -421,7 +421,7 @@
                     :invalid-message="error.restore.url"
                     :disabled="loading.retrieveClusterBackup"
                     class="mg-bottom-sm"
-                    ref="remoteUrl"
+                    ref="url"
                   />
                   <cv-checkbox
                     :label="$t('init.tls_verify')"
@@ -430,20 +430,31 @@
                   />
                   <!-- advanced options -->
                   <cv-accordion ref="accordion" class="mg-top-lg">
-                    <cv-accordion-item :open="toggleAccordion[0]">
+                    <cv-accordion-item
+                      :open="
+                        toggleAccordion[0] ||
+                        restore.isBackupPasswordAccordionOpenAndDisabled
+                      "
+                      :disabled="
+                        restore.isBackupPasswordAccordionOpenAndDisabled
+                      "
+                    >
                       <template slot="title">{{
                         $t("common.advanced")
                       }}</template>
                       <template slot="content">
                         <NsTextInput
+                          type="password"
+                          :password-hide-label="$t('password.hide_password')"
+                          :password-show-label="$t('password.show_password')"
                           v-model.trim="restore.backupPassword"
                           :label="$t('init.backup_password')"
                           :placeholder="$t('init.use_admin_password')"
-                          :invalid-message="error.restore.backupPassword"
+                          :invalid-message="error.restore.backup_password"
                           :disabled="loading.retrieveClusterBackup"
                           tooltipAlignment="center"
                           tooltipDirection="right"
-                          ref="backupPassword"
+                          ref="backup_password"
                           class="mg-top-md"
                         >
                           <template #tooltip>
@@ -483,36 +494,59 @@
           <cv-row>
             <cv-column>
               <cv-tile light>
-                <cv-form @submit.prevent="retrieveClusterBackup">
+                <cv-form @submit.prevent="retrieveClusterBackupFromFile">
                   <div>
-                    {{ $t("init.upload_core_backup_file") }}
+                    {{ $t("init.upload_cluster_backup_file") }}
                   </div>
                   <cv-file-uploader
                     :drop-target-label="$t('common.upload_drop_target_text')"
                     accept=".gpg"
                     :clear-on-reselect="true"
                     :multiple="false"
-                    :removable="true"
+                    :removable="false"
                     :remove-aria-label="$t('common.remove')"
-                    ref="fileUploader"
+                    v-model="restore.filesUploaded"
+                    @change="onFileUpload"
+                    :class="[
+                      'file-uploader',
+                      { 'validation-failed': error.restore.backup_file },
+                    ]"
+                    ref="backup_file"
                   >
                   </cv-file-uploader>
+                  <!-- invalid message for file uploader -->
+                  <div
+                    v-if="error.restore.backup_file"
+                    class="validation-failed-invalid-message"
+                    v-html="error.restore.backup_file"
+                  ></div>
                   <!-- advanced options -->
                   <cv-accordion ref="accordion" class="mg-top-lg">
-                    <cv-accordion-item :open="toggleAccordion[0]">
+                    <cv-accordion-item
+                      :open="
+                        toggleAccordion[0] ||
+                        restore.isBackupPasswordAccordionOpenAndDisabled
+                      "
+                      :disabled="
+                        restore.isBackupPasswordAccordionOpenAndDisabled
+                      "
+                    >
                       <template slot="title">{{
                         $t("common.advanced")
                       }}</template>
                       <template slot="content">
                         <NsTextInput
+                          type="password"
+                          :password-hide-label="$t('password.hide_password')"
+                          :password-show-label="$t('password.show_password')"
                           v-model.trim="restore.backupPassword"
                           :label="$t('init.backup_password')"
                           :placeholder="$t('init.use_admin_password')"
-                          :invalid-message="error.restore.backupPassword"
+                          :invalid-message="error.restore.backup_password"
                           :disabled="loading.retrieveClusterBackup"
                           tooltipAlignment="center"
                           tooltipDirection="right"
-                          ref="backupPassword"
+                          ref="backup_password"
                           class="mg-top-md"
                         >
                           <template #tooltip>
@@ -524,6 +558,13 @@
                       </template>
                     </cv-accordion-item>
                   </cv-accordion>
+                  <NsInlineNotification
+                    v-if="error.retrieveClusterBackup"
+                    kind="error"
+                    :title="$t('action.retrieve-cluster-backup')"
+                    :description="error.retrieveClusterBackup"
+                    :showCloseButton="false"
+                  />
                   <cv-button-set class="footer-buttons">
                     <NsButton
                       type="button"
@@ -635,6 +676,10 @@ export default {
         url: "",
         tlsVerify: true,
         backupPassword: "",
+        filesUploaded: [],
+        base64FileUploaded: "",
+        isBackupPasswordAccordionOpenAndDisabled: false,
+        isBackupPasswordAccordionDisabled: false,
       },
       loading: {
         retrieveClusterBackup: false,
@@ -647,9 +692,11 @@ export default {
         vpnEndpointPort: "",
         vpnCidr: "",
         joinCode: "",
+        retrieveClusterBackup: "",
         restore: {
           url: "",
-          backupPassword: "",
+          backup_password: "",
+          backup_file: "",
         },
       },
     };
@@ -1001,6 +1048,7 @@ export default {
           extra: {
             title: this.$t("action." + taskAction),
             isNotificationHidden: true,
+            toastTimeout: 0, // persistent notification
           },
         })
       );
@@ -1117,6 +1165,7 @@ export default {
           extra: {
             title: this.$t("action." + taskAction),
             isNotificationHidden: true,
+            toastTimeout: 0, // persistent notification
           },
         })
       );
@@ -1168,8 +1217,184 @@ export default {
       this.error.joinCode = "init.invalid_join_code";
       this.focusElement("joinCode");
     },
-    retrieveClusterBackup() {
-      console.log("retrieveClusterBackup"); ////
+    async onFileUpload(files) {
+      this.error.restore.backup_file = "";
+      this.restore.base64FileUploaded = "";
+
+      if (files.length > 1) {
+        // keep only last uploaded file
+
+        this.$set(this.restore.filesUploaded, 0, files[files.length - 1]);
+        this.restore.filesUploaded.splice(1);
+      }
+
+      const fileUploaded = this.restore.filesUploaded[0];
+
+      if (!fileUploaded || fileUploaded.invalidMessageTitle) {
+        // invalid file
+        return;
+      }
+      const file = fileUploaded.file;
+      const result = await this.toBase64(file).catch((e) => Error(e));
+
+      if (result instanceof Error) {
+        console.log("error converting file to base64:", result.message);
+        return;
+      } else {
+        this.restore.base64FileUploaded = result.split(
+          "data:application/pgp-encrypted;base64,"
+        )[1];
+        console.log("base64!", this.restore.base64FileUploaded); ////
+      }
+    },
+    //// move to ui-lib
+    toBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = (error) => reject(error);
+      });
+    },
+    validateRetrieveClusterBackupFromFile() {
+      let isValidationOk = true;
+      this.clearErrors();
+
+      if (
+        !this.restore.filesUploaded.length ||
+        !this.restore.base64FileUploaded
+      ) {
+        this.error.restore.backup_file = this.$t("common.required");
+
+        if (isValidationOk) {
+          this.focusElement("backup_file");
+          isValidationOk = false;
+        }
+      }
+      return isValidationOk;
+    },
+    validateRetrieveClusterBackupFromUrl() {
+      let isValidationOk = true;
+      this.clearErrors();
+
+      if (!this.restore.url) {
+        this.error.restore.url = this.$t("common.required");
+
+        if (isValidationOk) {
+          this.focusElement("url");
+          isValidationOk = false;
+        }
+      }
+      return isValidationOk;
+    },
+    retrieveClusterBackupFromFile() {
+      if (!this.validateRetrieveClusterBackupFromFile()) {
+        return;
+      }
+
+      const inputData = {
+        type: "file",
+        password: this.restore.backupPassword,
+        file: this.restore.base64FileUploaded,
+      };
+      this.retrieveClusterBackup(inputData);
+    },
+    retrieveClusterBackupFromUrl() {
+      if (!this.validateRetrieveClusterBackupFromUrl()) {
+        return;
+      }
+
+      const inputData = {
+        type: "url",
+        password: this.restore.backupPassword,
+        url: this.restore.url,
+        tls_verify: this.restore.tlsVerify,
+      };
+      this.retrieveClusterBackup(inputData);
+    },
+    async retrieveClusterBackup(inputData) {
+      // validation already performed in retrieveClusterBackupFromFile() and retrieveClusterBackupFromUrl()
+      this.error.retrieveClusterBackup = "";
+      this.loading.retrieveClusterBackup = true;
+      const taskAction = "retrieve-cluster-backup";
+
+      // register to task validation
+      this.$root.$off(taskAction + "-validation-failed");
+      this.$root.$once(
+        taskAction + "-validation-failed",
+        this.retrieveClusterBackupValidationFailed
+      );
+
+      // register to task error
+      this.$root.$off(taskAction + "-aborted");
+      this.$root.$once(
+        taskAction + "-aborted",
+        this.retrieveClusterBackupAborted
+      );
+
+      // register to task completion
+      this.$root.$off(taskAction + "-completed");
+      this.$root.$once(
+        taskAction + "-completed",
+        this.retrieveClusterBackupCompleted
+      );
+
+      console.log("retrieveClusterBackup, inputData", inputData); ////
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          data: inputData,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+            toastTimeout: 0, // persistent notification
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.retrieveClusterBackup = this.getErrorMessage(err);
+        return;
+      }
+    },
+    retrieveClusterBackupValidationFailed(validationErrors) {
+      console.log("retrieveClusterBackupValidationFailed", validationErrors); ////
+
+      this.loading.retrieveClusterBackup = false;
+      let focusAlreadySet = false;
+
+      for (const validationError of validationErrors) {
+        const param = validationError.parameter;
+
+        if (param == "backup_password") {
+          this.restore.isBackupPasswordAccordionOpenAndDisabled = true;
+        }
+
+        console.log("validationError", validationError); ////
+
+        // set i18n error message
+        this.error.restore[param] = this.$t("init." + validationError.error);
+
+        if (!focusAlreadySet) {
+          this.focusElement(param);
+          focusAlreadySet = true;
+        }
+      }
+    },
+    retrieveClusterBackupAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.loading.retrieveClusterBackup = false;
+    },
+    retrieveClusterBackupCompleted(taskContext, taskResult) {
+      console.log("retrieveClusterBackupCompleted", taskResult.output); ////
+
+      this.loading.retrieveClusterBackup = false;
+      this.restore.isBackupPasswordAccordionOpenAndDisabled = false;
+
+      //// go to next step
     },
   },
 };
@@ -1223,6 +1448,10 @@ export default {
   margin-right: auto;
 }
 
+.file-uploader {
+  margin-bottom: 0 !important;
+}
+
 .footer-buttons {
   display: flex;
   justify-content: flex-end;
@@ -1243,5 +1472,11 @@ export default {
 
 .join-code textarea {
   min-height: 5rem;
+}
+
+// highlight file uploaded on validation error
+.validation-failed .bx--file__selected-file {
+  outline: 2px solid $danger-01;
+  outline-offset: -2px;
 }
 </style>

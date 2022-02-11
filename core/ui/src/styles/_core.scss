@@ -445,6 +445,25 @@ a {
 .bx--number input[type="number"] {
   padding-right: 5rem;
 }
+
+// danger highlight for non-textinput elements
+.validation-failed-highlight {
+  outline: 2px solid $danger-01;
+  outline-offset: -2px;
+}
+
+// invalid message for non-textinput elements
+.validation-failed-invalid-message {
+  font-size: 0.75rem;
+  line-height: 1.33333;
+  letter-spacing: 0.32px;
+  margin: $spacing-02 0 0;
+  display: block;
+  overflow: visible;
+  max-height: 12.5rem;
+  font-weight: 400;
+  color: $danger-01;
+}
 // form elements end
 
 // data table start
