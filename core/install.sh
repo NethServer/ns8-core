@@ -39,6 +39,11 @@ else
     exit 1
 fi
 
+if [[ $(journalctl --output cat -n 1) == "" ]]; then
+    echo "Journal is empty, attempting a systemd-journald restart:"
+    systemctl restart systemd-journald.service
+fi
+
 echo "Set kernel parameters:"
 sysctl -w net.ipv4.ip_unprivileged_port_start=23 -w user.max_user_namespaces=28633 -w net.ipv4.ip_forward=1 | tee /etc/sysctl.d/80-nethserver.conf
 
@@ -190,9 +195,6 @@ add-user --role owner --password "${ADMIN_PASSWORD:-Nethesis,1234}" admin
 
 echo "Enable the events gateway for the node agent:"
 systemctl enable --now eventsgw@node
-
-echo "Restart systemd-journald:"
-systemctl restart systemd-journald
 
 cat - <<EOF
 
