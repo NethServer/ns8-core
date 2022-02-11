@@ -443,14 +443,19 @@ func runAction(actionCtx context.Context, task *models.Task) {
 
 		// Block until the three coroutines (stdout, stderr, comfd) finish,
 		// or the action is canceled
+		doneChan := actionCtx.Done()
 		for chanCount := 0; chanCount < 3; {
 			select {
 			case <- comReadLock:
 				chanCount++
-			case <- actionCtx.Done():
+			case <- doneChan:
+				// Just send a TERM signal to the running step. It then
+				// returns an exit code and the whole action is aborted.
+				log.Printf(SD_WARNING+"%s/task/%s: Sending TERM signal to action \"%s\" at step %s", agentPrefix, task.ID, task.Action, lastStep)
 				if err := syscall.Kill(-cmd.Process.Pid, syscall.SIGTERM); err != nil {
 					log.Print(SD_ERR+"Kill failed: ", err)
 				}
+				doneChan = make(chan struct{}) // stop doneChan from being select()'ed
 			case <- time.After(pollingDuration):
 				publishStatus(rdb, progressChannel, actionDescriptor)
 			}

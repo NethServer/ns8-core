@@ -1,0 +1,5 @@
+#!/bin/sh
+
+echo "WARNING_MESSAGE" 1>&2
+
+exit 0
