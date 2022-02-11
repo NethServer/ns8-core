@@ -10,7 +10,7 @@ NethServer 8 (NS8), is the evolution of NethServer 7 (NS7).
 
 Give it a try: [Quickstart](quickstart.md)!
 
-Or explore [core internals](core), [modules architecture](modules) or the [UI](ui).
+See the [FAQ](faq), explore [core internals](core), [modules architecture](modules) or the [UI implementation](ui).
 
 External links:
 - [Project roadmap](https://trello.com/b/R58gtZ8I/ns8-prototype)
