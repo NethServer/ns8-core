@@ -191,6 +191,9 @@ add-user --role owner --password "${ADMIN_PASSWORD:-Nethesis,1234}" admin
 echo "Enable the events gateway for the node agent:"
 systemctl enable --now eventsgw@node
 
+echo "Restart systemd-journald:"
+systemctl restart systemd-journald
+
 cat - <<EOF
 
 NethServer 8 Scratchpad
