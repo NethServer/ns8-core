@@ -7,7 +7,6 @@
         {
             "timestamp": 1644230044,
             "cluster": "mycluster1",
-            "modules": 2,
             "vpn": "cs1.leader.cluster0.gs.nethserver.net:55820",
             "domains": 1,
             "backup_repositories": 1
@@ -36,11 +35,6 @@
             "title": "VPN endpoint",
             "description": "Original VPN host and port",
             "type": "string"
-        },
-        "modules": {
-            "title": "Number of installed modules",
-            "description": "Number of non-core modules installed in the original cluster",
-            "type": "integer"
         },
         "domains": {
             "title": "Number of domains",

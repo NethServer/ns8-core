@@ -73,6 +73,6 @@ fgz = gzip.open(f'{output_dir}/dump.json.gz', mode='r')
 dump = json.loads(fgz.read())
 fgz.close()
 
-result = {'timestamp': dump['timestamp'], 'cluster': dump['cluster']['ui_name'] or '', 'modules': len(dump['modules']), "vpn": dump['vpn']['endpoint'], 'domains': len(dump['cluster']['user_domain']), 'backup_repositories': len(dump['cluster']['backup_repository'])}
+result = {'timestamp': dump['timestamp'], 'cluster': dump['cluster']['ui_name'] or '', "vpn": dump['vpn']['endpoint'], 'domains': len(dump['cluster']['user_domain']['ldap']), 'backup_repositories': len(dump['cluster']['backup_repository'])}
 
 json.dump(result, fp=sys.stdout)
