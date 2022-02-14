@@ -74,19 +74,12 @@ for k in ['network', 'ui_name']:
 # cluster: favorite apps
 dump['cluster']['favorites'] = list(rdb.smembers(f'cluster/favorites'))
 
-# modules: basic environment, label, backups
-for m in rdb.scan_iter('module/*/environment'):
-    k = m.removeprefix('module/')
-    k = k.removesuffix('/environment')
-    ui_name = ""
-    backups = []
-    if rdb.exists(f'module/{k}/ui_name'):
-        ui_name = rdb.get(f'module/{k}/ui_name')
-    if rdb.exists(f'module/{k}/backups'):
-        backups = list(rdb.smembers(f'module/{k}/backups'))
-
-    if ui_name or backups:
-        dump['modules'][rdb.hget(m, 'MODULE_UUID')] = {'ui_name': ui_name, 'backups': backups}
+# modules: backup schedules
+for m in rdb.scan_iter('module/*/backups'):
+    k = m.removeprefix('module/').removesuffix('/backups')
+    uuid = rdb.hget(f'module/{k}/environment', 'MODULE_UUID')
+    dump['modules'][uuid] = {'backups': []}
+    dump['modules'][uuid]['backups'] = list(rdb.smembers(m))
 
 # nodes: vpn, label
 for v in rdb.scan_iter('node/*/vpn'):
