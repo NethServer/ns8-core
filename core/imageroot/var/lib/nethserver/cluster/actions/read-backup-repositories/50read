@@ -45,13 +45,17 @@ for krepo in rdb.scan_iter('cluster/backup_repository/*'):
             continue # skip non-dir entries
         pchild = subprocess.Popen(rclone_cmd + ["REMOTE_PATH/" + oroot['Path']], **popen_args)
         for backup in json.load(pchild.stdout):
-            # parse ISO 8601 date but remove ending Z (UTC timezone)
-            mod_time = datetime.fromisoformat(backup['ModTime'][0:-1])
-            mod_time = mod_time.replace(tzinfo=timezone.utc).timestamp()
+            # parse almost-ISO-8601 dates
+            try:
+                sec_index = backup['ModTime'].rfind('.')
+                mod_time = datetime.strptime(backup['ModTime'][0:sec_index],'%Y-%m-%dT%H:%M:%S')
+                mod_time = int(mod_time.replace(tzinfo=timezone.utc).timestamp())
+            except:
+                mod_time = -1
 
             if not '@' in backup["Path"] or backup["IsDir"] is False:
                 continue # skip non-repo entries
             parts = backup['Path'].split('@')
-            backups.append({'name': oroot['Path'], 'path': f'{oroot["Path"]}/{backup["Path"]}', 'instance': parts[0], 'uuid': parts[1], 'timestamp': int(mod_time), 'repository_id' : repo_uuid, 'repository_name': repo['name'], 'repository_provider': repo['provider'], 'repository_url': repo['url']})
+            backups.append({'name': oroot['Path'], 'path': f'{oroot["Path"]}/{backup["Path"]}', 'instance': parts[0], 'uuid': parts[1], 'timestamp': mod_time, 'repository_id' : repo_uuid, 'repository_name': repo['name'], 'repository_provider': repo['provider'], 'repository_url': repo['url']})
 
 print(json.dumps(backups))
