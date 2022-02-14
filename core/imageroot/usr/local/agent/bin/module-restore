@@ -40,6 +40,7 @@ def get_default_volume_mounts():
     install_dir = os.environ['AGENT_INSTALL_DIR']
     module_is_rootfull = os.geteuid() == 0
     module_id = os.environ['MODULE_ID']
+    volume_args['_installdir'] = f"--volume={install_dir}:/srv"
     if os.path.isfile(install_dir + '/etc/state-include.conf'):
         # Mount Podman volumes by finding their names in the include file:
         with open(install_dir + '/etc/state-include.conf', 'r') as incfile:
@@ -68,5 +69,8 @@ if sys.argv[1:]:
 else:
     podman_args.extend(get_default_volume_mounts()) # mount volumes from state-include.conf
 
-restic_args = ["restore", snapshot, "--target", "."] # workdir should be /srv
+restic_args = ["restore", snapshot,
+    "--target", ".", # workdir should be /srv
+    "--exclude", "state/environment", # special core file exception
+]
 agent.run_restic(rdb, repository, repopath, podman_args, restic_args).check_returncode()
