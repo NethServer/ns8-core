@@ -37,7 +37,7 @@ As NS7, NS8 is perfectly suited for small offices and medium enterprises.
 ### What can I do with NethServer 8?
 
 You can serve an Active Directory domain with Samba 4, or just a simple OpenLDAP server.
-You can host multiple instance of the same application connected to different local or
+You can host multiple instances of the same application connected to different local or
 remote domains.
 
 If you need a new domain, just create a new node and join it to the existing cluster:
