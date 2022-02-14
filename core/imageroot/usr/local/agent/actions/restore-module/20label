@@ -24,4 +24,5 @@ exec 1>&2 # Redirect any output to the journal (stderr)
 
 if [ -f ui_name.dump ]; then
     redis-restore module/$MODULE_ID/ui_name < ui_name.dump
+    rm -f ui_name.dump
 fi
