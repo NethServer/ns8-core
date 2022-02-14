@@ -69,7 +69,7 @@ for d in rdb.scan_iter('cluster/user_domain/ldap/*/conf'):
 
 # cluster: vpn network, label
 for k in ['network', 'ui_name']:
-    dump['cluster'][k] = rdb.get(f'cluster/{k}')
+    dump['cluster'][k] = rdb.get(f'cluster/{k}') or ''
 
 # cluster: favorite apps
 dump['cluster']['favorites'] = list(rdb.smembers(f'cluster/favorites'))
