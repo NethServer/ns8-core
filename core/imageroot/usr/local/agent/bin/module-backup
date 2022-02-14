@@ -43,6 +43,11 @@ if obackup['enabled'] != '1':
     print(f"Backup {backup_id} is not enabled, exit now.", file=sys.stderr)
     sys.exit(0)
 
+# Dump ui_name key, if exists
+if rdb.exists(f'module/{module_id}/ui_name'):
+    with open('ui_name.dump', 'wb') as fp:
+        subprocess.run(["redis-dump", f'module/{module_id}/ui_name'], stdout=fp)
+
 try:
     subprocess.run(["module-dump-state"] + sys.argv[1:], check=True)
 except FileNotFoundError:
