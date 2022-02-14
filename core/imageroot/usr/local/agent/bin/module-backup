@@ -43,10 +43,16 @@ if obackup['enabled'] != '1':
     print(f"Backup {backup_id} is not enabled, exit now.", file=sys.stderr)
     sys.exit(0)
 
+# This file is always required by the restore procedure
+# See the cluster/restore-module action for details
+backup_args = ["state/environment"]
+
 # Dump ui_name key, if exists
 if rdb.exists(f'module/{module_id}/ui_name'):
     with open('ui_name.dump', 'wb') as fp:
-        subprocess.run(["redis-dump", f'module/{module_id}/ui_name'], stdout=fp)
+        dump_p = subprocess.run(["redis-dump", f'module/{module_id}/ui_name'], stdout=fp)
+        if dump_p.returncode == 0:
+            backup_args.append('state/ui_name.dump')
 
 try:
     subprocess.run(["module-dump-state"] + sys.argv[1:], check=True)
@@ -79,10 +85,6 @@ with subprocess.Popen(["podman", "volume", "ls", "--format={{.Name}}"], stdout=s
             continue
 
         podman_args.append(f"--volume={svolume}:/srv/volumes/{dvolume}")
-
-# This file is always required by the restore procedure
-# See the cluster/restore-module action for details
-backup_args = ["state/environment"]
 
 # Configure include pattern list:
 if os.path.isfile(install_dir + "/etc/state-include.conf"):
