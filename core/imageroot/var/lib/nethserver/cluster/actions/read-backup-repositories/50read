@@ -56,6 +56,12 @@ for krepo in rdb.scan_iter('cluster/backup_repository/*'):
             if not '@' in backup["Path"] or backup["IsDir"] is False:
                 continue # skip non-repo entries
             parts = backup['Path'].split('@')
-            backups.append({'name': oroot['Path'], 'path': f'{oroot["Path"]}/{backup["Path"]}', 'instance': parts[0], 'uuid': parts[1], 'timestamp': mod_time, 'repository_id' : repo_uuid, 'repository_name': repo['name'], 'repository_provider': repo['provider'], 'repository_url': repo['url']})
+            installed_instance = ""
+            for mod in rdb.scan_iter('module/*/environment'):
+                u = rdb.hget(mod, 'MODULE_UUID')
+                if rdb.hget(mod, 'MODULE_UUID') == parts[1]:
+                    installed_instance = rdb.hget(mod, 'MODULE_ID')
+                    break
+            backups.append({'name': oroot['Path'], 'path': f'{oroot["Path"]}/{backup["Path"]}', 'instance': parts[0], 'uuid': parts[1], 'timestamp': mod_time, 'repository_id' : repo_uuid, 'repository_name': repo['name'], 'repository_provider': repo['provider'], 'repository_url': repo['url'], 'installed_instance': installed_instance})
 
 print(json.dumps(backups))

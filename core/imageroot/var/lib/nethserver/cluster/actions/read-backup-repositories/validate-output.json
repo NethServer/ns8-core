@@ -14,7 +14,8 @@
                 "repository_id": "e181c936-1bc3-5032-a809-d8b0551eebe9",
                 "repository_name": "B2 repo",
                 "repository_provider": "backblaze",
-                "repository_url": "b2:giacomons8"
+                "repository_url": "b2:giacomons8",
+		"installed_instance": "dokuwiki4"
             }
         ]
     ]
