@@ -25,7 +25,6 @@ import sys
 import json
 import uuid
 import agent
-import hashlib
 import cluster.backup
 
 request = json.load(sys.stdin)
@@ -38,10 +37,9 @@ rid = str(uuid.uuid5(uuid.NAMESPACE_URL, url))
 if request['password']:
     password = request['password']
 else:
-    # Generate random password for backup encryption
-    m = hashlib.sha256()
-    m.update(uuid.uuid4().bytes)
-    password = m.hexdigest()
+    # Use admin sha256 password
+    admin = rdb.acl_getuser('admin')
+    password = admin['passwords'][0]
 
 if request['name']:
     name = request['name']
