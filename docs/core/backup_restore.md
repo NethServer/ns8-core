@@ -66,7 +66,12 @@ To save a Redis key, you should:
 Given a module named `mymodule`, create the file `mymodule/imageroot/bin/module-dump-state` inside the module source tree:
 ```
 #!/bin/bash
-redis-dump mymodule1/mykey > mykey.dump
+redis-dump module/mymodule1/mykey > mykey.dump
+```
+
+Make sure also `module-dump-state` is executable:
+```
+chmod a+x mymodule/imageroot/bin/module-dump-state
 ```
 
 Then, add the key dump path to `mymodule/imageroot/etc/state-include.conf`:
