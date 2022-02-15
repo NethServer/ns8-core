@@ -26,6 +26,7 @@ import sys
 import uuid
 import random
 from .exceptions import *
+from .handlers import _push_cancel_task_handler, _pop_cancel_task_handler
 
 async def _task_submission_check_client_idle(rdb, taskrq, max_idle_time):
     for client_item in await rdb.client_list('normal'):
@@ -79,6 +80,14 @@ async def run_redisclient(taskrq, **kwargs):
             'lock': asyncio.Lock(),
             'pushed': False,
         }
+
+        # Register signal handlers to post a cancel-task action:
+        loop = asyncio.get_running_loop()
+        def cancel_task_handler():
+            timeout = kwargs.get('cancel_task_timeout', 0)
+            loop.create_task(_cancel_task(rdb, taskrq['agent_id'], task_id, taskrq['parent'], timeout))
+        _push_cancel_task_handler(loop, cancel_task_handler)
+
         # Context is initially locked. Unlock occurs when task has been
         # submitted by _acontrol_task:
         await taskctx['lock'].acquire()
@@ -88,6 +97,9 @@ async def run_redisclient(taskrq, **kwargs):
 
         done, pending = await asyncio.wait({tcontrol, tpoll}, return_when=asyncio.FIRST_COMPLETED)
 
+        # Clean up signal handlers
+        _pop_cancel_task_handler(loop, cancel_task_handler)
+
         if tpoll in done:
             tcontrol.cancel()
             return tpoll.result()
@@ -95,6 +107,22 @@ async def run_redisclient(taskrq, **kwargs):
         if tcontrol in done:
             tpoll.cancel()
             return tcontrol.result()
+
+async def _cancel_task(rdb, agent_id, task_id, parent_task, timeout = 2):
+    """Push a cancel-task action
+    """
+    print(f'Sending cancel-task request to {agent_id}/task/{task_id}', file=sys.stderr)
+    return await rdb.lpush(f"{agent_id}/tasks", json.dumps({
+        'id': str(uuid.uuid4()),
+        'action': 'cancel-task',
+        'data': {'task': task_id, 'timeout': timeout},
+        'parent': parent_task,
+        'extra': {
+            'title': f"{agent_id}/cancel-task",
+            'description': f"Terminate task {task_id}",
+            'isNotificationHidden': True,
+        },
+    }))
 
 async def _apoll_status(rdb, taskctx):
     while True:
@@ -122,13 +150,10 @@ async def _aread_status(rdb, status_path):
     except:
         pass
 
-    if exit_code.isnumeric():
-        exit_code = int(exit_code)
-
     return {
         'output': output,
         'error': error,
-        'exit_code': exit_code,
+        'exit_code': int(exit_code),
     }
 
 async def _acontrol_task(rdb, taskctx, **kwargs):

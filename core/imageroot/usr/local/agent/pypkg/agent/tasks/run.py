@@ -60,10 +60,10 @@ def runp_brief(tasks, **kwargs):
     errors = 0
     for idx, result in enumerate(results):
         if isinstance(result, Exception):
-            print(f"Task {tasks[idx]['action']}@{tasks[idx]['agent_id']} run failed: {result}", file=sys.stderr)
+            print(f"Task {tasks[idx]['agent_id']}/{tasks[idx]['action']} run error: {result}", file=sys.stderr)
             errors += 1
         elif result['exit_code'] != 0:
-            print(f"Task {tasks[idx]['action']}@{tasks[idx]['agent_id']} run failed: {repr(result)}", file=sys.stderr)
+            print(f"Task {tasks[idx]['agent_id']}/{tasks[idx]['action']} run failed: {repr(result)}", file=sys.stderr)
             errors += 1
 
     return errors
