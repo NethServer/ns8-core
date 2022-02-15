@@ -454,7 +454,8 @@
       "collaboration": "Collaboration",
       "system_administration": "System administration",
       "office": "Office",
-      "documentation": "Documentation"
+      "documentation": "Documentation",
+      "database": "Database"
     }
   },
   "logs": {
