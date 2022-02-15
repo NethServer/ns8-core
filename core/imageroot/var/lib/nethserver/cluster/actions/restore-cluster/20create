@@ -46,7 +46,8 @@ create_retval = agent.tasks.run(
         "endpoint": dump["vpn"]["endpoint"],
         "listen_port": int(dump["vpn"]["listen_port"])
     },
-    endpoint="redis://cluster-leader"
+    endpoint="redis://cluster-leader",
+    progress_callback=agent.get_progress_callback(10, 80)
 )
 
 if create_retval['exit_code'] != 0:
