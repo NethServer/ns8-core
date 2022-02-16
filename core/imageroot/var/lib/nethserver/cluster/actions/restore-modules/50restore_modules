@@ -29,14 +29,21 @@ import tempfile
 
 errors = 0
 request = json.load(sys.stdin)
+start_progress = 1
+num_modules = len(request)
+module_progress = int(100 / num_modules)
+agent.set_progress(start_progress)
 
 # source
 for module in request:
     data = module
     data.setdefault('snapshot', '')
     data.setdefault('node', 1)
-    task = agent.tasks.run(agent_id = 'cluster', action = 'restore-module', data = data,  endpoint = "redis://cluster-leader")
+    end_progress = start_progress + module_progress
+    task = agent.tasks.run(agent_id = 'cluster', action = 'restore-module', data = data,  endpoint = "redis://cluster-leader",
+    progress_callback=agent.get_progress_callback(start_progress, end_progress))
     errors = errors + task['exit_code']
+    start_progress = end_progress + 1
 
 if errors > 0:
     json.dumps(errors)

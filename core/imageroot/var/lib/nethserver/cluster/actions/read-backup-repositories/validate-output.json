@@ -1,7 +1,7 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "read-backup-repository output",
-    "$id": "http://schema.nethserver.org/cluster/read-all-backup-repositories-output.json",
+    "title": "read-backup-repositories output",
+    "$id": "http://schema.nethserver.org/cluster/read-backup-repositories-output.json",
     "description": "Read the content of all backup repositories",
     "examples": [
         [

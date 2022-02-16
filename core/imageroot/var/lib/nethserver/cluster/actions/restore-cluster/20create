@@ -27,6 +27,9 @@ import gzip
 import agent
 import agent.tasks
 
+agent.set_weight(os.path.basename(__file__), 90)
+agent.set_weight('30load', 10)
+
 dump_file = './backup/dump.json.gz'
 
 if not os.path.isfile(dump_file):
@@ -47,7 +50,7 @@ create_retval = agent.tasks.run(
         "listen_port": int(dump["vpn"]["listen_port"])
     },
     endpoint="redis://cluster-leader",
-    progress_callback=agent.get_progress_callback(10, 80)
+    progress_callback=agent.get_progress_callback(1, 99)
 )
 
 if create_retval['exit_code'] != 0:
