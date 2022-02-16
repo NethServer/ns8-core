@@ -11,6 +11,7 @@ buildah add "${container}" imageroot /imageroot
 buildah add "${container}" ui /ui
 buildah config \
     --label='org.nethserver.tcp-ports-demand=8' \
+    --label='org.nethserver.flags=core_module no_data_backup' \
     --label='org.nethserver.images=docker.io/library/nginx:1.20-alpine' \
     --entrypoint=/ "${container}"
 buildah commit "${container}" "${repobase}/${reponame}"

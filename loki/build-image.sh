@@ -12,6 +12,7 @@ buildah add "${container}" ui /ui
 buildah config --entrypoint=/ \
 	--label="org.nethserver.images=docker.io/traefik:v2.4 docker.io/grafana/loki:2.2.1" \
 	--label="org.nethserver.tcp-ports-demand=1" \
+    --label='org.nethserver.flags=core_module' \
 	"${container}"
 buildah commit "${container}" "${repobase}/${reponame}"
 images+=("${repobase}/${reponame}")
