@@ -29,12 +29,10 @@ def _push_cancel_task_handler(loop, handler_function):
     global handler_functions
     if not handler_functions:
         def run_cancel_task_handlers():
-            loop.remove_signal_handler(signal.SIGINT)
             loop.remove_signal_handler(signal.SIGTERM)
             for hf in handler_functions:
                 hf()
             handler_functions.clear()
-        loop.add_signal_handler(signal.SIGINT, run_cancel_task_handlers)
         loop.add_signal_handler(signal.SIGTERM, run_cancel_task_handlers)
     handler_functions.add(handler_function)
 
@@ -45,5 +43,4 @@ def _pop_cancel_task_handler(loop, handler_function):
     except KeyError:
         pass
     if not handler_functions:
-        loop.remove_signal_handler(signal.SIGINT)
         loop.remove_signal_handler(signal.SIGTERM)
