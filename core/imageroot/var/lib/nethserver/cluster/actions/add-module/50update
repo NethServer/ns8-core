@@ -202,7 +202,8 @@ for userk in rdb.scan_iter('roles/*'):
         cluster.grants.alter_user(rdb, user=userk[len('roles/'):], revoke=False, role='owner', on_clause=f'module/{module_id}')
 
 # Save flags inside redis
-rdb.sadd(f'module/{module_id}/flags', *flags)
+for flag in flags:
+    rdb.sadd(f'module/{module_id}/flags', flag)
 # Map rootfull label to a flag
 if is_rootfull:
     rdb.sadd(f'module/{module_id}/flags', 'rootfull')
