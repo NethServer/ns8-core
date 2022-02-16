@@ -61,7 +61,8 @@
     "save": "Save",
     "all_good": "All good",
     "upload_drop_target_text": "Click or drag and drop file here",
-    "remove": "Remove"
+    "remove": "Remove",
+    "skip": "Skip"
   },
   "error": {
     "error": "Error",
@@ -151,7 +152,20 @@
     "upload_cluster_backup_file": "Upload cluster backup file",
     "invalid_passphrase": "Invalid password. Enter the password used to cipher cluster backup (by default it's the admin password of the old cluster)",
     "not_valid_gpg_file": "Invalid GPG file",
-    "url_format": "Invalid URL"
+    "url_format": "Invalid URL",
+    "restore_summary": "Summary",
+    "backup_date": "Backup date",
+    "cluster_label": "Cluster label",
+    "vpn_endpoint": "VPN endpoint",
+    "domains": "Domains",
+    "backup_repositories": "Backup repositories",
+    "restoring_cluster": "Restoring cluster",
+    "restore_apps": "Restore apps",
+    "select_apps_to_restore": "Select apps to restore",
+    "skip_apps_restore": "Skip apps restore",
+    "skip_apps_restore_1": "Do you want to skip apps restore?",
+    "skip_apps_restore_2": "You can restore apps later in <strong>Backup</strong> page",
+    "restoring_apps_c": "Restoring {num} app... | Restoring {num} apps..."
   },
   "shell": {
     "skip_to_content": "Skip to content",
@@ -193,10 +207,12 @@
     "task_failed": "Task <strong>{task}</strong> failed",
     "task_completed": "Task <strong>{task}</strong> completed",
     "task_pending": "Task <strong>{task}</strong> is pending",
+    "task_running": "Task <strong>{task}</strong> is running",
     "task_failed_validation": "Task <strong>{task}</strong> failed validation",
     "subtask_failed": "Subtask <strong>{task}</strong> failed",
     "subtask_completed": "Subtask <strong>{task}</strong> completed",
     "subtask_pending": "Subtask <strong>{task}</strong> is pending",
+    "subtask_running": "Subtask <strong>{task}</strong> is running",
     "subtask_failed_validation": "Subtask <strong>{task}</strong> failed validation",
     "completed": "Completed",
     "configure": "Configure",
@@ -244,7 +260,10 @@
     "run-backup": "Run backup",
     "restore-module": "Restore module",
     "read-backup-repository": "Read backup repository",
-    "retrieve-cluster-backup": "Retrieve cluster backup"
+    "retrieve-cluster-backup": "Retrieve cluster backup",
+    "restore-cluster": "Restore cluster",
+    "read-backup-repositories": "Read backup repositories",
+    "restore-modules": "Restore modules"
   },
   "network": {
     "title": "Network"

@@ -698,6 +698,10 @@ export default {
       this.loading.addBackup = true;
       const taskAction = "add-backup";
 
+      // register to task error
+      this.$root.$off(taskAction + "-aborted");
+      this.$root.$once(taskAction + "-aborted", this.addBackupAborted);
+
       // register to task validation
       this.$root.$off(taskAction + "-validation-failed");
       this.$root.$once(
@@ -719,7 +723,6 @@ export default {
             schedule_hint: this.schedule,
             retention: parseInt(this.retention),
             instances: this.instances,
-            // enabled: this.enabled, ////
             enabled: true,
           },
           extra: {
@@ -736,6 +739,13 @@ export default {
         this.error.addBackup = this.getErrorMessage(err);
         return;
       }
+    },
+    addBackupAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.loading.addBackup = false;
+
+      // hide modal
+      this.$emit("hide");
     },
     addBackupValidationFailed(validationErrors) {
       this.loading.addBackup = false;
