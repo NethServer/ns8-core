@@ -15,7 +15,8 @@ TimeoutStopSec=70
 SuccessExitStatus=127
 ExecStartPre=/bin/rm -f %t/%N.pid %t/%N.cid
 # Workaround SELinux access denied:
-ExecStartPre=-python3 /var/lib/nethserver/%N/bin/expand_resolv_conf
+ExecStartPre=-runagent -m %N expand_resolv_conf
+ExecStartPre=runagent -m %N samba-network up
 ExecStart=/usr/bin/podman run \
     --dns=none \
     --no-hosts \
@@ -37,6 +38,7 @@ ExecStart=/usr/bin/podman run \
     ${SAMBA_DC_IMAGE} run-dc
 ExecStop=/usr/bin/podman stop --ignore --cidfile %t/%N.cid -t 10
 ExecStopPost=/usr/bin/podman rm --ignore -f --cidfile %t/%N.cid
+ExecStopPost=runagent -m %N samba-network down
 PIDFile=%t/%N.pid
 WorkingDirectory=/var/lib/nethserver/%N/state
 SyslogIdentifier=%N
