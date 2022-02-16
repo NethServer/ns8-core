@@ -300,3 +300,36 @@ Each action step is assigned 1 as default *weight*. The step weight multiplies i
 
 The above command sets the `50update` step weight to 8. A step that downloads data from the network, or performs a long filesystem
 operation can be assigned a bigger weight to balance the progress increments of the action.
+
+## Builtin actions
+
+The `agent` binary implements some builtin actions. They are not read from
+the directories passed as command arguments and cannot be overridden.
+
+### list-actions
+
+The `list-actions` action scans the action directories on the filesystems
+and returns an array of action names. Builtin actions are included, too.
+
+Action input is ignored.
+
+Action output (JSON format):
+
+    ["action1", "action2", "list-actions", "cancel-task"]
+
+### cancel-task
+
+The `cancel-task` action cancels a running task, by sending a TERM signal
+to the currently running step process and any other process forked from
+it.  Depending on how the TERM signal is handled by the step process and
+its exit code, the action can be subsequently aborted or continue
+execution.
+
+If the given task ID does not match any running task, the action aborts
+with code `2`.
+
+Action input (JSON format):
+
+    {"task":"fbee04e5-f251-4cda-a835-d7598449bf16"}
+
+Action output is undefined.

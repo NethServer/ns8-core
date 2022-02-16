@@ -4,6 +4,9 @@ Library            Process
 Library            OperatingSystem
 Library            Telnet
 
+*** Variables ***
+${AGENT_ID}    %{AGENT_ID}
+
 *** Keywords ***
 Start the agent
     Create File    /srv/state/environment
@@ -17,16 +20,23 @@ Start the agent
 
 Stop the agent and cleanup
     Terminate All Processes
+    Flush the Redis database
+
+Flush the Redis database
     Flush All    ${RDB}
 
 Start command monitoring
     Open Connection    127.0.0.1
-    ...    port=6379    newline=CRLF    default_log_level=TRACE    prompt=+
+    ...    port=6379    newline=CRLF    default_log_level=TRACE    prompt=+    timeout=${0.5}
     Write Bare    MONITOR\r\n
     Read Until Regexp  \\+OK
 
 Stop command monitoring
     Close All Connections
+
+Stop command monitoring and flush the database
+    Close All Connections
+    Flush the Redis database
 
 Wait until the agent log contains
     [Arguments]    ${pattern}
@@ -35,17 +45,17 @@ Wait until the agent log contains
 Grep in the agent log
     [Arguments]    ${pattern}
     ${matches} =     Grep File    /srv/log/agent.log    ${pattern}
-    Should Not Be Empty    ${matches}    msg=${pattern} not found in the agent log
+    Should Not Be Empty    ${matches}    msg="${pattern}" not found in the agent log
 
 The agent environment contains
     [Arguments]    ${pattern}
     ${matches} =     Grep File    /srv/state/environment    ${pattern}
-    Should Not Be Empty    ${matches}    msg=${pattern} not found in the environment
+    Should Not Be Empty    ${matches}    msg="${pattern}" not found in the environment
 
 The agent environment does not contain
     [Arguments]    ${pattern}
     ${matches} =     Grep File    /srv/state/environment    ${pattern}
-    Should Be Empty    ${matches}    msg=${pattern} was found in the environment
+    Should Be Empty    ${matches}    msg="${pattern}" was found in the environment
 
 The task is submitted
     [Arguments]    ${action_name}    ${task_data}=""

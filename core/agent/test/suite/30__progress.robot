@@ -5,9 +5,6 @@ Suite Teardown   Stop the agent and cleanup
 Test Setup       Start command monitoring
 Test Teardown    Stop command monitoring
 
-*** Variables ***
-${AGENT_ID}    %{AGENT_ID}
-
 *** Test Cases ***
 Observe step weights
     Given The task is submitted    set-weight

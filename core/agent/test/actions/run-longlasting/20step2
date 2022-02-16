@@ -1,0 +1,7 @@
+#!/bin/bash
+
+# 1s loop
+for ((I=0 ; I<20 ; I++)); do
+    echo $I
+    sleep 0.05
+done

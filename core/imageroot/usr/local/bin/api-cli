@@ -28,6 +28,7 @@ import requests
 import sys
 import getpass
 import agent
+import signal
 
 # Handled exceptions:
 from aiohttp import ClientError
@@ -191,15 +192,17 @@ args = root_parser.parse_args()
 
 command = globals().get(args.command.replace('-', '_') + '_command')
 
+def sigint_handler(*args):
+    print('SIGINT caught! Sending cancel-task requests...', file=sys.stderr)
+    signal.raise_signal(signal.SIGTERM)
+
+signal.signal(signal.SIGINT, sigint_handler)
+
 try:
     exit_code = command(args)
 
 except (ClientError, RedisError, TaskError, RequestException) as ex:
     print(f'{ex.__class__.__name__}: {ex}', file=sys.stderr)
-    exit_code = 1
-
-except KeyboardInterrupt as ex:
-    print('Error: user keyboard interrupt!', file=sys.stderr)
     exit_code = 1
 
 sys.exit(exit_code)

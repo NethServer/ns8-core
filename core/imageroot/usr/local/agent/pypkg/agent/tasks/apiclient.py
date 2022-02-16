@@ -27,6 +27,7 @@ import urllib
 import sys
 from ssl import SSLCertVerificationError
 from .exceptions import *
+from .handlers import _push_cancel_task_handler, _pop_cancel_task_handler
 
 async def run_apiclient_nowait(taskrq, **kwargs):
     kwargs['ssl_ctx'] = None if kwargs.pop('tls_verify', True) is True else False
@@ -46,7 +47,19 @@ async def run_apiclient(taskrq, **kwargs):
         tcontroller = asyncio.create_task(_retry_request(_acontrol_task, taskctx, client=client, theaders=theaders, **kwargs), name='tcontroller')
         tpoll = asyncio.create_task(_retry_request(_apoll_status, taskctx, client=client, theaders=theaders, **kwargs), name = 'tpoll')
 
+        # Register signal handlers to post a cancel-task action:
+        loop = asyncio.get_running_loop()
+        def cancel_task_handler():
+            task_id = taskctx['status_path'].split('/')[-1] # retrieve task ID from POST return value
+            timeout = kwargs.get('cancel_task_timeout', 0)
+            loop.create_task(_cancel_task(taskrq['agent_id'], task_id, taskrq['parent'], timeout, client=client, theaders=theaders, **kwargs))
+        _push_cancel_task_handler(loop, cancel_task_handler)
+
         done, pending = await asyncio.wait({tcontroller, tpoll}, return_when=asyncio.FIRST_COMPLETED)
+
+        # Clean up signal handlers
+        _pop_cancel_task_handler(loop, cancel_task_handler)
+
         if tpoll in done:
             tcontroller.cancel()
             return tpoll.result()
@@ -55,6 +68,23 @@ async def run_apiclient(taskrq, **kwargs):
             tpoll.cancel()
             return tcontroller.result()
 
+async def _cancel_task(agent_id, task_id, parent, timeout, **kwargs):
+    """Post a cancel-task action
+    """
+    return await _apost_task({
+        'agent_id': agent_id,
+        'action': 'cancel-task',
+        'data': {
+            'task': task_id,
+            'timeout': timeout,
+        },
+        'parent': parent,
+        'extra': {
+            'title': f"{agent_id}/cancel-task",
+            'description': f"Terminate task {task_id}",
+            'isNotificationHidden': True,
+        },
+    }, **kwargs)
 
 async def _alogin(**kwargs):
     """Read the Redis user credentials from the environment and retrieve a new authorization token.
