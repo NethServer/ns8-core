@@ -111,6 +111,7 @@ communication errors and re-connection/retrying logic at every stage, like:
 - Task submission
 - Task progress tracking
 - Task response parsing
+- Task cancellation when the TERM signal is received
 
 Example:
 
