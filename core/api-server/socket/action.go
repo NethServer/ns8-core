@@ -78,20 +78,20 @@ func Action(socketAction models.SocketAction) {
 		// switch entity
 		switch logsAction.Entity {
 		case "cluster":
-			entity = "'{job=\"systemd-journal\"} | json | line_format \"{{.nodename}} --> {{.MESSAGE}}\"'"
+			entity = "{job=\"systemd-journal\"} | json | line_format \"{{.nodename}} --> {{.MESSAGE}}\""
 
 		case "node":
-			entity = "'{nodename=\"" + logsAction.EntityName + "\"} | json | line_format \"{{.nodename}} --> {{.MESSAGE}}\"'"
+			entity = "{nodename=\"" + logsAction.EntityName + "\"} | json | line_format \"{{.nodename}} --> {{.MESSAGE}}\""
 
 		case "module":
-			entity = "'{job=\"systemd-journal\"} | json | CONTAINER_TAG=\"" + logsAction.EntityName + "\" | line_format \"{{.nodename}} --> {{.MESSAGE}}\"'"
+			entity = "{job=\"systemd-journal\"} | json | CONTAINER_TAG=\"" + logsAction.EntityName + "\" | line_format \"{{.nodename}} --> {{.MESSAGE}}\""
 
 		}
 
 		// execute command
 		go func() {
 			fmt.Println("/usr/local/bin/logcli", "query", "-q", "--no-labels", mode, entity)
-			cmd := exec.Command("/usr/local/bin/logcli", "query", "-q", "-no-labels", mode, entity)
+			cmd := exec.Command("/usr/local/bin/logcli", "query", "-q", "--no-labels", mode, entity)
 
 			// create a pipe for the output of the script
 			cmdReader, err := cmd.StdoutPipe()
@@ -113,6 +113,12 @@ func Action(socketAction models.SocketAction) {
 			err = cmd.Start()
 			if err != nil {
 				fmt.Fprintln(os.Stderr, "Error starting Cmd", err)
+				return
+			}
+
+			err = cmd.Wait()
+			if err != nil {
+				fmt.Fprintln(os.Stderr, "Error waiting for Cmd", err)
 				return
 			}
 
