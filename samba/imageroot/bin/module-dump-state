@@ -22,5 +22,9 @@
 
 echo "Dumping Samba DC state to disk:"
 podman exec -w /var/lib/samba -i "${MODULE_ID}" bash -s <<'EOF'
-find . -name "*.[t,l]db" -a -not -name netlogon_creds_cli.tdb -print0 -fprint /dev/stderr | xargs -0 -- tdbbackup
+set -e
+rm -rvf backup
+samba-tool domain backup offline --targetdir=backup
+cd backup
+mv -v samba-backup-*.tar.bz2 samba-backup.tar.bz2
 EOF

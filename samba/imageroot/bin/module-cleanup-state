@@ -21,4 +21,4 @@
 #
 
 echo "Cleaning up Samba DC state:"
-podman exec -w /var/lib/samba/ -i "${MODULE_ID}" find . -name "*.bak" -print -delete
+podman exec -w /var/lib/samba/ -i "${MODULE_ID}" rm -rvf backup
