@@ -49,6 +49,12 @@ Module images can use a list of well-known labels to configure the system:
   if set to `1` the module will run podman in rootfull mode. See [Rootless vs Rootfull](../rootless_rootfull)
 - `org.nethserver.authorizations`: allowed action to be executed on other modules, like `traefik@any:routeadm` to add traefik routes.
   See [Roles and authorizations]({{site.baseurl}}/core/agents/#roles-and-authorizations).
+- `org.nethserver.flags`: a space-separated list of well-known flags. Currently available flags are:
+  - `core_module`: if present, it marks a module as core
+  - `account_provider`: if present, it marks a module as an account provider
+  - `no_data_backup`: if present, the modules will need no data backup
+  - `rootless`: if present, the module is rootless (calculated from `org.nethserver.rootfull` label)
+  - `rootfull`: if present, the module is rootfull (calculated from `org.nethserver.rootfull` label)
 
 Labels are set by `build-images.sh`, when the images are built.
 
