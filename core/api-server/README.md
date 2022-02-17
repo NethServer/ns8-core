@@ -86,3 +86,37 @@ Every request made to the server, using its APIs or WebSocket, is logged inside 
 - `Action`: the name of the action made by the user
 - `Data`: the payload of the action (if present)
 - `Timestamp`: the time when the specific action is executed
+
+## Websockets
+The API server provides a WebSocket connection under the `/ws` path. Through websocket it is possible to send commands and receive data asynchronously via the socket channel.
+
+At the moment the supported commands are:
+- `logs-start`: used to get the logs for a specific entity (cluster, node or module). Use loki cli (`logcli`) to search and retrieve logs
+- `logs-end`: used to stop the logs you are following (normally used in tail mode)
+
+To execute commands via websocket, you need to send a payload to the websocket and listen to the results.
+
+#### logs-start
+```json
+{
+   "action": "logs-start",
+   "data": {
+      "mode": "dump",
+      "lines": "25",
+      "filter": "",
+      "entity" :"module",
+      "entity_name": "traefik1"
+   }
+}
+```
+
+- `action`: fixed to `logs-start`
+- `data`: payload of the action
+  - `mode`: must be `tail` or `dump` - `string` (choose how to retrieve logs)
+  - `lines`: could be empty or a number - `string` (could be empty in `tail` mode)
+  - `filter`: could be empty or string - `string` (used to search specific words inside logs)
+  - `entity`: must be `cluster` or `node` or `module` - `string`
+  - `entity_name`: could be empty (`cluster` case) or name of the entity - `string` (ex. hostname of the node or module id like `traefik1`)
+
+
+The websocket also listens for every event of every task launched within the cluster and reports the payload through the socket channel.
