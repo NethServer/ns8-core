@@ -1,7 +1,6 @@
 locals {
   //Map host name code to OS image
   images = {
-    "fc" = "fedora-34-x64",
     "dn" = "debian-11-x64",
     "cs" = data.digitalocean_image.centos.id
   }
