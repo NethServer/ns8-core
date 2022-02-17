@@ -421,7 +421,7 @@
                     <NsTextInput
                       v-model.trim="restore.url"
                       :label="$t('init.remote_url')"
-                      placeholder="https://myserver/core-backup.json.gz.gpg"
+                      placeholder="https://myserver/cluster-backup.json.gz.gpg"
                       :invalid-message="error.restore.url"
                       :disabled="loading.retrieveClusterBackup"
                       class="mg-bottom-sm"
@@ -679,17 +679,23 @@
               :description="error.readBackupRepositories"
               :showCloseButton="false"
             />
-            <NsEmptyState
-              :title="$t('init.restoring_cluster')"
-              :animationData="GearsLottie"
-              animationTitle="gears"
-              :loop="true"
-            />
-            <NsProgressBar
-              :value="restore.progress"
-              :indeterminate="!restore.progress"
-              class="mg-bottom-md"
-            />
+            <cv-row>
+              <cv-column>
+                <cv-tile light>
+                  <NsEmptyState
+                    :title="$t('init.restoring_cluster')"
+                    :animationData="GearsLottie"
+                    animationTitle="gears"
+                    :loop="true"
+                  />
+                  <NsProgressBar
+                    :value="restore.progress"
+                    :indeterminate="!restore.progress"
+                    class="mg-bottom-md"
+                  />
+                </cv-tile>
+              </cv-column>
+            </cv-row>
           </template>
           <template v-if="restore.step == 'apps'">
             <!-- restore modules -->
@@ -700,7 +706,7 @@
                     {{ $t("init.select_apps_to_restore") }}
                   </h5>
                   <cv-form @submit.prevent="restoreModules">
-                    <RestoreInstanceSelector
+                    <RestoreMultipleInstancesSelector
                       :instances="restore.instances"
                       selection="all"
                       :loading="loading.retrieveClusterBackup"
@@ -791,14 +797,14 @@ import {
 import { mapActions } from "vuex";
 import to from "await-to-js";
 import NotificationService from "@/mixins/notification";
-import RestoreInstanceSelector from "@/components/backup/RestoreInstanceSelector";
+import RestoreMultipleInstancesSelector from "@/components/backup/RestoreMultipleInstancesSelector";
 import SkipRestoreAppsModal from "@/components/SkipRestoreAppsModal";
 
 export default {
   name: "InitializeCluster",
   components: {
     NsPasswordInput,
-    RestoreInstanceSelector,
+    RestoreMultipleInstancesSelector,
     SkipRestoreAppsModal,
   },
   mixins: [
@@ -1765,16 +1771,15 @@ export default {
       this.loading.restoreModules = false;
     },
     restoreModulesValidationOk() {
-      this.loading.restoreModules = false;
-
-      // go to cluster status
+      // go to cluster status page
       this.getClusterStatus();
     },
     restoreModulesValidationFailed() {
       this.loading.restoreModules = false;
     },
     restoreModulesCompleted() {
-      //// do something when all apps are restored?
+      // update app drawer to show restored instances
+      this.$root.$emit("reloadAppDrawer");
     },
     skipRestoreApps() {
       // go to cluster status page

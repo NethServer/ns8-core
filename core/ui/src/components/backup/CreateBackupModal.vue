@@ -23,7 +23,7 @@
             <div class="mg-bottom-md">
               {{ $t("backup.choose_app_instances_to_backup") }}
             </div>
-            <InstanceSelector
+            <BackupInstanceSelector
               :instances="installedModules"
               :selection="isEditing ? backup.instances : instanceSelection"
               :instancesNotBackedUp="instancesNotBackedUp"
@@ -345,7 +345,7 @@
 <script>
 import { UtilService, TaskService, IconService } from "@nethserver/ns8-ui-lib";
 import to from "await-to-js";
-import InstanceSelector from "@/components/backup/InstanceSelector";
+import BackupInstanceSelector from "@/components/backup/BackupInstanceSelector";
 import _cloneDeep from "lodash/cloneDeep";
 // import Information16 from "@carbon/icons-vue/es/information/16"; ////
 import _capitalize from "lodash/capitalize";
@@ -360,7 +360,7 @@ const DEFAULT_RETENTION = "5";
 
 export default {
   name: "CreateBackupModal",
-  components: { InstanceSelector },
+  components: { BackupInstanceSelector },
   mixins: [UtilService, TaskService, IconService],
   props: {
     isShown: {

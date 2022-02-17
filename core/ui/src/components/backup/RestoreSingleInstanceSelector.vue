@@ -1,0 +1,211 @@
+<template>
+  <div class="instance-selector">
+    <div class="search">
+      <cv-search
+        :label="$t('backup.search_instances')"
+        :placeholder="$t('backup.search_instances')"
+        :clear-aria-label="$t('common.clear_search')"
+        v-model.trim="searchQuery"
+        v-debounce="searchInstance"
+        @input="onSearchInput"
+        class="search-input"
+        :disabled="loading"
+        :light="light"
+        ref="search"
+      >
+      </cv-search>
+    </div>
+    <div class="instance-list">
+      <!-- skeleton -->
+      <cv-tile v-if="loading" :light="light" class="no-mg-bottom">
+        <cv-skeleton-text :paragraph="true" :line-count="8"></cv-skeleton-text>
+      </cv-tile>
+      <!-- no search results -->
+      <NsEmptyState
+        v-else-if="!instancesToDisplay.length"
+        :title="$t('common.no_search_results')"
+        :animationData="GhostLottie"
+        animationTitle="ghost"
+        :loop="1"
+      >
+        <template #description>
+          <div>{{ $t("common.no_search_results_description") }}</div>
+        </template>
+      </NsEmptyState>
+      <!-- instance list -->
+      <NsTile
+        v-else
+        v-for="(instance, index) of instancesToDisplay"
+        :key="index"
+        :light="light"
+        kind="selectable"
+        v-model="instance.selected"
+        value="nodeValue"
+        @click="deselectOtherInstances(instance)"
+        class="instance-tile"
+      >
+        <div>
+          <div>{{ instance.instance }}</div>
+          <div class="instance-description">
+            {{ instance.repository_name }}
+            <cv-interactive-tooltip
+              alignment="center"
+              direction="right"
+              class="info"
+            >
+              <template slot="trigger">
+                <Information16 />
+              </template>
+              <template slot="content">
+                <div>{{ instance.repository_url }}</div>
+              </template>
+            </cv-interactive-tooltip>
+          </div>
+        </div>
+      </NsTile>
+    </div>
+  </div>
+</template>
+
+<script>
+import { UtilService, LottieService } from "@nethserver/ns8-ui-lib";
+import Information16 from "@carbon/icons-vue/es/information/16";
+
+export default {
+  name: "RestoreSingleInstanceSelector",
+  components: { Information16 },
+  mixins: [UtilService, LottieService],
+  props: {
+    instances: {
+      type: Array,
+      required: true,
+    },
+    loading: {
+      type: Boolean,
+      default: false,
+    },
+    light: Boolean,
+  },
+  data() {
+    return {
+      searchQuery: "",
+      searchResults: [],
+      searchFields: ["instance", "name", "repository_name"],
+      isSearchActive: false,
+    };
+  },
+  computed: {
+    instancesToDisplay() {
+      if (this.isSearchActive) {
+        return this.searchResults;
+      } else {
+        return this.instances;
+      }
+    },
+    selectedInstance() {
+      return this.instances.find((i) => i.selected);
+    },
+  },
+  watch: {
+    selectedInstance: function () {
+      this.$emit("select", this.selectedInstance);
+    },
+  },
+  methods: {
+    searchInstance() {
+      // clean query
+      const cleanRegex = /[^a-zA-Z0-9]/g;
+      const queryText = this.searchQuery.replace(cleanRegex, "");
+
+      // empty search
+      if (queryText.length == 0) {
+        this.isSearchActive = false;
+        return;
+      }
+
+      // show search results
+      this.isSearchActive = true;
+
+      // search
+      this.searchResults = this.instances.filter((instance) => {
+        // compare query text with all search fields of option
+        return this.searchFields.some((searchField) => {
+          const searchValue = instance[searchField];
+
+          if (searchValue) {
+            return new RegExp(queryText, "i").test(
+              searchValue.replace(cleanRegex, "")
+            );
+          }
+        });
+      }, this);
+    },
+    onSearchInput() {
+      // needed to manage clear search button
+      if (!this.searchQuery.length) {
+        this.searchInstance();
+      }
+    },
+    deselectOtherInstances(instance) {
+      for (let i of this.instances) {
+        if (i.path !== instance.path) {
+          i.selected = false;
+        }
+      }
+    },
+  },
+};
+</script>
+
+<style scoped lang="scss">
+@import "../../styles/carbon-utils";
+
+.instance-selector {
+  display: flex;
+  flex-direction: column;
+}
+
+.search-input {
+  margin-bottom: $spacing-03;
+}
+
+.instance-list {
+  overflow-y: auto;
+  max-height: 16rem;
+}
+
+.ns-tile.instance-tile {
+  margin-bottom: $spacing-03;
+}
+
+.instance-label {
+  display: flex;
+  align-items: center;
+}
+
+.instance-description {
+  margin-top: $spacing-03;
+  color: $ui-04;
+
+  .info {
+    position: relative;
+    top: 3px;
+  }
+}
+
+.no-mg-bottom {
+  margin-bottom: 0;
+}
+</style>
+
+<style lang="scss">
+@import "../../styles/carbon-utils";
+
+// global styles
+
+// search text input is always full width
+.search-input .bx--text-input__field-wrapper,
+.search-input .bx--text-input {
+  max-width: 100% !important;
+}
+</style>

@@ -274,7 +274,7 @@
   "backup": {
     "title": "Backup",
     "repositories": "Repositories",
-    "backup_scheduler": "Backup scheduler",
+    "app_backups": "App backups",
     "no_backup_repository": "No backup repository",
     "empty_state_repository_description": "Add a repository to configure backup",
     "no_backup_scheduled": "No backup scheduled",
@@ -331,7 +331,7 @@
     "disabled_backups_description": "There is {num} backup disabled | There are {num} backups disabled",
     "repository_password_helper": "Enter password if repository was configured previously",
     "not_backed_up": "Not backed up",
-    "search_instances": "Search instances...",
+    "search_instances": "Search app instances...",
     "not_backed_up_instances_selected": "Instances not backed up are currently selected",
     "repo_password_tooltip": "This password is used to encrypt data in the repository. Store this password in a safe place, otherwise you won't be able to restore your backed up data",
     "run_backup": "Run backup",
@@ -393,8 +393,13 @@
     "backup_repository_auth_error": "Cannot authenticate",
     "backup_repository_auth_error_description": "Check repository settings",
     "no_instance_to_restore": "No app instance to restore",
-    "no_instance_to_restore_description": "It looks like there is no app instance backed up on the repository",
-    "invalid_url_protocol": "URL must start with '{protocol}'"
+    "no_instance_to_restore_description": "It looks like there is no app instance backed up on your repositories",
+    "invalid_url_protocol": "URL must start with '{protocol}'",
+    "backup_page_tooltip_1": "<div>Here you can configure your backups and restore any apps.</div><h6>Backup</h6><div>Cluster data is composed of <strong>cluster data</strong> and <strong>apps data</strong>.</div><div>Ensure your peace of mind by configuring:</div><ul><li><strong>Cluster backup</strong>: download it regularly using the overflow menu on the top right corner of this page</li><li><strong>Apps backup</strong>: add your backup repositories and configure app backup scheduling in the <strong>App backups</strong> section on this page</li></ul>",
+    "backup_page_tooltip_2": "<h6>Restore</h6><div>You can restore any previously backed up app or the whole cluster:</div>:<ul><li><strong>Restore one or more apps</strong> use the overflow menu on the top right corner of this page</li><li><strong>Restore the whole cluster</strong>: you need a <strong>cluster backup</strong> and a fresh installation of {productName}. This is useful in a disaster recovery scenario</li></ul>",
+    "download_cluster_configuration_backup": "Download cluster backup",
+    "restore_app": "Restore app",
+    "replace_existing_app": "Replace existing app {app}"
   },
   "calendar": {
     "days": "Days",

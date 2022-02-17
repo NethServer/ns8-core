@@ -13,7 +13,7 @@
     @previousStep="previousStep"
     @nextStep="nextStep"
   >
-    <template slot="title">{{ $t("backup.restore") }}</template>
+    <template slot="title">{{ $t("backup.restore_app") }}</template>
     <template slot="content">
       <cv-form>
         <NsInlineNotification
@@ -24,10 +24,10 @@
           :showCloseButton="false"
         />
         <NsInlineNotification
-          v-if="error.readBackupRepository"
+          v-if="error.readBackupRepositories"
           kind="error"
-          :title="$t('action.read-backup-repository')"
-          :description="error.readBackupRepository"
+          :title="$t('action.read-backup-repositories')"
+          :description="error.readBackupRepositories"
           :showCloseButton="false"
         />
         <template v-if="step == 'instance'">
@@ -36,39 +36,39 @@
           </div>
           <cv-grid class="instances mg-bottom-md no-padding">
             <cv-row>
-              <cv-column v-if="loading.readBackupRepository" :lg="16">
-                <cv-tile light>
-                  <cv-skeleton-text
-                    :paragraph="true"
-                    :line-count="4"
-                  ></cv-skeleton-text>
-                </cv-tile>
-              </cv-column>
-              <cv-column v-else-if="!instances.length" :lg="16">
+              <cv-column
+                v-if="!loading.readBackupRepositories && !instances.length"
+              >
                 <NsEmptyState :title="$t('backup.no_instance_to_restore')">
                   <template #description>{{
                     $t("backup.no_instance_to_restore_description")
                   }}</template>
                 </NsEmptyState>
               </cv-column>
-              <cv-column
-                v-else
-                v-for="(instance, index) in instances"
-                :key="index"
-                :lg="16"
-              >
-                <NsTile
+            </cv-row>
+            <cv-row>
+              <cv-column>
+                <RestoreSingleInstanceSelector
+                  :instances="instances"
+                  :loading="loading.readBackupRepositories"
                   :light="true"
-                  kind="selectable"
-                  v-model="instance.selected"
-                  value="nodeValue"
-                  @click="deselectOtherInstances(instance)"
-                  class="mg-bottom-sm"
-                >
-                  <h6>
-                    {{ instance.path }}
-                  </h6>
-                </NsTile>
+                  @select="onSelectInstance"
+                />
+              </cv-column>
+            </cv-row>
+            <cv-row>
+              <cv-column>
+                <cv-checkbox
+                  :label="
+                    $t('backup.replace_existing_app', {
+                      app: instanceToReplace,
+                    })
+                  "
+                  v-model="replaceExistingApp"
+                  :disabled="!instanceToReplace"
+                  value="checkReplaceExistingApp"
+                  class="mg-top-lg"
+                />
               </cv-column>
             </cv-row>
           </cv-grid>
@@ -99,19 +99,16 @@
 import { UtilService, TaskService, IconService } from "@nethserver/ns8-ui-lib";
 import to from "await-to-js";
 import NodeSelector from "@/components/NodeSelector";
+import RestoreSingleInstanceSelector from "@/components/backup/RestoreSingleInstanceSelector";
 
 export default {
-  name: "RestoreModal",
-  components: { NodeSelector },
+  name: "RestoreSingleInstanceModal",
+  components: { NodeSelector, RestoreSingleInstanceSelector },
   mixins: [UtilService, TaskService, IconService],
   props: {
     isShown: {
       type: Boolean,
       default: true,
-    },
-    repositoryId: {
-      type: String,
-      required: true,
     },
   },
   data() {
@@ -121,14 +118,16 @@ export default {
       nodes: [],
       instances: [],
       selectedNode: null,
+      selectedInstance: null,
+      replaceExistingApp: false,
       loading: {
         getClusterStatus: true,
-        readBackupRepository: true,
+        readBackupRepositories: true,
         restoreModule: false,
       },
       error: {
         getClusterStatus: "",
-        readBackupRepository: "",
+        readBackupRepositories: "",
         restoreModule: "",
       },
     };
@@ -150,8 +149,13 @@ export default {
         (this.step == "node" && !this.selectedNode)
       );
     },
-    selectedInstance() {
-      return this.instances.find((i) => i.selected);
+    instanceToReplace() {
+      if (
+        !(this.selectedInstance && this.selectedInstance.installed_instance)
+      ) {
+        return "";
+      }
+      return this.selectedInstance.installed_instance;
     },
   },
   watch: {
@@ -159,16 +163,10 @@ export default {
       if (this.isShown) {
         // show first step
         this.step = this.steps[0];
-
-        // ensure repositoryId prop is updated
-        this.$nextTick(() => {
-          console.log("inside nexttick", this.repositoryId); ////
-
-          if (this.repositoryId) {
-            this.readBackupRepository();
-            this.getClusterStatus();
-          }
-        });
+        this.selectedInstance = null;
+        this.replaceExistingApp = false;
+        this.readBackupRepositories();
+        this.getClusterStatus();
       }
     },
   },
@@ -237,23 +235,28 @@ export default {
       this.nodes = nodes;
       this.loading.getClusterStatus = false;
     },
-    async readBackupRepository() {
-      this.error.readBackupRepository = "";
-      this.loading.readBackupRepository = true;
-      const taskAction = "read-backup-repository";
+    async readBackupRepositories() {
+      this.error.readBackupRepositories = "";
+      this.loading.readBackupRepositories = true;
+      const taskAction = "read-backup-repositories";
+
+      // register to task error
+      this.$root.$off(taskAction + "-aborted");
+      this.$root.$once(
+        taskAction + "-aborted",
+        this.readBackupRepositoriesAborted
+      );
 
       // register to task completion
+      this.$root.$off(taskAction + "-completed");
       this.$root.$once(
         taskAction + "-completed",
-        this.readBackupRepositoryCompleted
+        this.readBackupRepositoriesCompleted
       );
 
       const res = await to(
         this.createClusterTask({
           action: taskAction,
-          data: {
-            repository: this.repositoryId,
-          },
           extra: {
             title: this.$t("action." + taskAction),
             isNotificationHidden: true,
@@ -264,24 +267,23 @@ export default {
 
       if (err) {
         console.error(`error creating task ${taskAction}`, err);
-        this.error.readBackupRepository = this.getErrorMessage(err);
+        this.error.readBackupRepositories = this.getErrorMessage(err);
         return;
       }
     },
-    readBackupRepositoryCompleted(taskContext, taskResult) {
-      let instances = [];
+    readBackupRepositoriesAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.loading.readBackupRepositories = false;
+    },
+    readBackupRepositoriesCompleted(taskContext, taskResult) {
+      let instances = taskResult.output;
 
-      for (const [app, instancePaths] of Object.entries(taskResult.output)) {
-        for (const instancePath of instancePaths) {
-          const instance = {
-            path: `${app}/${instancePath}`,
-            selected: false,
-          };
-          instances.push(instance);
-        }
+      for (const instance of instances) {
+        // prepare data for instance selector
+        instance.selected = false;
       }
       this.instances = instances;
-      this.loading.readBackupRepository = false;
+      this.loading.readBackupRepositories = false;
     },
     async restoreModule() {
       this.loading.restoreModule = true;
@@ -305,10 +307,11 @@ export default {
         this.createClusterTask({
           action: taskAction,
           data: {
-            repository: this.repositoryId,
+            repository: this.selectedInstance.repository_id,
             path: this.selectedInstance.path,
             snapshot: "", // latest
             node: this.selectedNode.id,
+            replace: this.replaceExistingApp,
           },
           extra: {
             title: this.$t("action." + taskAction),
@@ -333,9 +336,6 @@ export default {
         return;
       }
 
-      // disable restore command on UI until completion
-      this.$emit("enableRestore", false);
-
       // close modal immediately, no validation needed
       this.$emit("hide");
     },
@@ -343,15 +343,9 @@ export default {
       console.error(`${taskContext.action} aborted`, taskResult);
       this.loading.restoreModule = false;
       this.$emit("hide");
-
-      // re-enable restore command on UI
-      this.$emit("enableRestore", true);
     },
     restoreModuleCompleted() {
       this.loading.restoreModule = false;
-
-      // re-enable restore command on UI
-      this.$emit("enableRestore", true);
 
       // show restored instance in app drawer
       this.$root.$emit("reloadAppDrawer");
@@ -359,12 +353,9 @@ export default {
     onSelectNode(selectedNode) {
       this.selectedNode = selectedNode;
     },
-    deselectOtherInstances(instance) {
-      for (let i of this.instances) {
-        if (i.path !== instance.path) {
-          i.selected = false;
-        }
-      }
+    onSelectInstance(selectedInstance) {
+      this.selectedInstance = selectedInstance;
+      this.replaceExistingApp = false;
     },
   },
 };
