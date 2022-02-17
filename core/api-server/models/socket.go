@@ -29,10 +29,14 @@ type SocketAction struct {
 	Data   interface{} `json:"data" structs:"data"`
 }
 
-type LogsAction struct {
+type LogsStartAction struct {
 	Mode       string `json:"mode" structs:"mode"`
 	Lines      string `json:"lines" structs:"lines"`
 	Filter     string `json:"filter" structs:"filter"`
 	Entity     string `json:"entity" structs:"entity"`
 	EntityName string `json:"entity_name" structs:"entity_name"`
+}
+
+type LogsStopAction struct {
+	Pid string `json:"pid" structs:"pid"`
 }

@@ -26,10 +26,10 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
-	"os"
 	"os/exec"
 	"strconv"
 
+	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
 
 	"github.com/NethServer/ns8-scratchpad/core/api-server/models"
@@ -40,26 +40,38 @@ func Action(socketAction models.SocketAction) {
 	// switch action received
 	switch socketAction.Action {
 	case "logs-stop":
-		for cmdPid := range Commands {
-			cmd := Commands[cmdPid]
-			if errKill := cmd.Process.Kill(); errKill != nil {
-				utils.LogError(errors.Wrap(errKill, "[SOCKET] error in command kill"))
-			}
-		}
-
-	case "logs-start":
 		// decode data payload into specific action
-		var logsAction models.LogsAction
+		var logsAction models.LogsStopAction
 
 		// marshal data payload into json string
 		jsonStr, err := json.Marshal(socketAction.Data)
 		if err != nil {
-			fmt.Println(err)
+			utils.LogError(errors.Wrap(err, "[SOCKET] error in json marshal logs-stop action"))
 		}
 
 		// convert json string into struct
 		if errLogsAction := json.Unmarshal(jsonStr, &logsAction); errLogsAction != nil {
-			utils.LogError(errors.Wrap(errLogsAction, "[SOCKET] error in Logs action json unmarshal"))
+			utils.LogError(errors.Wrap(errLogsAction, "[SOCKET] error in Logs action stop json unmarshal"))
+		}
+
+		cmd := Commands[logsAction.Pid]
+		if errKill := cmd.Process.Kill(); errKill != nil {
+			utils.LogError(errors.Wrap(errKill, "[SOCKET] error in command kill"))
+		}
+
+	case "logs-start":
+		// decode data payload into specific action
+		var logsAction models.LogsStartAction
+
+		// marshal data payload into json string
+		jsonStr, err := json.Marshal(socketAction.Data)
+		if err != nil {
+			utils.LogError(errors.Wrap(err, "[SOCKET] error in json marshal logs-start action"))
+		}
+
+		// convert json string into struct
+		if errLogsAction := json.Unmarshal(jsonStr, &logsAction); errLogsAction != nil {
+			utils.LogError(errors.Wrap(errLogsAction, "[SOCKET] error in Logs action start json unmarshal"))
 		}
 
 		// filter logs params
@@ -72,7 +84,7 @@ func Action(socketAction models.SocketAction) {
 		case "tail":
 			mode = "-t"
 		case "dump":
-			mode = "--limit " + logsAction.Lines
+			mode = "--limit=" + logsAction.Lines
 		}
 
 		// switch entity
@@ -88,44 +100,60 @@ func Action(socketAction models.SocketAction) {
 
 		}
 
-		// execute command
-		go func() {
-			fmt.Println("/usr/local/bin/logcli", "query", "-q", "--no-labels", mode, entity)
-			cmd := exec.Command("/usr/local/bin/logcli", "query", "-q", "--no-labels", mode, entity)
+		// define command
+		fmt.Println("/usr/local/bin/logcli", "query", "-q", "--no-labels", mode, entity)
+		cmd := exec.Command("/usr/local/bin/logcli", "query", "-q", "--no-labels", mode, entity)
 
-			// create a pipe for the output of the script
-			cmdReader, err := cmd.StdoutPipe()
-			if err != nil {
-				fmt.Fprintln(os.Stderr, "Error creating StdoutPipe for Cmd", err)
-				return
-			}
-
-			// create scanner to listen to command outputs
-			scanner := bufio.NewScanner(cmdReader)
+		if logsAction.Mode == "tail" {
+			// execute command follow mode
 			go func() {
-				// foreach command outputs send to websocket
-				for scanner.Scan() {
-					broadcastToAll(scanner.Text())
+				pid := ""
+
+				// create a pipe for the output of the script
+				cmdReader, err := cmd.StdoutPipe()
+				if err != nil {
+					utils.LogError(errors.Wrap(err, "[SOCKET] error creating stdout pipe for Cmd"))
+					return
+				}
+
+				// create scanner to listen to command outputs
+				scanner := bufio.NewScanner(cmdReader)
+				go func() {
+					// foreach command outputs send to websocket
+					for scanner.Scan() {
+						broadcastToAll(gin.H{"pid": pid, "data": scanner.Text()})
+					}
+				}()
+
+				// start command
+				err = cmd.Start()
+				if err != nil {
+					return
+				}
+
+				// add command to command lists
+				pid = strconv.Itoa(cmd.Process.Pid)
+				Commands[pid] = cmd
+
+				// use Wait to avoid defunct process when killed
+				err = cmd.Wait()
+				if err != nil {
+					return
 				}
 			}()
+		}
 
-			// start command
-			err = cmd.Start()
-			if err != nil {
-				fmt.Fprintln(os.Stderr, "Error starting Cmd", err)
-				return
-			}
+		if logsAction.Mode == "dump" {
+			go func() {
+				out, err := cmd.Output()
+				if err != nil {
+					utils.LogError(errors.Wrap(err, "[SOCKET] error executing Cmd for dump"))
+				}
 
-			err = cmd.Wait()
-			if err != nil {
-				fmt.Fprintln(os.Stderr, "Error waiting for Cmd", err)
-				return
-			}
+				broadcastToAll(gin.H{"pid": "", "data": string(out)})
+			}()
+		}
 
-			// add command to command lists
-			pid := strconv.Itoa(cmd.Process.Pid)
-			Commands[pid] = cmd
-		}()
 	}
 }
 
