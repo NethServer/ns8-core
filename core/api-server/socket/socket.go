@@ -23,7 +23,9 @@
 package socket
 
 import (
+	"encoding/json"
 	"fmt"
+	"os/exec"
 
 	jwt "github.com/golang-jwt/jwt"
 	"github.com/olahol/melody"
@@ -31,12 +33,14 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/NethServer/ns8-scratchpad/core/api-server/configuration"
+	"github.com/NethServer/ns8-scratchpad/core/api-server/models"
 	"github.com/NethServer/ns8-scratchpad/core/api-server/utils"
 )
 
 var socketConnection *melody.Melody
 
 var Connections map[string][]*melody.Session
+var Commands map[string]*exec.Cmd
 
 func Instance() *melody.Melody {
 	if socketConnection == nil {
@@ -57,6 +61,9 @@ func InitSocketConnection() *melody.Melody {
 
 	// init connection obj
 	Connections = make(map[string][]*melody.Session)
+
+	// init commands obj
+	Commands = make(map[string]*exec.Cmd)
 
 	return socketConnection
 }
@@ -108,5 +115,12 @@ func OnDisconnect(s *melody.Session) {
 }
 
 func OnMessage(s *melody.Session, msg []byte) {
-	socketConnection.Broadcast(msg)
+	// get action received
+	var socketAction models.SocketAction
+	if errSocketAction := json.Unmarshal([]byte(msg), &socketAction); errSocketAction != nil {
+		utils.LogError(errors.Wrap(errSocketAction, "[SOCKET] error in Action json unmarshal"))
+	}
+
+	// switch action received
+	Action(socketAction)
 }

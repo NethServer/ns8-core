@@ -25,10 +25,10 @@ package methods
 import (
 	"encoding/json"
 	"net/http"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
-	"sort"
 
 	"github.com/fatih/structs"
 	"github.com/gin-gonic/gin"
