@@ -22,7 +22,6 @@ Each variable is a map and each item represents a cluster node.
 - The item _key_ selects the OS type. Specify it followed by a number:
 
   * `dn` is for Debian 11
-  * `fc` is for Fedora 34
   * `cs` is for CentOS Stream 9
 
 - The item _value_ selects the droplet region. Refer to `doctl compute region list` output for
@@ -59,14 +58,14 @@ Download and install [Terraform](https://www.terraform.io/downloads), then follo
 
 4. Create two nodes for `cluster0`
 
-       terraform apply -var 'leader_node={"dn1":"ams3"}' -var 'worker_nodes={"fc1":"sfo3"}'
+       terraform apply -var 'leader_node={"dn1":"ams3"}' -var 'worker_nodes={"cs1":"sfo3"}'
        # -> dn1.leader.cluster0.dp.nethserver.net
-       # -> fc1.worker.cluster0.dp.nethserver.net
+       # -> cs1.worker.cluster0.dp.nethserver.net
 
 5. Add another node to it:
 
-       terraform apply -var 'leader_node={"dn1":"ams3"}' -var 'worker_nodes={"fc1":"sfo3","fc2:"lon1"}'
-       # -> fc2.worker.cluster0.dp.nethserver.net
+       terraform apply -var 'leader_node={"dn1":"ams3"}' -var 'worker_nodes={"cs1":"sfo3","cs2:"lon1"}'
+       # -> cs2.worker.cluster0.dp.nethserver.net
 
 6. Destroy the cluster
 
@@ -76,9 +75,9 @@ To work with multiple cluster instances just add more Terraform
 workspaces. E.g.:
 
     terraform workspace new cluster1
-    terraform apply -var 'leader_node={"dn1":"ams3"}' -var 'worker_nodes={"fc5":"ams3","fc6":"sfo3","fc7":"sgp1"}'
+    terraform apply -var 'leader_node={"dn1":"ams3"}' -var 'worker_nodes={"dn5":"ams3","dn6":"sfo3","dn7":"sgp1"}'
     terraform workspace select cluster0
-    terraform apply -var 'leader_node={"dn1":"ams3"}' -var 'worker_nodes={"dn1":"ams3","fc2":"sfo3"}'
+    terraform apply -var 'leader_node={"dn1":"ams3"}' -var 'worker_nodes={"dn1":"ams3","dn2":"sfo3"}'
 
 ## Shared firewall configuration
 

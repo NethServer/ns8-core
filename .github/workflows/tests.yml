@@ -7,7 +7,7 @@ on:
 env:
   TF_VAR_project: "NS8-CI"
   TF_VAR_domain: "ci.nethserver.net"
-  NS8_LEADER_NODES: "fc1 dn1 cs1"
+  NS8_LEADER_NODES: "dn1 cs1"
   NS8_CORE_MODULES: "core traefik loki promtail ldapproxy"
 
 jobs:
