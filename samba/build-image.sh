@@ -13,7 +13,7 @@ if ! buildah inspect --type container "${container}" &>/dev/null; then
     buildah run "${container}" -- bash <<EOF
 set -e
 apt-get update
-apt-get -y install samba winbind krb5-user iputils-ping
+apt-get -y install samba winbind krb5-user iputils-ping bzip2
 apt-get clean
 find /var/lib/apt/lists/ -type f -delete
 EOF

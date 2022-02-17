@@ -32,11 +32,16 @@ for evar in [
         'PROVISION_TYPE',
         'NBDOMAIN',
         'REALM',
-        'HOSTNAME',
         'IPADDRESS',
         'SVCUSER',
         'SVCPASS',
     ]:
     agent.set_env(evar, original_environment[evar])
+
+# The "samba-tool domain backup restore" procedure expects a new DC hostname,
+# a new one must be provided, now!
+dcname, _ = original_environment['HOSTNAME'].split('.', 1) # short hostname
+dcname = 'o' + dcname[14::-1] # "o" + reversed short hostname, trimmed at 14 chars max
+agent.set_env('HOSTNAME', dcname + '.' + original_environment['REALM'].lower())
 
 agent.dump_env()
