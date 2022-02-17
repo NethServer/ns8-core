@@ -84,7 +84,7 @@ else:
 exec_args = [
     "podman", "run",
     "-i", "--attach=stdin", "--attach=stdout", "--attach=stderr",
-    "--env=RCLONE*", "--network=host",
+    "--env=RCLONE*", "--network=host", "--rm",
     rclone_image,
     ] + sys.argv[2:]
 
