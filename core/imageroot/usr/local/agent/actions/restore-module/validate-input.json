@@ -22,7 +22,8 @@
                 "TRAEFIK_HOST": "mywiki.dp.nethserver.net",
                 "TRAEFIK_HTTP2HTTPS": "False",
                 "TRAEFIK_LETS_ENCRYPT": "False"
-            }
+            },
+	    "replace": false
         }
     ],
     "type": "object",
@@ -69,6 +70,12 @@
         "snapshot": {
             "title": "Snapshot ID",
             "type": "string"
+        },
+        "replace": {
+            "title": "Replace flag",
+            "description": "If set to true restore old UUID from 'environment' field",
+            "type": "boolean"
         }
+
     }
 }

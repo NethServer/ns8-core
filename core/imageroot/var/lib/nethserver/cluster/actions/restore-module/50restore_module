@@ -68,6 +68,7 @@ restore_task_result = agent.tasks.run("module/" + module_id, "restore-module",
         "path": path,
         "snapshot": snapshot,
         "environment": original_environment,
+        "replace": replace
     },
     endpoint="redis://cluster-leader",
     progress_callback=agent.get_progress_callback(51, 95)
@@ -75,9 +76,14 @@ restore_task_result = agent.tasks.run("module/" + module_id, "restore-module",
 
 agent.assert_exp(restore_task_result['exit_code'] == 0)
 
-# Replace existing module with the same MODULE_UUID
+# Remove existing modules with the same MODULE_UUID
 if replace:
     for mod in rdb.scan_iter('module/*/environment'):
+
+        # Do not remove freshly restored module
+        if rdb.hget(mod, 'MODULE_ID') == add_module_result['output']['module_id']:
+            continue
+
         # Remove old module
         if rdb.hget(mod, 'MODULE_UUID') == original_environment['MODULE_UUID']:
            remove_module_result = agent.tasks.run("cluster", "remove-module",
@@ -89,10 +95,5 @@ if replace:
                progress_callback=agent.get_progress_callback(95, 98)
            )
            agent.assert_exp(remove_module_result['exit_code'] == 0)
-
-           # Replace UUID inside the new instance
-           rdbp = agent.redis_connect(privileged = True)
-           rdbp.hset(f'module/{add_module_result["output"]["module_id"]}/environment', 'MODULE_UUID',  original_environment['MODULE_UUID'])
-           rdbp.close()
 
 json.dump(add_module_result['output'], fp=sys.stdout)
