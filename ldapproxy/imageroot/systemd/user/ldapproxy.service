@@ -17,7 +17,6 @@ ExecStart=/usr/bin/podman run \
     --cidfile=%t/ldapproxy.ctr-id \
     --cgroups=no-conmon \
     --network=host \
-    --log-opt=tag=%u \
     --replace --name=%N \
     --volume=./nginx:/srv:z \
     ${NGINX_IMAGE} nginx -g "daemon off;" -c /srv/nginx.conf

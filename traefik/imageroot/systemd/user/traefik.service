@@ -13,7 +13,6 @@ ExecStart=/usr/bin/podman run \
     --cidfile=%t/traefik.ctr-id \
     --cgroups=no-conmon \
     --network=host \
-    --log-opt=tag=%u \
     --replace --name=%N \
     --volume=traefik-acme:/etc/traefik/acme \
     --volume=./traefik.yaml:/etc/traefik/traefik.yaml:Z \

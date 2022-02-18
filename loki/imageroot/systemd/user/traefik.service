@@ -15,7 +15,6 @@ ExecStart=/usr/bin/podman run \
     --cidfile=%t/traefik.ctr-id \
     --cgroups=no-conmon \
     --pod-id-file %t/loki.pod-id \
-    --log-opt=tag=%u-traefik \
     --replace \
     --name=%N \
     --volume=./traefik.yaml:/etc/traefik.yaml:Z \
