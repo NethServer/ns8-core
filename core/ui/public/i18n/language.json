@@ -490,6 +490,7 @@
     "instance_label": "App instance label",
     "instance_label_tooltip": "You can assign the app instance an easy to remember name",
     "edit_instance_label": "Edit instance label",
+    "core_module": "System app",
     "app_categories": {
       "collaboration": "Collaboration",
       "system_administration": "System administration",

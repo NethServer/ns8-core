@@ -25,7 +25,7 @@
       <span class="selection-info">{{
         $t("common.x_of_y_selected", {
           selected: numSelected,
-          total: instances.length,
+          total: internalInstances.length,
         })
       }}</span>
     </div>
@@ -87,6 +87,19 @@
             />
           </div>
           <span>{{ getInstanceLabel(instance) }} </span>
+          <cv-interactive-tooltip
+            v-if="instance.flags.includes('core_module')"
+            alignment="center"
+            direction="right"
+            class="info core-module-icon"
+          >
+            <template slot="trigger">
+              <Settings16 />
+            </template>
+            <template slot="content">
+              <div>{{ $t("software_center.core_module") }}</div>
+            </template>
+          </cv-interactive-tooltip>
         </label>
       </cv-tile>
     </div>
@@ -96,9 +109,12 @@
 <script>
 import { UtilService, LottieService } from "@nethserver/ns8-ui-lib";
 import _isEqual from "lodash/isEqual";
+import _cloneDeep from "lodash/cloneDeep";
+import Settings16 from "@carbon/icons-vue/es/settings/16";
 
 export default {
   name: "BackupInstanceSelector",
+  components: { Settings16 },
   mixins: [UtilService, LottieService],
   props: {
     instances: {
@@ -120,6 +136,7 @@ export default {
   },
   data() {
     return {
+      internalInstances: [],
       selectedList: [],
       searchQuery: "",
       searchResults: [],
@@ -142,12 +159,17 @@ export default {
       if (this.isSearchActive) {
         return this.searchResults;
       } else {
-        return this.instances;
+        return this.internalInstances;
       }
     },
   },
   watch: {
     instances: function () {
+      const instances = _cloneDeep(this.instances);
+      this.internalInstances = instances.filter((i) => {
+        return !i.flags.includes("no_data_backup");
+      });
+
       this.selectedList = [];
       this.updateSelection();
     },
@@ -165,7 +187,7 @@ export default {
     selectAll() {
       this.selectedList = [];
 
-      for (const instance of this.instances) {
+      for (const instance of this.internalInstances) {
         this.selectedList.push(instance.id);
       }
     },
@@ -231,7 +253,7 @@ export default {
       this.isSearchActive = true;
 
       // search
-      this.searchResults = this.instances.filter((instance) => {
+      this.searchResults = this.internalInstances.filter((instance) => {
         // compare query text with all search fields of option
         return this.searchFields.some((searchField) => {
           const searchValue = instance[searchField];
@@ -310,6 +332,10 @@ export default {
 .app-icon img {
   width: 100%;
   height: 100%;
+}
+
+.core-module-icon {
+  margin-left: $spacing-03;
 }
 </style>
 

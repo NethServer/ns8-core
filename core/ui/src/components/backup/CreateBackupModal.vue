@@ -303,16 +303,6 @@
               ref="name"
             >
             </cv-text-input>
-            <!-- <cv-toggle ////
-            :label="$t('common.status')"
-            value="statusValue"
-            :form-item="true"
-            v-model="enabled"
-            :disabled="loading.addBackup || loading.alterBackup"
-          >
-            <template slot="text-left">{{ $t("common.disabled") }}</template>
-            <template slot="text-right">{{ $t("common.enabled") }}</template>
-          </cv-toggle> -->
             <!-- run backup on finish -->
             <cv-checkbox
               v-if="!isEditing"
