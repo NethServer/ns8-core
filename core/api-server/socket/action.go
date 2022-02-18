@@ -30,13 +30,14 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/olahol/melody"
 	"github.com/pkg/errors"
 
 	"github.com/NethServer/ns8-scratchpad/core/api-server/models"
 	"github.com/NethServer/ns8-scratchpad/core/api-server/utils"
 )
 
-func Action(socketAction models.SocketAction) {
+func Action(socketAction models.SocketAction, s *melody.Session) {
 	// switch action received
 	switch socketAction.Action {
 	case "logs-stop":
@@ -54,7 +55,7 @@ func Action(socketAction models.SocketAction) {
 			utils.LogError(errors.Wrap(errLogsAction, "[SOCKET] error in Logs action stop json unmarshal"))
 		}
 
-		cmd := Commands[logsAction.Pid]
+		cmd := Commands[s.Request.Header["Sec-Websocket-Key"][0]][logsAction.Pid]
 		if errKill := cmd.Process.Kill(); errKill != nil {
 			utils.LogError(errors.Wrap(errKill, "[SOCKET] error in command kill"))
 		}
@@ -142,7 +143,10 @@ func Action(socketAction models.SocketAction) {
 
 				// add command to command lists
 				pid = strconv.Itoa(cmd.Process.Pid)
-				Commands[pid] = cmd
+				if Commands[s.Request.Header["Sec-Websocket-Key"][0]] == nil {
+					Commands[s.Request.Header["Sec-Websocket-Key"][0]] = make(map[string]*exec.Cmd)
+				}
+				Commands[s.Request.Header["Sec-Websocket-Key"][0]][pid] = cmd
 
 				// use Wait to avoid defunct process when killed
 				err = cmd.Wait()
@@ -170,7 +174,7 @@ func broadcastToAll(msg interface{}) {
 	// convert interface to json string
 	jsonStr, err := json.Marshal(msg)
 	if err != nil {
-		fmt.Println(err)
+		utils.LogError(errors.Wrap(err, "[SOCKET] error converting interface msg to broadcast"))
 	}
 
 	if clientSession, ok := Connections["/ws"]; ok {

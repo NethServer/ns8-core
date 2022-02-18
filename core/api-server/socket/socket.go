@@ -40,7 +40,7 @@ import (
 var socketConnection *melody.Melody
 
 var Connections map[string][]*melody.Session
-var Commands map[string]*exec.Cmd
+var Commands map[string]map[string]*exec.Cmd
 
 func Instance() *melody.Melody {
 	if socketConnection == nil {
@@ -63,7 +63,7 @@ func InitSocketConnection() *melody.Melody {
 	Connections = make(map[string][]*melody.Session)
 
 	// init commands obj
-	Commands = make(map[string]*exec.Cmd)
+	Commands = make(map[string]map[string]*exec.Cmd)
 
 	return socketConnection
 }
@@ -115,8 +115,8 @@ func OnDisconnect(s *melody.Session) {
 	Connections[s.Request.URL.Path] = newSessions
 
 	// kill running processes
-	for pid := range Commands {
-		cmd := Commands[pid]
+	for pid := range Commands[s.Request.Header["Sec-Websocket-Key"][0]] {
+		cmd := Commands[s.Request.Header["Sec-Websocket-Key"][0]][pid]
 		cmd.Process.Kill()
 	}
 }
@@ -129,5 +129,5 @@ func OnMessage(s *melody.Session, msg []byte) {
 	}
 
 	// switch action received
-	Action(socketAction)
+	Action(socketAction, s)
 }
