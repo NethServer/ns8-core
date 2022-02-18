@@ -106,6 +106,8 @@ INPUT
       "mode": "dump",
       "lines": "25",
       "filter": "",
+      "from": "2021-01-19T10:00:00Z",
+      "to": "2021-01-19T20:00:00Z",
       "entity" :"module",
       "entity_name": "traefik1"
    }
@@ -117,6 +119,8 @@ INPUT
   - `mode`: must be `tail` or `dump` - `string` (choose how to retrieve logs)
   - `lines`: could be empty or a number - `string` (could be empty in `tail` mode)
   - `filter`: could be empty or string - `string` (used to search specific words inside logs)
+  - `from`: could be empty or iso8601 date string - `string` (used to search specific logs in a date range)
+  - `to`: could be empty or iso8601 date string - `string` (used to search specific logs in a date range)
   - `entity`: must be `cluster` or `node` or `module` - `string`
   - `entity_name`: could be empty (`cluster` case) or name of the entity - `string` (ex. hostname of the node or module id like `traefik1`)
 

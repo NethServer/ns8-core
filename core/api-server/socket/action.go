@@ -79,8 +79,22 @@ func Action(socketAction models.SocketAction, s *melody.Session) {
 		var mode = ""
 		var filter = ""
 		var entity = ""
-		// var from = ""
-		// var to = ""
+		var from = ""
+		var to = ""
+
+		// define basic args
+		args := []string{"query", "-q", "--no-labels"}
+
+		// check date
+		if len(logsAction.From) > 0 {
+			from = "--from=" + logsAction.From
+			args = append(args, from)
+		}
+
+		if len(logsAction.To) > 0 {
+			to = "--to=" + logsAction.To
+			args = append(args, to)
+		}
 
 		// switch mode
 		switch logsAction.Mode {
@@ -89,6 +103,7 @@ func Action(socketAction models.SocketAction, s *melody.Session) {
 		case "dump":
 			mode = "--limit=" + logsAction.Lines
 		}
+		args = append(args, mode)
 
 		// check filter
 		if len(logsAction.Filter) > 0 {
@@ -100,19 +115,20 @@ func Action(socketAction models.SocketAction, s *melody.Session) {
 		// switch entity
 		switch logsAction.Entity {
 		case "cluster":
-			entity = "{job=\"systemd-journal\"} | " + filter + " | line_format \"{{.nodename}} --> {{.MESSAGE}}\""
+			entity = "{job=\"systemd-journal\"} | " + filter + " | line_format \"{{.nodename}} {{.MESSAGE}}\""
 
 		case "node":
-			entity = "{nodename=\"" + logsAction.EntityName + "\"} | " + filter + " | line_format \"{{.nodename}} --> {{.MESSAGE}}\""
+			entity = "{nodename=\"" + logsAction.EntityName + "\"} | " + filter + " | line_format \"{{.nodename}} {{.MESSAGE}}\""
 
 		case "module":
-			entity = "{job=\"systemd-journal\"} | " + filter + " | CONTAINER_TAG=\"" + logsAction.EntityName + "\" | line_format \"{{.nodename}} --> {{.MESSAGE}}\""
+			entity = "{job=\"systemd-journal\"} | " + filter + " | CONTAINER_TAG=\"" + logsAction.EntityName + "\" | line_format \"{{.nodename}} {{.MESSAGE}}\""
 
 		}
+		args = append(args, entity)
 
 		// define command
-		fmt.Println("/usr/local/bin/logcli", "query", "-q", "--no-labels", mode, entity)
-		cmd := exec.Command("/usr/local/bin/logcli", "query", "-q", "--no-labels", mode, entity)
+		fmt.Println("/usr/local/bin/logcli", args)
+		cmd := exec.Command("/usr/local/bin/logcli", args...)
 
 		if logsAction.Mode == "tail" {
 			// execute command follow mode
@@ -120,18 +136,17 @@ func Action(socketAction models.SocketAction, s *melody.Session) {
 				pid := ""
 
 				// create a pipe for the output of the script
-				cmdReader, err := cmd.StdoutPipe()
-				if err != nil {
-					utils.LogError(errors.Wrap(err, "[SOCKET] error creating stdout pipe for Cmd"))
+				stdout, errStdOut := cmd.StdoutPipe()
+				if errStdOut != nil {
 					return
 				}
 
 				// create scanner to listen to command outputs
-				scanner := bufio.NewScanner(cmdReader)
+				scannerStdOut := bufio.NewScanner(stdout)
 				go func() {
 					// foreach command outputs send to websocket
-					for scanner.Scan() {
-						broadcastToAll(gin.H{"pid": pid, "data": scanner.Text()})
+					for scannerStdOut.Scan() {
+						broadcastToAll(gin.H{"pid": pid, "data": scannerStdOut.Text()})
 					}
 				}()
 
