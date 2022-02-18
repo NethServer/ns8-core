@@ -15,7 +15,13 @@
               </template>
               <template slot="content">
                 <div v-html="$t('backup.backup_page_tooltip_1')"></div>
-                <div v-html="$t('backup.backup_page_tooltip_2')"></div>
+                <div
+                  v-html="
+                    $t('backup.backup_page_tooltip_2', {
+                      productName: $root.config.PRODUCT_NAME,
+                    })
+                  "
+                ></div>
               </template>
             </cv-interactive-tooltip>
           </h2>
@@ -1039,9 +1045,6 @@ export default {
     },
     downloadClusterBackupCompleted(taskContext, taskResult) {
       this.loading.downloadClusterBackup = false;
-
-      console.log("downloadClusterBackupCompleted", taskResult.output); ////
-
       const downloadUrl = `${window.location.protocol}//${window.location.hostname}/cluster-admin/backup/${taskResult.output.path}`;
 
       //// useless, custom filename is not used
@@ -1062,9 +1065,6 @@ export default {
         document.body.appendChild(link);
         link.click();
       });
-    },
-    async restoreApps() {
-      console.log("restoreApps"); ////
     },
   },
 };

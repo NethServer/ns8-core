@@ -693,6 +693,19 @@
                     :indeterminate="!restore.progress"
                     class="mg-bottom-md"
                   />
+                  <cv-button-set class="footer-buttons">
+                    <NsButton
+                      type="button"
+                      kind="secondary"
+                      :icon="ChevronLeft20"
+                      size="lg"
+                      @click="goToRestoreFromFileOrUrl"
+                      :disabled="
+                        loading.restoreCluster || loading.readBackupRepositories
+                      "
+                      >{{ $t("common.go_back") }}
+                    </NsButton>
+                  </cv-button-set>
                 </cv-tile>
               </cv-column>
             </cv-row>

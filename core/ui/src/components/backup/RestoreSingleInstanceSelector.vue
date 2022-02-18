@@ -20,6 +20,15 @@
       <cv-tile v-if="loading" :light="light" class="no-mg-bottom">
         <cv-skeleton-text :paragraph="true" :line-count="8"></cv-skeleton-text>
       </cv-tile>
+      <!-- no instance to restore -->
+      <NsEmptyState
+        v-else-if="!instances.length"
+        :title="$t('backup.no_instance_to_restore')"
+      >
+        <template #description>{{
+          $t("backup.no_instance_to_restore_description")
+        }}</template>
+      </NsEmptyState>
       <!-- no search results -->
       <NsEmptyState
         v-else-if="!instancesToDisplay.length"

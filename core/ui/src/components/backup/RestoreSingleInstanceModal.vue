@@ -36,17 +36,6 @@
           </div>
           <cv-grid class="instances mg-bottom-md no-padding">
             <cv-row>
-              <cv-column
-                v-if="!loading.readBackupRepositories && !instances.length"
-              >
-                <NsEmptyState :title="$t('backup.no_instance_to_restore')">
-                  <template #description>{{
-                    $t("backup.no_instance_to_restore_description")
-                  }}</template>
-                </NsEmptyState>
-              </cv-column>
-            </cv-row>
-            <cv-row>
               <cv-column>
                 <RestoreSingleInstanceSelector
                   :instances="instances"
