@@ -121,13 +121,13 @@ INPUT
   - `entity_name`: could be empty (`cluster` case) or name of the entity - `string` (ex. hostname of the node or module id like `traefik1`)
 
 
-  ```json
-  OUTPUT
-  {
-     "data":"2022-02-17T20:47:24+01:00 fedora33.n2.edoardo --\u003e [GIN-debug] Listening and serving HTTP on 127.0.0.1:8080",
-     "pid":"14431"
-  }
-  ```
+```json
+OUTPUT
+{
+   "data":"2022-02-17T20:47:24+01:00 fedora33.n2.edoardo --\u003e [GIN-debug] Listening and serving HTTP on 127.0.0.1:8080",
+   "pid":"14431"
+}
+```
 
 - `data`: contains the log information
 - `pid`: is the pid of the process that actually reads log
