@@ -47,7 +47,7 @@ jobs:
           modules_list='[]'
           for module in ${NS8_CORE_MODULES}
           do
-            res=$(podman search --limit 150 --list-tags   --format json   ghcr.io/nethserver/traefik | jq 'any(.[].Tags[]; . == "${{ steps.tag.outputs.name }}")')
+            res=$(podman search --limit 150 --list-tags   --format json   ghcr.io/nethserver/${module} | jq 'any(.[].Tags[]; . == "${{ steps.tag.outputs.name }}")')
             if [ "$res" = "true" ]
             then
               modules_list=$(echo "${modules_list}"  | jq -c --arg m ${module} ' . + [$m]')
