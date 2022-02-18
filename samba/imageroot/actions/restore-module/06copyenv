@@ -40,8 +40,23 @@ for evar in [
 
 # The "samba-tool domain backup restore" procedure expects a new DC hostname,
 # a new one must be provided, now!
-dcname, _ = original_environment['HOSTNAME'].split('.', 1) # short hostname
-dcname = 'o' + dcname[14::-1] # "o" + reversed short hostname, trimmed at 14 chars max
-agent.set_env('HOSTNAME', dcname + '.' + original_environment['REALM'].lower())
+def generate_new_dc_name(name):
+    if len(name) > 1 and (name[-2].isnumeric() and name[-1].isalpha()):
+        newname = name[:-2] + \
+                alphabet[(1 + alphabet.find(name[-2])) % len(alphabet)] + \
+                alphabet[(1 + alphabet.find(name[-1])) % len(alphabet)]
+
+    elif name[-1].isnumeric():
+        newname = name + 'r'
+    else:
+        newname = name + '0'
+
+    if len(newname) > 14:
+        newname = newname[:13] + newname[-2:]
+
+    return newname
+
+hname, _ = original_environment['HOSTNAME'].split('.', 1) # short hostname
+agent.set_env('HOSTNAME', generate_new_dc_name(hname) + '.' + original_environment['REALM'].lower())
 
 agent.dump_env()
