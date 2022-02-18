@@ -33,6 +33,8 @@ type LogsStartAction struct {
 	Mode       string `json:"mode" structs:"mode"`
 	Lines      string `json:"lines" structs:"lines"`
 	Filter     string `json:"filter" structs:"filter"`
+	From       string `json:"from" structs:"from"`
+	To         string `json:"to" structs:"to"`
 	Entity     string `json:"entity" structs:"entity"`
 	EntityName string `json:"entity_name" structs:"entity_name"`
 }

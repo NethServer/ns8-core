@@ -76,8 +76,10 @@ func Action(socketAction models.SocketAction) {
 
 		// filter logs params
 		var mode = ""
-		//var filter = ""
+		var filter = ""
 		var entity = ""
+		// var from = ""
+		// var to = ""
 
 		// switch mode
 		switch logsAction.Mode {
@@ -87,16 +89,23 @@ func Action(socketAction models.SocketAction) {
 			mode = "--limit=" + logsAction.Lines
 		}
 
+		// check filter
+		if len(logsAction.Filter) > 0 {
+			filter = "json |  line_format \"{{.MESSAGE}}\" |= \"" + logsAction.Filter + "\""
+		} else {
+			filter = "json"
+		}
+
 		// switch entity
 		switch logsAction.Entity {
 		case "cluster":
-			entity = "{job=\"systemd-journal\"} | json | line_format \"{{.nodename}} --> {{.MESSAGE}}\""
+			entity = "{job=\"systemd-journal\"} | " + filter + " | line_format \"{{.nodename}} --> {{.MESSAGE}}\""
 
 		case "node":
-			entity = "{nodename=\"" + logsAction.EntityName + "\"} | json | line_format \"{{.nodename}} --> {{.MESSAGE}}\""
+			entity = "{nodename=\"" + logsAction.EntityName + "\"} | " + filter + " | line_format \"{{.nodename}} --> {{.MESSAGE}}\""
 
 		case "module":
-			entity = "{job=\"systemd-journal\"} | json | CONTAINER_TAG=\"" + logsAction.EntityName + "\" | line_format \"{{.nodename}} --> {{.MESSAGE}}\""
+			entity = "{job=\"systemd-journal\"} | " + filter + " | CONTAINER_TAG=\"" + logsAction.EntityName + "\" | line_format \"{{.nodename}} --> {{.MESSAGE}}\""
 
 		}
 

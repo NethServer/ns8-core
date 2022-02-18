@@ -104,6 +104,7 @@ func OnConnect(s *melody.Session) {
 }
 
 func OnDisconnect(s *melody.Session) {
+	// reassign existing connections
 	sessions := Connections[s.Request.URL.Path]
 	var newSessions []*melody.Session
 	for _, existingSession := range sessions {
@@ -112,6 +113,12 @@ func OnDisconnect(s *melody.Session) {
 		}
 	}
 	Connections[s.Request.URL.Path] = newSessions
+
+	// kill running processes
+	for pid := range Commands {
+		cmd := Commands[pid]
+		cmd.Process.Kill()
+	}
 }
 
 func OnMessage(s *melody.Session, msg []byte) {
