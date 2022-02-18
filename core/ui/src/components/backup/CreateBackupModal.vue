@@ -23,7 +23,7 @@
             <div class="mg-bottom-md">
               {{ $t("backup.choose_app_instances_to_backup") }}
             </div>
-            <InstanceSelector
+            <BackupInstanceSelector
               :instances="installedModules"
               :selection="isEditing ? backup.instances : instanceSelection"
               :instancesNotBackedUp="instancesNotBackedUp"
@@ -345,7 +345,7 @@
 <script>
 import { UtilService, TaskService, IconService } from "@nethserver/ns8-ui-lib";
 import to from "await-to-js";
-import InstanceSelector from "@/components/backup/InstanceSelector";
+import BackupInstanceSelector from "@/components/backup/BackupInstanceSelector";
 import _cloneDeep from "lodash/cloneDeep";
 // import Information16 from "@carbon/icons-vue/es/information/16"; ////
 import _capitalize from "lodash/capitalize";
@@ -360,7 +360,7 @@ const DEFAULT_RETENTION = "5";
 
 export default {
   name: "CreateBackupModal",
-  components: { InstanceSelector },
+  components: { BackupInstanceSelector },
   mixins: [UtilService, TaskService, IconService],
   props: {
     isShown: {
@@ -698,6 +698,10 @@ export default {
       this.loading.addBackup = true;
       const taskAction = "add-backup";
 
+      // register to task error
+      this.$root.$off(taskAction + "-aborted");
+      this.$root.$once(taskAction + "-aborted", this.addBackupAborted);
+
       // register to task validation
       this.$root.$off(taskAction + "-validation-failed");
       this.$root.$once(
@@ -719,7 +723,6 @@ export default {
             schedule_hint: this.schedule,
             retention: parseInt(this.retention),
             instances: this.instances,
-            // enabled: this.enabled, ////
             enabled: true,
           },
           extra: {
@@ -736,6 +739,13 @@ export default {
         this.error.addBackup = this.getErrorMessage(err);
         return;
       }
+    },
+    addBackupAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.loading.addBackup = false;
+
+      // hide modal
+      this.$emit("hide");
     },
     addBackupValidationFailed(validationErrors) {
       this.loading.addBackup = false;

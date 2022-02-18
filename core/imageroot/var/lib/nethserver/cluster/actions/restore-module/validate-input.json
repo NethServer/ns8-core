@@ -8,7 +8,8 @@
             "repository": "48ce000a-79b7-5fe6-8558-177fd70c27b4",
             "path": "dokuwiki/dokuwiki1@f5d24fcd-819c-4b1d-98ad-a1b2ebcee8cf",
             "snapshot": "",
-            "node": 1
+            "node": 1,
+            "replace": false
         }
     ],
     "type": "object",
@@ -40,6 +41,11 @@
             "description": "Node identifier where the module has to be restored",
             "type": "integer",
             "minimum": 1
+        },
+        "replace": {
+            "title": "Replace flag",
+            "description": "If set to true, remove any existing instance with the same UUID, then restore the UUID to the new module",
+            "type": "boolean"
         }
     }
 }

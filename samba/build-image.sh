@@ -41,6 +41,7 @@ buildah config \
     --label 'org.nethserver.rootfull=1' \
     --label "org.nethserver.images=ghcr.io/nethserver/samba-dc:${IMAGETAG:-latest}" \
     --label 'org.nethserver.authorizations=ldapproxy@node:accountprovider cluster:accountprovider' \
+    --label 'org.nethserver.flags=core_module account_provider' \
     --entrypoint=/ "${container}"
 buildah commit "${container}" "${repobase}/${reponame}"
 images+=("${repobase}/${reponame}")

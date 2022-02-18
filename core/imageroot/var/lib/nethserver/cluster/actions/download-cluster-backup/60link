@@ -1,0 +1,36 @@
+#!/usr/bin/bash
+
+#
+# Copyright (C) 2022 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
+BACKUP="/var/lib/nethserver/cluster/state/backup/dump.json.gz.gpg"
+OUT_DIR="/var/lib/nethserver/cluster/ui/backup/"
+
+if [ ! -f $BACKUP ]; then
+    echo "Backup '$BACKUP' not found"
+    exit 1
+fi
+
+rm -rf $OUT_DIR
+sha=$(sha256sum -z $BACKUP | awk '{print $1}')
+mkdir -p $OUT_DIR/$sha/
+cp $BACKUP $OUT_DIR/$sha/
+
+echo "{\"path\": \"$sha/dump.json.gz.gpg\"}"

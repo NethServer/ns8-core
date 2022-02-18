@@ -1,11 +1,5 @@
 <template>
   <div class="instance-selector">
-    <NsInlineNotification
-      v-if="isShownNotBackedUpNotification && selection == 'notBackedUp'"
-      kind="info"
-      :title="$t('backup.not_backed_up_instances_selected')"
-      :showCloseButton="false"
-    />
     <div class="toolbar">
       <NsDropdownAction kind="secondary" disabled>
         <template v-slot:trigger>{{ $t("common.select") }}</template>
@@ -15,12 +9,7 @@
         <cv-overflow-menu-item @click="selectNone">
           {{ $t("common.none") }}
         </cv-overflow-menu-item>
-        <cv-overflow-menu-item
-          @click="selectNotBackedUp"
-          :disabled="!instancesNotBackedUp.length"
-        >
-          {{ $t("backup.not_backed_up") }}
-        </cv-overflow-menu-item>
+        <!-- //// select core apps -->
       </NsDropdownAction>
       <span class="selection-info">{{
         $t("common.x_of_y_selected", {
@@ -39,13 +28,14 @@
         @input="onSearchInput"
         class="search-input"
         :disabled="loading"
+        :light="light"
         ref="search"
       >
       </cv-search>
     </div>
     <div class="instance-list">
       <!-- skeleton -->
-      <cv-tile v-if="loading" light>
+      <cv-tile v-if="loading" :light="light">
         <cv-skeleton-text :paragraph="true" :line-count="8"></cv-skeleton-text>
       </cv-tile>
       <!-- no search results -->
@@ -63,20 +53,20 @@
       <!-- instance list -->
       <cv-tile
         v-else
-        light
-        v-for="instance of instancesToDisplay"
-        :key="'tile-' + instance.id"
-        class="instance-tile"
+        :light="light"
+        v-for="(instance, index) of instancesToDisplay"
+        :key="index"
+        :class="['instance-tile', { 'instance-tile-light': light }]"
       >
         <label class="instance-label">
           <cv-checkbox
             v-model="selectedList"
-            :value="instance.id"
+            :value="instance.path"
             hide-label
             class="checkbox-instance"
-            :id="instance.id"
+            :id="instance.path"
           />
-          <div class="app-icon">
+          <!-- <div class="app-icon"> ////
             <img
               :src="
                 instance.logo
@@ -85,8 +75,25 @@
               "
               :alt="instance.id + ' logo'"
             />
+          </div> -->
+          <div>
+            <div>{{ instance.instance }}</div>
+            <div class="instance-description">
+              {{ instance.repository_name }}
+              <cv-interactive-tooltip
+                alignment="center"
+                direction="right"
+                class="info"
+              >
+                <template slot="trigger">
+                  <Information16 />
+                </template>
+                <template slot="content">
+                  <div>{{ instance.repository_url }}</div>
+                </template>
+              </cv-interactive-tooltip>
+            </div>
           </div>
-          <span>{{ getInstanceLabel(instance) }} </span>
         </label>
       </cv-tile>
     </div>
@@ -95,10 +102,11 @@
 
 <script>
 import { UtilService, LottieService } from "@nethserver/ns8-ui-lib";
-import _isEqual from "lodash/isEqual";
+import Information16 from "@carbon/icons-vue/es/information/16";
 
 export default {
-  name: "InstanceSelector",
+  name: "RestoreMultipleInstancesSelector",
+  components: { Information16 },
   mixins: [UtilService, LottieService],
   props: {
     instances: {
@@ -109,34 +117,24 @@ export default {
       type: [String, Array],
       default: "",
     },
-    instancesNotBackedUp: {
-      type: Array,
-      default: () => [],
-    },
     loading: {
       type: Boolean,
       default: false,
     },
+    light: Boolean,
   },
   data() {
     return {
       selectedList: [],
       searchQuery: "",
       searchResults: [],
-      searchFields: ["id", "module", "ui_name"],
+      searchFields: ["instance", "name", "repository_name"],
       isSearchActive: false,
     };
   },
   computed: {
     numSelected() {
       return this.selectedList.length;
-    },
-    isShownNotBackedUpNotification() {
-      // check array equality
-      return _isEqual(this.selectedList, this.idsNotBackedUp);
-    },
-    idsNotBackedUp() {
-      return this.instancesNotBackedUp.map((i) => i.id);
     },
     instancesToDisplay() {
       if (this.isSearchActive) {
@@ -154,11 +152,20 @@ export default {
     selection: function () {
       this.updateSelection();
     },
-    instancesNotBackedUp: function () {
-      this.updateSelection();
-    },
     selectedList: function () {
-      this.$emit("select", this.selectedList);
+      console.log("selectedList", this.selectedList); ////
+
+      const selectedInstances = [];
+
+      for (const path of this.selectedList) {
+        const instanceFound = this.instances.find((i) => i.path == path);
+
+        if (instanceFound) {
+          selectedInstances.push(instanceFound);
+        }
+      }
+
+      this.$emit("select", selectedInstances);
     },
   },
   methods: {
@@ -166,54 +173,22 @@ export default {
       this.selectedList = [];
 
       for (const instance of this.instances) {
-        this.selectedList.push(instance.id);
+        this.selectedList.push(instance.path);
       }
     },
     selectNone() {
       this.selectedList = [];
     },
-    selectNotBackedUp() {
-      this.selectedList = [];
-
-      for (const id of this.idsNotBackedUp) {
-        this.selectedList.push(id);
-      }
-    },
-    selectInstances() {
-      // select specific instances (used by EditBackupModal)
-
-      this.selectedList = [];
-
-      for (const instance of this.selection) {
-        // list-installed-modules and list-backups use different attributes for module id
-        const instanceId = instance.module_id
-          ? instance.module_id
-          : instance.id;
-        this.selectedList.push(instanceId);
-      }
-    },
-    getInstanceLabel(instance) {
-      return instance.ui_name
-        ? instance.ui_name + " (" + instance.id + ")"
-        : instance.id;
-    },
     updateSelection() {
-      if (typeof this.selection == "string") {
-        switch (this.selection) {
-          case "all":
-            this.selectAll();
-            break;
-          case "none":
-          case "":
-            this.selectNone();
-            break;
-          case "notBackedUp":
-            this.selectNotBackedUp();
-            break;
-        }
-      } else {
-        // selection is an array of instances
-        this.selectInstances();
+      switch (this.selection) {
+        case "all":
+          this.selectAll();
+          break;
+        case "none":
+        case "":
+          this.selectNone();
+          break;
+        //// case "core"
       }
     },
     searchInstance() {
@@ -278,12 +253,16 @@ export default {
 
 .instance-list {
   overflow-y: auto;
-  height: 18rem;
+  height: 16rem;
 }
 
 .instance-tile {
   margin-bottom: 0;
-  border-bottom: 1px solid $ui-01;
+  border-bottom: 2px solid $ui-02;
+}
+
+.instance-tile-light {
+  border-bottom: 2px solid $ui-01;
 }
 
 .instance-label {
@@ -299,17 +278,14 @@ export default {
   flex-grow: 0;
 }
 
-.app-icon {
-  display: inline-block;
-  width: 2rem;
-  height: 2rem;
-  flex-shrink: 0;
-  margin-right: $spacing-03;
-}
+.instance-description {
+  margin-top: $spacing-03;
+  color: $ui-04;
 
-.app-icon img {
-  width: 100%;
-  height: 100%;
+  .info {
+    position: relative;
+    top: 3px;
+  }
 }
 </style>
 

@@ -40,6 +40,7 @@
     "no_label": "No label",
     "next": "Next",
     "previous": "Previous",
+    "go_back": "Go back",
     "finish": "Finish",
     "please_read_carefully": "Please read carefully",
     "type_to_confirm": "Type <strong>{name}</strong> to confirm deletion",
@@ -58,7 +59,10 @@
     "no_search_results_description": "Try changing your search query",
     "success": "Success",
     "save": "Save",
-    "all_good": "All good"
+    "all_good": "All good",
+    "upload_drop_target_text": "Click or drag and drop file here",
+    "remove": "Remove",
+    "skip": "Skip"
   },
   "error": {
     "error": "Error",
@@ -136,7 +140,32 @@
     "redirect_cluster": "Worker Node",
     "redirect_cluster_description": "This node is a worker of the cluster now. Click the button below to access cluster administration page on the leader node.",
     "redirect_cluster_link": "Go to cluster administration",
-    "node_added_to_cluster": "Node {nodeId} added to cluster"
+    "node_added_to_cluster": "Node {nodeId} added to cluster",
+    "restore_cluster": "Restore cluster",
+    "restore_cluster_description": "Restore a cluster backup and backed up apps",
+    "restore_from_cluster_backup_file": "Restore from cluster backup file",
+    "restore_from_remote_url": "Restore from remote URL",
+    "remote_url": "Remote URL",
+    "backup_password": "Backup password",
+    "use_admin_password": "Use admin password",
+    "backup_password_tooltip": "Password used to decipher backup. If empty, <strong>admin</strong> user password is used",
+    "upload_cluster_backup_file": "Upload cluster backup file",
+    "invalid_passphrase": "Invalid password. Enter the password used to cipher cluster backup (by default it's the admin password of the old cluster)",
+    "not_valid_gpg_file": "Invalid GPG file",
+    "url_format": "Invalid URL",
+    "restore_summary": "Summary",
+    "backup_date": "Backup date",
+    "cluster_label": "Cluster label",
+    "vpn_endpoint": "VPN endpoint",
+    "domains": "Domains",
+    "backup_repositories": "Backup repositories",
+    "restoring_cluster": "Restoring cluster",
+    "restore_apps": "Restore apps",
+    "select_apps_to_restore": "Select apps to restore",
+    "skip_apps_restore": "Skip apps restore",
+    "skip_apps_restore_1": "Do you want to skip apps restore?",
+    "skip_apps_restore_2": "You can restore apps later in <strong>Backup</strong> page",
+    "restoring_apps_c": "Restoring {num} app... | Restoring {num} apps..."
   },
   "shell": {
     "skip_to_content": "Skip to content",
@@ -178,10 +207,12 @@
     "task_failed": "Task <strong>{task}</strong> failed",
     "task_completed": "Task <strong>{task}</strong> completed",
     "task_pending": "Task <strong>{task}</strong> is pending",
+    "task_running": "Task <strong>{task}</strong> is running",
     "task_failed_validation": "Task <strong>{task}</strong> failed validation",
     "subtask_failed": "Subtask <strong>{task}</strong> failed",
     "subtask_completed": "Subtask <strong>{task}</strong> completed",
     "subtask_pending": "Subtask <strong>{task}</strong> is pending",
+    "subtask_running": "Subtask <strong>{task}</strong> is running",
     "subtask_failed_validation": "Subtask <strong>{task}</strong> failed validation",
     "completed": "Completed",
     "configure": "Configure",
@@ -228,7 +259,11 @@
     "alter-backup": "Alter backup",
     "run-backup": "Run backup",
     "restore-module": "Restore module",
-    "read-backup-repository": "Read backup repository"
+    "read-backup-repository": "Read backup repository",
+    "retrieve-cluster-backup": "Retrieve cluster backup",
+    "restore-cluster": "Restore cluster",
+    "read-backup-repositories": "Read backup repositories",
+    "restore-modules": "Restore modules"
   },
   "network": {
     "title": "Network"
@@ -239,7 +274,7 @@
   "backup": {
     "title": "Backup",
     "repositories": "Repositories",
-    "backup_scheduler": "Backup scheduler",
+    "app_backups": "App backups",
     "no_backup_repository": "No backup repository",
     "empty_state_repository_description": "Add a repository to configure backup",
     "no_backup_scheduled": "No backup scheduled",
@@ -296,7 +331,7 @@
     "disabled_backups_description": "There is {num} backup disabled | There are {num} backups disabled",
     "repository_password_helper": "Enter password if repository was configured previously",
     "not_backed_up": "Not backed up",
-    "search_instances": "Search instances...",
+    "search_instances": "Search app instances...",
     "not_backed_up_instances_selected": "Instances not backed up are currently selected",
     "repo_password_tooltip": "This password is used to encrypt data in the repository. Store this password in a safe place, otherwise you won't be able to restore your backed up data",
     "run_backup": "Run backup",
@@ -358,8 +393,13 @@
     "backup_repository_auth_error": "Cannot authenticate",
     "backup_repository_auth_error_description": "Check repository settings",
     "no_instance_to_restore": "No app instance to restore",
-    "no_instance_to_restore_description": "It looks like there is no app instance backed up on the repository",
-    "invalid_url_protocol": "URL must start with '{protocol}'"
+    "no_instance_to_restore_description": "It looks like there is no app instance backed up on your repositories",
+    "invalid_url_protocol": "URL must start with '{protocol}'",
+    "backup_page_tooltip_1": "<div class='mg-bottom-sm'>Here you can configure your backups and restore any apps.</div><h6 class='mg-bottom-sm'>Backup</h6><div class='mg-bottom-sm'>Cluster data is composed of <strong>cluster data</strong> and <strong>apps data</strong>.</div><div class='mg-bottom-sm'>Ensure your peace of mind by configuring:</div><ul class='unordered-list mg-bottom-sm'><li><strong>Cluster backup</strong>: download it regularly using the overflow menu on the top right corner of this page</li><li><strong>Apps backup</strong>: add your backup repositories and configure app backup scheduling in the <strong>App backups</strong> section on this page</li></ul>",
+    "backup_page_tooltip_2": "<h6 class='mg-bottom-sm'>Restore</h6><div>You can restore any previously backed up app or the whole cluster:</div><ul class='unordered-list mg-bottom-sm'><li><strong>Restore one or more apps</strong>: use the overflow menu on the top right corner of this page</li><li><strong>Restore the whole cluster</strong>: you need a <strong>cluster backup</strong> and a fresh installation of {productName}. This is useful in a disaster recovery scenario</li></ul>",
+    "download_cluster_configuration_backup": "Download cluster backup",
+    "restore_app": "Restore app",
+    "replace_existing_app": "Replace existing app {app}"
   },
   "calendar": {
     "days": "Days",

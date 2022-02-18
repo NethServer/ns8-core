@@ -393,23 +393,6 @@ export default {
 
       //// handle ALL providers
     },
-    //// move method to ui-lib
-    clearErrors() {
-      this.clearStrings(this.error);
-    },
-    //// move method to ui-lib
-    clearStrings(obj) {
-      for (const key of Object.keys(obj)) {
-        if (typeof obj[key] == "string") {
-          obj[key] = "";
-        } else if (typeof obj[key] == "object") {
-          // recursion
-          this.clearStrings(obj[key]);
-        } else {
-          console.error("unexpected object type:", typeof obj[key]);
-        }
-      }
-    },
     nextStep() {
       if (this.isNextButtonDisabled) {
         return;

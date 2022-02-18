@@ -13,7 +13,8 @@
           "source": "ghcr.io/nethserver/traefik",
           "version": "latest",
           "logo": "https://raw.githubusercontent.com/NethServer/ns8-repomd/repomd/dokuwiki/logo.png",
-          "module": "traefik"
+          "module": "traefik",
+          "flags": ["no_data_backup", "core_module"]
         }
       ],
       "ghcr.io/nethserver/dokuwiki": [
@@ -24,7 +25,8 @@
           "source": "ghcr.io/nethserver/dokuwiki",
           "version": "0.0.1-alpha1",
           "logo": "https://raw.githubusercontent.com/NethServer/ns8-repomd/repomd/dokuwiki/logo.png",
-          "module": "dokuwiki"
+          "module": "dokuwiki",
+	  "flags": []
         },
         {
           "id": "dokuwiki1",
@@ -33,7 +35,8 @@
           "source": "ghcr.io/nethserver/dokuwiki",
           "version": "0.0.1-alpha1",
           "logo": "https://raw.githubusercontent.com/NethServer/ns8-repomd/repomd/dokuwiki/logo.png",
-          "module": "dokuwiki"
+          "module": "dokuwiki",
+	  "flags": []
         }
       ]
     }
@@ -72,6 +75,13 @@
           "module": {
             "type": "string",
             "description": "Name of the module of the instance"
+          },
+          "flags": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "description": "List of flags from org.nethserver.flags image label"
           }
         },
         "required": [
@@ -81,7 +91,8 @@
           "source",
           "version",
           "logo",
-          "module"
+          "module",
+	  "flags"
         ]
       }
     }

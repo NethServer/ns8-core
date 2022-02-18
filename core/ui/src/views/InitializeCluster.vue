@@ -1,250 +1,799 @@
 <template>
-  <div class="bx--grid">
-    <cv-loading
-      :active="isCreatingCluster || isJoiningCluster"
-      :overlay="true"
-    ></cv-loading>
-    <div class="bx--row">
-      <div class="bx--col-lg-16">
-        <div class="logo">
-          <img
-            :src="require('@/assets/logo.png')"
-            :alt="this.$root.config.PRODUCT_NAME + ' logo'"
-          />
-        </div>
-      </div>
-    </div>
-    <div v-if="q.page === 'welcome'">
-      <div class="bx--row">
-        <div class="bx--col-lg-16 page-title">
-          <h2>
-            {{
-              $t("init.welcome", { product: this.$root.config.PRODUCT_NAME })
-            }}
-          </h2>
-        </div>
-      </div>
-      <!-- create / join cluster -->
-      <div class="bx--row">
-        <div class="bx--col-md-4">
-          <NsTile
-            :light="true"
-            kind="clickable"
-            :icon="EdgeCluster32"
-            @click="selectCreateCluster"
-            large
-          >
-            <h6>{{ $t("init.create_cluster") }}</h6>
-            <div class="tile-description">
-              {{ $t("init.create_cluster_description") }}
-            </div>
-          </NsTile>
-        </div>
-        <div class="bx--col-md-4">
-          <NsTile
-            :light="true"
-            kind="clickable"
-            :icon="Connect32"
-            @click="selectJoinCluster"
-            large
-          >
-            <h6>{{ $t("init.join_cluster") }}</h6>
-            <div class="tile-description">
-              {{ $t("init.join_cluster_description") }}
-            </div>
-          </NsTile>
-        </div>
-      </div>
-    </div>
-    <div v-else-if="q.page === 'create'">
-      <template v-if="isPasswordChangeNeeded">
-        <div class="bx--row">
-          <!-- password change needed -->
-          <div class="bx--col-lg-16 page-title">
-            <h2>{{ $t("init.create_cluster") }}</h2>
-            <div class="title-description">
-              {{ $t("init.create_cluster_description") }}
-            </div>
-          </div>
-        </div>
-        <div class="bx--row">
-          <div class="bx--col-lg-16">
-            <NsInlineNotification
-              kind="info"
-              :title="$t('init.change_admin_password')"
-              :description="$t('init.change_admin_password_description')"
-              :showCloseButton="false"
+  <div>
+    <cv-grid class="welcome-grid">
+      <cv-loading
+        :active="isCreatingCluster || isJoiningCluster"
+        :overlay="true"
+      ></cv-loading>
+      <cv-row>
+        <cv-column>
+          <div class="logo">
+            <img
+              :src="require('@/assets/logo.png')"
+              :alt="this.$root.config.PRODUCT_NAME + ' logo'"
             />
           </div>
-        </div>
-        <div class="bx--row">
-          <div class="bx--col-lg-16">
+        </cv-column>
+      </cv-row>
+      <template v-if="q.page === 'welcome'">
+        <cv-row>
+          <cv-column class="welcome">
+            <h2>
+              {{
+                $t("init.welcome", { product: this.$root.config.PRODUCT_NAME })
+              }}
+            </h2>
+          </cv-column>
+        </cv-row>
+        <!-- create / join / restore cluster -->
+        <cv-row>
+          <cv-column>
             <cv-tile light>
-              <cv-form @submit.prevent="changePassword">
-                <cv-text-input
-                  :label="$t('init.current_password')"
-                  v-model="currentPassword"
-                  :invalid-message="$t(error.currentPassword)"
-                  type="password"
-                  ref="currentPassword"
-                >
-                </cv-text-input>
-                <NsPasswordInput
-                  :newPasswordLabel="$t('init.new_password')"
-                  :confirmPasswordLabel="$t('init.new_password_confirm')"
-                  v-model="newPassword"
-                  @passwordValidation="onPasswordValidation"
-                  :newPasswordInvalidMessage="$t(error.newPassword)"
-                  :confirmPasswordInvalidMessage="$t(error.confirmPassword)"
-                  :passwordHideLabel="$t('password.hide_password')"
-                  :passwordShowLabel="$t('password.show_password')"
-                  :lengthLabel="$t('password.long_enough')"
-                  :lowercaseLabel="$t('password.lowercase_letter')"
-                  :uppercaseLabel="$t('password.uppercase_letter')"
-                  :numberLabel="$t('password.number')"
-                  :symbolLabel="$t('password.symbol')"
-                  :equalLabel="$t('password.equal')"
-                  :focus="focusPasswordField"
-                />
-                <NsButton
-                  kind="primary"
-                  :icon="Password20"
-                  :disabled="isChangingPassword"
-                  >{{ $t("init.change_password") }}</NsButton
-                >
-                <div>
-                  <cv-link @click="selectJoinCluster" class="mg-top">{{
-                    $t("init.join_cluster_instead")
-                  }}</cv-link>
-                </div>
-              </cv-form>
+              <cv-grid fullWidth class="mg-top-lg">
+                <cv-row>
+                  <cv-column :md="4">
+                    <NsTile
+                      kind="clickable"
+                      :icon="EdgeCluster32"
+                      @click="selectCreateCluster"
+                      large
+                    >
+                      <h6 class="mg-bottom-sm">
+                        {{ $t("init.create_cluster") }}
+                      </h6>
+                      <div class="tile-description">
+                        {{ $t("init.create_cluster_description") }}
+                      </div>
+                    </NsTile>
+                  </cv-column>
+                  <cv-column :md="4">
+                    <NsTile
+                      kind="clickable"
+                      :icon="Connect32"
+                      @click="selectJoinCluster"
+                      large
+                    >
+                      <h6 class="mg-bottom-sm">
+                        {{ $t("init.join_cluster") }}
+                      </h6>
+                      <div class="tile-description">
+                        {{ $t("init.join_cluster_description") }}
+                      </div>
+                    </NsTile>
+                  </cv-column>
+                </cv-row>
+                <cv-row>
+                  <cv-column class="horizontal-divider"> </cv-column>
+                </cv-row>
+                <cv-row>
+                  <cv-column>
+                    <NsTile
+                      kind="clickable"
+                      :icon="Reset32"
+                      @click="selectRestoreCluster"
+                      large
+                      class="restore-card"
+                    >
+                      <h6 class="mg-bottom-sm">
+                        {{ $t("init.restore_cluster") }}
+                      </h6>
+                      <div class="tile-description">
+                        {{ $t("init.restore_cluster_description") }}
+                      </div>
+                    </NsTile>
+                  </cv-column>
+                </cv-row>
+              </cv-grid>
             </cv-tile>
-          </div>
-        </div>
+          </cv-column>
+        </cv-row>
       </template>
-      <!-- admin password was changed -->
-      <template v-else>
-        <!-- create cluster form -->
-        <div class="bx--row">
-          <div class="bx--col-lg-16 page-title">
-            <h2>{{ $t("init.create_cluster") }}</h2>
-            <div class="title-description">
-              {{ $t("init.create_cluster_description") }}
-            </div>
-          </div>
-        </div>
-        <div class="bx--row">
-          <div class="bx--col-lg-16">
-            <cv-tile light>
-              <cv-form @submit.prevent="createCluster">
-                <cv-text-input
-                  :label="$t('init.vpn_endpoint_address')"
-                  v-model.trim="vpnEndpointAddress"
-                  :invalid-message="$t(error.vpnEndpointAddress)"
-                  ref="vpnEndpointAddress"
-                >
-                </cv-text-input>
-                <cv-text-input
-                  :label="$t('init.vpn_endpoint_port')"
-                  v-model.trim="vpnEndpointPort"
-                  :invalid-message="$t(error.vpnEndpointPort)"
-                  ref="vpnEndpointPort"
-                >
-                </cv-text-input>
-                <cv-text-input
-                  :label="$t('init.vpn_cidr')"
-                  v-model.trim="vpnCidr"
-                  :invalid-message="$t(error.vpnCidr)"
-                  ref="vpnCidr"
-                >
-                </cv-text-input>
-                <NsButton
-                  kind="primary"
-                  :icon="EdgeCluster20"
-                  :disabled="isCreatingCluster"
-                  >{{ $t("init.create_cluster") }}</NsButton
-                >
-                <div>
-                  <cv-link @click="selectJoinCluster" class="mg-top">{{
-                    $t("init.join_cluster_instead")
-                  }}</cv-link>
-                </div>
-              </cv-form>
-            </cv-tile>
-          </div>
-        </div>
-      </template>
-    </div>
-    <div v-else-if="q.page === 'join'">
-      <!-- join cluster form -->
-      <div class="bx--row">
-        <div class="bx--col-lg-16 page-title">
-          <h2>{{ $t("init.join_cluster") }}</h2>
-          <div class="title-description">
-            {{ $t("init.join_cluster_description") }}
-          </div>
-        </div>
-      </div>
-      <div class="bx--row">
-        <div class="bx--col-lg-16">
-          <cv-tile light>
-            <cv-form @submit.prevent="joinCluster">
-              <cv-text-area
-                :label="$t('common.join_code')"
-                v-model.trim="joinCode"
-                :invalid-message="$t(error.joinCode)"
-                :helper-text="
-                  $t('init.join_code_helper_text') +
-                  ' https://LEADER_NODE_IP/cluster-admin/#/nodes?isShownAddNodeModal=true'
-                "
-                class="join-code"
-                ref="joinCode"
-              >
-              </cv-text-area>
-              <cv-checkbox
-                :label="$t('init.tls_verify')"
-                v-model="tlsVerify"
-                value="checkTlsVerify"
-              />
-              <NsButton kind="primary" :icon="Connect20">{{
-                $t("init.join_cluster")
-              }}</NsButton>
-              <div>
-                <cv-link @click="selectCreateCluster" class="mg-top">{{
-                  $t("init.create_cluster_instead")
-                }}</cv-link>
+      <template v-else-if="q.page === 'create'">
+        <template v-if="isPasswordChangeNeeded">
+          <cv-row>
+            <!-- password change needed -->
+            <cv-column class="welcome">
+              <h2>{{ $t("init.create_cluster") }}</h2>
+              <div class="title-description">
+                {{ $t("init.create_cluster_description") }}
               </div>
-            </cv-form>
-          </cv-tile>
-        </div>
-      </div>
-    </div>
-    <div v-else-if="q.page === 'redirect'">
-      <div class="bx--row">
-        <div class="bx--col-lg-16 page-title">
-          <h2>{{ $t("init.redirect_cluster") }}</h2>
-        </div>
-      </div>
-      <div class="bx--row">
-        <div class="bx--col-lg-16">
-          <div class="title-description">
-            {{ $t("init.redirect_cluster_description") }}
-          </div>
-        </div>
-      </div>
-      <div class="bx--row mg-top-lg">
-        <div class="bx--col-lg-16">
-          <a
-            :href="this.joinEndpoint + '/cluster-admin/'"
-            class="external-link-button"
-          >
-            <NsButton kind="primary" :icon="Launch20">
-              {{ $t("init.redirect_cluster_link") }}
-            </NsButton>
-          </a>
-        </div>
-      </div>
-    </div>
+            </cv-column>
+          </cv-row>
+          <cv-row>
+            <cv-column>
+              <NsInlineNotification
+                kind="info"
+                :title="$t('init.change_admin_password')"
+                :description="$t('init.change_admin_password_description')"
+                :showCloseButton="false"
+              />
+            </cv-column>
+          </cv-row>
+          <cv-row>
+            <cv-column>
+              <cv-tile light>
+                <cv-form @submit.prevent="changePassword">
+                  <cv-text-input
+                    :label="$t('init.current_password')"
+                    v-model="currentPassword"
+                    :invalid-message="$t(error.currentPassword)"
+                    type="password"
+                    ref="currentPassword"
+                  >
+                  </cv-text-input>
+                  <NsPasswordInput
+                    :newPasswordLabel="$t('init.new_password')"
+                    :confirmPasswordLabel="$t('init.new_password_confirm')"
+                    v-model="newPassword"
+                    @passwordValidation="onPasswordValidation"
+                    :newPasswordInvalidMessage="$t(error.newPassword)"
+                    :confirmPasswordInvalidMessage="$t(error.confirmPassword)"
+                    :passwordHideLabel="$t('password.hide_password')"
+                    :passwordShowLabel="$t('password.show_password')"
+                    :lengthLabel="$t('password.long_enough')"
+                    :lowercaseLabel="$t('password.lowercase_letter')"
+                    :uppercaseLabel="$t('password.uppercase_letter')"
+                    :numberLabel="$t('password.number')"
+                    :symbolLabel="$t('password.symbol')"
+                    :equalLabel="$t('password.equal')"
+                    :focus="focusPasswordField"
+                  />
+                  <cv-button-set class="footer-buttons">
+                    <NsButton
+                      type="button"
+                      kind="secondary"
+                      :icon="ChevronLeft20"
+                      size="lg"
+                      @click="goToWelcomePage"
+                      >{{ $t("common.go_back") }}
+                    </NsButton>
+                    <NsButton
+                      kind="primary"
+                      :loading="isChangingPassword"
+                      :disabled="isChangingPassword"
+                      :icon="Password20"
+                      size="lg"
+                      >{{ $t("init.change_password") }}
+                    </NsButton>
+                  </cv-button-set>
+                </cv-form>
+              </cv-tile>
+            </cv-column>
+          </cv-row>
+        </template>
+        <!-- admin password was changed -->
+        <template v-else>
+          <!-- create cluster form -->
+          <cv-row>
+            <cv-column class="welcome">
+              <h2>{{ $t("init.create_cluster") }}</h2>
+              <div class="title-description">
+                {{ $t("init.create_cluster_description") }}
+              </div>
+            </cv-column>
+          </cv-row>
+          <cv-row>
+            <cv-column>
+              <cv-tile light>
+                <cv-form @submit.prevent="createCluster">
+                  <cv-text-input
+                    :label="$t('init.vpn_endpoint_address')"
+                    v-model.trim="vpnEndpointAddress"
+                    :invalid-message="$t(error.vpnEndpointAddress)"
+                    ref="vpnEndpointAddress"
+                  >
+                  </cv-text-input>
+                  <cv-text-input
+                    :label="$t('init.vpn_endpoint_port')"
+                    v-model.trim="vpnEndpointPort"
+                    :invalid-message="$t(error.vpnEndpointPort)"
+                    type="number"
+                    class="narrow"
+                    ref="vpnEndpointPort"
+                  >
+                  </cv-text-input>
+                  <cv-text-input
+                    :label="$t('init.vpn_cidr')"
+                    v-model.trim="vpnCidr"
+                    :invalid-message="$t(error.vpnCidr)"
+                    class="narrow"
+                    ref="vpnCidr"
+                  >
+                  </cv-text-input>
+                  <cv-button-set class="footer-buttons">
+                    <NsButton
+                      type="button"
+                      kind="secondary"
+                      :icon="ChevronLeft20"
+                      size="lg"
+                      @click="goToWelcomePage"
+                      >{{ $t("common.go_back") }}
+                    </NsButton>
+                    <NsButton
+                      kind="primary"
+                      :loading="isCreatingCluster"
+                      :disabled="isCreatingCluster"
+                      :icon="EdgeCluster20"
+                      size="lg"
+                      >{{ $t("init.create_cluster") }}
+                    </NsButton>
+                  </cv-button-set>
+                </cv-form>
+              </cv-tile>
+            </cv-column>
+          </cv-row>
+        </template>
+      </template>
+      <template v-else-if="q.page === 'join'">
+        <!-- join cluster form -->
+        <cv-row>
+          <cv-column class="welcome">
+            <h2>{{ $t("init.join_cluster") }}</h2>
+            <div class="title-description">
+              {{ $t("init.join_cluster_description") }}
+            </div>
+          </cv-column>
+        </cv-row>
+        <cv-row>
+          <cv-column>
+            <cv-tile light>
+              <cv-form @submit.prevent="joinCluster">
+                <cv-text-area
+                  :label="$t('common.join_code')"
+                  v-model.trim="joinCode"
+                  :invalid-message="$t(error.joinCode)"
+                  :helper-text="
+                    $t('init.join_code_helper_text') +
+                    ' https://LEADER_NODE_IP/cluster-admin/#/nodes?isShownAddNodeModal=true'
+                  "
+                  class="join-code"
+                  ref="joinCode"
+                >
+                </cv-text-area>
+                <cv-checkbox
+                  :label="$t('init.tls_verify')"
+                  v-model="tlsVerify"
+                  value="checkTlsVerify"
+                />
+                <cv-button-set class="footer-buttons">
+                  <NsButton
+                    type="button"
+                    kind="secondary"
+                    :icon="ChevronLeft20"
+                    size="lg"
+                    @click="goToWelcomePage"
+                    >{{ $t("common.go_back") }}
+                  </NsButton>
+                  <NsButton
+                    kind="primary"
+                    :loading="isJoiningCluster"
+                    :disabled="isJoiningCluster"
+                    :icon="Connect20"
+                    size="lg"
+                    >{{ $t("init.join_cluster") }}
+                  </NsButton>
+                </cv-button-set>
+              </cv-form>
+            </cv-tile>
+          </cv-column>
+        </cv-row>
+      </template>
+      <template v-else-if="q.page === 'restore'">
+        <template v-if="isPasswordChangeNeeded">
+          <cv-row>
+            <!-- password change needed -->
+            <cv-column class="welcome">
+              <h2>{{ $t("init.restore_cluster") }}</h2>
+              <div class="title-description">
+                {{ $t("init.restore_cluster_description") }}
+              </div>
+            </cv-column>
+          </cv-row>
+          <cv-row>
+            <cv-column>
+              <NsInlineNotification
+                kind="info"
+                :title="$t('init.change_admin_password')"
+                :description="$t('init.change_admin_password_description')"
+                :showCloseButton="false"
+              />
+            </cv-column>
+          </cv-row>
+          <cv-row>
+            <cv-column>
+              <cv-tile light>
+                <cv-form @submit.prevent="changePassword">
+                  <cv-text-input
+                    :label="$t('init.current_password')"
+                    v-model="currentPassword"
+                    :invalid-message="$t(error.currentPassword)"
+                    type="password"
+                    ref="currentPassword"
+                  >
+                  </cv-text-input>
+                  <NsPasswordInput
+                    :newPasswordLabel="$t('init.new_password')"
+                    :confirmPasswordLabel="$t('init.new_password_confirm')"
+                    v-model="newPassword"
+                    @passwordValidation="onPasswordValidation"
+                    :newPasswordInvalidMessage="$t(error.newPassword)"
+                    :confirmPasswordInvalidMessage="$t(error.confirmPassword)"
+                    :passwordHideLabel="$t('password.hide_password')"
+                    :passwordShowLabel="$t('password.show_password')"
+                    :lengthLabel="$t('password.long_enough')"
+                    :lowercaseLabel="$t('password.lowercase_letter')"
+                    :uppercaseLabel="$t('password.uppercase_letter')"
+                    :numberLabel="$t('password.number')"
+                    :symbolLabel="$t('password.symbol')"
+                    :equalLabel="$t('password.equal')"
+                    :focus="focusPasswordField"
+                  />
+                  <cv-button-set class="footer-buttons">
+                    <NsButton
+                      type="button"
+                      kind="secondary"
+                      :icon="ChevronLeft20"
+                      size="lg"
+                      @click="goToWelcomePage"
+                      >{{ $t("common.go_back") }}
+                    </NsButton>
+                    <NsButton
+                      kind="primary"
+                      :loading="isChangingPassword"
+                      :disabled="isChangingPassword"
+                      :icon="Password20"
+                      size="lg"
+                      >{{ $t("init.change_password") }}
+                    </NsButton>
+                  </cv-button-set>
+                </cv-form>
+              </cv-tile>
+            </cv-column>
+          </cv-row>
+        </template>
+        <!-- admin password was changed -->
+        <template v-else>
+          <cv-row>
+            <cv-column class="welcome">
+              <h2>{{ $t("init.restore_cluster") }}</h2>
+              <div class="title-description">
+                {{ $t("init.restore_cluster_description") }}
+              </div>
+            </cv-column>
+          </cv-row>
+          <!-- restore cluster -->
+          <template v-if="restore.step == 'type'">
+            <!-- restore from file / url -->
+            <cv-row>
+              <cv-column>
+                <cv-tile light>
+                  <cv-grid fullWidth class="mg-top-lg no-padding">
+                    <cv-row>
+                      <cv-column :md="4">
+                        <NsTile
+                          kind="clickable"
+                          :icon="Link32"
+                          @click="goToRestoreFromUrl"
+                          large
+                        >
+                          <h6>
+                            {{ $t("init.restore_from_remote_url") }}
+                          </h6>
+                        </NsTile>
+                      </cv-column>
+                      <cv-column :md="4">
+                        <NsTile
+                          kind="clickable"
+                          :icon="Document32"
+                          @click="goToRestoreFromFile"
+                          large
+                        >
+                          <h6>
+                            {{ $t("init.restore_from_cluster_backup_file") }}
+                          </h6>
+                        </NsTile>
+                      </cv-column>
+                    </cv-row>
+                  </cv-grid>
+                  <cv-button-set class="footer-buttons">
+                    <NsButton
+                      type="button"
+                      kind="secondary"
+                      :icon="ChevronLeft20"
+                      size="lg"
+                      @click="goToWelcomePage"
+                      >{{ $t("common.go_back") }}
+                    </NsButton>
+                  </cv-button-set>
+                </cv-tile>
+              </cv-column>
+            </cv-row>
+          </template>
+          <template v-else-if="restore.step == 'url'">
+            <!-- restore from url -->
+            <cv-row>
+              <cv-column>
+                <cv-tile light>
+                  <h5 class="mg-bottom-md">
+                    {{ $t("init.restore_from_remote_url") }}
+                  </h5>
+                  <cv-form @submit.prevent="retrieveClusterBackupFromUrl">
+                    <NsTextInput
+                      v-model.trim="restore.url"
+                      :label="$t('init.remote_url')"
+                      placeholder="https://myserver/cluster-backup.json.gz.gpg"
+                      :invalid-message="error.restore.url"
+                      :disabled="loading.retrieveClusterBackup"
+                      class="mg-bottom-sm"
+                      ref="url"
+                    />
+                    <cv-checkbox
+                      :label="$t('init.tls_verify')"
+                      v-model="restore.tlsVerify"
+                      value="checkTlsVerify"
+                    />
+                    <!-- advanced options -->
+                    <cv-accordion ref="accordion" class="mg-top-lg">
+                      <cv-accordion-item
+                        :open="
+                          toggleAccordion[0] ||
+                          restore.isBackupPasswordAccordionOpenAndDisabled
+                        "
+                        :disabled="
+                          restore.isBackupPasswordAccordionOpenAndDisabled
+                        "
+                      >
+                        <template slot="title">{{
+                          $t("common.advanced")
+                        }}</template>
+                        <template slot="content">
+                          <NsTextInput
+                            type="password"
+                            :password-hide-label="$t('password.hide_password')"
+                            :password-show-label="$t('password.show_password')"
+                            v-model.trim="restore.backupPassword"
+                            :label="$t('init.backup_password')"
+                            :placeholder="$t('init.use_admin_password')"
+                            :invalid-message="error.restore.backup_password"
+                            :disabled="loading.retrieveClusterBackup"
+                            tooltipAlignment="center"
+                            tooltipDirection="right"
+                            ref="backup_password"
+                            class="mg-top-md"
+                          >
+                            <template #tooltip>
+                              <span
+                                v-html="$t('init.backup_password_tooltip')"
+                              ></span>
+                            </template>
+                          </NsTextInput>
+                        </template>
+                      </cv-accordion-item>
+                    </cv-accordion>
+                    <cv-button-set class="footer-buttons">
+                      <NsButton
+                        type="button"
+                        kind="secondary"
+                        :icon="ChevronLeft20"
+                        size="lg"
+                        @click="goToRestoreType"
+                        >{{ $t("common.go_back") }}
+                      </NsButton>
+                      <NsButton
+                        kind="primary"
+                        :loading="loading.retrieveClusterBackup"
+                        :disabled="loading.retrieveClusterBackup"
+                        :icon="ChevronRight20"
+                        size="lg"
+                        >{{ $t("common.next") }}
+                      </NsButton>
+                    </cv-button-set>
+                  </cv-form>
+                </cv-tile>
+              </cv-column>
+            </cv-row>
+          </template>
+          <template v-else-if="restore.step == 'file'">
+            <!-- restore from file -->
+            <cv-row>
+              <cv-column>
+                <cv-tile light>
+                  <h5 class="mg-bottom-md">
+                    {{ $t("init.restore_from_cluster_backup_file") }}
+                  </h5>
+                  <cv-form @submit.prevent="retrieveClusterBackupFromFile">
+                    <div>
+                      {{ $t("init.upload_cluster_backup_file") }}
+                    </div>
+                    <cv-file-uploader
+                      :drop-target-label="$t('common.upload_drop_target_text')"
+                      accept=".gpg"
+                      :clear-on-reselect="true"
+                      :multiple="false"
+                      :removable="false"
+                      :remove-aria-label="$t('common.remove')"
+                      v-model="restore.filesUploaded"
+                      @change="onFileUpload"
+                      :class="[
+                        'file-uploader',
+                        { 'validation-failed': error.restore.backup_file },
+                      ]"
+                      ref="backup_file"
+                    >
+                    </cv-file-uploader>
+                    <!-- invalid message for file uploader -->
+                    <div
+                      v-if="error.restore.backup_file"
+                      class="validation-failed-invalid-message"
+                      v-html="error.restore.backup_file"
+                    ></div>
+                    <!-- advanced options -->
+                    <cv-accordion ref="accordion" class="mg-top-lg">
+                      <cv-accordion-item
+                        :open="
+                          toggleAccordion[0] ||
+                          restore.isBackupPasswordAccordionOpenAndDisabled
+                        "
+                        :disabled="
+                          restore.isBackupPasswordAccordionOpenAndDisabled
+                        "
+                      >
+                        <template slot="title">{{
+                          $t("common.advanced")
+                        }}</template>
+                        <template slot="content">
+                          <NsTextInput
+                            type="password"
+                            :password-hide-label="$t('password.hide_password')"
+                            :password-show-label="$t('password.show_password')"
+                            v-model.trim="restore.backupPassword"
+                            :label="$t('init.backup_password')"
+                            :placeholder="$t('init.use_admin_password')"
+                            :invalid-message="error.restore.backup_password"
+                            :disabled="loading.retrieveClusterBackup"
+                            tooltipAlignment="center"
+                            tooltipDirection="right"
+                            ref="backup_password"
+                            class="mg-top-md"
+                          >
+                            <template #tooltip>
+                              <span
+                                v-html="$t('init.backup_password_tooltip')"
+                              ></span>
+                            </template>
+                          </NsTextInput>
+                        </template>
+                      </cv-accordion-item>
+                    </cv-accordion>
+                    <NsInlineNotification
+                      v-if="error.retrieveClusterBackup"
+                      kind="error"
+                      :title="$t('action.retrieve-cluster-backup')"
+                      :description="error.retrieveClusterBackup"
+                      :showCloseButton="false"
+                    />
+                    <cv-button-set class="footer-buttons">
+                      <NsButton
+                        type="button"
+                        kind="secondary"
+                        :icon="ChevronLeft20"
+                        size="lg"
+                        @click="goToRestoreType"
+                        >{{ $t("common.go_back") }}
+                      </NsButton>
+                      <NsButton
+                        kind="primary"
+                        :loading="loading.retrieveClusterBackup"
+                        :disabled="loading.retrieveClusterBackup"
+                        :icon="ChevronRight20"
+                        size="lg"
+                        >{{ $t("common.next") }}
+                      </NsButton>
+                    </cv-button-set>
+                  </cv-form>
+                </cv-tile>
+              </cv-column>
+            </cv-row>
+          </template>
+          <template v-else-if="restore.step == 'summary'">
+            <!-- restore summary -->
+            <cv-row>
+              <cv-column>
+                <cv-tile light>
+                  <h5 class="mg-bottom-md">
+                    {{ $t("init.restore_summary") }}
+                  </h5>
+                  <cv-form @submit.prevent="restoreCluster">
+                    <div class="key-value-setting">
+                      <span class="label">{{ $t("init.backup_date") }}</span>
+                      <span class="value">{{
+                        (restore.summary.timestamp * 1000)
+                          | date("yyyy-MM-dd HH:mm:ss")
+                      }}</span>
+                    </div>
+                    <div
+                      v-if="restore.summary.cluster"
+                      class="key-value-setting"
+                    >
+                      <span class="label">{{ $t("init.cluster_label") }}</span>
+                      <span class="value">{{ restore.summary.cluster }}</span>
+                    </div>
+                    <div class="key-value-setting">
+                      <span class="label">{{ $t("init.vpn_endpoint") }}</span>
+                      <span class="value">{{ restore.summary.vpn }}</span>
+                    </div>
+                    <div class="key-value-setting">
+                      <span class="label">{{ $t("init.domains") }}</span>
+                      <span class="value">{{ restore.summary.domains }}</span>
+                    </div>
+                    <div class="key-value-setting">
+                      <span class="label">{{
+                        $t("init.backup_repositories")
+                      }}</span>
+                      <span class="value">{{
+                        restore.summary.backup_repositories
+                      }}</span>
+                    </div>
+                    <NsInlineNotification
+                      v-if="error.restoreCluster"
+                      kind="error"
+                      :title="$t('action.restore-cluster')"
+                      :description="error.restoreCluster"
+                      :showCloseButton="false"
+                    />
+                    <cv-button-set class="footer-buttons">
+                      <NsButton
+                        type="button"
+                        kind="secondary"
+                        :icon="ChevronLeft20"
+                        size="lg"
+                        @click="goToRestoreFromFileOrUrl"
+                        >{{ $t("common.go_back") }}
+                      </NsButton>
+                      <NsButton
+                        kind="primary"
+                        :loading="loading.restoreCluster"
+                        :disabled="loading.restoreCluster"
+                        :icon="Reset20"
+                        size="lg"
+                        >{{ $t("init.restore_cluster") }}
+                      </NsButton>
+                    </cv-button-set>
+                  </cv-form>
+                </cv-tile>
+              </cv-column>
+            </cv-row>
+          </template>
+          <template v-if="restore.step == 'restoringCluster'">
+            <NsInlineNotification
+              v-if="error.restoreCluster"
+              kind="error"
+              :title="$t('action.restore-cluster')"
+              :description="error.restoreCluster"
+              :showCloseButton="false"
+            />
+            <NsInlineNotification
+              v-if="error.readBackupRepositories"
+              kind="error"
+              :title="$t('action.read-backup-repositories')"
+              :description="error.readBackupRepositories"
+              :showCloseButton="false"
+            />
+            <cv-row>
+              <cv-column>
+                <cv-tile light>
+                  <NsEmptyState
+                    :title="$t('init.restoring_cluster')"
+                    :animationData="GearsLottie"
+                    animationTitle="gears"
+                    :loop="true"
+                  />
+                  <NsProgressBar
+                    :value="restore.progress"
+                    :indeterminate="!restore.progress"
+                    class="mg-bottom-md"
+                  />
+                  <cv-button-set class="footer-buttons">
+                    <NsButton
+                      type="button"
+                      kind="secondary"
+                      :icon="ChevronLeft20"
+                      size="lg"
+                      @click="goToRestoreFromFileOrUrl"
+                      :disabled="
+                        loading.restoreCluster || loading.readBackupRepositories
+                      "
+                      >{{ $t("common.go_back") }}
+                    </NsButton>
+                  </cv-button-set>
+                </cv-tile>
+              </cv-column>
+            </cv-row>
+          </template>
+          <template v-if="restore.step == 'apps'">
+            <!-- restore modules -->
+            <cv-row>
+              <cv-column>
+                <cv-tile light>
+                  <h5 class="mg-bottom-md">
+                    {{ $t("init.select_apps_to_restore") }}
+                  </h5>
+                  <cv-form @submit.prevent="restoreModules">
+                    <RestoreMultipleInstancesSelector
+                      :instances="restore.instances"
+                      selection="all"
+                      :loading="loading.retrieveClusterBackup"
+                      @select="onSelectInstances"
+                      :light="false"
+                    />
+                    <NsInlineNotification
+                      v-if="error.restoreModules"
+                      kind="error"
+                      :title="$t('action.restore-modules')"
+                      :description="error.restoreModules"
+                      :showCloseButton="false"
+                    />
+                    <cv-button-set class="footer-buttons">
+                      <NsButton
+                        type="button"
+                        kind="secondary"
+                        :icon="ChevronRight20"
+                        size="lg"
+                        @click="showSkipRestoreAppsModal"
+                        :disabled="loading.restoreModules"
+                        >{{ $t("common.skip") }}
+                      </NsButton>
+                      <NsButton
+                        kind="primary"
+                        :loading="loading.restoreModules"
+                        :disabled="
+                          loading.restoreModules ||
+                          !restore.selectedInstances.length
+                        "
+                        :icon="Reset20"
+                        size="lg"
+                        >{{ $t("init.restore_apps") }}
+                      </NsButton>
+                    </cv-button-set>
+                  </cv-form>
+                </cv-tile>
+              </cv-column>
+            </cv-row>
+          </template>
+        </template>
+      </template>
+      <template v-else-if="q.page === 'redirect'">
+        <cv-row>
+          <cv-column class="welcome">
+            <h2>{{ $t("init.redirect_cluster") }}</h2>
+          </cv-column>
+        </cv-row>
+        <cv-row>
+          <cv-column>
+            <div class="title-description">
+              {{ $t("init.redirect_cluster_description") }}
+            </div>
+          </cv-column>
+        </cv-row>
+        <cv-row class="mg-top-lg">
+          <cv-column>
+            <a
+              :href="this.joinEndpoint + '/cluster-admin/'"
+              class="external-link-button"
+            >
+              <NsButton kind="primary" :icon="Launch20">
+                {{ $t("init.redirect_cluster_link") }}
+              </NsButton>
+            </a>
+          </cv-column>
+        </cv-row>
+      </template>
+    </cv-grid>
+    <SkipRestoreAppsModal
+      :isShown="restore.isShownSkipRestoreAppsModal"
+      @hide="hideSkipRestoreAppsModal"
+      @confirm="skipRestoreApps"
+    />
   </div>
 </template>
 
@@ -256,14 +805,21 @@ import {
   StorageService,
   NsPasswordInput,
   TaskService,
+  LottieService,
 } from "@nethserver/ns8-ui-lib";
 import { mapActions } from "vuex";
 import to from "await-to-js";
 import NotificationService from "@/mixins/notification";
+import RestoreMultipleInstancesSelector from "@/components/backup/RestoreMultipleInstancesSelector";
+import SkipRestoreAppsModal from "@/components/SkipRestoreAppsModal";
 
 export default {
   name: "InitializeCluster",
-  components: { NsPasswordInput },
+  components: {
+    NsPasswordInput,
+    RestoreMultipleInstancesSelector,
+    SkipRestoreAppsModal,
+  },
   mixins: [
     UtilService,
     IconService,
@@ -271,6 +827,7 @@ export default {
     StorageService,
     TaskService,
     NotificationService,
+    LottieService,
   ],
   pageTitle() {
     return this.$t("init.welcome", { product: this.$root.config.PRODUCT_NAME });
@@ -300,6 +857,28 @@ export default {
       isJoiningCluster: false,
       isChangingPassword: false,
       isMaster: true,
+      restore: {
+        step: "type",
+        type: "",
+        url: "",
+        tlsVerify: true,
+        backupPassword: "",
+        filesUploaded: [],
+        base64FileUploaded: "",
+        isBackupPasswordAccordionOpenAndDisabled: false,
+        isBackupPasswordAccordionDisabled: false,
+        summary: {},
+        progress: 0,
+        instances: [],
+        selectedInstances: [],
+        isShownSkipRestoreAppsModal: false,
+      },
+      loading: {
+        retrieveClusterBackup: false,
+        restoreCluster: false,
+        readBackupRepositories: false,
+        restoreModules: false,
+      },
       error: {
         currentPassword: "",
         newPassword: "",
@@ -308,6 +887,15 @@ export default {
         vpnEndpointPort: "",
         vpnCidr: "",
         joinCode: "",
+        retrieveClusterBackup: "",
+        restoreCluster: "",
+        readBackupRepositories: "",
+        restoreModules: "",
+        restore: {
+          url: "",
+          backup_password: "",
+          backup_file: "",
+        },
       },
     };
   },
@@ -322,7 +910,7 @@ export default {
     next();
   },
   created() {
-    this.retrieveClusterStatus();
+    this.getClusterStatus();
     this.getDefaults();
   },
   methods: {
@@ -339,6 +927,7 @@ export default {
           extra: {
             title: this.$t("action." + taskAction),
             isNotificationHidden: true,
+            toastTimeout: 0, // persistent notification
           },
         })
       );
@@ -367,7 +956,7 @@ export default {
       this.vpnCidr = defaults.vpn.network;
     },
     selectCreateCluster() {
-      this.$router.push("/init?page=create");
+      this.$router.push({ path: "/init", query: { page: "create" } });
 
       if (this.isPasswordChangeNeeded) {
         this.focusElement("currentPassword");
@@ -376,10 +965,39 @@ export default {
       }
     },
     selectJoinCluster() {
-      this.$router.push("/init?page=join");
+      this.$router.push({ path: "/init", query: { page: "join" } });
       this.focusElement("joinCode");
     },
-    async retrieveClusterStatus() {
+    selectRestoreCluster() {
+      this.$router.push({ path: "/init", query: { page: "restore" } });
+
+      if (this.isPasswordChangeNeeded) {
+        this.focusElement("currentPassword");
+      }
+    },
+    goToRestoreType() {
+      this.restore.step = "type";
+      this.restore.type = "";
+    },
+    goToRestoreFromFile() {
+      this.restore.step = "file";
+      this.restore.type = "file";
+    },
+    goToRestoreFromUrl() {
+      this.restore.step = "url";
+      this.restore.type = "url";
+    },
+    goToRestoreFromFileOrUrl() {
+      if (this.restore.type == "file") {
+        this.goToRestoreFromFile();
+      } else {
+        this.goToRestoreFromUrl();
+      }
+    },
+    goToWelcomePage() {
+      this.$router.push({ path: "/init", query: { page: "welcome" } });
+    },
+    async getClusterStatus() {
       const taskAction = "get-cluster-status";
 
       // register to task completion
@@ -394,6 +1012,7 @@ export default {
           extra: {
             title: this.$t("action." + taskAction),
             isNotificationHidden: true,
+            toastTimeout: 0, // persistent notification
           },
         })
       );
@@ -536,6 +1155,7 @@ export default {
           extra: {
             title: this.$t("action." + taskAction),
             isNotificationHidden: true,
+            toastTimeout: 0, // persistent notification
           },
         })
       );
@@ -642,6 +1262,7 @@ export default {
           extra: {
             title: this.$t("action." + taskAction),
             isNotificationHidden: true,
+            toastTimeout: 0, // persistent notification
           },
         })
       );
@@ -758,6 +1379,7 @@ export default {
           extra: {
             title: this.$t("action." + taskAction),
             isNotificationHidden: true,
+            toastTimeout: 0, // persistent notification
           },
         })
       );
@@ -809,12 +1431,383 @@ export default {
       this.error.joinCode = "init.invalid_join_code";
       this.focusElement("joinCode");
     },
+    async onFileUpload(files) {
+      this.error.restore.backup_file = "";
+      this.restore.base64FileUploaded = "";
+
+      if (files.length > 1) {
+        // keep only last uploaded file
+
+        this.$set(this.restore.filesUploaded, 0, files[files.length - 1]);
+        this.restore.filesUploaded.splice(1);
+      }
+
+      const fileUploaded = this.restore.filesUploaded[0];
+
+      if (!fileUploaded || fileUploaded.invalidMessageTitle) {
+        // invalid file
+        return;
+      }
+      const file = fileUploaded.file;
+      const result = await this.fileToBase64(file).catch((e) => Error(e));
+
+      if (result instanceof Error) {
+        console.log("error converting file to base64:", result.message);
+        return;
+      } else {
+        this.restore.base64FileUploaded = result.split(
+          "data:application/pgp-encrypted;base64,"
+        )[1];
+        console.log("base64!", this.restore.base64FileUploaded); ////
+      }
+    },
+    validateRetrieveClusterBackupFromFile() {
+      let isValidationOk = true;
+      this.clearErrors();
+
+      if (
+        !this.restore.filesUploaded.length ||
+        !this.restore.base64FileUploaded
+      ) {
+        this.error.restore.backup_file = this.$t("common.required");
+
+        if (isValidationOk) {
+          this.focusElement("backup_file");
+          isValidationOk = false;
+        }
+      }
+      return isValidationOk;
+    },
+    validateRetrieveClusterBackupFromUrl() {
+      let isValidationOk = true;
+      this.clearErrors();
+
+      if (!this.restore.url) {
+        this.error.restore.url = this.$t("common.required");
+
+        if (isValidationOk) {
+          this.focusElement("url");
+          isValidationOk = false;
+        }
+      }
+      return isValidationOk;
+    },
+    retrieveClusterBackupFromFile() {
+      if (!this.validateRetrieveClusterBackupFromFile()) {
+        return;
+      }
+
+      const inputData = {
+        type: "file",
+        password: this.restore.backupPassword,
+        file: this.restore.base64FileUploaded,
+      };
+      this.retrieveClusterBackup(inputData);
+    },
+    retrieveClusterBackupFromUrl() {
+      if (!this.validateRetrieveClusterBackupFromUrl()) {
+        return;
+      }
+
+      const inputData = {
+        type: "url",
+        password: this.restore.backupPassword,
+        url: this.restore.url,
+        tls_verify: this.restore.tlsVerify,
+      };
+      this.retrieveClusterBackup(inputData);
+    },
+    async retrieveClusterBackup(inputData) {
+      // validation already performed in retrieveClusterBackupFromFile() and retrieveClusterBackupFromUrl()
+      this.error.retrieveClusterBackup = "";
+      this.loading.retrieveClusterBackup = true;
+      const taskAction = "retrieve-cluster-backup";
+
+      // register to task validation
+      this.$root.$off(taskAction + "-validation-failed");
+      this.$root.$once(
+        taskAction + "-validation-failed",
+        this.retrieveClusterBackupValidationFailed
+      );
+
+      // register to task error
+      this.$root.$off(taskAction + "-aborted");
+      this.$root.$once(
+        taskAction + "-aborted",
+        this.retrieveClusterBackupAborted
+      );
+
+      // register to task completion
+      this.$root.$off(taskAction + "-completed");
+      this.$root.$once(
+        taskAction + "-completed",
+        this.retrieveClusterBackupCompleted
+      );
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          data: inputData,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+            toastTimeout: 0, // persistent notification
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.retrieveClusterBackup = this.getErrorMessage(err);
+        return;
+      }
+    },
+    retrieveClusterBackupValidationFailed(validationErrors) {
+      console.log("retrieveClusterBackupValidationFailed", validationErrors); ////
+
+      this.loading.retrieveClusterBackup = false;
+      let focusAlreadySet = false;
+
+      for (const validationError of validationErrors) {
+        const param = validationError.parameter;
+
+        if (param == "backup_password") {
+          this.restore.isBackupPasswordAccordionOpenAndDisabled = true;
+        }
+
+        console.log("validationError", validationError); ////
+
+        // set i18n error message
+        this.error.restore[param] = this.$t("init." + validationError.error);
+
+        if (!focusAlreadySet) {
+          this.focusElement(param);
+          focusAlreadySet = true;
+        }
+      }
+    },
+    retrieveClusterBackupAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.loading.retrieveClusterBackup = false;
+    },
+    retrieveClusterBackupCompleted(taskContext, taskResult) {
+      console.log("retrieveClusterBackupCompleted", taskResult.output); ////
+
+      this.restore.summary = taskResult.output;
+      this.restore.isBackupPasswordAccordionOpenAndDisabled = false;
+      this.restore.step = "summary";
+      this.loading.retrieveClusterBackup = false;
+    },
+    async restoreCluster() {
+      this.error.restoreCluster = "";
+      this.loading.restoreCluster = true;
+      this.restore.step = "restoringCluster";
+      const taskAction = "restore-cluster";
+
+      // register to task error
+      this.$root.$off(taskAction + "-aborted");
+      this.$root.$once(taskAction + "-aborted", this.restoreClusterAborted);
+
+      // register to task completion
+      this.$root.$once(taskAction + "-completed", this.restoreClusterCompleted);
+
+      // register to task progress to update progress bar
+      this.$root.$on(taskAction + "-progress", this.restoreClusterProgress);
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+            isProgressNotified: true,
+            toastTimeout: 0, // persistent notification
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.restoreCluster = this.getErrorMessage(err);
+        return;
+      }
+    },
+    restoreClusterProgress(progress) {
+      this.restore.progress = progress;
+    },
+    restoreClusterAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.loading.restoreCluster = false;
+
+      // unregister to task progress
+      this.$root.$off("restore-cluster-progress");
+    },
+    restoreClusterCompleted() {
+      // unregister to task progress
+      this.$root.$off("restore-cluster-progress");
+      this.loading.restoreCluster = false;
+      this.readBackupRepositories();
+    },
+    async readBackupRepositories() {
+      this.error.readBackupRepositories = "";
+      this.loading.readBackupRepositories = true;
+      const taskAction = "read-backup-repositories";
+
+      // register to task error
+      this.$root.$off(taskAction + "-aborted");
+      this.$root.$once(
+        taskAction + "-aborted",
+        this.readBackupRepositoriesAborted
+      );
+
+      // register to task completion
+      this.$root.$off(taskAction + "-completed");
+      this.$root.$once(
+        taskAction + "-completed",
+        this.readBackupRepositoriesCompleted
+      );
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+            toastTimeout: 0, // persistent notification
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.readBackupRepositories = this.getErrorMessage(err);
+        return;
+      }
+    },
+    readBackupRepositoriesAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.loading.readBackupRepositories = false;
+    },
+    readBackupRepositoriesCompleted(taskContext, taskResult) {
+      this.loading.readBackupRepositories = false;
+      this.restore.instances = taskResult.output;
+
+      if (this.restore.instances.length) {
+        this.restore.step = "apps";
+      } else {
+        // there is no app to restore, go to cluster status
+        this.getClusterStatus();
+      }
+    },
+    onSelectInstances(selectedInstances) {
+      console.log("onSelectInstances", selectedInstances); ////
+
+      this.restore.selectedInstances = selectedInstances;
+    },
+    showSkipRestoreAppsModal() {
+      console.log("showSkipRestoreAppsModal"); ////
+      this.restore.isShownSkipRestoreAppsModal = true;
+    },
+    hideSkipRestoreAppsModal() {
+      this.restore.isShownSkipRestoreAppsModal = false;
+    },
+    prepareRestoreModulesData() {
+      const data = [];
+
+      for (const i of this.restore.selectedInstances) {
+        const instance = {
+          repository: i.repository_id,
+          path: i.path,
+          snapshot: "",
+          node: 1,
+        };
+        data.push(instance);
+      }
+
+      console.log("prepared", data); ////
+
+      return data;
+    },
+    async restoreModules() {
+      console.log("restoreModules", this.restore.selectedInstances); ////
+
+      const inputData = this.prepareRestoreModulesData();
+
+      this.error.restoreModules = "";
+      this.loading.restoreModules = true;
+      const taskAction = "restore-modules";
+
+      // register to task error
+      this.$root.$off(taskAction + "-aborted");
+      this.$root.$once(taskAction + "-aborted", this.restoreModulesAborted);
+
+      // register to task validation
+      this.$root.$off(taskAction + "-validation-ok");
+      this.$root.$once(
+        taskAction + "-validation-ok",
+        this.restoreModulesValidationOk
+      );
+      this.$root.$off(taskAction + "-validation-failed");
+      this.$root.$once(
+        taskAction + "-validation-failed",
+        this.restoreModulesValidationFailed
+      );
+
+      // register to task completion
+      this.$root.$once(taskAction + "-completed", this.restoreModulesCompleted);
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          data: inputData,
+          extra: {
+            title: this.$t("action." + taskAction),
+            description: this.$tc("init.restoring_apps_c", inputData.length, {
+              num: inputData.length,
+            }),
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.restoreModules = this.getErrorMessage(err);
+        return;
+      }
+    },
+    restoreModulesAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.loading.restoreModules = false;
+    },
+    restoreModulesValidationOk() {
+      // go to cluster status page
+      this.getClusterStatus();
+    },
+    restoreModulesValidationFailed() {
+      this.loading.restoreModules = false;
+    },
+    restoreModulesCompleted() {
+      // update app drawer to show restored instances
+      this.$root.$emit("reloadAppDrawer");
+    },
+    skipRestoreApps() {
+      // go to cluster status page
+      this.getClusterStatus();
+    },
   },
 };
 </script>
 
 <style scoped lang="scss">
 @import "../styles/carbon-utils";
+
+.welcome-grid {
+  max-width: 70rem;
+}
 
 .logo {
   width: 4rem;
@@ -828,8 +1821,9 @@ export default {
   height: 100%;
 }
 
-.mg-top {
-  margin-top: $spacing-07;
+.welcome {
+  margin-top: 2rem;
+  margin-bottom: 4rem;
 }
 
 .tile-description {
@@ -838,6 +1832,38 @@ export default {
 
 .bx--form .bx--form-item {
   margin-bottom: $spacing-06;
+}
+
+.horizontal-divider {
+  margin-top: 0rem;
+  margin-bottom: 2rem;
+  height: 1px;
+  background-color: $ui-04;
+  max-width: 40rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.restore-card {
+  max-width: 20rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.file-uploader {
+  margin-bottom: 0 !important;
+}
+
+.footer-buttons {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: $spacing-07;
+}
+
+@media (max-width: $breakpoint-medium) {
+  .footer-buttons.bx--btn-set .bx--btn {
+    max-width: 9rem;
+  }
 }
 </style>
 
@@ -848,5 +1874,11 @@ export default {
 
 .join-code textarea {
   min-height: 5rem;
+}
+
+// highlight file uploaded on validation error
+.validation-failed .bx--file__selected-file {
+  outline: 2px solid $danger-01;
+  outline-offset: -2px;
 }
 </style>

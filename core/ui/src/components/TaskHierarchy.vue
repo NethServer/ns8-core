@@ -8,8 +8,8 @@
         />
         <span>
           <span v-html="getTaskStatusDescription(subTask, false)"></span>
-          <span v-if="isMoreInfoShown">
-            (ID:
+          <span v-if="isMoreInfoShown"
+            >. ID:
             <cv-tooltip
               alignment="center"
               direction="top"
@@ -26,7 +26,7 @@
               >
                 {{ subTask.context.id }}
               </cv-link></cv-tooltip
-            >)
+            >
           </span>
         </span>
       </div>

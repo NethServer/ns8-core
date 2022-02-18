@@ -2,8 +2,46 @@
   <div>
     <div class="bx--grid bx--grid--full-width">
       <div class="bx--row">
-        <div class="bx--col-lg-16 page-title">
-          <h2>{{ $t("backup.title") }}</h2>
+        <div class="bx--col-lg-16 page-title title-and-toolbar">
+          <h2>
+            {{ $t("backup.title") }}
+            <cv-interactive-tooltip
+              alignment="start"
+              direction="right"
+              class="info"
+            >
+              <template slot="trigger">
+                <Information16 />
+              </template>
+              <template slot="content">
+                <div v-html="$t('backup.backup_page_tooltip_1')"></div>
+                <div
+                  v-html="
+                    $t('backup.backup_page_tooltip_2', {
+                      productName: $root.config.PRODUCT_NAME,
+                    })
+                  "
+                ></div>
+              </template>
+            </cv-interactive-tooltip>
+          </h2>
+          <cv-overflow-menu flip-menu class="large-overflow-menu">
+            <cv-overflow-menu-item @click="downloadClusterConfigurationBackup">
+              <NsMenuItem
+                :label="$t('backup.download_cluster_configuration_backup')"
+              >
+                <template slot="icon">
+                  <Download20 />
+                </template>
+              </NsMenuItem>
+            </cv-overflow-menu-item>
+            <cv-overflow-menu-item
+              @click="showRestoreModal"
+              :disabled="!repositories.length"
+            >
+              <NsMenuItem icon="reset" :label="$t('backup.restore_app')" />
+            </cv-overflow-menu-item>
+          </cv-overflow-menu>
         </div>
       </div>
       <template v-if="loading.listBackupRepositories || loading.listBackups">
@@ -216,7 +254,7 @@
         <!-- backups -->
         <div class="bx--row">
           <div class="bx--col">
-            <h4 class="mg-bottom-md">{{ $t("backup.backup_scheduler") }}</h4>
+            <h4 class="mg-bottom-md">{{ $t("backup.app_backups") }}</h4>
           </div>
         </div>
         <div v-if="error.listBackups" class="bx--row">
@@ -308,12 +346,6 @@
                         icon="save"
                         :label="$t('backup.run_backup_now')"
                       />
-                    </cv-overflow-menu-item>
-                    <cv-overflow-menu-item
-                      @click="showRestoreModal(backup)"
-                      :disabled="!isRestoreEnabled"
-                    >
-                      <NsMenuItem icon="reset" :label="$t('backup.restore')" />
                     </cv-overflow-menu-item>
                     <cv-overflow-menu-item
                       @click="toggleBackupStatus(backup)"
@@ -550,11 +582,9 @@
       @hide="hideBackupDetailsModal"
     />
     <!-- restore modal -->
-    <RestoreModal
+    <RestoreSingleInstanceModal
       :isShown="isShownRestoreModal"
-      :repositoryId="restoreRepoId"
       @hide="hideRestoreModal"
-      @enableRestore="enableRestore"
     />
   </div>
 </template>
@@ -565,14 +595,17 @@ import {
   UtilService,
   TaskService,
   IconService,
+  DateTimeService,
 } from "@nethserver/ns8-ui-lib";
 import AddRepositoryModal from "@/components/backup/AddRepositoryModal";
 import CreateBackupModal from "@/components/backup/CreateBackupModal";
 import RepoDetailsModal from "@/components/backup/RepoDetailsModal";
 import BackupDetailsModal from "@/components/backup/BackupDetailsModal";
 import EditRepositoryModal from "@/components/backup/EditRepositoryModal";
-import RestoreModal from "@/components/backup/RestoreModal";
+import RestoreSingleInstanceModal from "@/components/backup/RestoreSingleInstanceModal";
 import to from "await-to-js";
+import Information16 from "@carbon/icons-vue/es/information/16";
+import Download20 from "@carbon/icons-vue/es/download/20";
 
 export default {
   name: "Backup",
@@ -582,9 +615,17 @@ export default {
     RepoDetailsModal,
     BackupDetailsModal,
     EditRepositoryModal,
-    RestoreModal,
+    RestoreSingleInstanceModal,
+    Information16,
+    Download20,
   },
-  mixins: [TaskService, UtilService, IconService, QueryParamService],
+  mixins: [
+    TaskService,
+    UtilService,
+    IconService,
+    QueryParamService,
+    DateTimeService,
+  ],
   pageTitle() {
     return this.$t("backup.title");
   },
@@ -605,8 +646,6 @@ export default {
       unconfiguredInstances: [],
       instanceSelection: "",
       isEditingBackup: false,
-      restoreRepoId: "",
-      isRestoreEnabled: true,
       currentRepo: {
         name: "",
         password: "",
@@ -619,6 +658,7 @@ export default {
         listBackupRepositories: true,
         listBackups: true,
         alterBackup: false,
+        downloadClusterBackup: false,
       },
       error: {
         listBackupRepositories: "",
@@ -627,6 +667,7 @@ export default {
         removeBackup: "",
         runBackup: "",
         alterBackup: "",
+        downloadClusterBackup: "",
       },
     };
   },
@@ -793,8 +834,7 @@ export default {
     hideBackupDetailsModal() {
       this.isShownBackupDetailsModal = false;
     },
-    showRestoreModal(backup) {
-      this.restoreRepoId = backup.repository;
+    showRestoreModal() {
       this.isShownRestoreModal = true;
     },
     hideRestoreModal() {
@@ -964,8 +1004,67 @@ export default {
       this.loading.alterBackup = false;
       this.listBackups();
     },
-    enableRestore(value) {
-      this.isRestoreEnabled = value;
+    async downloadClusterConfigurationBackup() {
+      this.loading.downloadClusterBackup = true;
+      const taskAction = "download-cluster-backup";
+
+      // register to task error
+      this.$root.$off(taskAction + "-aborted");
+      this.$root.$once(
+        taskAction + "-aborted",
+        this.downloadClusterBackupAborted
+      );
+
+      // register to task completion
+      this.$root.$off(taskAction + "-completed");
+      this.$root.$once(
+        taskAction + "-completed",
+        this.downloadClusterBackupCompleted
+      );
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.downloadClusterBackup = this.getErrorMessage(err);
+        return;
+      }
+    },
+    downloadClusterBackupAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.loading.downloadClusterBackup = false;
+    },
+    downloadClusterBackupCompleted(taskContext, taskResult) {
+      this.loading.downloadClusterBackup = false;
+      const downloadUrl = `${window.location.protocol}//${window.location.hostname}/cluster-admin/backup/${taskResult.output.path}`;
+
+      //// useless, custom filename is not used
+      const fileName =
+        "cluster-backup " +
+        this.formatDate(new Date(), "yyyy-MM-dd HH:mm") +
+        ".json.gz.gpg";
+
+      this.axios({
+        url: downloadUrl,
+        method: "GET",
+        responseType: "blob",
+      }).then((response) => {
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", fileName);
+        document.body.appendChild(link);
+        link.click();
+      });
     },
   },
 };

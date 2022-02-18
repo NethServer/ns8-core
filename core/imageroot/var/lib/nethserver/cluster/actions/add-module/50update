@@ -85,6 +85,11 @@ if 'org.nethserver.images' in inspect_labels:
 else:
     extra_images = []
 
+if 'org.nethserver.flags' in inspect_labels:
+    flags = inspect_labels['org.nethserver.flags'].split()
+else:
+    flags = []
+
 # Increment the module sequence for image_id (e.g. traefik => traefik1)
 module_id = image_id + str(rdb.incr(f'cluster/module_sequence/{image_id}'))
 
@@ -195,6 +200,15 @@ for userk in rdb.scan_iter('roles/*'):
     user_auths = rdb.hgetall(userk)
     if 'cluster' in user_auths and user_auths['cluster'] == 'owner':
         cluster.grants.alter_user(rdb, user=userk[len('roles/'):], revoke=False, role='owner', on_clause=f'module/{module_id}')
+
+# Save flags inside redis
+for flag in flags:
+    rdb.sadd(f'module/{module_id}/flags', flag)
+# Map rootfull label to a flag
+if is_rootfull:
+    rdb.sadd(f'module/{module_id}/flags', 'rootfull')
+else:
+    rdb.sadd(f'module/{module_id}/flags', 'rootless')
 
 json.dump({
     "module_id": module_id,

@@ -1,0 +1,67 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2022 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
+import os
+import sys
+import json
+import gzip
+import agent
+
+dump_file = './backup/dump.json.gz'
+
+# load json from gzip file
+fgz = gzip.open(dump_file, mode='r')
+dump = json.loads(fgz.read().decode('utf-8'))
+fgz.close()
+
+rdb = agent.redis_connect(privileged=True)
+
+# Restore simple keys
+for config in ['network', 'ui_name']:
+    rdb.set(f'cluster/{config}', dump['cluster'][config])
+    del(dump['cluster'][config])
+
+# Restore favorites
+for f in dump['cluster']['favorites']:
+    rdb.sadd('cluster/favorites', f)
+del(dump['cluster']['favorites'])
+
+# Restore ldap user domains
+for d in dump['cluster']['user_domain']['ldap'].keys():
+    domain = dump['cluster']['user_domain']['ldap'][d]
+    rdb.hset(f'cluster/user_domain/ldap/{d}/conf', mapping=domain['conf'])
+    rdb.hset(f'cluster/user_domain/ldap/{d}/ui_names', mapping=domain['ui_names'])
+    for p in domain['providers']:
+        r = rdb.lpush(f'cluster/user_domain/ldap/{d}/providers', p)
+
+del(dump['cluster']['user_domain'])
+
+# Restore backup repositories
+for r in dump['cluster']['backup_repository'].keys():
+    rdb.hset(f'cluster/backup_repository/{r}', mapping=dump['cluster']['backup_repository'][r])
+
+# Restore backups, make sure backup_sequence is consistent
+max_backup = -1
+for b in dump['cluster']['backup'].keys():
+    max_backup = max(max_backup, int(b))
+    rdb.hset(f'cluster/backup/{b}', mapping=dump['cluster']['backup'][b])
+rdb.set('cluster/backup_sequence', max_backup)

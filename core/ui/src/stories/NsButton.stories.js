@@ -35,17 +35,19 @@ const Template = (args, { argTypes }) => ({
 
 export const Default = Template.bind({});
 Default.args = {
-  slotContent: `Button text`,
   kind: "secondary",
+  size: "default",
   loading: false,
   value: "selected",
+  slotContent: `Button text`,
 };
 
 export const Icon = Template.bind({});
 Icon.args = {
-  slotContent: `Button text`,
   kind: "secondary",
+  size: "default",
   loading: false,
   value: "selected",
   icon: Save,
+  slotContent: `Button text`,
 };

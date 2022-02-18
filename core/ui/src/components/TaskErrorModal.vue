@@ -14,8 +14,8 @@
         />
         <div>
           <span v-html="getTaskStatusDescription(taskErrorToShow, true)"></span>
-          <span v-if="isMoreInfoShown">
-            (ID:
+          <span v-if="isMoreInfoShown"
+            >. ID:
             <cv-tooltip
               alignment="center"
               direction="bottom"
@@ -32,7 +32,7 @@
               >
                 {{ taskErrorToShow.context.id }}
               </cv-link></cv-tooltip
-            >)
+            >
           </span>
         </div>
       </div>

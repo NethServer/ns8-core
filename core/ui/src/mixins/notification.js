@@ -69,8 +69,6 @@ export default {
 
       let toastTimeout = notification.toastTimeout;
 
-      console.log("toastTimeout", toastTimeout); ////
-
       if (!toastTimeout && toastTimeout != 0) {
         if (
           notification.task &&
@@ -249,9 +247,7 @@ export default {
             notificationType = "info";
             break;
         }
-
         let notificationText = payload.description;
-        let toastTimeout = null;
 
         if (taskStatus === "completed") {
           if (
@@ -269,11 +265,6 @@ export default {
           }
         } else if (taskStatus === "aborted") {
           notificationText = this.$t("error.generic_error");
-
-          // persistent error notification for create-cluster and join-cluster
-          if (["create-cluster", "join-cluster"].includes(taskContext.action)) {
-            toastTimeout = 0;
-          }
         } else if (taskStatus === "validation-failed") {
           notificationText = this.$t("error.validation_error");
         } else if (payload.description) {
@@ -300,6 +291,13 @@ export default {
             this.$root.$emit(taskContext.action + "-validation-ok", task);
             taskValidated = true;
           }
+        }
+
+        let toastTimeout = null;
+
+        // custom toast timeout (set taskContext.extra.toastTimeout = 0 for persistent notification)
+        if (taskContext.extra) {
+          toastTimeout = taskContext.extra.toastTimeout;
         }
 
         const notification = {
