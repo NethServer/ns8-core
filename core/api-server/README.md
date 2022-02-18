@@ -90,14 +90,16 @@ Every request made to the server, using its APIs or WebSocket, is logged inside 
 ## Websockets
 The API server provides a WebSocket connection under the `/ws` path. Through websocket it is possible to send commands and receive data asynchronously via the socket channel.
 
+### Commands
 At the moment the supported commands are:
 - `logs-start`: used to get the logs for a specific entity (cluster, node or module). Use loki cli (`logcli`) to search and retrieve logs
-- `logs-end`: used to stop the logs you are following (normally used in tail mode)
+- `logs-stop`: used to stop the logs you are following (normally used in tail mode)
 
 To execute commands via websocket, you need to send a payload to the websocket and listen to the results.
 
 #### logs-start
 ```json
+INPUT
 {
    "action": "logs-start",
    "data": {
@@ -119,4 +121,30 @@ To execute commands via websocket, you need to send a payload to the websocket a
   - `entity_name`: could be empty (`cluster` case) or name of the entity - `string` (ex. hostname of the node or module id like `traefik1`)
 
 
+  ```json
+  OUTPUT
+  {
+     "data":"2022-02-17T20:47:24+01:00 fedora33.n2.edoardo --\u003e [GIN-debug] Listening and serving HTTP on 127.0.0.1:8080",
+     "pid":"14431"
+  }
+  ```
+
+- `data`: contains the log information
+- `pid`: is the pid of the process that actually reads log
+
+#### logs-stop
+```json
+{
+   "action":"logs-stop",
+   "data":{
+      "pid":"14088"
+   }
+}
+```
+
+- `action`: fixed to `logs-start`
+- `data`: payload of the action
+  - `pid`: contains the pid of the process that reads log
+
+### Task events
 The websocket also listens for every event of every task launched within the cluster and reports the payload through the socket channel.
