@@ -1,17 +1,27 @@
-# NS8 testing suite
+---
+layout: default
+title: Testing suite
+nav_order: 11
+parent: Core
+---
+
+# Testing suite
+
+* TOC
+{:toc}
 
 ## Requisites
 
 The tests have been created using [Robot Framework](https://robotframework.org/) and the execution happens inside a Podman container. The only dependency required
-in the host system is Podman (https://podman.io/getting-started/installation).
+in the host system is [Podman](https://podman.io/getting-started/installation).
 
 ## Tests structure
 
 All tests are in the `tests` directory of each NS8 module, in the root of the `tests` directory the file `pythonreq.txt`
-specifies the dependencies required and each subdirectory contains a test suite with the related tests.
+specifies the dependencies required and each sub-directory contains a test suite with the related tests.
 
 The test suite and the related tests are executed in alphabetical order, the `__init__.robot` can be used for the suite
-initialization. More details in the [Robot Framework documentation](https://robotframework.org/robotframework/latest/RobotFrameworkUserGuide.html#files-and-directories)
+initialization. More details in the [Robot Framework documentation](https://robotframework.org/robotframework/latest/RobotFrameworkUserGuide.html#files-and-directories).
 
 ```
 <module>/tests/
@@ -78,7 +88,7 @@ The same goes for executing only frontend tests:
 Some test cases of core module are marked with `install` or `uninstall` tag. More precisely:
 
 - test cases related to NS8 installation and cluster creation are marked with `install` tag
-- test cases related to NS8 uninstallation are marked with `uninstall` tag
+- test cases related to NS8 removal are marked with `uninstall` tag
 
 This pair of tags make it easy to quickly execute tests on a machine with NS8 already installed and configured. Skipping installation, cluster creation and uninstallation drastically reduces tests execution time. To skip NS8 installation, configuration and uninstallation you can edit `robot` command provided in `test-module.sh`:
 
@@ -88,7 +98,9 @@ This pair of tags make it easy to quickly execute tests on a machine with NS8 al
 
 The execution of UI tests normally happens in headless mode, i.e. without showing the browser window. Anyway, for tests development and debug purposes, seeing test execution in the browser can be very helpful.
 
-At the moment, the only way to do this is to run the tests on your host machine, outside a podman container. Robot Framework installation on your machine is required, then you can run `robot` command with `HEADLESS` variable set to `false`, e.g.:
+At the moment, the only way to do this is to run the tests on your host machine, outside a podman container. Robot Framework installation on your machine is required:
+The quickest way to install it is using pip `pip install robotframework`, other installations methods are available inside [the manual](https://robotframework.org/robotframework/latest/RobotFrameworkUserGuide.html#toc-entry-209).
+Then you can run `robot` command with `HEADLESS` variable set to `false`, e.g.:
 
     cd ns8-core
     robot -v NODE_ADDR:<LEADER_IP_ADDR> -v HEADLESS:false -v SSH_KEYFILE:$HOME/.ssh/id_rsa -d $HOME/ns8-test-outputs tests/
@@ -117,3 +129,4 @@ Given a domain named `test.nethserver.org`, running on CentOS Stream 9 on `clust
 should be:
 
     SSH_KEYFILE=../infra/key ./test-module.sh cs1.leader.cluster0.test.nethserver.org
+
