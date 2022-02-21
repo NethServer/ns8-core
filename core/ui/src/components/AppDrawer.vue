@@ -441,7 +441,10 @@ export default {
 
       for (let instanceList of Object.values(taskResult.output)) {
         for (let instance of instanceList) {
-          apps.push(instance);
+          // skip instance if it's an account provider app
+          if (!instance.flags.includes("account_provider")) {
+            apps.push(instance);
+          }
         }
       }
 
@@ -450,7 +453,6 @@ export default {
       }
 
       this.listFavorites();
-
       apps.sort(this.sortModuleInstances());
       this.apps = apps;
     },

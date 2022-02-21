@@ -50,8 +50,18 @@
                 {{ getApplicationCategories(app) }}
               </div>
               <div
-                v-if="app.installed && app.installed.length"
-                class="toggle-instances app-row"
+                v-if="isAccountProviderApp(app)"
+                class="app-row icon-and-text"
+              >
+                <NsSvg :svg="Information16" class="icon ns-info" />
+                <span
+                  >{{ $t("software_center.app_managed_in") }}
+                  <cv-link to="/domains">{{ $t("domains.title") }}</cv-link>
+                </span>
+              </div>
+              <div
+                v-else-if="app.installed && app.installed.length"
+                class="app-row"
               >
                 <NsButton
                   kind="ghost"
@@ -61,7 +71,7 @@
                   >{{ $t("software_center.instances") }}</NsButton
                 >
               </div>
-              <div v-else class="app-actions app-row">
+              <div v-else class="app-row">
                 <!-- app is not installed -->
                 <NsButton
                   kind="secondary"
@@ -183,6 +193,17 @@ export default {
         name: "SoftwareCenterAppInstances",
         params: { appName: app.name },
       });
+    },
+    isAccountProviderApp(app) {
+      if (
+        app.versions &&
+        app.versions[0] &&
+        app.versions[0].labels["org.nethserver.flags"]
+      ) {
+        const flags = app.versions[0].labels["org.nethserver.flags"];
+        return flags.includes("account_provider");
+      }
+      return false;
     },
   },
 };
