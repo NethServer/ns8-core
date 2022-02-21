@@ -408,7 +408,8 @@
     "replace_existing_app": "Replace existing app {app}",
     "cluster_configuration": "Cluster configuration",
     "apps": "Apps",
-    "repositories_tooltip": "These are the repositories where you apps are backed up to"
+    "repositories_tooltip": "These are the repositories where you apps are backed up to",
+    "cluster_configuration_tooltip": "Download an encryped GPG file that you can use to restore your cluster in a disaster recovery scenario"
   },
   "calendar": {
     "days": "Days",

@@ -191,6 +191,18 @@
           <div class="bx--col">
             <h4 class="mg-bottom-md">
               {{ $t("backup.cluster_configuration") }}
+              <cv-interactive-tooltip
+                alignment="start"
+                direction="right"
+                class="info"
+              >
+                <template slot="trigger">
+                  <Information16 />
+                </template>
+                <template slot="content">
+                  {{ $t("backup.cluster_configuration_tooltip") }}
+                </template>
+              </cv-interactive-tooltip>
             </h4>
           </div>
         </div>
