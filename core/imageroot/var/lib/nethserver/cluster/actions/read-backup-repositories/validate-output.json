@@ -15,7 +15,8 @@
                 "repository_name": "B2 repo",
                 "repository_provider": "backblaze",
                 "repository_url": "b2:giacomons8",
-		"installed_instance": "dokuwiki4"
+                "installed_instance": "dokuwiki4",
+                "installed_instance_ui_name": "My Dokuwiki"
             }
         ]
     ]

@@ -144,7 +144,17 @@ export default {
       ) {
         return "";
       }
-      return this.selectedInstance.installed_instance;
+
+      if (this.selectedInstance.installed_instance_ui_name) {
+        return (
+          this.selectedInstance.installed_instance_ui_name +
+          " (" +
+          this.selectedInstance.installed_instance +
+          ")"
+        );
+      } else {
+        return this.selectedInstance.installed_instance;
+      }
     },
   },
   watch: {

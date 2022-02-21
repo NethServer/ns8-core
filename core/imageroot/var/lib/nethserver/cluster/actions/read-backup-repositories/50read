@@ -61,7 +61,8 @@ for krepo in rdb.scan_iter('cluster/backup_repository/*'):
                 u = rdb.hget(mod, 'MODULE_UUID')
                 if rdb.hget(mod, 'MODULE_UUID') == parts[1]:
                     installed_instance = rdb.hget(mod, 'MODULE_ID')
+                    ui_name = rdb.get(f'module/{installed_instance}/ui_name') or ""
                     break
-            backups.append({'name': oroot['Path'], 'path': f'{oroot["Path"]}/{backup["Path"]}', 'instance': parts[0], 'uuid': parts[1], 'timestamp': mod_time, 'repository_id' : repo_uuid, 'repository_name': repo['name'], 'repository_provider': repo['provider'], 'repository_url': repo['url'], 'installed_instance': installed_instance})
+            backups.append({'name': oroot['Path'], 'path': f'{oroot["Path"]}/{backup["Path"]}', 'instance': parts[0], 'uuid': parts[1], 'timestamp': mod_time, 'repository_id' : repo_uuid, 'repository_name': repo['name'], 'repository_provider': repo['provider'], 'repository_url': repo['url'], 'installed_instance': installed_instance, 'installed_instance_ui_name': ui_name})
 
 print(json.dumps(backups))
