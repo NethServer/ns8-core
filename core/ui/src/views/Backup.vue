@@ -14,34 +14,49 @@
                 <Information16 />
               </template>
               <template slot="content">
-                <div v-html="$t('backup.backup_page_tooltip_1')"></div>
                 <div
-                  v-html="
-                    $t('backup.backup_page_tooltip_2', {
-                      productName: $root.config.PRODUCT_NAME,
-                    })
-                  "
+                  v-html="$t('backup.backup_page_tooltip_1')"
+                  class="mg-bottom-sm"
                 ></div>
+                <div
+                  v-html="$t('backup.backup_page_tooltip_2')"
+                  class="mg-bottom-sm"
+                ></div>
+                <h6 v-html="$t('backup.title')" class="mg-bottom-sm"></h6>
+                <div
+                  v-html="$t('backup.backup_page_tooltip_3')"
+                  class="mg-bottom-sm"
+                ></div>
+                <ul class="unordered-list mg-bottom-sm">
+                  <li>
+                    <span v-html="$t('backup.backup_page_tooltip_4')"></span>
+                  </li>
+                  <li>
+                    <span v-html="$t('backup.backup_page_tooltip_5')"></span>
+                  </li>
+                </ul>
+                <h6 v-html="$t('backup.restore')" class="mg-bottom-sm"></h6>
+                <div
+                  v-html="$t('backup.backup_page_tooltip_6')"
+                  class="mg-bottom-sm"
+                ></div>
+                <ul class="unordered-list mg-bottom-sm">
+                  <li>
+                    <span v-html="$t('backup.backup_page_tooltip_7')"></span>
+                  </li>
+                  <li>
+                    <span
+                      v-html="
+                        $t('backup.backup_page_tooltip_8', {
+                          productName: $root.config.PRODUCT_NAME,
+                        })
+                      "
+                    ></span>
+                  </li>
+                </ul>
               </template>
             </cv-interactive-tooltip>
           </h2>
-          <cv-overflow-menu flip-menu class="large-overflow-menu">
-            <cv-overflow-menu-item @click="downloadClusterConfigurationBackup">
-              <NsMenuItem
-                :label="$t('backup.download_cluster_configuration_backup')"
-              >
-                <template slot="icon">
-                  <Download20 />
-                </template>
-              </NsMenuItem>
-            </cv-overflow-menu-item>
-            <cv-overflow-menu-item
-              @click="showRestoreModal"
-              :disabled="!repositories.length"
-            >
-              <NsMenuItem icon="reset" :label="$t('backup.restore_app')" />
-            </cv-overflow-menu-item>
-          </cv-overflow-menu>
         </div>
       </div>
       <template v-if="loading.listBackupRepositories || loading.listBackups">
@@ -171,10 +186,49 @@
             />
           </div>
         </div>
+        <!-- cluster configuration -->
+        <div class="bx--row">
+          <div class="bx--col">
+            <h4 class="mg-bottom-md">
+              {{ $t("backup.cluster_configuration") }}
+            </h4>
+          </div>
+        </div>
+        <div class="bx--row mg-bottom-lg">
+          <div class="bx--col">
+            <NsButton
+              kind="secondary"
+              :icon="Download20"
+              @click="downloadClusterConfigurationBackup()"
+              >{{ $t("backup.download_cluster_configuration_backup") }}
+            </NsButton>
+          </div>
+        </div>
+        <div class="bx--row">
+          <div class="bx--col">
+            <h4 class="mg-bottom-md">
+              {{ $t("backup.apps") }}
+            </h4>
+          </div>
+        </div>
         <!-- repositories -->
         <div class="bx--row">
           <div class="bx--col">
-            <h4 class="mg-bottom-md">{{ $t("backup.repositories") }}</h4>
+            <h6 class="mg-bottom-md">
+              {{ $t("backup.repositories") }}
+              <cv-interactive-tooltip
+                alignment="start"
+                direction="right"
+                class="info"
+              >
+                <template slot="trigger">
+                  <Information16 />
+                </template>
+                <template slot="content">
+                  {{ $t("backup.repositories_tooltip") }}
+                </template>
+              </cv-interactive-tooltip>
+            </h6>
           </div>
         </div>
         <div v-if="error.listBackupRepositories" class="bx--row">
@@ -254,7 +308,7 @@
         <!-- backups -->
         <div class="bx--row">
           <div class="bx--col">
-            <h4 class="mg-bottom-md">{{ $t("backup.app_backups") }}</h4>
+            <h6 class="mg-bottom-md">{{ $t("backup.schedules") }}</h6>
           </div>
         </div>
         <div v-if="error.listBackups" class="bx--row">
@@ -458,6 +512,22 @@
             </div>
           </div>
         </template>
+        <div class="bx--row">
+          <div class="bx--col">
+            <h6 class="mg-bottom-md">{{ $t("backup.restore") }}</h6>
+          </div>
+        </div>
+        <div class="bx--row mg-bottom-xlg">
+          <div class="bx--col">
+            <NsButton
+              kind="secondary"
+              :icon="Reset20"
+              @click="showRestoreModal()"
+              :disabled="!repositories.length"
+              >{{ $t("backup.restore_app") }}
+            </NsButton>
+          </div>
+        </div>
       </template>
     </div>
     <!-- delete repository modal -->
@@ -605,7 +675,6 @@ import EditRepositoryModal from "@/components/backup/EditRepositoryModal";
 import RestoreSingleInstanceModal from "@/components/backup/RestoreSingleInstanceModal";
 import to from "await-to-js";
 import Information16 from "@carbon/icons-vue/es/information/16";
-import Download20 from "@carbon/icons-vue/es/download/20";
 
 export default {
   name: "Backup",
@@ -617,7 +686,6 @@ export default {
     EditRepositoryModal,
     RestoreSingleInstanceModal,
     Information16,
-    Download20,
   },
   mixins: [
     TaskService,
