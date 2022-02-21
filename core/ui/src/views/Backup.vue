@@ -593,7 +593,7 @@
       :backups="backups"
       @hide="hideCreateBackupModal"
       @backupCreated="onBackupCreated"
-      @backupAltered="listBackupRepositories"
+      @backupAltered="onBackupAltered"
     />
     <!-- delete repository modal -->
     <NsDangerDeleteModal
@@ -1023,6 +1023,14 @@ export default {
       this.listBackups();
     },
     onBackupCreated(runBackupOnFinish, createdBackup) {
+      this.listBackupRepositories();
+
+      if (runBackupOnFinish) {
+        // run created backup now
+        this.runBackup(createdBackup);
+      }
+    },
+    onBackupAltered(runBackupOnFinish, createdBackup) {
       this.listBackupRepositories();
 
       if (runBackupOnFinish) {

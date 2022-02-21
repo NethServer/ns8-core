@@ -305,7 +305,6 @@
             </cv-text-input>
             <!-- run backup on finish -->
             <cv-checkbox
-              v-if="!isEditing"
               :label="$t('backup.run_backup_now')"
               v-model="runBackupOnFinish"
               :disabled="loading.addBackup || loading.alterBackup"
@@ -511,7 +510,7 @@ export default {
             this.name = this.backup.name;
             this.schedule = _cloneDeep(this.backup.schedule);
             this.retention = this.backup.retention.toString();
-            // this.enabled = this.backup.enabled; ////
+            this.runBackupOnFinish = false;
             this.updateInternalRepositories();
           } else {
             this.clearFields();
@@ -577,7 +576,6 @@ export default {
       this.schedule.custom = DEFAULT_SCHEDULE_CUSTOM;
       this.retention = DEFAULT_RETENTION;
       this.runBackupOnFinish = false;
-      // this.enabled = true; ////
 
       for (let repo of this.internalRepositories) {
         repo.selected = false;
@@ -754,8 +752,6 @@ export default {
       }
     },
     addBackupCompleted(taskContext, taskResult) {
-      console.log("addBackupCompleted", taskResult.output); ////
-
       this.loading.addBackup = false;
 
       // hide modal
@@ -806,6 +802,7 @@ export default {
           extra: {
             title: this.$t("action." + taskAction),
             isNotificationHidden: true,
+            runBackupOnFinish: this.runBackupOnFinish,
           },
         })
       );
@@ -833,14 +830,21 @@ export default {
         }
       }
     },
-    alterBackupCompleted() {
+    alterBackupCompleted(taskContext) {
       this.loading.alterBackup = false;
 
       // hide modal
       this.$emit("hide");
 
+      const runBackupOnFinish = taskContext.extra.runBackupOnFinish;
+
+      const alteredBackup = {
+        id: taskContext.data.id,
+        name: taskContext.data.name,
+      };
+
       // reload backup configuration
-      this.$emit("backupAltered");
+      this.$emit("backupAltered", runBackupOnFinish, alteredBackup);
     },
     async listInstalledModules() {
       this.loading.listInstalledModules = true;
