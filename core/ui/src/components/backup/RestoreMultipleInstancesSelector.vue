@@ -9,7 +9,6 @@
         <cv-overflow-menu-item @click="selectNone">
           {{ $t("common.none") }}
         </cv-overflow-menu-item>
-        <!-- //// select core apps -->
       </NsDropdownAction>
       <span class="selection-info">{{
         $t("common.x_of_y_selected", {
@@ -66,16 +65,6 @@
             class="checkbox-instance"
             :id="instance.path"
           />
-          <!-- <div class="app-icon"> ////
-            <img
-              :src="
-                instance.logo
-                  ? instance.logo
-                  : require('@/assets/module_default_logo.png')
-              "
-              :alt="instance.id + ' logo'"
-            />
-          </div> -->
           <div>
             <div>{{ instance.instance }}</div>
             <div class="instance-description">
@@ -153,8 +142,6 @@ export default {
       this.updateSelection();
     },
     selectedList: function () {
-      console.log("selectedList", this.selectedList); ////
-
       const selectedInstances = [];
 
       for (const path of this.selectedList) {
@@ -188,7 +175,6 @@ export default {
         case "":
           this.selectNone();
           break;
-        //// case "core"
       }
     },
     searchInstance() {

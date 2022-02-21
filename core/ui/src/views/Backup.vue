@@ -469,13 +469,6 @@
                         }}</span>
                       </div>
                     </div>
-                    <!-- <div class="row icon-and-text"> ////
-                      <NsSvg :svg="Time20" class="icon" />
-                      //// format schedule
-                      <span :title="$t('backup.schedule')">{{
-                        $t("backup." + backup.schedule)
-                      }}</span>
-                    </div> -->
                     <div class="row">
                       <cv-tag
                         v-if="backup.enabled"
@@ -853,9 +846,6 @@ export default {
         backup.errorInstances = backup.instances.filter(
           (i) => i.status == false
         );
-
-        //// remove mock
-        // backup.errorInstances.push(backup.instances[0]); ////
       }
       this.backups = backups;
       this.loading.listBackups = false;
@@ -1135,10 +1125,9 @@ export default {
       this.loading.downloadClusterBackup = false;
       const downloadUrl = `${window.location.protocol}//${window.location.hostname}/cluster-admin/backup/${taskResult.output.path}`;
 
-      //// useless, custom filename is not used
       const fileName =
-        "cluster-backup " +
-        this.formatDate(new Date(), "yyyy-MM-dd HH:mm") +
+        "cluster-configuration-backup " +
+        this.formatDate(new Date(), "yyyy-MM-dd HH.mm") +
         ".json.gz.gpg";
 
       this.axios({

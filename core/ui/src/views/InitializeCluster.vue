@@ -687,7 +687,16 @@
                     :animationData="GearsLottie"
                     animationTitle="gears"
                     :loop="true"
-                  />
+                  >
+                    <template #description>
+                      <span v-if="restore.progress < 100">
+                        {{ $t("init.traveling_back_in_time") }}
+                      </span>
+                      <span v-else>
+                        {{ $t("init.reading_backup_repositories") }}
+                      </span>
+                    </template>
+                  </NsEmptyState>
                   <NsProgressBar
                     :value="restore.progress"
                     :indeterminate="!restore.progress"
@@ -1458,7 +1467,6 @@ export default {
         this.restore.base64FileUploaded = result.split(
           "data:application/pgp-encrypted;base64,"
         )[1];
-        console.log("base64!", this.restore.base64FileUploaded); ////
       }
     },
     validateRetrieveClusterBackupFromFile() {
