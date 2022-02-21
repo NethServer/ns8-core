@@ -57,6 +57,7 @@ for krepo in rdb.scan_iter('cluster/backup_repository/*'):
                 continue # skip non-repo entries
             parts = backup['Path'].split('@')
             installed_instance = ""
+            ui_name = ""
             for mod in rdb.scan_iter('module/*/environment'):
                 u = rdb.hget(mod, 'MODULE_UUID')
                 if rdb.hget(mod, 'MODULE_UUID') == parts[1]:
