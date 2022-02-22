@@ -36,6 +36,17 @@ args = parser.parse_args()
 
 endpoint_host, endpoint_port = args.endpoint.split(":")
 
+loginobj = {
+    "username": "admin",
+    "password": args.admin_pw,
+}
+
+response = requests.post('http://127.0.0.1:8080/api/login', json=loginobj)
+response.raise_for_status()
+payload = response.json()
+
+token = payload['token']
+
 # Initialize a new cluster
 result = agent.tasks.run(
     agent_id='cluster',
@@ -50,21 +61,12 @@ result = agent.tasks.run(
         'description': "create-cluster command",
         'isNotificationHidden': False,
     },
-    endpoint="redis://cluster-leader",
+    auth_token=token,
 )
 if result['exit_code'] != 0:
     print(result['error'], file=sys.stderr, end='')
     print(result['output'])
     sys.exit(result['exit_code'])
 
-loginobj = {
-    "username": "admin",
-    "password": args.admin_pw,
-}
-
-response = requests.post('http://127.0.0.1:8080/api/login', json=loginobj)
-response.raise_for_status()
-payload = response.json()
-
 print("Copy the following command to a worker node to join this cluster with admin's credentials:\n")
-print(f"    join-cluster --no-tlsverify https://{endpoint_host} {payload['token']}")
+print(f"    join-cluster --no-tlsverify https://{endpoint_host} {token}")

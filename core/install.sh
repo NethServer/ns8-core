@@ -191,7 +191,8 @@ echo "Install Traefik:"
 add-module ghcr.io/nethserver/traefik:latest 1
 
 echo "Setting default admin password:"
-add-user --role owner --password "${ADMIN_PASSWORD:-Nethesis,1234}" admin
+ADMIN_PASSWORD="${ADMIN_PASSWORD:-Nethesis,1234}"
+add-user --role owner --password "${ADMIN_PASSWORD}" admin
 
 echo "Enable the events gateway for the node agent:"
 systemctl enable --now eventsgw@node
@@ -217,12 +218,12 @@ B. To initialize this node as a cluster leader run:
 
    For instance:
 
-      create-cluster $(hostname -f):55820 10.5.4.0/24 Nethesis,1234
+      create-cluster $(hostname -f):55820 10.5.4.0/24 ${ADMIN_PASSWORD}
 
 Finally, access the administration UI at:
 
    https://$(hostname -f)/cluster-admin/
 
    User: admin
-   Password: Nethesis,1234
+   Password: ${ADMIN_PASSWORD}
 EOF
