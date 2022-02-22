@@ -171,7 +171,7 @@ echo "Start API server and core agents:"
 systemctl enable --now api-server.service agent@cluster.service agent@node.service
 
 echo "Grant initial permissions:"
-runagent python3 <<'EOF'
+runagent python3 2>/dev/null <<'EOF'
 import agent
 import cluster.grants
 rdb = agent.redis_connect(privileged=True)
@@ -188,7 +188,7 @@ cluster.grants.grant(rdb, action_clause="read-*", to_clause="reader", on_clause=
 EOF
 
 echo "Install Traefik:"
-add-module ghcr.io/nethserver/traefik:latest 1
+add-module ghcr.io/nethserver/traefik:latest 1 2>/dev/null
 
 echo "Setting default admin password:"
 ADMIN_PASSWORD="${ADMIN_PASSWORD:-Nethesis,1234}"
