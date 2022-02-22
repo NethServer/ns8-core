@@ -99,7 +99,7 @@ This pair of tags make it easy to quickly execute tests on a machine with NS8 al
 The execution of UI tests normally happens in headless mode, i.e. without showing the browser window. Anyway, for tests development and debug purposes, seeing test execution in the browser can be very helpful.
 
 At the moment, the only way to do this is to run the tests on your host machine, outside a podman container. Robot Framework installation on your machine is required:
-The quickest way to install it is using pip `pip install robotframework`, other installations methods are available inside [the manual](https://robotframework.org/robotframework/latest/RobotFrameworkUserGuide.html#toc-entry-209).
+The quickest way to install it is using pip `pip install -r core/tests/pythonreq.txt`, other installations methods are available inside [the manual](https://robotframework.org/robotframework/latest/RobotFrameworkUserGuide.html#toc-entry-209).
 Then you can run `robot` command with `HEADLESS` variable set to `false`, e.g.:
 
     cd ns8-core
