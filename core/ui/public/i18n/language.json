@@ -62,7 +62,8 @@
     "all_good": "All good",
     "upload_drop_target_text": "Click or drag and drop file here",
     "remove": "Remove",
-    "skip": "Skip"
+    "skip": "Skip",
+    "core_module_c": "System app | System apps"
   },
   "error": {
     "error": "Error",
@@ -165,7 +166,9 @@
     "skip_apps_restore": "Skip apps restore",
     "skip_apps_restore_1": "Do you want to skip apps restore?",
     "skip_apps_restore_2": "You can restore apps later in <strong>Backup</strong> page",
-    "restoring_apps_c": "Restoring {num} app... | Restoring {num} apps..."
+    "restoring_apps_c": "Restoring {num} app... | Restoring {num} apps...",
+    "traveling_back_in_time": "Traveling back in time...",
+    "reading_backup_repositories": "Reading backup repositories..."
   },
   "shell": {
     "skip_to_content": "Skip to content",
@@ -219,13 +222,13 @@
     "cannot_create_task": "Cannot create task {action}"
   },
   "action": {
-    "add-module": "Add module",
+    "add-module": "Install app",
     "list-repositories": "List repositories",
     "add-repository": "Add repository",
     "alter-repository": "Alter repository",
     "remove-repository": "Remove repository",
-    "list-modules": "List modules",
-    "list-installed-modules": "List installed modules",
+    "list-modules": "List apps",
+    "list-installed-modules": "List installed apps",
     "list-updates": "List updates",
     "get-cluster-status": "Get cluster status",
     "get-defaults": "Get defaults",
@@ -237,10 +240,10 @@
     "list-favorites": "List favorites",
     "list-shortcuts": "List shortcuts",
     "get-node-status": "Get node status",
-    "remove-module": "Remove module",
+    "remove-module": "Remove app",
     "set-name": "Set name",
     "list-user-domains": "List user domains",
-    "configure-module": "Configure module",
+    "configure-module": "Configure app",
     "add-external-domain": "Add external domain",
     "add-external-provider": "Add external provider",
     "remove-external-provider": "Remove external provider",
@@ -258,12 +261,12 @@
     "alter-backup-repository": "Alter backup repository",
     "alter-backup": "Alter backup",
     "run-backup": "Run backup",
-    "restore-module": "Restore module",
+    "restore-module": "Restore app",
     "read-backup-repository": "Read backup repository",
     "retrieve-cluster-backup": "Retrieve cluster backup",
     "restore-cluster": "Restore cluster",
     "read-backup-repositories": "Read backup repositories",
-    "restore-modules": "Restore modules"
+    "restore-modules": "Restore apps"
   },
   "network": {
     "title": "Network"
@@ -274,7 +277,7 @@
   "backup": {
     "title": "Backup",
     "repositories": "Repositories",
-    "app_backups": "App backups",
+    "schedules": "Schedules",
     "no_backup_repository": "No backup repository",
     "empty_state_repository_description": "Add a repository to configure backup",
     "no_backup_scheduled": "No backup scheduled",
@@ -395,11 +398,21 @@
     "no_instance_to_restore": "No app instance to restore",
     "no_instance_to_restore_description": "It looks like there is no app instance backed up on your repositories",
     "invalid_url_protocol": "URL must start with '{protocol}'",
-    "backup_page_tooltip_1": "<div class='mg-bottom-sm'>Here you can configure your backups and restore any apps.</div><h6 class='mg-bottom-sm'>Backup</h6><div class='mg-bottom-sm'>Cluster data is composed of <strong>cluster data</strong> and <strong>apps data</strong>.</div><div class='mg-bottom-sm'>Ensure your peace of mind by configuring:</div><ul class='unordered-list mg-bottom-sm'><li><strong>Cluster backup</strong>: download it regularly using the overflow menu on the top right corner of this page</li><li><strong>Apps backup</strong>: add your backup repositories and configure app backup scheduling in the <strong>App backups</strong> section on this page</li></ul>",
-    "backup_page_tooltip_2": "<h6 class='mg-bottom-sm'>Restore</h6><div>You can restore any previously backed up app or the whole cluster:</div><ul class='unordered-list mg-bottom-sm'><li><strong>Restore one or more apps</strong>: use the overflow menu on the top right corner of this page</li><li><strong>Restore the whole cluster</strong>: you need a <strong>cluster backup</strong> and a fresh installation of {productName}. This is useful in a disaster recovery scenario</li></ul>",
-    "download_cluster_configuration_backup": "Download cluster backup",
-    "restore_app": "Restore app",
-    "replace_existing_app": "Replace existing app {app}"
+    "backup_page_tooltip_1": "Here you can configure your backups and restore any app.",
+    "backup_page_tooltip_2": "Cluster data is composed of <strong>cluster configuration data</strong> and <strong>apps data</strong>.",
+    "backup_page_tooltip_3": "Ensure your peace of mind by configuring:",
+    "backup_page_tooltip_4": "<strong>Cluster configuration backup</strong>: download it regularly and store it in a safe place",
+    "backup_page_tooltip_5": "<strong>Apps backup</strong>: add your backup repositories and configure apps backup scheduling",
+    "backup_page_tooltip_6": "You can restore any previously backed up app or the whole cluster:",
+    "backup_page_tooltip_7": "<strong>Restore an app</strong>: you can do it in the <strong>Restore</strong> section",
+    "backup_page_tooltip_8": "<strong>Restore the whole cluster</strong>: you need a <strong>cluster configuration backup</strong> and a fresh installation of {productName}. This is useful in a disaster recovery scenario",
+    "download_cluster_configuration_backup": "Download backup",
+    "restore_app": "Restore an app",
+    "replace_existing_app": "Replace existing app {app}",
+    "cluster_configuration": "Cluster configuration",
+    "apps": "Apps",
+    "repositories_tooltip": "These are the repositories where your apps are backed up to",
+    "cluster_configuration_tooltip": "Download an encryped GPG file that you can use to restore your cluster in a disaster recovery scenario"
   },
   "calendar": {
     "days": "Days",
@@ -473,15 +486,15 @@
     "source_code": "Source code",
     "source_package": "Source package",
     "authors": "Author | Authors",
-    "app_installation": "{app} installation",
+    "app_installation": "Install {app}",
     "choose_node_for_installation": "Select the node where {app} will be installed",
     "about_to_install_app": "{app} will be installed on the system",
     "installing_on_node": "Installing on {node}",
     "instance_installed_on_node": "{module_id} installed on {node}",
     "app_instances": "{app} instances",
     "app_instances_no_name": "App instances",
-    "app_uninstallation": "{app} uninstallation",
-    "instance_uninstallation": "{instance} uninstallation",
+    "app_uninstallation": "Uninstall {app}",
+    "instance_uninstallation": "Uninstall {instance}",
     "about_to_uninstall_instance": "{instance} will be uninstalled from the system",
     "uninstall_instance": "Uninstall instance",
     "uninstalling": "Uninstalling...",
@@ -490,6 +503,7 @@
     "instance_label": "App instance label",
     "instance_label_tooltip": "You can assign the app instance an easy to remember name",
     "edit_instance_label": "Edit instance label",
+    "app_managed_in": "This app is managed in",
     "app_categories": {
       "collaboration": "Collaboration",
       "system_administration": "System administration",

@@ -26,8 +26,8 @@ Create Internal Domain
     Click    .bx--list-box__menu-icon
     Click    .bx--list-box__menu-item:first-child
     Click    button >> text=Configure domain
-    ${old_browser_timeout} =    Set Browser Timeout    60 seconds
-    ${old_retry_assertions} =    Set Retry Assertions For    60 seconds
+    ${old_browser_timeout} =    Set Browser Timeout    90 seconds
+    ${old_retry_assertions} =    Set Retry Assertions For    90 seconds
     Get Element    .cv-tile >> text=test.domain
     Set Browser Timeout    ${old_browser_timeout}
     Set Retry Assertions For    ${old_retry_assertions}

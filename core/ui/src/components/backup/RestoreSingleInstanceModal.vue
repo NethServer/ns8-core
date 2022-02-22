@@ -144,7 +144,17 @@ export default {
       ) {
         return "";
       }
-      return this.selectedInstance.installed_instance;
+
+      if (this.selectedInstance.installed_instance_ui_name) {
+        return (
+          this.selectedInstance.installed_instance_ui_name +
+          " (" +
+          this.selectedInstance.installed_instance +
+          ")"
+        );
+      } else {
+        return this.selectedInstance.installed_instance;
+      }
     },
   },
   watch: {
@@ -207,10 +217,6 @@ export default {
     getClusterStatusCompleted(taskContext, taskResult) {
       const clusterStatus = taskResult.output;
       let nodes = clusterStatus.nodes.sort(this.sortByProperty("id"));
-
-      //// remove mock
-      // nodes.push({ id: 2, local: false, ui_name: "" }); ////
-      // nodes.push({ id: 3, local: false, ui_name: "" }); ////
 
       for (const node of nodes) {
         node.selected = false;

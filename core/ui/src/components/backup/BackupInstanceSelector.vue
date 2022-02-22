@@ -21,11 +21,14 @@
         >
           {{ $t("backup.not_backed_up") }}
         </cv-overflow-menu-item>
+        <cv-overflow-menu-item @click="selectCoreModules">
+          {{ $tc("common.core_module_c", 2) }}
+        </cv-overflow-menu-item>
       </NsDropdownAction>
       <span class="selection-info">{{
         $t("common.x_of_y_selected", {
           selected: numSelected,
-          total: instances.length,
+          total: internalInstances.length,
         })
       }}</span>
     </div>
@@ -87,6 +90,19 @@
             />
           </div>
           <span>{{ getInstanceLabel(instance) }} </span>
+          <cv-interactive-tooltip
+            v-if="instance.flags.includes('core_module')"
+            alignment="center"
+            direction="right"
+            class="info core-module-icon"
+          >
+            <template slot="trigger">
+              <Settings16 />
+            </template>
+            <template slot="content">
+              <div>{{ $tc("common.core_module_c", 1) }}</div>
+            </template>
+          </cv-interactive-tooltip>
         </label>
       </cv-tile>
     </div>
@@ -96,9 +112,12 @@
 <script>
 import { UtilService, LottieService } from "@nethserver/ns8-ui-lib";
 import _isEqual from "lodash/isEqual";
+import _cloneDeep from "lodash/cloneDeep";
+import Settings16 from "@carbon/icons-vue/es/settings/16";
 
 export default {
   name: "BackupInstanceSelector",
+  components: { Settings16 },
   mixins: [UtilService, LottieService],
   props: {
     instances: {
@@ -120,6 +139,7 @@ export default {
   },
   data() {
     return {
+      internalInstances: [],
       selectedList: [],
       searchQuery: "",
       searchResults: [],
@@ -142,12 +162,17 @@ export default {
       if (this.isSearchActive) {
         return this.searchResults;
       } else {
-        return this.instances;
+        return this.internalInstances;
       }
     },
   },
   watch: {
     instances: function () {
+      const instances = _cloneDeep(this.instances);
+      this.internalInstances = instances.filter((i) => {
+        return !i.flags.includes("no_data_backup");
+      });
+
       this.selectedList = [];
       this.updateSelection();
     },
@@ -165,7 +190,7 @@ export default {
     selectAll() {
       this.selectedList = [];
 
-      for (const instance of this.instances) {
+      for (const instance of this.internalInstances) {
         this.selectedList.push(instance.id);
       }
     },
@@ -177,6 +202,15 @@ export default {
 
       for (const id of this.idsNotBackedUp) {
         this.selectedList.push(id);
+      }
+    },
+    selectCoreModules() {
+      this.selectedList = [];
+
+      for (const instance of this.internalInstances) {
+        if (instance.flags.includes("core_module")) {
+          this.selectedList.push(instance.id);
+        }
       }
     },
     selectInstances() {
@@ -210,6 +244,9 @@ export default {
           case "notBackedUp":
             this.selectNotBackedUp();
             break;
+          case "core":
+            this.selectCoreModules();
+            break;
         }
       } else {
         // selection is an array of instances
@@ -231,7 +268,7 @@ export default {
       this.isSearchActive = true;
 
       // search
-      this.searchResults = this.instances.filter((instance) => {
+      this.searchResults = this.internalInstances.filter((instance) => {
         // compare query text with all search fields of option
         return this.searchFields.some((searchField) => {
           const searchValue = instance[searchField];
@@ -283,7 +320,7 @@ export default {
 
 .instance-tile {
   margin-bottom: 0;
-  border-bottom: 1px solid $ui-01;
+  border-bottom: 2px solid $ui-01;
 }
 
 .instance-label {
@@ -310,6 +347,10 @@ export default {
 .app-icon img {
   width: 100%;
   height: 100%;
+}
+
+.core-module-icon {
+  margin-left: $spacing-03;
 }
 </style>
 

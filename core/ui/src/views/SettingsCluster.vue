@@ -159,8 +159,6 @@ export default {
       this.newClusterLabel = this.clusterLabel;
       this.loading.getClusterStatus = false;
 
-      console.log("clusterStatus", clusterStatus); ////
-
       // update cluster label in shell header
       this.setClusterLabelInStore(this.clusterLabel);
     },
@@ -202,7 +200,7 @@ export default {
     setClusterLabelCompleted() {
       this.loading.setClusterLabel = false;
 
-      //// don't do this at avery task completed
+      //// don't do this at every task completed
       this.getClusterStatus();
     },
   },

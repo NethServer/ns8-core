@@ -180,6 +180,7 @@
                     :label="$t('init.vpn_endpoint_address')"
                     v-model.trim="vpnEndpointAddress"
                     :invalid-message="$t(error.vpnEndpointAddress)"
+                    :disabled="loading.getDefaults || isCreatingCluster"
                     ref="vpnEndpointAddress"
                   >
                   </cv-text-input>
@@ -187,6 +188,7 @@
                     :label="$t('init.vpn_endpoint_port')"
                     v-model.trim="vpnEndpointPort"
                     :invalid-message="$t(error.vpnEndpointPort)"
+                    :disabled="loading.getDefaults || isCreatingCluster"
                     type="number"
                     class="narrow"
                     ref="vpnEndpointPort"
@@ -196,6 +198,7 @@
                     :label="$t('init.vpn_cidr')"
                     v-model.trim="vpnCidr"
                     :invalid-message="$t(error.vpnCidr)"
+                    :disabled="loading.getDefaults || isCreatingCluster"
                     class="narrow"
                     ref="vpnCidr"
                   >
@@ -212,7 +215,7 @@
                     <NsButton
                       kind="primary"
                       :loading="isCreatingCluster"
-                      :disabled="isCreatingCluster"
+                      :disabled="loading.getDefaults || isCreatingCluster"
                       :icon="EdgeCluster20"
                       size="lg"
                       >{{ $t("init.create_cluster") }}
@@ -687,7 +690,16 @@
                     :animationData="GearsLottie"
                     animationTitle="gears"
                     :loop="true"
-                  />
+                  >
+                    <template #description>
+                      <span v-if="restore.progress < 100">
+                        {{ $t("init.traveling_back_in_time") }}
+                      </span>
+                      <span v-else>
+                        {{ $t("init.reading_backup_repositories") }}
+                      </span>
+                    </template>
+                  </NsEmptyState>
                   <NsProgressBar
                     :value="restore.progress"
                     :indeterminate="!restore.progress"
@@ -874,6 +886,7 @@ export default {
         isShownSkipRestoreAppsModal: false,
       },
       loading: {
+        getDefaults: true,
         retrieveClusterBackup: false,
         restoreCluster: false,
         readBackupRepositories: false,
@@ -916,9 +929,15 @@ export default {
   methods: {
     ...mapActions(["setClusterInitializedInStore"]),
     async getDefaults() {
+      this.loading.getDefaults = true;
       const taskAction = "get-defaults";
 
+      // register to task error
+      this.$root.$off(taskAction + "-aborted");
+      this.$root.$once(taskAction + "-aborted", this.getDefaultsAborted);
+
       // register to task completion
+      this.$root.$off(taskAction + "-completed");
       this.$root.$once(taskAction + "-completed", this.getDefaultsCompleted);
 
       const res = await to(
@@ -949,11 +968,16 @@ export default {
         }
       }
     },
+    getDefaultsAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.loading.getDefaults = false;
+    },
     getDefaultsCompleted(taskContext, taskResult) {
       const defaults = taskResult.output;
       this.vpnEndpointAddress = defaults.vpn.host;
       this.vpnEndpointPort = defaults.vpn.port.toString();
       this.vpnCidr = defaults.vpn.network;
+      this.loading.getDefaults = false;
     },
     selectCreateCluster() {
       this.$router.push({ path: "/init", query: { page: "create" } });
@@ -1403,16 +1427,10 @@ export default {
       this.isJoiningCluster = true;
     },
     joinClusterCompleted(taskContext, taskResult) {
-      console.log("joinClusterCompleted"); ////
-      console.log("taskContext", taskContext); ////
-      console.log("taskResult", taskResult); ////
-
       this.isJoiningCluster = false;
       this.$router.push("/init?page=redirect");
 
       const nodeId = taskResult.output.nodeId;
-
-      console.log("nodeId", nodeId); ////
 
       const notification = {
         title: this.$t("action.join-cluster"),
@@ -1458,7 +1476,6 @@ export default {
         this.restore.base64FileUploaded = result.split(
           "data:application/pgp-encrypted;base64,"
         )[1];
-        console.log("base64!", this.restore.base64FileUploaded); ////
       }
     },
     validateRetrieveClusterBackupFromFile() {
@@ -1564,8 +1581,6 @@ export default {
       }
     },
     retrieveClusterBackupValidationFailed(validationErrors) {
-      console.log("retrieveClusterBackupValidationFailed", validationErrors); ////
-
       this.loading.retrieveClusterBackup = false;
       let focusAlreadySet = false;
 
@@ -1575,8 +1590,6 @@ export default {
         if (param == "backup_password") {
           this.restore.isBackupPasswordAccordionOpenAndDisabled = true;
         }
-
-        console.log("validationError", validationError); ////
 
         // set i18n error message
         this.error.restore[param] = this.$t("init." + validationError.error);
@@ -1592,8 +1605,6 @@ export default {
       this.loading.retrieveClusterBackup = false;
     },
     retrieveClusterBackupCompleted(taskContext, taskResult) {
-      console.log("retrieveClusterBackupCompleted", taskResult.output); ////
-
       this.restore.summary = taskResult.output;
       this.restore.isBackupPasswordAccordionOpenAndDisabled = false;
       this.restore.step = "summary";
@@ -1703,12 +1714,9 @@ export default {
       }
     },
     onSelectInstances(selectedInstances) {
-      console.log("onSelectInstances", selectedInstances); ////
-
       this.restore.selectedInstances = selectedInstances;
     },
     showSkipRestoreAppsModal() {
-      console.log("showSkipRestoreAppsModal"); ////
       this.restore.isShownSkipRestoreAppsModal = true;
     },
     hideSkipRestoreAppsModal() {
@@ -1726,14 +1734,9 @@ export default {
         };
         data.push(instance);
       }
-
-      console.log("prepared", data); ////
-
       return data;
     },
     async restoreModules() {
-      console.log("restoreModules", this.restore.selectedInstances); ////
-
       const inputData = this.prepareRestoreModulesData();
 
       this.error.restoreModules = "";

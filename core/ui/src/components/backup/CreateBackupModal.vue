@@ -303,19 +303,8 @@
               ref="name"
             >
             </cv-text-input>
-            <!-- <cv-toggle ////
-            :label="$t('common.status')"
-            value="statusValue"
-            :form-item="true"
-            v-model="enabled"
-            :disabled="loading.addBackup || loading.alterBackup"
-          >
-            <template slot="text-left">{{ $t("common.disabled") }}</template>
-            <template slot="text-right">{{ $t("common.enabled") }}</template>
-          </cv-toggle> -->
             <!-- run backup on finish -->
             <cv-checkbox
-              v-if="!isEditing"
               :label="$t('backup.run_backup_now')"
               v-model="runBackupOnFinish"
               :disabled="loading.addBackup || loading.alterBackup"
@@ -347,7 +336,6 @@ import { UtilService, TaskService, IconService } from "@nethserver/ns8-ui-lib";
 import to from "await-to-js";
 import BackupInstanceSelector from "@/components/backup/BackupInstanceSelector";
 import _cloneDeep from "lodash/cloneDeep";
-// import Information16 from "@carbon/icons-vue/es/information/16"; ////
 import _capitalize from "lodash/capitalize";
 
 const DEFAULT_SCHEDULE_INTERVAL = "daily";
@@ -406,7 +394,6 @@ export default {
         custom: DEFAULT_SCHEDULE_CUSTOM,
       },
       retention: DEFAULT_RETENTION,
-      // enabled: true, ////
       installedModules: [],
       internalRepositories: [],
       runBackupOnFinish: false,
@@ -521,7 +508,7 @@ export default {
             this.name = this.backup.name;
             this.schedule = _cloneDeep(this.backup.schedule);
             this.retention = this.backup.retention.toString();
-            // this.enabled = this.backup.enabled; ////
+            this.runBackupOnFinish = false;
             this.updateInternalRepositories();
           } else {
             this.clearFields();
@@ -564,13 +551,6 @@ export default {
         this.name = backupName;
       }
     },
-    // backup: function () { ////
-    //   this.name = this.backup.name;
-    //   this.schedule = this.backup.schedule;
-    //   this.retention = this.backup.retention.toString();
-    //   // this.enabled = this.backup.enabled; ////
-    //   this.updateInternalRepositories();
-    // },
   },
   created() {
     this.updateInternalRepositories();
@@ -587,7 +567,6 @@ export default {
       this.schedule.custom = DEFAULT_SCHEDULE_CUSTOM;
       this.retention = DEFAULT_RETENTION;
       this.runBackupOnFinish = false;
-      // this.enabled = true; ////
 
       for (let repo of this.internalRepositories) {
         repo.selected = false;
@@ -652,8 +631,6 @@ export default {
     validateSettingsStep() {
       let isValidationOk = true;
       this.error.retention = "";
-
-      //// todo validate schedule
 
       if (!this.retention || this.retention < 1) {
         this.error.retention = "error.invalid_value";
@@ -764,8 +741,6 @@ export default {
       }
     },
     addBackupCompleted(taskContext, taskResult) {
-      console.log("addBackupCompleted", taskResult.output); ////
-
       this.loading.addBackup = false;
 
       // hide modal
@@ -816,6 +791,7 @@ export default {
           extra: {
             title: this.$t("action." + taskAction),
             isNotificationHidden: true,
+            runBackupOnFinish: this.runBackupOnFinish,
           },
         })
       );
@@ -843,14 +819,21 @@ export default {
         }
       }
     },
-    alterBackupCompleted() {
+    alterBackupCompleted(taskContext) {
       this.loading.alterBackup = false;
 
       // hide modal
       this.$emit("hide");
 
+      const runBackupOnFinish = taskContext.extra.runBackupOnFinish;
+
+      const alteredBackup = {
+        id: taskContext.data.id,
+        name: taskContext.data.name,
+      };
+
       // reload backup configuration
-      this.$emit("backupAltered");
+      this.$emit("backupAltered", runBackupOnFinish, alteredBackup);
     },
     async listInstalledModules() {
       this.loading.listInstalledModules = true;
