@@ -504,7 +504,6 @@ export default {
       this.isShownInstallModal = true;
     },
     showSetInstanceLabelModal(instance) {
-      console.log("showSetInstanceLabelModal", instance); ////
       this.currentInstance = instance;
       this.newInstanceLabel = instance.ui_name;
       this.isShownEditInstanceLabel = true;

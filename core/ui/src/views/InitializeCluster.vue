@@ -1427,16 +1427,10 @@ export default {
       this.isJoiningCluster = true;
     },
     joinClusterCompleted(taskContext, taskResult) {
-      console.log("joinClusterCompleted"); ////
-      console.log("taskContext", taskContext); ////
-      console.log("taskResult", taskResult); ////
-
       this.isJoiningCluster = false;
       this.$router.push("/init?page=redirect");
 
       const nodeId = taskResult.output.nodeId;
-
-      console.log("nodeId", nodeId); ////
 
       const notification = {
         title: this.$t("action.join-cluster"),
@@ -1587,8 +1581,6 @@ export default {
       }
     },
     retrieveClusterBackupValidationFailed(validationErrors) {
-      console.log("retrieveClusterBackupValidationFailed", validationErrors); ////
-
       this.loading.retrieveClusterBackup = false;
       let focusAlreadySet = false;
 
@@ -1598,8 +1590,6 @@ export default {
         if (param == "backup_password") {
           this.restore.isBackupPasswordAccordionOpenAndDisabled = true;
         }
-
-        console.log("validationError", validationError); ////
 
         // set i18n error message
         this.error.restore[param] = this.$t("init." + validationError.error);
@@ -1615,8 +1605,6 @@ export default {
       this.loading.retrieveClusterBackup = false;
     },
     retrieveClusterBackupCompleted(taskContext, taskResult) {
-      console.log("retrieveClusterBackupCompleted", taskResult.output); ////
-
       this.restore.summary = taskResult.output;
       this.restore.isBackupPasswordAccordionOpenAndDisabled = false;
       this.restore.step = "summary";
@@ -1726,12 +1714,9 @@ export default {
       }
     },
     onSelectInstances(selectedInstances) {
-      console.log("onSelectInstances", selectedInstances); ////
-
       this.restore.selectedInstances = selectedInstances;
     },
     showSkipRestoreAppsModal() {
-      console.log("showSkipRestoreAppsModal"); ////
       this.restore.isShownSkipRestoreAppsModal = true;
     },
     hideSkipRestoreAppsModal() {
@@ -1749,14 +1734,9 @@ export default {
         };
         data.push(instance);
       }
-
-      console.log("prepared", data); ////
-
       return data;
     },
     async restoreModules() {
-      console.log("restoreModules", this.restore.selectedInstances); ////
-
       const inputData = this.prepareRestoreModulesData();
 
       this.error.restoreModules = "";

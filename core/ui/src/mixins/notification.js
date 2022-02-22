@@ -89,14 +89,10 @@ export default {
         }
       }
 
-      // console.log("notification.id", notification.id); ////
-
-      const toastId = this.$toast(toast, {
+      this.$toast(toast, {
         timeout: toastTimeout,
         id: notification.id,
       });
-
-      console.log("toastId", toastId); ////
     },
     notificationExists(notification) {
       const notificationFound = this.notifications.find(
@@ -305,7 +301,7 @@ export default {
           title: taskContext.extra ? taskContext.extra.title : "-",
           description: notificationText,
           type: notificationType,
-          timestamp: payload.timestamp, ////
+          timestamp: payload.timestamp,
           isHidden: taskContext.extra && taskContext.extra.isNotificationHidden,
           toastTimeout,
           task: {

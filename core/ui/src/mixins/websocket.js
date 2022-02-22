@@ -6,7 +6,6 @@ export default {
   mixins: [NotificationService, TaskService, StorageService],
   methods: {
     initWebSocket() {
-      //// need to monitor this.$socket.readyState?
       var jwt =
         (this.getFromStorage("loginInfo") &&
           this.getFromStorage("loginInfo").token) ||
