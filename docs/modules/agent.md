@@ -95,3 +95,7 @@ import agent
 agent.set_env('MYVAR', 'value')
 agent.dump_env()
 ```
+
+## Validation
+
+See [validation framework]({{site.baseurl}}/core/validation).
