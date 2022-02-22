@@ -180,6 +180,7 @@
                     :label="$t('init.vpn_endpoint_address')"
                     v-model.trim="vpnEndpointAddress"
                     :invalid-message="$t(error.vpnEndpointAddress)"
+                    :disabled="loading.getDefaults || isCreatingCluster"
                     ref="vpnEndpointAddress"
                   >
                   </cv-text-input>
@@ -187,6 +188,7 @@
                     :label="$t('init.vpn_endpoint_port')"
                     v-model.trim="vpnEndpointPort"
                     :invalid-message="$t(error.vpnEndpointPort)"
+                    :disabled="loading.getDefaults || isCreatingCluster"
                     type="number"
                     class="narrow"
                     ref="vpnEndpointPort"
@@ -196,6 +198,7 @@
                     :label="$t('init.vpn_cidr')"
                     v-model.trim="vpnCidr"
                     :invalid-message="$t(error.vpnCidr)"
+                    :disabled="loading.getDefaults || isCreatingCluster"
                     class="narrow"
                     ref="vpnCidr"
                   >
@@ -212,7 +215,7 @@
                     <NsButton
                       kind="primary"
                       :loading="isCreatingCluster"
-                      :disabled="isCreatingCluster"
+                      :disabled="loading.getDefaults || isCreatingCluster"
                       :icon="EdgeCluster20"
                       size="lg"
                       >{{ $t("init.create_cluster") }}
@@ -883,6 +886,7 @@ export default {
         isShownSkipRestoreAppsModal: false,
       },
       loading: {
+        getDefaults: true,
         retrieveClusterBackup: false,
         restoreCluster: false,
         readBackupRepositories: false,
@@ -925,9 +929,15 @@ export default {
   methods: {
     ...mapActions(["setClusterInitializedInStore"]),
     async getDefaults() {
+      this.loading.getDefaults = true;
       const taskAction = "get-defaults";
 
+      // register to task error
+      this.$root.$off(taskAction + "-aborted");
+      this.$root.$once(taskAction + "-aborted", this.getDefaultsAborted);
+
       // register to task completion
+      this.$root.$off(taskAction + "-completed");
       this.$root.$once(taskAction + "-completed", this.getDefaultsCompleted);
 
       const res = await to(
@@ -958,11 +968,16 @@ export default {
         }
       }
     },
+    getDefaultsAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.loading.getDefaults = false;
+    },
     getDefaultsCompleted(taskContext, taskResult) {
       const defaults = taskResult.output;
       this.vpnEndpointAddress = defaults.vpn.host;
       this.vpnEndpointPort = defaults.vpn.port.toString();
       this.vpnCidr = defaults.vpn.network;
+      this.loading.getDefaults = false;
     },
     selectCreateCluster() {
       this.$router.push({ path: "/init", query: { page: "create" } });
