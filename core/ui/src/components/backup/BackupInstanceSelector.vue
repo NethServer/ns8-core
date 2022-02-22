@@ -21,6 +21,9 @@
         >
           {{ $t("backup.not_backed_up") }}
         </cv-overflow-menu-item>
+        <cv-overflow-menu-item @click="selectCoreModules">
+          {{ $tc("common.core_module_c", 2) }}
+        </cv-overflow-menu-item>
       </NsDropdownAction>
       <span class="selection-info">{{
         $t("common.x_of_y_selected", {
@@ -97,7 +100,7 @@
               <Settings16 />
             </template>
             <template slot="content">
-              <div>{{ $t("software_center.core_module") }}</div>
+              <div>{{ $tc("common.core_module_c", 1) }}</div>
             </template>
           </cv-interactive-tooltip>
         </label>
@@ -201,6 +204,15 @@ export default {
         this.selectedList.push(id);
       }
     },
+    selectCoreModules() {
+      this.selectedList = [];
+
+      for (const instance of this.internalInstances) {
+        if (instance.flags.includes("core_module")) {
+          this.selectedList.push(instance.id);
+        }
+      }
+    },
     selectInstances() {
       // select specific instances (used by EditBackupModal)
 
@@ -231,6 +243,9 @@ export default {
             break;
           case "notBackedUp":
             this.selectNotBackedUp();
+            break;
+          case "core":
+            this.selectCoreModules();
             break;
         }
       } else {
@@ -305,7 +320,7 @@ export default {
 
 .instance-tile {
   margin-bottom: 0;
-  border-bottom: 1px solid $ui-01;
+  border-bottom: 2px solid $ui-01;
 }
 
 .instance-label {

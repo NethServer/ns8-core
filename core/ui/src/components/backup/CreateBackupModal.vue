@@ -336,7 +336,6 @@ import { UtilService, TaskService, IconService } from "@nethserver/ns8-ui-lib";
 import to from "await-to-js";
 import BackupInstanceSelector from "@/components/backup/BackupInstanceSelector";
 import _cloneDeep from "lodash/cloneDeep";
-// import Information16 from "@carbon/icons-vue/es/information/16"; ////
 import _capitalize from "lodash/capitalize";
 
 const DEFAULT_SCHEDULE_INTERVAL = "daily";
@@ -395,7 +394,6 @@ export default {
         custom: DEFAULT_SCHEDULE_CUSTOM,
       },
       retention: DEFAULT_RETENTION,
-      // enabled: true, ////
       installedModules: [],
       internalRepositories: [],
       runBackupOnFinish: false,
@@ -553,13 +551,6 @@ export default {
         this.name = backupName;
       }
     },
-    // backup: function () { ////
-    //   this.name = this.backup.name;
-    //   this.schedule = this.backup.schedule;
-    //   this.retention = this.backup.retention.toString();
-    //   // this.enabled = this.backup.enabled; ////
-    //   this.updateInternalRepositories();
-    // },
   },
   created() {
     this.updateInternalRepositories();
@@ -640,8 +631,6 @@ export default {
     validateSettingsStep() {
       let isValidationOk = true;
       this.error.retention = "";
-
-      //// todo validate schedule
 
       if (!this.retention || this.retention < 1) {
         this.error.retention = "error.invalid_value";

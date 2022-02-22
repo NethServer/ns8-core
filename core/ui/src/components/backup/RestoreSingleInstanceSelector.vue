@@ -17,9 +17,19 @@
     </div>
     <div class="instance-list">
       <!-- skeleton -->
-      <cv-tile v-if="loading" :light="light" class="no-mg-bottom">
-        <cv-skeleton-text :paragraph="true" :line-count="8"></cv-skeleton-text>
-      </cv-tile>
+      <div v-if="loading">
+        <cv-tile
+          v-for="index in 3"
+          :key="index"
+          :light="light"
+          class="instance-tile no-mg-bottom"
+        >
+          <cv-skeleton-text
+            :paragraph="true"
+            :line-count="2"
+          ></cv-skeleton-text>
+        </cv-tile>
+      </div>
       <!-- no instance to restore -->
       <NsEmptyState
         v-else-if="!instances.length"
@@ -49,7 +59,7 @@
         :light="light"
         kind="selectable"
         v-model="instance.selected"
-        value="nodeValue"
+        value="instanceValue"
         @click="deselectOtherInstances(instance)"
         class="instance-tile"
       >
@@ -180,10 +190,11 @@ export default {
 
 .instance-list {
   overflow-y: auto;
-  max-height: 16rem;
+  max-height: 18rem;
 }
 
-.ns-tile.instance-tile {
+.ns-tile.instance-tile,
+.cv-tile.instance-tile {
   margin-bottom: $spacing-03;
 }
 

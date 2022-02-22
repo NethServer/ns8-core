@@ -375,6 +375,7 @@ export default {
           title: this.$t("websocket.websocket_connected"),
           description: this.$t("websocket.websocket_connected_description"),
           type: "success",
+          toastTimeout: 5000,
           actionLabel: null,
           action: {
             type: "execute",
