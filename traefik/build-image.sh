@@ -11,6 +11,7 @@ buildah add "${container}" imageroot /imageroot
 buildah add "${container}" ui /ui
 buildah config --entrypoint=/ \
     --label="org.nethserver.images=docker.io/traefik:v2.4" \
+    --label="org.nethserver.flags=core_module no_data_backup" \
     "${container}"
 buildah commit "${container}" "${repobase}/${reponame}"
 images+=("${repobase}/${reponame}")
