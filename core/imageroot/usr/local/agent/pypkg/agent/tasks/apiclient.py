@@ -27,7 +27,6 @@ import urllib
 import sys
 from ssl import SSLCertVerificationError
 from .exceptions import *
-from .handlers import _push_cancel_task_handler, _pop_cancel_task_handler
 
 async def run_apiclient_nowait(taskrq, **kwargs):
     kwargs['ssl_ctx'] = None if kwargs.pop('tls_verify', True) is True else False
@@ -40,25 +39,35 @@ async def run_apiclient(taskrq, **kwargs):
     theaders = _get_theaders_cache(kwargs.pop('auth_token', None))
     async with aiohttp.ClientSession(raise_for_status=True) as client:
         taskctx = {'status_path': None, 'rq': taskrq, 'lock': asyncio.Lock()}
-        # Context is initially locked. Unlock occurs when task has been
-        # submitted by _acontrol_task:
-        await taskctx['lock'].acquire()
 
-        tcontroller = asyncio.create_task(_retry_request(_acontrol_task, taskctx, client=client, theaders=theaders, **kwargs), name='tcontroller')
-        tpoll = asyncio.create_task(_retry_request(_apoll_status, taskctx, client=client, theaders=theaders, **kwargs), name = 'tpoll')
+        async with taskctx['lock']:
+            tcontroller = asyncio.create_task(_retry_request(_acontrol_task, taskctx, client=client, theaders=theaders, **kwargs), name='tcontroller')
+            tpoll = asyncio.create_task(_retry_request(_apoll_status, taskctx, client=client, theaders=theaders, **kwargs), name = 'tpoll')
+            try:
+                taskctx['status_path'] = await _retry_request(_apost_task, taskrq, client=client, theaders=theaders, **kwargs)
+            except:
+                tpoll.cancel()
+                tcontroller.cancel()
+                raise
 
-        # Register signal handlers to post a cancel-task action:
-        loop = asyncio.get_running_loop()
-        def cancel_task_handler():
-            task_id = taskctx['status_path'].split('/')[-1] # retrieve task ID from POST return value
-            timeout = kwargs.get('cancel_task_timeout', 0)
-            loop.create_task(_cancel_task(taskrq['agent_id'], task_id, taskrq['parent'], timeout, client=client, theaders=theaders, **kwargs))
-        _push_cancel_task_handler(loop, cancel_task_handler)
+        def generate_cancel_handler():
+            return _cancel_task(
+                taskrq['agent_id'],
+                taskctx['status_path'].rsplit('/', 1)[1],
+                taskrq['parent'],
+                kwargs.get('cancel_task_timeout', 0),
+                kwargs['endpoint'],
+                theaders,
+                kwargs['ssl_ctx'],
+            )
+
+        # Add a callback to post a cancel-task action:
+        kwargs['cancel_handler'].add_callback(generate_cancel_handler)
 
         done, pending = await asyncio.wait({tcontroller, tpoll}, return_when=asyncio.FIRST_COMPLETED)
 
-        # Clean up signal handlers
-        _pop_cancel_task_handler(loop, cancel_task_handler)
+        # Remove the cancel callback
+        kwargs['cancel_handler'].remove_callback(generate_cancel_handler)
 
         if tpoll in done:
             tcontroller.cancel()
@@ -67,24 +76,6 @@ async def run_apiclient(taskrq, **kwargs):
         if tcontroller in done:
             tpoll.cancel()
             return tcontroller.result()
-
-async def _cancel_task(agent_id, task_id, parent, timeout, **kwargs):
-    """Post a cancel-task action
-    """
-    return await _apost_task({
-        'agent_id': agent_id,
-        'action': 'cancel-task',
-        'data': {
-            'task': task_id,
-            'timeout': timeout,
-        },
-        'parent': parent,
-        'extra': {
-            'title': f"{agent_id}/cancel-task",
-            'description': f"Terminate task {task_id}",
-            'isNotificationHidden': True,
-        },
-    }, **kwargs)
 
 async def _alogin(**kwargs):
     """Read the Redis user credentials from the environment and retrieve a new authorization token.
@@ -218,10 +209,31 @@ async def _retry_request(request_procedure, *args, **kwargs):
     # retry_sendlogin=False flag.
     #
     kwargs.pop('retry_sendlogin')
-    kwargs.pop('theaders')
     theaders = await _retry_request(_alogin, retry_sendlogin=False, **kwargs)
-    return await _retry_request(request_procedure, *args, theaders=theaders, retry_sendlogin=False, **kwargs)
+    kwargs['theaders'].update(theaders)
+    return await _retry_request(request_procedure, *args, retry_sendlogin=False, **kwargs)
 
+async def _cancel_task(agent_id, task_id, parent, timeout, endpoint, theaders, sslctx):
+    """Post a cancel-task action
+    """
+    async with aiohttp.ClientSession(raise_for_status=True) as client:
+        async with client.post(
+            f'{endpoint}/api/{agent_id}/tasks',
+            json={
+                'action': 'cancel-task',
+                'data': {"task": task_id, "timeout": timeout},
+                'parent': parent,
+                'extra': {
+                    'title': f"{agent_id}/cancel-task",
+                    'description': f"Terminate task {task_id}",
+                    'isNotificationHidden': True,
+                },
+            },
+            ssl=sslctx,
+            headers=theaders,
+        ) as resp:
+
+            return await resp.json()
 
 async def _apost_task(taskrq, **kwargs):
     """Create a new task for the given agent_id and return its task_id.
@@ -264,10 +276,6 @@ async def _acontrol_task(taskctx, **kwargs):
         ssl=kwargs['ssl_ctx'],
         heartbeat=4.0,
     ) as ws:
-        # Check the context to submit the task only the first time
-        if taskctx['lock'].locked() and taskctx['status_path'] is None:
-            taskctx['status_path'] = await _retry_request(_apost_task, taskctx['rq'], **kwargs)
-            taskctx['lock'].release() # _apoll_status is waiting on the lock
         async for msg in ws:
             if msg.type != aiohttp.WSMsgType.TEXT:
                 continue
@@ -277,7 +285,10 @@ async def _acontrol_task(taskctx, **kwargs):
             except:
                 continue # Discard unknown message
 
-            if jdata['name'] == 'progress/' + taskctx['status_path']:
+            async with taskctx['lock']:
+                status_path = taskctx['status_path']
+
+            if jdata['name'] == 'progress/' + status_path:
                 if progress_callback:
                     progress_callback(jdata['payload']['progress'])
                 if jdata['payload']['status'] in ['completed', 'aborted', 'validation-failed']:
@@ -291,11 +302,13 @@ async def _apoll_status(taskctx, **kwargs):
     """Read in a loop the status of the given task_id from agent_id
     """
     while True:
-        async with taskctx['lock']: # wait until the context is unlocked by _acontrol_task
-            try:
-                return await _aread_status(taskctx['status_path'], **kwargs)
-            except aiohttp.ClientResponseError as exhttp:
-                if not exhttp.status in [400,404]:
-                    raise
+        async with taskctx['lock']:
+            status_path = taskctx['status_path']
+
+        try:
+            return await _aread_status(status_path, **kwargs)
+        except aiohttp.ClientResponseError as exhttp:
+            if not exhttp.status in [400,404]:
+                raise
 
         await asyncio.sleep(5.0)

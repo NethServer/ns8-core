@@ -21,10 +21,12 @@
 import asyncio
 import os
 import sys
+import signal
 
 from .apiclient import run_apiclient, run_apiclient_nowait
 from .redisclient import run_redisclient, run_redisclient_nowait
 from .exceptions import *
+from .handlers import AsyncSignalHandler
 
 def run(agent_id, action, data={}, **kwargs):
     """Run a new task and wait until it completes. An object with exit_code, error, output is returned.
@@ -91,33 +93,34 @@ async def _runp(tasks, **kwargs):
     nowait = kwargs.pop('nowait', False)
     kwargs.setdefault('check_idle_time', 0 if nowait else 8) # Check the client connection is alive
 
-    runners = []
-    for idx, taskrq in enumerate(tasks):
-        if not 'data' in taskrq:
-            taskrq['data']={}
+    with AsyncSignalHandler(asyncio.get_running_loop(), signal.SIGTERM) as cancel_handler:
+        runners = []
+        for idx, taskrq in enumerate(tasks):
+            if not 'data' in taskrq:
+                taskrq['data']={}
 
-        if not 'parent' in taskrq:
-            taskrq['parent'] = os.getenv("AGENT_TASK_ID", "")
+            if not 'parent' in taskrq:
+                taskrq['parent'] = os.getenv("AGENT_TASK_ID", "")
 
-        if 'extra' in kwargs:
-            taskrq['extra'] = kwargs['extra']
+            if 'extra' in kwargs:
+                taskrq['extra'] = kwargs['extra']
 
-        if parent_cbk:
-            task_cbk = create_task_cbk(idx)
-        else:
-            task_cbk = None
+            if parent_cbk:
+                task_cbk = create_task_cbk(idx)
+            else:
+                task_cbk = None
 
-        if nowait:
-            tcoro = _run_nowait(taskrq, **kwargs)
-        else:
-            tcoro = _run(taskrq, progress_callback=task_cbk, **kwargs)
+            if nowait:
+                tcoro = _run_with_protocol_nowait(taskrq, **kwargs)
+            else:
+                tcoro = _run_with_protocol(taskrq, progress_callback=task_cbk, cancel_handler=cancel_handler, **kwargs)
 
-        runners.append(asyncio.create_task(tcoro, name=taskrq['action'] + '@' + taskrq['agent_id']))
+            runners.append(asyncio.create_task(tcoro, name=taskrq['agent_id'] + '/' + taskrq['action']))
 
-    return await asyncio.gather(*runners, return_exceptions=(len(tasks) > 1))
+        return await asyncio.gather(*runners, return_exceptions=(len(tasks) > 1))
 
 
-async def _run(taskrq, **pconn):
+async def _run_with_protocol(taskrq, **pconn):
     pconn.setdefault('progress_callback', None)
     pconn.setdefault('endpoint', 'http://cluster-leader/cluster-admin')
     if pconn['endpoint'].startswith("redis://"):
@@ -125,7 +128,7 @@ async def _run(taskrq, **pconn):
     else:
         return await run_apiclient(taskrq, **pconn)
 
-async def _run_nowait(taskrq, **pconn):
+async def _run_with_protocol_nowait(taskrq, **pconn):
     pconn.setdefault('endpoint', 'http://cluster-leader/cluster-admin')
     if pconn['endpoint'].startswith("redis://"):
         return await run_redisclient_nowait(taskrq, **pconn)
