@@ -117,7 +117,10 @@
                       danger
                       @click="willDeleteUnconfiguredDomain(unconfiguredDomain)"
                     >
-                      <NsMenuItem icon="trash" :label="$t('common.delete')" />
+                      <NsMenuItem
+                        :icon="TrashCan20"
+                        :label="$t('common.delete')"
+                      />
                     </cv-overflow-menu-item>
                   </cv-overflow-menu>
                 </template>
@@ -227,7 +230,10 @@
                       danger
                       @click="showDeleteDomainModal(domain)"
                     >
-                      <NsMenuItem icon="trash" :label="$t('common.delete')" />
+                      <NsMenuItem
+                        :icon="TrashCan20"
+                        :label="$t('common.delete')"
+                      />
                     </cv-overflow-menu-item>
                   </cv-overflow-menu>
                 </template>

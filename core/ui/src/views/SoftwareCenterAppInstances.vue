@@ -113,7 +113,7 @@
                   @click="openInstance(instance)"
                 >
                   <NsMenuItem
-                    icon="launch"
+                    :icon="Launch20"
                     :label="$t('software_center.open')"
                   />
                 </cv-overflow-menu-item>
@@ -130,7 +130,7 @@
                   @click="showSetInstanceLabelModal(instance)"
                 >
                   <NsMenuItem
-                    icon="edit"
+                    :icon="Edit20"
                     :label="$t('software_center.edit_instance_label')"
                   />
                 </cv-overflow-menu-item>
@@ -149,7 +149,7 @@
                   @click="showUninstallModal(app, instance)"
                 >
                   <NsMenuItem
-                    icon="trash"
+                    :icon="TrashCan20"
                     :label="$t('software_center.uninstall')"
                   />
                 </cv-overflow-menu-item>

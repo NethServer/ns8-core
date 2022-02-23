@@ -273,7 +273,7 @@
                     @click="showSetProviderLabelModal(provider)"
                   >
                     <NsMenuItem
-                      icon="edit"
+                      :icon="Edit20"
                       :label="$t('domain_detail.edit_provider_label')"
                     />
                   </cv-overflow-menu-item>
@@ -282,7 +282,10 @@
                     danger
                     @click="willDeleteUnconfiguredProvider(provider)"
                   >
-                    <NsMenuItem icon="trash" :label="$t('common.delete')" />
+                    <NsMenuItem
+                      :icon="TrashCan20"
+                      :label="$t('common.delete')"
+                    />
                   </cv-overflow-menu-item>
                 </cv-overflow-menu>
               </template>
@@ -339,7 +342,7 @@
                     @click="showSetProviderLabelModal(provider)"
                   >
                     <NsMenuItem
-                      icon="edit"
+                      :icon="Edit20"
                       :label="$t('domain_detail.edit_provider_label')"
                     />
                   </cv-overflow-menu-item>
@@ -348,7 +351,10 @@
                     danger
                     @click="showDeleteProviderModal(provider)"
                   >
-                    <NsMenuItem icon="trash" :label="$t('common.delete')" />
+                    <NsMenuItem
+                      :icon="TrashCan20"
+                      :label="$t('common.delete')"
+                    />
                   </cv-overflow-menu-item>
                 </cv-overflow-menu>
               </template>

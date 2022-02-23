@@ -2,15 +2,39 @@
   <div>
     <div class="bx--grid bx--grid--full-width">
       <div class="bx--row">
-        <div class="bx--col-lg-16 page-title title-and-toolbar">
+        <div class="bx--col-md-4 page-title">
           <h2>{{ $t("software_center.title") }}</h2>
-          <NsButton
-            kind="ghost"
-            size="field"
-            :icon="Settings20"
-            @click="goToSettingsSoftwareRepositories()"
-            >{{ $t("common.settings") }}</NsButton
-          >
+        </div>
+        <div class="bx--col-md-4">
+          <div class="page-toolbar">
+            <NsButton
+              kind="secondary"
+              size="field"
+              :icon="Restart20"
+              @click="cleanRepositoriesCache()"
+              :disabled="loading.cleanRepositoriesCache"
+              :loading="loading.cleanRepositoriesCache"
+              class="page-toolbar-item"
+              >{{
+                $t("software_center.reload_software_repositories")
+              }}</NsButton
+            >
+            <NsIconMenu
+              :flipMenu="true"
+              tipPosition="top"
+              tipAlignment="end"
+              class="page-toolbar-item"
+            >
+              <cv-overflow-menu-item
+                @click="goToSettingsSoftwareRepositories()"
+              >
+                <NsMenuItem
+                  :icon="Settings20"
+                  :label="$t('settings.sw_repositories')"
+                />
+              </cv-overflow-menu-item>
+            </NsIconMenu>
+          </div>
         </div>
       </div>
       <div v-if="error.listModules" class="bx--row">
@@ -19,6 +43,16 @@
             kind="error"
             :title="$t('action.list-modules')"
             :description="error.listModules"
+            :showCloseButton="false"
+          />
+        </div>
+      </div>
+      <div v-if="error.cleanRepositoriesCache" class="bx--row">
+        <div class="bx--col">
+          <NsInlineNotification
+            kind="error"
+            :title="$t('action.clean-repositories-cache')"
+            :description="error.cleanRepositoriesCache"
             :showCloseButton="false"
           />
         </div>
@@ -41,136 +75,135 @@
         </div>
       </div>
       <div>
-        <div>
-          <cv-tile :light="true">
-            <cv-search
-              :label="$t('software_center.search_placeholder')"
-              :placeholder="$t('software_center.search_placeholder')"
-              size="xl"
-              :clear-aria-label="$t('common.clear_search')"
-              v-model="q.search"
-              v-debounce="searchApp"
-              class="app-search"
-            >
-            </cv-search>
-            <cv-content-switcher
-              class="switcher"
-              @selected="contentSwitcherSelected"
-            >
-              <cv-content-switcher-button
-                owner-id="all"
-                :selected="csbAllSelected"
-                >{{ $t("software_center.all") }}</cv-content-switcher-button
-              >
-              <cv-content-switcher-button
-                owner-id="installed"
-                :selected="csbInstalledSelected"
-                >{{
-                  $t("software_center.installed")
-                }}</cv-content-switcher-button
-              >
-              <cv-content-switcher-button
-                owner-id="updates"
-                :selected="csbUpdatesSelected"
-                >{{ $t("software_center.updates") }}</cv-content-switcher-button
-              >
-            </cv-content-switcher>
+        <cv-search
+          :label="$t('software_center.search_placeholder')"
+          :placeholder="$t('software_center.search_placeholder')"
+          size="xl"
+          :clear-aria-label="$t('common.clear_search')"
+          v-model="q.search"
+          v-debounce="searchApp"
+          class="app-search"
+          :light="true"
+        >
+        </cv-search>
+        <cv-content-switcher
+          class="switcher"
+          @selected="contentSwitcherSelected"
+        >
+          <cv-content-switcher-button
+            owner-id="all"
+            :selected="csbAllSelected"
+            >{{ $t("software_center.all") }}</cv-content-switcher-button
+          >
+          <cv-content-switcher-button
+            owner-id="installed"
+            :selected="csbInstalledSelected"
+            >{{ $t("software_center.installed") }}</cv-content-switcher-button
+          >
+          <cv-content-switcher-button
+            owner-id="updates"
+            :selected="csbUpdatesSelected"
+            >{{ $t("software_center.updates") }}</cv-content-switcher-button
+          >
+        </cv-content-switcher>
 
-            <section v-if="['all', 'installed', 'updates'].includes(q.view)">
-              <div v-if="csbAllSelected">
-                <NsEmptyState
-                  v-if="!modules.length && !loading.modules"
-                  :title="$t('software_center.no_apps')"
-                  key="all-empty-state"
-                />
-                <AppList
-                  v-else
-                  :apps="modules"
-                  :isUpdatingAll="isUpdatingAll"
-                  :skeleton="loading.modules"
-                  @install="openInstallModal"
-                  key="all-app-list"
-                />
-              </div>
-              <div v-if="csbInstalledSelected">
-                <NsEmptyState
-                  v-if="!installedModules.length && !loading.modules"
-                  :title="$t('software_center.no_apps')"
-                  key="installed-empty-state"
-                />
-                <AppList
-                  v-else
-                  :apps="installedModules"
-                  :isUpdatingAll="isUpdatingAll"
-                  :skeleton="loading.modules"
-                  @install="openInstallModal"
-                  key="installed-app-list"
-                />
-              </div>
-              <div v-if="csbUpdatesSelected">
-                <!-- update all -->
-                <NsInlineNotification
-                  v-if="updateAllAppsTimeout"
-                  kind="info"
-                  :title="$t('software_center.update_will_start_in_a_moment')"
-                  :actionLabel="$t('common.cancel')"
-                  @action="cancelUpdateAll"
-                  :showCloseButton="false"
-                  :timer="updateAllAppsDelay"
-                />
-                <div
-                  v-if="updates.length && !updateAllAppsTimeout"
-                  class="toolbar"
-                >
-                  <NsButton
-                    kind="primary"
-                    :icon="Upgrade20"
-                    @click="willUpdateAll()"
-                    >{{ $t("software_center.update_all") }}</NsButton
-                  >
-                </div>
-                <NsEmptyState
-                  v-if="!updates.length && !loading.modules"
-                  :title="$t('software_center.system_up_to_date')"
-                  :animationData="RocketLottie"
-                  animationTitle="rocket"
-                  :loop="1"
-                  key="updates-empty-state"
-                />
-                <AppList
-                  v-else
-                  :apps="updates"
-                  :isUpdatingAll="isUpdatingAll"
-                  :skeleton="loading.modules"
-                  @install="openInstallModal"
-                  key="updates-app-list"
-                />
-              </div>
-            </section>
-            <!-- search results -->
-            <div v-if="q.view === 'search'">
-              <h6 class="search-results-title">
-                {{ $t("software_center.search_results") }}
-              </h6>
-              <AppList
-                v-if="searchResults.length"
-                :apps="searchResults"
-                :isUpdatingAll="isUpdatingAll"
-                :skeleton="loading.modules"
-                @install="openInstallModal"
-                key="search-app-list"
-              />
-              <NsEmptyState
-                v-else
-                :title="$t('software_center.no_apps_found')"
-                key="search-empty-state"
+        <section v-if="['all', 'installed', 'updates'].includes(q.view)">
+          <div v-if="csbAllSelected">
+            <NsEmptyState
+              v-if="!modules.length && !loading.modules"
+              :title="$t('software_center.no_apps')"
+              key="all-empty-state"
+            />
+            <AppList
+              v-else
+              :apps="modules"
+              :isUpdatingAll="isUpdatingAll"
+              :skeleton="loading.modules"
+              @install="openInstallModal"
+              key="all-app-list"
+              :light="true"
+            />
+          </div>
+          <div v-if="csbInstalledSelected">
+            <NsEmptyState
+              v-if="!installedModules.length && !loading.modules"
+              :title="$t('software_center.no_apps')"
+              key="installed-empty-state"
+            />
+            <AppList
+              v-else
+              :apps="installedModules"
+              :isUpdatingAll="isUpdatingAll"
+              :skeleton="loading.modules"
+              @install="openInstallModal"
+              key="installed-app-list"
+              :light="true"
+            />
+          </div>
+          <div v-if="csbUpdatesSelected">
+            <!-- update all -->
+            <NsInlineNotification
+              v-if="updateAllAppsTimeout"
+              kind="info"
+              :title="$t('software_center.update_will_start_in_a_moment')"
+              :actionLabel="$t('common.cancel')"
+              @action="cancelUpdateAll"
+              :showCloseButton="false"
+              :timer="updateAllAppsDelay"
+            />
+            <div v-if="updates.length && !updateAllAppsTimeout" class="toolbar">
+              <NsButton
+                kind="primary"
+                :icon="Upgrade20"
+                @click="willUpdateAll()"
+                >{{ $t("software_center.update_all") }}</NsButton
               >
-                <template #description>
-                  {{ $t("software_center.no_apps_found_description") }}
-                </template>
-              </NsEmptyState>
             </div>
-          </cv-tile>
+            <NsEmptyState
+              v-if="!updates.length && !loading.modules"
+              :title="$t('software_center.system_up_to_date')"
+              :animationData="RocketLottie"
+              animationTitle="rocket"
+              :loop="1"
+              key="updates-empty-state"
+            />
+            <AppList
+              v-else
+              :apps="updates"
+              :isUpdatingAll="isUpdatingAll"
+              :skeleton="loading.modules"
+              @install="openInstallModal"
+              key="updates-app-list"
+              :light="true"
+            />
+          </div>
+        </section>
+        <!-- search results -->
+        <div v-if="q.view === 'search'">
+          <h6 class="search-results-title">
+            {{ $t("software_center.search_results") }}
+          </h6>
+          <AppList
+            v-if="searchResults.length"
+            :apps="searchResults"
+            :isUpdatingAll="isUpdatingAll"
+            :skeleton="loading.modules"
+            @install="openInstallModal"
+            key="search-app-list"
+            :light="true"
+          />
+          <NsEmptyState
+            v-else
+            :title="$t('software_center.no_apps_found')"
+            :animationData="GhostLottie"
+            animationTitle="ghost"
+            :loop="1"
+            key="search-empty-state"
+          >
+            <template #description>
+              {{ $t("software_center.no_apps_found_description") }}
+            </template>
+          </NsEmptyState>
         </div>
       </div>
     </div>
@@ -230,9 +263,11 @@ export default {
       appToInstall: null,
       loading: {
         modules: true,
+        cleanRepositoriesCache: false,
       },
       error: {
         listModules: "",
+        cleanRepositoriesCache: "",
       },
     };
   },
@@ -427,6 +462,50 @@ export default {
     openInstallModal(app) {
       this.appToInstall = app;
       this.isShownInstallModal = true;
+    },
+    async cleanRepositoriesCache() {
+      this.loading.cleanRepositoriesCache = true;
+      this.error.cleanRepositoriesCache = "";
+      const taskAction = "clean-repositories-cache";
+
+      // register to task error
+      this.$root.$off(taskAction + "-aborted");
+      this.$root.$once(
+        taskAction + "-aborted",
+        this.cleanRepositoriesCacheAborted
+      );
+
+      // register to task completion
+      this.$root.$off(taskAction + "-completed");
+      this.$root.$once(
+        taskAction + "-completed",
+        this.cleanRepositoriesCacheCompleted
+      );
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.cleanRepositoriesCache = this.getErrorMessage(err);
+        return;
+      }
+    },
+    cleanRepositoriesCacheAborted(taskResult, taskContext) {
+      this.loading.cleanRepositoriesCache = false;
+      console.error(`${taskContext.action} aborted`, taskResult);
+    },
+    cleanRepositoriesCacheCompleted() {
+      this.loading.cleanRepositoriesCache = false;
+      this.listModules();
     },
   },
 };

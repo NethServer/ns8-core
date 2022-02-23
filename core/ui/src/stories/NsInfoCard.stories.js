@@ -1,5 +1,7 @@
 import { NsInfoCard, NsMenuItem, NsMenuDivider } from "@nethserver/ns8-ui-lib";
 import Application32 from "@carbon/icons-vue/es/application/32";
+import Edit20 from "@carbon/icons-vue/es/edit/20";
+import TrashCan20 from "@carbon/icons-vue/es/trash-can/20";
 
 export default {
   title: "Components/NsInfoCard",
@@ -56,6 +58,9 @@ Error.args = {
 const OverflowMenuTemplate = (args, { argTypes }) => ({
   props: Object.keys(argTypes),
   components: { NsInfoCard, NsMenuItem, NsMenuDivider },
+  data() {
+    return { Edit20, TrashCan20 };
+  },
   template:
     '<NsInfoCard v-bind="$props">\
         <template slot="menu">\
@@ -66,11 +71,11 @@ const OverflowMenuTemplate = (args, { argTypes }) => ({
             class="top-right-overflow-menu"\
           >\
             <cv-overflow-menu-item>\
-              <NsMenuItem icon="edit" label="Edit" />\
+              <NsMenuItem :icon="Edit20" label="Edit" />\
             </cv-overflow-menu-item>\
             <NsMenuDivider />\
             <cv-overflow-menu-item danger>\
-              <NsMenuItem icon="trash" label="Delete" />\
+              <NsMenuItem :icon="TrashCan20" label="Delete" />\
             </cv-overflow-menu-item>\
           </cv-overflow-menu>\
         </template>\

@@ -266,7 +266,8 @@
     "retrieve-cluster-backup": "Retrieve cluster backup",
     "restore-cluster": "Restore cluster",
     "read-backup-repositories": "Read backup repositories",
-    "restore-modules": "Restore apps"
+    "restore-modules": "Restore apps",
+    "clean-repositories-cache": "Reload software repos"
   },
   "network": {
     "title": "Network"
@@ -504,6 +505,7 @@
     "instance_label_tooltip": "You can assign the app instance an easy to remember name",
     "edit_instance_label": "Edit instance label",
     "app_managed_in": "This app is managed in",
+    "reload_software_repositories": "Reload software repos",
     "app_categories": {
       "collaboration": "Collaboration",
       "system_administration": "System administration",
