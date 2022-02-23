@@ -26,7 +26,6 @@ import sys
 import uuid
 import random
 from .exceptions import *
-from .handlers import _push_cancel_task_handler, _pop_cancel_task_handler
 
 async def _task_submission_check_client_idle(rdb, taskrq, max_idle_time):
     for client_item in await rdb.client_list('normal'):
@@ -81,12 +80,19 @@ async def run_redisclient(taskrq, **kwargs):
             'pushed': False,
         }
 
-        # Register signal handlers to post a cancel-task action:
-        loop = asyncio.get_running_loop()
-        def cancel_task_handler():
-            timeout = kwargs.get('cancel_task_timeout', 0)
-            loop.create_task(_cancel_task(rdb, taskrq['agent_id'], task_id, taskrq['parent'], timeout))
-        _push_cancel_task_handler(loop, cancel_task_handler)
+        def generate_cancel_handler():
+            return _cancel_task(
+                kwargs['endpoint'],
+                redis_username,
+                redis_password,
+                taskrq['agent_id'],
+                task_id,
+                taskrq['parent'],
+                kwargs.get('cancel_task_timeout', 0),
+            )
+
+        # Add a callback to post a cancel-task action:
+        kwargs['cancel_handler'].add_callback(generate_cancel_handler)
 
         # Context is initially locked. Unlock occurs when task has been
         # submitted by _acontrol_task:
@@ -97,8 +103,8 @@ async def run_redisclient(taskrq, **kwargs):
 
         done, pending = await asyncio.wait({tcontrol, tpoll}, return_when=asyncio.FIRST_COMPLETED)
 
-        # Clean up signal handlers
-        _pop_cancel_task_handler(loop, cancel_task_handler)
+        # Remove the cancel callback
+        kwargs['cancel_handler'].remove_callback(generate_cancel_handler)
 
         if tpoll in done:
             tcontrol.cancel()
@@ -108,21 +114,35 @@ async def run_redisclient(taskrq, **kwargs):
             tpoll.cancel()
             return tcontrol.result()
 
-async def _cancel_task(rdb, agent_id, task_id, parent_task, timeout = 2):
+async def _cancel_task(
+        endpoint,
+        username,
+        password,
+        agent_id,
+        task_id,
+        parent_task,
+        timeout,
+    ):
     """Push a cancel-task action
     """
-    print(f'Sending cancel-task request to {agent_id}/task/{task_id}', file=sys.stderr)
-    return await rdb.lpush(f"{agent_id}/tasks", json.dumps({
-        'id': str(uuid.uuid4()),
-        'action': 'cancel-task',
-        'data': {'task': task_id, 'timeout': timeout},
-        'parent': parent_task,
-        'extra': {
-            'title': f"{agent_id}/cancel-task",
-            'description': f"Terminate task {task_id}",
-            'isNotificationHidden': True,
-        },
-    }))
+    async with aioredis.from_url(
+        endpoint,
+        username=username,
+        password=password,
+        decode_responses=True,
+    ) as rdb:
+        print(f'Sending cancel-task request to {agent_id}/task/{task_id}', file=sys.stderr)
+        return await rdb.lpush(f"{agent_id}/tasks", json.dumps({
+            'id': str(uuid.uuid4()),
+            'action': 'cancel-task',
+            'data': {'task': task_id, 'timeout': timeout},
+            'parent': parent_task,
+            'extra': {
+                'title': f"{agent_id}/cancel-task",
+                'description': f"Terminate task {task_id}",
+                'isNotificationHidden': True,
+            },
+        }))
 
 async def _apoll_status(rdb, taskctx):
     while True:

@@ -18,29 +18,54 @@
 # along with NethServer.  If not, see COPYING.
 #
 
-import signal
+import asyncio
 
-# Global registry of cancel task handlers. Each task
-# submissions registers a cancel task handler instance.
-# If a TERM/INT signal is received, all handlers run
-handler_functions = set()
+class AsyncSignalHandler:
+    """Registry of cancel task handlers. Each task
+    submissions registers a cancel task handler instance.
+    If a signal is received, all handlers run.
 
-def _push_cancel_task_handler(loop, handler_function):
-    global handler_functions
-    if not handler_functions:
+    Usage:
+
+        with AsyncSignalHandler(asyncio.get_running_loop(), signal.SIGTERM) as handler:
+
+            # for some function f()...
+
+            handler.add_callback(f)
+
+            # ...
+
+            handler.remove_callback(f)
+
+
+    """
+    def __init__(self, loop, signal):
+        self.signal = signal
+        self.handler_generators = set()
+        self.loop = loop
+
+    def __enter__(self):
         def run_cancel_task_handlers():
-            loop.remove_signal_handler(signal.SIGTERM)
-            for hf in handler_functions:
-                hf()
-            handler_functions.clear()
-        loop.add_signal_handler(signal.SIGTERM, run_cancel_task_handlers)
-    handler_functions.add(handler_function)
+            handlers = [hgen() for hgen in self.handler_generators]
+            self.cleanup()
+            for hcoro in handlers:
+                asyncio.create_task(hcoro) # schedule the handler to run soon
 
-def _pop_cancel_task_handler(loop, handler_function):
-    global handler_functions
-    try:
-        handler_functions.remove(handler_function)
-    except KeyError:
-        pass
-    if not handler_functions:
-        loop.remove_signal_handler(signal.SIGTERM)
+        self.loop.add_signal_handler(self.signal, run_cancel_task_handlers)
+        return self
+
+    def __exit__(self, *args):
+        self.cleanup()
+
+    def cleanup(self):
+        self.handler_generators.clear()
+        self.loop.remove_signal_handler(self.signal)
+
+    def add_callback(self, handler_function):
+        self.handler_generators.add(handler_function)
+
+    def remove_callback(self, handler_function):
+        try:
+            self.handler_generators.remove(handler_function)
+        except KeyError:
+            pass
