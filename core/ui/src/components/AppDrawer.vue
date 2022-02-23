@@ -345,7 +345,7 @@ export default {
         this.isTransitioning = false;
       }, 300); // same duration as .slide-app-drawer transition
 
-      if (this.isAppDrawerShown && !this.loading.apps) {
+      if (this.isAppDrawerShown && !this.loading.apps && this.apps.length) {
         // set focus on app search
         this.focusElement("appSearch");
       } else {
@@ -359,7 +359,7 @@ export default {
       }
     },
     "loading.apps": function () {
-      if (!this.loading.apps && this.isAppDrawerShown) {
+      if (!this.loading.apps && this.isAppDrawerShown && this.apps.length) {
         // set focus on app search
         this.focusElement("appSearch");
       }
@@ -441,8 +441,11 @@ export default {
 
       for (let instanceList of Object.values(taskResult.output)) {
         for (let instance of instanceList) {
-          // skip instance if it's an account provider app
-          if (!instance.flags.includes("account_provider")) {
+          // skip instance if it's an account provider app or a core app
+          if (
+            !instance.flags.includes("account_provider") &&
+            !instance.flags.includes("core_module")
+          ) {
             apps.push(instance);
           }
         }
