@@ -17,14 +17,11 @@ Users can open modules UI from the App drawer or using Global search.
 Every NS8 module follows the same UI guidelines in order to provide a uniform user experience. Almost every module has at least these standard pages:
 - Status
 - Settings
-- Logs
 - About
 
 Status page is the landing page of the module, it should provide a dashboard displaying the current status of the module, including instance name, installation node and information about module systemd services.
 
 Settings page should contain a form to set and review module configuration.
-
-Logs page should display log entries relevant to the module, in order to support troubleshooting activity.
 
 About page should provide module meta-information such as documentation URL, source code and author information.
 
