@@ -1,6 +1,26 @@
 #!/bin/bash
 
 #
+# Copyright (C) 2022 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
+#
 # Erase data and uninstall the core scripts
 # Some files can be still left in place: look at this
 # script output for their paths.
@@ -31,14 +51,27 @@ userdel -r api-server
 echo "Wipe Redis DB"
 podman volume rm -f redis-data
 
-for modulehome in /var/lib/nethserver/*; do
+for modulehome in /var/lib/nethserver/*[0-9]; do
     if [[ ! -d ${modulehome} ]]; then
       continue
     fi
     moduleid=$(basename $modulehome)
     echo "Deleting rootfull module ${moduleid}..."
-    systemctl disable --now eventsgw@${moduleid} agent@${moduleid} && rm -rf "${modulehome}"
+    units=($(find /etc/systemd/system -type f -a \( \
+      -name "${moduleid}*.service" \
+      -o -name "backup*-${moduleid}.service" \
+      -o -name "backup*-${moduleid}.timer" \) \
+      -delete -printf '%f\n'))
+    systemctl disable --now "eventsgw@${moduleid}" "agent@${moduleid}" "${units[@]}"
+    rm -rf "${modulehome}"
 done
+
+echo "Deleting cluster and agent core modules"
+systemctl disable --now \
+  agent@node.service \
+  eventsgw@node.service \
+  agent@cluster.service
+rm -rf /var/lib/nethserver/cluster /var/lib/nethserver/node
 
 echo "Uninstalling the core image files"
 (
