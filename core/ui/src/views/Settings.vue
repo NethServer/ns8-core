@@ -6,7 +6,7 @@
       </div>
     </div>
     <div class="bx--row">
-      <div class="bx--col-md-4 bx--col-lg-4">
+      <div class="bx--col-md-4 bx--col-xlg-4">
         <NsTile
           :light="true"
           kind="clickable"
@@ -16,7 +16,7 @@
           <h6>{{ $t("settings.cluster") }}</h6>
         </NsTile>
       </div>
-      <div class="bx--col-md-4 bx--col-lg-4">
+      <div class="bx--col-md-4 bx--col-xlg-4">
         <NsTile
           :light="true"
           kind="clickable"

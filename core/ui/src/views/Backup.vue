@@ -104,21 +104,23 @@
       <!-- empty state repositories -->
       <div v-else-if="!repositories.length" class="bx--row">
         <div class="bx--col">
-          <NsEmptyState :title="$t('backup.no_backup_repository')">
-            <template #pictogram>
-              <HardDrivePictogram />
-            </template>
-            <template #description>
-              <div>{{ $t("backup.empty_state_repository_description") }}</div>
-              <NsButton
-                kind="primary"
-                :icon="Add20"
-                @click="showAddRepoModal()"
-                class="empty-state-button"
-                >{{ $t("backup.add_repository") }}
-              </NsButton>
-            </template>
-          </NsEmptyState>
+          <cv-tile kind="standard" :light="true">
+            <NsEmptyState :title="$t('backup.no_backup_repository')">
+              <template #pictogram>
+                <HardDrivePictogram />
+              </template>
+              <template #description>
+                <div>{{ $t("backup.empty_state_repository_description") }}</div>
+                <NsButton
+                  kind="primary"
+                  :icon="Add20"
+                  @click="showAddRepoModal()"
+                  class="empty-state-button"
+                  >{{ $t("backup.add_repository") }}
+                </NsButton>
+              </template>
+            </NsEmptyState>
+          </cv-tile>
         </div>
       </div>
       <template v-else>

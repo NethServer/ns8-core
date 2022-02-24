@@ -159,14 +159,19 @@
                 >{{ $t("software_center.update_all") }}</NsButton
               >
             </div>
-            <NsEmptyState
+            <cv-tile
               v-if="!updates.length && !loading.modules"
-              :title="$t('software_center.system_up_to_date')"
-              :animationData="RocketLottie"
-              animationTitle="rocket"
-              :loop="1"
-              key="updates-empty-state"
-            />
+              kind="standard"
+              :light="true"
+            >
+              <NsEmptyState
+                :title="$t('software_center.system_up_to_date')"
+                :animationData="RocketLottie"
+                animationTitle="rocket"
+                :loop="1"
+                key="updates-empty-state"
+              />
+            </cv-tile>
             <AppList
               v-else
               :apps="updates"
@@ -192,18 +197,19 @@
             key="search-app-list"
             :light="true"
           />
-          <NsEmptyState
-            v-else
-            :title="$t('software_center.no_apps_found')"
-            :animationData="GhostLottie"
-            animationTitle="ghost"
-            :loop="1"
-            key="search-empty-state"
-          >
-            <template #description>
-              {{ $t("software_center.no_apps_found_description") }}
-            </template>
-          </NsEmptyState>
+          <cv-tile v-else kind="standard" :light="true">
+            <NsEmptyState
+              :title="$t('software_center.no_apps_found')"
+              :animationData="GhostLottie"
+              animationTitle="ghost"
+              :loop="1"
+              key="search-empty-state"
+            >
+              <template #description>
+                {{ $t("software_center.no_apps_found_description") }}
+              </template>
+            </NsEmptyState>
+          </cv-tile>
         </div>
       </div>
     </div>
@@ -525,6 +531,5 @@ export default {
 .search-results-title {
   margin-top: $spacing-07;
   margin-bottom: $spacing-03;
-  color: $text-02;
 }
 </style>
