@@ -60,7 +60,6 @@ update_retvals = agent.tasks.runp(update_tasks,
     progress_callback = agent.get_progress_callback(31, 95),
 )
 
-grant_actions_data = []
 errors = 0
 appspath = '/var/lib/nethserver/cluster/ui/apps/'
 for idx, retval in enumerate(update_retvals):
@@ -70,15 +69,6 @@ for idx, retval in enumerate(update_retvals):
         print(agent.SD_ERR + f"Module instance \"{mid}\" task exception: {retval}", file=sys.stderr)
         errors += 1
         continue
-
-    # XXX Update permissions for the updated instance, even if the update could be failed
-    grant_actions_data.extend([
-        {"action": "*", "to": "owner", "on": f"module/{mid}"},
-        {"action": "list-*", "to": "reader", "on": f"module/{mid}"},
-        {"action": "get-*", "to": "reader", "on": f"module/{mid}"},
-        {"action": "show-*", "to": "reader", "on": f"module/{mid}"},
-        {"action": "read-*", "to": "reader", "on": f"module/{mid}"},
-    ])
 
     if retval['exit_code'] != 0:
         print(agent.SD_ERR + f"Module instance \"{mid}\" update failed with code {retval['exit_code']}", file=sys.stderr)
@@ -102,16 +92,6 @@ for idx, retval in enumerate(update_retvals):
         print(agent.SD_ERR + f"Module UI update failed for instance {mid}: {ex}", file=sys.stderr)
         errors += 1
         continue
-
-if grant_actions_data:
-    # Non-blocking task. Permissions refresh on completely updated
-    # instances:
-    agent.tasks.run_nowait(
-        agent_id = 'cluster',
-        action = 'grant-actions',
-        data = grant_actions_data,
-        endpoint = "redis://cluster-leader"
-    )
 
 agent.assert_exp(errors == 0)
 
