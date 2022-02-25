@@ -191,15 +191,20 @@ export default {
 
       for (let instanceList of Object.values(taskResult.output)) {
         for (let instance of instanceList) {
-          const openAppResult = {
-            name: instance.ui_name ? instance.ui_name : instance.id,
-            description: this.$t("shell.open_app", { app: instance.module }),
-            path: "/apps/" + instance.id,
-            source: instance.id,
-            tags: [],
-            label: instance.ui_name,
-          };
-          openAppResults.push(openAppResult);
+          if (
+            !instance.flags.includes("account_provider") &&
+            !instance.flags.includes("core_module")
+          ) {
+            const openAppResult = {
+              name: instance.ui_name ? instance.ui_name : instance.id,
+              description: this.$t("shell.open_app", { app: instance.module }),
+              path: "/apps/" + instance.id,
+              source: instance.id,
+              tags: [],
+              label: instance.ui_name,
+            };
+            openAppResults.push(openAppResult);
+          }
         }
       }
 
