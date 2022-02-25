@@ -25,6 +25,7 @@ package middleware
 import (
 	"github.com/pkg/errors"
 	"time"
+	"path/filepath"
 
 	"github.com/fatih/structs"
 	"github.com/gin-gonic/gin"
@@ -169,8 +170,9 @@ func InitJWT() *jwt.GinJWTMiddleware {
 				// check action authorization
 				actionAllowed := false
 				for _, authorizedAction := range authorizedActions {
-					if jsonTask.Action == authorizedAction {
-						actionAllowed = true
+					actionAllowed, _ = filepath.Match(authorizedAction, jsonTask.Action)
+					if actionAllowed {
+						break
 					}
 				}
 
