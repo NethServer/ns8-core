@@ -30,7 +30,7 @@ The basic `10restore_module` actually invokes the `module-restore` command.
 
 All backups are scheduled by systemd timers. Given a backup with id `1`, it is possible to retrieve the time status with:
 - rootless containers, eg. `dokuwiki1`, executed by `dokuwiki1` user: `systemctl --user status backup1.timer`
-- rootfull containers, eg. `samba1`, executed by `root` user: `systemctl status mybackup-samba1.timer`
+- rootfull containers, eg. `samba1`, executed by `root` user: `systemctl status backup1-samba1.timer`
 
 ## Include and exclude files
 
