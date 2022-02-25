@@ -73,6 +73,9 @@ systemctl disable --now \
   agent@cluster.service
 rm -rf /var/lib/nethserver/cluster /var/lib/nethserver/node
 
+echo "Removing main directories"
+rm -rf /usr/local/agent /var/lib/nethserver /etc/nethserver
+
 echo "Uninstalling the core image files"
 (
   while read image_entry; do
