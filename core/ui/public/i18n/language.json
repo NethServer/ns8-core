@@ -514,7 +514,10 @@
       "database": "Database"
     }
   },
-  "logs": {
+  "system_logs": {
+    "title": "System logs"
+  },
+  "audit_logs": {
     "title": "Audit logs",
     "start_date": "Start date",
     "end_date": "End date",

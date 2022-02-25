@@ -2,7 +2,7 @@
   <div class="bx--grid bx--grid--full-width">
     <div class="bx--row">
       <div class="bx--col-lg-16 page-title">
-        <h2>{{ $t("logs.title") }}</h2>
+        <h2>{{ $t("system_logs.title") }}</h2>
       </div>
     </div>
     <div class="bx--row">
@@ -23,14 +23,14 @@
               <cv-date-picker
                 kind="single"
                 :cal-options="calOptions"
-                :date-label="$t('logs.start_date')"
+                :date-label="$t('audit_logs.start_date')"
                 v-model="startDateString"
                 class="interval-date"
                 :invalid-message="error.startDate"
               >
               </cv-date-picker>
               <cv-time-picker
-                :label="$t('logs.start_time_label')"
+                :label="$t('audit_logs.start_time_label')"
                 :time.sync="startTime"
                 ampm="24"
                 :pattern="time24HourPatternString"
@@ -49,14 +49,14 @@
               <cv-date-picker
                 kind="single"
                 :cal-options="calOptions"
-                :date-label="$t('logs.end_date')"
+                :date-label="$t('audit_logs.end_date')"
                 v-model="endDateString"
                 class="interval-date"
                 :invalid-message="error.endDate"
               >
               </cv-date-picker>
               <cv-time-picker
-                :label="$t('logs.end_time_label')"
+                :label="$t('audit_logs.end_time_label')"
                 :time.sync="endTime"
                 ampm="24"
                 :pattern="time24HourPatternString"
@@ -74,41 +74,47 @@
             <cv-multi-select
               v-model="usersSelected"
               :options="users"
-              :title="$t('logs.users') + ' (' + $t('common.optional') + ')'"
-              :label="$t('logs.users_label')"
+              :title="
+                $t('audit_logs.users') + ' (' + $t('common.optional') + ')'
+              "
+              :label="$t('audit_logs.users_label')"
               :helper-text="usersHelperText"
             >
             </cv-multi-select>
             <NsInlineNotification
               v-if="error.auditUsers"
               kind="error"
-              :title="$t('logs.cannot_retrieve_audit_users')"
+              :title="$t('audit_logs.cannot_retrieve_audit_users')"
               :description="error.auditUsers"
               :showCloseButton="false"
             />
             <cv-multi-select
               v-model="actionsSelected"
               :options="actions"
-              :title="$t('logs.actions') + ' (' + $t('common.optional') + ')'"
-              :label="$t('logs.actions_label')"
+              :title="
+                $t('audit_logs.actions') + ' (' + $t('common.optional') + ')'
+              "
+              :label="$t('audit_logs.actions_label')"
               :helper-text="actionsHelperText"
             >
             </cv-multi-select>
             <NsInlineNotification
               v-if="error.auditActions"
               kind="error"
-              :title="$t('logs.cannot_retrieve_audit_actions')"
+              :title="$t('audit_logs.cannot_retrieve_audit_actions')"
               :description="error.auditActions"
               :showCloseButton="false"
             />
             <cv-text-input
-              :label="$t('logs.auditInfo') + ' (' + $t('common.optional') + ')'"
+              :label="
+                $t('audit_logs.auditInfo') + ' (' + $t('common.optional') + ')'
+              "
               v-model="auditInfo"
-              :placeholder="$t('logs.audit_info_placeholder')"
+              :placeholder="$t('audit_logs.audit_info_placeholder')"
             >
             </cv-text-input>
             <cv-number-input
-              :label="$t('logs.max_results')"
+              :label="$t('audit_logs.max_results')"
               min="1"
               v-model="maxResults"
               class="logs-max-results"
@@ -121,7 +127,7 @@
                 :icon="Search20"
                 :loading="loading.auditLogs"
                 :disabled="loading.auditLogs"
-                >{{ $t("logs.search_logs") }}</NsButton
+                >{{ $t("audit_logs.search_logs") }}</NsButton
               >
               <NsButton
                 kind="ghost"
@@ -139,7 +145,7 @@
           <NsInlineNotification
             v-if="error.auditLogs"
             kind="error"
-            :title="$t('logs.cannot_retrieve_audit_logs')"
+            :title="$t('audit_logs.cannot_retrieve_audit_logs')"
             :description="error.auditLogs"
             :showCloseButton="false"
           />
@@ -149,10 +155,10 @@
         <div class="bx--col-md-8">
           <NsEmptyState
             v-if="!this.tableRows.length && !loading.auditLogs"
-            :title="$t('logs.no_logs_found')"
+            :title="$t('audit_logs.no_logs_found')"
           >
             <template #description>{{
-              $t("logs.no_logs_found_description")
+              $t("audit_logs.no_logs_found_description")
             }}</template>
           </NsEmptyState>
           <div v-else>
@@ -235,7 +241,7 @@ import {
 } from "@nethserver/ns8-ui-lib";
 
 export default {
-  name: "Logs",
+  name: "SystemLogs",
   mixins: [
     DateTimeService,
     DataTableService,
@@ -244,7 +250,7 @@ export default {
     UtilService,
   ],
   pageTitle() {
-    return this.$t("logs.title");
+    return this.$t("audit_logs.title");
   },
   data() {
     return {
@@ -298,7 +304,7 @@ export default {
     },
     i18nTableColumns() {
       return this.tableColumns.map((column) => {
-        return this.$t("logs." + column);
+        return this.$t("audit_logs." + column);
       });
     },
   },
@@ -409,10 +415,10 @@ export default {
         );
 
         if (this.dateIsBefore(endLocal, startLocal)) {
-          this.error.startDate = this.$t("logs.invalid_interval");
-          this.error.startTime = this.$t("logs.invalid_interval");
-          this.error.endDate = this.$t("logs.invalid_interval");
-          this.error.endTime = this.$t("logs.invalid_interval");
+          this.error.startDate = this.$t("audit_logs.invalid_interval");
+          this.error.startTime = this.$t("audit_logs.invalid_interval");
+          this.error.endDate = this.$t("audit_logs.invalid_interval");
+          this.error.endTime = this.$t("audit_logs.invalid_interval");
 
           isValidationOk = false;
         }

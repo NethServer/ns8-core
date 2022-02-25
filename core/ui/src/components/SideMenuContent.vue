@@ -66,9 +66,19 @@
         </cv-side-nav-menu-item>
       </cv-side-nav-menu> -->
 
-      <cv-side-nav-link @click="goTo('/logs')" :active="isLinkActive('/logs')">
+      <cv-side-nav-link
+        @click="goTo('/system-logs')"
+        :active="isLinkActive('/system-logs')"
+      >
         <template v-slot:nav-icon><Catalog20 /></template>
-        {{ $t("logs.title") }}
+        {{ $t("system_logs.title") }}
+      </cv-side-nav-link>
+      <cv-side-nav-link
+        @click="goTo('/audit-logs')"
+        :active="isLinkActive('/audit-logs')"
+      >
+        <template v-slot:nav-icon><Catalog20 /></template>
+        {{ $t("audit_logs.title") }}
       </cv-side-nav-link>
       <cv-side-nav-link
         @click="goTo('/settings')"
