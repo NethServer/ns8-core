@@ -168,9 +168,11 @@ roles assignment.
 In normal conditions module actions must be assigned to `roles`, and roles
 must be granted to agents and users.
 
-In Redis, a SET contains the actions assigned to a role. If default
+In Redis, a SET defines the actions assigned to a role. If default
 assignments are not enough the set can be modified by the module during
-the `create-module` action.
+the `create-module` action.  A set element represent an exact action name
+or an action name pattern, expressed in [glob-pattern
+syntax](https://pkg.go.dev/path/filepath#Match) (e.g. `get-*`).
 
 The following Bash command in the `create-module` action allows agents
 with the `actionsreader` role to run `list-actions` on `AGENT_ID` (e.g.
@@ -180,7 +182,13 @@ with the `actionsreader` role to run `list-actions` on `AGENT_ID` (e.g.
     redis-exec SADD "${AGENT_ID}/roles/actionsreader" "list-actions"
 ```
 
-Now it is possible to grant the `actionsreader` on `module/mymod1` to
+Same as above, but to allow also any other action with name prefix `list-`:
+
+```sh
+    redis-exec SADD "${AGENT_ID}/roles/actionsreader" "list-*"
+```
+
+Now it is possible to grant the role `actionsreader` on `module/mymod1` to
 another agent (e.g. `module/authmod2`). This is the corresponding Redis command:
 
     HSET roles/module/authmod2 module/mymod1 actionsreader
