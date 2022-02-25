@@ -20,7 +20,6 @@
 
 import fnmatch
 import agent
-import agent.tasks
 
 def _lookup_grant_on(rdb, agent_pattern):
     """
@@ -44,21 +43,6 @@ def _lookup_grant_to(rdb, role_pattern):
             results.append(key[pos+7:])
     return results
 
-def _lookup_actions(rdb, agent_id):
-    """
-    Retrieve the available actions from agent_id
-    """
-    list_actions_result = agent.tasks.run(
-        agent_id=agent_id,
-        action='list-actions',
-        data={},
-        check_idle_time=0, # disable idle check and wait until the agent is up
-        endpoint="redis://cluster-leader", # require "cluster" credentials
-    )
-    if list_actions_result['exit_code'] != 0:
-        return []
-    return list_actions_result['output']
-
 def _change_role_definition(rdb, revoke, action_clause, on_clause, to_clause):
     if "*" in on_clause:
         on_clause_list = _lookup_grant_on(rdb, on_clause)
@@ -72,19 +56,11 @@ def _change_role_definition(rdb, revoke, action_clause, on_clause, to_clause):
 
     pipe = rdb.pipeline()
     for onk in on_clause_list:
-        if "*"  in action_clause:
-            action_clause_list = fnmatch.filter(_lookup_actions(rdb, onk), action_clause)
-        else:
-            action_clause_list = [action_clause]
-
-        if len(action_clause_list) == 0:
-            continue
-
         for tok in to_clause_list:
             if revoke:
-                pipe.srem(f'{onk}/roles/{tok}', *action_clause_list)
+                pipe.srem(f'{onk}/roles/{tok}', action_clause)
             else:
-                pipe.sadd(f'{onk}/roles/{tok}', *action_clause_list)
+                pipe.sadd(f'{onk}/roles/{tok}', action_clause)
     pipe.execute()
 
 def grant(rdb, action_clause, on_clause, to_clause):
