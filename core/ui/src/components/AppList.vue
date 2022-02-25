@@ -8,7 +8,7 @@
             :key="index"
             class="bx--col-md-4 bx--col-max-4"
           >
-            <cv-tile kind="standard" class="app">
+            <cv-tile kind="standard" class="app" :light="light">
               <cv-skeleton-text
                 :paragraph="true"
                 :line-count="9"
@@ -24,7 +24,12 @@
             :key="index"
             class="bx--col-md-4 bx--col-max-4"
           >
-            <cv-tile kind="standard" @click="showAppInfo(app)" class="app">
+            <cv-tile
+              kind="standard"
+              @click="showAppInfo(app)"
+              class="app"
+              :light="light"
+            >
               <div class="app-logo app-row">
                 <a @click="showAppInfo(app)">
                   <img
@@ -110,6 +115,7 @@ export default {
     },
     isUpdatingAll: Boolean,
     skeleton: Boolean,
+    light: Boolean,
   },
   data() {
     return {

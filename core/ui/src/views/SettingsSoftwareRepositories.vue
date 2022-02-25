@@ -175,7 +175,10 @@
                     <cv-data-table-cell>
                       <cv-overflow-menu flip-menu class="table-overflow-menu">
                         <cv-overflow-menu-item @click="showEditRepoModal(row)">
-                          <NsMenuItem icon="edit" :label="$t('common.edit')" />
+                          <NsMenuItem
+                            :icon="Edit20"
+                            :label="$t('common.edit')"
+                          />
                         </cv-overflow-menu-item>
                         <NsMenuDivider />
                         <cv-overflow-menu-item
@@ -183,7 +186,7 @@
                           @click="willDeleteRepository(row)"
                         >
                           <NsMenuItem
-                            icon="trash"
+                            :icon="TrashCan20"
                             :label="$t('common.delete')"
                           />
                         </cv-overflow-menu-item>

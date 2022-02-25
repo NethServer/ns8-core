@@ -117,7 +117,10 @@
                       danger
                       @click="willDeleteUnconfiguredDomain(unconfiguredDomain)"
                     >
-                      <NsMenuItem icon="trash" :label="$t('common.delete')" />
+                      <NsMenuItem
+                        :icon="TrashCan20"
+                        :label="$t('common.delete')"
+                      />
                     </cv-overflow-menu-item>
                   </cv-overflow-menu>
                 </template>
@@ -179,21 +182,23 @@
         <!-- empty state -->
         <div v-if="!domains.length" class="bx--row">
           <div class="bx--col">
-            <NsEmptyState :title="$t('domains.no_domain_configured')">
-              <template #pictogram>
-                <GroupPictogram />
-              </template>
-              <template #description>
-                <div>{{ $t("domains.empty_state_domains_description") }}</div>
-                <NsButton
-                  kind="primary"
-                  :icon="Add20"
-                  @click="showCreateDomainModal()"
-                  class="empty-state-button"
-                  >{{ $t("domains.create_domain") }}
-                </NsButton>
-              </template>
-            </NsEmptyState>
+            <cv-tile kind="standard" :light="true">
+              <NsEmptyState :title="$t('domains.no_domain_configured')">
+                <template #pictogram>
+                  <GroupPictogram />
+                </template>
+                <template #description>
+                  <div>{{ $t("domains.empty_state_domains_description") }}</div>
+                  <NsButton
+                    kind="primary"
+                    :icon="Add20"
+                    @click="showCreateDomainModal()"
+                    class="empty-state-button"
+                    >{{ $t("domains.create_domain") }}
+                  </NsButton>
+                </template>
+              </NsEmptyState>
+            </cv-tile>
           </div>
         </div>
         <template v-else>
@@ -227,7 +232,10 @@
                       danger
                       @click="showDeleteDomainModal(domain)"
                     >
-                      <NsMenuItem icon="trash" :label="$t('common.delete')" />
+                      <NsMenuItem
+                        :icon="TrashCan20"
+                        :label="$t('common.delete')"
+                      />
                     </cv-overflow-menu-item>
                   </cv-overflow-menu>
                 </template>
