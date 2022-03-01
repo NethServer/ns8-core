@@ -26,7 +26,7 @@ import ()
 
 type SocketAction struct {
 	Action  string      `json:"action" structs:"action"`
-	Payload interface{} `json:"data" structs:"data"`
+	Payload interface{} `json:"payload" structs:"payload"`
 }
 
 type LogsStartAction struct {
@@ -41,5 +41,6 @@ type LogsStartAction struct {
 }
 
 type LogsStopAction struct {
+	Id  string `json:"id" structs:"id"`
 	Pid string `json:"pid" structs:"pid"`
 }

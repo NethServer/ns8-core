@@ -149,10 +149,12 @@ OUTPUT
 
 #### logs-stop
 ```json
+INPUT
 {
-   "action":"logs-stop",
-   "payload":{
-      "pid":"14088"
+   "action": "logs-stop",
+   "payload": {
+      "id": "2fd5b630-3d27-4b88-ac11-ad2d09f4bbd7",
+      "pid": "14088"
    }
 }
 ```
@@ -160,6 +162,27 @@ OUTPUT
 - `action`: fixed to `logs-start`
 - `payload`: payload of the action
   - `pid`: contains the pid of the process that reads log
+
+```json
+OUTPUT
+{
+   "name": "logs-stop",
+   "payload": {
+      "id": "2fd5b630-3d27-4b88-ac11-ad2d09f4bbd7",
+      "pid": "14431",
+      "message": "logs follow stopped"
+   },
+   "timestamp":"2022-03-01T09:01:41.698943069Z",
+   "type":"action"
+}
+```
+
+- `name`: is the name of the action
+- `payload`: contains the response logs
+  - `id`: id of the trackes log stream
+  - `pid`: is the pid of the process that actually reads log
+- `timestamp`: timestamp of the action
+- `type`: used to identify the websocket outputs
 
 ### Task events
 The websocket also listens for every event of every task launched within the cluster and reports the payload through the socket channel.

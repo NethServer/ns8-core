@@ -61,7 +61,7 @@ func Action(socketAction models.SocketAction, s *melody.Session) {
 			utils.LogError(errors.Wrap(errKill, "[SOCKET] error in command kill"))
 		}
 
-		broadcastToAll("logs-stop", gin.H{"pid": logsAction.Pid, "message": "logs follow stopped"})
+		broadcastToAll("logs-stop", gin.H{"id": logsAction.Id, "pid": logsAction.Pid, "message": "logs follow stopped"})
 
 	case "logs-start":
 		// decode data payload into specific action
