@@ -46,7 +46,7 @@ func Action(socketAction models.SocketAction, s *melody.Session) {
 		var logsAction models.LogsStopAction
 
 		// marshal data payload into json string
-		jsonStr, err := json.Marshal(socketAction.Data)
+		jsonStr, err := json.Marshal(socketAction.Payload)
 		if err != nil {
 			utils.LogError(errors.Wrap(err, "[SOCKET] error in json marshal logs-stop action"))
 		}
@@ -61,14 +61,14 @@ func Action(socketAction models.SocketAction, s *melody.Session) {
 			utils.LogError(errors.Wrap(errKill, "[SOCKET] error in command kill"))
 		}
 
-		broadcastToAll("logs-stop", gin.H{"pid": logsAction.Pid, "data": "logs follow stopped"})
+		broadcastToAll("logs-stop", gin.H{"pid": logsAction.Pid, "message": "logs follow stopped"})
 
 	case "logs-start":
 		// decode data payload into specific action
 		var logsAction models.LogsStartAction
 
 		// marshal data payload into json string
-		jsonStr, err := json.Marshal(socketAction.Data)
+		jsonStr, err := json.Marshal(socketAction.Payload)
 		if err != nil {
 			utils.LogError(errors.Wrap(err, "[SOCKET] error in json marshal logs-start action"))
 		}
@@ -149,7 +149,7 @@ func Action(socketAction models.SocketAction, s *melody.Session) {
 				go func() {
 					// foreach command outputs send to websocket
 					for scannerStdOut.Scan() {
-						broadcastToAll("logs-start", gin.H{"pid": pid, "data": scannerStdOut.Text()})
+						broadcastToAll("logs-start", gin.H{"id": logsAction.Id, "pid": pid, "message": scannerStdOut.Text()})
 					}
 				}()
 
@@ -181,7 +181,7 @@ func Action(socketAction models.SocketAction, s *melody.Session) {
 					utils.LogError(errors.Wrap(err, "[SOCKET] error executing Cmd for dump"))
 				}
 
-				broadcastToAll("logs-start", gin.H{"pid": "", "data": string(out)})
+				broadcastToAll("logs-start", gin.H{"id": logsAction.Id, "pid": "", "message": string(out)})
 			}()
 		}
 

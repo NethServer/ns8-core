@@ -25,11 +25,12 @@ package models
 import ()
 
 type SocketAction struct {
-	Action string      `json:"action" structs:"action"`
-	Data   interface{} `json:"data" structs:"data"`
+	Action  string      `json:"action" structs:"action"`
+	Payload interface{} `json:"data" structs:"data"`
 }
 
 type LogsStartAction struct {
+	Id         string `json:"id" structs:"id"`
 	Mode       string `json:"mode" structs:"mode"`
 	Lines      string `json:"lines" structs:"lines"`
 	Filter     string `json:"filter" structs:"filter"`

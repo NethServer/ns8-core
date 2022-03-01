@@ -102,7 +102,8 @@ To execute commands via websocket, you need to send a payload to the websocket a
 INPUT
 {
    "action": "logs-start",
-   "data": {
+   "payload": {
+      "id": "2fd5b630-3d27-4b88-ac11-ad2d09f4bbd7",
       "mode": "dump",
       "lines": "25",
       "filter": "",
@@ -115,7 +116,8 @@ INPUT
 ```
 
 - `action`: fixed to `logs-start`
-- `data`: payload of the action
+- `payload`: payload of the action
+  - `id`: used to track multiple stream output (used in UI to get different logs stream in different panes)
   - `mode`: must be `tail` or `dump` - `string` (choose how to retrieve logs)
   - `lines`: could be empty or a number - `string` (could be empty in `tail` mode)
   - `filter`: could be empty or string - `string` (used to search specific words inside logs)
@@ -128,26 +130,35 @@ INPUT
 ```json
 OUTPUT
 {
-   "data":"2022-02-17T20:47:24+01:00 fedora33.n2.edoardo --\u003e [GIN-debug] Listening and serving HTTP on 127.0.0.1:8080",
-   "pid":"14431"
+   "name": "logs-start",
+   "payload": {
+      "message": "2022-02-17T20:47:24+01:00 fedora33.n2.edoardo --\u003e [GIN-debug] Listening and serving HTTP on 127.0.0.1:8080",
+      "pid": "14431"
+   },
+   "timestamp":"2022-03-01T09:01:41.698943069Z",
+   "type":"action"
 }
 ```
 
-- `data`: contains the log information
-- `pid`: is the pid of the process that actually reads log
+- `name`: is the name of the action
+- `payload`: contains the response logs
+  - `message`: contains the log message
+  - `pid`: is the pid of the process that actually reads log
+- `timestamp`: timestamp of the action
+- `type`: used to identify the websocket outputs
 
 #### logs-stop
 ```json
 {
    "action":"logs-stop",
-   "data":{
+   "payload":{
       "pid":"14088"
    }
 }
 ```
 
 - `action`: fixed to `logs-start`
-- `data`: payload of the action
+- `payload`: payload of the action
   - `pid`: contains the pid of the process that reads log
 
 ### Task events
