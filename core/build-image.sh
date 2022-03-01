@@ -66,6 +66,7 @@ cleanup_list+=("${core_env_file}")
 printf "CORE_IMAGE=ghcr.io/nethserver/core:%s\n" "${IMAGETAG:-latest}" >> "${core_env_file}"
 printf "REDIS_IMAGE=ghcr.io/nethserver/redis:%s\n" "${IMAGETAG:-latest}" >> "${core_env_file}"
 printf "RCLONE_IMAGE=docker.io/rclone/rclone:1.57\n" >> "${core_env_file}"
+printf "RSYNC_IMAGE=ghcr.io/nethserver/rsync:%s\n" "${IMAGETAG:-latest}" >> "${core_env_file}"
 chmod -c 644 "${core_env_file}"
 source "${core_env_file}"
 buildah add "${container}" ${core_env_file} /etc/nethserver/core.env
@@ -115,6 +116,19 @@ reponame="restic"
 buildah run ${container} -- apk add --no-cache restic
 buildah config --cmd [] ${container}
 buildah config --entrypoint '["/usr/bin/restic"]' ${container}
+buildah commit "${container}" "${repobase}/${reponame}"
+buildah rm "${container}"
+images+=("${repobase}/${reponame}")
+
+echo "Building the rsync image..."
+container=$(buildah from alpine)
+reponame="rsync"
+buildah run ${container} -- apk add --no-cache rsync
+buildah add "${container}" rsync/entrypoint.sh /entrypoint.sh
+buildah config \
+    --entrypoint='["/entrypoint.sh"]' \
+    --cmd='["rsync", "--daemon", "--no-detach"]' \
+    ${container}
 buildah commit "${container}" "${repobase}/${reponame}"
 buildah rm "${container}"
 images+=("${repobase}/${reponame}")
