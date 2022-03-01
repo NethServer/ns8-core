@@ -28,6 +28,7 @@ import (
 	"fmt"
 	"os/exec"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/olahol/melody"
@@ -59,6 +60,8 @@ func Action(socketAction models.SocketAction, s *melody.Session) {
 		if errKill := cmd.Process.Kill(); errKill != nil {
 			utils.LogError(errors.Wrap(errKill, "[SOCKET] error in command kill"))
 		}
+
+		broadcastToAll("logs-stop", gin.H{"pid": logsAction.Pid, "data": "logs follow stopped"})
 
 	case "logs-start":
 		// decode data payload into specific action
@@ -146,7 +149,7 @@ func Action(socketAction models.SocketAction, s *melody.Session) {
 				go func() {
 					// foreach command outputs send to websocket
 					for scannerStdOut.Scan() {
-						broadcastToAll(gin.H{"pid": pid, "data": scannerStdOut.Text()})
+						broadcastToAll("logs-start", gin.H{"pid": pid, "data": scannerStdOut.Text()})
 					}
 				}()
 
@@ -178,22 +181,29 @@ func Action(socketAction models.SocketAction, s *melody.Session) {
 					utils.LogError(errors.Wrap(err, "[SOCKET] error executing Cmd for dump"))
 				}
 
-				broadcastToAll(gin.H{"pid": "", "data": string(out)})
+				broadcastToAll("logs-start", gin.H{"pid": "", "data": string(out)})
 			}()
 		}
 
 	}
 }
 
-func broadcastToAll(msg interface{}) {
+func broadcastToAll(name string, msg interface{}) {
+	// create event object
+	event := &models.Event{}
+	event.Name = name
+	event.Timestamp = time.Now().UTC()
+	event.Payload = msg
+	event.Type = "action"
+
 	// convert interface to json string
-	jsonStr, err := json.Marshal(msg)
+	actionJSON, err := json.Marshal(event)
 	if err != nil {
 		utils.LogError(errors.Wrap(err, "[SOCKET] error converting interface msg to broadcast"))
 	}
 
 	if clientSession, ok := Connections["/ws"]; ok {
 		// Broadcast to all sessions
-		socketConnection.BroadcastMultiple([]byte(jsonStr), clientSession)
+		socketConnection.BroadcastMultiple(actionJSON, clientSession)
 	}
 }
