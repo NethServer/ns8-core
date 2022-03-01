@@ -57,11 +57,15 @@ func Action(socketAction models.SocketAction, s *melody.Session) {
 		}
 
 		cmd := Commands[s.Request.Header["Sec-Websocket-Key"][0]][logsAction.Pid]
-		if errKill := cmd.Process.Kill(); errKill != nil {
-			utils.LogError(errors.Wrap(errKill, "[SOCKET] error in command kill"))
-		}
 
-		broadcastToAll("logs-stop", gin.H{"id": logsAction.Id, "pid": logsAction.Pid, "message": "logs follow stopped"})
+		// check if specific pid exists and command is valid
+		if cmd != nil {
+			if errKill := cmd.Process.Kill(); errKill != nil {
+				utils.LogError(errors.Wrap(errKill, "[SOCKET] error in command kill"))
+			}
+
+			broadcastToAll("logs-stop", gin.H{"id": logsAction.Id, "pid": logsAction.Pid, "message": "logs follow stopped"})
+		}
 
 	case "logs-start":
 		// decode data payload into specific action
