@@ -1,0 +1,50 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2022 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
+import socket
+import agent
+import json
+import time
+import sys
+
+request = json.load(sys.stdin)
+address = request['address']
+port = int(request['port'])
+replace = bool(request['replace'])
+username, password = request['credentials']
+
+timeout = 5 # seconds
+
+print(f"Dialling {address}:{port}...", file=sys.stderr)
+
+for attempt in range(60): # 5s*60 = 5 minutes of attempts
+    try:
+        socket.create_connection((address, port), timeout).close()
+        break
+    except Exception as ex:
+        print(agent.SD_DEBUG + str(ex), file=sys.stderr)
+
+    time.sleep(timeout)
+else:
+    sys.exit(1)
+
+print(f"Connection with {address}:{port} established: the server is ready.", file=sys.stderr)

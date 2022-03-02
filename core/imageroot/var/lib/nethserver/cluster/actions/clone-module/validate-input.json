@@ -1,0 +1,38 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "clone-module input",
+    "$id": "http://schema.nethserver.org/cluster/clone-module-input.json",
+    "description": "Input schema of the clone-module action",
+    "examples": [
+        {
+            "module": "dokuwiki1",
+            "node": 1,
+            "replace": false
+        }
+    ],
+    "type": "object",
+    "required": [
+        "module",
+        "replace",
+        "node"
+    ],
+    "properties": {
+        "module": {
+            "title": "Module ID",
+            "description": "The identifier of the module to be cloned",
+            "type":"string",
+            "minLength": 1
+        },
+        "node": {
+            "title": "Node ID",
+            "description": "Node identifier where the clone is created",
+            "type": "integer",
+            "minimum": 1
+        },
+        "replace": {
+            "title": "Replace flag",
+            "description": "If set to true, the clone receives the original UUID and the original module is erased. If false, the clone is just a copy of the original module.",
+            "type": "boolean"
+        }
+    }
+}

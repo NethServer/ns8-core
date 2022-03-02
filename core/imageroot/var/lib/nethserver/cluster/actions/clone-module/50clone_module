@@ -1,0 +1,131 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2022 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
+import agent
+import sys
+import os
+import agent.tasks
+import json
+
+request = json.load(sys.stdin)
+
+# source
+smid = request['module']
+replace = request.get('replace', False)
+
+# destination
+node_id = int(request['node'])
+
+rdb = agent.redis_connect(privileged=True)
+
+secret = str(os.getpid()) + os.getenv('AGENT_TASK_ID')
+original_environment = rdb.hgetall(f'module/{smid}/environment')
+rsyncd_addr = rdb.hget(f'node/{node_id}/vpn', 'ip_address')
+agent.assert_exp(rsyncd_addr)
+
+# Retrieve the list of volume names from the source module
+list_volumes_result = agent.tasks.run(f"module/{smid}", "list-volumes",
+    endpoint="redis://cluster-leader",
+    progress_callback=agent.get_progress_callback(2, 12)
+)
+agent.assert_exp(list_volumes_result['exit_code'] == 0) # list-volumes is successful
+svolumes = list_volumes_result['output']
+
+# Create the destination  module
+add_module_result = agent.tasks.run("cluster", "add-module",
+    data={
+        "image": original_environment['IMAGE_URL'],
+        "node": node_id,
+    }, 
+    endpoint="redis://cluster-leader",
+    progress_callback=agent.get_progress_callback(13, 25),
+)
+agent.assert_exp(add_module_result['exit_code'] == 0) # add-module is successful
+
+dmid = add_module_result['output']['module_id'] # Destination module ID
+rsyncd_port = int(rdb.incrby(f'node/{node_id}/tcp_ports_sequence', 1)) # Allocate a TCP port for rsyncd
+agent.assert_exp(rsyncd_port > 0) # valid destination port number
+
+# Rootfull modules require a volume name remapping:
+is_rootfull = rdb.sismember(f'module/{smid}/flags', 'rootfull')
+if is_rootfull:
+    dvolumes = []
+    for xvol in svolumes:
+        if xvol.startswith(smid + '-'): # replace the MODULE_ID prefix
+            dvolumes.append(dmid + xvol.removeprefix(smid))
+else:
+    dvolumes = svolumes
+
+# Prepare the task for the destination module (server)
+server_task = {
+    "agent_id": "module/" + dmid,
+    "action": "clone-module",
+    "data": {
+        "replace": replace,
+        "credentials": [smid, secret],
+        "environment": original_environment,
+        "port": rsyncd_port,
+        "volumes": dvolumes,
+    },
+}
+
+# Prepare the task for the source module (client)
+client_task = {
+    "agent_id": "module/" + smid,
+    "action": "transfer-state",
+    "data": {
+        "replace": replace,
+        "credentials": [smid, secret],
+        "address": rsyncd_addr,
+        "port": rsyncd_port,
+    }
+}
+
+# Send and receive tasks run in parallel until both finish
+clone_errors = agent.tasks.runp_brief([server_task, client_task],
+    endpoint="redis://cluster-leader",
+    progress_callback=agent.get_progress_callback(26, 94),
+)
+
+if clone_errors > 0:
+    sys.exit(1)
+
+# Copy the UI module name ui_name
+ui_name = rdb.get(f'module/{smid}/ui_name')
+if not ui_name is None:
+    rdb.set(f'module/{dmid}/ui_name', ui_name)
+
+# Erase existing module
+if replace:
+    remove_retval = agent.tasks.run("cluster", "remove-module",
+        data={
+            "module_id": smid,
+            "preserve_data": False
+        },
+        endpoint="redis://cluster-leader",
+        progress_callback=agent.get_progress_callback(95, 98),
+    )
+    if remove_retval['exit_code'] != 0:
+        print(f"Removal of module/{smid} has failed!")
+        sys.exit(1)
+
+json.dump(add_module_result['output'], fp=sys.stdout)

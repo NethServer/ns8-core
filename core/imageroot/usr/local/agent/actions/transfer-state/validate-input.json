@@ -1,0 +1,50 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "transfer-state input",
+    "$id": "http://schema.nethserver.org/module/transfer-state-input.json",
+    "description": "Transfer the module state to another module instance",
+    "examples": [
+        {
+            "replace": true,
+            "credentials": ["dokuwiki1", "s3cr3t"],
+            "address": "10.5.4.3",
+            "port": 20021
+        }
+    ],
+    "type":"object",
+    "required": [
+        "replace",
+        "credentials",
+        "address",
+        "port"
+    ],
+    "properties": {
+        "replace": {
+            "title": "Replace flag",
+            "description": "If set to true the state cannot be modified after the transfer is completed",
+            "type": "boolean"
+        },
+        "credentials": {
+            "title": "Rsyncd service credentials",
+            "description": "An array with two elements: username, password",
+            "type":"array",
+            "maxItems": 2,
+            "minItems": 2,
+            "items": {
+                "type": "string",
+                "minLength": 1
+            }
+        },
+        "address": {
+            "title": "Rsyncd remote address",
+            "description": "It must be an host name or IP address",
+            "minLength": 1,
+            "type":"string"
+        },
+        "port": {
+            "title": "Rsyncd remote TCP port number",
+            "type":"integer",
+            "minimum": 1
+        }
+    }
+}
