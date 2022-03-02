@@ -174,6 +174,28 @@ def run_restic(rdb, repository, repo_path, podman_args, restic_args, **kwargs):
 
     return subprocess.run(podman_cmd, **kwargs)
 
+def get_existing_volume_args():
+    """Return a list of --volume arguments for Podman run and similar. The argument values
+    are built from the list of available volumes of the module.
+    """
+    volume_args = {}
+    module_is_rootfull = os.geteuid() == 0
+    module_id = os.environ['MODULE_ID']
+    volume_args['_statedir'] = f"--volume={os.environ['AGENT_STATE_DIR']}:/srv/state"
+    with subprocess.Popen(['podman', 'volume', 'ls', '--format=json'], stdout=subprocess.PIPE) as vproc:
+        volumes = [vobj['Name'] for vobj in json.load(vproc.stdout)]
+
+    for vname in volumes:
+        if module_is_rootfull:
+            if not vname.startswith(module_id + '-'):
+                continue # skip volume if the prefix is not MODULE_ID
+            vdir = vname.removeprefix(module_id + '-')
+        else:
+            vdir = vname # 1-1 mapping for rootless modules
+        volume_args[vname] = f"--volume={vname}:/srv/volumes/{vdir}"
+
+    return list(volume_args.values())
+
 def get_state_volume_args():
     """Return a list of --volume arguments for Podman run and similar. The argument values
     are built from the module etc/state-include.conf file, if available, otherwise return

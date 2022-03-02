@@ -1,0 +1,20 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "List module volumes",
+    "$id": "http://schema.nethserver.org/agent/list-volumes-output.json",
+    "examples": [
+        [
+            {
+                "name": "dokuwiki-data",
+                "created": "2021-07-19 10:19:45.528366456 +0200 CEST"
+            }
+        ]
+    ],
+    "type": "array",
+    "description": "A list of Podman volume names of the current module",
+    "items": {
+        "type": "string",
+        "description": "Podman volume name",
+        "minLength": 1
+    }
+}

@@ -1,0 +1,94 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "clone-module input",
+    "$id": "http://schema.nethserver.org/module/clone-module-input.json",
+    "description": "Clone the module state received from rsync",
+    "examples": [
+        {
+            "credentials": [
+                "dokuwiki1",
+                "s3cr3t"
+            ],
+            "environment": {
+                "IMAGE_URL": "ghcr.io/nethserver/dokuwiki:latest",
+                "MODULE_UUID": "f5d24fcd-819c-4b1d-98ad-a1b2ebcee8cf",
+                "DOKUWIKI_IMAGE": "docker.io/bitnami/dokuwiki:20200729.0.0-debian-10-r299",
+                "DOKUWIKI_WIKI_NAME": "mywiki",
+                "DOKUWIKI_USERNAME": "admin",
+                "DOKUWIKI_PASSWORD": "pass",
+                "DOKUWIKI_EMAIL": "davidep@nethesis.it",
+                "DOKUWIKI_FULL_NAME": "Wiki Admin",
+                "PHP_ENABLE_OPCACHE": "1",
+                "PHP_MEMORY_LIMIT": "512M",
+                "TRAEFIK_HOST": "mywiki.dp.nethserver.net",
+                "TRAEFIK_HTTP2HTTPS": "False",
+                "TRAEFIK_LETS_ENCRYPT": "False"
+            },
+            "port": 20027,
+            "volumes": [
+                "dokuwiki-data"
+            ],
+            "replace": false
+        }
+    ],
+    "type": "object",
+    "required": [
+        "credentials",
+        "replace",
+        "environment",
+        "volumes",
+        "port"
+    ],
+    "properties": {
+        "volumes": {
+            "title": "Initial volume set where the module state is stored",
+            "type": "array",
+            "items": {
+                "type": "string",
+                "title": "Name of the volume element"
+            }
+        },
+        "port": {
+            "title": "Rsyncd TCP port number",
+            "type": "integer",
+            "minimum": 1
+        },
+        "environment": {
+            "type": "object",
+            "title": "Environment backup",
+            "description": "Copy of the environment of the original module",
+            "properties": {
+                "IMAGE_URL": {
+                    "type": "string",
+                    "description": "URL of the module root image",
+                    "examples": [
+                        "ghcr.io/nethserver/mymodule:v2.3.2"
+                    ],
+                    "minLength": 1
+                }
+            },
+            "patternProperties": {
+                "^[^=]+$": {
+                    "type": "string"
+                }
+            },
+            "additionalProperties": false
+        },
+        "credentials": {
+            "title": "Rsyncd service credentials",
+            "description": "An array with two elements: username, password",
+            "type": "array",
+            "maxItems": 2,
+            "minItems": 2,
+            "items": {
+                "type": "string",
+                "minLength": 1
+            }
+        },
+        "replace": {
+            "title": "Replace flag",
+            "description": "If set to true the original module will be erased",
+            "type": "boolean"
+        }
+    }
+}
