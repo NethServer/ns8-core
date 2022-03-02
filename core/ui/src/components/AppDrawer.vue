@@ -409,6 +409,13 @@ export default {
       this.loading.apps = true;
       const taskAction = "list-installed-modules";
 
+      // register to task error
+      this.$root.$off(taskAction + "-aborted");
+      this.$root.$once(
+        taskAction + "-aborted",
+        this.listInstalledModulesAborted
+      );
+
       // register to task completion
       this.$root.$once(
         taskAction + "-completed",
@@ -434,6 +441,11 @@ export default {
         );
         return;
       }
+    },
+    listInstalledModulesAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.apps = this.$t("error.generic_error");
+      this.loading.apps = false;
     },
     listInstalledModulesCompleted(taskContext, taskResult) {
       this.loading.apps = false;

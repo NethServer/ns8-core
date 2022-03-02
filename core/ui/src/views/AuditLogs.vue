@@ -5,10 +5,9 @@
         <h2>{{ $t("audit_logs.title") }}</h2>
       </div>
     </div>
-    <div class="bx--row">
+    <div class="bx--row landscape-warning">
       <div class="bx--col-lg-16">
         <NsInlineNotification
-          class="landscape-warning"
           kind="warning"
           :title="$t('common.use_landscape_mode')"
           :description="$t('common.use_landscape_mode_description')"

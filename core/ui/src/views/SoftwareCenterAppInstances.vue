@@ -122,7 +122,7 @@
                   @click="addAppToFavorites(instance)"
                 >
                   <NsMenuItem
-                    icon="star"
+                    :icon="Star20"
                     :label="$t('software_center.add_to_favorites')"
                   />
                 </cv-overflow-menu-item>
@@ -139,7 +139,7 @@
                   @click="removeAppFromFavorites(instance)"
                 >
                   <NsMenuItem
-                    icon="star"
+                    :icon="Star20"
                     :label="$t('software_center.remove_from_favorites')"
                   />
                 </cv-overflow-menu-item>
