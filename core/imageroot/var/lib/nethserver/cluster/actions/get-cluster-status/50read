@@ -27,6 +27,7 @@ import redis
 import socket
 import hashlib
 import subprocess
+import agent.tasks
 
 def get_ip(host):
     ip_list = socket.gethostbyaddr(host)[2]
@@ -57,6 +58,15 @@ if network is not None:
         endpoint = rdb.hget(node, 'endpoint')
         if endpoint:
             ret['leader_url'] = f'https://{endpoint.partition(":")[0]}/cluster-admin/'
+        get_info_result = agent.tasks.run(
+            agent_id=f'node/{node_id}',
+            action='get-info',
+            endpoint="redis://cluster-leader",
+        )
+        if get_info_result['exit_code'] == 0:
+            for key in get_info_result['output'].keys():
+                 vpn[ip_addr][key] = get_info_result['output'][key]
+
 else:
     json.dump(ret, fp=sys.stdout)
     sys.exit(0)
