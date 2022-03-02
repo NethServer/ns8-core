@@ -148,9 +148,6 @@ func Action(socketAction models.SocketAction, s *melody.Session) {
 					return
 				}
 
-				// send feedback for command received
-				broadcastToAll("logs-start", gin.H{"id": logsAction.Id, "pid": "", "message": ""})
-
 				// create scanner to listen to command outputs
 				scannerStdOut := bufio.NewScanner(stdout)
 				go func() {
@@ -172,6 +169,9 @@ func Action(socketAction models.SocketAction, s *melody.Session) {
 					Commands[s.Request.Header["Sec-Websocket-Key"][0]] = make(map[string]*exec.Cmd)
 				}
 				Commands[s.Request.Header["Sec-Websocket-Key"][0]][pid] = cmd
+
+				// send feedback for command received
+				broadcastToAll("logs-start", gin.H{"id": logsAction.Id, "pid": pid, "message": ""})
 
 				// use Wait to avoid defunct process when killed
 				err = cmd.Wait()
