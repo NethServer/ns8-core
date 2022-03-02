@@ -10,7 +10,9 @@ export default {
         (this.getFromStorage("loginInfo") &&
           this.getFromStorage("loginInfo").token) ||
         "";
-      this.$connect(this.$root.config.WS_ENDPOINT + "?jwt=" + jwt);
+      this.$connect(this.$root.config.WS_ENDPOINT + "?jwt=" + jwt, {
+        format: "json",
+      });
 
       this.$options.sockets.onmessage = this.onMessage;
       this.$options.sockets.onopen = this.onOpen;
@@ -25,10 +27,17 @@ export default {
     },
     onMessage(message) {
       const messageData = JSON.parse(message.data);
-      const payload = messageData.payload;
 
-      // console.log("ws data", messageData); ////
-
+      switch (messageData.type) {
+        case "task":
+          this.handleTaskMessage(messageData);
+          break;
+        case "action":
+          this.handleActionMessage(messageData);
+          break;
+      }
+    },
+    handleTaskMessage(messageData) {
       const progressTaskMatch = /^progress\/(.+\/task\/(.+))$/.exec(
         messageData.name
       );
@@ -36,7 +45,17 @@ export default {
       if (progressTaskMatch) {
         const taskPath = progressTaskMatch[1];
         const taskId = progressTaskMatch[2];
-        this.handleProgressTaskMessage(taskPath, taskId, payload);
+        this.handleProgressTaskMessage(taskPath, taskId, messageData.payload);
+      }
+    },
+    handleActionMessage(messageData) {
+      switch (messageData.name) {
+        case "logs-start":
+          this.$root.$emit("logsStart", messageData.payload);
+          break;
+        case "logs-stop":
+          this.$root.$emit("logsStop", messageData.payload);
+          break;
       }
     },
     onClose(event) {

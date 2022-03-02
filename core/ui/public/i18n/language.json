@@ -63,7 +63,10 @@
     "upload_drop_target_text": "Click or drag and drop file here",
     "remove": "Remove",
     "skip": "Skip",
-    "core_module_c": "System app | System apps"
+    "core_module_c": "System app | System apps",
+    "search_placeholder": "Search...",
+    "case_sensitive": "Case sensitive",
+    "choose": "Choose"
   },
   "error": {
     "error": "Error",
@@ -515,7 +518,27 @@
     }
   },
   "system_logs": {
-    "title": "System logs"
+    "title": "System logs",
+    "start_date": "Start date",
+    "end_date": "End date",
+    "start_time_label": "Start time (24-hour)",
+    "end_time_label": "End time (24-hour)",
+    "start": "Start",
+    "end": "End",
+    "context": "Context",
+    "context_cluster": "Cluster",
+    "context_node": "Node",
+    "context_module": "App",
+    "search_query": "Search query",
+    "max_lines": "Max lines",
+    "wrap_text": "Wrap text",
+    "follow_logs": "Follow logs",
+    "search_logs": "Search logs",
+    "collapse_filters": "Collapse filters",
+    "expand_filters": "Expand filters",
+    "clear_logs": "Clear",
+    "stop_following": "Stop following",
+    "scroll_to_bottom": "Scroll to bottom"
   },
   "audit_logs": {
     "title": "Audit logs",
