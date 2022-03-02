@@ -148,6 +148,9 @@ func Action(socketAction models.SocketAction, s *melody.Session) {
 					return
 				}
 
+				// send feedback for command received
+				broadcastToAll("logs-start", gin.H{"id": logsAction.Id, "pid": "", "message": ""})
+
 				// create scanner to listen to command outputs
 				scannerStdOut := bufio.NewScanner(stdout)
 				go func() {
