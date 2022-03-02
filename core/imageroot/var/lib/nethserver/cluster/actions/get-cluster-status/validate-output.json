@@ -130,6 +130,8 @@
           }
         },
         "required": [
+          "hostname",
+          "machine_id",
           "id",
           "ui_name",
           "local",
@@ -144,8 +146,6 @@
     "nodes",
     "leader",
     "leader_url",
-    "default_password",
-    "hostname",
-    "machine_id"
-  ]
+    "default_password"
+ ]
 }
