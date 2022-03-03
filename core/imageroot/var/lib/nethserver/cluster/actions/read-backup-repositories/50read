@@ -20,6 +20,7 @@
 # along with NethServer.  If not, see COPYING.
 #
 
+import re
 import sys
 import json
 import agent
@@ -33,6 +34,7 @@ popen_args={"encoding": 'utf-8', "stdout": subprocess.PIPE, "stderr": sys.stderr
 
 rdb = agent.redis_connect(privileged=False)
 
+uuid_regex = re.compile('[0-9a-f]{32}\Z', re.I)
 backups = list()
 for krepo in rdb.scan_iter('cluster/backup_repository/*'):
     repo_uuid = krepo.removeprefix('cluster/backup_repository/')
@@ -53,17 +55,16 @@ for krepo in rdb.scan_iter('cluster/backup_repository/*'):
             except:
                 mod_time = -1
 
-            if not '@' in backup["Path"] or backup["IsDir"] is False:
+            if re.match('[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}', backup['Path'], re.I) is None or backup["IsDir"] is False:
                 continue # skip non-repo entries
-            parts = backup['Path'].split('@')
             installed_instance = ""
             ui_name = ""
             for mod in rdb.scan_iter('module/*/environment'):
                 u = rdb.hget(mod, 'MODULE_UUID')
-                if rdb.hget(mod, 'MODULE_UUID') == parts[1]:
+                if rdb.hget(mod, 'MODULE_UUID') == backup['Path']:
                     installed_instance = rdb.hget(mod, 'MODULE_ID')
                     ui_name = rdb.get(f'module/{installed_instance}/ui_name') or ""
                     break
-            backups.append({'name': oroot['Path'], 'path': f'{oroot["Path"]}/{backup["Path"]}', 'instance': parts[0], 'uuid': parts[1], 'timestamp': mod_time, 'repository_id' : repo_uuid, 'repository_name': repo['name'], 'repository_provider': repo['provider'], 'repository_url': repo['url'], 'installed_instance': installed_instance, 'installed_instance_ui_name': ui_name})
+            backups.append({'name': oroot['Path'], 'path': f'{oroot["Path"]}/{backup["Path"]}', 'uuid': backup["Path"], 'timestamp': mod_time, 'repository_id' : repo_uuid, 'repository_name': repo['name'], 'repository_provider': repo['provider'], 'repository_url': repo['url'], 'installed_instance': installed_instance, 'installed_instance_ui_name': ui_name})
 
 print(json.dumps(backups))

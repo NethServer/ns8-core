@@ -8,7 +8,6 @@
             {
                 "name": "dokuwiki",
                 "path": "dokuwiki/dokuwiki1@cc7335d7-4d67-408c-8c35-42257667e51b",
-                "instance": "dokuwiki1",
                 "uuid": "cc7335d7-4d67-408c-8c35-42257667e51b",
                 "timestamp": 1644403745,
                 "repository_id": "e181c936-1bc3-5032-a809-d8b0551eebe9",
