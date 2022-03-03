@@ -37,7 +37,7 @@ repository = obackup['repository']
 module_id = os.environ['MODULE_ID']
 install_dir = os.environ['AGENT_INSTALL_DIR']
 module_is_rootfull = os.geteuid() == 0
-repopath = agent.get_image_name_from_url(os.environ['IMAGE_URL']) + "/" + module_id + "@" + os.environ['MODULE_UUID']
+repopath = agent.get_image_name_from_url(os.environ['IMAGE_URL']) + "/" + os.environ['MODULE_UUID']
 
 if obackup['enabled'] != '1':
     print(f"Backup {backup_id} is not enabled, exit now.", file=sys.stderr)
