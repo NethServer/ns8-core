@@ -414,10 +414,10 @@ export default {
         );
 
         if (this.dateIsBefore(endLocal, startLocal)) {
-          this.error.startDate = this.$t("audit_logs.invalid_interval");
-          this.error.startTime = this.$t("audit_logs.invalid_interval");
-          this.error.endDate = this.$t("audit_logs.invalid_interval");
-          this.error.endTime = this.$t("audit_logs.invalid_interval");
+          this.error.startDate = this.$t("error.invalid_time_interval");
+          this.error.startTime = this.$t("error.invalid_time_interval");
+          this.error.endDate = this.$t("error.invalid_time_interval");
+          this.error.endTime = this.$t("error.invalid_time_interval");
 
           isValidationOk = false;
         }

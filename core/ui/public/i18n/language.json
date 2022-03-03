@@ -86,7 +86,8 @@
     "invalid_username_or_password": "Invalid username or password",
     "invalid_port_number": "Invalid port number",
     "invalid_24h_pattern": "Invalid 24-hour pattern",
-    "invalid_value": "Invalid value"
+    "invalid_value": "Invalid value",
+    "invalid_time_interval": "Invalid time interval"
   },
   "websocket": {
     "websocket_disconnected": "Websocket disconnected",
@@ -561,8 +562,7 @@
     "cannot_retrieve_audit_logs": "Cannot retrieve logs",
     "audit_info_placeholder": "Search anything inside data content of log",
     "no_logs_found": "No logs found",
-    "no_logs_found_description": "Try changing your search filters",
-    "invalid_interval": "Invalid time interval"
+    "no_logs_found_description": "Try changing your search filters"
   },
   "cluster_status": {
     "title": "Cluster status",

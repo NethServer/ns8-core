@@ -32,7 +32,7 @@
 import { carbonPrefixMixin, themeMixin } from "@carbon/vue/src/mixins";
 
 export default {
-  name: "LogsOutput",
+  name: "LogOutput",
   props: {
     id: {
       type: String,

@@ -14,6 +14,16 @@
         />
       </cv-column>
     </cv-row>
+    <cv-row v-if="error.getClusterStatus">
+      <cv-column>
+        <NsInlineNotification
+          kind="error"
+          :title="$t('action.get-cluster-status')"
+          :description="error.getClusterStatus"
+          :showCloseButton="false"
+        />
+      </cv-column>
+    </cv-row>
     <cv-row v-if="error.listInstalledModules">
       <cv-column>
         <NsInlineNotification
@@ -29,6 +39,88 @@
         <cv-tile :light="true">
           <cv-grid fullWidth class="no-padding">
             <template v-if="filtersShown">
+              <cv-row>
+                <cv-column :md="4">
+                  <label class="bx--label">
+                    {{ $t("system_logs.context") }}
+                  </label>
+                  <cv-content-switcher
+                    size="sm"
+                    class="context-switcher mg-bottom-md"
+                    @selected="contextSelected"
+                  >
+                    <cv-content-switcher-button
+                      owner-id="cluster"
+                      :selected="csbClusterSelected"
+                      >{{
+                        $t("system_logs.context_cluster")
+                      }}</cv-content-switcher-button
+                    >
+                    <cv-content-switcher-button
+                      owner-id="node"
+                      :selected="csbNodeSelected"
+                      >{{
+                        $t("system_logs.context_node")
+                      }}</cv-content-switcher-button
+                    >
+                    <cv-content-switcher-button
+                      owner-id="module"
+                      :selected="csbModuleSelected"
+                      >{{
+                        $t("system_logs.context_module")
+                      }}</cv-content-switcher-button
+                    >
+                  </cv-content-switcher>
+                </cv-column>
+                <cv-column v-if="csbNodeSelected" :md="4">
+                  <cv-combo-box
+                    v-model="selectedNodeId"
+                    :label="$t('common.choose')"
+                    :title="$t('system_logs.context_node')"
+                    :invalid-message="error.selectedNode"
+                    :auto-filter="true"
+                    :auto-highlight="true"
+                    :options="nodes"
+                    :disabled="loading.getClusterStatus"
+                    class="mg-bottom-md"
+                    key="csbNode"
+                  >
+                  </cv-combo-box>
+                </cv-column>
+                <cv-column v-else-if="csbModuleSelected" :md="4">
+                  <cv-combo-box
+                    v-model="selectedAppId"
+                    :label="$t('common.choose')"
+                    :title="$t('system_logs.context_module')"
+                    :invalid-message="error.selectedApp"
+                    :auto-filter="true"
+                    :auto-highlight="true"
+                    :options="apps"
+                    :disabled="loading.listInstalledModules"
+                    class="mg-bottom-md"
+                    key="csbApp"
+                  >
+                  </cv-combo-box>
+                </cv-column>
+              </cv-row>
+              <cv-row>
+                <cv-column :md="4">
+                  <cv-text-input
+                    :label="
+                      $t('system_logs.search_query') +
+                      ' (' +
+                      $t('common.optional') +
+                      ')'
+                    "
+                    v-model="searchQuery"
+                    :placeholder="$t('common.search_placeholder')"
+                    :helper-text="$t('common.case_sensitive')"
+                    @keypress.enter="onEnterKeyPress()"
+                    class="search-query mg-bottom-md"
+                  >
+                  </cv-text-input>
+                </cv-column>
+              </cv-row>
               <cv-row>
                 <cv-column :md="4">
                   <cv-date-picker
@@ -84,80 +176,15 @@
                 </cv-column>
               </cv-row>
               <cv-row>
-                <cv-column :md="4">
-                  <label class="bx--label">
-                    {{ $t("system_logs.context") }}
-                  </label>
-                  <cv-content-switcher
-                    size="sm"
-                    class="context-switcher mg-bottom-md"
-                    @selected="contextSelected"
-                  >
-                    <cv-content-switcher-button
-                      owner-id="cluster"
-                      :selected="csbClusterSelected"
-                      >{{
-                        $t("system_logs.context_cluster")
-                      }}</cv-content-switcher-button
-                    >
-                    <cv-content-switcher-button
-                      owner-id="node"
-                      :selected="csbNodeSelected"
-                      >{{
-                        $t("system_logs.context_node")
-                      }}</cv-content-switcher-button
-                    >
-                    <cv-content-switcher-button
-                      owner-id="module"
-                      :selected="csbModuleSelected"
-                      >{{
-                        $t("system_logs.context_module")
-                      }}</cv-content-switcher-button
-                    >
-                  </cv-content-switcher>
-                </cv-column>
-                <cv-column v-if="csbNodeSelected" :md="4">
-                  <!-- TODO //// -->
-                </cv-column>
-                <cv-column v-else-if="csbModuleSelected" :md="4">
-                  <cv-combo-box
-                    v-model="selectedAppId"
-                    :label="$t('common.choose')"
-                    :title="$t('system_logs.context_module')"
-                    :invalid-message="error.selectedApp"
-                    :auto-filter="true"
-                    :auto-highlight="true"
-                    :options="apps"
-                    :disabled="loading.listInstalledModules"
-                    class="mg-bottom-md"
-                  >
-                  </cv-combo-box>
-                </cv-column>
-              </cv-row>
-              <cv-row>
-                <cv-column :md="4">
-                  <cv-text-input
-                    :label="
-                      $t('system_logs.search_query') +
-                      ' (' +
-                      $t('common.optional') +
-                      ')'
-                    "
-                    v-model="searchQuery"
-                    :placeholder="$t('common.search_placeholder')"
-                    :helper-text="$t('common.case_sensitive')"
-                    @keypress.enter="onEnterKeyPress()"
-                    class="search-query mg-bottom-md"
-                  >
-                  </cv-text-input>
-                </cv-column>
                 <cv-column :md="2" :xlg="2">
                   <cv-text-input
                     :label="$t('system_logs.max_lines')"
                     v-model.trim="maxLines"
+                    :invalid-message="error.maxLines"
                     :disabled="followLogs"
                     type="number"
                     min="1"
+                    :max="MAX_LINES"
                     @keypress.enter="onEnterKeyPress()"
                     class="narrow mg-bottom-md"
                   >
@@ -168,7 +195,6 @@
                     :label="$t('system_logs.follow_logs')"
                     v-model="followLogs"
                     value="checkFollowLogs"
-                    class="mg-bottom-md"
                   />
                 </cv-column>
               </cv-row>
@@ -220,15 +246,6 @@
             <cv-row v-if="!filtersShown" class="mg-bottom-md">
               <cv-column>
                 <div class="paragraph-line-height">
-                  <span class="filter-collapsed"
-                    ><strong>{{ $t("system_logs.start") }}</strong
-                    >:
-                    <span>{{ startDateString + " " + startTime }}</span></span
-                  >
-                  <span class="filter-collapsed"
-                    ><strong>{{ $t("system_logs.end") }}</strong
-                    >: <span>{{ endDateString + " " + endTime }}</span></span
-                  >
                   <span class="filter-collapsed">
                     <strong>{{ $t("system_logs.context") }}</strong
                     >:
@@ -236,7 +253,7 @@
                       $t("system_logs.context_cluster")
                     }}</span>
                     <span v-else-if="context == 'node'">
-                      <!-- //// TODO -->
+                      {{ selectedNode ? selectedNode.label : "-" }}
                     </span>
                     <span v-else-if="context == 'module'">
                       {{ selectedApp ? selectedApp.label : "-" }}</span
@@ -246,6 +263,15 @@
                     ><strong>{{ $t("system_logs.search_query") }}</strong
                     >: "<span>{{ searchQuery }}</span
                     >"</span
+                  >
+                  <span class="filter-collapsed"
+                    ><strong>{{ $t("system_logs.start") }}</strong
+                    >:
+                    <span>{{ startDateString + " " + startTime }}</span></span
+                  >
+                  <span class="filter-collapsed"
+                    ><strong>{{ $t("system_logs.end") }}</strong
+                    >: <span>{{ endDateString + " " + endTime }}</span></span
                   >
                   <span class="filter-collapsed"
                     ><strong>{{ $t("system_logs.max_lines") }}</strong
@@ -263,7 +289,7 @@
             </cv-row>
             <cv-row>
               <cv-column>
-                <cv-link @click="toggleFilters" class="mg-bottom-md">
+                <cv-link @click="toggleFilters" class="toggle-filters">
                   {{
                     filtersShown
                       ? $t("system_logs.collapse_filters")
@@ -330,13 +356,13 @@
             </cv-row>
             <cv-row>
               <cv-column>
-                <LogsOutput
+                <LogOutput
                   :id="requestId"
                   :scrollToBottom="scrollToBottom"
                   :wrapText="wrapText"
                   :loading="loading.logs"
                   :light="false"
-                  >{{ logsOutput }}</LogsOutput
+                  >{{ logOutput }}</LogOutput
                 >
               </cv-column>
             </cv-row>
@@ -357,17 +383,18 @@ import {
 } from "@nethserver/ns8-ui-lib";
 import { mapState } from "vuex";
 import { v4 as uuidv4 } from "uuid";
-import LogsOutput from "../components/LogsOutput.vue";
+import LogOutput from "../components/LogOutput.vue";
 
 export default {
   name: "SystemLogs",
-  components: { LogsOutput },
+  components: { LogOutput },
   mixins: [DateTimeService, IconService, UtilService, TaskService],
   pageTitle() {
     return this.$t("system_logs.title");
   },
   data() {
     return {
+      MAX_LINES: 2000,
       startDateString: "",
       endDateString: "",
       startTime: "",
@@ -378,18 +405,21 @@ export default {
       context: "cluster",
       searchQuery: "",
       maxLines: "",
-      wrapText: false,
+      wrapText: true,
       followLogs: false,
       filtersShown: true,
-      logsOutput: "",
+      logOutput: "",
       isFollowing: false,
       requestId: "",
+      nodes: [],
+      selectedNodeId: "",
       apps: [],
       selectedAppId: "",
       scrollToBottom: true,
       loading: {
-        logs: true,
-        listInstalledModules: true,
+        logs: false,
+        getClusterStatus: false,
+        listInstalledModules: false,
       },
       error: {
         startDate: "",
@@ -397,7 +427,9 @@ export default {
         endDate: "",
         endTime: "",
         maxLines: "",
+        getClusterStatus: "",
         listInstalledModules: "",
+        selectedNode: "",
         selectedApp: "",
       },
     };
@@ -416,6 +448,9 @@ export default {
     selectedApp() {
       return this.apps.find((app) => app.value == this.selectedAppId);
     },
+    selectedNode() {
+      return this.nodes.find((node) => node.value == this.selectedNodeId);
+    },
   },
   watch: {
     isWebsocketConnected: function () {
@@ -426,6 +461,7 @@ export default {
   },
   created() {
     this.initFilters();
+    this.getClusterStatus();
     this.listInstalledModules();
     if (this.isWebsocketConnected) {
       this.logsStart();
@@ -444,20 +480,34 @@ export default {
     initFilters() {
       this.clearErrors(this);
       // set time interval
-      this.startDateString = this.formatDate(new Date(), "yyyy-MM-dd");
+      this.startDateString = this.formatDate(
+        this.subDays(new Date(), 1),
+        "yyyy-MM-dd"
+      );
       this.endDateString = this.formatDate(new Date(), "yyyy-MM-dd");
       this.startTime = "00:00";
       this.endTime = "23:59";
       this.context = "cluster";
       this.selectedAppId = "";
-      // this.selectedNodeId = ""; ////
+      this.selectedNodeId = "";
       this.searchQuery = "";
-      this.maxLines = "100"; //// save to local storage?
+      this.maxLines = "500";
       this.followLogs = false;
     },
     validateSearchLogs() {
       this.clearErrors();
       let isValidationOk = true;
+
+      if (this.context == "node" && !this.selectedNodeId) {
+        this.error.selectedNode = this.$t("common.required");
+        isValidationOk = false;
+      }
+
+      if (this.context == "module" && !this.selectedAppId) {
+        this.error.selectedApp = this.$t("common.required");
+        isValidationOk = false;
+      }
+
       if (!this.startTime) {
         this.error.startTime = this.$t("common.required");
         isValidationOk = false;
@@ -475,15 +525,16 @@ export default {
           this.endDateString + "T" + this.endTime + ":59"
         );
         if (this.dateIsBefore(endLocal, startLocal)) {
-          this.error.startDate = this.$t("audit_logs.invalid_interval");
-          this.error.startTime = this.$t("audit_logs.invalid_interval");
-          this.error.endDate = this.$t("audit_logs.invalid_interval");
-          this.error.endTime = this.$t("audit_logs.invalid_interval");
+          this.error.startDate = this.$t("error.invalid_time_interval");
+          this.error.startTime = this.$t("error.invalid_time_interval");
+          this.error.endDate = this.$t("error.invalid_time_interval");
+          this.error.endTime = this.$t("error.invalid_time_interval");
           isValidationOk = false;
         }
       }
-      if (this.context == "module" && !this.selectedAppId) {
-        this.error.selectedApp = this.$t("common.required");
+
+      if (this.maxLines < 1 || this.maxLines > this.MAX_LINES) {
+        this.error.maxLines = this.$t("error.invalid_value");
         isValidationOk = false;
       }
       return isValidationOk;
@@ -512,7 +563,7 @@ export default {
           entityName = "";
           break;
         case "node":
-          // entityName = this.selectedNodeId; ////
+          entityName = this.selectedNodeId;
           break;
         case "module":
           entityName = this.selectedAppId;
@@ -537,7 +588,7 @@ export default {
         },
       };
       this.$socket.sendObj(logsStartObj);
-      // console.log("## logs-start sent", logsStartObj); ////
+      console.log("## logs-start sent", logsStartObj); ////
     },
     logsStop() {
       // console.log("## logsStop"); ////
@@ -565,7 +616,7 @@ export default {
     onLogsStartDump(payload) {
       // console.log("## onLogsStartDump", payload); ////
       this.loading.logs = false;
-      this.logsOutput += payload.message;
+      this.logOutput += payload.message;
     },
     onLogsStartFollow(payload) {
       // console.log("## onLogsStartFollow", payload); ////
@@ -575,14 +626,14 @@ export default {
         this.pid = payload.pid;
       }
       if (payload.message) {
-        this.logsOutput += "\n" + payload.message;
+        this.logOutput += "\n" + payload.message;
       }
     },
     toggleFilters() {
       this.filtersShown = !this.filtersShown;
     },
     clearLogs() {
-      this.logsOutput = "";
+      this.logOutput = "";
     },
     onEnterKeyPress() {
       if (!this.isFollowing) {
@@ -592,12 +643,14 @@ export default {
     async listInstalledModules() {
       this.loading.listInstalledModules = true;
       const taskAction = "list-installed-modules";
+
       // register to task error
       this.$root.$off(taskAction + "-aborted");
       this.$root.$once(
         taskAction + "-aborted",
         this.listInstalledModulesAborted
       );
+
       // register to task completion
       this.$root.$once(
         taskAction + "-completed",
@@ -625,7 +678,6 @@ export default {
       this.loading.listInstalledModules = false;
     },
     listInstalledModulesCompleted(taskContext, taskResult) {
-      this.loading.listInstalledModules = false;
       let apps = [];
       for (let instanceList of Object.values(taskResult.output)) {
         for (let instance of instanceList) {
@@ -640,6 +692,63 @@ export default {
       }
       apps.sort(this.sortByProperty("label"));
       this.apps = apps;
+      this.loading.listInstalledModules = false;
+    },
+    async getClusterStatus() {
+      this.error.getClusterStatus = "";
+      this.loading.getClusterStatus = true;
+      const taskAction = "get-cluster-status";
+
+      // register to task error
+      this.$root.$off(taskAction + "-aborted");
+      this.$root.$once(taskAction + "-aborted", this.getClusterStatusAborted);
+
+      // register to task completion
+      this.$root.$once(
+        taskAction + "-completed",
+        this.getClusterStatusCompleted
+      );
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.getClusterStatus = this.getErrorMessage(err);
+        return;
+      }
+    },
+    getClusterStatusAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.getClusterStatus = this.$t("error.generic_error");
+      this.loading.getClusterStatus = false;
+    },
+    getClusterStatusCompleted(taskContext, taskResult) {
+      const clusterStatus = taskResult.output;
+
+      console.log("getClusterStatusCompleted", clusterStatus); ////
+
+      let nodes = [];
+      for (let node of clusterStatus.nodes) {
+        nodes.push({
+          name: node.hostname,
+          label: node.ui_name
+            ? node.ui_name + " (" + this.$t("common.node") + " " + node.id + ")"
+            : this.$t("common.node") + " " + node.id,
+          value: node.hostname,
+        });
+      }
+      nodes.sort(this.sortByProperty("label"));
+      this.nodes = nodes;
+      this.loading.getClusterStatus = false;
     },
   },
 };
@@ -676,7 +785,11 @@ export default {
 
 .buttons {
   margin-top: $spacing-05;
-  margin-bottom: $spacing-05;
+  margin-bottom: $spacing-06;
+}
+
+.toggle-filters {
+  margin-bottom: $spacing-06;
 }
 
 .logs-output.bx--snippet--multi {
