@@ -28,6 +28,7 @@ import (
 	"fmt"
 	"os/exec"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -107,6 +108,7 @@ func Action(socketAction models.SocketAction, s *melody.Session) {
 		switch logsAction.Mode {
 		case "tail":
 			mode = "-t"
+			args = append(args, "--forward")
 		case "dump":
 			mode = "--limit=" + logsAction.Lines
 		}
@@ -188,7 +190,12 @@ func Action(socketAction models.SocketAction, s *melody.Session) {
 					utils.LogError(errors.Wrap(err, "[SOCKET] error executing Cmd for dump"))
 				}
 
-				broadcastToAll("logs-start", gin.H{"id": logsAction.Id, "pid": "", "message": string(out)})
+				// reverse logs orders
+				logsStrings := strings.Split(string(out), "\n")
+				logsStringsR := reverse(logsStrings)
+				logsStringsOut := strings.Join(logsStringsR[:], "\n")
+
+				broadcastToAll("logs-start", gin.H{"id": logsAction.Id, "pid": "", "message": logsStringsOut})
 			}()
 		}
 
@@ -213,4 +220,13 @@ func broadcastToAll(name string, msg interface{}) {
 		// Broadcast to all sessions
 		socketConnection.BroadcastMultiple(actionJSON, clientSession)
 	}
+}
+
+func reverse(ss []string) []string {
+	last := len(ss) - 1
+	for i := 0; i < len(ss)/2; i++ {
+		ss[i], ss[last-i] = ss[last-i], ss[i]
+	}
+
+	return ss
 }
