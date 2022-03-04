@@ -64,7 +64,7 @@ for mbackup in rdb.scan_iter('module/*/backups'):
             backups[bid]['instances'].append({
                 "module_id": mid,
                 "ui_name": rdb.get(f"module/{mid}/ui_name") or "",
-                "repository_path": f"{mid}@{module_uuid}",
+                "repository_path": module_uuid,
                 "status": status,
             })
             configured_instances.add(mid)
