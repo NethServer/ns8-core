@@ -1,8 +1,75 @@
 <template>
   <cv-grid fullWidth class="system-logs">
     <cv-row>
-      <cv-column class="page-title">
+      <cv-column :md="4" :xlg="10" class="page-title">
         <h2>{{ $t("system_logs.title") }}</h2>
+      </cv-column>
+      <cv-column :md="4" :xlg="6">
+        <div class="page-toolbar">
+          <NsButton
+            kind="secondary"
+            size="field"
+            :icon="Add20"
+            @click="addSearch()"
+            :disabled="searches.length > 1"
+            class="page-toolbar-item"
+            >{{ $t("system_logs.add_search") }}</NsButton
+          >
+          <!-- <template v-else>
+            <cv-content-switcher
+              @selected="onLayoutSelected"
+              class="page-toolbar-item"
+            >
+              <cv-content-switcher-button
+                owner-id="horizontal"
+                :selected="csbHorizontalLayoutSelected"
+                >{{
+                  $t("system_logs.horizontal_layout")
+                }}</cv-content-switcher-button
+              >
+              <cv-content-switcher-button
+                owner-id="vertical"
+                :selected="csbVerticalLayoutSelected"
+                >{{
+                  $t("system_logs.vertical_layout")
+                }}</cv-content-switcher-button
+              >
+            </cv-content-switcher> -->
+          <NsIconMenu
+            :flipMenu="true"
+            tipPosition="top"
+            tipAlignment="end"
+            class="page-toolbar-item"
+          >
+            <cv-overflow-menu-item @click="collapseAllFilters()">
+              <NsMenuItem
+                :icon="RowCollapse20"
+                :label="$t('system_logs.collapse_filters')"
+              />
+            </cv-overflow-menu-item>
+            <cv-overflow-menu-item
+              @click="setHorizontalLayout()"
+              :disabled="searches.length < 2 || !verticalLayout"
+              class="toggle-layout"
+            >
+              <NsMenuItem
+                :icon="Row20"
+                :label="$t('system_logs.horizontal_layout')"
+              />
+            </cv-overflow-menu-item>
+            <cv-overflow-menu-item
+              @click="setVerticalLayout()"
+              :disabled="searches.length < 2 || verticalLayout"
+              class="toggle-layout"
+            >
+              <NsMenuItem
+                :icon="Column20"
+                :label="$t('system_logs.vertical_layout')"
+              />
+            </cv-overflow-menu-item>
+          </NsIconMenu>
+          <!-- </template> -->
+        </div>
       </cv-column>
     </cv-row>
     <cv-row class="landscape-warning">
@@ -35,339 +102,24 @@
       </cv-column>
     </cv-row>
     <cv-row>
-      <cv-column>
-        <cv-tile :light="true">
-          <cv-grid fullWidth class="no-padding">
-            <template v-if="filtersShown">
-              <cv-row>
-                <cv-column :md="4">
-                  <label class="bx--label">
-                    {{ $t("system_logs.context") }}
-                  </label>
-                  <cv-content-switcher
-                    size="sm"
-                    class="context-switcher mg-bottom-md"
-                    @selected="contextSelected"
-                  >
-                    <cv-content-switcher-button
-                      owner-id="cluster"
-                      :selected="csbClusterSelected"
-                      >{{
-                        $t("system_logs.context_cluster")
-                      }}</cv-content-switcher-button
-                    >
-                    <cv-content-switcher-button
-                      owner-id="node"
-                      :selected="csbNodeSelected"
-                      >{{
-                        $t("system_logs.context_node")
-                      }}</cv-content-switcher-button
-                    >
-                    <cv-content-switcher-button
-                      owner-id="module"
-                      :selected="csbModuleSelected"
-                      >{{
-                        $t("system_logs.context_module")
-                      }}</cv-content-switcher-button
-                    >
-                  </cv-content-switcher>
-                </cv-column>
-                <cv-column v-if="csbNodeSelected" :md="4">
-                  <cv-combo-box
-                    v-model="selectedNodeId"
-                    :label="$t('common.choose')"
-                    :title="$t('system_logs.context_node')"
-                    :invalid-message="error.selectedNode"
-                    :auto-filter="true"
-                    :auto-highlight="true"
-                    :options="nodes"
-                    :disabled="loading.getClusterStatus"
-                    class="mg-bottom-md"
-                    key="csbNode"
-                  >
-                  </cv-combo-box>
-                </cv-column>
-                <cv-column v-else-if="csbModuleSelected" :md="4">
-                  <cv-combo-box
-                    v-model="selectedAppId"
-                    :label="$t('common.choose')"
-                    :title="$t('system_logs.context_module')"
-                    :invalid-message="error.selectedApp"
-                    :auto-filter="true"
-                    :auto-highlight="true"
-                    :options="apps"
-                    :disabled="loading.listInstalledModules"
-                    class="mg-bottom-md"
-                    key="csbApp"
-                  >
-                  </cv-combo-box>
-                </cv-column>
-              </cv-row>
-              <cv-row>
-                <cv-column :md="4">
-                  <cv-text-input
-                    :label="
-                      $t('system_logs.search_query') +
-                      ' (' +
-                      $t('common.optional') +
-                      ')'
-                    "
-                    v-model="searchQuery"
-                    :placeholder="$t('common.search_placeholder')"
-                    :helper-text="$t('common.case_sensitive')"
-                    @keypress.enter="onEnterKeyPress()"
-                    class="search-query mg-bottom-md"
-                  >
-                  </cv-text-input>
-                </cv-column>
-              </cv-row>
-              <cv-row>
-                <cv-column :md="4">
-                  <cv-date-picker
-                    kind="single"
-                    :cal-options="calOptions"
-                    :date-label="$t('system_logs.start_date')"
-                    v-model="startDateString"
-                    class="interval-date mg-bottom-md"
-                    :invalid-message="error.startDate"
-                  >
-                  </cv-date-picker>
-                  <cv-time-picker
-                    :label="$t('system_logs.start_time_label')"
-                    :time.sync="startTime"
-                    ampm="24"
-                    :pattern="time24HourPatternString"
-                    :placeholder="time24HourPlaceholder"
-                    :form-item="true"
-                    class="interval-time mg-bottom-md"
-                    :invalid-message="
-                      time24HourPattern.test(startTime)
-                        ? error.startTime
-                        : $t('error.invalid_24h_pattern')
-                    "
-                  >
-                  </cv-time-picker>
-                </cv-column>
-                <cv-column :md="4">
-                  <cv-date-picker
-                    kind="single"
-                    :cal-options="calOptions"
-                    :date-label="$t('system_logs.end_date')"
-                    v-model="endDateString"
-                    class="interval-date mg-bottom-md"
-                    :invalid-message="error.endDate"
-                  >
-                  </cv-date-picker>
-                  <cv-time-picker
-                    :label="$t('system_logs.end_time_label')"
-                    :time.sync="endTime"
-                    ampm="24"
-                    :pattern="time24HourPatternString"
-                    :placeholder="time24HourPlaceholder"
-                    :form-item="true"
-                    class="interval-time mg-bottom-md"
-                    :invalid-message="
-                      time24HourPattern.test(endTime)
-                        ? error.endTime
-                        : $t('error.invalid_24h_pattern')
-                    "
-                  >
-                  </cv-time-picker>
-                </cv-column>
-              </cv-row>
-              <cv-row>
-                <cv-column :md="2" :xlg="2">
-                  <cv-text-input
-                    :label="$t('system_logs.max_lines')"
-                    v-model.trim="maxLines"
-                    :invalid-message="error.maxLines"
-                    :disabled="followLogs"
-                    type="number"
-                    min="1"
-                    :max="MAX_LINES"
-                    @keypress.enter="onEnterKeyPress()"
-                    class="narrow mg-bottom-md"
-                  >
-                  </cv-text-input>
-                </cv-column>
-                <cv-column :md="2" :xlg="2" class="checkbox-filter">
-                  <cv-checkbox
-                    :label="$t('system_logs.follow_logs')"
-                    v-model="followLogs"
-                    value="checkFollowLogs"
-                  />
-                </cv-column>
-              </cv-row>
-              <cv-row>
-                <cv-column class="buttons">
-                  <NsButton
-                    v-if="isFollowing"
-                    kind="primary"
-                    class="search-button"
-                    :icon="Close20"
-                    :loading="loading.stopFollowing"
-                    :disabled="loading.stopFollowing"
-                    @click="logsStop"
-                    >{{ $t("system_logs.stop_following") }}</NsButton
-                  >
-                  <NsButton
-                    v-else
-                    kind="primary"
-                    class="search-button"
-                    :icon="Search20"
-                    :loading="loading.logs"
-                    :disabled="loading.logs || loading.listInstalledModules"
-                    @click="logsStart"
-                    >{{
-                      followLogs
-                        ? $t("system_logs.follow_logs")
-                        : $t("system_logs.search_logs")
-                    }}</NsButton
-                  >
-                  <NsIconMenu
-                    :flipMenu="true"
-                    tipPosition="top"
-                    tipAlignment="end"
-                    class="overflow-near-button"
-                  >
-                    <cv-overflow-menu-item @click="initFilters()">
-                      <NsMenuItem
-                        :icon="Reset20"
-                        @click="initFilters"
-                        :label="$t('common.reset_filters')"
-                      />
-                    </cv-overflow-menu-item>
-                  </NsIconMenu>
-                </cv-column>
-              </cv-row>
-            </template>
-          </cv-grid>
-          <cv-grid fullWidth class="no-padding">
-            <cv-row v-if="!filtersShown" class="mg-bottom-md">
-              <cv-column>
-                <div class="paragraph-line-height">
-                  <span class="filter-collapsed">
-                    <strong>{{ $t("system_logs.context") }}</strong
-                    >:
-                    <span v-if="context == 'cluster'">{{
-                      $t("system_logs.context_cluster")
-                    }}</span>
-                    <span v-else-if="context == 'node'">
-                      {{ selectedNode ? selectedNode.label : "-" }}
-                    </span>
-                    <span v-else-if="context == 'module'">
-                      {{ selectedApp ? selectedApp.label : "-" }}</span
-                    >
-                  </span>
-                  <span class="filter-collapsed"
-                    ><strong>{{ $t("system_logs.search_query") }}</strong
-                    >: "<span>{{ searchQuery }}</span
-                    >"</span
-                  >
-                  <span class="filter-collapsed"
-                    ><strong>{{ $t("system_logs.start") }}</strong
-                    >:
-                    <span>{{ startDateString + " " + startTime }}</span></span
-                  >
-                  <span class="filter-collapsed"
-                    ><strong>{{ $t("system_logs.end") }}</strong
-                    >: <span>{{ endDateString + " " + endTime }}</span></span
-                  >
-                  <span class="filter-collapsed"
-                    ><strong>{{ $t("system_logs.max_lines") }}</strong
-                    >: <span>{{ maxLines }}</span></span
-                  >
-                  <span class="filter-collapsed"
-                    ><strong>{{ $t("system_logs.follow_logs") }}</strong
-                    >:
-                    <span>{{
-                      followLogs ? $t("common.enabled") : $t("common.disabled")
-                    }}</span></span
-                  >
-                </div>
-              </cv-column>
-            </cv-row>
-            <cv-row>
-              <cv-column>
-                <cv-link @click="toggleFilters" class="toggle-filters">
-                  {{
-                    filtersShown
-                      ? $t("system_logs.collapse_filters")
-                      : $t("system_logs.expand_filters")
-                  }}
-                </cv-link>
-              </cv-column>
-            </cv-row>
-            <cv-row>
-              <cv-column class="logs-output-toolbar">
-                <NsButton
-                  kind="secondary"
-                  size="small"
-                  :icon="Erase20"
-                  @click="clearLogs"
-                  class="item mg-bottom-sm"
-                  >{{ $t("system_logs.clear_logs") }}</NsButton
-                >
-                <div class="checkbox-filter">
-                  <cv-checkbox
-                    :label="$t('system_logs.wrap_text')"
-                    v-model="wrapText"
-                    value="checkWrapText"
-                    class="item mg-bottom-sm"
-                  />
-                </div>
-                <!-- <cv-toggle ////
-                  hideLabel
-                  value="checkWrapText"
-                  :form-item="true"
-                  v-model="wrapText"
-                  class="item toggle-without-label mg-bottom-sm"
-                >
-                  <template slot="text-left">{{
-                    $t("system_logs.wrap_text")
-                  }}</template>
-                  <template slot="text-right">{{
-                    $t("system_logs.wrap_text")
-                  }}</template>
-                </cv-toggle> -->
-                <div class="checkbox-filter">
-                  <cv-checkbox
-                    :label="$t('system_logs.scroll_to_bottom')"
-                    v-model="scrollToBottom"
-                    value="checkScrollToBottom"
-                    class="item mg-bottom-sm"
-                  />
-                </div>
-                <!-- <cv-toggle ////
-                  hideLabel
-                  value="checkScrollToBottom"
-                  :form-item="true"
-                  v-model="scrollToBottom"
-                  class="item toggle-without-label mg-bottom-sm"
-                >
-                  <template slot="text-left">{{
-                    $t("system_logs.scroll_to_bottom")
-                  }}</template>
-                  <template slot="text-right">{{
-                    $t("system_logs.scroll_to_bottom")
-                  }}</template>
-                </cv-toggle> -->
-              </cv-column>
-            </cv-row>
-            <cv-row>
-              <cv-column>
-                <LogOutput
-                  :id="requestId"
-                  :scrollToBottom="scrollToBottom"
-                  :wrapText="wrapText"
-                  :loading="loading.logs"
-                  :light="false"
-                  >{{ logOutput }}</LogOutput
-                >
-              </cv-column>
-            </cv-row>
-          </cv-grid>
-        </cv-tile>
+      <cv-column
+        v-for="searchId in searches"
+        :key="searchId"
+        :md="verticalLayout ? 4 : 8"
+      >
+        <LogSearch
+          :searchId="searchId"
+          :nodes="nodes"
+          :apps="apps"
+          :loadingNodes="loading.getClusterStatus"
+          :loadingApps="loading.apps"
+          :verticalLayout="verticalLayout"
+          :numSearches="searches.length"
+          @close="closeSearch"
+          :closeAriaLabel="$t('common.close')"
+          :light="true"
+          :ref="'search-' + searchId"
+        />
       </cv-column>
     </cv-row>
   </cv-grid>
@@ -375,270 +127,110 @@
 
 <script>
 import to from "await-to-js";
-import {
-  UtilService,
-  IconService,
-  DateTimeService,
-  TaskService,
-} from "@nethserver/ns8-ui-lib";
-import { mapState } from "vuex";
+import { UtilService, IconService, TaskService } from "@nethserver/ns8-ui-lib";
 import { v4 as uuidv4 } from "uuid";
-import LogOutput from "../components/LogOutput.vue";
+import LogSearch from "../components/LogSearch.vue";
 
 export default {
   name: "SystemLogs",
-  components: { LogOutput },
-  mixins: [DateTimeService, IconService, UtilService, TaskService],
+  components: { LogSearch },
+  mixins: [IconService, UtilService, TaskService],
   pageTitle() {
     return this.$t("system_logs.title");
   },
   data() {
     return {
-      MAX_LINES: 2000,
-      startDateString: "",
-      endDateString: "",
-      startTime: "",
-      endTime: "",
-      calOptions: {
-        dateFormat: "Y-m-d",
-      },
-      context: "cluster",
-      searchQuery: "",
-      maxLines: "",
-      wrapText: true,
-      followLogs: false,
-      filtersShown: true,
-      logOutput: "",
-      isFollowing: false,
-      requestId: "",
       nodes: [],
-      selectedNodeId: "",
       apps: [],
-      selectedAppId: "",
-      scrollToBottom: true,
+      searches: [],
+      verticalLayout: false,
       loading: {
-        logs: false,
         getClusterStatus: false,
         listInstalledModules: false,
       },
       error: {
-        startDate: "",
-        startTime: "",
-        endDate: "",
-        endTime: "",
-        maxLines: "",
         getClusterStatus: "",
         listInstalledModules: "",
-        selectedNode: "",
-        selectedApp: "",
       },
     };
   },
   computed: {
-    ...mapState(["isWebsocketConnected"]),
-    csbClusterSelected() {
-      return this.context === "cluster";
-    },
-    csbNodeSelected() {
-      return this.context === "node";
-    },
-    csbModuleSelected() {
-      return this.context === "module";
-    },
-    selectedApp() {
-      return this.apps.find((app) => app.value == this.selectedAppId);
-    },
-    selectedNode() {
-      return this.nodes.find((node) => node.value == this.selectedNodeId);
-    },
-  },
-  watch: {
-    isWebsocketConnected: function () {
-      if (this.isWebsocketConnected) {
-        this.logsStart();
-      }
-    },
+    // csbHorizontalLayoutSelected() { ////
+    //   return !this.verticalLayout;
+    // },
+    // csbVerticalLayoutSelected() {
+    //   return this.verticalLayout;
+    // },
   },
   created() {
-    this.initFilters();
     this.getClusterStatus();
     this.listInstalledModules();
-    if (this.isWebsocketConnected) {
-      this.logsStart();
-    }
-  },
-  beforeDestroy() {
-    // remove event listeners
-    this.$root.$off("logsStart");
-    this.$root.$off("logsStop");
-
-    if (this.pid) {
-      this.logsStop();
-    }
+    this.addSearch();
   },
   methods: {
-    initFilters() {
-      this.clearErrors(this);
-      // set time interval
-      this.startDateString = this.formatDate(
-        this.subDays(new Date(), 1),
-        "yyyy-MM-dd"
+    addSearch() {
+      const searchId = uuidv4();
+      this.searches.push(searchId);
+
+      // scroll to new search
+      this.$nextTick(() => {
+        const el = this.$refs["search-" + searchId][0].$el;
+        this.scrollToElement(el);
+      });
+    },
+    async getClusterStatus() {
+      this.error.getClusterStatus = "";
+      this.loading.getClusterStatus = true;
+      const taskAction = "get-cluster-status";
+
+      // register to task error
+      this.$root.$off(taskAction + "-aborted");
+      this.$root.$once(taskAction + "-aborted", this.getClusterStatusAborted);
+
+      // register to task completion
+      this.$root.$once(
+        taskAction + "-completed",
+        this.getClusterStatusCompleted
       );
-      this.endDateString = this.formatDate(new Date(), "yyyy-MM-dd");
-      this.startTime = "00:00";
-      this.endTime = "23:59";
-      this.context = "cluster";
-      this.selectedAppId = "";
-      this.selectedNodeId = "";
-      this.searchQuery = "";
-      this.maxLines = "500";
-      this.followLogs = false;
-    },
-    validateSearchLogs() {
-      this.clearErrors();
-      let isValidationOk = true;
 
-      if (this.context == "node" && !this.selectedNodeId) {
-        this.error.selectedNode = this.$t("common.required");
-        isValidationOk = false;
-      }
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+          },
+        })
+      );
+      const err = res[0];
 
-      if (this.context == "module" && !this.selectedAppId) {
-        this.error.selectedApp = this.$t("common.required");
-        isValidationOk = false;
-      }
-
-      if (!this.startTime) {
-        this.error.startTime = this.$t("common.required");
-        isValidationOk = false;
-      }
-      if (!this.endTime) {
-        this.error.endTime = this.$t("common.required");
-        isValidationOk = false;
-      }
-      if (this.startTime && this.endTime) {
-        // using Date constructor: new Date('1995-12-17T03:24:00')
-        const startLocal = new Date(
-          this.startDateString + "T" + this.startTime + ":00"
-        );
-        const endLocal = new Date(
-          this.endDateString + "T" + this.endTime + ":59"
-        );
-        if (this.dateIsBefore(endLocal, startLocal)) {
-          this.error.startDate = this.$t("error.invalid_time_interval");
-          this.error.startTime = this.$t("error.invalid_time_interval");
-          this.error.endDate = this.$t("error.invalid_time_interval");
-          this.error.endTime = this.$t("error.invalid_time_interval");
-          isValidationOk = false;
-        }
-      }
-
-      if (this.maxLines < 1 || this.maxLines > this.MAX_LINES) {
-        this.error.maxLines = this.$t("error.invalid_value");
-        isValidationOk = false;
-      }
-      return isValidationOk;
-    },
-    logsStart() {
-      if (!this.validateSearchLogs()) {
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.getClusterStatus = this.getErrorMessage(err);
         return;
       }
-      this.loading.logs = true;
-      const mode = this.followLogs ? "tail" : "dump";
-      // using Date constructor: new Date('1995-12-17T03:24:00')
-      const startLocal = new Date(
-        this.startDateString + "T" + this.startTime + ":00"
-      );
-      const endLocal = new Date(
-        this.endDateString + "T" + this.endTime + ":59"
-      );
-      const format = "yyyy-MM-dd'T'HH:mm:ssX";
-      const startUtcString = this.formatInTimeZone(startLocal, format, "UTC");
-      const endUtcString = this.formatInTimeZone(endLocal, format, "UTC");
-      this.requestId = uuidv4();
-      this.clearLogs();
-      let entityName;
-      switch (this.context) {
-        case "cluster":
-          entityName = "";
-          break;
-        case "node":
-          entityName = this.selectedNodeId;
-          break;
-        case "module":
-          entityName = this.selectedAppId;
-          break;
+    },
+    getClusterStatusAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.getClusterStatus = this.$t("error.generic_error");
+      this.loading.getClusterStatus = false;
+    },
+    getClusterStatusCompleted(taskContext, taskResult) {
+      const clusterStatus = taskResult.output;
+
+      let nodes = [];
+      for (let node of clusterStatus.nodes) {
+        nodes.push({
+          name: node.hostname,
+          label: node.ui_name
+            ? node.ui_name + " (" + this.$t("common.node") + " " + node.id + ")"
+            : this.$t("common.node") + " " + node.id,
+          value: node.hostname,
+        });
       }
-      if (this.followLogs) {
-        this.$root.$on("logsStart", this.onLogsStartFollow);
-      } else {
-        this.$root.$once("logsStart", this.onLogsStartDump);
-      }
-      const logsStartObj = {
-        action: "logs-start",
-        payload: {
-          mode: mode,
-          lines: this.maxLines,
-          filter: this.searchQuery,
-          from: startUtcString,
-          to: endUtcString,
-          entity: this.context,
-          entity_name: entityName,
-          id: this.requestId,
-        },
-      };
-      this.$socket.sendObj(logsStartObj);
-      console.log("## logs-start sent", logsStartObj); ////
-    },
-    logsStop() {
-      // console.log("## logsStop"); ////
-      this.$root.$off("logsStart");
-      this.$root.$once("logsStop", this.onLogsStop);
-      const logsStopObj = {
-        action: "logs-stop",
-        payload: {
-          pid: this.pid,
-          id: this.requestId,
-        },
-      };
-      this.$socket.sendObj(logsStopObj);
-      // console.log("## logs-stop sent", logsStopObj); ////
-    },
-    onLogsStop() {
-      // console.log("## onLogsStop"); ////
-      this.isFollowing = false;
-      this.pid = "";
-      this.requestId = "";
-    },
-    contextSelected(value) {
-      this.context = value;
-    },
-    onLogsStartDump(payload) {
-      // console.log("## onLogsStartDump", payload); ////
-      this.loading.logs = false;
-      this.logOutput += payload.message;
-    },
-    onLogsStartFollow(payload) {
-      // console.log("## onLogsStartFollow", payload); ////
-      if (this.loading.logs) {
-        this.loading.logs = false;
-        this.isFollowing = true;
-        this.pid = payload.pid;
-      }
-      if (payload.message) {
-        this.logOutput += "\n" + payload.message;
-      }
-    },
-    toggleFilters() {
-      this.filtersShown = !this.filtersShown;
-    },
-    clearLogs() {
-      this.logOutput = "";
-    },
-    onEnterKeyPress() {
-      if (!this.isFollowing) {
-        this.logsStart();
-      }
+      nodes.sort(this.sortByProperty("label"));
+      this.nodes = nodes;
+      this.loading.getClusterStatus = false;
     },
     async listInstalledModules() {
       this.loading.listInstalledModules = true;
@@ -694,61 +286,20 @@ export default {
       this.apps = apps;
       this.loading.listInstalledModules = false;
     },
-    async getClusterStatus() {
-      this.error.getClusterStatus = "";
-      this.loading.getClusterStatus = true;
-      const taskAction = "get-cluster-status";
-
-      // register to task error
-      this.$root.$off(taskAction + "-aborted");
-      this.$root.$once(taskAction + "-aborted", this.getClusterStatusAborted);
-
-      // register to task completion
-      this.$root.$once(
-        taskAction + "-completed",
-        this.getClusterStatusCompleted
-      );
-
-      const res = await to(
-        this.createClusterTask({
-          action: taskAction,
-          extra: {
-            title: this.$t("action." + taskAction),
-            isNotificationHidden: true,
-          },
-        })
-      );
-      const err = res[0];
-
-      if (err) {
-        console.error(`error creating task ${taskAction}`, err);
-        this.error.getClusterStatus = this.getErrorMessage(err);
-        return;
+    setHorizontalLayout() {
+      this.verticalLayout = false;
+    },
+    setVerticalLayout() {
+      this.verticalLayout = true;
+    },
+    collapseAllFilters() {
+      for (const searchId of this.searches) {
+        this.$root.$emit(`collapseSystemLogsFilters-${searchId}`);
       }
     },
-    getClusterStatusAborted(taskResult, taskContext) {
-      console.error(`${taskContext.action} aborted`, taskResult);
-      this.error.getClusterStatus = this.$t("error.generic_error");
-      this.loading.getClusterStatus = false;
-    },
-    getClusterStatusCompleted(taskContext, taskResult) {
-      const clusterStatus = taskResult.output;
-
-      console.log("getClusterStatusCompleted", clusterStatus); ////
-
-      let nodes = [];
-      for (let node of clusterStatus.nodes) {
-        nodes.push({
-          name: node.hostname,
-          label: node.ui_name
-            ? node.ui_name + " (" + this.$t("common.node") + " " + node.id + ")"
-            : this.$t("common.node") + " " + node.id,
-          value: node.hostname,
-        });
-      }
-      nodes.sort(this.sortByProperty("label"));
-      this.nodes = nodes;
-      this.loading.getClusterStatus = false;
+    closeSearch(searchId) {
+      this.searches = this.searches.filter((s) => s !== searchId);
+      this.verticalLayout = false;
     },
   },
 };
@@ -756,72 +307,11 @@ export default {
 
 <style scoped lang="scss">
 @import "../styles/carbon-utils";
-.interval-date {
-  display: inline-flex;
-  margin-right: $spacing-06;
-}
 
-.interval-time {
-  display: inline-flex;
-}
-
-.context-switcher {
-  margin-bottom: $spacing-05;
-}
-
-.checkbox-filter {
-  display: flex;
-  align-items: center;
-}
-
-.logs-output-toolbar {
-  display: flex;
-  align-items: center;
-
-  .item {
-    margin-right: $spacing-07;
-  }
-}
-
-.buttons {
-  margin-top: $spacing-05;
-  margin-bottom: $spacing-06;
-}
-
-.toggle-filters {
-  margin-bottom: $spacing-06;
-}
-
-.logs-output.bx--snippet--multi {
-  max-width: none;
-  min-height: 7rem;
-  max-height: 35rem;
-}
-
-.filter-collapsed {
-  margin-right: $spacing-05;
-}
-</style>
-
-<style lang="scss">
-@import "../styles/carbon-utils";
-
-// global styles
-
-// remove fade effect on right border of code snippet
-.system-logs .logs-output.bx--snippet--multi .bx--snippet-container pre::after {
-  background-image: none;
-}
-
-// show scrollbar
-.system-logs .logs-output.bx--snippet--multi .bx--snippet-container {
-  overflow-y: auto !important;
-}
-
-@media (min-width: $breakpoint-medium) {
-  .system-logs .search-query .bx--text-input,
-  .system-logs .search-query .bx--text-input__field-wrapper {
-    max-width: none;
+// cannot switch to vertical layout on small screens
+@media (max-width: $breakpoint-x-large) {
+  .toggle-layout {
+    display: none;
   }
 }
 </style>

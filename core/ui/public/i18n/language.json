@@ -533,13 +533,21 @@
     "search_query": "Search query",
     "max_lines": "Max lines",
     "wrap_text": "Wrap text",
+    "search": "Search",
+    "follow": "Follow",
     "follow_logs": "Follow logs",
-    "search_logs": "Search logs",
     "collapse_filters": "Collapse filters",
     "expand_filters": "Expand filters",
     "clear_logs": "Clear",
     "stop_following": "Stop following",
-    "scroll_to_bottom": "Scroll to bottom"
+    "scroll_to_bottom": "Scroll to bottom",
+    "add_search": "Add search",
+    "horizontal_layout": "Horizontal layout",
+    "vertical_layout": "Vertical layout",
+    "no_log_found": "No log found",
+    "try_changing_search_filters": "Try changing search filters",
+    "mode": "Mode",
+    "dump": "Dump"
   },
   "audit_logs": {
     "title": "Audit logs",

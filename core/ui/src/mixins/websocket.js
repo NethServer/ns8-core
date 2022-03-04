@@ -49,17 +49,28 @@ export default {
       }
     },
     handleActionMessage(messageData) {
+      console.log("## handleActionMessage", messageData); ////
+
+      const payload = messageData.payload;
+
       switch (messageData.name) {
-        case "logs-start":
-          this.$root.$emit("logsStart", messageData.payload);
+        case "logs-start": {
+          payload.message = this.splitLogLines(payload.message);
+          this.$root.$emit(`logsStart-${payload.id}`, payload);
           break;
+        }
         case "logs-stop":
-          this.$root.$emit("logsStop", messageData.payload);
+          this.$root.$emit(`logsStop-${payload.id}`, payload);
           break;
       }
     },
+    splitLogLines(logLinesString) {
+      const logLines = logLinesString.split("\n");
+      // discard empty lines
+      return logLines.filter((l) => l);
+    },
     onClose(event) {
-      console.log("ws close", event);
+      console.log("ws close", event); ////
       this.$root.$emit("websocketDisconnected");
     },
   },
