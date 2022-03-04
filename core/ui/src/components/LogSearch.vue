@@ -96,7 +96,7 @@
           </cv-column>
         </cv-row>
         <cv-row>
-          <cv-column :md="verticalLayout ? 4 : 2">
+          <cv-column :md="verticalLayout ? 8 : 4" :xlg="verticalLayout ? 8 : 4">
             <label class="bx--label">
               {{ $t("system_logs.mode") }}
             </label>
@@ -116,18 +116,14 @@
               >
             </cv-content-switcher>
           </cv-column>
-          <cv-column
-            v-if="!followLogs"
-            :md="verticalLayout ? 4 : 2"
-            :xlg="verticalLayout ? 8 : 2"
-          >
+          <cv-column v-if="!followLogs" :md="verticalLayout ? 4 : 2">
             <cv-text-input
               :label="$t('system_logs.max_lines')"
               v-model.trim="maxLines"
               :invalid-message="error.maxLines"
               type="number"
               min="1"
-              :max="MAX_LINES"
+              :max="OUTPUT_MAX_LINES"
               @keypress.enter="onEnterKeyPress()"
               class="narrow mg-bottom-md"
             >
@@ -188,77 +184,6 @@
             </cv-time-picker>
           </cv-column>
         </cv-row>
-        <cv-row>
-          <!-- <cv-column :md="verticalLayout ? 4 : 2" :xlg="verticalLayout ? 8 : 2"> ////
-            <cv-text-input
-              :label="$t('system_logs.max_lines')"
-              v-model.trim="maxLines"
-              :invalid-message="error.maxLines"
-              :disabled="followLogs"
-              type="number"
-              min="1"
-              :max="MAX_LINES"
-              @keypress.enter="onEnterKeyPress()"
-              class="narrow mg-bottom-md"
-            >
-            </cv-text-input>
-          </cv-column> -->
-          <!-- <cv-column ////
-            :md="4"
-            :xlg="verticalLayout ? 8 : 4"
-            class="checkbox-filter"
-          >
-            <cv-checkbox
-              :label="$t('system_logs.follow_logs')"
-              v-model="followLogs"
-              value="checkFollowLogs"
-            />
-          </cv-column> -->
-        </cv-row>
-        <!-- <cv-row> ////
-          <cv-column class="buttons">
-            <NsButton
-              v-if="isFollowing"
-              kind="primary"
-              class="search-button"
-              :icon="Close20"
-              :loading="loading.stopFollowing"
-              :disabled="loading.stopFollowing"
-              @click="logsStop"
-              >{{ $t("system_logs.stop_following") }}</NsButton
-            >
-            <NsButton
-              v-else
-              kind="primary"
-              class="search-button"
-              :icon="Search20"
-              :loading="loading.logs"
-              :disabled="
-                !isWebsocketConnected || loading.logs || loading.loadingApps
-              "
-              @click="logsStart"
-              >{{
-                followLogs
-                  ? $t("system_logs.follow_logs")
-                  : $t("system_logs.search_logs")
-              }}</NsButton
-            >
-            <NsIconMenu
-              :flipMenu="true"
-              tipPosition="top"
-              tipAlignment="end"
-              class="overflow-near-button"
-            >
-              <cv-overflow-menu-item @click="initFilters()">
-                <NsMenuItem
-                  :icon="Reset20"
-                  @click="initFilters"
-                  :label="$t('common.reset_filters')"
-                />
-              </cv-overflow-menu-item>
-            </NsIconMenu>
-          </cv-column>
-        </cv-row> -->
       </template>
     </cv-grid>
     <cv-grid fullWidth class="no-padding">
@@ -331,6 +256,7 @@
             :loading="loading.stopFollowing"
             :disabled="loading.stopFollowing"
             @click="logsStop"
+            key="stop-following"
             >{{ $t("system_logs.stop_following") }}</NsButton
           >
           <NsButton
@@ -343,6 +269,7 @@
               !isWebsocketConnected || loading.logs || loading.loadingApps
             "
             @click="logsStart"
+            key="search"
             >{{
               followLogs ? $t("system_logs.follow") : $t("system_logs.search")
             }}</NsButton
@@ -413,8 +340,9 @@
             :numSearches="numSearches"
             :noLogsFound="noLogsFound"
             :light="false"
-            >{{ logOutput }}</LogOutput
-          >
+            :outputLines="outputLines"
+            :key="'logOutput-' + searchId"
+          />
         </cv-column>
       </cv-row>
     </cv-grid>
@@ -460,7 +388,7 @@ export default {
   mixins: [UtilService, IconService, DateTimeService],
   data() {
     return {
-      MAX_LINES: 2000,
+      OUTPUT_MAX_LINES: 2000,
       filtersShown: true,
       context: "cluster",
       searchQuery: "",
@@ -474,7 +402,7 @@ export default {
       maxLines: "",
       wrapText: true,
       followLogs: false,
-      logOutput: "",
+      outputLines: [],
       isFollowing: false,
       selectedNodeId: "",
       selectedAppId: "",
@@ -582,35 +510,38 @@ export default {
         isValidationOk = false;
       }
 
-      if (!this.startTime) {
-        this.error.startTime = this.$t("common.required");
-        isValidationOk = false;
-      }
-      if (!this.endTime) {
-        this.error.endTime = this.$t("common.required");
-        isValidationOk = false;
-      }
-      if (this.startTime && this.endTime) {
-        // using Date constructor: new Date('1995-12-17T03:24:00')
-        const startLocal = new Date(
-          this.startDateString + "T" + this.startTime + ":00"
-        );
-        const endLocal = new Date(
-          this.endDateString + "T" + this.endTime + ":59"
-        );
-        if (this.dateIsBefore(endLocal, startLocal)) {
-          this.error.startDate = this.$t("error.invalid_time_interval");
-          this.error.startTime = this.$t("error.invalid_time_interval");
-          this.error.endDate = this.$t("error.invalid_time_interval");
-          this.error.endTime = this.$t("error.invalid_time_interval");
+      if (!this.followLogs) {
+        if (!this.startTime) {
+          this.error.startTime = this.$t("common.required");
+          isValidationOk = false;
+        }
+        if (!this.endTime) {
+          this.error.endTime = this.$t("common.required");
+          isValidationOk = false;
+        }
+        if (this.startTime && this.endTime) {
+          // using Date constructor: new Date('1995-12-17T03:24:00')
+          const startLocal = new Date(
+            this.startDateString + "T" + this.startTime + ":00"
+          );
+          const endLocal = new Date(
+            this.endDateString + "T" + this.endTime + ":59"
+          );
+          if (this.dateIsBefore(endLocal, startLocal)) {
+            this.error.startDate = this.$t("error.invalid_time_interval");
+            this.error.startTime = this.$t("error.invalid_time_interval");
+            this.error.endDate = this.$t("error.invalid_time_interval");
+            this.error.endTime = this.$t("error.invalid_time_interval");
+            isValidationOk = false;
+          }
+        }
+
+        if (this.maxLines < 1 || this.maxLines > this.OUTPUT_MAX_LINES) {
+          this.error.maxLines = this.$t("error.invalid_value");
           isValidationOk = false;
         }
       }
 
-      if (this.maxLines < 1 || this.maxLines > this.MAX_LINES) {
-        this.error.maxLines = this.$t("error.invalid_value");
-        isValidationOk = false;
-      }
       return isValidationOk;
     },
     logsStart() {
@@ -673,6 +604,7 @@ export default {
       // console.log("## logsStop"); ////
       this.$root.$off(`logsStart-${this.searchId}`);
       this.$root.$once(`logsStop-${this.searchId}`, this.onLogsStop);
+
       const logsStopObj = {
         action: "logs-stop",
         payload: {
@@ -696,10 +628,11 @@ export default {
         // show empty state in LogsOutput
         this.noLogsFound = true;
       } else {
-        for (const line of payload.message) {
-          this.logOutput += "\n" + line;
-        }
+        this.outputLines = [...this.outputLines, ...payload.message];
       }
+
+      // signal LogOutput
+      this.$root.$emit(`logsUpdated-${this.searchId}`);
     },
     onLogsStartFollow(payload) {
       // console.log("## onLogsStartFollow", payload); ////
@@ -708,12 +641,23 @@ export default {
         this.isFollowing = true;
         this.pid = payload.pid;
       }
+
       if (payload.message.length) {
-        this.logOutput += "\n" + payload.message;
+        this.outputLines = [...this.outputLines, ...payload.message];
       }
+
+      // limit output buffer
+      if (this.outputLines.length > this.OUTPUT_MAX_LINES) {
+        const numLinesToDelete =
+          this.outputLines.length - this.OUTPUT_MAX_LINES;
+        this.outputLines.splice(0, numLinesToDelete);
+      }
+
+      // signal LogOutput
+      this.$root.$emit(`logsUpdated-${this.searchId}`);
     },
     clearLogs() {
-      this.logOutput = "";
+      this.outputLines = [];
     },
     onEnterKeyPress() {
       if (!this.isFollowing) {

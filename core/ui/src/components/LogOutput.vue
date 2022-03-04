@@ -39,8 +39,10 @@
       v-else
       class="bx--snippet-container"
       :ref="'logsContainer-' + searchId"
+      :key="'logsContainer-' + searchId"
     >
-      <pre><slot /></pre>
+      <pre>
+<template v-for="line of outputLines">{{ line + '\n' }}</template></pre>
     </div>
   </div>
 </template>
@@ -54,6 +56,10 @@ export default {
   props: {
     searchId: {
       type: String,
+      required: true,
+    },
+    outputLines: {
+      type: Array,
       required: true,
     },
     scrollToBottom: {
@@ -78,10 +84,10 @@ export default {
     },
   },
   created() {
-    this.$root.$on(`logsStart-${this.searchId}`, this.logsUpdated);
+    this.$root.$on(`logsUpdated-${this.searchId}`, this.logsUpdated);
   },
   beforeDestroy() {
-    this.$root.$off(`logsStart-${this.searchId}`);
+    this.$root.$off(`logsUpdated-${this.searchId}`);
   },
   methods: {
     // handleScroll: function (el) { ////

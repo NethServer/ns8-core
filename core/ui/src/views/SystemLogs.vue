@@ -154,14 +154,6 @@ export default {
       },
     };
   },
-  computed: {
-    // csbHorizontalLayoutSelected() { ////
-    //   return !this.verticalLayout;
-    // },
-    // csbVerticalLayoutSelected() {
-    //   return this.verticalLayout;
-    // },
-  },
   created() {
     this.getClusterStatus();
     this.listInstalledModules();
@@ -300,6 +292,7 @@ export default {
     closeSearch(searchId) {
       this.searches = this.searches.filter((s) => s !== searchId);
       this.verticalLayout = false;
+      this.$root.$off(`logsStart-${this.searchId}`);
     },
   },
 };
