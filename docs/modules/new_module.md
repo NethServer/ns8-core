@@ -81,6 +81,9 @@ The `configure-module` action should:
 - enable and start the systemd unit(s)
 - setup Traefik proxy routes, if needed
 
+Make sure that all parameters used by `configure-module` are saved inside the environment.
+Such parameters could than be retrieved by a `get-configuration` action, used to display the configuration inside the UI.
+
 #### build-images.sh
 
 The script creates an empty container image and publish it to the registry on user request.
@@ -97,6 +100,7 @@ and it will be available from the admin URL `https://your.server.fqdn/cluster-ad
 
 See how to [setup and develop the UI]({{site.baseurl}}/ui/modules.).
 
+Also make sure to edit [`imageroot/ui/public/metadata.json`]({{site.baseurl}}/modules/metadata) and replace the logo at `imageroot/ui/src/assets/module_default_logo.png`.
 
 ## Step 3: commit and push
 
@@ -166,9 +170,9 @@ Then create a new Pull Request (PR) to [ns8-repomd](https://github.com/NethServe
 The PR should contain:
 - a new [directory](https://github.com/NethServer/ns8-repomd/tree/main/dokuwiki) with the name of the module
 - the directory should contain:
-  - a file named [`metadata.json`](thttps://github.com/NethServer/ns8-repomd/blob/main/dokuwiki/metadata.json) which contains all information regarding the module itself
-  - a [logo](https://github.com/NethServer/ns8-repomd/blob/main/dokuwiki/logo.png)
-  - a [screenshots](https://github.com/NethServer/ns8-repomd/tree/main/dokuwiki/screenshots) directory with one ore more screenshots (optional)
+  - a file named [`metadata.json`]({{site.baseurl}}/modules/metadata#metadata.json) which contains all information regarding the module itself
+  - a logo file named [logo.png]({{site.baseurl}}/modules/metadata#logo)
+  - a screenshots directory with one ore more screenshots (optional)
 
 When the PR has been merged, [repository metadata](https://github.com/NethServer/ns8-repomd/tree/repomd) will be automatically updated accordingly.
 
