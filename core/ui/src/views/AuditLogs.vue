@@ -1,232 +1,275 @@
 <template>
-  <div class="bx--grid bx--grid--full-width">
-    <div class="bx--row">
-      <div class="bx--col-lg-16 page-title">
+  <cv-grid fullWidth>
+    <cv-row>
+      <cv-column class="page-title">
         <h2>{{ $t("audit_logs.title") }}</h2>
-      </div>
-    </div>
-    <div class="bx--row landscape-warning">
-      <div class="bx--col-lg-16">
+      </cv-column>
+    </cv-row>
+    <cv-row class="landscape-warning">
+      <cv-column>
         <NsInlineNotification
           kind="warning"
           :title="$t('common.use_landscape_mode')"
           :description="$t('common.use_landscape_mode_description')"
         />
-      </div>
-    </div>
-    <cv-tile :light="true">
-      <div class="bx--row">
-        <div class="bx--col-md-8">
-          <cv-form @submit.prevent="searchLogs">
-            <div>
-              <cv-date-picker
-                kind="single"
-                :cal-options="calOptions"
-                :date-label="$t('audit_logs.start_date')"
-                v-model="startDateString"
-                class="interval-date"
-                :invalid-message="error.startDate"
-              >
-              </cv-date-picker>
-              <cv-time-picker
-                :label="$t('audit_logs.start_time_label')"
-                :time.sync="startTime"
-                ampm="24"
-                :pattern="time24HourPatternString"
-                :placeholder="time24HourPlaceholder"
-                :form-item="true"
-                class="interval-time"
-                :invalid-message="
-                  time24HourPattern.test(startTime)
-                    ? error.startTime
-                    : $t('error.invalid_24h_pattern')
-                "
-              >
-              </cv-time-picker>
-            </div>
-            <div>
-              <cv-date-picker
-                kind="single"
-                :cal-options="calOptions"
-                :date-label="$t('audit_logs.end_date')"
-                v-model="endDateString"
-                class="interval-date"
-                :invalid-message="error.endDate"
-              >
-              </cv-date-picker>
-              <cv-time-picker
-                :label="$t('audit_logs.end_time_label')"
-                :time.sync="endTime"
-                ampm="24"
-                :pattern="time24HourPatternString"
-                :placeholder="time24HourPlaceholder"
-                :form-item="true"
-                class="interval-time"
-                :invalid-message="
-                  time24HourPattern.test(endTime)
-                    ? error.endTime
-                    : $t('error.invalid_24h_pattern')
-                "
-              >
-              </cv-time-picker>
-            </div>
-            <cv-multi-select
-              v-model="usersSelected"
-              :options="users"
-              :title="
-                $t('audit_logs.users') + ' (' + $t('common.optional') + ')'
-              "
-              :label="$t('audit_logs.users_label')"
-              :helper-text="usersHelperText"
-            >
-            </cv-multi-select>
-            <NsInlineNotification
-              v-if="error.auditUsers"
-              kind="error"
-              :title="$t('audit_logs.cannot_retrieve_audit_users')"
-              :description="error.auditUsers"
-              :showCloseButton="false"
-            />
-            <cv-multi-select
-              v-model="actionsSelected"
-              :options="actions"
-              :title="
-                $t('audit_logs.actions') + ' (' + $t('common.optional') + ')'
-              "
-              :label="$t('audit_logs.actions_label')"
-              :helper-text="actionsHelperText"
-            >
-            </cv-multi-select>
-            <NsInlineNotification
-              v-if="error.auditActions"
-              kind="error"
-              :title="$t('audit_logs.cannot_retrieve_audit_actions')"
-              :description="error.auditActions"
-              :showCloseButton="false"
-            />
-            <cv-text-input
-              :label="
-                $t('audit_logs.auditInfo') + ' (' + $t('common.optional') + ')'
-              "
-              v-model="auditInfo"
-              :placeholder="$t('audit_logs.audit_info_placeholder')"
-            >
-            </cv-text-input>
-            <cv-number-input
-              :label="$t('audit_logs.max_results')"
-              min="1"
-              v-model="maxResults"
-              class="logs-max-results"
-            >
-            </cv-number-input>
-            <div class="buttons">
-              <NsButton
-                kind="primary"
-                class="search-button"
-                :icon="Search20"
-                :loading="loading.auditLogs"
-                :disabled="loading.auditLogs"
-                >{{ $t("audit_logs.search_logs") }}</NsButton
-              >
-              <NsButton
-                kind="ghost"
-                :icon="Reset20"
-                @click="initFilters"
-                type="button"
-                >{{ $t("common.reset_filters") }}</NsButton
-              >
-            </div>
-          </cv-form>
-        </div>
-      </div>
-      <div class="bx--row">
-        <div class="bx--col-md-8">
-          <NsInlineNotification
-            v-if="error.auditLogs"
-            kind="error"
-            :title="$t('audit_logs.cannot_retrieve_audit_logs')"
-            :description="error.auditLogs"
-            :showCloseButton="false"
-          />
-        </div>
-      </div>
-      <div class="bx--row">
-        <div class="bx--col-md-8">
-          <NsEmptyState
-            v-if="!this.tableRows.length && !loading.auditLogs"
-            :title="$t('audit_logs.no_logs_found')"
-          >
-            <template #description>{{
-              $t("audit_logs.no_logs_found_description")
-            }}</template>
-          </NsEmptyState>
-          <div v-else>
-            <cv-data-table-skeleton
-              v-if="loading.auditLogs"
-              :columns="i18nTableColumns"
-              :rows="10"
-            ></cv-data-table-skeleton>
-            <cv-data-table
-              v-if="
-                !loading.auditLogs &&
-                !error.auditUsers &&
-                !error.auditActions &&
-                !error.auditLogs
-              "
-              :sortable="true"
-              :columns="i18nTableColumns"
-              @sort="sortTable"
-              :pagination="pagination"
-              @pagination="paginateTable"
-              ref="table"
-            >
-              <template slot="data">
-                <cv-data-table-row
-                  v-for="(row, rowIndex) in tablePage"
-                  :key="`${rowIndex}`"
-                  :value="`${rowIndex}`"
+      </cv-column>
+    </cv-row>
+    <cv-row>
+      <cv-column>
+        <cv-tile :light="true">
+          <cv-grid fullWidth class="no-padding">
+            <cv-row>
+              <cv-column :lg="8">
+                <cv-date-picker
+                  kind="single"
+                  :cal-options="calOptions"
+                  :date-label="$t('audit_logs.start_date')"
+                  v-model="startDateString"
+                  class="interval-date mg-bottom-md"
+                  :invalid-message="error.startDate"
                 >
-                  <cv-data-table-cell>{{ row.timestamp }}</cv-data-table-cell>
-                  <cv-data-table-cell>{{ row.user }}</cv-data-table-cell>
-                  <cv-data-table-cell>{{ row.action }}</cv-data-table-cell>
-                  <cv-data-table-cell
-                    :class="{ 'audit-info-collapsed': row.auditInfoCollapsed }"
+                </cv-date-picker>
+                <cv-time-picker
+                  :label="$t('audit_logs.start_time_label')"
+                  :time.sync="startTime"
+                  ampm="24"
+                  :pattern="time24HourPatternString"
+                  :placeholder="time24HourPlaceholder"
+                  :form-item="true"
+                  class="interval-time mg-bottom-md"
+                  :invalid-message="
+                    time24HourPattern.test(startTime)
+                      ? error.startTime
+                      : $t('error.invalid_24h_pattern')
+                  "
+                >
+                </cv-time-picker>
+              </cv-column>
+              <cv-column :lg="8">
+                <cv-date-picker
+                  kind="single"
+                  :cal-options="calOptions"
+                  :date-label="$t('audit_logs.end_date')"
+                  v-model="endDateString"
+                  class="interval-date mg-bottom-md"
+                  :invalid-message="error.endDate"
+                >
+                </cv-date-picker>
+                <cv-time-picker
+                  :label="$t('audit_logs.end_time_label')"
+                  :time.sync="endTime"
+                  ampm="24"
+                  :pattern="time24HourPatternString"
+                  :placeholder="time24HourPlaceholder"
+                  :form-item="true"
+                  class="interval-time mg-bottom-md"
+                  :invalid-message="
+                    time24HourPattern.test(endTime)
+                      ? error.endTime
+                      : $t('error.invalid_24h_pattern')
+                  "
+                >
+                </cv-time-picker>
+              </cv-column>
+            </cv-row>
+            <cv-row>
+              <cv-column :lg="8">
+                <cv-multi-select
+                  v-model="usersSelected"
+                  :options="users"
+                  :title="
+                    $t('audit_logs.users') + ' (' + $t('common.optional') + ')'
+                  "
+                  :label="$t('audit_logs.users_label')"
+                  :helper-text="usersHelperText"
+                  class="mg-bottom-md"
+                >
+                </cv-multi-select>
+                <NsInlineNotification
+                  v-if="error.auditUsers"
+                  kind="error"
+                  :title="$t('audit_logs.cannot_retrieve_audit_users')"
+                  :description="error.auditUsers"
+                  :showCloseButton="false"
+                />
+              </cv-column>
+              <cv-column :lg="8">
+                <cv-multi-select
+                  v-model="actionsSelected"
+                  :options="actions"
+                  :title="
+                    $t('audit_logs.actions') +
+                    ' (' +
+                    $t('common.optional') +
+                    ')'
+                  "
+                  :label="$t('audit_logs.actions_label')"
+                  :helper-text="actionsHelperText"
+                  class="mg-bottom-md"
+                >
+                </cv-multi-select>
+                <NsInlineNotification
+                  v-if="error.auditActions"
+                  kind="error"
+                  :title="$t('audit_logs.cannot_retrieve_audit_actions')"
+                  :description="error.auditActions"
+                  :showCloseButton="false"
+                />
+              </cv-column>
+            </cv-row>
+            <cv-row>
+              <cv-column :lg="8">
+                <cv-text-input
+                  :label="
+                    $t('audit_logs.auditInfo') +
+                    ' (' +
+                    $t('common.optional') +
+                    ')'
+                  "
+                  v-model="auditInfo"
+                  :placeholder="$t('audit_logs.audit_info_placeholder')"
+                  @keypress.enter="searchLogs()"
+                  class="mg-bottom-md"
+                >
+                </cv-text-input>
+              </cv-column>
+              <cv-column :lg="8">
+                <cv-text-input
+                  :label="$t('audit_logs.max_results')"
+                  v-model="maxResults"
+                  :invalid-message="error.maxResults"
+                  type="number"
+                  min="1"
+                  :max="MAX_RESULTS_LIMIT"
+                  @keypress.enter="searchLogs()"
+                  class="narrow mg-bottom-md"
+                  ref="maxResults"
+                >
+                </cv-text-input>
+              </cv-column>
+            </cv-row>
+            <cv-row class="search-button">
+              <cv-column>
+                <NsButton
+                  kind="primary"
+                  :icon="Search20"
+                  :loading="loading.auditLogs"
+                  :disabled="loading.auditLogs"
+                  @click="searchLogs"
+                  >{{ $t("audit_logs.search_logs") }}</NsButton
+                >
+              </cv-column>
+            </cv-row>
+          </cv-grid>
+          <cv-grid fullWidth class="no-padding">
+            <cv-row>
+              <cv-column>
+                <NsInlineNotification
+                  v-if="error.auditLogs"
+                  kind="error"
+                  :title="$t('audit_logs.cannot_retrieve_audit_logs')"
+                  :description="error.auditLogs"
+                  :showCloseButton="false"
+                />
+              </cv-column>
+            </cv-row>
+            <cv-row>
+              <cv-column>
+                <cv-tile
+                  v-if="!this.tableRows.length && !loading.auditLogs"
+                  :light="false"
+                >
+                  <NsEmptyState
+                    :title="$t('audit_logs.no_log_found')"
+                    :animationData="GhostLottie"
+                    animationTitle="ghost"
+                    :loop="1"
                   >
-                    <cv-icon-button
-                      v-if="row.auditInfo"
-                      kind="ghost"
-                      size="sm"
-                      :icon="
-                        row.auditInfoCollapsed ? RowExpand20 : RowCollapse20
-                      "
-                      :label="
-                        row.auditInfoCollapsed
-                          ? $t('common.expand')
-                          : $t('common.collapse')
-                      "
-                      @click="row.auditInfoCollapsed = !row.auditInfoCollapsed"
-                      tip-position="left"
-                      class="expand-audit-info-button"
-                    />
-                    <code>
-                      <pre
-                        v-if="!row.auditInfoCollapsed"
-                        class="audit-info-pre"
-                        >{{ tryParseJson(row.auditInfo) }}</pre
+                    <template #description>
+                      <div>{{ $t("audit_logs.no_log_found_description") }}</div>
+                    </template>
+                  </NsEmptyState>
+                </cv-tile>
+                <div v-else>
+                  <cv-data-table-skeleton
+                    v-if="loading.auditLogs"
+                    :columns="i18nTableColumns"
+                    :rows="10"
+                  ></cv-data-table-skeleton>
+                  <cv-data-table
+                    v-if="
+                      !loading.auditLogs &&
+                      !error.auditUsers &&
+                      !error.auditActions &&
+                      !error.auditLogs
+                    "
+                    :sortable="true"
+                    :columns="i18nTableColumns"
+                    @sort="sortTable"
+                    :pagination="pagination"
+                    @pagination="paginateTable"
+                    ref="table"
+                  >
+                    <template slot="data">
+                      <cv-data-table-row
+                        v-for="(row, rowIndex) in tablePage"
+                        :key="`${rowIndex}`"
+                        :value="`${rowIndex}`"
                       >
-                      <span v-else :id="'audit-info-' + row.id">{{
-                        tryParseJson(row.auditInfo)
-                      }}</span>
-                    </code>
-                  </cv-data-table-cell>
-                </cv-data-table-row>
-              </template></cv-data-table
-            >
-          </div>
-        </div>
-      </div>
-    </cv-tile>
-  </div>
+                        <cv-data-table-cell>{{
+                          row.timestamp
+                        }}</cv-data-table-cell>
+                        <cv-data-table-cell>{{ row.user }}</cv-data-table-cell>
+                        <cv-data-table-cell>{{
+                          row.action
+                        }}</cv-data-table-cell>
+                        <cv-data-table-cell
+                          :class="{
+                            'audit-info-collapsed': row.auditInfoCollapsed,
+                          }"
+                        >
+                          <cv-icon-button
+                            v-if="row.auditInfo"
+                            kind="ghost"
+                            size="sm"
+                            :icon="
+                              row.auditInfoCollapsed
+                                ? RowExpand20
+                                : RowCollapse20
+                            "
+                            :label="
+                              row.auditInfoCollapsed
+                                ? $t('common.expand')
+                                : $t('common.collapse')
+                            "
+                            @click="
+                              row.auditInfoCollapsed = !row.auditInfoCollapsed
+                            "
+                            tip-position="left"
+                            class="expand-audit-info-button"
+                          />
+                          <code>
+                            <pre
+                              v-if="!row.auditInfoCollapsed"
+                              class="audit-info-pre"
+                              >{{ tryParseJson(row.auditInfo) }}</pre
+                            >
+                            <span v-else :id="'audit-info-' + row.id">{{
+                              tryParseJson(row.auditInfo)
+                            }}</span>
+                          </code>
+                        </cv-data-table-cell>
+                      </cv-data-table-row>
+                    </template></cv-data-table
+                  >
+                </div>
+              </cv-column>
+            </cv-row>
+          </cv-grid>
+        </cv-tile>
+      </cv-column>
+    </cv-row>
+  </cv-grid>
 </template>
 
 <script>
@@ -237,6 +280,7 @@ import {
   IconService,
   DateTimeService,
   DataTableService,
+  LottieService,
 } from "@nethserver/ns8-ui-lib";
 
 export default {
@@ -247,12 +291,14 @@ export default {
     IconService,
     AuditService,
     UtilService,
+    LottieService,
   ],
   pageTitle() {
     return this.$t("audit_logs.title");
   },
   data() {
     return {
+      MAX_RESULTS_LIMIT: 2000,
       maxResults: 0,
       startDateString: "",
       endDateString: "",
@@ -279,6 +325,7 @@ export default {
         startTime: "",
         endDate: "",
         endTime: "",
+        maxResults: "",
       },
     };
   },
@@ -329,7 +376,7 @@ export default {
       this.usersSelected = [];
       this.actionsSelected = [];
       this.auditInfo = "";
-      this.maxResults = 100; //// save to local storage?
+      this.maxResults = "100";
     },
     async getAuditData() {
       // get audit users
@@ -423,6 +470,14 @@ export default {
         }
       }
 
+      if (this.maxResults < 1 || this.maxResults > this.MAX_RESULTS_LIMIT) {
+        this.error.maxResults = this.$t("error.must_be_between", {
+          min: 1,
+          max: this.MAX_RESULTS_LIMIT,
+        });
+        isValidationOk = false;
+      }
+
       return isValidationOk;
     },
     async searchLogs() {
@@ -502,12 +557,8 @@ export default {
   float: right;
 }
 
-.buttons {
-  margin-top: $spacing-07;
+.search-button {
+  margin-top: $spacing-05;
   margin-bottom: $spacing-09;
-}
-
-.logs-max-results {
-  max-width: 12rem;
 }
 </style>
