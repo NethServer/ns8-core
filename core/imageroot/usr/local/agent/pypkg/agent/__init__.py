@@ -181,9 +181,10 @@ def get_state_volume_args():
     """
     volume_args = {}
     install_dir = os.environ['AGENT_INSTALL_DIR']
+    state_dir = os.environ['AGENT_STATE_DIR']
     module_is_rootfull = os.geteuid() == 0
     module_id = os.environ['MODULE_ID']
-    volume_args['_installdir'] = f"--volume={install_dir}:/srv"
+    volume_args['_statedir'] = f"--volume={state_dir}:/srv/state"
     try:
         # Mount Podman volumes by finding their names in the include file:
         with open(install_dir + '/etc/state-include.conf', 'r') as incfile:
