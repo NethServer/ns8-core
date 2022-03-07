@@ -341,6 +341,7 @@
             :noLogsFound="noLogsFound"
             :light="false"
             :outputLines="outputLines"
+            :highlight="highlight"
             :key="'logOutput-' + searchId"
           />
         </cv-column>
@@ -409,6 +410,7 @@ export default {
       scrollToBottom: true,
       searchStarted: false,
       noLogsFound: false,
+      highlight: "",
       loading: {
         logs: false,
       },
@@ -563,6 +565,7 @@ export default {
       const format = "yyyy-MM-dd'T'HH:mm:ssX";
       const startUtcString = this.formatInTimeZone(startLocal, format, "UTC");
       const endUtcString = this.formatInTimeZone(endLocal, format, "UTC");
+      this.highlight = this.searchQuery;
       this.clearLogs();
       let entityName;
 

@@ -35,6 +35,7 @@
     "vue-infinite-loading": "^2.4.5",
     "vue-native-websocket": "^2.0.14",
     "vue-router": "^3.2.0",
+    "vue-text-highlight": "^2.0.10",
     "vue-toastification": "^1.7.11",
     "vuex": "^3.4.0"
   },

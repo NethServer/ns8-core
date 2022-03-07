@@ -13,11 +13,6 @@
     ]"
     data-code-snippet
   >
-    <!-- <div ////
-      @scroll="handleScroll"
-      class="bx--snippet-container"
-      ref="logsContainer"
-    > -->
     <cv-skeleton-text
       v-if="loading"
       :paragraph="true"
@@ -41,8 +36,7 @@
       :ref="'logsContainer-' + searchId"
       :key="'logsContainer-' + searchId"
     >
-      <pre>
-<template v-for="line of outputLines">{{ line + '\n' }}</template></pre>
+      <pre><text-highlight :queries="highlightQueries">{{ logText }}</text-highlight></pre>
     </div>
   </div>
 </template>
@@ -70,6 +64,10 @@ export default {
       type: Number,
       default: 1,
     },
+    highlight: {
+      type: String,
+      default: "",
+    },
     verticalLayout: Boolean,
     loading: Boolean,
     wrapText: Boolean,
@@ -78,6 +76,14 @@ export default {
     noLogsFound: Boolean,
   },
   mixins: [carbonPrefixMixin, themeMixin, UtilService, LottieService],
+  computed: {
+    logText() {
+      return this.outputLines.join("\n");
+    },
+    highlightQueries() {
+      return [this.highlight];
+    },
+  },
   watch: {
     searchId: function () {
       this.$root.$on(`logsStart-${this.searchId}`, this.logsUpdated);
@@ -90,26 +96,10 @@ export default {
     this.$root.$off(`logsUpdated-${this.searchId}`);
   },
   methods: {
-    // handleScroll: function (el) { ////
-    //   // this method is invoked only on user scrolls
-    //   if (
-    //     el.target.offsetHeight + el.target.scrollTop >=
-    //     el.target.scrollHeight
-    //   ) {
-    //     this.scrolledToBottom = true;
-    //   } else {
-    //     this.scrolledToBottom = false;
-    //   }
-
-    //   // if (!this.userHasScrolled) { ////
-    //   //   this.userHasScrolled = true;
-    //   // }
-    // },
     logsUpdated() {
       // new log lines are displayed
 
       setTimeout(() => {
-        // keep scrolling to the bottom if user has never scrolled or if he has scrolled to the bottom
         if (this.scrollToBottom) {
           this.scrollToBottomOfContainer();
         }
