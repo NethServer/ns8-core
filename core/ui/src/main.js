@@ -59,7 +59,7 @@ import VueI18n from "vue-i18n";
 Vue.use(VueI18n);
 const i18n = new VueI18n();
 const messages = require("../public/i18n/language.json");
-const langCode = navigator.language.substr(0, 2);
+const langCode = navigator.language.substring(0, 2);
 i18n.setLocaleMessage(langCode, messages);
 i18n.locale = langCode;
 
