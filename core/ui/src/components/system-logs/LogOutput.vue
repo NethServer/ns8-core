@@ -117,7 +117,7 @@ export default {
 </script>
 
 <style scoped lang="scss">
-@import "../styles/carbon-utils";
+@import "../../styles/carbon-utils";
 
 .logs-output.bx--snippet--multi {
   max-width: none;
@@ -135,7 +135,7 @@ export default {
 </style>
 
 <style lang="scss">
-@import "../styles/carbon-utils";
+@import "../../styles/carbon-utils";
 
 // global styles
 

@@ -87,7 +87,8 @@
     "invalid_port_number": "Invalid port number",
     "invalid_24h_pattern": "Invalid 24-hour pattern",
     "invalid_value": "Invalid value",
-    "invalid_time_interval": "Invalid time interval"
+    "invalid_time_interval": "Invalid time interval",
+    "must_be_between": "Must be between {min} and {max}"
   },
   "websocket": {
     "websocket_disconnected": "Websocket disconnected",

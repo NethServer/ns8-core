@@ -129,7 +129,7 @@
 import to from "await-to-js";
 import { UtilService, IconService, TaskService } from "@nethserver/ns8-ui-lib";
 import { v4 as uuidv4 } from "uuid";
-import LogSearch from "../components/LogSearch.vue";
+import LogSearch from "@/components/system-logs/LogSearch.vue";
 
 export default {
   name: "SystemLogs",

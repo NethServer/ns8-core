@@ -352,7 +352,7 @@
 
 <script>
 import { mapState } from "vuex";
-import LogOutput from "../components/LogOutput.vue";
+import LogOutput from "./LogOutput.vue";
 import {
   UtilService,
   IconService,
@@ -539,7 +539,10 @@ export default {
         }
 
         if (this.maxLines < 1 || this.maxLines > this.OUTPUT_MAX_LINES) {
-          this.error.maxLines = this.$t("error.invalid_value");
+          this.error.maxLines = this.$t("error.must_be_between", {
+            min: 1,
+            max: this.OUTPUT_MAX_LINES,
+          });
           isValidationOk = false;
         }
       }
@@ -638,7 +641,7 @@ export default {
       this.$root.$emit(`logsUpdated-${this.searchId}`);
     },
     onLogsStartFollow(payload) {
-      // console.log("## onLogsStartFollow", payload); ////
+      console.log("## onLogsStartFollow", payload); ////
       if (this.loading.logs) {
         this.loading.logs = false;
         this.isFollowing = true;
@@ -682,7 +685,7 @@ export default {
 </script>
 
 <style scoped lang="scss">
-@import "../styles/carbon-utils";
+@import "../../styles/carbon-utils";
 
 .log-search {
   // needed for close button positon
@@ -732,7 +735,7 @@ export default {
 </style>
 
 <style lang="scss">
-@import "../styles/carbon-utils";
+@import "../../styles/carbon-utils";
 
 // global styles
 
