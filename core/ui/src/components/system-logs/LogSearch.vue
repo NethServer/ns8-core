@@ -251,7 +251,7 @@
           <NsButton
             v-if="isFollowing"
             kind="primary"
-            class="search-button item mg-bottom-sm"
+            class="search-button mg-bottom-sm"
             :icon="Close20"
             :loading="loading.stopFollowing"
             :disabled="loading.stopFollowing"
@@ -262,7 +262,7 @@
           <NsButton
             v-else
             kind="primary"
-            class="search-button item mg-bottom-sm"
+            class="search-button mg-bottom-sm"
             :icon="Search20"
             :loading="loading.logs"
             :disabled="
@@ -279,7 +279,7 @@
               kind="secondary"
               :icon="Erase20"
               @click="clearLogs"
-              class="item mg-bottom-sm"
+              class="mg-right mg-bottom-sm"
               >{{ $t("system_logs.clear_logs") }}</NsButton
             >
             <div class="checkbox-filter">
@@ -287,7 +287,7 @@
                 :label="$t('system_logs.wrap_text')"
                 v-model="wrapText"
                 value="checkWrapText"
-                class="item mg-bottom-sm"
+                class="mg-right mg-bottom-sm"
               />
             </div>
             <!-- <cv-toggle ////
@@ -722,7 +722,7 @@ export default {
   flex-wrap: wrap;
   align-items: center;
 
-  .item {
+  .mg-right {
     margin-right: $spacing-06;
   }
 }
