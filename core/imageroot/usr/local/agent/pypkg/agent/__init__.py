@@ -174,6 +174,38 @@ def run_restic(rdb, repository, repo_path, podman_args, restic_args, **kwargs):
 
     return subprocess.run(podman_cmd, **kwargs)
 
+def get_state_volume_args():
+    """Return a list of --volume arguments for Podman run and similar. The argument values
+    are built from the module etc/state-include.conf file, if available, otherwise return
+    the list of already existing volumes.
+    """
+    volume_args = {}
+    install_dir = os.environ['AGENT_INSTALL_DIR']
+    module_is_rootfull = os.geteuid() == 0
+    module_id = os.environ['MODULE_ID']
+    volume_args['_installdir'] = f"--volume={install_dir}:/srv"
+    try:
+        # Mount Podman volumes by finding their names in the include file:
+        with open(install_dir + '/etc/state-include.conf', 'r') as incfile:
+            for iline in incfile:
+                if iline.startswith('volumes/'):
+                    sstart = len('volumes/')
+                    send = iline.find('/', sstart)
+                    svolume = iline[sstart:send]
+                    if not svolume:
+                        continue
+                    elif module_is_rootfull:
+                        dvolume = module_id + '-' + svolume
+                    else:
+                        dvolume = svolume
+
+                    volume_args[dvolume] = f"--volume={dvolume}:/srv/volumes/{svolume}"
+    except FileNotFoundError:
+        pass
+
+    return list(volume_args.values())
+
+
 def __action(*args):
     # write to stderr if AGENT file descriptor is not available:
     # this is usefull when developing new actions

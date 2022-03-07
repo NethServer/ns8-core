@@ -1,7 +1,7 @@
-#!/bin/bash
+#!/usr/bin/env python3
 
 #
-# Copyright (C) 2021 Nethesis S.r.l.
+# Copyright (C) 2022 Nethesis S.r.l.
 # http://www.nethesis.it - nethserver@nethesis.it
 #
 # This script is part of NethServer.
@@ -20,6 +20,25 @@
 # along with NethServer.  If not, see COPYING.
 #
 
-exec 1>&2 # Redirect any output to the journal (stderr)
+import agent
+import json
+import sys
+import os, os.path
 
-exec module-restore
+request = json.load(sys.stdin)
+
+repository = request['repository']
+repopath = request['path']
+snapshot = request['snapshot'] or "latest"
+original_environment = request['environment']
+
+rdb = agent.redis_connect(host='127.0.0.1') # Connect to local replica
+
+podman_args = ["--workdir=/srv"]
+podman_args.extend(agent.get_state_volume_args()) # get volumes from state-include.conf
+
+restic_args = ["restore", snapshot,
+    "--target", ".", # workdir should be /srv
+    "--exclude", "state/environment", # special core file exception
+]
+agent.run_restic(rdb, repository, repopath, podman_args, restic_args).check_returncode()
