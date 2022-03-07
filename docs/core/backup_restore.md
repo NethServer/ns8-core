@@ -36,20 +36,33 @@ All backups are scheduled by systemd timers. Given a backup with id `1`, it is p
 
 Whenever possible, containers should always use volumes to avoid SELinux issues during backup an restore.
 
-Includes can be added to the `state-include.conf` file saved inside the `AGENT_INSTALL_DIR`.
+Includes can be added to the `state-include.conf` file saved inside `AGENT_INSTALL_DIR/etc/`.
 In the [source tree](modules/images/#source-tree), the file should be placed under `<module>/imageroot/etc/state-include.conf`.
 On installed modules, the file will appear on different paths:
 - rootless containers, eg. `dokuwiki1`, full path will be `/home/dokuwiki1/.config/etc/state-include.conf`
 - rootfull containers, eg. `samba1`,  full path will be  `/var/lib/nethserver/samba1/etc/state-include.conf`
 
-Lines starting with `volumes/` will be translated to volume name. Example:
-```
-volumes/dokuwiki-data
-```
+Lines are interpreted as path patterns. Only patterns referring to
+volumes and the agent `state/` directory are considered.
+
+Lines starting with `state/` refer to `AGENT_STATE_DIR` contents. Eg. to
+include `mykey.dump` under the `AGENT_STATE_DIR` add
+
+    state/mykey.dump
+
+Lines starting with `volumes/` will be mapped to a volume name. Eg. to
+include the whole `dokuwiki-data` volume add
+
+    volumes/dokuwiki-data
 
 Internally, volumes will be mapped as:
-- `<volume_name>` for rootless containers, eg. for `dokuwiki1` map to `dokuwiki-data`
-- `<module_id>-<volume_name>` for rootfull containers, eg. for `samba1` map to `samba1-data`
+
+- `<volume_name>` (1-1) for rootless containers; eg. for module
+  `dokuwiki1`, line prefix `volumes/dokuwiki-data` maps to volume name
+  `dokuwiki-data`
+
+- `<module_id>-<volume_name>` for rootfull containers; eg. for module
+  `samba1`, line prefix `volumes/ data` maps to volume name `samba1-data`
 
 Volumes listed in `state-include.conf` are automatically mounted (and
 created if necessary) by the basic `10restore` step of the
@@ -57,7 +70,13 @@ created if necessary) by the basic `10restore` step of the
 
 Excludes can be added to `state-exclude.conf` file saved inside the `AGENT_INSTALL_DIR`.
 
-See [include](https://restic.readthedocs.io/en/stable/040_backup.html#including-files) and [exclude](https://restic.readthedocs.io/en/stable/040_backup.html#excluding-files).
+For a complete explanation of the patterns, like wildcard characters, see
+the official Restic documentation to
+[include](https://restic.readthedocs.io/en/stable/040_backup.html#including-files)
+and
+[exclude](https://restic.readthedocs.io/en/stable/040_backup.html#excluding-files)
+files. Note that include and exclude patterns have a slight different
+syntax.
 
 ## Save and restore Redis keys
 
