@@ -501,6 +501,7 @@ export default {
 
       if (err) {
         console.error(`error creating task ${taskAction}`, err);
+        this.loading.cleanRepositoriesCache = false;
         this.error.cleanRepositoriesCache = this.getErrorMessage(err);
         return;
       }

@@ -185,7 +185,7 @@
     "logout": "Logout"
   },
   "app_drawer": {
-    "no_apps": "No apps",
+    "no_apps": "No app",
     "no_apps_description": "To install apps go to Software center",
     "search_placeholder": "Search app...",
     "edit_favorite_apps": "Edit favorite apps",
@@ -470,7 +470,7 @@
     "other_actions": "Other actions",
     "search_results": "Search results",
     "no_app_found": "No app found",
-    "no_apps": "No apps",
+    "no_apps": "No app",
     "no_app_found_description": "Try changing your search query",
     "open": "Open",
     "update": "Update",

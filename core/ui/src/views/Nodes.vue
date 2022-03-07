@@ -353,14 +353,15 @@ export default {
     },
     showCopyClipboardHint() {
       setTimeout(() => {
-        const isCopyClipboardHintShown = this.getFromStorage(
-          "isCopyClipboardHintShown"
-        );
-
-        if (!isCopyClipboardHintShown) {
-          this.isCopyClipboardHintShown = true;
-          this.saveToStorage("isCopyClipboardHintShown", true);
-        }
+        //// TODO FIX
+        // const isCopyClipboardHintShown = this.getFromStorage(
+        //   "isCopyClipboardHintShown"
+        // );
+        //
+        // if (!isCopyClipboardHintShown) {
+        //   this.isCopyClipboardHintShown = true;
+        //   this.saveToStorage("isCopyClipboardHintShown", true);
+        // }
       }, 1000);
     },
     async retrieveNodesStatus() {
