@@ -199,14 +199,14 @@
           />
           <cv-tile v-else kind="standard" :light="true">
             <NsEmptyState
-              :title="$t('software_center.no_apps_found')"
+              :title="$t('software_center.no_app_found')"
               :animationData="GhostLottie"
               animationTitle="ghost"
               :loop="1"
               key="search-empty-state"
             >
               <template #description>
-                {{ $t("software_center.no_apps_found_description") }}
+                {{ $t("software_center.no_app_found_description") }}
               </template>
             </NsEmptyState>
           </cv-tile>

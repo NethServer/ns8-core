@@ -469,9 +469,9 @@
     "install_new_instance": "Install new instance",
     "other_actions": "Other actions",
     "search_results": "Search results",
-    "no_apps_found": "No apps found",
+    "no_app_found": "No app found",
     "no_apps": "No apps",
-    "no_apps_found_description": "Try changing your search query",
+    "no_app_found_description": "Try changing your search query",
     "open": "Open",
     "update": "Update",
     "update_all": "Update all apps",
@@ -570,8 +570,8 @@
     "cannot_retrieve_audit_actions": "Cannot retrieve log actions",
     "cannot_retrieve_audit_logs": "Cannot retrieve logs",
     "audit_info_placeholder": "Search anything inside data content of log",
-    "no_logs_found": "No logs found",
-    "no_logs_found_description": "Try changing your search filters"
+    "no_log_found": "No log found",
+    "no_log_found_description": "Try changing search filters"
   },
   "cluster_status": {
     "title": "Cluster status",

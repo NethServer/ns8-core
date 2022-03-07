@@ -119,11 +119,11 @@
           <cv-column v-if="!followLogs" :md="verticalLayout ? 4 : 2">
             <cv-text-input
               :label="$t('system_logs.max_lines')"
-              v-model.trim="maxLines"
+              v-model="maxLines"
               :invalid-message="error.maxLines"
               type="number"
               min="1"
-              :max="OUTPUT_MAX_LINES"
+              :max="MAX_LINES_LIMIT"
               @keypress.enter="onEnterKeyPress()"
               class="narrow mg-bottom-md"
             >
@@ -389,7 +389,7 @@ export default {
   mixins: [UtilService, IconService, DateTimeService],
   data() {
     return {
-      OUTPUT_MAX_LINES: 2000,
+      MAX_LINES_LIMIT: 2000,
       filtersShown: true,
       context: "cluster",
       searchQuery: "",
@@ -538,10 +538,10 @@ export default {
           }
         }
 
-        if (this.maxLines < 1 || this.maxLines > this.OUTPUT_MAX_LINES) {
+        if (this.maxLines < 1 || this.maxLines > this.MAX_LINES_LIMIT) {
           this.error.maxLines = this.$t("error.must_be_between", {
             min: 1,
-            max: this.OUTPUT_MAX_LINES,
+            max: this.MAX_LINES_LIMIT,
           });
           isValidationOk = false;
         }
@@ -653,9 +653,8 @@ export default {
       }
 
       // limit output buffer
-      if (this.outputLines.length > this.OUTPUT_MAX_LINES) {
-        const numLinesToDelete =
-          this.outputLines.length - this.OUTPUT_MAX_LINES;
+      if (this.outputLines.length > this.MAX_LINES_LIMIT) {
+        const numLinesToDelete = this.outputLines.length - this.MAX_LINES_LIMIT;
         this.outputLines.splice(0, numLinesToDelete);
       }
 
@@ -704,11 +703,6 @@ export default {
 .checkbox-filter {
   display: flex;
   align-items: center;
-}
-
-.buttons {
-  margin-top: $spacing-05;
-  margin-bottom: $spacing-06;
 }
 
 .toggle-filters {
