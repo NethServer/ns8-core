@@ -26,7 +26,7 @@ The system implements the common logic for backup inside the agent with `module-
 Each module can implement `module-dump-state` and `module-cleanup-state` to prepare/cleanup the data that has to be included in the backup.
 The `state/environment` file is always included inside the backup, as it is required by the `cluster/restore-module` action.
 The restore is implemented using a `restore-module` action inside the module agent, each module can extend it to implement specific restore steps.
-The basic `10restore_module` actually invokes the `module-restore` command.
+The basic `10restore` step actually runs the Restic restore procedure in a temporary container.
 
 All backups are scheduled by systemd timers. Given a backup with id `1`, it is possible to retrieve the time status with:
 - rootless containers, eg. `dokuwiki1`, executed by `dokuwiki1` user: `systemctl --user status backup1.timer`
@@ -40,7 +40,7 @@ Includes can be added to the `state-include.conf` file saved inside the `AGENT_I
 In the [source tree](modules/images/#source-tree), the file should be placed under `<module>/imageroot/etc/state-include.conf`.
 On installed modules, the file will appear on different paths:
 - rootless containers, eg. `dokuwiki1`, full path will be `/home/dokuwiki1/.config/etc/state-include.conf`
-- rootfull containers, eg. `samba1`,  full path will be  `/var/lib/nethserver/samba1/etc/stae-include.conf`
+- rootfull containers, eg. `samba1`,  full path will be  `/var/lib/nethserver/samba1/etc/state-include.conf`
 
 Lines starting with `volumes/` will be translated to volume name. Example:
 ```
@@ -49,7 +49,11 @@ volumes/dokuwiki-data
 
 Internally, volumes will be mapped as:
 - `<volume_name>` for rootless containers, eg. for `dokuwiki1` map to `dokuwiki-data`
-- `<module_id>-<volume_name>` for rootfull containers, eg. for `samba1` map to `samba1-data` 
+- `<module_id>-<volume_name>` for rootfull containers, eg. for `samba1` map to `samba1-data`
+
+Volumes listed in `state-include.conf` are automatically mounted (and
+created if necessary) by the basic `10restore` step of the
+`restore-module` action.
 
 Excludes can be added to `state-exclude.conf` file saved inside the `AGENT_INSTALL_DIR`.
 
