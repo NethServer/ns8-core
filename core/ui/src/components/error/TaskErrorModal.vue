@@ -101,7 +101,7 @@
 
 <script>
 import { mapState, mapActions } from "vuex";
-import TaskHierarchy from "@/components/TaskHierarchy";
+import TaskHierarchy from "./TaskHierarchy";
 import { TaskService, StorageService } from "@nethserver/ns8-ui-lib";
 
 export default {
@@ -173,7 +173,7 @@ export default {
 </script>
 
 <style scoped lang="scss">
-@import "../styles/carbon-utils";
+@import "../../styles/carbon-utils";
 
 .code-snippet-wrapper {
   max-height: 11rem;
@@ -191,7 +191,7 @@ export default {
 </style>
 
 <style lang="scss">
-@import "../styles/carbon-utils";
+@import "../../styles/carbon-utils";
 
 // global styles
 

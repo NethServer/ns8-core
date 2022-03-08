@@ -219,7 +219,7 @@ import {
 import to from "await-to-js";
 import NodeService from "@/mixins/node";
 import { mapState } from "vuex";
-import NodeCard from "@/components/NodeCard";
+import NodeCard from "@/components/misc/NodeCard";
 
 export default {
   name: "Nodes",

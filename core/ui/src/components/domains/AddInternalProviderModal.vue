@@ -137,7 +137,7 @@ import {
   LottieService,
 } from "@nethserver/ns8-ui-lib";
 import to from "await-to-js";
-import NodeSelector from "@/components/NodeSelector";
+import NodeSelector from "@/components/misc/NodeSelector";
 
 //// review all (copy/paste)
 

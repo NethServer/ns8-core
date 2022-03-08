@@ -649,7 +649,7 @@ export default {
 </script>
 
 <style scoped lang="scss">
-@import "../styles/carbon-utils";
+@import "../../styles/carbon-utils";
 
 .app-drawer {
   background-color: $ui-05;
@@ -817,7 +817,7 @@ export default {
 </style>
 
 <style lang="scss">
-@import "../styles/carbon-utils";
+@import "../../styles/carbon-utils";
 
 // global styles
 

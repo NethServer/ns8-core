@@ -11,7 +11,7 @@
 </template>
 
 <script>
-import SideMenuContent from "@/components/SideMenuContent";
+import SideMenuContent from "@/components/shell/SideMenuContent";
 
 export default {
   name: "SideMenu",
@@ -25,7 +25,7 @@ export default {
 </script>
 
 <style scoped lang="scss">
-@import "../styles/carbon-utils";
+@import "../../styles/carbon-utils";
 
 @media (max-width: $breakpoint-large) {
   // hide side menu on small devices
@@ -36,7 +36,7 @@ export default {
 </style>
 
 <style lang="scss">
-@import "../styles/carbon-utils";
+@import "../../styles/carbon-utils";
 
 // global styles
 

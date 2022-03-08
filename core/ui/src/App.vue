@@ -12,15 +12,15 @@
 </template>
 
 <script>
-import ShellHeader from "./components/ShellHeader";
-import SideMenu from "./components/SideMenu";
-import MobileSideMenu from "./components/MobileSideMenu";
+import ShellHeader from "@/components/shell/ShellHeader";
+import SideMenu from "@/components/shell/SideMenu";
+import MobileSideMenu from "@/components/shell/MobileSideMenu";
 import axios from "axios";
 import WebSocketService from "@/mixins/websocket";
 import { mapState, mapActions } from "vuex";
 import to from "await-to-js";
 import LoginService from "@/mixins/login";
-import TaskErrorModal from "@/components/TaskErrorModal";
+import TaskErrorModal from "@/components/error/TaskErrorModal";
 import NotificationService from "@/mixins/notification";
 import {
   UtilService,

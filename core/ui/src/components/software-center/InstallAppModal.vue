@@ -61,7 +61,7 @@
 import { UtilService, TaskService, IconService } from "@nethserver/ns8-ui-lib";
 import to from "await-to-js";
 import NotificationService from "@/mixins/notification";
-import NodeSelector from "@/components/NodeSelector";
+import NodeSelector from "@/components/misc/NodeSelector";
 
 export default {
   name: "InstallAppModal",
@@ -237,5 +237,5 @@ export default {
 </script>
 
 <style scoped lang="scss">
-@import "../styles/carbon-utils";
+@import "../../styles/carbon-utils";
 </style>

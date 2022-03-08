@@ -823,7 +823,7 @@ import { mapActions } from "vuex";
 import to from "await-to-js";
 import NotificationService from "@/mixins/notification";
 import RestoreMultipleInstancesSelector from "@/components/backup/RestoreMultipleInstancesSelector";
-import SkipRestoreAppsModal from "@/components/SkipRestoreAppsModal";
+import SkipRestoreAppsModal from "@/components/misc/SkipRestoreAppsModal";
 
 export default {
   name: "InitializeCluster",

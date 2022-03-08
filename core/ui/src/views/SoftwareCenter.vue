@@ -223,10 +223,10 @@
 </template>
 
 <script>
-import AppList from "@/components/AppList";
+import AppList from "@/components/software-center/AppList";
 import to from "await-to-js";
 import { mapActions } from "vuex";
-import InstallAppModal from "../components/InstallAppModal";
+import InstallAppModal from "../components/software-center/InstallAppModal";
 import {
   QueryParamService,
   UtilService,
