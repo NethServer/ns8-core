@@ -46,9 +46,9 @@
               >
             </cv-content-switcher>
           </cv-column>
-          <cv-column v-if="csbNodeSelected" :md="verticalLayout ? 8 : 4">
+          <cv-column v-show="csbNodeSelected" :md="verticalLayout ? 8 : 4">
             <cv-combo-box
-              v-model="selectedNodeId"
+              v-model="internalSelectedNodeId"
               :label="$t('common.choose')"
               :title="$t('system_logs.context_node')"
               :invalid-message="error.selectedNode"
@@ -61,9 +61,9 @@
             >
             </cv-combo-box>
           </cv-column>
-          <cv-column v-else-if="csbModuleSelected" :md="verticalLayout ? 8 : 4">
+          <cv-column v-show="csbModuleSelected" :md="verticalLayout ? 8 : 4">
             <cv-combo-box
-              v-model="selectedAppId"
+              v-model="internalSelectedAppId"
               :label="$t('common.choose')"
               :title="$t('system_logs.context_module')"
               :invalid-message="error.selectedApp"
@@ -86,7 +86,7 @@
                 $t('common.optional') +
                 ')'
               "
-              v-model.trim="searchQuery"
+              v-model.trim="internalSearchQuery"
               :placeholder="$t('common.search_placeholder')"
               :helper-text="$t('common.case_sensitive')"
               @keypress.enter="onEnterKeyPress()"
@@ -116,10 +116,10 @@
               >
             </cv-content-switcher>
           </cv-column>
-          <cv-column v-if="!followLogs" :md="verticalLayout ? 4 : 2">
+          <cv-column v-if="!internalFollowLogs" :md="verticalLayout ? 4 : 2">
             <cv-text-input
               :label="$t('system_logs.max_lines')"
-              v-model="maxLines"
+              v-model="internalMaxLines"
               :invalid-message="error.maxLines"
               type="number"
               min="1"
@@ -130,27 +130,27 @@
             </cv-text-input>
           </cv-column>
         </cv-row>
-        <cv-row v-if="!followLogs">
+        <cv-row v-if="!internalFollowLogs">
           <cv-column :md="verticalLayout ? 8 : 4">
             <cv-date-picker
               kind="single"
               :cal-options="calOptions"
               :date-label="$t('system_logs.start_date')"
-              v-model="startDateString"
+              v-model="internalStartDate"
               class="interval-date mg-bottom-md"
               :invalid-message="error.startDate"
             >
             </cv-date-picker>
             <cv-time-picker
               :label="$t('system_logs.start_time_label')"
-              :time.sync="startTime"
+              :time.sync="internalStartTime"
               ampm="24"
               :pattern="time24HourPatternString"
               :placeholder="time24HourPlaceholder"
               :form-item="true"
               class="interval-time mg-bottom-md"
               :invalid-message="
-                time24HourPattern.test(startTime)
+                time24HourPattern.test(internalStartTime)
                   ? error.startTime
                   : $t('error.invalid_24h_pattern')
               "
@@ -162,21 +162,21 @@
               kind="single"
               :cal-options="calOptions"
               :date-label="$t('system_logs.end_date')"
-              v-model="endDateString"
+              v-model="internalEndDate"
               class="interval-date mg-bottom-md"
               :invalid-message="error.endDate"
             >
             </cv-date-picker>
             <cv-time-picker
               :label="$t('system_logs.end_time_label')"
-              :time.sync="endTime"
+              :time.sync="internalEndTime"
               ampm="24"
               :pattern="time24HourPatternString"
               :placeholder="time24HourPlaceholder"
               :form-item="true"
               class="interval-time mg-bottom-md"
               :invalid-message="
-                time24HourPattern.test(endTime)
+                time24HourPattern.test(internalEndTime)
                   ? error.endTime
                   : $t('error.invalid_24h_pattern')
               "
@@ -198,38 +198,44 @@
             <span class="filter-collapsed">
               <strong>{{ $t("system_logs.context") }}</strong
               >:
-              <span v-if="context == 'cluster'">{{
+              <span v-if="internalContext == 'cluster'">{{
                 $t("system_logs.context_cluster")
               }}</span>
-              <span v-else-if="context == 'node'">
+              <span v-else-if="internalContext == 'node'">
                 {{ selectedNode ? selectedNode.label : "-" }}
               </span>
-              <span v-else-if="context == 'module'">
+              <span v-else-if="internalContext == 'module'">
                 {{ selectedApp ? selectedApp.label : "-" }}</span
               >
             </span>
             <span class="filter-collapsed"
               ><strong>{{ $t("system_logs.search_query") }}</strong
-              >: "<span>{{ searchQuery }}</span
+              >: "<span>{{ internalSearchQuery }}</span
               >"</span
             >
             <span class="filter-collapsed"
               ><strong>{{ $t("system_logs.start") }}</strong
-              >: <span>{{ startDateString + " " + startTime }}</span></span
+              >:
+              <span>{{
+                internalStartDate + " " + internalStartTime
+              }}</span></span
             >
             <span class="filter-collapsed"
               ><strong>{{ $t("system_logs.end") }}</strong
-              >: <span>{{ endDateString + " " + endTime }}</span></span
+              >:
+              <span>{{ internalEndDate + " " + internalEndTime }}</span></span
             >
             <span class="filter-collapsed"
               ><strong>{{ $t("system_logs.max_lines") }}</strong
-              >: <span>{{ maxLines }}</span></span
+              >: <span>{{ internalMaxLines }}</span></span
             >
             <span class="filter-collapsed"
               ><strong>{{ $t("system_logs.follow_logs") }}</strong
               >:
               <span>{{
-                followLogs ? $t("common.enabled") : $t("common.disabled")
+                internalFollowLogs
+                  ? $t("common.enabled")
+                  : $t("common.disabled")
               }}</span></span
             >
           </div>
@@ -271,7 +277,9 @@
             @click="logsStart"
             key="search"
             >{{
-              followLogs ? $t("system_logs.follow") : $t("system_logs.search")
+              internalFollowLogs
+                ? $t("system_logs.follow")
+                : $t("system_logs.search")
             }}</NsButton
           >
           <template v-if="searchStarted">
@@ -379,6 +387,44 @@ export default {
       type: Number,
       default: 1,
     },
+    searchQuery: {
+      type: String,
+      default: "",
+    },
+    context: {
+      type: String,
+      default: "cluster",
+    },
+    selectedNodeId: {
+      type: String,
+      default: "",
+    },
+    selectedAppId: {
+      type: String,
+      default: "",
+    },
+    maxLines: {
+      type: String,
+      default: "500",
+    },
+    startDate: {
+      type: String,
+      default: "",
+    },
+    startTime: {
+      type: String,
+      default: "",
+    },
+    endDate: {
+      type: String,
+      default: "",
+    },
+    endTime: {
+      type: String,
+      default: "",
+    },
+    mainSearch: Boolean,
+    followLogs: Boolean,
     verticalLayout: Boolean,
     loadingNodes: Boolean,
     loadingApps: Boolean,
@@ -391,22 +437,22 @@ export default {
     return {
       MAX_LINES_LIMIT: 2000,
       filtersShown: true,
-      context: "cluster",
-      searchQuery: "",
+      internalContext: "",
+      internalSearchQuery: "",
       calOptions: {
         dateFormat: "Y-m-d",
       },
-      startDateString: "",
-      endDateString: "",
-      startTime: "",
-      endTime: "",
-      maxLines: "",
+      internalStartDate: "",
+      internalEndDate: "",
+      internalStartTime: "",
+      internalEndTime: "",
+      internalMaxLines: "",
       wrapText: true,
-      followLogs: false,
+      internalFollowLogs: false,
       outputLines: [],
       isFollowing: false,
-      selectedNodeId: "",
-      selectedAppId: "",
+      internalSelectedNodeId: "",
+      internalSelectedAppId: "",
       scrollToBottom: true,
       searchStarted: false,
       noLogsFound: false,
@@ -428,28 +474,150 @@ export default {
   computed: {
     ...mapState(["isWebsocketConnected"]),
     csbClusterSelected() {
-      return this.context === "cluster";
+      return this.internalContext === "cluster";
     },
     csbNodeSelected() {
-      return this.context === "node";
+      return this.internalContext === "node";
     },
     csbModuleSelected() {
-      return this.context === "module";
+      return this.internalContext === "module";
     },
     selectedApp() {
-      return this.apps.find((app) => app.value == this.selectedAppId);
+      return this.apps.find((app) => app.value == this.internalSelectedAppId);
     },
     selectedNode() {
-      return this.nodes.find((node) => node.value == this.selectedNodeId);
+      return this.nodes.find(
+        (node) => node.value == this.internalSelectedNodeId
+      );
     },
     showCloseButton() {
       return this.numSearches > 1;
     },
     csbDumpModeSelected() {
-      return !this.followLogs;
+      return !this.internalFollowLogs;
     },
     csbFollowModeSelected() {
-      return this.followLogs;
+      return this.internalFollowLogs;
+    },
+  },
+  watch: {
+    searchQuery: function () {
+      if (this.mainSearch) {
+        this.internalSearchQuery = this.searchQuery;
+      }
+    },
+    internalSearchQuery: function () {
+      if (this.mainSearch) {
+        this.$emit("updateSearchQuery", this.internalSearchQuery);
+      }
+    },
+    context: function () {
+      if (this.mainSearch) {
+        this.internalContext = this.context;
+      }
+    },
+    internalContext: function () {
+      if (this.mainSearch) {
+        this.$emit("updateContext", this.internalContext);
+      }
+    },
+    selectedNodeId: function () {
+      if (this.mainSearch && this.nodes.length) {
+        this.$nextTick(() => {
+          this.internalSelectedNodeId = this.selectedNodeId;
+        });
+      }
+    },
+    internalSelectedNodeId: function () {
+      if (this.mainSearch) {
+        this.$emit("updateSelectedNodeId", this.internalSelectedNodeId);
+      }
+    },
+    nodes: function () {
+      if (this.mainSearch && this.nodes.length) {
+        this.$nextTick(() => {
+          this.internalSelectedNodeId = this.selectedNodeId;
+        });
+      }
+    },
+    selectedAppId: function () {
+      if (this.mainSearch && this.apps.length) {
+        this.$nextTick(() => {
+          this.internalSelectedAppId = this.selectedAppId;
+        });
+      }
+    },
+    internalSelectedAppId: function () {
+      if (this.mainSearch) {
+        this.$emit("updateSelectedAppId", this.internalSelectedAppId);
+      }
+    },
+    apps: function () {
+      if (this.mainSearch && this.apps.length) {
+        this.$nextTick(() => {
+          this.internalSelectedAppId = this.selectedAppId;
+        });
+      }
+    },
+    followLogs: function () {
+      if (this.mainSearch) {
+        this.internalFollowLogs = this.followLogs;
+      }
+    },
+    internalFollowLogs: function () {
+      if (this.mainSearch) {
+        this.$emit("updateFollowLogs", this.internalFollowLogs);
+      }
+    },
+    maxLines: function () {
+      if (this.mainSearch) {
+        this.internalMaxLines = this.maxLines;
+      }
+    },
+    internalMaxLines: function () {
+      if (this.mainSearch) {
+        this.$emit("updateMaxLines", this.internalMaxLines);
+      }
+    },
+    startDate: function () {
+      if (this.mainSearch) {
+        this.internalStartDate = this.startDate;
+      }
+    },
+    internalStartDate: function () {
+      if (this.mainSearch) {
+        this.$emit("updateStartDate", this.internalStartDate);
+      }
+    },
+    endDate: function () {
+      if (this.mainSearch) {
+        this.internalEndDate = this.endDate;
+      }
+    },
+    internalEndDate: function () {
+      if (this.mainSearch) {
+        this.$emit("updateEndDate", this.internalEndDate);
+      }
+    },
+    startTime: function () {
+      if (this.mainSearch) {
+        this.internalStartTime = this.startTime;
+      }
+    },
+    internalStartTime: function () {
+      if (this.mainSearch) {
+        this.$emit("updateStartTime", this.internalStartTime);
+      }
+    },
+    endTime: function () {
+      if (this.mainSearch) {
+        this.internalEndTime = this.endTime;
+      }
+    },
+    internalEndTime: function () {
+      if (this.mainSearch) {
+        this.$emit("updateEndTime", this.internalEndTime);
+      }
     },
   },
   created() {
@@ -460,12 +628,14 @@ export default {
       `collapseSystemLogsFilters-${this.searchId}`,
       this.collapseFilters
     );
+    this.$root.$on("logSearchClosed", this.onLogSearchClosed);
   },
   beforeDestroy() {
     // remove event listeners
     this.$root.$off(`logsStart-${this.searchId}`);
     this.$root.$off(`logsStop-${this.searchId}`);
     this.$root.$off(`collapseSystemLogsFilters-${this.searchId}`);
+    this.$root.$off("logSearchClosed");
 
     if (this.pid) {
       this.logsStop();
@@ -479,55 +649,55 @@ export default {
       this.filtersShown = false;
     },
     onContextSelected(value) {
-      this.context = value;
+      this.internalContext = value;
     },
     initFilters() {
       this.clearErrors(this);
       // set time interval
-      this.startDateString = this.formatDate(
+      this.internalStartDate = this.formatDate(
         this.subDays(new Date(), 1),
         "yyyy-MM-dd"
       );
-      this.endDateString = this.formatDate(new Date(), "yyyy-MM-dd");
-      this.startTime = "00:00";
-      this.endTime = "23:59";
-      this.context = "cluster";
-      this.selectedAppId = "";
-      this.selectedNodeId = "";
-      this.searchQuery = "";
-      this.maxLines = "500";
-      this.followLogs = false;
+      this.internalEndDate = this.formatDate(new Date(), "yyyy-MM-dd");
+      this.internalStartTime = "00:00";
+      this.internalEndTime = "23:59";
+      this.internalContext = "cluster";
+      this.internalSelectedAppId = "";
+      this.internalSelectedNodeId = "";
+      this.internalSearchQuery = "";
+      this.internalMaxLines = "500";
+      this.internalFollowLogs = false;
     },
     validateSearchLogs() {
       this.clearErrors();
       let isValidationOk = true;
 
-      if (this.context == "node" && !this.selectedNodeId) {
+      if (this.internalContext == "node" && !this.internalSelectedNodeId) {
         this.error.selectedNode = this.$t("common.required");
         isValidationOk = false;
       }
 
-      if (this.context == "module" && !this.selectedAppId) {
+      if (this.internalContext == "module" && !this.internalSelectedAppId) {
         this.error.selectedApp = this.$t("common.required");
         isValidationOk = false;
       }
 
-      if (!this.followLogs) {
-        if (!this.startTime) {
+      if (!this.internalFollowLogs) {
+        if (!this.internalStartTime) {
           this.error.startTime = this.$t("common.required");
           isValidationOk = false;
         }
-        if (!this.endTime) {
+        if (!this.internalEndTime) {
           this.error.endTime = this.$t("common.required");
           isValidationOk = false;
         }
-        if (this.startTime && this.endTime) {
+        if (this.internalStartTime && this.internalEndTime) {
           // using Date constructor: new Date('1995-12-17T03:24:00')
           const startLocal = new Date(
-            this.startDateString + "T" + this.startTime + ":00"
+            this.internalStartDate + "T" + this.internalStartTime + ":00"
           );
           const endLocal = new Date(
-            this.endDateString + "T" + this.endTime + ":59"
+            this.internalEndDate + "T" + this.internalEndTime + ":59"
           );
           if (this.dateIsBefore(endLocal, startLocal)) {
             this.error.startDate = this.$t("error.invalid_time_interval");
@@ -538,7 +708,10 @@ export default {
           }
         }
 
-        if (this.maxLines < 1 || this.maxLines > this.MAX_LINES_LIMIT) {
+        if (
+          this.internalMaxLines < 1 ||
+          this.internalMaxLines > this.MAX_LINES_LIMIT
+        ) {
           this.error.maxLines = this.$t("error.must_be_between", {
             min: 1,
             max: this.MAX_LINES_LIMIT,
@@ -556,35 +729,35 @@ export default {
       this.loading.logs = true;
       this.noLogsFound = false;
       this.searchStarted = true;
-      const mode = this.followLogs ? "tail" : "dump";
+      const mode = this.internalFollowLogs ? "tail" : "dump";
 
       // using Date constructor: new Date('1995-12-17T03:24:00')
       const startLocal = new Date(
-        this.startDateString + "T" + this.startTime + ":00"
+        this.internalStartDate + "T" + this.internalStartTime + ":00"
       );
       const endLocal = new Date(
-        this.endDateString + "T" + this.endTime + ":59"
+        this.internalEndDate + "T" + this.internalEndTime + ":59"
       );
       const format = "yyyy-MM-dd'T'HH:mm:ssX";
       const startUtcString = this.formatInTimeZone(startLocal, format, "UTC");
       const endUtcString = this.formatInTimeZone(endLocal, format, "UTC");
-      this.highlight = this.searchQuery;
+      this.highlight = this.internalSearchQuery;
       this.clearLogs();
       let entityName;
 
-      switch (this.context) {
+      switch (this.internalContext) {
         case "cluster":
           entityName = "";
           break;
         case "node":
-          entityName = this.selectedNodeId;
+          entityName = this.internalSelectedNodeId;
           break;
         case "module":
-          entityName = this.selectedAppId;
+          entityName = this.internalSelectedAppId;
           break;
       }
 
-      if (this.followLogs) {
+      if (this.internalFollowLogs) {
         this.$root.$on(`logsStart-${this.searchId}`, this.onLogsStartFollow);
       } else {
         this.$root.$once(`logsStart-${this.searchId}`, this.onLogsStartDump);
@@ -594,20 +767,18 @@ export default {
         action: "logs-start",
         payload: {
           mode: mode,
-          lines: this.maxLines,
-          filter: this.searchQuery,
+          lines: this.internalMaxLines,
+          filter: this.internalSearchQuery,
           from: startUtcString,
           to: endUtcString,
-          entity: this.context,
+          entity: this.internalContext,
           entity_name: entityName,
           id: this.searchId,
         },
       };
       this.$socket.sendObj(logsStartObj);
-      // console.log("## logs-start sent", logsStartObj); ////
     },
     logsStop() {
-      // console.log("## logsStop"); ////
       this.$root.$off(`logsStart-${this.searchId}`);
       this.$root.$once(`logsStop-${this.searchId}`, this.onLogsStop);
 
@@ -619,15 +790,12 @@ export default {
         },
       };
       this.$socket.sendObj(logsStopObj);
-      // console.log("## logs-stop sent", logsStopObj); ////
     },
     onLogsStop() {
-      // console.log("## onLogsStop"); ////
       this.isFollowing = false;
       this.pid = "";
     },
     onLogsStartDump(payload) {
-      // console.log("## onLogsStartDump", payload); ////
       this.loading.logs = false;
 
       if (!payload.message.length) {
@@ -641,7 +809,6 @@ export default {
       this.$root.$emit(`logsUpdated-${this.searchId}`);
     },
     onLogsStartFollow(payload) {
-      console.log("## onLogsStartFollow", payload); ////
       if (this.loading.logs) {
         this.loading.logs = false;
         this.isFollowing = true;
@@ -671,12 +838,30 @@ export default {
     },
     onClose() {
       this.$emit("close", this.searchId);
+      this.$root.$emit("logSearchClosed");
+    },
+    onLogSearchClosed() {
+      this.$nextTick(() => {
+        if (this.mainSearch) {
+          // update query params
+          this.$emit("updateSearchQuery", this.internalSearchQuery);
+          this.$emit("updateContext", this.internalContext);
+          this.$emit("updateSelectedNodeId", this.internalSelectedNodeId);
+          this.$emit("updateSelectedAppId", this.internalSelectedAppId);
+          this.$emit("updateFollowLogs", this.internalFollowLogs);
+          this.$emit("updateMaxLines", this.internalMaxLines);
+          this.$emit("updateStartDate", this.internalStartDate);
+          this.$emit("updateEndDate", this.internalEndDate);
+          this.$emit("updateStartTime", this.internalStartTime);
+          this.$emit("updateEndTime", this.internalEndTime);
+        }
+      });
     },
     onModeSelected(value) {
       if (value == "dump") {
-        this.followLogs = false;
+        this.internalFollowLogs = false;
       } else if (value == "follow") {
-        this.followLogs = true;
+        this.internalFollowLogs = true;
       }
     },
   },

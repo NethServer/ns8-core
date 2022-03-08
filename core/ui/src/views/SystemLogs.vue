@@ -103,7 +103,7 @@
     </cv-row>
     <cv-row>
       <cv-column
-        v-for="searchId in searches"
+        v-for="(searchId, index) in searches"
         :key="searchId"
         :md="verticalLayout ? 4 : 8"
       >
@@ -115,8 +115,29 @@
           :loadingApps="loading.apps"
           :verticalLayout="verticalLayout"
           :numSearches="searches.length"
-          @close="closeSearch"
+          :mainSearch="index == 0"
+          :searchQuery="q.searchQuery"
+          :context="q.context"
+          :selectedNodeId="q.selectedNodeId"
+          :selectedAppId="q.selectedAppId"
+          :followLogs="q.followLogs"
+          :maxLines="q.maxLines"
+          :startDate="q.startDate"
+          :startTime="q.startTime"
+          :endDate="q.endDate"
+          :endTime="q.endTime"
           :closeAriaLabel="$t('common.close')"
+          @close="closeSearch"
+          @updateSearchQuery="onUpdateSearchQuery"
+          @updateContext="onUpdateContext"
+          @updateSelectedNodeId="onUpdateSelectedNodeId"
+          @updateSelectedAppId="onUpdateSelectedAppId"
+          @updateFollowLogs="onUpdateFollowLogs"
+          @updateMaxLines="onUpdateMaxLines"
+          @updateStartDate="onUpdateStartDate"
+          @updateStartTime="onUpdateStartTime"
+          @updateEndDate="onUpdateEndDate"
+          @updateEndTime="onUpdateEndTime"
           :light="true"
           :ref="'search-' + searchId"
         />
@@ -127,19 +148,43 @@
 
 <script>
 import to from "await-to-js";
-import { UtilService, IconService, TaskService } from "@nethserver/ns8-ui-lib";
+import {
+  UtilService,
+  IconService,
+  TaskService,
+  QueryParamService,
+  DateTimeService,
+} from "@nethserver/ns8-ui-lib";
 import { v4 as uuidv4 } from "uuid";
 import LogSearch from "@/components/system-logs/LogSearch.vue";
 
 export default {
   name: "SystemLogs",
   components: { LogSearch },
-  mixins: [IconService, UtilService, TaskService],
+  mixins: [
+    IconService,
+    UtilService,
+    TaskService,
+    QueryParamService,
+    DateTimeService,
+  ],
   pageTitle() {
     return this.$t("system_logs.title");
   },
   data() {
     return {
+      q: {
+        searchQuery: "",
+        context: "cluster",
+        selectedNodeId: "",
+        selectedAppId: "",
+        followLogs: false,
+        maxLines: "500",
+        startDate: "",
+        startTime: "",
+        endDate: "",
+        endTime: "",
+      },
       nodes: [],
       apps: [],
       searches: [],
@@ -155,11 +200,30 @@ export default {
     };
   },
   created() {
+    this.initTimeFilters();
     this.getClusterStatus();
     this.listInstalledModules();
     this.addSearch();
   },
+  beforeRouteEnter(to, from, next) {
+    next((vm) => {
+      vm.watchQueryData(vm);
+      vm.queryParamsToDataForCore(vm, to.query);
+    });
+  },
+  beforeRouteUpdate(to, from, next) {
+    this.queryParamsToDataForCore(this, to.query);
+    next();
+  },
   methods: {
+    initTimeFilters() {
+      this.q.startDate = this.formatDate(
+        this.subDays(new Date(), 1),
+        "yyyy-MM-dd"
+      );
+
+      this.q.endDate = this.formatDate(new Date(), "yyyy-MM-dd");
+    },
     addSearch() {
       const searchId = uuidv4();
       this.searches.push(searchId);
@@ -293,6 +357,36 @@ export default {
       this.searches = this.searches.filter((s) => s !== searchId);
       this.verticalLayout = false;
       this.$root.$off(`logsStart-${this.searchId}`);
+    },
+    onUpdateSearchQuery(searchQuery) {
+      this.q.searchQuery = searchQuery;
+    },
+    onUpdateContext(context) {
+      this.q.context = context;
+    },
+    onUpdateSelectedNodeId(selectedNodeId) {
+      this.q.selectedNodeId = selectedNodeId;
+    },
+    onUpdateSelectedAppId(selectedAppId) {
+      this.q.selectedAppId = selectedAppId;
+    },
+    onUpdateFollowLogs(followLogs) {
+      this.q.followLogs = followLogs;
+    },
+    onUpdateMaxLines(maxLines) {
+      this.q.maxLines = maxLines;
+    },
+    onUpdateStartDate(startDate) {
+      this.q.startDate = startDate;
+    },
+    onUpdateEndDate(endDate) {
+      this.q.endDate = endDate;
+    },
+    onUpdateStartTime(startTime) {
+      this.q.startTime = startTime;
+    },
+    onUpdateEndTime(endTime) {
+      this.q.endTime = endTime;
     },
   },
 };
