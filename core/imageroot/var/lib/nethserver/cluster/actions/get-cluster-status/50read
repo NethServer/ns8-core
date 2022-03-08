@@ -85,6 +85,8 @@ for line in proc.stdout.readlines():
         vpn[local_ip]['local'] = True
     else:
         peer_ip = parts[3].removesuffix('/32')
+        if not peer_ip in vpn:
+            continue # ignore unknown VPN peers
         vpn[peer_ip]['vpn']['public_key'] = parts[0]
         vpn[peer_ip]['vpn']['endpoint'] = parts[2].partition(':')[0]
         vpn[peer_ip]['vpn']['last_seen'] = int(parts[4])
