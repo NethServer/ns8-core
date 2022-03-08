@@ -5,10 +5,14 @@ on:
       - main
     paths:
       - 'core/**'
+      - '!core/tests/**'
+      - '!core/test-module.sh'
   pull_request:
     types: ['opened', 'synchronize']
     paths:
       - 'core/**'
+      - '!core/tests/**'
+      - '!core/test-module.sh'
 
 jobs:
   push_image:
