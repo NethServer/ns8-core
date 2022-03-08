@@ -345,9 +345,11 @@ export default {
         this.isTransitioning = false;
       }, 300); // same duration as .slide-app-drawer transition
 
-      if (this.isAppDrawerShown && !this.loading.apps && this.apps.length) {
-        // set focus on app search
-        this.focusElement("appSearch");
+      if (this.isAppDrawerShown) {
+        if (!this.loading.apps && this.apps.length) {
+          // set focus on app search
+          this.focusElement("appSearch");
+        }
       } else {
         // save favorite apps if user closes drawer while editing favorites
         if (this.isEditingFavoriteApps) {
