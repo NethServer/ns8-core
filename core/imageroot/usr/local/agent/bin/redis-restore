@@ -32,4 +32,6 @@ except IndexError:
     ttl = "0"
 
 # Read raw binary data from stdin
-rdb.restore(key, ttl, sys.stdin.buffer.raw.read())
+data = sys.stdin.buffer.raw.read()
+if data: # zero length file is ignored
+    rdb.restore(key, ttl, data)
