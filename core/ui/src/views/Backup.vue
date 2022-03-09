@@ -371,17 +371,19 @@
         <!-- empty state backups -->
         <div v-if="!backups.length" class="bx--row">
           <div class="bx--col">
-            <NsEmptyState :title="$t('backup.no_backup_scheduled')">
-              <template #description>
-                <NsButton
-                  kind="primary"
-                  :icon="Add20"
-                  @click="showCreateBackupModal('')"
-                  class="empty-state-button-no-description"
-                  >{{ $t("backup.schedule_backup") }}
-                </NsButton>
-              </template>
-            </NsEmptyState>
+            <cv-tile light>
+              <NsEmptyState :title="$t('backup.no_backup_scheduled')">
+                <template #description>
+                  <NsButton
+                    kind="primary"
+                    :icon="Add20"
+                    @click="showCreateBackupModal('')"
+                    class="empty-state-button-no-description"
+                    >{{ $t("backup.schedule_backup") }}
+                  </NsButton>
+                </template>
+              </NsEmptyState>
+            </cv-tile>
           </div>
         </div>
         <template v-else>
@@ -608,7 +610,7 @@
       @backupCreated="onBackupCreated"
       @backupAltered="onBackupAltered"
     />
-    <!-- delete repository modal -->
+    <!-- delete backup modal -->
     <NsDangerDeleteModal
       :isShown="isShownDeleteBackupModal"
       :name="currentBackup.name"
@@ -618,6 +620,9 @@
         $t('backup.delete_scheduled_backup_confirm', {
           name: currentBackup.name,
         })
+      "
+      :typeToConfirm="
+        $t('common.type_to_confirm', { name: currentBackup.name })
       "
       @hide="hideDeleteBackupModal"
       @confirmDelete="deleteBackup(currentBackup)"
