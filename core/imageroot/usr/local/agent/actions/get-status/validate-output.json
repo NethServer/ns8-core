@@ -6,7 +6,9 @@
   "examples": [
     {
       "instance": "dokuwiki1",
+      "ui_name": "mywiki",
       "node": "1",
+      "node_ui_name": "andromeda",
       "services": [
         {
           "name": "dokuwiki",
@@ -34,7 +36,9 @@
   "type": "object",
   "required": [
     "instance",
+    "ui_name",
     "node",
+    "node_ui_name",
     "services",
     "images",
     "volumes"
@@ -44,9 +48,17 @@
       "type": "string",
       "description": "Instance identifier"
     },
+    "ui_name": {
+      "type": "string",
+      "description": "UI name of the module instance"
+    },
     "node": {
       "type": "string",
       "description": "Id of the node where the instance is running"
+    },
+    "node_ui_name": {
+      "type": "string",
+      "description": "UI name of the node"
     },
     "services": {
       "type": "array",
