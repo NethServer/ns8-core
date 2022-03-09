@@ -99,19 +99,24 @@ def get_progress_callback(range_low, range_high):
     return cbk
 
 def run_helper(*args, log_command=True, **kwargs):
-    """Run the command in args, writing the command line to stderr.
+    """Run the command in args, writing the command line to stderr with prio DEBUG.
+    Set log_command=False, to suppress the command logging.
 
-    The command output is redirected to stderr.
+    The command output is redirected to stderr by default.
+    Additional keyword arguments are passed to subprocess.Popen
     """
     if log_command:
-        print(shlex.join(args), file=sys.stderr)
+        print(SD_DEBUG + shlex.join(args), file=sys.stderr)
 
-    progress_callback = kwargs.get('progress_callback', None)
+    progress_callback = kwargs.pop('progress_callback', None)
+    start_env = kwargs.pop('env', os.environ)
+    pass_fds = kwargs.pop('pass_fds', [])
+    outstream = kwargs.pop('stdout', sys.stderr)
 
     curr_progress = -1
     fdr, fdw = os.pipe()
-    child_env = dict(os.environ, AGENT_COMFD=str(fdw))
-    proc = subprocess.Popen(args, stdout=sys.stderr, pass_fds=(fdw,), env=child_env)
+    child_env = dict(start_env, AGENT_COMFD=str(fdw))
+    proc = subprocess.Popen(args, stdout=outstream, pass_fds=(*pass_fds, fdw), env=child_env, **kwargs)
     os.close(fdw)
     with os.fdopen(fdr, mode="r", encoding='utf-8') as fdh:
         rows = csv.reader(fdh, delimiter=' ', quotechar='"', quoting=csv.QUOTE_MINIMAL)
