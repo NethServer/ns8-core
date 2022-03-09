@@ -6,7 +6,7 @@ import Settings from "../views/Settings";
 import Applications from "../views/Applications";
 import SoftwareCenter from "../views/SoftwareCenter";
 import SystemLogs from "../views/SystemLogs";
-import AuditLogs from "../views/AuditLogs";
+import AuditTrail from "../views/AuditTrail";
 import SettingsSoftwareRepositories from "../views/SettingsSoftwareRepositories";
 import SettingsCluster from "../views/SettingsCluster";
 import SoftwareCenterAppInstances from "../views/SoftwareCenterAppInstances";
@@ -73,9 +73,9 @@ const routes = [
     component: SystemLogs,
   },
   {
-    path: "/audit-logs",
-    name: "AuditLogs",
-    component: AuditLogs,
+    path: "/audit-trail",
+    name: "AuditTrail",
+    component: AuditTrail,
   },
   {
     path: "/domains",

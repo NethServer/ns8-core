@@ -1,17 +1,17 @@
 [
     {
         "name": {
-            "en": "Audit logs",
-            "it": "Log di audit"
+            "en": "Audit trail",
+            "it": "Registro di audit"
         },
         "description": {
-            "en": "Show audit logs",
-            "it": "Visualizza log di audit"
+            "en": "Show audit trail",
+            "it": "Visualizza registro di audit"
         },
         "tags": {
-            "en": ["audit", "logs", "log", "operation"],
-            "it": ["audit", "logs", "log", "operazioni"]
+            "en": ["audit", "trail", "logs", "operation"],
+            "it": ["audit", "trail", "logs", "operazioni"]
         },
-        "path": "logs"
+        "path": "audit-trail"
     }
 ]

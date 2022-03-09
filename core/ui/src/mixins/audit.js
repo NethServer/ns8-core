@@ -24,7 +24,7 @@ export default {
         },
       });
     },
-    getAuditLogs(users, actions, data, from, to, limit) {
+    getAuditTrail(users, actions, data, from, to, limit) {
       const token = this.getFromStorage("loginInfo")
         ? this.getFromStorage("loginInfo").token
         : "";

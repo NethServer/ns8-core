@@ -553,11 +553,11 @@
     "card_description": "Show {name} logs",
     "card_button_label": "Go to System logs"
   },
-  "audit_logs": {
-    "title": "Audit logs",
+  "audit_trail": {
+    "title": "Audit trail",
     "start_date": "Start date",
     "end_date": "End date",
-    "search_logs": "Search logs",
+    "search": "Search",
     "users": "Users",
     "users_label": "Select users",
     "actions": "Actions",
@@ -571,7 +571,7 @@
     "end_time_label": "End time (24-hour)",
     "cannot_retrieve_audit_users": "Cannot retrieve log users",
     "cannot_retrieve_audit_actions": "Cannot retrieve log actions",
-    "cannot_retrieve_audit_logs": "Cannot retrieve logs",
+    "cannot_retrieve_audit_trail": "Cannot retrieve audit trail",
     "audit_info_placeholder": "Search anything inside data content of log",
     "no_log_found": "No log found",
     "no_log_found_description": "Try changing search filters"
