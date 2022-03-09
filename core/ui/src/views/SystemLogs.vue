@@ -112,7 +112,7 @@
           :nodes="nodes"
           :apps="apps"
           :loadingNodes="loading.getClusterStatus"
-          :loadingApps="loading.apps"
+          :loadingApps="loading.listInstalledModules"
           :verticalLayout="verticalLayout"
           :numSearches="searches.length"
           :mainSearch="index == 0"

@@ -548,7 +548,10 @@
     "no_log_found": "No log found",
     "try_changing_search_filters": "Try changing search filters",
     "mode": "Mode",
-    "dump": "Dump"
+    "dump": "Dump",
+    "card_title": "Logs",
+    "card_description": "Show {name} logs",
+    "card_button_label": "Go to System logs"
   },
   "audit_logs": {
     "title": "Audit logs",

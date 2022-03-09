@@ -55,7 +55,7 @@
               :auto-filter="true"
               :auto-highlight="true"
               :options="nodes"
-              :disabled="loading.loadingNodes"
+              :disabled="loadingNodes"
               class="mg-bottom-md"
               key="csbNode"
             >
@@ -70,7 +70,7 @@
               :auto-filter="true"
               :auto-highlight="true"
               :options="apps"
-              :disabled="loading.loadingApps"
+              :disabled="loadingApps"
               class="mg-bottom-md"
               key="csbApp"
             >
@@ -272,7 +272,10 @@
             :icon="Search20"
             :loading="loading.logs"
             :disabled="
-              !isWebsocketConnected || loading.logs || loading.loadingApps
+              !isWebsocketConnected ||
+              loading.logs ||
+              loadingNodes ||
+              loadingApps
             "
             @click="logsStart"
             key="search"
@@ -394,6 +397,7 @@ export default {
     context: {
       type: String,
       default: "cluster",
+      validator: (val) => ["cluster", "node", "module"].includes(val),
     },
     selectedNodeId: {
       type: String,
@@ -459,6 +463,7 @@ export default {
       highlight: "",
       loading: {
         logs: false,
+        stopFollowing: false,
       },
       error: {
         startDate: "",
@@ -779,6 +784,7 @@ export default {
       this.$socket.sendObj(logsStartObj);
     },
     logsStop() {
+      this.loading.stopFollowing = true;
       this.$root.$off(`logsStart-${this.searchId}`);
       this.$root.$once(`logsStop-${this.searchId}`, this.onLogsStop);
 
@@ -792,6 +798,7 @@ export default {
       this.$socket.sendObj(logsStopObj);
     },
     onLogsStop() {
+      this.loading.stopFollowing = false;
       this.isFollowing = false;
       this.pid = "";
     },
