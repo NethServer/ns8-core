@@ -26,4 +26,6 @@ import agent
 rdb = agent.redis_connect(host='127.0.0.1', decode_responses=False)
 
 # Write raw binary data to stdout
-sys.stdout.buffer.write(rdb.dump(sys.argv[1]))
+data = rdb.dump(sys.argv[1])
+if data: # if the key does not exist, ignore it
+    sys.stdout.buffer.write(data)
