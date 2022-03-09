@@ -7,13 +7,6 @@
             <cv-tile :light="true" class="login-tile">
               <h2 class="login-title">{{ $t("login.title") }}</h2>
               <div v-if="step === 'username'">
-                <NsInlineNotification
-                  v-if="error.login"
-                  kind="error"
-                  :title="$t('login.cannot_login')"
-                  :description="error.login"
-                  :showCloseButton="false"
-                />
                 <cv-form @submit.prevent="checkUsername" class="login-form">
                   <cv-text-input
                     :label="$t('login.username')"
@@ -66,6 +59,13 @@
                     ref="passwordInput"
                     name="password"
                   ></cv-text-input>
+                  <NsInlineNotification
+                    v-if="error.login"
+                    kind="error"
+                    :title="$t('login.cannot_login')"
+                    :description="error.login"
+                    :showCloseButton="false"
+                  />
                   <div class="login-footer">
                     <NsButton
                       kind="primary"
@@ -223,9 +223,8 @@ export default {
       }
 
       this.error.login = errorMessage;
-      this.step = "username";
       this.password = "";
-      this.focusElement("usernameInput");
+      this.focusElement("passwordInput");
     },
     goToUsername() {
       this.step = "username";

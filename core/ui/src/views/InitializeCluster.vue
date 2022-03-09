@@ -454,7 +454,7 @@
                             type="password"
                             :password-hide-label="$t('password.hide_password')"
                             :password-show-label="$t('password.show_password')"
-                            v-model.trim="restore.backupPassword"
+                            v-model="restore.backupPassword"
                             :label="$t('init.backup_password')"
                             :placeholder="$t('init.use_admin_password')"
                             :invalid-message="error.restore.backup_password"
@@ -549,7 +549,7 @@
                             type="password"
                             :password-hide-label="$t('password.hide_password')"
                             :password-show-label="$t('password.show_password')"
-                            v-model.trim="restore.backupPassword"
+                            v-model="restore.backupPassword"
                             :label="$t('init.backup_password')"
                             :placeholder="$t('init.use_admin_password')"
                             :invalid-message="error.restore.backup_password"
@@ -823,7 +823,7 @@ import { mapActions } from "vuex";
 import to from "await-to-js";
 import NotificationService from "@/mixins/notification";
 import RestoreMultipleInstancesSelector from "@/components/backup/RestoreMultipleInstancesSelector";
-import SkipRestoreAppsModal from "@/components/SkipRestoreAppsModal";
+import SkipRestoreAppsModal from "@/components/misc/SkipRestoreAppsModal";
 
 export default {
   name: "InitializeCluster",

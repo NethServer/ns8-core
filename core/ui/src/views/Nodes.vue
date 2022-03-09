@@ -219,7 +219,7 @@ import {
 import to from "await-to-js";
 import NodeService from "@/mixins/node";
 import { mapState } from "vuex";
-import NodeCard from "@/components/NodeCard";
+import NodeCard from "@/components/misc/NodeCard";
 
 export default {
   name: "Nodes",
@@ -353,14 +353,15 @@ export default {
     },
     showCopyClipboardHint() {
       setTimeout(() => {
-        const isCopyClipboardHintShown = this.getFromStorage(
-          "isCopyClipboardHintShown"
-        );
-
-        if (!isCopyClipboardHintShown) {
-          this.isCopyClipboardHintShown = true;
-          this.saveToStorage("isCopyClipboardHintShown", true);
-        }
+        //// TODO FIX
+        // const isCopyClipboardHintShown = this.getFromStorage(
+        //   "isCopyClipboardHintShown"
+        // );
+        //
+        // if (!isCopyClipboardHintShown) {
+        //   this.isCopyClipboardHintShown = true;
+        //   this.saveToStorage("isCopyClipboardHintShown", true);
+        // }
       }, 1000);
     },
     async retrieveNodesStatus() {

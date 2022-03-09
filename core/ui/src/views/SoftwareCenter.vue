@@ -199,14 +199,14 @@
           />
           <cv-tile v-else kind="standard" :light="true">
             <NsEmptyState
-              :title="$t('software_center.no_apps_found')"
+              :title="$t('software_center.no_app_found')"
               :animationData="GhostLottie"
               animationTitle="ghost"
               :loop="1"
               key="search-empty-state"
             >
               <template #description>
-                {{ $t("software_center.no_apps_found_description") }}
+                {{ $t("software_center.no_app_found_description") }}
               </template>
             </NsEmptyState>
           </cv-tile>
@@ -223,10 +223,10 @@
 </template>
 
 <script>
-import AppList from "@/components/AppList";
+import AppList from "@/components/software-center/AppList";
 import to from "await-to-js";
 import { mapActions } from "vuex";
-import InstallAppModal from "../components/InstallAppModal";
+import InstallAppModal from "../components/software-center/InstallAppModal";
 import {
   QueryParamService,
   UtilService,
@@ -501,6 +501,7 @@ export default {
 
       if (err) {
         console.error(`error creating task ${taskAction}`, err);
+        this.loading.cleanRepositoriesCache = false;
         this.error.cleanRepositoriesCache = this.getErrorMessage(err);
         return;
       }

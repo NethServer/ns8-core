@@ -102,7 +102,7 @@
 
 <script>
 import { IconService, UtilService } from "@nethserver/ns8-ui-lib";
-import AppInfoModal from "@/components/AppInfoModal";
+import AppInfoModal from "./AppInfoModal";
 
 export default {
   name: "AppList",
@@ -216,7 +216,7 @@ export default {
 </script>
 
 <style scoped lang="scss">
-@import "../styles/carbon-utils";
+@import "../../styles/carbon-utils";
 
 .app-list .app {
   display: flex;

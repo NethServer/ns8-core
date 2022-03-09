@@ -207,7 +207,7 @@
               <template slot="content">
                 <cv-text-input
                   :label="$t('backup.repository_password')"
-                  v-model.trim="password"
+                  v-model="password"
                   :helper-text="$t('backup.repository_password_helper')"
                   :invalid-message="error.password"
                   :disabled="loading.addBackupRepository"

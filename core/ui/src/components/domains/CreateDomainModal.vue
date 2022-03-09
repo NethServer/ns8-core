@@ -155,7 +155,7 @@
           </cv-text-input>
           <cv-text-input
             :label="$t('domains.bind_password')"
-            v-model.trim="external.bind_password"
+            v-model="external.bind_password"
             :invalid-message="$t(error.external.bind_password)"
             :disabled="loading.external.addExternalDomain"
             ref="bind_password"
@@ -356,7 +356,7 @@ import {
   LottieService,
 } from "@nethserver/ns8-ui-lib";
 import to from "await-to-js";
-import NodeSelector from "@/components/NodeSelector";
+import NodeSelector from "@/components/misc/NodeSelector";
 
 export default {
   name: "CreateDomainModal",

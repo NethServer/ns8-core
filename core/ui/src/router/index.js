@@ -5,7 +5,8 @@ import Login from "../views/Login";
 import Settings from "../views/Settings";
 import Applications from "../views/Applications";
 import SoftwareCenter from "../views/SoftwareCenter";
-import Logs from "../views/Logs";
+import SystemLogs from "../views/SystemLogs";
+import AuditLogs from "../views/AuditLogs";
 import SettingsSoftwareRepositories from "../views/SettingsSoftwareRepositories";
 import SettingsCluster from "../views/SettingsCluster";
 import SoftwareCenterAppInstances from "../views/SoftwareCenterAppInstances";
@@ -67,9 +68,14 @@ const routes = [
     component: SoftwareCenterAppInstances,
   },
   {
-    path: "/logs",
-    name: "Logs",
-    component: Logs,
+    path: "/system-logs",
+    name: "SystemLogs",
+    component: SystemLogs,
+  },
+  {
+    path: "/audit-logs",
+    name: "AuditLogs",
+    component: AuditLogs,
   },
   {
     path: "/domains",

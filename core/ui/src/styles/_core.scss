@@ -171,6 +171,15 @@ a {
   white-space: nowrap;
 }
 
+// remove margin-top for cv-toggle without label
+.toggle-without-label .bx--toggle-input__label .bx--toggle__switch {
+  margin-top: 0;
+}
+
+.paragraph-line-height {
+  line-height: 1.5;
+}
+
 // reduce width of wizard buttons on small screens
 @media (max-width: $breakpoint-medium) {
   .bx--btn-set .bx--btn.wizard-button {
@@ -188,6 +197,12 @@ a {
 
 .bx--overflow-menu-options__btn {
   max-width: none;
+}
+
+.overflow-near-button,
+.overflow-near-button button {
+  height: 3rem;
+  width: 3rem;
 }
 // overflow menu end
 
@@ -451,7 +466,8 @@ a {
 .narrow .bx--text-input__field-wrapper,
 .cv-select.narrow,
 .cv-multi-select.narrow,
-.cv-combo-box.narrow {
+.cv-combo-box.narrow,
+.cv-number-input.narrow {
   max-width: 12rem;
 }
 

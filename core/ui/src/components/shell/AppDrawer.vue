@@ -345,9 +345,11 @@ export default {
         this.isTransitioning = false;
       }, 300); // same duration as .slide-app-drawer transition
 
-      if (this.isAppDrawerShown && !this.loading.apps && this.apps.length) {
-        // set focus on app search
-        this.focusElement("appSearch");
+      if (this.isAppDrawerShown) {
+        if (!this.loading.apps && this.apps.length) {
+          // set focus on app search
+          this.focusElement("appSearch");
+        }
       } else {
         // save favorite apps if user closes drawer while editing favorites
         if (this.isEditingFavoriteApps) {
@@ -409,6 +411,13 @@ export default {
       this.loading.apps = true;
       const taskAction = "list-installed-modules";
 
+      // register to task error
+      this.$root.$off(taskAction + "-aborted");
+      this.$root.$once(
+        taskAction + "-aborted",
+        this.listInstalledModulesAborted
+      );
+
       // register to task completion
       this.$root.$once(
         taskAction + "-completed",
@@ -434,6 +443,11 @@ export default {
         );
         return;
       }
+    },
+    listInstalledModulesAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.apps = this.$t("error.generic_error");
+      this.loading.apps = false;
     },
     listInstalledModulesCompleted(taskContext, taskResult) {
       this.loading.apps = false;
@@ -637,7 +651,7 @@ export default {
 </script>
 
 <style scoped lang="scss">
-@import "../styles/carbon-utils";
+@import "../../styles/carbon-utils";
 
 .app-drawer {
   background-color: $ui-05;
@@ -805,7 +819,7 @@ export default {
 </style>
 
 <style lang="scss">
-@import "../styles/carbon-utils";
+@import "../../styles/carbon-utils";
 
 // global styles
 

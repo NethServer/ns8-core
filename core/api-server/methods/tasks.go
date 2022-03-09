@@ -25,16 +25,17 @@ package methods
 import (
 	"encoding/json"
 	"net/http"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
-	"sort"
 
 	"github.com/fatih/structs"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	guuid "github.com/google/uuid"
 	"github.com/mpvl/unique"
+	"github.com/pkg/errors"
 
 	jwt "github.com/appleboy/gin-jwt/v2"
 
@@ -43,6 +44,7 @@ import (
 	"github.com/NethServer/ns8-scratchpad/core/api-server/redis"
 	"github.com/NethServer/ns8-scratchpad/core/api-server/response"
 	"github.com/NethServer/ns8-scratchpad/core/api-server/socket"
+	"github.com/NethServer/ns8-scratchpad/core/api-server/utils"
 )
 
 func getList(c *gin.Context, queueName string) {
@@ -431,13 +433,13 @@ func ListenTaskEvents() {
 			event.Type = "task"
 
 			if err := json.Unmarshal([]byte(msg.Payload), &event.Payload); err != nil {
-				panic(err)
+				utils.LogError(errors.Wrap(err, "[SOCKET] error converting task payload to event"))
 			}
 
 			// marshal model to json string
 			taskJSON, errJSON := json.Marshal(event)
 			if errJSON != nil {
-				panic(errJSON)
+				utils.LogError(errors.Wrap(errJSON, "[SOCKET] error converting task object to string"))
 			}
 
 			// identify all sessions associated with task id

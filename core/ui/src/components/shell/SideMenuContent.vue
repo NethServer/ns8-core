@@ -66,9 +66,19 @@
         </cv-side-nav-menu-item>
       </cv-side-nav-menu> -->
 
-      <cv-side-nav-link @click="goTo('/logs')" :active="isLinkActive('/logs')">
+      <cv-side-nav-link
+        @click="goTo('/system-logs')"
+        :active="isLinkActive('/system-logs')"
+      >
         <template v-slot:nav-icon><Catalog20 /></template>
-        {{ $t("logs.title") }}
+        {{ $t("system_logs.title") }}
+      </cv-side-nav-link>
+      <cv-side-nav-link
+        @click="goTo('/audit-logs')"
+        :active="isLinkActive('/audit-logs')"
+      >
+        <template v-slot:nav-icon><Police20 /></template>
+        {{ $t("audit_logs.title") }}
       </cv-side-nav-link>
       <cv-side-nav-link
         @click="goTo('/settings')"
@@ -89,7 +99,6 @@
 </template>
 
 <script>
-// import Network_220 from "@carbon/icons-vue/es/network--2/20"; ////
 import Events20 from "@carbon/icons-vue/es/events/20";
 import Save20 from "@carbon/icons-vue/es/save/20";
 import Settings20 from "@carbon/icons-vue/es/settings/20";
@@ -98,13 +107,13 @@ import Application20 from "@carbon/icons-vue/es/application/20";
 import Activity20 from "@carbon/icons-vue/es/activity/20";
 import Chip20 from "@carbon/icons-vue/es/chip/20";
 import Information20 from "@carbon/icons-vue/es/information/20";
+import Police20 from "@carbon/icons-vue/es/police/20";
 import { mapActions, mapGetters } from "vuex";
 import CvSideNavDivider from "@carbon/vue/src/components/cv-ui-shell/cv-side-nav-divider.vue";
 
 export default {
   name: "SideMenuContent",
   components: {
-    // Network_220, ////
     Save20,
     Events20,
     Catalog20,
@@ -114,6 +123,7 @@ export default {
     Chip20,
     Information20,
     CvSideNavDivider,
+    Police20,
   },
   data() {
     return {};
@@ -135,5 +145,5 @@ export default {
 </script>
 
 <style scoped lang="scss">
-@import "../styles/carbon-utils";
+@import "../../styles/carbon-utils";
 </style>

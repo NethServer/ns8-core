@@ -16,7 +16,7 @@
     "@carbon/icons-vue": "^10.37.0",
     "@carbon/themes": "^10.34.0",
     "@carbon/vue": "^2.40.0",
-    "@nethserver/ns8-ui-lib": "^0.0.62",
+    "@nethserver/ns8-ui-lib": "^0.0.66",
     "await-to-js": "^3.0.0",
     "axios": "^0.21.2",
     "carbon-components": "^10.41.0",
@@ -35,6 +35,7 @@
     "vue-infinite-loading": "^2.4.5",
     "vue-native-websocket": "^2.0.14",
     "vue-router": "^3.2.0",
+    "vue-text-highlight": "^2.0.10",
     "vue-toastification": "^1.7.11",
     "vuex": "^3.4.0"
   },

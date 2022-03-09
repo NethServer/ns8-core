@@ -1,0 +1,934 @@
+<template>
+  <cv-tile class="log-search" :light="light">
+    <button
+      v-if="showCloseButton"
+      class="bx--modal-close"
+      type="button"
+      @click="onClose"
+      :aria-label="closeAriaLabel"
+    >
+      <Close16 class="bx--modal-close__icon" />
+    </button>
+    <cv-grid
+      fullWidth
+      :class="['no-padding', { 'mg-top-md': showCloseButton }]"
+    >
+      <template v-if="filtersShown">
+        <cv-row>
+          <cv-column :md="verticalLayout ? 8 : 4">
+            <label class="bx--label">
+              {{ $t("system_logs.context") }}
+            </label>
+            <cv-content-switcher
+              class="mg-bottom-md"
+              @selected="onContextSelected"
+            >
+              <cv-content-switcher-button
+                owner-id="cluster"
+                :selected="csbClusterSelected"
+                >{{
+                  $t("system_logs.context_cluster")
+                }}</cv-content-switcher-button
+              >
+              <cv-content-switcher-button
+                owner-id="node"
+                :selected="csbNodeSelected"
+                >{{
+                  $t("system_logs.context_node")
+                }}</cv-content-switcher-button
+              >
+              <cv-content-switcher-button
+                owner-id="module"
+                :selected="csbModuleSelected"
+                >{{
+                  $t("system_logs.context_module")
+                }}</cv-content-switcher-button
+              >
+            </cv-content-switcher>
+          </cv-column>
+          <cv-column v-show="csbNodeSelected" :md="verticalLayout ? 8 : 4">
+            <cv-combo-box
+              v-model="internalSelectedNodeId"
+              :label="$t('common.choose')"
+              :title="$t('system_logs.context_node')"
+              :invalid-message="error.selectedNode"
+              :auto-filter="true"
+              :auto-highlight="true"
+              :options="nodes"
+              :disabled="loadingNodes"
+              class="mg-bottom-md"
+              key="csbNode"
+            >
+            </cv-combo-box>
+          </cv-column>
+          <cv-column v-show="csbModuleSelected" :md="verticalLayout ? 8 : 4">
+            <cv-combo-box
+              v-model="internalSelectedAppId"
+              :label="$t('common.choose')"
+              :title="$t('system_logs.context_module')"
+              :invalid-message="error.selectedApp"
+              :auto-filter="true"
+              :auto-highlight="true"
+              :options="apps"
+              :disabled="loadingApps"
+              class="mg-bottom-md"
+              key="csbApp"
+            >
+            </cv-combo-box>
+          </cv-column>
+        </cv-row>
+        <cv-row>
+          <cv-column :md="verticalLayout ? 8 : 4">
+            <cv-text-input
+              :label="
+                $t('system_logs.search_query') +
+                ' (' +
+                $t('common.optional') +
+                ')'
+              "
+              v-model.trim="internalSearchQuery"
+              :placeholder="$t('common.search_placeholder')"
+              :helper-text="$t('common.case_sensitive')"
+              @keypress.enter="onEnterKeyPress()"
+              class="search-query mg-bottom-md"
+            >
+            </cv-text-input>
+          </cv-column>
+        </cv-row>
+        <cv-row>
+          <cv-column :md="verticalLayout ? 8 : 4" :xlg="verticalLayout ? 8 : 4">
+            <label class="bx--label">
+              {{ $t("system_logs.mode") }}
+            </label>
+            <cv-content-switcher
+              class="mg-bottom-md"
+              @selected="onModeSelected"
+            >
+              <cv-content-switcher-button
+                owner-id="dump"
+                :selected="csbDumpModeSelected"
+                >{{ $t("system_logs.dump") }}</cv-content-switcher-button
+              >
+              <cv-content-switcher-button
+                owner-id="follow"
+                :selected="csbFollowModeSelected"
+                >{{ $t("system_logs.follow") }}</cv-content-switcher-button
+              >
+            </cv-content-switcher>
+          </cv-column>
+          <cv-column v-if="!internalFollowLogs" :md="verticalLayout ? 4 : 2">
+            <cv-text-input
+              :label="$t('system_logs.max_lines')"
+              v-model="internalMaxLines"
+              :invalid-message="error.maxLines"
+              type="number"
+              min="1"
+              :max="MAX_LINES_LIMIT"
+              @keypress.enter="onEnterKeyPress()"
+              class="narrow mg-bottom-md"
+            >
+            </cv-text-input>
+          </cv-column>
+        </cv-row>
+        <cv-row v-if="!internalFollowLogs">
+          <cv-column :md="verticalLayout ? 8 : 4">
+            <cv-date-picker
+              kind="single"
+              :cal-options="calOptions"
+              :date-label="$t('system_logs.start_date')"
+              v-model="internalStartDate"
+              class="interval-date mg-bottom-md"
+              :invalid-message="error.startDate"
+            >
+            </cv-date-picker>
+            <cv-time-picker
+              :label="$t('system_logs.start_time_label')"
+              :time.sync="internalStartTime"
+              ampm="24"
+              :pattern="time24HourPatternString"
+              :placeholder="time24HourPlaceholder"
+              :form-item="true"
+              class="interval-time mg-bottom-md"
+              :invalid-message="
+                time24HourPattern.test(internalStartTime)
+                  ? error.startTime
+                  : $t('error.invalid_24h_pattern')
+              "
+            >
+            </cv-time-picker>
+          </cv-column>
+          <cv-column :md="verticalLayout ? 8 : 4">
+            <cv-date-picker
+              kind="single"
+              :cal-options="calOptions"
+              :date-label="$t('system_logs.end_date')"
+              v-model="internalEndDate"
+              class="interval-date mg-bottom-md"
+              :invalid-message="error.endDate"
+            >
+            </cv-date-picker>
+            <cv-time-picker
+              :label="$t('system_logs.end_time_label')"
+              :time.sync="internalEndTime"
+              ampm="24"
+              :pattern="time24HourPatternString"
+              :placeholder="time24HourPlaceholder"
+              :form-item="true"
+              class="interval-time mg-bottom-md"
+              :invalid-message="
+                time24HourPattern.test(internalEndTime)
+                  ? error.endTime
+                  : $t('error.invalid_24h_pattern')
+              "
+            >
+            </cv-time-picker>
+          </cv-column>
+        </cv-row>
+      </template>
+    </cv-grid>
+    <cv-grid fullWidth class="no-padding">
+      <cv-row v-if="!filtersShown" class="mg-bottom-md">
+        <cv-column>
+          <div
+            :class="[
+              'paragraph-line-height',
+              { 'pad-right-lg': showCloseButton },
+            ]"
+          >
+            <span class="filter-collapsed">
+              <strong>{{ $t("system_logs.context") }}</strong
+              >:
+              <span v-if="internalContext == 'cluster'">{{
+                $t("system_logs.context_cluster")
+              }}</span>
+              <span v-else-if="internalContext == 'node'">
+                {{ selectedNode ? selectedNode.label : "-" }}
+              </span>
+              <span v-else-if="internalContext == 'module'">
+                {{ selectedApp ? selectedApp.label : "-" }}</span
+              >
+            </span>
+            <span class="filter-collapsed"
+              ><strong>{{ $t("system_logs.search_query") }}</strong
+              >: "<span>{{ internalSearchQuery }}</span
+              >"</span
+            >
+            <span class="filter-collapsed"
+              ><strong>{{ $t("system_logs.start") }}</strong
+              >:
+              <span>{{
+                internalStartDate + " " + internalStartTime
+              }}</span></span
+            >
+            <span class="filter-collapsed"
+              ><strong>{{ $t("system_logs.end") }}</strong
+              >:
+              <span>{{ internalEndDate + " " + internalEndTime }}</span></span
+            >
+            <span class="filter-collapsed"
+              ><strong>{{ $t("system_logs.max_lines") }}</strong
+              >: <span>{{ internalMaxLines }}</span></span
+            >
+            <span class="filter-collapsed"
+              ><strong>{{ $t("system_logs.follow_logs") }}</strong
+              >:
+              <span>{{
+                internalFollowLogs
+                  ? $t("common.enabled")
+                  : $t("common.disabled")
+              }}</span></span
+            >
+          </div>
+        </cv-column>
+      </cv-row>
+      <cv-row>
+        <cv-column>
+          <cv-link @click="toggleFilters" class="toggle-filters">
+            {{
+              filtersShown
+                ? $t("system_logs.collapse_filters")
+                : $t("system_logs.expand_filters")
+            }}
+          </cv-link>
+        </cv-column>
+      </cv-row>
+      <cv-row>
+        <cv-column class="logs-output-toolbar">
+          <NsButton
+            v-if="isFollowing"
+            kind="primary"
+            class="search-button mg-bottom-sm"
+            :icon="Close20"
+            :loading="loading.stopFollowing"
+            :disabled="loading.stopFollowing"
+            @click="logsStop"
+            key="stop-following"
+            >{{ $t("system_logs.stop_following") }}</NsButton
+          >
+          <NsButton
+            v-else
+            kind="primary"
+            class="search-button mg-bottom-sm"
+            :icon="Search20"
+            :loading="loading.logs"
+            :disabled="
+              !isWebsocketConnected ||
+              loading.logs ||
+              loadingNodes ||
+              loadingApps
+            "
+            @click="logsStart"
+            key="search"
+            >{{
+              internalFollowLogs
+                ? $t("system_logs.follow")
+                : $t("system_logs.search")
+            }}</NsButton
+          >
+          <template v-if="searchStarted">
+            <NsButton
+              kind="secondary"
+              :icon="Erase20"
+              @click="clearLogs"
+              class="mg-right mg-bottom-sm"
+              >{{ $t("system_logs.clear_logs") }}</NsButton
+            >
+            <div class="checkbox-filter">
+              <cv-checkbox
+                :label="$t('system_logs.wrap_text')"
+                v-model="wrapText"
+                value="checkWrapText"
+                class="mg-right mg-bottom-sm"
+              />
+            </div>
+            <!-- <cv-toggle ////
+                  hideLabel
+                  value="checkWrapText"
+                  :form-item="true"
+                  v-model="wrapText"
+                  class="item toggle-without-label mg-bottom-sm"
+                >
+                  <template slot="text-left">{{
+                    $t("system_logs.wrap_text")
+                  }}</template>
+                  <template slot="text-right">{{
+                    $t("system_logs.wrap_text")
+                  }}</template>
+                </cv-toggle> -->
+            <div class="checkbox-filter">
+              <cv-checkbox
+                :label="$t('system_logs.scroll_to_bottom')"
+                v-model="scrollToBottom"
+                value="checkScrollToBottom"
+                class="item mg-bottom-sm"
+              />
+            </div>
+            <!-- <cv-toggle ////
+                  hideLabel
+                  value="checkScrollToBottom"
+                  :form-item="true"
+                  v-model="scrollToBottom"
+                  class="item toggle-without-label mg-bottom-sm"
+                >
+                  <template slot="text-left">{{
+                    $t("system_logs.scroll_to_bottom")
+                  }}</template>
+                  <template slot="text-right">{{
+                    $t("system_logs.scroll_to_bottom")
+                  }}</template>
+                </cv-toggle> -->
+          </template>
+        </cv-column>
+      </cv-row>
+      <cv-row v-if="searchStarted">
+        <cv-column>
+          <LogOutput
+            :searchId="searchId"
+            :scrollToBottom="scrollToBottom"
+            :wrapText="wrapText"
+            :loading="loading.logs"
+            :verticalLayout="verticalLayout"
+            :numSearches="numSearches"
+            :noLogsFound="noLogsFound"
+            :light="false"
+            :outputLines="outputLines"
+            :highlight="highlight"
+            :key="'logOutput-' + searchId"
+          />
+        </cv-column>
+      </cv-row>
+    </cv-grid>
+  </cv-tile>
+</template>
+
+<script>
+import { mapState } from "vuex";
+import LogOutput from "./LogOutput.vue";
+import {
+  UtilService,
+  IconService,
+  DateTimeService,
+} from "@nethserver/ns8-ui-lib";
+import Close16 from "@carbon/icons-vue/es/close/16";
+
+export default {
+  name: "LogSearch",
+  props: {
+    searchId: {
+      type: String,
+      required: true,
+    },
+    nodes: {
+      type: Array,
+      required: true,
+    },
+    apps: {
+      type: Array,
+      required: true,
+    },
+    numSearches: {
+      type: Number,
+      default: 1,
+    },
+    searchQuery: {
+      type: String,
+      default: "",
+    },
+    context: {
+      type: String,
+      default: "cluster",
+      validator: (val) => ["cluster", "node", "module"].includes(val),
+    },
+    selectedNodeId: {
+      type: String,
+      default: "",
+    },
+    selectedAppId: {
+      type: String,
+      default: "",
+    },
+    maxLines: {
+      type: String,
+      default: "500",
+    },
+    startDate: {
+      type: String,
+      default: "",
+    },
+    startTime: {
+      type: String,
+      default: "",
+    },
+    endDate: {
+      type: String,
+      default: "",
+    },
+    endTime: {
+      type: String,
+      default: "",
+    },
+    mainSearch: Boolean,
+    followLogs: Boolean,
+    verticalLayout: Boolean,
+    loadingNodes: Boolean,
+    loadingApps: Boolean,
+    closeAriaLabel: { type: String, default: "Close modal" },
+    light: Boolean,
+  },
+  components: { LogOutput, Close16 },
+  mixins: [UtilService, IconService, DateTimeService],
+  data() {
+    return {
+      MAX_LINES_LIMIT: 2000,
+      filtersShown: true,
+      internalContext: "",
+      internalSearchQuery: "",
+      calOptions: {
+        dateFormat: "Y-m-d",
+      },
+      internalStartDate: "",
+      internalEndDate: "",
+      internalStartTime: "",
+      internalEndTime: "",
+      internalMaxLines: "",
+      wrapText: true,
+      internalFollowLogs: false,
+      outputLines: [],
+      isFollowing: false,
+      internalSelectedNodeId: "",
+      internalSelectedAppId: "",
+      scrollToBottom: true,
+      searchStarted: false,
+      noLogsFound: false,
+      highlight: "",
+      loading: {
+        logs: false,
+        stopFollowing: false,
+      },
+      error: {
+        startDate: "",
+        startTime: "",
+        endDate: "",
+        endTime: "",
+        maxLines: "",
+        selectedNode: "",
+        selectedApp: "",
+      },
+    };
+  },
+  computed: {
+    ...mapState(["isWebsocketConnected"]),
+    csbClusterSelected() {
+      return this.internalContext === "cluster";
+    },
+    csbNodeSelected() {
+      return this.internalContext === "node";
+    },
+    csbModuleSelected() {
+      return this.internalContext === "module";
+    },
+    selectedApp() {
+      return this.apps.find((app) => app.value == this.internalSelectedAppId);
+    },
+    selectedNode() {
+      return this.nodes.find(
+        (node) => node.value == this.internalSelectedNodeId
+      );
+    },
+    showCloseButton() {
+      return this.numSearches > 1;
+    },
+    csbDumpModeSelected() {
+      return !this.internalFollowLogs;
+    },
+    csbFollowModeSelected() {
+      return this.internalFollowLogs;
+    },
+  },
+  watch: {
+    searchQuery: function () {
+      if (this.mainSearch) {
+        this.internalSearchQuery = this.searchQuery;
+      }
+    },
+    internalSearchQuery: function () {
+      if (this.mainSearch) {
+        this.$emit("updateSearchQuery", this.internalSearchQuery);
+      }
+    },
+    context: function () {
+      if (this.mainSearch) {
+        this.internalContext = this.context;
+      }
+    },
+    internalContext: function () {
+      if (this.mainSearch) {
+        this.$emit("updateContext", this.internalContext);
+      }
+    },
+    selectedNodeId: function () {
+      if (this.mainSearch && this.nodes.length) {
+        this.$nextTick(() => {
+          this.internalSelectedNodeId = this.selectedNodeId;
+        });
+      }
+    },
+    internalSelectedNodeId: function () {
+      if (this.mainSearch) {
+        this.$emit("updateSelectedNodeId", this.internalSelectedNodeId);
+      }
+    },
+    nodes: function () {
+      if (this.mainSearch && this.nodes.length) {
+        this.$nextTick(() => {
+          this.internalSelectedNodeId = this.selectedNodeId;
+        });
+      }
+    },
+    selectedAppId: function () {
+      if (this.mainSearch && this.apps.length) {
+        this.$nextTick(() => {
+          this.internalSelectedAppId = this.selectedAppId;
+        });
+      }
+    },
+    internalSelectedAppId: function () {
+      if (this.mainSearch) {
+        this.$emit("updateSelectedAppId", this.internalSelectedAppId);
+      }
+    },
+    apps: function () {
+      if (this.mainSearch && this.apps.length) {
+        this.$nextTick(() => {
+          this.internalSelectedAppId = this.selectedAppId;
+        });
+      }
+    },
+    followLogs: function () {
+      if (this.mainSearch) {
+        this.internalFollowLogs = this.followLogs;
+      }
+    },
+    internalFollowLogs: function () {
+      if (this.mainSearch) {
+        this.$emit("updateFollowLogs", this.internalFollowLogs);
+      }
+    },
+    maxLines: function () {
+      if (this.mainSearch) {
+        this.internalMaxLines = this.maxLines;
+      }
+    },
+    internalMaxLines: function () {
+      if (this.mainSearch) {
+        this.$emit("updateMaxLines", this.internalMaxLines);
+      }
+    },
+    startDate: function () {
+      if (this.mainSearch) {
+        this.internalStartDate = this.startDate;
+      }
+    },
+    internalStartDate: function () {
+      if (this.mainSearch) {
+        this.$emit("updateStartDate", this.internalStartDate);
+      }
+    },
+    endDate: function () {
+      if (this.mainSearch) {
+        this.internalEndDate = this.endDate;
+      }
+    },
+    internalEndDate: function () {
+      if (this.mainSearch) {
+        this.$emit("updateEndDate", this.internalEndDate);
+      }
+    },
+    startTime: function () {
+      if (this.mainSearch) {
+        this.internalStartTime = this.startTime;
+      }
+    },
+    internalStartTime: function () {
+      if (this.mainSearch) {
+        this.$emit("updateStartTime", this.internalStartTime);
+      }
+    },
+    endTime: function () {
+      if (this.mainSearch) {
+        this.internalEndTime = this.endTime;
+      }
+    },
+    internalEndTime: function () {
+      if (this.mainSearch) {
+        this.$emit("updateEndTime", this.internalEndTime);
+      }
+    },
+  },
+  created() {
+    this.initFilters();
+
+    // register event listeners
+    this.$root.$on(
+      `collapseSystemLogsFilters-${this.searchId}`,
+      this.collapseFilters
+    );
+    this.$root.$on("logSearchClosed", this.onLogSearchClosed);
+  },
+  beforeDestroy() {
+    // remove event listeners
+    this.$root.$off(`logsStart-${this.searchId}`);
+    this.$root.$off(`logsStop-${this.searchId}`);
+    this.$root.$off(`collapseSystemLogsFilters-${this.searchId}`);
+    this.$root.$off("logSearchClosed");
+
+    if (this.pid) {
+      this.logsStop();
+    }
+  },
+  methods: {
+    toggleFilters() {
+      this.filtersShown = !this.filtersShown;
+    },
+    collapseFilters() {
+      this.filtersShown = false;
+    },
+    onContextSelected(value) {
+      this.internalContext = value;
+    },
+    initFilters() {
+      this.clearErrors(this);
+      // set time interval
+      this.internalStartDate = this.formatDate(
+        this.subDays(new Date(), 1),
+        "yyyy-MM-dd"
+      );
+      this.internalEndDate = this.formatDate(new Date(), "yyyy-MM-dd");
+      this.internalStartTime = "00:00";
+      this.internalEndTime = "23:59";
+      this.internalContext = "cluster";
+      this.internalSelectedAppId = "";
+      this.internalSelectedNodeId = "";
+      this.internalSearchQuery = "";
+      this.internalMaxLines = "500";
+      this.internalFollowLogs = false;
+    },
+    validateSearchLogs() {
+      this.clearErrors();
+      let isValidationOk = true;
+
+      if (this.internalContext == "node" && !this.internalSelectedNodeId) {
+        this.error.selectedNode = this.$t("common.required");
+        isValidationOk = false;
+      }
+
+      if (this.internalContext == "module" && !this.internalSelectedAppId) {
+        this.error.selectedApp = this.$t("common.required");
+        isValidationOk = false;
+      }
+
+      if (!this.internalFollowLogs) {
+        if (!this.internalStartTime) {
+          this.error.startTime = this.$t("common.required");
+          isValidationOk = false;
+        }
+        if (!this.internalEndTime) {
+          this.error.endTime = this.$t("common.required");
+          isValidationOk = false;
+        }
+        if (this.internalStartTime && this.internalEndTime) {
+          // using Date constructor: new Date('1995-12-17T03:24:00')
+          const startLocal = new Date(
+            this.internalStartDate + "T" + this.internalStartTime + ":00"
+          );
+          const endLocal = new Date(
+            this.internalEndDate + "T" + this.internalEndTime + ":59"
+          );
+          if (this.dateIsBefore(endLocal, startLocal)) {
+            this.error.startDate = this.$t("error.invalid_time_interval");
+            this.error.startTime = this.$t("error.invalid_time_interval");
+            this.error.endDate = this.$t("error.invalid_time_interval");
+            this.error.endTime = this.$t("error.invalid_time_interval");
+            isValidationOk = false;
+          }
+        }
+
+        if (
+          this.internalMaxLines < 1 ||
+          this.internalMaxLines > this.MAX_LINES_LIMIT
+        ) {
+          this.error.maxLines = this.$t("error.must_be_between", {
+            min: 1,
+            max: this.MAX_LINES_LIMIT,
+          });
+          isValidationOk = false;
+        }
+      }
+
+      return isValidationOk;
+    },
+    logsStart() {
+      if (!this.validateSearchLogs()) {
+        return;
+      }
+      this.loading.logs = true;
+      this.noLogsFound = false;
+      this.searchStarted = true;
+      const mode = this.internalFollowLogs ? "tail" : "dump";
+
+      // using Date constructor: new Date('1995-12-17T03:24:00')
+      const startLocal = new Date(
+        this.internalStartDate + "T" + this.internalStartTime + ":00"
+      );
+      const endLocal = new Date(
+        this.internalEndDate + "T" + this.internalEndTime + ":59"
+      );
+      const format = "yyyy-MM-dd'T'HH:mm:ssX";
+      const startUtcString = this.formatInTimeZone(startLocal, format, "UTC");
+      const endUtcString = this.formatInTimeZone(endLocal, format, "UTC");
+      this.highlight = this.internalSearchQuery;
+      this.clearLogs();
+      let entityName;
+
+      switch (this.internalContext) {
+        case "cluster":
+          entityName = "";
+          break;
+        case "node":
+          entityName = this.internalSelectedNodeId;
+          break;
+        case "module":
+          entityName = this.internalSelectedAppId;
+          break;
+      }
+
+      if (this.internalFollowLogs) {
+        this.$root.$on(`logsStart-${this.searchId}`, this.onLogsStartFollow);
+      } else {
+        this.$root.$once(`logsStart-${this.searchId}`, this.onLogsStartDump);
+      }
+
+      const logsStartObj = {
+        action: "logs-start",
+        payload: {
+          mode: mode,
+          lines: this.internalMaxLines,
+          filter: this.internalSearchQuery,
+          from: startUtcString,
+          to: endUtcString,
+          entity: this.internalContext,
+          entity_name: entityName,
+          id: this.searchId,
+        },
+      };
+      this.$socket.sendObj(logsStartObj);
+    },
+    logsStop() {
+      this.loading.stopFollowing = true;
+      this.$root.$off(`logsStart-${this.searchId}`);
+      this.$root.$once(`logsStop-${this.searchId}`, this.onLogsStop);
+
+      const logsStopObj = {
+        action: "logs-stop",
+        payload: {
+          pid: this.pid,
+          id: this.searchId,
+        },
+      };
+      this.$socket.sendObj(logsStopObj);
+    },
+    onLogsStop() {
+      this.loading.stopFollowing = false;
+      this.isFollowing = false;
+      this.pid = "";
+    },
+    onLogsStartDump(payload) {
+      this.loading.logs = false;
+
+      if (!payload.message.length) {
+        // show empty state in LogsOutput
+        this.noLogsFound = true;
+      } else {
+        this.outputLines = [...this.outputLines, ...payload.message];
+      }
+
+      // signal LogOutput
+      this.$root.$emit(`logsUpdated-${this.searchId}`);
+    },
+    onLogsStartFollow(payload) {
+      if (this.loading.logs) {
+        this.loading.logs = false;
+        this.isFollowing = true;
+        this.pid = payload.pid;
+      }
+
+      if (payload.message.length) {
+        this.outputLines = [...this.outputLines, ...payload.message];
+      }
+
+      // limit output buffer
+      if (this.outputLines.length > this.MAX_LINES_LIMIT) {
+        const numLinesToDelete = this.outputLines.length - this.MAX_LINES_LIMIT;
+        this.outputLines.splice(0, numLinesToDelete);
+      }
+
+      // signal LogOutput
+      this.$root.$emit(`logsUpdated-${this.searchId}`);
+    },
+    clearLogs() {
+      this.outputLines = [];
+    },
+    onEnterKeyPress() {
+      if (!this.isFollowing) {
+        this.logsStart();
+      }
+    },
+    onClose() {
+      this.$emit("close", this.searchId);
+      this.$root.$emit("logSearchClosed");
+    },
+    onLogSearchClosed() {
+      this.$nextTick(() => {
+        if (this.mainSearch) {
+          // update query params
+          this.$emit("updateSearchQuery", this.internalSearchQuery);
+          this.$emit("updateContext", this.internalContext);
+          this.$emit("updateSelectedNodeId", this.internalSelectedNodeId);
+          this.$emit("updateSelectedAppId", this.internalSelectedAppId);
+          this.$emit("updateFollowLogs", this.internalFollowLogs);
+          this.$emit("updateMaxLines", this.internalMaxLines);
+          this.$emit("updateStartDate", this.internalStartDate);
+          this.$emit("updateEndDate", this.internalEndDate);
+          this.$emit("updateStartTime", this.internalStartTime);
+          this.$emit("updateEndTime", this.internalEndTime);
+        }
+      });
+    },
+    onModeSelected(value) {
+      if (value == "dump") {
+        this.internalFollowLogs = false;
+      } else if (value == "follow") {
+        this.internalFollowLogs = true;
+      }
+    },
+  },
+};
+</script>
+
+<style scoped lang="scss">
+@import "../../styles/carbon-utils";
+
+.log-search {
+  // needed for close button positon
+  position: relative;
+}
+
+.interval-date {
+  display: inline-flex;
+  margin-right: $spacing-06;
+}
+
+.interval-time {
+  display: inline-flex;
+}
+
+.checkbox-filter {
+  display: flex;
+  align-items: center;
+}
+
+.toggle-filters {
+  margin-bottom: $spacing-06;
+}
+
+.filter-collapsed {
+  margin-right: $spacing-05;
+}
+
+.pad-right-lg {
+  padding-right: $spacing-07;
+}
+
+.logs-output-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+
+  .mg-right {
+    margin-right: $spacing-06;
+  }
+}
+</style>
+
+<style lang="scss">
+@import "../../styles/carbon-utils";
+
+// global styles
+
+@media (min-width: $breakpoint-medium) {
+  .system-logs .search-query .bx--text-input,
+  .system-logs .search-query .bx--text-input__field-wrapper {
+    max-width: none;
+  }
+}
+</style>

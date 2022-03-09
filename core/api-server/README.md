@@ -86,3 +86,103 @@ Every request made to the server, using its APIs or WebSocket, is logged inside 
 - `Action`: the name of the action made by the user
 - `Data`: the payload of the action (if present)
 - `Timestamp`: the time when the specific action is executed
+
+## Websockets
+The API server provides a WebSocket connection under the `/ws` path. Through websocket it is possible to send commands and receive data asynchronously via the socket channel.
+
+### Commands
+At the moment the supported commands are:
+- `logs-start`: used to get the logs for a specific entity (cluster, node or module). Use loki cli (`logcli`) to search and retrieve logs
+- `logs-stop`: used to stop the logs you are following (normally used in tail mode)
+
+To execute commands via websocket, you need to send a payload to the websocket and listen to the results.
+
+#### logs-start
+```json
+INPUT
+{
+   "action": "logs-start",
+   "payload": {
+      "id": "2fd5b630-3d27-4b88-ac11-ad2d09f4bbd7",
+      "mode": "dump",
+      "lines": "25",
+      "filter": "",
+      "from": "2021-01-19T10:00:00Z",
+      "to": "2021-01-19T20:00:00Z",
+      "entity" :"module",
+      "entity_name": "traefik1"
+   }
+}
+```
+
+- `action`: fixed to `logs-start`
+- `payload`: payload of the action
+  - `id`: used to track multiple stream output (used in UI to get different logs stream in different panes)
+  - `mode`: must be `tail` or `dump` - `string` (choose how to retrieve logs)
+  - `lines`: could be empty or a number - `string` (could be empty in `tail` mode)
+  - `filter`: could be empty or string - `string` (used to search specific words inside logs)
+  - `from`: could be empty or iso8601 date string - `string` (used to search specific logs in a date range)
+  - `to`: could be empty or iso8601 date string - `string` (used to search specific logs in a date range)
+  - `entity`: must be `cluster` or `node` or `module` - `string`
+  - `entity_name`: could be empty (`cluster` case) or name of the entity - `string` (ex. hostname of the node or module id like `traefik1`)
+
+
+```json
+OUTPUT
+{
+   "name": "logs-start",
+   "payload": {
+      "message": "2022-02-17T20:47:24+01:00 fedora33.n2.edoardo --\u003e [GIN-debug] Listening and serving HTTP on 127.0.0.1:8080",
+      "pid": "14431"
+   },
+   "timestamp":"2022-03-01T09:01:41.698943069Z",
+   "type":"action"
+}
+```
+
+- `name`: is the name of the action
+- `payload`: contains the response logs
+  - `message`: contains the log message
+  - `pid`: is the pid of the process that actually reads log
+- `timestamp`: timestamp of the action
+- `type`: used to identify the websocket outputs
+
+#### logs-stop
+```json
+INPUT
+{
+   "action": "logs-stop",
+   "payload": {
+      "id": "2fd5b630-3d27-4b88-ac11-ad2d09f4bbd7",
+      "pid": "14088"
+   }
+}
+```
+
+- `action`: fixed to `logs-start`
+- `payload`: payload of the action
+  - `pid`: contains the pid of the process that reads log
+
+```json
+OUTPUT
+{
+   "name": "logs-stop",
+   "payload": {
+      "id": "2fd5b630-3d27-4b88-ac11-ad2d09f4bbd7",
+      "pid": "14431",
+      "message": "logs follow stopped"
+   },
+   "timestamp":"2022-03-01T09:01:41.698943069Z",
+   "type":"action"
+}
+```
+
+- `name`: is the name of the action
+- `payload`: contains the response logs
+  - `id`: id of the trackes log stream
+  - `pid`: is the pid of the process that actually reads log
+- `timestamp`: timestamp of the action
+- `type`: used to identify the websocket outputs
+
+### Task events
+The websocket also listens for every event of every task launched within the cluster and reports the payload through the socket channel.

@@ -104,13 +104,13 @@ import AppSwitcher20 from "@carbon/icons-vue/es/app-switcher/20";
 import Search20 from "@carbon/icons-vue/es/search/20";
 import Logout20 from "@carbon/icons-vue/es/logout/20";
 import { mapState, mapActions, mapGetters } from "vuex";
-import GlobalSearch from "@/components/GlobalSearch";
-import AppDrawer from "@/components/AppDrawer";
+import GlobalSearch from "@/components/shell/GlobalSearch";
+import AppDrawer from "@/components/shell/AppDrawer";
 import LoginService from "@/mixins/login";
 import WebSocketService from "@/mixins/websocket";
-import NotificationDrawer from "@/components/NotificationDrawer";
+import NotificationDrawer from "@/components/shell/NotificationDrawer";
 import { StorageService } from "@nethserver/ns8-ui-lib";
-import HeaderGlobalMenu from "@/components/HeaderGlobalMenu";
+import HeaderGlobalMenu from "@/components/shell/HeaderGlobalMenu";
 
 export default {
   name: "ShellHeader",
@@ -159,7 +159,7 @@ export default {
 </script>
 
 <style scoped lang="scss">
-@import "../styles/carbon-utils";
+@import "../../styles/carbon-utils";
 
 .notifications-button {
   position: relative;

@@ -127,7 +127,7 @@
 
 <script>
 import { UtilService } from "@nethserver/ns8-ui-lib";
-import ImageGallery from "../components/ImageGallery";
+import ImageGallery from "./ImageGallery";
 
 export default {
   name: "AppInfoModal",
@@ -149,7 +149,7 @@ export default {
 </script>
 
 <style scoped lang="scss">
-@import "../styles/carbon-utils";
+@import "../../styles/carbon-utils";
 
 .logo-and-name {
   display: flex;

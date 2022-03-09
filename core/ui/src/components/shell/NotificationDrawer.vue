@@ -165,7 +165,7 @@ export default {
 </script>
 
 <style scoped lang="scss">
-@import "../styles/carbon-utils";
+@import "../../styles/carbon-utils";
 
 .slide-notifications-enter-active,
 .slide-notifications-leave-active {
@@ -237,12 +237,8 @@ export default {
 }
 </style>
 
-<style scoped lang="scss">
-@import "../styles/carbon-utils";
-</style>
-
 <style lang="scss">
-@import "../styles/carbon-utils";
+@import "../../styles/carbon-utils";
 
 // global styles
 

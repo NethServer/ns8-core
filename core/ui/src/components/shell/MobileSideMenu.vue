@@ -11,7 +11,7 @@
 </template>
 
 <script>
-import SideMenuContent from "@/components/SideMenuContent";
+import SideMenuContent from "@/components/shell/SideMenuContent";
 import { mapState, mapActions } from "vuex";
 
 export default {
@@ -47,7 +47,7 @@ export default {
 </script>
 
 <style scoped lang="scss">
-@import "../styles/carbon-utils";
+@import "../../styles/carbon-utils";
 
 .mobile-side-menu {
   width: $side-menu-width;
