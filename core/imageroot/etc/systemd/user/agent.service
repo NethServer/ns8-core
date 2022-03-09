@@ -11,7 +11,7 @@ EnvironmentFile=-%S/state/agent.env
 WorkingDirectory=%S/state
 ExecStart=/usr/local/bin/agent ${AGENT_ID} ${AGENT_BASEACTIONS_DIR} ${AGENT_INSTALL_DIR}/actions %h/actions-custom
 Restart=always
-SyslogIdentifier=%u-agent
+SyslogIdentifier=%u
 
 [Install]
 WantedBy=default.target
