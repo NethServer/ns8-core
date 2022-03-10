@@ -31,7 +31,7 @@ set -e
 exec 1>&2
 
 NAME="selfsigned"
-FQDN=$(hostname -f)
+FQDN="$(hostname -f).test"
 addresses=''
 
 # Do not override existing certs
