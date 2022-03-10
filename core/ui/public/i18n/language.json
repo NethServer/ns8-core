@@ -384,6 +384,7 @@
     "schedule_backup_for_instance": "Create a backup schedule for {instance}",
     "schedule_action": "Schedule",
     "no_backup": "No backup",
+    "no_backup_configured": "No backup configured",
     "configure": "Configure",
     "go_to_backup": "Go to Backup",
     "num_backup_snapshots": "{num} backup snapshot | {num} backup snapshots",

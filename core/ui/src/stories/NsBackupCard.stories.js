@@ -7,8 +7,7 @@ export default {
 
 const sharedProps = {
   title: "Backup",
-  noBackupMessage: "No backup",
-  scheduleBackupLabel: "Configure",
+  noBackupMessage: "No backup configured",
   goToBackupLabel: "Go to Backup",
   repositoryLabel: "Repository",
   statusLabel: "Status",
@@ -111,8 +110,8 @@ Default.args = {
   backups: [...sharedBackups],
 };
 
-export const BackupNotConfigured = Template.bind({});
-BackupNotConfigured.args = {
+export const NoBackupConfigured = Template.bind({});
+NoBackupConfigured.args = {
   moduleId: "nextcloud1",
   moduleUiName: "My Nextcloud",
   ...sharedProps,

@@ -248,6 +248,7 @@ export default {
 .app-description {
   color: $text-02;
   text-align: center;
+  line-height: 1.5;
 }
 
 .app-categories {

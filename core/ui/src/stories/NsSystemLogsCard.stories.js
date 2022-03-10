@@ -23,6 +23,7 @@ Default.args = {
   description: "Show nextcloud1 logs",
   buttonLabel: "Go to System logs",
   light: true,
+  router: null,
   context: "module",
   nodeId: "",
   moduleId: "nextcloud1",
