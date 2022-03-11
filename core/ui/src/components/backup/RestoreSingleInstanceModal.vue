@@ -296,7 +296,7 @@ export default {
       const app = this.selectedInstance.path.split("/")[0];
       const nodeName =
         this.selectedNode.ui_name ||
-        this.$t("common.node_lc") + ` ${this.selectedNode.id}`;
+        this.$t("common.node") + ` ${this.selectedNode.id}`;
 
       const res = await to(
         this.createClusterTask({
