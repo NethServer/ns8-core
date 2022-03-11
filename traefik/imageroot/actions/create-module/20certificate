@@ -31,7 +31,7 @@ set -e
 exec 1>&2
 
 NAME="selfsigned"
-FQDN="$(hostname -f).test"
+FQDN="host-$(printf %05d ${RANDOM}).ns8.test"
 addresses=''
 
 # Do not override existing certs
