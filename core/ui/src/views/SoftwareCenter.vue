@@ -167,7 +167,7 @@
               :light="true"
             >
               <NsEmptyState
-                :title="$t('software_center.system_up_to_date')"
+                :title="$t('software_center.cluster_up_to_date')"
                 :animationData="RocketLottie"
                 animationTitle="rocket"
                 :loop="1"

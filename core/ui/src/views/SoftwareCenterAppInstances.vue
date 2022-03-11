@@ -215,7 +215,9 @@
         <div class="mg-bottom-md">
           {{
             $t("software_center.about_to_uninstall_instance", {
-              instance: instanceToUninstall.id,
+              instance: instanceToUninstall.ui_name
+                ? `${instanceToUninstall.ui_name} (${instanceToUninstall.id})`
+                : instanceToUninstall.id,
             })
           }}
         </div>
@@ -482,7 +484,9 @@ export default {
           },
           extra: {
             title: this.$t("software_center.instance_uninstallation", {
-              instance: this.instanceToUninstall.id,
+              instance: this.instanceToUninstall.ui_name
+                ? this.instanceToUninstall.ui_name
+                : this.instanceToUninstall.id,
             }),
             description: this.$t("software_center.uninstalling"),
           },
