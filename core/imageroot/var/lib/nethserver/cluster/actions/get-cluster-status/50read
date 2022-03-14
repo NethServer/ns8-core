@@ -58,14 +58,20 @@ if network is not None:
         endpoint = rdb.hget(node, 'endpoint')
         if endpoint:
             ret['leader_url'] = f'https://{endpoint.partition(":")[0]}/cluster-admin/'
-        get_info_result = agent.tasks.run(
-            agent_id=f'node/{node_id}',
-            action='get-info',
-            endpoint="redis://cluster-leader",
-        )
+        try:
+            get_info_result = agent.tasks.run(
+                agent_id=f'node/{node_id}',
+                action='get-info',
+                endpoint="redis://cluster-leader",
+            )
+        except Exception as ex:
+            print(f'Error executing task get-info on node/{node_id}', ex, file=sys.stderr)
+            vpn[ip_addr]['online'] = False
+            continue
         if get_info_result['exit_code'] == 0:
+            vpn[ip_addr]['online'] = True
             for key in get_info_result['output'].keys():
-                 vpn[ip_addr][key] = get_info_result['output'][key]
+                vpn[ip_addr][key] = get_info_result['output'][key]
 
 else:
     json.dump(ret, fp=sys.stdout)

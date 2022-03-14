@@ -13,6 +13,9 @@
           "id": 2,
           "ui_name": "node2@ams3",
           "local": false,
+          "online": true,
+          "hostname": "dn2.worker.cluster0.gs.nethserver.net",
+          "machine_id": "96b91e27d15ae6d7ef0cc79c621f7904",
           "vpn": {
             "ip_address": "10.5.4.2",
             "public_key": "0yLfAut1CwatFb0k0sim6oPudIOWMzJsO9ggYVmvXBg=",
@@ -21,22 +24,17 @@
             "rcvd": 5989132,
             "sent": 6097216,
             "keepalive": 25
-          },
-          "hostname": "dn2.worker.cluster0.gs.nethserver.net",
-          "machine_id": "96b91e27d15ae6d7ef0cc79c621f7904",
-          "local": false
+          }
         },
         {
           "id": 1,
           "ui_name": "node1@sfo3",
           "local": true,
+          "online": false,
           "vpn": {
             "ip_address": "10.5.4.1",
             "public_key": "c4BSbQV3zG1qIK1eSUfVvwLtTBxRuI1y5IWmddZgals="
-          },
-          "hostname": "dn1.leader.cluster0.gs.nethserver.net",
-          "machine_id": "751361a048c35d6bc123be6b621f797a",
-          "local": true
+          }
         }
       ],
       "leader_url": "https://server1.nethserver.org/cluster-admin/",
@@ -130,8 +128,7 @@
           }
         },
         "required": [
-          "hostname",
-          "machine_id",
+          "online",
           "id",
           "ui_name",
           "local",
