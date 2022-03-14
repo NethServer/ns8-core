@@ -15,6 +15,7 @@ podman run -i \
     bash -l -s <<EOF
     set -e
     echo "$ssh_key" > /home/pwuser/ns8-key
+    set -x
     pip install -r /home/pwuser/ns8-scratchpad/core/tests/pythonreq.txt
     mkdir ~/outputs
     cd /home/pwuser/ns8-scratchpad/core/
@@ -25,7 +26,11 @@ podman run -i \
 	-d ~/outputs /home/pwuser/ns8-scratchpad/core/tests/
 EOF
 
+tests_res=$?
+
 podman cp rf-core-runner:/home/pwuser/outputs tests/
 podman stop rf-core-runner
 podman rm rf-core-runner
 rm -f /tmp/seccomp_profile.json
+
+exit ${tests_res}
