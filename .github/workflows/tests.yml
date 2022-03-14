@@ -110,31 +110,21 @@ jobs:
           path: ${{ github.workspace }}/
       - name: Run tests
         run: |
-          wget -nv https://raw.githubusercontent.com/microsoft/playwright/master/utils/docker/seccomp_profile.json
-          podman run -v ${{ github.workspace }}/:/home/pwuser/ns8-scratchpad:z -i --security-opt seccomp=seccomp_profile.json --ipc=host --name rf-runner ghcr.io/marketsquare/robotframework-browser/rfbrowser-stable:v10.0.3 bash -l -s <<EOF
-          set -e -x
-          pip install -r /home/pwuser/ns8-scratchpad/core/tests/pythonreq.txt
-          mkdir ~/outputs
-          cd /home/pwuser/ns8-scratchpad/core/
-          robot -v NODE_ADDR:${{ matrix.node }}.leader.${{ matrix.node }}-${{ needs.ns8.outputs.short_sha }}.${{ env.TF_VAR_domain }} \
-            -v SSH_KEYFILE:/home/pwuser/ns8-scratchpad/key \
-            -v COREBRANCH:${{ needs.ns8.outputs.tag }} \
-            -v COREMODULES:${{ join(fromJSON(needs.ns8.outputs.modules), ',' ) }} \
-            -d ~/outputs /home/pwuser/ns8-scratchpad/core/tests/
-          EOF
-      - name: export logs
-        if: always()
-        run: podman cp rf-runner:/home/pwuser/outputs ${{ github.workspace }}/
-        working-directory: ${{ github.workspace }}
+          ./test-module.sh ${{ matrix.node }}.leader.${{ matrix.node }}-${{ needs.ns8.outputs.short_sha }}.${{ env.TF_VAR_domain }}
+        working-directory: ${{ github.workspace }}/core
+        env:
+          SSH_KEYFILE: ${{ github.workspace }}/key
+          COREBRANCH: ${{ needs.ns8.outputs.tag }}
+          COREMODULES: ${{ join(fromJSON(needs.ns8.outputs.modules), ',' ) }}
       - name: Save tests results
         if: always()
         uses: actions/upload-artifact@v2
         with:
           name: core-tests-logs-${{ matrix.node }}
           path: |
-             ${{ github.workspace }}/outputs/output.xml
-             ${{ github.workspace }}/outputs/log.html
-             ${{ github.workspace }}/outputs/report.html
+             ${{ github.workspace }}/core/tests/outputs/output.xml
+             ${{ github.workspace }}/core/tests/outputs/log.html
+             ${{ github.workspace }}/core/tests/outputs/report.html
   infra_destroy:
     name: "Destroy the infrastructure"
     runs-on: ubuntu-latest
