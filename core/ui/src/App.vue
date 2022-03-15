@@ -220,13 +220,20 @@ export default {
     },
     async retrieveClusterStatus(initial) {
       const taskAction = "get-cluster-status";
+      const eventId = this.getUuid();
 
       const completedCallback = initial
         ? this.getInitialClusterStatusCompleted
         : this.getClusterStatusCompleted;
 
+      // register to task error
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.getClusterStatusAborted
+      );
+
       // register to task completion
-      this.$root.$once(taskAction + "-completed", completedCallback);
+      this.$root.$once(`${taskAction}-completed-${eventId}`, completedCallback);
 
       const res = await to(
         this.createClusterTask({
@@ -234,6 +241,7 @@ export default {
           extra: {
             title: this.$t("action." + taskAction),
             isNotificationHidden: true,
+            eventId,
           },
         })
       );
@@ -258,6 +266,9 @@ export default {
           return;
         }
       }
+    },
+    getClusterStatusAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
     },
     onClusterInitialized() {
       this.setClusterInitializedInStore(true);

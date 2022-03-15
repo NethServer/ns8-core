@@ -163,9 +163,18 @@ export default {
     async installInstance() {
       this.error.addModule = "";
       const taskAction = "add-module";
+      const eventId = this.getUuid();
 
-      // register to task completion
-      this.$root.$once(taskAction + "-completed", this.addModuleCompleted);
+      // register to task error
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.addModuleAborted
+      );
+
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.addModuleCompleted
+      );
 
       const nodeName =
         this.selectedNode.ui_name ||
@@ -186,6 +195,7 @@ export default {
               node: nodeName,
             }),
             node: nodeName,
+            eventId,
             completion: {
               i18nString: "software_center.instance_installed_on_node",
               extraTextParams: ["node"],
@@ -205,6 +215,10 @@ export default {
       // emit event to close modal
       this.$emit("close");
     },
+    addModuleAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.addModule = this.$t("error.generic_error");
+    },
     addModuleCompleted(taskContext, taskResult) {
       const moduleId = taskResult.output.module_id;
 
@@ -216,7 +230,7 @@ export default {
       // backup notification
 
       setTimeout(() => {
-        //// todo: check if app is eligible for backup (i.e. not samba, traefik...)
+        //// todo: call list-installed-modules to check if app is eligible for backup (i.e. not samba, traefik...)
 
         const notification = {
           title: this.$t("backup.schedule_backup"),

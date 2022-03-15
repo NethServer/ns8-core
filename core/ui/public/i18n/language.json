@@ -704,7 +704,12 @@
     "usage": "usage",
     "edit_node_label": "Edit node label",
     "node_label": "Node label",
-    "node_label_tooltip": "You can assign the node an easy to remember name"
+    "node_label_tooltip": "You can assign the node an easy to remember name",
+    "offline": "Offline",
+    "node_is_offline": "Node is offline",
+    "nodes_offline": "Some nodes are offline",
+    "nodes_offline_description": "Check nodes status and connectivity",
+    "node_is_offline_description": "Check node status and connectivity"
   },
   "node_detail": {
     "title": "Node detail",

@@ -32,6 +32,16 @@
           <cv-tag v-else kind="blue" :label="$t('nodes.worker')"></cv-tag>
         </div>
       </div>
+      <div v-if="!isOnline" class="bx--row">
+        <div class="bx--col">
+          <NsInlineNotification
+            kind="error"
+            :title="$t('nodes.node_is_offline')"
+            :description="$t('nodes.node_is_offline_description')"
+            :showCloseButton="false"
+          />
+        </div>
+      </div>
       <div v-if="error.getClusterStatus" class="bx--row">
         <div class="bx--col">
           <NsInlineNotification
@@ -339,6 +349,7 @@ export default {
       isLeader: false,
       vpnInfo: {},
       nodeLabel: "-",
+      isOnline: true,
       loading: {
         nodeStatus: true,
         clusterStatus: true,
@@ -362,7 +373,7 @@ export default {
   created() {
     this.nodeId = this.$route.params.nodeId;
     this.retrieveNodeStatus();
-    this.retrieveClusterStatus();
+    this.getClusterStatus();
 
     // periodically retrieve nodes status
     this.nodeStatusInterval = setInterval(
@@ -372,7 +383,7 @@ export default {
 
     // periodically retrieve cluster status to get "last seen"
     this.clusterStatusInterval = setInterval(
-      this.retrieveClusterStatus,
+      this.getClusterStatus,
       this.CLUSTER_STATUS_TIME_INTERVAL
     );
   },
@@ -382,12 +393,17 @@ export default {
   },
   methods: {
     async retrieveNodeStatus() {
+      if (!this.isOnline) {
+        return;
+      }
+
       this.error.getNodeStatus = "";
       const taskAction = "get-node-status";
+      const eventId = this.getUuid();
 
       // register to task events
       this.$root.$once(
-        taskAction + "-completed-node-" + this.nodeId,
+        `${taskAction}-completed-${eventId}`,
         this.getNodeStatusCompleted
       );
 
@@ -398,6 +414,7 @@ export default {
             title: this.$t("action." + taskAction),
             isNotificationHidden: true,
             node: this.nodeId,
+            eventId,
           },
         })
       );
@@ -429,7 +446,7 @@ export default {
       this.nodeStatus = nodeStatus;
       this.loading.nodeStatus = false;
     },
-    async retrieveClusterStatus() {
+    async getClusterStatus() {
       this.error.getClusterStatus = "";
       const taskAction = "get-cluster-status";
 
@@ -465,6 +482,7 @@ export default {
       this.isLeader = currentNode.local;
       this.vpnInfo = currentNode.vpn;
       this.nodeLabel = currentNode.ui_name;
+      this.isOnline = currentNode.online;
       this.loading.clusterStatus = false;
     },
   },

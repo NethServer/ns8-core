@@ -17,7 +17,11 @@
       <cv-tag v-if="isLeader" kind="green" :label="leaderLabel"></cv-tag>
       <cv-tag v-else kind="blue" :label="workerLabel"></cv-tag>
     </div>
-    <div v-if="loading" class="row node-card-skeleton">
+    <div v-if="!online" class="row icon-and-text offline">
+      <NsSvg :svg="ErrorFilled16" class="icon ns-error" />
+      <span>{{ $t("nodes.offline") }}</span>
+    </div>
+    <div v-else-if="loading" class="row node-card-skeleton">
       <cv-skeleton-text :paragraph="true" :line-count="5"></cv-skeleton-text>
     </div>
     <div v-else class="table-wrapper">
@@ -92,14 +96,13 @@
 </template>
 
 <script>
-import { CvTile } from "@carbon/vue";
-import Chip32 from "@carbon/icons-vue/es/chip/32";
 import Information16 from "@carbon/icons-vue/es/information/16";
+import { UtilService, IconService } from "@nethserver/ns8-ui-lib";
 
 export default {
   name: "NodeCard",
-  //components added for storybook to work
-  components: { CvTile, Information16 },
+  components: { Information16 },
+  mixins: [UtilService, IconService],
   props: {
     nodeId: {
       type: Number,
@@ -169,13 +172,12 @@ export default {
       type: Number,
       default: 90,
     },
+    online: {
+      type: Boolean,
+      default: true,
+    },
     loading: Boolean,
     light: Boolean,
-  },
-  data() {
-    return {
-      Chip32,
-    };
   },
 };
 </script>
@@ -228,5 +230,9 @@ export default {
 
 .td {
   display: table-cell;
+}
+
+.offline {
+  margin-top: 1rem;
 }
 </style>

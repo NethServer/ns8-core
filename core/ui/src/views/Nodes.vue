@@ -15,6 +15,16 @@
         />
       </div>
     </div>
+    <div v-if="error.nodesOffline" class="bx--row">
+      <div class="bx--col">
+        <NsInlineNotification
+          kind="error"
+          :title="$t('nodes.nodes_offline')"
+          :description="$t('nodes.nodes_offline_description')"
+          :showCloseButton="false"
+        />
+      </div>
+    </div>
     <div v-if="error.getNodeStatus" class="bx--row">
       <div class="bx--col">
         <NsInlineNotification
@@ -40,7 +50,7 @@
         <cv-tile light>
           <cv-skeleton-text
             :paragraph="true"
-            :line-count="11"
+            :line-count="9"
           ></cv-skeleton-text>
         </cv-tile>
       </div>
@@ -58,6 +68,7 @@
           :isLeader="node.id == leaderNode.id"
           light
           loading
+          :online="node.online"
         />
         <NodeCard
           v-else
@@ -84,6 +95,7 @@
           :swapWarningTh="90"
           :disksUsage="nodesStatus[node.id].disksUsage"
           :diskWarningTh="90"
+          :online="node.online"
           light
         >
           <template #menu>
@@ -236,7 +248,7 @@ export default {
   },
   data() {
     return {
-      NODE_STATUS_TIME_INTERVAL: 5000,
+      REFRESH_DATA_TIME_INTERVAL: 5000,
       q: {
         isShownAddNodeModal: false,
       },
@@ -244,7 +256,7 @@ export default {
       isCopyClipboardHintShown: false,
       nodes: [],
       nodesStatus: {},
-      nodesStatusInterval: null,
+      refreshDataInterval: null,
       currentNode: null,
       newNodeLabel: "",
       isShownSetNodeLabelModal: false,
@@ -256,6 +268,7 @@ export default {
         getClusterStatus: "",
         getNodeStatus: "",
         setNodeLabel: "",
+        nodesOffline: "",
       },
     };
   },
@@ -288,10 +301,16 @@ export default {
     next();
   },
   created() {
-    this.retrieveClusterStatus();
+    this.getClusterStatus();
+
+    // periodically retrieve cluster and nodes status
+    this.refreshDataInterval = setInterval(
+      this.getClusterStatus,
+      this.REFRESH_DATA_TIME_INTERVAL
+    );
   },
   beforeDestroy() {
-    clearInterval(this.nodesStatusInterval);
+    clearInterval(this.refreshDataInterval);
   },
   methods: {
     retrieveJoinCode() {
@@ -310,7 +329,7 @@ export default {
         );
       }
     },
-    async retrieveClusterStatus() {
+    async getClusterStatus() {
       this.error.getClusterStatus = "";
       const taskAction = "get-cluster-status";
 
@@ -341,15 +360,7 @@ export default {
       const clusterStatus = taskResult.output;
       this.nodes = clusterStatus.nodes.sort(this.sortByProperty("id"));
       this.loading.nodes = false;
-
-      // immediately retrieve nodes status
       this.retrieveNodesStatus();
-
-      // periodically retrieve nodes status
-      this.nodesStatusInterval = setInterval(
-        this.retrieveNodesStatus,
-        this.NODE_STATUS_TIME_INTERVAL
-      );
     },
     showCopyClipboardHint() {
       setTimeout(() => {
@@ -366,14 +377,16 @@ export default {
     },
     async retrieveNodesStatus() {
       this.error.getNodeStatus = "";
+      this.error.nodesOffline = "";
 
       for (const node of this.nodes) {
         const nodeId = node.id;
         const taskAction = "get-node-status";
+        const eventId = this.getUuid();
 
         // register to task events
         this.$root.$once(
-          taskAction + "-completed-node-" + nodeId,
+          `${taskAction}-completed-${eventId}`,
           this.getNodeStatusCompleted
         );
 
@@ -384,6 +397,7 @@ export default {
               title: this.$t("action." + taskAction),
               isNotificationHidden: true,
               node: nodeId,
+              eventId,
             },
           })
         );
@@ -391,7 +405,14 @@ export default {
 
         if (err) {
           console.error(`error creating task ${taskAction}`, err);
-          this.error.getNodeStatus = this.getErrorMessage(err);
+
+          if (err.response && err.response.status == 404) {
+            // node is offline
+            this.error.nodesOffline = this.$t("nodes.nodes_offline");
+          } else {
+            // other kind of error
+            this.error.getNodeStatus = this.getErrorMessage(err);
+          }
         }
       }
     },
@@ -476,7 +497,7 @@ export default {
     setNodeLabelCompleted() {
       this.loading.setNodeLabel = false;
       this.hideSetNodeLabelModal();
-      this.retrieveClusterStatus();
+      this.getClusterStatus();
     },
   },
 };
