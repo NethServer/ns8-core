@@ -471,9 +471,19 @@ export default {
     async uninstallInstance() {
       this.error.removeModule = "";
       const taskAction = "remove-module";
+      const eventId = this.getUuid();
+
+      // register to task error
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.removeModuleAborted
+      );
 
       // register to task completion
-      this.$root.$once(taskAction + "-completed", this.removeModuleCompleted);
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.removeModuleCompleted
+      );
 
       const res = await to(
         this.createClusterTask({
@@ -489,6 +499,7 @@ export default {
                 : this.instanceToUninstall.id,
             }),
             description: this.$t("software_center.uninstalling"),
+            eventId,
           },
         })
       );
@@ -500,6 +511,10 @@ export default {
         return;
       }
       this.isUninstallModalShown = false;
+    },
+    removeModuleAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.removeModule = this.$t("error.generic_error");
     },
     removeModuleCompleted() {
       this.listModules();
