@@ -29,6 +29,7 @@ import (
 	"os/exec"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -39,7 +40,7 @@ import (
 	"github.com/NethServer/ns8-core/core/api-server/utils"
 )
 
-func Action(socketAction models.SocketAction, s *melody.Session) {
+func Action(socketAction models.SocketAction, s *melody.Session, wg *sync.WaitGroup) {
 	// switch action received
 	switch socketAction.Action {
 	case "logs-stop":
@@ -155,7 +156,11 @@ func Action(socketAction models.SocketAction, s *melody.Session) {
 				go func() {
 					// foreach command outputs send to websocket
 					for scannerStdOut.Scan() {
-						broadcastToAll("logs-start", gin.H{"id": logsAction.Id, "pid": pid, "message": scannerStdOut.Text()})
+						if s != nil {
+							broadcastToAll("logs-start", gin.H{"id": logsAction.Id, "pid": pid, "message": scannerStdOut.Text()})
+						} else {
+							fmt.Println(scannerStdOut.Text())
+						}
 					}
 				}()
 
@@ -166,14 +171,16 @@ func Action(socketAction models.SocketAction, s *melody.Session) {
 				}
 
 				// add command to command lists
-				pid = strconv.Itoa(cmd.Process.Pid)
-				if Commands[s.Request.Header["Sec-Websocket-Key"][0]] == nil {
-					Commands[s.Request.Header["Sec-Websocket-Key"][0]] = make(map[string]*exec.Cmd)
-				}
-				Commands[s.Request.Header["Sec-Websocket-Key"][0]][pid] = cmd
+				if s != nil {
+					pid = strconv.Itoa(cmd.Process.Pid)
+					if Commands[s.Request.Header["Sec-Websocket-Key"][0]] == nil {
+						Commands[s.Request.Header["Sec-Websocket-Key"][0]] = make(map[string]*exec.Cmd)
+					}
+					Commands[s.Request.Header["Sec-Websocket-Key"][0]][pid] = cmd
 
-				// send feedback for command received
-				broadcastToAll("logs-start", gin.H{"id": logsAction.Id, "pid": pid, "message": ""})
+					// send feedback for command received
+					broadcastToAll("logs-start", gin.H{"id": logsAction.Id, "pid": pid, "message": ""})
+				}
 
 				// use Wait to avoid defunct process when killed
 				err = cmd.Wait()
@@ -195,7 +202,12 @@ func Action(socketAction models.SocketAction, s *melody.Session) {
 				logsStringsR := reverse(logsStrings)
 				logsStringsOut := strings.Join(logsStringsR[:], "\n")
 
-				broadcastToAll("logs-start", gin.H{"id": logsAction.Id, "pid": "", "message": logsStringsOut})
+				if s != nil {
+					broadcastToAll("logs-start", gin.H{"id": logsAction.Id, "pid": "", "message": logsStringsOut})
+				} else {
+					fmt.Println(logsStringsOut)
+					defer wg.Done()
+				}
 			}()
 		}
 
