@@ -516,7 +516,8 @@
       "system_administration": "System administration",
       "office": "Office",
       "documentation": "Documentation",
-      "database": "Database"
+      "database": "Database",
+      "storage": "Storage"
     }
   },
   "system_logs": {
