@@ -38,7 +38,7 @@ def allocate_tcp_ports_range(node_id, module_environment, size):
 
     seq = rdb.incrby(f'node/{int(node_id)}/tcp_ports_sequence', size)
     agent.assert_exp(int(seq) > 0)
-    module_environment['TCP_PORT'] = f'{seq - 1}' # Always set the first port
+    module_environment['TCP_PORT'] = f'{seq - size}' # Always set the first port
     if size > 1: # Multiple ports: always set the ports range variable
         module_environment['TCP_PORTS_RANGE'] = f'{seq - size}-{seq - 1}'
     if size <= 8: # Few ports: set also a comma-separated list of ports variable
