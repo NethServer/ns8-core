@@ -80,7 +80,7 @@ syntax.
 
 ## Save and restore Redis keys
 
-### Dump key
+### Dump key and state
 
 To save a Redis key, you should:
 - dump the key inside the `module-dump-state` command
@@ -100,6 +100,21 @@ chmod a+x mymodule/imageroot/bin/module-dump-state
 Then, add the key dump path to `mymodule/imageroot/etc/state-include.conf`:
 ```
 state/mykey.dump
+```
+
+### Cleanup state
+
+As best practice, the dump should be removed when the backup has completed.
+
+Given a module named `mymodule`, create the file `mymodule/imageroot/bin/module-cleanup-state` inside the module source tree:
+```
+#!/bin/bash
+rm -f mykey.dump
+```
+
+Make sure also `module-cleanup-state` is executable:
+```
+chmod a+x mymodule/imageroot/bin/module-cleanup-state
 ```
 
 ### Restore key
