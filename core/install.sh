@@ -53,20 +53,20 @@ if [[ -n "${imagetag}" ]]; then
     shift
     for module in "${@}"; do
         podman pull "ghcr.io/nethserver/${module}:${imagetag}"
-        echo "Tagging development branch ${module}:${imagetag} => ${module}:latest"
-        podman tag "ghcr.io/nethserver/${module}:${imagetag}" "ghcr.io/nethserver/${module}:latest"
+        echo "Tagging development branch ${module}:${imagetag} => ${module}:ns8-stable"
+        podman tag "ghcr.io/nethserver/${module}:${imagetag}" "ghcr.io/nethserver/${module}:ns8-stable"
     done
     shift $# # Discard all arguments
 fi
 
 echo "Extracting core sources:"
 mkdir -pv /var/lib/nethserver/node/state
-cid=$(podman create "ghcr.io/nethserver/core:latest")
+cid=$(podman create "ghcr.io/nethserver/core:ns8-stable")
 podman export ${cid} | tar --totals -C / --no-overwrite-dir --no-same-owner -x -v -f - | sort | tee /var/lib/nethserver/node/state/coreimage.lst
 podman rm -f ${cid}
 
-echo "Pulling rclone image ${RCLONE_IMAGE}:"
 source /etc/nethserver/core.env
+echo "Pulling rclone image ${RCLONE_IMAGE}:"
 podman pull "${RCLONE_IMAGE}"
 
 
@@ -188,7 +188,7 @@ cluster.grants.grant(rdb, action_clause="read-*", to_clause="reader", on_clause=
 EOF
 
 echo "Install Traefik:"
-add-module ghcr.io/nethserver/traefik:latest 1
+add-module ghcr.io/nethserver/traefik:ns8-stable 1
 
 echo "Setting default admin password:"
 ADMIN_PASSWORD="${ADMIN_PASSWORD:-Nethesis,1234}"
