@@ -162,7 +162,7 @@ def run_restic(rdb, repository, repo_path, podman_args, restic_args, **kwargs):
         podman_cmd.extend(['-e', envvar]) # Import Restic environment variables
 
     podman_cmd.extend(podman_args) # Any argument is appended to podman invocation
-    podman_cmd.append(core_env.get("RESTIC_IMAGE", "ghcr.io/nethserver/restic:ns8-stable"))
+    podman_cmd.append(core_env["RESTIC_IMAGE"])
     podman_cmd.extend(restic_args)
 
     penv = os.environ.copy()
