@@ -1,7 +1,7 @@
 <template>
-  <div class="bx--grid bx--grid--full-width" v-if="isClusterInitialized">
-    <div class="bx--row">
-      <div class="bx--col-lg-16 page-title">
+  <cv-grid fullWidth v-if="isClusterInitialized">
+    <cv-row>
+      <cv-column class="page-title">
         <h2>
           {{ $t("cluster_status.title") }}
           <cv-interactive-tooltip
@@ -17,19 +17,19 @@
             </template>
           </cv-interactive-tooltip>
         </h2>
-      </div>
-    </div>
-    <div class="bx--row">
-      <div class="bx--col-md-4 bx--col-max-4">
+      </cv-column>
+    </cv-row>
+    <cv-row>
+      <cv-column :md="4" :max="4">
         <NsInfoCard
           light
           :title="apps.length.toString()"
           :description="$tc('common.installed_apps', apps.length)"
           :icon="Application32"
-          :loading="loading.apps"
-          :isErrorShown="error.apps"
+          :loading="loading.listInstalledModules"
+          :isErrorShown="error.listInstalledModules"
           :errorTitle="$t('error.cannot_retrieve_installed_apps')"
-          :errorDescription="error.apps"
+          :errorDescription="error.listInstalledModules"
           class="min-height-card"
         >
           <template slot="content">
@@ -42,8 +42,8 @@
             </NsButton>
           </template>
         </NsInfoCard>
-      </div>
-      <div class="bx--col-md-4 bx--col-max-4">
+      </cv-column>
+      <cv-column :md="4" :max="4">
         <NsInfoCard
           light
           :title="nodes.length.toString()"
@@ -65,8 +65,8 @@
             </NsButton>
           </template>
         </NsInfoCard>
-      </div>
-      <div class="bx--col-md-4 bx--col-max-4">
+      </cv-column>
+      <cv-column :md="4" :max="4">
         <NsInfoCard
           light
           :title="backups.length.toString()"
@@ -137,9 +137,9 @@
             </div>
           </template>
         </NsInfoCard>
-      </div>
-    </div>
-  </div>
+      </cv-column>
+    </cv-row>
+  </cv-grid>
 </template>
 
 <script>
@@ -188,14 +188,14 @@ export default {
       instancesNotBackedUp: [],
       loading: {
         nodes: true,
-        apps: true,
+        listInstalledModules: true,
         listBackups: true,
       },
       error: {
         name: "",
         email: "",
         nodes: "",
-        apps: "",
+        listInstalledModules: "",
         listBackups: "",
       },
       toastVisible: true,
@@ -269,12 +269,19 @@ export default {
       this.loading.nodes = false;
     },
     async listInstalledModules() {
-      this.loading.apps = true;
+      this.loading.listInstalledModules = true;
       const taskAction = "list-installed-modules";
+      const eventId = this.getUuid();
+
+      // register to task error
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.listInstalledModulesAborted
+      );
 
       // register to task completion
       this.$root.$once(
-        taskAction + "-completed",
+        `${taskAction}-completed-${eventId}`,
         this.listInstalledModulesCompleted
       );
 
@@ -284,17 +291,23 @@ export default {
           extra: {
             title: this.$t("action." + taskAction),
             isNotificationHidden: true,
+            eventId,
           },
         })
       );
-      const errApps = res[0];
+      const err = res[0];
 
-      if (errApps) {
-        console.error("error retrieving installed apps", errApps);
-        this.error.apps = this.getErrorMessage(errApps);
-        this.loading.apps = false;
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.listInstalledModules = this.getErrorMessage(err);
+        this.loading.listInstalledModules = false;
         return;
       }
+    },
+    listInstalledModulesAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.listInstalledModules = this.$t("error.generic_error");
+      this.loading.listInstalledModules = false;
     },
     listInstalledModulesCompleted(taskContext, taskResult) {
       let apps = [];
@@ -305,15 +318,25 @@ export default {
         }
       }
       this.apps = apps;
-      this.loading.apps = false;
+      this.loading.listInstalledModules = false;
     },
     async listBackups() {
       this.loading.listBackups = true;
       this.error.listBackups = "";
       const taskAction = "list-backups";
+      const eventId = this.getUuid();
+
+      // register to task error
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.listBackupsAborted
+      );
 
       // register to task completion
-      this.$root.$once(taskAction + "-completed", this.listBackupsCompleted);
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.listBackupsCompleted
+      );
 
       const res = await to(
         this.createClusterTask({
@@ -321,6 +344,7 @@ export default {
           extra: {
             title: this.$t("action." + taskAction),
             isNotificationHidden: true,
+            eventId,
           },
         })
       );
@@ -331,6 +355,11 @@ export default {
         this.error.listBackups = this.getErrorMessage(err);
         return;
       }
+    },
+    listBackupsAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.listBackups = this.$t("error.generic_error");
+      this.loading.listBackups = false;
     },
     listBackupsCompleted(taskContext, taskResult) {
       this.instancesNotBackedUp = taskResult.output.unconfigured_instances;

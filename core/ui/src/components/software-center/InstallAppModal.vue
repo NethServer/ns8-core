@@ -217,7 +217,6 @@ export default {
     },
     addModuleAborted(taskResult, taskContext) {
       console.error(`${taskContext.action} aborted`, taskResult);
-      this.error.addModule = this.$t("error.generic_error");
     },
     addModuleCompleted(taskContext, taskResult) {
       const moduleId = taskResult.output.module_id;

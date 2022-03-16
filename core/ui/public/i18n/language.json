@@ -708,8 +708,8 @@
     "node_label_tooltip": "You can assign the node an easy to remember name",
     "offline": "Offline",
     "node_is_offline": "Node is offline",
-    "nodes_offline": "Some nodes are offline",
-    "nodes_offline_description": "Check nodes status and connectivity",
+    "nodes_offline_c": "{num} node is offline | {num} nodes are offline",
+    "nodes_offline_description_c": "Check node status and connectivity | Check nodes status and connectivity",
     "node_is_offline_description": "Check node status and connectivity"
   },
   "node_detail": {

@@ -15,12 +15,18 @@
         />
       </div>
     </div>
-    <div v-if="error.nodesOffline" class="bx--row">
+    <div v-if="nodesOffline.length" class="bx--row">
       <div class="bx--col">
         <NsInlineNotification
           kind="error"
-          :title="$t('nodes.nodes_offline')"
-          :description="$t('nodes.nodes_offline_description')"
+          :title="
+            $tc('nodes.nodes_offline_c', nodesOffline.length, {
+              num: nodesOffline.length,
+            })
+          "
+          :description="
+            $tc('nodes.nodes_offline_description_c', nodesOffline.length)
+          "
           :showCloseButton="false"
         />
       </div>
@@ -268,7 +274,6 @@ export default {
         getClusterStatus: "",
         getNodeStatus: "",
         setNodeLabel: "",
-        nodesOffline: "",
       },
     };
   },
@@ -280,6 +285,9 @@ export default {
       }
 
       return this.nodes.find((node) => node.local);
+    },
+    nodesOffline() {
+      return this.nodes.filter((n) => n.online == false);
     },
   },
   watch: {
@@ -377,9 +385,13 @@ export default {
     },
     async retrieveNodesStatus() {
       this.error.getNodeStatus = "";
-      this.error.nodesOffline = "";
 
       for (const node of this.nodes) {
+        if (!node.online) {
+          // node is offline
+          return;
+        }
+
         const nodeId = node.id;
         const taskAction = "get-node-status";
         const eventId = this.getUuid();
@@ -405,14 +417,7 @@ export default {
 
         if (err) {
           console.error(`error creating task ${taskAction}`, err);
-
-          if (err.response && err.response.status == 404) {
-            // node is offline
-            this.error.nodesOffline = this.$t("nodes.nodes_offline");
-          } else {
-            // other kind of error
-            this.error.getNodeStatus = this.getErrorMessage(err);
-          }
+          this.error.getNodeStatus = this.getErrorMessage(err);
         }
       }
     },

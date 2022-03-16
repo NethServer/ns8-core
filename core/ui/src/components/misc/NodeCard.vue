@@ -17,9 +17,12 @@
       <cv-tag v-if="isLeader" kind="green" :label="leaderLabel"></cv-tag>
       <cv-tag v-else kind="blue" :label="workerLabel"></cv-tag>
     </div>
-    <div v-if="!online" class="row icon-and-text offline">
-      <NsSvg :svg="ErrorFilled16" class="icon ns-error" />
-      <span>{{ $t("nodes.offline") }}</span>
+    <div v-if="!online" class="row offline">
+      <NsInlineNotification
+        kind="error"
+        :title="$t('nodes.node_is_offline')"
+        :showCloseButton="false"
+      />
     </div>
     <div v-else-if="loading" class="row node-card-skeleton">
       <cv-skeleton-text :paragraph="true" :line-count="5"></cv-skeleton-text>
