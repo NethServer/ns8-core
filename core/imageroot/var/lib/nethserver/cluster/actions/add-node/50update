@@ -129,7 +129,7 @@ additional_tasks = [
         'agent_id': 'cluster',
         'action': 'add-module',
         'data': {
-            "image": f'ghcr.io/nethserver/traefik:latest',
+            "image": f'ghcr.io/nethserver/traefik:ns8-stable',
             "node": node_id,
             "check_idle_time": 0,
         }
@@ -138,7 +138,7 @@ additional_tasks = [
         'agent_id': 'cluster',
         'action': 'add-module',
         'data': {
-            "image": f'ghcr.io/nethserver/ldapproxy:latest',
+            "image": f'ghcr.io/nethserver/ldapproxy:ns8-stable',
             "node": node_id,
             "check_idle_time": 0,
         }
@@ -147,7 +147,7 @@ additional_tasks = [
         'agent_id': 'cluster',
         'action': 'add-module',
         'data': {
-            "image": f'ghcr.io/nethserver/promtail:latest',
+            "image": f'ghcr.io/nethserver/promtail:ns8-stable',
             "node": node_id,
             "check_idle_time": 0,
         }

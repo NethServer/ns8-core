@@ -89,11 +89,11 @@ cluster.grants.grant(rdb, action_clause="update-routes", to_clause="accountprovi
 #
 add1_module_failures = agent.tasks.runp_brief([
         {"agent_id": "cluster", "action": "add-module", "data": {
-            'image': 'ghcr.io/nethserver/ldapproxy:latest',
+            'image': 'ghcr.io/nethserver/ldapproxy:ns8-stable',
             'node': NODE_ID,
         }},
         {"agent_id": "cluster", "action": "add-module", "data": {
-            'image': 'ghcr.io/nethserver/loki:latest',
+            'image': 'ghcr.io/nethserver/loki:ns8-stable',
             'node': NODE_ID,
         }},
     ],
