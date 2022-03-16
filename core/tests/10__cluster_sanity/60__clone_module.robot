@@ -66,7 +66,9 @@ Setup a dummy module
     Store dummy module configuration
 
 Build the dummy image
-    Put Directory    ${CURDIR}/dummy    recursive=True
+    [Documentation]     Upload the dummy sources and built the image to make it
+    ...                 available for tests
+    Put Directory    ${CURDIR}/_dummy    dummy    recursive=True
     ${stdout}    ${rc} =    Execute Command    ( cd dummy ; bash -x build-images.sh ; ) 2>&1 ; rm -rf dummy   return_stdout=True    return_rc=True
     Should Be Equal As Integers    0    ${rc}    ${stdout}
     Log    ${stdout}
