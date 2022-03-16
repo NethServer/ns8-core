@@ -314,7 +314,12 @@ export default {
 
       for (let instanceList of Object.values(taskResult.output)) {
         for (let instance of instanceList) {
-          apps.push(instance);
+          if (
+            !instance.flags.includes("account_provider") &&
+            !instance.flags.includes("core_module")
+          ) {
+            apps.push(instance);
+          }
         }
       }
       this.apps = apps;
