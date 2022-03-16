@@ -303,8 +303,8 @@ export default {
     async installProvider() {
       this.error.addInternalProvider = "";
 
-      //// todo select version
-      let version = "latest";
+      // latest stable release
+      let version = "ns8-stable";
 
       const taskAction = "add-internal-provider";
 
