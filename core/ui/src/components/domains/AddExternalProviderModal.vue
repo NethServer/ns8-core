@@ -1,5 +1,5 @@
 <template>
-  <cv-modal
+  <NsModal
     v-if="domain"
     size="default"
     :visible="isShown"
@@ -40,7 +40,7 @@
     <template slot="primary-button">{{
       $t("domain_detail.add_provider")
     }}</template>
-  </cv-modal>
+  </NsModal>
 </template>
 
 <script>

@@ -200,7 +200,7 @@
       @installationCompleted="listModules"
     />
     <!-- uninstall instance modal -->
-    <cv-modal
+    <NsModal
       size="default"
       :visible="isUninstallModalShown"
       @modal-hidden="isUninstallModalShown = false"
@@ -234,9 +234,9 @@
       <template slot="primary-button">{{
         $t("software_center.uninstall_instance")
       }}</template>
-    </cv-modal>
+    </NsModal>
     <!-- set instance label modal -->
-    <cv-modal
+    <NsModal
       size="default"
       :visible="isShownEditInstanceLabel"
       @modal-hidden="hideSetInstanceLabelModal"
@@ -279,7 +279,7 @@
       <template slot="primary-button">{{
         $t("software_center.edit_instance_label")
       }}</template>
-    </cv-modal>
+    </NsModal>
   </div>
 </template>
 

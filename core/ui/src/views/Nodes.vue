@@ -131,7 +131,7 @@
       </div>
     </div>
     <!-- add node modal -->
-    <cv-modal
+    <NsModal
       size="default"
       :visible="q.isShownAddNodeModal"
       @modal-hidden="q.isShownAddNodeModal = false"
@@ -183,9 +183,9 @@
         >
       </template>
       <template slot="secondary-button">{{ $t("common.close") }}</template>
-    </cv-modal>
+    </NsModal>
     <!-- set node label modal -->
-    <cv-modal
+    <NsModal
       size="default"
       :visible="isShownSetNodeLabelModal"
       @modal-hidden="hideSetNodeLabelModal"
@@ -223,7 +223,7 @@
       <template slot="primary-button">{{
         $t("nodes.edit_node_label")
       }}</template>
-    </cv-modal>
+    </NsModal>
   </div>
 </template>
 

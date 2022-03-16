@@ -1,5 +1,5 @@
 <template>
-  <cv-modal
+  <NsModal
     size="default"
     :visible="isShown"
     @modal-hidden="$emit('hide')"
@@ -96,7 +96,7 @@
     </template>
     <template slot="secondary-button">{{ $t("common.cancel") }}</template>
     <template slot="primary-button">{{ $t("common.save") }}</template>
-  </cv-modal>
+  </NsModal>
 </template>
 
 <script>

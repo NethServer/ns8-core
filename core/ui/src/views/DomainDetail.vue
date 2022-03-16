@@ -380,7 +380,7 @@
       </template>
     </div>
     <!-- cannot delete last provider modal -->
-    <cv-modal
+    <NsModal
       size="default"
       :visible="isShownLastProviderModal"
       @modal-hidden="isShownLastProviderModal = false"
@@ -397,7 +397,7 @@
         />
       </template>
       <template slot="secondary-button">{{ $t("common.got_it") }}</template>
-    </cv-modal>
+    </NsModal>
     <!-- add provider modal -->
     <template v-if="domain">
       <AddInternalProviderModal
@@ -435,7 +435,7 @@
       @confirmDelete="deleteProvider"
     />
     <!-- set provider label modal -->
-    <cv-modal
+    <NsModal
       size="default"
       :visible="isShownSetProviderLabelModal"
       @modal-hidden="hideSetProviderLabelModal"
@@ -478,7 +478,7 @@
       <template slot="primary-button">{{
         $t("domain_detail.edit_provider_label")
       }}</template>
-    </cv-modal>
+    </NsModal>
   </div>
 </template>
 

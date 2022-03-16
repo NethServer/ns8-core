@@ -1,5 +1,5 @@
 <template>
-  <cv-modal size="default" :visible="isShown" @modal-hidden="$emit('hide')">
+  <NsModal size="default" :visible="isShown" @modal-hidden="$emit('hide')">
     <template slot="title">{{ $t("backup.backup_details") }}</template>
     <template slot="content">
       <div class="key-value-setting">
@@ -156,7 +156,7 @@
       </div>
     </template>
     <template slot="primary-button">{{ $t("common.close") }}</template>
-  </cv-modal>
+  </NsModal>
 </template>
 
 <script>

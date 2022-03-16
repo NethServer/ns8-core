@@ -199,7 +199,7 @@
       </div>
     </div>
     <!-- new repository modal -->
-    <cv-modal
+    <NsModal
       size="default"
       :visible="q.isShownCreateRepoModal"
       @modal-hidden="q.isShownCreateRepoModal = false"
@@ -256,9 +256,9 @@
       <template slot="primary-button">{{
         $t("settings_sw_repositories.create_repository")
       }}</template>
-    </cv-modal>
+    </NsModal>
     <!-- edit repository modal -->
-    <cv-modal
+    <NsModal
       size="default"
       :visible="q.isShownEditRepoModal"
       @modal-hidden="q.isShownEditRepoModal = false"
@@ -318,7 +318,7 @@
       <template slot="primary-button">{{
         $t("settings_sw_repositories.edit_repository")
       }}</template>
-    </cv-modal>
+    </NsModal>
   </div>
 </template>
 

@@ -1,5 +1,5 @@
 <template>
-  <cv-modal
+  <NsModal
     size="default"
     :visible="isShown"
     @modal-hidden="onModalHidden"
@@ -58,7 +58,7 @@
     <template slot="primary-button">{{
       $t("software_center.install")
     }}</template>
-  </cv-modal>
+  </NsModal>
 </template>
 
 <script>
