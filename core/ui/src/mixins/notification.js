@@ -137,6 +137,16 @@ export default {
       // hide notification drawer
       this.setNotificationDrawerShownInStore(false);
     },
+    getTaskEventName(taskContext, result) {
+      let eventId = "";
+
+      if (taskContext.extra && taskContext.extra.eventId) {
+        eventId = "-" + taskContext.extra.eventId;
+      }
+
+      // e.g. get-cluster-status-completed-f5d24fcd-819c-4b1d-98ad-a1b2ebcee8cf
+      return `${taskContext.action}-${result}${eventId}`;
+    },
     async handleProgressTaskMessage(taskPath, taskId, payload) {
       const [err, contextResponse] = await to(this.getTaskContext(taskPath));
 
@@ -171,16 +181,14 @@ export default {
 
         if (taskStatus === "validation-failed") {
           // show validation errors
-          this.$root.$emit(
-            taskContext.action + "-validation-failed",
-            taskResult.output
+          const taskEventName = this.getTaskEventName(
+            taskContext,
+            "validation-failed"
           );
+          this.$root.$emit(taskEventName, taskResult.output);
         } else if (taskStatus === "aborted") {
-          this.$root.$emit(
-            taskContext.action + "-aborted",
-            taskResult,
-            taskContext
-          );
+          const taskEventName = this.getTaskEventName(taskContext, "aborted");
+          this.$root.$emit(taskEventName, taskResult, taskContext);
         }
       }
 
@@ -191,6 +199,7 @@ export default {
         const parentTask = this.getTaskById(taskContext.parent);
 
         if (!parentTask) {
+          //// remove
           console.log("parentTask not found, ignoring");
           console.log("  taskContext", taskContext);
           console.log("  payload", payload);
@@ -284,7 +293,11 @@ export default {
             !task.validated
           ) {
             // validation is ok (e.g.: close the modal that created the task)
-            this.$root.$emit(taskContext.action + "-validation-ok", task);
+            const taskEventName = this.getTaskEventName(
+              taskContext,
+              "validation-ok"
+            );
+            this.$root.$emit(taskEventName, task);
             taskValidated = true;
           }
         }
@@ -318,14 +331,11 @@ export default {
 
           if (taskStatus === "completed") {
             // emit an event so that the component that requested the task can handle the result
-
-            // get-node-status task is invoked in burst mode, need to distinguish events
-            const eventName =
-              taskContext.action == "get-node-status"
-                ? "get-node-status-completed-node-" + taskContext.extra.node
-                : taskContext.action + "-completed";
-
-            this.$root.$emit(eventName, taskContext, taskResult);
+            const taskEventName = this.getTaskEventName(
+              taskContext,
+              "completed"
+            );
+            this.$root.$emit(taskEventName, taskContext, taskResult);
           }
 
           // set notification action
@@ -345,7 +355,8 @@ export default {
 
         // ad-hoc progress notification (e.g. account provider installation)
         if (taskContext.extra && taskContext.extra.isProgressNotified) {
-          this.$root.$emit(taskContext.action + "-progress", payload.progress);
+          const taskEventName = this.getTaskEventName(taskContext, "progress");
+          this.$root.$emit(taskEventName, payload.progress);
         }
 
         this.putNotification(notification);

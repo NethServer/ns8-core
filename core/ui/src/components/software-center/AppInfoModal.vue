@@ -1,6 +1,6 @@
 <template>
   <div v-if="app">
-    <cv-modal
+    <NsModal
       size="default"
       :visible="isShown"
       @modal-hidden="$emit('close')"
@@ -121,7 +121,7 @@
         </div>
       </template>
       <template slot="secondary-button">{{ $t("common.close") }}</template>
-    </cv-modal>
+    </NsModal>
   </div>
 </template>
 

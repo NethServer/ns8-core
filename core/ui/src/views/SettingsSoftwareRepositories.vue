@@ -199,7 +199,7 @@
       </div>
     </div>
     <!-- new repository modal -->
-    <cv-modal
+    <NsModal
       size="default"
       :visible="q.isShownCreateRepoModal"
       @modal-hidden="q.isShownCreateRepoModal = false"
@@ -256,9 +256,9 @@
       <template slot="primary-button">{{
         $t("settings_sw_repositories.create_repository")
       }}</template>
-    </cv-modal>
+    </NsModal>
     <!-- edit repository modal -->
-    <cv-modal
+    <NsModal
       size="default"
       :visible="q.isShownEditRepoModal"
       @modal-hidden="q.isShownEditRepoModal = false"
@@ -318,7 +318,7 @@
       <template slot="primary-button">{{
         $t("settings_sw_repositories.edit_repository")
       }}</template>
-    </cv-modal>
+    </NsModal>
   </div>
 </template>
 
@@ -495,23 +495,27 @@ export default {
       }
 
       const taskAction = "add-repository";
+      const eventId = this.getUuid();
+
+      // register to task error
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.addRepositoryAborted
+      );
 
       // register to task validation
-      this.$root.$off(taskAction + "-validation-ok");
       this.$root.$once(
-        taskAction + "-validation-ok",
+        `${taskAction}-validation-ok-${eventId}`,
         this.addRepositoryValidationOk
       );
-      this.$root.$off(taskAction + "-validation-failed");
       this.$root.$once(
-        taskAction + "-validation-failed",
+        `${taskAction}-validation-failed-${eventId}`,
         this.addRepositoryValidationFailed
       );
 
       // register to task completion
-      this.$root.$off(taskAction + "-completed");
       this.$root.$once(
-        taskAction + "-completed",
+        `${taskAction}-completed-${eventId}`,
         this.addRepositoriesCompleted
       );
 
@@ -527,6 +531,7 @@ export default {
           extra: {
             title: this.$t("action." + taskAction),
             isNotificationHidden: true,
+            eventId,
           },
         })
       );
@@ -538,6 +543,14 @@ export default {
         this.loading.createRepository = false;
         return;
       }
+    },
+    addRepositoryAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.addRepository = this.$t("error.generic_error");
+      this.loading.createRepository = false;
+
+      // hide modal so that user can see error notification
+      this.q.isShownCreateRepoModal = false;
     },
     addRepositoryValidationOk() {
       // hide modal after validation
@@ -591,11 +604,20 @@ export default {
       if (err) {
         console.error(`error creating task ${taskAction}`, err);
         this.error.alterRepository = this.getErrorMessage(err);
+        this.loading.editRepository = false;
         return;
       }
     },
     addRepositoriesCompleted() {
       this.listRepositories();
+    },
+    alterRepositoryAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.alterRepository = this.$t("error.generic_error");
+      this.loading.editRepository = false;
+
+      // hide modal so that user can see error notification
+      this.q.isShownEditRepoModal = false;
     },
     alterRepositoryCompleted() {
       this.listRepositories();

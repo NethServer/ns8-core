@@ -23,6 +23,20 @@ export const Default = Template.bind({});
 Default.args = {
   title: "Card title",
   description: "Card description",
+  titleTooltip: "",
+  loading: false,
+  isErrorShown: false,
+  errorTitle: "",
+  errorDescription: "",
+  light: true,
+  icon: Application32,
+};
+
+export const TitleTooltip = Template.bind({});
+TitleTooltip.args = {
+  title: "Card title with tooltip",
+  description: "Hover card title to show tooltip",
+  titleTooltip: "This is title tooltip",
   loading: false,
   isErrorShown: false,
   errorTitle: "",
@@ -35,6 +49,7 @@ export const Loading = Template.bind({});
 Loading.args = {
   title: "Card title",
   description: "Card description",
+  titleTooltip: "",
   loading: true,
   isErrorShown: false,
   errorTitle: "",
@@ -47,6 +62,7 @@ export const Error = Template.bind({});
 Error.args = {
   title: "Card title",
   description: "Card description",
+  titleTooltip: "",
   loading: false,
   isErrorShown: true,
   errorTitle: "Error title",
@@ -89,6 +105,7 @@ export const OverflowMenu = OverflowMenuTemplate.bind({});
 OverflowMenu.args = {
   title: "Card title",
   description: "Card description",
+  titleTooltip: "",
   loading: false,
   isErrorShown: false,
   errorTitle: "",

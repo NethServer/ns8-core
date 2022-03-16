@@ -74,11 +74,11 @@
         {{ $t("system_logs.title") }}
       </cv-side-nav-link>
       <cv-side-nav-link
-        @click="goTo('/audit-logs')"
-        :active="isLinkActive('/audit-logs')"
+        @click="goTo('/audit-trail')"
+        :active="isLinkActive('/audit-trail')"
       >
         <template v-slot:nav-icon><Police20 /></template>
-        {{ $t("audit_logs.title") }}
+        {{ $t("audit_trail.title") }}
       </cv-side-nav-link>
       <cv-side-nav-link
         @click="goTo('/settings')"

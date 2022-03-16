@@ -419,6 +419,7 @@ export default {
       );
 
       // register to task completion
+      this.$root.$off(taskAction + "-completed");
       this.$root.$once(
         taskAction + "-completed",
         this.listInstalledModulesCompleted

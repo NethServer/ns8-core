@@ -22,6 +22,6 @@ Default.args = {
   errorTooltip: "Failed components",
   successTooltip: "Running components",
   warningTooltip: "Unknown components",
-  light: false,
+  light: true,
   icon: Cube32,
 };

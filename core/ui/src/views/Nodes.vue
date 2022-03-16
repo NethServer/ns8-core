@@ -15,6 +15,22 @@
         />
       </div>
     </div>
+    <div v-if="nodesOffline.length" class="bx--row">
+      <div class="bx--col">
+        <NsInlineNotification
+          kind="error"
+          :title="
+            $tc('nodes.nodes_offline_c', nodesOffline.length, {
+              num: nodesOffline.length,
+            })
+          "
+          :description="
+            $tc('nodes.nodes_offline_description_c', nodesOffline.length)
+          "
+          :showCloseButton="false"
+        />
+      </div>
+    </div>
     <div v-if="error.getNodeStatus" class="bx--row">
       <div class="bx--col">
         <NsInlineNotification
@@ -40,7 +56,7 @@
         <cv-tile light>
           <cv-skeleton-text
             :paragraph="true"
-            :line-count="11"
+            :line-count="9"
           ></cv-skeleton-text>
         </cv-tile>
       </div>
@@ -58,6 +74,7 @@
           :isLeader="node.id == leaderNode.id"
           light
           loading
+          :online="node.online"
         />
         <NodeCard
           v-else
@@ -84,6 +101,7 @@
           :swapWarningTh="90"
           :disksUsage="nodesStatus[node.id].disksUsage"
           :diskWarningTh="90"
+          :online="node.online"
           light
         >
           <template #menu>
@@ -113,7 +131,7 @@
       </div>
     </div>
     <!-- add node modal -->
-    <cv-modal
+    <NsModal
       size="default"
       :visible="q.isShownAddNodeModal"
       @modal-hidden="q.isShownAddNodeModal = false"
@@ -165,9 +183,9 @@
         >
       </template>
       <template slot="secondary-button">{{ $t("common.close") }}</template>
-    </cv-modal>
+    </NsModal>
     <!-- set node label modal -->
-    <cv-modal
+    <NsModal
       size="default"
       :visible="isShownSetNodeLabelModal"
       @modal-hidden="hideSetNodeLabelModal"
@@ -205,7 +223,7 @@
       <template slot="primary-button">{{
         $t("nodes.edit_node_label")
       }}</template>
-    </cv-modal>
+    </NsModal>
   </div>
 </template>
 
@@ -236,7 +254,7 @@ export default {
   },
   data() {
     return {
-      NODE_STATUS_TIME_INTERVAL: 5000,
+      REFRESH_DATA_TIME_INTERVAL: 5000,
       q: {
         isShownAddNodeModal: false,
       },
@@ -244,7 +262,7 @@ export default {
       isCopyClipboardHintShown: false,
       nodes: [],
       nodesStatus: {},
-      nodesStatusInterval: null,
+      refreshDataInterval: null,
       currentNode: null,
       newNodeLabel: "",
       isShownSetNodeLabelModal: false,
@@ -268,6 +286,9 @@ export default {
 
       return this.nodes.find((node) => node.local);
     },
+    nodesOffline() {
+      return this.nodes.filter((n) => n.online == false);
+    },
   },
   watch: {
     "q.isShownAddNodeModal": function () {
@@ -288,10 +309,16 @@ export default {
     next();
   },
   created() {
-    this.retrieveClusterStatus();
+    this.getClusterStatus();
+
+    // periodically retrieve cluster and nodes status
+    this.refreshDataInterval = setInterval(
+      this.getClusterStatus,
+      this.REFRESH_DATA_TIME_INTERVAL
+    );
   },
   beforeDestroy() {
-    clearInterval(this.nodesStatusInterval);
+    clearInterval(this.refreshDataInterval);
   },
   methods: {
     retrieveJoinCode() {
@@ -310,7 +337,7 @@ export default {
         );
       }
     },
-    async retrieveClusterStatus() {
+    async getClusterStatus() {
       this.error.getClusterStatus = "";
       const taskAction = "get-cluster-status";
 
@@ -341,15 +368,7 @@ export default {
       const clusterStatus = taskResult.output;
       this.nodes = clusterStatus.nodes.sort(this.sortByProperty("id"));
       this.loading.nodes = false;
-
-      // immediately retrieve nodes status
       this.retrieveNodesStatus();
-
-      // periodically retrieve nodes status
-      this.nodesStatusInterval = setInterval(
-        this.retrieveNodesStatus,
-        this.NODE_STATUS_TIME_INTERVAL
-      );
     },
     showCopyClipboardHint() {
       setTimeout(() => {
@@ -368,12 +387,18 @@ export default {
       this.error.getNodeStatus = "";
 
       for (const node of this.nodes) {
+        if (!node.online) {
+          // node is offline
+          return;
+        }
+
         const nodeId = node.id;
         const taskAction = "get-node-status";
+        const eventId = this.getUuid();
 
         // register to task events
         this.$root.$once(
-          taskAction + "-completed-node-" + nodeId,
+          `${taskAction}-completed-${eventId}`,
           this.getNodeStatusCompleted
         );
 
@@ -384,6 +409,7 @@ export default {
               title: this.$t("action." + taskAction),
               isNotificationHidden: true,
               node: nodeId,
+              eventId,
             },
           })
         );
@@ -476,7 +502,7 @@ export default {
     setNodeLabelCompleted() {
       this.loading.setNodeLabel = false;
       this.hideSetNodeLabelModal();
-      this.retrieveClusterStatus();
+      this.getClusterStatus();
     },
   },
 };

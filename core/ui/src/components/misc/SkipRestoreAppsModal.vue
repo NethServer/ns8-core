@@ -1,5 +1,5 @@
 <template>
-  <cv-modal
+  <NsModal
     size="default"
     :visible="isShown"
     @modal-hidden="$emit('hide')"
@@ -14,7 +14,7 @@
     <template slot="primary-button">{{
       $t("init.skip_apps_restore")
     }}</template>
-  </cv-modal>
+  </NsModal>
 </template>
 
 <script>

@@ -1,5 +1,5 @@
 <template>
-  <cv-modal
+  <NsModal
     size="default"
     :visible="isShown"
     @modal-hidden="onModalHidden"
@@ -24,6 +24,7 @@
             {{
               $t("software_center.choose_node_for_installation", {
                 app: app.name,
+                version: appVersion,
               })
             }}
           </div>
@@ -33,13 +34,16 @@
             class="mg-top-lg"
           />
         </template>
-        <div v-else>
-          {{
-            $t("software_center.about_to_install_app", {
+        <div
+          v-else
+          v-html="
+            $t('software_center.about_to_install_app', {
               app: app.name,
+              version: appVersion,
+              node: firstNodeLabel,
             })
-          }}
-        </div>
+          "
+        ></div>
         <div v-if="error.addModule">
           <NsInlineNotification
             kind="error"
@@ -54,7 +58,7 @@
     <template slot="primary-button">{{
       $t("software_center.install")
     }}</template>
-  </cv-modal>
+  </NsModal>
 </template>
 
 <script>
@@ -83,6 +87,28 @@ export default {
         getClusterStatus: "",
       },
     };
+  },
+  computed: {
+    firstNodeLabel() {
+      if (this.nodes.length && this.nodes[0]) {
+        if (this.nodes[0].ui_name) {
+          return `${this.nodes[0].ui_name} (${this.$t("common.node")} ${
+            this.nodes[0].id
+          })`;
+        } else {
+          return `${this.$t("common.node")} ${this.nodes[0].id}`;
+        }
+      } else {
+        return "";
+      }
+    },
+    appVersion() {
+      if (this.app.versions.length) {
+        return this.app.versions[0].tag;
+      } else {
+        return "latest";
+      }
+    },
   },
   created() {
     this.retrieveClusterStatus();
@@ -136,38 +162,29 @@ export default {
     },
     async installInstance() {
       this.error.addModule = "";
-      let version;
-
-      if (this.app.versions.length) {
-        version = this.app.versions[0].tag;
-      } else {
-        version = "latest";
-      }
-
-      //// remove mock
-      version = "latest";
-
-      console.log(
-        "installing version",
-        version,
-        "to node",
-        this.selectedNode.id
-      ); ////
-
       const taskAction = "add-module";
+      const eventId = this.getUuid();
 
-      // register to task completion
-      this.$root.$once(taskAction + "-completed", this.addModuleCompleted);
+      // register to task error
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.addModuleAborted
+      );
+
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.addModuleCompleted
+      );
 
       const nodeName =
         this.selectedNode.ui_name ||
-        this.$t("common.node_lc") + ` ${this.selectedNode.id}`;
+        this.$t("common.node") + ` ${this.selectedNode.id}`;
 
       const res = await to(
         this.createClusterTask({
           action: taskAction,
           data: {
-            image: this.app.source + ":" + version,
+            image: this.app.source + ":" + this.appVersion,
             node: parseInt(this.selectedNode.id),
           },
           extra: {
@@ -178,6 +195,7 @@ export default {
               node: nodeName,
             }),
             node: nodeName,
+            eventId,
             completion: {
               i18nString: "software_center.instance_installed_on_node",
               extraTextParams: ["node"],
@@ -197,6 +215,9 @@ export default {
       // emit event to close modal
       this.$emit("close");
     },
+    addModuleAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+    },
     addModuleCompleted(taskContext, taskResult) {
       const moduleId = taskResult.output.module_id;
 
@@ -208,7 +229,7 @@ export default {
       // backup notification
 
       setTimeout(() => {
-        //// todo: check if app is eligible for backup (i.e. not samba, traefik...)
+        //// todo: call list-installed-modules to check if app is eligible for backup (i.e. not samba, traefik...)
 
         const notification = {
           title: this.$t("backup.schedule_backup"),

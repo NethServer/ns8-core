@@ -1,5 +1,5 @@
 <template>
-  <cv-modal
+  <NsModal
     size="default"
     :visible="isShown"
     @modal-hidden="$emit('hide')"
@@ -96,7 +96,7 @@
     </template>
     <template slot="secondary-button">{{ $t("common.cancel") }}</template>
     <template slot="primary-button">{{ $t("common.save") }}</template>
-  </cv-modal>
+  </NsModal>
 </template>
 
 <script>
@@ -182,23 +182,6 @@ export default {
     },
   },
   methods: {
-    //// move method to ui-lib
-    clearErrors() {
-      this.clearStrings(this.error);
-    },
-    //// move method to ui-lib
-    clearStrings(obj) {
-      for (const key of Object.keys(obj)) {
-        if (typeof obj[key] == "string") {
-          obj[key] = "";
-        } else if (typeof obj[key] == "object") {
-          // recursion
-          this.clearStrings(obj[key]);
-        } else {
-          console.error("unexpected object type:", typeof obj[key]);
-        }
-      }
-    },
     buildRepositoryParameters() {
       switch (this.repository.provider) {
         case "backblaze":

@@ -1,5 +1,5 @@
 <template>
-  <cv-modal
+  <NsModal
     size="default"
     :visible="!!taskErrorToShow"
     @modal-hidden="taskErrorModalHidden"
@@ -96,7 +96,7 @@
       </template>
     </template>
     <template slot="primary-button">{{ $t("common.close") }}</template>
-  </cv-modal>
+  </NsModal>
 </template>
 
 <script>

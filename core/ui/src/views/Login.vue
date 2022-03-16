@@ -34,6 +34,13 @@
                 </cv-form>
               </div>
               <div v-else-if="step === 'password'">
+                <NsInlineNotification
+                  v-if="error.login"
+                  kind="error"
+                  :title="$t('login.cannot_login')"
+                  :description="error.login"
+                  :showCloseButton="false"
+                />
                 <div class="login-as">
                   {{ $t("login.logging_in_as") }}
                   <strong>{{ username }}</strong>
@@ -59,13 +66,6 @@
                     ref="passwordInput"
                     name="password"
                   ></cv-text-input>
-                  <NsInlineNotification
-                    v-if="error.login"
-                    kind="error"
-                    :title="$t('login.cannot_login')"
-                    :description="error.login"
-                    :showCloseButton="false"
-                  />
                   <div class="login-footer">
                     <NsButton
                       kind="primary"

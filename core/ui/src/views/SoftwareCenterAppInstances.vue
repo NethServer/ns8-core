@@ -200,7 +200,7 @@
       @installationCompleted="listModules"
     />
     <!-- uninstall instance modal -->
-    <cv-modal
+    <NsModal
       size="default"
       :visible="isUninstallModalShown"
       @modal-hidden="isUninstallModalShown = false"
@@ -215,7 +215,9 @@
         <div class="mg-bottom-md">
           {{
             $t("software_center.about_to_uninstall_instance", {
-              instance: instanceToUninstall.id,
+              instance: instanceToUninstall.ui_name
+                ? `${instanceToUninstall.ui_name} (${instanceToUninstall.id})`
+                : instanceToUninstall.id,
             })
           }}
         </div>
@@ -232,9 +234,9 @@
       <template slot="primary-button">{{
         $t("software_center.uninstall_instance")
       }}</template>
-    </cv-modal>
+    </NsModal>
     <!-- set instance label modal -->
-    <cv-modal
+    <NsModal
       size="default"
       :visible="isShownEditInstanceLabel"
       @modal-hidden="hideSetInstanceLabelModal"
@@ -277,7 +279,7 @@
       <template slot="primary-button">{{
         $t("software_center.edit_instance_label")
       }}</template>
-    </cv-modal>
+    </NsModal>
   </div>
 </template>
 
@@ -469,9 +471,19 @@ export default {
     async uninstallInstance() {
       this.error.removeModule = "";
       const taskAction = "remove-module";
+      const eventId = this.getUuid();
+
+      // register to task error
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.removeModuleAborted
+      );
 
       // register to task completion
-      this.$root.$once(taskAction + "-completed", this.removeModuleCompleted);
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.removeModuleCompleted
+      );
 
       const res = await to(
         this.createClusterTask({
@@ -482,9 +494,12 @@ export default {
           },
           extra: {
             title: this.$t("software_center.instance_uninstallation", {
-              instance: this.instanceToUninstall.id,
+              instance: this.instanceToUninstall.ui_name
+                ? this.instanceToUninstall.ui_name
+                : this.instanceToUninstall.id,
             }),
             description: this.$t("software_center.uninstalling"),
+            eventId,
           },
         })
       );
@@ -496,6 +511,10 @@ export default {
         return;
       }
       this.isUninstallModalShown = false;
+    },
+    removeModuleAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.removeModule = this.$t("error.generic_error");
     },
     removeModuleCompleted() {
       this.listModules();

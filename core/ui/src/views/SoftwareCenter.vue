@@ -109,11 +109,12 @@
 
         <section v-if="['all', 'installed', 'updates'].includes(q.view)">
           <div v-if="csbAllSelected">
-            <NsEmptyState
-              v-if="!modules.length && !loading.modules"
-              :title="$t('software_center.no_apps')"
-              key="all-empty-state"
-            />
+            <cv-tile v-if="!modules.length && !loading.modules" light>
+              <NsEmptyState
+                :title="$t('software_center.no_apps')"
+                key="all-empty-state"
+              />
+            </cv-tile>
             <AppList
               v-else
               :apps="modules"
@@ -125,11 +126,12 @@
             />
           </div>
           <div v-if="csbInstalledSelected">
-            <NsEmptyState
-              v-if="!installedModules.length && !loading.modules"
-              :title="$t('software_center.no_apps')"
-              key="installed-empty-state"
-            />
+            <cv-tile v-if="!installedModules.length && !loading.modules" light>
+              <NsEmptyState
+                :title="$t('software_center.no_apps')"
+                key="installed-empty-state"
+              />
+            </cv-tile>
             <AppList
               v-else
               :apps="installedModules"
@@ -165,7 +167,7 @@
               :light="true"
             >
               <NsEmptyState
-                :title="$t('software_center.system_up_to_date')"
+                :title="$t('software_center.cluster_up_to_date')"
                 :animationData="RocketLottie"
                 animationTitle="rocket"
                 :loop="1"

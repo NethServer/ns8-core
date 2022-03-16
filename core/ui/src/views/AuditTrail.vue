@@ -2,7 +2,7 @@
   <cv-grid fullWidth>
     <cv-row>
       <cv-column class="page-title">
-        <h2>{{ $t("audit_logs.title") }}</h2>
+        <h2>{{ $t("audit_trail.title") }}</h2>
       </cv-column>
     </cv-row>
     <cv-row class="landscape-warning">
@@ -23,14 +23,14 @@
                 <cv-date-picker
                   kind="single"
                   :cal-options="calOptions"
-                  :date-label="$t('audit_logs.start_date')"
+                  :date-label="$t('audit_trail.start_date')"
                   v-model="startDateString"
                   class="interval-date mg-bottom-md"
                   :invalid-message="error.startDate"
                 >
                 </cv-date-picker>
                 <cv-time-picker
-                  :label="$t('audit_logs.start_time_label')"
+                  :label="$t('audit_trail.start_time_label')"
                   :time.sync="startTime"
                   ampm="24"
                   :pattern="time24HourPatternString"
@@ -49,14 +49,14 @@
                 <cv-date-picker
                   kind="single"
                   :cal-options="calOptions"
-                  :date-label="$t('audit_logs.end_date')"
+                  :date-label="$t('audit_trail.end_date')"
                   v-model="endDateString"
                   class="interval-date mg-bottom-md"
                   :invalid-message="error.endDate"
                 >
                 </cv-date-picker>
                 <cv-time-picker
-                  :label="$t('audit_logs.end_time_label')"
+                  :label="$t('audit_trail.end_time_label')"
                   :time.sync="endTime"
                   ampm="24"
                   :pattern="time24HourPatternString"
@@ -78,9 +78,9 @@
                   v-model="usersSelected"
                   :options="users"
                   :title="
-                    $t('audit_logs.users') + ' (' + $t('common.optional') + ')'
+                    $t('audit_trail.users') + ' (' + $t('common.optional') + ')'
                   "
-                  :label="$t('audit_logs.users_label')"
+                  :label="$t('audit_trail.users_label')"
                   :helper-text="usersHelperText"
                   class="mg-bottom-md"
                 >
@@ -88,7 +88,7 @@
                 <NsInlineNotification
                   v-if="error.auditUsers"
                   kind="error"
-                  :title="$t('audit_logs.cannot_retrieve_audit_users')"
+                  :title="$t('audit_trail.cannot_retrieve_audit_users')"
                   :description="error.auditUsers"
                   :showCloseButton="false"
                 />
@@ -98,12 +98,12 @@
                   v-model="actionsSelected"
                   :options="actions"
                   :title="
-                    $t('audit_logs.actions') +
+                    $t('audit_trail.actions') +
                     ' (' +
                     $t('common.optional') +
                     ')'
                   "
-                  :label="$t('audit_logs.actions_label')"
+                  :label="$t('audit_trail.actions_label')"
                   :helper-text="actionsHelperText"
                   class="mg-bottom-md"
                 >
@@ -111,7 +111,7 @@
                 <NsInlineNotification
                   v-if="error.auditActions"
                   kind="error"
-                  :title="$t('audit_logs.cannot_retrieve_audit_actions')"
+                  :title="$t('audit_trail.cannot_retrieve_audit_actions')"
                   :description="error.auditActions"
                   :showCloseButton="false"
                 />
@@ -121,13 +121,13 @@
               <cv-column :lg="8">
                 <cv-text-input
                   :label="
-                    $t('audit_logs.auditInfo') +
+                    $t('audit_trail.auditInfo') +
                     ' (' +
                     $t('common.optional') +
                     ')'
                   "
                   v-model="auditInfo"
-                  :placeholder="$t('audit_logs.audit_info_placeholder')"
+                  :placeholder="$t('audit_trail.audit_info_placeholder')"
                   @keypress.enter="searchLogs()"
                   class="mg-bottom-md"
                 >
@@ -135,7 +135,7 @@
               </cv-column>
               <cv-column :lg="8">
                 <cv-text-input
-                  :label="$t('audit_logs.max_results')"
+                  :label="$t('audit_trail.max_results')"
                   v-model="maxResults"
                   :invalid-message="error.maxResults"
                   type="number"
@@ -153,10 +153,10 @@
                 <NsButton
                   kind="primary"
                   :icon="Search20"
-                  :loading="loading.auditLogs"
-                  :disabled="loading.auditLogs"
+                  :loading="loading.auditTrail"
+                  :disabled="loading.auditTrail"
                   @click="searchLogs"
-                  >{{ $t("audit_logs.search_logs") }}</NsButton
+                  >{{ $t("audit_trail.search") }}</NsButton
                 >
               </cv-column>
             </cv-row>
@@ -165,10 +165,10 @@
             <cv-row>
               <cv-column>
                 <NsInlineNotification
-                  v-if="error.auditLogs"
+                  v-if="error.auditTrail"
                   kind="error"
-                  :title="$t('audit_logs.cannot_retrieve_audit_logs')"
-                  :description="error.auditLogs"
+                  :title="$t('audit_trail.cannot_retrieve_audit_trail')"
+                  :description="error.auditTrail"
                   :showCloseButton="false"
                 />
               </cv-column>
@@ -176,32 +176,34 @@
             <cv-row>
               <cv-column>
                 <cv-tile
-                  v-if="!this.tableRows.length && !loading.auditLogs"
+                  v-if="!this.tableRows.length && !loading.auditTrail"
                   :light="false"
                 >
                   <NsEmptyState
-                    :title="$t('audit_logs.no_log_found')"
+                    :title="$t('audit_trail.no_log_found')"
                     :animationData="GhostLottie"
                     animationTitle="ghost"
                     :loop="1"
                   >
                     <template #description>
-                      <div>{{ $t("audit_logs.no_log_found_description") }}</div>
+                      <div>
+                        {{ $t("audit_trail.no_log_found_description") }}
+                      </div>
                     </template>
                   </NsEmptyState>
                 </cv-tile>
                 <div v-else>
                   <cv-data-table-skeleton
-                    v-if="loading.auditLogs"
+                    v-if="loading.auditTrail"
                     :columns="i18nTableColumns"
                     :rows="10"
                   ></cv-data-table-skeleton>
                   <cv-data-table
                     v-if="
-                      !loading.auditLogs &&
+                      !loading.auditTrail &&
                       !error.auditUsers &&
                       !error.auditActions &&
-                      !error.auditLogs
+                      !error.auditTrail
                     "
                     :sortable="true"
                     :columns="i18nTableColumns"
@@ -284,7 +286,7 @@ import {
 } from "@nethserver/ns8-ui-lib";
 
 export default {
-  name: "AuditLogs",
+  name: "AuditTrail",
   mixins: [
     DateTimeService,
     DataTableService,
@@ -294,7 +296,7 @@ export default {
     LottieService,
   ],
   pageTitle() {
-    return this.$t("audit_logs.title");
+    return this.$t("audit_trail.title");
   },
   data() {
     return {
@@ -315,12 +317,12 @@ export default {
       tableColumns: ["timestamp", "user", "action", "auditInfo"],
       tableRows: [],
       loading: {
-        auditLogs: true,
+        auditTrail: true,
       },
       error: {
         auditUsers: "",
         auditActions: "",
-        auditLogs: "",
+        auditTrail: "",
         startDate: "",
         startTime: "",
         endDate: "",
@@ -350,7 +352,7 @@ export default {
     },
     i18nTableColumns() {
       return this.tableColumns.map((column) => {
-        return this.$t("audit_logs." + column);
+        return this.$t("audit_trail." + column);
       });
     },
   },
@@ -385,7 +387,7 @@ export default {
       if (errUsers) {
         console.error("error retrieving audit users", errUsers);
         this.error.auditUsers = this.getErrorMessage(errUsers);
-        this.loading.auditLogs = false;
+        this.loading.auditTrail = false;
         return;
       }
 
@@ -401,7 +403,7 @@ export default {
       if (errActions) {
         console.error("error retrieving audit actions", errActions);
         this.error.auditActions = this.getErrorMessage(errActions);
-        this.loading.auditLogs = false;
+        this.loading.auditTrail = false;
         return;
       }
 
@@ -486,10 +488,10 @@ export default {
       }
 
       const auditParams = this.getAuditParams();
-      this.loading.auditLogs = true;
+      this.loading.auditTrail = true;
 
       const [err, response] = await to(
-        this.getAuditLogs(
+        this.getAuditTrail(
           auditParams.users,
           auditParams.actions,
           auditParams.data,
@@ -498,11 +500,11 @@ export default {
           auditParams.limit
         )
       );
-      this.loading.auditLogs = false;
+      this.loading.auditTrail = false;
 
       if (err) {
-        console.error("error retrieving audit logs", err);
-        this.error.auditLogs = this.getErrorMessage(err);
+        console.error("error retrieving audit trail", err);
+        this.error.auditTrail = this.getErrorMessage(err);
         return;
       }
 

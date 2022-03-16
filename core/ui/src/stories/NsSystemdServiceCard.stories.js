@@ -23,6 +23,6 @@ Default.args = {
   inactiveLabel: "inactive",
   enabledLabel: "enabled",
   disaledLabel: "disabled",
-  light: false,
+  light: true,
   icon: Cube32,
 };
