@@ -171,7 +171,11 @@
             <h4 class="mg-bottom-md">{{ $t("node_detail.swap") }}</h4>
             <NsMeterChart
               :label="$t('node_detail.usage')"
-              :value="loading.nodeStatus ? 0 : nodeStatus.swap.usage"
+              :value="
+                loading.nodeStatus || Number.isNaN(nodeStatus.swap.usage)
+                  ? 0
+                  : nodeStatus.swap.usage
+              "
               height="3rem"
               class="mg-bottom-md"
             />

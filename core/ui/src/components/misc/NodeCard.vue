@@ -80,7 +80,7 @@
         <div class="tr">
           <div class="td label">{{ swapUsageLabel }}</div>
           <div :class="['td', { warning: swapUsage >= swapWarningTh }]">
-            {{ swapUsage }}%
+            {{ Number.isNaN(swapUsage) ? "-" : swapUsage + "%" }}
           </div>
         </div>
         <div class="tr" v-for="(disk, index) in disksUsage" :key="index">
