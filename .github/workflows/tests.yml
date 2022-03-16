@@ -122,9 +122,8 @@ jobs:
         with:
           name: core-tests-logs-${{ matrix.node }}
           path: |
-             ${{ github.workspace }}/core/tests/outputs/output.xml
-             ${{ github.workspace }}/core/tests/outputs/log.html
-             ${{ github.workspace }}/core/tests/outputs/report.html
+             ${{ github.workspace }}/core/tests/outputs/
+
   infra_destroy:
     name: "Destroy the infrastructure"
     runs-on: ubuntu-latest

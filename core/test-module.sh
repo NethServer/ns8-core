@@ -11,6 +11,7 @@ podman run -i \
     -v ..:/home/pwuser/ns8-scratchpad:z \
     --security-opt seccomp=/tmp/seccomp_profile.json \
     --ipc=host \
+    --volume=site-packages:/home/pwuser/.local/lib/python3.8/site-packages:Z \
     --name rf-core-runner ghcr.io/marketsquare/robotframework-browser/rfbrowser-stable:v10.0.3 \
     bash -l -s <<EOF
     set -e
@@ -23,6 +24,8 @@ podman run -i \
         -v SSH_KEYFILE:/home/pwuser/ns8-key \
 	-v COREBRANCH:${COREBRANCH} \
 	-v COREMODULES:${COREMODULES} \
+	--skiponfailure unstable \
+	--console dotted \
 	-d ~/outputs /home/pwuser/ns8-scratchpad/core/tests/
 EOF
 
