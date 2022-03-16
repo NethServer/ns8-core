@@ -24,6 +24,7 @@ podman run -i \
         -v SSH_KEYFILE:/home/pwuser/ns8-key \
 	-v COREBRANCH:${COREBRANCH} \
 	-v COREMODULES:${COREMODULES} \
+	--console dotted \
 	-d ~/outputs /home/pwuser/ns8-scratchpad/core/tests/
 EOF
 
