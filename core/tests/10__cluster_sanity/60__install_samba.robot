@@ -1,5 +1,6 @@
 *** Settings ***
 Library           SSHLibrary
+Resource          api.resource
 
 *** Test Cases ***
 Install Samba instance samba1
@@ -9,9 +10,9 @@ Install Samba instance samba1
     Should Contain    ${output}    samba1
 
 Configure samba1 instance
-    ${output}  ${rc} =    Execute Command   api-cli run configure-module --agent module/samba1 --data '{"provision":"new-domain", "adminuser":"administrator", "adminpass":"Nethesis,1234", "realm":"ad.nethserver.test", "nbdomain":"NS", "hostname":"ns1", "ipaddress":"10.5.4.1"}'
-    ...    return_rc=True
-    Should Be Equal As Integers    ${rc}    0
+    Run task    module/samba1/configure-module
+    ...         {"provision":"new-domain", "adminuser":"administrator", "adminpass":"Nethesis,1234", "realm":"ad.nethserver.test", "nbdomain":"NS", "hostname":"ns1", "ipaddress":"10.5.4.1"}
+    ...         decode_json=${FALSE}
 
 Samba service has not failed
     ${rc} =    Execute Command    systemctl is-failed -q samba1    return_rc=True  return_stdout=False

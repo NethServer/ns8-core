@@ -1,12 +1,11 @@
 *** Settings ***
 Library    RequestsLibrary
 Library    SSHLibrary
+Resource   api.resource
 
 *** Test Cases ***
 Set node FQDN certificate
-    ${output}  ${rc} =    Execute Command    api-cli run set-certificate --agent module/traefik1 --data '{"fqdn":"${NODE_ADDR}"}'
-    ...    return_rc=True
-    Should Be Equal As Integers    ${rc}    0
+    Run task    module/traefik1/set-certificate    {"fqdn":"${NODE_ADDR}"}
 
 Check that admin interface is accessible with a valid certificate
     [Tags]    unstable
