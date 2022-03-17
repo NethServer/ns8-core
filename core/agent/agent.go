@@ -36,9 +36,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/NethServer/ns8-scratchpad/core/agent/action"
-	"github.com/NethServer/ns8-scratchpad/core/agent/validation"
-	"github.com/NethServer/ns8-scratchpad/core/api-server/models"
+	"github.com/NethServer/ns8-core/core/agent/action"
+	"github.com/NethServer/ns8-core/core/agent/validation"
+	"github.com/NethServer/ns8-core/core/agent/models"
 	"github.com/go-redis/redis/v8"
 )
 

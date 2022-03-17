@@ -1,6 +1,6 @@
 # Agent
 
-* Go version 1.16+
+* Go version 1.18+
 * Run `go build .` in this directory
 
 ## Startup

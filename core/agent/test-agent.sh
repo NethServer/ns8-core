@@ -32,7 +32,7 @@ bcontainer="gobuilder-agent"
 
 # Reuse existing ${bcontainer}, to speed up builds
 if ! buildah containers --format "{{.ContainerName}}" | grep -q "${bcontainer}"; then
-    buildah from --name "${bcontainer}" -v ${PWD}:/usr/src:Z docker.io/golang:1.16-alpine
+    buildah from --name "${bcontainer}" -v ${PWD}:/usr/src:Z docker.io/golang:1.18-alpine
 fi
 
 # Rebuild the "agent" Golang binary
