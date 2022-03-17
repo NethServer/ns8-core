@@ -99,6 +99,38 @@ def _list_repository_modules(rdb, repository_name, repository_url):
 
     return modules
 
+def get_latest_module(module, rdb):
+    """Find most recent version of the given module
+    """
+    version = ""
+    source = ""
+    available = list_available(rdb)
+    for m in available:
+        if m["id"] == module:
+            source = m["source"]
+            repo_testing = int(rdb.hget(f'cluster/repository/{m["repository"]}', 'testing')) == 1
+            for v in m["versions"]:
+                if repo_testing and v["testing"]:
+                    version = v["tag"]
+                elif not repo_testing and not v["testing"]:
+                    version = v["tag"]
+
+                if version:
+                    break
+
+        if version:
+            break
+
+    # Fallback to default 'latest' if no version has been found
+    if not version:
+        version = "latest"
+
+    if not source:
+        return ""
+
+    return f'{source}:{version}'
+
+
 def list_available(rdb):
     modules = []
     # List all modules from enabled repositories

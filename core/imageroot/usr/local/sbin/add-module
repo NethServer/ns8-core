@@ -25,63 +25,17 @@ import agent
 import agent.tasks
 import argparse
 import urllib.parse
-import cluster.modules
-
-def get_latest_module(module, rdb):
-    """Find most recent version of the given module
-    """
-    version = ""
-    source = ""
-    available = cluster.modules.list_available(rdb)
-    for m in available:
-        if m["name"] == module:
-            source = m["source"]
-            repo_testing = int(rdb.hget(f'cluster/repository/{m["repository"]}', 'testing')) == 1
-            for v in m["versions"]:
-                if repo_testing and v["testing"]:
-                    version = v["tag"]
-                elif not repo_testing and not v["testing"]:
-                    version = v["tag"]
-
-                if version:
-                    break
-
-        if version:
-            break
-
-    # Fallback to default 'latest' if no version has been found
-    if not version:
-        version = "latest"
-
-    if not source:
-        return ""
-
-    return f'{source}:{version}'
 
 parser = argparse.ArgumentParser()
 parser.add_argument('image')
 parser.add_argument('node', default=1, type=int)
 args = parser.parse_args()
 
-rdb = agent.redis_connect(privileged=True)
-
-# if the image name contains a slash, let's assume it's a valid image URL,
-# like ghr.io/nethserver/<image>:<tag>
-if "/" in args.image:
-    image_url = args.image
-else:
-# search for the package inside the repsoitory metadata
-    image_url = get_latest_module(args.image, rdb)
-
-if not image_url:
-    print(f"No available module found for '{args.image}'", file=sys.stderr)
-    sys.exit(1)
-
 result = agent.tasks.run(
     agent_id='cluster',
     action='add-module',
     data={
-        'image': image_url,
+        'image': args.image,
         'node': args.node,
     },
     extra={
