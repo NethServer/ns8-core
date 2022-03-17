@@ -54,11 +54,11 @@ domain = lp.get_domain("mydomain")
 print(domain)
 ```
 
-The module can add the following settings to `eventsgw.conf` to listen to
-account provider changes:
+The module can handle account provider changes by defining an event
+handler. Create an executable script with path
+`${AGENT_INSTALL_DIR}/events/account-provider-changed/10handler` and run
+any command from it. For instance:
 
-```ini
-[commands]
-*/event/account-provider-changed = mycommand && systemctl --user reload mymodule.service
+```shell
+mycommand && systemctl --user reload mymodule.service
 ```
-
