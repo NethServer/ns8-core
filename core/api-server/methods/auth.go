@@ -28,8 +28,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/NethServer/ns8-scratchpad/core/api-server/models"
-	"github.com/NethServer/ns8-scratchpad/core/api-server/redis"
+	"github.com/NethServer/ns8-core/core/api-server/models"
+	"github.com/NethServer/ns8-core/core/api-server/redis"
 )
 
 var ctx = context.Background()

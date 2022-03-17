@@ -1,6 +1,6 @@
-module github.com/NethServer/ns8-scratchpad/core/api-server
+module github.com/NethServer/ns8-core/core/api-server
 
-go 1.15
+go 1.18
 
 require (
 	github.com/appleboy/gin-jwt/v2 v2.6.4

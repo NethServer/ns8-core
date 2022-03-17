@@ -31,10 +31,10 @@ import (
 	"github.com/fatih/structs"
 	"github.com/gin-gonic/gin"
 
-	"github.com/NethServer/ns8-scratchpad/core/api-server/audit"
-	"github.com/NethServer/ns8-scratchpad/core/api-server/configuration"
-	"github.com/NethServer/ns8-scratchpad/core/api-server/models"
-	"github.com/NethServer/ns8-scratchpad/core/api-server/response"
+	"github.com/NethServer/ns8-core/core/api-server/audit"
+	"github.com/NethServer/ns8-core/core/api-server/configuration"
+	"github.com/NethServer/ns8-core/core/api-server/models"
+	"github.com/NethServer/ns8-core/core/api-server/response"
 )
 
 // GetAudits godoc

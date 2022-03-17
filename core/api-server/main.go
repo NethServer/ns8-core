@@ -35,12 +35,12 @@ import (
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 
-	"github.com/NethServer/ns8-scratchpad/core/api-server/audit"
-	"github.com/NethServer/ns8-scratchpad/core/api-server/configuration"
-	"github.com/NethServer/ns8-scratchpad/core/api-server/methods"
-	"github.com/NethServer/ns8-scratchpad/core/api-server/middleware"
-	"github.com/NethServer/ns8-scratchpad/core/api-server/response"
-	"github.com/NethServer/ns8-scratchpad/core/api-server/socket"
+	"github.com/NethServer/ns8-core/core/api-server/audit"
+	"github.com/NethServer/ns8-core/core/api-server/configuration"
+	"github.com/NethServer/ns8-core/core/api-server/methods"
+	"github.com/NethServer/ns8-core/core/api-server/middleware"
+	"github.com/NethServer/ns8-core/core/api-server/response"
+	"github.com/NethServer/ns8-core/core/api-server/socket"
 )
 
 // @title NethServer 8 API
