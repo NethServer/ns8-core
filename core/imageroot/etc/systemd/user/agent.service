@@ -13,7 +13,6 @@ ExecStart=/usr/local/bin/agent \
     --agentid=${AGENT_ID} \
     --actionsdir=${AGENT_BASEACTIONS_DIR} \
     --actionsdir=${AGENT_INSTALL_DIR}/actions \
-    --actionsdir=%h/actions-custom \
     --eventsdir=${AGENT_INSTALL_DIR}/events
 Restart=always
 SyslogIdentifier=%u
