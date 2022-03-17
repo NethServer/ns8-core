@@ -89,11 +89,11 @@ cluster.grants.grant(rdb, action_clause="update-routes", to_clause="accountprovi
 #
 add1_module_failures = agent.tasks.runp_brief([
         {"agent_id": "cluster", "action": "add-module", "data": {
-            'image': 'ghcr.io/nethserver/ldapproxy:latest',
+            'image': 'ldapproxy',
             'node': NODE_ID,
         }},
         {"agent_id": "cluster", "action": "add-module", "data": {
-            'image': 'ghcr.io/nethserver/loki:latest',
+            'image': 'loki',
             'node': NODE_ID,
         }},
     ],
@@ -105,7 +105,7 @@ agent.assert_exp(add1_module_failures == 0)
 add2_module_failures = agent.tasks.runp_brief([
         # promtail must be installed AFTER loki
         {"agent_id": "cluster", "action": "add-module", "data": {
-            'image': 'ghcr.io/nethserver/promtail:latest',
+            'image': 'promtail',
             'node': NODE_ID,
         }},
     ],
