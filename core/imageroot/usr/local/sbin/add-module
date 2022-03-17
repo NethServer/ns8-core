@@ -28,7 +28,7 @@ import urllib.parse
 
 parser = argparse.ArgumentParser()
 parser.add_argument('image')
-parser.add_argument('node', default=1, type=int)
+parser.add_argument('node', default=1, type=int, nargs='?')
 args = parser.parse_args()
 
 result = agent.tasks.run(
