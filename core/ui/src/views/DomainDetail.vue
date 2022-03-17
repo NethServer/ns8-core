@@ -662,9 +662,11 @@ export default {
         if (usedNodes.includes(node.id)) {
           //// remove mock
           // node.unavailable = true; ////
+          //// do not use unavailable attribute, use NodeSelector disabledNodes property
           node.unavailable = false;
           node.selected = false;
         } else {
+          //// do not use unavailable attribute, use NodeSelector disabledNodes property
           node.unavailable = false;
           node.selected = false;
         }
