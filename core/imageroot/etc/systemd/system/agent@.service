@@ -9,9 +9,14 @@ Environment=AGENT_STATE_DIR=/var/lib/nethserver/%i/state
 EnvironmentFile=/etc/nethserver/agent.env
 EnvironmentFile=-/var/lib/nethserver/%i/state/agent.env
 WorkingDirectory=/var/lib/nethserver/%i/state
-ExecStart=/usr/local/bin/agent ${AGENT_ID} ${AGENT_BASEACTIONS_DIR} ${AGENT_INSTALL_DIR}/actions /var/lib/nethserver/%i/actions-custom
+ExecStart=/usr/local/bin/agent \
+    --agentid=${AGENT_ID} \
+    --actionsdir=${AGENT_BASEACTIONS_DIR} \
+    --actionsdir=${AGENT_INSTALL_DIR}/actions \
+    --actionsdir=/var/lib/nethserver/%i/actions-custom \
+    --eventsdir=${AGENT_INSTALL_DIR}/events
 Restart=always
 SyslogIdentifier=%i
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=default.target
