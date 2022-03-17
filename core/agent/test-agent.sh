@@ -31,7 +31,7 @@ set -e
 bcontainer="gobuilder-agent"
 
 # Reuse existing ${bcontainer}, to speed up builds
-if ! buildah containers --format "{{.ContainerName}}" | grep -q "${bcontainer}"; then
+if ! buildah containers --format "{{.ContainerName}}" | grep "${bcontainer}" >/dev/null; then
     buildah from --name "${bcontainer}" -v ${PWD}:/usr/src:Z docker.io/golang:1.18-alpine
 fi
 

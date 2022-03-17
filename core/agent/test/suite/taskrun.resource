@@ -12,7 +12,8 @@ Start the agent
     Create File    /srv/state/environment
     Create File    /srv/log/agent.log
     Start Process    /usr/src/agent
-    ...    ${AGENT_ID}    /usr/src/test/actions
+    ...    --agentid\=${AGENT_ID}
+    ...    --actionsdir\=/usr/src/test/actions
     ...    cwd=/srv/state    shell=False
     ...    stderr=STDOUT    stdout=/srv/log/agent.log
     ${redis_conn} =     Connect To Redis    127.0.0.1

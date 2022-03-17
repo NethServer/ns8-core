@@ -24,6 +24,7 @@ import (
 	"context"
 	"encoding/csv"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io"
 	"log"
@@ -55,12 +56,26 @@ const (
 )
 
 var ctx = context.Background()
-var agentPrefix = os.Args[1]
-var actionPaths = os.Args[2:]
+var agentPrefix string
+var actionPaths flagStringSlice
+var eventPaths flagStringSlice
 var rdb *redis.Client
 
 var pollingDuration = 5000 * time.Millisecond
 var taskExpireDuration = 24 * time.Hour
+
+// Command arguments --actionsdir and --eventsdir can be repeated multiple
+// times. Each item is inserted into a []string.
+type flagStringSlice []string
+
+func (v *flagStringSlice) String() string {
+	return "" // doesn't matter
+}
+
+func (v *flagStringSlice) Set(raw string) error {
+	*v = append(*v, raw)
+	return nil
+}
 
 func prepareActionEnvironment() []string {
 	env := make([]string, 0)
@@ -514,6 +529,13 @@ func setClientNameCallback (ctx context.Context, cn *redis.Conn) error {
 }
 
 func main() {
+
+	// Parse command-line arguments
+	flag.Var(&actionPaths, "actionsdir", "Directory path with actions definition")
+	flag.Var(&actionPaths, "eventsdir", "Directory path with events definition")
+	flag.StringVar(&agentPrefix, "agentid", "", "Agent ID and default Redis username")
+	flag.Parse()
+
 	log.SetFlags(0)
 	if agentPrefix == "" {
 		log.Fatal(SD_EMERG+"The agent prefix argument is not set")
