@@ -27,7 +27,7 @@ import (
 	"strings"
 	"strconv"
 	"fmt"
-	"github.com/NethServer/ns8-scratchpad/core/api-server/configuration"
+	"github.com/NethServer/ns8-core/core/api-server/configuration"
 
 	"github.com/go-redis/redis/v8"
 )

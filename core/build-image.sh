@@ -11,7 +11,7 @@ if ! buildah containers --format "{{.ContainerName}}" | grep -q gobuilder-core; 
     echo "Pulling Golang runtime..."
     golang_cache_path="${PWD}/.golang-cache"
     mkdir -vp "${golang_cache_path}/{mcache,bcache}"
-    buildah from --name gobuilder-tmp docker.io/library/golang:1.16-alpine
+    buildah from --name gobuilder-tmp docker.io/library/golang:1.18-alpine
     buildah run gobuilder-tmp apk add g++ gcc
     buildah config --env GOCACHE=/var/lib/misc/bcache --env GOMODCACHE=/var/lib/misc/mcache gobuilder-tmp
     buildah commit --rm gobuilder-tmp gobuilder-image

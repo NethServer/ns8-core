@@ -32,9 +32,9 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/NethServer/ns8-scratchpad/core/api-server/configuration"
-	"github.com/NethServer/ns8-scratchpad/core/api-server/models"
-	"github.com/NethServer/ns8-scratchpad/core/api-server/utils"
+	"github.com/NethServer/ns8-core/core/api-server/configuration"
+	"github.com/NethServer/ns8-core/core/api-server/models"
+	"github.com/NethServer/ns8-core/core/api-server/utils"
 )
 
 var socketConnection *melody.Melody

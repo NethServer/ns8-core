@@ -39,12 +39,12 @@ import (
 
 	jwt "github.com/appleboy/gin-jwt/v2"
 
-	"github.com/NethServer/ns8-scratchpad/core/api-server/audit"
-	"github.com/NethServer/ns8-scratchpad/core/api-server/models"
-	"github.com/NethServer/ns8-scratchpad/core/api-server/redis"
-	"github.com/NethServer/ns8-scratchpad/core/api-server/response"
-	"github.com/NethServer/ns8-scratchpad/core/api-server/socket"
-	"github.com/NethServer/ns8-scratchpad/core/api-server/utils"
+	"github.com/NethServer/ns8-core/core/api-server/audit"
+	"github.com/NethServer/ns8-core/core/api-server/models"
+	"github.com/NethServer/ns8-core/core/api-server/redis"
+	"github.com/NethServer/ns8-core/core/api-server/response"
+	"github.com/NethServer/ns8-core/core/api-server/socket"
+	"github.com/NethServer/ns8-core/core/api-server/utils"
 )
 
 func getList(c *gin.Context, queueName string) {

@@ -35,8 +35,8 @@ import (
 	"github.com/olahol/melody"
 	"github.com/pkg/errors"
 
-	"github.com/NethServer/ns8-scratchpad/core/api-server/models"
-	"github.com/NethServer/ns8-scratchpad/core/api-server/utils"
+	"github.com/NethServer/ns8-core/core/api-server/models"
+	"github.com/NethServer/ns8-core/core/api-server/utils"
 )
 
 func Action(socketAction models.SocketAction, s *melody.Session) {
