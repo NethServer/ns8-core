@@ -303,9 +303,6 @@ export default {
     async installProvider() {
       this.error.addInternalProvider = "";
 
-      //// todo select version
-      let version = "latest";
-
       const taskAction = "add-internal-provider";
 
       // register to task completion
@@ -331,7 +328,7 @@ export default {
         this.createClusterTask({
           action: taskAction,
           data: {
-            image: "ghcr.io/nethserver/samba:" + version, ////
+            image: "samba",
             node: parseInt(this.selectedNode.id),
             domain: this.domain.name,
           },
