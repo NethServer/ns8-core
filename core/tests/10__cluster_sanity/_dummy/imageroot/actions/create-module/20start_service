@@ -1,0 +1,19 @@
+#!/bin/bash
+
+exec 1>&2
+set -e
+
+# Write a token in the state/ directory
+secret="secret-$$"
+echo -n ${secret} > secret
+
+# Write tokens in a container volume
+podman run --interactive --rm \
+    --volume=vol00:/data/vol00:Z \
+    --volume=vol01:/data/vol01:Z \
+    --volume=vol02:/data/vol02:Z \
+    docker.io/alpine:latest sh <<EOF
+echo -n ${secret} > /data/vol00/secret0
+echo -n ${secret} > /data/vol01/secret1
+echo -n ${secret} > /data/vol02/secret2
+EOF

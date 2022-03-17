@@ -1,0 +1,16 @@
+#!/bin/bash
+
+set -e
+
+# Read tokens
+podman run --rm --interactive \
+    --volume=vol00:/data/vol00:Z \
+    --volume=vol01:/data/vol01:Z \
+    --volume=vol02:/data/vol02:Z \
+    docker.io/alpine:latest sh >contents <<EOF
+cat /data/vol00/secret0
+cat /data/vol01/secret1
+cat /data/vol02/secret2
+EOF
+
+printf '{"uuid":"%s","state":"%s","contents":"%s"}' "${MODULE_UUID}" $(< secret) $(< contents)
