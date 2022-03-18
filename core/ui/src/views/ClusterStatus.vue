@@ -387,6 +387,8 @@ export default {
 
 .card-row {
   margin-bottom: $spacing-05;
+  display: flex;
+  justify-content: center;
 }
 
 .card-row:last-child {
