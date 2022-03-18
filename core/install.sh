@@ -62,7 +62,7 @@ fi
 echo "Extracting core sources:"
 mkdir -pv /var/lib/nethserver/node/state
 cid=$(podman create "ghcr.io/nethserver/core:latest")
-podman export ${cid} | tar --totals -C / --no-overwrite-dir --no-same-owner -x -v -f - | sort | tee /var/lib/nethserver/node/state/coreimage.lst
+podman export ${cid} | tar --totals -C / --no-overwrite-dir --no-same-owner -x -v -f - | LC_ALL=C sort | tee /var/lib/nethserver/node/state/coreimage.lst
 podman rm -f ${cid}
 
 echo "Pulling rclone image ${RCLONE_IMAGE}:"
