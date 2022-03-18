@@ -47,7 +47,7 @@ podman export "${cid}" | tar \
     --exclude-caches-under \
     --strip-components="${stripcount}" \
     -x -v -f - "${imageroot}" \
-    | sort \
+    | LC_ALL=C sort \
     | tee ${lst_file}
 
 # Clean up old files that are no longer shipped with the image:
