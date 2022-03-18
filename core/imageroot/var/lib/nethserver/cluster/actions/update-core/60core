@@ -31,7 +31,7 @@ core_url = request.get('core_url', '')
 nodes_list = request['nodes']
 
 rdb = agent.redis_connect(privileged=True)
-# if the image name does not contain a slash, search for the latest core image inside the repo
+# if the image url is not given, search for the latest core image inside the repo
 if not core_url:
     core_url = cluster.modules.get_latest_module('core', rdb)
 
@@ -79,5 +79,3 @@ agent.tasks.runp_nowait(
 )
 
 agent.assert_exp(update_errors == 0)
-
-json.dump({}, fp=sys.stdout)
