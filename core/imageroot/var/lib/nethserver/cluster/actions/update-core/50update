@@ -24,12 +24,16 @@ import json
 import agent
 import agent.tasks
 import sys, os
+import cluster.modules
 
 request = json.load(sys.stdin)
-core_url = request['core_url']
+core_url = request.get('core_url', '')
 nodes_list = request['nodes']
 
 rdb = agent.redis_connect(privileged=True)
+# if the image name does not contain a slash, search for the latest core image inside the repo
+if not core_url:
+    core_url = cluster.modules.get_latest_module('core', rdb)
 
 # Nodes sanity check: send a "list-actions" ping task and wait the result.
 # If any node fails abort the whole action.
