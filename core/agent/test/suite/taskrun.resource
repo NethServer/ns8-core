@@ -14,6 +14,7 @@ Start the agent
     Start Process    /usr/src/agent
     ...    --agentid\=${AGENT_ID}
     ...    --actionsdir\=/usr/src/test/actions
+    ...    --eventsdir\=/usr/src/test/events
     ...    cwd=/srv/state    shell=False
     ...    stderr=STDOUT    stdout=/srv/log/agent.log
     ${redis_conn} =     Connect To Redis    127.0.0.1
@@ -27,8 +28,9 @@ Flush the Redis database
     Flush All    ${RDB}
 
 Start command monitoring
+    [Arguments]    ${timeout}=${0.5}
     Open Connection    127.0.0.1
-    ...    port=6379    newline=CRLF    default_log_level=TRACE    prompt=+    timeout=${0.5}
+    ...    port=6379    newline=CRLF    default_log_level=TRACE    prompt=+    timeout=${timeout}
     Write Bare    MONITOR\r\n
     Read Until Regexp  \\+OK
 

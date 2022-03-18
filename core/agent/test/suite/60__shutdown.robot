@@ -24,7 +24,7 @@ Terminate a busy agent
 
 *** Keywords ***
 Start the command monitoring and the agent
-    Start command monitoring
+    Start command monitoring    timeout=${2.0}
     Start the agent
 
 The agent completes successfully

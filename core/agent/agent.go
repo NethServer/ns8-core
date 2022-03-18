@@ -30,16 +30,15 @@ import (
 	"log"
 	"os"
 	"os/exec"
-	"syscall"
-	"sync"
 	"os/signal"
 	"strconv"
 	"strings"
+	"sync"
+	"syscall"
 	"time"
 
-	"github.com/NethServer/ns8-core/core/agent/action"
-	"github.com/NethServer/ns8-core/core/agent/validation"
 	"github.com/NethServer/ns8-core/core/agent/models"
+	"github.com/NethServer/ns8-core/core/agent/validation"
 	"github.com/go-redis/redis/v8"
 )
 
@@ -152,7 +151,7 @@ func dumpToFile(env []string) {
 	log.Printf("Wrote %s/environment file", path)
 }
 
-func publishStatus(client redis.Cmdable, progressChannel string, actionDescriptor action.Descriptor) {
+func publishStatus(client redis.Cmdable, progressChannel string, actionDescriptor models.Processor) {
 	err := client.Publish(ctx, progressChannel, actionDescriptor.ToJSON()).Err()
 	if err != nil {
 		log.Printf(SD_ERR+"Failed to publish the action status on channel %s", progressChannel)
@@ -169,11 +168,11 @@ func runCancelTask(task *models.Task, cancelFuncMap map[string]context.CancelFun
 	actionError := ""
 	actionOutput := ""
 
-	actionDescriptor := action.CreateBuiltin(task.Action)
+	actionDescriptor := models.CreateOneStepProcessor(task.Action)
 	publishStatus(rdb, progressChannel, actionDescriptor)
 
 	type CancelRequest struct {
-		Task 	string
+		Task    string
 		Timeout int
 	}
 
@@ -220,7 +219,7 @@ func runCancelTask(task *models.Task, cancelFuncMap map[string]context.CancelFun
 		return nil
 	})
 	if err != nil {
-		log.Print(SD_ERR + "Redis command failed: ", err)
+		log.Print(SD_ERR+"Redis command failed: ", err)
 	}
 	log.Printf("%s/task/%s: action \"%s\" status is \"%s\" (%d) at step %s", agentPrefix, task.ID, task.Action, actionDescriptor.Status, exitCode, lastStep)
 }
@@ -232,14 +231,14 @@ func runListActions(task *models.Task) {
 	errorKey := agentPrefix + "/task/" + task.ID + "/error"
 	exitCodeKey := agentPrefix + "/task/" + task.ID + "/exit_code"
 
-	actionDescriptor := action.CreateBuiltin(task.Action)
+	actionDescriptor := models.CreateOneStepProcessor(task.Action)
 	publishStatus(rdb, progressChannel, actionDescriptor)
 
 	actionDescriptor.Status = "running"
 	publishStatus(rdb, progressChannel, actionDescriptor)
 
 	// read the action list from disk
-	actions := action.ListActions(actionPaths)
+	actions := models.ListProcessors(actionPaths)
 
 	// append agent builtin actions
 	actions = append(actions, "list-actions", "cancel-task")
@@ -279,7 +278,7 @@ func runAction(actionCtx context.Context, task *models.Task) {
 
 	lastStep := "{unknown}"
 
-	actionDescriptor := action.Create(task.Action, actionPaths)
+	actionDescriptor := models.CreateTaskProcessor(task.Action, actionPaths)
 
 	publishStatus(rdb, progressChannel, actionDescriptor) // publish pending status
 
@@ -301,11 +300,11 @@ func runAction(actionCtx context.Context, task *models.Task) {
 		lastStep = step.Name
 
 		// Special treatment for builtin validation steps
-		if step.Name == action.STEP_VALIDATE_INPUT {
+		if step.Name == models.STEP_VALIDATE_INPUT {
 			errorList, validateFault := validation.ValidateGoStruct(step.Path, task.Data)
 			if validateFault != nil {
 				errorMessage := fmt.Sprintf("JSON Schema input validation aborted at step %s: %v\n", step.Path, validateFault)
-				log.Printf(SD_ERR+errorMessage)
+				log.Printf(SD_ERR + errorMessage)
 				actionError += errorMessage
 				actionDescriptor.Status = "aborted"
 				exitCode = 1
@@ -321,11 +320,11 @@ func runAction(actionCtx context.Context, task *models.Task) {
 			}
 			continue
 
-		} else if step.Name == action.STEP_VALIDATE_OUTPUT {
+		} else if step.Name == models.STEP_VALIDATE_OUTPUT {
 			errorList, validateFault := validation.ValidateJsonString(step.Path, []byte(actionOutput))
 			if validateFault != nil {
 				errorMessage := fmt.Sprintf("JSON Schema output validation aborted at step %s: %v\n", step.Path, validateFault)
-				log.Printf(SD_ERR+errorMessage)
+				log.Printf(SD_ERR + errorMessage)
 				actionError += errorMessage
 				actionDescriptor.Status = "aborted"
 				exitCode = 1
@@ -461,9 +460,9 @@ func runAction(actionCtx context.Context, task *models.Task) {
 		doneChan := actionCtx.Done()
 		for chanCount := 0; chanCount < 3; {
 			select {
-			case <- comReadLock:
+			case <-comReadLock:
 				chanCount++
-			case <- doneChan:
+			case <-doneChan:
 				// Just send a TERM signal to the running step. It then
 				// returns an exit code and the whole action is aborted.
 				log.Printf(SD_WARNING+"%s/task/%s: Sending TERM signal to action \"%s\" at step %s", agentPrefix, task.ID, task.Action, lastStep)
@@ -471,7 +470,7 @@ func runAction(actionCtx context.Context, task *models.Task) {
 					log.Print(SD_ERR+"Kill failed: ", err)
 				}
 				doneChan = make(chan struct{}) // stop doneChan from being select()'ed
-			case <- time.After(pollingDuration):
+			case <-time.After(pollingDuration):
 				publishStatus(rdb, progressChannel, actionDescriptor)
 			}
 		}
@@ -524,8 +523,92 @@ func runAction(actionCtx context.Context, task *models.Task) {
 	log.Printf("%s/task/%s: action \"%s\" status is \"%s\" (%d) at step %s", agentPrefix, task.ID, task.Action, actionDescriptor.Status, exitCode, lastStep)
 }
 
-func setClientNameCallback (ctx context.Context, cn *redis.Conn) error {
+func runEvent(actionCtx context.Context, task *models.Event) {
+
+}
+
+func setClientNameCallback(ctx context.Context, cn *redis.Conn) error {
 	return cn.ClientSetName(ctx, agentPrefix).Err()
+}
+
+func listenActionsAsync(brpopCtx context.Context, rdb *redis.Client, complete chan int) {
+	defer func() { complete <- 1 }()
+	var workersRegistry sync.WaitGroup
+	taskCancelFunctions := make(map[string]context.CancelFunc)
+
+	for { // Action listen loop
+		var task models.Task
+
+		// Pop the task from the agent tasks queue
+		popResult, popErr := rdb.BRPop(brpopCtx, pollingDuration, agentPrefix+"/tasks").Result()
+		if popErr == redis.Nil {
+			continue
+		} else if brpopCtx.Err() != nil {
+			break
+		} else if popErr != nil {
+			log.Print(SD_ERR+"Task queue pop error: ", popErr)
+			time.Sleep(pollingDuration)
+			continue
+		}
+
+		if err := json.Unmarshal([]byte(popResult[1]), &task); err != nil {
+			log.Print(SD_ERR+"Task ignored for decoding error: ", err)
+			continue
+		}
+
+		// Store the task as context
+		setErr := rdb.Set(ctx, agentPrefix+"/task/"+task.ID+"/context", popResult[1], taskExpireDuration).Err()
+		if setErr != nil {
+			log.Print(SD_ERR+"Context set error: ", setErr)
+		}
+
+		taskCtx, taskCancelFunction := context.WithCancel(ctx)
+		taskCancelFunctions[task.ID] = taskCancelFunction
+
+		// run the Action required by the Task payload
+		go func(task models.Task) {
+			defer func() {
+				workersRegistry.Done()
+				delete(taskCancelFunctions, task.ID)
+			}()
+			workersRegistry.Add(1)
+			switch task.Action {
+			case "list-actions":
+				runListActions(&task)
+			case "cancel-task":
+				runCancelTask(&task, taskCancelFunctions)
+			default:
+				runAction(taskCtx, &task)
+			}
+		}(task)
+	}
+	workersRegistry.Wait() // block until Action coroutines finish
+}
+
+func listenEventsAsync(ctx context.Context, rdb *redis.Client, complete chan int) {
+	pubsub := rdb.PSubscribe(ctx, "*/event/*")
+	defer func() {
+		pubsub.Close()
+		complete <- 1
+	}()
+
+	csyn := make(chan int, 1)
+
+	go func() {
+		for msg := range pubsub.Channel() {
+			log.Print(msg.Channel, msg.Payload)
+		}
+		log.Print("Channel closed")
+		csyn <- 1
+	}()
+
+	select {
+	case <-csyn:
+			return
+	case <-ctx.Done():
+			return
+	}
+
 }
 
 func main() {
@@ -538,11 +621,11 @@ func main() {
 
 	log.SetFlags(0)
 	if agentPrefix == "" {
-		log.Fatal(SD_EMERG+"The agent prefix argument is not set")
+		log.Fatal(SD_EMERG + "The agent prefix argument is not set")
 		// exit(1) log.Fatal terminates the process with an exit code
 	}
 	if len(actionPaths) == 0 {
-		log.Fatal(SD_EMERG+"Action path command arguments are not set")
+		log.Fatal(SD_EMERG + "Action path command arguments are not set")
 		// exit(1) log.Fatal terminates the process with an exit code
 	}
 
@@ -551,7 +634,7 @@ func main() {
 		redisAddress = "127.0.0.1:6379"
 	}
 
-	// Override default lenght of polling interval (5000ms)
+	// Override default length of polling interval (5000ms)
 	ePollingDuration := os.Getenv("AGENT_POLLING_INTERVAL")
 	if ePollingDuration != "" {
 		oValue, convError := time.ParseDuration(ePollingDuration)
@@ -571,76 +654,30 @@ func main() {
 		}
 	}
 	rdb = redis.NewClient(&redis.Options{
-		Addr:     redisAddress,
-		Username: redisUsername,
-		Password: redisPassword,
-		DB:       0,
+		Addr:      redisAddress,
+		Username:  redisUsername,
+		Password:  redisPassword,
+		DB:        0,
 		OnConnect: setClientNameCallback,
 	})
 
-	queueName := agentPrefix + "/tasks"
-
 	var signalChannel = make(chan os.Signal, 1)
 	signal.Notify(signalChannel, syscall.SIGUSR1)
-	var brpopCtx, cancelBrpop = context.WithCancel(ctx)
-
-	var workersRegistry sync.WaitGroup
+	var cancelCtx, cancelBrpop = context.WithCancel(ctx)
 
 	go func() {
 		xsig := <-signalChannel
 		signal.Stop(signalChannel)
-		log.Printf(SD_WARNING + "Signal \"%v\" caught: shutdown started.", xsig)
+		log.Printf(SD_WARNING+"Signal \"%v\" caught: shutdown started.", xsig)
 		cancelBrpop()
 	}()
 
-	taskCancelFunctions := make(map[string]context.CancelFunc)
+	listeners := make(chan int, 1)
 
-	for {
-		var task models.Task
+	go listenActionsAsync(cancelCtx, rdb, listeners)
+	go listenEventsAsync(cancelCtx, rdb, listeners)
 
-		// Pop the task from the agent tasks queue
-		popResult, popErr := rdb.BRPop(brpopCtx, pollingDuration, queueName).Result()
-		if popErr == redis.Nil {
-			continue
-		} else if brpopCtx.Err() != nil {
-			break
-		} else if popErr != nil {
-			log.Print(SD_ERR+"Task queue pop error: ", popErr)
-			time.Sleep(pollingDuration)
-			continue
-		}
-
-		if err := json.Unmarshal([]byte(popResult[1]), &task); err != nil {
-			log.Print(SD_ERR+"Task ignored for decoding error: ", err)
-			continue
-		}
-
-		// Store the task as context
-		setErr := rdb.Set(ctx, agentPrefix + "/task/" + task.ID + "/context", popResult[1], taskExpireDuration).Err()
-		if setErr != nil {
-			log.Print(SD_ERR+"Context set error: ", setErr)
-		}
-
-		taskCtx, taskCancelFunction := context.WithCancel(ctx)
-		taskCancelFunctions[task.ID] = taskCancelFunction
-
-		workersRegistry.Add(1)
-
-		// run the Action required by the Task payload
-		go func(task models.Task) {
-			defer func() {
-				workersRegistry.Done()
-				delete(taskCancelFunctions, task.ID)
-			}()
-			switch task.Action {
-			case "list-actions":
-				runListActions(&task)
-			case "cancel-task":
-				runCancelTask(&task, taskCancelFunctions)
-			default:
-				runAction(taskCtx, &task)
-			}
-		}(task)
-	}
-	workersRegistry.Wait() // block until Action coroutines finish
+	// wait for coroutines completion
+	<-listeners
+	<-listeners
 }

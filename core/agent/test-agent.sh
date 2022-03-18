@@ -83,5 +83,6 @@ robot \
     --name "Agent tests" \
     -d /srv/output \
     --console=dotted "${@}" \
+    --skiponfailure unstable \
     test/suite/
 EOF
