@@ -73,6 +73,7 @@ source "${core_env_file}"
 buildah add "${container}" ${core_env_file} /etc/nethserver/core.env
 buildah config \
     --label="org.nethserver.images=${REDIS_IMAGE} ${RCLONE_IMAGE}" \
+    --label="org.nethserver.flags=core_module" \
     --entrypoint=/ "${container}"
 buildah commit "${container}" "${repobase}/${reponame}"
 buildah rm "${container}"
