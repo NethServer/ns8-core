@@ -104,6 +104,7 @@ export default {
       "setLeaderListenPortInStore",
       "setWebsocketConnectedInStore",
       "setClusterLabelInStore",
+      "setNodesInStore",
     ]),
     configureKeyboardShortcuts(window) {
       window.addEventListener(
@@ -293,8 +294,6 @@ export default {
       if (this.isMaster) {
         const clusterStatus = taskResult.output;
 
-        console.log("clusterStatus", clusterStatus); ////
-
         //// remove mock
         // clusterStatus.initialized = false; ////
 
@@ -326,13 +325,15 @@ export default {
       if (this.isMaster) {
         const clusterStatus = taskResult.output;
 
-        console.log("clusterStatus", clusterStatus); ////
-
         // leader listen port
         if (clusterStatus.nodes.length) {
           const leaderNode = clusterStatus.nodes.find((el) => el.local);
           const leaderListenPort = leaderNode.vpn.listen_port;
           this.setLeaderListenPortInStore(leaderListenPort);
+
+          // update nodes in vuex store
+          const nodes = clusterStatus.nodes.sort(this.sortByProperty("id"));
+          this.setNodesInStore(nodes);
         }
       }
 

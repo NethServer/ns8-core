@@ -27,6 +27,7 @@ export default new Vuex.Store({
     isClusterInitialized: false,
     leaderListenPort: null,
     clusterLabel: "",
+    nodes: [],
   },
   getters: {
     unreadNotifications: (state, getters) => {
@@ -163,6 +164,9 @@ export default new Vuex.Store({
     setClusterLabel(state, clusterLabel) {
       state.clusterLabel = clusterLabel;
     },
+    setNodes(state, nodes) {
+      state.nodes = nodes;
+    },
   },
   actions: {
     createNotificationInStore(context, notification) {
@@ -230,6 +234,9 @@ export default new Vuex.Store({
     },
     setClusterLabelInStore(context, clusterLabel) {
       context.commit("setClusterLabel", clusterLabel);
+    },
+    setNodesInStore(context, nodes) {
+      context.commit("setNodes", nodes);
     },
   },
 });

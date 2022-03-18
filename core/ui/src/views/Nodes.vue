@@ -236,7 +236,7 @@ import {
 } from "@nethserver/ns8-ui-lib";
 import to from "await-to-js";
 import NodeService from "@/mixins/node";
-import { mapState } from "vuex";
+import { mapState, mapActions } from "vuex";
 import NodeCard from "@/components/misc/NodeCard";
 
 export default {
@@ -321,6 +321,7 @@ export default {
     clearInterval(this.refreshDataInterval);
   },
   methods: {
+    ...mapActions(["setNodesInStore"]),
     retrieveJoinCode() {
       const loginInfo = this.getFromStorage("loginInfo");
 
@@ -366,7 +367,11 @@ export default {
     },
     getClusterStatusCompleted(taskContext, taskResult) {
       const clusterStatus = taskResult.output;
+
+      // update nodes in vuex store
       this.nodes = clusterStatus.nodes.sort(this.sortByProperty("id"));
+      this.setNodesInStore(this.nodes);
+
       this.loading.nodes = false;
       this.retrieveNodesStatus();
     },

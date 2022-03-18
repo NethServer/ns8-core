@@ -24,16 +24,6 @@
           </h3>
         </div>
       </div>
-      <div v-if="error.getClusterStatus" class="bx--row">
-        <div class="bx--col">
-          <NsInlineNotification
-            kind="error"
-            :title="$t('action.get-cluster-status')"
-            :description="error.getClusterStatus"
-            :showCloseButton="false"
-          />
-        </div>
-      </div>
       <!-- domain settings -->
       <div class="bx--row">
         <div class="bx--col">
@@ -403,7 +393,6 @@
       <AddInternalProviderModal
         v-if="domain.location == 'internal'"
         :isShown="isShownAddInternalProviderModal"
-        :nodes="nodes"
         :domain="domain"
         :isResumeConfiguration="addProvider.isResumeConfiguration"
         :providerId="addProvider.providerId"
@@ -492,6 +481,8 @@ import {
 import to from "await-to-js";
 import AddInternalProviderModal from "@/components/domains/AddInternalProviderModal";
 import AddExternalProviderModal from "@/components/domains/AddExternalProviderModal";
+import _cloneDeep from "lodash/cloneDeep";
+import { mapState } from "vuex";
 
 export default {
   name: "DomainDetail",
@@ -508,7 +499,7 @@ export default {
       isShownDeleteProviderModal: false,
       domainName: "",
       domain: null,
-      nodes: [],
+      internalNodes: [],
       isShownLastProviderModal: false,
       currentProvider: {
         id: "",
@@ -523,13 +514,11 @@ export default {
       providerToDelete: null,
       loading: {
         listUserDomains: true,
-        getClusterStatus: true,
         setProviderLabel: false,
         addExternalProvider: false,
       },
       error: {
         listUserDomains: "",
-        getClusterStatus: "",
         removeInternalProvider: "",
         setProviderLabel: "",
         removeExternalProvider: "",
@@ -537,6 +526,7 @@ export default {
     };
   },
   computed: {
+    ...mapState(["nodes"]),
     unconfiguredProviders() {
       if (!this.domain) {
         return [];
@@ -601,10 +591,8 @@ export default {
       );
       this.loading.listUserDomains = false;
 
-      console.log("domain", this.domain); ////
-
-      //// remove getClusterStatus? available nodes will be retrieved in another way
-      this.getClusterStatus();
+      //// fix? maybe available nodes will be retrieved by a dedicated api
+      this.initNodes();
     },
     showAddProviderModal() {
       if (this.domain.location == "internal") {
@@ -624,39 +612,9 @@ export default {
     showAddExternalProviderModal() {
       this.isShownAddExternalProviderModal = true;
     },
-    async getClusterStatus() {
-      this.error.getClusterStatus = "";
-      this.loading.getClusterStatus = true;
-      const taskAction = "get-cluster-status";
-
-      // register to task completion
-      this.$root.$once(
-        taskAction + "-completed",
-        this.getClusterStatusCompleted
-      );
-
-      const res = await to(
-        this.createClusterTask({
-          action: taskAction,
-          extra: {
-            title: this.$t("action." + taskAction),
-            isNotificationHidden: true,
-          },
-        })
-      );
-      const err = res[0];
-
-      if (err) {
-        console.error(`error creating task ${taskAction}`, err);
-        this.error.getClusterStatus = this.getErrorMessage(err);
-        this.loading.getClusterStatus = false;
-        return;
-      }
-    },
-    getClusterStatusCompleted(taskContext, taskResult) {
-      const clusterStatus = taskResult.output;
-      let nodes = clusterStatus.nodes.sort(this.sortByProperty("id"));
+    initNodes() {
       let usedNodes = this.domain.providers.map((provider) => provider.node);
+      const nodes = _cloneDeep(this.nodes);
 
       for (const node of nodes) {
         if (usedNodes.includes(node.id)) {
@@ -671,8 +629,7 @@ export default {
           node.selected = false;
         }
       }
-      this.nodes = nodes;
-      this.loading.getClusterStatus = false;
+      this.internalNodes = nodes;
     },
     deleteProvider() {
       if (this.domain.location == "internal") {

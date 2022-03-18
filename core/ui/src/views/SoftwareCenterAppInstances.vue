@@ -69,14 +69,20 @@
         </div>
       </div>
       <div class="bx--row">
-        <div v-if="loading.modules" class="bx--col-md-4 bx--col-max-4">
-          <cv-tile light>
-            <cv-skeleton-text
-              :paragraph="true"
-              :line-count="6"
-            ></cv-skeleton-text>
-          </cv-tile>
-        </div>
+        <template v-if="loading.modules">
+          <div
+            v-for="index in 2"
+            :key="index"
+            class="bx--col-md-4 bx--col-max-4"
+          >
+            <cv-tile light>
+              <cv-skeleton-text
+                :paragraph="true"
+                :line-count="8"
+              ></cv-skeleton-text>
+            </cv-tile>
+          </div>
+        </template>
         <div v-else-if="!app.installed.length" class="bx--col">
           <NsEmptyState :title="$t('software_center.no_instance_installed')">
             <template #description>
@@ -127,6 +133,15 @@
                   />
                 </cv-overflow-menu-item>
                 <cv-overflow-menu-item
+                  v-if="favoriteApps.includes(instance.id)"
+                  @click="removeAppFromFavorites(instance)"
+                >
+                  <NsMenuItem
+                    :icon="Star20"
+                    :label="$t('software_center.remove_from_favorites')"
+                  />
+                </cv-overflow-menu-item>
+                <cv-overflow-menu-item
                   @click="showSetInstanceLabelModal(instance)"
                 >
                   <NsMenuItem
@@ -134,13 +149,19 @@
                     :label="$t('software_center.edit_instance_label')"
                   />
                 </cv-overflow-menu-item>
+                <cv-overflow-menu-item @click="showCloneAppModal(instance)">
+                  <NsMenuItem
+                    :icon="Copy20"
+                    :label="$t('software_center.clone')"
+                  />
+                </cv-overflow-menu-item>
                 <cv-overflow-menu-item
-                  v-if="favoriteApps.includes(instance.id)"
-                  @click="removeAppFromFavorites(instance)"
+                  @click="showMoveAppModal(instance)"
+                  :disabled="nodes.length < 2"
                 >
                   <NsMenuItem
-                    :icon="Star20"
-                    :label="$t('software_center.remove_from_favorites')"
+                    :icon="ArrowRight20"
+                    :label="$t('software_center.move')"
                   />
                 </cv-overflow-menu-item>
                 <NsMenuDivider />
@@ -202,8 +223,8 @@
     <!-- uninstall instance modal -->
     <NsModal
       size="default"
-      :visible="isUninstallModalShown"
-      @modal-hidden="isUninstallModalShown = false"
+      :visible="isShownUninstallModal"
+      @modal-hidden="isShownUninstallModal = false"
       @primary-click="uninstallInstance"
     >
       <template v-if="instanceToUninstall" slot="title">{{
@@ -212,15 +233,16 @@
         })
       }}</template>
       <template v-if="instanceToUninstall" slot="content">
-        <div class="mg-bottom-md">
-          {{
-            $t("software_center.about_to_uninstall_instance", {
+        <div
+          class="mg-bottom-md"
+          v-html="
+            $t('software_center.about_to_uninstall_instance', {
               instance: instanceToUninstall.ui_name
                 ? `${instanceToUninstall.ui_name} (${instanceToUninstall.id})`
                 : instanceToUninstall.id,
             })
-          }}
-        </div>
+          "
+        ></div>
         <div v-if="error.removeModule">
           <NsInlineNotification
             kind="error"
@@ -280,6 +302,15 @@
         $t("software_center.edit_instance_label")
       }}</template>
     </NsModal>
+    <CloneOrMoveAppModal
+      :isShown="cloneOrMove.isModalShown"
+      :isClone="cloneOrMove.isClone"
+      :instanceId="cloneOrMove.instanceId"
+      :instanceUiName="cloneOrMove.instanceUiName"
+      :installationNode="cloneOrMove.installationNode"
+      @hide="cloneOrMove.isModalShown = false"
+      @cloneOrMoveCompleted="listModules"
+    />
   </div>
 </template>
 
@@ -293,10 +324,11 @@ import {
   IconService,
 } from "@nethserver/ns8-ui-lib";
 import { mapState, mapActions } from "vuex";
+import CloneOrMoveAppModal from "@/components/software-center/CloneOrMoveAppModal";
 
 export default {
   name: "SoftwareCenterAppInstances",
-  components: { InstallAppModal },
+  components: { InstallAppModal, CloneOrMoveAppModal },
   mixins: [TaskService, UtilService, IconService, QueryParamService],
   pageTitle() {
     return this.$t("software_center.app_instances_no_name");
@@ -307,11 +339,18 @@ export default {
       app: null,
       isShownInstallModal: false,
       isShownEditInstanceLabel: false,
-      isUninstallModalShown: false,
+      isShownUninstallModal: false,
       appToUninstall: null,
       instanceToUninstall: null,
       currentInstance: null,
       newInstanceLabel: "",
+      cloneOrMove: {
+        isModalShown: false,
+        isClone: true,
+        instanceId: "",
+        instanceUiName: "",
+        installationNode: 0,
+      },
       loading: {
         modules: true,
         setInstanceLabel: false,
@@ -341,7 +380,7 @@ export default {
     this.listModules();
   },
   computed: {
-    ...mapState(["favoriteApps"]),
+    ...mapState(["favoriteApps", "nodes"]),
   },
   methods: {
     ...mapActions(["setAppDrawerShownInStore"]),
@@ -466,7 +505,7 @@ export default {
       this.appToUninstall = app;
       this.instanceToUninstall = instance;
       this.error.removeModule = "";
-      this.isUninstallModalShown = true;
+      this.isShownUninstallModal = true;
     },
     async uninstallInstance() {
       this.error.removeModule = "";
@@ -510,7 +549,7 @@ export default {
         this.error.removeModule = this.getErrorMessage(err);
         return;
       }
-      this.isUninstallModalShown = false;
+      this.isShownUninstallModal = false;
     },
     removeModuleAborted(taskResult, taskContext) {
       console.error(`${taskContext.action} aborted`, taskResult);
@@ -572,6 +611,20 @@ export default {
 
       // update instance label in app drawer
       this.$root.$emit("reloadAppDrawer");
+    },
+    showCloneAppModal(instance) {
+      this.cloneOrMove.isClone = true;
+      this.cloneOrMove.instanceId = instance.id;
+      this.cloneOrMove.instanceUiName = instance.ui_name;
+      this.cloneOrMove.installationNode = parseInt(instance.node);
+      this.cloneOrMove.isModalShown = true;
+    },
+    showMoveAppModal(instance) {
+      this.cloneOrMove.isClone = false;
+      this.cloneOrMove.instanceId = instance.id;
+      this.cloneOrMove.instanceUiName = instance.ui_name;
+      this.cloneOrMove.installationNode = parseInt(instance.node);
+      this.cloneOrMove.isModalShown = true;
     },
   },
 };
