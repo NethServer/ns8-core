@@ -320,24 +320,6 @@ export default {
   },
   methods: {
     ...mapActions(["setUpdatesInStore"]),
-    async retrieveClusterNodes() {
-      // get cluster nodes
-      const [errNodes, responseNodes] = await to(this.getNodes());
-
-      if (errNodes) {
-        console.error("error retrieving cluster nodes", errNodes);
-        this.error.nodes = this.getErrorMessage(errNodes);
-        return;
-      }
-
-      let nodes = responseNodes.data.data.list;
-      nodes = nodes.map((n) => {
-        return { id: n, selected: false };
-      });
-      nodes[0].selected = true;
-
-      this.nodes = nodes;
-    },
     async listModules() {
       this.loading.modules = true;
       this.error.listModules = "";

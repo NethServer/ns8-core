@@ -109,7 +109,7 @@ export default {
     };
   },
   computed: {
-    ...mapState(["nodes"]),
+    ...mapState(["clusterNodes"]),
     stepIndex() {
       return this.steps.indexOf(this.step);
     },

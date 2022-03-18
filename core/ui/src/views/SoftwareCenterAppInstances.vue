@@ -157,7 +157,7 @@
                 </cv-overflow-menu-item>
                 <cv-overflow-menu-item
                   @click="showMoveAppModal(instance)"
-                  :disabled="nodes.length < 2"
+                  :disabled="clusterNodes.length < 2"
                 >
                   <NsMenuItem
                     :icon="ArrowRight20"
@@ -380,7 +380,7 @@ export default {
     this.listModules();
   },
   computed: {
-    ...mapState(["favoriteApps", "nodes"]),
+    ...mapState(["favoriteApps", "clusterNodes"]),
   },
   methods: {
     ...mapActions(["setAppDrawerShownInStore"]),

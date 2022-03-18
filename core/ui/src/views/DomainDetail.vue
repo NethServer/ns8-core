@@ -526,7 +526,7 @@ export default {
     };
   },
   computed: {
-    ...mapState(["nodes"]),
+    ...mapState(["clusterNodes"]),
     unconfiguredProviders() {
       if (!this.domain) {
         return [];
@@ -614,7 +614,7 @@ export default {
     },
     initNodes() {
       let usedNodes = this.domain.providers.map((provider) => provider.node);
-      const nodes = _cloneDeep(this.nodes);
+      const nodes = _cloneDeep(this.clusterNodes);
 
       for (const node of nodes) {
         if (usedNodes.includes(node.id)) {

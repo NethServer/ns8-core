@@ -104,7 +104,7 @@ export default {
       "setLeaderListenPortInStore",
       "setWebsocketConnectedInStore",
       "setClusterLabelInStore",
-      "setNodesInStore",
+      "setClusterNodesInStore",
     ]),
     configureKeyboardShortcuts(window) {
       window.addEventListener(
@@ -333,7 +333,7 @@ export default {
 
           // update nodes in vuex store
           const nodes = clusterStatus.nodes.sort(this.sortByProperty("id"));
-          this.setNodesInStore(nodes);
+          this.setClusterNodesInStore(nodes);
         }
       }
 

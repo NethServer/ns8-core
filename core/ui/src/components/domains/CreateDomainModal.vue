@@ -450,10 +450,10 @@ export default {
     };
   },
   computed: {
-    ...mapState(["nodes"]),
+    ...mapState(["clusterNodes"]),
     nextButtonLabel() {
       if (
-        (this.nodes.length == 1 && this.step == "instance") ||
+        (this.clusterNodes.length == 1 && this.step == "instance") ||
         this.step == "node"
       ) {
         return this.$t("domains.install_provider");
@@ -566,7 +566,7 @@ export default {
           }
           break;
         case "instance":
-          if (this.nodes.length > 1) {
+          if (this.clusterNodes.length > 1) {
             this.step = "node";
           } else {
             this.step = "installingProvider";

@@ -188,7 +188,7 @@ export default {
     };
   },
   computed: {
-    ...mapState(["nodes"]),
+    ...mapState(["clusterNodes"]),
   },
   created() {
     this.initTimeFilters();
@@ -228,7 +228,7 @@ export default {
     initNodes() {
       let nodes = [];
 
-      for (let node of this.nodes) {
+      for (let node of this.clusterNodes) {
         nodes.push({
           name: node.hostname,
           label: node.ui_name

@@ -13,7 +13,9 @@
             </cv-breadcrumb-item>
             <cv-breadcrumb-item>
               <span>{{
-                nodeLabel ? nodeLabel : $t("common.node") + " " + nodeId
+                nodeLabel
+                  ? nodeLabel + " (" + $t("common.node") + " " + nodeId + ")"
+                  : $t("common.node") + " " + nodeId
               }}</span>
             </cv-breadcrumb-item>
           </cv-breadcrumb>
@@ -22,7 +24,11 @@
       <div class="bx--row">
         <div class="bx--col-lg-16 page-subtitle title-and-role">
           <h3 class="title">
-            {{ nodeLabel ? nodeLabel : $t("common.node") + " " + nodeId }}
+            {{
+              nodeLabel
+                ? nodeLabel + " (" + $t("common.node") + " " + nodeId + ")"
+                : $t("common.node") + " " + nodeId
+            }}
           </h3>
           <cv-tag
             v-if="isLeader"
@@ -397,7 +403,7 @@ export default {
     clearInterval(this.clusterStatusInterval);
   },
   methods: {
-    ...mapActions(["setNodesInStore"]),
+    ...mapActions(["setClusterNodesInStore"]),
     async retrieveNodeStatus() {
       if (!this.isOnline) {
         return;
@@ -481,7 +487,6 @@ export default {
     },
     getClusterStatusCompleted(taskContext, taskResult) {
       const clusterStatus = taskResult.output;
-
       const currentNode = clusterStatus.nodes.find(
         (node) => node.id == this.nodeId
       );
@@ -493,7 +498,7 @@ export default {
 
       // update nodes in vuex store
       const nodes = clusterStatus.nodes.sort(this.sortByProperty("id"));
-      this.setNodesInStore(nodes);
+      this.setClusterNodesInStore(nodes);
     },
   },
 };

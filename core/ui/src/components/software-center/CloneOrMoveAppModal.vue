@@ -11,19 +11,17 @@
     "
   >
     <template slot="title">{{
-      isClone
-        ? $t("software_center.clone_instance")
-        : $t("software_center.move_instance")
+      isClone ? $t("software_center.clone_app") : $t("software_center.move_app")
     }}</template>
     <template slot="content">
       <div
         class="mg-bottom-md"
         v-html="
           isClone
-            ? $t('software_center.clone_instance_description', {
+            ? $t('software_center.clone_app_description', {
                 instanceLabel,
               })
-            : $t('software_center.move_instance_description', { instanceLabel })
+            : $t('software_center.move_app_description', { instanceLabel })
         "
       ></div>
       <div>{{ $t("software_center.select_destination_node") }}</div>
@@ -44,9 +42,7 @@
     </template>
     <template slot="secondary-button">{{ $t("common.cancel") }}</template>
     <template slot="primary-button">{{
-      isClone
-        ? $t("software_center.clone_instance")
-        : $t("software_center.move_instance")
+      isClone ? $t("software_center.clone_app") : $t("software_center.move_app")
     }}</template>
   </NsModal>
 </template>
@@ -95,7 +91,7 @@ export default {
     };
   },
   computed: {
-    ...mapState(["nodes"]),
+    ...mapState(["clusterNodes"]),
     instanceLabel() {
       if (this.instanceUiName) {
         return `${this.instanceUiName} (${this.instanceId})`;
@@ -131,14 +127,14 @@ export default {
       const shortInstanceLabel = this.instanceUiName || this.instanceId;
       const shortNodeLabel =
         this.selectedNode.ui_name ||
-        this.$t("common.node") + this.selectedNode.id;
+        this.$t("common.node") + ` ${this.selectedNode.id}`;
 
       const notificationTitle = this.isClone
-        ? this.$t("software_center.clone_instance_to_node", {
+        ? this.$t("software_center.clone_app_to_node", {
             instance: shortInstanceLabel,
             node: shortNodeLabel,
           })
-        : this.$t("software_center.move_instance_to_node", {
+        : this.$t("software_center.move_app_to_node", {
             instance: shortInstanceLabel,
             node: shortNodeLabel,
           });

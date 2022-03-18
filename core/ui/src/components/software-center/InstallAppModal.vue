@@ -12,7 +12,7 @@
     }}</template>
     <template v-if="app" slot="content">
       <cv-form @submit.prevent="installInstance">
-        <template v-if="nodes.length > 1">
+        <template v-if="clusterNodes.length > 1">
           <div
             v-html="
               $t('software_center.choose_node_for_installation', {
@@ -74,15 +74,15 @@ export default {
     };
   },
   computed: {
-    ...mapState(["nodes"]),
+    ...mapState(["clusterNodes"]),
     firstNodeLabel() {
-      if (this.nodes.length && this.nodes[0]) {
-        if (this.nodes[0].ui_name) {
-          return `${this.nodes[0].ui_name} (${this.$t("common.node")} ${
-            this.nodes[0].id
+      if (this.clusterNodes.length && this.clusterNodes[0]) {
+        if (this.clusterNodes[0].ui_name) {
+          return `${this.clusterNodes[0].ui_name} (${this.$t("common.node")} ${
+            this.clusterNodes[0].id
           })`;
         } else {
-          return `${this.$t("common.node")} ${this.nodes[0].id}`;
+          return `${this.$t("common.node")} ${this.clusterNodes[0].id}`;
         }
       } else {
         return "";
@@ -97,8 +97,8 @@ export default {
     },
   },
   created() {
-    if (this.nodes.length == 1) {
-      this.selectedNode = this.nodes[0];
+    if (this.clusterNodes.length == 1) {
+      this.selectedNode = this.clusterNodes[0];
     }
   },
   methods: {

@@ -67,7 +67,7 @@ export default {
     };
   },
   computed: {
-    ...mapState(["nodes"]),
+    ...mapState(["clusterNodes"]),
     selectedNode() {
       return this.internalNodes.find((n) => n.selected);
     },
@@ -85,7 +85,7 @@ export default {
   },
   methods: {
     updateNodes() {
-      const nodes = _cloneDeep(this.nodes);
+      const nodes = _cloneDeep(this.clusterNodes);
 
       for (const node of nodes) {
         node.selected = false;

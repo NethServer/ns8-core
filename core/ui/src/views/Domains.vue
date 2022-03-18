@@ -356,7 +356,7 @@ export default {
     };
   },
   computed: {
-    ...mapState(["nodes"]),
+    ...mapState(["clusterNodes"]),
     hasUnconfiguredDomainsOrProviders() {
       return (
         this.unconfiguredDomains.length ||
