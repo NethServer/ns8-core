@@ -23,13 +23,12 @@
 package main
 
 import (
-	"github.com/NethServer/ns8-scratchpad/core/api-server/socket"
-
-	"encoding/json"
-	"github.com/NethServer/ns8-scratchpad/core/api-server/models"
-	"github.com/NethServer/ns8-scratchpad/core/api-server/utils"
+	"github.com/NethServer/ns8-core/core/api-server/models"
+	"github.com/NethServer/ns8-core/core/api-server/socket"
+	"github.com/NethServer/ns8-core/core/api-server/utils"
 	"github.com/pkg/errors"
 
+	"encoding/json"
 	"fmt"
 	"os"
 	"sync"
@@ -54,7 +53,7 @@ var RootCmd = &cobra.Command{
 	Short: "api-server-logs is a wrapper of api-server websocket logs",
 }
 
-var versionCmd = &cobra.Command{
+var VersionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "show api-server-logs version",
 	Run: func(cmd *cobra.Command, args []string) {
@@ -66,13 +65,13 @@ var LogsCmd = &cobra.Command{
 	Use:   "logs",
 	Short: "get logs of a specific entity. default: cluster",
 	Run: func(cmd *cobra.Command, args []string) {
-		logs()
+		Logs()
 	},
 }
 
 func Execute() {
 	// add commands
-	RootCmd.AddCommand(versionCmd)
+	RootCmd.AddCommand(VersionCmd)
 	RootCmd.AddCommand(LogsCmd)
 
 	// define logs command flags
@@ -91,13 +90,13 @@ func Execute() {
 	}
 }
 
-func logs() {
+func Logs() {
 	// set wait group for commands
 	var wg sync.WaitGroup
 	wg.Add(1)
 
 	// define payload
-	msg := `
+	payload := `
   {
    "action": "logs-start",
    "payload": {
@@ -115,7 +114,7 @@ func logs() {
 
 	// init command to execute
 	var action models.SocketAction
-	if errAction := json.Unmarshal([]byte(msg), &action); errAction != nil {
+	if errAction := json.Unmarshal([]byte(payload), &action); errAction != nil {
 		utils.LogError(errors.Wrap(errAction, "[LOG-CLI] error in Action json unmarshal"))
 	}
 
