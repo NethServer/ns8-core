@@ -79,5 +79,3 @@ agent.tasks.runp_nowait(
 )
 
 agent.assert_exp(update_errors == 0)
-
-json.dump({}, fp=sys.stdout)

@@ -1,0 +1,63 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2021 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
+import json
+import agent
+import agent.tasks
+import sys, os
+import cluster.modules
+
+rdb = agent.redis_connect(privileged=True)
+
+# Update all core modules
+instances = dict()
+for mf in rdb.scan_iter('module/*/flags'):
+    flags = rdb.smembers(mf)
+    if 'core_module' in flags:
+        module_id = mf.removeprefix('module/').removesuffix('/flags')
+        image_url = rdb.hget(f'module/{module_id}/environment', 'IMAGE_URL')
+        image_id = agent.get_image_name_from_url(image_url)
+        if image_id not in instances.keys():
+            instances[image_id] = {'instances': [], 'url': ''}
+            instances[image_id]['url'] = cluster.modules.get_latest_module(image_id, rdb)
+        instances[image_id]['instances'].append(module_id)
+
+update_module_tasks = []
+for mid in instances.keys():
+    update_module_tasks.append({
+        'agent_id': 'cluster',
+        "action": "update-module",
+        "data": {
+            "module_url": instances[mid]['url'],
+            "instances":  instances[mid]['instances']
+        }
+    })
+
+
+update_module_errors = agent.tasks.runp_brief(update_module_tasks,
+    endpoint = "redis://cluster-leader",
+    progress_callback=agent.get_progress_callback(75, 95),
+)
+
+agent.assert_exp(update_module_errors == 0)
+
+json.dump({}, fp=sys.stdout)
