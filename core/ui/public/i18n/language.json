@@ -525,6 +525,7 @@
     "current_node": "Current node",
     "clone_app_to_node": "Clone {instance} to {node}",
     "move_app_to_node": "Move {instance} to {node}",
+    "uninstall_app": "Uninstall <strong>{name}</strong>? App data will be deleted as well. This action is <strong>NOT</strong> reversible",
     "app_categories": {
       "collaboration": "Collaboration",
       "system_administration": "System administration",

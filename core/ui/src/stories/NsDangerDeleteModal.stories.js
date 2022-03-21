@@ -25,4 +25,7 @@ Default.args = {
   description:
     "Do you really want to delete this object? This action is irreversible",
   typeToConfirm: "",
+  isErrorShown: false,
+  errorTitle: "",
+  errorDescription: "",
 };

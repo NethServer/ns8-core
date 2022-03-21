@@ -221,42 +221,31 @@
       @installationCompleted="listModules"
     />
     <!-- uninstall instance modal -->
-    <NsModal
-      size="default"
-      :visible="isShownUninstallModal"
-      @modal-hidden="isShownUninstallModal = false"
-      @primary-click="uninstallInstance"
-    >
-      <template v-if="instanceToUninstall" slot="title">{{
-        $t("software_center.app_uninstallation", {
-          app: appToUninstall.name,
+    <NsDangerDeleteModal
+      :isShown="isShownUninstallModal"
+      :name="instanceToUninstall ? instanceToUninstall.id : ''"
+      :title="
+        $t('software_center.app_uninstallation', {
+          app: instanceToUninstallLabel,
         })
-      }}</template>
-      <template v-if="instanceToUninstall" slot="content">
-        <div
-          class="mg-bottom-md"
-          v-html="
-            $t('software_center.about_to_uninstall_instance', {
-              instance: instanceToUninstall.ui_name
-                ? `${instanceToUninstall.ui_name} (${instanceToUninstall.id})`
-                : instanceToUninstall.id,
-            })
-          "
-        ></div>
-        <div v-if="error.removeModule">
-          <NsInlineNotification
-            kind="error"
-            :title="$t('action.remove-module')"
-            :description="error.removeModule"
-            :showCloseButton="false"
-          />
-        </div>
-      </template>
-      <template slot="secondary-button">{{ $t("common.cancel") }}</template>
-      <template slot="primary-button">{{
-        $t("software_center.uninstall_instance")
-      }}</template>
-    </NsModal>
+      "
+      :warning="$t('common.please_read_carefully')"
+      :description="
+        $t('software_center.uninstall_app', {
+          name: instanceToUninstallLabel,
+        })
+      "
+      :typeToConfirm="
+        $t('common.type_to_confirm', {
+          name: instanceToUninstall ? instanceToUninstall.id : '',
+        })
+      "
+      :isErrorShown="!!error.removeModule"
+      :errorTitle="$t('action.remove-module')"
+      :errorDescription="error.removeModule"
+      @hide="isShownUninstallModal = false"
+      @confirmDelete="uninstallInstance"
+    />
     <!-- set instance label modal -->
     <NsModal
       size="default"
@@ -282,6 +271,7 @@
               :helper-text="$t('software_center.instance_label_tooltip')"
               maxlength="24"
               ref="newInstanceLabel"
+              data-modal-primary-focus
             >
             </cv-text-input>
             <div v-if="error.setInstanceLabel" class="bx--row">
@@ -381,6 +371,15 @@ export default {
   },
   computed: {
     ...mapState(["favoriteApps", "clusterNodes"]),
+    instanceToUninstallLabel() {
+      if (!this.instanceToUninstall) {
+        return "";
+      }
+
+      return this.instanceToUninstall.ui_name
+        ? `${this.instanceToUninstall.ui_name} (${this.instanceToUninstall.id})`
+        : this.instanceToUninstall.id;
+    },
   },
   methods: {
     ...mapActions(["setAppDrawerShownInStore"]),
@@ -564,10 +563,8 @@ export default {
     showSetInstanceLabelModal(instance) {
       this.currentInstance = instance;
       this.newInstanceLabel = instance.ui_name;
+      this.error.setInstanceLabel = "";
       this.isShownEditInstanceLabel = true;
-      setTimeout(() => {
-        this.focusElement("newInstanceLabel");
-      }, 300);
     },
     hideSetInstanceLabelModal() {
       this.isShownEditInstanceLabel = false;
