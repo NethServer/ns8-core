@@ -6,3 +6,7 @@ cat -
 echo ""
 echo "Environment variables:"
 env
+
+echo "Message sent to stderr" >&2
+
+echo "set-env IGNORED DURING_EVENTS" >&${AGENT_COMFD}

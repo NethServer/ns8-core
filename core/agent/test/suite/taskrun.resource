@@ -21,7 +21,7 @@ Start the agent
     Set Suite Variable    ${RDB}    ${redis_conn}
 
 Stop the agent and cleanup
-    Terminate All Processes
+    Terminate Process
     Flush the Redis database
 
 Flush the Redis database
@@ -43,7 +43,7 @@ Stop command monitoring and flush the database
 
 Wait until the agent log contains
     [Arguments]    ${pattern}
-    Wait Until Keyword Succeeds    ${2.0}    ${0.125}    Grep in the agent log  ${pattern}
+    Wait Until Keyword Succeeds    2s    125ms    Grep in the agent log  ${pattern}
 
 Grep in the agent log
     [Arguments]    ${pattern}

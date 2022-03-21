@@ -596,9 +596,8 @@ func listenEventsAsync(ctx context.Context, rdb *redis.Client, complete chan int
 
 	go func() {
 		for msg := range pubsub.Channel() {
-			log.Print(msg.Channel, msg.Payload)
+			log.Print(msg.Channel)
 		}
-		log.Print("Channel closed")
 		csyn <- 1
 	}()
 

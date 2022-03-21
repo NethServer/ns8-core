@@ -17,7 +17,12 @@ jobs:
           # Export test output
           mkdir -p tstate
           podman volume export tstate | tar -C tstate -v -x -f -
+        if: always()
       - uses: actions/upload-artifact@v2
         with:
           name: test-agent
           path: tstate/
+        if: always()
+      - run: podman stop -a
+        continue-on-error: true
+        if: always()
