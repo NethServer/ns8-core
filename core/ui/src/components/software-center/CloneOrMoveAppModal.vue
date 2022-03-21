@@ -112,12 +112,6 @@ export default {
         this.cloneModuleAborted
       );
 
-      // register to task validation
-      this.$root.$once(
-        `${taskAction}-validation-ok-${eventId}`,
-        this.cloneModuleValidationOk
-      );
-
       // register to task completion
       this.$root.$once(
         `${taskAction}-completed-${eventId}`,
@@ -162,16 +156,14 @@ export default {
         this.loading.cloneModule = false;
         return;
       }
-    },
-    cloneModuleAborted(taskResult, taskContext) {
-      console.error(`${taskContext.action} aborted`, taskResult);
-      this.loading.cloneModule = false;
-    },
-    cloneModuleValidationOk() {
       this.loading.cloneModule = false;
 
       // hide modal
       this.$emit("hide");
+    },
+    cloneModuleAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.loading.cloneModule = false;
     },
     cloneModuleCompleted() {
       // reload instances

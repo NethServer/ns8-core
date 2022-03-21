@@ -208,7 +208,9 @@
     "recent": "Recent",
     "no_notifications": "No notifications",
     "no_notifications_description": "You don't have any recent notifications yet",
-    "mark_all_read": "Mark all as read"
+    "mark_all_read": "Mark all as read",
+    "abort": "Abort",
+    "confirm_abort": "Confirm abort"
   },
   "task": {
     "task_failed": "Task <strong>{task}</strong> failed",
@@ -272,7 +274,8 @@
     "read-backup-repositories": "Read backup repositories",
     "restore-modules": "Restore apps",
     "clean-repositories-cache": "Reload software repos",
-    "clone-module": "Clone module"
+    "clone-module": "Clone module",
+    "cancel-task": "Cancel task"
   },
   "network": {
     "title": "Network"
