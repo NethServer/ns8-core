@@ -195,10 +195,10 @@ export default {
       this.loading.cloneModule = false;
     },
     cloneModuleCompleted(taskContext, taskResult) {
-      console.log("cloneModuleCompleted", taskResult.output); ////
+      const newModuleId = taskResult.output.module_id;
 
-      // reload instances
-      this.$emit("cloneOrMoveCompleted");
+      // reload instances and highlight cloned/moved instance
+      this.$emit("cloneOrMoveCompleted", newModuleId);
     },
     onSelectNode(selectedNode) {
       this.selectedNode = selectedNode;

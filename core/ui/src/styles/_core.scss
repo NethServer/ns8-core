@@ -756,3 +756,9 @@ ul.unordered-list {
     display: block;
   }
 }
+
+// highlight an element with a colored border
+.highlight-me {
+  outline-offset: -2px;
+  outline: 2px solid $interactive-01;
+}

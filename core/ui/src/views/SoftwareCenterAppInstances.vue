@@ -105,6 +105,10 @@
             light
             :title="instance.ui_name ? instance.ui_name : instance.id"
             :icon="Application32"
+            :class="{
+              'highlight-me':
+                isElementHighlighted && elementToHighlight == instance.id,
+            }"
           >
             <template #menu>
               <cv-overflow-menu
@@ -218,7 +222,7 @@
       :isShown="isShownInstallModal"
       :app="app"
       @close="isShownInstallModal = false"
-      @installationCompleted="listModules"
+      @installationCompleted="onInstallationCompleted"
     />
     <!-- uninstall instance modal -->
     <NsDangerDeleteModal
@@ -299,7 +303,7 @@
       :instanceUiName="cloneOrMove.instanceUiName"
       :installationNode="cloneOrMove.installationNode"
       @hide="cloneOrMove.isModalShown = false"
-      @cloneOrMoveCompleted="listModules"
+      @cloneOrMoveCompleted="onCloneOrMoveCompleted"
     />
   </div>
 </template>
@@ -334,6 +338,8 @@ export default {
       instanceToUninstall: null,
       currentInstance: null,
       newInstanceLabel: "",
+      elementToHighlight: "",
+      isElementHighlighted: false,
       cloneOrMove: {
         isModalShown: false,
         isClone: true,
@@ -416,6 +422,16 @@ export default {
       if (app) {
         app.installed.sort(this.sortModuleInstances());
         this.app = app;
+      }
+
+      // highlight instance
+      if (this.elementToHighlight) {
+        this.isElementHighlighted = true;
+
+        setTimeout(() => {
+          this.isElementHighlighted = false;
+          this.elementToHighlight = "";
+        }, 5000);
       }
     },
     isInstanceUpgradable(app, instance) {
@@ -622,6 +638,14 @@ export default {
       this.cloneOrMove.instanceUiName = instance.ui_name;
       this.cloneOrMove.installationNode = parseInt(instance.node);
       this.cloneOrMove.isModalShown = true;
+    },
+    onCloneOrMoveCompleted(newModuleId) {
+      this.elementToHighlight = newModuleId;
+      this.listModules();
+    },
+    onInstallationCompleted(newModuleId) {
+      this.elementToHighlight = newModuleId;
+      this.listModules();
     },
   },
 };

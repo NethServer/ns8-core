@@ -163,7 +163,8 @@ export default {
     addModuleCompleted(taskContext, taskResult) {
       const moduleId = taskResult.output.module_id;
 
-      this.$emit("installationCompleted");
+      // reload instances and highlight new instance
+      this.$emit("installationCompleted", moduleId);
 
       // show new app in app drawer
       this.$root.$emit("reloadAppDrawer");
