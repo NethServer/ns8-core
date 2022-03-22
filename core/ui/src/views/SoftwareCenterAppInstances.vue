@@ -69,14 +69,20 @@
         </div>
       </div>
       <div class="bx--row">
-        <div v-if="loading.modules" class="bx--col-md-4 bx--col-max-4">
-          <cv-tile light>
-            <cv-skeleton-text
-              :paragraph="true"
-              :line-count="6"
-            ></cv-skeleton-text>
-          </cv-tile>
-        </div>
+        <template v-if="loading.modules">
+          <div
+            v-for="index in 2"
+            :key="index"
+            class="bx--col-md-4 bx--col-max-4"
+          >
+            <cv-tile light>
+              <cv-skeleton-text
+                :paragraph="true"
+                :line-count="8"
+              ></cv-skeleton-text>
+            </cv-tile>
+          </div>
+        </template>
         <div v-else-if="!app.installed.length" class="bx--col">
           <NsEmptyState :title="$t('software_center.no_instance_installed')">
             <template #description>
@@ -99,6 +105,10 @@
             light
             :title="instance.ui_name ? instance.ui_name : instance.id"
             :icon="Application32"
+            :class="{
+              'highlight-me':
+                isElementHighlighted && elementToHighlight == instance.id,
+            }"
           >
             <template #menu>
               <cv-overflow-menu
@@ -127,6 +137,15 @@
                   />
                 </cv-overflow-menu-item>
                 <cv-overflow-menu-item
+                  v-if="favoriteApps.includes(instance.id)"
+                  @click="removeAppFromFavorites(instance)"
+                >
+                  <NsMenuItem
+                    :icon="Star20"
+                    :label="$t('software_center.remove_from_favorites')"
+                  />
+                </cv-overflow-menu-item>
+                <cv-overflow-menu-item
                   @click="showSetInstanceLabelModal(instance)"
                 >
                   <NsMenuItem
@@ -134,13 +153,19 @@
                     :label="$t('software_center.edit_instance_label')"
                   />
                 </cv-overflow-menu-item>
+                <cv-overflow-menu-item @click="showCloneAppModal(instance)">
+                  <NsMenuItem
+                    :icon="Copy20"
+                    :label="$t('software_center.clone')"
+                  />
+                </cv-overflow-menu-item>
                 <cv-overflow-menu-item
-                  v-if="favoriteApps.includes(instance.id)"
-                  @click="removeAppFromFavorites(instance)"
+                  @click="showMoveAppModal(instance)"
+                  :disabled="clusterNodes.length < 2"
                 >
                   <NsMenuItem
-                    :icon="Star20"
-                    :label="$t('software_center.remove_from_favorites')"
+                    :icon="ArrowRight20"
+                    :label="$t('software_center.move')"
                   />
                 </cv-overflow-menu-item>
                 <NsMenuDivider />
@@ -197,44 +222,34 @@
       :isShown="isShownInstallModal"
       :app="app"
       @close="isShownInstallModal = false"
-      @installationCompleted="listModules"
+      @installationCompleted="onInstallationCompleted"
     />
     <!-- uninstall instance modal -->
-    <NsModal
-      size="default"
-      :visible="isUninstallModalShown"
-      @modal-hidden="isUninstallModalShown = false"
-      @primary-click="uninstallInstance"
-    >
-      <template v-if="instanceToUninstall" slot="title">{{
-        $t("software_center.app_uninstallation", {
-          app: appToUninstall.name,
+    <NsDangerDeleteModal
+      :isShown="isShownUninstallModal"
+      :name="instanceToUninstall ? instanceToUninstall.id : ''"
+      :title="
+        $t('software_center.app_uninstallation', {
+          app: instanceToUninstallLabel,
         })
-      }}</template>
-      <template v-if="instanceToUninstall" slot="content">
-        <div class="mg-bottom-md">
-          {{
-            $t("software_center.about_to_uninstall_instance", {
-              instance: instanceToUninstall.ui_name
-                ? `${instanceToUninstall.ui_name} (${instanceToUninstall.id})`
-                : instanceToUninstall.id,
-            })
-          }}
-        </div>
-        <div v-if="error.removeModule">
-          <NsInlineNotification
-            kind="error"
-            :title="$t('action.remove-module')"
-            :description="error.removeModule"
-            :showCloseButton="false"
-          />
-        </div>
-      </template>
-      <template slot="secondary-button">{{ $t("common.cancel") }}</template>
-      <template slot="primary-button">{{
-        $t("software_center.uninstall_instance")
-      }}</template>
-    </NsModal>
+      "
+      :warning="$t('common.please_read_carefully')"
+      :description="
+        $t('software_center.uninstall_app', {
+          name: instanceToUninstallLabel,
+        })
+      "
+      :typeToConfirm="
+        $t('common.type_to_confirm', {
+          name: instanceToUninstall ? instanceToUninstall.id : '',
+        })
+      "
+      :isErrorShown="!!error.removeModule"
+      :errorTitle="$t('action.remove-module')"
+      :errorDescription="error.removeModule"
+      @hide="isShownUninstallModal = false"
+      @confirmDelete="uninstallInstance"
+    />
     <!-- set instance label modal -->
     <NsModal
       size="default"
@@ -260,6 +275,7 @@
               :helper-text="$t('software_center.instance_label_tooltip')"
               maxlength="24"
               ref="newInstanceLabel"
+              data-modal-primary-focus
             >
             </cv-text-input>
             <div v-if="error.setInstanceLabel" class="bx--row">
@@ -280,6 +296,15 @@
         $t("software_center.edit_instance_label")
       }}</template>
     </NsModal>
+    <CloneOrMoveAppModal
+      :isShown="cloneOrMove.isModalShown"
+      :isClone="cloneOrMove.isClone"
+      :instanceId="cloneOrMove.instanceId"
+      :instanceUiName="cloneOrMove.instanceUiName"
+      :installationNode="cloneOrMove.installationNode"
+      @hide="cloneOrMove.isModalShown = false"
+      @cloneOrMoveCompleted="onCloneOrMoveCompleted"
+    />
   </div>
 </template>
 
@@ -293,10 +318,11 @@ import {
   IconService,
 } from "@nethserver/ns8-ui-lib";
 import { mapState, mapActions } from "vuex";
+import CloneOrMoveAppModal from "@/components/software-center/CloneOrMoveAppModal";
 
 export default {
   name: "SoftwareCenterAppInstances",
-  components: { InstallAppModal },
+  components: { InstallAppModal, CloneOrMoveAppModal },
   mixins: [TaskService, UtilService, IconService, QueryParamService],
   pageTitle() {
     return this.$t("software_center.app_instances_no_name");
@@ -307,11 +333,20 @@ export default {
       app: null,
       isShownInstallModal: false,
       isShownEditInstanceLabel: false,
-      isUninstallModalShown: false,
+      isShownUninstallModal: false,
       appToUninstall: null,
       instanceToUninstall: null,
       currentInstance: null,
       newInstanceLabel: "",
+      elementToHighlight: "",
+      isElementHighlighted: false,
+      cloneOrMove: {
+        isModalShown: false,
+        isClone: true,
+        instanceId: "",
+        instanceUiName: "",
+        installationNode: 0,
+      },
       loading: {
         modules: true,
         setInstanceLabel: false,
@@ -341,7 +376,16 @@ export default {
     this.listModules();
   },
   computed: {
-    ...mapState(["favoriteApps"]),
+    ...mapState(["favoriteApps", "clusterNodes"]),
+    instanceToUninstallLabel() {
+      if (!this.instanceToUninstall) {
+        return "";
+      }
+
+      return this.instanceToUninstall.ui_name
+        ? `${this.instanceToUninstall.ui_name} (${this.instanceToUninstall.id})`
+        : this.instanceToUninstall.id;
+    },
   },
   methods: {
     ...mapActions(["setAppDrawerShownInStore"]),
@@ -378,6 +422,16 @@ export default {
       if (app) {
         app.installed.sort(this.sortModuleInstances());
         this.app = app;
+      }
+
+      // highlight instance
+      if (this.elementToHighlight) {
+        this.isElementHighlighted = true;
+
+        setTimeout(() => {
+          this.isElementHighlighted = false;
+          this.elementToHighlight = "";
+        }, 5000);
       }
     },
     isInstanceUpgradable(app, instance) {
@@ -466,7 +520,7 @@ export default {
       this.appToUninstall = app;
       this.instanceToUninstall = instance;
       this.error.removeModule = "";
-      this.isUninstallModalShown = true;
+      this.isShownUninstallModal = true;
     },
     async uninstallInstance() {
       this.error.removeModule = "";
@@ -510,7 +564,7 @@ export default {
         this.error.removeModule = this.getErrorMessage(err);
         return;
       }
-      this.isUninstallModalShown = false;
+      this.isShownUninstallModal = false;
     },
     removeModuleAborted(taskResult, taskContext) {
       console.error(`${taskContext.action} aborted`, taskResult);
@@ -525,10 +579,8 @@ export default {
     showSetInstanceLabelModal(instance) {
       this.currentInstance = instance;
       this.newInstanceLabel = instance.ui_name;
+      this.error.setInstanceLabel = "";
       this.isShownEditInstanceLabel = true;
-      setTimeout(() => {
-        this.focusElement("newInstanceLabel");
-      }, 300);
     },
     hideSetInstanceLabelModal() {
       this.isShownEditInstanceLabel = false;
@@ -572,6 +624,28 @@ export default {
 
       // update instance label in app drawer
       this.$root.$emit("reloadAppDrawer");
+    },
+    showCloneAppModal(instance) {
+      this.cloneOrMove.isClone = true;
+      this.cloneOrMove.instanceId = instance.id;
+      this.cloneOrMove.instanceUiName = instance.ui_name;
+      this.cloneOrMove.installationNode = parseInt(instance.node);
+      this.cloneOrMove.isModalShown = true;
+    },
+    showMoveAppModal(instance) {
+      this.cloneOrMove.isClone = false;
+      this.cloneOrMove.instanceId = instance.id;
+      this.cloneOrMove.instanceUiName = instance.ui_name;
+      this.cloneOrMove.installationNode = parseInt(instance.node);
+      this.cloneOrMove.isModalShown = true;
+    },
+    onCloneOrMoveCompleted(newModuleId) {
+      this.elementToHighlight = newModuleId;
+      this.listModules();
+    },
+    onInstallationCompleted(newModuleId) {
+      this.elementToHighlight = newModuleId;
+      this.listModules();
     },
   },
 };

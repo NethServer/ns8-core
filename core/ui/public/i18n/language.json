@@ -208,7 +208,9 @@
     "recent": "Recent",
     "no_notifications": "No notifications",
     "no_notifications_description": "You don't have any recent notifications yet",
-    "mark_all_read": "Mark all as read"
+    "mark_all_read": "Mark all as read",
+    "abort": "Abort",
+    "confirm_abort": "Confirm abort"
   },
   "task": {
     "task_failed": "Task <strong>{task}</strong> failed",
@@ -271,7 +273,9 @@
     "restore-cluster": "Restore cluster",
     "read-backup-repositories": "Read backup repositories",
     "restore-modules": "Restore apps",
-    "clean-repositories-cache": "Reload software repos"
+    "clean-repositories-cache": "Reload software repos",
+    "clone-module": "Clone module",
+    "cancel-task": "Cancel task"
   },
   "network": {
     "title": "Network"
@@ -493,15 +497,15 @@
     "source_package": "Source package",
     "authors": "Author | Authors",
     "app_installation": "Install {app}",
-    "choose_node_for_installation": "Select installation node for {app} v{version}",
-    "about_to_install_app": "{app} v{version} will be installed on {node}",
+    "choose_node_for_installation": "Select installation node for <strong>{app} v{version}</strong>",
+    "about_to_install_app": "<strong>{app} v{version}</strong> will be installed on <strong>{node}</strong>",
     "installing_on_node": "Installing on {node}",
     "instance_installed_on_node": "{module_id} installed on {node}",
     "app_instances": "{app} instances",
     "app_instances_no_name": "App instances",
     "app_uninstallation": "Uninstall {app}",
     "instance_uninstallation": "Uninstall {instance}",
-    "about_to_uninstall_instance": "{instance} will be uninstalled from the cluster",
+    "about_to_uninstall_instance": "<strong>{instance}</strong> will be uninstalled from the cluster",
     "uninstall_instance": "Uninstall instance",
     "uninstalling": "Uninstalling...",
     "no_instance_installed": "No instance installed",
@@ -511,6 +515,22 @@
     "edit_instance_label": "Edit instance label",
     "app_managed_in": "This app is managed in",
     "reload_software_repositories": "Reload software repos",
+    "clone": "Clone",
+    "move": "Move",
+    "clone_app": "Clone app",
+    "move_app": "Move app",
+    "clone_app_description": "Clone <strong>{instanceLabel}</strong> instance and data to any node. Current instance will be left untouched.",
+    "move_app_description": "Move <strong>{instanceLabel}</strong> instance and data to a different node.",
+    "select_destination_node": "Select destination node",
+    "current_node": "Current node",
+    "cloning_app_to_node": "Cloning {instance} to {node}",
+    "moving_app_to_node": "Moving {instance} to {node}",
+    "app_with_ui_name_cloned_to_node": "{instance} cloned to {node}",
+    "app_without_ui_name_cloned_to_node": "{instance} cloned to {node} as {module_id}",
+    "app_with_ui_name_moved_to_node": "{instance} moved to {node}",
+    "app_without_ui_name_moved_to_node": "{instance} moved to {node} as {module_id}",
+    "app_now_renamed": "{instance} (now {module_id})",
+    "uninstall_app": "Uninstall <strong>{name}</strong>? App data will be deleted as well. This action is <strong>NOT</strong> reversible",
     "app_categories": {
       "collaboration": "Collaboration",
       "system_administration": "System administration",
@@ -611,7 +631,7 @@
     "delete_internal_domain_confirm": "Delete internal domain <strong>{name}</strong>? All users, groups and account provider data will be deleted. This action is <strong>NOT</strong> reversible",
     "delete_external_domain_confirm": "Delete external domain <strong>{name}</strong>? Account provider data will be left intact, but if you change your mind you'll have to bind the external domain again",
     "unconfigured_domain": "Unconfigured domain",
-    "unconfigured_domains_or_providers_title": "There are one or more unconfigured domains or providers",
+    "unconfigured_domains_or_providers_title": "There are unconfigured domains or providers",
     "unconfigured_domains_or_providers_description": "You can resume their configuration or delete them",
     "resume_configuration": "Resume configuration",
     "installing_account_provider": "Installing account provider, please wait...",
@@ -684,7 +704,7 @@
     "provider_label": "Provider label",
     "provider_label_tooltip": "You can assign the provider an easy to remember name",
     "unconfigured_provider": "Unconfigured provider",
-    "unconfigured_providers_title": "There are one or more unconfigured providers",
+    "unconfigured_providers_title": "There are unconfigured providers",
     "unconfigured_providers_description": "You can resume their configuration or delete them"
   },
   "nodes": {

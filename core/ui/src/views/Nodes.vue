@@ -235,20 +235,13 @@ import {
   IconService,
 } from "@nethserver/ns8-ui-lib";
 import to from "await-to-js";
-import NodeService from "@/mixins/node";
-import { mapState } from "vuex";
+import { mapState, mapActions } from "vuex";
 import NodeCard from "@/components/misc/NodeCard";
 
 export default {
   name: "Nodes",
   components: { NodeCard },
-  mixins: [
-    TaskService,
-    UtilService,
-    IconService,
-    QueryParamService,
-    NodeService,
-  ],
+  mixins: [TaskService, UtilService, IconService, QueryParamService],
   pageTitle() {
     return this.$t("nodes.title");
   },
@@ -321,6 +314,7 @@ export default {
     clearInterval(this.refreshDataInterval);
   },
   methods: {
+    ...mapActions(["setClusterNodesInStore"]),
     retrieveJoinCode() {
       const loginInfo = this.getFromStorage("loginInfo");
 
@@ -366,7 +360,11 @@ export default {
     },
     getClusterStatusCompleted(taskContext, taskResult) {
       const clusterStatus = taskResult.output;
+
+      // update nodes in vuex store
       this.nodes = clusterStatus.nodes.sort(this.sortByProperty("id"));
+      this.setClusterNodesInStore(this.nodes);
+
       this.loading.nodes = false;
       this.retrieveNodesStatus();
     },

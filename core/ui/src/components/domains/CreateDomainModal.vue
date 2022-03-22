@@ -209,11 +209,7 @@
         <div>
           {{ $t("domains.choose_node_for_account_provider_installation") }}
         </div>
-        <NodeSelector
-          :nodes="nodes"
-          class="mg-top-lg"
-          @selectNode="onSelectNode"
-        />
+        <NodeSelector class="mg-top-lg" @selectNode="onSelectNode" />
       </template>
       <template v-if="step == 'installingProvider'">
         <NsInlineNotification
@@ -357,6 +353,7 @@ import {
 } from "@nethserver/ns8-ui-lib";
 import to from "await-to-js";
 import NodeSelector from "@/components/misc/NodeSelector";
+import { mapState } from "vuex";
 
 export default {
   name: "CreateDomainModal",
@@ -366,10 +363,6 @@ export default {
     isShown: {
       type: Boolean,
       default: true,
-    },
-    nodes: {
-      type: Array,
-      required: true,
     },
     isResumeConfiguration: {
       type: Boolean,
@@ -457,9 +450,10 @@ export default {
     };
   },
   computed: {
+    ...mapState(["clusterNodes"]),
     nextButtonLabel() {
       if (
-        (this.nodes.length == 1 && this.step == "instance") ||
+        (this.clusterNodes.length == 1 && this.step == "instance") ||
         this.step == "node"
       ) {
         return this.$t("domains.install_provider");
@@ -572,7 +566,7 @@ export default {
           }
           break;
         case "instance":
-          if (this.nodes.length > 1) {
+          if (this.clusterNodes.length > 1) {
             this.step = "node";
           } else {
             this.step = "installingProvider";

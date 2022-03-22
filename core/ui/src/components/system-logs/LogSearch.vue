@@ -55,7 +55,6 @@
               :auto-filter="true"
               :auto-highlight="true"
               :options="nodes"
-              :disabled="loadingNodes"
               class="mg-bottom-md"
               key="csbNode"
             >
@@ -271,12 +270,7 @@
             class="search-button mg-bottom-sm"
             :icon="Search20"
             :loading="loading.logs"
-            :disabled="
-              !isWebsocketConnected ||
-              loading.logs ||
-              loadingNodes ||
-              loadingApps
-            "
+            :disabled="!isWebsocketConnected || loading.logs || loadingApps"
             @click="logsStart"
             key="search"
             >{{
@@ -430,7 +424,6 @@ export default {
     mainSearch: Boolean,
     followLogs: Boolean,
     verticalLayout: Boolean,
-    loadingNodes: Boolean,
     loadingApps: Boolean,
     closeAriaLabel: { type: String, default: "Close modal" },
     light: Boolean,

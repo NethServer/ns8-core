@@ -81,16 +81,6 @@
         />
       </cv-column>
     </cv-row>
-    <cv-row v-if="error.getClusterStatus">
-      <cv-column>
-        <NsInlineNotification
-          kind="error"
-          :title="$t('action.get-cluster-status')"
-          :description="error.getClusterStatus"
-          :showCloseButton="false"
-        />
-      </cv-column>
-    </cv-row>
     <cv-row v-if="error.listInstalledModules">
       <cv-column>
         <NsInlineNotification
@@ -109,9 +99,8 @@
       >
         <LogSearch
           :searchId="searchId"
-          :nodes="nodes"
+          :nodes="internalNodes"
           :apps="apps"
-          :loadingNodes="loading.getClusterStatus"
           :loadingApps="loading.listInstalledModules"
           :verticalLayout="verticalLayout"
           :numSearches="searches.length"
@@ -157,6 +146,7 @@ import {
 } from "@nethserver/ns8-ui-lib";
 import { v4 as uuidv4 } from "uuid";
 import LogSearch from "@/components/system-logs/LogSearch.vue";
+import { mapState } from "vuex";
 
 export default {
   name: "SystemLogs",
@@ -185,23 +175,24 @@ export default {
         endDate: "",
         endTime: "",
       },
-      nodes: [],
+      internalNodes: [],
       apps: [],
       searches: [],
       verticalLayout: false,
       loading: {
-        getClusterStatus: false,
         listInstalledModules: false,
       },
       error: {
-        getClusterStatus: "",
         listInstalledModules: "",
       },
     };
   },
+  computed: {
+    ...mapState(["clusterNodes"]),
+  },
   created() {
     this.initTimeFilters();
-    this.getClusterStatus();
+    this.initNodes();
     this.listInstalledModules();
     this.addSearch();
   },
@@ -234,48 +225,10 @@ export default {
         this.scrollToElement(el);
       });
     },
-    async getClusterStatus() {
-      this.error.getClusterStatus = "";
-      this.loading.getClusterStatus = true;
-      const taskAction = "get-cluster-status";
-
-      // register to task error
-      this.$root.$off(taskAction + "-aborted");
-      this.$root.$once(taskAction + "-aborted", this.getClusterStatusAborted);
-
-      // register to task completion
-      this.$root.$once(
-        taskAction + "-completed",
-        this.getClusterStatusCompleted
-      );
-
-      const res = await to(
-        this.createClusterTask({
-          action: taskAction,
-          extra: {
-            title: this.$t("action." + taskAction),
-            isNotificationHidden: true,
-          },
-        })
-      );
-      const err = res[0];
-
-      if (err) {
-        console.error(`error creating task ${taskAction}`, err);
-        this.error.getClusterStatus = this.getErrorMessage(err);
-        return;
-      }
-    },
-    getClusterStatusAborted(taskResult, taskContext) {
-      console.error(`${taskContext.action} aborted`, taskResult);
-      this.error.getClusterStatus = this.$t("error.generic_error");
-      this.loading.getClusterStatus = false;
-    },
-    getClusterStatusCompleted(taskContext, taskResult) {
-      const clusterStatus = taskResult.output;
-
+    initNodes() {
       let nodes = [];
-      for (let node of clusterStatus.nodes) {
+
+      for (let node of this.clusterNodes) {
         nodes.push({
           name: node.hostname,
           label: node.ui_name
@@ -285,8 +238,7 @@ export default {
         });
       }
       nodes.sort(this.sortByProperty("label"));
-      this.nodes = nodes;
-      this.loading.getClusterStatus = false;
+      this.internalNodes = nodes;
     },
     async listInstalledModules() {
       this.loading.listInstalledModules = true;

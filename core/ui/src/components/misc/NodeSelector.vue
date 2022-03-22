@@ -2,7 +2,12 @@
   <div class="node-selector">
     <cv-grid class="mg-bottom-md no-padding">
       <cv-row>
-        <cv-column v-for="(node, index) in nodes" :key="index" :md="4" :max="4">
+        <cv-column
+          v-for="(node, index) in internalNodes"
+          :key="index"
+          :md="4"
+          :max="4"
+        >
           <NsTile
             :light="true"
             kind="selectable"
@@ -11,15 +16,21 @@
             :footerIcon="Chip20"
             @click="deselectOtherNodes(node)"
             class="min-height-card"
-            :disabled="node.unavailable"
+            :disabled="disabledNodes.includes(node.id)"
           >
             <h6>
               {{
                 node.ui_name ? node.ui_name : $t("common.node") + " " + node.id
               }}
             </h6>
-            <div v-if="node.ui_name" class="node-id">
+            <div v-if="node.ui_name" class="mg-top-md">
               {{ $t("common.node") }} {{ node.id }}
+            </div>
+            <div
+              v-if="extraInfoLabel && extraInfoNode == node.id"
+              class="mg-top-md"
+            >
+              {{ extraInfoLabel }}
             </div>
           </NsTile>
         </cv-column>
@@ -30,19 +41,35 @@
 
 <script>
 import { UtilService, IconService } from "@nethserver/ns8-ui-lib";
+import _cloneDeep from "lodash/cloneDeep";
+import { mapState } from "vuex";
 
 export default {
   name: "NodeSelector",
   mixins: [UtilService, IconService],
   props: {
-    nodes: {
+    extraInfoNode: {
+      type: Number,
+      default: 0,
+    },
+    extraInfoLabel: {
+      type: String,
+      default: "",
+    },
+    disabledNodes: {
       type: Array,
-      required: true,
+      default: () => [],
     },
   },
+  data() {
+    return {
+      internalNodes: [],
+    };
+  },
   computed: {
+    ...mapState(["clusterNodes"]),
     selectedNode() {
-      return this.nodes.find((n) => n.selected);
+      return this.internalNodes.find((n) => n.selected);
     },
   },
   watch: {
@@ -50,15 +77,28 @@ export default {
       this.$emit("selectNode", this.selectedNode);
     },
     nodes: function () {
-      this.$emit("selectNode", this.selectedNode);
+      this.updateNodes();
     },
   },
   created() {
-    this.$emit("selectNode", this.selectedNode);
+    this.updateNodes();
   },
   methods: {
+    updateNodes() {
+      const nodes = _cloneDeep(this.clusterNodes);
+
+      for (const node of nodes) {
+        node.selected = false;
+      }
+
+      if (nodes.length == 1) {
+        nodes[0].selected = true;
+      }
+      this.internalNodes = nodes;
+      this.$emit("selectNode", this.selectedNode);
+    },
     deselectOtherNodes(node) {
-      for (let n of this.nodes) {
+      for (let n of this.internalNodes) {
         if (n.id !== node.id) {
           n.selected = false;
         }
@@ -70,8 +110,4 @@ export default {
 
 <style scoped lang="scss">
 @import "../../styles/carbon-utils";
-
-.node-id {
-  margin-top: $spacing-05;
-}
 </style>

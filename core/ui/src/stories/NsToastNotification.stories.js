@@ -29,6 +29,8 @@ Default.args = {
   isRead: false,
   progress: 0,
   isProgressShown: false,
+  cancelLabel: "Abort",
+  confirmCancelLabel: "Confirm abort",
   closeAriaLabel: "Dismiss notification",
 };
 
@@ -42,6 +44,8 @@ Progress.args = {
   lowContrast: false,
   progress: 75,
   isProgressShown: true,
+  cancelLabel: "Abort",
+  confirmCancelLabel: "Confirm abort",
   timestamp: new Date(),
   isRead: false,
   closeAriaLabel: "Dismiss notification",

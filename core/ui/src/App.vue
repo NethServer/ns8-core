@@ -104,6 +104,7 @@ export default {
       "setLeaderListenPortInStore",
       "setWebsocketConnectedInStore",
       "setClusterLabelInStore",
+      "setClusterNodesInStore",
     ]),
     configureKeyboardShortcuts(window) {
       window.addEventListener(
@@ -293,20 +294,12 @@ export default {
       if (this.isMaster) {
         const clusterStatus = taskResult.output;
 
-        console.log("clusterStatus", clusterStatus); ////
-
         //// remove mock
         // clusterStatus.initialized = false; ////
 
         const isClusterInitialized = clusterStatus.initialized;
         this.setClusterInitializedInStore(isClusterInitialized);
-
-        // leader listen port
-        if (clusterStatus.nodes.length) {
-          const leaderNode = clusterStatus.nodes.find((el) => el.local);
-          const leaderListenPort = leaderNode.vpn.listen_port;
-          this.setLeaderListenPortInStore(leaderListenPort);
-        }
+        this.setLeaderListenPortAndNodesInStore(clusterStatus);
 
         if (this.isClusterInitialized) {
           this.onClusterInitialized();
@@ -325,18 +318,20 @@ export default {
     getClusterStatusCompleted(taskContext, taskResult) {
       if (this.isMaster) {
         const clusterStatus = taskResult.output;
-
-        console.log("clusterStatus", clusterStatus); ////
-
-        // leader listen port
-        if (clusterStatus.nodes.length) {
-          const leaderNode = clusterStatus.nodes.find((el) => el.local);
-          const leaderListenPort = leaderNode.vpn.listen_port;
-          this.setLeaderListenPortInStore(leaderListenPort);
-        }
+        this.setLeaderListenPortAndNodesInStore(clusterStatus);
       }
+    },
+    setLeaderListenPortAndNodesInStore(clusterStatus) {
+      if (clusterStatus.nodes.length) {
+        // set leader listen port in vuex store
+        const leaderNode = clusterStatus.nodes.find((el) => el.local);
+        const leaderListenPort = leaderNode.vpn.listen_port;
+        this.setLeaderListenPortInStore(leaderListenPort);
 
-      //// TODO later: update cluster status in vuex store?
+        // set nodes in vuex store
+        const nodes = clusterStatus.nodes.sort(this.sortByProperty("id"));
+        this.setClusterNodesInStore(nodes);
+      }
     },
     async listUpdates() {
       const taskAction = "list-updates";

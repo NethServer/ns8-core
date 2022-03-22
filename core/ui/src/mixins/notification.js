@@ -1,11 +1,15 @@
 import { mapState, mapActions, mapGetters } from "vuex";
 import to from "await-to-js";
-import { UtilService, NsToastNotification } from "@nethserver/ns8-ui-lib";
+import {
+  UtilService,
+  NsToastNotification,
+  TaskService,
+} from "@nethserver/ns8-ui-lib";
 import { v4 as uuidv4 } from "uuid";
 
 export default {
   name: "NotificationService",
-  mixins: [UtilService],
+  mixins: [UtilService, TaskService],
   computed: {
     ...mapState(["notifications"]),
     ...mapGetters(["getNotificationById", "getTaskById"]),
@@ -61,6 +65,8 @@ export default {
           lowContrast: false,
           showCloseButton: true,
           id: notification.id,
+          cancelLabel: this.$t("notification.abort"),
+          confirmCancelLabel: this.$t("notification.confirm_abort"),
         },
         listeners: {
           notificationAction: this.handleNotificationAction,
@@ -111,6 +117,39 @@ export default {
       } else {
         this.createNotification(notification);
       }
+    },
+    async handleCancelTask(notificationId) {
+      const taskAction = "cancel-task";
+      const eventId = this.getUuid();
+
+      // register to task error
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.cancelTaskAborted
+      );
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          data: {
+            task: notificationId,
+          },
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+            eventId,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        return;
+      }
+    },
+    cancelTaskAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
     },
     handleNotificationAction(notificationId) {
       const notification = this.getNotificationById(notificationId);

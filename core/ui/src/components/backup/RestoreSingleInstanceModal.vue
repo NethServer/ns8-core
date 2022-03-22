@@ -17,13 +17,6 @@
     <template slot="content">
       <cv-form>
         <NsInlineNotification
-          v-if="error.getClusterStatus"
-          kind="error"
-          :title="$t('action.get-cluster-status')"
-          :description="error.getClusterStatus"
-          :showCloseButton="false"
-        />
-        <NsInlineNotification
           v-if="error.readBackupRepositories"
           kind="error"
           :title="$t('action.read-backup-repositories')"
@@ -66,11 +59,7 @@
           <div>
             {{ $t("backup.select_restore_node") }}
           </div>
-          <NodeSelector
-            :nodes="nodes"
-            @selectNode="onSelectNode"
-            class="mg-top-lg"
-          />
+          <NodeSelector @selectNode="onSelectNode" class="mg-top-lg" />
           <NsInlineNotification
             v-if="error.restoreModule"
             kind="error"
@@ -89,6 +78,7 @@ import { UtilService, TaskService, IconService } from "@nethserver/ns8-ui-lib";
 import to from "await-to-js";
 import NodeSelector from "@/components/misc/NodeSelector";
 import RestoreSingleInstanceSelector from "@/components/backup/RestoreSingleInstanceSelector";
+import { mapState } from "vuex";
 
 export default {
   name: "RestoreSingleInstanceModal",
@@ -104,24 +94,22 @@ export default {
     return {
       step: "",
       steps: ["instance", "node"],
-      nodes: [],
       instances: [],
       selectedNode: null,
       selectedInstance: null,
       replaceExistingApp: false,
       loading: {
-        getClusterStatus: true,
         readBackupRepositories: true,
         restoreModule: false,
       },
       error: {
-        getClusterStatus: "",
         readBackupRepositories: "",
         restoreModule: "",
       },
     };
   },
   computed: {
+    ...mapState(["clusterNodes"]),
     stepIndex() {
       return this.steps.indexOf(this.step);
     },
@@ -165,7 +153,6 @@ export default {
         this.selectedInstance = null;
         this.replaceExistingApp = false;
         this.readBackupRepositories();
-        this.getClusterStatus();
       }
     },
   },
@@ -185,50 +172,6 @@ export default {
       if (!this.isFirstStep) {
         this.step = this.steps[this.stepIndex - 1];
       }
-    },
-    async getClusterStatus() {
-      this.error.getClusterStatus = "";
-      this.loading.getClusterStatus = true;
-      const taskAction = "get-cluster-status";
-
-      // register to task completion
-      this.$root.$once(
-        taskAction + "-completed",
-        this.getClusterStatusCompleted
-      );
-
-      const res = await to(
-        this.createClusterTask({
-          action: taskAction,
-          extra: {
-            title: this.$t("action." + taskAction),
-            isNotificationHidden: true,
-          },
-        })
-      );
-      const err = res[0];
-
-      if (err) {
-        console.error(`error creating task ${taskAction}`, err);
-        this.error.getClusterStatus = this.getErrorMessage(err);
-        return;
-      }
-    },
-    getClusterStatusCompleted(taskContext, taskResult) {
-      const clusterStatus = taskResult.output;
-      let nodes = clusterStatus.nodes.sort(this.sortByProperty("id"));
-
-      for (const node of nodes) {
-        node.selected = false;
-      }
-
-      if (nodes.length == 1) {
-        // select node if there's only one
-        nodes[0].selected = true;
-      }
-
-      this.nodes = nodes;
-      this.loading.getClusterStatus = false;
     },
     async readBackupRepositories() {
       this.error.readBackupRepositories = "";

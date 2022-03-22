@@ -793,7 +793,7 @@
               :href="this.joinEndpoint + '/cluster-admin/'"
               class="external-link-button"
             >
-              <NsButton kind="primary" :icon="Launch20">
+              <NsButton kind="primary" :icon="ArrowRight20">
                 {{ $t("init.redirect_cluster_link") }}
               </NsButton>
             </a>

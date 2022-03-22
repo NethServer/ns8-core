@@ -19,11 +19,7 @@
         <div>
           {{ $t("domains.choose_node_for_account_provider_installation") }}
         </div>
-        <NodeSelector
-          :nodes="nodes"
-          @selectNode="onSelectNode"
-          class="mg-top-lg"
-        />
+        <NodeSelector @selectNode="onSelectNode" class="mg-top-lg" />
       </template>
       <template v-if="step == 'installingProvider'">
         <NsInlineNotification
@@ -149,10 +145,6 @@ export default {
     isShown: {
       type: Boolean,
       default: true,
-    },
-    nodes: {
-      type: Array,
-      required: true,
     },
     domain: {
       type: Object,

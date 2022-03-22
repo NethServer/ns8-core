@@ -16,16 +16,6 @@
           />
         </div>
       </div>
-      <div v-if="error.getClusterStatus" class="bx--row">
-        <div class="bx--col">
-          <NsInlineNotification
-            kind="error"
-            :title="$t('action.get-cluster-status')"
-            :description="error.getClusterStatus"
-            :showCloseButton="false"
-          />
-        </div>
-      </div>
       <div v-if="error.removeModule" class="bx--row">
         <div class="bx--col">
           <NsInlineNotification
@@ -287,7 +277,6 @@
     <!-- create domain modal -->
     <CreateDomainModal
       :isShown="isShownCreateDomainModal"
-      :nodes="nodes"
       :isResumeConfiguration="createDomain.isResumeConfiguration"
       :providerId="createDomain.providerId"
       :isOpenLdap="createDomain.isOpenLdap"
@@ -328,6 +317,7 @@ import {
 } from "@nethserver/ns8-ui-lib";
 import CreateDomainModal from "@/components/domains/CreateDomainModal";
 import to from "await-to-js";
+import { mapState } from "vuex";
 
 export default {
   name: "Domains",
@@ -342,7 +332,6 @@ export default {
       isShownCreateDomainModal: false,
       domains: [],
       unconfiguredDomains: [],
-      nodes: [],
       isShownDeleteDomainModal: false,
       currentDomain: {
         name: "",
@@ -357,11 +346,9 @@ export default {
       domainToDelete: null,
       loading: {
         listUserDomains: true,
-        getClusterStatus: true,
       },
       error: {
         listUserDomains: "",
-        getClusterStatus: "",
         removeModule: "",
         removeExternalDomain: "",
         removeInternalDomain: "",
@@ -369,6 +356,7 @@ export default {
     };
   },
   computed: {
+    ...mapState(["clusterNodes"]),
     hasUnconfiguredDomainsOrProviders() {
       return (
         this.unconfiguredDomains.length ||
@@ -388,7 +376,6 @@ export default {
   },
   created() {
     this.listUserDomains();
-    this.retrieveClusterStatus();
   },
   methods: {
     goTo(path) {
@@ -423,8 +410,6 @@ export default {
       }
     },
     listUserDomainsCompleted(taskContext, taskResult) {
-      console.log("listUserDomainsCompleted", taskResult.output); ////
-
       let domains = taskResult.output.domains;
       if (domains.length) {
         domains.sort(this.sortByProperty("name"));
@@ -476,44 +461,6 @@ export default {
         name: "DomainDetail",
         params: { domainName: domain.name },
       });
-    },
-    async retrieveClusterStatus() {
-      this.error.getClusterStatus = "";
-      const taskAction = "get-cluster-status";
-
-      // register to task completion
-      this.$root.$once(
-        taskAction + "-completed",
-        this.getClusterStatusCompleted
-      );
-
-      const res = await to(
-        this.createClusterTask({
-          action: taskAction,
-          extra: {
-            title: this.$t("action." + taskAction),
-            isNotificationHidden: true,
-          },
-        })
-      );
-      const err = res[0];
-
-      if (err) {
-        console.error(`error creating task ${taskAction}`, err);
-        this.error.getClusterStatus = this.getErrorMessage(err);
-        return;
-      }
-    },
-    getClusterStatusCompleted(taskContext, taskResult) {
-      const clusterStatus = taskResult.output;
-      let nodes = clusterStatus.nodes.sort(this.sortByProperty("id"));
-
-      for (const node of nodes) {
-        node.selected = false;
-      }
-      nodes[0].selected = true;
-      this.nodes = nodes;
-      this.loading.getClusterStatus = false;
     },
     deleteDomain(domain) {
       this.isShownDeleteDomainModal = false;

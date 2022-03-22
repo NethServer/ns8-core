@@ -49,10 +49,10 @@
           :title="nodes.length.toString()"
           :description="$tc('common.nodes_c', nodes.length)"
           :icon="Chip32"
-          :loading="loading.nodes"
-          :isErrorShown="error.nodes"
+          :loading="loading.getClusterStatus"
+          :isErrorShown="error.getClusterStatus"
           :errorTitle="$t('error.cannot_retrieve_cluster_nodes')"
-          :errorDescription="error.nodes"
+          :errorDescription="error.getClusterStatus"
           class="min-height-card"
         >
           <template slot="content">
@@ -144,9 +144,8 @@
 
 <script>
 import NotificationService from "@/mixins/notification";
-import NodeService from "@/mixins/node";
 import Information16 from "@carbon/icons-vue/es/information/16";
-import { mapState } from "vuex";
+import { mapState, mapActions } from "vuex";
 import to from "await-to-js";
 import WebSocketService from "@/mixins/websocket";
 import {
@@ -166,7 +165,6 @@ export default {
     UtilService,
     TaskService,
     WebSocketService,
-    NodeService,
     IconService,
     StorageService,
   ],
@@ -187,14 +185,14 @@ export default {
       backups: [],
       instancesNotBackedUp: [],
       loading: {
-        nodes: true,
+        getClusterStatus: true,
         listInstalledModules: true,
         listBackups: true,
       },
       error: {
         name: "",
         email: "",
-        nodes: "",
+        getClusterStatus: "",
         listInstalledModules: "",
         listBackups: "",
       },
@@ -248,27 +246,67 @@ export default {
     next();
   },
   methods: {
+    ...mapActions(["setClusterNodesInStore"]),
     retrieveData() {
-      this.retrieveClusterNodes();
+      this.getClusterStatus();
       this.listInstalledModules();
       this.listBackups();
     },
-    async retrieveClusterNodes() {
-      //// retrieve cluster status instead of retrieveClusterNodes? It provides more info
-      this.loading.nodes = true;
-      const [errNodes, responseNodes] = await to(this.getNodes());
+    async getClusterStatus() {
+      this.error.getClusterStatus = "";
+      this.loading.getClusterStatus = true;
+      const taskAction = "get-cluster-status";
+      const eventId = this.getUuid();
 
-      if (errNodes) {
-        console.error("error retrieving cluster nodes", errNodes);
-        this.error.nodes = this.getErrorMessage(errNodes);
-        this.loading.nodes = false;
+      // register to task error
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.getClusterStatusAborted
+      );
+
+      // register to task completion
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.getClusterStatusCompleted
+      );
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+            eventId,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.getClusterStatus = this.getErrorMessage(err);
+        this.loading.getClusterStatus = false;
         return;
       }
+    },
+    getClusterStatusAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.getClusterStatus = this.$t("error.generic_error");
+      this.loading.getClusterStatus = false;
+    },
+    getClusterStatusCompleted(taskContext, taskResult) {
+      const clusterStatus = taskResult.output;
+      const nodes = clusterStatus.nodes.sort(this.sortByProperty("id"));
+      this.setClusterNodesInStore(nodes);
+      this.nodes = nodes;
 
-      this.nodes = responseNodes.data.data.list;
-      this.loading.nodes = false;
+      // update nodes in vuex store
+      this.setClusterNodesInStore(this.nodes);
+
+      this.loading.getClusterStatus = false;
     },
     async listInstalledModules() {
+      this.error.listInstalledModules = "";
       this.loading.listInstalledModules = true;
       const taskAction = "list-installed-modules";
       const eventId = this.getUuid();
@@ -387,6 +425,8 @@ export default {
 
 .card-row {
   margin-bottom: $spacing-05;
+  display: flex;
+  justify-content: center;
 }
 
 .card-row:last-child {

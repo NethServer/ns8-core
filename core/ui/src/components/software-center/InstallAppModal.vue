@@ -11,28 +11,17 @@
       $t("software_center.app_installation", { app: app.name })
     }}</template>
     <template v-if="app" slot="content">
-      <NsInlineNotification
-        v-if="error.getClusterStatus"
-        kind="error"
-        :title="$t('action.get-cluster-status')"
-        :description="error.getClusterStatus"
-        :showCloseButton="false"
-      />
       <cv-form @submit.prevent="installInstance">
-        <template v-if="nodes.length > 1">
-          <div>
-            {{
-              $t("software_center.choose_node_for_installation", {
+        <template v-if="clusterNodes.length > 1">
+          <div
+            v-html="
+              $t('software_center.choose_node_for_installation', {
                 app: app.name,
                 version: appVersion,
               })
-            }}
-          </div>
-          <NodeSelector
-            :nodes="nodes"
-            @selectNode="onSelectNode"
-            class="mg-top-lg"
-          />
+            "
+          ></div>
+          <NodeSelector @selectNode="onSelectNode" class="mg-top-lg" />
         </template>
         <div
           v-else
@@ -66,6 +55,7 @@ import { UtilService, TaskService, IconService } from "@nethserver/ns8-ui-lib";
 import to from "await-to-js";
 import NotificationService from "@/mixins/notification";
 import NodeSelector from "@/components/misc/NodeSelector";
+import { mapState } from "vuex";
 
 export default {
   name: "InstallAppModal",
@@ -77,26 +67,22 @@ export default {
   },
   data() {
     return {
-      nodes: [],
       selectedNode: null,
-      loading: {
-        getClusterStatus: true,
-      },
       error: {
         addModule: "",
-        getClusterStatus: "",
       },
     };
   },
   computed: {
+    ...mapState(["clusterNodes"]),
     firstNodeLabel() {
-      if (this.nodes.length && this.nodes[0]) {
-        if (this.nodes[0].ui_name) {
-          return `${this.nodes[0].ui_name} (${this.$t("common.node")} ${
-            this.nodes[0].id
+      if (this.clusterNodes.length && this.clusterNodes[0]) {
+        if (this.clusterNodes[0].ui_name) {
+          return `${this.clusterNodes[0].ui_name} (${this.$t("common.node")} ${
+            this.clusterNodes[0].id
           })`;
         } else {
-          return `${this.$t("common.node")} ${this.nodes[0].id}`;
+          return `${this.$t("common.node")} ${this.clusterNodes[0].id}`;
         }
       } else {
         return "";
@@ -111,55 +97,11 @@ export default {
     },
   },
   created() {
-    this.retrieveClusterStatus();
+    if (this.clusterNodes.length == 1) {
+      this.selectedNode = this.clusterNodes[0];
+    }
   },
   methods: {
-    async retrieveClusterStatus() {
-      this.error.getClusterStatus = "";
-      const taskAction = "get-cluster-status";
-
-      // register to task completion
-      this.$root.$once(
-        taskAction + "-completed",
-        this.getClusterStatusCompleted
-      );
-
-      const res = await to(
-        this.createClusterTask({
-          action: taskAction,
-          extra: {
-            title: this.$t("action." + taskAction),
-            isNotificationHidden: true,
-          },
-        })
-      );
-      const err = res[0];
-
-      if (err) {
-        console.error(`error creating task ${taskAction}`, err);
-        this.error.getClusterStatus = this.getErrorMessage(err);
-        return;
-      }
-    },
-    getClusterStatusCompleted(taskContext, taskResult) {
-      const clusterStatus = taskResult.output;
-      let nodes = clusterStatus.nodes.sort(this.sortByProperty("id"));
-
-      //// remove mock
-      // nodes.push({ id: 2, local: false, ui_name: "" }); ////
-
-      for (const node of nodes) {
-        node.selected = false;
-      }
-
-      if (nodes.length == 1) {
-        nodes[0].selected = true;
-        this.selectedNode = nodes[0];
-      }
-
-      this.nodes = nodes;
-      this.loading.getClusterStatus = false;
-    },
     async installInstance() {
       this.error.addModule = "";
       const taskAction = "add-module";
@@ -221,7 +163,8 @@ export default {
     addModuleCompleted(taskContext, taskResult) {
       const moduleId = taskResult.output.module_id;
 
-      this.$emit("installationCompleted");
+      // reload instances and highlight new instance
+      this.$emit("installationCompleted", moduleId);
 
       // show new app in app drawer
       this.$root.$emit("reloadAppDrawer");
