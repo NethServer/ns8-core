@@ -124,14 +124,36 @@ export default {
         this.$t("common.node") + ` ${this.selectedNode.id}`;
 
       const notificationTitle = this.isClone
-        ? this.$t("software_center.clone_app_to_node", {
+        ? this.$t("software_center.clone_app")
+        : this.$t("software_center.move_app");
+
+      const notificationDescription = this.isClone
+        ? this.$t("software_center.cloning_app_to_node", {
             instance: shortInstanceLabel,
             node: shortNodeLabel,
           })
-        : this.$t("software_center.move_app_to_node", {
+        : this.$t("software_center.moving_app_to_node", {
             instance: shortInstanceLabel,
             node: shortNodeLabel,
           });
+
+      let completionString = "";
+
+      if (this.instanceUiName) {
+        if (this.isClone) {
+          completionString = "software_center.app_with_ui_name_cloned_to_node";
+        } else {
+          completionString = "software_center.app_with_ui_name_moved_to_node";
+        }
+      } else {
+        if (this.isClone) {
+          completionString =
+            "software_center.app_without_ui_name_cloned_to_node";
+        } else {
+          completionString =
+            "software_center.app_without_ui_name_moved_to_node";
+        }
+      }
 
       const res = await to(
         this.createClusterTask({
@@ -143,7 +165,14 @@ export default {
           },
           extra: {
             title: notificationTitle,
-            description: this.$t("common.processing"),
+            description: notificationDescription,
+            instance: shortInstanceLabel,
+            node: shortNodeLabel,
+            completion: {
+              i18nString: completionString,
+              extraTextParams: ["node", "instance"],
+              outputTextParams: ["module_id"],
+            },
             eventId,
           },
         })
@@ -165,7 +194,9 @@ export default {
       console.error(`${taskContext.action} aborted`, taskResult);
       this.loading.cloneModule = false;
     },
-    cloneModuleCompleted() {
+    cloneModuleCompleted(taskContext, taskResult) {
+      console.log("cloneModuleCompleted", taskResult.output); ////
+
       // reload instances
       this.$emit("cloneOrMoveCompleted");
     },
