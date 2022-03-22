@@ -26,10 +26,11 @@ import agent
 import cluster.modules
 
 def get_module(source, modules):
+    ret = []
     for m in modules:
         if m["source"] == source:
-            return m
-    return None
+            ret.append(m)
+    return ret
 
 rdb = agent.redis_connect(privileged=True)
 installed = cluster.modules.list_installed(rdb, skip_core_modules = True)
@@ -44,8 +45,6 @@ for a in available:
     if a["source"] in installed.keys():
         a["installed"] = installed[a["source"]]
 
-    m = get_module(a["source"], updates)
-    if m is not None:
-        a["updates"].append(m)
+    a["updates"] = get_module(a["source"], updates)
 
 json.dump(available, fp=sys.stdout)
