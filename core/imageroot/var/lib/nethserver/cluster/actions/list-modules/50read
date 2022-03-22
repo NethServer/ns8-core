@@ -32,9 +32,9 @@ def get_module(source, modules):
     return None
 
 rdb = agent.redis_connect(privileged=True)
-installed = cluster.modules.list_installed(rdb)
-available = cluster.modules.list_available(rdb)
-updates = cluster.modules.list_updates(rdb)
+installed = cluster.modules.list_installed(rdb, skip_core_modules = True)
+available = cluster.modules.list_available(rdb, skip_core_modules = True)
+updates = cluster.modules.list_updates(rdb, skip_core_modules = True)
 
 # Prepare variables for later use
 for a in available:
