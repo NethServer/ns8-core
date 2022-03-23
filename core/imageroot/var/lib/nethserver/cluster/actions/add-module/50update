@@ -57,8 +57,13 @@ image_url = request['image']
 if "/" in request['image']:
     image_url = request['image']
 else:
-# search for the latest package inside the repository metadata
-    image_url = cluster.modules.get_latest_module(request['image'], rdb)
+    override = rdb.hget('cluster/override/modules', request['image'])
+    # use override from redis
+    if override:
+        image_url = override
+    else:
+    # search for the latest package inside the repository metadata
+        image_url = cluster.modules.get_latest_module(request['image'], rdb)
 
 image_id = agent.get_image_name_from_url(image_url)
 agent.assert_exp(image_url)
