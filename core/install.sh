@@ -22,6 +22,7 @@
 
 set -e
 
+core_url='ghcr.io/nethserver/core:latest'
 source /etc/os-release
 
 echo "Install dependencies:"
@@ -42,11 +43,21 @@ else
     exit 1
 fi
 
-core_url=${1:-ghcr.io/nethserver/core:latest}
+# Search for core image and prepare modules for next install script
+modules=()
+for arg in "${@}"; do
+    module=$(basename ${arg} | sed s/:.*//)
+    if [ "$module" == "core" ]; then
+        core_url=${arg}
+    else
+        modules+=(${arg})
+    fi
+done
+
 echo "Extracting core sources from ${core_url}:"
 mkdir -pv /var/lib/nethserver/node/state
 cid=$(podman create "${core_url}")
 podman export ${cid} | tar --totals -C / --no-overwrite-dir --no-same-owner -x -v -f - | LC_ALL=C sort | tee /var/lib/nethserver/node/state/coreimage.lst
 podman rm -f ${cid}
 
-/var/lib/nethserver/node/install-core.sh
+/var/lib/nethserver/node/install-core.sh "${modules[@]}"

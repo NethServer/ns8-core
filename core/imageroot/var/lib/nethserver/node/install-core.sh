@@ -154,6 +154,12 @@ cluster.grants.grant(rdb, action_clause="show-*", to_clause="reader", on_clause=
 cluster.grants.grant(rdb, action_clause="read-*", to_clause="reader", on_clause='node/1')
 EOF
 
+for arg in "${@}"; do
+    module=$(basename ${arg} | sed s/:.*//)
+    echo "Adding module override:  ${module} -> ${arg}"
+    redis-cli hset cluster/override/modules ${module} ${arg}
+done
+
 echo "Install Traefik:"
 add-module traefik 1
 
