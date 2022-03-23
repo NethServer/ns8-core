@@ -23,6 +23,10 @@ package main
 import (
 	"context"
 	"log"
+	"os"
+	"os/exec"
+	"strings"
+	"sync"
 
 	"github.com/NethServer/ns8-core/core/agent/models"
 	"github.com/go-redis/redis/v8"
@@ -30,29 +34,77 @@ import (
 
 func listenEventsAsync(ctx context.Context, rdb *redis.Client, complete chan int) {
 	pubsub := rdb.PSubscribe(ctx, "*/event/*")
-	defer func() {
-		pubsub.Close()
-		complete <- 1
-	}()
 
+	var wg sync.WaitGroup
 	csyn := make(chan int, 1)
 
 	go func() {
 		for msg := range pubsub.Channel() {
-			log.Print(msg.Channel)
+			if before, after, found := strings.Cut(msg.Channel, "/event/"); found {
+				go runEvent(&wg, &models.Event{Source: before, Payload: msg.Payload, Name: after})
+			}
 		}
 		csyn <- 1
 	}()
 
 	select {
 	case <-csyn:
-		return
 	case <-ctx.Done():
-		return
 	}
 
+	pubsub.Close()
+	wg.Wait() // wait for running event handlers completion
+	complete <- 1
 }
 
-func runEvent(actionCtx context.Context, task *models.Event) {
+func runEvent(wg *sync.WaitGroup, event *models.Event) {
+	wg.Add(1)
+	defer wg.Done()
 
+	var exitCode int = 0
+	var lastStep string = ""
+
+	// Get additional environment variables from the filesystem
+	environment := readEnvironmentFile()
+	handler := models.CreateEventHandler(event.Name, eventPaths) // global variable
+	for stepIndex, step := range handler.Steps {
+		lastStep = step.Name
+
+		handler.Status = "running"
+
+		cmd := exec.Command(step.Path)
+		cmd.Env = append(append(os.Environ(), environment...),
+			"AGENT_COMFD=2", // Commands are redirected to stderr
+			"AGENT_EVENT_NAME="+event.Name,
+			"AGENT_EVENT_SOURCE="+event.Source,
+		)
+		cmd.Stdin = strings.NewReader(event.Payload)
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+
+		log.Printf(SD_DEBUG + "Handler of %s/event/%s is starting step %s", event.Source, event.Name, step.Name)
+		if err := cmd.Start(); err != nil {
+			exitCode = 9
+			handler.Status = "aborted"
+			log.Printf(SD_ERR + "Handler of %s/event/%s failed at step %s: %v", event.Source, event.Name, step, err)
+			break
+		}
+
+		if err := cmd.Wait(); err != nil {
+			log.Print(SD_ERR, err)
+			exitCode = cmd.ProcessState.ExitCode()
+			if handler.Status == "running" {
+				handler.Status = "aborted"
+			}
+			break
+		}
+
+		handler.SetProgressAtStep(stepIndex, 100)
+	}
+
+	if exitCode == 0 {
+		handler.Status = "completed"
+	}
+
+	log.Printf("Handler of %s/event/%s exited with status \"%s\" (%d) at step %s", event.Source, event.Name, handler.Status, exitCode, lastStep)
 }

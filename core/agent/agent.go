@@ -67,7 +67,7 @@ func (v *flagStringSlice) Set(raw string) error {
 	return nil
 }
 
-func prepareActionEnvironment() []string {
+func readEnvironmentFile() []string {
 	env := make([]string, 0)
 	content, err := os.ReadFile("./environment")
 	if err != nil {
@@ -94,7 +94,7 @@ func main() {
 
 	// Parse command-line arguments
 	flag.Var(&actionPaths, "actionsdir", "Directory path with actions definition")
-	flag.Var(&actionPaths, "eventsdir", "Directory path with events definition")
+	flag.Var(&eventPaths, "eventsdir", "Directory path with events definition")
 	flag.StringVar(&agentPrefix, "agentid", "", "Agent ID and default Redis username")
 	flag.Parse()
 

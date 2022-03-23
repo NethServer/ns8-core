@@ -69,9 +69,8 @@ func runAction(actionCtx context.Context, task *models.Task) {
 		log.Printf(SD_ERR+"Action %s is not defined", task.Action)
 	}
 
-	// Get additional environment variables from Redis DB and
-	// other runtime sources
-	environment := dedupEnv(prepareActionEnvironment())
+	// Get additional environment variables from the filesystem
+	environment := readEnvironmentFile()
 
 	for stepIndex, step := range actionDescriptor.Steps {
 		lastStep = step.Name
