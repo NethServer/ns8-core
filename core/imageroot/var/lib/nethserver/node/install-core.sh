@@ -117,9 +117,8 @@ SET node/1/tcp_ports_sequence 20000
 EOF
 
     # Configure default module repository
-    # FIXME: remove testing flag before official release
     cat <<EOF
-HSET cluster/repository/default url https://raw.githubusercontent.com/NethServer/ns8-repomd/${REPOBRANCH:-repomd}/ status 1 testing 1
+HSET cluster/repository/default url ${REPOMD:-https://raw.githubusercontent.com/NethServer/ns8-repomd/repomd}/ status 1 testing ${TESTING:-0}
 EOF
 
     # Setup initial ACLs
