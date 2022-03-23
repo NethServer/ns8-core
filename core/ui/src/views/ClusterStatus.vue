@@ -23,13 +23,40 @@
       <cv-column :md="4" :max="4">
         <NsInfoCard
           light
-          :title="apps.length.toString()"
-          :description="$tc('common.installed_apps', apps.length)"
+          :title="moduleUpdates.length.toString()"
+          :description="
+            $tc('cluster_status.updated_available_c', moduleUpdates.length)
+          "
+          :icon="Upgrade32"
+          :loading="loading.listModules"
+          :isErrorShown="error.listModules"
+          :errorTitle="$t('error.cannot_retrieve_available_apps')"
+          :errorDescription="error.listModules"
+          class="min-height-card"
+        >
+          <template slot="content">
+            <NsButton
+              kind="ghost"
+              :icon="ArrowRight20"
+              @click="$router.push('/software-center?search=&view=updates')"
+            >
+              {{ $t("cluster_status.go_to_software_center") }}
+            </NsButton>
+          </template>
+        </NsInfoCard>
+      </cv-column>
+      <cv-column :md="4" :max="4">
+        <NsInfoCard
+          light
+          :title="installedModules.length.toString()"
+          :description="
+            $tc('cluster_status.apps_installed_c', installedModules.length)
+          "
           :icon="Application32"
-          :loading="loading.listInstalledModules"
-          :isErrorShown="error.listInstalledModules"
-          :errorTitle="$t('error.cannot_retrieve_installed_apps')"
-          :errorDescription="error.listInstalledModules"
+          :loading="loading.listModules"
+          :isErrorShown="error.listModules"
+          :errorTitle="$t('error.cannot_retrieve_available_apps')"
+          :errorDescription="error.listModules"
           class="min-height-card"
         >
           <template slot="content">
@@ -182,18 +209,19 @@ export default {
       },
       nodes: [],
       apps: [],
+      updates: [],
       backups: [],
       instancesNotBackedUp: [],
       loading: {
         getClusterStatus: true,
-        listInstalledModules: true,
+        listModules: true,
         listBackups: true,
       },
       error: {
         name: "",
         email: "",
         getClusterStatus: "",
-        listInstalledModules: "",
+        listModules: "",
         listBackups: "",
       },
       toastVisible: true,
@@ -213,6 +241,36 @@ export default {
     ]),
     erroredBackups() {
       return this.backups.filter((b) => b.errorInstances.length);
+    },
+    installedModules() {
+      let installedModules = [];
+
+      for (const app of this.apps) {
+        for (const installedModule of app.installed) {
+          if (
+            !installedModule.flags.includes("account_provider") &&
+            !installedModule.flags.includes("core_module")
+          ) {
+            installedModules.push(installedModule);
+          }
+        }
+      }
+      return installedModules;
+    },
+    moduleUpdates() {
+      let moduleUpdates = [];
+
+      for (const appUpdate of this.updates) {
+        for (const moduleUpdate of appUpdate.updates) {
+          if (
+            !moduleUpdate.flags.includes("account_provider") &&
+            !moduleUpdate.flags.includes("core_module")
+          ) {
+            moduleUpdates.push(moduleUpdate);
+          }
+        }
+      }
+      return moduleUpdates;
     },
   },
   watch: {
@@ -246,10 +304,11 @@ export default {
     next();
   },
   methods: {
-    ...mapActions(["setClusterNodesInStore"]),
+    ...mapActions(["setClusterNodesInStore", "setUpdatesInStore"]),
     retrieveData() {
       this.getClusterStatus();
-      this.listInstalledModules();
+      this.listModules();
+      //// TODO this.listCoreModules();
       this.listBackups();
     },
     async getClusterStatus() {
@@ -305,22 +364,22 @@ export default {
 
       this.loading.getClusterStatus = false;
     },
-    async listInstalledModules() {
-      this.error.listInstalledModules = "";
-      this.loading.listInstalledModules = true;
-      const taskAction = "list-installed-modules";
+    async listModules() {
+      this.loading.modules = true;
+      this.error.listModules = "";
+      const taskAction = "list-modules";
       const eventId = this.getUuid();
 
       // register to task error
       this.$root.$once(
         `${taskAction}-aborted-${eventId}`,
-        this.listInstalledModulesAborted
+        this.listModulesAborted
       );
 
       // register to task completion
       this.$root.$once(
         `${taskAction}-completed-${eventId}`,
-        this.listInstalledModulesCompleted
+        this.listModulesCompleted
       );
 
       const res = await to(
@@ -337,31 +396,34 @@ export default {
 
       if (err) {
         console.error(`error creating task ${taskAction}`, err);
-        this.error.listInstalledModules = this.getErrorMessage(err);
-        this.loading.listInstalledModules = false;
+        this.error.listModules = this.getErrorMessage(err);
+        this.loading.listModules = false;
         return;
       }
     },
-    listInstalledModulesAborted(taskResult, taskContext) {
+    listModulesAborted(taskResult, taskContext) {
       console.error(`${taskContext.action} aborted`, taskResult);
-      this.error.listInstalledModules = this.$t("error.generic_error");
-      this.loading.listInstalledModules = false;
+      this.error.listModules = this.$t("error.generic_error");
+      this.loading.listModules = false;
     },
-    listInstalledModulesCompleted(taskContext, taskResult) {
-      let apps = [];
+    listModulesCompleted(taskContext, taskResult) {
+      let apps = taskResult.output;
+      apps.sort(this.sortByProperty("name"));
+      let updates = [];
 
-      for (let instanceList of Object.values(taskResult.output)) {
-        for (let instance of instanceList) {
-          if (
-            !instance.flags.includes("account_provider") &&
-            !instance.flags.includes("core_module")
-          ) {
-            apps.push(instance);
-          }
+      for (const app of apps) {
+        if (app.updates.length) {
+          updates.push(app);
         }
+
+        // sort installed instances
+        app.installed.sort(this.sortModuleInstances());
       }
+
+      this.setUpdatesInStore(updates);
+      this.updates = updates;
       this.apps = apps;
-      this.loading.listInstalledModules = false;
+      this.loading.listModules = false;
     },
     async listBackups() {
       this.loading.listBackups = true;

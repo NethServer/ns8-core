@@ -225,6 +225,13 @@
       @close="isShownInstallModal = false"
       @installationCompleted="onInstallationCompleted"
     />
+    <UpdateAppModal
+      :isShown="isShownUpdateModal"
+      :app="app"
+      :instance="instanceToUpdate"
+      @hide="isShownUpdateModal = false"
+      @updateCompleted="onUpdateCompleted"
+    />
     <!-- uninstall instance modal -->
     <NsDangerDeleteModal
       :isShown="isShownUninstallModal"
@@ -320,10 +327,11 @@ import {
 } from "@nethserver/ns8-ui-lib";
 import { mapState, mapActions } from "vuex";
 import CloneOrMoveAppModal from "@/components/software-center/CloneOrMoveAppModal";
+import UpdateAppModal from "../components/software-center/UpdateAppModal";
 
 export default {
   name: "SoftwareCenterAppInstances",
-  components: { InstallAppModal, CloneOrMoveAppModal },
+  components: { InstallAppModal, CloneOrMoveAppModal, UpdateAppModal },
   mixins: [TaskService, UtilService, IconService, QueryParamService],
   pageTitle() {
     return this.$t("software_center.app_instances_no_name");
@@ -341,6 +349,8 @@ export default {
       newInstanceLabel: "",
       elementToHighlight: "",
       isElementHighlighted: false,
+      isShownUpdateModal: false,
+      instanceToUpdate: null,
       cloneOrMove: {
         isModalShown: false,
         isClone: true,
@@ -447,7 +457,8 @@ export default {
       this.$router.push(`/apps/${instance.id}`);
     },
     updateInstance(instance) {
-      console.log("updateInstance", instance); ////
+      this.instanceToUpdate = instance;
+      this.isShownUpdateModal = true;
     },
     addAppToFavorites(instance) {
       this.addFavorite(instance);
@@ -646,6 +657,9 @@ export default {
     },
     onInstallationCompleted(newModuleId) {
       this.elementToHighlight = newModuleId;
+      this.listModules();
+    },
+    onUpdateCompleted() {
       this.listModules();
     },
   },

@@ -18,7 +18,6 @@
     "cancel": "Cancel",
     "node": "Node",
     "nodes_c": "Node | Nodes",
-    "installed_apps": "Installed app | Installed apps",
     "version": "Version",
     "enabled": "Enabled",
     "disabled": "Disabled",
@@ -80,6 +79,7 @@
     "cannot_retrieve_task_status": "Cannot retrieve task status",
     "cannot_retrieve_cluster_nodes": "Cannot retrieve cluster nodes",
     "cannot_retrieve_installed_apps": "Cannot retrieve installed apps",
+    "cannot_retrieve_available_apps": "Cannot retrieve available apps",
     "cannot_retrieve_cluster_tasks": "Cannot retrieve cluster tasks",
     "cannot_retrieve_backups": "Cannot retrieve backups",
     "invalid_username_or_password": "Invalid username or password",
@@ -275,7 +275,8 @@
     "restore-modules": "Restore apps",
     "clean-repositories-cache": "Reload software repos",
     "clone-module": "Clone module",
-    "cancel-task": "Cancel task"
+    "cancel-task": "Cancel task",
+    "update-module": "Update module"
   },
   "network": {
     "title": "Network"
@@ -531,6 +532,9 @@
     "app_without_ui_name_moved_to_node": "{instance} moved to {node} as {module_id}",
     "app_now_renamed": "{instance} (now {module_id})",
     "uninstall_app": "Uninstall <strong>{name}</strong>? App data will be deleted as well. This action is <strong>NOT</strong> reversible",
+    "update_app": "Update {app}",
+    "about_to_update_app": "<strong>{app} v{version}</strong> will be updated to <strong>v{newVersion}</strong>",
+    "updating_to_version": "Updating to version {version}",
     "app_categories": {
       "collaboration": "Collaboration",
       "system_administration": "System administration",
@@ -603,7 +607,9 @@
     "go_to_software_center": "Go to Software center",
     "go_to_backup": "Go to Backup",
     "backups_failed_c": "{num} backup failed | {num} backups failed",
-    "instances_not_backed_up_c": "{num} app not backed up | {num} apps not backed up"
+    "instances_not_backed_up_c": "{num} app not backed up | {num} apps not backed up",
+    "apps_installed_c": "App installed | Apps installed",
+    "updated_available_c": "Update available | Updates available"
   },
   "domains": {
     "title": "Domains and users",

@@ -29,6 +29,7 @@
               @click="showAppInfo(app)"
               class="app"
               :light="light"
+              :id="app.id"
             >
               <div class="app-logo app-row">
                 <a @click="showAppInfo(app)">

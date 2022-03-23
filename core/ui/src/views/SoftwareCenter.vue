@@ -441,13 +441,25 @@ export default {
     },
     willUpdateAll() {
       this.updateAllAppsTimeout = setTimeout(() => {
-        console.log("updating all!"); ////
+        this.updateAll();
         this.updateAllAppsTimeout = 0;
       }, this.updateAllAppsDelay);
     },
     cancelUpdateAll() {
       clearTimeout(this.updateAllAppsTimeout);
       this.updateAllAppsTimeout = 0;
+    },
+    updateAll() {
+      console.log("updateAll, num apps", this.updates.length); ////
+
+      for (const appToUpdate of this.updates) {
+        console.log("appToUpdate", appToUpdate.name); ////
+        console.log("newest version", appToUpdate.versions[0].tag); ////
+
+        for (const instanceToUpdate of appToUpdate.updates) {
+          console.log("  instanceToUpdate", instanceToUpdate.id); ////
+        }
+      }
     },
     openInstallModal(app) {
       this.appToInstall = app;
