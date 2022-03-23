@@ -26,5 +26,5 @@ import agent
 import cluster.modules
 
 rdb = agent.redis_connect(privileged=True)
-updates = cluster.modules.list_updates(rdb)
+updates = cluster.modules.list_updates(rdb, skip_core_modules = True)
 json.dump(updates, fp=sys.stdout)

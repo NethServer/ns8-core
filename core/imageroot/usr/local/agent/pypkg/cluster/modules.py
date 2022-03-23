@@ -47,7 +47,7 @@ def _get_cached_logo_urls(rdb):
                 logos[m["id"]] = m['logo']
     return logos
 
-def _parse_repository_metadata(repository_name, repository_url, repository_updated, repodata):
+def _parse_repository_metadata(repository_name, repository_url, repository_updated, repodata, skip_core_modules = False):
     modules = []
 
     try:
@@ -56,6 +56,12 @@ def _parse_repository_metadata(repository_name, repository_url, repository_updat
         return modules
 
     for package in repodata:
+        # Skip core modules if flag is enabled
+        if skip_core_modules and package['versions']:
+            version = package['versions'][0]
+            if 'org.nethserver.flags' in version['labels'] and 'core_module' in version['labels']['org.nethserver.flags']:
+                continue
+
         package["repository"] = repository_name
         package["repository_updated"] = repository_updated
 
@@ -74,11 +80,11 @@ def _parse_repository_metadata(repository_name, repository_url, repository_updat
     return modules
 
 
-def _list_repository_modules(rdb, repository_name, repository_url):
+def _list_repository_modules(rdb, repository_name, repository_url, skip_core_modules = False):
     key = f'cluster/repository_cache/{repository_name}'
     cache = rdb.hgetall(key)
     if cache:
-        return _parse_repository_metadata(repository_name, repository_url, cache["updated"], cache["data"])
+        return _parse_repository_metadata(repository_name, repository_url, cache["updated"], cache["data"], skip_core_modules)
 
     try:
         url = urllib.parse.urljoin(repository_url, "repodata.json")
@@ -89,7 +95,7 @@ def _list_repository_modules(rdb, repository_name, repository_url):
         return []
 
     updated = req.headers.get('Last-Modified', "")
-    modules = _parse_repository_metadata(repository_name, repository_url, updated, repodata)
+    modules = _parse_repository_metadata(repository_name, repository_url, updated, repodata, skip_core_modules)
     # Save inside the cache if data is valid
     if modules:
         # Save also repodata file date
@@ -99,7 +105,40 @@ def _list_repository_modules(rdb, repository_name, repository_url):
 
     return modules
 
-def list_available(rdb):
+def get_latest_module(module, rdb):
+    """Find most recent version of the given module
+    """
+    version = ""
+    source = ""
+    available = list_available(rdb)
+    for m in available:
+        if m["id"] == module:
+            source = m["source"]
+            repo_testing = int(rdb.hget(f'cluster/repository/{m["repository"]}', 'testing')) == 1
+            for v in m["versions"]:
+                if repo_testing and v["testing"]:
+                    version = v["tag"]
+                elif not repo_testing and not v["testing"]:
+                    version = v["tag"]
+
+                if version:
+                    break
+
+        if version:
+            break
+
+    # Fallback to default 'latest' if no version has been found
+    if not version:
+        version = "latest"
+
+    # Fallback to community registry if no source has been found
+    if not source:
+        source = f"ghcr.io/nethserver/{module}"
+
+    return f'{source}:{version}'
+
+
+def list_available(rdb, skip_core_modules = False):
     modules = []
     # List all modules from enabled repositories
     for m in rdb.scan_iter('cluster/repository/*'):
@@ -108,11 +147,11 @@ def list_available(rdb):
         if int(repo["status"]) == 0:
             continue
         
-        modules.extend(_list_repository_modules(rdb, os.path.basename(m), repo["url"]))
+        modules.extend(_list_repository_modules(rdb, os.path.basename(m), repo["url"], skip_core_modules))
 
     return modules
 
-def list_installed(rdb):
+def list_installed(rdb, skip_core_modules = False):
     installed = {}
     logos = _get_cached_logo_urls(rdb)
     # Search for installed modules
@@ -122,17 +161,38 @@ def list_installed(rdb):
         url, sep, tag = vars['IMAGE_URL'].partition(":")
         image = url[url.rindex('/')+1:]
         logo = logos.get(image) or ''
+        flags = list(rdb.smembers(f'module/{vars["MODULE_ID"]}/flags')) or []
+        if skip_core_modules and 'core_module' in flags:
+            continue
         if url not in installed.keys():
             installed[url] = []
-        flags = list(rdb.smembers(f'module/{vars["MODULE_ID"]}/flags')) or []
         installed[url].append({ 'id': vars["MODULE_ID"], 'ui_name': module_ui_name, 'node': vars['NODE_ID'], 'digest': vars["IMAGE_DIGEST"], 'source': url, 'version': tag, 'logo': logo, 'module': image, 'flags': flags})
 
     return installed
 
-def list_updates(rdb):
+def list_installed_core(rdb):
+    installed = {'ghcr.io/nethserver/core': []}
+    core_env = agent.read_envfile('/etc/nethserver/core.env')
+    (url, tag) = core_env['CORE_IMAGE'].split(":")
+    installed['ghcr.io/nethserver/core'].append({ 'id': 'core', 'version': tag, 'module': 'core'})
+    # Search for installed modules
+    for m in rdb.scan_iter('module/*/environment'):
+        vars = rdb.hgetall(m)
+        if 'core_module' in rdb.smembers(f'module/{vars["MODULE_ID"]}/flags'):
+            url, sep, tag = vars['IMAGE_URL'].partition(":")
+            image = url[url.rindex('/')+1:]
+        
+            if url not in installed.keys():
+                installed[url] = []
+            installed[url].append({'id': vars["MODULE_ID"], 'version': tag, 'module': image})
+
+    return installed
+
+
+def list_updates(rdb, skip_core_modules = False):
     updates = []
-    installed = list_installed(rdb)
-    available = list_available(rdb)
+    installed = list_installed(rdb, skip_core_modules)
+    available = list_available(rdb, skip_core_modules)
 
     for module in available:
         if module["source"] not in installed.keys():
@@ -160,9 +220,54 @@ def list_updates(rdb):
             # Version from remote repositories are already sorted
             # First match is the newest release
             if v > cur:
-                # Create a copy to make to not edit original object
+                # Create a copy to not change original object
                 update = instance.copy()
                 update["update"] = version["tag"]
                 updates.append(update)
 
     return updates
+
+def list_core_modules():
+    rdb = agent.redis_connect(privileged=True)
+    modules = []
+    installed = list_installed_core(rdb)
+    available = list_available(rdb, skip_core_modules = False)
+
+    for module in available:
+        if not 'core' in module['categories']:
+           continue
+
+        if module["source"] not in installed.keys():
+            continue
+
+        newest_version = None
+        for version in module["versions"]:
+            v = semver.VersionInfo.parse(version["tag"])
+            # Skip testing versions if testing is disabled
+            testing = rdb.hget(f'cluster/repository/{module["repository"]}', 'testing')
+            if int(testing) == 0 and not v.prerelease is None:
+                continue
+
+            newest_version = version["tag"]
+            break
+
+        # Handle multiple instances of the same module
+        instances = []
+        for instance in installed[module["source"]]:
+            del(instance['module'])
+            instance["update"] = ""
+            instances.append(instance)
+            try:
+                cur = semver.VersionInfo.parse(instance["version"])
+            except:
+                # skip installed instanced with dev version
+                continue
+
+            # Version from remote repositories are already sorted
+            # First match is the newest release
+            if v > cur:
+                instance["update"] = version["tag"]
+
+        modules.append({"name": module['name'], "instances": instances})
+
+    return modules

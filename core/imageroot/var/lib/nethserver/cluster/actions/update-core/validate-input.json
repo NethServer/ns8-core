@@ -12,16 +12,18 @@
                 3,
                 4
             ]
+        },
+        {
+            "nodes": [1]
         }
     ],
     "type": "object",
     "required": [
-        "core_url",
         "nodes"
     ],
     "properties": {
         "core_url": {
-            "description": "Core image URL to download and install",
+            "description": "Core image URL to download and install. If empty, search core URL inside repository metadata.",
             "type": "string"
         },
         "nodes": {

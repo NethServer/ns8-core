@@ -25,6 +25,7 @@ import json
 import agent
 import agent.tasks
 import cluster.grants
+import cluster.modules
 import subprocess
 import os
 import re
@@ -45,13 +46,21 @@ def allocate_tcp_ports_range(node_id, module_environment, size):
         module_environment['TCP_PORTS'] = ','.join(str(port) for port in range(seq-size, seq))
 
 request = json.load(sys.stdin)
-image_url = request['image']
-image_id = agent.get_image_name_from_url(image_url)
 node_id = int(request['node'])
 agent.assert_exp(node_id > 0)
 check_idle_time = request.get('check_idle_time')
 
 rdb = agent.redis_connect(privileged=True)
+image_url = request['image']
+# if the image name contains a slash, let's assume it's a valid image URL,
+# like ghr.io/nethserver/<image>:<tag>
+if "/" in request['image']:
+    image_url = request['image']
+else:
+# search for the latest package inside the repository metadata
+    image_url = cluster.modules.get_latest_module(request['image'], rdb)
+
+image_id = agent.get_image_name_from_url(image_url)
 agent.assert_exp(image_url)
 
 # Pull the image from the remote server, if not already available locally

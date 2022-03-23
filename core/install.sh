@@ -21,6 +21,26 @@
 #
 
 set -e
+metadata=${METADATA:-https://raw.githubusercontent.com/nethserver/ns8-repomd/repomd/repodata.json}
+repodata=""
+
+function get_module_url () {
+    id=$1
+    if [ -z "${repodata}" ]; then
+        repodata=$(curl ${metadata})
+    fi
+    repo=$(echo ${repodata} | jq -r '.[] | select(.id == "'$1'") | .source')
+    # select the first non-testing version
+    version=$(echo ${repodata} | jq -r '.[] | select(.id == "'$1'") | [.versions[]|select(.testing == false)] | first | .tag')
+    if [[ -z "${version}" || "${version}" == "null" ]]; then
+        version="latest"
+    fi
+    if [ ! -z "${REPOBASE}" ]; then
+        echo "${REPOBASE}/${id}:${version}"
+    else
+        echo "${repo}:${version}"
+    fi
+}
 
 source /etc/os-release
 
@@ -30,7 +50,7 @@ if [[ ${ID} == "centos" && "${PLATFORM_ID}" == "platform:el9" ]]; then
     systemctl disable --now firewalld || :
 elif [[ "${ID}" == "debian" && "${VERSION_ID}" == "11" ]]; then
     apt-get update
-    apt-get -y install gnupg2 python3-venv podman wireguard uuid-runtime jq openssl
+    apt-get -y install gnupg2 python3-venv podman wireguard uuid-runtime jq openssl psmisc
 elif [[ "${ID}" == "ubuntu" && "${VERSION_ID}" == "20.04" && "${CI}" == "true" && "${GITHUB_ACTIONS}" == "true" ]]; then
     apt-get update
     apt-get -y install wireguard
@@ -52,16 +72,20 @@ imagetag="$1"
 if [[ -n "${imagetag}" ]]; then
     shift
     for module in "${@}"; do
-        podman pull "ghcr.io/nethserver/${module}:${imagetag}"
-        echo "Tagging development branch ${module}:${imagetag} => ${module}:latest"
-        podman tag "ghcr.io/nethserver/${module}:${imagetag}" "ghcr.io/nethserver/${module}:latest"
+        url=$(get_module_url ${module})
+        image=$(echo $url | cut -d':' -f1)
+        version=$(echo $url | cut -d':' -f2)
+        podman pull "${image}:${imagetag}"
+        echo "Tagging development branch ${module}:${imagetag} => ${module}:${version}"
+        podman tag "${image}:${imagetag}" "${image}:${version}"
     done
     shift $# # Discard all arguments
 fi
 
 echo "Extracting core sources:"
 mkdir -pv /var/lib/nethserver/node/state
-cid=$(podman create "ghcr.io/nethserver/core:latest")
+core_url=$(get_module_url 'core')
+cid=$(podman create "${core_url}")
 podman export ${cid} | tar --totals -C / --no-overwrite-dir --no-same-owner -x -v -f - | LC_ALL=C sort | tee /var/lib/nethserver/node/state/coreimage.lst
 podman rm -f ${cid}
 
@@ -188,7 +212,7 @@ cluster.grants.grant(rdb, action_clause="read-*", to_clause="reader", on_clause=
 EOF
 
 echo "Install Traefik:"
-add-module ghcr.io/nethserver/traefik:latest 1
+add-module $(get_module_url traefik) 1
 
 echo "Setting default admin password:"
 ADMIN_PASSWORD="${ADMIN_PASSWORD:-Nethesis,1234}"
