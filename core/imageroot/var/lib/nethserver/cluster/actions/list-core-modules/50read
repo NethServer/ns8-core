@@ -22,29 +22,6 @@
 
 import sys
 import json
-import agent
 import cluster.modules
 
-def get_module(source, modules):
-    ret = []
-    for m in modules:
-        if m["source"] == source:
-            ret.append(m)
-    return ret
-
-rdb = agent.redis_connect(privileged=True)
-installed = cluster.modules.list_installed(rdb, skip_core_modules = True)
-available = cluster.modules.list_available(rdb, skip_core_modules = True)
-updates = cluster.modules.list_updates(rdb, skip_core_modules = True)
-
-# Prepare variables for later use
-for a in available:
-    a["updates"] = []
-    a["installed"] = []
-
-    if a["source"] in installed.keys():
-        a["installed"] = installed[a["source"]]
-
-    a["updates"] = get_module(a["source"], updates)
-
-json.dump(available, fp=sys.stdout)
+json.dump(cluster.modules.list_core_modules(), fp=sys.stdout)
