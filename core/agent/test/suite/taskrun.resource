@@ -38,8 +38,9 @@ Stop command monitoring
     Close All Connections
 
 Stop command monitoring and flush the database
-    Close All Connections
     Flush the Redis database
+    The command is received    FLUSHALL
+    Close All Connections
 
 Wait until the agent log contains
     [Arguments]    ${pattern}

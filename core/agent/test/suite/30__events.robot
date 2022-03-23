@@ -1,7 +1,7 @@
 *** Settings ***
 Resource         taskrun.resource
 Test Setup      Start the agent and wait psubscribe
-Test Teardown   Stop the agent and cleanup
+Test Teardown   Stop the agent and wait flushall
 
 *** Test Cases ***
 Payload is echoed across runs
@@ -39,11 +39,24 @@ Abort stops execution
     When The event exit code is    2
     Then The agent log does not contain    NEVER REACH THIS POINT
 
+Event aborted by agent termination
+    Given The event is raised    long-run    payloadoflongrun
+    When Send Signal To Process    SIGTERM
+    Then The agent quits within one second
+    And The agent log does not contain    exited with status
+
+Event completed by agent graceful shutdown
+    Given The event is raised    long-run    payloadoflongrun
+    When Send Signal To Process    SIGUSR1
+    Then The event exit code is    0
+    And The agent completes successfully
+
 *** Keywords ***
 The event is raised
     [Arguments]    ${event_name}    ${event_payload}
     Set Test Variable    ${LAST_EVENT}    ${event_name}
     Evaluate    $RDB.publish("source/event/"+$event_name, $event_payload)
+    The command is received    PUBLISH
 
 The agent log does not contain
     [Arguments]    ${pattern}
@@ -62,4 +75,17 @@ Start the agent and wait psubscribe
     Start command monitoring
     Start the agent
     The command is received    psubscribe
-    Stop command monitoring
+
+Stop the agent and wait flushall
+    Terminate Process
+    Stop command monitoring and flush the database
+
+The agent completes successfully
+    ${res} =    Wait For Process    timeout=1200ms
+    Process Should Be Stopped
+    Should Be Equal As Integers    ${res.rc}    ${0}
+
+The agent quits within one second
+    ${res} =    Wait For Process    timeout=1s
+    Should Be True    ${res}    msg=The agent process is still running
+    Should Be Equal As Integers    ${res.rc}    ${-15}
