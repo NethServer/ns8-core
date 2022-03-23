@@ -17,11 +17,11 @@ Connect to the node
     Should Be True    '${output}' == 'running' or '${output}' == 'degraded'
 
 Install the core
-    [Arguments]    ${COREBRANCH}    ${COREMODULES}
+    [Arguments]    ${COREMODULES}
     Save the journal begin timestamp
     ${COREMODULES} =    Replace String    ${COREMODULES}    ,    ${SPACE}
     Put File    install.sh    .    mode=0644
-    ${rc} =    Execute Command    bash install.sh ${COREBRANCH} ${COREMODULES}
+    ${rc} =    Execute Command    bash install.sh ${COREMODULES}
     ...    return_stdout=False
     ...    return_stderr=False
     ...    return_rc=True
