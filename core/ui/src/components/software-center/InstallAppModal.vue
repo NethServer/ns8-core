@@ -90,6 +90,11 @@ export default {
     },
     appVersion() {
       if (this.app.versions.length) {
+        //// remove
+        // if (this.app.name == "Dokuwiki" || this.app.name == "Nextcloud") {
+        //   return "0.0.1-alpha2";
+        // }
+
         return this.app.versions[0].tag;
       } else {
         return "latest";

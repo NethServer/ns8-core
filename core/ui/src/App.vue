@@ -94,7 +94,6 @@ export default {
   methods: {
     ...mapActions([
       "setLoggedUserInStore",
-      "setUpdatesInStore",
       "setClusterInitializedInStore",
       "setMobileSideMenuShownInStore",
       "setNotificationDrawerShownInStore",
@@ -277,9 +276,6 @@ export default {
       // needed to set leader listen port in store after cluster creation
       this.retrieveClusterStatus(false);
 
-      // check for software updates
-      this.listUpdates();
-
       //// TODO later
       // this.retrieveRecurringClusterStatus();
 
@@ -332,44 +328,6 @@ export default {
         const nodes = clusterStatus.nodes.sort(this.sortByProperty("id"));
         this.setClusterNodesInStore(nodes);
       }
-    },
-    async listUpdates() {
-      const taskAction = "list-updates";
-      // register to task completion
-      this.$root.$once(taskAction + "-completed", this.listUpdatesCompleted);
-
-      const res = await to(
-        this.createClusterTask({
-          action: taskAction,
-          extra: {
-            title: this.$t("action." + taskAction),
-            isNotificationHidden: true,
-          },
-        })
-      );
-      const err = res[0];
-
-      if (err) {
-        // check if node is a worker
-        if (err.response.status == 403) {
-          this.isMaster = false;
-          // redirect to worker page
-          this.$router.replace(
-            "/init?page=redirect&endpoint=" +
-              err.response.data.data.split(":")[0]
-          );
-        } else {
-          this.createErrorNotification(
-            err,
-            this.$t("task.cannot_create_task", { action: taskAction })
-          );
-          return;
-        }
-      }
-    },
-    listUpdatesCompleted(taskContext, taskResult) {
-      let updates = taskResult.output;
-      this.setUpdatesInStore(updates);
     },
     onWebsocketConnected() {
       this.setWebsocketConnectedInStore(true);

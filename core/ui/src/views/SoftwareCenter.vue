@@ -227,7 +227,6 @@
 <script>
 import AppList from "@/components/software-center/AppList";
 import to from "await-to-js";
-import { mapActions } from "vuex";
 import InstallAppModal from "../components/software-center/InstallAppModal";
 import {
   QueryParamService,
@@ -319,7 +318,6 @@ export default {
     this.listModules();
   },
   methods: {
-    ...mapActions(["setUpdatesInStore"]),
     async listModules() {
       this.loading.modules = true;
       this.error.listModules = "";
@@ -359,8 +357,6 @@ export default {
         // sort installed instances
         module.installed.sort(this.sortModuleInstances());
       }
-
-      this.setUpdatesInStore(updates);
       this.updates = updates;
       this.modules = modules;
 

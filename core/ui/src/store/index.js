@@ -22,8 +22,6 @@ export default new Vuex.Store({
       message: "",
       reconnectError: false,
     },
-    // apps to update
-    updates: [],
     isClusterInitialized: false,
     leaderListenPort: null,
     clusterLabel: "",
@@ -82,9 +80,6 @@ export default new Vuex.Store({
 
       return taskFound;
     },
-    getUpdatesCount: (state) => {
-      return state.updates.length;
-    },
   },
   mutations: {
     createNotification(state, notification) {
@@ -140,9 +135,6 @@ export default new Vuex.Store({
     },
     setLoggedUser(state, username) {
       state.loggedUser = username;
-    },
-    setUpdates(state, updates) {
-      state.updates = updates;
     },
     setClusterInitialized(state, value) {
       state.isClusterInitialized = value;
@@ -210,9 +202,6 @@ export default new Vuex.Store({
     },
     setLoggedUserInStore(context, username) {
       context.commit("setLoggedUser", username);
-    },
-    setUpdatesInStore(context, updates) {
-      context.commit("setUpdates", updates);
     },
     setClusterInitializedInStore(context, value) {
       context.commit("setClusterInitialized", value);

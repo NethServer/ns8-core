@@ -304,7 +304,7 @@ export default {
     next();
   },
   methods: {
-    ...mapActions(["setClusterNodesInStore", "setUpdatesInStore"]),
+    ...mapActions(["setClusterNodesInStore"]),
     retrieveData() {
       this.getClusterStatus();
       this.listModules();
@@ -419,8 +419,6 @@ export default {
         // sort installed instances
         app.installed.sort(this.sortModuleInstances());
       }
-
-      this.setUpdatesInStore(updates);
       this.updates = updates;
       this.apps = apps;
       this.loading.listModules = false;
