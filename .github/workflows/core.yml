@@ -1,11 +1,11 @@
 name: core
 on:
   push:
-    paths:
-      - '!docs/**'
-      - '!infra/**'
-      - '!core/tests/**'
-      - '!core/test-module.sh'
+    paths-ignore:
+      - 'docs/**'
+      - 'infra/**'
+      - 'core/tests/**'
+      - 'core/test-module.sh'
 
 jobs:
   push_image:
