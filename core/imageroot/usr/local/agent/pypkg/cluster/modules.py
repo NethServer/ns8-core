@@ -116,9 +116,9 @@ def get_latest_module(module, rdb):
             source = m["source"]
             repo_testing = int(rdb.hget(f'cluster/repository/{m["repository"]}', 'testing')) == 1
             for v in m["versions"]:
-                if repo_testing and v["testing"]:
+                if repo_testing:
                     version = v["tag"]
-                elif not repo_testing and not v["testing"]:
+                elif not v["testing"]:
                     version = v["tag"]
 
                 if version:
