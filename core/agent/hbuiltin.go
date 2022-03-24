@@ -29,7 +29,7 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
-func runListActions(task *models.Task) {
+func runListActions(rdb *redis.Client, task *models.Task) {
 	// Redis key names where the action response is stored:
 	progressChannel := "progress/" + agentPrefix + "/task/" + task.ID
 	outputKey := agentPrefix + "/task/" + task.ID + "/output"
@@ -68,7 +68,7 @@ func runListActions(task *models.Task) {
 	}
 }
 
-func runCancelTask(task *models.Task, cancelFuncMap map[string]context.CancelFunc) {
+func runCancelTask(rdb *redis.Client, task *models.Task, cancelFuncMap map[string]context.CancelFunc) {
 	// Redis key names where the action response is stored:
 	progressChannel := "progress/" + agentPrefix + "/task/" + task.ID
 	outputKey := agentPrefix + "/task/" + task.ID + "/output"

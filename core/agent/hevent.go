@@ -32,7 +32,21 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
-func listenEventsAsync(ctx context.Context, rdb *redis.Client, complete chan int) {
+func listenEventsAsync(ctx context.Context, complete chan int) {
+	// Connect with default credentials to listen event channels with no
+	// restrictions.
+	redisAddress := os.Getenv("REDIS_ADDRESS")
+	if redisAddress == "" {
+		redisAddress = "127.0.0.1:6379"
+	}
+	rdb := redis.NewClient(&redis.Options{
+		Addr:      redisAddress,
+		Username:  "default",
+		Password:  agentPrefix,
+		DB:        0,
+		OnConnect: setClientNameCallback,
+	})
+
 	pubsub := rdb.PSubscribe(ctx, "*/event/*")
 
 	var wg sync.WaitGroup

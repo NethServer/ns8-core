@@ -49,7 +49,6 @@ var ctx = context.Background()
 var agentPrefix string
 var actionPaths flagStringSlice
 var eventPaths flagStringSlice
-var rdb *redis.Client
 
 var pollingDuration = 5000 * time.Millisecond
 var taskExpireDuration = 24 * time.Hour
@@ -110,11 +109,6 @@ func main() {
 		// exit(1) log.Fatal terminates the process with an exit code
 	}
 
-	redisAddress := os.Getenv("REDIS_ADDRESS")
-	if redisAddress == "" {
-		redisAddress = "127.0.0.1:6379"
-	}
-
 	// Override default length of polling interval (5000ms)
 	ePollingDuration := os.Getenv("AGENT_POLLING_INTERVAL")
 	if ePollingDuration != "" {
@@ -123,24 +117,6 @@ func main() {
 			pollingDuration = oValue
 		}
 	}
-
-	// If we have a REDIS_PASSWORD the default redis username is the agentPrefix string
-	// The default user name can be overridden by the REDIS_USER environment variable
-	redisUsername := ""
-	redisPassword := os.Getenv("REDIS_PASSWORD")
-	if redisPassword != "" {
-		redisUsername = os.Getenv("REDIS_USER")
-		if redisUsername == "" {
-			redisUsername = agentPrefix
-		}
-	}
-	rdb = redis.NewClient(&redis.Options{
-		Addr:      redisAddress,
-		Username:  redisUsername,
-		Password:  redisPassword,
-		DB:        0,
-		OnConnect: setClientNameCallback,
-	})
 
 	var signalChannel = make(chan os.Signal, 1)
 	signal.Notify(signalChannel, syscall.SIGUSR1)
@@ -155,8 +131,8 @@ func main() {
 
 	listeners := make(chan int, 1)
 
-	go listenActionsAsync(cancelCtx, rdb, listeners)
-	go listenEventsAsync(cancelCtx, rdb, listeners)
+	go listenActionsAsync(cancelCtx, listeners)
+	go listenEventsAsync(cancelCtx, listeners)
 
 	// wait for coroutines completion
 	<-listeners

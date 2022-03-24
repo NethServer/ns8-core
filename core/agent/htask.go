@@ -40,7 +40,7 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
-func runAction(actionCtx context.Context, task *models.Task) {
+func runAction(rdb *redis.Client, actionCtx context.Context, task *models.Task) {
 
 	// Redis key names where the action response is stored:
 	progressChannel := "progress/" + agentPrefix + "/task/" + task.ID
@@ -299,10 +299,32 @@ func runAction(actionCtx context.Context, task *models.Task) {
 	log.Printf("%s/task/%s: action \"%s\" status is \"%s\" (%d) at step %s", agentPrefix, task.ID, task.Action, actionDescriptor.Status, exitCode, lastStep)
 }
 
-func listenActionsAsync(brpopCtx context.Context, rdb *redis.Client, complete chan int) {
+func listenActionsAsync(brpopCtx context.Context, complete chan int) {
 	defer func() { complete <- 1 }()
 	var workersRegistry sync.WaitGroup
 	taskCancelFunctions := make(map[string]context.CancelFunc)
+
+	// If we have a REDIS_PASSWORD the default redis username is the agentPrefix string
+	// The default user name can be overridden by the REDIS_USER environment variable
+	redisUsername := ""
+	redisPassword := os.Getenv("REDIS_PASSWORD")
+	if redisPassword != "" {
+		redisUsername = os.Getenv("REDIS_USER")
+		if redisUsername == "" {
+			redisUsername = agentPrefix
+		}
+	}
+	redisAddress := os.Getenv("REDIS_ADDRESS")
+	if redisAddress == "" {
+		redisAddress = "127.0.0.1:6379"
+	}
+	rdb := redis.NewClient(&redis.Options{
+		Addr:      redisAddress,
+		Username:  redisUsername,
+		Password:  redisPassword,
+		DB:        0,
+		OnConnect: setClientNameCallback,
+	})
 
 	for { // Action listen loop
 		var task models.Task
@@ -342,11 +364,11 @@ func listenActionsAsync(brpopCtx context.Context, rdb *redis.Client, complete ch
 			workersRegistry.Add(1)
 			switch task.Action {
 			case "list-actions":
-				runListActions(&task)
+				runListActions(rdb, &task)
 			case "cancel-task":
-				runCancelTask(&task, taskCancelFunctions)
+				runCancelTask(rdb, &task, taskCancelFunctions)
 			default:
-				runAction(taskCtx, &task)
+				runAction(rdb, taskCtx, &task)
 			}
 		}(task)
 	}
