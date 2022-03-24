@@ -130,7 +130,7 @@ def get_latest_module(module, rdb):
 
     # Fail if package has not been found inside the repository metadata
     if not source or not version:
-        raise Exception('Package not found')
+        raise Exception(f'Package not found: {module}')
 
     return f'{source}:{version}'
 
