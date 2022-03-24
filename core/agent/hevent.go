@@ -78,9 +78,13 @@ func runEvent(wg *sync.WaitGroup, event *models.Event) {
 	var exitCode int = 0
 	var lastStep string = ""
 
+	handler := models.CreateEventHandler(event.Name, eventPaths) // global variable
+	if len(handler.Steps) == 0 {
+		return // if event handler is not defined, skip silently this run
+	}
+
 	// Get additional environment variables from the filesystem
 	environment := readEnvironmentFile()
-	handler := models.CreateEventHandler(event.Name, eventPaths) // global variable
 	for stepIndex, step := range handler.Steps {
 		lastStep = step.Name
 
