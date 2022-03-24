@@ -1,18 +1,19 @@
 name: core
 on:
   push:
-    paths:
-      - 'core/**'
-      - '!core/tests/**'
-      - '!core/test-module.sh'
+    paths-ignore:
+      - 'docs/**'
+      - 'infra/**'
+      - 'core/tests/**'
+      - 'core/test-module.sh'
 
 jobs:
   push_image:
     env:
       REPONAME: ${{ github.workflow }}
-      IMAGETAG: ${{ github.head_ref }}
+      IMAGETAG: ${{ github.ref_name }}
     name: 'Build ${{ github.workflow }}'
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - id: info
         name: "Retrieve runtime information"
@@ -39,7 +40,6 @@ jobs:
         name: "Push the images"
         run: |
           # Push the images
-          set -e
           trap 'buildah logout ghcr.io' EXIT
           buildah login -u ${{ github.actor }} --password-stdin ghcr.io <<<"${{ secrets.GITHUB_TOKEN }}"
-          for image in ${{ steps.build.outputs.images }} ; do buildah push $image docker://${image}:${IMAGETAG:-latest} ; done
+          for image in ${{ steps.build.outputs.images }} ; do buildah push $image docker://${image}:${IMAGETAG:?is missing} ; done
