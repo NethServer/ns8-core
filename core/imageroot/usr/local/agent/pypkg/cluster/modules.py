@@ -127,13 +127,10 @@ def get_latest_module(module, rdb):
         if version:
             break
 
-    # Fallback to default 'latest' if no version has been found
-    if not version:
-        version = "latest"
 
-    # Fallback to community registry if no source has been found
-    if not source:
-        source = f"ghcr.io/nethserver/{module}"
+    # Fail if package has not been found inside the repository metadata
+    if not source or not version:
+        raise Exception('Package not found')
 
     return f'{source}:{version}'
 
