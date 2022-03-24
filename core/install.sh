@@ -22,7 +22,7 @@
 
 set -e
 
-core_url='ghcr.io/nethserver/core:latest'
+core_url='ghcr.io/nethserver/core:ns8-stable'
 source /etc/os-release
 
 echo "Install dependencies:"
