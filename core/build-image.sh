@@ -67,7 +67,7 @@ core_env_file=$(mktemp)
 cleanup_list+=("${core_env_file}")
 printf "CORE_IMAGE=${repobase}/core:%s\n" "${IMAGETAG:-latest}" >> "${core_env_file}"
 printf "REDIS_IMAGE=${repobase}/redis:%s\n" "${IMAGETAG:-latest}" >> "${core_env_file}"
-printf "RCLONE_IMAGE=${repobase}/rclone:1.57\n" >> "${core_env_file}"
+printf "RCLONE_IMAGE=docker.io/rclone/rclone:1.57.0\n" >> "${core_env_file}"
 printf "RSYNC_IMAGE=${repobase}/rsync:%s\n" "${IMAGETAG:-latest}" >> "${core_env_file}"
 printf "RESTIC_IMAGE=${repobase}/restic:%s\n" "${IMAGETAG:-latest}" >> "${core_env_file}"
 chmod -c 644 "${core_env_file}"
