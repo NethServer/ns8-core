@@ -116,9 +116,9 @@ def get_latest_module(module, rdb):
             source = m["source"]
             repo_testing = int(rdb.hget(f'cluster/repository/{m["repository"]}', 'testing')) == 1
             for v in m["versions"]:
-                if repo_testing and v["testing"]:
+                if repo_testing:
                     version = v["tag"]
-                elif not repo_testing and not v["testing"]:
+                elif not v["testing"]:
                     version = v["tag"]
 
                 if version:
@@ -127,13 +127,10 @@ def get_latest_module(module, rdb):
         if version:
             break
 
-    # Fallback to default 'latest' if no version has been found
-    if not version:
-        version = "latest"
 
-    # Fallback to community registry if no source has been found
-    if not source:
-        source = f"ghcr.io/nethserver/{module}"
+    # Fail if package has not been found inside the repository metadata
+    if not source or not version:
+        raise Exception('Package not found')
 
     return f'{source}:{version}'
 
