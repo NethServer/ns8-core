@@ -31,10 +31,11 @@ echo "Build statically linked Go binaries based on Musl..."
 echo "1/2 agent..."
 buildah run gobuilder-core sh -c "cd /usr/src/core/agent && CGO_ENABLED=0 go build -v ."
 
-echo "2/2 api-server..."
+echo "2/2 api-server and api-server-logs..."
 # Statically link libraries and disable Sqlite extensions that expect a dynamic loader (not portable across distros)
 # Ref https://www.arp242.net/static-go.html
-buildah run gobuilder-core sh -c "cd /usr/src/core/api-server && go build -v -ldflags=\"-extldflags=-static\" -tags sqlite_omit_load_extension ."
+buildah run gobuilder-core sh -c "cd /usr/src/core/api-server && go build -v -ldflags=\"-extldflags=-static\" -tags sqlite_omit_load_extension api-server.go"
+buildah run gobuilder-core sh -c "cd /usr/src/core/api-server && go build -v -ldflags=\"-extldflags=-static\" -tags sqlite_omit_load_extension api-server-logs.go"
 
 echo "Build static UI files with node..."
 buildah run nodebuilder-core sh -c "cd /usr/src/core/ui && yarn install && yarn build"
@@ -59,6 +60,7 @@ buildah add "${container}" imageroot /
 buildah add "${container}" "${logcli_tmp_dir}/logcli-linux-amd64" /usr/local/bin/logcli.bin
 buildah add "${container}" agent/agent /usr/local/bin/agent
 buildah add "${container}" api-server/api-server /usr/local/bin/api-server
+buildah add "${container}" api-server/api-server-logs /usr/local/bin/api-server-logs
 buildah add "${container}" ui/dist /var/lib/nethserver/cluster/ui
 buildah add "${container}" install.sh /var/lib/nethserver/node/install.sh
 core_env_file=$(mktemp)

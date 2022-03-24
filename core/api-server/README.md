@@ -186,3 +186,70 @@ OUTPUT
 
 ### Task events
 The websocket also listens for every event of every task launched within the cluster and reports the payload through the socket channel.
+
+# api-server-logs
+This component is a wrapper of api-server websocket logs
+
+## Usage
+```bash
+# ./api-server-logs
+
+api-server-logs is a wrapper of api-server websocket logs
+
+Usage:
+  api-server-logs [command]
+
+Available Commands:
+  completion  Generate the autocompletion script for the specified shell
+  help        Help about any command
+  logs        get logs of a specific entity. default: cluster
+  version     show api-server-logs version
+
+Flags:
+  -h, --help   help for api-server-logs
+
+Use "api-server-logs [command] --help" for more information about a command.
+
+```
+
+### Commands
+- `completion`:
+  ```bash
+  Generate the autocompletion script for api-server-logs for the specified shell.
+  See each sub-command's help for details on how to use the generated script.
+
+  Usage:
+    api-server-logs completion [command]
+
+  Available Commands:
+    bash        Generate the autocompletion script for bash
+    fish        Generate the autocompletion script for fish
+    powershell  Generate the autocompletion script for powershell
+    zsh         Generate the autocompletion script for zsh
+
+  Flags:
+    -h, --help   help for completion
+  ```
+
+- `help`: prints the Usage output
+- `logs`: the command to retrieve logs in dump or follow mode
+  ```bash
+  get logs of a specific entity. default: cluster
+
+  Usage:
+    api-server-logs logs [flags]
+
+  Flags:
+    -e, --entity string   get logs for a specific entity: cluster, node, module (default "cluster")
+    -f, --from string     get logs from a specific date. ISO8601 format
+    -h, --help            help for logs
+    -l, --lines string    get logs for a specific lines in dump mode (default "25")
+    -m, --mode string     get logs in a specific mode: tail or dump (default "tail")
+    -n, --name string     get logs for a specific entity name. used in node or module
+    -s, --search string   get logs for a specific search string
+    -t, --to string       get logs to a specific date. ISO8601 format
+  ```
+- `version`: prints the command version
+  ```bash
+  api-server-logs 0.0.1
+  ```

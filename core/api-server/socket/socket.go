@@ -129,5 +129,5 @@ func OnMessage(s *melody.Session, msg []byte) {
 	}
 
 	// switch action received
-	Action(socketAction, s)
+	Action(socketAction, s, nil)
 }
