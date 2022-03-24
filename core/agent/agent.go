@@ -63,7 +63,9 @@ func (v *flagStringSlice) String() string {
 }
 
 func (v *flagStringSlice) Set(raw string) error {
-	*v = append(*v, raw)
+	if len(raw) > 0 {
+		*v = append(*v, raw)
+	}
 	return nil
 }
 
