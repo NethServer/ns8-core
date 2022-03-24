@@ -34,8 +34,8 @@ buildah run gobuilder-core sh -c "cd /usr/src/core/agent && CGO_ENABLED=0 go bui
 echo "2/2 api-server and api-server-logs..."
 # Statically link libraries and disable Sqlite extensions that expect a dynamic loader (not portable across distros)
 # Ref https://www.arp242.net/static-go.html
-buildah run gobuilder-core sh -c "cd /usr/src/core/api-server && go build api-server.go -v -ldflags=\"-extldflags=-static\" -tags sqlite_omit_load_extension ."
-buildah run gobuilder-core sh -c "cd /usr/src/core/api-server && go build api-server-logs.go -v -ldflags=\"-extldflags=-static\" -tags sqlite_omit_load_extension ."
+buildah run gobuilder-core sh -c "cd /usr/src/core/api-server && go build -v -ldflags=\"-extldflags=-static\" -tags sqlite_omit_load_extension api-server.go"
+buildah run gobuilder-core sh -c "cd /usr/src/core/api-server && go build -v -ldflags=\"-extldflags=-static\" -tags sqlite_omit_load_extension api-server-logs.go"
 
 echo "Build static UI files with node..."
 buildah run nodebuilder-core sh -c "cd /usr/src/core/ui && yarn install && yarn build"
