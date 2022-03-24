@@ -10,6 +10,7 @@ jobs:
   push_image:
     env:
       REPONAME: ${{ github.workflow }}
+      IMAGETAG: ${{ github.head_ref }}
     name: 'Build ${{ github.workflow }}'
     runs-on: ubuntu-20.04
     steps:
@@ -41,4 +42,4 @@ jobs:
           set -e
           trap 'buildah logout ghcr.io' EXIT
           buildah login -u ${{ github.actor }} --password-stdin ghcr.io <<<"${{ secrets.GITHUB_TOKEN }}"
-          for image in ${{ steps.build.outputs.images }} ; do buildah push $image docker://${image}:${GITHUB_REF_NAME:-latest} ; done
+          for image in ${{ steps.build.outputs.images }} ; do buildah push $image docker://${image}:${IMAGETAG:-latest} ; done
