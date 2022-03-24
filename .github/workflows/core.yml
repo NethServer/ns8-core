@@ -39,10 +39,23 @@ jobs:
         run: "cd ${REPONAME} && bash build-image.sh"
         env:
           REPOBASE: ghcr.io/${{needs.module.outputs.owner}}
+      - id: python-dep
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
       - id: push
         name: "Push the images"
         run: |
+          pip install semver
           # Push the images
           trap 'buildah logout ghcr.io' EXIT
           buildah login -u ${{ github.actor }} --password-stdin ghcr.io <<<"${{ secrets.GITHUB_TOKEN }}"
-          for image in ${{ steps.build.outputs.images }} ; do buildah push $image docker://${image}:${IMAGETAG:?is missing} ; done
+          for image in ${{ steps.build.outputs.images }} ; do
+             buildah push $image docker://${image}:${IMAGETAG:?is missing}
+             if [[ "${image}" == */core && "${{ github.ref_type }}" == "tag" ]]; then
+                 python3 -c "import semver, sys; sys.exit(1) if semver.VersionInfo.parse(sys.argv[1]).prerelease else sys.exit(0)" ${IMAGETAG}
+                 if [[ $? -eq 0 ]]; then
+                     buildah push $image docker://${image}:ns8-stable
+                 fi
+             fi
+          done
