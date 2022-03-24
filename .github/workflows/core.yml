@@ -8,19 +8,22 @@ on:
       - 'core/test-module.sh'
 
 jobs:
+  module:
+    uses: NethServer/ns8-github-actions/.github/workflows/module-info.yml@main
   push_image:
     env:
-      REPONAME: ${{ github.workflow }}
-      IMAGETAG: ${{ github.ref_name }}
+      REPONAME: ${{needs.module.outputs.name}}
+      IMAGETAG: ${{needs.module.outputs.tag}}
     name: 'Build ${{ github.workflow }}'
     runs-on: ubuntu-latest
+    needs:
+      - module
     steps:
       - id: info
         name: "Retrieve runtime information"
         run: |
           echo "::set-output name=images-dir::$(buildah info --format '{{.store.GraphRoot}}/overlay-images')"
           echo "::set-output name=weekstamp::$(date +%YW%W)"
-          echo "::set-output name=org::$(dirname ${GITHUB_REPOSITORY} | tr '[:upper:]' '[:lower:]')"
       - id: checkout
         uses: actions/checkout@v2
       - id: corecache
@@ -35,7 +38,7 @@ jobs:
         name: "Build the images"
         run: "cd ${REPONAME} && bash build-image.sh"
         env:
-          REPOBASE: ghcr.io/${{ steps.info.outputs.org }}
+          REPOBASE: ghcr.io/${{needs.module.outputs.owner}}
       - id: push
         name: "Push the images"
         run: |
