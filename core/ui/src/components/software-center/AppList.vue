@@ -24,15 +24,9 @@
             :key="index"
             class="bx--col-md-4 bx--col-max-4"
           >
-            <cv-tile
-              kind="standard"
-              @click="showAppInfo(app)"
-              class="app"
-              :light="light"
-              :id="app.id"
-            >
+            <cv-tile kind="standard" class="app" :light="light" :id="app.id">
               <div class="app-logo app-row">
-                <a @click="showAppInfo(app)">
+                <a v-if="app.id !== 'system'" @click="showAppInfo(app)">
                   <img
                     :src="
                       app.logo
@@ -42,24 +36,45 @@
                     :alt="app.name + ' logo'"
                   />
                 </a>
+                <img
+                  v-else
+                  :src="
+                    app.logo
+                      ? app.logo
+                      : require('@/assets/module_default_logo.png')
+                  "
+                  :alt="app.name + ' logo'"
+                />
               </div>
               <div class="app-name app-row">
-                <a @click="showAppInfo(app)">{{ app.name }}</a>
+                <a v-if="app.id !== 'system'" @click="showAppInfo(app)">{{
+                  app.name
+                }}</a>
+                <span v-else>{{ app.name }}</span>
               </div>
               <div class="app-description app-row">
                 {{ getApplicationDescription(app) }}
               </div>
               <div
-                v-if="getApplicationCategories(app)"
+                v-if="app.categories && getApplicationCategories(app)"
                 class="app-categories app-row"
               >
                 {{ getApplicationCategories(app) }}
               </div>
+              <div v-if="app.id == 'system'" class="app-row">
+                <NsButton
+                  kind="ghost"
+                  :icon="Search20"
+                  size="field"
+                  @click="showSystemAppModal()"
+                  >{{ $t("common.details") }}</NsButton
+                >
+              </div>
               <div
-                v-if="isAccountProviderApp(app)"
+                v-else-if="isAccountProviderApp(app)"
                 class="app-row icon-and-text"
               >
-                <NsSvg :svg="Information16" class="icon ns-info" />
+                <NsSvg :svg="InformationFilled16" class="icon ns-info" />
                 <span
                   >{{ $t("software_center.app_managed_in") }}
                   <cv-link to="/domains">{{ $t("domains.title") }}</cv-link>
@@ -98,16 +113,22 @@
       :isShown="appInfo.isShown"
       @close="onClose"
     />
+    <SystemAppModal
+      :isShown="isShownSystemAppModal"
+      :systemApp="systemApp"
+      @hide="hideSystemAppModal"
+    />
   </div>
 </template>
 
 <script>
 import { IconService, UtilService } from "@nethserver/ns8-ui-lib";
 import AppInfoModal from "./AppInfoModal";
+import SystemAppModal from "./SystemAppModal";
 
 export default {
   name: "AppList",
-  components: { AppInfoModal },
+  components: { AppInfoModal, SystemAppModal },
   mixins: [IconService, UtilService],
   props: {
     apps: {
@@ -128,7 +149,13 @@ export default {
       appsLoaded: [],
       pageNum: 0,
       pageSize: 20,
+      isShownSystemAppModal: false,
     };
+  },
+  computed: {
+    systemApp() {
+      return this.apps.find((app) => app.id == "system");
+    },
   },
   watch: {
     apps: function () {
@@ -211,6 +238,12 @@ export default {
         return flags.includes("account_provider");
       }
       return false;
+    },
+    showSystemAppModal() {
+      this.isShownSystemAppModal = true;
+    },
+    hideSystemAppModal() {
+      this.isShownSystemAppModal = false;
     },
   },
 };

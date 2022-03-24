@@ -276,7 +276,9 @@
     "clean-repositories-cache": "Reload software repos",
     "clone-module": "Clone module",
     "cancel-task": "Cancel task",
-    "update-module": "Update module"
+    "update-module": "Update module",
+    "list-core-modules": "List core modules",
+    "update-core": "Update core"
   },
   "network": {
     "title": "Network"
@@ -479,7 +481,7 @@
     "no_app_found_description": "Try changing your search query",
     "open": "Open",
     "update": "Update",
-    "update_all": "Update all apps",
+    "update_all": "Update all",
     "update_will_start_in_a_moment": "Update will start in a moment...",
     "add_to_favorites": "Add to favorites",
     "remove_from_favorites": "Remove from favorites",
@@ -535,6 +537,14 @@
     "update_app": "Update {app}",
     "about_to_update_app": "<strong>{app} v{version}</strong> will be updated to <strong>v{newVersion}</strong>",
     "updating_to_version": "Updating to version {version}",
+    "system_app_name": "{productName} system",
+    "system_app_description": "Collection of {productName} system apps",
+    "update_system": "Update system",
+    "system_app_table_description": "{productName} system is composed by the following instances:",
+    "system_app_update_available": "System update available",
+    "system_app_update_available_description": "Some system apps need to be updated",
+    "version": "Version",
+    "update_available": "Update available",
     "app_categories": {
       "collaboration": "Collaboration",
       "system_administration": "System administration",
@@ -609,7 +619,8 @@
     "backups_failed_c": "{num} backup failed | {num} backups failed",
     "instances_not_backed_up_c": "{num} app not backed up | {num} apps not backed up",
     "apps_installed_c": "App installed | Apps installed",
-    "updated_available_c": "Update available | Updates available"
+    "updated_available_c": "Update available | Updates available",
+    "system_update_available": "System update available"
   },
   "domains": {
     "title": "Domains and users",

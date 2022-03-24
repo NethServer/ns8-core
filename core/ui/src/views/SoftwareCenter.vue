@@ -47,6 +47,16 @@
           />
         </div>
       </div>
+      <div v-if="error.listModules" class="bx--row">
+        <div class="bx--col">
+          <NsInlineNotification
+            kind="error"
+            :title="$t('action.list-core-modules')"
+            :description="error.listCoreModules"
+            :showCloseButton="false"
+          />
+        </div>
+      </div>
       <div v-if="error.cleanRepositoriesCache" class="bx--row">
         <div class="bx--col">
           <NsInlineNotification
@@ -58,9 +68,23 @@
         </div>
       </div>
       <div v-if="q.view !== 'updates'" class="bx--row">
-        <div class="bx--col-lg-16">
+        <div v-if="isSystemUpdateAvailable" class="bx--col">
           <NsInlineNotification
-            v-if="updates.length"
+            kind="warning"
+            :title="$t('software_center.system_app_update_available')"
+            :description="
+              $t('software_center.system_app_update_available_description')
+            "
+            :actionLabel="$t('common.details')"
+            @action="goToUpdates"
+            :showCloseButton="false"
+          />
+        </div>
+        <div
+          v-else-if="updates.length && !loading.listCoreModules"
+          class="bx--col"
+        >
+          <NsInlineNotification
             kind="warning"
             :title="$t('software_center.software_updates')"
             :description="
@@ -119,7 +143,7 @@
               v-else
               :apps="modules"
               :isUpdatingAll="isUpdatingAll"
-              :skeleton="loading.modules"
+              :skeleton="loading.modules || loading.listCoreModules"
               @install="openInstallModal"
               key="all-app-list"
               :light="true"
@@ -136,7 +160,7 @@
               v-else
               :apps="installedModules"
               :isUpdatingAll="isUpdatingAll"
-              :skeleton="loading.modules"
+              :skeleton="loading.modules || loading.listCoreModules"
               @install="openInstallModal"
               key="installed-app-list"
               :light="true"
@@ -162,7 +186,9 @@
               >
             </div>
             <cv-tile
-              v-if="!updates.length && !loading.modules"
+              v-if="
+                !updates.length && !loading.modules && !loading.listCoreModules
+              "
               kind="standard"
               :light="true"
             >
@@ -178,7 +204,7 @@
               v-else
               :apps="updates"
               :isUpdatingAll="isUpdatingAll"
-              :skeleton="loading.modules"
+              :skeleton="loading.modules || loading.listCoreModules"
               @install="openInstallModal"
               key="updates-app-list"
               :light="true"
@@ -194,7 +220,7 @@
             v-if="searchResults.length"
             :apps="searchResults"
             :isUpdatingAll="isUpdatingAll"
-            :skeleton="loading.modules"
+            :skeleton="loading.modules || loading.listCoreModules"
             @install="openInstallModal"
             key="search-app-list"
             :light="true"
@@ -264,17 +290,21 @@ export default {
       searchResults: [],
       modules: [],
       updates: [],
+      coreApps: [],
       updateAllAppsTimeout: 0,
       updateAllAppsDelay: 7000, // you have 7 seconds to cancel "Update all"
       isShownInstallModal: false,
       appToInstall: null,
+      isSystemUpdateAvailable: false,
       loading: {
         modules: true,
         cleanRepositoriesCache: false,
+        listCoreModules: true,
       },
       error: {
         listModules: "",
         cleanRepositoriesCache: "",
+        listCoreModules: "",
       },
     };
   },
@@ -364,6 +394,94 @@ export default {
       if (this.q.search) {
         this.searchApp(this.q.search);
       }
+      this.listCoreModules();
+    },
+    async listCoreModules() {
+      this.error.listCoreModules = "";
+      this.loading.listCoreModules = true;
+      const taskAction = "list-core-modules";
+      const eventId = this.getUuid();
+
+      // register to task error
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.listCoreModulesAborted
+      );
+
+      // register to task completion
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.listCoreModulesCompleted
+      );
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+            eventId,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.listCoreModules = this.getErrorMessage(err);
+        this.loading.listCoreModules = false;
+        return;
+      }
+    },
+    listCoreModulesAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.listCoreModules = this.$t("error.generic_error");
+      this.loading.listCoreModules = false;
+    },
+    listCoreModulesCompleted(taskContext, taskResult) {
+      const coreApps = taskResult.output;
+      let isSystemUpdateAvailable = false;
+
+      console.log("coreApps", coreApps); ////
+
+      const systemApp = {
+        id: "system",
+        name: this.$t("software_center.system_app_name", {
+          productName: this.$root.config.PRODUCT_NAME,
+        }),
+        description: {
+          en: this.$t("software_center.system_app_description", {
+            productName: this.$root.config.PRODUCT_NAME,
+          }),
+        },
+        installed: coreApps,
+      };
+      this.modules.push(systemApp);
+      this.modules.sort(this.sortByProperty("name"));
+
+      // check for core updates
+
+      for (const coreApp of coreApps) {
+        for (const coreInstance of coreApp.instances) {
+          //// remove mock
+          // if (coreInstance.id == "traefik1") {
+          //   coreInstance.update = "new_mock_version";
+          // }
+
+          if (coreInstance.update) {
+            isSystemUpdateAvailable = true;
+          }
+        }
+      }
+
+      if (isSystemUpdateAvailable) {
+        this.isSystemUpdateAvailable = true;
+
+        // add system app to updates
+        this.updates.splice(0, 0, systemApp);
+      }
+      this.coreApps = coreApps;
+      this.loading.listCoreModules = false;
     },
     searchApp(query) {
       // clean query

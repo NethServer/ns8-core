@@ -23,25 +23,34 @@
       <cv-column :md="4" :max="4">
         <NsInfoCard
           light
-          :title="moduleUpdates.length.toString()"
-          :description="
-            $tc('cluster_status.updated_available_c', moduleUpdates.length)
-          "
+          :title="numUpdates.toString()"
+          :description="$tc('cluster_status.updated_available_c', numUpdates)"
           :icon="Upgrade32"
-          :loading="loading.listModules"
-          :isErrorShown="error.listModules"
+          :loading="loading.listModules || loading.listCoreModules"
+          :isErrorShown="error.listCoreModules"
           :errorTitle="$t('error.cannot_retrieve_available_apps')"
-          :errorDescription="error.listModules"
+          :errorDescription="error.listCoreModules"
           class="min-height-card"
         >
           <template slot="content">
-            <NsButton
-              kind="ghost"
-              :icon="ArrowRight20"
-              @click="$router.push('/software-center?search=&view=updates')"
-            >
-              {{ $t("cluster_status.go_to_software_center") }}
-            </NsButton>
+            <div class="card-rows">
+              <div
+                v-if="isSystemUpdateAvailable"
+                class="card-row mg-top-sm icon-and-text"
+              >
+                <NsSvg :svg="Warning16" class="icon ns-warning" />
+                <span>{{ $t("cluster_status.system_update_available") }}</span>
+              </div>
+              <div class="card-row">
+                <NsButton
+                  kind="ghost"
+                  :icon="ArrowRight20"
+                  @click="$router.push('/software-center?search=&view=updates')"
+                >
+                  {{ $t("cluster_status.go_to_software_center") }}
+                </NsButton>
+              </div>
+            </div>
           </template>
         </NsInfoCard>
       </cv-column>
@@ -106,7 +115,7 @@
           class="min-height-card"
         >
           <template slot="content">
-            <div>
+            <div class="card-rows">
               <div
                 v-if="!loading.listBackups && !error.listBackups"
                 class="card-row mg-top-sm"
@@ -212,10 +221,12 @@ export default {
       updates: [],
       backups: [],
       instancesNotBackedUp: [],
+      isSystemUpdateAvailable: false,
       loading: {
         getClusterStatus: true,
         listModules: true,
         listBackups: true,
+        listCoreModules: true,
       },
       error: {
         name: "",
@@ -223,6 +234,7 @@ export default {
         getClusterStatus: "",
         listModules: "",
         listBackups: "",
+        listCoreModules: "",
       },
       toastVisible: true,
       toastTitle: "Toast title",
@@ -272,6 +284,13 @@ export default {
       }
       return moduleUpdates;
     },
+    numUpdates() {
+      if (this.isSystemUpdateAvailable) {
+        return this.moduleUpdates.length + 1;
+      } else {
+        return this.moduleUpdates.length;
+      }
+    },
   },
   watch: {
     isWebsocketConnected: function () {
@@ -308,7 +327,7 @@ export default {
     retrieveData() {
       this.getClusterStatus();
       this.listModules();
-      //// TODO this.listCoreModules();
+      this.listCoreModules();
       this.listBackups();
     },
     async getClusterStatus() {
@@ -423,6 +442,67 @@ export default {
       this.apps = apps;
       this.loading.listModules = false;
     },
+    async listCoreModules() {
+      this.error.listCoreModules = "";
+      this.loading.listCoreModules = true;
+      const taskAction = "list-core-modules";
+      const eventId = this.getUuid();
+
+      // register to task error
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.listCoreModulesAborted
+      );
+
+      // register to task completion
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.listCoreModulesCompleted
+      );
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+            eventId,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.listCoreModules = this.getErrorMessage(err);
+        this.loading.listCoreModules = false;
+        return;
+      }
+    },
+    listCoreModulesAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.listCoreModules = this.$t("error.generic_error");
+      this.loading.listCoreModules = false;
+    },
+    listCoreModulesCompleted(taskContext, taskResult) {
+      const coreApps = taskResult.output;
+      let isSystemUpdateAvailable = false;
+
+      for (const coreApp of coreApps) {
+        for (const coreInstance of coreApp.instances) {
+          //// remove mock
+          // if (coreInstance.id == "traefik1") {
+          //   coreInstance.update = "new_mock_version";
+          // }
+
+          if (coreInstance.update) {
+            isSystemUpdateAvailable = true;
+          }
+        }
+      }
+      this.isSystemUpdateAvailable = isSystemUpdateAvailable;
+      this.loading.listCoreModules = false;
+    },
     async listBackups() {
       this.loading.listBackups = true;
       this.error.listBackups = "";
@@ -482,6 +562,11 @@ export default {
 
 <style scoped lang="scss">
 @import "../styles/carbon-utils";
+
+.card-rows {
+  display: flex;
+  flex-direction: column;
+}
 
 .card-row {
   margin-bottom: $spacing-05;

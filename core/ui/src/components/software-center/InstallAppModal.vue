@@ -90,7 +90,7 @@ export default {
     },
     appVersion() {
       if (this.app.versions.length) {
-        //// remove
+        //// remove mock
         // if (this.app.name == "Dokuwiki" || this.app.name == "Nextcloud") {
         //   return "0.0.1-alpha2";
         // }
