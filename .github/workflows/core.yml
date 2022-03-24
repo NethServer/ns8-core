@@ -2,7 +2,8 @@ name: core
 on:
   push:
     paths:
-      - 'core/**'
+      - '!docs/**'
+      - '!infra/**'
       - '!core/tests/**'
       - '!core/test-module.sh'
 
@@ -12,7 +13,7 @@ jobs:
       REPONAME: ${{ github.workflow }}
       IMAGETAG: ${{ github.ref_name }}
     name: 'Build ${{ github.workflow }}'
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - id: info
         name: "Retrieve runtime information"
