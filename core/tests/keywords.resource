@@ -13,7 +13,7 @@ Connect to the node
     [Arguments]    ${NODE_ADDR}    ${SSH_KEYFILE}
     Open Connection    ${NODE_ADDR}
     Login With Public Key    root    ${SSH_KEYFILE}
-    ${output} =    Execute Command    systemctl is-system-running    --wait
+    ${output} =    Execute Command    systemctl is-system-running --wait
     Should Be True    '${output}' == 'running' or '${output}' == 'degraded'
 
 Install the core
