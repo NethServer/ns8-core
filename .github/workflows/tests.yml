@@ -50,7 +50,7 @@ jobs:
             res=$(podman search --limit 150 --list-tags   --format json   ghcr.io/nethserver/${module} | jq 'any(.[].Tags[]; . == "${{ steps.tag.outputs.name }}")')
             if [ "$res" = "true" ]
             then
-              modules_list=$(echo "${modules_list}"  | jq -c --arg m ${module} ' . + [$m]')
+              modules_list=$(echo "${modules_list}"  | jq -c --arg m ghcr.io/nethserver/${module}:${{ steps.tag.outputs.name }} ' . + [$m]')
             fi
           done
           echo "::set-output name=list::${modules_list}"
@@ -114,7 +114,6 @@ jobs:
         working-directory: ${{ github.workspace }}/core
         env:
           SSH_KEYFILE: ${{ github.workspace }}/key
-          COREBRANCH: ${{ needs.ns8.outputs.tag }}
           COREMODULES: ${{ join(fromJSON(needs.ns8.outputs.modules), ',' ) }}
       - name: Save tests results
         if: always()

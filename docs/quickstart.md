@@ -54,13 +54,19 @@ commands: follow on-screen instructions printed by `install.sh`.
 
 Run either new cluster initialization (`create-cluster`) or joining an existing cluster (`join-cluster`).
 
-### Install a development branch
+### Install custom images
 
 Developers may prefer to run `install.sh` with one or more images from a
-development branch. The first argument selects the branch name, following
-arguments the module names to be pulled from that branch.
+development branch or alternative registries.
 
-    bash install.sh mybranch module1 module2 ...
+    bash install.sh ghcr.io/nethserver/core:latest ghcr.io/nethserver/traefik:mybranch
+
+### Install customization
+
+The install script also accepts the following environment variables:
+- `TESTING`: override testing flag inside the `default` repository. It can be `0` (disabled) or `1` (enabled), default is `0`
+- `REPMOD`: override `default` software repository URL, it could be something like `https://mycustomrrepo.server.test/repomd`
+- `ADMIN_PASSWORD`: override default admin password
 
 ## Applications
 

@@ -65,3 +65,6 @@ for b in dump['cluster']['backup'].keys():
     max_backup = max(max_backup, int(b))
     rdb.hset(f'cluster/backup/{b}', mapping=dump['cluster']['backup'][b])
 rdb.set('cluster/backup_sequence', max_backup)
+
+# Restore cluster override for modules
+rdb.hset(f'cluster/override/modules', mapping=dump['cluster']['override']['modules'])

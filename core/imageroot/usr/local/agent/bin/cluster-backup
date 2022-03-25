@@ -40,7 +40,7 @@ VERSION = "1"
 # pythonic wat to retrieve current timestamp on UTC timezone
 now = int(datetime.now(timezone.utc).replace(tzinfo=timezone.utc).timestamp())
 
-dump = { 'version': VERSION, 'timestamp': now, 'modules': {}, 'vpn': {}, 'cluster': { 'repository': {}, 'backup': {}, 'backup_repository': {}, 'user_domain': { 'ldap': {} } } }
+dump = { 'version': VERSION, 'timestamp': now, 'modules': {}, 'vpn': {}, 'cluster': { 'repository': {}, 'backup': {}, 'backup_repository': {}, 'user_domain': { 'ldap': {} },'override': {'modules': {} } } }
 
 # cluster: software repositories
 for r in rdb.scan_iter('cluster/repository/*'):
@@ -73,6 +73,9 @@ for k in ['network', 'ui_name']:
 
 # cluster: favorite apps
 dump['cluster']['favorites'] = list(rdb.smembers(f'cluster/favorites'))
+
+# cluster: module URL override
+dump['cluster']['override']['modules'] = rdb.hgetall('override/modules')
 
 # modules: backup schedules
 for m in rdb.scan_iter('module/*/backups'):
