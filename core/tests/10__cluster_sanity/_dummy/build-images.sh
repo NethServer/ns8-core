@@ -7,7 +7,7 @@ if ! command -v buildah; then
     # Pick up the first one that is available
     if command -v apt; then
         apt install buildah
-        trap "apt remove buildah" EXIT
+        trap "apt remove -y buildah" EXIT
     elif command -v dnf; then
         dnf install -q -y buildah
         trap "dnf remove -q -y buildah" EXIT
