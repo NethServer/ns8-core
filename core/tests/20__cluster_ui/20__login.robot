@@ -8,11 +8,11 @@ Test Teardown     Close the context
 
 *** Test Cases ***
 Login Page Is Reachable
-    New Page    https://${NODE_ADDR}/cluster-admin/
+    Open login page
     Get Title    should be    Log in
 
 Invalid Login Credentials
-    New Page    https://${NODE_ADDR}/cluster-admin/
+    Open login page
     Fill Text    text="Username"    Baaad
     Click    button >> text="Continue"
     Fill Text    text="Password"    S3cret!

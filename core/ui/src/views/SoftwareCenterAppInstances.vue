@@ -176,6 +176,7 @@
                   <NsMenuItem
                     :icon="TrashCan20"
                     :label="$t('software_center.uninstall')"
+                    :data-test-id="index == 0 ? 'first' : ''"
                   />
                 </cv-overflow-menu-item>
               </cv-overflow-menu>

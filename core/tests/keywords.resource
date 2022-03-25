@@ -60,8 +60,17 @@ Close the browser
 
 UI login
     [Arguments]    ${username}    ${password}
-    New Page    https://${NODE_ADDR}/cluster-admin/
+    Open login page
     Fill Text    text="Username"    ${username}
     Click    button >> text="Continue"
     Fill Text    text="Password"    ${password}
     Click    button >> text="Log in"
+
+Open login page
+    # support for localhost:PORT as NODE_ADDR
+    IF    $NODE_ADDR.startswith("localhost")
+        ${url}=    Set Variable    http://${NODE_ADDR}
+    ELSE
+        ${url}=    Set Variable    https://${NODE_ADDR}/cluster-admin
+    END
+    New Page    ${url}

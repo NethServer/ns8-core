@@ -36,15 +36,12 @@ Uninstall App
     Click    .app-list .bx--row > div:first-child button >> text="Instances"
     # click overflow menu
     Click    .bx--row > div:first-child .cv-overflow-menu button
-    # temporarily disable strict mode (query can return more than one element)
-    ${old_mode} =    Set Strict Mode    False
-    Click    .bx--overflow-menu-options >> text="Uninstall"
-    Set Strict Mode    ${old_mode}
+    Click    .bx--overflow-menu-options [data-test-id="first"] >> text="Uninstall"
     # get module ID from modal title
-    ${modalTitle}=    Get Text    .bx--modal-header__heading >> text=Uninstall
-    ${regexpMatch}=    Evaluate    re.search("Uninstall (.+)", "${modalTitle}"), re
+    ${modal_title}=    Get Text    .bx--modal-header__heading >> text=Uninstall
+    ${regexp_match}=    Evaluate    re.search("Uninstall (.+)", "${modal_title}"), re
     # enter module ID in danger modal input
-    Fill Text    .cv-modal .bx--text-input    ${regexpMatch[0].group(1)}
+    Fill Text    .cv-modal .bx--text-input    ${regexp_match[0].group(1)}
     Click    button >> text="I understand, delete"
     ${old_browser_timeout} =    Set Browser Timeout    60 seconds
     ${old_retry_assertions} =    Set Retry Assertions For    60 seconds
