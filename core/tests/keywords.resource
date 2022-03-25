@@ -68,8 +68,7 @@ UI login
 
 Open login page
     # support for localhost:PORT as NODE_ADDR
-    ${is_localhost}=    Evaluate    "${NODE_ADDR}".startswith("localhost")
-    IF    ${is_localhost} == True
+    IF    $NODE_ADDR.startswith("localhost")
         ${url}=    Set Variable    http://${NODE_ADDR}
     ELSE
         ${url}=    Set Variable    https://${NODE_ADDR}/cluster-admin
