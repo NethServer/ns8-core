@@ -221,9 +221,6 @@ echo "Setting default admin password:"
 ADMIN_PASSWORD="${ADMIN_PASSWORD:-Nethesis,1234}"
 add-user --role owner --password "${ADMIN_PASSWORD}" admin
 
-echo "Enable the events gateway for the node agent:"
-systemctl enable --now eventsgw@node
-
 cat - <<EOF
 
 NethServer 8 Scratchpad

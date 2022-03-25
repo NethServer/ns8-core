@@ -33,9 +33,6 @@ Systemd units for agents are:
 
 See also the [Agent documentation](https://github.com/NethServer/ns8-core/blob/main/core/agent/README.md).
 
-Similarly `eventsgw.service` and `eventsgw@.service` units are provided by
-the core to run event handler services.
-
 ## Tasks processing
 
 Agents wait for tasks on a Redis list. Only the `cluster` agent and the

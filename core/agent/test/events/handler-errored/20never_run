@@ -1,0 +1,4 @@
+#!/bin/bash
+
+echo "NEVER REACH THIS POINT"
+exit 0

@@ -9,7 +9,11 @@ Environment=AGENT_ID=module/%u
 EnvironmentFile=/etc/nethserver/agent.env
 EnvironmentFile=-%S/state/agent.env
 WorkingDirectory=%S/state
-ExecStart=/usr/local/bin/agent ${AGENT_ID} ${AGENT_BASEACTIONS_DIR} ${AGENT_INSTALL_DIR}/actions %h/actions-custom
+ExecStart=/usr/local/bin/agent \
+    --agentid=${AGENT_ID} \
+    --actionsdir=${AGENT_BASEACTIONS_DIR} \
+    --actionsdir=${AGENT_INSTALL_DIR}/actions \
+    --eventsdir=${AGENT_INSTALL_DIR}/events
 Restart=always
 SyslogIdentifier=%u
 

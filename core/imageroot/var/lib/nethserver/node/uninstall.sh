@@ -62,14 +62,13 @@ for modulehome in /var/lib/nethserver/*[0-9]; do
       -o -name "backup*-${moduleid}.service" \
       -o -name "backup*-${moduleid}.timer" \) \
       -delete -printf '%f\n'))
-    systemctl disable --now "eventsgw@${moduleid}" "agent@${moduleid}" "${units[@]}"
+    systemctl disable --now "agent@${moduleid}" "${units[@]}"
     rm -rf "${modulehome}"
 done
 
 echo "Deleting cluster and agent core modules"
 systemctl disable --now \
   agent@node.service \
-  eventsgw@node.service \
   agent@cluster.service
 rm -rf /var/lib/nethserver/cluster /var/lib/nethserver/node
 

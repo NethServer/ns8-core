@@ -1,18 +1,18 @@
 # Agent
 
-* Go version 1.16+
+* Go version 1.18+
 * Run `go build .` in this directory
 
 ## Startup
 
-Start the agent passing two or more arguments:
+Start the agent passing the following arguments
 
 1. The agent prefix identifier (e.g. "cluster", "node/1", "module/mail1"...)
-2. One or more root action directories where actions are defined
+2. One or more root action/event directories
 
 For instance:
 
-    ./agent module/mail1 . ~/.config/actions
+    ./agent --agentid module/mail1 . --actionsdir ~/.config/actions --eventsdir ~/.config/events
 
 The agent accepts also some environment variables, so a complete invocation from Bash could be:
 
@@ -333,3 +333,36 @@ Action input (JSON format):
     {"task":"fbee04e5-f251-4cda-a835-d7598449bf16"}
 
 Action output is undefined.
+
+## Events
+
+Actions are started when a task object is received: it is designed to be a
+one-to-one communication channel.  On the opposite, Events are a form of
+one-to-many communication.  When the agent starts it listens for events
+with a Redis `PSUBSCRIBE */event/*` command.
+
+If the TCP connection is closed, the underlying `go-redis` library handles
+the server reconnection.
+
+When an event matching the PSUBSCRIBE pattern is received, the agent
+starts to process it.
+
+The Redis channel matches the pattern `<Source>/event/<Name>`. The prefix
+is the event **source**. The suffix is the event **name**.
+
+The event processing model resembles the actions one: a matching event
+name is searched in the directory list defined by ``--eventsdir`` command
+arguments. Then a list of executable event handler steps is built with the
+same rules of action steps. The steps are executed in alphabetical order
+and if one of them has non-zero exit code, the event processing is
+aborted.
+
+Action execution similarities are:
+
+- The event payload can be read from the step stdin
+- The step stdout and stderr file descriptors are redirected to the agent stderr
+
+Differences with the action execution are:
+
+- The final event exit code is written to the agent log only
+- Commands sent to AGENT_COMFD are ignored (and redirected to the agent stderr)

@@ -37,4 +37,4 @@ Example:
 }
 ```
 
-The event is published under Redis channel `module/traefik<X>/event/certificate-update`.
+The event is published under Redis channel `module/traefik<X>/event/certificate-updated`.

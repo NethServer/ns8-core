@@ -1,0 +1,4 @@
+#!/bin/bash
+
+echo "[ERROR] event handler error in $AGENT_EVENT_NAME/$(basename $0)" 1>&2
+exit 2

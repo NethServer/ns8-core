@@ -12,22 +12,25 @@ Start the agent
     Create File    /srv/state/environment
     Create File    /srv/log/agent.log
     Start Process    /usr/src/agent
-    ...    ${AGENT_ID}    /usr/src/test/actions
+    ...    --agentid\=${AGENT_ID}
+    ...    --actionsdir\=/usr/src/test/actions
+    ...    --eventsdir\=/usr/src/test/events
     ...    cwd=/srv/state    shell=False
     ...    stderr=STDOUT    stdout=/srv/log/agent.log
     ${redis_conn} =     Connect To Redis    127.0.0.1
     Set Suite Variable    ${RDB}    ${redis_conn}
 
 Stop the agent and cleanup
-    Terminate All Processes
+    Terminate Process
     Flush the Redis database
 
 Flush the Redis database
     Flush All    ${RDB}
 
 Start command monitoring
+    [Arguments]    ${timeout}=${0.5}
     Open Connection    127.0.0.1
-    ...    port=6379    newline=CRLF    default_log_level=TRACE    prompt=+    timeout=${0.5}
+    ...    port=6379    newline=CRLF    default_log_level=TRACE    prompt=+    timeout=${timeout}
     Write Bare    MONITOR\r\n
     Read Until Regexp  \\+OK
 
@@ -35,12 +38,13 @@ Stop command monitoring
     Close All Connections
 
 Stop command monitoring and flush the database
-    Close All Connections
     Flush the Redis database
+    The command is received    FLUSHALL
+    Close All Connections
 
 Wait until the agent log contains
     [Arguments]    ${pattern}
-    Wait Until Keyword Succeeds    ${2.0}    ${0.125}    Grep in the agent log  ${pattern}
+    Wait Until Keyword Succeeds    2s    125ms    Grep in the agent log  ${pattern}
 
 Grep in the agent log
     [Arguments]    ${pattern}

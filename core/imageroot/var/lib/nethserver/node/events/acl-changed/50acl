@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #
-# Copyright (C) 2021 Nethesis S.r.l.
+# Copyright (C) 2022 Nethesis S.r.l.
 # http://www.nethesis.it - nethserver@nethesis.it
 #
 # This script is part of NethServer.
@@ -20,13 +20,10 @@
 # along with NethServer.  If not, see COPYING.
 #
 
-exec 1>&2
 set -e
+exec 1>&2
 
-if [[ $(id -u) == 0 ]]; then
-    # Rootfull module
-    systemctl enable --now "eventsgw@${MODULE_ID}.service"
-else
-    # Rootless module
-    systemctl --user enable --now eventsgw.service
-fi
+#
+# Reload ACLs
+#
+/usr/local/bin/acl-load

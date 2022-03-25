@@ -35,24 +35,21 @@ redis-cli PUBLISH module/traefik1/event/test '{"field": "value"}'
 
 ## Handling events
 
-Events are handled by the `eventsgw` service.
-Multiple service instances run for both rootfull and rootless modules.
+Events are handled like actions by the `agent` service.
 
-The service starts only if the `eventsgw.conf` configuration file exists.
-Rootfull modules must create the the file inside `/var/lib/nethserver/<module_id>/state/eventsgw.conf`,
-i.e `/var/lib/nethserver/samba1/state/eventsgw.conf`.
-Rootless module must create the file inside the state dir `/home/<module_id>/.config/state/eventsgw.conf`,
-i.e. `/home/openldap1/.config/state/eventsgw.conf`.
+Modules can define their event handlers under a dedicated directory,
+separate from the `actions/` one: `${AGENT_INSTALL_DIR}/events/`. The
+handler directory contains one or more step scripts that must be
+executable files. For instance:
+- **rootfull module**: `/var/lib/nethserver/mymodule/events/some-event-happened/10handler`.
+- **rootless module**: `/home/mymodule/.config/events/some-event-happened/10handler`
 
-The `eventsgw.conf` is a INI file with an `actions` section.
-Each section has a key-value format:
-- the key on the left is the Redis channel to subscribe
-- the value on the right is the command or action to execute
+Like actions, the event payload can be read by the step scripts from the
+standard input file descriptor.
 
-Example:
-```ini
-[actions]
-# Execute an action on the module when the event is received. The event data is passed to the action `data` argument.
-module/traefik*/event/certificate-renew = renew-certificate
+Lines sent to standard error and standard output are relayed to the system
+log.
 
-```
+Similarly to actions, if an handler step exit code is non-zero, the
+handler execution is aborted. Subsequent steps are not executed and an
+error message is sent to the log.
