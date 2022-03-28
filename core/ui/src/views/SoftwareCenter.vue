@@ -104,6 +104,14 @@
           />
         </div>
       </div>
+      <div v-if="error.updateCore">
+        <NsInlineNotification
+          kind="error"
+          :title="$t('action.update-core')"
+          :description="error.updateCore"
+          :showCloseButton="false"
+        />
+      </div>
       <div>
         <cv-search
           :label="$t('software_center.search_placeholder')"
@@ -174,7 +182,25 @@
           </div>
           <div v-if="csbUpdatesSelected">
             <!-- core update -->
-            <template v-if="isCoreUpdateAvailable">
+            <template
+              v-if="
+                isCoreUpdateAvailable &&
+                !loading.modules &&
+                !loading.listCoreModules
+              "
+            >
+              <!-- core update -->
+              <NsInlineNotification
+                v-if="updateCoreTimeout"
+                kind="info"
+                :title="
+                  $t('software_center.core_update_will_start_in_a_moment')
+                "
+                :actionLabel="$t('common.cancel')"
+                @action="cancelUpdateCore"
+                :showCloseButton="false"
+                :timer="UPDATE_DELAY"
+              />
               <h4 class="mg-bottom-md">
                 {{ $t("software_center.core_update") }}
               </h4>
@@ -193,16 +219,17 @@
             <NsInlineNotification
               v-if="updateAllAppsTimeout"
               kind="info"
-              :title="$t('software_center.update_will_start_in_a_moment')"
+              :title="$t('software_center.apps_update_will_start_in_a_moment')"
               :actionLabel="$t('common.cancel')"
-              @action="cancelUpdateAll"
+              @action="cancelUpdateAllApps"
               :showCloseButton="false"
-              :timer="updateAllAppsDelay"
+              :timer="UPDATE_DELAY"
             />
             <div
               v-if="
                 appUpdates.length &&
                 !updateAllAppsTimeout &&
+                !loading.listModules &&
                 !loading.listCoreModules
               "
               class="toolbar"
@@ -210,9 +237,9 @@
               <NsButton
                 kind="primary"
                 :icon="Upgrade20"
-                @click="willUpdateAll()"
+                @click="willUpdateAllApps()"
                 :disabled="isUpdatingCore"
-                >{{ $t("software_center.update_all") }}</NsButton
+                >{{ $t("software_center.update_all_apps") }}</NsButton
               >
             </div>
             <cv-tile
@@ -300,7 +327,7 @@ import {
   IconService,
   LottieService,
 } from "@nethserver/ns8-ui-lib";
-import { mapState } from "vuex";
+import { mapState, mapActions } from "vuex";
 
 export default {
   name: "SoftwareCenter",
@@ -333,7 +360,9 @@ export default {
       appUpdates: [],
       coreModules: [],
       updateAllAppsTimeout: 0,
-      updateAllAppsDelay: 7000, // you have 7 seconds to cancel "Update all"
+      updateCoreTimeout: 0,
+      // you have 10 seconds to cancel "Update core" and "Update all apps"
+      UPDATE_DELAY: 10000,
       isShownInstallModal: false,
       appToInstall: null,
       isCoreUpdateAvailable: false,
@@ -348,11 +377,12 @@ export default {
         listModules: "",
         cleanRepositoriesCache: "",
         listCoreModules: "",
+        updateCore: "",
       },
     };
   },
   computed: {
-    ...mapState(["isUpdatingCore"]),
+    ...mapState(["isUpdatingCore", "clusterNodes"]),
     csbAllSelected() {
       return this.q.view === "all";
     },
@@ -366,6 +396,9 @@ export default {
       return this.modules.filter((app) => {
         return app.installed.length;
       });
+    },
+    nodeIds() {
+      return this.clusterNodes.map((node) => node.id);
     },
   },
   watch: {
@@ -389,13 +422,14 @@ export default {
     this.listModules();
 
     // register to events
-    this.$root.$on("updateCoreCompleted", this.onUpdateCoreCompleted);
+    this.$root.$on("willUpdateCore", this.onWillUpdateCore);
   },
   beforeDestroy() {
     // remove event listener
-    this.$root.$off("updateCoreCompleted");
+    this.$root.$off("willUpdateCore");
   },
   methods: {
+    ...mapActions(["setUpdatingCoreInStore"]),
     async listModules() {
       this.loading.modules = true;
       this.error.listModules = "";
@@ -594,18 +628,28 @@ export default {
     goToSettingsSoftwareRepositories() {
       this.$router.push("/settings/software-repository");
     },
-    willUpdateAll() {
-      this.updateAllAppsTimeout = setTimeout(() => {
-        this.updateAll();
-        this.updateAllAppsTimeout = 0;
-      }, this.updateAllAppsDelay);
+    onWillUpdateCore() {
+      this.updateCoreTimeout = setTimeout(() => {
+        this.updateCore();
+        this.updateCoreTimeout = 0;
+      }, this.UPDATE_DELAY);
     },
-    cancelUpdateAll() {
+    willUpdateAllApps() {
+      this.updateAllAppsTimeout = setTimeout(() => {
+        this.updateAllApps();
+        this.updateAllAppsTimeout = 0;
+      }, this.UPDATE_DELAY);
+    },
+    cancelUpdateCore() {
+      clearTimeout(this.updateCoreTimeout);
+      this.updateCoreTimeout = 0;
+    },
+    cancelUpdateAllApps() {
       clearTimeout(this.updateAllAppsTimeout);
       this.updateAllAppsTimeout = 0;
     },
-    updateAll() {
-      console.log("updateAll, num apps", this.appUpdates.length); ////
+    updateAllApps() {
+      console.log("updateAllApps, num apps", this.appUpdates.length); ////
 
       for (const appToUpdate of this.appUpdates) {
         console.log("appToUpdate", appToUpdate.name); ////
@@ -665,14 +709,58 @@ export default {
       this.loading.cleanRepositoriesCache = false;
       this.listModules();
     },
-    onUpdateCoreCompleted() {
-      this.listModules();
-    },
     showCoreAppModal() {
       this.isShownCoreAppModal = true;
     },
     hideCoreAppModal() {
       this.isShownCoreAppModal = false;
+    },
+    async updateCore() {
+      this.error.updateCore = "";
+      this.setUpdatingCoreInStore(true);
+      const taskAction = "update-core";
+      const eventId = this.getUuid();
+
+      // register to task error
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.updateCoreAborted
+      );
+
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.updateCoreCompleted
+      );
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          data: {
+            nodes: this.nodeIds,
+          },
+          extra: {
+            title: this.$t("software_center.update_core"),
+            description: this.$t("common.processing"),
+            eventId,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.updateCore = this.getErrorMessage(err);
+        this.setUpdatingCoreInStore(false);
+        return;
+      }
+    },
+    updateCoreAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.setUpdatingCoreInStore(false);
+    },
+    updateCoreCompleted() {
+      this.setUpdatingCoreInStore(false);
+      this.listModules();
     },
   },
 };

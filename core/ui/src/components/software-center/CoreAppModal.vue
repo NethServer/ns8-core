@@ -48,14 +48,6 @@
           </cv-data-table-row>
         </template>
       </cv-data-table>
-      <div v-if="error.updateCore">
-        <NsInlineNotification
-          kind="error"
-          :title="$t('action.update-core')"
-          :description="error.updateCore"
-          :showCloseButton="false"
-        />
-      </div>
     </template>
     <template v-if="isCoreUpdatable" slot="secondary-button">{{
       $t("common.close")
@@ -73,8 +65,7 @@ import {
   IconService,
   DataTableService,
 } from "@nethserver/ns8-ui-lib";
-import to from "await-to-js";
-import { mapState, mapActions } from "vuex";
+import { mapState } from "vuex";
 
 export default {
   name: "CoreAppModal",
@@ -87,16 +78,10 @@ export default {
     return {
       tableRows: [],
       tableColumns: [],
-      loading: {
-        updateCore: false,
-      },
-      error: {
-        updateCore: "",
-      },
     };
   },
   computed: {
-    ...mapState(["clusterNodes", "isUpdatingCore"]),
+    ...mapState(["isUpdatingCore"]),
     isCoreUpdatable() {
       // check if at least a core module has an update available
       if (this.coreApp) {
@@ -127,81 +112,33 @@ export default {
         return this.$t("software_center." + column);
       });
     },
-    nodeIds() {
-      return this.clusterNodes.map((node) => node.id);
-    },
   },
   watch: {
     coreApp: function () {
-      this.tableRows = this.coreInstances;
+      this.updateTableData();
     },
   },
   created() {
-    this.tableRows = this.coreInstances;
-    this.tableColumns = this.isCoreUpdatable
-      ? ["instance", "version", "update_available"]
-      : ["instance", "version"];
+    this.updateTableData();
   },
   methods: {
-    ...mapActions(["setUpdatingCoreInStore"]),
-    async updateCore() {
-      this.error.updateCore = "";
-      this.setUpdatingCoreInStore(true);
-      const taskAction = "update-core";
-      const eventId = this.getUuid();
-
-      // register to task error
-      this.$root.$once(
-        `${taskAction}-aborted-${eventId}`,
-        this.updateCoreAborted
-      );
-
-      this.$root.$once(
-        `${taskAction}-completed-${eventId}`,
-        this.updateCoreCompleted
-      );
-
-      const res = await to(
-        this.createClusterTask({
-          action: taskAction,
-          data: {
-            nodes: this.nodeIds,
-          },
-          extra: {
-            title: this.$t("software_center.update_core"),
-            description: this.$t("common.processing"),
-            eventId,
-          },
-        })
-      );
-      const err = res[0];
-
-      if (err) {
-        console.error(`error creating task ${taskAction}`, err);
-        this.error.updateCore = this.getErrorMessage(err);
-        this.setUpdatingCoreInStore(false);
-        return;
-      }
-
-      // emit event to close modal
+    updateTableData() {
+      this.tableRows = this.coreInstances;
+      this.tableColumns = this.isCoreUpdatable
+        ? ["instance", "version", "update_available"]
+        : ["instance", "version"];
+    },
+    willUpdateCore() {
+      this.$root.$emit("willUpdateCore");
       this.$emit("hide");
-    },
-    updateCoreAborted(taskResult, taskContext) {
-      console.error(`${taskContext.action} aborted`, taskResult);
-      this.setUpdatingCoreInStore(false);
-    },
-    updateCoreCompleted() {
-      this.setUpdatingCoreInStore(false);
-
-      // broadcast event
-      this.$root.$emit("updateCoreCompleted");
+      this.$router.replace("/software-center?view=updates");
     },
     onModalHidden() {
       this.$emit("hide");
     },
     primaryAction() {
       if (this.isCoreUpdatable) {
-        this.updateCore();
+        this.willUpdateCore();
       } else {
         this.$emit("hide");
       }
