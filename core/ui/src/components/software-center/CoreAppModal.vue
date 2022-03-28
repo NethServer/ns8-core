@@ -4,7 +4,7 @@
     :visible="isShown"
     @modal-hidden="onModalHidden"
     @primary-click="primaryAction"
-    :primary-button-disabled="isUpdatingCore"
+    :primary-button-disabled="isUpdateInProgress"
     class="no-pad-modal"
   >
     <template v-if="coreApp" slot="title">{{ coreApp.name }}</template>
@@ -81,7 +81,7 @@ export default {
     };
   },
   computed: {
-    ...mapState(["isUpdatingCore"]),
+    ...mapState(["isUpdateInProgress"]),
     isCoreUpdatable() {
       // check if at least a core module has an update available
       if (this.coreApp) {

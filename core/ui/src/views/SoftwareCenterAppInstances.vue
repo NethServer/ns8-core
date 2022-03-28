@@ -56,9 +56,58 @@
           />
         </div>
       </div>
+      <div v-if="error.updateModule" class="bx--row">
+        <div class="bx--col">
+          <NsInlineNotification
+            kind="error"
+            :title="$t('action.update-module')"
+            :description="error.updateModule"
+            :showCloseButton="false"
+          />
+        </div>
+      </div>
+      <div v-if="updateInstancesTimeout" class="bx--row">
+        <div class="bx--col">
+          <NsInlineNotification
+            kind="info"
+            :title="
+              $t('software_center.instances_update_will_start_in_a_moment')
+            "
+            :actionLabel="$t('common.cancel')"
+            @action="cancelUpdateInstances"
+            :showCloseButton="false"
+            :timer="UPDATE_DELAY"
+          />
+        </div>
+      </div>
       <div class="bx--row">
-        <div class="bx--col-lg-16">
-          <div v-if="app && app.installed && app.installed.length">
+        <template v-if="app">
+          <div v-if="app.updates.length" class="bx--col">
+            <NsButton
+              kind="primary"
+              :icon="Upgrade20"
+              :disabled="isUpdateInProgress"
+              @click="willUpdateAllInstances()"
+              >{{ $t("software_center.update_all_instances") }}
+            </NsButton>
+            <NsIconMenu
+              :flipMenu="true"
+              tipPosition="top"
+              tipAlignment="end"
+              class="overflow-near-button"
+            >
+              <cv-overflow-menu-item @click="installInstance()">
+                <NsMenuItem
+                  :icon="Download20"
+                  :label="$t('software_center.install_new_instance')"
+                />
+              </cv-overflow-menu-item>
+            </NsIconMenu>
+          </div>
+          <div
+            v-else-if="app.installed && app.installed.length"
+            class="bx--col"
+          >
             <NsButton
               kind="secondary"
               :icon="Download20"
@@ -66,7 +115,7 @@
               >{{ $t("software_center.install_new_instance") }}
             </NsButton>
           </div>
-        </div>
+        </template>
       </div>
       <div class="bx--row">
         <template v-if="loading.modules">
@@ -197,10 +246,10 @@
                   <!-- app is installed and can be updated -->
                   <template v-if="isInstanceUpgradable(app, instance)">
                     <NsButton
-                      kind="primary"
+                      kind="secondary"
                       :icon="Upgrade20"
                       @click="updateInstance(instance)"
-                      :disabled="isUpdatingCore"
+                      :disabled="isUpdateInProgress"
                       >{{ $t("software_center.update") }}</NsButton
                     >
                   </template>
@@ -339,6 +388,8 @@ export default {
   },
   data() {
     return {
+      // you have 10 seconds to cancel "Update core" and "Update all apps"
+      UPDATE_DELAY: 10000,
       appName: "",
       app: null,
       isShownInstallModal: false,
@@ -352,6 +403,7 @@ export default {
       isElementHighlighted: false,
       isShownUpdateModal: false,
       instanceToUpdate: null,
+      updateInstancesTimeout: 0,
       cloneOrMove: {
         isModalShown: false,
         isClone: true,
@@ -362,6 +414,7 @@ export default {
       loading: {
         modules: true,
         setInstanceLabel: false,
+        updateModule: false,
       },
       error: {
         listModules: "",
@@ -370,6 +423,7 @@ export default {
         removeFavorite: "",
         setNodeLabel: "",
         setInstanceLabel: "",
+        updateModule: "",
       },
     };
   },
@@ -388,7 +442,7 @@ export default {
     this.listModules();
   },
   computed: {
-    ...mapState(["favoriteApps", "clusterNodes", "isUpdatingCore"]),
+    ...mapState(["favoriteApps", "clusterNodes", "isUpdateInProgress"]),
     instanceToUninstallLabel() {
       if (!this.instanceToUninstall) {
         return "";
@@ -398,9 +452,15 @@ export default {
         ? `${this.instanceToUninstall.ui_name} (${this.instanceToUninstall.id})`
         : this.instanceToUninstall.id;
     },
+    updatableInstancesIds() {
+      if (this.app) {
+        return this.app.updates.map((instance) => instance.id);
+      }
+      return [];
+    },
   },
   methods: {
-    ...mapActions(["setAppDrawerShownInStore"]),
+    ...mapActions(["setAppDrawerShownInStore", "setUpdateInProgressInStore"]),
     async listModules() {
       this.loading.modules = true;
       this.error.listModules = "";
@@ -662,6 +722,67 @@ export default {
     },
     onUpdateCompleted() {
       this.listModules();
+    },
+    willUpdateAllInstances() {
+      this.updateInstancesTimeout = setTimeout(() => {
+        this.updateAllInstances();
+        this.updateInstancesTimeout = 0;
+      }, this.UPDATE_DELAY);
+    },
+    async updateAllInstances() {
+      this.error.updateModule = "";
+      this.setUpdateInProgressInStore(true);
+      const taskAction = "update-module";
+      const eventId = this.getUuid();
+
+      // register to task error
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.updateModuleAborted
+      );
+
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.updateModuleCompleted
+      );
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          data: {
+            instances: this.updatableInstancesIds,
+          },
+          extra: {
+            title: this.$t("software_center.update_app_instances", {
+              app: this.app.name,
+            }),
+            description: this.$t("software_center.updating_n_instances_c", {
+              num: this.updatableInstancesIds.length,
+            }),
+            eventId,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.updateModule = this.getErrorMessage(err);
+        this.setUpdateInProgressInStore(false);
+        return;
+      }
+    },
+    updateModuleAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.setUpdateInProgressInStore(false);
+    },
+    updateModuleCompleted() {
+      this.setUpdateInProgressInStore(false);
+      this.listModules();
+    },
+    cancelUpdateInstances() {
+      clearTimeout(this.updateInstancesTimeout);
+      this.updateInstancesTimeout = 0;
     },
   },
 };

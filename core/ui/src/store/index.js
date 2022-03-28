@@ -26,7 +26,7 @@ export default new Vuex.Store({
     leaderListenPort: null,
     clusterLabel: "",
     clusterNodes: [],
-    isUpdatingCore: false,
+    isUpdateInProgress: false,
   },
   getters: {
     unreadNotifications: (state, getters) => {
@@ -160,8 +160,8 @@ export default new Vuex.Store({
     setClusterNodes(state, clusterNodes) {
       state.clusterNodes = clusterNodes;
     },
-    setUpdatingCore(state, value) {
-      state.isUpdatingCore = value;
+    setUpdateInProgress(state, value) {
+      state.isUpdateInProgress = value;
     },
   },
   actions: {
@@ -231,8 +231,8 @@ export default new Vuex.Store({
     setClusterNodesInStore(context, clusterNodes) {
       context.commit("setClusterNodes", clusterNodes);
     },
-    setUpdatingCoreInStore(context, value) {
-      context.commit("setUpdatingCore", value);
+    setUpdateInProgressInStore(context, value) {
+      context.commit("setUpdateInProgress", value);
     },
   },
 });

@@ -189,7 +189,6 @@
                 !loading.listCoreModules
               "
             >
-              <!-- core update -->
               <NsInlineNotification
                 v-if="updateCoreTimeout"
                 kind="info"
@@ -238,7 +237,7 @@
                 kind="primary"
                 :icon="Upgrade20"
                 @click="willUpdateAllApps()"
-                :disabled="isUpdatingCore"
+                :disabled="isUpdateInProgress"
                 >{{ $t("software_center.update_all_apps") }}</NsButton
               >
             </div>
@@ -348,6 +347,8 @@ export default {
   },
   data() {
     return {
+      // you have 10 seconds to cancel "Update core" and "Update all apps"
+      UPDATE_DELAY: 10000,
       q: {
         search: "",
         view: "all",
@@ -361,8 +362,6 @@ export default {
       coreModules: [],
       updateAllAppsTimeout: 0,
       updateCoreTimeout: 0,
-      // you have 10 seconds to cancel "Update core" and "Update all apps"
-      UPDATE_DELAY: 10000,
       isShownInstallModal: false,
       appToInstall: null,
       isCoreUpdateAvailable: false,
@@ -382,7 +381,7 @@ export default {
     };
   },
   computed: {
-    ...mapState(["isUpdatingCore", "clusterNodes"]),
+    ...mapState(["isUpdateInProgress", "clusterNodes"]),
     csbAllSelected() {
       return this.q.view === "all";
     },
@@ -429,7 +428,7 @@ export default {
     this.$root.$off("willUpdateCore");
   },
   methods: {
-    ...mapActions(["setUpdatingCoreInStore"]),
+    ...mapActions(["setUpdateInProgressInStore"]),
     async listModules() {
       this.loading.modules = true;
       this.error.listModules = "";
@@ -717,7 +716,7 @@ export default {
     },
     async updateCore() {
       this.error.updateCore = "";
-      this.setUpdatingCoreInStore(true);
+      this.setUpdateInProgressInStore(true);
       const taskAction = "update-core";
       const eventId = this.getUuid();
 
@@ -750,16 +749,16 @@ export default {
       if (err) {
         console.error(`error creating task ${taskAction}`, err);
         this.error.updateCore = this.getErrorMessage(err);
-        this.setUpdatingCoreInStore(false);
+        this.setUpdateInProgressInStore(false);
         return;
       }
     },
     updateCoreAborted(taskResult, taskContext) {
       console.error(`${taskContext.action} aborted`, taskResult);
-      this.setUpdatingCoreInStore(false);
+      this.setUpdateInProgressInStore(false);
     },
     updateCoreCompleted() {
-      this.setUpdatingCoreInStore(false);
+      this.setUpdateInProgressInStore(false);
       this.listModules();
     },
   },
