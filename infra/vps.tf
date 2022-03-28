@@ -2,12 +2,8 @@ locals {
   //Map host name code to OS image
   images = {
     "dn" = "debian-11-x64",
-    "cs" = data.digitalocean_image.centos.id
+    "cs" = "centos-stream-9-x64"
   }
-}
-
-data "digitalocean_image" "centos" {
-  name = "CentOS-Stream-GenericCloud-9-20220121.1"
 }
 
 resource "digitalocean_droplet" "leader" {
