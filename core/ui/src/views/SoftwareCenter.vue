@@ -25,6 +25,12 @@
               tipAlignment="end"
               class="page-toolbar-item"
             >
+              <cv-overflow-menu-item @click="showCoreAppModal()">
+                <NsMenuItem
+                  :icon="Application20"
+                  :label="$t('software_center.core_apps')"
+                />
+              </cv-overflow-menu-item>
               <cv-overflow-menu-item
                 @click="goToSettingsSoftwareRepositories()"
               >
@@ -68,12 +74,12 @@
         </div>
       </div>
       <div v-if="q.view !== 'updates'" class="bx--row">
-        <div v-if="isSystemUpdateAvailable" class="bx--col">
+        <div v-if="isCoreUpdateAvailable" class="bx--col">
           <NsInlineNotification
             kind="warning"
-            :title="$t('software_center.system_app_update_available')"
+            :title="$t('software_center.core_app_update_available')"
             :description="
-              $t('software_center.system_app_update_available_description')
+              $t('software_center.core_app_update_available_description')
             "
             :actionLabel="$t('common.details')"
             @action="goToUpdates"
@@ -81,15 +87,15 @@
           />
         </div>
         <div
-          v-else-if="updates.length && !loading.listCoreModules"
+          v-else-if="appUpdates.length && !loading.listCoreModules"
           class="bx--col"
         >
           <NsInlineNotification
             kind="warning"
             :title="$t('software_center.software_updates')"
             :description="
-              $tc('software_center.you_have_updates', updates.length, {
-                numUpdates: updates.length,
+              $tc('software_center.you_have_updates', appUpdates.length, {
+                numUpdates: appUpdates.length,
               })
             "
             :actionLabel="$t('common.details')"
@@ -142,8 +148,8 @@
             <AppList
               v-else
               :apps="modules"
-              :isUpdatingAll="isUpdatingAll"
               :skeleton="loading.modules || loading.listCoreModules"
+              tab="all"
               @install="openInstallModal"
               key="all-app-list"
               :light="true"
@@ -159,15 +165,31 @@
             <AppList
               v-else
               :apps="installedModules"
-              :isUpdatingAll="isUpdatingAll"
               :skeleton="loading.modules || loading.listCoreModules"
+              tab="installed"
               @install="openInstallModal"
               key="installed-app-list"
               :light="true"
             />
           </div>
           <div v-if="csbUpdatesSelected">
-            <!-- update all -->
+            <!-- core update -->
+            <template v-if="isCoreUpdateAvailable">
+              <h4 class="mg-bottom-md">
+                {{ $t("software_center.core_update") }}
+              </h4>
+              <AppList
+                :apps="[coreApp]"
+                :skeleton="false"
+                tab="updates"
+                key="core-update"
+                :light="true"
+              />
+              <h4 v-if="appUpdates.length" class="mg-bottom-md">
+                {{ $t("software_center.app_updates") }}
+              </h4>
+            </template>
+            <!-- apps updates -->
             <NsInlineNotification
               v-if="updateAllAppsTimeout"
               kind="info"
@@ -177,17 +199,28 @@
               :showCloseButton="false"
               :timer="updateAllAppsDelay"
             />
-            <div v-if="updates.length && !updateAllAppsTimeout" class="toolbar">
+            <div
+              v-if="
+                appUpdates.length &&
+                !updateAllAppsTimeout &&
+                !loading.listCoreModules
+              "
+              class="toolbar"
+            >
               <NsButton
                 kind="primary"
                 :icon="Upgrade20"
                 @click="willUpdateAll()"
+                :disabled="isUpdatingCore"
                 >{{ $t("software_center.update_all") }}</NsButton
               >
             </div>
             <cv-tile
               v-if="
-                !updates.length && !loading.modules && !loading.listCoreModules
+                !appUpdates.length &&
+                !isCoreUpdateAvailable &&
+                !loading.modules &&
+                !loading.listCoreModules
               "
               kind="standard"
               :light="true"
@@ -202,9 +235,9 @@
             </cv-tile>
             <AppList
               v-else
-              :apps="updates"
-              :isUpdatingAll="isUpdatingAll"
+              :apps="appUpdates"
               :skeleton="loading.modules || loading.listCoreModules"
+              tab="updates"
               @install="openInstallModal"
               key="updates-app-list"
               :light="true"
@@ -219,8 +252,8 @@
           <AppList
             v-if="searchResults.length"
             :apps="searchResults"
-            :isUpdatingAll="isUpdatingAll"
             :skeleton="loading.modules || loading.listCoreModules"
+            tab="search"
             @install="openInstallModal"
             key="search-app-list"
             :light="true"
@@ -247,13 +280,19 @@
       @close="isShownInstallModal = false"
       @installationCompleted="listModules"
     />
+    <CoreAppModal
+      :isShown="isShownCoreAppModal"
+      :coreApp="coreApp"
+      @hide="hideCoreAppModal"
+    />
   </div>
 </template>
 
 <script>
 import AppList from "@/components/software-center/AppList";
 import to from "await-to-js";
-import InstallAppModal from "../components/software-center/InstallAppModal";
+import InstallAppModal from "@/components/software-center/InstallAppModal";
+import CoreAppModal from "@/components/software-center/CoreAppModal";
 import {
   QueryParamService,
   UtilService,
@@ -261,12 +300,14 @@ import {
   IconService,
   LottieService,
 } from "@nethserver/ns8-ui-lib";
+import { mapState } from "vuex";
 
 export default {
   name: "SoftwareCenter",
   components: {
     AppList,
     InstallAppModal,
+    CoreAppModal,
   },
   mixins: [
     IconService,
@@ -289,13 +330,15 @@ export default {
       searchFields: ["name", "description", "categories"],
       searchResults: [],
       modules: [],
-      updates: [],
-      coreApps: [],
+      appUpdates: [],
+      coreModules: [],
       updateAllAppsTimeout: 0,
       updateAllAppsDelay: 7000, // you have 7 seconds to cancel "Update all"
       isShownInstallModal: false,
       appToInstall: null,
-      isSystemUpdateAvailable: false,
+      isCoreUpdateAvailable: false,
+      coreApp: null,
+      isShownCoreAppModal: false,
       loading: {
         modules: true,
         cleanRepositoriesCache: false,
@@ -309,6 +352,7 @@ export default {
     };
   },
   computed: {
+    ...mapState(["isUpdatingCore"]),
     csbAllSelected() {
       return this.q.view === "all";
     },
@@ -317,9 +361,6 @@ export default {
     },
     csbUpdatesSelected() {
       return this.q.view === "updates";
-    },
-    isUpdatingAll() {
-      return this.updateAllAppsTimeout > 0;
     },
     installedModules() {
       return this.modules.filter((app) => {
@@ -346,6 +387,13 @@ export default {
   },
   created() {
     this.listModules();
+
+    // register to events
+    this.$root.$on("updateCoreCompleted", this.onUpdateCoreCompleted);
+  },
+  beforeDestroy() {
+    // remove event listener
+    this.$root.$off("updateCoreCompleted");
   },
   methods: {
     async listModules() {
@@ -377,17 +425,17 @@ export default {
       this.loading.modules = false;
       let modules = taskResult.output;
       modules.sort(this.sortByProperty("name"));
-      let updates = [];
+      let appUpdates = [];
 
       for (const module of modules) {
         if (module.updates.length) {
-          updates.push(module);
+          appUpdates.push(module);
         }
 
         // sort installed instances
         module.installed.sort(this.sortModuleInstances());
       }
-      this.updates = updates;
+      this.appUpdates = appUpdates;
       this.modules = modules;
 
       // perform search on browser history navigation (e.g. going back to software center)
@@ -439,29 +487,25 @@ export default {
       this.loading.listCoreModules = false;
     },
     listCoreModulesCompleted(taskContext, taskResult) {
-      const coreApps = taskResult.output;
-      let isSystemUpdateAvailable = false;
+      const coreModules = taskResult.output;
+      let isCoreUpdateAvailable = false;
 
-      console.log("coreApps", coreApps); ////
-
-      const systemApp = {
-        id: "system",
-        name: this.$t("software_center.system_app_name", {
+      this.coreApp = {
+        id: "core",
+        name: this.$t("software_center.core_app_name", {
           productName: this.$root.config.PRODUCT_NAME,
         }),
         description: {
-          en: this.$t("software_center.system_app_description", {
+          en: this.$t("software_center.core_app_description", {
             productName: this.$root.config.PRODUCT_NAME,
           }),
         },
-        installed: coreApps,
+        installed: coreModules,
       };
-      this.modules.push(systemApp);
-      this.modules.sort(this.sortByProperty("name"));
 
       // check for core updates
 
-      for (const coreApp of coreApps) {
+      for (const coreApp of coreModules) {
         for (const coreInstance of coreApp.instances) {
           //// remove mock
           // if (coreInstance.id == "traefik1") {
@@ -469,18 +513,15 @@ export default {
           // }
 
           if (coreInstance.update) {
-            isSystemUpdateAvailable = true;
+            isCoreUpdateAvailable = true;
           }
         }
       }
 
-      if (isSystemUpdateAvailable) {
-        this.isSystemUpdateAvailable = true;
-
-        // add system app to updates
-        this.updates.splice(0, 0, systemApp);
+      if (isCoreUpdateAvailable) {
+        this.isCoreUpdateAvailable = true;
       }
-      this.coreApps = coreApps;
+      this.coreModules = coreModules;
       this.loading.listCoreModules = false;
     },
     searchApp(query) {
@@ -564,9 +605,9 @@ export default {
       this.updateAllAppsTimeout = 0;
     },
     updateAll() {
-      console.log("updateAll, num apps", this.updates.length); ////
+      console.log("updateAll, num apps", this.appUpdates.length); ////
 
-      for (const appToUpdate of this.updates) {
+      for (const appToUpdate of this.appUpdates) {
         console.log("appToUpdate", appToUpdate.name); ////
         console.log("newest version", appToUpdate.versions[0].tag); ////
 
@@ -623,6 +664,15 @@ export default {
     cleanRepositoriesCacheCompleted() {
       this.loading.cleanRepositoriesCache = false;
       this.listModules();
+    },
+    onUpdateCoreCompleted() {
+      this.listModules();
+    },
+    showCoreAppModal() {
+      this.isShownCoreAppModal = true;
+    },
+    hideCoreAppModal() {
+      this.isShownCoreAppModal = false;
     },
   },
 };

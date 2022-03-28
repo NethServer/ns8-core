@@ -35,11 +35,11 @@
           <template slot="content">
             <div class="card-rows">
               <div
-                v-if="isSystemUpdateAvailable"
+                v-if="isCoreUpdateAvailable"
                 class="card-row mg-top-sm icon-and-text"
               >
                 <NsSvg :svg="Warning16" class="icon ns-warning" />
-                <span>{{ $t("cluster_status.system_update_available") }}</span>
+                <span>{{ $t("cluster_status.core_update_available") }}</span>
               </div>
               <div class="card-row">
                 <NsButton
@@ -221,7 +221,7 @@ export default {
       updates: [],
       backups: [],
       instancesNotBackedUp: [],
-      isSystemUpdateAvailable: false,
+      isCoreUpdateAvailable: false,
       loading: {
         getClusterStatus: true,
         listModules: true,
@@ -285,7 +285,7 @@ export default {
       return moduleUpdates;
     },
     numUpdates() {
-      if (this.isSystemUpdateAvailable) {
+      if (this.isCoreUpdateAvailable) {
         return this.moduleUpdates.length + 1;
       } else {
         return this.moduleUpdates.length;
@@ -486,7 +486,7 @@ export default {
     },
     listCoreModulesCompleted(taskContext, taskResult) {
       const coreApps = taskResult.output;
-      let isSystemUpdateAvailable = false;
+      let isCoreUpdateAvailable = false;
 
       for (const coreApp of coreApps) {
         for (const coreInstance of coreApp.instances) {
@@ -496,11 +496,11 @@ export default {
           // }
 
           if (coreInstance.update) {
-            isSystemUpdateAvailable = true;
+            isCoreUpdateAvailable = true;
           }
         }
       }
-      this.isSystemUpdateAvailable = isSystemUpdateAvailable;
+      this.isCoreUpdateAvailable = isCoreUpdateAvailable;
       this.loading.listCoreModules = false;
     },
     async listBackups() {

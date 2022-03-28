@@ -26,7 +26,7 @@
           >
             <cv-tile kind="standard" class="app" :light="light" :id="app.id">
               <div class="app-logo app-row">
-                <a v-if="app.id !== 'system'" @click="showAppInfo(app)">
+                <a v-if="app.id !== 'core'" @click="showAppInfo(app)">
                   <img
                     :src="
                       app.logo
@@ -47,7 +47,7 @@
                 />
               </div>
               <div class="app-name app-row">
-                <a v-if="app.id !== 'system'" @click="showAppInfo(app)">{{
+                <a v-if="app.id !== 'core'" @click="showAppInfo(app)">{{
                   app.name
                 }}</a>
                 <span v-else>{{ app.name }}</span>
@@ -61,13 +61,13 @@
               >
                 {{ getApplicationCategories(app) }}
               </div>
-              <div v-if="app.id == 'system'" class="app-row">
+              <div v-if="app.id == 'core'" class="app-row">
                 <NsButton
                   kind="ghost"
                   :icon="Search20"
                   size="field"
-                  @click="showSystemAppModal()"
-                  >{{ $t("common.details") }}</NsButton
+                  @click="showCoreAppModal()"
+                  >{{ $t("software_center.update_details") }}</NsButton
                 >
               </div>
               <div
@@ -79,6 +79,16 @@
                   >{{ $t("software_center.app_managed_in") }}
                   <cv-link to="/domains">{{ $t("domains.title") }}</cv-link>
                 </span>
+              </div>
+              <div v-else-if="tab == 'updates'">
+                <!-- app has an update -->
+                <NsButton
+                  kind="ghost"
+                  :icon="Search20"
+                  size="field"
+                  @click="goToSoftwareCenterAppInstances(app)"
+                  >{{ $t("software_center.update_details") }}</NsButton
+                >
               </div>
               <div
                 v-else-if="app.installed && app.installed.length"
@@ -113,10 +123,10 @@
       :isShown="appInfo.isShown"
       @close="onClose"
     />
-    <SystemAppModal
-      :isShown="isShownSystemAppModal"
-      :systemApp="systemApp"
-      @hide="hideSystemAppModal"
+    <CoreAppModal
+      :isShown="isShownCoreAppModal"
+      :coreApp="coreApp"
+      @hide="hideCoreAppModal"
     />
   </div>
 </template>
@@ -124,18 +134,21 @@
 <script>
 import { IconService, UtilService } from "@nethserver/ns8-ui-lib";
 import AppInfoModal from "./AppInfoModal";
-import SystemAppModal from "./SystemAppModal";
+import CoreAppModal from "./CoreAppModal";
 
 export default {
   name: "AppList",
-  components: { AppInfoModal, SystemAppModal },
+  components: { AppInfoModal, CoreAppModal },
   mixins: [IconService, UtilService],
   props: {
     apps: {
       type: Array,
       required: true,
     },
-    isUpdatingAll: Boolean,
+    tab: {
+      type: String,
+      required: true,
+    },
     skeleton: Boolean,
     light: Boolean,
   },
@@ -149,12 +162,12 @@ export default {
       appsLoaded: [],
       pageNum: 0,
       pageSize: 20,
-      isShownSystemAppModal: false,
+      isShownCoreAppModal: false,
     };
   },
   computed: {
-    systemApp() {
-      return this.apps.find((app) => app.id == "system");
+    coreApp() {
+      return this.apps.find((app) => app.id == "core");
     },
   },
   watch: {
@@ -171,23 +184,9 @@ export default {
     openApp(instance) {
       this.$router.push(`/apps/${instance.id}`);
     },
-    updateApp(app) {
-      console.log("updateApp", app); ////
-    },
     showAppInfo(app) {
       this.appInfo.isShown = true;
       this.appInfo.app = app;
-    },
-    toggleExpandInstances(app) {
-      app.expandInstances = !app.expandInstances;
-    },
-    isInstanceUpgradable(app, instance) {
-      return (
-        app.updates &&
-        app.updates.find((update) => {
-          return update.id === instance.id;
-        })
-      );
     },
     onClose() {
       const context = this;
@@ -239,11 +238,11 @@ export default {
       }
       return false;
     },
-    showSystemAppModal() {
-      this.isShownSystemAppModal = true;
+    showCoreAppModal() {
+      this.isShownCoreAppModal = true;
     },
-    hideSystemAppModal() {
-      this.isShownSystemAppModal = false;
+    hideCoreAppModal() {
+      this.isShownCoreAppModal = false;
     },
   },
 };
@@ -256,7 +255,6 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
-  height: 17rem;
 }
 
 .app-row {

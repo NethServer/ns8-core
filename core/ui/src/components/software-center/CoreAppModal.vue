@@ -4,23 +4,23 @@
     :visible="isShown"
     @modal-hidden="onModalHidden"
     @primary-click="primaryAction"
-    :primary-button-disabled="loading.updateCore"
+    :primary-button-disabled="isUpdatingCore"
     class="no-pad-modal"
   >
-    <template v-if="systemApp" slot="title">{{ systemApp.name }}</template>
-    <template v-if="systemApp" slot="content">
+    <template v-if="coreApp" slot="title">{{ coreApp.name }}</template>
+    <template v-if="coreApp" slot="content">
       <NsInlineNotification
-        v-if="isSystemUpdatable"
+        v-if="isCoreUpdatable"
         kind="warning"
-        :title="$t('software_center.system_app_update_available')"
+        :title="$t('software_center.core_app_update_available')"
         :description="
-          $t('software_center.system_app_update_available_description')
+          $t('software_center.core_app_update_available_description')
         "
         :showCloseButton="false"
       />
       <div class="mg-bottom-md">
         {{
-          $t("software_center.system_app_table_description", {
+          $t("software_center.core_app_table_description", {
             productName: $root.config.PRODUCT_NAME,
           })
         }}
@@ -42,7 +42,7 @@
           >
             <cv-data-table-cell>{{ row.id }}</cv-data-table-cell>
             <cv-data-table-cell>{{ row.version }}</cv-data-table-cell>
-            <cv-data-table-cell v-if="isSystemUpdatable">
+            <cv-data-table-cell v-if="isCoreUpdatable">
               {{ row.update || "-" }}
             </cv-data-table-cell>
           </cv-data-table-row>
@@ -57,13 +57,11 @@
         />
       </div>
     </template>
-    <template v-if="isSystemUpdatable" slot="secondary-button">{{
+    <template v-if="isCoreUpdatable" slot="secondary-button">{{
       $t("common.close")
     }}</template>
     <template slot="primary-button">{{
-      isSystemUpdatable
-        ? $t("software_center.update_system")
-        : $t("common.close")
+      isCoreUpdatable ? $t("software_center.update_core") : $t("common.close")
     }}</template>
   </NsModal>
 </template>
@@ -76,14 +74,14 @@ import {
   DataTableService,
 } from "@nethserver/ns8-ui-lib";
 import to from "await-to-js";
-import { mapState } from "vuex";
+import { mapState, mapActions } from "vuex";
 
 export default {
-  name: "SystemAppModal",
+  name: "CoreAppModal",
   mixins: [UtilService, TaskService, IconService, DataTableService],
   props: {
     isShown: Boolean,
-    systemApp: { type: [Object, null] },
+    coreApp: { type: [Object, null] },
   },
   data() {
     return {
@@ -98,11 +96,11 @@ export default {
     };
   },
   computed: {
-    ...mapState(["clusterNodes"]),
-    isSystemUpdatable() {
+    ...mapState(["clusterNodes", "isUpdatingCore"]),
+    isCoreUpdatable() {
       // check if at least a core module has an update available
-      if (this.systemApp) {
-        for (const coreApp of this.systemApp.installed) {
+      if (this.coreApp) {
+        for (const coreApp of this.coreApp.installed) {
           for (const instance of coreApp.instances) {
             if (instance.update) {
               return true;
@@ -112,15 +110,15 @@ export default {
       }
       return false;
     },
-    systemInstances() {
-      if (this.systemApp) {
-        const systemInstances = [];
+    coreInstances() {
+      if (this.coreApp) {
+        const coreInstances = [];
 
-        for (const coreApp of this.systemApp.installed) {
-          systemInstances.push(...coreApp.instances);
+        for (const coreApp of this.coreApp.installed) {
+          coreInstances.push(...coreApp.instances);
         }
-        systemInstances.sort(this.sortByProperty("id"));
-        return systemInstances;
+        coreInstances.sort(this.sortByProperty("id"));
+        return coreInstances;
       }
       return [];
     },
@@ -134,20 +132,21 @@ export default {
     },
   },
   watch: {
-    systemApp: function () {
-      this.tableRows = this.systemInstances;
+    coreApp: function () {
+      this.tableRows = this.coreInstances;
     },
   },
   created() {
-    this.tableRows = this.systemInstances;
-    this.tableColumns = this.isSystemUpdatable
+    this.tableRows = this.coreInstances;
+    this.tableColumns = this.isCoreUpdatable
       ? ["instance", "version", "update_available"]
       : ["instance", "version"];
   },
   methods: {
+    ...mapActions(["setUpdatingCoreInStore"]),
     async updateCore() {
       this.error.updateCore = "";
-      this.loading.updateCore = true;
+      this.setUpdatingCoreInStore(true);
       const taskAction = "update-core";
       const eventId = this.getUuid();
 
@@ -169,7 +168,7 @@ export default {
             nodes: this.nodeIds,
           },
           extra: {
-            title: this.$t("software_center.update_system"),
+            title: this.$t("software_center.update_core"),
             description: this.$t("common.processing"),
             eventId,
           },
@@ -180,7 +179,7 @@ export default {
       if (err) {
         console.error(`error creating task ${taskAction}`, err);
         this.error.updateCore = this.getErrorMessage(err);
-        this.loading.updateCore = false;
+        this.setUpdatingCoreInStore(false);
         return;
       }
 
@@ -189,19 +188,19 @@ export default {
     },
     updateCoreAborted(taskResult, taskContext) {
       console.error(`${taskContext.action} aborted`, taskResult);
-      this.loading.updateCore = false;
+      this.setUpdatingCoreInStore(false);
     },
     updateCoreCompleted() {
-      this.loading.updateCore = false;
+      this.setUpdatingCoreInStore(false);
 
-      // reload instances
-      this.$emit("updateCoreCompleted");
+      // broadcast event
+      this.$root.$emit("updateCoreCompleted");
     },
     onModalHidden() {
       this.$emit("hide");
     },
     primaryAction() {
-      if (this.isSystemUpdatable) {
+      if (this.isCoreUpdatable) {
         this.updateCore();
       } else {
         this.$emit("hide");

@@ -200,6 +200,7 @@
                       kind="primary"
                       :icon="Upgrade20"
                       @click="updateInstance(instance)"
+                      :disabled="isUpdatingCore"
                       >{{ $t("software_center.update") }}</NsButton
                     >
                   </template>
@@ -387,7 +388,7 @@ export default {
     this.listModules();
   },
   computed: {
-    ...mapState(["favoriteApps", "clusterNodes"]),
+    ...mapState(["favoriteApps", "clusterNodes", "isUpdatingCore"]),
     instanceToUninstallLabel() {
       if (!this.instanceToUninstall) {
         return "";
