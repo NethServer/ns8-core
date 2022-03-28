@@ -11,7 +11,7 @@ resource "digitalocean_droplet" "leader" {
   image              = local.images[substr(each.key, 0, 2)]
   name               = format("%s.leader.%s.%s", each.key, terraform.workspace ,var.domain)
   region             = each.value
-  size               = "s-1vcpu-1gb-intel"
+  size               = "s-2vcpu-2gb-intel"
   private_networking = true
   ssh_keys = compact([try(data.digitalocean_ssh_key.terraform[0].id, ""),
     digitalocean_ssh_key.deploy.id])
@@ -24,7 +24,7 @@ resource "digitalocean_droplet" "worker" {
   image              = local.images[substr(each.key, 0, 2)]
   name               = format("%s.worker.%s.%s", each.key, terraform.workspace ,var.domain)
   region             = each.value
-  size               = "s-1vcpu-1gb-intel"
+  size               = "s-2vcpu-2gb-intel"
   private_networking = true
   ssh_keys = compact([try(data.digitalocean_ssh_key.terraform[0].id, ""),
     digitalocean_ssh_key.deploy.id])
