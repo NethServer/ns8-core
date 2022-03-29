@@ -232,7 +232,12 @@
                 </div>
                 <div class="row icon-and-text">
                   <NsSvg :svg="Chip20" class="icon" />
-                  <span>{{ $t("common.node") }} {{ instance.node }}</span>
+                  <span v-if="instance.node_ui_name">{{
+                    instance.node_ui_name
+                  }}</span>
+                  <span v-else
+                    >{{ $t("common.node") }} {{ instance.node }}</span
+                  >
                 </div>
                 <div class="row actions">
                   <!-- app is installed and can be updated -->
