@@ -277,6 +277,7 @@
     "clone-module": "Clone module",
     "cancel-task": "Cancel task",
     "update-module": "Update module",
+    "update-modules": "Update modules",
     "list-core-modules": "List core modules",
     "update-core": "Update core"
   },
@@ -554,6 +555,8 @@
     "update_all_instances": "Update all instances",
     "update_app_instances": "Update {app} instances",
     "updating_n_instances_c": "Updating {num} instance | Updating {num} instances",
+    "num_instances_updated": "{numInstances} instances updated",
+    "n_instances_will_be_updateted_c": "Update of {num} instance will start in a moment... | Update of {num} instances will start in a moment...",
     "app_categories": {
       "collaboration": "Collaboration",
       "system_administration": "System administration",

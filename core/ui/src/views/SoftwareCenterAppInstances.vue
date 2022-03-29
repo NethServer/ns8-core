@@ -745,9 +745,13 @@ export default {
             title: this.$t("software_center.update_app_instances", {
               app: this.app.name,
             }),
-            description: this.$t("software_center.updating_n_instances_c", {
-              num: this.updatableInstancesIds.length,
-            }),
+            description: this.$tc(
+              "software_center.updating_n_instances_c",
+              this.updatableInstancesIds.length,
+              {
+                num: this.updatableInstancesIds.length,
+              }
+            ),
             eventId,
           },
         })

@@ -213,11 +213,26 @@
                 {{ $t("software_center.app_updates") }}
               </h4>
             </template>
+            <NsInlineNotification
+              v-if="error.updateModules"
+              kind="error"
+              :title="$t('action.update-modules')"
+              :description="error.updateModules"
+              :showCloseButton="false"
+            />
             <!-- apps updates -->
             <NsInlineNotification
               v-if="updateAllAppsTimeout"
               kind="info"
-              :title="$t('software_center.apps_update_will_start_in_a_moment')"
+              :title="
+                $tc(
+                  'software_center.n_instances_will_be_updateted_c',
+                  numInstancesToUpdate,
+                  {
+                    num: numInstancesToUpdate,
+                  }
+                )
+              "
               :actionLabel="$t('common.cancel')"
               @action="cancelUpdateAllApps"
               :showCloseButton="false"
@@ -376,6 +391,7 @@ export default {
         cleanRepositoriesCache: "",
         listCoreModules: "",
         updateCore: "",
+        updateModules: "",
       },
     };
   },
@@ -397,6 +413,14 @@ export default {
     },
     nodeIds() {
       return this.clusterNodes.map((node) => node.id);
+    },
+    numInstancesToUpdate() {
+      let numInstancesToUpdate = 0;
+
+      for (const appToUpdate of this.appUpdates) {
+        numInstancesToUpdate += appToUpdate.updates.length;
+      }
+      return numInstancesToUpdate;
     },
   },
   watch: {
@@ -633,8 +657,9 @@ export default {
       }, this.UPDATE_DELAY);
     },
     willUpdateAllApps() {
+      this.error.updateModules = "";
       this.updateAllAppsTimeout = setTimeout(() => {
-        this.updateAllApps();
+        this.updateModules();
         this.updateAllAppsTimeout = 0;
       }, this.UPDATE_DELAY);
     },
@@ -646,17 +671,60 @@ export default {
       clearTimeout(this.updateAllAppsTimeout);
       this.updateAllAppsTimeout = 0;
     },
-    updateAllApps() {
-      console.log("updateAllApps, num apps", this.appUpdates.length); ////
+    async updateModules() {
+      this.error.updateModules = "";
+      this.setUpdateInProgressInStore(true);
+      const taskAction = "update-modules";
+      const eventId = this.getUuid();
 
-      for (const appToUpdate of this.appUpdates) {
-        console.log("appToUpdate", appToUpdate.name); ////
-        console.log("newest version", appToUpdate.versions[0].tag); ////
+      // register to task error
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.updateModulesAborted
+      );
 
-        for (const instanceToUpdate of appToUpdate.updates) {
-          console.log("  instanceToUpdate", instanceToUpdate.id); ////
-        }
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.updateModulesCompleted
+      );
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          extra: {
+            title: this.$t("software_center.update_all_apps"),
+            description: this.$tc(
+              "software_center.updating_n_instances_c",
+              this.numInstancesToUpdate,
+              {
+                num: this.numInstancesToUpdate,
+              }
+            ),
+            eventId,
+            numInstances: this.numInstancesToUpdate,
+            completion: {
+              i18nString: "software_center.num_instances_updated",
+              extraTextParams: ["numInstances"],
+            },
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.updateModules = this.getErrorMessage(err);
+        this.setUpdateInProgressInStore(false);
+        return;
       }
+    },
+    updateModulesAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.setUpdateInProgressInStore(false);
+    },
+    updateModulesCompleted() {
+      this.setUpdateInProgressInStore(false);
+      this.listModules();
     },
     openInstallModal(app) {
       this.appToInstall = app;
