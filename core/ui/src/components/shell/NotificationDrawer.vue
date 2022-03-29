@@ -35,6 +35,7 @@
           :action="notification.action"
           @notificationAction="handleNotificationAction"
           @cancelTask="handleCancelTask"
+          :isCancelShown="isCancelShownForNotification(notification)"
           :cancelLabel="$t('notification.abort')"
           :confirmCancelLabel="$t('notification.confirm_abort')"
           :isRead="notification.isRead"
@@ -67,6 +68,7 @@
           :actionLabel="notification.actionLabel"
           :action="notification.action"
           @notificationAction="handleNotificationAction"
+          :isCancelShown="false"
           :cancelLabel="$t('notification.abort')"
           :confirmCancelLabel="$t('notification.confirm_abort')"
           :isRead="notification.isRead"
@@ -164,6 +166,15 @@ export default {
           $state.complete();
         }
       }
+    },
+    isCancelShownForNotification(notification) {
+      const actionsWithCancel = ["clone-module"];
+      return (
+        notification.task &&
+        notification.task &&
+        notification.task.context &&
+        actionsWithCancel.includes(notification.task.context.action)
+      );
     },
   },
 };
