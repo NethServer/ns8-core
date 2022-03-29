@@ -1,8 +1,8 @@
 <template>
   <div>
-    <div class="bx--grid bx--grid--full-width">
-      <div class="bx--row">
-        <div class="bx--col-lg-16">
+    <cv-grid fullWidth>
+      <cv-row>
+        <cv-column>
           <cv-breadcrumb
             aria-label="breadcrumb"
             :no-trailing-slash="true"
@@ -17,57 +17,57 @@
               <span>{{ appName }}</span>
             </cv-breadcrumb-item>
           </cv-breadcrumb>
-        </div>
-      </div>
-      <div class="bx--row">
-        <div class="bx--col-lg-16 page-subtitle">
+        </cv-column>
+      </cv-row>
+      <cv-row>
+        <cv-column class="page-subtitle">
           <h3>
             {{ $t("software_center.app_instances", { app: this.appName }) }}
           </h3>
-        </div>
-      </div>
-      <div v-if="error.listModules" class="bx--row">
-        <div class="bx--col">
+        </cv-column>
+      </cv-row>
+      <cv-row v-if="error.listModules">
+        <cv-column>
           <NsInlineNotification
             kind="error"
             :title="$t('action.list-modules')"
             :description="error.listModules"
             :showCloseButton="false"
           />
-        </div>
-      </div>
-      <div v-if="error.addFavorite" class="bx--row">
-        <div class="bx--col">
+        </cv-column>
+      </cv-row>
+      <cv-row v-if="error.addFavorite">
+        <cv-column>
           <NsInlineNotification
             kind="error"
             :title="$t('action.add-favorite')"
             :description="error.addFavorite"
             :showCloseButton="false"
           />
-        </div>
-      </div>
-      <div v-if="error.removeFavorite" class="bx--row">
-        <div class="bx--col">
+        </cv-column>
+      </cv-row>
+      <cv-row v-if="error.removeFavorite">
+        <cv-column>
           <NsInlineNotification
             kind="error"
             :title="$t('action.remove-favorite')"
             :description="error.removeFavorite"
             :showCloseButton="false"
           />
-        </div>
-      </div>
-      <div v-if="error.updateModule" class="bx--row">
-        <div class="bx--col">
+        </cv-column>
+      </cv-row>
+      <cv-row v-if="error.updateModule">
+        <cv-column>
           <NsInlineNotification
             kind="error"
             :title="$t('action.update-module')"
             :description="error.updateModule"
             :showCloseButton="false"
           />
-        </div>
-      </div>
-      <div v-if="updateInstancesTimeout" class="bx--row">
-        <div class="bx--col">
+        </cv-column>
+      </cv-row>
+      <cv-row v-if="updateInstancesTimeout">
+        <cv-column>
           <NsInlineNotification
             kind="info"
             :title="
@@ -78,11 +78,11 @@
             :showCloseButton="false"
             :timer="UPDATE_DELAY"
           />
-        </div>
-      </div>
-      <div class="bx--row">
+        </cv-column>
+      </cv-row>
+      <cv-row>
         <template v-if="app">
-          <div v-if="app.updates.length" class="bx--col">
+          <cv-column v-if="app.updates.length">
             <NsButton
               kind="primary"
               :icon="Upgrade20"
@@ -103,36 +103,29 @@
                 />
               </cv-overflow-menu-item>
             </NsIconMenu>
-          </div>
-          <div
-            v-else-if="app.installed && app.installed.length"
-            class="bx--col"
-          >
+          </cv-column>
+          <cv-column v-else-if="app.installed && app.installed.length">
             <NsButton
               kind="secondary"
               :icon="Download20"
               @click="installInstance()"
               >{{ $t("software_center.install_new_instance") }}
             </NsButton>
-          </div>
+          </cv-column>
         </template>
-      </div>
-      <div class="bx--row">
+      </cv-row>
+      <cv-row>
         <template v-if="loading.modules">
-          <div
-            v-for="index in 2"
-            :key="index"
-            class="bx--col-md-4 bx--col-max-4"
-          >
+          <cv-column v-for="index in 2" :key="index" :md="4" :max="4">
             <cv-tile light>
               <cv-skeleton-text
                 :paragraph="true"
                 :line-count="8"
               ></cv-skeleton-text>
             </cv-tile>
-          </div>
+          </cv-column>
         </template>
-        <div v-else-if="!app.installed.length" class="bx--col">
+        <cv-column v-else-if="!app.installed.length">
           <NsEmptyState :title="$t('software_center.no_instance_installed')">
             <template #description>
               <NsButton
@@ -143,12 +136,13 @@
               </NsButton>
             </template>
           </NsEmptyState>
-        </div>
-        <div
+        </cv-column>
+        <cv-column
           v-else
           v-for="(instance, index) in app.installed"
           :key="index"
-          class="bx--col-md-4 bx--col-max-4"
+          :md="4"
+          :max="4"
         >
           <NsInfoCard
             light
@@ -266,9 +260,9 @@
               </div>
             </template>
           </NsInfoCard>
-        </div>
-      </div>
-    </div>
+        </cv-column>
+      </cv-row>
+    </cv-grid>
     <InstallAppModal
       :isShown="isShownInstallModal"
       :app="app"
@@ -336,16 +330,13 @@
               data-modal-primary-focus
             >
             </cv-text-input>
-            <div v-if="error.setInstanceLabel" class="bx--row">
-              <div class="bx--col">
-                <NsInlineNotification
-                  kind="error"
-                  :title="$t('action.set-name')"
-                  :description="error.setInstanceLabel"
-                  :showCloseButton="false"
-                />
-              </div>
-            </div>
+            <NsInlineNotification
+              v-if="error.setInstanceLabel"
+              kind="error"
+              :title="$t('action.set-name')"
+              :description="error.setInstanceLabel"
+              :showCloseButton="false"
+            />
           </cv-form>
         </template>
       </template>

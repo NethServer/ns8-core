@@ -1,28 +1,25 @@
 <template>
   <div>
     <div class="app-list">
-      <div v-if="skeleton" class="bx--grid bx--grid--full-width no-padding">
-        <div class="bx--row">
-          <div
-            v-for="index in 8"
-            :key="index"
-            class="bx--col-md-4 bx--col-max-4"
-          >
+      <cv-grid v-if="skeleton" fullWidth class="no-padding">
+        <cv-row>
+          <cv-column v-for="index in 8" :key="index" :md="4" :max="4">
             <cv-tile kind="standard" class="app" :light="light">
               <cv-skeleton-text
                 :paragraph="true"
                 :line-count="9"
               ></cv-skeleton-text>
             </cv-tile>
-          </div>
-        </div>
-      </div>
-      <div v-else class="bx--grid bx--grid--full-width no-padding">
-        <div class="bx--row">
-          <div
+          </cv-column>
+        </cv-row>
+      </cv-grid>
+      <cv-grid v-else fullWidth class="no-padding">
+        <cv-row>
+          <cv-column
             v-for="(app, index) in appsLoaded"
             :key="index"
-            class="bx--col-md-4 bx--col-max-4"
+            :md="4"
+            :max="4"
           >
             <cv-tile kind="standard" class="app" :light="light" :id="app.id">
               <div class="app-logo app-row">
@@ -113,9 +110,9 @@
                 >
               </div>
             </cv-tile>
-          </div>
-        </div>
-      </div>
+          </cv-column>
+        </cv-row>
+      </cv-grid>
       <infinite-loading @infinite="infiniteScrollHandler"></infinite-loading>
     </div>
     <AppInfoModal

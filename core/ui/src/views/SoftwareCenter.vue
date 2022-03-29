@@ -1,11 +1,11 @@
 <template>
   <div>
-    <div class="bx--grid bx--grid--full-width">
-      <div class="bx--row">
-        <div class="bx--col-md-4 page-title">
+    <cv-grid fullWidth>
+      <cv-row>
+        <cv-column :md="4" class="page-title">
           <h2>{{ $t("software_center.title") }}</h2>
-        </div>
-        <div class="bx--col-md-4">
+        </cv-column>
+        <cv-column :md="4">
           <div class="page-toolbar">
             <NsButton
               kind="secondary"
@@ -41,40 +41,40 @@
               </cv-overflow-menu-item>
             </NsIconMenu>
           </div>
-        </div>
-      </div>
-      <div v-if="error.listModules" class="bx--row">
-        <div class="bx--col">
+        </cv-column>
+      </cv-row>
+      <cv-row v-if="error.listModules">
+        <cv-column>
           <NsInlineNotification
             kind="error"
             :title="$t('action.list-modules')"
             :description="error.listModules"
             :showCloseButton="false"
           />
-        </div>
-      </div>
-      <div v-if="error.listModules" class="bx--row">
-        <div class="bx--col">
+        </cv-column>
+      </cv-row>
+      <cv-row v-if="error.listModules">
+        <cv-column>
           <NsInlineNotification
             kind="error"
             :title="$t('action.list-core-modules')"
             :description="error.listCoreModules"
             :showCloseButton="false"
           />
-        </div>
-      </div>
-      <div v-if="error.cleanRepositoriesCache" class="bx--row">
-        <div class="bx--col">
+        </cv-column>
+      </cv-row>
+      <cv-row v-if="error.cleanRepositoriesCache">
+        <cv-column>
           <NsInlineNotification
             kind="error"
             :title="$t('action.clean-repositories-cache')"
             :description="error.cleanRepositoriesCache"
             :showCloseButton="false"
           />
-        </div>
-      </div>
-      <div v-if="q.view !== 'updates'" class="bx--row">
-        <div v-if="isCoreUpdateAvailable" class="bx--col">
+        </cv-column>
+      </cv-row>
+      <cv-row v-if="q.view !== 'updates'">
+        <cv-column v-if="isCoreUpdateAvailable">
           <NsInlineNotification
             kind="warning"
             :title="$t('software_center.core_app_update_available')"
@@ -85,11 +85,8 @@
             @action="goToUpdates"
             :showCloseButton="false"
           />
-        </div>
-        <div
-          v-else-if="appUpdates.length && !loading.listCoreModules"
-          class="bx--col"
-        >
+        </cv-column>
+        <cv-column v-else-if="appUpdates.length && !loading.listCoreModules">
           <NsInlineNotification
             kind="warning"
             :title="$t('software_center.software_updates')"
@@ -102,16 +99,18 @@
             @action="goToUpdates"
             :showCloseButton="false"
           />
-        </div>
-      </div>
-      <div v-if="error.updateCore">
-        <NsInlineNotification
-          kind="error"
-          :title="$t('action.update-core')"
-          :description="error.updateCore"
-          :showCloseButton="false"
-        />
-      </div>
+        </cv-column>
+      </cv-row>
+      <cv-row v-if="error.updateCore">
+        <cv-column>
+          <NsInlineNotification
+            kind="error"
+            :title="$t('action.update-core')"
+            :description="error.updateCore"
+            :showCloseButton="false"
+          />
+        </cv-column>
+      </cv-row>
       <div>
         <cv-search
           :label="$t('software_center.search_placeholder')"
@@ -299,7 +298,7 @@
           </cv-tile>
         </div>
       </div>
-    </div>
+    </cv-grid>
     <InstallAppModal
       :isShown="isShownInstallModal"
       :app="appToInstall"
