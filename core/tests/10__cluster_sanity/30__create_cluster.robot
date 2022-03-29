@@ -2,7 +2,6 @@
 Library           SSHLibrary
 
 *** Variables ***
-${COREBRANCH}     main
 ${ADMINPASS}      Nethesis,1234
 ${EP_PORT}        55820
 ${WG_NETWORK}     10.5.4.0/24
