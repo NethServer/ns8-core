@@ -1,37 +1,29 @@
 <template>
   <div>
     <div class="app-list">
-      <div v-if="skeleton" class="bx--grid bx--grid--full-width no-padding">
-        <div class="bx--row">
-          <div
-            v-for="index in 8"
-            :key="index"
-            class="bx--col-md-4 bx--col-max-4"
-          >
+      <cv-grid v-if="skeleton" fullWidth class="no-padding">
+        <cv-row>
+          <cv-column v-for="index in 8" :key="index" :md="4" :max="4">
             <cv-tile kind="standard" class="app" :light="light">
               <cv-skeleton-text
                 :paragraph="true"
                 :line-count="9"
               ></cv-skeleton-text>
             </cv-tile>
-          </div>
-        </div>
-      </div>
-      <div v-else class="bx--grid bx--grid--full-width no-padding">
-        <div class="bx--row">
-          <div
+          </cv-column>
+        </cv-row>
+      </cv-grid>
+      <cv-grid v-else fullWidth class="no-padding">
+        <cv-row>
+          <cv-column
             v-for="(app, index) in appsLoaded"
             :key="index"
-            class="bx--col-md-4 bx--col-max-4"
+            :md="4"
+            :max="4"
           >
-            <cv-tile
-              kind="standard"
-              @click="showAppInfo(app)"
-              class="app"
-              :light="light"
-            >
+            <cv-tile kind="standard" class="app" :light="light" :id="app.id">
               <div class="app-logo app-row">
-                <a @click="showAppInfo(app)">
+                <a v-if="app.id !== 'core'" @click="showAppInfo(app)">
                   <img
                     :src="
                       app.logo
@@ -41,28 +33,59 @@
                     :alt="app.name + ' logo'"
                   />
                 </a>
+                <img
+                  v-else
+                  :src="
+                    app.logo
+                      ? app.logo
+                      : require('@/assets/module_default_logo.png')
+                  "
+                  :alt="app.name + ' logo'"
+                />
               </div>
               <div class="app-name app-row">
-                <a @click="showAppInfo(app)">{{ app.name }}</a>
+                <a v-if="app.id !== 'core'" @click="showAppInfo(app)">{{
+                  app.name
+                }}</a>
+                <span v-else>{{ app.name }}</span>
               </div>
               <div class="app-description app-row">
                 {{ getApplicationDescription(app) }}
               </div>
               <div
-                v-if="getApplicationCategories(app)"
+                v-if="app.categories && getApplicationCategories(app)"
                 class="app-categories app-row"
               >
                 {{ getApplicationCategories(app) }}
               </div>
+              <div v-if="app.id == 'core'" class="app-row">
+                <NsButton
+                  kind="ghost"
+                  :icon="Search20"
+                  size="field"
+                  @click="showCoreAppModal()"
+                  >{{ $t("software_center.update_details") }}</NsButton
+                >
+              </div>
               <div
-                v-if="isAccountProviderApp(app)"
+                v-else-if="isAccountProviderApp(app)"
                 class="app-row icon-and-text"
               >
-                <NsSvg :svg="Information16" class="icon ns-info" />
+                <NsSvg :svg="InformationFilled16" class="icon ns-info" />
                 <span
                   >{{ $t("software_center.app_managed_in") }}
                   <cv-link to="/domains">{{ $t("domains.title") }}</cv-link>
                 </span>
+              </div>
+              <div v-else-if="tab == 'updates'">
+                <!-- app has an update -->
+                <NsButton
+                  kind="ghost"
+                  :icon="Search20"
+                  size="field"
+                  @click="goToSoftwareCenterAppInstances(app)"
+                  >{{ $t("software_center.update_details") }}</NsButton
+                >
               </div>
               <div
                 v-else-if="app.installed && app.installed.length"
@@ -87,9 +110,9 @@
                 >
               </div>
             </cv-tile>
-          </div>
-        </div>
-      </div>
+          </cv-column>
+        </cv-row>
+      </cv-grid>
       <infinite-loading @infinite="infiniteScrollHandler"></infinite-loading>
     </div>
     <AppInfoModal
@@ -97,23 +120,32 @@
       :isShown="appInfo.isShown"
       @close="onClose"
     />
+    <CoreAppModal
+      :isShown="isShownCoreAppModal"
+      :coreApp="coreApp"
+      @hide="hideCoreAppModal"
+    />
   </div>
 </template>
 
 <script>
 import { IconService, UtilService } from "@nethserver/ns8-ui-lib";
 import AppInfoModal from "./AppInfoModal";
+import CoreAppModal from "./CoreAppModal";
 
 export default {
   name: "AppList",
-  components: { AppInfoModal },
+  components: { AppInfoModal, CoreAppModal },
   mixins: [IconService, UtilService],
   props: {
     apps: {
       type: Array,
       required: true,
     },
-    isUpdatingAll: Boolean,
+    tab: {
+      type: String,
+      required: true,
+    },
     skeleton: Boolean,
     light: Boolean,
   },
@@ -127,7 +159,13 @@ export default {
       appsLoaded: [],
       pageNum: 0,
       pageSize: 20,
+      isShownCoreAppModal: false,
     };
+  },
+  computed: {
+    coreApp() {
+      return this.apps.find((app) => app.id == "core");
+    },
   },
   watch: {
     apps: function () {
@@ -143,23 +181,9 @@ export default {
     openApp(instance) {
       this.$router.push(`/apps/${instance.id}`);
     },
-    updateApp(app) {
-      console.log("updateApp", app); ////
-    },
     showAppInfo(app) {
       this.appInfo.isShown = true;
       this.appInfo.app = app;
-    },
-    toggleExpandInstances(app) {
-      app.expandInstances = !app.expandInstances;
-    },
-    isInstanceUpgradable(app, instance) {
-      return (
-        app.updates &&
-        app.updates.find((update) => {
-          return update.id === instance.id;
-        })
-      );
     },
     onClose() {
       const context = this;
@@ -211,6 +235,12 @@ export default {
       }
       return false;
     },
+    showCoreAppModal() {
+      this.isShownCoreAppModal = true;
+    },
+    hideCoreAppModal() {
+      this.isShownCoreAppModal = false;
+    },
   },
 };
 </script>
@@ -222,7 +252,6 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
-  height: 17rem;
 }
 
 .app-row {

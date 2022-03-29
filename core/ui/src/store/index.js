@@ -22,12 +22,11 @@ export default new Vuex.Store({
       message: "",
       reconnectError: false,
     },
-    // apps to update
-    updates: [],
     isClusterInitialized: false,
     leaderListenPort: null,
     clusterLabel: "",
     clusterNodes: [],
+    isUpdateInProgress: false,
   },
   getters: {
     unreadNotifications: (state, getters) => {
@@ -81,9 +80,6 @@ export default new Vuex.Store({
       const taskFound = searchTask(taskId, tasks);
 
       return taskFound;
-    },
-    getUpdatesCount: (state) => {
-      return state.updates.length;
     },
   },
   mutations: {
@@ -141,9 +137,6 @@ export default new Vuex.Store({
     setLoggedUser(state, username) {
       state.loggedUser = username;
     },
-    setUpdates(state, updates) {
-      state.updates = updates;
-    },
     setClusterInitialized(state, value) {
       state.isClusterInitialized = value;
     },
@@ -166,6 +159,9 @@ export default new Vuex.Store({
     },
     setClusterNodes(state, clusterNodes) {
       state.clusterNodes = clusterNodes;
+    },
+    setUpdateInProgress(state, value) {
+      state.isUpdateInProgress = value;
     },
   },
   actions: {
@@ -211,9 +207,6 @@ export default new Vuex.Store({
     setLoggedUserInStore(context, username) {
       context.commit("setLoggedUser", username);
     },
-    setUpdatesInStore(context, updates) {
-      context.commit("setUpdates", updates);
-    },
     setClusterInitializedInStore(context, value) {
       context.commit("setClusterInitialized", value);
     },
@@ -237,6 +230,9 @@ export default new Vuex.Store({
     },
     setClusterNodesInStore(context, clusterNodes) {
       context.commit("setClusterNodes", clusterNodes);
+    },
+    setUpdateInProgressInStore(context, value) {
+      context.commit("setUpdateInProgress", value);
     },
   },
 });

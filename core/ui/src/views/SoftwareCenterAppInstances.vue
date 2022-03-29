@@ -1,8 +1,8 @@
 <template>
   <div>
-    <div class="bx--grid bx--grid--full-width">
-      <div class="bx--row">
-        <div class="bx--col-lg-16">
+    <cv-grid fullWidth>
+      <cv-row>
+        <cv-column>
           <cv-breadcrumb
             aria-label="breadcrumb"
             :no-trailing-slash="true"
@@ -17,73 +17,113 @@
               <span>{{ appName }}</span>
             </cv-breadcrumb-item>
           </cv-breadcrumb>
-        </div>
-      </div>
-      <div class="bx--row">
-        <div class="bx--col-lg-16 page-subtitle">
+        </cv-column>
+      </cv-row>
+      <cv-row>
+        <cv-column class="page-subtitle">
           <h3>
             {{ $t("software_center.app_instances", { app: this.appName }) }}
           </h3>
-        </div>
-      </div>
-      <div v-if="error.listModules" class="bx--row">
-        <div class="bx--col">
+        </cv-column>
+      </cv-row>
+      <cv-row v-if="error.listModules">
+        <cv-column>
           <NsInlineNotification
             kind="error"
             :title="$t('action.list-modules')"
             :description="error.listModules"
             :showCloseButton="false"
           />
-        </div>
-      </div>
-      <div v-if="error.addFavorite" class="bx--row">
-        <div class="bx--col">
+        </cv-column>
+      </cv-row>
+      <cv-row v-if="error.addFavorite">
+        <cv-column>
           <NsInlineNotification
             kind="error"
             :title="$t('action.add-favorite')"
             :description="error.addFavorite"
             :showCloseButton="false"
           />
-        </div>
-      </div>
-      <div v-if="error.removeFavorite" class="bx--row">
-        <div class="bx--col">
+        </cv-column>
+      </cv-row>
+      <cv-row v-if="error.removeFavorite">
+        <cv-column>
           <NsInlineNotification
             kind="error"
             :title="$t('action.remove-favorite')"
             :description="error.removeFavorite"
             :showCloseButton="false"
           />
-        </div>
-      </div>
-      <div class="bx--row">
-        <div class="bx--col-lg-16">
-          <div v-if="app && app.installed && app.installed.length">
-            <NsButton
-              kind="secondary"
-              :icon="Download20"
-              @click="installInstance()"
-              >{{ $t("software_center.install_new_instance") }}
-            </NsButton>
-          </div>
-        </div>
-      </div>
-      <div class="bx--row">
-        <template v-if="loading.modules">
-          <div
-            v-for="index in 2"
-            :key="index"
-            class="bx--col-md-4 bx--col-max-4"
+        </cv-column>
+      </cv-row>
+      <cv-row v-if="error.updateModule">
+        <cv-column>
+          <NsInlineNotification
+            kind="error"
+            :title="$t('action.update-module')"
+            :description="error.updateModule"
+            :showCloseButton="false"
+          />
+        </cv-column>
+      </cv-row>
+      <cv-row v-if="updateInstancesTimeout">
+        <cv-column>
+          <NsInlineNotification
+            kind="info"
+            :title="
+              $t('software_center.instances_update_will_start_in_a_moment')
+            "
+            :actionLabel="$t('common.cancel')"
+            @action="cancelUpdateInstances"
+            :showCloseButton="false"
+            :timer="UPDATE_DELAY"
+          />
+        </cv-column>
+      </cv-row>
+      <cv-row v-if="app" class="toolbar">
+        <cv-column v-if="app.updates.length">
+          <NsButton
+            kind="primary"
+            :icon="Upgrade20"
+            :disabled="isUpdateInProgress"
+            @click="willUpdateAllInstances()"
+            >{{ $t("software_center.update_all_instances") }}
+          </NsButton>
+          <NsIconMenu
+            :flipMenu="true"
+            tipPosition="top"
+            tipAlignment="end"
+            class="overflow-near-button"
           >
+            <cv-overflow-menu-item @click="installInstance()">
+              <NsMenuItem
+                :icon="Download20"
+                :label="$t('software_center.install_new_instance')"
+              />
+            </cv-overflow-menu-item>
+          </NsIconMenu>
+        </cv-column>
+        <cv-column v-else-if="app.installed && app.installed.length">
+          <NsButton
+            kind="secondary"
+            :icon="Download20"
+            @click="installInstance()"
+            >{{ $t("software_center.install_new_instance") }}
+          </NsButton>
+        </cv-column>
+      </cv-row>
+      <cv-row>
+        <template v-if="loading.modules">
+          <cv-column v-for="index in 2" :key="index" :md="4" :max="4">
             <cv-tile light>
               <cv-skeleton-text
                 :paragraph="true"
                 :line-count="8"
               ></cv-skeleton-text>
             </cv-tile>
-          </div>
+          </cv-column>
         </template>
-        <div v-else-if="!app.installed.length" class="bx--col">
+        <cv-column v-else-if="!app.installed.length">
           <NsEmptyState :title="$t('software_center.no_instance_installed')">
             <template #description>
               <NsButton
@@ -94,12 +134,13 @@
               </NsButton>
             </template>
           </NsEmptyState>
-        </div>
-        <div
+        </cv-column>
+        <cv-column
           v-else
           v-for="(instance, index) in app.installed"
           :key="index"
-          class="bx--col-md-4 bx--col-max-4"
+          :md="4"
+          :max="4"
         >
           <NsInfoCard
             light
@@ -197,9 +238,10 @@
                   <!-- app is installed and can be updated -->
                   <template v-if="isInstanceUpgradable(app, instance)">
                     <NsButton
-                      kind="primary"
+                      kind="secondary"
                       :icon="Upgrade20"
                       @click="updateInstance(instance)"
+                      :disabled="isUpdateInProgress"
                       >{{ $t("software_center.update") }}</NsButton
                     >
                   </template>
@@ -216,14 +258,21 @@
               </div>
             </template>
           </NsInfoCard>
-        </div>
-      </div>
-    </div>
+        </cv-column>
+      </cv-row>
+    </cv-grid>
     <InstallAppModal
       :isShown="isShownInstallModal"
       :app="app"
       @close="isShownInstallModal = false"
       @installationCompleted="onInstallationCompleted"
+    />
+    <UpdateAppModal
+      :isShown="isShownUpdateModal"
+      :app="app"
+      :instance="instanceToUpdate"
+      @hide="isShownUpdateModal = false"
+      @updateCompleted="onUpdateCompleted"
     />
     <!-- uninstall instance modal -->
     <NsDangerDeleteModal
@@ -279,16 +328,13 @@
               data-modal-primary-focus
             >
             </cv-text-input>
-            <div v-if="error.setInstanceLabel" class="bx--row">
-              <div class="bx--col">
-                <NsInlineNotification
-                  kind="error"
-                  :title="$t('action.set-name')"
-                  :description="error.setInstanceLabel"
-                  :showCloseButton="false"
-                />
-              </div>
-            </div>
+            <NsInlineNotification
+              v-if="error.setInstanceLabel"
+              kind="error"
+              :title="$t('action.set-name')"
+              :description="error.setInstanceLabel"
+              :showCloseButton="false"
+            />
           </cv-form>
         </template>
       </template>
@@ -320,16 +366,19 @@ import {
 } from "@nethserver/ns8-ui-lib";
 import { mapState, mapActions } from "vuex";
 import CloneOrMoveAppModal from "@/components/software-center/CloneOrMoveAppModal";
+import UpdateAppModal from "../components/software-center/UpdateAppModal";
 
 export default {
   name: "SoftwareCenterAppInstances",
-  components: { InstallAppModal, CloneOrMoveAppModal },
+  components: { InstallAppModal, CloneOrMoveAppModal, UpdateAppModal },
   mixins: [TaskService, UtilService, IconService, QueryParamService],
   pageTitle() {
     return this.$t("software_center.app_instances_no_name");
   },
   data() {
     return {
+      // you have 10 seconds to cancel "Update core" and "Update all apps"
+      UPDATE_DELAY: 10000,
       appName: "",
       app: null,
       isShownInstallModal: false,
@@ -341,6 +390,9 @@ export default {
       newInstanceLabel: "",
       elementToHighlight: "",
       isElementHighlighted: false,
+      isShownUpdateModal: false,
+      instanceToUpdate: null,
+      updateInstancesTimeout: 0,
       cloneOrMove: {
         isModalShown: false,
         isClone: true,
@@ -351,6 +403,7 @@ export default {
       loading: {
         modules: true,
         setInstanceLabel: false,
+        updateModule: false,
       },
       error: {
         listModules: "",
@@ -359,6 +412,7 @@ export default {
         removeFavorite: "",
         setNodeLabel: "",
         setInstanceLabel: "",
+        updateModule: "",
       },
     };
   },
@@ -377,7 +431,7 @@ export default {
     this.listModules();
   },
   computed: {
-    ...mapState(["favoriteApps", "clusterNodes"]),
+    ...mapState(["favoriteApps", "clusterNodes", "isUpdateInProgress"]),
     instanceToUninstallLabel() {
       if (!this.instanceToUninstall) {
         return "";
@@ -387,9 +441,15 @@ export default {
         ? `${this.instanceToUninstall.ui_name} (${this.instanceToUninstall.id})`
         : this.instanceToUninstall.id;
     },
+    updatableInstancesIds() {
+      if (this.app) {
+        return this.app.updates.map((instance) => instance.id);
+      }
+      return [];
+    },
   },
   methods: {
-    ...mapActions(["setAppDrawerShownInStore"]),
+    ...mapActions(["setAppDrawerShownInStore", "setUpdateInProgressInStore"]),
     async listModules() {
       this.loading.modules = true;
       this.error.listModules = "";
@@ -447,7 +507,8 @@ export default {
       this.$router.push(`/apps/${instance.id}`);
     },
     updateInstance(instance) {
-      console.log("updateInstance", instance); ////
+      this.instanceToUpdate = instance;
+      this.isShownUpdateModal = true;
     },
     addAppToFavorites(instance) {
       this.addFavorite(instance);
@@ -647,6 +708,74 @@ export default {
     onInstallationCompleted(newModuleId) {
       this.elementToHighlight = newModuleId;
       this.listModules();
+    },
+    onUpdateCompleted() {
+      this.listModules();
+    },
+    willUpdateAllInstances() {
+      this.updateInstancesTimeout = setTimeout(() => {
+        this.updateAllInstances();
+        this.updateInstancesTimeout = 0;
+      }, this.UPDATE_DELAY);
+    },
+    async updateAllInstances() {
+      this.error.updateModule = "";
+      this.setUpdateInProgressInStore(true);
+      const taskAction = "update-module";
+      const eventId = this.getUuid();
+
+      // register to task error
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.updateModuleAborted
+      );
+
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.updateModuleCompleted
+      );
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          data: {
+            instances: this.updatableInstancesIds,
+          },
+          extra: {
+            title: this.$t("software_center.update_app_instances", {
+              app: this.app.name,
+            }),
+            description: this.$tc(
+              "software_center.updating_n_instances_c",
+              this.updatableInstancesIds.length,
+              {
+                num: this.updatableInstancesIds.length,
+              }
+            ),
+            eventId,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.updateModule = this.getErrorMessage(err);
+        this.setUpdateInProgressInStore(false);
+        return;
+      }
+    },
+    updateModuleAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.setUpdateInProgressInStore(false);
+    },
+    updateModuleCompleted() {
+      this.setUpdateInProgressInStore(false);
+      this.listModules();
+    },
+    cancelUpdateInstances() {
+      clearTimeout(this.updateInstancesTimeout);
+      this.updateInstancesTimeout = 0;
     },
   },
 };

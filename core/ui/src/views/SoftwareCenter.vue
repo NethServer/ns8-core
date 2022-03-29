@@ -1,11 +1,11 @@
 <template>
   <div>
-    <div class="bx--grid bx--grid--full-width">
-      <div class="bx--row">
-        <div class="bx--col-md-4 page-title">
+    <cv-grid fullWidth>
+      <cv-row>
+        <cv-column :md="4" class="page-title">
           <h2>{{ $t("software_center.title") }}</h2>
-        </div>
-        <div class="bx--col-md-4">
+        </cv-column>
+        <cv-column :md="4">
           <div class="page-toolbar">
             <NsButton
               kind="secondary"
@@ -25,6 +25,12 @@
               tipAlignment="end"
               class="page-toolbar-item"
             >
+              <cv-overflow-menu-item @click="showCoreAppModal()">
+                <NsMenuItem
+                  :icon="Application20"
+                  :label="$t('software_center.core_apps')"
+                />
+              </cv-overflow-menu-item>
               <cv-overflow-menu-item
                 @click="goToSettingsSoftwareRepositories()"
               >
@@ -35,45 +41,76 @@
               </cv-overflow-menu-item>
             </NsIconMenu>
           </div>
-        </div>
-      </div>
-      <div v-if="error.listModules" class="bx--row">
-        <div class="bx--col">
+        </cv-column>
+      </cv-row>
+      <cv-row v-if="error.listModules">
+        <cv-column>
           <NsInlineNotification
             kind="error"
             :title="$t('action.list-modules')"
             :description="error.listModules"
             :showCloseButton="false"
           />
-        </div>
-      </div>
-      <div v-if="error.cleanRepositoriesCache" class="bx--row">
-        <div class="bx--col">
+        </cv-column>
+      </cv-row>
+      <cv-row v-if="error.listModules">
+        <cv-column>
+          <NsInlineNotification
+            kind="error"
+            :title="$t('action.list-core-modules')"
+            :description="error.listCoreModules"
+            :showCloseButton="false"
+          />
+        </cv-column>
+      </cv-row>
+      <cv-row v-if="error.cleanRepositoriesCache">
+        <cv-column>
           <NsInlineNotification
             kind="error"
             :title="$t('action.clean-repositories-cache')"
             :description="error.cleanRepositoriesCache"
             :showCloseButton="false"
           />
-        </div>
-      </div>
-      <div v-if="q.view !== 'updates'" class="bx--row">
-        <div class="bx--col-lg-16">
+        </cv-column>
+      </cv-row>
+      <cv-row v-if="q.view !== 'updates'">
+        <cv-column v-if="isCoreUpdateAvailable">
           <NsInlineNotification
-            v-if="updates.length"
+            kind="warning"
+            :title="$t('software_center.core_app_update_available')"
+            :description="
+              $t('software_center.core_app_update_available_description')
+            "
+            :actionLabel="$t('common.details')"
+            @action="goToUpdates"
+            :showCloseButton="false"
+          />
+        </cv-column>
+        <cv-column v-else-if="appUpdates.length && !loading.listCoreModules">
+          <NsInlineNotification
             kind="warning"
             :title="$t('software_center.software_updates')"
             :description="
-              $tc('software_center.you_have_updates', updates.length, {
-                numUpdates: updates.length,
+              $tc('software_center.you_have_updates', appUpdates.length, {
+                numUpdates: appUpdates.length,
               })
             "
             :actionLabel="$t('common.details')"
             @action="goToUpdates"
             :showCloseButton="false"
           />
-        </div>
-      </div>
+        </cv-column>
+      </cv-row>
+      <cv-row v-if="error.updateCore">
+        <cv-column>
+          <NsInlineNotification
+            kind="error"
+            :title="$t('action.update-core')"
+            :description="error.updateCore"
+            :showCloseButton="false"
+          />
+        </cv-column>
+      </cv-row>
       <div>
         <cv-search
           :label="$t('software_center.search_placeholder')"
@@ -118,8 +155,8 @@
             <AppList
               v-else
               :apps="modules"
-              :isUpdatingAll="isUpdatingAll"
-              :skeleton="loading.modules"
+              :skeleton="loading.modules || loading.listCoreModules"
+              tab="all"
               @install="openInstallModal"
               key="all-app-list"
               :light="true"
@@ -135,34 +172,96 @@
             <AppList
               v-else
               :apps="installedModules"
-              :isUpdatingAll="isUpdatingAll"
-              :skeleton="loading.modules"
+              :skeleton="loading.modules || loading.listCoreModules"
+              tab="installed"
               @install="openInstallModal"
               key="installed-app-list"
               :light="true"
             />
           </div>
           <div v-if="csbUpdatesSelected">
-            <!-- update all -->
+            <!-- core update -->
+            <template
+              v-if="
+                isCoreUpdateAvailable &&
+                !loading.modules &&
+                !loading.listCoreModules
+              "
+            >
+              <NsInlineNotification
+                v-if="updateCoreTimeout"
+                kind="info"
+                :title="
+                  $t('software_center.core_update_will_start_in_a_moment')
+                "
+                :actionLabel="$t('common.cancel')"
+                @action="cancelUpdateCore"
+                :showCloseButton="false"
+                :timer="UPDATE_DELAY"
+              />
+              <h4 class="mg-bottom-md">
+                {{ $t("software_center.core_update") }}
+              </h4>
+              <AppList
+                :apps="[coreApp]"
+                :skeleton="false"
+                tab="updates"
+                key="core-update"
+                :light="true"
+              />
+              <h4 v-if="appUpdates.length" class="mg-bottom-md">
+                {{ $t("software_center.app_updates") }}
+              </h4>
+            </template>
+            <NsInlineNotification
+              v-if="error.updateModules"
+              kind="error"
+              :title="$t('action.update-modules')"
+              :description="error.updateModules"
+              :showCloseButton="false"
+            />
+            <!-- apps updates -->
             <NsInlineNotification
               v-if="updateAllAppsTimeout"
               kind="info"
-              :title="$t('software_center.update_will_start_in_a_moment')"
+              :title="
+                $tc(
+                  'software_center.n_instances_will_be_updateted_c',
+                  numInstancesToUpdate,
+                  {
+                    num: numInstancesToUpdate,
+                  }
+                )
+              "
               :actionLabel="$t('common.cancel')"
-              @action="cancelUpdateAll"
+              @action="cancelUpdateAllApps"
               :showCloseButton="false"
-              :timer="updateAllAppsDelay"
+              :timer="UPDATE_DELAY"
             />
-            <div v-if="updates.length && !updateAllAppsTimeout" class="toolbar">
+            <div
+              v-if="
+                appUpdates.length &&
+                !updateAllAppsTimeout &&
+                !loading.listModules &&
+                !loading.listCoreModules
+              "
+              class="toolbar"
+            >
               <NsButton
                 kind="primary"
                 :icon="Upgrade20"
-                @click="willUpdateAll()"
-                >{{ $t("software_center.update_all") }}</NsButton
+                @click="willUpdateAllApps()"
+                :disabled="isUpdateInProgress"
+                >{{ $t("software_center.update_all_apps") }}</NsButton
               >
             </div>
             <cv-tile
-              v-if="!updates.length && !loading.modules"
+              v-if="
+                !appUpdates.length &&
+                !isCoreUpdateAvailable &&
+                !loading.modules &&
+                !loading.listCoreModules
+              "
               kind="standard"
               :light="true"
             >
@@ -176,9 +275,9 @@
             </cv-tile>
             <AppList
               v-else
-              :apps="updates"
-              :isUpdatingAll="isUpdatingAll"
-              :skeleton="loading.modules"
+              :apps="appUpdates"
+              :skeleton="loading.modules || loading.listCoreModules"
+              tab="updates"
               @install="openInstallModal"
               key="updates-app-list"
               :light="true"
@@ -193,8 +292,8 @@
           <AppList
             v-if="searchResults.length"
             :apps="searchResults"
-            :isUpdatingAll="isUpdatingAll"
-            :skeleton="loading.modules"
+            :skeleton="loading.modules || loading.listCoreModules"
+            tab="search"
             @install="openInstallModal"
             key="search-app-list"
             :light="true"
@@ -214,12 +313,17 @@
           </cv-tile>
         </div>
       </div>
-    </div>
+    </cv-grid>
     <InstallAppModal
       :isShown="isShownInstallModal"
       :app="appToInstall"
       @close="isShownInstallModal = false"
       @installationCompleted="listModules"
+    />
+    <CoreAppModal
+      :isShown="isShownCoreAppModal"
+      :coreApp="coreApp"
+      @hide="hideCoreAppModal"
     />
   </div>
 </template>
@@ -227,8 +331,8 @@
 <script>
 import AppList from "@/components/software-center/AppList";
 import to from "await-to-js";
-import { mapActions } from "vuex";
-import InstallAppModal from "../components/software-center/InstallAppModal";
+import InstallAppModal from "@/components/software-center/InstallAppModal";
+import CoreAppModal from "@/components/software-center/CoreAppModal";
 import {
   QueryParamService,
   UtilService,
@@ -236,12 +340,14 @@ import {
   IconService,
   LottieService,
 } from "@nethserver/ns8-ui-lib";
+import { mapState, mapActions } from "vuex";
 
 export default {
   name: "SoftwareCenter",
   components: {
     AppList,
     InstallAppModal,
+    CoreAppModal,
   },
   mixins: [
     IconService,
@@ -255,6 +361,8 @@ export default {
   },
   data() {
     return {
+      // you have 10 seconds to cancel "Update core" and "Update all apps"
+      UPDATE_DELAY: 10000,
       q: {
         search: "",
         view: "all",
@@ -264,22 +372,31 @@ export default {
       searchFields: ["name", "description", "categories"],
       searchResults: [],
       modules: [],
-      updates: [],
+      appUpdates: [],
+      coreModules: [],
       updateAllAppsTimeout: 0,
-      updateAllAppsDelay: 7000, // you have 7 seconds to cancel "Update all"
+      updateCoreTimeout: 0,
       isShownInstallModal: false,
       appToInstall: null,
+      isCoreUpdateAvailable: false,
+      coreApp: null,
+      isShownCoreAppModal: false,
       loading: {
         modules: true,
         cleanRepositoriesCache: false,
+        listCoreModules: true,
       },
       error: {
         listModules: "",
         cleanRepositoriesCache: "",
+        listCoreModules: "",
+        updateCore: "",
+        updateModules: "",
       },
     };
   },
   computed: {
+    ...mapState(["isUpdateInProgress", "clusterNodes"]),
     csbAllSelected() {
       return this.q.view === "all";
     },
@@ -289,13 +406,21 @@ export default {
     csbUpdatesSelected() {
       return this.q.view === "updates";
     },
-    isUpdatingAll() {
-      return this.updateAllAppsTimeout > 0;
-    },
     installedModules() {
       return this.modules.filter((app) => {
         return app.installed.length;
       });
+    },
+    nodeIds() {
+      return this.clusterNodes.map((node) => node.id);
+    },
+    numInstancesToUpdate() {
+      let numInstancesToUpdate = 0;
+
+      for (const appToUpdate of this.appUpdates) {
+        numInstancesToUpdate += appToUpdate.updates.length;
+      }
+      return numInstancesToUpdate;
     },
   },
   watch: {
@@ -317,9 +442,16 @@ export default {
   },
   created() {
     this.listModules();
+
+    // register to events
+    this.$root.$on("willUpdateCore", this.onWillUpdateCore);
+  },
+  beforeDestroy() {
+    // remove event listener
+    this.$root.$off("willUpdateCore");
   },
   methods: {
-    ...mapActions(["setUpdatesInStore"]),
+    ...mapActions(["setUpdateInProgressInStore"]),
     async listModules() {
       this.loading.modules = true;
       this.error.listModules = "";
@@ -349,25 +481,104 @@ export default {
       this.loading.modules = false;
       let modules = taskResult.output;
       modules.sort(this.sortByProperty("name"));
-      let updates = [];
+      let appUpdates = [];
 
       for (const module of modules) {
         if (module.updates.length) {
-          updates.push(module);
+          appUpdates.push(module);
         }
 
         // sort installed instances
         module.installed.sort(this.sortModuleInstances());
       }
-
-      this.setUpdatesInStore(updates);
-      this.updates = updates;
+      this.appUpdates = appUpdates;
       this.modules = modules;
 
       // perform search on browser history navigation (e.g. going back to software center)
       if (this.q.search) {
         this.searchApp(this.q.search);
       }
+      this.listCoreModules();
+    },
+    async listCoreModules() {
+      this.error.listCoreModules = "";
+      this.loading.listCoreModules = true;
+      const taskAction = "list-core-modules";
+      const eventId = this.getUuid();
+
+      // register to task error
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.listCoreModulesAborted
+      );
+
+      // register to task completion
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.listCoreModulesCompleted
+      );
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+            eventId,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.listCoreModules = this.getErrorMessage(err);
+        this.loading.listCoreModules = false;
+        return;
+      }
+    },
+    listCoreModulesAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.listCoreModules = this.$t("error.generic_error");
+      this.loading.listCoreModules = false;
+    },
+    listCoreModulesCompleted(taskContext, taskResult) {
+      const coreModules = taskResult.output;
+      let isCoreUpdateAvailable = false;
+
+      this.coreApp = {
+        id: "core",
+        name: this.$t("software_center.core_app_name", {
+          productName: this.$root.config.PRODUCT_NAME,
+        }),
+        description: {
+          en: this.$t("software_center.core_app_description", {
+            productName: this.$root.config.PRODUCT_NAME,
+          }),
+        },
+        installed: coreModules,
+      };
+
+      // check for core updates
+
+      for (const coreApp of coreModules) {
+        for (const coreInstance of coreApp.instances) {
+          //// remove mock
+          // if (coreInstance.id == "traefik1") {
+          //   coreInstance.update = "new_mock_version";
+          // }
+
+          if (coreInstance.update) {
+            isCoreUpdateAvailable = true;
+          }
+        }
+      }
+
+      if (isCoreUpdateAvailable) {
+        this.isCoreUpdateAvailable = true;
+      }
+      this.coreModules = coreModules;
+      this.loading.listCoreModules = false;
     },
     searchApp(query) {
       // clean query
@@ -439,15 +650,81 @@ export default {
     goToSettingsSoftwareRepositories() {
       this.$router.push("/settings/software-repository");
     },
-    willUpdateAll() {
-      this.updateAllAppsTimeout = setTimeout(() => {
-        console.log("updating all!"); ////
-        this.updateAllAppsTimeout = 0;
-      }, this.updateAllAppsDelay);
+    onWillUpdateCore() {
+      this.updateCoreTimeout = setTimeout(() => {
+        this.updateCore();
+        this.updateCoreTimeout = 0;
+      }, this.UPDATE_DELAY);
     },
-    cancelUpdateAll() {
+    willUpdateAllApps() {
+      this.error.updateModules = "";
+      this.updateAllAppsTimeout = setTimeout(() => {
+        this.updateModules();
+        this.updateAllAppsTimeout = 0;
+      }, this.UPDATE_DELAY);
+    },
+    cancelUpdateCore() {
+      clearTimeout(this.updateCoreTimeout);
+      this.updateCoreTimeout = 0;
+    },
+    cancelUpdateAllApps() {
       clearTimeout(this.updateAllAppsTimeout);
       this.updateAllAppsTimeout = 0;
+    },
+    async updateModules() {
+      this.error.updateModules = "";
+      this.setUpdateInProgressInStore(true);
+      const taskAction = "update-modules";
+      const eventId = this.getUuid();
+
+      // register to task error
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.updateModulesAborted
+      );
+
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.updateModulesCompleted
+      );
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          extra: {
+            title: this.$t("software_center.update_all_apps"),
+            description: this.$tc(
+              "software_center.updating_n_instances_c",
+              this.numInstancesToUpdate,
+              {
+                num: this.numInstancesToUpdate,
+              }
+            ),
+            eventId,
+            numInstances: this.numInstancesToUpdate,
+            completion: {
+              i18nString: "software_center.num_instances_updated",
+              extraTextParams: ["numInstances"],
+            },
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.updateModules = this.getErrorMessage(err);
+        this.setUpdateInProgressInStore(false);
+        return;
+      }
+    },
+    updateModulesAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.setUpdateInProgressInStore(false);
+    },
+    updateModulesCompleted() {
+      this.setUpdateInProgressInStore(false);
+      this.listModules();
     },
     openInstallModal(app) {
       this.appToInstall = app;
@@ -496,6 +773,59 @@ export default {
     },
     cleanRepositoriesCacheCompleted() {
       this.loading.cleanRepositoriesCache = false;
+      this.listModules();
+    },
+    showCoreAppModal() {
+      this.isShownCoreAppModal = true;
+    },
+    hideCoreAppModal() {
+      this.isShownCoreAppModal = false;
+    },
+    async updateCore() {
+      this.error.updateCore = "";
+      this.setUpdateInProgressInStore(true);
+      const taskAction = "update-core";
+      const eventId = this.getUuid();
+
+      // register to task error
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.updateCoreAborted
+      );
+
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.updateCoreCompleted
+      );
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          data: {
+            nodes: this.nodeIds,
+          },
+          extra: {
+            title: this.$t("software_center.update_core"),
+            description: this.$t("common.processing"),
+            eventId,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.updateCore = this.getErrorMessage(err);
+        this.setUpdateInProgressInStore(false);
+        return;
+      }
+    },
+    updateCoreAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.setUpdateInProgressInStore(false);
+    },
+    updateCoreCompleted() {
+      this.setUpdateInProgressInStore(false);
       this.listModules();
     },
   },

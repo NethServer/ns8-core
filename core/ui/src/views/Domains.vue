@@ -192,7 +192,7 @@
           </div>
         </div>
         <template v-else>
-          <div class="bx--row">
+          <div class="bx--row toolbar">
             <div class="bx--col">
               <NsButton
                 kind="secondary"

@@ -23,13 +23,28 @@
 import json
 import agent
 import agent.tasks
+import cluster.modules
 import sys, os
 
 request = json.load(sys.stdin)
-image_url= request['module_url']
+image_url= request.get('module_url')
 instances = request['instances']
+image_id = ''
 
 rdb = agent.redis_connect(privileged=True)
+
+# Explicit image_url always wins
+if not image_url:
+    # resolve image_id from first instance
+    image_id = agent.get_image_name_from_url(rdb.hget(f'module/{instances[0]}/environment', 'IMAGE_URL'))
+
+    override = rdb.hget('cluster/override/modules', image_id)
+    # use override from redis
+    if override:
+        image_url = override
+    else:
+    # search for the latest package inside the repository metadata
+        image_url = cluster.modules.get_latest_module(image_id, rdb)
 
 # Modules sanity check: send a "list-actions" ping task and wait the result.
 # If any module fails abort the whole action.

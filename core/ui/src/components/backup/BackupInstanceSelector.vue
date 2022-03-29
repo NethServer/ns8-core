@@ -302,11 +302,11 @@ export default {
 .toolbar {
   display: flex;
   flex-direction: row;
-  margin-bottom: $spacing-03;
+  margin-bottom: $spacing-05;
 }
 
 .search-input {
-  margin-bottom: $spacing-03;
+  margin-bottom: $spacing-05;
 }
 
 .selection-info {
