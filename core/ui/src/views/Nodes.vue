@@ -41,7 +41,7 @@
         />
       </div>
     </div>
-    <div class="bx--row">
+    <div class="bx--row toolbar">
       <div class="bx--col">
         <NsButton
           kind="secondary"

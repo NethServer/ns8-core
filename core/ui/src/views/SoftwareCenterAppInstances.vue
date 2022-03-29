@@ -80,39 +80,37 @@
           />
         </cv-column>
       </cv-row>
-      <cv-row>
-        <template v-if="app">
-          <cv-column v-if="app.updates.length">
-            <NsButton
-              kind="primary"
-              :icon="Upgrade20"
-              :disabled="isUpdateInProgress"
-              @click="willUpdateAllInstances()"
-              >{{ $t("software_center.update_all_instances") }}
-            </NsButton>
-            <NsIconMenu
-              :flipMenu="true"
-              tipPosition="top"
-              tipAlignment="end"
-              class="overflow-near-button"
-            >
-              <cv-overflow-menu-item @click="installInstance()">
-                <NsMenuItem
-                  :icon="Download20"
-                  :label="$t('software_center.install_new_instance')"
-                />
-              </cv-overflow-menu-item>
-            </NsIconMenu>
-          </cv-column>
-          <cv-column v-else-if="app.installed && app.installed.length">
-            <NsButton
-              kind="secondary"
-              :icon="Download20"
-              @click="installInstance()"
-              >{{ $t("software_center.install_new_instance") }}
-            </NsButton>
-          </cv-column>
-        </template>
+      <cv-row v-if="app" class="toolbar">
+        <cv-column v-if="app.updates.length">
+          <NsButton
+            kind="primary"
+            :icon="Upgrade20"
+            :disabled="isUpdateInProgress"
+            @click="willUpdateAllInstances()"
+            >{{ $t("software_center.update_all_instances") }}
+          </NsButton>
+          <NsIconMenu
+            :flipMenu="true"
+            tipPosition="top"
+            tipAlignment="end"
+            class="overflow-near-button"
+          >
+            <cv-overflow-menu-item @click="installInstance()">
+              <NsMenuItem
+                :icon="Download20"
+                :label="$t('software_center.install_new_instance')"
+              />
+            </cv-overflow-menu-item>
+          </NsIconMenu>
+        </cv-column>
+        <cv-column v-else-if="app.installed && app.installed.length">
+          <NsButton
+            kind="secondary"
+            :icon="Download20"
+            @click="installInstance()"
+            >{{ $t("software_center.install_new_instance") }}
+          </NsButton>
+        </cv-column>
       </cv-row>
       <cv-row>
         <template v-if="loading.modules">

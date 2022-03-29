@@ -561,6 +561,6 @@ export default {
 
 .search-button {
   margin-top: $spacing-05;
-  margin-bottom: $spacing-09;
+  margin-bottom: $spacing-07;
 }
 </style>

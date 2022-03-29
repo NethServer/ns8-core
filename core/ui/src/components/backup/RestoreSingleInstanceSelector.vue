@@ -185,7 +185,7 @@ export default {
 }
 
 .search-input {
-  margin-bottom: $spacing-03;
+  margin-bottom: $spacing-05;
 }
 
 .instance-list {

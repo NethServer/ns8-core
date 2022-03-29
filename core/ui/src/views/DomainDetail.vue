@@ -201,7 +201,7 @@
         </div>
       </div>
       <template v-else-if="domain">
-        <div class="bx--row">
+        <div class="bx--row toolbar">
           <div class="bx--col">
             <NsButton
               kind="secondary"
