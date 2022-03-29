@@ -61,7 +61,7 @@
             <NsButton
               kind="primary"
               :icon="Save20"
-              :loading="isLoadingSettings"
+              :loading="loading.setClusterLabel"
               :disabled="isLoadingSettings"
               >{{ $t("common.save_settings") }}</NsButton
             >
@@ -106,7 +106,7 @@ export default {
   },
   computed: {
     isLoadingSettings() {
-      return this.loading.getClusterStatus || this.loading.setClusterLabel; //// || this.loading...;
+      return this.loading.getClusterStatus || this.loading.setClusterLabel;
     },
   },
   beforeRouteEnter(to, from, next) {
