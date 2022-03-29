@@ -2,6 +2,7 @@
 
 LEADER_NODE=$1
 SSH_KEYFILE=${SSH_KEYFILE:-$HOME/.ssh/id_rsa}
+COREMODULES=$(echo ${COREMODULES} | tr ' ' ',')
 
 ssh_key="$(cat $SSH_KEYFILE)"
 

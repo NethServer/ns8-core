@@ -114,7 +114,7 @@ jobs:
         working-directory: ${{ github.workspace }}/core
         env:
           SSH_KEYFILE: ${{ github.workspace }}/key
-          COREMODULES: ${{ join(fromJSON(needs.ns8.outputs.modules), ',' ) }}
+          COREMODULES: ${{ join(fromJSON(needs.ns8.outputs.modules), ' ' ) }}
       - name: Save tests results
         if: always()
         uses: actions/upload-artifact@v2

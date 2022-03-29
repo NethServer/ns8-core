@@ -68,7 +68,7 @@ to remote host will fail.
 #### Environment variables
 
 * `SSH_KEYFILE`: SSH private key to use for connection to the NS8 cluster, default `~/.ssh/id_rsa`.
-* `COREMODULES`: Comma separated list of modules to install from the selected branch.
+* `COREMODULES`: list of space-separated module URL to pull and use during the NS8 installation process.
 
 The `COREMODULES` have the same meaning as the [`install.sh`](docs/quickstart.md#install-a-development-branch) parameters.
 
