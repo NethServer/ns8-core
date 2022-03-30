@@ -63,7 +63,10 @@ jobs:
       matrix:
           node: ${{ fromJSON(needs.ns8.outputs.nodes) }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+        with:
+          repository: NethServer/ns8-terraform-infra
+          path: infra
       - name: HashiCorp - Setup Terraform
         uses: hashicorp/setup-terraform@v1.2.1
         with:
@@ -135,7 +138,10 @@ jobs:
         node: ${{ fromJSON(needs.ns8.outputs.nodes) }}
     if: always()
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+        with:
+          repository: NethServer/ns8-terraform-infra
+          path: infra
       - name: HashiCorp - Setup Terraform
         uses: hashicorp/setup-terraform@v1.2.1
       - name: Get Terraform State
