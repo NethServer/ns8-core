@@ -199,6 +199,7 @@
                   <NsMenuItem
                     :icon="Copy20"
                     :label="$t('software_center.clone')"
+                    :data-test-id="index == 0 ? 'first-clone' : ''"
                   />
                 </cv-overflow-menu-item>
                 <cv-overflow-menu-item
@@ -218,7 +219,7 @@
                   <NsMenuItem
                     :icon="TrashCan20"
                     :label="$t('software_center.uninstall')"
-                    :data-test-id="index == 0 ? 'first' : ''"
+                    :data-test-id="index == 0 ? 'first-uninstall' : ''"
                   />
                 </cv-overflow-menu-item>
               </cv-overflow-menu>
