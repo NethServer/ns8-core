@@ -3,6 +3,7 @@ Documentation     This is a resource file, that can contain variables and keywor
 ...               Keywords defined here can be used where this Keywords.resource in loaded.
 Library           SSHLibrary
 Library           DateTime
+Library           Browser
 
 *** Variables ***
 ${SSH_KEYFILE}    %{HOME}/.ssh/id_ecdsa
@@ -47,6 +48,10 @@ Collect the suite journal
     Get File    journal-dump.log    ${OUTPUT DIR}/journal-${SUITE NAME}.log
 
 Open the browser
+    ${old_browser_timeout} =    Set Browser Timeout    20 seconds
+    ${old_retry_assertions} =    Set Retry Assertions For    20 seconds
+    # Log To Console    old_browser_timeout ${old_browser_timeout}
+    # Log To Console    old_retry_assertions ${old_retry_assertions}
     New Browser    chromium    headless=${HEADLESS}
 
 Open the context

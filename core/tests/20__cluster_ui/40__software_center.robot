@@ -12,8 +12,8 @@ Install App
     Click    text="Software center"
     Click    .app-list .bx--row > div:first-child button >> text="Install"
     Click    .bx--btn--primary >> text="Install"
-    ${old_browser_timeout} =    Set Browser Timeout    120 seconds
-    ${old_retry_assertions} =    Set Retry Assertions For    120 seconds
+    ${old_browser_timeout} =    Set Browser Timeout    240 seconds
+    ${old_retry_assertions} =    Set Retry Assertions For    240 seconds
     Get Text    .bx--toast-notification--success >> text=installed on
     Set Browser Timeout    ${old_browser_timeout}
     Set Retry Assertions For    ${old_retry_assertions}
@@ -24,8 +24,8 @@ Install Another Instance
     Click    .app-list .bx--row > div:first-child button >> text="Instances"
     Click    button >> text="Install new instance"
     Click    .bx--btn--primary >> text="Install"
-    ${old_browser_timeout} =    Set Browser Timeout    120 seconds
-    ${old_retry_assertions} =    Set Retry Assertions For    120 seconds
+    ${old_browser_timeout} =    Set Browser Timeout    240 seconds
+    ${old_retry_assertions} =    Set Retry Assertions For    240 seconds
     Get Text    .bx--toast-notification--success >> text=installed on
     Set Browser Timeout    ${old_browser_timeout}
     Set Retry Assertions For    ${old_retry_assertions}
@@ -35,7 +35,7 @@ Uninstall App
     Click    text="Software center"
     Click    .app-list .bx--row > div:first-child button >> text="Instances"
     # click overflow menu
-    Click    .bx--row > div:first-child .cv-overflow-menu button
+    Click    .bx--row > div:first-child .cv-overflow-menu[data-test-id="first"] button
     Click    .bx--overflow-menu-options [data-test-id="first"] >> text="Uninstall"
     # get module ID from modal title
     ${modal_title}=    Get Text    .bx--modal-header__heading >> text=Uninstall
@@ -43,8 +43,8 @@ Uninstall App
     # enter module ID in danger modal input
     Fill Text    .cv-modal .bx--text-input    ${regexp_match[0].group(1)}
     Click    button >> text="I understand, delete"
-    ${old_browser_timeout} =    Set Browser Timeout    60 seconds
-    ${old_retry_assertions} =    Set Retry Assertions For    60 seconds
+    ${old_browser_timeout} =    Set Browser Timeout    120 seconds
+    ${old_retry_assertions} =    Set Retry Assertions For    120 seconds
     Get Text    .bx--toast-notification--success >> text="Completed"
     Set Browser Timeout    ${old_browser_timeout}
     Set Retry Assertions For    ${old_retry_assertions}

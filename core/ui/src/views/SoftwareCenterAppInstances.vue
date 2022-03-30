@@ -157,6 +157,7 @@
                 tip-position="top"
                 tip-alignment="end"
                 class="top-right-overflow-menu"
+                :data-test-id="index == 0 ? 'first' : ''"
               >
                 <cv-overflow-menu-item
                   primary-focus
