@@ -35,12 +35,12 @@
             <div class="mg-bottom-md">
               {{ $t("backup.choose_destination_repository") }}
             </div>
-            <div class="bx--grid no-padding">
-              <div class="bx--row">
-                <div
+            <cv-grid class="no-padding">
+              <cv-row>
+                <cv-column
                   v-for="repo in internalRepositories"
                   :key="'col-' + repo.id"
-                  class="bx--col-md-4"
+                  :md="4"
                 >
                   <NsTile
                     :light="true"
@@ -61,14 +61,14 @@
                       {{ repo.url }}
                     </div>
                   </NsTile>
-                </div>
-              </div>
-            </div>
+                </cv-column>
+              </cv-row>
+            </cv-grid>
           </div>
           <div v-show="step == 'settings'">
-            <div class="schedule-container bx--grid no-padding">
-              <div class="bx--row">
-                <div class="bx--col-md-2 bx--col-max-4">
+            <cv-grid class="schedule-container no-padding">
+              <cv-row>
+                <cv-column :md="2" :max="4">
                   <!-- schedule interval -->
                   <cv-select
                     v-model="schedule.interval"
@@ -93,10 +93,11 @@
                       {{ $t("backup.custom") }}
                     </cv-select-option> -->
                   </cv-select>
-                </div>
-                <div
+                </cv-column>
+                <cv-column
                   v-if="schedule.interval == 'hourly'"
-                  class="bx--col-md-2 bx--col-max-4"
+                  :md="2"
+                  :max="4"
                 >
                   <!-- hourly schedule -->
                   <cv-text-input
@@ -109,12 +110,9 @@
                     ref="schedule-minute"
                   >
                   </cv-text-input>
-                </div>
+                </cv-column>
                 <!-- daily schedule -->
-                <div
-                  v-if="schedule.interval == 'daily'"
-                  class="bx--col-md-2 bx--col-max-4"
-                >
+                <cv-column v-if="schedule.interval == 'daily'" :md="2" :max="4">
                   <cv-time-picker
                     :label="$t('backup.at')"
                     :time.sync="schedule.time"
@@ -129,10 +127,10 @@
                     :form-item="true"
                   >
                   </cv-time-picker>
-                </div>
+                </cv-column>
                 <!-- weekly schedule -->
                 <template v-if="schedule.interval == 'weekly'">
-                  <div class="bx--col-md-2 bx--col-max-4">
+                  <cv-column :md="2" :max="4">
                     <cv-select
                       v-model="schedule.weekDay"
                       :label="$t('backup.on')"
@@ -160,8 +158,8 @@
                         {{ $t("calendar.sunday") }}
                       </cv-select-option>
                     </cv-select>
-                  </div>
-                  <div class="bx--col-md-2 bx--col-max-4">
+                  </cv-column>
+                  <cv-column :md="2" :max="4">
                     <cv-time-picker
                       :label="$t('backup.at')"
                       :time.sync="schedule.time"
@@ -176,11 +174,11 @@
                       :form-item="true"
                     >
                     </cv-time-picker>
-                  </div>
+                  </cv-column>
                 </template>
                 <!-- monthly schedule -->
                 <template v-if="schedule.interval == 'monthly'">
-                  <div class="bx--col-md-2 bx--col-max-4">
+                  <cv-column :md="2" :max="4">
                     <cv-text-input
                       :label="$t('backup.on_day')"
                       v-model.trim="schedule.monthDay"
@@ -190,8 +188,8 @@
                       :disabled="loading.addBackup || loading.alterBackup"
                     >
                     </cv-text-input>
-                  </div>
-                  <div class="bx--col-md-2 bx--col-max-4">
+                  </cv-column>
+                  <cv-column :md="2" :max="4">
                     <cv-time-picker
                       :label="$t('backup.at')"
                       :time.sync="schedule.time"
@@ -206,11 +204,12 @@
                       :form-item="true"
                     >
                     </cv-time-picker>
-                  </div>
+                  </cv-column>
                 </template>
-                <div
+                <cv-column
                   v-if="schedule.interval == 'custom'"
-                  class="bx--col-md-6 bx--col-max-12"
+                  :md="6"
+                  :max="12"
                 >
                   <!-- custom schedule -->
                   <NsTextInput
@@ -241,14 +240,14 @@
                       </div>
                     </template>
                   </NsTextInput>
-                </div>
-              </div>
-              <div
+                </cv-column>
+              </cv-row>
+              <cv-row
                 v-if="schedule.interval !== 'custom'"
-                class="bx--row mg-bottom-xlg"
+                class="mg-bottom-xlg"
               >
                 <!-- schedule description -->
-                <div class="bx--col schedule-description">
+                <cv-column class="schedule-description">
                   {{ getBackupScheduleDescription(schedule) }}
                   <!-- calendar event expression //// -->
                   <!-- <cv-interactive-tooltip
@@ -267,30 +266,30 @@
                       <code>{{ scheduleExpression }}</code>
                     </template>
                   </cv-interactive-tooltip> -->
-                </div>
-              </div>
-            </div>
-            <div class="bx--row">
-              <div class="bx--col-md-2 bx--col-max-4">
-                <NsTextInput
-                  :label="$t('backup.retention')"
-                  v-model.trim="retention"
-                  type="number"
-                  min="1"
-                  :helper-text="$t('backup.backup_snapshots')"
-                  :invalid-message="$t(error.retention)"
-                  :disabled="loading.addBackup || loading.alterBackup"
-                  tooltipAlignment="end"
-                  tooltipDirection="right"
-                  ref="retention"
-                  class="retention"
-                >
-                  <template #tooltip>{{
-                    $t("backup.retention_tooltip")
-                  }}</template>
-                </NsTextInput>
-              </div>
-            </div>
+                </cv-column>
+              </cv-row>
+              <cv-row>
+                <cv-column :md="2" :max="4">
+                  <NsTextInput
+                    :label="$t('backup.retention')"
+                    v-model.trim="retention"
+                    type="number"
+                    min="1"
+                    :helper-text="$t('backup.backup_snapshots')"
+                    :invalid-message="$t(error.retention)"
+                    :disabled="loading.addBackup || loading.alterBackup"
+                    tooltipAlignment="end"
+                    tooltipDirection="right"
+                    ref="retention"
+                    class="retention"
+                  >
+                    <template #tooltip>{{
+                      $t("backup.retention_tooltip")
+                    }}</template>
+                  </NsTextInput>
+                </cv-column>
+              </cv-row>
+            </cv-grid>
           </div>
           <div v-show="step == 'name'">
             <cv-text-input

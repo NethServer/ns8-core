@@ -20,10 +20,10 @@
           <div class="mg-bottom-md">
             {{ $t("backup.select_backup_provider") }}
           </div>
-          <div class="bx--grid">
-            <div class="bx--row">
+          <cv-grid>
+            <cv-row>
               <!-- backblaze -->
-              <div class="bx--col-md-4">
+              <cv-column :md="4">
                 <NsTile
                   :light="true"
                   kind="selectable"
@@ -44,9 +44,9 @@
                     </h6>
                   </div>
                 </NsTile>
-              </div>
+              </cv-column>
               <!-- azure -->
-              <div class="bx--col-md-4">
+              <cv-column :md="4">
                 <NsTile
                   :light="true"
                   kind="selectable"
@@ -68,9 +68,9 @@
                     </h6>
                   </div>
                 </NsTile>
-              </div>
+              </cv-column>
               <!-- amazon s3 -->
-              <div class="bx--col-md-4">
+              <cv-column :md="4">
                 <NsTile
                   :light="true"
                   kind="selectable"
@@ -91,9 +91,9 @@
                     </h6>
                   </div>
                 </NsTile>
-              </div>
+              </cv-column>
               <!-- generic s3 -->
-              <div class="bx--col-md-4">
+              <cv-column :md="4">
                 <NsTile
                   :light="true"
                   kind="selectable"
@@ -115,9 +115,9 @@
                     </h6>
                   </div>
                 </NsTile>
-              </div>
-            </div>
-          </div>
+              </cv-column>
+            </cv-row>
+          </cv-grid>
         </template>
         <template v-if="step == 'settings'">
           <NsInlineNotification
@@ -371,8 +371,8 @@ export default {
           );
           repoNameSuffix++;
         }
-
         this.name = repoName;
+        this.focusElement("url");
       }
     },
   },
