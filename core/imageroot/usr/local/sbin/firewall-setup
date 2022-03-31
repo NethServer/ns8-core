@@ -54,7 +54,7 @@ ssh_port = find_ssh_port('inet4') or find_ssh_port('inet6') or 22
 subprocess.run(['firewall-cmd', '--permanent', '--service=ssh', f'--add-port={ssh_port}/tcp'], check = True)
 subprocess.run(['firewall-cmd', '--permanent', '--zone=public', '--add-service=ssh'], check = True)
 
-# As WireGuard default port
+# Add WireGuard default port
 subprocess.run(['firewall-cmd', '--permanent', f'--new-service=wireguard'], check = True)
 subprocess.run(['firewall-cmd', '--permanent', f'--service=wireguard', f'--set-short=WireGuard', f'--add-port=55820/udp'], check = True)
 subprocess.run(['firewall-cmd', '--reload'], check = True)

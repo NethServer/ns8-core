@@ -1,0 +1,58 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2022 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
+import sys
+import json
+import subprocess
+
+request = json.load(sys.stdin)
+name = request['name']
+ports = request['ports']
+
+# Check if firewalld is running
+state_p = subprocess.run(['firewall-cmd', '--state'])
+if state_p.returncode == 0:
+    fw_cmd = ['firewall-cmd', '--permanent']
+    fw_running = True
+else:
+    fw_cmd = ['firewall-offline-cmd']
+    fw_running = False
+
+# Create the service
+subprocess.run(fw_cmd + [f'--new-service={name}'], check = True)
+
+# Add service ports
+port_cmd = []
+for port in ports
+    ports.append(f'--add-port={port}')
+subprocess.run(fw_cmd + [f'--service={name}', f'--set-short={name}'] + port_cmd, check = True)
+
+# Firewalld needs to be reloaded before using the service
+if fw_running:
+    subprocess.run(['firewall-cmd', '--reload'], check = True)
+
+# Add the service to public zone
+subprocess.run(fw_cmd + [f'--add-service={name}', '--zone=public'])
+
+# Apply the configuration
+if fw_running:
+    subprocess.run(['firewall-cmd', '--reload'], check = True)

@@ -169,6 +169,8 @@ cluster.grants.grant(rdb, "list-*", f'node/{node_id}', "reader")
 cluster.grants.grant(rdb, "get-*", f'node/{node_id}', "reader")
 cluster.grants.grant(rdb, "show-*", f'node/{node_id}', "reader")
 cluster.grants.grant(rdb, "read-*", f'node/{node_id}', "reader")
+cluster.grants.grant(rdb, "add-public-service",  f'node/{node_id}', "fwadm")
+cluster.grants.grant(rdb, "remove-public-service", f'node/{node_id}', "fwadm")
 
 # Grant on cascade the owner role on the new node, to users with the owner
 # role on cluster
