@@ -1,8 +1,8 @@
 <template>
   <div>
-    <div class="bx--grid bx--grid--full-width">
-      <div class="bx--row">
-        <div class="bx--col-lg-16 page-title title-and-toolbar">
+    <cv-grid fullWidth>
+      <cv-row>
+        <cv-column class="page-title title-and-toolbar">
           <h2>
             {{ $t("backup.title") }}
             <cv-interactive-tooltip
@@ -57,53 +57,45 @@
               </template>
             </cv-interactive-tooltip>
           </h2>
-        </div>
-      </div>
+        </cv-column>
+      </cv-row>
       <template v-if="loading.listBackupRepositories || loading.listBackups">
         <!-- repositories skeleton -->
-        <div class="bx--row">
-          <div class="bx--col">
+        <cv-row>
+          <cv-column>
             <cv-skeleton-text heading width="40%"></cv-skeleton-text>
-          </div>
-        </div>
-        <div class="bx--row">
-          <div
-            v-for="index in 2"
-            :key="index"
-            class="bx--col-md-4 bx--col-max-4"
-          >
+          </cv-column>
+        </cv-row>
+        <cv-row>
+          <cv-column v-for="index in 2" :key="index" :md="4" :max="4">
             <cv-tile light>
               <cv-skeleton-text
                 :paragraph="true"
                 :line-count="8"
               ></cv-skeleton-text>
             </cv-tile>
-          </div>
-        </div>
+          </cv-column>
+        </cv-row>
         <!-- backups skeleton -->
-        <div class="bx--row">
-          <div class="bx--col">
+        <cv-row>
+          <cv-column>
             <cv-skeleton-text heading width="40%"></cv-skeleton-text>
-          </div>
-        </div>
-        <div class="bx--row">
-          <div
-            v-for="index in 2"
-            :key="index"
-            class="bx--col-md-4 bx--col-max-4"
-          >
+          </cv-column>
+        </cv-row>
+        <cv-row>
+          <cv-column v-for="index in 2" :key="index" :md="4" :max="4">
             <cv-tile light>
               <cv-skeleton-text
                 :paragraph="true"
                 :line-count="8"
               ></cv-skeleton-text>
             </cv-tile>
-          </div>
-        </div>
+          </cv-column>
+        </cv-row>
       </template>
       <!-- empty state repositories -->
-      <div v-else-if="!repositories.length" class="bx--row">
-        <div class="bx--col">
+      <cv-row v-else-if="!repositories.length">
+        <cv-column>
           <cv-tile kind="standard" :light="true">
             <NsEmptyState :title="$t('backup.no_backup_repository')">
               <template #pictogram>
@@ -121,15 +113,12 @@
               </template>
             </NsEmptyState>
           </cv-tile>
-        </div>
-      </div>
+        </cv-column>
+      </cv-row>
       <template v-else>
         <!-- errored backups -->
-        <div
-          v-if="!loading.listBackups && erroredBackups.length"
-          class="bx--row"
-        >
-          <div class="bx--col">
+        <cv-row v-if="!loading.listBackups && erroredBackups.length">
+          <cv-column>
             <NsInlineNotification
               kind="error"
               :title="
@@ -140,14 +129,11 @@
               :description="$t('backup.errored_backups_description')"
               :showCloseButton="false"
             />
-          </div>
-        </div>
+          </cv-column>
+        </cv-row>
         <!-- disabled backups warning -->
-        <div
-          v-if="!loading.listBackups && disabledBackups.length"
-          class="bx--row"
-        >
-          <div class="bx--col">
+        <cv-row v-if="!loading.listBackups && disabledBackups.length">
+          <cv-column>
             <NsInlineNotification
               kind="warning"
               :title="$t('backup.disabled_backups')"
@@ -162,14 +148,11 @@
               "
               :showCloseButton="false"
             />
-          </div>
-        </div>
+          </cv-column>
+        </cv-row>
         <!-- unconfigured instances warning -->
-        <div
-          v-if="!loading.listBackups && unconfiguredInstances.length"
-          class="bx--row"
-        >
-          <div class="bx--col">
+        <cv-row v-if="!loading.listBackups && unconfiguredInstances.length">
+          <cv-column>
             <NsInlineNotification
               kind="warning"
               :title="$t('backup.app_instances_not_backed_up')"
@@ -186,11 +169,11 @@
               @action="showCreateBackupModal('notBackedUp')"
               :showCloseButton="false"
             />
-          </div>
-        </div>
+          </cv-column>
+        </cv-row>
         <!-- cluster configuration -->
-        <div class="bx--row">
-          <div class="bx--col">
+        <cv-row>
+          <cv-column>
             <h4 class="mg-bottom-md">
               {{ $t("backup.cluster_configuration") }}
               <cv-interactive-tooltip
@@ -206,28 +189,28 @@
                 </template>
               </cv-interactive-tooltip>
             </h4>
-          </div>
-        </div>
-        <div class="bx--row mg-bottom-lg">
-          <div class="bx--col">
+          </cv-column>
+        </cv-row>
+        <cv-row class="mg-bottom-lg">
+          <cv-column>
             <NsButton
               kind="secondary"
               :icon="Download20"
               @click="downloadClusterConfigurationBackup()"
               >{{ $t("backup.download_cluster_configuration_backup") }}
             </NsButton>
-          </div>
-        </div>
-        <div class="bx--row">
-          <div class="bx--col">
+          </cv-column>
+        </cv-row>
+        <cv-row>
+          <cv-column>
             <h4 class="mg-bottom-md">
               {{ $t("backup.apps") }}
             </h4>
-          </div>
-        </div>
+          </cv-column>
+        </cv-row>
         <!-- repositories -->
-        <div class="bx--row">
-          <div class="bx--col">
+        <cv-row>
+          <cv-column>
             <h6 class="mg-bottom-md">
               {{ $t("backup.repositories") }}
               <cv-interactive-tooltip
@@ -243,40 +226,41 @@
                 </template>
               </cv-interactive-tooltip>
             </h6>
-          </div>
-        </div>
-        <div v-if="error.listBackupRepositories" class="bx--row">
-          <div class="bx--col">
+          </cv-column>
+        </cv-row>
+        <cv-row v-if="error.listBackupRepositories">
+          <cv-column>
             <NsInlineNotification
               kind="error"
               :title="$t('action.list-backup-repositories')"
               :description="error.listBackupRepositories"
               :showCloseButton="false"
             />
-          </div>
-        </div>
-        <div v-if="error.removeBackupRepository" class="bx--row">
-          <div class="bx--col">
+          </cv-column>
+        </cv-row>
+        <cv-row v-if="error.removeBackupRepository">
+          <cv-column>
             <NsInlineNotification
               kind="error"
               :title="$t('action.remove-backup-repository')"
               :description="error.removeBackupRepository"
               :showCloseButton="false"
             />
-          </div>
-        </div>
-        <div class="bx--row toolbar">
-          <div class="bx--col">
+          </cv-column>
+        </cv-row>
+        <cv-row class="toolbar">
+          <cv-column>
             <NsButton kind="secondary" :icon="Add20" @click="showAddRepoModal()"
               >{{ $t("backup.add_repository") }}
             </NsButton>
-          </div>
-        </div>
-        <div class="bx--row">
-          <div
+          </cv-column>
+        </cv-row>
+        <cv-row>
+          <cv-column
             v-for="repo in repositories"
             :key="repo.id"
-            class="bx--col-md-4 bx--col-max-4"
+            :md="4"
+            :max="4"
           >
             <NsInfoCard light :title="repo.name" :icon="DataBase32">
               <template #menu>
@@ -320,57 +304,57 @@
                 </div>
               </template>
             </NsInfoCard>
-          </div>
-        </div>
+          </cv-column>
+        </cv-row>
         <!-- backups -->
-        <div class="bx--row">
-          <div class="bx--col">
+        <cv-row>
+          <cv-column>
             <h6 class="mg-bottom-md">{{ $t("backup.schedules") }}</h6>
-          </div>
-        </div>
-        <div v-if="error.listBackups" class="bx--row">
-          <div class="bx--col">
+          </cv-column>
+        </cv-row>
+        <cv-row v-if="error.listBackups">
+          <cv-column>
             <NsInlineNotification
               kind="error"
               :title="$t('action.list-backups')"
               :description="error.listBackups"
               :showCloseButton="false"
             />
-          </div>
-        </div>
-        <div v-if="error.removeBackup" class="bx--row">
-          <div class="bx--col">
+          </cv-column>
+        </cv-row>
+        <cv-row v-if="error.removeBackup">
+          <cv-column>
             <NsInlineNotification
               kind="error"
               :title="$t('action.remove-backup')"
               :description="error.removeBackup"
               :showCloseButton="false"
             />
-          </div>
-        </div>
-        <div v-if="error.runBackup" class="bx--row">
-          <div class="bx--col">
+          </cv-column>
+        </cv-row>
+        <cv-row v-if="error.runBackup">
+          <cv-column>
             <NsInlineNotification
               kind="error"
               :title="$t('action.run-backup')"
               :description="error.runBackup"
               :showCloseButton="false"
             />
-          </div>
-        </div>
-        <div v-if="error.alterBackup" class="bx--row">
-          <div class="bx--col">
+          </cv-column>
+        </cv-row>
+        <cv-row v-if="error.alterBackup">
+          <cv-column>
             <NsInlineNotification
               kind="error"
               :title="$t('action.alter-backup')"
               :description="error.alterBackup"
               :showCloseButton="false"
             />
-          </div>
-        </div>
+          </cv-column>
+        </cv-row>
         <!-- empty state backups -->
-        <div v-if="!backups.length" class="bx--row">
-          <div class="bx--col">
+        <cv-row v-if="!backups.length">
+          <cv-column>
             <cv-tile light>
               <NsEmptyState :title="$t('backup.no_backup_scheduled')">
                 <template #description>
@@ -384,24 +368,25 @@
                 </template>
               </NsEmptyState>
             </cv-tile>
-          </div>
-        </div>
+          </cv-column>
+        </cv-row>
         <template v-else>
-          <div class="bx--row">
-            <div class="bx--col">
+          <cv-row class="toolbar">
+            <cv-column>
               <NsButton
                 kind="secondary"
                 :icon="Add20"
                 @click="showCreateBackupModal('')"
                 >{{ $t("backup.schedule_backup") }}
               </NsButton>
-            </div>
-          </div>
-          <div class="bx--row">
-            <div
+            </cv-column>
+          </cv-row>
+          <cv-row>
+            <cv-column
               v-for="backup in backups"
               :key="backup.id"
-              class="bx--col-md-4 bx--col-max-4"
+              :md="4"
+              :max="4"
             >
               <NsInfoCard light :title="backup.name" :icon="Save32">
                 <template #menu>
@@ -524,16 +509,16 @@
                   </div>
                 </template>
               </NsInfoCard>
-            </div>
-          </div>
+            </cv-column>
+          </cv-row>
         </template>
-        <div class="bx--row">
-          <div class="bx--col">
+        <cv-row>
+          <cv-column>
             <h6 class="mg-bottom-md">{{ $t("backup.restore") }}</h6>
-          </div>
-        </div>
-        <div class="bx--row mg-bottom-xlg">
-          <div class="bx--col">
+          </cv-column>
+        </cv-row>
+        <cv-row class="mg-bottom-xlg">
+          <cv-column>
             <NsButton
               kind="secondary"
               :icon="Reset20"
@@ -541,10 +526,10 @@
               :disabled="!repositories.length"
               >{{ $t("backup.restore_app") }}
             </NsButton>
-          </div>
-        </div>
+          </cv-column>
+        </cv-row>
       </template>
-    </div>
+    </cv-grid>
     <!-- delete repository modal -->
     <NsDangerDeleteModal
       :isShown="isShownDeleteRepoModal"

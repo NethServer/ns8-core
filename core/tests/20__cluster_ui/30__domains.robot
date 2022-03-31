@@ -15,8 +15,8 @@ Create Internal Domain
     Click    text=Next
     Click    .cv-modal >> text=Samba
     Click    button >> text=Install provider
-    ${old_browser_timeout} =    Set Browser Timeout    60 seconds
-    ${old_retry_assertions} =    Set Retry Assertions For    60 seconds
+    ${old_browser_timeout} =    Set Browser Timeout    120 seconds
+    ${old_retry_assertions} =    Set Retry Assertions For    120 seconds
     Fill Text    .cv-text-input >> text="Domain"    test.domain
     Set Browser Timeout    ${old_browser_timeout}
     Set Retry Assertions For    ${old_retry_assertions}
@@ -26,8 +26,8 @@ Create Internal Domain
     Click    .bx--list-box__menu-icon
     Click    .bx--list-box__menu-item:first-child
     Click    button >> text=Configure domain
-    ${old_browser_timeout} =    Set Browser Timeout    90 seconds
-    ${old_retry_assertions} =    Set Retry Assertions For    90 seconds
+    ${old_browser_timeout} =    Set Browser Timeout    180 seconds
+    ${old_retry_assertions} =    Set Retry Assertions For    180 seconds
     Get Element    .cv-tile >> text=test.domain
     Set Browser Timeout    ${old_browser_timeout}
     Set Retry Assertions For    ${old_retry_assertions}

@@ -163,7 +163,10 @@ def list_installed(rdb, skip_core_modules = False):
             continue
         if url not in installed.keys():
             installed[url] = []
-        installed[url].append({ 'id': vars["MODULE_ID"], 'ui_name': module_ui_name, 'node': vars['NODE_ID'], 'digest': vars["IMAGE_DIGEST"], 'source': url, 'version': tag, 'logo': logo, 'module': image, 'flags': flags})
+        # Retrieve node ui_name
+        node_id = vars['NODE_ID']
+        node_ui_name = rdb.get(f"node/{node_id}/ui_name") or ""
+        installed[url].append({ 'id': vars["MODULE_ID"], 'ui_name': module_ui_name, 'node': node_id, 'node_ui_name': node_ui_name, 'digest': vars["IMAGE_DIGEST"], 'source': url, 'version': tag, 'logo': logo, 'module': image, 'flags': flags})
 
     return installed
 

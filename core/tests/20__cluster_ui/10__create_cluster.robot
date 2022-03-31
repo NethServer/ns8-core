@@ -16,8 +16,8 @@ Create Cluster
     Fill Text    text="Re-enter new admin password"    Nethesis,12345
     Click    button >> text=Change password
     Click    button >> text=Create cluster
-    ${old_browser_timeout} =    Set Browser Timeout    120 seconds
-    ${old_retry_assertions} =    Set Retry Assertions For    120 seconds
+    ${old_browser_timeout} =    Set Browser Timeout    240 seconds
+    ${old_retry_assertions} =    Set Retry Assertions For    240 seconds
     Get Title    ==    Cluster status
     Set Browser Timeout    ${old_browser_timeout}
     Set Retry Assertions For    ${old_retry_assertions}

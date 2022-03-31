@@ -157,6 +157,7 @@
                 tip-position="top"
                 tip-alignment="end"
                 class="top-right-overflow-menu"
+                :data-test-id="index == 0 ? 'first' : ''"
               >
                 <cv-overflow-menu-item
                   primary-focus
@@ -198,6 +199,7 @@
                   <NsMenuItem
                     :icon="Copy20"
                     :label="$t('software_center.clone')"
+                    :data-test-id="index == 0 ? 'first-clone' : ''"
                   />
                 </cv-overflow-menu-item>
                 <cv-overflow-menu-item
@@ -217,7 +219,7 @@
                   <NsMenuItem
                     :icon="TrashCan20"
                     :label="$t('software_center.uninstall')"
-                    :data-test-id="index == 0 ? 'first' : ''"
+                    :data-test-id="index == 0 ? 'first-uninstall' : ''"
                   />
                 </cv-overflow-menu-item>
               </cv-overflow-menu>
@@ -232,7 +234,12 @@
                 </div>
                 <div class="row icon-and-text">
                   <NsSvg :svg="Chip20" class="icon" />
-                  <span>{{ $t("common.node") }} {{ instance.node }}</span>
+                  <span v-if="instance.node_ui_name">{{
+                    instance.node_ui_name
+                  }}</span>
+                  <span v-else
+                    >{{ $t("common.node") }} {{ instance.node }}</span
+                  >
                 </div>
                 <div class="row actions">
                   <!-- app is installed and can be updated -->

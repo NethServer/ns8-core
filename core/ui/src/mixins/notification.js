@@ -65,6 +65,7 @@ export default {
           lowContrast: false,
           showCloseButton: true,
           id: notification.id,
+          isCancelShown: false,
           cancelLabel: this.$t("notification.abort"),
           confirmCancelLabel: this.$t("notification.confirm_abort"),
         },
