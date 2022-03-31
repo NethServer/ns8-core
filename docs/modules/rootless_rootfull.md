@@ -97,4 +97,6 @@ namespace is private for the module.
 This command prints out the filesystem path where Podman stores volumes
 data:
 
+{% raw %}
     podman system info --format='{{.Store.VolumePath}}'
+{% endraw %}
