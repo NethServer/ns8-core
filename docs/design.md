@@ -87,6 +87,7 @@ NS8 should run on a OS with the following features:
 - podman ≥ 2.2
 - support WireGuard VPN
 - cgroups v2
+- firewalld to manage ports for the public network
 
 ### Users
 
