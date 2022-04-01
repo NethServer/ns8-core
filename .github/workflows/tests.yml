@@ -5,9 +5,6 @@ on:
       - "labeled"
   workflow_dispatch:
 env:
-  TF_VAR_project: "NS8-CI"
-  TF_VAR_domain: "ci.nethserver.net"
-  NS8_LEADER_NODES: "dn1 cs1"
   NS8_CORE_MODULES: "core traefik loki promtail ldapproxy"
 
 jobs:
@@ -18,15 +15,8 @@ jobs:
     name: Find NS8 cluster informations
     runs-on: ubuntu-latest
     outputs:
-      nodes: ${{ steps.nodes.outputs.list }}
       modules: ${{ steps.modules.outputs.list }}
-      tag: ${{ steps.tag.outputs.name }}
-      short_sha: ${{ steps.short_sha.outputs.value }}
     steps:
-      - id: nodes
-        run: |
-          nodes=$(jq -ncR '[inputs]' <<< "$(echo $NS8_LEADER_NODES | tr ' ' '\n')")
-          echo "::set-output name=list::${nodes}"
       - id: tag
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]
@@ -40,8 +30,6 @@ jobs:
             tag="latest"
           fi
           echo "::set-output name=name::${tag}"
-      - id: short_sha
-        run: echo "::set-output name=value::$( echo ${{ github.sha }} | cut -c1-8 )"
       - id: modules
         run: |
           modules_list='[]'
@@ -54,113 +42,19 @@ jobs:
             fi
           done
           echo "::set-output name=list::${modules_list}"
-  infra_create:
-    name: "Create the infrastructure"
-    runs-on: ubuntu-latest
+  run_tests:
     needs: ns8
-    strategy:
-      fail-fast: false
-      matrix:
-          node: ${{ fromJSON(needs.ns8.outputs.nodes) }}
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          repository: NethServer/ns8-terraform-infra
-          path: infra
-      - name: HashiCorp - Setup Terraform
-        uses: hashicorp/setup-terraform@v1.2.1
-        with:
-          terraform_wrapper: false
-      - name: HashiCorp - Terraform Apply
-        env:
-          TF_VAR_do_token: ${{ secrets.do_token }}
-        run: |
-          terraform init
-          terraform workspace new ${{ matrix.node }}-${{ needs.ns8.outputs.short_sha }}
-          terraform apply -var 'leader_node={"${{ matrix.node }}":"ams3"}' -auto-approve
-        working-directory: ${{ github.workspace }}/infra
-      - name: HashiCorp - Terraform Output Deploy Key
-        run: terraform output -raw deploy-key > ${{ github.workspace }}/key
-        working-directory: ${{ github.workspace }}/infra
-      - name: Save Deploy Key
-        uses: actions/upload-artifact@v2
-        with:
-          name: deploy-key-${{ matrix.node }}
-          path: ${{ github.workspace }}/key
-          retention-days: 1
-      - name: Save Terraform State
-        uses: actions/upload-artifact@v2
-        with:
-          name: terraform.tfstate-${{ matrix.node }}
-          path: ${{ github.workspace }}/infra/terraform.tfstate.d/${{ matrix.node }}-${{ needs.ns8.outputs.short_sha }}/terraform.tfstate
-          retention-days: 1
-  core:
-    name: "Core tests"
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        node: ${{ fromJSON(needs.ns8.outputs.nodes) }}
-    needs:
-      - infra_create
-      - ns8
-    steps:
-      - uses: actions/checkout@v2
-      - name: Get Deploy Key
-        uses: actions/download-artifact@v2
-        with:
-          name: deploy-key-${{ matrix.node }}
-          path: ${{ github.workspace }}/
-      - name: Run tests
-        run: |
-          ./test-module.sh ${{ matrix.node }}.leader.${{ matrix.node }}-${{ needs.ns8.outputs.short_sha }}.${{ env.TF_VAR_domain }}
-        working-directory: ${{ github.workspace }}/core
-        env:
-          SSH_KEYFILE: ${{ github.workspace }}/key
-          COREMODULES: ${{ join(fromJSON(needs.ns8.outputs.modules), ' ' ) }}
-      - name: Save tests results
-        if: always()
-        uses: actions/upload-artifact@v2
-        with:
-          name: core-tests-logs-${{ matrix.node }}
-          path: |
-             ${{ github.workspace }}/core/tests/outputs/
-
-  infra_destroy:
-    name: "Destroy the infrastructure"
-    runs-on: ubuntu-latest
-    needs:
-      - ns8
-      - core
-    strategy:
-      fail-fast: false
-      matrix:
-        node: ${{ fromJSON(needs.ns8.outputs.nodes) }}
-    if: always()
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          repository: NethServer/ns8-terraform-infra
-          path: infra
-      - name: HashiCorp - Setup Terraform
-        uses: hashicorp/setup-terraform@v1.2.1
-      - name: Get Terraform State
-        uses: actions/download-artifact@v2
-        with:
-          name: terraform.tfstate-${{ matrix.node }}
-          path: |
-             ${{ github.workspace }}/infra/
-      - name: Destroy the infrastructure
-        env:
-          TF_VAR_do_token: ${{ secrets.do_token }}
-        run: |
-          terraform init
-          terraform apply -destroy -auto-approve
-        working-directory: ${{ github.workspace }}/infra
+    uses: NethServer/ns8-github-actions/.github/workflows/test-on-digitalocean-infra.yml@main
+    with:
+      setup_cluster: false
+      path: core/
+      coremodules: ${{ join(fromJSON(needs.ns8.outputs.modules), ' ' ) }}
+    secrets:
+      do_token: ${{ secrets.do_token }}
   remove_label:
     name: "Cleaup PR label"
     runs-on: ubuntu-latest
-    needs: infra_destroy
+    needs: run_tests
     if: |
       github.event.label.name == 'testing' &&
       needs.infra_destroy.result == 'success' &&
