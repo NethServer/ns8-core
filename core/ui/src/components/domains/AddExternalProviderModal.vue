@@ -7,7 +7,9 @@
     @primary-click="addExternalProvider"
     :primary-button-disabled="loading.addExternalProvider"
   >
-    <template slot="title">{{ $t("domain_detail.add_provider") }}</template>
+    <template slot="title">{{
+      $t("domain_configuration.add_provider")
+    }}</template>
     <template slot="content">
       <cv-form @submit.prevent="addExternalProvider">
         <cv-text-input
@@ -38,7 +40,7 @@
     </template>
     <template slot="secondary-button">{{ $t("common.cancel") }}</template>
     <template slot="primary-button">{{
-      $t("domain_detail.add_provider")
+      $t("domain_configuration.add_provider")
     }}</template>
   </NsModal>
 </template>

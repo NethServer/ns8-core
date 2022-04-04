@@ -12,7 +12,9 @@
     @cancel="$emit('hide')"
     @nextStep="nextStep"
   >
-    <template slot="title">{{ $t("domain_detail.add_provider") }}</template>
+    <template slot="title">{{
+      $t("domain_configuration.add_provider")
+    }}</template>
     <template slot="content">
       <template v-if="step == 'node'">
         <!-- //// disable unavailable nodes -->

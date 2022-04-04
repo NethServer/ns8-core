@@ -2,7 +2,7 @@
   <div>
     <cv-grid fullWidth>
       <cv-row>
-        <cv-column class="page-title title-and-toolbar">
+        <cv-column class="page-title">
           <h2>
             {{ $t("backup.title") }}
             <cv-interactive-tooltip

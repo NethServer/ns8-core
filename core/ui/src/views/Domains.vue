@@ -219,6 +219,14 @@
                     class="top-right-overflow-menu"
                   >
                     <cv-overflow-menu-item
+                      @click="goToDomainConfiguration(domain)"
+                    >
+                      <NsMenuItem
+                        :icon="Settings20"
+                        :label="$t('domain_configuration.configuration')"
+                      />
+                    </cv-overflow-menu-item>
+                    <cv-overflow-menu-item
                       danger
                       @click="showDeleteDomainModal(domain)"
                     >
@@ -261,9 +269,9 @@
                     <div class="row actions">
                       <NsButton
                         kind="ghost"
-                        :icon="ZoomIn20"
-                        @click="goToDomain(domain)"
-                        >{{ $t("common.details") }}</NsButton
+                        :icon="Group20"
+                        @click="goToDomainUsersAndGroups(domain)"
+                        >{{ $t("domains.users_and_groups") }}</NsButton
                       >
                     </div>
                   </div>
@@ -456,9 +464,9 @@ export default {
     hideDeleteDomainModal() {
       this.isShownDeleteDomainModal = false;
     },
-    goToDomain(domain) {
+    goToDomainUsersAndGroups(domain) {
       this.$router.push({
-        name: "DomainDetail",
+        name: "DomainUsersAndGroups",
         params: { domainName: domain.name },
       });
     },
@@ -603,6 +611,12 @@ export default {
       clearTimeout(this.domainToDelete.timeout);
       this.domainToDelete = null;
       this.listUserDomains();
+    },
+    goToDomainConfiguration(domain) {
+      this.$router.push({
+        name: "DomainConfiguration",
+        params: { domainName: domain.name },
+      });
     },
   },
 };

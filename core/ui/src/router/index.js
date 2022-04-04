@@ -14,7 +14,8 @@ import InitializeCluster from "../views/InitializeCluster";
 import Domains from "../views/Domains";
 import Nodes from "../views/Nodes";
 import NodeDetail from "../views/NodeDetail";
-import DomainDetail from "../views/DomainDetail";
+import DomainUsersAndGroups from "../views/DomainUsersAndGroups";
+import DomainConfiguration from "../views/DomainConfiguration";
 import Backup from "../views/Backup";
 import About from "../views/About";
 
@@ -94,8 +95,13 @@ const routes = [
   },
   {
     path: "/domains/:domainName",
-    name: "DomainDetail",
-    component: DomainDetail,
+    name: "DomainUsersAndGroups",
+    component: DomainUsersAndGroups,
+  },
+  {
+    path: "/domains/:domainName/configuration",
+    name: "DomainConfiguration",
+    component: DomainConfiguration,
   },
   {
     path: "/backup",

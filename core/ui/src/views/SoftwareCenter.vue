@@ -2,10 +2,10 @@
   <div>
     <cv-grid fullWidth>
       <cv-row>
-        <cv-column :md="4" class="page-title">
+        <cv-column :md="4" :xlg="10" class="page-title">
           <h2>{{ $t("software_center.title") }}</h2>
         </cv-column>
-        <cv-column :md="4">
+        <cv-column :md="4" :xlg="6">
           <div class="page-toolbar">
             <NsButton
               kind="secondary"
@@ -651,6 +651,11 @@ export default {
       this.$router.push("/settings/software-repository");
     },
     onWillUpdateCore() {
+      setTimeout(() => {
+        this.startCoreUpdateCountdown();
+      }, 500);
+    },
+    startCoreUpdateCountdown() {
       this.updateCoreTimeout = setTimeout(() => {
         this.updateCore();
         this.updateCoreTimeout = 0;

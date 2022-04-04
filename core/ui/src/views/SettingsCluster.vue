@@ -17,7 +17,7 @@
       </div>
     </div>
     <div class="bx--row">
-      <div class="bx--col-lg-16 page-subtitle">
+      <div class="bx--col-lg-16 subpage-title">
         <h3>{{ $t("settings.cluster") }}</h3>
       </div>
     </div>

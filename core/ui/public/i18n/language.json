@@ -107,7 +107,9 @@
     "old_new_passwords_must_be_different": "New password must be different from current password",
     "passwords_do_not_match": "Passwords do not match",
     "password_not_secure": "Password must meet all security requirements below",
-    "invalid_user_password": "Wrong password"
+    "invalid_user_password": "Wrong password",
+    "password": "Password",
+    "re_enter_password": "Re-enter password"
   },
   "login": {
     "title": "Log in",
@@ -700,7 +702,8 @@
     "ipaddress_dc_conflict_check_failed": "A provider with this IP already exists",
     "unconfigured_provider": "Unconfigured provider",
     "unconfigured_domains": "Unconfigured domains",
-    "configured_domains": "Configured domains"
+    "configured_domains": "Configured domains",
+    "users_and_groups": "Users and groups"
   },
   "samba": {
     "adminuser": "Samba admin username",
@@ -715,9 +718,29 @@
     "enter_samba_admin_username": "Login as Samba admin",
     "enter_samba_admin_password": "Enter Samba admin password"
   },
-  "domain_detail": {
-    "title": "Domain detail",
-    "domain": "Domain",
+  "domain_users": {
+    "title": "Domain users and groups",
+    "domain_name_users_and_groups": "{domain} users and groups",
+    "users": "Users",
+    "groups": "Groups",
+    "create_user": "Create user",
+    "create_group": "Create group",
+    "edit_user": "Edit user",
+    "username": "Username",
+    "full_name": "Full name",
+    "search_user": "Search user",
+    "no_user": "No user",
+    "no_user_description": "There is no user in this domain",
+    "change_password": "Change password",
+    "disable": "Disable",
+    "plus_other_groups": "+{num} other groups",
+    "select_groups": "Select groups",
+    "change_password_for_user": "Change password for {user}"
+  },
+  "domain_configuration": {
+    "title": "Domain configuration",
+    "domain_name_configuration": "{domain} configuration",
+    "configuration": "Configuration",
     "settings": "Settings",
     "providers": "Providers",
     "add_provider": "Add provider",

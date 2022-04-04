@@ -81,7 +81,7 @@ a {
 }
 
 // used for secondary pages (e.g. where breadcrumb is shown)
-.page-subtitle {
+.subpage-title {
   margin-top: $spacing-06;
   margin-bottom: $spacing-05;
 }
@@ -113,6 +113,12 @@ a {
   margin-bottom: $spacing-06;
 }
 
+// used for secondary pages (e.g. where breadcrumb is shown)
+.subpage-toolbar-item {
+  margin-top: $spacing-06;
+  margin-bottom: $spacing-05;
+}
+
 @media (max-width: $breakpoint-medium) {
   .page-toolbar {
     justify-content: flex-start;
@@ -121,12 +127,6 @@ a {
   .page-toolbar-item {
     margin-top: 0;
   }
-}
-
-.title-and-toolbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
 }
 
 .cv-tile {
