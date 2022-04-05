@@ -735,7 +735,14 @@
     "disable": "Disable",
     "plus_other_groups": "+{num} other groups",
     "select_groups": "Select groups",
-    "change_password_for_user": "Change password for {user}"
+    "change_password_for_user": "Change password for {user}",
+    "no_group": "No group",
+    "no_group_description": "There is no group in this domain",
+    "search_group": "Search group",
+    "plus_other_users": "+{num} other users",
+    "name": "Name",
+    "edit_group": "Edit group",
+    "select_users": "Select users"
   },
   "domain_configuration": {
     "title": "Domain configuration",

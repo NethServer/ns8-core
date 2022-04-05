@@ -108,11 +108,50 @@
           </h4>
         </cv-column>
       </cv-row>
-      <cv-row class="toolbar">
+      <cv-row>
         <cv-column>
-          <NsButton kind="secondary" :icon="Add20" @click="showCreateGroupModal"
-            >{{ $t("domain_users.create_group") }}
-          </NsButton>
+          <cv-tile light>
+            <cv-grid fullWidth class="no-padding">
+              <cv-row v-if="groups.length" class="toolbar">
+                <cv-column>
+                  <NsButton
+                    kind="secondary"
+                    :icon="Add20"
+                    @click="showCreateGroupModal"
+                    >{{ $t("domain_users.create_group") }}
+                  </NsButton>
+                </cv-column>
+              </cv-row>
+              <cv-row>
+                <cv-column>
+                  <NsEmptyState
+                    v-if="!groups.length"
+                    :title="$t('domain_users.no_group')"
+                  >
+                    <template #pictogram>
+                      <GroupPictogram />
+                    </template>
+                    <template #description>
+                      <div>{{ $t("domain_users.no_group_description") }}</div>
+                      <NsButton
+                        kind="primary"
+                        :icon="Add20"
+                        @click="showCreateGroupModal"
+                        class="empty-state-button"
+                        >{{ $t("domain_users.create_group") }}
+                      </NsButton>
+                    </template>
+                  </NsEmptyState>
+                  <GroupsTable
+                    v-else
+                    :groups="groups"
+                    @editGroup="onEditGroup"
+                    @deleteGroup="onDeleteGroup"
+                  />
+                </cv-column>
+              </cv-row>
+            </cv-grid>
+          </cv-tile>
         </cv-column>
       </cv-row>
     </cv-grid>
@@ -120,8 +159,15 @@
       :isShown="isShownCreateOrEditUserModal"
       :isEditing="isEditingUser"
       :user="currentUser"
-      :groups="groups"
+      :groups="groupsForSelect"
       @hide="hideCreateOrEditUserModal"
+    />
+    <CreateOrEditGroupModal
+      :isShown="isShownCreateOrEditGroupModal"
+      :isEditing="isEditingGroup"
+      :group="currentGroup"
+      :users="usersForSelect"
+      @hide="hideCreateOrEditGroupModal"
     />
     <ChangeUserPasswordModal
       :isShown="isShownChangeUserPasswordModal"
@@ -139,12 +185,20 @@ import {
   IconService,
 } from "@nethserver/ns8-ui-lib";
 import CreateOrEditUserModal from "@/components/domains/CreateOrEditUserModal";
+import CreateOrEditGroupModal from "@/components/domains/CreateOrEditGroupModal";
 import UsersTable from "@/components/domains/UsersTable";
+import GroupsTable from "@/components/domains/GroupsTable";
 import ChangeUserPasswordModal from "@/components/domains/ChangeUserPasswordModal";
 
 export default {
   name: "DomainUsersAndGroups",
-  components: { CreateOrEditUserModal, UsersTable, ChangeUserPasswordModal },
+  components: {
+    CreateOrEditUserModal,
+    CreateOrEditGroupModal,
+    UsersTable,
+    GroupsTable,
+    ChangeUserPasswordModal,
+  },
   mixins: [TaskService, UtilService, QueryParamService, IconService],
   pageTitle() {
     return this.$t("domain_users.title");
@@ -223,7 +277,33 @@ export default {
         },
       ],
       //// remove mock
+      usersForSelect: [
+        { label: "user1", value: "user1", name: "user1" },
+        { label: "user2", value: "user2", name: "user2" },
+        { label: "user3", value: "user3", name: "user3" },
+        { label: "user4", value: "user4", name: "user4" },
+      ],
+      //// remove mock
       groups: [
+        {
+          name: "admin",
+          users: ["user1"],
+        },
+        {
+          name: "dev",
+          users: ["user2", "user3"],
+        },
+        {
+          name: "support",
+          users: ["user2", "user3", "user4"],
+        },
+        {
+          name: "marketing",
+          users: [],
+        },
+      ],
+      //// remove mock
+      groupsForSelect: [
         { label: "admin", value: "admin", name: "admin" },
         { label: "dev", value: "dev", name: "dev" },
         { label: "support", value: "support", name: "support" },
@@ -297,6 +377,12 @@ export default {
     },
     onDeleteUser(user) {
       console.log("onDeleteUser", user); ////
+    },
+    onEditGroup(group) {
+      this.showEditGroupModal(group);
+    },
+    onDeleteGroup(group) {
+      console.log("onDeleteGroup", group); ////
     },
   },
 };
