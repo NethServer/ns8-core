@@ -21,7 +21,7 @@
 #
 
 #
-# Read Dokuwiki configuration
+# Read module status
 #
 
 import os
