@@ -73,7 +73,7 @@
               </cv-interactive-tooltip>
             </span>
           </cv-data-table-cell>
-          <cv-data-table-cell>
+          <cv-data-table-cell class="table-overflow-menu-cell">
             <cv-overflow-menu flip-menu class="table-overflow-menu">
               <cv-overflow-menu-item @click="editUser(row)">
                 <NsMenuItem :icon="Edit20" :label="$t('common.edit')" />

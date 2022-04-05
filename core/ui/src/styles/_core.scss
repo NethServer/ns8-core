@@ -540,9 +540,17 @@ ul.unordered-list {
   pointer-events: all;
 }
 
-.table-overflow-menu {
-  margin: 0 auto;
+// overflow menu for data table start
+.table-overflow-menu-cell {
+  position: relative;
 }
+
+.table-overflow-menu {
+  position: absolute;
+  top: 4px;
+  right: 1rem;
+}
+// overflow menu for data table end
 
 // show data table pagination in smaller screens too
 .cv-data-table
