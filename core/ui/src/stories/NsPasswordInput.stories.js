@@ -27,6 +27,7 @@ Default.args = {
   focus: {},
   light: true,
   minLength: 8,
+  clearConfirmPasswordCommand: 0,
   lengthLabel: "Long enough",
   lowercaseLabel: "Lowercase letter",
   uppercaseLabel: "Uppercase letter",
