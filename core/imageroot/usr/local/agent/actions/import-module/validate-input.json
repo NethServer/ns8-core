@@ -1,0 +1,38 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "import-module input",
+    "$id": "http://schema.nethserver.org/module/import-module-input.json",
+    "description": "Clone the module state received from rsync",
+    "examples": [
+        {
+            "credentials": [
+                "dokuwiki1",
+                "s3cr3t"
+            ],
+            "port": 20027
+        }
+    ],
+    "type": "object",
+    "required": [
+        "credentials",
+        "port"
+    ],
+    "properties": {
+        "port": {
+            "title": "Rsyncd TCP port number",
+            "type": "integer",
+            "minimum": 1
+        },
+        "credentials": {
+            "title": "Rsyncd service credentials",
+            "description": "An array with two elements: username, password",
+            "type": "array",
+            "maxItems": 2,
+            "minItems": 2,
+            "items": {
+                "type": "string",
+                "minLength": 1
+            }
+        }
+    }
+}

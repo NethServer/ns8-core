@@ -1,0 +1,54 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2022 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
+import agent
+import sys
+import os
+import json
+import subprocess
+
+request = json.load(sys.stdin)
+port = int(request['port'])
+username, password = request['credentials']
+
+rdb = agent.redis_connect()
+cluster_network = rdb.get('cluster/network')
+
+os.makedirs("./data", exist_ok=True)
+
+podman_cmd = ['podman', 'run', '--rm', '--privileged', '--network=host', '--workdir=/srv',
+        '--env=RSYNCD_NETWORK=' + cluster_network,
+        '--env=RSYNCD_ADDRESS=cluster-localnode',
+        '--env=RSYNCD_PORT=' + str(port),
+        '--env=RSYNCD_USER=' + username,
+        '--env=RSYNCD_PASSWORD=' + password,
+        '--env=RSYNCD_SYSLOG_TAG=' + os.environ['MODULE_ID'],
+        '--volume=/dev/log:/dev/log',
+        '--name=rsync',
+        '--volume=./data/:/srv/'
+    ]
+
+rsync_cmd = ['rsync', '--daemon']
+
+core_env = agent.read_envfile('/etc/nethserver/core.env') # Import URLs of core images
+
+agent.run_helper(*podman_cmd, core_env['RSYNC_IMAGE']).check_returncode()
