@@ -1,0 +1,34 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "import-module input",
+    "$id": "http://schema.nethserver.org/cluster/import-module-input.json",
+    "description": "Input schema of the import-module action",
+    "examples": [
+        {
+            "image": "traefik",
+            "node": 1
+        },
+        {
+            "image": "ghcr.io/nethserver/traefik:latest",
+            "node": 1
+        }
+    ],
+    "type": "object",
+    "required": [
+        "image",
+        "node"
+    ],
+    "properties": {
+        "image": {
+            "title": "Module image name",
+            "description": "Name of the module image to install. If the image is not a URL, install the latest version of the module. Otherwise, just install the provided URL.",
+            "type": "string"
+        },
+        "node": {
+            "title": "Node ID",
+            "description": "Node identifier where the module has to be installed",
+            "type": "integer",
+            "minimum": 1
+        }
+    }
+}
