@@ -24,6 +24,7 @@ podman run -i \
     robot -v NODE_ADDR:${LEADER_NODE} \
         -v SSH_KEYFILE:/home/pwuser/ns8-key \
 	-v COREMODULES:${COREMODULES} \
+	--name core \
 	--skiponfailure unstable \
 	--console dotted \
 	-d ~/outputs /home/pwuser/ns8-scratchpad/core/tests/
