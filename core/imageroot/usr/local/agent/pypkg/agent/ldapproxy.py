@@ -24,7 +24,6 @@ import os
 class Ldapproxy:
 
     def __init__(self, node_id=None):
-        self.rdb = self._redis_connect()
         self.domains = None
         if node_id is None:
             node_id = os.environ['NODE_ID']
