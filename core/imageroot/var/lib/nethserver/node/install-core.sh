@@ -26,11 +26,6 @@ set -e
 # Install NS8
 #
 
-if [[ $(journalctl --output cat -n 1) == "" ]]; then
-    echo "Journal is empty, attempting a systemd-journald restart:"
-    systemctl restart systemd-journald.service
-fi
-
 echo "Set kernel parameters:"
 sysctl -w net.ipv4.ip_unprivileged_port_start=23 -w user.max_user_namespaces=28633 -w net.ipv4.ip_forward=1 | tee /etc/sysctl.d/80-nethserver.conf
 
