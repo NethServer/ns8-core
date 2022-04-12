@@ -30,6 +30,7 @@ request = json.load(sys.stdin)
 
 image = request['image']
 node_id = int(request['node'])
+volumes = request['volumes']
 
 rdb = agent.redis_connect(privileged=True)
 
@@ -53,7 +54,7 @@ rsyncd_port = int(rdb.incrby(f'node/{node_id}/tcp_ports_sequence', 1)) # Allocat
 agent.assert_exp(rsyncd_port > 0) # valid destination port number
 
 # Execute the import-module (rsync server)
-data={"credentials": [dmid, secret], "port": rsyncd_port}
+data={"credentials": [dmid, secret], "port": rsyncd_port, 'volumes': volumes}
 import_task_result = agent.tasks.run_nowait("module/" + dmid, "import-module",
     data=data,
     endpoint="redis://cluster-leader",
