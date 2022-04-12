@@ -9,15 +9,27 @@
                 "dokuwiki1",
                 "s3cr3t"
             ],
-            "port": 20027
+            "port": 20027,
+            "volumes": [
+                "dokuwiki-data"
+            ]
         }
     ],
     "type": "object",
     "required": [
         "credentials",
-        "port"
+        "port",
+        "volumes"
     ],
     "properties": {
+        "volumes": {
+            "title": "Initial volume set where the module state is stored",
+            "type": "array",
+            "items": {
+                "type": "string",
+                "title": "Name of the volume element"
+            }
+        },
         "port": {
             "title": "Rsyncd TCP port number",
             "type": "integer",
