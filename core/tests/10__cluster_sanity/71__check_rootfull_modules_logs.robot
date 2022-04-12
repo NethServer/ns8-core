@@ -7,9 +7,3 @@ Check logs for promtail1
     ...    return_rc=True
     Should Be Equal As Integers    ${rc}    0
     Should Not Be Empty    ${output}
-
-Check logs for samba1
-    ${output}  ${rc} =    Execute Command  logcli query -q --no-labels '{job="systemd-journal"} | json | CONTAINER_TAG="samba1" | line_format "{{.nodename}} --> {{.MESSAGE}}"'
-    ...    return_rc=True
-    Should Be Equal As Integers    ${rc}    0
-    Should Not Be Empty    ${output}
