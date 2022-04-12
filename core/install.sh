@@ -22,6 +22,9 @@
 
 set -e
 
+echo "Restart journald:"
+systemctl restart systemd-journald.service
+
 core_url='ghcr.io/nethserver/core:ns8-stable'
 source /etc/os-release
 
