@@ -24,14 +24,19 @@ import sys
 import agent
 import csv
 
-r = agent.redis_connect(privileged=True)
+rdb = agent.redis_connect(privileged=True)
 
 if len(sys.argv) > 1:
-    response = r.execute_command(*sys.argv[1:])
+    # Single command mode: print the response
+    response = rdb.execute_command(*sys.argv[1:])
     print(response)
     exit(0)
 
+# Pipeline mode, print one line for each response
 reader = csv.reader(sys.stdin, delimiter=' ', quotechar='"')
+trx = rdb.pipeline()
 for cmdargs in reader:
-    response = r.execute_command(*cmdargs)
+    trx.execute_command(*cmdargs)
+
+for response in trx.execute():
     print(response)
