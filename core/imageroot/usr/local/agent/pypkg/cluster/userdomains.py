@@ -22,6 +22,7 @@ import redis
 import ldap3
 import ssl
 import sys
+import agent
 
 def probe_ldap_basedn(config, ldapconn=None):
     if ldapconn is None:
@@ -199,4 +200,13 @@ def get_external_domains(rdb):
         if not domains[domain_id]['providers']:
             del domains[domain_id]
 
+    return domains
+
+def list_domains(rdb = None):
+    domains = {}
+    if not rdb:
+        rdb = agent.redis_connect()
+
+    domains = get_internal_domains(rdb)
+    domains.update(get_external_domains(rdb))
     return domains

@@ -20,6 +20,7 @@
 
 import redis
 import os
+import cluster.userdomains
 
 class Ldapproxy:
 
@@ -71,13 +72,13 @@ class Ldapproxy:
             pass
 
         domains = {}
-        for ksrv in rdb.scan_iter('*/srv/tcp/ldap'):
-            dhx = rdb.hgetall(ksrv)
-            if 'domain' in dhx:
-                domains.setdefault(dhx['domain'], dhx)
+        configured_domains = cluster.userdomains.list_domains(rdb)
+        for domain in configured_domains:
+            dhx = configured_domains[domain]
+            domains.setdefault(domain, dhx)
 
-            if dhx['domain'] in domain_port:
-                domains[dhx['domain']].setdefault('listen_port', domain_port[dhx['domain']])
+            if domain in domain_port:
+                domains[domain].setdefault('listen_port', domain_port[domain])
 
         rdb.close()
         return domains
