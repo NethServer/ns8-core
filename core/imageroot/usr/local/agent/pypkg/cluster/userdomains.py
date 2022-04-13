@@ -210,16 +210,3 @@ def list_domains(rdb = None):
     domains = get_internal_domains(rdb)
     domains.update(get_external_domains(rdb))
     return domains
-
-def get_domain(domain):
-    rdb = agent.redis_connect()
-    internal_domains = get_internal_domains(rdb)
-    for dom in internal_domains:
-        if dom == domain:
-            return internal_domains[dom]
-    external_domains = get_external_domains(rdb)
-    for dom in external_domains:
-        if dom == domain:
-            return external_domains[dom]
-
-    return None
