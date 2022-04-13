@@ -733,16 +733,20 @@
     "no_user_description": "There is no user in this domain",
     "change_password": "Change password",
     "disable": "Disable",
-    "plus_other_groups": "+{num} other groups",
+    "plus_others": "+{num} others",
     "select_groups": "Select groups",
     "change_password_for_user": "Change password for {user}",
     "no_group": "No group",
     "no_group_description": "There is no group in this domain",
     "search_group": "Search group",
-    "plus_other_users": "+{num} other users",
     "name": "Name",
     "edit_group": "Edit group",
-    "select_users": "Select users"
+    "select_users": "Select users",
+    "delete_user": "Delete user {user}",
+    "delete_user_description": "Delete user <strong>{name}</strong>? This user will lose access to all apps and will be removed from all groups",
+    "delete_group": "Delete group {group}",
+    "delete_group_description": "Delete group <strong>{name}</strong>? All users in this group will lose access to the resources associated with the group",
+    "cannot_make_changes_to_an_external_domain": "Cannot make changes to an external domain"
   },
   "domain_configuration": {
     "title": "Domain configuration",

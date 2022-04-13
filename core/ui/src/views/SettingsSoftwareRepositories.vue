@@ -171,7 +171,7 @@
                         >
                       </div> -->
                     </cv-data-table-cell>
-                    <cv-data-table-cell>
+                    <cv-data-table-cell class="table-overflow-menu-cell">
                       <cv-overflow-menu flip-menu class="table-overflow-menu">
                         <cv-overflow-menu-item @click="showEditRepoModal(row)">
                           <NsMenuItem

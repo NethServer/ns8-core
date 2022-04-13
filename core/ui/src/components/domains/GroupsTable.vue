@@ -1,91 +1,116 @@
 <template>
   <div>
-    <NsInlineNotification
-      kind="warning"
-      :title="$t('common.use_landscape_mode')"
-      :description="$t('common.use_landscape_mode_description')"
-      class="landscape-warning"
-    />
-    <cv-search
-      :label="$t('domain_users.search_group')"
-      :placeholder="$t('domain_users.search_group')"
-      :clear-aria-label="$t('common.clear_search')"
-      v-model="searchFilter"
-      v-debounce="filterRows"
-      @input="onSearchInput"
-      :light="false"
-    >
-    </cv-search>
-    <!-- no search results -->
-    <cv-tile v-if="!tableRows.length">
-      <NsEmptyState
-        :title="$t('common.no_search_results')"
-        :animationData="GhostLottie"
-        animationTitle="ghost"
-        :loop="1"
-      >
-        <template #description>
-          <div>{{ $t("common.no_search_results_description") }}</div>
-        </template>
-      </NsEmptyState>
-    </cv-tile>
-    <!-- data table -->
-    <cv-data-table
-      v-else
-      :sortable="true"
+    <!-- loading table -->
+    <cv-data-table-skeleton
+      v-if="loading"
       :columns="i18nTableColumns"
-      @sort="sortTable"
-      :pagination="pagination"
-      @pagination="paginateTable"
-      :overflow-menu="true"
+      :rows="5"
+    ></cv-data-table-skeleton>
+    <NsEmptyState
+      v-else-if="!groups.length"
+      :title="$t('domain_users.no_group')"
     >
-      <template slot="data">
-        <cv-data-table-row
-          v-for="(row, rowIndex) in tablePage"
-          :key="`${rowIndex}`"
-          :value="`${rowIndex}`"
-        >
-          <cv-data-table-cell light>{{ row.name }}</cv-data-table-cell>
-          <cv-data-table-cell>
-            <span v-if="row.users.length < 3">
-              {{ row.users.join(", ") }}
-            </span>
-            <span v-else>
-              {{ row.users[0] }}
-              <cv-interactive-tooltip
-                alignment="center"
-                direction="right"
-                class="tooltip-with-text-trigger"
-              >
-                <template slot="trigger">
-                  {{
-                    $t("domain_users.plus_other_users", {
-                      num: row.users.length - 1,
-                    })
-                  }}
-                </template>
-                <template slot="content">
-                  <div v-for="user in row.users" :key="user">
-                    {{ user }}
-                  </div>
-                </template>
-              </cv-interactive-tooltip>
-            </span>
-          </cv-data-table-cell>
-          <cv-data-table-cell>
-            <cv-overflow-menu flip-menu class="table-overflow-menu">
-              <cv-overflow-menu-item @click="editGroup(row)">
-                <NsMenuItem :icon="Edit20" :label="$t('common.edit')" />
-              </cv-overflow-menu-item>
-              <NsMenuDivider />
-              <cv-overflow-menu-item danger @click="deleteGroup(row)">
-                <NsMenuItem :icon="TrashCan20" :label="$t('common.delete')" />
-              </cv-overflow-menu-item>
-            </cv-overflow-menu>
-          </cv-data-table-cell>
-        </cv-data-table-row>
+      <template #pictogram>
+        <GroupPictogram />
       </template>
-    </cv-data-table>
+      <template #description>
+        <div>{{ $t("domain_users.no_group_description") }}</div>
+        <NsButton
+          kind="primary"
+          :icon="Add20"
+          @click="createGroup"
+          class="empty-state-button"
+          >{{ $t("domain_users.create_group") }}
+        </NsButton>
+      </template>
+    </NsEmptyState>
+    <template v-else>
+      <cv-search
+        :label="$t('domain_users.search_group')"
+        :placeholder="$t('domain_users.search_group')"
+        :clear-aria-label="$t('common.clear_search')"
+        v-model="searchFilter"
+        v-debounce="filterRows"
+        @input="onSearchInput"
+        :light="false"
+      >
+      </cv-search>
+      <!-- no search results -->
+      <cv-tile v-if="!tableRows.length">
+        <NsEmptyState
+          :title="$t('common.no_search_results')"
+          :animationData="GhostLottie"
+          animationTitle="ghost"
+          :loop="1"
+        >
+          <template #description>
+            <div>{{ $t("common.no_search_results_description") }}</div>
+          </template>
+        </NsEmptyState>
+      </cv-tile>
+      <!-- data table -->
+      <cv-data-table
+        v-else
+        :sortable="true"
+        :columns="i18nTableColumns"
+        @sort="sortTable"
+        :pagination="pagination"
+        @pagination="paginateTable"
+        :overflow-menu="domain && domain.location == 'internal'"
+      >
+        <template slot="data">
+          <cv-data-table-row
+            v-for="(row, rowIndex) in tablePage"
+            :key="`${rowIndex}`"
+            :value="`${rowIndex}`"
+          >
+            <cv-data-table-cell light>{{ row.name }}</cv-data-table-cell>
+            <cv-data-table-cell>
+              <span v-if="row.users.length < 3">
+                {{ row.users.join(", ") }}
+              </span>
+              <span v-else>
+                {{ row.users[0] }}
+                <cv-interactive-tooltip
+                  alignment="center"
+                  direction="right"
+                  class="tooltip-with-text-trigger"
+                >
+                  <template slot="trigger">
+                    <span class="others">
+                      {{
+                        $t("domain_users.plus_others", {
+                          num: row.users.length - 1,
+                        })
+                      }}
+                    </span>
+                  </template>
+                  <template slot="content">
+                    <div v-for="user in row.users" :key="user">
+                      {{ user }}
+                    </div>
+                  </template>
+                </cv-interactive-tooltip>
+              </span>
+            </cv-data-table-cell>
+            <cv-data-table-cell
+              v-if="domain && domain.location == 'internal'"
+              class="table-overflow-menu-cell"
+            >
+              <cv-overflow-menu flip-menu class="table-overflow-menu">
+                <cv-overflow-menu-item @click="editGroup(row)">
+                  <NsMenuItem :icon="Edit20" :label="$t('common.edit')" />
+                </cv-overflow-menu-item>
+                <NsMenuDivider />
+                <cv-overflow-menu-item danger @click="deleteGroup(row)">
+                  <NsMenuItem :icon="TrashCan20" :label="$t('common.delete')" />
+                </cv-overflow-menu-item>
+              </cv-overflow-menu>
+            </cv-data-table-cell>
+          </cv-data-table-row>
+        </template>
+      </cv-data-table>
+    </template>
   </div>
 </template>
 
@@ -97,13 +122,13 @@ import {
   LottieService,
 } from "@nethserver/ns8-ui-lib";
 
-//// check (copy/paste)
-
 export default {
   name: "GroupsTable",
   mixins: [UtilService, IconService, DataTableService, LottieService],
   props: {
     groups: { type: Array },
+    domain: { type: Object },
+    loading: { type: Boolean, default: false },
   },
   data() {
     return {
@@ -144,6 +169,9 @@ export default {
       if (!this.searchFilter) {
         this.tableRows = this.groups;
       }
+    },
+    createGroup() {
+      this.$emit("createGroup");
     },
     editGroup(group) {
       this.$emit("editGroup", group);
@@ -192,4 +220,8 @@ export default {
 
 <style scoped lang="scss">
 @import "../../styles/carbon-utils";
+
+.others {
+  margin-left: $spacing-02;
+}
 </style>
