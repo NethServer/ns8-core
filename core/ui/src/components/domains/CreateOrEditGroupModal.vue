@@ -25,11 +25,16 @@
           v-model="selectedUsers"
           :options="users"
           :title="$t('domain_users.users') + ' (' + $t('common.optional') + ')'"
-          :label="$t('domain_users.select_users')"
+          :label="
+            users.length
+              ? $t('domain_users.select_users')
+              : $t('domain_users.no_user')
+          "
           :helper-text="usersHelperText"
-          :filterable="true"
+          :filterable="!!users.length"
           :auto-filter="true"
           :auto-highlight="true"
+          :disabled="!users.length"
           class="mg-bottom-14"
           ref="users"
         >
@@ -144,7 +149,7 @@ export default {
       return isValidationOk;
     },
     createGroup() {
-      if (!this.validatecreateGroup()) {
+      if (!this.validateCreateGroup()) {
         return;
       }
 

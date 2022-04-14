@@ -703,7 +703,8 @@
     "unconfigured_provider": "Unconfigured provider",
     "unconfigured_domains": "Unconfigured domains",
     "configured_domains": "Configured domains",
-    "users_and_groups": "Users and groups"
+    "users_and_groups": "Users and groups",
+    "domain_not_found": "Domain not found"
   },
   "samba": {
     "adminuser": "Samba admin username",
@@ -716,7 +717,18 @@
     "hostname": "Hostname",
     "nbdomain": "NetBIOS domain",
     "enter_samba_admin_username": "Login as Samba admin",
-    "enter_samba_admin_password": "Enter Samba admin password"
+    "enter_samba_admin_password": "Enter Samba admin password",
+    "samba_configuration": "Samba configuration"
+  },
+  "openldap": {
+    "domain": "Domain",
+    "admuser": "OpenLDAP admin username",
+    "admpass": "OpenLDAP admin password",
+    "admpass_confirm": "Re-enter OpenLDAP admin password",
+    "choose_openldap_admin_password": "Choose a password for OpenLDAP admin user",
+    "enter_openldap_admin_username": "Login as OpenLDAP admin",
+    "enter_openldap_admin_password": "Enter OpenLDAP admin password",
+    "openldap_configuration": "OpenLDAP configuration"
   },
   "domain_users": {
     "title": "Domain users and groups",

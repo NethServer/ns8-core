@@ -32,11 +32,16 @@
           :title="
             $t('domain_users.groups') + ' (' + $t('common.optional') + ')'
           "
-          :label="$t('domain_users.select_groups')"
+          :label="
+            groups.length
+              ? $t('domain_users.select_groups')
+              : $t('domain_users.no_group')
+          "
           :helper-text="groupsHelperText"
-          :filterable="true"
+          :filterable="!!groups.length"
           :auto-filter="true"
           :auto-highlight="true"
+          :disabled="!groups.length"
           :class="{ 'mg-bottom-14': isEditing }"
           ref="groups"
         >
