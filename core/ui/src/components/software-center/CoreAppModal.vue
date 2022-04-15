@@ -10,6 +10,12 @@
     <template v-if="coreApp" slot="title">{{ coreApp.name }}</template>
     <template v-if="coreApp" slot="content">
       <NsInlineNotification
+        kind="warning"
+        :title="$t('common.use_landscape_mode')"
+        :description="$t('common.use_landscape_mode_description')"
+        class="landscape-warning"
+      />
+      <NsInlineNotification
         v-if="isCoreUpdatable"
         kind="warning"
         :title="$t('software_center.core_app_update_available')"
