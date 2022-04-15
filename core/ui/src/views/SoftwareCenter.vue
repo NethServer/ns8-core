@@ -576,6 +576,8 @@ export default {
 
       if (isCoreUpdateAvailable) {
         this.isCoreUpdateAvailable = true;
+      } else {
+        this.isCoreUpdateAvailable = false;
       }
       this.coreModules = coreModules;
       this.loading.listCoreModules = false;
