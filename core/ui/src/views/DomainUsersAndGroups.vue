@@ -122,7 +122,13 @@
       <!-- groups -->
       <cv-row class="mg-top-lg">
         <cv-column>
-          <h4 class="mg-bottom-md">
+          <h4
+            ref="groups"
+            :class="[
+              'mg-bottom-md',
+              { 'highlight-anchor': highlightAnchor == 'groups' },
+            ]"
+          >
             {{ $t("domain_users.groups") }}
           </h4>
         </cv-column>
@@ -293,101 +299,101 @@ export default {
       groupToDelete: null,
       //// remove mock
       users: [
-        // {
-        //   username: "alice",
-        //   full_name: "Alice J",
-        //   groups: ["admin", "dev"],
-        // },
-        // {
-        //   username: "bob",
-        //   full_name: "Bob K",
-        //   groups: ["admin", "support"],
-        // },
-        // {
-        //   username: "carl",
-        //   full_name: "Carl L",
-        //   groups: ["marketing"],
-        // },
-        // {
-        //   username: "dakota",
-        //   full_name: "Dakota M",
-        //   groups: ["dev", "support", "marketing"],
-        // },
-        // {
-        //   username: "alice",
-        //   full_name: "Alice J",
-        //   groups: ["admin", "dev"],
-        // },
-        // {
-        //   username: "bob",
-        //   full_name: "Bob K",
-        //   groups: ["admin", "support"],
-        // },
-        // {
-        //   username: "carl",
-        //   full_name: "Carl L",
-        //   groups: ["marketing"],
-        // },
-        // {
-        //   username: "dakota",
-        //   full_name: "Dakota M",
-        //   groups: ["dev", "support", "marketing"],
-        // },
-        // {
-        //   username: "alice",
-        //   full_name: "Alice J",
-        //   groups: ["admin", "dev"],
-        // },
-        // {
-        //   username: "bob",
-        //   full_name: "Bob K",
-        //   groups: ["admin", "support"],
-        // },
-        // {
-        //   username: "carl",
-        //   full_name: "Carl L",
-        //   groups: ["marketing"],
-        // },
-        // {
-        //   username: "dakota",
-        //   full_name: "Dakota M",
-        //   groups: ["dev", "support", "marketing"],
-        // },
+        {
+          username: "alice",
+          full_name: "Alice J",
+          groups: ["admin", "dev"],
+        },
+        {
+          username: "bob",
+          full_name: "Bob K",
+          groups: ["admin", "support"],
+        },
+        {
+          username: "carl",
+          full_name: "Carl L",
+          groups: ["marketing"],
+        },
+        {
+          username: "dakota",
+          full_name: "Dakota M",
+          groups: ["dev", "support", "marketing"],
+        },
+        {
+          username: "alice",
+          full_name: "Alice J",
+          groups: ["admin", "dev"],
+        },
+        {
+          username: "bob",
+          full_name: "Bob K",
+          groups: ["admin", "support"],
+        },
+        {
+          username: "carl",
+          full_name: "Carl L",
+          groups: ["marketing"],
+        },
+        {
+          username: "dakota",
+          full_name: "Dakota M",
+          groups: ["dev", "support", "marketing"],
+        },
+        {
+          username: "alice",
+          full_name: "Alice J",
+          groups: ["admin", "dev"],
+        },
+        {
+          username: "bob",
+          full_name: "Bob K",
+          groups: ["admin", "support"],
+        },
+        {
+          username: "carl",
+          full_name: "Carl L",
+          groups: ["marketing"],
+        },
+        {
+          username: "dakota",
+          full_name: "Dakota M",
+          groups: ["dev", "support", "marketing"],
+        },
       ],
       //// remove mock
       usersForSelect: [
-        // { label: "user1", value: "user1", name: "user1" },
-        // { label: "user2", value: "user2", name: "user2" },
-        // { label: "user3", value: "user3", name: "user3" },
-        // { label: "user4", value: "user4", name: "user4" },
+        { label: "user1", value: "user1", name: "user1" },
+        { label: "user2", value: "user2", name: "user2" },
+        { label: "user3", value: "user3", name: "user3" },
+        { label: "user4", value: "user4", name: "user4" },
       ],
       //// remove mock
       groups: [
-        // {
-        //   name: "admin",
-        //   users: ["user1"],
-        // },
-        // {
-        //   name: "dev",
-        //   users: ["user2", "user3"],
-        // },
-        // {
-        //   name: "support",
-        //   users: ["user2", "user3", "user4"],
-        // },
-        // {
-        //   name: "marketing",
-        //   users: [],
-        // },
+        {
+          name: "admin",
+          users: ["user1"],
+        },
+        {
+          name: "dev",
+          users: ["user2", "user3"],
+        },
+        {
+          name: "support",
+          users: ["user2", "user3", "user4"],
+        },
+        {
+          name: "marketing",
+          users: [],
+        },
       ],
       //// remove mock
       groupsForSelect: [
-        // { label: "admin", value: "admin", name: "admin" },
-        // { label: "dev", value: "dev", name: "dev" },
-        // { label: "support", value: "support", name: "support" },
-        // { label: "marketing", value: "marketing", name: "marketing" },
-        // { label: "group1", value: "group1", name: "group1" },
-        // { label: "group2", value: "group2", name: "group2" },
+        { label: "admin", value: "admin", name: "admin" },
+        { label: "dev", value: "dev", name: "dev" },
+        { label: "support", value: "support", name: "support" },
+        { label: "marketing", value: "marketing", name: "marketing" },
+        { label: "group1", value: "group1", name: "group1" },
+        { label: "group2", value: "group2", name: "group2" },
       ],
       loading: {
         listUserDomains: false,
@@ -559,6 +565,9 @@ export default {
       // this.domain.location = "external";
 
       this.loading.listUserDomains = false;
+
+      // scroll to anchor if route URL contains a hash (#)
+      this.checkAndScrollToAnchor();
     },
   },
 };

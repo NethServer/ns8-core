@@ -253,18 +253,46 @@
                         {{ $t("domains.ldap") }}
                       </template>
                     </div>
+                    <!-- numer of users and groups -->
+                    <div class="row">
+                      <cv-link @click="goToDomainUsersAndGroups(domain)">
+                        <span>{{
+                          $tc("domain_users.num_users_c", domain.numUsers, {
+                            num: domain.numUsers,
+                          })
+                        }}</span>
+                      </cv-link>
+                      <span class="bullet-separator">&bull;</span>
+                      <cv-link
+                        @click="goToDomainUsersAndGroups(domain, 'groups')"
+                      >
+                        <span>{{
+                          $tc("domain_users.num_groups_c", domain.numGroups, {
+                            num: domain.numGroups,
+                          })
+                        }}</span>
+                      </cv-link>
+                    </div>
                     <!-- unconfigured providers -->
                     <div
                       v-if="domain.hasUnconfiguredProviders"
                       class="row icon-and-text"
                     >
-                      <NsSvg :svg="WarningAlt20" class="icon" />
-                      <span>{{ $t("domains.unconfigured_provider") }} </span>
+                      <NsSvg :svg="Warning16" class="icon ns-warning" />
+                      <cv-link
+                        @click="goToDomainConfiguration(domain, 'providers')"
+                      >
+                        <span>{{ $t("domains.unconfigured_provider") }}</span>
+                      </cv-link>
                     </div>
                     <!-- number of providers -->
                     <div v-else class="row">
-                      {{ domain.providers.length }}
-                      {{ $tc("domains.providers", domain.providers.length) }}
+                      <cv-link
+                        @click="goToDomainConfiguration(domain, 'providers')"
+                      >
+                        {{ domain.providers.length }}
+                        {{ $tc("domains.providers", domain.providers.length) }}
+                      </cv-link>
                     </div>
                     <div class="row actions">
                       <NsButton
@@ -434,6 +462,10 @@ export default {
         } else {
           domain.hasUnconfiguredProviders = false;
         }
+
+        //// remove mock
+        domain.numUsers = 12;
+        domain.numGroups = 4;
       }
 
       this.domains = domains;
@@ -464,10 +496,11 @@ export default {
     hideDeleteDomainModal() {
       this.isShownDeleteDomainModal = false;
     },
-    goToDomainUsersAndGroups(domain) {
+    goToDomainUsersAndGroups(domain, anchor) {
       this.$router.push({
         name: "DomainUsersAndGroups",
         params: { domainName: domain.name },
+        hash: anchor ? "#" + anchor : "",
       });
     },
     deleteDomain(domain) {
@@ -612,10 +645,11 @@ export default {
       this.domainToDelete = null;
       this.listUserDomains();
     },
-    goToDomainConfiguration(domain) {
+    goToDomainConfiguration(domain, anchor) {
       this.$router.push({
         name: "DomainConfiguration",
         params: { domainName: domain.name },
+        hash: anchor ? "#" + anchor : "",
       });
     },
   },

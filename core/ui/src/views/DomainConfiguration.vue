@@ -140,7 +140,13 @@
       </cv-row>
       <cv-row>
         <cv-column>
-          <h4 class="mg-bottom-md">
+          <h4
+            ref="providers"
+            :class="[
+              'mg-bottom-md',
+              { 'highlight-anchor': highlightAnchor == 'providers' },
+            ]"
+          >
             {{ $t("domain_configuration.providers") }}
           </h4>
         </cv-column>
@@ -618,6 +624,9 @@ export default {
 
       //// fix? maybe available nodes will be retrieved by a dedicated api
       this.initNodes();
+
+      // scroll to anchor if route URL contains a hash (#)
+      this.checkAndScrollToAnchor();
     },
     showAddProviderModal() {
       if (this.domain.location == "internal") {

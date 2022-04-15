@@ -758,7 +758,9 @@
     "delete_user_description": "Delete user <strong>{name}</strong>? This user will lose access to all apps and will be removed from all groups",
     "delete_group": "Delete group {group}",
     "delete_group_description": "Delete group <strong>{name}</strong>? All users in this group will lose access to the resources associated with the group",
-    "cannot_make_changes_to_an_external_domain": "Cannot make changes to an external domain"
+    "cannot_make_changes_to_an_external_domain": "Cannot make changes to an external domain",
+    "num_users_c": "{num} user | {num} users",
+    "num_groups_c": "{num} group | {num} groups"
   },
   "domain_configuration": {
     "title": "Domain configuration",
