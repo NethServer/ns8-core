@@ -322,7 +322,7 @@
                   </div>
                   <div v-if="provider.node" class="row icon-and-text">
                     <NsSvg :svg="Chip20" class="icon" />
-                    <span>{{ $t("common.node") }} {{ provider.node }}</span>
+                    <span>{{ getNodeLabel(provider.node) }}</span>
                   </div>
                   <div v-if="provider.host" class="row icon-and-text">
                     <NsSvg :svg="Network_220" class="icon" />
@@ -387,7 +387,7 @@
                   </div>
                   <div v-if="provider.node" class="row icon-and-text">
                     <NsSvg :svg="Chip20" class="icon" />
-                    <span>{{ $t("common.node") }} {{ provider.node }}</span>
+                    <span>{{ getNodeLabel(provider.node) }}</span>
                   </div>
                   <div v-if="provider.host" class="row icon-and-text">
                     <NsSvg :svg="Network_220" class="icon" />
@@ -913,6 +913,20 @@ export default {
         name: "DomainUsersAndGroups",
         params: { domainName: this.domainName },
       });
+    },
+    getNodeLabel(nodeId) {
+      const node = this.internalNodes.find((n) => n.id == nodeId);
+
+      if (node) {
+        if (node.ui_name) {
+          return (
+            node.ui_name + " (" + this.$t("common.node") + " " + nodeId + ")"
+          );
+        } else {
+          return this.$t("common.node") + " " + nodeId;
+        }
+      }
+      return this.$t("common.node") + " " + nodeId;
     },
   },
 };
