@@ -29,21 +29,12 @@
                   :invalid-message="error.startDate"
                 >
                 </cv-date-picker>
-                <cv-time-picker
+                <NsTimePicker
+                  hideClearButton
+                  v-model="startTime"
                   :label="$t('audit_trail.start_time_label')"
-                  :time.sync="startTime"
-                  ampm="24"
-                  :pattern="time24HourPatternString"
-                  :placeholder="time24HourPlaceholder"
-                  :form-item="true"
                   class="interval-time mg-bottom-md"
-                  :invalid-message="
-                    time24HourPattern.test(startTime)
-                      ? error.startTime
-                      : $t('error.invalid_24h_pattern')
-                  "
-                >
-                </cv-time-picker>
+                ></NsTimePicker>
               </cv-column>
               <cv-column :lg="8">
                 <cv-date-picker
@@ -55,21 +46,12 @@
                   :invalid-message="error.endDate"
                 >
                 </cv-date-picker>
-                <cv-time-picker
+                <NsTimePicker
+                  hideClearButton
+                  v-model="endTime"
                   :label="$t('audit_trail.end_time_label')"
-                  :time.sync="endTime"
-                  ampm="24"
-                  :pattern="time24HourPatternString"
-                  :placeholder="time24HourPlaceholder"
-                  :form-item="true"
                   class="interval-time mg-bottom-md"
-                  :invalid-message="
-                    time24HourPattern.test(endTime)
-                      ? error.endTime
-                      : $t('error.invalid_24h_pattern')
-                  "
-                >
-                </cv-time-picker>
+                ></NsTimePicker>
               </cv-column>
             </cv-row>
             <cv-row>
@@ -329,6 +311,7 @@ export default {
         endTime: "",
         maxResults: "",
       },
+      timeTest: "23:45", ////
     };
   },
   computed: {

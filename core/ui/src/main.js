@@ -44,6 +44,10 @@ Vue.use(VueClipboard);
 import TextHighlight from "vue-text-highlight";
 Vue.component("text-highlight", TextHighlight);
 
+import VueTimepicker from "vue2-timepicker";
+import "vue2-timepicker/dist/VueTimepicker.css";
+Vue.component("vue-timepicker", VueTimepicker);
+
 import ns8Lib from "@nethserver/ns8-ui-lib";
 Vue.use(ns8Lib);
 

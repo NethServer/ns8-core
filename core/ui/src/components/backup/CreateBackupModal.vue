@@ -113,20 +113,11 @@
                 </cv-column>
                 <!-- daily schedule -->
                 <cv-column v-if="schedule.interval == 'daily'" :md="2" :max="4">
-                  <cv-time-picker
+                  <NsTimePicker
+                    hideClearButton
+                    v-model="schedule.time"
                     :label="$t('backup.at')"
-                    :time.sync="schedule.time"
-                    ampm="24"
-                    :pattern="time24HourPatternString"
-                    :invalid-message="
-                      time24HourPattern.test(schedule.time)
-                        ? ''
-                        : $t('error.invalid_24h_pattern')
-                    "
-                    :placeholder="time24HourPlaceholder"
-                    :form-item="true"
-                  >
-                  </cv-time-picker>
+                  ></NsTimePicker>
                 </cv-column>
                 <!-- weekly schedule -->
                 <template v-if="schedule.interval == 'weekly'">
@@ -160,20 +151,11 @@
                     </cv-select>
                   </cv-column>
                   <cv-column :md="2" :max="4">
-                    <cv-time-picker
+                    <NsTimePicker
+                      hideClearButton
+                      v-model="schedule.time"
                       :label="$t('backup.at')"
-                      :time.sync="schedule.time"
-                      ampm="24"
-                      :pattern="time24HourPatternString"
-                      :invalid-message="
-                        time24HourPattern.test(schedule.time)
-                          ? ''
-                          : $t('error.invalid_24h_pattern')
-                      "
-                      :placeholder="time24HourPlaceholder"
-                      :form-item="true"
-                    >
-                    </cv-time-picker>
+                    ></NsTimePicker>
                   </cv-column>
                 </template>
                 <!-- monthly schedule -->
@@ -190,20 +172,11 @@
                     </cv-text-input>
                   </cv-column>
                   <cv-column :md="2" :max="4">
-                    <cv-time-picker
+                    <NsTimePicker
+                      hideClearButton
+                      v-model="schedule.time"
                       :label="$t('backup.at')"
-                      :time.sync="schedule.time"
-                      ampm="24"
-                      :pattern="time24HourPatternString"
-                      :invalid-message="
-                        time24HourPattern.test(schedule.time)
-                          ? ''
-                          : $t('error.invalid_24h_pattern')
-                      "
-                      :placeholder="time24HourPlaceholder"
-                      :form-item="true"
-                    >
-                    </cv-time-picker>
+                    ></NsTimePicker>
                   </cv-column>
                 </template>
                 <cv-column
@@ -487,7 +460,7 @@ export default {
         }
         case "monthly": {
           const monthDay = this.schedule.monthDay.padStart(2, "0");
-          return `*-*-${monthDay} 00:00:00`;
+          return `*-*-${monthDay} ${this.schedule.time}:00`;
         }
         case "custom":
           return this.schedule.custom;

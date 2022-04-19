@@ -140,21 +140,12 @@
               :invalid-message="error.startDate"
             >
             </cv-date-picker>
-            <cv-time-picker
+            <NsTimePicker
+              hideClearButton
+              v-model="internalStartTime"
               :label="$t('system_logs.start_time_label')"
-              :time.sync="internalStartTime"
-              ampm="24"
-              :pattern="time24HourPatternString"
-              :placeholder="time24HourPlaceholder"
-              :form-item="true"
               class="interval-time mg-bottom-md"
-              :invalid-message="
-                time24HourPattern.test(internalStartTime)
-                  ? error.startTime
-                  : $t('error.invalid_24h_pattern')
-              "
-            >
-            </cv-time-picker>
+            ></NsTimePicker>
           </cv-column>
           <cv-column :md="verticalLayout ? 8 : 4">
             <cv-date-picker
@@ -166,21 +157,12 @@
               :invalid-message="error.endDate"
             >
             </cv-date-picker>
-            <cv-time-picker
+            <NsTimePicker
+              hideClearButton
+              v-model="internalEndTime"
               :label="$t('system_logs.end_time_label')"
-              :time.sync="internalEndTime"
-              ampm="24"
-              :pattern="time24HourPatternString"
-              :placeholder="time24HourPlaceholder"
-              :form-item="true"
               class="interval-time mg-bottom-md"
-              :invalid-message="
-                time24HourPattern.test(internalEndTime)
-                  ? error.endTime
-                  : $t('error.invalid_24h_pattern')
-              "
-            >
-            </cv-time-picker>
+            ></NsTimePicker>
           </cv-column>
         </cv-row>
       </template>

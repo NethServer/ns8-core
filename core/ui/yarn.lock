@@ -1492,10 +1492,10 @@
     call-me-maybe "^1.0.1"
     glob-to-regexp "^0.3.0"
 
-"@nethserver/ns8-ui-lib@^0.0.79":
-  version "0.0.79"
-  resolved "https://registry.yarnpkg.com/@nethserver/ns8-ui-lib/-/ns8-ui-lib-0.0.79.tgz#2e283e9a4b6ce07ca8e4b0e79b9d67f2cca4001d"
-  integrity sha512-Cgn7xkaqiRICHpkqzpxZojOEJI3aCPOujqNhNY+K+LqdA5JzY8WTeJ4tjOEYm1p3TsfpDloMRmZRhSUKuJU2sA==
+"@nethserver/ns8-ui-lib@^0.0.80":
+  version "0.0.80"
+  resolved "https://registry.yarnpkg.com/@nethserver/ns8-ui-lib/-/ns8-ui-lib-0.0.80.tgz#a4c1f55e75bfdfbaecc6338d069d0f4f5a9a9a66"
+  integrity sha512-iXvWSvVJljtZMKaOTl39qybkh005B4IdXkfCJsoU6dIjNzzXdpMcT8yo4WXNahP0hPaPW7oMxPT+f+FntaYJ2g==
   dependencies:
     "@rollup/plugin-json" "^4.1.0"
     core-js "^3.15.2"
@@ -13631,6 +13631,11 @@ vue-toastification@^1.7.11:
   version "1.7.14"
   resolved "https://registry.yarnpkg.com/vue-toastification/-/vue-toastification-1.7.14.tgz#4d6af4085f7122463c2821a27f851898b265cc85"
   integrity sha512-khZR8t3NWZ/JJ2MZxXLbesHrRJ8AKa75PY5Zq8yMifF9x8lHq8ljYkC0d2PD9yahooygQB5tcFyRDkbbIPx8hw==
+
+vue2-timepicker@^1.1.6:
+  version "1.1.6"
+  resolved "https://registry.yarnpkg.com/vue2-timepicker/-/vue2-timepicker-1.1.6.tgz#d74df71e3992c7073aa503d3e71d729d114be3da"
+  integrity sha512-DhO2UH4CTer/lMWxg+jqxn/+h6g2vZrsM6vCe9u7/Ie+Pej9yA+8mQA3C3VPApZ+LauKc43WxCspOXb6SGBOTw==
 
 vue@2.5.21:
   version "2.5.21"
