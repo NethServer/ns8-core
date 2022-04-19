@@ -319,7 +319,7 @@ const DEFAULT_SCHEDULE_CUSTOM = "";
 const DEFAULT_RETENTION = "5";
 
 export default {
-  name: "CreateBackupModal",
+  name: "CreateOrEditBackupModal",
   components: { BackupInstanceSelector },
   mixins: [UtilService, TaskService, IconService],
   props: {
