@@ -1,0 +1,66 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2022 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
+import agent
+import sys
+import os
+import agent.tasks
+import json
+
+request = json.load(sys.stdin)
+
+image = request['image']
+node_id = int(request['node'])
+volumes = request['volumes']
+
+rdb = agent.redis_connect(privileged=True)
+
+secret = str(os.getpid()) + os.getenv('AGENT_TASK_ID')
+rsyncd_addr = rdb.hget(f'node/{node_id}/vpn', 'ip_address')
+agent.assert_exp(rsyncd_addr)
+
+# Create the destination  module
+add_module_result = agent.tasks.run("cluster", "add-module",
+    data={
+        "image": image,
+        "node": node_id
+    }, 
+    endpoint="redis://cluster-leader",
+    progress_callback=agent.get_progress_callback(13, 25),
+)
+agent.assert_exp(add_module_result['exit_code'] == 0) # add-module is successful
+
+dmid = add_module_result['output']['module_id'] # Destination module ID
+rsyncd_port = int(rdb.incrby(f'node/{node_id}/tcp_ports_sequence', 1)) # Allocate a TCP port for rsyncd
+agent.assert_exp(rsyncd_port > 0) # valid destination port number
+
+# Execute the import-module (rsync server)
+data={"credentials": [dmid, secret], "port": rsyncd_port, 'volumes': volumes}
+import_task_result = agent.tasks.run_nowait("module/" + dmid, "import-module",
+    data=data,
+    endpoint="redis://cluster-leader",
+    progress_callback=agent.get_progress_callback(26, 94),
+)
+
+# Return connection details
+data['address'] = rsyncd_addr
+json.dump(data, fp=sys.stdout)

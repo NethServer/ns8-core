@@ -9,6 +9,13 @@
             "listen_port": 55820,
             "node_pwh": "b12f4f5137c4c6b4ef2efd936b88119c4af8356d4e9c3a31a18cd4a88effc41d",
             "public_key": "XCVh3GCRqMcmIgpHhsbCL7Usm7Lm7Hb7bsS5LTSz/Dc="
+        },
+        {
+            "endpoint": "",
+            "listen_port": 55820,
+            "node_pwh": "b12f4f5137c4c6b4ef2efd936b88119c4af8356d4e9c3a31a18cd4a88effc41d",
+            "public_key": "XCVh3GCRqMcmIgpHhsbCL7Usm7Lm7Hb7bsS5LTSz/Dc=",
+            "flags": ["nomodules"]
         }
     ],
     "type": "object",
@@ -33,6 +40,11 @@
         "listen_port": {
             "description": "WireGuard VPN listening port number. Can differ from the port number announced by `endpoint`",
             "type": "integer"
+        },
+        "flags": {
+            "description": "List of node flags",
+            "type": "array",
+            "items": { "type": "string" }
         }
     }
 }
