@@ -207,6 +207,7 @@ Legend:
 |module/{id}/task/{id}/exit_code    |INTEGER    |action exit code|
 |module/{id}/roles/{role}           |SET        |glob patterns matching the actions that {role} can run. {role} is one of "owner", "reader"...|
 |module/{id}/backups                |SET        |List of backup numeric IDs|
+|module/{id}/flags                  |SET        |Images flags copied from `org.nethserver.flags` image label|
 
 ### task queue item
 
