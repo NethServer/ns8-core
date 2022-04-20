@@ -51,6 +51,12 @@ agent.assert_exp(node_id > 0)
 check_idle_time = request.get('check_idle_time')
 
 rdb = agent.redis_connect(privileged=True)
+
+# Skip nodes flagged as nomodules, like NS7 machines
+if rdb.sismember(f'node/{node_id}/flags', 'nomodules'):
+    print(f"Can't execute add-module on node {node_id}")
+    sys.exit(1)
+
 image_url = request['image']
 # if the image name contains a slash, let's assume it's a valid image URL,
 # like ghr.io/nethserver/<image>:<tag>
