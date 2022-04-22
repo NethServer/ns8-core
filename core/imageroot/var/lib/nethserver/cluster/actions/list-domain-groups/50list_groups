@@ -1,0 +1,74 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2021 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
+import sys
+import json
+from agent.ldapproxy import Ldapproxy
+import cluster.ldapclient
+import ldap3
+
+request = json.load(sys.stdin)
+
+domain = Ldapproxy().get_domain(request['domain'])
+
+groups = []
+
+with cluster.ldapclient.connect(**domain) as ldapconn:
+    if domain['schema'] == 'rfc2307':
+        response = ldapconn.search(domain['base_dn'], '(objectClass=posixGroup)',
+            attributes=['cn', 'memberUid', 'description'],
+        )[2]
+
+        for entry in response:
+            if entry['type'] != 'searchResEntry':
+                continue # ignore referrals
+            groups.append({
+                "group": entry['attributes']['cn'][0],
+                "description":  entry['attributes']['description'][0],
+                "users": entry['attributes']['memberUid'],
+            })
+
+    elif domain['schema'] == 'ad':
+        response = ldapconn.search(domain['base_dn'], '(&(objectClass=group))',
+            attributes=['cn','member','description', 'sAMAccountName'],
+        )[2]
+
+        def get_description(entry):
+            try:
+                return entry['attributes']['description'][0]
+            except IndexError:
+                return entry['attributes']['cn']
+
+        for entry in response:
+            if entry['type'] != 'searchResEntry':
+                continue # ignore referrals
+            groups.append({
+                "group": entry['attributes']['sAMAccountName'],
+                "description":  get_description(entry),
+                "users": [dn.split(',', 1)[0].removeprefix('CN=') for dn in entry['attributes']['member']],
+            })
+
+    else:
+        raise Exception('Unknown LDAP schema ' + domain['schema'])
+
+groups = sorted(groups, key=lambda rec: rec['group'].lower())
+json.dump({"groups":groups}, fp=sys.stdout)

@@ -1,0 +1,97 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2021 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
+import sys
+import json
+from agent.ldapproxy import Ldapproxy
+import cluster.ldapclient
+import ldap3
+
+request = json.load(sys.stdin)
+
+domain = Ldapproxy().get_domain(request['domain'])
+group = request['group']
+
+with cluster.ldapclient.connect(**domain) as ldapconn:
+    if domain['schema'] == 'rfc2307':
+        response = ldapconn.search(domain['base_dn'], f'(&(objectClass=posixGroup)(cn={group}))',
+            attributes=['cn', 'memberUid', 'description'],
+        )[2]
+
+        def get_user(uid):
+            user = ldapconn.search(domain['base_dn'], f'(&(objectClass=posixAccount)(objectClass=inetOrgPerson)(uid={uid}))',
+                attributes=['cn', 'uid'],
+            )[2][0]['attributes']
+
+            return {
+                'user': user['uid'][0],
+                'full_name': user['cn'][0],
+            }
+
+        for entry in response:
+            if entry['type'] != 'searchResEntry':
+                continue # ignore referrals
+            ogroup = {
+                "group": entry['attributes']['cn'][0],
+                "description":  entry['attributes']['description'][0],
+                "users": [get_user(uid) for uid in  entry['attributes']['memberUid']],
+            }
+            break
+
+    elif domain['schema'] == 'ad':
+        response = ldapconn.search(domain['base_dn'], f'(&(objectClass=group)(sAMAccountName={group}))',
+            attributes=['cn', 'member', 'description', 'sAMAccountName'],
+        )[2]
+
+        def get_description(entry):
+            try:
+                return entry['attributes']['description'][0]
+            except IndexError:
+                return entry['attributes']['cn']
+
+        def get_user(dn):
+            user = cluster.ldapclient.get_dn_attributes(ldapconn, dn, attributes=['sAMAccountName', 'cn', 'displayName'])
+
+            try:
+                full_name = user['displayName'][0]
+            except IndexError:
+                full_name = user['cn']
+
+            return {
+                'user': user['sAMAccountName'],
+                'full_name': user['cn'],
+            }
+
+        for entry in response:
+            if entry['type'] != 'searchResEntry':
+                continue # ignore referrals
+            ogroup = {
+                "group": entry['attributes']['sAMAccountName'],
+                "description":  get_description(entry),
+                "users": [get_user(dn) for dn in entry['attributes']['member']],
+            }
+            break
+
+    else:
+        raise Exception('Unknown LDAP schema ' + domain['schema'])
+
+json.dump({"group":ogroup}, fp=sys.stdout)

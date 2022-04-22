@@ -44,6 +44,7 @@ class Ldapproxy:
         try:
             keys = [
                 'schema',
+                'location',
                 'base_dn',
                 'bind_dn',
                 'bind_password',
