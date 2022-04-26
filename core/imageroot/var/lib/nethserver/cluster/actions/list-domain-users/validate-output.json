@@ -1,0 +1,51 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "list-domain-users output",
+    "description": "List users of a given accounts domain",
+    "$id": "http://schema.nethserver.org/cluster/list-domain-users-output.json",
+    "examples": [
+        {
+            "users": [
+                {
+                    "user": "Administrator",
+                    "full_name": "Administrator"
+                }
+            ]
+        }
+    ],
+    "type": "object",
+    "required": [
+        "users"
+    ],
+    "properties": {
+        "users": {
+            "type": "array",
+            "items": {
+                "$ref": "#/$defs/user"
+            }
+        }
+    },
+    "$defs": {
+        "user": {
+            "title": "A user descriptor",
+            "description": "Basic description of a user: name and (person) full name",
+            "type": "object",
+            "required": [
+                "user",
+                "full_name"
+            ],
+            "properties": {
+                "user": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "full_name": {
+                    "type": "string",
+                    "title": "Full name",
+                    "description": "The person name",
+                    "minLength": 1
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,78 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "get-domain-group output",
+    "description": "Return the details of a group",
+    "$id": "http://schema.nethserver.org/cluster/get-domain-group-output.json",
+    "examples": [
+        {
+            "group": {
+                "group": "Domain Admins",
+                "description": "Designated administrators of the domain",
+                "users": [
+                    {
+                        "user": "Administrator",
+                        "full_name": "Administrator"
+                    }
+                ]
+            }
+        }
+    ],
+    "type": "object",
+    "required": [
+        "group"
+    ],
+    "properties": {
+        "group": {
+            "$ref": "#/$defs/group"
+        }
+    },
+    "$defs": {
+        "user": {
+            "type": "object",
+            "required": [
+                "user",
+                "full_name"
+            ],
+            "properties": {
+                "user": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "full_name": {
+                    "type": "string",
+                    "title": "Full name",
+                    "description": "The person name",
+                    "minLength": 1
+                }
+            }
+        },
+        "group": {
+            "title": "Group details",
+            "type": "object",
+            "required": [
+                "group",
+                "description",
+                "users"
+            ],
+            "properties": {
+                "group": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "description": {
+                    "type": "string",
+                    "title": "Description",
+                    "description": "A brief description of the group purpose",
+                    "minLength": 1
+                },
+                "users": {
+                    "title": "Group members",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/user"
+                    }
+                }
+            }
+        }
+    }
+}
