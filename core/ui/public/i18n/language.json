@@ -111,6 +111,14 @@
     "password": "Password",
     "re_enter_password": "Re-enter password"
   },
+  "pagination": {
+    "items_per_page": "Items per page:",
+    "range_of_total_items": "{range} of {total} items",
+    "of_total_pages": "of {total} pages",
+    "previous_page": "Previous page",
+    "next_page": "Next page",
+    "page_number": "Page number"
+  },
   "login": {
     "title": "Log in",
     "login": "Log in",
@@ -281,7 +289,17 @@
     "update-module": "Update module",
     "update-modules": "Update modules",
     "list-core-modules": "List core modules",
-    "update-core": "Update core"
+    "update-core": "Update core",
+    "list-domain-users": "List domain users",
+    "list-domain-groups": "List domain groups",
+    "get-domain-user": "Get domain user",
+    "get-domain-group": "Get domain group",
+    "add-user": "Add user",
+    "add-group": "Add group",
+    "alter-user": "Edit user",
+    "alter-group": "Edit group",
+    "remove-user": "Delete user",
+    "remove-group": "Delete group"
   },
   "network": {
     "title": "Network"
@@ -754,9 +772,9 @@
     "name": "Name",
     "edit_group": "Edit group",
     "select_users": "Select users",
-    "delete_user": "Delete user {user}",
+    "delete_user": "Delete {user}",
     "delete_user_description": "Delete user <strong>{name}</strong>? This user will lose access to all apps and will be removed from all groups",
-    "delete_group": "Delete group {group}",
+    "delete_group": "Delete {group}",
     "delete_group_description": "Delete group <strong>{name}</strong>? All users in this group will lose access to the resources associated with the group",
     "cannot_make_changes_to_an_external_domain": "Cannot make changes to an external domain",
     "num_users_c": "{num} user | {num} users",

@@ -17,7 +17,7 @@
           v-model.trim="name"
           :label="$t('domain_users.name')"
           :invalid-message="error.name"
-          :disabled="isEditing || loading.createGroup || loading.editGroup"
+          :disabled="isEditing || loading.addGroup || loading.alterGroup"
           data-modal-primary-focus
           ref="name"
         />
@@ -39,20 +39,18 @@
           ref="users"
         >
         </cv-multi-select>
-        <!-- //// todo add action name to language.json -->
         <NsInlineNotification
-          v-if="error.createGroup"
+          v-if="error.addGroup"
           kind="error"
-          :title="$t('action.////')"
-          :description="error.createGroup"
+          :title="$t('action.add-group')"
+          :description="error.addGroup"
           :showCloseButton="false"
         />
-        <!-- //// todo add action name to language.json -->
         <NsInlineNotification
-          v-if="error.editGroup"
+          v-if="error.alterGroup"
           kind="error"
-          :title="$t('action.////')"
-          :description="error.editGroup"
+          :title="$t('action.alter-group')"
+          :description="error.alterGroup"
           :showCloseButton="false"
         />
       </cv-form>
@@ -81,18 +79,19 @@ export default {
     },
     group: { type: [Object, null] },
     users: { type: Array, required: true },
+    provider: { type: String },
   },
   data() {
     return {
       name: "",
       selectedUsers: [],
       loading: {
-        createGroup: false,
-        editGroup: false,
+        addGroup: false,
+        alterGroup: false,
       },
       error: {
-        createGroup: "",
-        editGroup: "",
+        addGroup: "",
+        alterGroup: "",
         name: "",
       },
     };
@@ -124,12 +123,12 @@ export default {
   methods: {
     createOrEditGroup() {
       if (this.isEditing) {
-        this.editGroup();
+        this.alterGroup();
       } else {
-        this.createGroup();
+        this.addGroup();
       }
     },
-    validateCreateGroup() {
+    validateAddGroup() {
       this.clearErrors();
       let isValidationOk = true;
 
@@ -148,8 +147,8 @@ export default {
 
       return isValidationOk;
     },
-    createGroup() {
-      if (!this.validateCreateGroup()) {
+    addGroup() {
+      if (!this.validateAddGroup()) {
         return;
       }
 
@@ -157,7 +156,7 @@ export default {
 
       // const taskAction = "..."; ////
     },
-    validateEditGroup() {
+    validateAlterGroup() {
       this.clearErrors();
       let isValidationOk = true;
 
@@ -165,8 +164,8 @@ export default {
 
       return isValidationOk;
     },
-    editGroup() {
-      if (!this.validateEditGroup()) {
+    alterGroup() {
+      if (!this.validateAlterGroup()) {
         return;
       }
 

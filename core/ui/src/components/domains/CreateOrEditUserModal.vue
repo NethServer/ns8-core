@@ -15,7 +15,7 @@
           v-model.trim="username"
           :label="$t('domain_users.username')"
           :invalid-message="error.username"
-          :disabled="isEditing || loading.createUser || loading.editUser"
+          :disabled="isEditing || loading.addUser || loading.alterUser"
           data-modal-primary-focus
           ref="username"
         />
@@ -23,7 +23,7 @@
           v-model.trim="fullName"
           :label="$t('domain_users.full_name')"
           :invalid-message="error.fullName"
-          :disabled="loading.createUser || loading.editUser"
+          :disabled="loading.addUser || loading.alterUser"
           ref="fullName"
         />
         <cv-multi-select
@@ -65,20 +65,18 @@
           :focus="focusPasswordField"
           :clearConfirmPasswordCommand="clearConfirmPasswordCommand"
         />
-        <!-- //// todo add action name to language.json -->
         <NsInlineNotification
-          v-if="error.createUser"
+          v-if="error.addUser"
           kind="error"
-          :title="$t('action.////')"
-          :description="error.createUser"
+          :title="$t('action.add-user')"
+          :description="error.addUser"
           :showCloseButton="false"
         />
-        <!-- //// todo add action name to language.json -->
         <NsInlineNotification
-          v-if="error.editUser"
+          v-if="error.alterUser"
           kind="error"
-          :title="$t('action.////')"
-          :description="error.editUser"
+          :title="$t('action.alter-user')"
+          :description="error.alterUser"
           :showCloseButton="false"
         />
       </cv-form>
@@ -105,6 +103,7 @@ export default {
     },
     user: { type: [Object, null] },
     groups: { type: Array, required: true },
+    provider: { type: String },
   },
   data() {
     return {
@@ -116,12 +115,12 @@ export default {
       focusPasswordField: { element: "" },
       clearConfirmPasswordCommand: 0,
       loading: {
-        createUser: false,
-        editUser: false,
+        addUser: false,
+        alterUser: false,
       },
       error: {
-        createUser: "",
-        editUser: "",
+        addUser: "",
+        alterUser: "",
         username: "",
         fullName: "",
         newPassword: "",
@@ -162,12 +161,12 @@ export default {
   methods: {
     createOrEditUser() {
       if (this.isEditing) {
-        this.editUser();
+        this.alterUser();
       } else {
-        this.createUser();
+        this.addUser();
       }
     },
-    validateCreateUser() {
+    validateAddUser() {
       this.clearErrors();
       let isValidationOk = true;
 
@@ -252,8 +251,8 @@ export default {
       }
       return isValidationOk;
     },
-    createUser() {
-      if (!this.validateCreateUser()) {
+    addUser() {
+      if (!this.validateAddUser()) {
         return;
       }
 
@@ -261,7 +260,7 @@ export default {
 
       // const taskAction = "..."; ////
     },
-    validateEditUser() {
+    validateAlterUser() {
       this.clearErrors();
       let isValidationOk = true;
 
@@ -275,8 +274,8 @@ export default {
       }
       return isValidationOk;
     },
-    editUser() {
-      if (!this.validateEditUser()) {
+    alterUser() {
+      if (!this.validateAlterUser()) {
         return;
       }
 
