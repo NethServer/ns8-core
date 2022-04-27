@@ -45,11 +45,12 @@ with cluster.ldapclient.connect(**domain) as ldapconn:
             users.append({
                 "user": entry['attributes']['uid'][0],
                 "full_name": entry['attributes']['cn'][0],
+                "locked": False, # XXX still not implemented
             })
 
     elif domain['schema'] == 'ad':
         response = ldapconn.search(domain['base_dn'], '(&(objectClass=user)(objectCategory=person))',
-            attributes=['cn', 'displayName', 'sAMAccountName'],
+            attributes=['cn', 'displayName', 'sAMAccountName', 'userAccountControl'],
         )[2]
 
         def get_full_name(entry):
@@ -66,6 +67,7 @@ with cluster.ldapclient.connect(**domain) as ldapconn:
             users.append({
                 "user": entry['attributes']['sAMAccountName'],
                 "full_name": get_full_name(entry),
+                "locked": bool(entry['attributes']['userAccountControl'] & 0x2), # ACCOUNTDISABLE
             })
 
     else:

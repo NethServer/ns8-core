@@ -32,6 +32,7 @@
             "required": [
                 "user",
                 "full_name",
+                "locked",
                 "groups"
             ],
             "properties": {
@@ -44,6 +45,11 @@
                     "title": "Full name",
                     "description": "The person name",
                     "minLength": 1
+                },
+                "locked": {
+                    "type": "boolean",
+                    "title": "Locked",
+                    "description": "True, if the user account has been locked, preventing the user from logging in"
                 },
                 "groups": {
                     "type": "array",
