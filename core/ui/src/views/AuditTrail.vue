@@ -158,7 +158,7 @@
             <cv-row>
               <cv-column>
                 <cv-tile
-                  v-if="!this.tableRows.length && !loading.auditTrail"
+                  v-if="!this.logs.length && !loading.auditTrail"
                   :light="false"
                 >
                   <NsEmptyState
@@ -175,23 +175,27 @@
                   </NsEmptyState>
                 </cv-tile>
                 <div v-else>
-                  <cv-data-table-skeleton
-                    v-if="loading.auditTrail"
-                    :columns="i18nTableColumns"
-                    :rows="10"
-                  ></cv-data-table-skeleton>
-                  <cv-data-table
+                  <NsDataTable
                     v-if="
-                      !loading.auditTrail &&
                       !error.auditUsers &&
                       !error.auditActions &&
                       !error.auditTrail
                     "
-                    :sortable="true"
+                    :allRows="logs"
                     :columns="i18nTableColumns"
-                    @sort="sortTable"
-                    :pagination="pagination"
-                    @pagination="paginateTable"
+                    :rawColumns="tableColumns"
+                    :sortable="true"
+                    :isSearchable="false"
+                    :isLoading="loading.auditTrail"
+                    :itemsPerPageLabel="$t('pagination.items_per_page')"
+                    :rangeOfTotalItemsLabel="
+                      $t('pagination.range_of_total_items')
+                    "
+                    :ofTotalPagesLabel="$t('pagination.of_total_pages')"
+                    :backwardText="$t('pagination.previous_page')"
+                    :forwardText="$t('pagination.next_page')"
+                    :pageNumberLabel="$t('pagination.page_number')"
+                    @updatePage="tablePage = $event"
                     ref="table"
                   >
                     <template slot="data">
@@ -244,8 +248,8 @@
                           </code>
                         </cv-data-table-cell>
                       </cv-data-table-row>
-                    </template></cv-data-table
-                  >
+                    </template>
+                  </NsDataTable>
                 </div>
               </cv-column>
             </cv-row>
@@ -263,7 +267,6 @@ import {
   UtilService,
   IconService,
   DateTimeService,
-  DataTableService,
   LottieService,
 } from "@nethserver/ns8-ui-lib";
 
@@ -271,7 +274,6 @@ export default {
   name: "AuditTrail",
   mixins: [
     DateTimeService,
-    DataTableService,
     IconService,
     AuditService,
     UtilService,
@@ -291,13 +293,14 @@ export default {
       calOptions: {
         dateFormat: "Y-m-d",
       },
+      logs: [],
       users: [],
       usersSelected: [],
       actions: [],
       actionsSelected: [],
       auditInfo: "",
       tableColumns: ["timestamp", "user", "action", "auditInfo"],
-      tableRows: [],
+      tablePage: [],
       loading: {
         auditTrail: true,
       },
@@ -311,7 +314,6 @@ export default {
         endTime: "",
         maxResults: "",
       },
-      timeTest: "23:45", ////
     };
   },
   computed: {
@@ -493,7 +495,7 @@ export default {
 
       const audits = response.data.data.audits ? response.data.data.audits : [];
 
-      let logs = audits.map((audit) => {
+      this.logs = audits.map((audit) => {
         const localTimestamp = this.formatDate(
           this.parseIsoDate(audit.timestamp),
           "yyyy-MM-dd HH:mm:ss"
@@ -508,8 +510,6 @@ export default {
           id: audit.id,
         };
       });
-
-      this.tableRows = logs;
     },
   },
 };

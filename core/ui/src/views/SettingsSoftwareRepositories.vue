@@ -62,7 +62,7 @@
       <div class="bx--row">
         <div class="bx--col-lg-16">
           <cv-tile :light="true">
-            <div v-if="!tableRows.length && !loading.repositories">
+            <div v-if="!repositories.length && !loading.repositories">
               <NsEmptyState
                 :title="$t('settings_sw_repositories.no_sw_repositories')"
               >
@@ -98,19 +98,22 @@
                   }}</NsButton
                 >
               </div>
-              <cv-data-table-skeleton
-                v-if="loading.repositories"
+              <NsDataTable
+                :allRows="repositories"
                 :columns="i18nTableColumns"
-                :rows="5"
-              ></cv-data-table-skeleton>
-              <cv-data-table
-                v-if="!loading.repositories"
+                :rawColumns="tableColumns"
                 :sortable="true"
-                :columns="i18nTableColumns"
-                @sort="sortTable"
-                :pagination="pagination"
-                @pagination="paginateTable"
+                :isSearchable="false"
+                :isLoading="loading.repositories"
+                :skeletonRows="5"
                 :overflow-menu="true"
+                :itemsPerPageLabel="$t('pagination.items_per_page')"
+                :rangeOfTotalItemsLabel="$t('pagination.range_of_total_items')"
+                :ofTotalPagesLabel="$t('pagination.of_total_pages')"
+                :backwardText="$t('pagination.previous_page')"
+                :forwardText="$t('pagination.next_page')"
+                :pageNumberLabel="$t('pagination.page_number')"
+                @updatePage="tablePage = $event"
                 ref="table"
               >
                 <template slot="data">
@@ -191,8 +194,9 @@
                         </cv-overflow-menu-item>
                       </cv-overflow-menu>
                     </cv-data-table-cell>
-                  </cv-data-table-row> </template
-              ></cv-data-table>
+                  </cv-data-table-row>
+                </template>
+              </NsDataTable>
             </div>
           </cv-tile>
         </div>
@@ -329,18 +333,11 @@ import {
   UtilService,
   TaskService,
   IconService,
-  DataTableService,
 } from "@nethserver/ns8-ui-lib";
 
 export default {
   name: "SettingsSoftwareRepositories",
-  mixins: [
-    TaskService,
-    UtilService,
-    IconService,
-    QueryParamService,
-    DataTableService,
-  ],
+  mixins: [TaskService, UtilService, IconService, QueryParamService],
   pageTitle() {
     return this.$t("settings.sw_repositories");
   },
@@ -358,8 +355,9 @@ export default {
         isEditRepoTesting: false,
         isEditRepoEnabled: true,
       },
+      repositories: [],
+      tablePage: [],
       tableColumns: ["name", "url", "status", "testing"],
-      tableRows: [],
       repoToDelete: null,
       loading: {
         repositories: true,
@@ -466,7 +464,7 @@ export default {
       }
     },
     listRepositoriesCompleted(taskContext, taskResult) {
-      this.tableRows = taskResult.output;
+      this.repositories = taskResult.output;
       this.loading.repositories = false;
     },
     validateNewRepository() {
@@ -632,7 +630,7 @@ export default {
       this.repoToDelete = repo;
 
       // remove repo from table
-      this.tableRows = this.tableRows.filter((r) => {
+      this.repositories = this.repositories.filter((r) => {
         return r.name != repo.name;
       });
     },
