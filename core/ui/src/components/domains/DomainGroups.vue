@@ -27,14 +27,6 @@
         </cv-row>
         <cv-row>
           <cv-column>
-            <!-- <GroupsTable ////
-              :groups="groups"
-              :domain="domain"
-              :loading="!domain || loading.listGroups"
-              @createGroup="showCreateGroupModal"
-              @editGroup="onEditGroup"
-              @deleteGroup="onDeleteGroup"
-            /> -->
             <NsDataTable
               :allRows="groups"
               :columns="i18nTableColumns"
@@ -49,8 +41,11 @@
               :noSearchResultsDescription="
                 $t('common.no_search_results_description')
               "
-              :isLoading="!domain || loading.listUsers"
+              :isLoading="!domain || loading.listDomainGroups"
               :skeletonRows="5"
+              :isErrorShown="!!error.listDomainGroups"
+              :errorTitle="$t('action.list-domain-groups')"
+              :errorDescription="error.listDomainGroups"
               :itemsPerPageLabel="$t('pagination.items_per_page')"
               :rangeOfTotalItemsLabel="$t('pagination.range_of_total_items')"
               :ofTotalPagesLabel="$t('pagination.of_total_pages')"
@@ -82,8 +77,10 @@
                   :key="`${rowIndex}`"
                   :value="`${rowIndex}`"
                 >
-                  <cv-data-table-cell>{{ row.name }}</cv-data-table-cell>
-                  <cv-data-table-cell>
+                  <cv-data-table-cell>{{ row.group }}</cv-data-table-cell>
+                  <cv-data-table-cell>{{ row.description }}</cv-data-table-cell>
+                  <!-- group users -->
+                  <!-- <cv-data-table-cell>
                     <span v-if="row.users.length < 3">
                       {{ row.users.join(", ") }}
                     </span>
@@ -110,7 +107,7 @@
                         </template>
                       </cv-interactive-tooltip>
                     </span>
-                  </cv-data-table-cell>
+                  </cv-data-table-cell> -->
                   <cv-data-table-cell
                     v-if="domain && domain.location == 'internal'"
                     class="table-overflow-menu-cell"
@@ -141,8 +138,9 @@
     <CreateOrEditGroupModal
       :isShown="isShownCreateOrEditGroupModal"
       :isEditing="isEditingGroup"
+      :domain="domain"
       :group="currentGroup"
-      :users="usersForSelect"
+      :allUsers="users"
       :provider="mainProvider"
       @hide="hideCreateOrEditGroupModal"
     />
@@ -179,7 +177,7 @@
 <script>
 import { UtilService, IconService, TaskService } from "@nethserver/ns8-ui-lib";
 import CreateOrEditGroupModal from "@/components/domains/CreateOrEditGroupModal";
-// import to from "await-to-js"; ////
+import to from "await-to-js";
 
 export default {
   name: "DomainGroups",
@@ -187,6 +185,7 @@ export default {
   mixins: [UtilService, IconService, TaskService],
   props: {
     domain: { type: Object },
+    users: { type: Array, required: true },
   },
   data() {
     return {
@@ -195,45 +194,44 @@ export default {
       isEditingGroup: false,
       currentGroup: null,
       groupToDelete: null,
-      tableColumns: ["name", "users"],
+      tableColumns: ["name", "description"],
       tablePage: [],
       mainProvider: "",
-      //// remove mock
-      groups: [
-        {
-          name: "admin",
-          users: ["user1"],
-        },
-        {
-          name: "dev",
-          users: ["user2", "user3"],
-        },
-        {
-          name: "support",
-          users: ["user2", "user3", "user4"],
-        },
-        {
-          name: "marketing",
-          users: [],
-        },
-      ],
-      //// remove mock
-      usersForSelect: [
-        { label: "user1", value: "user1", name: "user1" },
-        { label: "user2", value: "user2", name: "user2" },
-        { label: "user3", value: "user3", name: "user3" },
-        { label: "user4", value: "user4", name: "user4" },
-      ],
       loading: {
         listDomainGroups: false,
-        getDomainGroup: false,
         removeGroup: false,
       },
       error: {
         listDomainGroups: "",
-        getDomainGroup: "",
         removeGroup: "",
       },
+      groups: [],
+      //// remove mock
+      // groups: [
+      //   {
+      //     name: "admin",
+      //     users: ["user1"],
+      //   },
+      //   {
+      //     name: "dev",
+      //     users: ["user2", "user3"],
+      //   },
+      //   {
+      //     name: "support",
+      //     users: ["user2", "user3", "user4"],
+      //   },
+      //   {
+      //     name: "marketing",
+      //     users: [],
+      //   },
+      // ],
+      //// remove mock
+      // usersForSelect: [
+      //   { label: "user1", value: "user1", name: "user1" },
+      //   { label: "user2", value: "user2", name: "user2" },
+      //   { label: "user3", value: "user3", name: "user3" },
+      //   { label: "user4", value: "user4", name: "user4" },
+      // ],
     };
   },
   computed: {
@@ -242,6 +240,18 @@ export default {
         return this.$t("domain_users." + column);
       });
     },
+  },
+  watch: {
+    domain: function () {
+      if (this.domain) {
+        this.listDomainGroups();
+      }
+    },
+  },
+  created() {
+    if (this.domain) {
+      this.listDomainGroups();
+    }
   },
   methods: {
     showCreateGroupModal() {
@@ -267,6 +277,56 @@ export default {
     removeGroup() {
       console.log("removeGroup", this.groupToDelete); ////
     },
+
+    async listDomainGroups() {
+      this.loading.listDomainGroups = true;
+      this.error.listDomainGroups = "";
+      const taskAction = "list-domain-groups";
+      const eventId = this.getUuid();
+
+      // register to task error
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.listDomainGroupsAborted
+      );
+
+      // register to task completion
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.listDomainGroupsCompleted
+      );
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          data: {
+            domain: this.domain.name,
+          },
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+            eventId,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.listDomainGroups = this.getErrorMessage(err);
+        return;
+      }
+    },
+    listDomainGroupsAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.listDomainGroups = this.$t("error.generic_error");
+      this.loading.listDomainGroups = false;
+    },
+    listDomainGroupsCompleted(taskContext, taskResult) {
+      this.groups = taskResult.output.groups;
+      this.$emit("groupsLoaded", this.groups);
+      this.loading.listDomainGroups = false;
+    },
   },
 };
 </script>
@@ -274,7 +334,7 @@ export default {
 <style scoped lang="scss">
 @import "../../styles/carbon-utils";
 
-.others {
-  margin-left: $spacing-02;
-}
+// .others { ////
+//   margin-left: $spacing-02;
+// }
 </style>

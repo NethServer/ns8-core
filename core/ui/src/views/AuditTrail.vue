@@ -146,111 +146,89 @@
           <cv-grid fullWidth class="no-padding">
             <cv-row>
               <cv-column>
-                <NsInlineNotification
-                  v-if="error.auditTrail"
-                  kind="error"
-                  :title="$t('audit_trail.cannot_retrieve_audit_trail')"
-                  :description="error.auditTrail"
-                  :showCloseButton="false"
-                />
-              </cv-column>
-            </cv-row>
-            <cv-row>
-              <cv-column>
-                <cv-tile
-                  v-if="!this.logs.length && !loading.auditTrail"
-                  :light="false"
+                <NsDataTable
+                  :allRows="logs"
+                  :columns="i18nTableColumns"
+                  :rawColumns="tableColumns"
+                  :sortable="true"
+                  :isSearchable="false"
+                  :isLoading="loading.auditTrail"
+                  :isErrorShown="!!error.auditTrail"
+                  :errorTitle="$t('audit_trail.cannot_retrieve_audit_trail')"
+                  :errorDescription="error.auditTrail"
+                  :itemsPerPageLabel="$t('pagination.items_per_page')"
+                  :rangeOfTotalItemsLabel="
+                    $t('pagination.range_of_total_items')
+                  "
+                  :ofTotalPagesLabel="$t('pagination.of_total_pages')"
+                  :backwardText="$t('pagination.previous_page')"
+                  :forwardText="$t('pagination.next_page')"
+                  :pageNumberLabel="$t('pagination.page_number')"
+                  @updatePage="tablePage = $event"
+                  ref="table"
                 >
-                  <NsEmptyState
-                    :title="$t('audit_trail.no_log_found')"
-                    :animationData="GhostLottie"
-                    animationTitle="ghost"
-                    :loop="1"
-                  >
-                    <template #description>
-                      <div>
-                        {{ $t("audit_trail.no_log_found_description") }}
-                      </div>
-                    </template>
-                  </NsEmptyState>
-                </cv-tile>
-                <div v-else>
-                  <NsDataTable
-                    v-if="
-                      !error.auditUsers &&
-                      !error.auditActions &&
-                      !error.auditTrail
-                    "
-                    :allRows="logs"
-                    :columns="i18nTableColumns"
-                    :rawColumns="tableColumns"
-                    :sortable="true"
-                    :isSearchable="false"
-                    :isLoading="loading.auditTrail"
-                    :itemsPerPageLabel="$t('pagination.items_per_page')"
-                    :rangeOfTotalItemsLabel="
-                      $t('pagination.range_of_total_items')
-                    "
-                    :ofTotalPagesLabel="$t('pagination.of_total_pages')"
-                    :backwardText="$t('pagination.previous_page')"
-                    :forwardText="$t('pagination.next_page')"
-                    :pageNumberLabel="$t('pagination.page_number')"
-                    @updatePage="tablePage = $event"
-                    ref="table"
-                  >
-                    <template slot="data">
-                      <cv-data-table-row
-                        v-for="(row, rowIndex) in tablePage"
-                        :key="`${rowIndex}`"
-                        :value="`${rowIndex}`"
+                  <template slot="empty-state">
+                    <NsEmptyState
+                      :title="$t('audit_trail.no_log_found')"
+                      :animationData="GhostLottie"
+                      animationTitle="ghost"
+                      :loop="1"
+                    >
+                      <template #description>
+                        <div>
+                          {{ $t("audit_trail.no_log_found_description") }}
+                        </div>
+                      </template>
+                    </NsEmptyState>
+                  </template>
+                  <template slot="data">
+                    <cv-data-table-row
+                      v-for="(row, rowIndex) in tablePage"
+                      :key="`${rowIndex}`"
+                      :value="`${rowIndex}`"
+                    >
+                      <cv-data-table-cell>{{
+                        row.timestamp
+                      }}</cv-data-table-cell>
+                      <cv-data-table-cell>{{ row.user }}</cv-data-table-cell>
+                      <cv-data-table-cell>{{ row.action }}</cv-data-table-cell>
+                      <cv-data-table-cell
+                        :class="{
+                          'audit-info-collapsed': row.auditInfoCollapsed,
+                        }"
                       >
-                        <cv-data-table-cell>{{
-                          row.timestamp
-                        }}</cv-data-table-cell>
-                        <cv-data-table-cell>{{ row.user }}</cv-data-table-cell>
-                        <cv-data-table-cell>{{
-                          row.action
-                        }}</cv-data-table-cell>
-                        <cv-data-table-cell
-                          :class="{
-                            'audit-info-collapsed': row.auditInfoCollapsed,
-                          }"
-                        >
-                          <cv-icon-button
-                            v-if="row.auditInfo"
-                            kind="ghost"
-                            size="sm"
-                            :icon="
-                              row.auditInfoCollapsed
-                                ? RowExpand20
-                                : RowCollapse20
-                            "
-                            :label="
-                              row.auditInfoCollapsed
-                                ? $t('common.expand')
-                                : $t('common.collapse')
-                            "
-                            @click="
-                              row.auditInfoCollapsed = !row.auditInfoCollapsed
-                            "
-                            tip-position="left"
-                            class="expand-audit-info-button"
-                          />
-                          <code>
-                            <pre
-                              v-if="!row.auditInfoCollapsed"
-                              class="audit-info-pre"
-                              >{{ tryParseJson(row.auditInfo) }}</pre
-                            >
-                            <span v-else :id="'audit-info-' + row.id">{{
-                              tryParseJson(row.auditInfo)
-                            }}</span>
-                          </code>
-                        </cv-data-table-cell>
-                      </cv-data-table-row>
-                    </template>
-                  </NsDataTable>
-                </div>
+                        <cv-icon-button
+                          v-if="row.auditInfo"
+                          kind="ghost"
+                          size="sm"
+                          :icon="
+                            row.auditInfoCollapsed ? RowExpand20 : RowCollapse20
+                          "
+                          :label="
+                            row.auditInfoCollapsed
+                              ? $t('common.expand')
+                              : $t('common.collapse')
+                          "
+                          @click="
+                            row.auditInfoCollapsed = !row.auditInfoCollapsed
+                          "
+                          tip-position="left"
+                          class="expand-audit-info-button"
+                        />
+                        <code>
+                          <pre
+                            v-if="!row.auditInfoCollapsed"
+                            class="audit-info-pre"
+                            >{{ tryParseJson(row.auditInfo) }}</pre
+                          >
+                          <span v-else :id="'audit-info-' + row.id">{{
+                            tryParseJson(row.auditInfo)
+                          }}</span>
+                        </code>
+                      </cv-data-table-cell>
+                    </cv-data-table-row>
+                  </template>
+                </NsDataTable>
               </cv-column>
             </cv-row>
           </cv-grid>

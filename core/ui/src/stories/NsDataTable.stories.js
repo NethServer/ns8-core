@@ -176,6 +176,8 @@ const sharedProps = {
   skeletonRows: 5,
   noSearchResultsLabel: "No results",
   noSearchResultsDescription: "Try changing your search query",
+  errorTitle: "Cannot retrieve table data",
+  errorDescription: "Something went wrong",
   itemsPerPageLabel: "Items per page:",
   rangeOfTotalItemsLabel: "{range} of {total} items",
   ofTotalPagesLabel: "of {total} pages",
@@ -188,6 +190,7 @@ export const Default = Template.bind({});
 Default.args = {
   pageSizes: [5, 10, 25, 50, 100],
   isLoading: false,
+  isErrorShown: false,
   allRows: users,
   ...sharedProps,
 };
@@ -196,6 +199,7 @@ export const EmptyState = Template.bind({});
 EmptyState.args = {
   pageSizes: [5, 10, 25, 50, 100],
   isLoading: false,
+  isErrorShown: false,
   allRows: [],
   ...sharedProps,
 };
@@ -204,6 +208,7 @@ export const NoPagination = Template.bind({});
 NoPagination.args = {
   pageSizes: [], // no pagination
   isLoading: false,
+  isErrorShown: false,
   allRows: users,
   ...sharedProps,
 };
@@ -212,6 +217,16 @@ export const Loading = Template.bind({});
 Loading.args = {
   pageSizes: [5, 10, 25, 50, 100],
   isLoading: true,
-  allRows: users,
+  isErrorShown: false,
+  allRows: [],
+  ...sharedProps,
+};
+
+export const Error = Template.bind({});
+Error.args = {
+  pageSizes: [5, 10, 25, 50, 100],
+  isLoading: false,
+  isErrorShown: true,
+  allRows: [],
   ...sharedProps,
 };

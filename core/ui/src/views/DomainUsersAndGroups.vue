@@ -73,7 +73,11 @@
     </cv-row>
     <cv-row>
       <cv-column>
-        <DomainUsers :domain="domain" />
+        <DomainUsers
+          :domain="domain"
+          :groups="groups"
+          @usersLoaded="onUsersLoaded"
+        />
       </cv-column>
     </cv-row>
     <!-- groups -->
@@ -92,7 +96,11 @@
     </cv-row>
     <cv-row>
       <cv-column>
-        <DomainGroups :domain="domain" />
+        <DomainGroups
+          :domain="domain"
+          :users="users"
+          @groupsLoaded="onGroupsLoaded"
+        />
       </cv-column>
     </cv-row>
   </cv-grid>
@@ -123,6 +131,8 @@ export default {
     return {
       domainName: "",
       domain: null,
+      users: [],
+      groups: [],
       loading: {
         listUserDomains: false,
       },
@@ -212,6 +222,16 @@ export default {
 
       // scroll to anchor if route URL contains a hash (#)
       this.checkAndScrollToAnchor();
+    },
+    onUsersLoaded(users) {
+      console.log("onUsersLoaded", users); ////
+
+      this.users = users;
+    },
+    onGroupsLoaded(groups) {
+      console.log("onGroupsLoaded", groups); ////
+
+      this.groups = groups;
     },
   },
 };

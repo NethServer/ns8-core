@@ -472,8 +472,8 @@
   },
   "settings_cluster": {},
   "settings_sw_repositories": {
-    "no_sw_repositories": "No software repositories",
-    "no_sw_repositories_description": "You can create one by clicking the button below",
+    "no_sw_repositories": "No software repository",
+    "no_sw_repositories_description": "There is no software repository configured",
     "create_repository": "Create repository",
     "name": "Name",
     "url": "URL",
@@ -778,7 +778,8 @@
     "delete_group_description": "Delete group <strong>{name}</strong>? All users in this group will lose access to the resources associated with the group",
     "cannot_make_changes_to_an_external_domain": "Cannot make changes to an external domain",
     "num_users_c": "{num} user | {num} users",
-    "num_groups_c": "{num} group | {num} groups"
+    "num_groups_c": "{num} group | {num} groups",
+    "description": "Description"
   },
   "domain_configuration": {
     "title": "Domain configuration",

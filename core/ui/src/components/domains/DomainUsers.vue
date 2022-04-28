@@ -27,16 +27,6 @@
         </cv-row>
         <cv-row>
           <cv-column>
-            <!-- <UsersTable ////
-                    :users="users"
-                    :domain="domain"
-                    :loading="!domain || loading.listDomainUsers"
-                    @createUser="showCreateUserModal"
-                    @editUser="onEditUser"
-                    @changeUserPassword="onChangeUserPassword"
-                    @disableUser="onDisableUser"
-                    @deleteUser="onDeleteUser"
-                  /> -->
             <NsDataTable
               :allRows="users"
               :columns="i18nTableColumns"
@@ -53,6 +43,9 @@
               "
               :isLoading="!domain || loading.listDomainUsers"
               :skeletonRows="5"
+              :isErrorShown="!!error.listDomainUsers"
+              :errorTitle="$t('action.list-domain-users')"
+              :errorDescription="error.listDomainUsers"
               :itemsPerPageLabel="$t('pagination.items_per_page')"
               :rangeOfTotalItemsLabel="$t('pagination.range_of_total_items')"
               :ofTotalPagesLabel="$t('pagination.of_total_pages')"
@@ -84,9 +77,10 @@
                   :key="`${rowIndex}`"
                   :value="`${rowIndex}`"
                 >
-                  <cv-data-table-cell>{{ row.username }}</cv-data-table-cell>
+                  <cv-data-table-cell>{{ row.user }}</cv-data-table-cell>
                   <cv-data-table-cell>{{ row.full_name }}</cv-data-table-cell>
-                  <cv-data-table-cell>
+                  <!-- //// user groups -->
+                  <!-- <cv-data-table-cell>
                     <span v-if="row.groups.length < 3">
                       {{ row.groups.join(", ") }}
                     </span>
@@ -113,7 +107,7 @@
                         </template>
                       </cv-interactive-tooltip>
                     </span>
-                  </cv-data-table-cell>
+                  </cv-data-table-cell> -->
                   <cv-data-table-cell
                     v-if="domain && domain.location == 'internal'"
                     class="table-overflow-menu-cell"
@@ -158,8 +152,9 @@
     <CreateOrEditUserModal
       :isShown="isShownCreateOrEditUserModal"
       :isEditing="isEditingUser"
+      :domain="domain"
       :user="currentUser"
-      :groups="groupsForSelect"
+      :allGroups="groups"
       :provider="mainProvider"
       @hide="hideCreateOrEditUserModal"
     />
@@ -172,10 +167,10 @@
     <!-- //// check delete-user action name -->
     <NsDangerDeleteModal
       :isShown="isShownDeleteUserModal"
-      :name="userToDelete ? userToDelete.username : ''"
+      :name="userToDelete ? userToDelete.user : ''"
       :title="
         $t('domain_users.delete_user', {
-          user: userToDelete ? userToDelete.username : '',
+          user: userToDelete ? userToDelete.user : '',
         })
       "
       :warning="$t('common.please_read_carefully')"
@@ -186,7 +181,7 @@
       "
       :typeToConfirm="
         $t('common.type_to_confirm', {
-          name: userToDelete ? userToDelete.username : '',
+          name: userToDelete ? userToDelete.user : '',
         })
       "
       :isErrorShown="!!error.removeUser"
@@ -210,6 +205,7 @@ export default {
   mixins: [UtilService, IconService, TaskService],
   props: {
     domain: { type: Object },
+    groups: { type: Array, required: true },
   },
   data() {
     return {
@@ -219,71 +215,70 @@ export default {
       isEditingUser: false,
       currentUser: null,
       userToDelete: null,
-      tableColumns: ["username", "full_name", "groups"],
+      tableColumns: ["username", "full_name" /*, "groups"*/], ////
       tablePage: [],
       mainProvider: "",
       loading: {
         listDomainUsers: false,
-        getDomainUser: false,
         removeUser: false,
       },
       error: {
         listDomainUsers: "",
-        getDomainUser: "",
         removeUser: "",
       },
+      users: [],
       //// remove mock
-      users: [
-        {
-          username: "alice",
-          full_name: "Alice J",
-          groups: ["admin", "dev"],
-        },
-        {
-          username: "bob",
-          full_name: "Bob K",
-          groups: ["admin", "support"],
-        },
-        {
-          username: "carl",
-          full_name: "Carl L",
-          groups: ["marketing"],
-        },
-        {
-          username: "dakota",
-          full_name: "Dakota M",
-          groups: ["dev", "support", "marketing"],
-        },
-        {
-          username: "alicee",
-          full_name: "Alice J",
-          groups: ["admin", "dev"],
-        },
-        {
-          username: "bobb",
-          full_name: "Bob K",
-          groups: ["admin", "support"],
-        },
-        {
-          username: "carll",
-          full_name: "Carl L",
-          groups: ["marketing"],
-        },
-        {
-          username: "dakotaa",
-          full_name: "Dakota M",
-          groups: ["dev", "support", "marketing"],
-        },
-      ],
+      // users: [
+      //   {
+      //     user: "alice",
+      //     full_name: "Alice J",
+      //     groups: ["admin", "dev"],
+      //   },
+      //   {
+      //     user: "bob",
+      //     full_name: "Bob K",
+      //     groups: ["admin", "support"],
+      //   },
+      //   {
+      //     user: "carl",
+      //     full_name: "Carl L",
+      //     groups: ["marketing"],
+      //   },
+      //   {
+      //     user: "dakota",
+      //     full_name: "Dakota M",
+      //     groups: ["dev", "support", "marketing"],
+      //   },
+      //   {
+      //     user: "alicee",
+      //     full_name: "Alice J",
+      //     groups: ["admin", "dev"],
+      //   },
+      //   {
+      //     user: "bobb",
+      //     full_name: "Bob K",
+      //     groups: ["admin", "support"],
+      //   },
+      //   {
+      //     user: "carll",
+      //     full_name: "Carl L",
+      //     groups: ["marketing"],
+      //   },
+      //   {
+      //     user: "dakotaa",
+      //     full_name: "Dakota M",
+      //     groups: ["dev", "support", "marketing"],
+      //   },
+      // ],
       //// remove mock
-      groupsForSelect: [
-        { label: "admin", value: "admin", name: "admin" },
-        { label: "dev", value: "dev", name: "dev" },
-        { label: "support", value: "support", name: "support" },
-        { label: "marketing", value: "marketing", name: "marketing" },
-        { label: "group1", value: "group1", name: "group1" },
-        { label: "group2", value: "group2", name: "group2" },
-      ],
+      // groupsForSelect: [
+      //   { label: "admin", value: "admin", name: "admin" },
+      //   { label: "dev", value: "dev", name: "dev" },
+      //   { label: "support", value: "support", name: "support" },
+      //   { label: "marketing", value: "marketing", name: "marketing" },
+      //   { label: "group1", value: "group1", name: "group1" },
+      //   { label: "group2", value: "group2", name: "group2" },
+      // ],
     };
   },
   computed: {
@@ -298,8 +293,8 @@ export default {
       }
 
       return this.userToDelete.full_name
-        ? `${this.userToDelete.username} (${this.userToDelete.full_name})`
-        : this.instanceToUninstall.username;
+        ? `${this.userToDelete.user} (${this.userToDelete.full_name})`
+        : this.instanceToUninstall.user;
     },
   },
   watch: {
@@ -392,13 +387,12 @@ export default {
     },
     listDomainUsersAborted(taskResult, taskContext) {
       console.error(`${taskContext.action} aborted`, taskResult);
-      this.loading.listDomainUsers = false;
       this.error.listDomainUsers = this.$t("error.generic_error");
+      this.loading.listDomainUsers = false;
     },
     listDomainUsersCompleted(taskContext, taskResult) {
-      console.log("listDomainUsersCompleted", taskResult.output); ////
-
       this.users = taskResult.output.users;
+      this.$emit("usersLoaded", this.users);
       this.loading.listDomainUsers = false;
     },
   },
@@ -408,7 +402,7 @@ export default {
 <style scoped lang="scss">
 @import "../../styles/carbon-utils";
 
-.others {
-  margin-left: $spacing-02;
-}
+// .others { ////
+//   margin-left: $spacing-02;
+// }
 </style>

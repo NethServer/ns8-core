@@ -2,6 +2,7 @@
   <NsModal
     size="default"
     :visible="isShown"
+    :primary-button-disabled="isPrimaryButtonDisabled"
     @modal-hidden="onModalHidden"
     @primary-click="createOrEditGroup"
     class="no-pad-modal"
@@ -23,18 +24,18 @@
         />
         <cv-multi-select
           v-model="selectedUsers"
-          :options="users"
+          :options="allUsersForSelect"
           :title="$t('domain_users.users') + ' (' + $t('common.optional') + ')'"
           :label="
-            users.length
+            allUsers.length
               ? $t('domain_users.select_users')
               : $t('domain_users.no_user')
           "
           :helper-text="usersHelperText"
-          :filterable="!!users.length"
+          :filterable="!!allUsers.length"
           :auto-filter="true"
           :auto-highlight="true"
-          :disabled="!users.length"
+          :disabled="!allUsers.length || loading.getDomainGroup"
           class="mg-bottom-14"
           ref="users"
         >
@@ -66,7 +67,7 @@
 
 <script>
 import { UtilService, TaskService, IconService } from "@nethserver/ns8-ui-lib";
-// import to from "await-to-js"; ////
+import to from "await-to-js";
 
 export default {
   name: "CreateOrEditGroupModal",
@@ -77,8 +78,9 @@ export default {
       type: Boolean,
       default: false,
     },
+    domain: { type: Object },
     group: { type: [Object, null] },
-    users: { type: Array, required: true },
+    allUsers: { type: Array, required: true },
     provider: { type: String },
   },
   data() {
@@ -88,15 +90,26 @@ export default {
       loading: {
         addGroup: false,
         alterGroup: false,
+        getDomainGroup: false,
       },
       error: {
         addGroup: "",
         alterGroup: "",
+        getDomainGroup: "",
         name: "",
       },
     };
   },
   computed: {
+    allUsersForSelect() {
+      return this.allUsers.map((user) => {
+        return {
+          value: user.user,
+          label: `${user.user} (${user.full_name})`,
+          name: user.user,
+        };
+      });
+    },
     usersHelperText() {
       if (!this.selectedUsers.length) {
         return "";
@@ -106,17 +119,26 @@ export default {
         );
       }
     },
+    isPrimaryButtonDisabled() {
+      return (
+        this.loading.addGroup ||
+        this.loading.alterGroup ||
+        this.loading.getDomainGroup
+      );
+    },
   },
   watch: {
     isShown: function () {
-      if (!this.isEditing) {
-        // create group
-        this.name = "";
+      if (this.isShown) {
+        if (!this.isEditing) {
+          // create group
+          this.name = "";
+        } else {
+          // edit group
+          this.name = this.group.group;
+          this.getDomainGroup();
+        }
         this.selectedUsers = [];
-      } else {
-        // edit group
-        this.name = this.group.name;
-        this.selectedUsers = this.group.users;
       }
     },
   },
@@ -176,6 +198,61 @@ export default {
     onModalHidden() {
       this.clearErrors();
       this.$emit("hide");
+    },
+    async getDomainGroup() {
+      this.loading.getDomainGroup = true;
+      this.error.getDomainGroup = "";
+      const taskAction = "get-domain-group";
+      const eventId = this.getUuid();
+
+      // register to task error
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.getDomainGroupAborted
+      );
+
+      // register to task completion
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.getDomainGroupCompleted
+      );
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          data: {
+            domain: this.domain.name,
+            group: this.group.group,
+          },
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+            eventId,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.getDomainGroup = this.getErrorMessage(err);
+        return;
+      }
+    },
+    getDomainGroupAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.loading.getDomainGroup = false;
+      this.error.getDomainGroup = this.$t("error.generic_error");
+    },
+    getDomainGroupCompleted(taskContext, taskResult) {
+      console.log("getDomainGroupCompleted", taskResult.output); ////
+
+      const users = taskResult.output.group.users;
+
+      this.selectedUsers = users.map((u) => u.user);
+
+      console.log("selectedUsers", this.selectedUsers); ////
+      this.loading.getDomainGroup = false;
     },
   },
 };

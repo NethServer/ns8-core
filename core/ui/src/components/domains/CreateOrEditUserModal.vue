@@ -2,6 +2,7 @@
   <NsModal
     size="default"
     :visible="isShown"
+    :primary-button-disabled="isPrimaryButtonDisabled"
     @modal-hidden="onModalHidden"
     @primary-click="createOrEditUser"
     class="no-pad-modal"
@@ -26,26 +27,6 @@
           :disabled="loading.addUser || loading.alterUser"
           ref="fullName"
         />
-        <cv-multi-select
-          v-model="selectedGroups"
-          :options="groups"
-          :title="
-            $t('domain_users.groups') + ' (' + $t('common.optional') + ')'
-          "
-          :label="
-            groups.length
-              ? $t('domain_users.select_groups')
-              : $t('domain_users.no_group')
-          "
-          :helper-text="groupsHelperText"
-          :filterable="!!groups.length"
-          :auto-filter="true"
-          :auto-highlight="true"
-          :disabled="!groups.length"
-          :class="{ 'mg-bottom-14': isEditing }"
-          ref="groups"
-        >
-        </cv-multi-select>
         <NsPasswordInput
           v-if="!isEditing"
           :newPasswordLabel="$t('password.password')"
@@ -65,6 +46,26 @@
           :focus="focusPasswordField"
           :clearConfirmPasswordCommand="clearConfirmPasswordCommand"
         />
+        <cv-multi-select
+          v-model="selectedGroups"
+          :options="allGroupsForSelect"
+          :title="
+            $t('domain_users.groups') + ' (' + $t('common.optional') + ')'
+          "
+          :label="
+            allGroups.length
+              ? $t('domain_users.select_groups')
+              : $t('domain_users.no_group')
+          "
+          :helper-text="groupsHelperText"
+          :filterable="!!allGroups.length"
+          :auto-filter="true"
+          :auto-highlight="true"
+          :disabled="!allGroups.length || loading.getDomainUser"
+          :class="{ 'mg-bottom-14': isEditing }"
+          ref="groups"
+        >
+        </cv-multi-select>
         <NsInlineNotification
           v-if="error.addUser"
           kind="error"
@@ -90,7 +91,7 @@
 
 <script>
 import { UtilService, TaskService, IconService } from "@nethserver/ns8-ui-lib";
-// import to from "await-to-js"; ////
+import to from "await-to-js";
 
 export default {
   name: "CreateOrEditUserModal",
@@ -101,8 +102,9 @@ export default {
       type: Boolean,
       default: false,
     },
+    domain: { type: Object },
     user: { type: [Object, null] },
-    groups: { type: Array, required: true },
+    allGroups: { type: Array, required: true },
     provider: { type: String },
   },
   data() {
@@ -117,10 +119,12 @@ export default {
       loading: {
         addUser: false,
         alterUser: false,
+        getDomainUser: false,
       },
       error: {
         addUser: "",
         alterUser: "",
+        getDomainUser: "",
         username: "",
         fullName: "",
         newPassword: "",
@@ -129,6 +133,15 @@ export default {
     };
   },
   computed: {
+    allGroupsForSelect() {
+      return this.allGroups.map((group) => {
+        return {
+          value: group.group,
+          label: group.group,
+          name: group.group,
+        };
+      });
+    },
     groupsHelperText() {
       if (!this.selectedGroups.length) {
         return "";
@@ -138,23 +151,32 @@ export default {
         );
       }
     },
+    isPrimaryButtonDisabled() {
+      return (
+        this.loading.addUser ||
+        this.loading.alterUser ||
+        this.loading.getDomainUser
+      );
+    },
   },
   watch: {
     isShown: function () {
-      if (!this.isEditing) {
-        // create user
-        this.username = "";
-        this.fullName = "";
-        this.selectedGroups = [];
+      if (this.isShown) {
+        if (!this.isEditing) {
+          // create user
+          this.username = "";
+          this.fullName = "";
 
-        // clear password fields
-        this.newPassword = "";
-        this.clearConfirmPasswordCommand++;
-      } else {
-        // edit user
-        this.username = this.user.username;
-        this.fullName = this.user.full_name;
-        this.selectedGroups = this.user.groups;
+          // clear password fields
+          this.newPassword = "";
+          this.clearConfirmPasswordCommand++;
+        } else {
+          // edit user
+          this.username = this.user.user;
+          this.fullName = this.user.full_name;
+          this.getDomainUser();
+        }
+        this.selectedGroups = [];
       }
     },
   },
@@ -289,6 +311,61 @@ export default {
     },
     onPasswordValidation(passwordValidation) {
       this.passwordValidation = passwordValidation;
+    },
+    async getDomainUser() {
+      this.loading.getDomainUser = true;
+      this.error.getDomainUser = "";
+      const taskAction = "get-domain-user";
+      const eventId = this.getUuid();
+
+      // register to task error
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.getDomainUserAborted
+      );
+
+      // register to task completion
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.getDomainUserCompleted
+      );
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          data: {
+            domain: this.domain.name,
+            user: this.user.user,
+          },
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+            eventId,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.getDomainUser = this.getErrorMessage(err);
+        return;
+      }
+    },
+    getDomainUserAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.loading.getDomainUser = false;
+      this.error.getDomainUser = this.$t("error.generic_error");
+    },
+    getDomainUserCompleted(taskContext, taskResult) {
+      console.log("getDomainUserCompleted", taskResult.output); ////
+
+      const groups = taskResult.output.user.groups;
+
+      this.selectedGroups = groups.map((g) => g.group);
+
+      console.log("selectedGroups", this.selectedGroups); ////
+      this.loading.getDomainUser = false;
     },
   },
 };

@@ -31,16 +31,6 @@
           />
         </div>
       </div>
-      <div v-if="error.listRepositories" class="bx--row">
-        <div class="bx--col">
-          <NsInlineNotification
-            kind="error"
-            :title="$t('action.list-repositories')"
-            :description="error.listRepositories"
-            :showCloseButton="false"
-          />
-        </div>
-      </div>
       <div class="bx--row">
         <div class="bx--col-lg-16">
           <!-- repository being deleted -->
@@ -62,84 +52,87 @@
       <div class="bx--row">
         <div class="bx--col-lg-16">
           <cv-tile :light="true">
-            <div v-if="!repositories.length && !loading.repositories">
-              <NsEmptyState
-                :title="$t('settings_sw_repositories.no_sw_repositories')"
+            <div class="toolbar">
+              <NsButton
+                v-if="repositories.length"
+                kind="secondary"
+                :icon="Add20"
+                @click="showCreateRepoModal()"
+                :disabled="loading.repositories"
+                >{{
+                  $t("settings_sw_repositories.create_repository")
+                }}</NsButton
               >
-                <template #description>
-                  <div>
-                    {{
-                      $t(
-                        "settings_sw_repositories.no_sw_repositories_description"
-                      )
-                    }}
-                  </div>
-                  <NsButton
-                    kind="primary"
-                    :icon="Add20"
-                    @click="showCreateRepoModal()"
-                    class="empty-state-button"
-                    >{{
-                      $t("settings_sw_repositories.create_repository")
-                    }}</NsButton
-                  ></template
-                >
-              </NsEmptyState>
             </div>
-            <div v-else>
-              <div class="toolbar">
-                <NsButton
-                  kind="secondary"
-                  :icon="Add20"
-                  @click="showCreateRepoModal()"
-                  :disabled="loading.repositories"
-                  >{{
-                    $t("settings_sw_repositories.create_repository")
-                  }}</NsButton
+            <NsDataTable
+              :allRows="repositories"
+              :columns="i18nTableColumns"
+              :rawColumns="tableColumns"
+              :sortable="true"
+              :isSearchable="false"
+              :isLoading="loading.repositories"
+              :skeletonRows="5"
+              :overflow-menu="true"
+              :isErrorShown="!!error.listRepositories"
+              :errorTitle="$t('action.list-repositories')"
+              :errorDescription="error.listRepositories"
+              :itemsPerPageLabel="$t('pagination.items_per_page')"
+              :rangeOfTotalItemsLabel="$t('pagination.range_of_total_items')"
+              :ofTotalPagesLabel="$t('pagination.of_total_pages')"
+              :backwardText="$t('pagination.previous_page')"
+              :forwardText="$t('pagination.next_page')"
+              :pageNumberLabel="$t('pagination.page_number')"
+              @updatePage="tablePage = $event"
+              ref="table"
+            >
+              <template slot="empty-state">
+                <NsEmptyState
+                  :title="$t('settings_sw_repositories.no_sw_repositories')"
                 >
-              </div>
-              <NsDataTable
-                :allRows="repositories"
-                :columns="i18nTableColumns"
-                :rawColumns="tableColumns"
-                :sortable="true"
-                :isSearchable="false"
-                :isLoading="loading.repositories"
-                :skeletonRows="5"
-                :overflow-menu="true"
-                :itemsPerPageLabel="$t('pagination.items_per_page')"
-                :rangeOfTotalItemsLabel="$t('pagination.range_of_total_items')"
-                :ofTotalPagesLabel="$t('pagination.of_total_pages')"
-                :backwardText="$t('pagination.previous_page')"
-                :forwardText="$t('pagination.next_page')"
-                :pageNumberLabel="$t('pagination.page_number')"
-                @updatePage="tablePage = $event"
-                ref="table"
-              >
-                <template slot="data">
-                  <cv-data-table-row
-                    v-for="(row, rowIndex) in tablePage"
-                    :key="`${rowIndex}`"
-                    :value="`${rowIndex}`"
+                  <template #description>
+                    <div>
+                      {{
+                        $t(
+                          "settings_sw_repositories.no_sw_repositories_description"
+                        )
+                      }}
+                    </div>
+                    <NsButton
+                      kind="primary"
+                      :icon="Add20"
+                      @click="showCreateRepoModal()"
+                      class="empty-state-button"
+                      >{{
+                        $t("settings_sw_repositories.create_repository")
+                      }}</NsButton
+                    ></template
                   >
-                    <cv-data-table-cell>{{ row.name }}</cv-data-table-cell>
-                    <cv-data-table-cell class="break-word">{{
-                      row.url
-                    }}</cv-data-table-cell>
-                    <cv-data-table-cell>
-                      <cv-tag
-                        v-if="row.status"
-                        kind="green"
-                        :label="$t('common.enabled')"
-                        class="no-margin"
-                      ></cv-tag>
-                      <cv-tag
-                        v-else
-                        kind="gray"
-                        :label="$t('common.disabled')"
-                        class="no-margin"
-                      ></cv-tag>
-                      <!-- <div class="badge-container"> ////
+                </NsEmptyState>
+              </template>
+              <template slot="data">
+                <cv-data-table-row
+                  v-for="(row, rowIndex) in tablePage"
+                  :key="`${rowIndex}`"
+                  :value="`${rowIndex}`"
+                >
+                  <cv-data-table-cell>{{ row.name }}</cv-data-table-cell>
+                  <cv-data-table-cell class="break-word">{{
+                    row.url
+                  }}</cv-data-table-cell>
+                  <cv-data-table-cell>
+                    <cv-tag
+                      v-if="row.status"
+                      kind="green"
+                      :label="$t('common.enabled')"
+                      class="no-margin"
+                    ></cv-tag>
+                    <cv-tag
+                      v-else
+                      kind="gray"
+                      :label="$t('common.disabled')"
+                      class="no-margin"
+                    ></cv-tag>
+                    <!-- <div class="badge-container"> ////
                         <template v-if="row.status"
                           ><span class="green-badge left-badge"></span>
                           {{ $t("common.enabled") }}</template
@@ -149,21 +142,21 @@
                           >{{ $t("common.disabled") }}</template
                         >
                       </div> -->
-                    </cv-data-table-cell>
-                    <cv-data-table-cell>
-                      <cv-tag
-                        v-if="row.testing"
-                        kind="green"
-                        :label="$t('common.enabled')"
-                        class="no-margin"
-                      ></cv-tag>
-                      <cv-tag
-                        v-else
-                        kind="gray"
-                        :label="$t('common.disabled')"
-                        class="no-margin"
-                      ></cv-tag>
-                      <!-- <div class="badge-container"> ////
+                  </cv-data-table-cell>
+                  <cv-data-table-cell>
+                    <cv-tag
+                      v-if="row.testing"
+                      kind="green"
+                      :label="$t('common.enabled')"
+                      class="no-margin"
+                    ></cv-tag>
+                    <cv-tag
+                      v-else
+                      kind="gray"
+                      :label="$t('common.disabled')"
+                      class="no-margin"
+                    ></cv-tag>
+                    <!-- <div class="badge-container"> ////
                         <template v-if="row.testing"
                           ><span class="green-badge left-badge"></span>
                           {{ $t("common.enabled") }}</template
@@ -173,31 +166,27 @@
                           >{{ $t("common.disabled") }}</template
                         >
                       </div> -->
-                    </cv-data-table-cell>
-                    <cv-data-table-cell class="table-overflow-menu-cell">
-                      <cv-overflow-menu flip-menu class="table-overflow-menu">
-                        <cv-overflow-menu-item @click="showEditRepoModal(row)">
-                          <NsMenuItem
-                            :icon="Edit20"
-                            :label="$t('common.edit')"
-                          />
-                        </cv-overflow-menu-item>
-                        <NsMenuDivider />
-                        <cv-overflow-menu-item
-                          danger
-                          @click="willDeleteRepository(row)"
-                        >
-                          <NsMenuItem
-                            :icon="TrashCan20"
-                            :label="$t('common.delete')"
-                          />
-                        </cv-overflow-menu-item>
-                      </cv-overflow-menu>
-                    </cv-data-table-cell>
-                  </cv-data-table-row>
-                </template>
-              </NsDataTable>
-            </div>
+                  </cv-data-table-cell>
+                  <cv-data-table-cell class="table-overflow-menu-cell">
+                    <cv-overflow-menu flip-menu class="table-overflow-menu">
+                      <cv-overflow-menu-item @click="showEditRepoModal(row)">
+                        <NsMenuItem :icon="Edit20" :label="$t('common.edit')" />
+                      </cv-overflow-menu-item>
+                      <NsMenuDivider />
+                      <cv-overflow-menu-item
+                        danger
+                        @click="willDeleteRepository(row)"
+                      >
+                        <NsMenuItem
+                          :icon="TrashCan20"
+                          :label="$t('common.delete')"
+                        />
+                      </cv-overflow-menu-item>
+                    </cv-overflow-menu>
+                  </cv-data-table-cell>
+                </cv-data-table-row>
+              </template>
+            </NsDataTable>
           </cv-tile>
         </div>
       </div>
@@ -460,6 +449,7 @@ export default {
       if (err) {
         console.error(`error creating task ${taskAction}`, err);
         this.error.listRepositories = this.getErrorMessage(err);
+        this.loading.repositories = false;
         return;
       }
     },
