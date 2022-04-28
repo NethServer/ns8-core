@@ -213,24 +213,20 @@ export default {
       let domains = taskResult.output.domains;
       this.domain = domains.find((domain) => domain.name === this.domainName);
 
-      // console.log("this.domain", this.domain); ////
-
       //// remove mock
       // this.domain.location = "external";
 
       this.loading.listUserDomains = false;
-
-      // scroll to anchor if route URL contains a hash (#)
-      this.checkAndScrollToAnchor();
     },
     onUsersLoaded(users) {
-      console.log("onUsersLoaded", users); ////
-
       this.users = users;
+
+      // scroll to anchor if route URL contains a hash (#)
+      setTimeout(() => {
+        this.checkAndScrollToAnchor();
+      }, 100);
     },
     onGroupsLoaded(groups) {
-      console.log("onGroupsLoaded", groups); ////
-
       this.groups = groups;
     },
   },

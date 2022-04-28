@@ -626,7 +626,9 @@ export default {
       this.initNodes();
 
       // scroll to anchor if route URL contains a hash (#)
-      this.checkAndScrollToAnchor();
+      setTimeout(() => {
+        this.checkAndScrollToAnchor();
+      }, 100);
     },
     showAddProviderModal() {
       if (this.domain.location == "internal") {
