@@ -12,13 +12,20 @@
     }}</template>
     <template slot="content">
       <cv-form @submit.prevent="createOrEditUser">
+        <NsInlineNotification
+          v-if="error.getDomainUser"
+          kind="error"
+          :title="$t('action.get-domain-user')"
+          :description="error.getDomainUser"
+          :showCloseButton="false"
+        />
         <NsTextInput
           v-model.trim="username"
           :label="$t('domain_users.username')"
-          :invalid-message="error.username"
+          :invalid-message="error.user"
           :disabled="isEditing || loading.addUser || loading.alterUser"
           data-modal-primary-focus
-          ref="username"
+          ref="user"
         />
         <NsTextInput
           v-model.trim="fullName"
@@ -27,6 +34,28 @@
           :disabled="loading.addUser || loading.alterUser"
           ref="fullName"
         />
+        <cv-multi-select
+          v-model="selectedGroups"
+          :options="allGroupsForSelect"
+          :title="
+            $t('domain_users.groups') + ' (' + $t('common.optional') + ')'
+          "
+          :label="selectGroupsLabel"
+          :helper-text="groupsHelperText"
+          :filterable="!!allGroups.length"
+          :auto-filter="true"
+          :auto-highlight="true"
+          :invalid-message="error.groups"
+          :disabled="
+            !allGroups.length ||
+            loading.getDomainUser ||
+            loading.addUser ||
+            loading.alterUser
+          "
+          :class="{ 'mg-bottom-14': isEditing }"
+          ref="groups"
+        >
+        </cv-multi-select>
         <NsPasswordInput
           v-if="!isEditing"
           :newPasswordLabel="$t('password.password')"
@@ -46,26 +75,6 @@
           :focus="focusPasswordField"
           :clearConfirmPasswordCommand="clearConfirmPasswordCommand"
         />
-        <cv-multi-select
-          v-model="selectedGroups"
-          :options="allGroupsForSelect"
-          :title="
-            $t('domain_users.groups') + ' (' + $t('common.optional') + ')'
-          "
-          :label="
-            allGroups.length
-              ? $t('domain_users.select_groups')
-              : $t('domain_users.no_group')
-          "
-          :helper-text="groupsHelperText"
-          :filterable="!!allGroups.length"
-          :auto-filter="true"
-          :auto-highlight="true"
-          :disabled="!allGroups.length || loading.getDomainUser"
-          :class="{ 'mg-bottom-14': isEditing }"
-          ref="groups"
-        >
-        </cv-multi-select>
         <NsInlineNotification
           v-if="error.addUser"
           kind="error"
@@ -105,7 +114,6 @@ export default {
     domain: { type: Object },
     user: { type: [Object, null] },
     allGroups: { type: Array, required: true },
-    provider: { type: String },
   },
   data() {
     return {
@@ -125,10 +133,11 @@ export default {
         addUser: "",
         alterUser: "",
         getDomainUser: "",
-        username: "",
+        user: "",
         fullName: "",
         newPassword: "",
         confirmPassword: "",
+        groups: "",
       },
     };
   },
@@ -155,13 +164,28 @@ export default {
       return (
         this.loading.addUser ||
         this.loading.alterUser ||
-        this.loading.getDomainUser
+        this.loading.getDomainUser ||
+        !!this.error.getDomainUser
       );
+    },
+    mainProvider() {
+      return this.domain.providers[0].id;
+    },
+    selectGroupsLabel() {
+      if (this.loading.getDomainUser) {
+        return this.$t("common.loading");
+      } else if (this.allGroups.length) {
+        return this.$t("domain_users.select_groups");
+      } else {
+        return this.$t("domain_users.no_group");
+      }
     },
   },
   watch: {
     isShown: function () {
       if (this.isShown) {
+        this.clearErrors();
+
         if (!this.isEditing) {
           // create user
           this.username = "";
@@ -193,23 +217,10 @@ export default {
       let isValidationOk = true;
 
       if (!this.username) {
-        this.error.username = this.$t("common.required");
+        this.error.user = this.$t("common.required");
 
         if (isValidationOk) {
-          this.focusElement("username");
-          isValidationOk = false;
-        }
-      }
-
-      //// check if username is already taken
-
-      ////check illegal characters an syntax
-
-      if (!this.fullName) {
-        this.error.fullName = this.$t("common.required");
-
-        if (isValidationOk) {
-          this.focusElement("fullName");
+          this.focusElement("user");
           isValidationOk = false;
         }
       }
@@ -273,37 +284,153 @@ export default {
       }
       return isValidationOk;
     },
-    addUser() {
+    async addUser() {
       if (!this.validateAddUser()) {
         return;
       }
+      this.loading.addUser = true;
+      this.error.addUser = "";
+      const taskAction = "add-user";
+      const eventId = this.getUuid();
 
-      console.log("validation ok"); ////
+      // register to task error
+      this.$root.$once(`${taskAction}-aborted-${eventId}`, this.addUserAborted);
 
-      // const taskAction = "..."; ////
+      // register to task validation
+      this.$root.$once(
+        `${taskAction}-validation-ok-${eventId}`,
+        this.addUserValidationOk
+      );
+      this.$root.$once(
+        `${taskAction}-validation-failed-${eventId}`,
+        this.addUserValidationFailed
+      );
+
+      // register to task completion
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.addUserCompleted
+      );
+
+      const res = await to(
+        this.createModuleTaskForApp(this.mainProvider, {
+          action: taskAction,
+          data: {
+            user: this.username,
+            full_name: this.fullName,
+            password: this.newPassword,
+            locked: false,
+            groups: this.selectedGroups,
+          },
+          extra: {
+            title: this.$t("domain_users.create_user_user", {
+              user: this.username,
+            }),
+            description: this.$t("common.processing"),
+            eventId,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.addUser = this.getErrorMessage(err);
+        this.loading.addUser = false;
+        return;
+      }
     },
-    validateAlterUser() {
-      this.clearErrors();
-      let isValidationOk = true;
+    addUserAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.loading.addUser = false;
 
-      if (!this.fullName) {
-        this.error.fullName = this.$t("common.required");
+      // hide modal so that user can see error notification
+      this.$emit("hide");
+    },
+    addUserValidationOk() {
+      this.loading.addUser = false;
 
-        if (isValidationOk) {
-          this.focusElement("fullName");
-          isValidationOk = false;
+      // hide modal after validation
+      this.$emit("hide");
+    },
+    addUserValidationFailed(validationErrors) {
+      this.loading.addUser = false;
+      let focusAlreadySet = false;
+
+      for (const validationError of validationErrors) {
+        const param = validationError.parameter;
+
+        // set i18n error message
+        this.error[param] = this.$t("domain_users." + validationError.error);
+
+        if (!focusAlreadySet) {
+          this.focusElement(param);
+          focusAlreadySet = true;
         }
       }
-      return isValidationOk;
     },
-    alterUser() {
-      if (!this.validateAlterUser()) {
+    addUserCompleted() {
+      this.loading.addUser = false;
+
+      // reload users
+      this.$emit("reloadUsers");
+    },
+    async alterUser() {
+      this.loading.alterUser = true;
+      this.error.alterUser = "";
+      const taskAction = "alter-user";
+      const eventId = this.getUuid();
+
+      // register to task error
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.alterUserAborted
+      );
+
+      // register to task completion
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.alterUserCompleted
+      );
+
+      const res = await to(
+        this.createModuleTaskForApp(this.mainProvider, {
+          action: taskAction,
+          data: {
+            user: this.user.user,
+            full_name: this.fullName,
+            groups: this.selectedGroups,
+          },
+          extra: {
+            title: this.$t("domain_users.edit_user_user", {
+              user: this.user.user,
+            }),
+            description: this.$t("common.processing"),
+            eventId,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.alterUser = this.getErrorMessage(err);
+        this.loading.alterUser = false;
         return;
       }
 
-      console.log("validation ok"); ////
+      // hide modal
+      this.$emit("hide");
+    },
+    alterUserAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.loading.alterUser = false;
+    },
+    alterUserCompleted() {
+      this.loading.alterUser = false;
 
-      // const taskAction = "..."; ////
+      // reload users
+      this.$emit("reloadUsers");
     },
     onModalHidden() {
       this.clearErrors();
@@ -354,17 +481,12 @@ export default {
     },
     getDomainUserAborted(taskResult, taskContext) {
       console.error(`${taskContext.action} aborted`, taskResult);
-      this.loading.getDomainUser = false;
       this.error.getDomainUser = this.$t("error.generic_error");
+      this.loading.getDomainUser = false;
     },
     getDomainUserCompleted(taskContext, taskResult) {
-      console.log("getDomainUserCompleted", taskResult.output); ////
-
       const groups = taskResult.output.user.groups;
-
       this.selectedGroups = groups.map((g) => g.group);
-
-      console.log("selectedGroups", this.selectedGroups); ////
       this.loading.getDomainUser = false;
     },
   },

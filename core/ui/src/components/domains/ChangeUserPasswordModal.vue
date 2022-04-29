@@ -4,10 +4,11 @@
     :visible="isShown"
     @modal-hidden="onModalHidden"
     @primary-click="changeUserPassword"
+    :primary-button-disabled="loading.alterUser"
     class="no-pad-modal"
   >
     <template v-if="user" slot="title">{{
-      $t("domain_users.change_password_for_user", { user: user.username })
+      $t("domain_users.change_password_for_user", { user: user.user })
     }}</template>
     <template slot="content">
       <cv-form @submit.prevent="changeUserPassword">
@@ -29,12 +30,11 @@
           :focus="focusPasswordField"
           :clearConfirmPasswordCommand="clearConfirmPasswordCommand"
         />
-        <div v-if="error.changeUserPassword">
-          <!-- //// todo add action name to language.json -->
+        <div v-if="error.alterUser">
           <NsInlineNotification
             kind="error"
-            :title="$t('action.////')"
-            :description="error.changeUserPassword"
+            :title="$t('action.alter-user')"
+            :description="error.alterUser"
             :showCloseButton="false"
           />
         </div>
@@ -49,13 +49,14 @@
 
 <script>
 import { UtilService, TaskService, IconService } from "@nethserver/ns8-ui-lib";
-// import to from "await-to-js"; ////
+import to from "await-to-js";
 
 export default {
   name: "ChangeUserPasswordModal",
   mixins: [UtilService, TaskService, IconService],
   props: {
     isShown: Boolean,
+    domain: { type: Object },
     user: { type: [Object, null] },
   },
   data() {
@@ -65,15 +66,19 @@ export default {
       focusPasswordField: { element: "" },
       clearConfirmPasswordCommand: 0,
       loading: {
-        changeUserPassword: false,
+        alterUser: false,
       },
       error: {
-        //// change action name
-        changeUserPassword: "",
+        alterUser: "",
         newPassword: "",
         confirmPassword: "",
       },
     };
+  },
+  computed: {
+    mainProvider() {
+      return this.domain.providers[0].id;
+    },
   },
   watch: {
     isShown: function () {
@@ -152,14 +157,94 @@ export default {
       }
       return isValidationOk;
     },
-    changeUserPassword() {
+    async changeUserPassword() {
       if (!this.validateChangeUserPassword()) {
         return;
       }
 
-      console.log("validation ok"); ////
+      this.loading.alterUser = true;
+      this.error.alterUser = "";
+      const taskAction = "alter-user";
+      const eventId = this.getUuid();
 
-      // const taskAction = "..."; ////
+      // register to task error
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.alterUserAborted
+      );
+
+      // register to task validation
+      this.$root.$once(
+        `${taskAction}-validation-ok-${eventId}`,
+        this.alterUserValidationOk
+      );
+      this.$root.$once(
+        `${taskAction}-validation-failed-${eventId}`,
+        this.alterUserValidationFailed
+      );
+
+      // register to task completion
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.alterUserCompleted
+      );
+
+      const res = await to(
+        this.createModuleTaskForApp(this.mainProvider, {
+          action: taskAction,
+          data: {
+            user: this.user.user,
+            password: this.newPassword,
+          },
+          extra: {
+            title: this.$t("domain_users.change_password_for_user", {
+              user: this.user.user,
+            }),
+            description: this.$t("common.processing"),
+            eventId,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.alterUser = this.getErrorMessage(err);
+        this.loading.alterUser = false;
+        return;
+      }
+    },
+    alterUserAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.loading.alterUser = false;
+
+      // hide modal so that user can see error notification
+      this.$emit("hide");
+    },
+    alterUserValidationOk() {
+      this.loading.alterUser = false;
+
+      // hide modal after validation
+      this.$emit("hide");
+    },
+    alterUserValidationFailed(validationErrors) {
+      this.loading.alterUser = false;
+      let focusAlreadySet = false;
+
+      for (const validationError of validationErrors) {
+        const param = validationError.parameter;
+
+        // set i18n error message
+        this.error[param] = this.$t("domain_users." + validationError.error);
+
+        if (!focusAlreadySet) {
+          this.focusElement(param);
+          focusAlreadySet = true;
+        }
+      }
+    },
+    alterUserCompleted() {
+      this.loading.alterUser = false;
     },
     onModalHidden() {
       this.clearErrors();

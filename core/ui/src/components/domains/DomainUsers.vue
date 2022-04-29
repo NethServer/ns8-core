@@ -77,8 +77,21 @@
                   :key="`${rowIndex}`"
                   :value="`${rowIndex}`"
                 >
-                  <cv-data-table-cell>{{ row.user }}</cv-data-table-cell>
-                  <cv-data-table-cell>{{ row.full_name }}</cv-data-table-cell>
+                  <cv-data-table-cell>
+                    <span>{{ row.user }}</span>
+                  </cv-data-table-cell>
+                  <cv-data-table-cell>
+                    {{ row.full_name }}
+                  </cv-data-table-cell>
+                  <cv-data-table-cell>
+                    <cv-tag
+                      v-if="row.locked"
+                      kind="high-contrast"
+                      :label="$t('common.disabled')"
+                      size="sm"
+                      class="disabled-tag"
+                    ></cv-tag>
+                  </cv-data-table-cell>
                   <!-- //// user groups -->
                   <!-- <cv-data-table-cell>
                     <span v-if="row.groups.length < 3">
@@ -124,10 +137,17 @@
                           :label="$t('domain_users.change_password')"
                         />
                       </cv-overflow-menu-item>
-                      <cv-overflow-menu-item @click="disableUser(row)">
+                      <cv-overflow-menu-item
+                        :disabled="loading.alterUser"
+                        @click="enableOrDisableUser(row)"
+                      >
                         <NsMenuItem
                           :icon="Power20"
-                          :label="$t('domain_users.disable')"
+                          :label="
+                            row.locked
+                              ? $t('domain_users.enable')
+                              : $t('domain_users.disable')
+                          "
                         />
                       </cv-overflow-menu-item>
                       <NsMenuDivider />
@@ -155,21 +175,21 @@
       :domain="domain"
       :user="currentUser"
       :allGroups="groups"
-      :provider="mainProvider"
       @hide="hideCreateOrEditUserModal"
+      @reloadUsers="onReloadUsers"
     />
     <ChangeUserPasswordModal
       :isShown="isShownChangeUserPasswordModal"
+      :domain="domain"
       :user="currentUser"
       @hide="hideChangeUserPasswordModal"
     />
     <!-- delete user modal -->
-    <!-- //// check delete-user action name -->
     <NsDangerDeleteModal
       :isShown="isShownDeleteUserModal"
       :name="userToDelete ? userToDelete.user : ''"
       :title="
-        $t('domain_users.delete_user', {
+        $t('domain_users.delete_user_user', {
           user: userToDelete ? userToDelete.user : '',
         })
       "
@@ -185,7 +205,7 @@
         })
       "
       :isErrorShown="!!error.removeUser"
-      :errorTitle="$t('action.delete-user')"
+      :errorTitle="$t('action.remove-user')"
       :errorDescription="error.removeUser"
       @hide="hideDeleteUserModal"
       @confirmDelete="removeUser"
@@ -215,70 +235,19 @@ export default {
       isEditingUser: false,
       currentUser: null,
       userToDelete: null,
-      tableColumns: ["username", "full_name" /*, "groups"*/], ////
+      tableColumns: ["username", "full_name", "attributes" /*, "groups"*/], ////
       tablePage: [],
-      mainProvider: "",
       loading: {
         listDomainUsers: false,
         removeUser: false,
+        alterUser: false,
       },
       error: {
         listDomainUsers: "",
         removeUser: "",
+        alterUser: "",
       },
       users: [],
-      //// remove mock
-      // users: [
-      //   {
-      //     user: "alice",
-      //     full_name: "Alice J",
-      //     groups: ["admin", "dev"],
-      //   },
-      //   {
-      //     user: "bob",
-      //     full_name: "Bob K",
-      //     groups: ["admin", "support"],
-      //   },
-      //   {
-      //     user: "carl",
-      //     full_name: "Carl L",
-      //     groups: ["marketing"],
-      //   },
-      //   {
-      //     user: "dakota",
-      //     full_name: "Dakota M",
-      //     groups: ["dev", "support", "marketing"],
-      //   },
-      //   {
-      //     user: "alicee",
-      //     full_name: "Alice J",
-      //     groups: ["admin", "dev"],
-      //   },
-      //   {
-      //     user: "bobb",
-      //     full_name: "Bob K",
-      //     groups: ["admin", "support"],
-      //   },
-      //   {
-      //     user: "carll",
-      //     full_name: "Carl L",
-      //     groups: ["marketing"],
-      //   },
-      //   {
-      //     user: "dakotaa",
-      //     full_name: "Dakota M",
-      //     groups: ["dev", "support", "marketing"],
-      //   },
-      // ],
-      //// remove mock
-      // groupsForSelect: [
-      //   { label: "admin", value: "admin", name: "admin" },
-      //   { label: "dev", value: "dev", name: "dev" },
-      //   { label: "support", value: "support", name: "support" },
-      //   { label: "marketing", value: "marketing", name: "marketing" },
-      //   { label: "group1", value: "group1", name: "group1" },
-      //   { label: "group2", value: "group2", name: "group2" },
-      // ],
     };
   },
   computed: {
@@ -295,6 +264,9 @@ export default {
       return this.userToDelete.full_name
         ? `${this.userToDelete.user} (${this.userToDelete.full_name})`
         : this.instanceToUninstall.user;
+    },
+    mainProvider() {
+      return this.domain.providers[0].id;
     },
   },
   watch: {
@@ -337,14 +309,115 @@ export default {
     hideDeleteUserModal() {
       this.isShownDeleteUserModal = false;
     },
-    changeUserPassword(user) {
-      console.log("changeUserPassword", user); ////
+    async enableOrDisableUser(user) {
+      this.loading.alterUser = true;
+      this.error.alterUser = "";
+      const taskAction = "alter-user";
+      const eventId = this.getUuid();
+
+      // register to task error
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.alterUserAborted
+      );
+
+      // register to task completion
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.alterUserCompleted
+      );
+
+      const notificationTitle = user.locked
+        ? this.$t("domain_users.enable_user_user", { user: user.user })
+        : this.$t("domain_users.disable_user_user", { user: user.user });
+
+      const res = await to(
+        this.createModuleTaskForApp(this.mainProvider, {
+          action: taskAction,
+          data: {
+            user: user.user,
+            locked: !user.locked,
+          },
+          extra: {
+            title: notificationTitle,
+            description: this.$t("common.processing"),
+            eventId,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.alterUser = this.getErrorMessage(err);
+        this.loading.alterUser = false;
+        return;
+      }
     },
-    disableUser(user) {
-      console.log("disableUser", user); ////
+    alterUserAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.alterUser = this.$t("error.generic_error");
+      this.loading.alterUser = false;
     },
-    removeUser() {
-      console.log("removeUser", this.userToDelete); ////
+    alterUserCompleted() {
+      this.loading.alterUser = false;
+
+      // reload users
+      this.listDomainUsers();
+    },
+    async removeUser() {
+      this.loading.removeUser = true;
+      this.error.removeUser = "";
+      const taskAction = "remove-user";
+      const eventId = this.getUuid();
+
+      // register to task error
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.removeUserAborted
+      );
+
+      // register to task completion
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.removeUserCompleted
+      );
+
+      const res = await to(
+        this.createModuleTaskForApp(this.mainProvider, {
+          action: taskAction,
+          data: {
+            user: this.userToDelete.user,
+          },
+          extra: {
+            title: this.$t("domain_users.delete_user_user", {
+              user: this.userToDelete.user,
+            }),
+            description: this.$t("common.processing"),
+            eventId,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.removeUser = this.getErrorMessage(err);
+        this.loading.removeUser = false;
+        return;
+      }
+      this.hideDeleteUserModal();
+    },
+    removeUserAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.removeUser = this.$t("error.generic_error");
+      this.loading.removeUser = false;
+    },
+    removeUserCompleted() {
+      this.loading.removeUser = false;
+
+      // reload users
+      this.listDomainUsers();
     },
     async listDomainUsers() {
       this.loading.listDomainUsers = true;
@@ -394,6 +467,9 @@ export default {
       this.users = taskResult.output.users;
       this.$emit("usersLoaded", this.users);
       this.loading.listDomainUsers = false;
+    },
+    onReloadUsers() {
+      this.listDomainUsers();
     },
   },
 };

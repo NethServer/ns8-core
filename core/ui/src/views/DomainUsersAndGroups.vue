@@ -154,12 +154,6 @@ export default {
   created() {
     this.domainName = this.$route.params.domainName;
     this.listUserDomains();
-
-    //// remove mock
-    // setTimeout(() => {
-    //   this.loading.listUsers = false;
-    //   this.loading.listGroups = false;
-    // }, 1500);
   },
   methods: {
     goToDomainConfiguration() {

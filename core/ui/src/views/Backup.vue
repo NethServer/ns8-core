@@ -473,7 +473,7 @@
                       ></cv-tag>
                       <cv-tag
                         v-else
-                        kind="red"
+                        kind="high-contrast"
                         :label="$t('common.disabled')"
                         :title="$t('backup.backup_disabled')"
                       ></cv-tag>

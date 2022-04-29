@@ -79,7 +79,7 @@
                 >
                   <cv-data-table-cell>{{ row.group }}</cv-data-table-cell>
                   <cv-data-table-cell>{{ row.description }}</cv-data-table-cell>
-                  <!-- group users -->
+                  <!-- //// group users -->
                   <!-- <cv-data-table-cell>
                     <span v-if="row.users.length < 3">
                       {{ row.users.join(", ") }}
@@ -141,32 +141,31 @@
       :domain="domain"
       :group="currentGroup"
       :allUsers="users"
-      :provider="mainProvider"
       @hide="hideCreateOrEditGroupModal"
+      @reloadGroups="onReloadGroups"
     />
     <!-- delete group modal -->
-    <!-- //// check delete-group action name -->
     <NsDangerDeleteModal
       :isShown="isShownDeleteGroupModal"
-      :name="groupToDelete ? groupToDelete.name : ''"
+      :name="groupToDelete ? groupToDelete.group : ''"
       :title="
-        $t('domain_users.delete_group', {
-          group: groupToDelete ? groupToDelete.name : '',
+        $t('domain_users.delete_group_group', {
+          group: groupToDelete ? groupToDelete.group : '',
         })
       "
       :warning="$t('common.please_read_carefully')"
       :description="
         $t('domain_users.delete_group_description', {
-          name: groupToDelete ? groupToDelete.name : '',
+          name: groupToDelete ? groupToDelete.group : '',
         })
       "
       :typeToConfirm="
         $t('common.type_to_confirm', {
-          name: groupToDelete ? groupToDelete.name : '',
+          name: groupToDelete ? groupToDelete.group : '',
         })
       "
       :isErrorShown="!!error.removeGroup"
-      :errorTitle="$t('action.delete-group')"
+      :errorTitle="$t('action.remove-group')"
       :errorDescription="error.removeGroup"
       @hide="hideDeleteGroupModal"
       @confirmDelete="removeGroup"
@@ -196,7 +195,6 @@ export default {
       groupToDelete: null,
       tableColumns: ["name", "description"],
       tablePage: [],
-      mainProvider: "",
       loading: {
         listDomainGroups: false,
         removeGroup: false,
@@ -206,32 +204,6 @@ export default {
         removeGroup: "",
       },
       groups: [],
-      //// remove mock
-      // groups: [
-      //   {
-      //     name: "admin",
-      //     users: ["user1"],
-      //   },
-      //   {
-      //     name: "dev",
-      //     users: ["user2", "user3"],
-      //   },
-      //   {
-      //     name: "support",
-      //     users: ["user2", "user3", "user4"],
-      //   },
-      //   {
-      //     name: "marketing",
-      //     users: [],
-      //   },
-      // ],
-      //// remove mock
-      // usersForSelect: [
-      //   { label: "user1", value: "user1", name: "user1" },
-      //   { label: "user2", value: "user2", name: "user2" },
-      //   { label: "user3", value: "user3", name: "user3" },
-      //   { label: "user4", value: "user4", name: "user4" },
-      // ],
     };
   },
   computed: {
@@ -239,6 +211,9 @@ export default {
       return this.tableColumns.map((column) => {
         return this.$t("domain_users." + column);
       });
+    },
+    mainProvider() {
+      return this.domain.providers[0].id;
     },
   },
   watch: {
@@ -274,10 +249,60 @@ export default {
     hideDeleteGroupModal() {
       this.isShownDeleteGroupModal = false;
     },
-    removeGroup() {
-      console.log("removeGroup", this.groupToDelete); ////
-    },
+    async removeGroup() {
+      this.loading.removeGroup = true;
+      this.error.removeGroup = "";
+      const taskAction = "remove-group";
+      const eventId = this.getUuid();
 
+      // register to task error
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.removeGroupAborted
+      );
+
+      // register to task completion
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.removeGroupCompleted
+      );
+
+      const res = await to(
+        this.createModuleTaskForApp(this.mainProvider, {
+          action: taskAction,
+          data: {
+            group: this.groupToDelete.group,
+          },
+          extra: {
+            title: this.$t("domain_users.delete_group_group", {
+              group: this.groupToDelete.group,
+            }),
+            description: this.$t("common.processing"),
+            eventId,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.removeGroup = this.getErrorMessage(err);
+        this.loading.removeGroup = false;
+        return;
+      }
+      this.hideDeleteGroupModal();
+    },
+    removeGroupAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.removeGroup = this.$t("error.generic_error");
+      this.loading.removeGroup = false;
+    },
+    removeGroupCompleted() {
+      this.loading.removeGroup = false;
+
+      // reload users
+      this.listDomainGroups();
+    },
     async listDomainGroups() {
       this.loading.listDomainGroups = true;
       this.error.listDomainGroups = "";
@@ -326,6 +351,9 @@ export default {
       this.groups = taskResult.output.groups;
       this.$emit("groupsLoaded", this.groups);
       this.loading.listDomainGroups = false;
+    },
+    onReloadGroups() {
+      this.listDomainGroups();
     },
   },
 };
