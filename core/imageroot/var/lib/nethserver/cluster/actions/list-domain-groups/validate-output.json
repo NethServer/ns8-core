@@ -45,8 +45,7 @@
                 "description": {
                     "type": "string",
                     "title": "Description",
-                    "description": "A brief description of the group purpose",
-                    "minLength": 1
+                    "description": "A brief description of the group purpose"
                 },
                 "users": {
                     "title": "Group members",

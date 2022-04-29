@@ -36,7 +36,7 @@ with cluster.ldapclient.connect(**domain) as ldapconn:
 
     if domain['schema'] == 'rfc2307':
         response = ldapconn.search(domain['base_dn'], f'(&(objectClass=posixAccount)(objectClass=inetOrgPerson)(uid={user}))',
-            attributes=['cn', 'uid'],
+            attributes=['displayName', 'uid'],
         )[2]
 
         for entry in response:
@@ -44,7 +44,7 @@ with cluster.ldapclient.connect(**domain) as ldapconn:
                 continue # ignore referrals
             ouser = {
                 "user": entry['attributes']['uid'][0],
-                "full_name": entry['attributes']['cn'][0],
+                "display_name": entry['attributes'].get('displayName') or "",
                 "groups": [],
                 "locked": False, # XXX still not implemented
             }
@@ -52,22 +52,16 @@ with cluster.ldapclient.connect(**domain) as ldapconn:
 
     elif domain['schema'] == 'ad':
         response = ldapconn.search(domain['base_dn'], f'(&(objectClass=user)(sAMAccountName={user}))',
-            attributes=['cn', 'displayName', 'sAMAccountName', 'memberOf', 'userAccountControl'],
+            attributes=['displayName', 'sAMAccountName', 'memberOf', 'userAccountControl'],
         )[2]
 
-        def get_full_name(attrs):
-            try:
-                return attrs['displayName'][0]
-            except IndexError:
-                return attrs['cn']
-
         def get_group(dn):
-            group = cluster.ldapclient.get_dn_attributes(ldapconn, dn, attributes=['sAMAccountName', 'cn', 'description'])
+            group = cluster.ldapclient.get_dn_attributes(ldapconn, dn, attributes=['sAMAccountName', 'description'])
 
             try:
                 description = group['description'][0]
             except IndexError:
-                description = group['cn']
+                description = ""
 
             return {
                 "group": group['sAMAccountName'],
@@ -79,7 +73,7 @@ with cluster.ldapclient.connect(**domain) as ldapconn:
                 continue # ignore referrals
             ouser = {
                 "user": entry['attributes']['sAMAccountName'],
-                "full_name": get_full_name(entry['attributes']),
+                "display_name": entry['attributes'].get('displayName') or "",
                 "groups": [get_group(dn) for dn in entry['attributes']['memberOf']],
                 "locked": bool(entry['attributes']['userAccountControl'] & 0x2), # ACCOUNTDISABLE
             }

@@ -36,7 +36,7 @@ with cluster.ldapclient.connect(**domain) as ldapconn:
 
     if domain['schema'] == 'rfc2307':
         response = ldapconn.search(domain['base_dn'], '(&(objectClass=posixAccount)(objectClass=inetOrgPerson))',
-            attributes=['cn', 'uid'],
+            attributes=['displayName', 'uid'],
         )[2]
 
         for entry in response:
@@ -44,29 +44,21 @@ with cluster.ldapclient.connect(**domain) as ldapconn:
                 continue # ignore referrals
             users.append({
                 "user": entry['attributes']['uid'][0],
-                "full_name": entry['attributes']['cn'][0],
+                "display_name": entry['attributes'].get('displayName') or "",
                 "locked": False, # XXX still not implemented
             })
 
     elif domain['schema'] == 'ad':
         response = ldapconn.search(domain['base_dn'], '(&(objectClass=user)(objectCategory=person))',
-            attributes=['cn', 'displayName', 'sAMAccountName', 'userAccountControl'],
+            attributes=['displayName', 'sAMAccountName', 'userAccountControl'],
         )[2]
-
-        def get_full_name(entry):
-            try:
-                if entry['attributes']['displayName']:
-                    return entry['attributes']['displayName']
-            except IndexError:
-                pass
-            return entry['attributes']['cn']
 
         for entry in response:
             if entry['type'] != 'searchResEntry':
                 continue # ignore referrals
             users.append({
                 "user": entry['attributes']['sAMAccountName'],
-                "full_name": get_full_name(entry),
+                "display_name": entry['attributes'].get('displayName') or "",
                 "locked": bool(entry['attributes']['userAccountControl'] & 0x2), # ACCOUNTDISABLE
             })
 

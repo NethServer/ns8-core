@@ -38,12 +38,18 @@ with cluster.ldapclient.connect(**domain) as ldapconn:
             attributes=['cn', 'memberUid', 'description'],
         )[2]
 
+        def get_description(entry):
+            try:
+                return entry['attributes']['description'][0]
+            except IndexError:
+                return ""
+
         for entry in response:
             if entry['type'] != 'searchResEntry':
                 continue # ignore referrals
             groups.append({
                 "group": entry['attributes']['cn'][0],
-                "description":  entry['attributes']['description'][0],
+                "description": get_description(entry),
                 "users": entry['attributes']['memberUid'],
             })
 
@@ -56,14 +62,14 @@ with cluster.ldapclient.connect(**domain) as ldapconn:
             try:
                 return entry['attributes']['description'][0]
             except IndexError:
-                return entry['attributes']['cn']
+                return ""
 
         for entry in response:
             if entry['type'] != 'searchResEntry':
                 continue # ignore referrals
             groups.append({
                 "group": entry['attributes']['sAMAccountName'],
-                "description":  get_description(entry),
+                "description": get_description(entry),
                 "users": [dn.split(',', 1)[0].removeprefix('CN=') for dn in entry['attributes']['member']],
             })
 

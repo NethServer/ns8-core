@@ -7,7 +7,7 @@
         {
             "user": {
                 "user": "administrator",
-                "full_name": "Administrator",
+                "display_name": "Administrator",
                 "groups": [
                     {
                         "group": "Domain Admins",
@@ -31,7 +31,7 @@
             "type": "object",
             "required": [
                 "user",
-                "full_name",
+                "display_name",
                 "locked",
                 "groups"
             ],
@@ -40,11 +40,10 @@
                     "type": "string",
                     "minLength": 1
                 },
-                "full_name": {
+                "display_name": {
                     "type": "string",
-                    "title": "Full name",
-                    "description": "The person name",
-                    "minLength": 1
+                    "title": "Display name",
+                    "description": "Preferred name of a person to be used when displaying entries (RFC 2798/2.3)"
                 },
                 "locked": {
                     "type": "boolean",
@@ -75,8 +74,7 @@
                 "description": {
                     "type": "string",
                     "title": "Description",
-                    "description": "A brief description of the group purpose",
-                    "minLength": 1
+                    "description": "A brief description of the group purpose"
                 }
             }
         }

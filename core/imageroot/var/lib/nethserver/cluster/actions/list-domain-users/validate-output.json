@@ -8,7 +8,7 @@
             "users": [
                 {
                     "user": "Administrator",
-                    "full_name": "Administrator"
+                    "display_name": "Administrator"
                 }
             ]
         }
@@ -28,11 +28,11 @@
     "$defs": {
         "user": {
             "title": "A user descriptor",
-            "description": "Basic description of a user: name and (person) full name",
+            "description": "Basic description of a user: name and (person) display name",
             "type": "object",
             "required": [
                 "user",
-                "full_name",
+                "display_name",
                 "locked"
             ],
             "properties": {
@@ -40,11 +40,10 @@
                     "type": "string",
                     "minLength": 1
                 },
-                "full_name": {
+                "display_name": {
                     "type": "string",
-                    "title": "Full name",
-                    "description": "The person name",
-                    "minLength": 1
+                    "title": "Display name",
+                    "description": "Preferred name of a person to be used when displaying entries (RFC 2798/2.3)"
                 },
                 "locked": {
                     "type": "boolean",

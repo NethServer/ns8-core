@@ -39,46 +39,47 @@ with cluster.ldapclient.connect(**domain) as ldapconn:
 
         def get_user(uid):
             user = ldapconn.search(domain['base_dn'], f'(&(objectClass=posixAccount)(objectClass=inetOrgPerson)(uid={uid}))',
-                attributes=['cn', 'uid'],
+                attributes=['displayName', 'uid'],
             )[2][0]['attributes']
 
             return {
                 'user': user['uid'][0],
-                'full_name': user['cn'][0],
+                'display_name': user.get('displayName') or "",
             }
+
+        def get_description(entry):
+            try:
+                return entry['attributes']['description'][0]
+            except IndexError:
+                return ""
 
         for entry in response:
             if entry['type'] != 'searchResEntry':
                 continue # ignore referrals
             ogroup = {
                 "group": entry['attributes']['cn'][0],
-                "description":  entry['attributes']['description'][0],
+                "description": get_description(entry),
                 "users": [get_user(uid) for uid in  entry['attributes']['memberUid']],
             }
             break
 
     elif domain['schema'] == 'ad':
         response = ldapconn.search(domain['base_dn'], f'(&(objectClass=group)(sAMAccountName={group}))',
-            attributes=['cn', 'member', 'description', 'sAMAccountName'],
+            attributes=['member', 'description', 'sAMAccountName'],
         )[2]
 
         def get_description(entry):
             try:
                 return entry['attributes']['description'][0]
             except IndexError:
-                return entry['attributes']['cn']
+                return ""
 
         def get_user(dn):
-            user = cluster.ldapclient.get_dn_attributes(ldapconn, dn, attributes=['sAMAccountName', 'cn', 'displayName'])
-
-            try:
-                full_name = user['displayName'][0]
-            except IndexError:
-                full_name = user['cn']
+            user = cluster.ldapclient.get_dn_attributes(ldapconn, dn, attributes=['sAMAccountName', 'displayName'])
 
             return {
                 'user': user['sAMAccountName'],
-                'full_name': user['cn'],
+                'display_name': user.get('displayName') or "",
             }
 
         for entry in response:
