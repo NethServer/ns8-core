@@ -28,11 +28,11 @@
           ref="user"
         />
         <NsTextInput
-          v-model.trim="fullName"
-          :label="$t('domain_users.full_name')"
-          :invalid-message="error.fullName"
+          v-model.trim="displayName"
+          :label="$t('domain_users.display_name')"
+          :invalid-message="error.displayName"
           :disabled="loading.addUser || loading.alterUser"
-          ref="fullName"
+          ref="displayName"
         />
         <cv-multi-select
           v-model="selectedGroups"
@@ -118,7 +118,7 @@ export default {
   data() {
     return {
       username: "",
-      fullName: "",
+      displayName: "",
       selectedGroups: [],
       newPassword: "",
       passwordValidation: null,
@@ -134,7 +134,7 @@ export default {
         alterUser: "",
         getDomainUser: "",
         user: "",
-        fullName: "",
+        displayName: "",
         newPassword: "",
         confirmPassword: "",
         groups: "",
@@ -189,7 +189,7 @@ export default {
         if (!this.isEditing) {
           // create user
           this.username = "";
-          this.fullName = "";
+          this.displayName = "";
 
           // clear password fields
           this.newPassword = "";
@@ -197,7 +197,7 @@ export default {
         } else {
           // edit user
           this.username = this.user.user;
-          this.fullName = this.user.full_name;
+          this.displayName = this.user.display_name;
           this.getDomainUser();
         }
         this.selectedGroups = [];
@@ -317,7 +317,7 @@ export default {
           action: taskAction,
           data: {
             user: this.username,
-            full_name: this.fullName,
+            display_name: this.displayName,
             password: this.newPassword,
             locked: false,
             groups: this.selectedGroups,
@@ -398,7 +398,7 @@ export default {
           action: taskAction,
           data: {
             user: this.user.user,
-            full_name: this.fullName,
+            display_name: this.displayName,
             groups: this.selectedGroups,
           },
           extra: {

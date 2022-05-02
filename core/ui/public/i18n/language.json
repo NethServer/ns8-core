@@ -758,7 +758,7 @@
     "create_group": "Create group",
     "edit_user": "Edit user",
     "username": "Username",
-    "full_name": "Full name",
+    "display_name": "Display name",
     "search_user": "Search user",
     "no_user": "No user",
     "no_user_description": "There is no user in this domain",

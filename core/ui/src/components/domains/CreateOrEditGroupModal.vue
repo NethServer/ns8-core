@@ -121,9 +121,13 @@ export default {
   computed: {
     allUsersForSelect() {
       return this.allUsers.map((user) => {
+        const userLabel = user.display_name
+          ? `${user.user} (${user.display_name})`
+          : user.user;
+
         return {
           value: user.user,
-          label: `${user.user} (${user.full_name})`,
+          label: userLabel,
           name: user.user,
         };
       });

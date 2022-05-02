@@ -81,7 +81,7 @@
                     <span>{{ row.user }}</span>
                   </cv-data-table-cell>
                   <cv-data-table-cell>
-                    {{ row.full_name }}
+                    {{ row.display_name }}
                   </cv-data-table-cell>
                   <cv-data-table-cell>
                     <cv-tag
@@ -235,7 +235,7 @@ export default {
       isEditingUser: false,
       currentUser: null,
       userToDelete: null,
-      tableColumns: ["username", "full_name", "attributes" /*, "groups"*/], ////
+      tableColumns: ["username", "display_name", "attributes" /*, "groups"*/], ////
       tablePage: [],
       loading: {
         listDomainUsers: false,
@@ -261,8 +261,8 @@ export default {
         return "";
       }
 
-      return this.userToDelete.full_name
-        ? `${this.userToDelete.user} (${this.userToDelete.full_name})`
+      return this.userToDelete.display_name
+        ? `${this.userToDelete.user} (${this.userToDelete.display_name})`
         : this.instanceToUninstall.user;
     },
     mainProvider() {
