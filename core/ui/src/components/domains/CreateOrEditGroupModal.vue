@@ -3,6 +3,7 @@
     size="default"
     :visible="isShown"
     :primary-button-disabled="isPrimaryButtonDisabled"
+    :isLoading="loading.addGroup || loading.alterGroup"
     @modal-hidden="onModalHidden"
     @primary-click="createOrEditGroup"
     class="no-pad-modal"

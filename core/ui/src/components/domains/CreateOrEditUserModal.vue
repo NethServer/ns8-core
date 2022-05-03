@@ -3,6 +3,7 @@
     size="default"
     :visible="isShown"
     :primary-button-disabled="isPrimaryButtonDisabled"
+    :isLoading="loading.addUser || loading.alterUser"
     @modal-hidden="onModalHidden"
     @primary-click="createOrEditUser"
     class="no-pad-modal"

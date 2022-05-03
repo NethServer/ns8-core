@@ -263,7 +263,7 @@ export default {
 
       return this.userToDelete.display_name
         ? `${this.userToDelete.user} (${this.userToDelete.display_name})`
-        : this.instanceToUninstall.user;
+        : this.userToDelete.user;
     },
     mainProvider() {
       return this.domain.providers[0].id;
@@ -302,6 +302,8 @@ export default {
       this.isShownChangeUserPasswordModal = false;
     },
     showDeleteUserModal(user) {
+      console.log("showDeleteUserModal", user); ////
+
       this.userToDelete = user;
       this.error.removeUser = "";
       this.isShownDeleteUserModal = true;
