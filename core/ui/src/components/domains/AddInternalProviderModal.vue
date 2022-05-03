@@ -7,6 +7,7 @@
     :nextLabel="nextButtonLabel"
     :isPreviousDisabled="true"
     :isNextDisabled="isNextButtonDisabled"
+    :isCancelDisabled="isCancelButtonDisabled"
     :isNextLoading="false"
     @modal-hidden="$emit('hide')"
     @cancel="$emit('hide')"
@@ -286,6 +287,11 @@ export default {
         this.loading.openldap.configureModule
       );
     },
+    isCancelButtonDisabled() {
+      return (
+        this.step == "installingProvider" || this.step == "configuringProvider"
+      );
+    },
   },
   watch: {
     isShown: function () {
@@ -322,8 +328,6 @@ export default {
           this.installProvider();
           break;
         case "internalConfig":
-          this.step = "configuringProvider";
-
           if (this.isSamba) {
             this.configureSambaModule();
           } else if (this.isOpenLdap) {
@@ -653,6 +657,10 @@ export default {
         `${taskAction}-validation-failed-${eventId}`,
         this.configureSambaModuleValidationFailed
       );
+      this.$root.$once(
+        `${taskAction}-validation-ok-${eventId}`,
+        this.configureSambaModuleValidationOk
+      );
 
       // register to task progress to update progress bar
       this.$root.$on(
@@ -699,6 +707,9 @@ export default {
         this.loading.samba.configureModule = false;
         return;
       }
+    },
+    configureSambaModuleValidationOk() {
+      this.step = "configuringProvider";
     },
     configureSambaModuleValidationFailed(validationErrors, taskContext) {
       this.loading.samba.configureModule = false;
@@ -781,6 +792,10 @@ export default {
         `${taskAction}-validation-failed-${eventId}`,
         this.configureOpenLdapModuleValidationFailed
       );
+      this.$root.$once(
+        `${taskAction}-validation-ok-${eventId}`,
+        this.configureOpenLdapModuleValidationOk
+      );
 
       // register to task progress to update progress bar
       this.$root.$on(
@@ -831,6 +846,9 @@ export default {
 
       // hide modal so that user can see error notification
       this.$emit("hide");
+    },
+    configureOpenLdapModuleValidationOk() {
+      this.step = "configuringProvider";
     },
     configureOpenLdapModuleValidationFailed(validationErrors, taskContext) {
       this.loading.openldap.configureModule = false;
