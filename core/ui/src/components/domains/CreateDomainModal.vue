@@ -7,11 +7,7 @@
     :nextLabel="nextButtonLabel"
     :isPreviousDisabled="isPreviousButtonDisabled"
     :isNextDisabled="isNextButtonDisabled"
-    :isNextLoading="
-      loading.openldap.configureModule ||
-      loading.samba.configureModule ||
-      loading.external.addExternalDomain
-    "
+    :isNextLoading="loading.external.addExternalDomain"
     @modal-hidden="$emit('hide')"
     @cancel="$emit('hide')"
     @previousStep="previousStep"
@@ -386,6 +382,19 @@
           />
         </template>
       </template>
+      <template v-if="step == 'configuringProvider'">
+        <NsEmptyState
+          :title="$t('domains.configuring_account_provider')"
+          :animationData="GearsLottie"
+          animationTitle="gears"
+          :loop="true"
+        />
+        <NsProgressBar
+          :value="configureProviderProgress"
+          :indeterminate="!configureProviderProgress"
+          class="mg-bottom-md"
+        />
+      </template>
     </template>
   </NsWizard>
 </template>
@@ -436,6 +445,7 @@ export default {
       isOpenLdapSelected: false,
       isSambaSelected: false,
       installProviderProgress: 0,
+      configureProviderProgress: 0,
       selectedNode: null,
       samba: {
         adminuser: "",
@@ -536,6 +546,7 @@ export default {
         this.loading.samba.configureModule ||
         this.loading.external.addExternalDomain ||
         this.step == "installingProvider" ||
+        this.step == "configuringProvider" ||
         (this.step == "location" &&
           !this.isInternalSelected &&
           !this.isExternalSelected) ||
@@ -549,16 +560,21 @@ export default {
       return (
         this.isResumeConfiguration ||
         this.loading.samba.configureModule ||
+        this.loading.openldap.configureModule ||
         this.loading.external.addExternalDomain ||
-        ["location", "installingProvider", "internalConfig"].includes(this.step)
+        [
+          "location",
+          "installingProvider",
+          "internalConfig",
+          "configureProviderProgress",
+        ].includes(this.step)
       );
     },
   },
   watch: {
     isShown: function () {
       if (this.isShown) {
-        this.clearOpenLdapErrors();
-        this.clearSambaErrors();
+        this.clearErrors();
 
         if (!this.isResumeConfiguration) {
           // start wizard from first step
@@ -618,6 +634,8 @@ export default {
           this.installProvider();
           break;
         case "internalConfig":
+          this.step = "configuringProvider";
+
           if (this.isSambaSelected) {
             this.configureSambaModule();
           } else if (this.isOpenLdapSelected) {
@@ -639,26 +657,26 @@ export default {
     },
     async installProvider() {
       this.error.addInternalProvider = "";
-
       const taskAction = "add-internal-provider";
+      const eventId = this.getUuid();
+      this.installProviderProgress = 0;
+
+      // register to task error
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.addInternalProviderAborted
+      );
 
       // register to task completion
       this.$root.$once(
-        taskAction + "-completed",
+        `${taskAction}-completed-${eventId}`,
         this.addInternalProviderCompleted
       );
 
       // register to task progress to update progress bar
       this.$root.$on(
-        taskAction + "-progress",
+        `${taskAction}-progress-${eventId}`,
         this.addInternalProviderProgress
-      );
-
-      // register to task error
-      this.$root.$off(taskAction + "-aborted");
-      this.$root.$once(
-        taskAction + "-aborted",
-        this.addInternalProviderAborted
       );
 
       const selectedNodeId = this.selectedNode
@@ -679,6 +697,7 @@ export default {
             node: selectedNodeId,
             isNotificationHidden: true,
             isProgressNotified: true,
+            eventId,
           },
         })
       );
@@ -693,12 +712,19 @@ export default {
     addInternalProviderAborted(taskResult, taskContext) {
       console.error(`${taskContext.action} aborted`, taskResult);
 
+      // unregister to task progress
+      this.$root.$off(
+        `${taskContext.action}-progress-${taskContext.extra.eventId}`
+      );
+
       // hide modal so that user can see error notification
       this.$emit("hide");
     },
     addInternalProviderCompleted(taskContext, taskResult) {
       // unregister to task progress
-      this.$root.$off("add-internal-provider-progress");
+      this.$root.$off(
+        `${taskContext.action}-progress-${taskContext.extra.eventId}`
+      );
 
       this.step = "internalConfig";
       this.newProviderId = taskResult.output.module_id;
@@ -760,7 +786,9 @@ export default {
     getOpenLdapDefaultsAborted(taskResult, taskContext) {
       console.error(`${taskContext.action} aborted`, taskResult);
       this.loading.openldap.getDefaults = false;
-      this.error.openldap.getDefaults = this.$t("error.generic_error");
+
+      // hide modal so that user can see error notification
+      this.$emit("hide");
     },
     getOpenLdapDefaultsCompleted(taskContext, taskResult) {
       this.loading.openldap.getDefaults = false;
@@ -780,10 +808,17 @@ export default {
       this.loading.samba.getDefaults = true;
       this.error.samba.getDefaults = "";
       const taskAction = "get-defaults";
+      const eventId = this.getUuid();
+
+      // register to task error
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.getSambaDefaultsAborted
+      );
 
       // register to task completion
       this.$root.$once(
-        taskAction + "-completed",
+        `${taskAction}-completed-${eventId}`,
         this.getSambaDefaultsCompleted
       );
 
@@ -796,6 +831,7 @@ export default {
           extra: {
             title: this.$t("action." + taskAction),
             isNotificationHidden: true,
+            eventId,
           },
         })
       );
@@ -806,6 +842,13 @@ export default {
         this.error.samba.getDefaults = this.getErrorMessage(err);
         return;
       }
+    },
+    getSambaDefaultsAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.loading.samba.getDefaults = false;
+
+      // hide modal so that user can see error notification
+      this.$emit("hide");
     },
     getSambaDefaultsCompleted(taskContext, taskResult) {
       this.loading.samba.getDefaults = false;
@@ -928,7 +971,6 @@ export default {
         this.error.samba.ipaddress = "common.required";
 
         if (isValidationOk) {
-          this.focusElement("ipaddress");
           isValidationOk = false;
         }
       }
@@ -953,26 +995,31 @@ export default {
 
       this.loading.samba.configureModule = true;
       const taskAction = "configure-module";
+      const eventId = this.getUuid();
+      this.configureProviderProgress = 0;
+
+      // register to task error
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.configureSambaModuleAborted
+      );
 
       // register to task validation
-      this.$root.$off(taskAction + "-validation-failed");
       this.$root.$once(
-        taskAction + "-validation-failed",
+        `${taskAction}-validation-failed-${eventId}`,
         this.configureSambaModuleValidationFailed
       );
 
-      // register to task completion
-      this.$root.$off(taskAction + "-completed");
-      this.$root.$once(
-        taskAction + "-completed",
-        this.configureSambaModuleCompleted
+      // register to task progress to update progress bar
+      this.$root.$on(
+        `${taskAction}-progress-${eventId}`,
+        this.configureSambaModuleProgress
       );
 
-      // register to task error
-      this.$root.$off(taskAction + "-aborted");
+      // register to task completion
       this.$root.$once(
-        taskAction + "-aborted",
-        this.configureSambaModuleAborted
+        `${taskAction}-completed-${eventId}`,
+        this.configureSambaModuleCompleted
       );
 
       const res = await to(
@@ -990,6 +1037,8 @@ export default {
           extra: {
             title: this.$t("samba.samba_configuration"),
             isNotificationHidden: true,
+            isProgressNotified: true,
+            eventId,
           },
         })
       );
@@ -1002,8 +1051,14 @@ export default {
         return;
       }
     },
-    configureSambaModuleValidationFailed(validationErrors) {
+    configureSambaModuleValidationFailed(validationErrors, taskContext) {
       this.loading.samba.configureModule = false;
+
+      // unregister to task progress
+      this.$root.$off(
+        `${taskContext.action}-progress-${taskContext.extra.eventId}`
+      );
+
       let focusAlreadySet = false;
 
       for (const validationError of validationErrors) {
@@ -1026,8 +1081,16 @@ export default {
         }
       }
     },
-    configureSambaModuleCompleted() {
+    configureSambaModuleProgress(progress) {
+      this.configureProviderProgress = progress;
+    },
+    configureSambaModuleCompleted(taskContext) {
       this.loading.samba.configureModule = false;
+
+      // unregister to task progress
+      this.$root.$off(
+        `${taskContext.action}-progress-${taskContext.extra.eventId}`
+      );
 
       // hide modal
       this.$emit("hide");
@@ -1038,6 +1101,11 @@ export default {
     configureSambaModuleAborted(taskResult, taskContext) {
       console.error(`${taskContext.action} aborted`, taskResult);
       this.loading.samba.configureModule = false;
+
+      // unregister to task progress
+      this.$root.$off(
+        `${taskContext.action}-progress-${taskContext.extra.eventId}`
+      );
 
       // hide modal so that user can see error notification
       this.$emit("hide");
@@ -1127,6 +1195,7 @@ export default {
       this.loading.openldap.configureModule = true;
       const taskAction = "configure-module";
       const eventId = this.getUuid();
+      this.configureProviderProgress = 0;
 
       // register to task error
       this.$root.$once(
@@ -1138,6 +1207,12 @@ export default {
       this.$root.$once(
         `${taskAction}-validation-failed-${eventId}`,
         this.configureOpenLdapModuleValidationFailed
+      );
+
+      // register to task progress to update progress bar
+      this.$root.$on(
+        `${taskAction}-progress-${eventId}`,
+        this.configureOpenLdapModuleProgress
       );
 
       // register to task completion
@@ -1158,6 +1233,7 @@ export default {
           extra: {
             title: this.$t("openldap.openldap_configuration"),
             isNotificationHidden: true,
+            isProgressNotified: true,
             eventId,
           },
         })
@@ -1171,8 +1247,14 @@ export default {
         return;
       }
     },
-    configureOpenLdapModuleValidationFailed(validationErrors) {
+    configureOpenLdapModuleValidationFailed(validationErrors, taskContext) {
       this.loading.openldap.configureModule = false;
+
+      // unregister to task progress
+      this.$root.$off(
+        `${taskContext.action}-progress-${taskContext.extra.eventId}`
+      );
+
       let focusAlreadySet = false;
 
       for (const validationError of validationErrors) {
@@ -1186,8 +1268,16 @@ export default {
         }
       }
     },
-    configureOpenLdapModuleCompleted() {
+    configureOpenLdapModuleProgress(progress) {
+      this.configureProviderProgress = progress;
+    },
+    configureOpenLdapModuleCompleted(taskContext) {
       this.loading.openldap.configureModule = false;
+
+      // unregister to task progress
+      this.$root.$off(
+        `${taskContext.action}-progress-${taskContext.extra.eventId}`
+      );
 
       // hide modal
       this.$emit("hide");
@@ -1198,6 +1288,11 @@ export default {
     configureOpenLdapModuleAborted(taskResult, taskContext) {
       console.error(`${taskContext.action} aborted`, taskResult);
       this.loading.openldap.configureModule = false;
+
+      // unregister to task progress
+      this.$root.$off(
+        `${taskContext.action}-progress-${taskContext.extra.eventId}`
+      );
 
       // hide modal so that user can see error notification
       this.$emit("hide");
@@ -1272,22 +1367,23 @@ export default {
 
       this.loading.external.addExternalDomain = true;
       const taskAction = "add-external-domain";
+      const eventId = this.getUuid();
+
+      // register to task error
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.addExternalDomainAborted
+      );
 
       // register to task validation
-      this.$root.$off(taskAction + "-validation-failed");
       this.$root.$once(
-        taskAction + "-validation-failed",
+        `${taskAction}-validation-failed-${eventId}`,
         this.addExternalDomainValidationFailed
       );
 
-      // register to task error
-      this.$root.$off(taskAction + "-aborted");
-      this.$root.$once(taskAction + "-aborted", this.addExternalDomainAborted);
-
       // register to task completion
-      this.$root.$off(taskAction + "-completed");
       this.$root.$once(
-        taskAction + "-completed",
+        `${taskAction}-completed-${eventId}`,
         this.addExternalDomainCompleted
       );
 
@@ -1308,6 +1404,7 @@ export default {
           extra: {
             title: this.$t("action." + taskAction),
             isNotificationHidden: true,
+            eventId,
           },
         })
       );

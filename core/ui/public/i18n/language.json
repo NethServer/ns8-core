@@ -685,6 +685,7 @@
     "unconfigured_domains_or_providers_description": "You can resume their configuration or delete them",
     "resume_configuration": "Resume configuration",
     "installing_account_provider": "Installing account provider, please wait...",
+    "configuring_account_provider": "Configuring account provider, please wait...",
     "ipaddress_avail_check_failed": "IP address not available",
     "ipaddress_private_check_failed": "Invalid IP address",
     "ipaddress_bind_check_failed": "Cannot bind to one or more TCP ports",
