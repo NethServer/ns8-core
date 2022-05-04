@@ -584,7 +584,8 @@
       "office": "Office",
       "documentation": "Documentation",
       "database": "Database",
-      "storage": "Storage"
+      "storage": "Storage",
+      "monitoring": "Monitoring"
     }
   },
   "system_logs": {
