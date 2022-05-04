@@ -4,20 +4,13 @@ import ClusterStatus from "../views/ClusterStatus";
 import Login from "../views/Login";
 import Settings from "../views/Settings";
 import Applications from "../views/Applications";
-import SoftwareCenter from "../views/SoftwareCenter";
 import SystemLogs from "../views/SystemLogs";
-import AuditTrail from "../views/AuditTrail";
-import SettingsSoftwareRepositories from "../views/SettingsSoftwareRepositories";
 import SettingsCluster from "../views/SettingsCluster";
 import SoftwareCenterAppInstances from "../views/SoftwareCenterAppInstances";
-import InitializeCluster from "../views/InitializeCluster";
 import Domains from "../views/Domains";
 import Nodes from "../views/Nodes";
 import NodeDetail from "../views/NodeDetail";
 import DomainUsersAndGroups from "../views/DomainUsersAndGroups";
-import DomainConfiguration from "../views/DomainConfiguration";
-import Backup from "../views/Backup";
-import About from "../views/About";
 
 Vue.use(VueRouter);
 
@@ -36,7 +29,10 @@ const routes = [
   {
     path: "/init",
     name: "InitializeCluster",
-    component: InitializeCluster,
+    component: () =>
+      import(
+        /* webpackChunkName: "initialize-cluster" */ "../views/InitializeCluster.vue"
+      ),
   },
   {
     path: "/settings",
@@ -51,7 +47,10 @@ const routes = [
   {
     path: "/settings/software-repository",
     name: "SettingsSoftwareRepositories",
-    component: SettingsSoftwareRepositories,
+    component: () =>
+      import(
+        /* webpackChunkName: "settings-software-repositories" */ "../views/SettingsSoftwareRepositories.vue"
+      ),
   },
   {
     path: "/apps/:appId",
@@ -61,7 +60,10 @@ const routes = [
   {
     path: "/software-center",
     name: "SoftwareCenter",
-    component: SoftwareCenter,
+    component: () =>
+      import(
+        /* webpackChunkName: "software-center" */ "../views/SoftwareCenter.vue"
+      ),
   },
   {
     path: "/software-center/app-instances/:appName",
@@ -76,7 +78,8 @@ const routes = [
   {
     path: "/audit-trail",
     name: "AuditTrail",
-    component: AuditTrail,
+    component: () =>
+      import(/* webpackChunkName: "audit-trail" */ "../views/AuditTrail.vue"),
   },
   {
     path: "/domains",
@@ -101,17 +104,22 @@ const routes = [
   {
     path: "/domains/:domainName/configuration",
     name: "DomainConfiguration",
-    component: DomainConfiguration,
+    component: () =>
+      import(
+        /* webpackChunkName: "domain-configuration" */ "../views/DomainConfiguration.vue"
+      ),
   },
   {
     path: "/backup",
     name: "Backup",
-    component: Backup,
+    component: () =>
+      import(/* webpackChunkName: "backup" */ "../views/Backup.vue"),
   },
   {
     path: "/about",
     name: "About",
-    component: About,
+    component: () =>
+      import(/* webpackChunkName: "about" */ "../views/About.vue"),
   },
 ];
 
@@ -131,7 +139,7 @@ router.beforeEach((to, from, next) => {
   }
 
   if (to.name !== "Login" && !isAuthenticated) {
-    console.log("no token in localstorage"); ////
+    console.log("No token in localstorage");
 
     next({ name: "Login", query: { redirect: to.fullPath } });
   } else {
