@@ -40,7 +40,6 @@ List users
     Should Match Regexp    ${response}    "locked": *false
     Should Contain    ${response}    "u2"
     Should Contain    ${response}    "Second User"
-    Should Match Regexp    ${response}    "locked": *true
     Should Contain    ${response}    "u3"
     Should Contain    ${response}    "Third User"
     Should Contain    ${response}    "Administrator"
@@ -50,6 +49,25 @@ List groups
     Should Contain    ${response}    "g1"
     Should Contain    ${response}    "Group One"
     Should Match Regexp    ${response}    "users": *\\["u1"\\]
+
+Check Second User is locked
+    ${response} =     Run task    cluster/get-domain-user    {"domain":"${domain}","user":"u2"}
+    Should Be Equal    ${response['user']['user']}    u2
+    Should Be Equal    ${response['user']['display_name']}    Second User
+    Should Be Equal    ${response['user']['locked']}    ${TRUE}
+
+Check Group One members
+    ${response} =     Run task    cluster/get-domain-group    {"domain":"${domain}","group":"g1"}
+    Should Be Equal    ${response['group']['group']}    g1
+    Should Be Equal    ${response['group']['description']}    Group One
+    Should Be Equal    ${response['group']['users'][0]['user']}    u1
+    Should Be Equal    ${response['group']['users'][0]['display_name']}    First User
+
+Get a non-existing user
+    ${response} =    Run task    cluster/get-domain-user    {"domain":"${domain}","user":"UUU"}    rc_expected=2
+
+Get a non-existing group
+    ${response} =    Run task    cluster/get-domain-group    {"domain":"${domain}","group":"GGG"}    rc_expected=2
 
 Remove domain
     Run task    cluster/remove-internal-domain    {"domain":"${domain}"}

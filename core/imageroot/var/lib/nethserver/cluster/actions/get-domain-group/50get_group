@@ -22,6 +22,7 @@
 
 import sys
 import json
+import agent
 from agent.ldapproxy import Ldapproxy
 import cluster.ldapclient
 import ldap3
@@ -30,6 +31,7 @@ request = json.load(sys.stdin)
 
 domain = Ldapproxy().get_domain(request['domain'])
 group = request['group']
+ogroup = None
 
 with cluster.ldapclient.connect(**domain) as ldapconn:
     if domain['schema'] == 'rfc2307':
@@ -95,4 +97,9 @@ with cluster.ldapclient.connect(**domain) as ldapconn:
     else:
         raise Exception('Unknown LDAP schema ' + domain['schema'])
 
-json.dump({"group":ogroup}, fp=sys.stdout)
+if ogroup is not None:
+    json.dump({"group":ogroup}, fp=sys.stdout)
+else:
+    agent.set_status('validation-failed')
+    json.dump([{'field':'group', 'parameter':'group','value': group, 'error':'group_not_found'}], fp=sys.stdout)
+    sys.exit(2)
