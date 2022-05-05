@@ -1,6 +1,7 @@
 *** Settings ***
 Library            SSHLibrary
 Resource           api.resource
+Resource           userdomain.resource
 Suite Setup        Start the client tool container
 Suite Teardown     Stop the client tool container
 
@@ -14,7 +15,6 @@ Add domain
     Add the first samba module instance
     Prepare the suite configuration for the first samba module instance
     Run task    module/${mid1}/configure-module    {"hostname":"${hostname}","nbdomain":"${nbdomain}","ipaddress":"${ipaddress}","realm":"${domain}","adminuser":"administrator","adminpass":"Nethesis,1234","provision":"new-domain"}
-    Create users and groups
 
 Reach directory directly
     ${val} =    Get server url    ${mid1}
@@ -33,41 +33,16 @@ Bind through proxy
     Should Be Equal As Integers    ${rc}    0
     Should Contain    ${out}    ${srv.base_dn}
 
-List users
-    ${response} =     Run task    cluster/list-domain-users    {"domain":"${domain}"}    decode_json=${FALSE}
-    Should Contain    ${response}    "u1"
-    Should Contain    ${response}    "First User"
-    Should Match Regexp    ${response}    "locked": *false
-    Should Contain    ${response}    "u2"
-    Should Contain    ${response}    "Second User"
-    Should Contain    ${response}    "u3"
-    Should Contain    ${response}    "Third User"
-    Should Contain    ${response}    "Administrator"
-
-List groups
-    ${response} =     Run task    cluster/list-domain-groups    {"domain":"${domain}"}    decode_json=${FALSE}
-    Should Contain    ${response}    "g1"
-    Should Contain    ${response}    "Group One"
-    Should Match Regexp    ${response}    "users": *\\["u1"\\]
-
-Check Second User is locked
-    ${response} =     Run task    cluster/get-domain-user    {"domain":"${domain}","user":"u2"}
-    Should Be Equal    ${response['user']['user']}    u2
-    Should Be Equal    ${response['user']['display_name']}    Second User
-    Should Be Equal    ${response['user']['locked']}    ${TRUE}
-
-Check Group One members
-    ${response} =     Run task    cluster/get-domain-group    {"domain":"${domain}","group":"g1"}
-    Should Be Equal    ${response['group']['group']}    g1
-    Should Be Equal    ${response['group']['description']}    Group One
-    Should Be Equal    ${response['group']['users'][0]['user']}    u1
-    Should Be Equal    ${response['group']['users'][0]['display_name']}    First User
-
-Get a non-existing user
-    ${response} =    Run task    cluster/get-domain-user    {"domain":"${domain}","user":"UUU"}    rc_expected=2
-
-Get a non-existing group
-    ${response} =    Run task    cluster/get-domain-group    {"domain":"${domain}","group":"GGG"}    rc_expected=2
+Run user and group listing tests
+    Run Keywords
+    ...    Create users and groups
+    ...    List users
+    ...    List groups
+    ...    Check First User is unlocked
+    ...    Check Second User is locked
+    ...    Check Group One members
+    ...    Get a non-existing user
+    ...    Get a non-existing group
 
 Remove domain
     Run task    cluster/remove-internal-domain    {"domain":"${domain}"}
@@ -79,11 +54,6 @@ Directory is unreachable
 
 
 *** Keywords ***
-Create users and groups
-    Run task    module/${mid1}/add-user    {"user":"u1","display_name":"First User","password":"Nethesis,1234"}
-    Run task    module/${mid1}/add-user    {"user":"u2","display_name":"Second User","locked":true}
-    Run task    module/${mid1}/add-user    {"user":"u3","display_name":"Third User","groups":["domain admins"],"password":"Nethesis,1234"}
-    Run task    module/${mid1}/add-group   {"group":"g1","description":"Group One","users":["u1"]}
 Add the first samba module instance
     ${response} =     Run task    cluster/add-internal-provider    {"image":"samba","node":1}
     Set Suite Variable    ${mid1}    ${response['module_id']}
