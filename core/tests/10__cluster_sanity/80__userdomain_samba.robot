@@ -39,6 +39,7 @@ Run user and group listing tests
     ...    List users
     ...    List groups
     ...    Check First User is unlocked
+    ...    Check First User is member of g1
     ...    Check Second User is locked
     ...    Check Group One members
     ...    Get a non-existing user

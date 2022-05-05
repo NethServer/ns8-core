@@ -35,6 +35,11 @@ Check First User is unlocked
     Should Be Equal    ${response['user']['display_name']}    First User
     Should Be Equal    ${response['user']['locked']}    ${FALSE}
 
+Check First User is member of g1
+    ${response} =     Run task    cluster/get-domain-user    {"domain":"${domain}","user":"u1"}
+    Should Be Equal    ${response['user']['groups'][0]['group']}    g1
+    Should Be Equal    ${response['user']['groups'][0]['description']}    Group One
+
 Check Second User is locked
     ${response} =     Run task    cluster/get-domain-user    {"domain":"${domain}","user":"u2"}
     Should Be Equal    ${response['user']['user']}    u2

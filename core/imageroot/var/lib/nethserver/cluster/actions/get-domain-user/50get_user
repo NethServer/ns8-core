@@ -41,13 +41,33 @@ with cluster.ldapclient.connect(**domain) as ldapconn:
             attributes=['displayName', 'uid'],
         )[2]
 
+        def get_description(entry):
+            try:
+                return entry['attributes']['description'][0]
+            except IndexError:
+                return ""
+
+        def get_memberof(user):
+            groups = []
+            gresponse = ldapconn.search(domain['base_dn'], f'(&(objectClass=posixGroup)(memberUid={user}))',
+                attributes=['cn', 'memberUid', 'description'],
+            )[2]
+            for gentry in gresponse:
+                if gentry['type'] != 'searchResEntry':
+                    continue # ignore referrals
+                groups.append({
+                    "group": gentry['attributes']['cn'][0],
+                    "description": get_description(gentry),
+                })
+            return groups
+
         for entry in response:
             if entry['type'] != 'searchResEntry':
                 continue # ignore referrals
             ouser = {
                 "user": entry['attributes']['uid'][0],
                 "display_name": entry['attributes'].get('displayName') or "",
-                "groups": [],
+                "groups": get_memberof(user),
                 "locked": False, # XXX still not implemented
             }
             break
