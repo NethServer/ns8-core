@@ -24,89 +24,18 @@ import sys
 import json
 import agent
 from agent.ldapproxy import Ldapproxy
-import cluster.ldapclient
-import ldap3
+from cluster.ldapclient import Ldapclient, LdapclientEntryNotFound
 
 request = json.load(sys.stdin)
 
 domain = Ldapproxy().get_domain(request['domain'])
-
 user = request['user']
-ouser = None
 
-with cluster.ldapclient.connect(**domain) as ldapconn:
-
-    if domain['schema'] == 'rfc2307':
-        response = ldapconn.search(domain['base_dn'], f'(&(objectClass=posixAccount)(objectClass=inetOrgPerson)(uid={user}))',
-            attributes=['displayName', 'uid'],
-        )[2]
-
-        def get_description(entry):
-            try:
-                return entry['attributes']['description'][0]
-            except IndexError:
-                return ""
-
-        def get_memberof(user):
-            groups = []
-            gresponse = ldapconn.search(domain['base_dn'], f'(&(objectClass=posixGroup)(memberUid={user}))',
-                attributes=['cn', 'memberUid', 'description'],
-            )[2]
-            for gentry in gresponse:
-                if gentry['type'] != 'searchResEntry':
-                    continue # ignore referrals
-                groups.append({
-                    "group": gentry['attributes']['cn'][0],
-                    "description": get_description(gentry),
-                })
-            return groups
-
-        for entry in response:
-            if entry['type'] != 'searchResEntry':
-                continue # ignore referrals
-            ouser = {
-                "user": entry['attributes']['uid'][0],
-                "display_name": entry['attributes'].get('displayName') or "",
-                "groups": get_memberof(user),
-                "locked": False, # XXX still not implemented
-            }
-            break
-
-    elif domain['schema'] == 'ad':
-        response = ldapconn.search(domain['base_dn'], f'(&(objectClass=user)(sAMAccountName={user}))',
-            attributes=['displayName', 'sAMAccountName', 'memberOf', 'userAccountControl'],
-        )[2]
-
-        def get_group(dn):
-            group = cluster.ldapclient.get_dn_attributes(ldapconn, dn, attributes=['sAMAccountName', 'description'])
-
-            try:
-                description = group['description'][0]
-            except IndexError:
-                description = ""
-
-            return {
-                "group": group['sAMAccountName'],
-                "description": description,
-            }
-
-        for entry in response:
-            if entry['type'] != 'searchResEntry':
-                continue # ignore referrals
-            ouser = {
-                "user": entry['attributes']['sAMAccountName'],
-                "display_name": entry['attributes'].get('displayName') or "",
-                "groups": [get_group(dn) for dn in entry['attributes']['memberOf']],
-                "locked": bool(entry['attributes']['userAccountControl'] & 0x2), # ACCOUNTDISABLE
-            }
-            break
-
-    else:
-        raise Exception('Unknown LDAP schema ' + domain['schema'])
-
-if ouser is not None:
-    json.dump({"user":ouser}, fp=sys.stdout)
-else:
+try:
+    ouser = Ldapclient.factory(**domain).get_user(user)
+except LdapclientEntryNotFound:
     agent.set_status('validation-failed')
     json.dump([{'field':'user', 'parameter':'user','value': user, 'error':'user_not_found'}], fp=sys.stdout)
     sys.exit(2)
+
+json.dump({"user":ouser}, fp=sys.stdout)

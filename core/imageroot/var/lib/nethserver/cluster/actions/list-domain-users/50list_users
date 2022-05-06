@@ -23,47 +23,13 @@
 import sys
 import json
 from agent.ldapproxy import Ldapproxy
-import cluster.ldapclient
-import ldap3
+from cluster.ldapclient import Ldapclient
 
 request = json.load(sys.stdin)
 
 domain = Ldapproxy().get_domain(request['domain'])
 
-users = []
-
-with cluster.ldapclient.connect(**domain) as ldapconn:
-
-    if domain['schema'] == 'rfc2307':
-        response = ldapconn.search(domain['base_dn'], '(&(objectClass=posixAccount)(objectClass=inetOrgPerson))',
-            attributes=['displayName', 'uid'],
-        )[2]
-
-        for entry in response:
-            if entry['type'] != 'searchResEntry':
-                continue # ignore referrals
-            users.append({
-                "user": entry['attributes']['uid'][0],
-                "display_name": entry['attributes'].get('displayName') or "",
-                "locked": False, # XXX still not implemented
-            })
-
-    elif domain['schema'] == 'ad':
-        response = ldapconn.search(domain['base_dn'], '(&(objectClass=user)(objectCategory=person))',
-            attributes=['displayName', 'sAMAccountName', 'userAccountControl'],
-        )[2]
-
-        for entry in response:
-            if entry['type'] != 'searchResEntry':
-                continue # ignore referrals
-            users.append({
-                "user": entry['attributes']['sAMAccountName'],
-                "display_name": entry['attributes'].get('displayName') or "",
-                "locked": bool(entry['attributes']['userAccountControl'] & 0x2), # ACCOUNTDISABLE
-            })
-
-    else:
-        raise Exception('Unknown LDAP schema ' + domain['schema'])
+users = Ldapclient.factory(**domain).list_users()
 
 users = sorted(users, key=lambda rec: rec['user'])
 json.dump({"users":users}, fp=sys.stdout)

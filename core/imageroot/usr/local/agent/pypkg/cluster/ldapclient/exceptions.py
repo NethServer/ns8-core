@@ -1,7 +1,5 @@
-#!/usr/bin/env python3
-
 #
-# Copyright (C) 2021 Nethesis S.r.l.
+# Copyright (C) 2022 Nethesis S.r.l.
 # http://www.nethesis.it - nethserver@nethesis.it
 #
 # This script is part of NethServer.
@@ -20,16 +18,11 @@
 # along with NethServer.  If not, see COPYING.
 #
 
-import sys
-import json
-from agent.ldapproxy import Ldapproxy
-from cluster.ldapclient import Ldapclient
+class LdapclientException(Exception):
+    pass
 
-request = json.load(sys.stdin)
+class LdapclientEntryNotFound(LdapclientException):
+    pass
 
-domain = Ldapproxy().get_domain(request['domain'])
-
-groups = Ldapclient.factory(**domain).list_groups()
-
-groups = sorted(groups, key=lambda rec: rec['group'].lower())
-json.dump({"groups":groups}, fp=sys.stdout)
+class LdapclientUnknownSchema(Exception):
+    pass

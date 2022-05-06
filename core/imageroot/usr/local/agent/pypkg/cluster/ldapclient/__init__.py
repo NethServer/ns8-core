@@ -1,7 +1,5 @@
-#!/usr/bin/env python3
-
 #
-# Copyright (C) 2021 Nethesis S.r.l.
+# Copyright (C) 2022 Nethesis S.r.l.
 # http://www.nethesis.it - nethserver@nethesis.it
 #
 # This script is part of NethServer.
@@ -20,16 +18,16 @@
 # along with NethServer.  If not, see COPYING.
 #
 
-import sys
-import json
-from agent.ldapproxy import Ldapproxy
-from cluster.ldapclient import Ldapclient
+from .exceptions import *
+from .ad import LdapclientAd
+from .rfc2307 import LdapclientRfc2307
 
-request = json.load(sys.stdin)
-
-domain = Ldapproxy().get_domain(request['domain'])
-
-groups = Ldapclient.factory(**domain).list_groups()
-
-groups = sorted(groups, key=lambda rec: rec['group'].lower())
-json.dump({"groups":groups}, fp=sys.stdout)
+class Ldapclient:
+    @staticmethod
+    def factory(**kwargs):
+        if kwargs['schema'] == 'ad':
+            return LdapclientAd(**kwargs)
+        elif kwargs['schema'] == 'rfc2307':
+            return LdapclientRfc2307(**kwargs)
+        else:
+            raise LdapclientUnknownSchema
