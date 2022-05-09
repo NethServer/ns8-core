@@ -302,8 +302,6 @@ export default {
       this.isShownChangeUserPasswordModal = false;
     },
     showDeleteUserModal(user) {
-      console.log("showDeleteUserModal", user); ////
-
       this.userToDelete = user;
       this.error.removeUser = "";
       this.isShownDeleteUserModal = true;
