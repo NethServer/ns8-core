@@ -131,7 +131,7 @@ func Action(socketAction models.SocketAction, s *melody.Session, wg *sync.WaitGr
 			entity = "{nodename=\"" + logsAction.EntityName + "\"} | " + filter + " | line_format \"{{.nodename}} {{.MESSAGE}}\""
 
 		case "module":
-			entity = "{job=\"systemd-journal\"} | " + filter + " | CONTAINER_TAG=\"" + logsAction.EntityName + "\" | line_format \"{{.nodename}} {{.MESSAGE}}\""
+			entity = "{job=\"systemd-journal\"} | " + filter + " | SYSLOG_IDENTIFIER=\"" + logsAction.EntityName + "\" | line_format \"{{.nodename}} {{.MESSAGE}}\""
 
 		}
 		args = append(args, entity)

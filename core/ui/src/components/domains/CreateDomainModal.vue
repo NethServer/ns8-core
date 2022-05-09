@@ -7,9 +7,8 @@
     :nextLabel="nextButtonLabel"
     :isPreviousDisabled="isPreviousButtonDisabled"
     :isNextDisabled="isNextButtonDisabled"
-    :isNextLoading="
-      loading.samba.configureModule || loading.external.addExternalDomain
-    "
+    :isCancelDisabled="isCancelButtonDisabled"
+    :isNextLoading="loading.external.addExternalDomain"
     @modal-hidden="$emit('hide')"
     @cancel="$emit('hide')"
     @previousStep="previousStep"
@@ -74,7 +73,6 @@
                 value="instanceValue"
                 @click="isSambaSelected = false"
                 class="min-height-card"
-                disabled
               >
                 <h6 class="mg-bottom-md">
                   {{ $t("domains.openldap") }}
@@ -126,25 +124,6 @@
             ref="port"
           >
           </cv-text-input>
-          <!-- //// remove, schema is automatically detected -->
-          <!-- <label class="bx--label">{{ $t("domains.type") }}</label>
-          <cv-radio-group :vertical="false" ref="schema">
-            <cv-radio-button
-              name="schema-group"
-              :label="$t('domains.openldap')"
-              value="rfc2307"
-              :checked="true"
-              v-model="external.schema"
-              :disabled="loading.external.addExternalDomain"
-            />
-            <cv-radio-button
-              name="schema-group"
-              :label="$t('domains.samba')"
-              value="ad"
-              v-model="external.schema"
-              :disabled="loading.external.addExternalDomain"
-            />
-          </cv-radio-group> -->
           <cv-text-input
             :label="$t('domains.bind_dn')"
             v-model.trim="external.bind_dn"
@@ -233,7 +212,71 @@
       </template>
       <template v-if="step == 'internalConfig'">
         <!-- openldap -->
-        <cv-form v-if="isOpenLdapSelected"> //// openldap config </cv-form>
+        <template v-if="isOpenLdapSelected">
+          <NsInlineNotification
+            v-if="error.openldap.getDefaults"
+            kind="error"
+            :title="$t('action.get-defaults')"
+            :description="error.openldap.getDefaults"
+            :showCloseButton="false"
+          />
+          <cv-form>
+            <cv-text-input
+              :label="$t('openldap.domain')"
+              v-model.trim="openldap.domain"
+              :invalid-message="$t(error.openldap.domain)"
+              :disabled="
+                loading.openldap.configureModule || loading.openldap.getDefaults
+              "
+              ref="domain"
+            >
+            </cv-text-input>
+            <cv-text-input
+              :label="$t('openldap.admuser')"
+              v-model.trim="openldap.admuser"
+              :invalid-message="$t(error.openldap.admuser)"
+              :disabled="
+                loading.openldap.configureModule || loading.openldap.getDefaults
+              "
+              ref="admuser"
+            >
+            </cv-text-input>
+            <NsPasswordInput
+              :newPasswordLabel="$t('openldap.admpass')"
+              :confirmPasswordLabel="$t('openldap.admpass_confirm')"
+              v-model="openldap.admpass"
+              @passwordValidation="onNewOpenLdapPasswordValidation"
+              :newPaswordHelperText="
+                $t('openldap.choose_openldap_admin_password')
+              "
+              :newPasswordInvalidMessage="$t(error.openldap.admpass)"
+              :confirmPasswordInvalidMessage="
+                $t(error.openldap.confirmPassword)
+              "
+              :passwordHideLabel="$t('password.hide_password')"
+              :passwordShowLabel="$t('password.show_password')"
+              :lengthLabel="$t('password.long_enough')"
+              :lowercaseLabel="$t('password.lowercase_letter')"
+              :uppercaseLabel="$t('password.uppercase_letter')"
+              :numberLabel="$t('password.number')"
+              :symbolLabel="$t('password.symbol')"
+              :equalLabel="$t('password.equal')"
+              :focus="openldap.focusPasswordField"
+              :disabled="
+                loading.openldap.configureModule || loading.openldap.getDefaults
+              "
+              light
+              class="new-provider-password"
+            />
+          </cv-form>
+          <NsInlineNotification
+            v-if="error.openldap.configureModule"
+            kind="error"
+            :title="$t('action.configure-module')"
+            :description="error.openldap.configureModule"
+            :showCloseButton="false"
+          />
+        </template>
         <!-- samba -->
         <template v-if="isSambaSelected">
           <NsInlineNotification
@@ -296,7 +339,7 @@
                 loading.samba.configureModule || loading.samba.getDefaults
               "
               light
-              class="new-samba-password"
+              class="new-provider-password"
             />
             <cv-combo-box
               v-model="samba.ipaddress"
@@ -339,6 +382,19 @@
             :showCloseButton="false"
           />
         </template>
+      </template>
+      <template v-if="step == 'configuringProvider'">
+        <NsEmptyState
+          :title="$t('domains.configuring_account_provider')"
+          :animationData="GearsLottie"
+          animationTitle="gears"
+          :loop="true"
+        />
+        <NsProgressBar
+          :value="configureProviderProgress"
+          :indeterminate="!configureProviderProgress"
+          class="mg-bottom-md"
+        />
       </template>
     </template>
   </NsWizard>
@@ -390,6 +446,7 @@ export default {
       isOpenLdapSelected: false,
       isSambaSelected: false,
       installProviderProgress: 0,
+      configureProviderProgress: 0,
       selectedNode: null,
       samba: {
         adminuser: "",
@@ -399,6 +456,13 @@ export default {
         ipAddressOptions: [],
         hostname: "",
         nbdomain: "",
+        passwordValidation: null,
+        focusPasswordField: { element: "" },
+      },
+      openldap: {
+        domain: "",
+        admuser: "",
+        admpass: "",
         passwordValidation: null,
         focusPasswordField: { element: "" },
       },
@@ -414,6 +478,10 @@ export default {
       },
       loading: {
         samba: {
+          getDefaults: false,
+          configureModule: false,
+        },
+        openldap: {
           getDefaults: false,
           configureModule: false,
         },
@@ -435,6 +503,13 @@ export default {
           getDefaults: "",
           addExternalDomain: "",
           cannotReachDc: false,
+        },
+        openldap: {
+          getDefaults: "",
+          domain: "",
+          admuser: "",
+          admpass: "",
+          confirmPassword: "",
         },
         external: {
           domain: "",
@@ -468,9 +543,11 @@ export default {
     },
     isNextButtonDisabled() {
       return (
+        this.loading.openldap.configureModule ||
         this.loading.samba.configureModule ||
         this.loading.external.addExternalDomain ||
         this.step == "installingProvider" ||
+        this.step == "configuringProvider" ||
         (this.step == "location" &&
           !this.isInternalSelected &&
           !this.isExternalSelected) ||
@@ -480,20 +557,30 @@ export default {
         (this.step == "node" && !this.selectedNode)
       );
     },
+    isCancelButtonDisabled() {
+      return (
+        this.step == "installingProvider" || this.step == "configuringProvider"
+      );
+    },
     isPreviousButtonDisabled() {
       return (
         this.isResumeConfiguration ||
         this.loading.samba.configureModule ||
+        this.loading.openldap.configureModule ||
         this.loading.external.addExternalDomain ||
-        ["location", "installingProvider", "internalConfig"].includes(this.step)
+        [
+          "location",
+          "installingProvider",
+          "internalConfig",
+          "configureProviderProgress",
+        ].includes(this.step)
       );
     },
   },
   watch: {
     isShown: function () {
       if (this.isShown) {
-        // this.clearOpenLdapErrors(); ////
-        this.clearSambaErrors();
+        this.clearErrors();
 
         if (!this.isResumeConfiguration) {
           // start wizard from first step
@@ -503,26 +590,9 @@ export default {
           this.step = "internalConfig";
 
           if (this.isOpenLdap) {
-            // this.getOpenLdapDefaults(); ////
+            this.getOpenLdapDefaults();
           } else if (this.isSamba) {
             this.getSambaDefaults();
-          }
-        }
-
-        if (this.step !== "internalConfig") {
-          // // set focus to next button //// not working with NsWizard
-          // setTimeout(() => {
-          //   console.log("this.$refs", this.$refs); ////
-          //   const element = this.$refs["wizardNext"].$el;
-          //   element.focus();
-          // }, 300);
-        } else {
-          if (this.isOpenLdapSelected) {
-            //// focus first input field
-          } else if (this.isSambaSelected) {
-            setTimeout(() => {
-              this.focusElement("realm");
-            }, 300);
           }
         }
       }
@@ -535,17 +605,6 @@ export default {
     },
     isSamba: function () {
       this.isSambaSelected = this.isSamba;
-    },
-    step: function () {
-      if (this.step == "internalConfig") {
-        if (this.isOpenLdapSelected) {
-          //// focus first input field
-        } else if (this.isSambaSelected) {
-          setTimeout(() => {
-            this.focusElement("realm");
-          }, 300);
-        }
-      }
     },
   },
   created() {
@@ -602,37 +661,39 @@ export default {
     },
     async installProvider() {
       this.error.addInternalProvider = "";
-
       const taskAction = "add-internal-provider";
+      const eventId = this.getUuid();
+      this.installProviderProgress = 0;
+
+      // register to task error
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.addInternalProviderAborted
+      );
 
       // register to task completion
       this.$root.$once(
-        taskAction + "-completed",
+        `${taskAction}-completed-${eventId}`,
         this.addInternalProviderCompleted
       );
 
       // register to task progress to update progress bar
       this.$root.$on(
-        taskAction + "-progress",
+        `${taskAction}-progress-${eventId}`,
         this.addInternalProviderProgress
-      );
-
-      // register to task error
-      this.$root.$off(taskAction + "-aborted");
-      this.$root.$once(
-        taskAction + "-aborted",
-        this.addInternalProviderAborted
       );
 
       const selectedNodeId = this.selectedNode
         ? parseInt(this.selectedNode.id)
         : 1;
 
+      const providerImage = this.isOpenLdapSelected ? "openldap" : "samba";
+
       const res = await to(
         this.createClusterTask({
           action: taskAction,
           data: {
-            image: "samba",
+            image: providerImage,
             node: selectedNodeId,
           },
           extra: {
@@ -640,6 +701,7 @@ export default {
             node: selectedNodeId,
             isNotificationHidden: true,
             isProgressNotified: true,
+            eventId,
           },
         })
       );
@@ -654,19 +716,28 @@ export default {
     addInternalProviderAborted(taskResult, taskContext) {
       console.error(`${taskContext.action} aborted`, taskResult);
 
+      // unregister to task progress
+      this.$root.$off(
+        `${taskContext.action}-progress-${taskContext.extra.eventId}`
+      );
+
       // hide modal so that user can see error notification
       this.$emit("hide");
     },
     addInternalProviderCompleted(taskContext, taskResult) {
       // unregister to task progress
-      this.$root.$off("add-internal-provider-progress");
+      this.$root.$off(
+        `${taskContext.action}-progress-${taskContext.extra.eventId}`
+      );
 
       this.step = "internalConfig";
+      this.newProviderId = taskResult.output.module_id;
 
       if (this.isSambaSelected) {
-        this.newProviderId = taskResult.output.module_id;
         this.getSambaDefaults();
-      } //// else openldap
+      } else {
+        this.getOpenLdapDefaults();
+      }
 
       // reload domains
       this.$emit("reloadDomains");
@@ -677,14 +748,81 @@ export default {
     addInternalProviderProgress(progress) {
       this.installProviderProgress = progress;
     },
+    async getOpenLdapDefaults() {
+      this.loading.openldap.getDefaults = true;
+      this.error.openldap.getDefaults = "";
+      const taskAction = "get-defaults";
+      const eventId = this.getUuid();
+
+      // register to task error
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.getOpenLdapDefaultsAborted
+      );
+
+      // register to task completion
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.getOpenLdapDefaultsCompleted
+      );
+
+      const res = await to(
+        this.createModuleTaskForApp(this.newProviderId, {
+          action: taskAction,
+          data: {
+            provision: "new-domain",
+          },
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+            eventId,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.openldap.getDefaults = this.getErrorMessage(err);
+        return;
+      }
+    },
+    getOpenLdapDefaultsAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.loading.openldap.getDefaults = false;
+
+      // hide modal so that user can see error notification
+      this.$emit("hide");
+    },
+    getOpenLdapDefaultsCompleted(taskContext, taskResult) {
+      this.loading.openldap.getDefaults = false;
+      const defaults = taskResult.output;
+      this.openldap.domain = defaults.domain;
+      this.openldap.admuser = defaults.admuser;
+
+      // clear password
+      this.openldap.admpass = "";
+
+      // focus on first field
+      this.$nextTick(() => {
+        this.focusElement("domain");
+      });
+    },
     async getSambaDefaults() {
       this.loading.samba.getDefaults = true;
       this.error.samba.getDefaults = "";
       const taskAction = "get-defaults";
+      const eventId = this.getUuid();
+
+      // register to task error
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.getSambaDefaultsAborted
+      );
 
       // register to task completion
       this.$root.$once(
-        taskAction + "-completed",
+        `${taskAction}-completed-${eventId}`,
         this.getSambaDefaultsCompleted
       );
 
@@ -697,6 +835,7 @@ export default {
           extra: {
             title: this.$t("action." + taskAction),
             isNotificationHidden: true,
+            eventId,
           },
         })
       );
@@ -707,6 +846,13 @@ export default {
         this.error.samba.getDefaults = this.getErrorMessage(err);
         return;
       }
+    },
+    getSambaDefaultsAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.loading.samba.getDefaults = false;
+
+      // hide modal so that user can see error notification
+      this.$emit("hide");
     },
     getSambaDefaultsCompleted(taskContext, taskResult) {
       this.loading.samba.getDefaults = false;
@@ -731,6 +877,11 @@ export default {
         this.$set(this.samba.ipAddressOptions, index, option);
         index++;
       }
+
+      // focus on first field
+      this.$nextTick(() => {
+        this.focusElement("realm");
+      });
     },
     clearSambaErrors() {
       for (const key of Object.keys(this.error.samba)) {
@@ -824,7 +975,6 @@ export default {
         this.error.samba.ipaddress = "common.required";
 
         if (isValidationOk) {
-          this.focusElement("ipaddress");
           isValidationOk = false;
         }
       }
@@ -849,26 +999,35 @@ export default {
 
       this.loading.samba.configureModule = true;
       const taskAction = "configure-module";
+      const eventId = this.getUuid();
+      this.configureProviderProgress = 0;
+
+      // register to task error
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.configureSambaModuleAborted
+      );
 
       // register to task validation
-      this.$root.$off(taskAction + "-validation-failed");
       this.$root.$once(
-        taskAction + "-validation-failed",
+        `${taskAction}-validation-failed-${eventId}`,
         this.configureSambaModuleValidationFailed
+      );
+      this.$root.$once(
+        `${taskAction}-validation-ok-${eventId}`,
+        this.configureSambaModuleValidationOk
+      );
+
+      // register to task progress to update progress bar
+      this.$root.$on(
+        `${taskAction}-progress-${eventId}`,
+        this.configureSambaModuleProgress
       );
 
       // register to task completion
-      this.$root.$off(taskAction + "-completed");
       this.$root.$once(
-        taskAction + "-completed",
+        `${taskAction}-completed-${eventId}`,
         this.configureSambaModuleCompleted
-      );
-
-      // register to task error
-      this.$root.$off(taskAction + "-aborted");
-      this.$root.$once(
-        taskAction + "-aborted",
-        this.configureSambaModuleAborted
       );
 
       const res = await to(
@@ -884,8 +1043,10 @@ export default {
             provision: "new-domain",
           },
           extra: {
-            title: this.$t("action." + taskAction),
+            title: this.$t("samba.samba_configuration"),
             isNotificationHidden: true,
+            isProgressNotified: true,
+            eventId,
           },
         })
       );
@@ -898,8 +1059,17 @@ export default {
         return;
       }
     },
-    configureSambaModuleValidationFailed(validationErrors) {
+    configureSambaModuleValidationOk() {
+      this.step = "configuringProvider";
+    },
+    configureSambaModuleValidationFailed(validationErrors, taskContext) {
       this.loading.samba.configureModule = false;
+
+      // unregister to task progress
+      this.$root.$off(
+        `${taskContext.action}-progress-${taskContext.extra.eventId}`
+      );
+
       let focusAlreadySet = false;
 
       for (const validationError of validationErrors) {
@@ -922,8 +1092,16 @@ export default {
         }
       }
     },
-    configureSambaModuleCompleted() {
+    configureSambaModuleProgress(progress) {
+      this.configureProviderProgress = progress;
+    },
+    configureSambaModuleCompleted(taskContext) {
       this.loading.samba.configureModule = false;
+
+      // unregister to task progress
+      this.$root.$off(
+        `${taskContext.action}-progress-${taskContext.extra.eventId}`
+      );
 
       // hide modal
       this.$emit("hide");
@@ -935,14 +1113,213 @@ export default {
       console.error(`${taskContext.action} aborted`, taskResult);
       this.loading.samba.configureModule = false;
 
+      // unregister to task progress
+      this.$root.$off(
+        `${taskContext.action}-progress-${taskContext.extra.eventId}`
+      );
+
       // hide modal so that user can see error notification
       this.$emit("hide");
     },
+    clearOpenLdapErrors() {
+      for (const key of Object.keys(this.error.openldap)) {
+        this.error.openldap[key] = "";
+      }
+    },
+    validateConfigureOpenLdapModule() {
+      this.clearOpenLdapErrors();
+      let isValidationOk = true;
+
+      // openldap domain
+
+      if (!this.openldap.domain) {
+        this.error.openldap.domain = "common.required";
+
+        if (isValidationOk) {
+          this.focusElement("domain");
+          isValidationOk = false;
+        }
+      }
+
+      // openldap admin user
+
+      if (!this.openldap.admuser) {
+        this.error.openldap.admuser = "common.required";
+
+        if (isValidationOk) {
+          this.focusElement("admuser");
+          isValidationOk = false;
+        }
+      }
+
+      // openldap admin password
+
+      if (!this.openldap.admpass) {
+        this.error.openldap.admpass = "common.required";
+
+        if (isValidationOk) {
+          this.openldap.focusPasswordField = { element: "newPassword" };
+          isValidationOk = false;
+        }
+      } else {
+        if (
+          !this.openldap.passwordValidation.isLengthOk ||
+          !this.openldap.passwordValidation.isLowercaseOk ||
+          !this.openldap.passwordValidation.isUppercaseOk ||
+          !this.openldap.passwordValidation.isNumberOk ||
+          !this.openldap.passwordValidation.isSymbolOk
+        ) {
+          if (!this.error.openldap.admpass) {
+            this.error.openldap.admpass = "password.password_not_secure";
+          }
+
+          if (isValidationOk) {
+            this.openldap.focusPasswordField = { element: "newPassword" };
+            isValidationOk = false;
+          }
+        }
+
+        if (!this.openldap.passwordValidation.isEqualOk) {
+          if (!this.error.openldap.admpass) {
+            this.error.openldap.admpass = "password.passwords_do_not_match";
+          }
+
+          if (!this.error.openldap.confirmPassword) {
+            this.error.openldap.confirmPassword =
+              "password.passwords_do_not_match";
+          }
+
+          if (isValidationOk) {
+            this.openldap.focusPasswordField = { element: "confirmPassword" };
+            isValidationOk = false;
+          }
+        }
+      }
+      return isValidationOk;
+    },
     async configureOpenLdapModule() {
-      console.log("configureOpenLdapModule"); ////
+      const isValidationOk = this.validateConfigureOpenLdapModule();
+      if (!isValidationOk) {
+        return;
+      }
+
+      this.loading.openldap.configureModule = true;
+      const taskAction = "configure-module";
+      const eventId = this.getUuid();
+      this.configureProviderProgress = 0;
+
+      // register to task error
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.configureOpenLdapModuleAborted
+      );
+
+      // register to task validation
+      this.$root.$once(
+        `${taskAction}-validation-failed-${eventId}`,
+        this.configureOpenLdapModuleValidationFailed
+      );
+      this.$root.$once(
+        `${taskAction}-validation-ok-${eventId}`,
+        this.configureOpenLdapModuleValidationOk
+      );
+
+      // register to task progress to update progress bar
+      this.$root.$on(
+        `${taskAction}-progress-${eventId}`,
+        this.configureOpenLdapModuleProgress
+      );
+
+      // register to task completion
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.configureOpenLdapModuleCompleted
+      );
+
+      const res = await to(
+        this.createModuleTaskForApp(this.newProviderId, {
+          action: taskAction,
+          data: {
+            domain: this.openldap.domain,
+            admuser: this.openldap.admuser,
+            admpass: this.openldap.admpass,
+            provision: "new-domain",
+          },
+          extra: {
+            title: this.$t("openldap.openldap_configuration"),
+            isNotificationHidden: true,
+            isProgressNotified: true,
+            eventId,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.openldap.configureModule = this.getErrorMessage(err);
+        this.loading.openldap.configureModule = false;
+        return;
+      }
+    },
+    configureOpenLdapModuleValidationOk() {
+      this.step = "configuringProvider";
+    },
+    configureOpenLdapModuleValidationFailed(validationErrors, taskContext) {
+      this.loading.openldap.configureModule = false;
+
+      // unregister to task progress
+      this.$root.$off(
+        `${taskContext.action}-progress-${taskContext.extra.eventId}`
+      );
+
+      let focusAlreadySet = false;
+
+      for (const validationError of validationErrors) {
+        const param = validationError.parameter;
+        // set i18n error message
+        this.error.openldap[param] = "domains." + validationError.error;
+
+        if (!focusAlreadySet) {
+          this.focusElement(param);
+          focusAlreadySet = true;
+        }
+      }
+    },
+    configureOpenLdapModuleProgress(progress) {
+      this.configureProviderProgress = progress;
+    },
+    configureOpenLdapModuleCompleted(taskContext) {
+      this.loading.openldap.configureModule = false;
+
+      // unregister to task progress
+      this.$root.$off(
+        `${taskContext.action}-progress-${taskContext.extra.eventId}`
+      );
+
+      // hide modal
+      this.$emit("hide");
+
+      // reload domains
+      this.$emit("reloadDomains");
+    },
+    configureOpenLdapModuleAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.loading.openldap.configureModule = false;
+
+      // unregister to task progress
+      this.$root.$off(
+        `${taskContext.action}-progress-${taskContext.extra.eventId}`
+      );
+
+      // hide modal so that user can see error notification
+      this.$emit("hide");
     },
     onNewSambaPasswordValidation(passwordValidation) {
       this.samba.passwordValidation = passwordValidation;
+    },
+    onNewOpenLdapPasswordValidation(passwordValidation) {
+      this.openldap.passwordValidation = passwordValidation;
     },
     validateAddExternalDomain() {
       this.clearExternalDomainErrors();
@@ -1008,22 +1385,23 @@ export default {
 
       this.loading.external.addExternalDomain = true;
       const taskAction = "add-external-domain";
+      const eventId = this.getUuid();
+
+      // register to task error
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.addExternalDomainAborted
+      );
 
       // register to task validation
-      this.$root.$off(taskAction + "-validation-failed");
       this.$root.$once(
-        taskAction + "-validation-failed",
+        `${taskAction}-validation-failed-${eventId}`,
         this.addExternalDomainValidationFailed
       );
 
-      // register to task error
-      this.$root.$off(taskAction + "-aborted");
-      this.$root.$once(taskAction + "-aborted", this.addExternalDomainAborted);
-
       // register to task completion
-      this.$root.$off(taskAction + "-completed");
       this.$root.$once(
-        taskAction + "-completed",
+        `${taskAction}-completed-${eventId}`,
         this.addExternalDomainCompleted
       );
 
@@ -1044,6 +1422,7 @@ export default {
           extra: {
             title: this.$t("action." + taskAction),
             isNotificationHidden: true,
+            eventId,
           },
         })
       );
@@ -1120,7 +1499,7 @@ export default {
 
 // global styles
 
-.new-samba-password .new-password-container {
+.new-provider-password .new-password-container {
   margin-bottom: $spacing-06 !important;
 }
 </style>

@@ -225,7 +225,7 @@ export default {
             taskContext,
             "validation-failed"
           );
-          this.$root.$emit(taskEventName, taskResult.output);
+          this.$root.$emit(taskEventName, taskResult.output, taskContext);
         } else if (taskStatus === "aborted") {
           const taskEventName = this.getTaskEventName(taskContext, "aborted");
           this.$root.$emit(taskEventName, taskResult, taskContext);
@@ -396,7 +396,7 @@ export default {
         // ad-hoc progress notification (e.g. account provider installation)
         if (taskContext.extra && taskContext.extra.isProgressNotified) {
           const taskEventName = this.getTaskEventName(taskContext, "progress");
-          this.$root.$emit(taskEventName, payload.progress);
+          this.$root.$emit(taskEventName, payload.progress, taskContext);
         }
 
         this.putNotification(notification);

@@ -28,7 +28,7 @@ jobs:
           buildah run golang sh <<'EOF'
           go get -u github.com/swaggo/swag/cmd/swag
           cd /usr/src
-          swag init
+          swag init -g api-server.go
           EOF
       - id: publish
         name: "Publish the API documents"

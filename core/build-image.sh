@@ -40,8 +40,12 @@ buildah run gobuilder-core sh -c "cd /usr/src/core/api-server && go build -v -ld
 echo "Build static UI files with node..."
 buildah run nodebuilder-core sh -c "cd /usr/src/core/ui && yarn install && yarn build"
 
-echo "Provide core CSS style to external modules..."
-buildah run nodebuilder-core sh -c "cp -v /usr/src/core/ui/dist/css/app.*.css /usr/src/core/ui/dist/css/core.css"
+echo "Install tidy..."
+buildah run nodebuilder-core sh -c "apt-get update && apt-get install -y tidy"
+
+echo "Provide core style to external modules..."
+buildah run nodebuilder-core sh -c "cd /usr/src/core/ui/dist/css/ && tidy ../index.html | grep -oP 'link href=\"css/app~.+\.css\" rel=\"stylesheet\"' | grep -oP 'app~.+\.css' | paste -sd ' ' - > css_files"
+buildah run nodebuilder-core sh -c 'cd /usr/src/core/ui/dist/css/ && cat $(cat /usr/src/core/ui/dist/css/css_files) > /usr/src/core/ui/dist/css/core.css'
 
 echo "Download Logcli..."
 logcli_tmp_dir=$(mktemp -d)

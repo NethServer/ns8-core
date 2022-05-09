@@ -3,6 +3,16 @@ import { NsModal } from "@nethserver/ns8-ui-lib";
 export default {
   title: "Components/NsModal",
   component: NsModal,
+  argTypes: {
+    kind: {
+      options: ["", "danger"],
+      control: { type: "radio" },
+    },
+    size: {
+      options: ["", "xs", "small", "large"],
+      control: { type: "radio" },
+    },
+  },
 };
 
 const Template = (args, { argTypes }) => ({
@@ -23,6 +33,14 @@ const Template = (args, { argTypes }) => ({
 
 export const Default = Template.bind({});
 Default.args = {
-  hideOnClickOutside: false,
   visible: true,
+  hideOnClickOutside: false,
+  isLoading: false,
+  kind: "",
+  size: "",
+  alert: false,
+  closeAriaLabel: "Close modal",
+  autoHideOff: false,
+  primaryButtonDisabled: false,
+  hasFormContent: false,
 };

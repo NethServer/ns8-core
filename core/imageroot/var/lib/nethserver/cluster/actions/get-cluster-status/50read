@@ -52,8 +52,10 @@ if network is not None:
     for node in rdb.scan_iter('node/*/vpn'):
         node_id = node.split('/')[1]
         ip_addr = rdb.hget(node, 'ip_address')
+        if rdb.sismember(f'node/{node_id}/flags', 'nomodules'):
+            continue
         node_ui_name = rdb.get(f"node/{node_id}/ui_name") or ""
-        vpn[ip_addr] = {'id': int(node_id), 'ui_name': node_ui_name, 'vpn': { 'ip_address': ip_addr, 'listen_port': int(rdb.hget(node, 'listen_port')) } }
+        vpn[ip_addr] = {'id': int(node_id), 'ui_name': node_ui_name, 'online': False, 'vpn': { 'ip_address': ip_addr, 'listen_port': int(rdb.hget(node, 'listen_port')) } }
         # the leader is the peer with the endpoint
         endpoint = rdb.hget(node, 'endpoint')
         if endpoint:

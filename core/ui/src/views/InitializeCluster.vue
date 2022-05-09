@@ -705,19 +705,6 @@
                     :indeterminate="!restore.progress"
                     class="mg-bottom-md"
                   />
-                  <cv-button-set class="footer-buttons">
-                    <NsButton
-                      type="button"
-                      kind="secondary"
-                      :icon="ChevronLeft20"
-                      size="lg"
-                      @click="goToRestoreFromFileOrUrl"
-                      :disabled="
-                        loading.restoreCluster || loading.readBackupRepositories
-                      "
-                      >{{ $t("common.go_back") }}
-                    </NsButton>
-                  </cv-button-set>
                 </cv-tile>
               </cv-column>
             </cv-row>
@@ -1615,16 +1602,26 @@ export default {
       this.loading.restoreCluster = true;
       this.restore.step = "restoringCluster";
       const taskAction = "restore-cluster";
+      const eventId = this.getUuid();
+      this.restore.progress = 0;
 
       // register to task error
-      this.$root.$off(taskAction + "-aborted");
-      this.$root.$once(taskAction + "-aborted", this.restoreClusterAborted);
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.restoreClusterAborted
+      );
 
       // register to task completion
-      this.$root.$once(taskAction + "-completed", this.restoreClusterCompleted);
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.restoreClusterCompleted
+      );
 
       // register to task progress to update progress bar
-      this.$root.$on(taskAction + "-progress", this.restoreClusterProgress);
+      this.$root.$on(
+        `${taskAction}-progress-${eventId}`,
+        this.restoreClusterProgress
+      );
 
       const res = await to(
         this.createClusterTask({
@@ -1634,6 +1631,7 @@ export default {
             isNotificationHidden: true,
             isProgressNotified: true,
             toastTimeout: 0, // persistent notification
+            eventId,
           },
         })
       );
@@ -1651,14 +1649,21 @@ export default {
     restoreClusterAborted(taskResult, taskContext) {
       console.error(`${taskContext.action} aborted`, taskResult);
       this.loading.restoreCluster = false;
+      this.error.restoreCluster = this.$t("error.generic_error");
 
       // unregister to task progress
-      this.$root.$off("restore-cluster-progress");
+      this.$root.$off(
+        `${taskContext.action}-progress-${taskContext.extra.eventId}`
+      );
     },
-    restoreClusterCompleted() {
-      // unregister to task progress
-      this.$root.$off("restore-cluster-progress");
+    restoreClusterCompleted(taskContext) {
       this.loading.restoreCluster = false;
+
+      // unregister to task progress
+      this.$root.$off(
+        `${taskContext.action}-progress-${taskContext.extra.eventId}`
+      );
+
       this.readBackupRepositories();
     },
     async readBackupRepositories() {

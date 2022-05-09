@@ -200,3 +200,8 @@ def get_external_domains(rdb):
             del domains[domain_id]
 
     return domains
+
+def list_domains(rdb):
+    domains = get_internal_domains(rdb)
+    domains.update(get_external_domains(rdb))
+    return domains
