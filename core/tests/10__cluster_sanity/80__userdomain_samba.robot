@@ -6,14 +6,15 @@ Suite Setup        Start the client tool container
 Suite Teardown     Stop the client tool container
 
 *** Variables ***
-${domain}    openldap.nethserver.test
-${domsuffix}    dc\=openldap,dc\=nethserver,dc\=test
+${domain}    samba.nethserver.test
+${domsuffix}    dc\=samba,dc\=nethserver,dc\=test
 
 *** Test Cases ***
+
 Add domain
-    ${response} =     Run task    cluster/add-internal-provider    {"image":"openldap","node":1}
-    Set Suite Variable    ${mid1}    ${response['module_id']}
-    Run task    module/${mid1}/configure-module    {"domain":"${domain}","admuser":"admin","admpass":"Nethesis,1234","provision":"new-domain"}
+    Add the first samba module instance
+    Prepare the suite configuration for the first samba module instance
+    Run task    module/${mid1}/configure-module    {"hostname":"${hostname}","nbdomain":"${nbdomain}","ipaddress":"${ipaddress}","realm":"${domain}","adminuser":"administrator","adminpass":"Nethesis,1234","provision":"new-domain"}
 
 Reach directory directly
     ${val} =    Get server url    ${mid1}
@@ -32,11 +33,6 @@ Bind through proxy
     Should Be Equal As Integers    ${rc}    0
     Should Contain    ${out}    ${srv.base_dn}
 
-Add provider
-    ${response} =     Run task    cluster/add-internal-provider    {"domain":"${domain}","image":"openldap","node":1}
-    Set Suite Variable    ${mid2}    ${response['module_id']}
-    Run task    module/${mid2}/configure-module    {"domain":"${domain}","admuser":"admin","admpass":"Nethesis,1234","provision":"join-domain"}
-
 Run user and group listing tests
     Run Keywords
     ...    Create users and groups
@@ -44,13 +40,10 @@ Run user and group listing tests
     ...    List groups
     ...    Check First User is unlocked
     ...    Check First User is member of g1
-    #...    Check Second User is locked
+    ...    Check Second User is locked
     ...    Check Group One members
     ...    Get a non-existing user
     ...    Get a non-existing group
-
-Remove provider
-    Run task    cluster/remove-internal-provider    {"module_id":"${mid2}"}
 
 Remove domain
     Run task    cluster/remove-internal-domain    {"domain":"${domain}"}
@@ -62,22 +55,31 @@ Directory is unreachable
 
 
 *** Keywords ***
-RootDSE is correct
-    [Arguments]    ${hurl}
-    ${out}  ${err}  ${rc} =    Execute command    podman exec -i ldapclient ldapsearch -LLL -x -D '' -w '' -H ${hurl} -b '' -s base namingContexts
-    ...    return_rc=${TRUE}    return_stderr=${TRUE}
-    Should Be Equal As Integers    ${rc}    0
-    Should Contain    ${out}    namingContexts: ${domsuffix}    ignore_case=${TRUE}
+Add the first samba module instance
+    ${response} =     Run task    cluster/add-internal-provider    {"image":"samba","node":1}
+    Set Suite Variable    ${mid1}    ${response['module_id']}
+
+Prepare the suite configuration for the first samba module instance
+    ${response} =    Run task    module/${mid1}/get-defaults    {"provision":"new-domain"}
+    Set Suite Variable    ${ipaddress}    ${response['ipaddress_list'][0]['ipaddress']}
+    Should Not Be Empty    ${ipaddress}
+    Set Suite Variable    ${nbdomain}    ${response['nbdomain']}
+    Set Suite Variable    ${hostname}    ${response['hostname']}
 
 Get server url
     [Arguments]    ${mid}
     ${out} =    Execute Command    runagent redis-exec HGETALL module/${mid}/srv/tcp/ldap
     &{srv} =    Evaluate    ${out}
-    [Return]    ldap://${srv.host}:${srv.port}
+    [Return]    ldaps://${srv.host}:${srv.port}
 
+RootDSE is correct
+    [Arguments]    ${hurl}
+    ${out}  ${err}  ${rc} =    Execute Command    podman exec -i ldapclient ldapsearch -LLL -x -D '' -w '' -H ${hurl} -b '' -s base namingContexts
+    ...    return_stderr=${TRUE}    return_rc=${TRUE}
+    Should Contain    ${out}    namingContexts: ${domsuffix}    ignore_case=${TRUE}
 
 Start the client tool container
-    Execute Command    podman run --rm --replace --detach --network host --name ldapclient alpine sh -c 'sleep 100000' ; podman exec -i ldapclient apk add openldap-clients
+    Execute Command    podman run --env\=LDAPTLS_REQCERT\=never --rm --replace --detach --network host --name ldapclient alpine sh -c 'sleep 100000' ; podman exec -i ldapclient apk add openldap-clients
 
 Stop the client tool container
     Execute Command    podman kill ldapclient

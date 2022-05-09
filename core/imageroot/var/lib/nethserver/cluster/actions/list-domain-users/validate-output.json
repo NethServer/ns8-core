@@ -1,0 +1,56 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "list-domain-users output",
+    "description": "List users of a given accounts domain",
+    "$id": "http://schema.nethserver.org/cluster/list-domain-users-output.json",
+    "examples": [
+        {
+            "users": [
+                {
+                    "user": "Administrator",
+                    "display_name": "Administrator"
+                }
+            ]
+        }
+    ],
+    "type": "object",
+    "required": [
+        "users"
+    ],
+    "properties": {
+        "users": {
+            "type": "array",
+            "items": {
+                "$ref": "#/$defs/user"
+            }
+        }
+    },
+    "$defs": {
+        "user": {
+            "title": "A user descriptor",
+            "description": "Basic description of a user: name and (person) display name",
+            "type": "object",
+            "required": [
+                "user",
+                "display_name",
+                "locked"
+            ],
+            "properties": {
+                "user": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "display_name": {
+                    "type": "string",
+                    "title": "Display name",
+                    "description": "Preferred name of a person to be used when displaying entries (RFC 2798/2.3)"
+                },
+                "locked": {
+                    "type": "boolean",
+                    "title": "Locked",
+                    "description": "True, if the user account has been locked, preventing the user from logging in"
+                }
+            }
+        }
+    }
+}
