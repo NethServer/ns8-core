@@ -20,7 +20,7 @@
         </cv-column>
       </cv-row>
       <cv-row>
-        <cv-column class="page-subtitle">
+        <cv-column class="subpage-title">
           <h3>
             {{ $t("software_center.app_instances", { app: this.appName }) }}
           </h3>

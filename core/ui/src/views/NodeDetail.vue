@@ -22,7 +22,7 @@
         </div>
       </div>
       <div class="bx--row">
-        <div class="bx--col-lg-16 page-subtitle title-and-role">
+        <div class="bx--col-lg-16 subpage-title title-and-role">
           <h3 class="title">
             {{
               nodeLabel

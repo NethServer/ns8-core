@@ -2,7 +2,7 @@
   <div>
     <cv-grid fullWidth>
       <cv-row>
-        <cv-column class="page-title title-and-toolbar">
+        <cv-column class="page-title">
           <h2>
             {{ $t("backup.title") }}
             <cv-interactive-tooltip
@@ -166,7 +166,7 @@
                 )
               "
               :actionLabel="$t('backup.schedule_backup')"
-              @action="showCreateBackupModal('notBackedUp')"
+              @action="showCreateOrEditBackupModal('notBackedUp')"
               :showCloseButton="false"
             />
           </cv-column>
@@ -361,7 +361,7 @@
                   <NsButton
                     kind="primary"
                     :icon="Add20"
-                    @click="showCreateBackupModal('')"
+                    @click="showCreateOrEditBackupModal('')"
                     class="empty-state-button-no-description"
                     >{{ $t("backup.schedule_backup") }}
                   </NsButton>
@@ -376,7 +376,7 @@
               <NsButton
                 kind="secondary"
                 :icon="Add20"
-                @click="showCreateBackupModal('')"
+                @click="showCreateOrEditBackupModal('')"
                 >{{ $t("backup.schedule_backup") }}
               </NsButton>
             </cv-column>
@@ -473,7 +473,7 @@
                       ></cv-tag>
                       <cv-tag
                         v-else
-                        kind="red"
+                        kind="high-contrast"
                         :label="$t('common.disabled')"
                         :title="$t('backup.backup_disabled')"
                       ></cv-tag>
@@ -583,15 +583,15 @@
       @repoCreated="listBackupRepositories"
     />
     <!-- create backup modal -->
-    <CreateBackupModal
-      :isShown="isShownCreateBackupModal"
+    <CreateOrEditBackupModal
+      :isShown="isShownCreateOrEditBackupModal"
       :isEditing="isEditingBackup"
       :repositories="repositories"
       :instanceSelection="instanceSelection"
       :instancesNotBackedUp="unconfiguredInstances"
       :backup="currentBackup"
       :backups="backups"
-      @hide="hideCreateBackupModal"
+      @hide="hideCreateOrEditBackupModal"
       @backupCreated="onBackupCreated"
       @backupAltered="onBackupAltered"
     />
@@ -671,7 +671,7 @@ import {
   DateTimeService,
 } from "@nethserver/ns8-ui-lib";
 import AddRepositoryModal from "@/components/backup/AddRepositoryModal";
-import CreateBackupModal from "@/components/backup/CreateBackupModal";
+import CreateOrEditBackupModal from "@/components/backup/CreateOrEditBackupModal";
 import RepoDetailsModal from "@/components/backup/RepoDetailsModal";
 import BackupDetailsModal from "@/components/backup/BackupDetailsModal";
 import EditRepositoryModal from "@/components/backup/EditRepositoryModal";
@@ -683,7 +683,7 @@ export default {
   name: "Backup",
   components: {
     AddRepositoryModal,
-    CreateBackupModal,
+    CreateOrEditBackupModal,
     RepoDetailsModal,
     BackupDetailsModal,
     EditRepositoryModal,
@@ -705,7 +705,7 @@ export default {
       q: {
         isShownAddRepoModal: false,
       },
-      isShownCreateBackupModal: false,
+      isShownCreateOrEditBackupModal: false,
       isShownDeleteRepoModal: false,
       isShownRepoDetailsModal: false,
       isShownEditRepoModal: false,
@@ -875,18 +875,18 @@ export default {
     hideEditRepoModal() {
       this.isShownEditRepoModal = false;
     },
-    showCreateBackupModal(instanceSelection = "") {
+    showCreateOrEditBackupModal(instanceSelection = "") {
       this.instanceSelection = instanceSelection;
       this.isEditingBackup = false;
-      this.isShownCreateBackupModal = true;
+      this.isShownCreateOrEditBackupModal = true;
     },
-    hideCreateBackupModal() {
-      this.isShownCreateBackupModal = false;
+    hideCreateOrEditBackupModal() {
+      this.isShownCreateOrEditBackupModal = false;
     },
     showEditBackupModal(backup) {
       this.currentBackup = backup;
       this.isEditingBackup = true;
-      this.isShownCreateBackupModal = true;
+      this.isShownCreateOrEditBackupModal = true;
     },
     showDeleteBackupModal(backup) {
       this.currentBackup = backup;

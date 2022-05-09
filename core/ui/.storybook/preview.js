@@ -19,6 +19,13 @@ for (const f in Filters) {
 import VueDateFns from "vue-date-fns";
 Vue.use(VueDateFns);
 
+import VueTimepicker from "vue2-timepicker";
+import "vue2-timepicker/dist/VueTimepicker.css";
+Vue.component("vue-timepicker", VueTimepicker);
+
+import vueDebounce from "vue-debounce";
+Vue.use(vueDebounce);
+
 export const parameters = {
   actions: { argTypesRegex: "^on[A-Z].*" },
   controls: {

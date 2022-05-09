@@ -81,7 +81,7 @@ a {
 }
 
 // used for secondary pages (e.g. where breadcrumb is shown)
-.page-subtitle {
+.subpage-title {
   margin-top: $spacing-06;
   margin-bottom: $spacing-05;
 }
@@ -113,6 +113,12 @@ a {
   margin-bottom: $spacing-06;
 }
 
+// used for secondary pages (e.g. where breadcrumb is shown)
+.subpage-toolbar-item {
+  margin-top: $spacing-06;
+  margin-bottom: $spacing-05;
+}
+
 @media (max-width: $breakpoint-medium) {
   .page-toolbar {
     justify-content: flex-start;
@@ -121,12 +127,6 @@ a {
   .page-toolbar-item {
     margin-top: 0;
   }
-}
-
-.title-and-toolbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
 }
 
 .cv-tile {
@@ -540,9 +540,17 @@ ul.unordered-list {
   pointer-events: all;
 }
 
-.table-overflow-menu {
-  margin: 0 auto;
+// overflow menu for data table start
+.table-overflow-menu-cell {
+  position: relative;
 }
+
+.table-overflow-menu {
+  position: absolute;
+  top: 4px;
+  right: 1rem;
+}
+// overflow menu for data table end
 
 // show data table pagination in smaller screens too
 .cv-data-table
@@ -763,3 +771,50 @@ ul.unordered-list {
   outline-offset: -2px;
   outline: 2px solid $interactive-01;
 }
+
+// highlight an anchor with a fading background
+@keyframes highlightAnchor {
+  from {
+    background-color: $interactive-01;
+  }
+  to {
+    background-color: transparent;
+  }
+}
+
+.highlight-anchor {
+  animation-name: highlightAnchor;
+  animation-duration: 2s;
+}
+// end highlight an anchor with a fading background
+
+// use &bull; to separate items on the same row
+.bullet-separator {
+  margin-left: $spacing-03;
+  margin-right: $spacing-03;
+}
+
+// NsTimePicker start
+
+// brand color outline on focus
+.ns-time-picker .time-picker-field input:active,
+.ns-time-picker .time-picker-field input:focus {
+  outline: 2px solid $interactive-01;
+  outline-offset: -2px;
+}
+
+// hover color for clear button
+.ns-time-picker .time-picker-field .clear-btn:hover {
+  color: $ui-05;
+}
+
+// background color of selected time inside dropdown
+.ns-time-picker .vue__time-picker-dropdown ul li:not([disabled]).active,
+.ns-time-picker .vue__time-picker-dropdown ul li:not([disabled]).active:focus,
+.ns-time-picker .vue__time-picker-dropdown ul li:not([disabled]).active:hover,
+.ns-time-picker .vue__time-picker .dropdown ul li:not([disabled]).active,
+.ns-time-picker .vue__time-picker .dropdown ul li:not([disabled]).active:focus,
+.ns-time-picker .vue__time-picker .dropdown ul li:not([disabled]).active:hover {
+  background-color: $interactive-01;
+}
+// NsTimePicker end

@@ -10,6 +10,12 @@
     <template v-if="coreApp" slot="title">{{ coreApp.name }}</template>
     <template v-if="coreApp" slot="content">
       <NsInlineNotification
+        kind="warning"
+        :title="$t('common.use_landscape_mode')"
+        :description="$t('common.use_landscape_mode_description')"
+        class="landscape-warning"
+      />
+      <NsInlineNotification
         v-if="isCoreUpdatable"
         kind="warning"
         :title="$t('software_center.core_app_update_available')"
@@ -25,14 +31,19 @@
           })
         }}
       </div>
-      <cv-data-table
-        :sortable="true"
+      <NsDataTable
+        :allRows="coreInstances"
         :columns="i18nTableColumns"
-        @sort="sortTable"
-        :pagination="pagination"
-        @pagination="paginateTable"
+        :rawColumns="tableColumns"
+        :sortable="true"
         :overflow-menu="false"
-        ref="table"
+        :itemsPerPageLabel="$t('pagination.items_per_page')"
+        :rangeOfTotalItemsLabel="$t('pagination.range_of_total_items')"
+        :ofTotalPagesLabel="$t('pagination.of_total_pages')"
+        :backwardText="$t('pagination.previous_page')"
+        :forwardText="$t('pagination.next_page')"
+        :pageNumberLabel="$t('pagination.page_number')"
+        @updatePage="tablePage = $event"
       >
         <template slot="data">
           <cv-data-table-row
@@ -47,7 +58,7 @@
             </cv-data-table-cell>
           </cv-data-table-row>
         </template>
-      </cv-data-table>
+      </NsDataTable>
     </template>
     <template v-if="isCoreUpdatable" slot="secondary-button">{{
       $t("common.close")
@@ -59,24 +70,19 @@
 </template>
 
 <script>
-import {
-  UtilService,
-  TaskService,
-  IconService,
-  DataTableService,
-} from "@nethserver/ns8-ui-lib";
+import { UtilService, TaskService, IconService } from "@nethserver/ns8-ui-lib";
 import { mapState } from "vuex";
 
 export default {
   name: "CoreAppModal",
-  mixins: [UtilService, TaskService, IconService, DataTableService],
+  mixins: [UtilService, TaskService, IconService],
   props: {
     isShown: Boolean,
     coreApp: { type: [Object, null] },
   },
   data() {
     return {
-      tableRows: [],
+      tablePage: [],
       tableColumns: [],
     };
   },
@@ -123,7 +129,6 @@ export default {
   },
   methods: {
     updateTableData() {
-      this.tableRows = this.coreInstances;
       this.tableColumns = this.isCoreUpdatable
         ? ["instance", "version", "update_available"]
         : ["instance", "version"];

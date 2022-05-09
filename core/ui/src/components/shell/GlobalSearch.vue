@@ -118,7 +118,6 @@ export default {
   },
   methods: {
     async listShortcuts() {
-      //// refactor to vuex action?
       const taskAction = "list-shortcuts";
 
       // register to task completion

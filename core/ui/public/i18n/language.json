@@ -45,7 +45,7 @@
     "understood_delete": "I understand, delete",
     "show": "Show",
     "hide": "Hide",
-    "processing": "Processing...",
+    "processing": "Processing",
     "status": "Status",
     "advanced": "Advanced",
     "select": "Select",
@@ -62,9 +62,10 @@
     "remove": "Remove",
     "skip": "Skip",
     "core_module_c": "Core app | Core apps",
-    "search_placeholder": "Search...",
+    "search_placeholder": "Search",
     "case_sensitive": "Case sensitive",
-    "choose": "Choose"
+    "choose": "Choose",
+    "loading": "Loading"
   },
   "error": {
     "error": "Error",
@@ -107,7 +108,17 @@
     "old_new_passwords_must_be_different": "New password must be different from current password",
     "passwords_do_not_match": "Passwords do not match",
     "password_not_secure": "Password must meet all security requirements below",
-    "invalid_user_password": "Wrong password"
+    "invalid_user_password": "Wrong password",
+    "password": "Password",
+    "re_enter_password": "Re-enter password"
+  },
+  "pagination": {
+    "items_per_page": "Items per page:",
+    "range_of_total_items": "{range} of {total} items",
+    "of_total_pages": "of {total} pages",
+    "previous_page": "Previous page",
+    "next_page": "Next page",
+    "page_number": "Page number"
   },
   "login": {
     "title": "Log in",
@@ -170,7 +181,7 @@
     "skip_apps_restore": "Skip apps restore",
     "skip_apps_restore_1": "Do you want to skip apps restore?",
     "skip_apps_restore_2": "You can restore apps later in <strong>Backup</strong> page",
-    "restoring_apps_c": "Restoring {num} app... | Restoring {num} apps...",
+    "restoring_apps_c": "Restoring {num} app | Restoring {num} apps",
     "traveling_back_in_time": "Traveling back in time...",
     "reading_backup_repositories": "Reading backup repositories..."
   },
@@ -179,14 +190,14 @@
     "search": "Search",
     "account": "Account",
     "app_launcher": "App launcher",
-    "search_placeholder": "Search...",
+    "search_placeholder": "Search",
     "open_app": "Open {app}",
     "logout": "Logout"
   },
   "app_drawer": {
     "no_apps": "No app",
     "no_apps_description": "To install apps go to Software center",
-    "search_placeholder": "Search app...",
+    "search_placeholder": "Search app",
     "edit_favorite_apps": "Edit favorite apps",
     "favorites": "Favorites",
     "favorite": "Favorite",
@@ -279,7 +290,17 @@
     "update-module": "Update module",
     "update-modules": "Update modules",
     "list-core-modules": "List core modules",
-    "update-core": "Update core"
+    "update-core": "Update core",
+    "list-domain-users": "List domain users",
+    "list-domain-groups": "List domain groups",
+    "get-domain-user": "Get domain user",
+    "get-domain-group": "Get domain group",
+    "add-user": "Add user",
+    "add-group": "Add group",
+    "alter-user": "Edit user",
+    "alter-group": "Edit group",
+    "remove-user": "Delete user",
+    "remove-group": "Delete group"
   },
   "network": {
     "title": "Network"
@@ -347,7 +368,7 @@
     "disabled_backups_description": "There is {num} backup disabled | There are {num} backups disabled",
     "repository_password_helper": "Enter password if repository was configured previously",
     "not_backed_up": "Not backed up",
-    "search_instances": "Search app instances...",
+    "search_instances": "Search app instances",
     "not_backed_up_instances_selected": "Instances not backed up are currently selected",
     "repo_password_tooltip": "This password is used to encrypt data in the repository. Store this password in a safe place, otherwise you won't be able to restore your backed up data",
     "run_backup": "Run backup",
@@ -452,8 +473,8 @@
   },
   "settings_cluster": {},
   "settings_sw_repositories": {
-    "no_sw_repositories": "No software repositories",
-    "no_sw_repositories_description": "You can create one by clicking the button below",
+    "no_sw_repositories": "No software repository",
+    "no_sw_repositories_description": "There is no software repository configured",
     "create_repository": "Create repository",
     "name": "Name",
     "url": "URL",
@@ -467,7 +488,7 @@
   },
   "software_center": {
     "title": "Software center",
-    "search_placeholder": "Start typing to search apps...",
+    "search_placeholder": "Search apps",
     "software_updates": "Updates",
     "you_have_updates": "You have {numUpdates} app to update | You have {numUpdates} apps to update",
     "all": "All",
@@ -513,7 +534,7 @@
     "instance_uninstallation": "Uninstall {instance}",
     "about_to_uninstall_instance": "<strong>{instance}</strong> will be uninstalled from the cluster",
     "uninstall_instance": "Uninstall instance",
-    "uninstalling": "Uninstalling...",
+    "uninstalling": "Uninstalling",
     "no_instance_installed": "No instance installed",
     "instance": "Instance",
     "instance_label": "App instance label",
@@ -563,7 +584,8 @@
       "office": "Office",
       "documentation": "Documentation",
       "database": "Database",
-      "storage": "Storage"
+      "storage": "Storage",
+      "monitoring": "Monitoring"
     }
   },
   "system_logs": {
@@ -664,6 +686,7 @@
     "unconfigured_domains_or_providers_description": "You can resume their configuration or delete them",
     "resume_configuration": "Resume configuration",
     "installing_account_provider": "Installing account provider, please wait...",
+    "configuring_account_provider": "Configuring account provider, please wait...",
     "ipaddress_avail_check_failed": "IP address not available",
     "ipaddress_private_check_failed": "Invalid IP address",
     "ipaddress_bind_check_failed": "Cannot bind to one or more TCP ports",
@@ -700,7 +723,9 @@
     "ipaddress_dc_conflict_check_failed": "A provider with this IP already exists",
     "unconfigured_provider": "Unconfigured provider",
     "unconfigured_domains": "Unconfigured domains",
-    "configured_domains": "Configured domains"
+    "configured_domains": "Configured domains",
+    "users_and_groups": "Users and groups",
+    "domain_not_found": "Domain not found"
   },
   "samba": {
     "adminuser": "Samba admin username",
@@ -713,11 +738,68 @@
     "hostname": "Hostname",
     "nbdomain": "NetBIOS domain",
     "enter_samba_admin_username": "Login as Samba admin",
-    "enter_samba_admin_password": "Enter Samba admin password"
+    "enter_samba_admin_password": "Enter Samba admin password",
+    "samba_configuration": "Samba configuration"
   },
-  "domain_detail": {
-    "title": "Domain detail",
+  "openldap": {
     "domain": "Domain",
+    "admuser": "OpenLDAP admin username",
+    "admpass": "OpenLDAP admin password",
+    "admpass_confirm": "Re-enter OpenLDAP admin password",
+    "choose_openldap_admin_password": "Choose a password for OpenLDAP admin user",
+    "enter_openldap_admin_username": "Login as OpenLDAP admin",
+    "enter_openldap_admin_password": "Enter OpenLDAP admin password",
+    "openldap_configuration": "OpenLDAP configuration"
+  },
+  "domain_users": {
+    "title": "Domain users and groups",
+    "domain_name_users_and_groups": "{domain} users and groups",
+    "users": "Users",
+    "groups": "Groups",
+    "create_user": "Create user",
+    "create_group": "Create group",
+    "edit_user": "Edit user",
+    "username": "Username",
+    "display_name": "Display name",
+    "search_user": "Search user",
+    "no_user": "No user",
+    "no_user_description": "There is no user in this domain",
+    "change_password": "Change password",
+    "enable": "Enable",
+    "disable": "Disable",
+    "plus_others": "+{num} others",
+    "select_groups": "Select groups",
+    "change_password_for_user": "Change password for {user}",
+    "no_group": "No group",
+    "no_group_description": "There is no group in this domain",
+    "search_group": "Search group",
+    "name": "Name",
+    "user": "User",
+    "group": "Group",
+    "edit_group": "Edit group",
+    "select_users": "Select users",
+    "delete_user_description": "Delete user <strong>{name}</strong>? This user will lose access to all apps and will be removed from all groups.",
+    "delete_group_description": "Delete group <strong>{name}</strong>? All users in this group will lose access to the resources associated with the group.",
+    "cannot_make_changes_to_an_external_domain": "Cannot make changes to an external domain",
+    "num_users_c": "{num} user | {num} users",
+    "num_groups_c": "{num} group | {num} groups",
+    "description": "Description",
+    "create_user_user": "Create user {user}",
+    "disable_user_user": "Disable user {user}",
+    "enable_user_user": "Enable user {user}",
+    "edit_user_user": "Edit user {user}",
+    "delete_user_user": "Delete user {user}",
+    "attributes": "Attributes",
+    "user_already_exists": "User already exists",
+    "group_already_exists": "Group already exists",
+    "create_group_group": "Create group {group}",
+    "edit_group_group": "Edit group {group}",
+    "delete_group_group": "Delete group {group}"
+  },
+  "domain_configuration": {
+    "title": "Domain configuration",
+    "domain_name_configuration": "{domain} configuration",
+    "configuration": "Configuration",
     "settings": "Settings",
     "providers": "Providers",
     "add_provider": "Add provider",
