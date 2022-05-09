@@ -44,9 +44,7 @@ echo "Install tidy..."
 buildah run nodebuilder-core sh -c "apt-get update && apt-get install -y tidy"
 
 echo "Provide core style to external modules..."
-
 buildah run nodebuilder-core sh -c "cd /usr/src/core/ui/dist/css/ && tidy ../index.html | grep -oP 'link href=\"css/app~.+\.css\" rel=\"stylesheet\"' | grep -oP 'app~.+\.css' | paste -sd ' ' - > css_files"
-
 buildah run nodebuilder-core sh -c 'cd /usr/src/core/ui/dist/css/ && cat $(cat /usr/src/core/ui/dist/css/css_files) > /usr/src/core/ui/dist/css/core.css'
 
 echo "Download Logcli..."

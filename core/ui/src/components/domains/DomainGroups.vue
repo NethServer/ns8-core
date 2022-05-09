@@ -193,7 +193,7 @@ export default {
       isEditingGroup: false,
       currentGroup: null,
       groupToDelete: null,
-      tableColumns: ["name", "description"],
+      tableColumns: ["group", "description"],
       tablePage: [],
       loading: {
         listDomainGroups: false,

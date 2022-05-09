@@ -255,15 +255,21 @@
                     </div>
                     <!-- numer of users and groups -->
                     <div class="row">
-                      <cv-link @click="goToDomainUsersAndGroups(domain)">
+                      <cv-link
+                        v-if="domain.numUsers"
+                        @click="goToDomainUsersAndGroups(domain)"
+                      >
                         <span>{{
                           $tc("domain_users.num_users_c", domain.numUsers, {
                             num: domain.numUsers,
                           })
                         }}</span>
                       </cv-link>
-                      <span class="bullet-separator">&bull;</span>
+                      <span v-if="domain.numGroups" class="bullet-separator"
+                        >&bull;</span
+                      >
                       <cv-link
+                        v-if="domain.numGroups"
                         @click="goToDomainUsersAndGroups(domain, 'groups')"
                       >
                         <span>{{
@@ -464,8 +470,8 @@ export default {
         }
 
         //// remove mock
-        domain.numUsers = 12;
-        domain.numGroups = 4;
+        // domain.numUsers = 12;
+        // domain.numGroups = 4;
       }
 
       this.domains = domains;
