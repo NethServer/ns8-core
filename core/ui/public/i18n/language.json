@@ -774,6 +774,7 @@
     "no_group_description": "There is no group in this domain",
     "search_group": "Search group",
     "name": "Name",
+    "user": "User",
     "edit_group": "Edit group",
     "select_users": "Select users",
     "delete_user_description": "Delete user <strong>{name}</strong>? This user will lose access to all apps and will be removed from all groups.",

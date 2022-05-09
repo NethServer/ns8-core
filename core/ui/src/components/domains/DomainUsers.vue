@@ -235,7 +235,7 @@ export default {
       isEditingUser: false,
       currentUser: null,
       userToDelete: null,
-      tableColumns: ["username", "display_name", "attributes" /*, "groups"*/], ////
+      tableColumns: ["user", "display_name", "attributes" /*, "groups"*/], ////
       tablePage: [],
       loading: {
         listDomainUsers: false,
