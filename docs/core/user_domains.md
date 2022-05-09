@@ -5,7 +5,7 @@ nav_order: 6
 parent: Core
 ---
 
-# Users and groups: Ldapproxy
+# User domains
 
 Users and groups are stored in an LDAP database, served by one **account
 provider module**. Multiple modules can work together to serve the same
@@ -13,11 +13,13 @@ LDAP database as replicas of it. An LDAP database represents an account
 **domain**.
 
 A NS8 cluster can host multiple account domains from different
-implementations. It is possible to configure external LDAP services as
-hosted ones. Supported LDAP schema are
+implementations. It is possible to configure and connect external LDAP
+services, too. Supported LDAP schema are
 
-1. Active Directory
-2. RFC2307
+1. `ad` - Active Directory
+2. `rfc2307`
+
+## LDAP service discovery
 
 A module can discover the list of available account domains with the
 `agent.ldapproxy` Python module. The following command dumps a list of
@@ -62,3 +64,26 @@ any command from it. For instance:
 ```shell
 mycommand && systemctl --user reload mymodule.service
 ```
+
+## List users and groups
+
+Once LDAP connection parameters are retrieved with the `agent.ldapproxy`
+Python package, it is easy to get user and group listings with the
+`agent.ldapclient` package.
+
+This is an excerpt from the `cluster/list-domain-groups` API implementation:
+
+```python
+from agent.ldapproxy import Ldapproxy
+from agent.ldapclient import Ldapclient
+
+domparams = Ldapproxy().get_domain('mydom.test')
+groups = Ldapclient.factory(**domparams).list_groups()
+```
+
+For complete examples see the API implementation of
+
+- `cluster/list-domain-groups`
+- `cluster/list-domain-users`
+- `cluster/get-domain-user`
+- `cluster/get-domain-group`

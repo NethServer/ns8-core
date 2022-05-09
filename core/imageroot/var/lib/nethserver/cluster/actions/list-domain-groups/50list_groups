@@ -23,7 +23,7 @@
 import sys
 import json
 from agent.ldapproxy import Ldapproxy
-from cluster.ldapclient import Ldapclient
+from agent.ldapclient import Ldapclient
 
 request = json.load(sys.stdin)
 

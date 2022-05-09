@@ -24,7 +24,7 @@ import sys
 import json
 import agent
 from agent.ldapproxy import Ldapproxy
-from cluster.ldapclient import Ldapclient, LdapclientEntryNotFound
+from agent.ldapclient import Ldapclient, LdapclientEntryNotFound
 
 request = json.load(sys.stdin)
 
