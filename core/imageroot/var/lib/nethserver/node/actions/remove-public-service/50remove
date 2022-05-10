@@ -22,23 +22,13 @@
 
 import sys
 import json
-import subprocess
+import agent
 
 request = json.load(sys.stdin)
 name = request['service']
 
-# Check if firewalld is running
-state_p = subprocess.run(['firewall-cmd', '--state'])
-if state_p.returncode == 0:
-    fw_cmd = ['firewall-cmd', '--permanent']
-    fw_running = True
-else:
-    fw_cmd = ['firewall-offline-cmd']
-    fw_running = False
-
 # Delete the service, it will be automatically removed from all zones
-subprocess.run(fw_cmd + [f'--delete-service={name}'], check = True)
+agent.run_helper('firewall-cmd', '--permanent', f'--delete-service={name}').check_returncode()
 
 # Apply the configuration
-if fw_running:
-    subprocess.run(['firewall-cmd', '--reload'], check = True)
+agent.run_helper('firewall-cmd', '--reload').check_returncode()
