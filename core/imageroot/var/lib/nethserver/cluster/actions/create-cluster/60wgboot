@@ -37,3 +37,9 @@ Requires=wg-quick@wg0.service
 EOF
 
 systemctl daemon-reload
+
+# Allow connections to the wireguard UDP port from
+# the default firewall zone
+listen_port=$(jq -r .listen_port)
+firewall-cmd --permanent "--add-port=${listen_port}/udp"
+firewall-cmd --reload

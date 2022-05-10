@@ -67,8 +67,13 @@ fi
 echo "Generate WireGuard VPN key pair:"
 (umask 0077; wg genkey | tee /etc/nethserver/wg0.key | wg pubkey) | tee /etc/nethserver/wg0.pub
 
-echo "Setup firewalld:"
-/usr/local/sbin/firewall-setup
+echo "Add firewalld core rules:"
+(
+    exec >/dev/null
+    firewall-cmd --permanent --add-service=http --add-service=https
+    firewall-cmd --permanent --zone=trusted --add-interface=wg0
+    firewall-cmd --reload
+)
 
 echo "Start Redis DB:"
 systemctl enable --now redis
