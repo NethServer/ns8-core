@@ -25,7 +25,7 @@ import json
 import subprocess
 
 request = json.load(sys.stdin)
-name = request['name']
+name = request['service']
 ports = request['ports']
 
 # Check if firewalld is running
@@ -42,7 +42,7 @@ subprocess.run(fw_cmd + [f'--new-service={name}'], check = True)
 
 # Add service ports
 port_cmd = []
-for port in ports
+for port in ports:
     ports.append(f'--add-port={port}')
 subprocess.run(fw_cmd + [f'--service={name}', f'--set-short={name}'] + port_cmd, check = True)
 

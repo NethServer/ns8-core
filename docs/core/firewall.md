@@ -5,7 +5,7 @@ nav_order: 13
 parent: Core
 ---
 
-# Built-in firewall
+# Firewall
 
 * TOC
 {:toc}
@@ -20,11 +20,36 @@ Default policies:
 - SSH port is always open
 - all blocked packets are logged
 
-FIXME: describe how to use it
+Please note that rootfull containers with port mapping (DNAT) or private
+networking are *not supported*.
 
+## Configuration
 
-Podman firewalld integration is only partial:
-- podman 4, in CentOS Stream, automatically configure itself for firewalld using netavark
-- pdoman 3.x, on Debian and Ubuntu, needs to explicitly configure the CNI plugin
+To permit direct connections from the public zone to a service provided by
+a module, the module itself must modify the node firewall configuration.
 
-Please note that rootfull containers with port mapping (DNAT) are *not supported*.
+The node firewall is configured with a simple _fwadm_ API. A module must
+be authorized to use it, by adding `node:fwadm` to the module image label
+`org.nethserver.authorizations`. For instance, set
+
+       org.nethserver.authorizations=node:fwadm
+
+Then the `create-module` and `destroy-module` actions must use the `agent`
+Python package to add/remove the node firewall configuration needed by the
+module.
+
+In `create-module`:
+
+```python
+import os
+import agent
+agent.assert_exp(agent.add_public_service(os.environ['MODULE_ID'], ["80/tcp", "443/tcp"]))
+```
+
+In `destroy-module`:
+
+```python
+import os
+import agent
+agent.assert_exp(agent.remove_public_service(os.environ['MODULE_ID']))
+```

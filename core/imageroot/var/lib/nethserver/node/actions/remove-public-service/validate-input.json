@@ -1,0 +1,22 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "remove-public-service input",
+    "$id": "http://schema.nethserver.org/node/remove-public-service-input.json",
+    "description": "Remove firewall configuration for the given public service",
+    "examples": [
+        {
+            "service": "smtp"
+        }
+    ],
+    "type": "object",
+    "required": [
+        "service"
+    ],
+    "properties": {
+        "service": {
+            "type": "string",
+            "title": "Service name",
+            "minLength": 1
+        }
+    }
+}

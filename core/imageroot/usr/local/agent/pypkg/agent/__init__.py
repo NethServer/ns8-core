@@ -398,7 +398,7 @@ def add_public_service(name, ports):
         agent_id=f'node/{node_id}',
         action='add-public-service',
         data={
-            'name': name,
+            'service': name,
             'ports': ports
         }
     )
@@ -409,7 +409,6 @@ def remove_public_service(name):
     response = agent.tasks.run(
         agent_id=f'node/{node_id}',
         action='remove-public-service',
-        data={'name': name}
+        data={'service': name}
     )
     return response['exit_code'] == 0
-
