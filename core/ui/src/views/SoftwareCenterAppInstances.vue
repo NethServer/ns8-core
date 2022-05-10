@@ -195,11 +195,13 @@
                     :label="$t('software_center.edit_instance_label')"
                   />
                 </cv-overflow-menu-item>
-                <cv-overflow-menu-item @click="showCloneAppModal(instance)">
+                <cv-overflow-menu-item
+                  @click="showCloneAppModal(instance)"
+                  :data-test-id="index == 0 ? 'first-clone' : ''"
+                >
                   <NsMenuItem
                     :icon="Copy20"
                     :label="$t('software_center.clone')"
-                    :data-test-id="index == 0 ? 'first-clone' : ''"
                   />
                 </cv-overflow-menu-item>
                 <cv-overflow-menu-item
@@ -215,11 +217,11 @@
                 <cv-overflow-menu-item
                   danger
                   @click="showUninstallModal(app, instance)"
+                  :data-test-id="index == 0 ? 'first-uninstall' : ''"
                 >
                   <NsMenuItem
                     :icon="TrashCan20"
                     :label="$t('software_center.uninstall')"
-                    :data-test-id="index == 0 ? 'first-uninstall' : ''"
                   />
                 </cv-overflow-menu-item>
               </cv-overflow-menu>

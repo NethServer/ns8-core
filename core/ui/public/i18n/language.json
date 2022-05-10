@@ -110,7 +110,9 @@
     "password_not_secure": "Password must meet all security requirements below",
     "invalid_user_password": "Wrong password",
     "password": "Password",
-    "re_enter_password": "Re-enter password"
+    "re_enter_password": "Re-enter password",
+    "new_password": "New password",
+    "re_enter_new_password": "Re-enter new password"
   },
   "pagination": {
     "items_per_page": "Items per page:",

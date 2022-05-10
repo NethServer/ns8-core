@@ -125,8 +125,15 @@
                     v-if="domain && domain.location == 'internal'"
                     class="table-overflow-menu-cell"
                   >
-                    <cv-overflow-menu flip-menu class="table-overflow-menu">
-                      <cv-overflow-menu-item @click="showEditUserModal(row)">
+                    <cv-overflow-menu
+                      flip-menu
+                      class="table-overflow-menu"
+                      :data-test-id="row.user + '-menu'"
+                    >
+                      <cv-overflow-menu-item
+                        @click="showEditUserModal(row)"
+                        :data-test-id="row.user + '-edit'"
+                      >
                         <NsMenuItem :icon="Edit20" :label="$t('common.edit')" />
                       </cv-overflow-menu-item>
                       <cv-overflow-menu-item
@@ -157,6 +164,7 @@
                       <cv-overflow-menu-item
                         danger
                         @click="showDeleteUserModal(row)"
+                        :data-test-id="row.user + '-delete'"
                       >
                         <NsMenuItem
                           :icon="TrashCan20"
@@ -212,6 +220,7 @@
       :errorDescription="error.removeUser"
       @hide="hideDeleteUserModal"
       @confirmDelete="removeUser"
+      data-test-id="delete-user-modal"
     />
   </div>
 </template>

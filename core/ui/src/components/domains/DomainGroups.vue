@@ -112,14 +112,22 @@
                     v-if="domain && domain.location == 'internal'"
                     class="table-overflow-menu-cell"
                   >
-                    <cv-overflow-menu flip-menu class="table-overflow-menu">
-                      <cv-overflow-menu-item @click="showEditGroupModal(row)">
+                    <cv-overflow-menu
+                      flip-menu
+                      class="table-overflow-menu"
+                      :data-test-id="row.group + '-menu'"
+                    >
+                      <cv-overflow-menu-item
+                        @click="showEditGroupModal(row)"
+                        :data-test-id="row.group + '-edit'"
+                      >
                         <NsMenuItem :icon="Edit20" :label="$t('common.edit')" />
                       </cv-overflow-menu-item>
                       <NsMenuDivider />
                       <cv-overflow-menu-item
                         danger
                         @click="showDeleteGroupModal(row)"
+                        :data-test-id="row.group + '-delete'"
                       >
                         <NsMenuItem
                           :icon="TrashCan20"
@@ -169,6 +177,7 @@
       :errorDescription="error.removeGroup"
       @hide="hideDeleteGroupModal"
       @confirmDelete="removeGroup"
+      data-test-id="delete-group-modal"
     />
   </div>
 </template>
