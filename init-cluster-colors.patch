@@ -1,0 +1,82 @@
+diff --git a/core/ui/src/App.vue b/core/ui/src/App.vue
+index de51ebc..81beb09 100644
+--- a/core/ui/src/App.vue
++++ b/core/ui/src/App.vue
+@@ -291,7 +291,7 @@ export default {
+         const clusterStatus = taskResult.output;
+ 
+         //// remove mock
+-        // clusterStatus.initialized = false; ////
++        clusterStatus.initialized = false; ////
+ 
+         const isClusterInitialized = clusterStatus.initialized;
+         this.setClusterInitializedInStore(isClusterInitialized);
+diff --git a/core/ui/src/views/InitializeCluster.vue b/core/ui/src/views/InitializeCluster.vue
+index c74f8c0..6167f5b 100644
+--- a/core/ui/src/views/InitializeCluster.vue
++++ b/core/ui/src/views/InitializeCluster.vue
+@@ -1,5 +1,5 @@
+ <template>
+-  <div>
++  <div class="welcome-container">
+     <cv-grid class="welcome-grid">
+       <cv-loading
+         :active="isCreatingCluster || isJoiningCluster"
+@@ -1062,7 +1062,7 @@ export default {
+       const clusterStatus = taskResult.output;
+ 
+       //// remove mock
+-      // clusterStatus.initialized = false; ////
++      clusterStatus.initialized = false; ////
+ 
+       if (clusterStatus.initialized && this.isMaster) {
+         // redirect to status page
+@@ -1826,7 +1826,7 @@ export default {
+ 
+ .welcome {
+   margin-top: 2rem;
+-  margin-bottom: 4rem;
++  // margin-bottom: 4rem; ////
+ }
+ 
+ .tile-description {
+@@ -1868,6 +1868,20 @@ export default {
+     max-width: 9rem;
+   }
+ }
++
++.welcome-container {
++  background-color: $hover-primary-text;
++  color: white;
++  position: fixed;
++  padding: 0;
++  margin: 0;
++
++  top: 0;
++  left: 0;
++
++  width: 100%;
++  height: 100%;
++}
+ </style>
+ 
+ <style lang="scss">
+@@ -1884,4 +1898,18 @@ export default {
+   outline: 2px solid $danger-01;
+   outline-offset: -2px;
+ }
++
++.welcome-grid .bx--tile {
++  background-color: $hover-primary-text;
++  color: white;
++}
++
++.welcome-grid .bx--tile--light {
++  background-color: $interactive-01;
++  color: white;
++}
++
++.welcome-grid .tile-description {
++  color: white;
++}
+ </style>

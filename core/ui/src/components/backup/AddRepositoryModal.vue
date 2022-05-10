@@ -127,15 +127,16 @@
             :description="$t('backup.backup_repository_auth_error_description')"
             :showCloseButton="false"
           />
-          <cv-text-input
+          <NsTextInput
             :label="$t('backup.url')"
             v-model.trim="url"
             :invalid-message="error.url"
-            :placeholder="urlPlaceholder"
+            :placeholder="$t('backup.url_placeholder')"
             :disabled="loading.addBackupRepository"
+            :prefix="selectedProviderPrefix"
             ref="url"
           >
-          </cv-text-input>
+          </NsTextInput>
           <!-- backblaze -->
           <template v-if="isBackblazeSelected">
             <cv-text-input
@@ -264,14 +265,20 @@ export default {
       backblaze: {
         b2_account_id: "",
         b2_account_key: "",
+        repoPrefix: "b2:",
       },
       aws: {
         aws_access_key_id: "",
         aws_default_region: "",
         aws_secret_access_key: "",
+        repoPrefix: "s3:s3.amazonaws.com/",
       },
-      genericS3: {},
-      azure: {},
+      genericS3: {
+        repoPrefix: "",
+      },
+      azure: {
+        repoPrefix: "",
+      },
       //// handle all providers
       loading: {
         addBackupRepository: false,
@@ -323,18 +330,8 @@ export default {
       }
       //// handle all providers
     },
-    urlPlaceholder() {
-      const suffix = this.$t("backup.url_placeholder");
-
-      if (this.isBackblazeSelected) {
-        return this.BACKBLAZE_PROTOCOL + suffix;
-      } else if (this.isAmazonS3Selected || this.isGenericS3Selected) {
-        return this.AWS_PROTOCOL + suffix;
-      } else if (this.isAzureSelected) {
-        return this.AZURE_PROTOCOL + suffix;
-      } else {
-        return "";
-      }
+    selectedProviderPrefix() {
+      return this[this.selectedProvider].repoPrefix;
     },
   },
   watch: {
@@ -472,11 +469,9 @@ export default {
           this.focusElement("url");
           isValidationOk = false;
         }
-      } else if (!this.url.startsWith(this.BACKBLAZE_PROTOCOL)) {
+      } else if (this.url.includes(" ")) {
         // wrong url protocol
-        this.error.url = this.$t("backup.invalid_url_protocol", {
-          protocol: this.BACKBLAZE_PROTOCOL,
-        });
+        this.error.url = this.$t("backup.invalid_url");
 
         if (isValidationOk) {
           this.focusElement("url");
@@ -531,11 +526,9 @@ export default {
           this.focusElement("url");
           isValidationOk = false;
         }
-      } else if (!this.url.startsWith(this.AWS_PROTOCOL)) {
+      } else if (this.url.includes(" ")) {
         // wrong url protocol
-        this.error.url = this.$t("backup.invalid_url_protocol", {
-          protocol: this.AWS_PROTOCOL,
-        });
+        this.error.url = this.$t("backup.invalid_url");
 
         if (isValidationOk) {
           this.focusElement("url");
@@ -639,7 +632,7 @@ export default {
           data: {
             name: this.name,
             provider: this.selectedProvider,
-            url: this.url,
+            url: this.selectedProviderPrefix + this.url,
             parameters: this.buildRepositoryParameters(),
             password: this.password,
           },
