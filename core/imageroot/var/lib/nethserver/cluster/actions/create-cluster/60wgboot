@@ -38,8 +38,10 @@ EOF
 
 systemctl daemon-reload
 
-# Allow connections to the wireguard UDP port from
-# the default firewall zone
-listen_port=$(jq -r .listen_port)
-firewall-cmd --permanent "--add-port=${listen_port}/udp"
+readarray -t request < <(jq -r '.listen_port, .network')
+# 0. Allow connections to the wireguard UDP port from
+#    the default firewall zone.
+# 1. Trust connections from the wireguard VPN
+firewall-cmd --permanent --add-port="${request[0]}/udp"
+firewall-cmd --permanent --zone=trusted --add-source="${request[1]}"
 firewall-cmd --reload

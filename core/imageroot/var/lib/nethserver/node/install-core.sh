@@ -71,7 +71,6 @@ echo "Add firewalld core rules:"
 (
     exec >/dev/null
     firewall-cmd --permanent --add-service=http --add-service=https
-    firewall-cmd --permanent --zone=trusted --add-interface=wg0
     firewall-cmd --reload
 )
 
