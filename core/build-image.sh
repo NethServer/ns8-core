@@ -101,7 +101,6 @@ cat >etc/redis.conf <<EOR
 #
 # redis.conf -- do not edit manually!
 #
-bind 127.0.0.1 ::1
 port 6379
 protected-mode no
 save 5 1

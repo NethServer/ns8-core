@@ -76,9 +76,6 @@ with open("/var/lib/nethserver/node/state/environment", "w") as fenv:
 # Restart the node agent to apply the new environment setup
 agent.run_helper('systemctl', 'restart', 'agent@node').check_returncode()
 
-# Bind Redis to the VPN ip_address
-agent.assert_exp(rdb.execute_command('CONFIG SET', 'bind', f'127.0.0.1 ::1 {ip_address}') is True)
-
 # Set this Redis instance read-only
 agent.assert_exp(rdb.execute_command('REPLICAOF', leader_ip_address, '6379') == 'OK')
 
