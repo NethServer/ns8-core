@@ -1,0 +1,47 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2022 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
+import sys
+import json
+import agent
+
+request = json.load(sys.stdin)
+name = request['service']
+ports = request['ports']
+
+fw_cmd = ['firewall-cmd', '--permanent']
+
+# Create the service
+agent.run_helper(*fw_cmd, f'--new-service={name}').check_returncode()
+
+# Add the service to default zone
+agent.run_helper(*fw_cmd, f'--add-service={name}').check_returncode()
+
+# Add service ports
+port_cmd = [f'--service={name}']
+for port in ports:
+    port_cmd.append(f'--add-port={port}')
+
+agent.run_helper(*fw_cmd, *port_cmd).check_returncode()
+
+# Apply the configuration
+agent.run_helper('firewall-cmd', '--reload').check_returncode()

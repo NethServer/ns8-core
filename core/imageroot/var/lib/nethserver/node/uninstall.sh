@@ -43,6 +43,13 @@ for userhome in /home/*[0-9]; do
     userdel -r "${moduleid}"
 done
 
+echo "Clean up firewalld core rules"
+wg0_listen_port=$(awk '/ListenPort =/ {print $3}' /etc/wireguard/wg0.conf)
+firewall-cmd --permanent "--remove-port=${wg0_listen_port}"
+firewall-cmd --permanent --remove-service=http --remove-service=https
+firewall-cmd --permanent --zone=trusted --remove-interface=wg0
+firewall-cmd --reload
+
 echo "Stopping the core services"
 systemctl disable --now api-server.service redis.service wg-quick@wg0.service
 rm -vf /etc/systemd/system/redis.service.d/wireguard.conf

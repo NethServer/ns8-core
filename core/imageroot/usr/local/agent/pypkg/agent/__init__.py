@@ -31,6 +31,7 @@ import csv
 import traceback
 import shlex
 import warnings
+import agent.tasks
 
 # Reference https://www.man7.org/linux/man-pages/man3/sd-daemon.3.html
 SD_EMERG   = "<0>"  # system is unusable
@@ -390,3 +391,24 @@ def get_image_name_from_url(image_url):
     # Strip the trailing tag or hash
     image_name, _ = image_nametag.replace('@', ':', 1).split(':', 1)
     return image_name
+
+def add_public_service(name, ports):
+    node_id = os.environ['NODE_ID']
+    response = agent.tasks.run(
+        agent_id=f'node/{node_id}',
+        action='add-public-service',
+        data={
+            'service': name,
+            'ports': ports
+        }
+    )
+    return response['exit_code'] == 0
+
+def remove_public_service(name):
+    node_id = os.environ['NODE_ID']
+    response = agent.tasks.run(
+        agent_id=f'node/{node_id}',
+        action='remove-public-service',
+        data={'service': name}
+    )
+    return response['exit_code'] == 0

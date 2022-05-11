@@ -67,6 +67,13 @@ fi
 echo "Generate WireGuard VPN key pair:"
 (umask 0077; wg genkey | tee /etc/nethserver/wg0.key | wg pubkey) | tee /etc/nethserver/wg0.pub
 
+echo "Add firewalld core rules:"
+(
+    exec >/dev/null
+    firewall-cmd --permanent --add-service=http --add-service=https
+    firewall-cmd --reload
+)
+
 echo "Start Redis DB:"
 systemctl enable --now redis
 
@@ -147,6 +154,8 @@ cluster.grants.grant(rdb, action_clause="list-*", to_clause="reader", on_clause=
 cluster.grants.grant(rdb, action_clause="get-*",  to_clause="reader", on_clause='node/1')
 cluster.grants.grant(rdb, action_clause="show-*", to_clause="reader", on_clause='node/1')
 cluster.grants.grant(rdb, action_clause="read-*", to_clause="reader", on_clause='node/1')
+cluster.grants.grant(rdb, action_clause="add-public-service",  to_clause="fwadm", on_clause='node/1')
+cluster.grants.grant(rdb, action_clause="remove-public-service",  to_clause="fwadm", on_clause='node/1')
 EOF
 
 for arg in "${@}"; do

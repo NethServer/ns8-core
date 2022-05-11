@@ -22,18 +22,17 @@
 
 #
 # 1. Enable wg0 at system boot
-# 2. Configure Redis to start after it because it binds to wg0 IP address
+# 2. Configure firewalld to open Wireguard "listen_port"
 #
 
 set -e
 exec 1>&2
 systemctl enable wg-quick@wg0.service
-mkdir -vp /etc/systemd/system/redis.service.d
 
-cat >/etc/systemd/system/redis.service.d/wireguard.conf <<EOF
-[Unit]
-After=wg-quick@wg0.service
-Requires=wg-quick@wg0.service
-EOF
-
-systemctl daemon-reload
+readarray -t request < <(jq -r '.listen_port, .network')
+# 0. Allow connections to the wireguard UDP port from
+#    the default firewall zone.
+# 1. Trust connections from the wireguard VPN
+firewall-cmd --permanent --add-port="${request[0]}/udp"
+firewall-cmd --permanent --zone=trusted --add-source="${request[1]}"
+firewall-cmd --reload

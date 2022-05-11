@@ -1,0 +1,32 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "add-public-service input",
+    "$id": "http://schema.nethserver.org/node/add-public-service-input.json",
+    "description": "Add firewall configuration for a new public service",
+    "examples": [
+        {
+            "service": "smtp",
+            "ports": [
+                "25/tcp"
+            ]
+        }
+    ],
+    "type": "object",
+    "required": [
+        "service",
+        "ports"
+    ],
+    "properties": {
+        "service": {
+            "type": "string",
+            "title": "Service name",
+            "minLength": 1
+        },
+        "ports": {
+            "type": "array",
+            "title": "Firewall ports configuration",
+            "examples": ["25/tcp", "21/udp", "9000-9010/tcp"],
+            "minItems": 1
+        }
+    }
+}
