@@ -4,7 +4,7 @@ Description=Cluster API server
 [Service]
 Type=simple
 Environment=GIN_MODE=debug
-Environment=LISTEN_ADDRESS=:8080
+Environment=LISTEN_ADDRESS=:9311
 Environment=REDIS_ADDRESS=127.0.0.1:6379
 Environment=AUDIT_FILE=/var/lib/nethserver/api-server/audit.db
 EnvironmentFile=-/etc/nethserver/api-server.env

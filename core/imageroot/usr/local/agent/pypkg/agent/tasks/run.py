@@ -122,14 +122,14 @@ async def _runp(tasks, **kwargs):
 
 async def _run_with_protocol(taskrq, **pconn):
     pconn.setdefault('progress_callback', None)
-    pconn.setdefault('endpoint', 'http://cluster-leader:8080/')
+    pconn.setdefault('endpoint', 'http://cluster-leader:9311')
     if pconn['endpoint'].startswith("redis://"):
         return await run_redisclient(taskrq, **pconn)
     else:
         return await run_apiclient(taskrq, **pconn)
 
 async def _run_with_protocol_nowait(taskrq, **pconn):
-    pconn.setdefault('endpoint', 'http://cluster-leader:8080/')
+    pconn.setdefault('endpoint', 'http://cluster-leader:9311')
     if pconn['endpoint'].startswith("redis://"):
         return await run_redisclient_nowait(taskrq, **pconn)
     else:

@@ -7,5 +7,5 @@ Service has not failed
     Should Be Equal As Integers    ${rc}    1
 
 Service is reachable
-    ${output} =    Execute Command    curl http://127.0.0.1:8080/api/nodes
+    ${output} =    Execute Command    curl http://127.0.0.1:9311/api/nodes
     Should Contain    ${output}    "code":401

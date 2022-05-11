@@ -61,7 +61,7 @@ def login_command(args):
     if args.endpoint:
         endpoint = args.endpoint
     else:
-        endpoint = 'http://cluster-leader:8080/'
+        endpoint = 'http://cluster-leader:9311'
 
     response = requests.post(
         endpoint + '/api/login',
