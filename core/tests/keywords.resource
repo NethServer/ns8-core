@@ -79,3 +79,79 @@ Open login page
         ${url}=    Set Variable    https://${NODE_ADDR}/cluster-admin
     END
     New Page    ${url}
+
+Create domain user
+    [Arguments]    ${domain}    ${username}    ${display_name}
+    Click    text=Domains and users
+    Click    button[data-test-id="${domain}-users-and-groups"]
+    Click    .toolbar button >> text=Create user
+    Fill Text    .cv-text-input >> text="Username"    ${username}
+    Sleep    200ms
+    Fill Text    .cv-text-input >> text="Display name"    ${display_name}
+    Sleep    200ms
+    Fill Text    .cv-text-input >> text="Password"    Nethesis,1234
+    Sleep    200ms
+    Fill Text    .cv-text-input >> text="Re-enter password"    Nethesis,1234
+    Click    .cv-modal button >> text=Create user
+    Get Text    .bx--toast-notification--success >> text="Completed"
+    Get Element    .ns-data-table td >> text="${username}"
+
+Edit domain user
+    [Arguments]    ${domain}    ${username}    ${new_display_name}
+    Click    text=Domains and users
+    Click    button[data-test-id="${domain}-users-and-groups"]
+    # click overflow menu
+    Click    .cv-overflow-menu[data-test-id="${username}-menu"] button
+    Click    .bx--overflow-menu-options [data-test-id="${username}-edit"] >> text="Edit"
+    Fill Text    .cv-text-input >> text="Display name"    ${new_display_name}
+    Click    .cv-modal button >> text=Edit user
+    Get Text    .bx--toast-notification--success >> text="Completed"
+    Get Element    .ns-data-table td >> text="${new_display_name}"
+
+Delete domain user
+    [Arguments]    ${domain}    ${username}
+    Click    text=Domains and users
+    Click    button[data-test-id="${domain}-users-and-groups"]
+    # click overflow menu
+    Click    .cv-overflow-menu[data-test-id="${username}-menu"] button
+    Click    .bx--overflow-menu-options [data-test-id="${username}-delete"] >> text="Delete"
+    # enter domain name in danger modal input
+    Fill Text    [data-test-id="delete-user-modal"] .bx--text-input    ${username}
+    Click    [data-test-id="delete-user-modal"] button >> text="I understand, delete"
+    Get Text    .bx--toast-notification--success >> text="Completed"
+
+Create domain group
+    [Arguments]    ${domain}    ${group}    ${description}
+    Click    text=Domains and users
+    Click    button[data-test-id="${domain}-users-and-groups"]
+    Click    .toolbar button >> text=Create group
+    Fill Text    .cv-text-input >> text="Name"    ${group}
+    Sleep    200ms
+    Fill Text    .cv-text-input >> text="Description"    ${description}
+    Click    .cv-modal button >> text=Create group
+    Get Text    .bx--toast-notification--success >> text="Completed"
+    Get Element    .ns-data-table td >> text="${group}"
+
+Edit domain group
+    [Arguments]    ${domain}    ${group}    ${new_description}
+    Click    text=Domains and users
+    Click    button[data-test-id="${domain}-users-and-groups"]
+    # click overflow menu
+    Click    .cv-overflow-menu[data-test-id="${group}-menu"] button
+    Click    .bx--overflow-menu-options [data-test-id="${group}-edit"] >> text="Edit"
+    Fill Text    .cv-text-input >> text="Description"    ${new_description}
+    Click    .cv-modal button >> text=Edit group
+    Get Text    .bx--toast-notification--success >> text="Completed"
+    Get Element    .ns-data-table td >> text="${new_description}"
+
+Delete domain group
+    [Arguments]    ${domain}    ${group}
+    Click    text=Domains and users
+    Click    button[data-test-id="${domain}-users-and-groups"]
+    # click overflow menu
+    Click    .cv-overflow-menu[data-test-id="${group}-menu"] button
+    Click    .bx--overflow-menu-options [data-test-id="${group}-delete"] >> text="Delete"
+    # enter domain name in danger modal input
+    Fill Text    [data-test-id="delete-group-modal"] .bx--text-input    ${group}
+    Click    [data-test-id="delete-group-modal"] button >> text="I understand, delete"
+    Get Text    .bx--toast-notification--success >> text="Completed"

@@ -42,6 +42,7 @@ Default.args = {
   passwordVisible: false,
   tooltipAlignment: "start",
   tooltipDirection: "bottom",
+  prefix: "",
   light: true,
   slotTooltip: "<h6>Tooltip title</h6><p>Tooltip description</p>",
 };

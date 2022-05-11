@@ -217,6 +217,7 @@
                     tip-position="top"
                     tip-alignment="end"
                     class="top-right-overflow-menu"
+                    :data-test-id="domain.name + '-menu'"
                   >
                     <cv-overflow-menu-item
                       @click="goToDomainConfiguration(domain)"
@@ -229,6 +230,7 @@
                     <cv-overflow-menu-item
                       danger
                       @click="showDeleteDomainModal(domain)"
+                      :data-test-id="domain.name + '-delete'"
                     >
                       <NsMenuItem
                         :icon="TrashCan20"
@@ -305,6 +307,7 @@
                         kind="ghost"
                         :icon="Group20"
                         @click="goToDomainUsersAndGroups(domain)"
+                        :data-test-id="domain.name + '-users-and-groups'"
                         >{{ $t("domains.users_and_groups") }}</NsButton
                       >
                     </div>

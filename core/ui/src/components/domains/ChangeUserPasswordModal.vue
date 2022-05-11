@@ -13,8 +13,8 @@
     <template slot="content">
       <cv-form @submit.prevent="changeUserPassword">
         <NsPasswordInput
-          :newPasswordLabel="$t('password.password')"
-          :confirmPasswordLabel="$t('password.re_enter_password')"
+          :newPasswordLabel="$t('password.new_password')"
+          :confirmPasswordLabel="$t('password.re_enter_new_password')"
           v-model="newPassword"
           @passwordValidation="onPasswordValidation"
           :newPasswordInvalidMessage="$t(error.newPassword)"
