@@ -11,12 +11,11 @@
     "build-storybook": "build-storybook"
   },
   "dependencies": {
-    "@carbon/charts-vue": "^0.50.4",
     "@carbon/grid": "^10.26.0",
     "@carbon/icons-vue": "^10.37.0",
     "@carbon/themes": "^10.34.0",
     "@carbon/vue": "^2.40.0",
-    "@nethserver/ns8-ui-lib": "^0.0.90",
+    "@nethserver/ns8-ui-lib": "^0.0.91",
     "await-to-js": "^3.0.0",
     "axios": "^0.21.2",
     "carbon-components": "^10.41.0",

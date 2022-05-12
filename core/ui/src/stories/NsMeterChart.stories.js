@@ -13,10 +13,10 @@ const Template = (args, { argTypes }) => ({
 
 export const Default = Template.bind({});
 Default.args = {
-  title: "Title",
-  label: "Label",
+  label: "Usage",
   value: 65,
-  warningTh: 70,
-  dangerTh: 90,
-  height: "6rem",
+  loading: false,
+  warningThreshold: 70,
+  dangerThreshold: 90,
+  progressBarHeight: "10px",
 };
