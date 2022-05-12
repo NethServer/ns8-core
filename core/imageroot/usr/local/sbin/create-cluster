@@ -41,7 +41,7 @@ loginobj = {
     "password": args.admin_pw,
 }
 
-response = requests.post('http://127.0.0.1:8080/api/login', json=loginobj)
+response = requests.post('http://127.0.0.1:9311/api/login', json=loginobj)
 response.raise_for_status()
 payload = response.json()
 

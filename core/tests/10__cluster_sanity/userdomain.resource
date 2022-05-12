@@ -6,6 +6,10 @@ ${mid1}
 ${domain}
 
 *** Keywords ***
+Domain is ready
+    Wait Until Keyword Succeeds    10    1 seconds
+    ...    Run task    cluster/list-domain-users    {"domain":"${domain}"}
+
 Create users and groups
     Run task    module/${mid1}/add-user    {"user":"u1","display_name":"First User","password":"Nethesis,1234"}
     Run task    module/${mid1}/add-user    {"user":"u2","display_name":"Second User","locked":true}

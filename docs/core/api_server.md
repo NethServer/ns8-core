@@ -7,7 +7,8 @@ parent: Core
 
 # API server
 
-The API server is a daemon implemented using [Go](https://golang.org) and listens on `localhost:8080`.
+The API server is a daemon implemented using [Go](https://golang.org) and
+listens on TCP port `9311`.
 
 This component is used to send command from UI to Redis, using HTTP Rest API and Redis Pub/Sub protocol.
 
@@ -27,7 +28,7 @@ API flow:
 Authentication:
 ```bash
 curl -X 'POST' \
-  'http://localhost:8080/api/login' \
+  'http://localhost:9311/api/login' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{"username": "admin", "password": "Nethesis,12345"}' | jq
@@ -45,7 +46,7 @@ Response, note the JWT token saved inside the `token` field:
 Use the obtained JWT `token` to list configured nodes:
 ```bash
 curl -X 'GET' \ 
-  'http://localhost:8080/api/nodes'
+  'http://localhost:9311/api/nodes'
    -H 'accept: application/json' \
    -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY3Rpb25zIjpbXSwiZXhwIjoxNjQzNzIzNjkwLCJpZCI6ImFkbWluIiwib3JpZ19pYXQiOjE2NDMxMTg4OTAsInJvbGUiOiIifQ.BzzmleO6ln40DQUZr4FUyFTFEle6PkK-ar-vqwXJ5uo"
 ```

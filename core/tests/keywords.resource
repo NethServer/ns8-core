@@ -13,7 +13,9 @@ ${HEADLESS}       true
 Connect to the node
     [Arguments]    ${NODE_ADDR}    ${SSH_KEYFILE}
     Open Connection    ${NODE_ADDR}
-    Login With Public Key    root    ${SSH_KEYFILE}
+    Login With Public Key    root    ${SSH_KEYFILE}    keep_alive_interval=30 seconds
+
+System boot is complete
     ${output} =    Execute Command    systemctl is-system-running    --wait
     Should Be True    '${output}' == 'running' or '${output}' == 'degraded'
 
@@ -41,7 +43,6 @@ Uninstall core and modules
     Put File    imageroot/var/lib/nethserver/node/uninstall.sh    .    mode=0644
     Execute Command    bash uninstall.sh
     Collect the suite journal
-    Close Connection
 
 Collect the suite journal
     Execute Command    journalctl -S @${JOURNAL_SINCE} >journal-dump.log

@@ -9,6 +9,6 @@ ${COREMODULES}
 *** Test Cases ***
 NS8 Installation
     [Tags]    install
-    Connect to the Node    ${NODE_ADDR}    ${SSH_KEYFILE}
+    System boot is complete
     Install the core    ${COREMODULES}
     Basic post install sanity checks

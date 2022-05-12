@@ -39,6 +39,7 @@ Add provider
 
 Run user and group listing tests
     Run Keywords
+    ...    Domain is ready
     ...    Create users and groups
     ...    List users
     ...    List groups
