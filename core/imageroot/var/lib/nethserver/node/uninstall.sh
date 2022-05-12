@@ -44,10 +44,18 @@ for userhome in /home/*[0-9]; do
 done
 
 echo "Clean up firewalld core rules"
+firewall-cmd --permanent --remove-service=http --remove-service=https >/dev/null
+
 wg0_listen_port=$(awk '/ListenPort =/ {print $3}' /etc/wireguard/wg0.conf)
-firewall-cmd --permanent "--remove-port=${wg0_listen_port}"
-firewall-cmd --permanent --remove-service=http --remove-service=https
-firewall-cmd --permanent --zone=trusted --remove-interface=wg0
+if [[ -n "${wg0_listen_port}" ]]; then
+  firewall-cmd --permanent "--remove-port=${wg0_listen_port}/udp" >/dev/null
+fi
+
+wg0_cluster_network=$(runagent redis-get cluster/network)
+if [[ -n "${wg0_cluster_network}" ]]; then
+  firewall-cmd --permanent --zone=trusted --remove-source="${wg0_cluster_network}" >/dev/null
+fi
+
 firewall-cmd --reload
 
 echo "Stopping the core services"
