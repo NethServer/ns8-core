@@ -196,6 +196,17 @@ export default {
       }
 
       const taskStatus = payload.status;
+
+      if (!contextResponse.data.data) {
+        console.log(
+          "task context not found, skipping",
+          taskId,
+          taskPath,
+          payload
+        );
+        return;
+      }
+
       const taskContext = contextResponse.data.data.context;
       let taskResult;
 
