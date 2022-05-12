@@ -26,6 +26,7 @@ podman run -i \
 	-v COREMODULES:${COREMODULES} \
 	--name core \
 	--skiponfailure unstable \
+    --exclude frontend \
 	--console dotted \
 	-d ~/outputs /home/pwuser/ns8-scratchpad/core/tests/
 EOF
