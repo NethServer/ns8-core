@@ -64,13 +64,14 @@ for modulehome in /var/lib/nethserver/*[0-9]; do
     fi
     moduleid=$(basename $modulehome)
     echo "Deleting rootfull module ${moduleid}..."
-    units=($(find /etc/systemd/system -type f -a \( \
+    readarray -t units < <(find /etc/systemd/system -type f -a \( \
       -name "${moduleid}*.service" \
       -o -name "backup*-${moduleid}.service" \
       -o -name "backup*-${moduleid}.timer" \) \
-      -delete -printf '%f\n'))
-    systemctl disable --now "agent@${moduleid}" "${units[@]}"
-    rm -rf "${modulehome}"
+    )
+    # shellcheck disable=SC2046
+    systemctl disable --now "agent@${moduleid}" $(basename -a "${units[@]}")
+    rm -rfv "${modulehome}" "${units[@]}"
 done
 
 echo "Deleting cluster and agent core modules"
