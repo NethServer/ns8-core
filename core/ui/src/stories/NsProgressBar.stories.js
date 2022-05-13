@@ -13,11 +13,20 @@ const Template = (args, { argTypes }) => ({
 
 export const Determinate = Template.bind({});
 Determinate.args = {
-  value: 75,
+  value: 65,
   indeterminate: false,
+  height: "5px",
+  warningThreshold: 70,
+  dangerThreshold: 90,
+  useStatusColors: false,
 };
 
 export const Indeterminate = Template.bind({});
 Indeterminate.args = {
+  value: 65,
   indeterminate: true,
+  height: "5px",
+  warningThreshold: 70,
+  dangerThreshold: 90,
+  useStatusColors: false,
 };

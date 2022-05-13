@@ -633,6 +633,27 @@ ul.unordered-list {
 .progress-bar-container .indeterminate-subline {
   background: $interactive-01;
 }
+
+.progress-bar-container .line.healthy,
+.progress-bar-container .progress-line.healthy,
+.progress-bar-container .indeterminate-line.healthy,
+.progress-bar-container .indeterminate-subline.healthy {
+  background: $support-02;
+}
+
+.progress-bar-container .line.warning,
+.progress-bar-container .progress-line.warning,
+.progress-bar-container .indeterminate-line.warning,
+.progress-bar-container .indeterminate-subline.warning {
+  background: #eb991e;
+}
+
+.progress-bar-container .line.danger,
+.progress-bar-container .progress-line.danger,
+.progress-bar-container .indeterminate-line.danger,
+.progress-bar-container .indeterminate-subline.danger {
+  background: $danger-01;
+}
 // branding colors for NsProgressBar end
 
 // status colors start

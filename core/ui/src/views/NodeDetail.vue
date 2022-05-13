@@ -75,13 +75,16 @@
       </div>
       <div class="bx--row">
         <div class="bx--col-md-4 bx--col-max-4">
-          <cv-tile :light="true" class="same-height-tile">
+          <cv-tile :light="true">
             <h4 class="mg-bottom-md">{{ $t("node_detail.cpu") }}</h4>
             <NsMeterChart
               :label="$t('node_detail.usage')"
               :value="loading.nodeStatus ? 0 : nodeStatus.cpu.usage"
-              height="3rem"
-              class="mg-bottom-md"
+              :loading="loading.nodeStatus"
+              :warningThreshold="70"
+              :dangerThreshold="90"
+              progressBarHeight="10px"
+              class="mg-bottom-lg"
             />
             <div class="mg-bottom-sm">
               <span class="label"
@@ -144,13 +147,16 @@
           </cv-tile>
         </div>
         <div class="bx--col-md-4 bx--col-max-4">
-          <cv-tile :light="true" class="same-height-tile">
+          <cv-tile :light="true">
             <h4 class="mg-bottom-md">{{ $t("node_detail.memory") }}</h4>
             <NsMeterChart
               :label="$t('node_detail.usage')"
               :value="loading.nodeStatus ? 0 : nodeStatus.memory.usage"
-              height="3rem"
-              class="mg-bottom-md"
+              :loading="loading.nodeStatus"
+              :warningThreshold="70"
+              :dangerThreshold="90"
+              progressBarHeight="10px"
+              class="mg-bottom-lg"
             />
             <div class="mg-bottom-sm">
               <span class="label">{{ $t("node_detail.total") }}</span>
@@ -173,17 +179,20 @@
           </cv-tile>
         </div>
         <div class="bx--col-md-4 bx--col-max-4">
-          <cv-tile :light="true" class="same-height-tile">
+          <cv-tile :light="true">
             <h4 class="mg-bottom-md">{{ $t("node_detail.swap") }}</h4>
             <NsMeterChart
               :label="$t('node_detail.usage')"
               :value="
                 loading.nodeStatus || Number.isNaN(nodeStatus.swap.usage)
-                  ? 0
+                  ? '-'
                   : nodeStatus.swap.usage
               "
-              height="3rem"
-              class="mg-bottom-md"
+              :loading="loading.nodeStatus"
+              :warningThreshold="70"
+              :dangerThreshold="90"
+              progressBarHeight="10px"
+              class="mg-bottom-lg"
             />
             <div class="mg-bottom-sm">
               <span class="label">{{ $t("node_detail.total") }}</span>
@@ -206,7 +215,7 @@
           </cv-tile>
         </div>
         <div class="bx--col-md-4 bx--col-max-4">
-          <cv-tile :light="true" class="same-height-tile">
+          <cv-tile :light="true">
             <h4 class="mg-bottom-md">{{ $t("node_detail.vpn") }}</h4>
             <template v-if="!loading.clusterStatus && vpnInfo.endpoint">
               <div class="mg-bottom-sm">
@@ -286,8 +295,11 @@
               <NsMeterChart
                 :label="$t('node_detail.usage')"
                 :value="disk.usage"
-                height="3rem"
-                class="mg-bottom-md"
+                :loading="loading.nodeStatus"
+                :warningThreshold="70"
+                :dangerThreshold="90"
+                progressBarHeight="10px"
+                class="mg-bottom-lg"
               />
               <div class="mg-bottom-sm">
                 <span class="label">{{ $t("node_detail.device") }}</span>
@@ -531,20 +543,5 @@ export default {
   .title-and-role .title {
     max-width: 15rem;
   }
-}
-
-.same-height-tile {
-  min-height: 14rem;
-}
-</style>
-
-<style lang="scss">
-@import "../styles/carbon-utils";
-
-// global styles
-
-// hide success status icon for meter charts
-.bx--cc--meter-title .status-indicator.status--success {
-  display: none;
 }
 </style>
