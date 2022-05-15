@@ -102,6 +102,7 @@ cat >etc/redis.conf <<EOR
 # redis.conf -- do not edit manually!
 #
 port 6379
+supervised no
 protected-mode no
 save 5 1
 aclfile "/data/etc/redis.acl"
