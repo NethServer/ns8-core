@@ -587,7 +587,8 @@
       "documentation": "Documentation",
       "database": "Database",
       "storage": "Storage",
-      "monitoring": "Monitoring"
+      "monitoring": "Monitoring",
+      "web": "Web"
     }
   },
   "system_logs": {
