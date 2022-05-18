@@ -190,6 +190,13 @@ export default {
   computed: {
     ...mapState(["clusterNodes"]),
   },
+  watch: {
+    clusterNodes: function () {
+      if (this.clusterNodes.length) {
+        this.initNodes();
+      }
+    },
+  },
   created() {
     this.initTimeFilters();
     this.initNodes();

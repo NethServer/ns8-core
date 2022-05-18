@@ -36,7 +36,7 @@
               >
                 <NsMenuItem
                   :icon="Settings20"
-                  :label="$t('settings.sw_repositories')"
+                  :label="$t('settings_sw_repositories.title')"
                 />
               </cv-overflow-menu-item>
             </NsIconMenu>

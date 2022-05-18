@@ -302,7 +302,15 @@
     "alter-user": "Edit user",
     "alter-group": "Edit group",
     "remove-user": "Delete user",
-    "remove-group": "Delete group"
+    "remove-group": "Delete group",
+    "set-route": "Set route",
+    "delete-route": "Delete route",
+    "list-routes": "List routes",
+    "set-certificate": "Set certificate",
+    "delete-certificate": "Delete certificate",
+    "list-certificates": "List certificates",
+    "set-acme-server": "Set ACME server",
+    "get-acme-server": "Get ACME server"
   },
   "network": {
     "title": "Network"
@@ -469,12 +477,13 @@
     "sunday": "Sunday"
   },
   "settings": {
-    "title": "Settings",
-    "sw_repositories": "Software repositories",
-    "cluster": "Cluster"
+    "title": "Settings"
   },
-  "settings_cluster": {},
+  "settings_cluster": {
+    "title": "Cluster"
+  },
   "settings_sw_repositories": {
+    "title": "Software repositories",
     "no_sw_repositories": "No software repository",
     "no_sw_repositories_description": "There is no software repository configured",
     "create_repository": "Create repository",
@@ -487,6 +496,43 @@
     "repository_same_url_already_exists": "A repository with this URL already exists",
     "repository_not_accessible": "Repository not accessible",
     "repository_is_going_to_be_deleted": "Repository {object} is going to be deleted..."
+  },
+  "settings_http_routes": {
+    "title": "HTTP routes",
+    "all_nodes": "All nodes",
+    "name": "Name",
+    "type": "Type",
+    "node": "Node",
+    "search_route": "Search route",
+    "no_http_route": "No HTTP route",
+    "no_http_route_description": "There is no route configured",
+    "create_route": "Create route",
+    "host": "Host",
+    "path": "Path",
+    "host_and_path": "Host and path",
+    "routes_filtered": "HTTP routes filtered",
+    "routes_filtered_description": "Showing only routes for <strong>{node}</strong>",
+    "show_all": "Show all",
+    "http_route_details": "HTTP route details",
+    "url": "URL",
+    "strip_prefix": "Strip URL path prefix",
+    "strip_prefix_tooltip": "E.g.: <code>http://{host}/{path}/{requestpath}?{querystring}</code> is mapped to <code>http://{host}/{requestpath}?{querystring}</code>",
+    "request_lets_encrypt_certificate": "Request Let's Encrypt certificate",
+    "http2https": "HTTP to HTTPS",
+    "traefik_instance": "Traefik instance",
+    "url_helper": "Backend target URL",
+    "url_tooltip": "An example of valid URL is: <code>http://127.0.0.0:2000</code>",
+    "host_helper": "FQDN as virtual host",
+    "host_tooltip": "An exaple of valid host is: <code>myapp.example.org</code>",
+    "path_tooltip": "Matching evaluation will be performed with and without the trailing slash. E.g. <code>/foo</code> will match <code>/foo</code> and <code>/foo/*</code>",
+    "host_or_path_required": "Enter host or path",
+    "create_route_route": "Create route {route}",
+    "url_format": "Invalid URL format",
+    "delete_route_route": "Delete route {route}",
+    "delete_route_description": "Delete route <strong>{name}</strong>? Any application associated with this route won't be accessible anymore."
+  },
+  "settings_tls_certificates": {
+    "title": "TLS certificates"
   },
   "software_center": {
     "title": "Software center",

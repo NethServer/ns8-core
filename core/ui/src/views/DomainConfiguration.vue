@@ -109,7 +109,7 @@
                 ></cv-tag>
                 <cv-tag
                   v-else
-                  kind="gray"
+                  kind="high-contrast"
                   :label="$t('common.disabled')"
                   size="sm"
                   class="no-margin"
@@ -128,7 +128,7 @@
                 ></cv-tag>
                 <cv-tag
                   v-else
-                  kind="gray"
+                  kind="high-contrast"
                   :label="$t('common.disabled')"
                   size="sm"
                   class="no-margin"

@@ -2,10 +2,10 @@ import Vue from "vue";
 import VueRouter from "vue-router";
 import ClusterStatus from "../views/ClusterStatus";
 import Login from "../views/Login";
-import Settings from "../views/Settings";
+import Settings from "../views/settings/Settings";
 import Applications from "../views/Applications";
 import SystemLogs from "../views/SystemLogs";
-import SettingsCluster from "../views/SettingsCluster";
+import SettingsCluster from "../views/settings/SettingsCluster";
 import SoftwareCenterAppInstances from "../views/SoftwareCenterAppInstances";
 import Domains from "../views/Domains";
 import Nodes from "../views/Nodes";
@@ -49,7 +49,23 @@ const routes = [
     name: "SettingsSoftwareRepositories",
     component: () =>
       import(
-        /* webpackChunkName: "settings-software-repositories" */ "../views/SettingsSoftwareRepositories.vue"
+        /* webpackChunkName: "settings-software-repositories" */ "../views/settings/SettingsSoftwareRepositories.vue"
+      ),
+  },
+  {
+    path: "/settings/http-routes",
+    name: "SettingsHttpRoutes",
+    component: () =>
+      import(
+        /* webpackChunkName: "settings-http-routes" */ "../views/settings/SettingsHttpRoutes.vue"
+      ),
+  },
+  {
+    path: "/settings/tls-certificates",
+    name: "SettingsTlsCertificates",
+    component: () =>
+      import(
+        /* webpackChunkName: "settings-tls-certificates" */ "../views/settings/SettingsTlsCertificates.vue"
       ),
   },
   {

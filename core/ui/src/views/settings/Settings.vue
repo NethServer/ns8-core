@@ -1,33 +1,53 @@
 <template>
-  <div class="bx--grid bx--grid--full-width">
-    <div class="bx--row">
-      <div class="bx--col-lg-16 page-title">
+  <cv-grid fullWidth>
+    <cv-row>
+      <cv-column class="page-title">
         <h2>{{ $t("settings.title") }}</h2>
-      </div>
-    </div>
-    <div class="bx--row">
-      <div class="bx--col-md-4 bx--col-xlg-4">
+      </cv-column>
+    </cv-row>
+    <cv-row>
+      <cv-column :md="4" :xlg="4">
         <NsTile
           :light="true"
           kind="clickable"
           @click="goTo('/settings/cluster')"
           :icon="EdgeCluster32"
         >
-          <h6>{{ $t("settings.cluster") }}</h6>
+          <h6>{{ $t("settings_cluster.title") }}</h6>
         </NsTile>
-      </div>
-      <div class="bx--col-md-4 bx--col-xlg-4">
+      </cv-column>
+      <cv-column :md="4" :xlg="4">
         <NsTile
           :light="true"
           kind="clickable"
           @click="goTo('/settings/software-repository')"
           :icon="Application32"
         >
-          <h6>{{ $t("settings.sw_repositories") }}</h6>
+          <h6>{{ $t("settings_sw_repositories.title") }}</h6>
         </NsTile>
-      </div>
-    </div>
-  </div>
+      </cv-column>
+      <cv-column :md="4" :xlg="4">
+        <NsTile
+          :light="true"
+          kind="clickable"
+          @click="goTo('/settings/http-routes')"
+          :icon="Router32"
+        >
+          <h6>{{ $t("settings_http_routes.title") }}</h6>
+        </NsTile>
+      </cv-column>
+      <cv-column :md="4" :xlg="4">
+        <NsTile
+          :light="true"
+          kind="clickable"
+          @click="goTo('/settings/tls-certificates')"
+          :icon="Certificate32"
+        >
+          <h6>{{ $t("settings_tls_certificates.title") }}</h6>
+        </NsTile>
+      </cv-column>
+    </cv-row>
+  </cv-grid>
 </template>
 
 <script>
