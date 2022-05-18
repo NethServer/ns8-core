@@ -17,7 +17,7 @@ Certificates are saved under an hash named `/module/traefik<X>/certificate/<doma
 i.e `/module/traefik1/certificate/server.nethserver.org`.
 The certificate is saved inside the `cert` field, while the key is saved inside the `key` field.
 
-When a certificate is exported, Traefik module fires the `certificate-update` event with
+When a certificate is exported, Traefik module fires the `certificate-updated` event with
 a JSON messages. The JSON message contains the following fields:
 
 - `key`: the X509 certificate private key, PEM format encoded with base64
