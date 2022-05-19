@@ -871,7 +871,7 @@
     "title": "Nodes",
     "add_node_to_cluster": "Add node to cluster",
     "add_node_to_cluster_step_1": "Copy join code in the box below",
-    "add_node_to_cluster_step_2": "Go to <strong>https://NEW_NODE_IP/cluster-admin/</strong>",
+    "add_node_to_cluster_step_2": "Go to <strong><code>https://NEW_NODE_IP/cluster-admin/</code></strong>",
     "add_node_to_cluster_step_3": "Select <strong>Join cluster</strong>",
     "add_node_to_cluster_step_4": "Paste join code",
     "leader": "leader",
