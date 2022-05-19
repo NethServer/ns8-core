@@ -58,7 +58,7 @@
                   </cv-combo-box>
                 </cv-column>
               </cv-row>
-              <cv-row v-if="routes.length" class="toolbar">
+              <cv-row class="toolbar">
                 <cv-column>
                   <NsButton
                     kind="secondary"
@@ -113,13 +113,6 @@
                               )
                             }}
                           </div>
-                          <NsButton
-                            kind="primary"
-                            :icon="Add20"
-                            @click="showCreateRouteModal"
-                            class="empty-state-button"
-                            >{{ $t("settings_http_routes.create_route") }}
-                          </NsButton>
                         </template>
                       </NsEmptyState>
                     </template>
@@ -187,6 +180,7 @@
     <CreateHttpRouteModal
       :isShown="isShownCreateRouteModal"
       :nodes="internalNodes"
+      :defaultNodeId="q.selectedNodeId"
       @hide="hideCreateRouteModal"
       @reloadRoutes="onReloadRoutes"
     />
@@ -248,6 +242,7 @@ export default {
       tablePage: [],
       tableColumns: ["name", "type", "node"],
       routes: [],
+      internalNodes: [],
       isShownCreateRouteModal: false,
       isShownRouteDetailModal: false,
       isShownDeleteRouteModal: false,
@@ -304,6 +299,10 @@ export default {
       return "";
     },
     nodesForFilter() {
+      if (!this.internalNodes.length) {
+        return [];
+      }
+
       // add "All nodes" at the beginning of internalNodes array
       const nodes = _cloneDeep(this.internalNodes);
 
@@ -313,13 +312,6 @@ export default {
         value: "all",
       });
       return nodes;
-    },
-  },
-  watch: {
-    clusterNodes: function () {
-      if (this.clusterNodes.length) {
-        this.initNodes();
-      }
     },
   },
   beforeRouteEnter(to, from, next) {
@@ -333,41 +325,9 @@ export default {
     next();
   },
   created() {
-    this.initNodes();
     this.listInstalledModules();
   },
   methods: {
-    initNodes() {
-      let nodes = [];
-
-      if (!this.clusterNodes.length) {
-        return;
-      }
-
-      for (let node of this.clusterNodes) {
-        nodes.push({
-          name: node.id.toString(),
-          label: this.getShortNodeLabel(node),
-          value: node.id.toString(),
-        });
-      }
-
-      //// remove mock
-      nodes.push({
-        name: "9",
-        label: "Node 9",
-        value: "9",
-      });
-
-      this.internalNodes = nodes;
-
-      this.$nextTick(() => {
-        if (!this.q.selectedNodeId) {
-          // initially show all nodes
-          this.q.selectedNodeId = "all";
-        }
-      });
-    },
     showCreateRouteModal() {
       this.isShownCreateRouteModal = true;
     },
@@ -432,6 +392,17 @@ export default {
       this.loading.listInstalledModules = false;
     },
     listInstalledModulesCompleted(taskContext, taskResult) {
+      // init nodes
+      let nodes = [];
+
+      for (let node of this.clusterNodes) {
+        nodes.push({
+          name: node.id.toString(),
+          label: this.getShortNodeLabel(node),
+          value: node.id.toString(),
+        });
+      }
+
       let traefikInstances = [];
 
       for (let instanceList of Object.values(taskResult.output)) {
@@ -439,10 +410,8 @@ export default {
           if (instance.id.startsWith("traefik")) {
             traefikInstances.push(instance);
 
-            // update internalNodes labels
-            const node = this.internalNodes.find(
-              (node) => node.value === instance.node
-            );
+            // update nodes labels
+            const node = nodes.find((node) => node.value === instance.node);
 
             if (node) {
               node.label += ` (${instance.id})`;
@@ -451,8 +420,25 @@ export default {
           }
         }
       }
+      this.internalNodes = nodes;
       this.traefikInstances = traefikInstances;
       this.loading.listInstalledModules = false;
+
+      this.$nextTick(() => {
+        if (!this.q.selectedNodeId) {
+          // initially show all nodes
+          this.q.selectedNodeId = "all";
+        } else {
+          const nodeId = this.q.selectedNodeId;
+
+          // workaround to update combo box
+          this.q.selectedNodeId = "";
+          this.$nextTick(() => {
+            this.q.selectedNodeId = nodeId;
+          });
+        }
+      });
+
       this.listRoutes();
     },
     async listRoutes() {
@@ -478,6 +464,9 @@ export default {
         const res = await to(
           this.createModuleTaskForApp(traefikInstance.id, {
             action: taskAction,
+            data: {
+              expand_list: true,
+            },
             extra: {
               title: this.$t("action." + taskAction),
               isNotificationHidden: true,
@@ -509,17 +498,7 @@ export default {
       const routes = [];
 
       for (let route of taskResult.output) {
-        //// remove mock
-        route = {
-          name: route,
-          url: "http://127.0.0.0:2000",
-          host: "testHost",
-          path: "testPath",
-          lets_encrypt: true,
-          http2https: true,
-          strip_prefix: false,
-        };
-        //// end mock
+        route.name = route.instance;
 
         let type = "";
         if (route.host && route.path) {

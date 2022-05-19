@@ -138,6 +138,10 @@ export default {
       type: Array,
       required: true,
     },
+    defaultNodeId: {
+      type: String,
+      default: "",
+    },
   },
   data() {
     return {
@@ -162,7 +166,22 @@ export default {
       },
     };
   },
+  watch: {
+    defaultNodeId: function () {
+      this.updateSelectedNodeId();
+    },
+  },
+  created() {
+    this.updateSelectedNodeId();
+  },
   methods: {
+    updateSelectedNodeId() {
+      if (this.defaultNodeId != "all") {
+        this.selectedNodeId = this.defaultNodeId;
+      } else {
+        this.selectedNodeId = "";
+      }
+    },
     onModalHidden() {
       this.clearErrors();
       this.$emit("hide");

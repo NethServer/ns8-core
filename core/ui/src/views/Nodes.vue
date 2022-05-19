@@ -117,6 +117,12 @@
                   :label="$t('nodes.edit_node_label')"
                 />
               </cv-overflow-menu-item>
+              <cv-overflow-menu-item @click="goToHttpRoutes(node)">
+                <NsMenuItem
+                  :icon="Router20"
+                  :label="$t('settings_http_routes.title')"
+                />
+              </cv-overflow-menu-item>
             </cv-overflow-menu>
           </template>
           <template #content>
@@ -501,6 +507,12 @@ export default {
       this.loading.setNodeLabel = false;
       this.hideSetNodeLabelModal();
       this.getClusterStatus();
+    },
+    goToHttpRoutes(node) {
+      this.$router.push({
+        path: "/settings/http-routes",
+        query: { selectedNodeId: node.id },
+      });
     },
   },
 };
