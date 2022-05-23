@@ -309,7 +309,7 @@ export default {
     removeGroupCompleted() {
       this.loading.removeGroup = false;
 
-      // reload users
+      // reload groups
       this.listDomainGroups();
     },
     async listDomainGroups() {

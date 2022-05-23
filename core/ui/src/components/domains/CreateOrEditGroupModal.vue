@@ -350,7 +350,7 @@ export default {
     alterGroupCompleted() {
       this.loading.alterGroup = false;
 
-      // reload users
+      // reload groups
       this.$emit("reloadGroups");
     },
     onModalHidden() {
