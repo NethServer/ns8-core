@@ -65,7 +65,8 @@
     "search_placeholder": "Search",
     "case_sensitive": "Case sensitive",
     "choose": "Choose",
-    "loading": "Loading"
+    "loading": "Loading",
+    "all_nodes": "All nodes"
   },
   "error": {
     "error": "Error",
@@ -88,7 +89,12 @@
     "invalid_24h_pattern": "Invalid 24-hour pattern",
     "invalid_value": "Invalid value",
     "invalid_time_interval": "Invalid time interval",
-    "must_be_between": "Must be between {min} and {max}"
+    "must_be_between": "Must be between {min} and {max}",
+    "url_format": "Invalid URL format",
+    "host_format": "Invalid host format",
+    "ipaddress_format": "Invalid IP address format",
+    "path_pattern": "Invalid path pattern",
+    "fqdn_format": "Invalid FQDN format"
   },
   "websocket": {
     "websocket_disconnected": "Websocket disconnected",
@@ -499,7 +505,6 @@
   },
   "settings_http_routes": {
     "title": "HTTP routes",
-    "all_nodes": "All nodes",
     "name": "Name",
     "type": "Type",
     "node": "Node",
@@ -510,7 +515,7 @@
     "host": "Host",
     "path": "Path",
     "host_and_path": "Host and path",
-    "routes_filtered": "HTTP routes filtered",
+    "routes_filtered": "Routes filtered",
     "routes_filtered_description": "Showing only routes for <strong>{node}</strong>",
     "show_all": "Show all",
     "http_route_details": "HTTP route details",
@@ -524,15 +529,48 @@
     "url_tooltip": "An example of valid URL is: <code>http://127.0.0.0:2000</code>",
     "host_helper": "FQDN as virtual host",
     "host_tooltip": "An exaple of valid host is: <code>myapp.example.org</code>",
-    "path_tooltip": "Matching evaluation will be performed with and without the trailing slash. E.g. <code>/foo</code> will match <code>/foo</code> and <code>/foo/*</code>",
-    "host_or_path_required": "Enter host or path",
+    "path_tooltip": "Path must start with a slash character \"/\". Matching evaluation will be performed with and without the trailing slash. E.g. <code>/foo</code> will match <code>/foo</code> and <code>/foo/*</code>",
+    "host_or_path_required": "Enter host and/or path",
     "create_route_route": "Create route {route}",
     "url_format": "Invalid URL format",
     "delete_route_route": "Delete route {route}",
-    "delete_route_description": "Delete route <strong>{name}</strong>? Any application associated with this route won't be accessible anymore."
+    "delete_route_description": "Delete route <strong>{name}</strong>? Any application associated with this route won't be accessible anymore.",
+    "host_format": "Invalid host format",
+    "path_must_start_with_slash": "Path must start with a slash character \"/\"",
+    "route_already_exists": "Route already exists",
+    "edit_route": "Edit route",
+    "edit_route_route": "Edit route {route}"
   },
   "settings_tls_certificates": {
-    "title": "TLS certificates"
+    "title": "TLS certificates",
+    "certificates_filtered": "Certificates filtered",
+    "certificates_filtered_description": "Showing only certificates for <strong>{node}</strong>",
+    "show_all": "Show all",
+    "request_certificate": "Request certificate",
+    "search_certificate": "Search certificate",
+    "no_tls_certificate": "No TLS certificate",
+    "no_tls_certificate_description": "There is no TLS certificate requested",
+    "delete_certificate_for_fqdn": "Delete certificate for {fqdn}",
+    "delete_certificate_description": "Delete TLS certificate for <strong>{fqdn}</strong>?",
+    "fqdn": "FQDN",
+    "fqdn_helper": "Request certificate for this FQDN",
+    "status": "Status",
+    "obtained": "Obtained",
+    "not_obtained": "Not obtained",
+    "node": "Node",
+    "request_certificate_for_fqdn": "Request certificate for {fqdn}"
+  },
+  "settings_acme_servers": {
+    "title": "ACME servers",
+    "search_acme_server": "Search ACME server",
+    "no_acme_server": "No ACME server",
+    "no_acme_server_description": "There is no ACME server configured",
+    "url": "URL",
+    "node": "Node",
+    "edit_acme_server": "Edit ACME server",
+    "edit_acme_server_for_node": "Edit ACME server for {node}",
+    "reload_page": "Page reload needed",
+    "edit_acme_server_leader_node_warning": "You are editing the ACME server for the leader node. A page reload is needed after you click <strong>Edit ACME server</strong>"
   },
   "software_center": {
     "title": "Software center",

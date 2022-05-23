@@ -81,6 +81,9 @@ export default new Vuex.Store({
 
       return taskFound;
     },
+    leaderNode: (state) => {
+      return state.clusterNodes.find((node) => node.local);
+    },
   },
   mutations: {
     createNotification(state, notification) {

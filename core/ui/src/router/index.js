@@ -69,6 +69,14 @@ const routes = [
       ),
   },
   {
+    path: "/settings/acme-servers",
+    name: "SettingsAcmeServers",
+    component: () =>
+      import(
+        /* webpackChunkName: "settings-acme-servers" */ "../views/settings/SettingsAcmeServers.vue"
+      ),
+  },
+  {
     path: "/apps/:appId",
     name: "Applications",
     component: Applications,

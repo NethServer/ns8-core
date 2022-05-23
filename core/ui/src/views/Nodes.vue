@@ -123,6 +123,12 @@
                   :label="$t('settings_http_routes.title')"
                 />
               </cv-overflow-menu-item>
+              <cv-overflow-menu-item @click="goToTlsCertificates(node)">
+                <NsMenuItem
+                  :icon="Certificate20"
+                  :label="$t('settings_tls_certificates.title')"
+                />
+              </cv-overflow-menu-item>
             </cv-overflow-menu>
           </template>
           <template #content>
@@ -511,6 +517,12 @@ export default {
     goToHttpRoutes(node) {
       this.$router.push({
         path: "/settings/http-routes",
+        query: { selectedNodeId: node.id },
+      });
+    },
+    goToTlsCertificates(node) {
+      this.$router.push({
+        path: "/settings/tls-certificates",
         query: { selectedNodeId: node.id },
       });
     },

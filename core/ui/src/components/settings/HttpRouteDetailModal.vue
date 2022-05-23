@@ -20,7 +20,7 @@
         <span class="label">{{ $t("settings_http_routes.path") }}</span>
         <span class="value">{{ route.path }}</span>
       </div>
-      <div class="key-value-setting">
+      <div v-if="route.path" class="key-value-setting">
         <span class="label">{{ $t("settings_http_routes.strip_prefix") }}</span>
         <span class="value">
           <cv-tag

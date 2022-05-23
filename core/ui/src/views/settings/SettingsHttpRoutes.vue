@@ -25,6 +25,16 @@
       <cv-row>
         <cv-column>
           <NsInlineNotification
+            kind="warning"
+            :title="$t('common.use_landscape_mode')"
+            :description="$t('common.use_landscape_mode_description')"
+            class="landscape-warning"
+          />
+        </cv-column>
+      </cv-row>
+      <cv-row>
+        <cv-column>
+          <NsInlineNotification
             v-if="q.selectedNodeId && q.selectedNodeId !== 'all'"
             kind="info"
             :title="$t('settings_http_routes.routes_filtered')"
@@ -34,7 +44,7 @@
               })
             "
             :actionLabel="$t('settings_http_routes.show_all')"
-            @action="showAllRoutes"
+            @action="showAllNodes"
             :showCloseButton="false"
           />
         </cv-column>
@@ -151,6 +161,15 @@
                               />
                             </cv-overflow-menu-item>
                             <cv-overflow-menu-item
+                              @click="showEditRouteModal(row)"
+                              :data-test-id="row.name + '-edit'"
+                            >
+                              <NsMenuItem
+                                :icon="Edit20"
+                                :label="$t('common.edit')"
+                              />
+                            </cv-overflow-menu-item>
+                            <cv-overflow-menu-item
                               danger
                               @click="showDeleteRouteModal(row)"
                               :data-test-id="row.name + '-delete'"
@@ -177,10 +196,13 @@
       :route="currentRoute"
       @hide="hideRouteDetailModal"
     />
-    <CreateHttpRouteModal
-      :isShown="isShownCreateRouteModal"
+    <CreateOrEditHttpRouteModal
+      :isShown="isShownCreateOrEditRouteModal"
       :nodes="internalNodes"
       :defaultNodeId="q.selectedNodeId"
+      :allRoutes="routes"
+      :route="currentRoute"
+      :isEditing="isEditingRoute"
       @hide="hideCreateRouteModal"
       @reloadRoutes="onReloadRoutes"
     />
@@ -224,12 +246,12 @@ import {
 } from "@nethserver/ns8-ui-lib";
 import { mapState } from "vuex";
 import HttpRouteDetailModal from "@/components/settings/HttpRouteDetailModal.vue";
-import CreateHttpRouteModal from "@/components/settings/CreateHttpRouteModal.vue";
+import CreateOrEditHttpRouteModal from "@/components/settings/CreateOrEditHttpRouteModal.vue";
 import _cloneDeep from "lodash/cloneDeep";
 
 export default {
   name: "SettingsHttpRoutes",
-  components: { HttpRouteDetailModal, CreateHttpRouteModal },
+  components: { HttpRouteDetailModal, CreateOrEditHttpRouteModal },
   mixins: [TaskService, UtilService, IconService, QueryParamService],
   pageTitle() {
     return this.$t("settings_http_routes.title");
@@ -243,7 +265,7 @@ export default {
       tableColumns: ["name", "type", "node"],
       routes: [],
       internalNodes: [],
-      isShownCreateRouteModal: false,
+      isShownCreateOrEditRouteModal: false,
       isShownRouteDetailModal: false,
       isShownDeleteRouteModal: false,
       currentErrorAction: "",
@@ -251,6 +273,7 @@ export default {
       traefikInstances: [],
       currentRoute: null,
       routeToDelete: null,
+      isEditingRoute: false,
       loading: {
         listInstalledModules: false,
         listRoutesNum: 0,
@@ -308,7 +331,7 @@ export default {
 
       nodes.unshift({
         name: "all",
-        label: this.$t("settings_http_routes.all_nodes"),
+        label: this.$t("common.all_nodes"),
         value: "all",
       });
       return nodes;
@@ -329,10 +352,16 @@ export default {
   },
   methods: {
     showCreateRouteModal() {
-      this.isShownCreateRouteModal = true;
+      this.isEditingRoute = false;
+      this.isShownCreateOrEditRouteModal = true;
+    },
+    showEditRouteModal(route) {
+      this.isEditingRoute = true;
+      this.currentRoute = route;
+      this.isShownCreateOrEditRouteModal = true;
     },
     hideCreateRouteModal() {
-      this.isShownCreateRouteModal = false;
+      this.isShownCreateOrEditRouteModal = false;
     },
     showRouteDetailModal(route) {
       this.currentRoute = route;
@@ -379,7 +408,7 @@ export default {
         console.error(`error creating task ${taskAction}`, err);
         const errMessage = this.getErrorMessage(err);
         this.error.listInstalledModules = errMessage;
-        this.currentErrorAction = taskAction;
+        this.currentErrorAction = this.$t("action." + taskAction);
         this.currentErrorDescription = errMessage;
         return;
       }
@@ -387,7 +416,7 @@ export default {
     listInstalledModulesAborted(taskResult, taskContext) {
       console.error(`${taskContext.action} aborted`, taskResult);
       this.error.listInstalledModules = this.$t("error.generic_error");
-      this.currentErrorAction = taskContext.action;
+      this.currentErrorAction = this.$t("action." + taskContext.action);
       this.currentErrorDescription = this.$t("error.generic_error");
       this.loading.listInstalledModules = false;
     },
@@ -481,7 +510,7 @@ export default {
           console.error(`error creating task ${taskAction}`, err);
           const errMessage = this.getErrorMessage(err);
           this.error.listRoutes = errMessage;
-          this.currentErrorAction = taskAction;
+          this.currentErrorAction = this.$t("action." + taskAction);
           this.currentErrorDescription = errMessage;
           this.loading.listRoutesNum--;
         }
@@ -490,7 +519,7 @@ export default {
     listRoutesAborted(taskResult, taskContext) {
       console.error(`${taskContext.action} aborted`, taskResult);
       this.error.listRoutes = this.$t("error.generic_error");
-      this.currentErrorAction = taskContext.action;
+      this.currentErrorAction = this.$t("action." + taskContext.action);
       this.currentErrorDescription = this.$t("error.generic_error");
       this.loading.listRoutesNum--;
     },
@@ -526,7 +555,7 @@ export default {
         .sort(this.sortByProperty("name"));
       this.loading.listRoutesNum--;
     },
-    showAllRoutes() {
+    showAllNodes() {
       this.q.selectedNodeId = "all";
     },
     onReloadRoutes() {
@@ -577,13 +606,12 @@ export default {
     },
     deleteRouteAborted(taskResult, taskContext) {
       console.error(`${taskContext.action} aborted`, taskResult);
-      this.error.deleteRoute = this.$t("error.generic_error");
       this.loading.deleteRoute = false;
     },
     deleteRouteCompleted() {
       this.loading.deleteRoute = false;
 
-      // reload users
+      // reload routes
       this.listRoutes();
     },
   },

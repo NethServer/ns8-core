@@ -5,25 +5,20 @@
     :primary-button-disabled="loading.setRoute"
     :isLoading="loading.setRoute"
     @modal-hidden="onModalHidden"
-    @primary-click="setRoute"
+    @primary-click="createOrEditRoute"
   >
     <template slot="title">{{
-      $t("settings_http_routes.create_route")
+      isEditing
+        ? $t("settings_http_routes.edit_route_route", { route: route.instance })
+        : $t("settings_http_routes.create_route")
     }}</template>
     <template slot="content">
-      <cv-form @submit.prevent="setRoute">
-        <NsInlineNotification
-          v-if="error.setRoute"
-          kind="error"
-          :title="$t('action.set-route')"
-          :description="error.setRoute"
-          :showCloseButton="false"
-        />
+      <cv-form @submit.prevent="createOrEditRoute">
         <NsTextInput
           v-model.trim="instance"
           :label="$t('settings_http_routes.name')"
           :invalid-message="error.instance"
-          :disabled="loading.setRoute"
+          :disabled="isEditing || loading.setRoute"
           data-modal-primary-focus
           ref="instance"
         />
@@ -34,8 +29,9 @@
           :auto-filter="true"
           :auto-highlight="true"
           :options="nodes"
-          :disabled="loading.setRoute"
+          :disabled="isEditing || loading.setRoute"
           :invalid-message="error.node"
+          light
           ref="node"
         >
         </cv-combo-box>
@@ -116,11 +112,23 @@
           <template slot="text-left">{{ $t("common.disabled") }}</template>
           <template slot="text-right">{{ $t("common.enabled") }}</template>
         </NsToggle>
+        <!-- need to wrap error notification inside a div: custom elements like NsInlineNotification don't have scrollIntoView() function -->
+        <div ref="setRouteError">
+          <NsInlineNotification
+            v-if="error.setRoute"
+            kind="error"
+            :title="$t('action.set-route')"
+            :description="error.setRoute"
+            :showCloseButton="false"
+          />
+        </div>
       </cv-form>
     </template>
     <template slot="secondary-button">{{ $t("common.cancel") }}</template>
     <template slot="primary-button">{{
-      $t("settings_http_routes.create_route")
+      isEditing
+        ? $t("settings_http_routes.edit_route")
+        : $t("settings_http_routes.create_route")
     }}</template>
   </NsModal>
 </template>
@@ -130,7 +138,7 @@ import to from "await-to-js";
 import { UtilService, TaskService } from "@nethserver/ns8-ui-lib";
 
 export default {
-  name: "CreateHttpRouteModal",
+  name: "CreateOrEditHttpRouteModal",
   mixins: [UtilService, TaskService],
   props: {
     isShown: Boolean,
@@ -141,6 +149,15 @@ export default {
     defaultNodeId: {
       type: String,
       default: "",
+    },
+    allRoutes: {
+      type: Array,
+      required: true,
+    },
+    route: { type: [Object, null] },
+    isEditing: {
+      type: Boolean,
+      default: false,
     },
   },
   data() {
@@ -170,6 +187,39 @@ export default {
     defaultNodeId: function () {
       this.updateSelectedNodeId();
     },
+
+    isShown: function () {
+      if (this.isShown) {
+        this.clearErrors();
+
+        if (this.isEditing) {
+          // edit route
+          this.instance = this.route.instance;
+          this.selectedNodeId = this.route.nodeId;
+          this.url = this.route.url;
+          this.host = this.route.host;
+          this.path = this.route.path;
+          this.strip_prefix = this.route.strip_prefix;
+          this.lets_encrypt = this.route.lets_encrypt;
+          this.http2https = this.route.http2https;
+        }
+      } else {
+        // closing modal
+        if (this.isEditing) {
+          this.clearFields();
+        }
+      }
+    },
+    "error.setRoute": function () {
+      if (this.error.setRoute) {
+        // scroll to notification error
+
+        this.$nextTick(() => {
+          const el = this.$refs.setRouteError;
+          this.scrollToElement(el);
+        });
+      }
+    },
   },
   created() {
     this.updateSelectedNodeId();
@@ -186,7 +236,7 @@ export default {
       this.clearErrors();
       this.$emit("hide");
     },
-    validateSetRoute() {
+    validateSetRoute(isEditingRoute) {
       this.clearErrors();
 
       let isValidationOk = true;
@@ -199,6 +249,24 @@ export default {
         if (isValidationOk) {
           this.focusElement("instance");
           isValidationOk = false;
+        }
+      }
+
+      // check if route name already exists if user is creating a route
+      if (!isEditingRoute) {
+        const duplicatedRoute = this.allRoutes.find(
+          (route) => route.instance === this.instance
+        );
+
+        if (duplicatedRoute) {
+          this.error.instance = this.$t(
+            "settings_http_routes.route_already_exists"
+          );
+
+          if (isValidationOk) {
+            this.focusElement("instance");
+            isValidationOk = false;
+          }
         }
       }
 
@@ -234,11 +302,32 @@ export default {
           this.focusElement("host");
           isValidationOk = false;
         }
+      } else {
+        if (this.path && !this.path.startsWith("/")) {
+          // path must start with "/"
+          this.error.path = this.$t(
+            "settings_http_routes.path_must_start_with_slash"
+          );
+
+          if (isValidationOk) {
+            this.focusElement("path");
+            isValidationOk = false;
+          }
+        }
       }
       return isValidationOk;
     },
-    async setRoute() {
-      if (!this.validateSetRoute()) {
+    createOrEditRoute() {
+      if (!this.isEditing) {
+        // create route
+        this.setRoute(false);
+      } else {
+        // edit route
+        this.setRoute(true);
+      }
+    },
+    async setRoute(isEditingRoute) {
+      if (!this.validateSetRoute(isEditingRoute)) {
         return;
       }
 
@@ -274,22 +363,36 @@ export default {
       );
       const traefikInstance = selectedNode.traefikInstance;
 
+      let setRouteData = {
+        instance: this.instance,
+        url: this.url,
+        lets_encrypt: this.lets_encrypt,
+        http2https: this.http2https,
+      };
+
+      if (this.host) {
+        setRouteData.host = this.host;
+      }
+
+      if (this.path) {
+        setRouteData.path = this.path;
+        setRouteData.strip_prefix = this.strip_prefix;
+      }
+
+      const notificationTitle = isEditingRoute
+        ? this.$t("settings_http_routes.edit_route_route", {
+            route: this.instance,
+          })
+        : this.$t("settings_http_routes.create_route_route", {
+            route: this.instance,
+          });
+
       const res = await to(
         this.createModuleTaskForApp(traefikInstance, {
           action: taskAction,
-          data: {
-            instance: this.instance,
-            url: this.url,
-            host: this.host,
-            path: this.path,
-            strip_prefix: this.strip_prefix,
-            lets_encrypt: this.lets_encrypt,
-            http2https: this.http2https,
-          },
+          data: setRouteData,
           extra: {
-            title: this.$t("settings_http_routes.create_route_route", {
-              route: this.instance,
-            }),
+            title: notificationTitle,
             description: this.$t("common.processing"),
             eventId,
           },
@@ -325,8 +428,9 @@ export default {
         const param = validationError.parameter;
 
         // set i18n error message
-        this.error[param] = this.$t(
-          "settings_http_routes." + validationError.error
+        this.error[param] = this.getI18nStringWithFallback(
+          "settings_http_routes." + validationError.error,
+          "error." + validationError.error
         );
 
         if (!focusAlreadySet) {
@@ -337,9 +441,19 @@ export default {
     },
     setRouteCompleted() {
       this.loading.setRoute = false;
+      this.clearFields();
 
-      // reload users
+      // reload routes
       this.$emit("reloadRoutes");
+    },
+    clearFields() {
+      this.instance = "";
+      this.url = "";
+      this.host = "";
+      this.path = "";
+      this.lets_encrypt = false;
+      this.http2https = false;
+      this.strip_prefix = false;
     },
   },
 };
