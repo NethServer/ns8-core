@@ -504,7 +504,7 @@ export default {
       // register to task completion
       this.$root.$once(
         `${taskAction}-completed-${eventId}`,
-        this.addRepositoriesCompleted
+        this.addRepositoryCompleted
       );
 
       const res = await to(
@@ -596,7 +596,11 @@ export default {
         return;
       }
     },
-    addRepositoriesCompleted() {
+    addRepositoryCompleted() {
+      this.q.newRepoName = "";
+      this.q.newRepoUrl = "";
+      this.q.isNewRepoTesting = false;
+      this.q.isNewRepoEnabled = true;
       this.listRepositories();
     },
     alterRepositoryAborted(taskResult, taskContext) {
