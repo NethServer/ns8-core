@@ -191,7 +191,8 @@
     "skip_apps_restore_2": "You can restore apps later in <strong>Backup</strong> page",
     "restoring_apps_c": "Restoring {num} app | Restoring {num} apps",
     "traveling_back_in_time": "Traveling back in time...",
-    "reading_backup_repositories": "Reading backup repositories..."
+    "reading_backup_repositories": "Reading backup repositories...",
+    "creating_cluster"  : "Creating cluster..."
   },
   "shell": {
     "skip_to_content": "Skip to content",

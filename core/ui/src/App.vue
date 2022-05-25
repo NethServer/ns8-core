@@ -249,7 +249,7 @@ export default {
 
       if (err) {
         // check if node is a worker
-        if (err.response.status == 403) {
+        if (err.response && err.response.status == 403) {
           this.isMaster = false;
           // redirect to worker page
           this.$router.replace(
