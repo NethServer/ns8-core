@@ -322,11 +322,18 @@ import {
   UtilService,
   TaskService,
   IconService,
+  PageTitleService,
 } from "@nethserver/ns8-ui-lib";
 
 export default {
   name: "SettingsSoftwareRepositories",
-  mixins: [TaskService, UtilService, IconService, QueryParamService],
+  mixins: [
+    TaskService,
+    UtilService,
+    IconService,
+    QueryParamService,
+    PageTitleService,
+  ],
   pageTitle() {
     return this.$t("settings_sw_repositories.title");
   },

@@ -339,6 +339,7 @@ import {
   TaskService,
   IconService,
   LottieService,
+  PageTitleService,
 } from "@nethserver/ns8-ui-lib";
 import { mapState, mapActions } from "vuex";
 
@@ -355,6 +356,7 @@ export default {
     UtilService,
     TaskService,
     LottieService,
+    PageTitleService,
   ],
   pageTitle() {
     return this.$t("software_center.title");

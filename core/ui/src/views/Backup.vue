@@ -669,6 +669,7 @@ import {
   TaskService,
   IconService,
   DateTimeService,
+  PageTitleService,
 } from "@nethserver/ns8-ui-lib";
 import AddRepositoryModal from "@/components/backup/AddRepositoryModal";
 import CreateOrEditBackupModal from "@/components/backup/CreateOrEditBackupModal";
@@ -696,6 +697,7 @@ export default {
     IconService,
     QueryParamService,
     DateTimeService,
+    PageTitleService,
   ],
   pageTitle() {
     return this.$t("backup.title");

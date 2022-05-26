@@ -359,6 +359,7 @@ import {
   UtilService,
   TaskService,
   IconService,
+  PageTitleService,
 } from "@nethserver/ns8-ui-lib";
 import CreateDomainModal from "@/components/domains/CreateDomainModal";
 import to from "await-to-js";
@@ -367,7 +368,13 @@ import { mapState } from "vuex";
 export default {
   name: "Domains",
   components: { CreateDomainModal },
-  mixins: [TaskService, UtilService, IconService, QueryParamService],
+  mixins: [
+    TaskService,
+    UtilService,
+    IconService,
+    QueryParamService,
+    PageTitleService,
+  ],
   pageTitle() {
     return this.$t("domains.title");
   },

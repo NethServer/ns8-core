@@ -237,6 +237,7 @@ import {
   UtilService,
   TaskService,
   IconService,
+  PageTitleService,
 } from "@nethserver/ns8-ui-lib";
 import { mapState } from "vuex";
 import _cloneDeep from "lodash/cloneDeep";
@@ -245,7 +246,13 @@ import RequestTlsCertificateModal from "@/components/settings/RequestTlsCertific
 export default {
   name: "SettingsTlsCertificates",
   components: { RequestTlsCertificateModal },
-  mixins: [TaskService, UtilService, IconService, QueryParamService],
+  mixins: [
+    TaskService,
+    UtilService,
+    IconService,
+    QueryParamService,
+    PageTitleService,
+  ],
   pageTitle() {
     return this.$t("settings_tls_certificates.title");
   },

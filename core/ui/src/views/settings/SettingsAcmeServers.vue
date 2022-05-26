@@ -155,6 +155,7 @@ import {
   UtilService,
   TaskService,
   IconService,
+  PageTitleService,
 } from "@nethserver/ns8-ui-lib";
 import { mapState } from "vuex";
 import EditAcmeServerModal from "@/components/settings/EditAcmeServerModal.vue";
@@ -162,7 +163,13 @@ import EditAcmeServerModal from "@/components/settings/EditAcmeServerModal.vue";
 export default {
   name: "SettingsAcmeServers",
   components: { EditAcmeServerModal },
-  mixins: [TaskService, UtilService, IconService, QueryParamService],
+  mixins: [
+    TaskService,
+    UtilService,
+    IconService,
+    QueryParamService,
+    PageTitleService,
+  ],
   pageTitle() {
     return this.$t("settings_acme_servers.title");
   },

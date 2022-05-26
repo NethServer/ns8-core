@@ -372,6 +372,7 @@ import {
   UtilService,
   TaskService,
   IconService,
+  PageTitleService,
 } from "@nethserver/ns8-ui-lib";
 import { mapState, mapActions } from "vuex";
 import CloneOrMoveAppModal from "@/components/software-center/CloneOrMoveAppModal";
@@ -380,7 +381,13 @@ import UpdateAppModal from "../components/software-center/UpdateAppModal";
 export default {
   name: "SoftwareCenterAppInstances",
   components: { InstallAppModal, CloneOrMoveAppModal, UpdateAppModal },
-  mixins: [TaskService, UtilService, IconService, QueryParamService],
+  mixins: [
+    TaskService,
+    UtilService,
+    IconService,
+    QueryParamService,
+    PageTitleService,
+  ],
   pageTitle() {
     return this.$t("software_center.app_instances_no_name");
   },

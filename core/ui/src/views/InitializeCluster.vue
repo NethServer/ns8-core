@@ -825,6 +825,7 @@ import {
   NsPasswordInput,
   TaskService,
   LottieService,
+  PageTitleService,
 } from "@nethserver/ns8-ui-lib";
 import { mapActions } from "vuex";
 import to from "await-to-js";
@@ -849,6 +850,7 @@ export default {
     TaskService,
     NotificationService,
     LottieService,
+    PageTitleService,
   ],
   pageTitle() {
     return this.$t("init.welcome", { product: this.$root.config.PRODUCT_NAME });

@@ -96,6 +96,7 @@ import {
   QueryParamService,
   UtilService,
   StorageService,
+  PageTitleService,
 } from "@nethserver/ns8-ui-lib";
 
 export default {
@@ -107,6 +108,7 @@ export default {
     WebSocketService,
     UtilService,
     QueryParamService,
+    PageTitleService,
   ],
   pageTitle() {
     return this.$t("login.title");

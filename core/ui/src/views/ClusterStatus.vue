@@ -190,6 +190,7 @@ import {
   TaskService,
   IconService,
   StorageService,
+  PageTitleService,
 } from "@nethserver/ns8-ui-lib";
 
 export default {
@@ -203,6 +204,7 @@ export default {
     WebSocketService,
     IconService,
     StorageService,
+    PageTitleService,
   ],
   pageTitle() {
     return this.$t("cluster_status.title");

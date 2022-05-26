@@ -245,6 +245,7 @@ import {
   UtilService,
   TaskService,
   IconService,
+  PageTitleService,
 } from "@nethserver/ns8-ui-lib";
 import to from "await-to-js";
 import { mapState, mapActions } from "vuex";
@@ -253,7 +254,13 @@ import NodeCard from "@/components/misc/NodeCard";
 export default {
   name: "Nodes",
   components: { NodeCard },
-  mixins: [TaskService, UtilService, IconService, QueryParamService],
+  mixins: [
+    TaskService,
+    UtilService,
+    IconService,
+    QueryParamService,
+    PageTitleService,
+  ],
   pageTitle() {
     return this.$t("nodes.title");
   },

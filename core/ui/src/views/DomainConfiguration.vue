@@ -508,6 +508,7 @@ import {
   UtilService,
   TaskService,
   IconService,
+  PageTitleService,
 } from "@nethserver/ns8-ui-lib";
 import to from "await-to-js";
 import AddInternalProviderModal from "@/components/domains/AddInternalProviderModal";
@@ -518,7 +519,13 @@ import { mapState } from "vuex";
 export default {
   name: "DomainConfiguration",
   components: { AddInternalProviderModal, AddExternalProviderModal },
-  mixins: [TaskService, UtilService, QueryParamService, IconService],
+  mixins: [
+    TaskService,
+    UtilService,
+    QueryParamService,
+    IconService,
+    PageTitleService,
+  ],
   pageTitle() {
     return this.$t("domain_configuration.title");
   },
