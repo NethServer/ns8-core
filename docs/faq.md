@@ -21,6 +21,10 @@ beautiful Web User Interface.
 Do you want to easily manage applications without worrying about installation details?
 NS8 is for you.
 
+### What is the status of NS8?
+
+NethServer 8 is a work in progress, currently in a pre-release status.  Answers in this FAQ describing its capabilities describe the goals of the project, not necessarily its current state.
+
 ### What is the difference between NethServer 7 (NS7) and NethServer 8?
 
 NethServer 7 is an operating system built on top of CentOS 7.
@@ -49,7 +53,7 @@ If you like an all-in-one server. you can do it too.
 
 ### Can I migrate from NethServer 7 to NethServer 8?
 
-Yes. Migrating to the next major release is a primary goal, as always has been.
+Migrating to the next major release is a primary goal, as always has been.
 The migration procedure is still not ready but developers will work hard to make it *safe* and *painless*.
 
 ### How can I install NethServer 8?
@@ -72,7 +76,7 @@ Sure. See the question below.
 
 Anything supported by [these distributions]({{site.baseurl}}/quickstart#system-requirements),
 
-### Does NethServer 8 has Cockpit?
+### Does NethServer 8 have Cockpit?
 
 No, NethServer 8 has a brand new [User Interface]({{site.baseurl}}/ui).
 
