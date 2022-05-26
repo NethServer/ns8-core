@@ -38,7 +38,7 @@ status = {}
 rdb = agent.redis_connect()
 status["instance"] = os.environ["MODULE_ID"]
 status["ui_name"] = rdb.get(f'module/{os.environ["MODULE_ID"]}/ui_name') or ""
-status["node"] = rdb.hget(f'module/{os.environ["MODULE_ID"]}/environment', 'NODE_ID')
+status["node"] = os.environ["NODE_ID"]
 status["node_ui_name"] = rdb.get(f'node/{status["node"]}/ui_name') or ""
 
 rootfull = os.getuid() == 0
@@ -47,12 +47,12 @@ image_filter = []
 if rootfull:
     systemd_path = f'/etc/systemd/system/{status["instance"]}*.service'
     # prepare image filter
-    env = rdb.hgetall(f'module/{status["instance"]}/environment')
+    env = agent.read_envfile(os.environ["AGENT_STATE_DIR"] + "/environment")
     for key in env.keys():
         if key.endswith("_IMAGE"):
             image_filter.append(env[key])
 else:
-    systemd_path = f'{os.environ["HOME"]}/.config/systemd/user/*.service'
+    systemd_path = f'{os.environ["AGENT_INSTALL_DIR"]}/systemd/user/*.service'
 
 status["services"] = []
 for f in glob.glob(systemd_path):
