@@ -192,7 +192,7 @@
     "restoring_apps_c": "Restoring {num} app | Restoring {num} apps",
     "traveling_back_in_time": "Traveling back in time...",
     "reading_backup_repositories": "Reading backup repositories...",
-    "creating_cluster"  : "Creating cluster..."
+    "creating_cluster": "Creating cluster..."
   },
   "shell": {
     "skip_to_content": "Skip to content",
@@ -201,7 +201,8 @@
     "app_launcher": "App launcher",
     "search_placeholder": "Search",
     "open_app": "Open {app}",
-    "logout": "Logout"
+    "logout": "Logout",
+    "account_settings": "Account settings"
   },
   "app_drawer": {
     "no_apps": "No app",
@@ -572,6 +573,13 @@
     "edit_acme_server_for_node": "Edit ACME server for {node}",
     "reload_page": "Page reload needed",
     "edit_acme_server_leader_node_warning": "You are editing the ACME server for the leader node. A page reload is needed after you click <strong>Edit ACME server</strong>"
+  },
+  "settings_account": {
+    "title": "Account",
+    "current_user_password": "Current {user} password",
+    "new_user_password": "New {user} password",
+    "new_user_password_confirm": "Re-enter new {user} password",
+    "change_password": "Change password"
   },
   "software_center": {
     "title": "Software center",

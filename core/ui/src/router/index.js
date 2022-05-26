@@ -77,6 +77,14 @@ const routes = [
       ),
   },
   {
+    path: "/settings/account",
+    name: "SettingsAccount",
+    component: () =>
+      import(
+        /* webpackChunkName: "settings-account" */ "../views/settings/SettingsAccount.vue"
+      ),
+  },
+  {
     path: "/apps/:appId",
     name: "Applications",
     component: Applications,

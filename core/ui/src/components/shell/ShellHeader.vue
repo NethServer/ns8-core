@@ -83,6 +83,13 @@
         <template v-slot:trigger>
           <UserAvatar20 />
         </template>
+        <cv-overflow-menu-item @click="goToAccountSettings">
+          <NsMenuItem :label="$t('shell.account_settings')">
+            <template slot="icon">
+              <Settings20 />
+            </template>
+          </NsMenuItem>
+        </cv-overflow-menu-item>
         <cv-overflow-menu-item @click="logout">
           <NsMenuItem :label="$t('shell.logout')">
             <template slot="icon">
@@ -111,6 +118,7 @@ import WebSocketService from "@/mixins/websocket";
 import NotificationDrawer from "@/components/shell/NotificationDrawer";
 import { StorageService } from "@nethserver/ns8-ui-lib";
 import HeaderGlobalMenu from "@/components/shell/HeaderGlobalMenu";
+import Settings20 from "@carbon/icons-vue/es/settings/20";
 
 export default {
   name: "ShellHeader",
@@ -124,6 +132,7 @@ export default {
     AppDrawer,
     NotificationDrawer,
     HeaderGlobalMenu,
+    Settings20,
   },
   mixins: [StorageService, LoginService, WebSocketService],
   data() {
@@ -153,6 +162,9 @@ export default {
     },
     goToClusterStatus() {
       this.$router.push("/status");
+    },
+    goToAccountSettings() {
+      this.$router.push("/settings/account");
     },
   },
 };

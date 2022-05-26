@@ -20,6 +20,16 @@
         <NsTile
           :light="true"
           kind="clickable"
+          @click="goTo('/settings/account')"
+          :icon="UserAvatar32"
+        >
+          <h6>{{ $t("settings_account.title") }}</h6>
+        </NsTile>
+      </cv-column>
+      <cv-column :md="4" :xlg="4">
+        <NsTile
+          :light="true"
+          kind="clickable"
           @click="goTo('/settings/software-repository')"
           :icon="Application32"
         >
