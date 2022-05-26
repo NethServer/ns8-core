@@ -41,12 +41,28 @@ status["ui_name"] = rdb.get(f'module/{os.environ["MODULE_ID"]}/ui_name') or ""
 status["node"] = rdb.hget(f'module/{os.environ["MODULE_ID"]}/environment', 'NODE_ID')
 status["node_ui_name"] = rdb.get(f'node/{status["node"]}/ui_name') or ""
 
+rootfull = os.getuid() == 0
+image_filter = []
+
+if rootfull:
+    systemd_path = f'/etc/systemd/system/{status["instance"]}*.service'
+    # prepare image filter
+    env = rdb.hgetall(f'module/{status["instance"]}/environment')
+    for key in env.keys():
+        if key.endswith("_IMAGE"):
+            image_filter.append(env[key])
+else:
+    systemd_path = f'{os.environ["HOME"]}/.config/systemd/user/*.service'
+
 status["services"] = []
-for f in glob.glob(f'{os.environ["HOME"]}/.config/systemd/user/*.service'):
+for f in glob.glob(systemd_path):
     unit = os.path.basename(f)
     service = {"name": unit.removesuffix(".service")}
     for a in ["active", "enabled", "failed"]:
-        service[a] = subprocess.run(["systemctl", "-q", "--user", f"is-{a}", unit]).returncode == 0
+        if rootfull:
+            service[a] = subprocess.run(["systemctl", "-q", f"is-{a}", unit]).returncode == 0
+        else:
+            service[a] = subprocess.run(["systemctl", "-q", "--user", f"is-{a}", unit]).returncode == 0
     status["services"].append(service)
 
 status["images"] = []
@@ -57,7 +73,10 @@ try:
         if not i:
             continue
         info = i.split(",")
-        status["images"].append({"name": info[0], "size": info[1], "created": info[2]})
+        # add all non-rootfull images
+        # add only rootfull images matching the image filter
+        if (not rootfull) or (rootfull and info[0] in image_filter):
+            status["images"].append({"name": info[0], "size": info[1], "created": info[2]})
 except:
     pass
 
@@ -69,7 +88,10 @@ try:
         if not i:
             continue
         info = i.split(",")
-        status["volumes"].append({"name": info[0], 'mount': info[1], "created": info[2]})
+        # add all non-rootfull volumes
+        # add only rootfull volumes starting with the module_id
+        if (not rootfull) or (rootfull and info[0].startswith(status["instance"])):
+            status["volumes"].append({"name": info[0], 'mount': info[1], "created": info[2]})
 except:
     pass
 
