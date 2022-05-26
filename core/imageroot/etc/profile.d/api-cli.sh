@@ -20,6 +20,10 @@
 # along with NethServer.  If not, see COPYING.
 #
 
+if [ $SHELL != '/bin/bash' ]; then
+    return
+fi
+
 _apicli_wastyped()
 {
     local xword checkword="$1"
