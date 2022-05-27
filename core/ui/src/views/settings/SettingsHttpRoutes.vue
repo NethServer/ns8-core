@@ -162,6 +162,7 @@
                             </cv-overflow-menu-item>
                             <cv-overflow-menu-item
                               @click="showEditRouteModal(row)"
+                              :disabled="!row.user_created"
                               :data-test-id="row.name + '-edit'"
                             >
                               <NsMenuItem
@@ -172,6 +173,7 @@
                             <cv-overflow-menu-item
                               danger
                               @click="showDeleteRouteModal(row)"
+                              :disabled="!row.user_created"
                               :data-test-id="row.name + '-delete'"
                             >
                               <NsMenuItem

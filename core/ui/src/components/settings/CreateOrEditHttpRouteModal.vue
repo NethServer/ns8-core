@@ -368,6 +368,7 @@ export default {
         url: this.url,
         lets_encrypt: this.lets_encrypt,
         http2https: this.http2https,
+        user_created: true,
       };
 
       if (this.host) {
