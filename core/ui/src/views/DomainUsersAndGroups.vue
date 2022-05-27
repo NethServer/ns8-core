@@ -112,6 +112,7 @@ import {
   UtilService,
   TaskService,
   IconService,
+  PageTitleService,
 } from "@nethserver/ns8-ui-lib";
 import DomainUsers from "@/components/domains/DomainUsers";
 import DomainGroups from "@/components/domains/DomainGroups";
@@ -123,7 +124,13 @@ export default {
     DomainUsers,
     DomainGroups,
   },
-  mixins: [TaskService, UtilService, QueryParamService, IconService],
+  mixins: [
+    TaskService,
+    UtilService,
+    QueryParamService,
+    IconService,
+    PageTitleService,
+  ],
   pageTitle() {
     return this.$t("domain_users.title");
   },

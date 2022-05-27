@@ -51,10 +51,6 @@ Vue.component("vue-timepicker", VueTimepicker);
 import ns8Lib from "@nethserver/ns8-ui-lib";
 Vue.use(ns8Lib);
 
-// global mixin to set page title
-import { PageTitleService } from "@nethserver/ns8-ui-lib";
-Vue.mixin(PageTitleService);
-
 // filters
 import { Filters } from "@nethserver/ns8-ui-lib";
 for (const f in Filters) {

@@ -1457,10 +1457,10 @@
     call-me-maybe "^1.0.1"
     glob-to-regexp "^0.3.0"
 
-"@nethserver/ns8-ui-lib@^0.0.91":
-  version "0.0.91"
-  resolved "https://registry.yarnpkg.com/@nethserver/ns8-ui-lib/-/ns8-ui-lib-0.0.91.tgz#9685e12233958007f2d10b48236f42bfd59d7c46"
-  integrity sha512-nfc31uumTaHfujuksPkiKgNKdG81ccpj80jD1/tcQcwvW9rLsIlJaT3XGwTeNPJ9d04WQ5SAIsCcn0gdQ0yPMw==
+"@nethserver/ns8-ui-lib@^0.0.96":
+  version "0.0.96"
+  resolved "https://registry.yarnpkg.com/@nethserver/ns8-ui-lib/-/ns8-ui-lib-0.0.96.tgz#ac5e9728e310bba46e8451fd42ab6eda458536df"
+  integrity sha512-FO+1ECbbVeTeJ21DrducSLpHO35qSK999PHPtanukHG4hxCfaHmXL6Eyj27Mkxu//0GRAE79EVaQfkVedcrTOw==
   dependencies:
     "@rollup/plugin-json" "^4.1.0"
     core-js "^3.15.2"
@@ -4279,9 +4279,9 @@ caniuse-api@^3.0.0:
     lodash.uniq "^4.5.0"
 
 caniuse-lite@^1.0.0, caniuse-lite@^1.0.30001109, caniuse-lite@^1.0.30001125, caniuse-lite@^1.0.30001280:
-  version "1.0.30001285"
-  resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30001285.tgz#fe1e52229187e11d6670590790d669b9e03315b7"
-  integrity sha512-KAOkuUtcQ901MtmvxfKD+ODHH9YVDYnBt+TGYSz2KIfnq22CiArbUxXPN9067gNbgMlnNYRSwho8OPXZPALB9Q==
+  version "1.0.30001344"
+  resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001344.tgz"
+  integrity sha512-0ZFjnlCaXNOAYcV7i+TtdKBp0L/3XEU2MF/x6Du1lrh+SRX4IfzIVL4HNJg5pB2PmFb8rszIGyOvsZnqqRoc2g==
 
 capture-exit@^2.0.0:
   version "2.0.0"

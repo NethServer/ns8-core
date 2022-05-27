@@ -246,6 +246,7 @@ import {
   IconService,
   DateTimeService,
   LottieService,
+  PageTitleService,
 } from "@nethserver/ns8-ui-lib";
 
 export default {
@@ -256,6 +257,7 @@ export default {
     AuditService,
     UtilService,
     LottieService,
+    PageTitleService,
   ],
   pageTitle() {
     return this.$t("audit_trail.title");

@@ -11,14 +11,14 @@
             <cv-link to="/settings">{{ $t("settings.title") }}</cv-link>
           </cv-breadcrumb-item>
           <cv-breadcrumb-item>
-            <span>{{ $t("settings.cluster") }}</span>
+            <span>{{ $t("settings_cluster.title") }}</span>
           </cv-breadcrumb-item>
         </cv-breadcrumb>
       </div>
     </div>
     <div class="bx--row">
       <div class="bx--col-lg-16 subpage-title">
-        <h3>{{ $t("settings.cluster") }}</h3>
+        <h3>{{ $t("settings_cluster.title") }}</h3>
       </div>
     </div>
     <div v-if="error.getClusterStatus" class="bx--row">
@@ -79,14 +79,21 @@ import {
   UtilService,
   TaskService,
   IconService,
+  PageTitleService,
 } from "@nethserver/ns8-ui-lib";
 import { mapActions } from "vuex";
 
 export default {
   name: "SettingsCluster",
-  mixins: [TaskService, UtilService, IconService, QueryParamService],
+  mixins: [
+    TaskService,
+    UtilService,
+    IconService,
+    QueryParamService,
+    PageTitleService,
+  ],
   pageTitle() {
-    return this.$t("settings.cluster");
+    return this.$t("settings_cluster.title");
   },
   data() {
     return {
@@ -208,7 +215,7 @@ export default {
 </script>
 
 <style scoped lang="scss">
-@import "../styles/carbon-utils";
+@import "../../styles/carbon-utils";
 
 .break-word {
   word-wrap: break-word;

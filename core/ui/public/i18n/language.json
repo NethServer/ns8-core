@@ -65,7 +65,8 @@
     "search_placeholder": "Search",
     "case_sensitive": "Case sensitive",
     "choose": "Choose",
-    "loading": "Loading"
+    "loading": "Loading",
+    "all_nodes": "All nodes"
   },
   "error": {
     "error": "Error",
@@ -88,7 +89,12 @@
     "invalid_24h_pattern": "Invalid 24-hour pattern",
     "invalid_value": "Invalid value",
     "invalid_time_interval": "Invalid time interval",
-    "must_be_between": "Must be between {min} and {max}"
+    "must_be_between": "Must be between {min} and {max}",
+    "url_format": "Invalid URL format",
+    "host_format": "Invalid host format",
+    "ipaddress_format": "Invalid IP address format",
+    "path_pattern": "Invalid path pattern",
+    "fqdn_format": "Invalid FQDN format"
   },
   "websocket": {
     "websocket_disconnected": "Websocket disconnected",
@@ -138,7 +144,7 @@
     "welcome": "Welcome to {product}",
     "configure_node": "Configure this node",
     "create_cluster": "Create cluster",
-    "create_cluster_description": "Create a new cluster and promote this node as cluster leader",
+    "create_cluster_description": "Create a new cluster and promote this node as leader",
     "join_cluster": "Join cluster",
     "join_cluster_description": "Add this node to an existing cluster",
     "change_admin_password": "Change admin password",
@@ -160,7 +166,7 @@
     "redirect_cluster_link": "Go to cluster administration",
     "node_added_to_cluster": "Node {nodeId} added to cluster",
     "restore_cluster": "Restore cluster",
-    "restore_cluster_description": "Restore a cluster backup and backed up apps",
+    "restore_cluster_description": "Restore cluster and apps from backup",
     "restore_from_cluster_backup_file": "Restore from cluster backup file",
     "restore_from_remote_url": "Restore from remote URL",
     "remote_url": "Remote URL",
@@ -185,7 +191,8 @@
     "skip_apps_restore_2": "You can restore apps later in <strong>Backup</strong> page",
     "restoring_apps_c": "Restoring {num} app | Restoring {num} apps",
     "traveling_back_in_time": "Traveling back in time...",
-    "reading_backup_repositories": "Reading backup repositories..."
+    "reading_backup_repositories": "Reading backup repositories...",
+    "creating_cluster": "Creating cluster..."
   },
   "shell": {
     "skip_to_content": "Skip to content",
@@ -194,7 +201,8 @@
     "app_launcher": "App launcher",
     "search_placeholder": "Search",
     "open_app": "Open {app}",
-    "logout": "Logout"
+    "logout": "Logout",
+    "account_settings": "Account settings"
   },
   "app_drawer": {
     "no_apps": "No app",
@@ -302,7 +310,15 @@
     "alter-user": "Edit user",
     "alter-group": "Edit group",
     "remove-user": "Delete user",
-    "remove-group": "Delete group"
+    "remove-group": "Delete group",
+    "set-route": "Set route",
+    "delete-route": "Delete route",
+    "list-routes": "List routes",
+    "set-certificate": "Set certificate",
+    "delete-certificate": "Delete certificate",
+    "list-certificates": "List certificates",
+    "set-acme-server": "Set ACME server",
+    "get-acme-server": "Get ACME server"
   },
   "network": {
     "title": "Network"
@@ -469,12 +485,13 @@
     "sunday": "Sunday"
   },
   "settings": {
-    "title": "Settings",
-    "sw_repositories": "Software repositories",
-    "cluster": "Cluster"
+    "title": "Settings"
   },
-  "settings_cluster": {},
+  "settings_cluster": {
+    "title": "Cluster"
+  },
   "settings_sw_repositories": {
+    "title": "Software repositories",
     "no_sw_repositories": "No software repository",
     "no_sw_repositories_description": "There is no software repository configured",
     "create_repository": "Create repository",
@@ -487,6 +504,82 @@
     "repository_same_url_already_exists": "A repository with this URL already exists",
     "repository_not_accessible": "Repository not accessible",
     "repository_is_going_to_be_deleted": "Repository {object} is going to be deleted..."
+  },
+  "settings_http_routes": {
+    "title": "HTTP routes",
+    "name": "Name",
+    "type": "Type",
+    "node": "Node",
+    "search_route": "Search route",
+    "no_http_route": "No HTTP route",
+    "no_http_route_description": "There is no route configured",
+    "create_route": "Create route",
+    "host": "Host",
+    "path": "Path",
+    "host_and_path": "Host and path",
+    "routes_filtered": "Routes filtered",
+    "routes_filtered_description": "Showing only routes for <strong>{node}</strong>",
+    "show_all": "Show all",
+    "http_route_details": "HTTP route details",
+    "url": "URL",
+    "strip_prefix": "Strip URL path prefix",
+    "strip_prefix_tooltip": "E.g.: <code>http://{host}/{path}/{requestpath}?{querystring}</code> is mapped to <code>http://{host}/{requestpath}?{querystring}</code>",
+    "request_lets_encrypt_certificate": "Request Let's Encrypt certificate",
+    "http2https": "HTTP to HTTPS",
+    "traefik_instance": "Traefik instance",
+    "url_helper": "Backend target URL",
+    "url_tooltip": "An example of valid URL is: <code>http://127.0.0.0:2000</code>",
+    "host_helper": "FQDN as virtual host",
+    "host_tooltip": "An exaple of valid host is: <code>myapp.example.org</code>",
+    "path_tooltip": "Path must start with a slash character \"/\". Matching evaluation will be performed with and without the trailing slash. E.g. <code>/foo</code> will match <code>/foo</code> and <code>/foo/*</code>",
+    "host_or_path_required": "Enter host and/or path",
+    "create_route_route": "Create route {route}",
+    "url_format": "Invalid URL format",
+    "delete_route_route": "Delete route {route}",
+    "delete_route_description": "Delete route <strong>{name}</strong>? Any application associated with this route won't be accessible anymore.",
+    "host_format": "Invalid host format",
+    "path_must_start_with_slash": "Path must start with a slash character \"/\"",
+    "route_already_exists": "Route already exists",
+    "edit_route": "Edit route",
+    "edit_route_route": "Edit route {route}"
+  },
+  "settings_tls_certificates": {
+    "title": "TLS certificates",
+    "certificates_filtered": "Certificates filtered",
+    "certificates_filtered_description": "Showing only certificates for <strong>{node}</strong>",
+    "show_all": "Show all",
+    "request_certificate": "Request certificate",
+    "search_certificate": "Search certificate",
+    "no_tls_certificate": "No TLS certificate",
+    "no_tls_certificate_description": "There is no TLS certificate requested",
+    "delete_certificate_for_fqdn": "Delete certificate for {fqdn}",
+    "delete_certificate_description": "Delete TLS certificate for <strong>{fqdn}</strong>?",
+    "fqdn": "FQDN",
+    "fqdn_helper": "Request certificate for this FQDN",
+    "status": "Status",
+    "obtained": "Obtained",
+    "not_obtained": "Not obtained",
+    "node": "Node",
+    "request_certificate_for_fqdn": "Request certificate for {fqdn}"
+  },
+  "settings_acme_servers": {
+    "title": "ACME servers",
+    "search_acme_server": "Search ACME server",
+    "no_acme_server": "No ACME server",
+    "no_acme_server_description": "There is no ACME server configured",
+    "url": "URL",
+    "node": "Node",
+    "edit_acme_server": "Edit ACME server",
+    "edit_acme_server_for_node": "Edit ACME server for {node}",
+    "reload_page": "Page reload needed",
+    "edit_acme_server_leader_node_warning": "You are editing the ACME server for the leader node. A page reload is needed after you click <strong>Edit ACME server</strong>"
+  },
+  "settings_account": {
+    "title": "Account",
+    "current_user_password": "Current {user} password",
+    "new_user_password": "New {user} password",
+    "new_user_password_confirm": "Re-enter new {user} password",
+    "change_password": "Change password"
   },
   "software_center": {
     "title": "Software center",
@@ -825,7 +918,7 @@
     "title": "Nodes",
     "add_node_to_cluster": "Add node to cluster",
     "add_node_to_cluster_step_1": "Copy join code in the box below",
-    "add_node_to_cluster_step_2": "Go to <strong>https://NEW_NODE_IP/cluster-admin/</strong>",
+    "add_node_to_cluster_step_2": "Go to <strong><code>https://NEW_NODE_IP/cluster-admin/</code></strong>",
     "add_node_to_cluster_step_3": "Select <strong>Join cluster</strong>",
     "add_node_to_cluster_step_4": "Paste join code",
     "leader": "leader",

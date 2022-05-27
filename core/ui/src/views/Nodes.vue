@@ -117,6 +117,18 @@
                   :label="$t('nodes.edit_node_label')"
                 />
               </cv-overflow-menu-item>
+              <cv-overflow-menu-item @click="goToHttpRoutes(node)">
+                <NsMenuItem
+                  :icon="Router20"
+                  :label="$t('settings_http_routes.title')"
+                />
+              </cv-overflow-menu-item>
+              <cv-overflow-menu-item @click="goToTlsCertificates(node)">
+                <NsMenuItem
+                  :icon="Certificate20"
+                  :label="$t('settings_tls_certificates.title')"
+                />
+              </cv-overflow-menu-item>
             </cv-overflow-menu>
           </template>
           <template #content>
@@ -233,6 +245,7 @@ import {
   UtilService,
   TaskService,
   IconService,
+  PageTitleService,
 } from "@nethserver/ns8-ui-lib";
 import to from "await-to-js";
 import { mapState, mapActions } from "vuex";
@@ -241,7 +254,13 @@ import NodeCard from "@/components/misc/NodeCard";
 export default {
   name: "Nodes",
   components: { NodeCard },
-  mixins: [TaskService, UtilService, IconService, QueryParamService],
+  mixins: [
+    TaskService,
+    UtilService,
+    IconService,
+    QueryParamService,
+    PageTitleService,
+  ],
   pageTitle() {
     return this.$t("nodes.title");
   },
@@ -501,6 +520,18 @@ export default {
       this.loading.setNodeLabel = false;
       this.hideSetNodeLabelModal();
       this.getClusterStatus();
+    },
+    goToHttpRoutes(node) {
+      this.$router.push({
+        path: "/settings/http-routes",
+        query: { selectedNodeId: node.id },
+      });
+    },
+    goToTlsCertificates(node) {
+      this.$router.push({
+        path: "/settings/tls-certificates",
+        query: { selectedNodeId: node.id },
+      });
     },
   },
 };

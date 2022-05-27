@@ -340,6 +340,7 @@ import {
   TaskService,
   IconService,
   DateTimeService,
+  PageTitleService,
 } from "@nethserver/ns8-ui-lib";
 import to from "await-to-js";
 import Information16 from "@carbon/icons-vue/es/information/16";
@@ -354,6 +355,7 @@ export default {
     IconService,
     QueryParamService,
     DateTimeService,
+    PageTitleService,
   ],
   pageTitle() {
     return this.$t("node_detail.title");

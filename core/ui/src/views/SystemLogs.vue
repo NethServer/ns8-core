@@ -143,6 +143,7 @@ import {
   TaskService,
   QueryParamService,
   DateTimeService,
+  PageTitleService,
 } from "@nethserver/ns8-ui-lib";
 import { v4 as uuidv4 } from "uuid";
 import LogSearch from "@/components/system-logs/LogSearch.vue";
@@ -157,6 +158,7 @@ export default {
     TaskService,
     QueryParamService,
     DateTimeService,
+    PageTitleService,
   ],
   pageTitle() {
     return this.$t("system_logs.title");
@@ -189,6 +191,13 @@ export default {
   },
   computed: {
     ...mapState(["clusterNodes"]),
+  },
+  watch: {
+    clusterNodes: function () {
+      if (this.clusterNodes.length) {
+        this.initNodes();
+      }
+    },
   },
   created() {
     this.initTimeFilters();

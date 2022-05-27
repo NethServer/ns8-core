@@ -1,0 +1,41 @@
+import { NsToggle } from "@nethserver/ns8-ui-lib";
+
+export default {
+  title: "Components/NsToggle",
+  component: NsToggle,
+  argTypes: {
+    tooltipAlignment: {
+      options: ["start", "center", "end"],
+      control: { type: "radio" },
+    },
+    tooltipDirection: {
+      options: ["top", "left", "bottom", "right"],
+      control: { type: "radio" },
+    },
+  },
+};
+
+const Template = (args, { argTypes }) => ({
+  props: Object.keys(argTypes),
+  components: { NsToggle },
+  template:
+    '<NsToggle v-bind="$props">\
+        <template slot="tooltip">\
+          <div v-html="slotTooltip"></div>\
+        </template>\
+        <template slot="text-left">Disabled</template>\
+        <template slot="text-right">Enabled</template>\
+    </NsToggle>',
+});
+
+export const Default = Template.bind({});
+Default.args = {
+  label: "Label",
+  small: false,
+  formItem: true,
+  hideLabel: false,
+  tooltipAlignment: "start",
+  tooltipDirection: "bottom",
+  slotTooltip: "<h6>Tooltip title</h6><p>Tooltip description</p>",
+  value: "toggleValue",
+};

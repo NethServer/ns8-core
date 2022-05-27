@@ -1,20 +1,7 @@
 <template>
   <div>
     <cv-grid class="welcome-grid">
-      <cv-loading
-        :active="isCreatingCluster || isJoiningCluster"
-        :overlay="true"
-      ></cv-loading>
-      <cv-row>
-        <cv-column>
-          <div class="logo">
-            <img
-              :src="require('@/assets/logo.png')"
-              :alt="this.$root.config.PRODUCT_NAME + ' logo'"
-            />
-          </div>
-        </cv-column>
-      </cv-row>
+      <cv-loading :active="isJoiningCluster" :overlay="true"></cv-loading>
       <template v-if="q.page === 'welcome'">
         <cv-row>
           <cv-column class="welcome">
@@ -23,6 +10,7 @@
                 $t("init.welcome", { product: this.$root.config.PRODUCT_NAME })
               }}
             </h2>
+            <WelcomeLogo />
           </cv-column>
         </cv-row>
         <!-- create / join / restore cluster -->
@@ -31,7 +19,7 @@
             <cv-tile light>
               <cv-grid fullWidth class="mg-top-lg">
                 <cv-row>
-                  <cv-column :md="4">
+                  <cv-column>
                     <NsTile
                       kind="clickable"
                       :icon="EdgeCluster32"
@@ -46,7 +34,7 @@
                       </div>
                     </NsTile>
                   </cv-column>
-                  <cv-column :md="4">
+                  <cv-column>
                     <NsTile
                       kind="clickable"
                       :icon="Connect32"
@@ -61,18 +49,12 @@
                       </div>
                     </NsTile>
                   </cv-column>
-                </cv-row>
-                <cv-row>
-                  <cv-column class="horizontal-divider"> </cv-column>
-                </cv-row>
-                <cv-row>
                   <cv-column>
                     <NsTile
                       kind="clickable"
                       :icon="Reset32"
                       @click="selectRestoreCluster"
                       large
-                      class="restore-card"
                     >
                       <h6 class="mg-bottom-sm">
                         {{ $t("init.restore_cluster") }}
@@ -93,10 +75,13 @@
           <cv-row>
             <!-- password change needed -->
             <cv-column class="welcome">
-              <h2>{{ $t("init.create_cluster") }}</h2>
-              <div class="title-description">
-                {{ $t("init.create_cluster_description") }}
+              <div>
+                <h2>{{ $t("init.create_cluster") }}</h2>
+                <div class="title-description">
+                  {{ $t("init.create_cluster_description") }}
+                </div>
               </div>
+              <WelcomeLogo />
             </cv-column>
           </cv-row>
           <cv-row>
@@ -166,62 +151,87 @@
           <!-- create cluster form -->
           <cv-row>
             <cv-column class="welcome">
-              <h2>{{ $t("init.create_cluster") }}</h2>
-              <div class="title-description">
-                {{ $t("init.create_cluster_description") }}
+              <div>
+                <h2>{{ $t("init.create_cluster") }}</h2>
+                <div class="title-description">
+                  {{ $t("init.create_cluster_description") }}
+                </div>
               </div>
+              <WelcomeLogo />
             </cv-column>
           </cv-row>
           <cv-row>
             <cv-column>
               <cv-tile light>
-                <cv-form @submit.prevent="createCluster">
-                  <cv-text-input
-                    :label="$t('init.vpn_endpoint_address')"
-                    v-model.trim="vpnEndpointAddress"
-                    :invalid-message="$t(error.vpnEndpointAddress)"
-                    :disabled="loading.getDefaults || isCreatingCluster"
-                    ref="vpnEndpointAddress"
-                  >
-                  </cv-text-input>
-                  <cv-text-input
-                    :label="$t('init.vpn_endpoint_port')"
-                    v-model.trim="vpnEndpointPort"
-                    :invalid-message="$t(error.vpnEndpointPort)"
-                    :disabled="loading.getDefaults || isCreatingCluster"
-                    type="number"
-                    class="narrow"
-                    ref="vpnEndpointPort"
-                  >
-                  </cv-text-input>
-                  <cv-text-input
-                    :label="$t('init.vpn_cidr')"
-                    v-model.trim="vpnCidr"
-                    :invalid-message="$t(error.vpnCidr)"
-                    :disabled="loading.getDefaults || isCreatingCluster"
-                    class="narrow"
-                    ref="vpnCidr"
-                  >
-                  </cv-text-input>
-                  <cv-button-set class="footer-buttons">
-                    <NsButton
-                      type="button"
-                      kind="secondary"
-                      :icon="ChevronLeft20"
-                      size="lg"
-                      @click="goToWelcomePage"
-                      >{{ $t("common.go_back") }}
-                    </NsButton>
-                    <NsButton
-                      kind="primary"
-                      :loading="isCreatingCluster"
+                <template v-if="!isCreatingCluster">
+                  <cv-form @submit.prevent="createCluster">
+                    <cv-text-input
+                      :label="$t('init.vpn_endpoint_address')"
+                      v-model.trim="vpnEndpointAddress"
+                      :invalid-message="$t(error.vpnEndpointAddress)"
                       :disabled="loading.getDefaults || isCreatingCluster"
-                      :icon="EdgeCluster20"
-                      size="lg"
-                      >{{ $t("init.create_cluster") }}
-                    </NsButton>
-                  </cv-button-set>
-                </cv-form>
+                      ref="vpnEndpointAddress"
+                    >
+                    </cv-text-input>
+                    <cv-text-input
+                      :label="$t('init.vpn_endpoint_port')"
+                      v-model.trim="vpnEndpointPort"
+                      :invalid-message="$t(error.vpnEndpointPort)"
+                      :disabled="loading.getDefaults || isCreatingCluster"
+                      type="number"
+                      class="narrow"
+                      ref="vpnEndpointPort"
+                    >
+                    </cv-text-input>
+                    <cv-text-input
+                      :label="$t('init.vpn_cidr')"
+                      v-model.trim="vpnCidr"
+                      :invalid-message="$t(error.vpnCidr)"
+                      :disabled="loading.getDefaults || isCreatingCluster"
+                      class="narrow"
+                      ref="vpnCidr"
+                    >
+                    </cv-text-input>
+                    <cv-button-set class="footer-buttons">
+                      <NsButton
+                        type="button"
+                        kind="secondary"
+                        :icon="ChevronLeft20"
+                        size="lg"
+                        @click="goToWelcomePage"
+                        >{{ $t("common.go_back") }}
+                      </NsButton>
+                      <NsButton
+                        kind="primary"
+                        :loading="isCreatingCluster"
+                        :disabled="loading.getDefaults || isCreatingCluster"
+                        :icon="EdgeCluster20"
+                        size="lg"
+                        >{{ $t("init.create_cluster") }}
+                      </NsButton>
+                    </cv-button-set>
+                  </cv-form>
+                </template>
+                <template v-else>
+                  <NsInlineNotification
+                    v-if="error.createCluster"
+                    kind="error"
+                    :title="$t('action.create-cluster')"
+                    :description="error.createCluster"
+                    :showCloseButton="false"
+                  />
+                  <NsEmptyState
+                    :title="$t('init.creating_cluster')"
+                    :animationData="GearsLottie"
+                    animationTitle="gears"
+                    :loop="true"
+                  />
+                  <NsProgressBar
+                    :value="createClusterProgress"
+                    :indeterminate="!createClusterProgress"
+                    class="mg-bottom-xlg"
+                  />
+                </template>
               </cv-tile>
             </cv-column>
           </cv-row>
@@ -231,10 +241,13 @@
         <!-- join cluster form -->
         <cv-row>
           <cv-column class="welcome">
-            <h2>{{ $t("init.join_cluster") }}</h2>
-            <div class="title-description">
-              {{ $t("init.join_cluster_description") }}
+            <div>
+              <h2>{{ $t("init.join_cluster") }}</h2>
+              <div class="title-description">
+                {{ $t("init.join_cluster_description") }}
+              </div>
             </div>
+            <WelcomeLogo />
           </cv-column>
         </cv-row>
         <cv-row>
@@ -286,10 +299,13 @@
           <cv-row>
             <!-- password change needed -->
             <cv-column class="welcome">
-              <h2>{{ $t("init.restore_cluster") }}</h2>
-              <div class="title-description">
-                {{ $t("init.restore_cluster_description") }}
+              <div>
+                <h2>{{ $t("init.restore_cluster") }}</h2>
+                <div class="title-description">
+                  {{ $t("init.restore_cluster_description") }}
+                </div>
               </div>
+              <WelcomeLogo />
             </cv-column>
           </cv-row>
           <cv-row>
@@ -358,10 +374,13 @@
         <template v-else>
           <cv-row>
             <cv-column class="welcome">
-              <h2>{{ $t("init.restore_cluster") }}</h2>
-              <div class="title-description">
-                {{ $t("init.restore_cluster_description") }}
+              <div>
+                <h2>{{ $t("init.restore_cluster") }}</h2>
+                <div class="title-description">
+                  {{ $t("init.restore_cluster_description") }}
+                </div>
               </div>
+              <WelcomeLogo />
             </cv-column>
           </cv-row>
           <!-- restore cluster -->
@@ -765,6 +784,7 @@
         <cv-row>
           <cv-column class="welcome">
             <h2>{{ $t("init.redirect_cluster") }}</h2>
+            <WelcomeLogo />
           </cv-column>
         </cv-row>
         <cv-row>
@@ -805,12 +825,14 @@ import {
   NsPasswordInput,
   TaskService,
   LottieService,
+  PageTitleService,
 } from "@nethserver/ns8-ui-lib";
 import { mapActions } from "vuex";
 import to from "await-to-js";
 import NotificationService from "@/mixins/notification";
 import RestoreMultipleInstancesSelector from "@/components/backup/RestoreMultipleInstancesSelector";
 import SkipRestoreAppsModal from "@/components/misc/SkipRestoreAppsModal";
+import WelcomeLogo from "@/components/misc/WelcomeLogo";
 
 export default {
   name: "InitializeCluster",
@@ -818,6 +840,7 @@ export default {
     NsPasswordInput,
     RestoreMultipleInstancesSelector,
     SkipRestoreAppsModal,
+    WelcomeLogo,
   },
   mixins: [
     UtilService,
@@ -827,6 +850,7 @@ export default {
     TaskService,
     NotificationService,
     LottieService,
+    PageTitleService,
   ],
   pageTitle() {
     return this.$t("init.welcome", { product: this.$root.config.PRODUCT_NAME });
@@ -856,6 +880,7 @@ export default {
       isJoiningCluster: false,
       isChangingPassword: false,
       isMaster: true,
+      createClusterProgress: 0,
       restore: {
         step: "type",
         type: "",
@@ -891,6 +916,7 @@ export default {
         restoreCluster: "",
         readBackupRepositories: "",
         restoreModules: "",
+        createCluster: "",
         restore: {
           url: "",
           backup_password: "",
@@ -940,7 +966,7 @@ export default {
       const err = res[0];
 
       if (err) {
-        if (err.response.status == 403) {
+        if (err.response && err.response.status == 403) {
           this.isMaster = false;
         } else {
           // persistent error notification
@@ -1030,7 +1056,7 @@ export default {
       const err = res[0];
 
       if (err) {
-        if (err.response.status == 403) {
+        if (err.response && err.response.status == 403) {
           this.isMaster = false;
         } else {
           // persistent error notification
@@ -1173,7 +1199,7 @@ export default {
       const err = res[0];
 
       if (err) {
-        if (err.response.status == 403) {
+        if (err.response && err.response.status == 403) {
           this.isMaster = false;
         } else {
           // persistent error notification
@@ -1251,16 +1277,27 @@ export default {
       if (!this.validateCreateCluster()) {
         return;
       }
-
       const taskAction = "create-cluster";
-
-      // register to task completion
-      this.$root.$off(taskAction + "-completed");
-      this.$root.$once(taskAction + "-completed", this.createClusterCompleted);
+      const eventId = this.getUuid();
+      this.createClusterProgress = 0;
 
       // register to task error
-      this.$root.$off(taskAction + "-aborted");
-      this.$root.$once(taskAction + "-aborted", this.createClusterAborted);
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.createClusterAborted
+      );
+
+      // register to task completion
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.createClusterCompleted
+      );
+
+      // register to task progress to update progress bar
+      this.$root.$on(
+        `${taskAction}-progress-${eventId}`,
+        this.createClusterProgressUpdated
+      );
 
       const res = await to(
         this.createClusterTask({
@@ -1274,13 +1311,15 @@ export default {
             title: this.$t("action." + taskAction),
             isNotificationHidden: true,
             toastTimeout: 0, // persistent notification
+            isProgressNotified: true,
+            eventId,
           },
         })
       );
       const err = res[0];
 
       if (err) {
-        if (err.response.status == 403) {
+        if (err.response && err.response.status == 403) {
           this.isMaster = false;
         } else {
           // persistent error notification
@@ -1296,15 +1335,29 @@ export default {
       }
       this.isCreatingCluster = true;
     },
-    createClusterCompleted() {
+    createClusterCompleted(taskContext) {
       this.setClusterInitializedInStore(true);
       this.$root.$emit("clusterInitialized");
       this.$router.replace("/status");
       this.isCreatingCluster = false;
+
+      // unregister to task progress
+      this.$root.$off(
+        `${taskContext.action}-progress-${taskContext.extra.eventId}`
+      );
     },
     createClusterAborted(taskResult, taskContext) {
       console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.createCluster = this.$t("error.generic_error");
       this.isCreatingCluster = false;
+
+      // unregister to task progress
+      this.$root.$off(
+        `${taskContext.action}-progress-${taskContext.extra.eventId}`
+      );
+    },
+    createClusterProgressUpdated(progress) {
+      this.createClusterProgress = progress;
     },
     validateJoinCluster() {
       this.clearErrors(this);
@@ -1397,7 +1450,7 @@ export default {
       const err = res[0];
 
       if (err) {
-        if (err.response.status == 403) {
+        if (err.response && err.response.status == 403) {
           this.isMaster = false;
         } else {
           // persistent error notification
@@ -1817,21 +1870,12 @@ export default {
   max-width: 70rem;
 }
 
-.logo {
-  width: 4rem;
-  height: 4rem;
-  margin-top: $spacing-07;
-  flex-shrink: 0;
-}
-
-.logo img {
-  width: 100%;
-  height: 100%;
-}
-
 .welcome {
   margin-top: 2rem;
   margin-bottom: 4rem;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
 }
 
 .tile-description {
@@ -1842,22 +1886,6 @@ export default {
   margin-bottom: $spacing-06;
 }
 
-.horizontal-divider {
-  margin-top: 0rem;
-  margin-bottom: 2rem;
-  height: 1px;
-  background-color: $ui-04;
-  max-width: 40rem;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.restore-card {
-  max-width: 20rem;
-  margin-left: auto;
-  margin-right: auto;
-}
-
 .file-uploader {
   margin-bottom: 0 !important;
 }
@@ -1866,6 +1894,12 @@ export default {
   display: flex;
   justify-content: flex-end;
   margin-top: $spacing-07;
+
+  .cv-button {
+    position: relative;
+    top: $spacing-05;
+    left: $spacing-05;
+  }
 }
 
 @media (max-width: $breakpoint-medium) {

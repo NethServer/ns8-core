@@ -87,11 +87,12 @@ import {
   QueryParamService,
   UtilService,
   IconService,
+  PageTitleService,
 } from "@nethserver/ns8-ui-lib";
 
 export default {
   name: "About",
-  mixins: [UtilService, IconService, QueryParamService],
+  mixins: [UtilService, IconService, QueryParamService, PageTitleService],
   pageTitle() {
     return this.$t("settings.title");
   },

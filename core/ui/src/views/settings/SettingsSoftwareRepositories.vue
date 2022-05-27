@@ -12,14 +12,14 @@
               <cv-link to="/settings">{{ $t("settings.title") }}</cv-link>
             </cv-breadcrumb-item>
             <cv-breadcrumb-item>
-              <span>{{ $t("settings.sw_repositories") }}</span>
+              <span>{{ $t("settings_sw_repositories.title") }}</span>
             </cv-breadcrumb-item>
           </cv-breadcrumb>
         </div>
       </div>
       <div class="bx--row">
         <div class="bx--col-lg-16 subpage-title">
-          <h3>{{ $t("settings.sw_repositories") }}</h3>
+          <h3>{{ $t("settings_sw_repositories.title") }}</h3>
         </div>
       </div>
       <div class="bx--row landscape-warning">
@@ -128,7 +128,7 @@
                     ></cv-tag>
                     <cv-tag
                       v-else
-                      kind="gray"
+                      kind="high-contrast"
                       :label="$t('common.disabled')"
                       class="no-margin"
                     ></cv-tag>
@@ -152,7 +152,7 @@
                     ></cv-tag>
                     <cv-tag
                       v-else
-                      kind="gray"
+                      kind="high-contrast"
                       :label="$t('common.disabled')"
                       class="no-margin"
                     ></cv-tag>
@@ -322,13 +322,20 @@ import {
   UtilService,
   TaskService,
   IconService,
+  PageTitleService,
 } from "@nethserver/ns8-ui-lib";
 
 export default {
   name: "SettingsSoftwareRepositories",
-  mixins: [TaskService, UtilService, IconService, QueryParamService],
+  mixins: [
+    TaskService,
+    UtilService,
+    IconService,
+    QueryParamService,
+    PageTitleService,
+  ],
   pageTitle() {
-    return this.$t("settings.sw_repositories");
+    return this.$t("settings_sw_repositories.title");
   },
   data() {
     return {
@@ -504,7 +511,7 @@ export default {
       // register to task completion
       this.$root.$once(
         `${taskAction}-completed-${eventId}`,
-        this.addRepositoriesCompleted
+        this.addRepositoryCompleted
       );
 
       const res = await to(
@@ -596,7 +603,11 @@ export default {
         return;
       }
     },
-    addRepositoriesCompleted() {
+    addRepositoryCompleted() {
+      this.q.newRepoName = "";
+      this.q.newRepoUrl = "";
+      this.q.isNewRepoTesting = false;
+      this.q.isNewRepoEnabled = true;
       this.listRepositories();
     },
     alterRepositoryAborted(taskResult, taskContext) {
@@ -665,7 +676,7 @@ export default {
 </script>
 
 <style scoped lang="scss">
-@import "../styles/carbon-utils";
+@import "../../styles/carbon-utils";
 
 .break-word {
   word-wrap: break-word;
