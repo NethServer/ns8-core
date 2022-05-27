@@ -47,7 +47,11 @@
       <cv-row>
         <cv-column>
           <NsInlineNotification
-            v-if="q.selectedNodeId && q.selectedNodeId !== 'all'"
+            v-if="
+              q.selectedNodeId &&
+              q.selectedNodeId !== 'all' &&
+              selectedNodeLabel
+            "
             kind="info"
             :title="$t('settings_tls_certificates.certificates_filtered')"
             :description="

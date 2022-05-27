@@ -572,7 +572,7 @@
     "edit_acme_server": "Edit ACME server",
     "edit_acme_server_for_node": "Edit ACME server for {node}",
     "reload_page": "Page reload needed",
-    "edit_acme_server_leader_node_warning": "You are editing the ACME server for the leader node. A page reload is needed after you click <strong>Edit ACME server</strong>"
+    "edit_acme_server_leader_node_warning": "You are editing the ACME server for the leader node. After you click <strong>Edit ACME server</strong> you'll need to reload the page"
   },
   "settings_account": {
     "title": "Account",
