@@ -53,11 +53,15 @@
 
 <script>
 import to from "await-to-js";
-import { UtilService, TaskService } from "@nethserver/ns8-ui-lib";
+import {
+  UtilService,
+  TaskService,
+  DateTimeService,
+} from "@nethserver/ns8-ui-lib";
 
 export default {
   name: "RequestTlsCertificateModal",
-  mixins: [UtilService, TaskService],
+  mixins: [UtilService, TaskService, DateTimeService],
   props: {
     isShown: Boolean,
     nodes: {
@@ -168,6 +172,11 @@ export default {
       );
       const traefikInstance = selectedNode.traefikInstance;
 
+      const logsStartDate = this.formatDate(new Date(), "yyyy-MM-dd");
+      const logsHours = this.formatDate(new Date(), "HH");
+      const logsMins = this.formatDate(new Date(), "mm");
+      const logsStartTime = `${logsHours}%3A${logsMins}`;
+
       const res = await to(
         this.createModuleTaskForApp(traefikInstance, {
           action: taskAction,
@@ -183,6 +192,10 @@ export default {
             ),
             description: this.$t("common.processing"),
             eventId,
+            logs: {
+              path: `?searchQuery=&context=module&selectedAppId=${traefikInstance}&followLogs=false&startDate=${logsStartDate}&startTime=${logsStartTime}&autoStartSearch=true`,
+              instance: traefikInstance,
+            },
           },
         })
       );

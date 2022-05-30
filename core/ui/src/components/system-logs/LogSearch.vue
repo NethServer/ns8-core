@@ -403,6 +403,10 @@ export default {
       type: String,
       default: "",
     },
+    startSearchCommand: {
+      type: Number,
+      default: 0,
+    },
     mainSearch: Boolean,
     followLogs: Boolean,
     verticalLayout: Boolean,
@@ -597,6 +601,11 @@ export default {
     internalEndTime: function () {
       if (this.mainSearch) {
         this.$emit("updateEndTime", this.internalEndTime);
+      }
+    },
+    startSearchCommand: function () {
+      if (this.mainSearch && this.startSearchCommand > 0) {
+        this.logsStart();
       }
     },
   },

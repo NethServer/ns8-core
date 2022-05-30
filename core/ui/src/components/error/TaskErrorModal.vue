@@ -1,8 +1,9 @@
 <template>
   <NsModal
     size="default"
-    :visible="!!taskErrorToShow"
+    :visible="isTaskErrorShown"
     @modal-hidden="taskErrorModalHidden"
+    @primary-click="onPrimaryClick"
     class="task-error-modal"
   >
     <template slot="title">{{ getTaskTitle(taskErrorToShow) }}</template>
@@ -43,7 +44,6 @@
           class="task-hierarchy"
         />
       </div>
-
       <cv-toggle
         value="moreInfoValue"
         :form-item="true"
@@ -95,19 +95,33 @@
         </div>
       </template>
     </template>
-    <template slot="primary-button">{{ $t("common.close") }}</template>
+    <template v-if="isLogAvailable">
+      <template slot="secondary-button">{{ $t("common.close") }}</template>
+      <template slot="primary-button">{{
+        $t("common.view_instance_logs", {
+          instance: taskErrorToShow.context.extra.logs.instance,
+        })
+      }}</template>
+    </template>
+    <template v-else>
+      <template slot="primary-button">{{ $t("common.close") }}</template>
+    </template>
   </NsModal>
 </template>
 
 <script>
-import { mapState, mapActions } from "vuex";
+import { mapState } from "vuex";
 import TaskHierarchy from "./TaskHierarchy";
-import { TaskService, StorageService } from "@nethserver/ns8-ui-lib";
+import {
+  TaskService,
+  StorageService,
+  IconService,
+} from "@nethserver/ns8-ui-lib";
 
 export default {
   name: "TaskErrorModal",
   components: { TaskHierarchy },
-  mixins: [TaskService, StorageService],
+  mixins: [TaskService, StorageService, IconService],
   props: {},
   data() {
     return {
@@ -117,13 +131,21 @@ export default {
     };
   },
   computed: {
-    ...mapState(["taskErrorToShow"]),
+    ...mapState(["taskErrorToShow", "isTaskErrorShown"]),
     subTasks: function () {
       if (this.taskErrorToShow && this.taskErrorToShow.subTasks) {
         return this.taskErrorToShow.subTasks;
       } else {
         return [];
       }
+    },
+    isLogAvailable: function () {
+      return (
+        this.taskErrorToShow &&
+        this.taskErrorToShow.context &&
+        this.taskErrorToShow.context.extra &&
+        this.taskErrorToShow.context.extra.logs
+      );
     },
   },
   watch: {
@@ -140,10 +162,8 @@ export default {
     },
   },
   methods: {
-    ...mapActions(["setTaskErrorToShowInStore"]),
     taskErrorModalHidden() {
-      // use a delay to show a smooth animation for modal closing
-      setTimeout(() => this.setTaskErrorToShowInStore(null), 300);
+      this.$emit("hide");
     },
     showCopyClipboardHint() {
       setTimeout(() => {
@@ -167,6 +187,19 @@ export default {
     },
     onCopyError() {
       console.error("cannot copy to clipboard");
+    },
+    goToLogs() {
+      this.$router.push(
+        "/system-logs" + this.taskErrorToShow.context.extra.logs.path
+      );
+      this.$emit("hide");
+    },
+    onPrimaryClick() {
+      if (this.isLogAvailable) {
+        this.goToLogs();
+      } else {
+        this.$emit("hide");
+      }
     },
   },
 };

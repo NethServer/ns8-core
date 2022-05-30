@@ -66,7 +66,8 @@
     "case_sensitive": "Case sensitive",
     "choose": "Choose",
     "loading": "Loading",
-    "all_nodes": "All nodes"
+    "all_nodes": "All nodes",
+    "view_instance_logs": "View {instance} logs"
   },
   "error": {
     "error": "Error",

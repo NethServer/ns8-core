@@ -115,6 +115,7 @@
           :startTime="q.startTime"
           :endDate="q.endDate"
           :endTime="q.endTime"
+          :startSearchCommand="startSearchCommand"
           :closeAriaLabel="$t('common.close')"
           @close="closeSearch"
           @updateSearchQuery="onUpdateSearchQuery"
@@ -176,11 +177,13 @@ export default {
         startTime: "",
         endDate: "",
         endTime: "",
+        autoStartSearch: false,
       },
       internalNodes: [],
       apps: [],
       searches: [],
       verticalLayout: false,
+      startSearchCommand: 0,
       loading: {
         listInstalledModules: false,
       },
@@ -196,6 +199,13 @@ export default {
     clusterNodes: function () {
       if (this.clusterNodes.length) {
         this.initNodes();
+      }
+    },
+    apps: function () {
+      if (this.apps.length && this.q.autoStartSearch) {
+        this.$nextTick(() => {
+          this.startSearchCommand++;
+        });
       }
     },
   },
