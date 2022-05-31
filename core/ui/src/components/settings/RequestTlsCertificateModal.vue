@@ -58,6 +58,7 @@ import {
   TaskService,
   DateTimeService,
 } from "@nethserver/ns8-ui-lib";
+import { mapActions } from "vuex";
 
 export default {
   name: "RequestTlsCertificateModal",
@@ -71,6 +72,10 @@ export default {
     defaultNodeId: {
       type: String,
       default: "",
+    },
+    allCertificates: {
+      type: Array,
+      required: true,
     },
   },
   data() {
@@ -96,6 +101,10 @@ export default {
     this.updateSelectedNodeId();
   },
   methods: {
+    ...mapActions([
+      "addPendingTlsCertificateInStore",
+      "removePendingTlsCertificateInStore",
+    ]),
     updateSelectedNodeId() {
       if (this.defaultNodeId != "all") {
         this.selectedNodeId = this.defaultNodeId;
@@ -116,6 +125,22 @@ export default {
 
       if (!this.fqdn) {
         this.error.fqdn = this.$t("common.required");
+
+        if (isValidationOk) {
+          this.focusElement("fqdn");
+          isValidationOk = false;
+        }
+      }
+
+      // check if fqdn already exists
+      const duplicatedFqdn = this.allCertificates.find(
+        (cert) => cert.fqdn === this.fqdn
+      );
+
+      if (duplicatedFqdn) {
+        this.error.fqdn = this.$t(
+          "settings_tls_certificates.fqdn_already_exists"
+        );
 
         if (isValidationOk) {
           this.focusElement("fqdn");
@@ -182,6 +207,7 @@ export default {
           action: taskAction,
           data: {
             fqdn: this.fqdn,
+            sync: true,
           },
           extra: {
             title: this.$t(
@@ -207,16 +233,28 @@ export default {
         this.loading.setCertificate = false;
         return;
       }
+
+      // add pending certificate
+      this.addPendingTlsCertificateInStore(this.fqdn);
+
+      setTimeout(() => {
+        // reload certificates
+        this.$root.$emit("reloadCertificates");
+      }, 500);
     },
     setCertificateAborted(taskResult, taskContext) {
       console.error(`${taskContext.action} aborted`, taskResult);
       this.loading.setCertificate = false;
 
-      // hide modal so that user can see error notification
-      this.$emit("hide");
+      // remove pending certificate
+      this.removePendingTlsCertificateInStore(taskContext.data.fqdn);
+
+      // reload certificates
+      this.$root.$emit("reloadCertificates");
     },
     setCertificateValidationOk() {
       this.loading.setCertificate = false;
+      this.clearFields();
 
       // hide modal after validation
       this.$emit("hide");
@@ -240,12 +278,15 @@ export default {
         }
       }
     },
-    setCertificateCompleted() {
+    setCertificateCompleted(taskContext) {
       this.loading.setCertificate = false;
       this.clearFields();
 
+      // remove pending certificate
+      this.removePendingTlsCertificateInStore(taskContext.data.fqdn);
+
       // reload certificates
-      this.$emit("reloadCertificates");
+      this.$root.$emit("reloadCertificates");
     },
     clearFields() {
       this.fqdn = "";

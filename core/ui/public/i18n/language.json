@@ -560,8 +560,10 @@
     "status": "Status",
     "obtained": "Obtained",
     "not_obtained": "Not obtained",
+    "pending": "Pending",
     "node": "Node",
-    "request_certificate_for_fqdn": "Request certificate for {fqdn}"
+    "request_certificate_for_fqdn": "Request certificate for {fqdn}",
+    "fqdn_already_exists": "FQDN already exists"
   },
   "settings_acme_servers": {
     "title": "ACME servers",

@@ -163,9 +163,19 @@
                         <cv-data-table-cell>
                           <div class="icon-and-text">
                             <NsSvg
-                              v-if="!row.obtained"
+                              v-if="row.status == 'not_obtained'"
                               :svg="Warning16"
                               class="icon ns-warning"
+                            />
+                            <NsSvg
+                              v-else-if="row.status == 'obtained'"
+                              :svg="CheckmarkFilled16"
+                              class="icon ns-success"
+                            />
+                            <NsSvg
+                              v-else-if="row.status == 'pending'"
+                              :svg="InformationFilled16"
+                              class="icon ns-info"
                             />
                             <span>{{
                               $t("settings_tls_certificates." + row.status)
@@ -177,14 +187,16 @@
                         </cv-data-table-cell>
                         <cv-data-table-cell>
                           <div class="justify-flex-end">
-                            <NsButton
+                            <cv-icon-button
+                              :label="$t('common.delete')"
                               kind="danger"
                               :icon="TrashCan20"
                               size="small"
+                              tipPosition="left"
+                              tipAlignment="center"
                               @click="showDeleteCertificateModal(row)"
                               :data-test-id="row.fqdn + '-delete'"
-                              >{{ $t("common.delete") }}
-                            </NsButton>
+                            />
                           </div>
                         </cv-data-table-cell>
                       </cv-data-table-row>
@@ -201,8 +213,8 @@
       :isShown="isShownRequestCertificateModal"
       :nodes="internalNodes"
       :defaultNodeId="q.selectedNodeId"
+      :allCertificates="certificates"
       @hide="hideRequestCertificateModal"
-      @reloadCertificates="onReloadCertificates"
     />
     <!-- delete certificate modal -->
     <NsDangerDeleteModal
@@ -288,7 +300,7 @@ export default {
     };
   },
   computed: {
-    ...mapState(["clusterNodes"]),
+    ...mapState(["clusterNodes", "pendingTlsCertificates"]),
     i18nTableColumns() {
       return this.tableColumns.map((column) => {
         return this.$t("settings_tls_certificates." + column);
@@ -350,7 +362,14 @@ export default {
     next();
   },
   created() {
+    // register to events
+    this.$root.$on("reloadCertificates", this.onReloadCertificates);
+
     this.listInstalledModules();
+  },
+  beforeDestroy() {
+    // remove event listeners
+    this.$root.$off("reloadCertificates");
   },
   methods: {
     showRequestCertificateModal() {
@@ -516,7 +535,17 @@ export default {
       const certificates = [];
 
       for (let certificate of taskResult.output) {
-        certificate.status = certificate.obtained ? "obtained" : "not_obtained";
+        if (
+          this.pendingTlsCertificates.includes(certificate.fqdn) &&
+          !certificate.obtained
+        ) {
+          // set-certificate in progress, show pending status
+          certificate.status = "pending";
+        } else {
+          certificate.status = certificate.obtained
+            ? "obtained"
+            : "not_obtained";
+        }
         const traefikId = taskContext.extra.traefikInstance.id;
         const nodeId = taskContext.extra.traefikInstance.node;
         const nodeUiName = taskContext.extra.traefikInstance.node_ui_name;

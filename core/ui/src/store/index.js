@@ -28,6 +28,7 @@ export default new Vuex.Store({
     clusterLabel: "",
     clusterNodes: [],
     isUpdateInProgress: false,
+    pendingTlsCertificates: [],
   },
   getters: {
     unreadNotifications: (state, getters) => {
@@ -170,6 +171,14 @@ export default new Vuex.Store({
     setUpdateInProgress(state, value) {
       state.isUpdateInProgress = value;
     },
+    addPendingTlsCertificate(state, fqdn) {
+      state.pendingTlsCertificates.push(fqdn);
+    },
+    removePendingTlsCertificate(state, fqdn) {
+      state.pendingTlsCertificates = state.pendingTlsCertificates.filter(
+        (el) => el != fqdn
+      );
+    },
   },
   actions: {
     createNotificationInStore(context, notification) {
@@ -249,6 +258,12 @@ export default new Vuex.Store({
     },
     setUpdateInProgressInStore(context, value) {
       context.commit("setUpdateInProgress", value);
+    },
+    addPendingTlsCertificateInStore(context, fqdn) {
+      context.commit("addPendingTlsCertificate", fqdn);
+    },
+    removePendingTlsCertificateInStore(context, fqdn) {
+      context.commit("removePendingTlsCertificate", fqdn);
     },
   },
 });
