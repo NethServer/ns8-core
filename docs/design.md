@@ -96,7 +96,7 @@ As design choice, NS8 will use two different user bases for the core and the app
 The core, including the administrator UI, will authenticate only against Redis.
 Each module instance will use local Unix accounts.
 
-Applications will be able to access users from the same account provider available on NS7:
+Applications will be able to access users from the same account provider available on NS8:
 - local and remote OpenLDAP
 - local and remote AD
 
