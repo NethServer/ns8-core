@@ -13,7 +13,8 @@ export default new Vuex.Store({
     isEditingFavoriteApps: false,
     favoriteApps: [],
     isSearchExpanded: false,
-    taskErrorToShow: false,
+    taskErrorToShow: null,
+    isTaskErrorShown: false,
     loggedUser: "",
     isWebsocketConnected: false,
     socket: {
@@ -27,6 +28,7 @@ export default new Vuex.Store({
     clusterLabel: "",
     clusterNodes: [],
     isUpdateInProgress: false,
+    pendingTlsCertificates: [],
   },
   getters: {
     unreadNotifications: (state, getters) => {
@@ -119,6 +121,9 @@ export default new Vuex.Store({
     setTaskErrorToShow(state, task) {
       state.taskErrorToShow = task;
     },
+    setTaskErrorShown(state, value) {
+      state.isTaskErrorShown = value;
+    },
     setNotificationRead(state, notificationId) {
       const notification = state.notifications.find(
         (n) => n.id == notificationId
@@ -166,6 +171,14 @@ export default new Vuex.Store({
     setUpdateInProgress(state, value) {
       state.isUpdateInProgress = value;
     },
+    addPendingTlsCertificate(state, fqdn) {
+      state.pendingTlsCertificates.push(fqdn);
+    },
+    removePendingTlsCertificate(state, fqdn) {
+      state.pendingTlsCertificates = state.pendingTlsCertificates.filter(
+        (el) => el != fqdn
+      );
+    },
   },
   actions: {
     createNotificationInStore(context, notification) {
@@ -198,8 +211,17 @@ export default new Vuex.Store({
     toggleSearchExpandedInStore(context) {
       context.commit("toggleSearchExpanded");
     },
-    setTaskErrorToShowInStore(context, task) {
+    showTaskErrorInStore(context, task) {
       context.commit("setTaskErrorToShow", task);
+      context.commit("setTaskErrorShown", true);
+    },
+    hideTaskErrorInStore(context) {
+      context.commit("setTaskErrorShown", false);
+
+      // use a delay to show a smooth animation on modal closing
+      setTimeout(() => {
+        context.commit("setTaskErrorToShow", null);
+      }, 300);
     },
     setNotificationReadInStore(context, notificationId) {
       context.commit("setNotificationRead", notificationId);
@@ -236,6 +258,12 @@ export default new Vuex.Store({
     },
     setUpdateInProgressInStore(context, value) {
       context.commit("setUpdateInProgress", value);
+    },
+    addPendingTlsCertificateInStore(context, fqdn) {
+      context.commit("addPendingTlsCertificate", fqdn);
+    },
+    removePendingTlsCertificateInStore(context, fqdn) {
+      context.commit("removePendingTlsCertificate", fqdn);
     },
   },
 });

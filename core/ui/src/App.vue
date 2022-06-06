@@ -6,7 +6,7 @@
     <cv-content id="main-content">
       <router-view v-if="isLoaded" />
       <cv-loading :active="!isLoaded" :overlay="true"></cv-loading>
-      <TaskErrorModal />
+      <TaskErrorModal @hide="hideTaskErrorModal" />
     </cv-content>
   </div>
 </template>
@@ -104,6 +104,7 @@ export default {
       "setWebsocketConnectedInStore",
       "setClusterLabelInStore",
       "setClusterNodesInStore",
+      "hideTaskErrorInStore",
     ]),
     configureKeyboardShortcuts(window) {
       window.addEventListener(
@@ -376,6 +377,9 @@ export default {
         type: "error",
       };
       this.createNotification(notification);
+    },
+    hideTaskErrorModal() {
+      this.hideTaskErrorInStore();
     },
   },
 };

@@ -18,7 +18,7 @@ export default {
     ...mapActions([
       "createNotificationInStore",
       "updateNotificationInStore",
-      "setTaskErrorToShowInStore",
+      "showTaskErrorInStore",
       "setNotificationDrawerShownInStore",
       "setNotificationReadInStore",
     ]),
@@ -158,7 +158,7 @@ export default {
       switch (notification.action.type) {
         case "taskError":
           // show task error modal
-          this.setTaskErrorToShowInStore(notification.task);
+          this.showTaskErrorInStore(notification.task);
           break;
         case "changeRoute":
           // go to url
