@@ -44,7 +44,7 @@ for userhome in /home/*[0-9]; do
 done
 
 echo "Clean up firewalld core rules"
-firewall-cmd --permanent --remove-service=http --remove-service=https >/dev/null
+firewall-cmd --permanent --remove-service=http --remove-service=https --remove-service=ns-wireguard >/dev/null
 
 wg0_listen_port=$(awk '/ListenPort =/ {print $3}' /etc/wireguard/wg0.conf)
 if [[ -n "${wg0_listen_port}" ]]; then
