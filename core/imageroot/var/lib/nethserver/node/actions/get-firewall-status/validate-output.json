@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "get-firewall-status output",
+  "$id": "http://schema.nethserver.org/node/get-firewall-status-output.json",
+  "description": "Output schema of the get-firewall-status action",
+  "examples": [
+    {
+      "interfaces": ["eth0", "eth1"],
+      "services": [
+        {
+          "name": "dhcpv6-client",
+          "ports": ["546/udp"]
+        },
+        {
+          "name": "https",
+          "ports": ["443/tcp"]
+        }
+      ],
+      "ports": ["55820/udp"]
+    }
+  ]
+}

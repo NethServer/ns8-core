@@ -129,6 +129,9 @@
                   :label="$t('settings_tls_certificates.title')"
                 />
               </cv-overflow-menu-item>
+              <cv-overflow-menu-item @click="goToFirewall(node)">
+                <NsMenuItem :icon="Firewall20" :label="$t('firewall.title')" />
+              </cv-overflow-menu-item>
             </cv-overflow-menu>
           </template>
           <template #content>
@@ -474,6 +477,12 @@ export default {
       this.$router.push({
         name: "NodeDetail",
         params: { nodeId },
+      });
+    },
+    goToFirewall(node) {
+      this.$router.push({
+        name: "NodeFirewall",
+        params: { nodeId: node.id },
       });
     },
     showSetNodeLabelModal(node) {

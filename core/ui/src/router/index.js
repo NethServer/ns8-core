@@ -129,6 +129,14 @@ const routes = [
     component: NodeDetail,
   },
   {
+    path: "/nodes/:nodeId/firewall",
+    name: "NodeFirewall",
+    component: () =>
+      import(
+        /* webpackChunkName: "node-firewall" */ "../views/NodeFirewall.vue"
+      ),
+  },
+  {
     path: "/domains/:domainName",
     name: "DomainUsersAndGroups",
     component: DomainUsersAndGroups,

@@ -319,7 +319,8 @@
     "delete-certificate": "Delete certificate",
     "list-certificates": "List certificates",
     "set-acme-server": "Set ACME server",
-    "get-acme-server": "Get ACME server"
+    "get-acme-server": "Get ACME server",
+    "get-firewall-status": "Get firewall status"
   },
   "network": {
     "title": "Network"
@@ -966,6 +967,18 @@
     "data_received": "Data received",
     "data_sent": "Data sent",
     "system": "System"
+  },
+  "firewall": {
+    "title": "Firewall",
+    "node_firewall": "{node} firewall",
+    "public_zone_services": "Public zone services",
+    "public_zone_interfaces": "Public zone interfaces",
+    "name": "Service",
+    "tcp_ports": "TCP ports",
+    "udp_ports": "UDP ports",
+    "search_service_or_port": "Search service or port",
+    "no_service": "No service",
+    "no_service_description": "There is no service configured"
   },
   "about": {
     "title": "About",
