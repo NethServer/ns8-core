@@ -972,13 +972,14 @@
     "title": "Firewall",
     "node_firewall": "{node} firewall",
     "public_zone_services": "Public zone services",
-    "public_zone_interfaces": "Public zone interfaces",
+    "network_interfaces": "Network interfaces",
     "name": "Service",
     "tcp_ports": "TCP ports",
     "udp_ports": "UDP ports",
     "search_service_or_port": "Search service or port",
     "no_service": "No service",
-    "no_service_description": "There is no service configured"
+    "no_service_description": "There is no service configured",
+    "no_interface": "No interface"
   },
   "about": {
     "title": "About",
