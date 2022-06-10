@@ -237,10 +237,8 @@ export default {
       // add pending certificate
       this.addPendingTlsCertificateInStore(this.fqdn);
 
-      setTimeout(() => {
-        // reload certificates
-        this.$root.$emit("reloadCertificates");
-      }, 500);
+      // reload certificates
+      this.$root.$emit("reloadCertificates");
     },
     setCertificateAborted(taskResult, taskContext) {
       console.error(`${taskContext.action} aborted`, taskResult);
