@@ -132,23 +132,43 @@
       <cv-row>
         <cv-column>
           <h4 class="mg-bottom-md">
-            {{ $t("firewall.public_zone_interfaces") }}
+            {{ $t("firewall.network_interfaces") }}
           </h4>
         </cv-column>
       </cv-row>
       <cv-row>
-        <cv-column v-for="iface in interfaces" :key="iface" :md="4" :max="4">
-          <NsInfoCard
-            light
-            :title="iface"
-            :icon="Network_232"
-            :loading="loading.getFirewallStatus"
-            :isErrorShown="error.getFirewallStatus"
-            :errorTitle="$t('action.get-firewall-status')"
-            :errorDescription="error.getFirewallStatus"
-          >
-          </NsInfoCard>
+        <!-- loading interfaces -->
+        <template v-if="loading.getFirewallStatus">
+          <cv-column v-for="index in 2" :key="index" :md="4" :max="4">
+            <cv-tile kind="standard" light>
+              <cv-skeleton-text
+                :paragraph="true"
+                :line-count="5"
+              ></cv-skeleton-text>
+            </cv-tile>
+          </cv-column>
+        </template>
+        <!-- no interface -->
+        <cv-column v-else-if="!interfaces.length">
+          <cv-tile light>
+            <NsEmptyState :title="$t('firewall.no_interface')"></NsEmptyState>
+          </cv-tile>
         </cv-column>
+        <!-- interfaces -->
+        <template v-else>
+          <cv-column v-for="iface in interfaces" :key="iface" :md="4" :max="4">
+            <NsInfoCard
+              light
+              :title="iface"
+              :icon="Network_232"
+              :loading="loading.getFirewallStatus"
+              :isErrorShown="error.getFirewallStatus"
+              :errorTitle="$t('action.get-firewall-status')"
+              :errorDescription="error.getFirewallStatus"
+            >
+            </NsInfoCard>
+          </cv-column>
+        </template>
       </cv-row>
     </cv-grid>
   </div>

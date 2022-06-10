@@ -32,6 +32,8 @@ status = {}
 env = os.environ.copy()
 env['LANG'] = 'C'
 
+# services and ports
+
 public_zone_lines = subprocess.run(["firewall-cmd", "--list-all", "--zone=public"],
                                    env=env, capture_output=True, text=True, check=True)
 
@@ -58,9 +60,22 @@ for public_zone_line in public_zone_lines.stdout.split("\n"):
     elif re.match('^\s+ports:', public_zone_line):
         # ports with no service associated
         ports = public_zone_line.split(":")[1].strip().split(" ")
-        status['ports'] = ports
-    elif re.match('^\s+interfaces:', public_zone_line):
-        interfaces = public_zone_line.split(":")[1].strip().split(" ")
-        status['interfaces'] = interfaces
+
+        if ports[0] == '':
+            status['ports'] = []
+        else:
+            status['ports'] = ports
+
+
+# interfaces
+
+with subprocess.Popen(['ip', '-j', 'addr'], stdout=subprocess.PIPE, stderr=sys.stderr) as proc:
+    ip_cmd_output = json.load(proc.stdout)
+    interfaces = []
+
+    for iface in ip_cmd_output:
+        interfaces.append(iface['ifname'])
+
+    status['interfaces'] = interfaces
 
 json.dump(status, fp=sys.stdout)
