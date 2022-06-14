@@ -45,11 +45,7 @@ done
 
 echo "Clean up firewalld core rules"
 firewall-cmd --permanent --remove-service=http --remove-service=https --remove-service=ns-wireguard >/dev/null
-
-wg0_listen_port=$(awk '/ListenPort =/ {print $3}' /etc/wireguard/wg0.conf)
-if [[ -n "${wg0_listen_port}" ]]; then
-  firewall-cmd --permanent "--remove-port=${wg0_listen_port}/udp" >/dev/null
-fi
+firewall-cmd --permanent --delete-service=ns-wireguard
 
 wg0_cluster_network=$(runagent redis-get cluster/network)
 if [[ -n "${wg0_cluster_network}" ]]; then
