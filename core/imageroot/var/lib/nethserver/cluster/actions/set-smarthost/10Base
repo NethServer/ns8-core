@@ -27,16 +27,9 @@ import sys
 import json
 
 
-data = json.load(sys.stdin)
-
-SmartHostName = data.get("SmartHostName")
-SmartHostPassword = data.get("SmartHostPassword")
-SmartHostPort = data.get("SmartHostPort")
-SmartHostStatus = data.get("SmartHostStatus")
-SmartHostUsername = data.get("SmartHostUsername")
-SmartHostTlsStatus = data.get("SmartHostTlsStatus")
 
 agent_id = os.environ['AGENT_ID']
+data = json.load(sys.stdin)
 
 values = {
     "port": data['port'],
@@ -48,10 +41,10 @@ values = {
     "tls_verify": 'on' if data['tls_verify'] else 'off'
 }
 
-# Advertise this new account provider service instance:
+# Advertise the smarthost changes:
 rdb = agent.redis_connect(privileged=True)
 trx = rdb.pipeline()
-trx.hset(agent_id + '/smarthost', mapping=data)
+trx.hset(agent_id + '/smarthost', mapping=values)
 trx.publish(agent_id + '/event/smarthost-provider-changed', json.dumps({
     'key': agent_id + '/smarthost',
 }))

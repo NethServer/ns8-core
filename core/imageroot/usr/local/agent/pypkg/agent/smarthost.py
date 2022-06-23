@@ -22,7 +22,7 @@ import redis
 import os
 import json
 
-class smtpproxy:
+class SmartHost:
 
     def load_smtp(self):
         rdb = self._redis_connect()
