@@ -65,10 +65,18 @@
     "search_placeholder": "Search",
     "case_sensitive": "Case sensitive",
     "choose": "Choose",
+    "choose_an_option_or_input_any_value": "Choose an option or input any value",
+    "choose_options_or_input_any_value": "Choose options or input any value",
     "loading": "Loading",
     "all_nodes": "All nodes",
     "view_instance_logs": "View {instance} logs",
-    "done": "Done"
+    "done": "Done",
+    "this_action_is_not_reversible": "This action is <strong>NOT</strong> reversible",
+    "unselect": "Unselect",
+    "clear_selection": "Clear selection",
+    "clear_filter": "Clear filter",
+    "selected_l": "selected",
+    "user_input_l": "user input"
   },
   "error": {
     "error": "Error",

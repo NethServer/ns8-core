@@ -16,10 +16,14 @@
     "@carbon/themes": "^10.34.0",
     "@carbon/vue": "^2.40.0",
 <<<<<<< HEAD
+<<<<<<< HEAD
     "@nethserver/ns8-ui-lib": "^0.1.4",
 =======
     "@nethserver/ns8-ui-lib": "^0.0.98",
 >>>>>>> daedb31f (ui: NsMultiSelect storybook)
+=======
+    "@nethserver/ns8-ui-lib": "^0.0.99",
+>>>>>>> d82cbbbd (ui: NsComboBox storybook; fix NsMultiSelect)
     "await-to-js": "^3.0.0",
     "axios": "^0.21.2",
     "carbon-components": "^10.41.0",

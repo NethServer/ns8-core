@@ -53,6 +53,11 @@
             loading.alterGroup
           "
           showSelectedItems
+          :unselectAriaLabel="$t('common.unselect')"
+          :clearSelectionAriaLabel="$t('common.clear_selection')"
+          :clearFilterLabel="$t('common.clear_filter')"
+          :selectedLabel="$t('common.selected_l')"
+          :userInputLabel="$t('common.user_input_l')"
           class="mg-bottom-14"
           ref="users"
         />
