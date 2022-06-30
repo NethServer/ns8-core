@@ -60,5 +60,4 @@ class SmartHost:
         )
 
 if __name__ == '__main__':
-    sp = smtpproxy()
-    print(json.dumps(sp.load_smtp()))
+   json.dumps(sp.load_smtp())
