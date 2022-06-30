@@ -49,13 +49,19 @@
             "format": "idn-hostname"
         },
         "enabled": {
-            "type": "boolean"
+            "type": "boolean",
+            "title": "enabled",
+            "description": "Enable or disable the smarthost settings"
         },
         "tls": {
-            "format": "boolean"
+            "format": "boolean",
+            "title": "tls",
+            "description": "Enable or disable the starttls encryption with the server"
         },
         "tls_verify": {
-            "format": "boolean"
+            "format": "boolean",
+            "title": "tls_verify",
+            "description": "Enable or disable the usage of a valid certificate"
         }
     }
 }
