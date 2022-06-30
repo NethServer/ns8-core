@@ -28,9 +28,5 @@ from agent.smarthost import SmartHost
 
 
 sp = SmartHost()
-try :
-    smtp = sp.load_smtp()
-    json.dump(smtp, fp=sys.stdout)
-except Exception as err:
-    json.dump([{'field':'get-smarthost','parameter':'get-smarthost','value':err,'error':'cannot_retrieve_smarthost_settings'}],fp=sys.stdout, default=str)
-    sys.exit(2)
+smtp = sp.load_smtp()
+json.dump(smtp, fp=sys.stdout)
