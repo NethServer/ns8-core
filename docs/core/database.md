@@ -122,6 +122,7 @@ Legend:
 |cluster/roles/{role}                   |SET        |glob patterns matching the actions that {role} can run. {role} is one of "owner", "reader"...|
 |cluster/environment                    |HASH       |Cluster environment variables|
 |cluster/ui_name                        |STRING     |UI label for the cluster|
+|cluster/smarthost                      |HASH       |Settings and credentials to use a SMTP smarthost provider|
 
 #### software repositories
 
