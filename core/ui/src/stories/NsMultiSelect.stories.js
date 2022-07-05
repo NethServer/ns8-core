@@ -3,12 +3,27 @@ import { NsMultiSelect } from "@nethserver/ns8-ui-lib";
 export default {
   title: "Components/NsMultiSelect",
   component: NsMultiSelect,
+  argTypes: {
+    tooltipAlignment: {
+      options: ["start", "center", "end"],
+      control: { type: "radio" },
+    },
+    tooltipDirection: {
+      options: ["top", "left", "bottom", "right"],
+      control: { type: "radio" },
+    },
+  },
 };
 
 const Template = (args, { argTypes }) => ({
   props: Object.keys(argTypes),
   components: { NsMultiSelect },
-  template: '<NsMultiSelect v-bind="$props" />',
+  template:
+    '<NsMultiSelect v-bind="$props">\
+      <template slot="tooltip">\
+        <div v-html="slotTooltip"></div>\
+      </template>\
+    </NsMultiSelect>',
 });
 
 const vegetablesOptions = ["Salad", "Tomato", "Cucumber", "Carrot"].map(
@@ -80,6 +95,10 @@ Default.args = {
   acceptUserInput: false,
   showItemType: false,
   selectedItemsColor: "high-contrast",
+  marginBottomOnOpen: false,
+  tooltipAlignment: "start",
+  tooltipDirection: "bottom",
+  slotTooltip: "<h6>Tooltip title</h6><p>Tooltip description</p>",
   options: fruitOptions,
 };
 
@@ -109,6 +128,10 @@ ShowItemType.args = {
   acceptUserInput: false,
   showItemType: true,
   selectedItemsColor: "high-contrast",
+  marginBottomOnOpen: false,
+  tooltipAlignment: "start",
+  tooltipDirection: "bottom",
+  slotTooltip: "<h6>Tooltip title</h6><p>Tooltip description</p>",
   options: vegetablesOptions.concat(fruitOptions),
 };
 
@@ -138,5 +161,53 @@ AcceptUserInput.args = {
   acceptUserInput: true,
   showItemType: true,
   selectedItemsColor: "high-contrast",
+  marginBottomOnOpen: false,
+  tooltipAlignment: "start",
+  tooltipDirection: "bottom",
+  slotTooltip: "<h6>Tooltip title</h6><p>Tooltip description</p>",
+  options: fruitOptions,
+};
+
+const TemplateWithTextParagraph = (args, { argTypes }) => ({
+  props: Object.keys(argTypes),
+  components: { NsMultiSelect },
+  template:
+    '<div>\
+      <NsMultiSelect v-bind="$props" />\
+      <p>\
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.\
+      </p>\
+    </div>',
+});
+
+export const MarginBottomOnOpen = TemplateWithTextParagraph.bind({});
+MarginBottomOnOpen.args = {
+  autoFilter: false,
+  autoHighlight: false,
+  disabled: false,
+  filterTagKind: "high-contrast",
+  inline: false,
+  invalidMessage: undefined,
+  helperText: undefined,
+  title: "Title",
+  label: "Choose",
+  highlight: "",
+  value: [],
+  selectionFeedback: "top-after-reopen",
+  filterable: false,
+  light: true,
+  clearFilterLabel: "Clear filter",
+  showSelectedItems: true,
+  unselectAriaLabel: "Unselect",
+  clearSelectionAriaLabel: "Clear selection",
+  selectedLabel: "selected",
+  userInputLabel: "user input",
+  maxDisplayOptions: 100,
+  acceptUserInput: false,
+  showItemType: false,
+  selectedItemsColor: "high-contrast",
+  marginBottomOnOpen: true,
+  tooltipAlignment: "start",
+  tooltipDirection: "bottom",
   options: fruitOptions,
 };
