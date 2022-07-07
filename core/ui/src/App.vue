@@ -60,6 +60,8 @@ export default {
     this.$root.$on("login", this.initWebSocket);
     this.$root.$on("logout", this.logout);
     this.$root.$on("createErrorNotification", this.createErrorNotification);
+    this.$root.$on("createNotificationForApp", this.createNotificationForApp);
+    this.$root.$on("deleteNotificationForApp", this.deleteNotificationForApp);
     this.$root.$on(
       "configureKeyboardShortcuts",
       this.configureKeyboardShortcuts
@@ -410,6 +412,12 @@ export default {
         type: "error",
       };
       this.createNotification(notification);
+    },
+    createNotificationForApp(notification) {
+      this.createNotification(notification);
+    },
+    deleteNotificationForApp(notification) {
+      this.deleteNotification(notification);
     },
     hideTaskErrorModal() {
       this.hideTaskErrorInStore();

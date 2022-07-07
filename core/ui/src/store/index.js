@@ -186,6 +186,11 @@ export default new Vuex.Store({
     setLogoutInfo(state, logoutInfo) {
       state.logoutInfo = logoutInfo;
     },
+    deleteNotification(state, notificationId) {
+      state.notifications = state.notifications.filter(
+        (n) => n.id !== notificationId
+      );
+    },
   },
   actions: {
     createNotificationInStore(context, notification) {
@@ -274,6 +279,9 @@ export default new Vuex.Store({
     },
     setLogoutInfoInStore(context, logoutInfo) {
       context.commit("setLogoutInfo", logoutInfo);
+    },
+    deleteNotificationInStore(context, notificationId) {
+      context.commit("deleteNotification", notificationId);
     },
   },
 });

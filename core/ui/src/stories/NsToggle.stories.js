@@ -39,3 +39,15 @@ Default.args = {
   slotTooltip: "<h6>Tooltip title</h6><p>Tooltip description</p>",
   value: "toggleValue",
 };
+
+export const NoLabel = Template.bind({});
+NoLabel.args = {
+  label: undefined,
+  small: false,
+  formItem: true,
+  hideLabel: false,
+  tooltipAlignment: "start",
+  tooltipDirection: "bottom",
+  slotTooltip: "<h6>Tooltip title</h6><p>Tooltip description</p>",
+  value: "toggleValue",
+};
