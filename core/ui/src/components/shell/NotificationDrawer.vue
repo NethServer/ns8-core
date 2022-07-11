@@ -261,6 +261,7 @@ export default {
 .Vue-Toastification__toast {
   border-radius: 0 !important;
   min-width: $notification-drawer-width-small-screen !important;
+  font-family: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif !important;
 }
 
 .Vue-Toastification__container.top-right.toastification-container {
