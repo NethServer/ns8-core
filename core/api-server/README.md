@@ -253,7 +253,7 @@ INPUT
 
 -   `action`: fixed to `logs-start`
 -   `payload`: payload of the action
-    -   `pid`: contains the pid of the process that reads log
+-   `pid`: contains the pid of the process that reads log
 
 ```json
 OUTPUT
