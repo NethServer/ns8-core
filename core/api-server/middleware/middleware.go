@@ -23,7 +23,6 @@
 package middleware
 
 import (
-	"fmt"
 	"github.com/pkg/errors"
 	"path/filepath"
 	"time"

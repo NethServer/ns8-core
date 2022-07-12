@@ -327,7 +327,7 @@ func Get2FAStatus(c *gin.Context) {
 	c.JSON(http.StatusOK, structs.Map(response.StatusOK{
 		Code:    200,
 		Message: "2FA set for this user",
-		Data:    status,
+		Data:    status == "1",
 	}))
 
 }
