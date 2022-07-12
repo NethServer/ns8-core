@@ -34,6 +34,7 @@ type Configuration struct {
 	Secret        string `json:"secret"`
 	StaticPath    string `json:"static_path"`
 	AuditFile     string `json:"audit_file"`
+	Issuer        string `json:"issuer"`
 }
 
 var Config = Configuration{}
@@ -78,5 +79,11 @@ func Init() {
 		Config.AuditFile = os.Getenv("AUDIT_FILE")
 	} else {
 		Config.AuditFile = ""
+	}
+
+	if os.Getenv("ISSUER") != "" {
+		Config.Issuer = os.Getenv("ISSUER")
+	} else {
+		Config.Issuer = "NS8"
 	}
 }

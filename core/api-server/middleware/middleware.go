@@ -23,10 +23,10 @@
 package middleware
 
 import (
+	"fmt"
+	"github.com/pkg/errors"
 	"path/filepath"
 	"time"
-
-	"github.com/pkg/errors"
 
 	"github.com/fatih/structs"
 	"github.com/gin-gonic/gin"
@@ -118,11 +118,15 @@ func InitJWT() *jwt.GinJWTMiddleware {
 		PayloadFunc: func(data interface{}) jwt.MapClaims {
 			// read current user
 			if user, ok := data.(*models.UserAuthorizations); ok {
+				// check if user require 2fa
+				var required = methods.Check2FA(user.Username)
+
 				// create claims map
 				return jwt.MapClaims{
 					identityKey: user.Username,
 					"role":      "",
 					"actions":   []string{},
+					"2fa":       required,
 				}
 			}
 
@@ -153,6 +157,22 @@ func InitJWT() *jwt.GinJWTMiddleware {
 			// bypass auth for GET requests: // TODO
 			if c.Request.Method == "GET" {
 				return true
+			}
+
+			// bypass for 2FA apis
+			if c.Request.Method == "POST" && c.Request.RequestURI == "/api/2FA" {
+				return true
+			}
+			if c.Request.Method == "DELETE" && c.Request.RequestURI == "/api/2FA" {
+				return true
+			}
+
+			// check token validation
+			claims, _ := InstanceJWT().GetClaimsFromJWT(c)
+			token, _ := InstanceJWT().ParseToken(c)
+
+			if !methods.CheckTokenValidation(claims["id"].(string), token.Raw) {
+				return false
 			}
 
 			// extract data payload and check authorizations
@@ -201,6 +221,18 @@ func InitJWT() *jwt.GinJWTMiddleware {
 
 			// not authorized
 			return false
+		},
+		LoginResponse: func(c *gin.Context, code int, token string, t time.Time) {
+			//get claims
+			tokenObj, _ := InstanceJWT().ParseTokenString(token)
+			claims := jwt.ExtractClaimsFromToken(tokenObj)
+
+			// set token to valid
+			if !claims["2fa"].(bool) {
+				methods.SetTokenValidation(claims["id"].(string), token)
+			}
+
+			c.JSON(200, gin.H{"code": 200, "expire": t, "token": token})
 		},
 		Unauthorized: func(c *gin.Context, code int, message string) {
 			if message == "redis is not running" {
