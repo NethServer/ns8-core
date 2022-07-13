@@ -17,7 +17,7 @@
         <cv-row>
           <cv-column>
             <cv-tile light>
-              <cv-grid fullWidth class="mg-top-lg">
+              <cv-grid fullWidth class="mg-top-xlg">
                 <cv-row>
                   <cv-column>
                     <NsTile
@@ -389,7 +389,7 @@
             <cv-row>
               <cv-column>
                 <cv-tile light>
-                  <cv-grid fullWidth class="mg-top-lg no-padding">
+                  <cv-grid fullWidth class="mg-top-xlg no-padding">
                     <cv-row>
                       <cv-column :md="4">
                         <NsTile
@@ -455,7 +455,7 @@
                       value="checkTlsVerify"
                     />
                     <!-- advanced options -->
-                    <cv-accordion ref="accordion" class="mg-top-lg">
+                    <cv-accordion ref="accordion" class="mg-top-xlg">
                       <cv-accordion-item
                         :open="
                           toggleAccordion[0] ||
@@ -550,7 +550,7 @@
                       v-html="error.restore.backup_file"
                     ></div>
                     <!-- advanced options -->
-                    <cv-accordion ref="accordion" class="mg-top-lg">
+                    <cv-accordion ref="accordion" class="mg-top-xlg">
                       <cv-accordion-item
                         :open="
                           toggleAccordion[0] ||
@@ -794,7 +794,7 @@
             </div>
           </cv-column>
         </cv-row>
-        <cv-row class="mg-top-lg">
+        <cv-row class="mg-top-xlg">
           <cv-column>
             <a
               :href="this.joinEndpoint + '/cluster-admin/'"

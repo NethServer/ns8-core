@@ -81,7 +81,7 @@
       </cv-column>
     </cv-row>
     <!-- groups -->
-    <cv-row class="mg-top-lg">
+    <cv-row class="mg-top-xlg">
       <cv-column>
         <h4
           ref="groups"

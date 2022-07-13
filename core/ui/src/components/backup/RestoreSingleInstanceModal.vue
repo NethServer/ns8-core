@@ -49,7 +49,7 @@
                   v-model="replaceExistingApp"
                   :disabled="!instanceToReplace"
                   value="checkReplaceExistingApp"
-                  class="mg-top-lg"
+                  class="mg-top-xlg"
                 />
               </cv-column>
             </cv-row>
@@ -59,7 +59,7 @@
           <div>
             {{ $t("backup.select_restore_node") }}
           </div>
-          <NodeSelector @selectNode="onSelectNode" class="mg-top-lg" />
+          <NodeSelector @selectNode="onSelectNode" class="mg-top-xlg" />
           <NsInlineNotification
             v-if="error.restoreModule"
             kind="error"
