@@ -321,6 +321,7 @@ func Get2FAStatus(c *gin.Context) {
 			Message: "2FA not set for this user",
 			Data:    errRedis2FAGet,
 		}))
+		return
 	}
 
 	// response
@@ -370,6 +371,7 @@ func Set2FAStatus(c *gin.Context) {
 				Message: "Error in revocate all user tokens",
 				Data:    err,
 			}))
+			return
 		}
 	}
 
@@ -380,6 +382,7 @@ func Set2FAStatus(c *gin.Context) {
 			Message: "Error in set 2FA for user",
 			Data:    errRedis2FASet.Err(),
 		}))
+		return
 	}
 
 	// response
@@ -413,6 +416,7 @@ func Del2FAStatus(c *gin.Context) {
 			Message: "Error in revocate 2FA for user",
 			Data:    errRevocate,
 		}))
+		return
 	}
 
 	// delete tokens
@@ -422,6 +426,7 @@ func Del2FAStatus(c *gin.Context) {
 			Message: "Error in revocate all user tokens",
 			Data:    errDelete,
 		}))
+		return
 	}
 
 	// response

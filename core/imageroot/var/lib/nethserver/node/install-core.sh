@@ -128,7 +128,7 @@ EOF
 ACL SETUSER cluster ON #${cluster_pwhash} ~* &* +@all
 AUTH cluster "${cluster_password}"
 ACL SETUSER default ON nopass ~* &* nocommands +@read +@connection +subscribe +psubscribe +psync +replconf +ping
-ACL SETUSER api-server ON #${apiserver_pwhash} ~* &* nocommands +@read +@pubsub +lpush +@transaction +@connection +role +sadd
+ACL SETUSER api-server ON #${apiserver_pwhash} ~* &* nocommands +@read +@pubsub +lpush +@transaction +@connection +role +sadd +del +hset
 ACL SETUSER node/1 ON #${node_pwhash} resetkeys ~node/1/* resetchannels &progress/node/1/* &node/1/event/* nocommands +@read +@write +@transaction +@connection +publish
 ACL SAVE
 SAVE
