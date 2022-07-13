@@ -319,7 +319,7 @@ func Get2FAStatus(c *gin.Context) {
 		c.JSON(http.StatusNotFound, structs.Map(response.StatusNotFound{
 			Code:    404,
 			Message: "2FA not set for this user",
-			Data:    errRedis2FAGet,
+			Data:    nil,
 		}))
 		return
 	}
@@ -369,7 +369,7 @@ func Set2FAStatus(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, structs.Map(response.StatusBadRequest{
 				Code:    403,
 				Message: "Error in revocate all user tokens",
-				Data:    err,
+				Data:    nil,
 			}))
 			return
 		}
@@ -380,7 +380,7 @@ func Set2FAStatus(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, structs.Map(response.StatusBadRequest{
 			Code:    403,
 			Message: "Error in set 2FA for user",
-			Data:    errRedis2FASet.Err(),
+			Data:    nil,
 		}))
 		return
 	}
@@ -414,7 +414,7 @@ func Del2FAStatus(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, structs.Map(response.StatusBadRequest{
 			Code:    403,
 			Message: "Error in revocate 2FA for user",
-			Data:    errRevocate,
+			Data:    nil,
 		}))
 		return
 	}
@@ -424,7 +424,7 @@ func Del2FAStatus(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, structs.Map(response.StatusBadRequest{
 			Code:    403,
 			Message: "Error in revocate all user tokens",
-			Data:    errDelete,
+			Data:    nil,
 		}))
 		return
 	}
