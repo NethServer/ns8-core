@@ -102,9 +102,6 @@ func main() {
 	api.POST("/login", middleware.InstanceJWT().LoginHandler)
 	api.POST("/logout", middleware.InstanceJWT().LogoutHandler)
 
-	// define refresh endpoint
-	api.GET("/refresh_token", middleware.InstanceJWT().RefreshHandler)
-
 	// define JWT middleware
 	api.Use(middleware.InstanceJWT().MiddlewareFunc())
 	{

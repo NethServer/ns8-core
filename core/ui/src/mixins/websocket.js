@@ -14,9 +14,12 @@ export default {
         format: "json",
       });
 
-      this.$options.sockets.onmessage = this.onMessage;
-      this.$options.sockets.onopen = this.onOpen;
-      this.$options.sockets.onclose = this.onClose;
+      // set ws handlers only if not already set (e.g. after logout + login again)
+      if (!this.$options.sockets.onmessage) {
+        this.$options.sockets.onmessage = this.onMessage;
+        this.$options.sockets.onopen = this.onOpen;
+        this.$options.sockets.onclose = this.onClose;
+      }
     },
     closeWebSocket() {
       this.$disconnect();
@@ -70,7 +73,7 @@ export default {
       return logLines.filter((l) => l);
     },
     onClose(event) {
-      console.log("ws close", event); ////
+      console.log("websocket close", event); ////
       this.$root.$emit("websocketDisconnected");
     },
   },

@@ -78,7 +78,6 @@
     "401": "Invalid authentication",
     "403": "Operation not authorized",
     "404": "Resource not found",
-    "cannot_refresh_token": "Cannot refresh token",
     "cannot_retrieve_task_status": "Cannot retrieve task status",
     "cannot_retrieve_cluster_nodes": "Cannot retrieve cluster nodes",
     "cannot_retrieve_installed_apps": "Cannot retrieve installed apps",
@@ -139,7 +138,9 @@
     "password": "Password",
     "username_placeholder": "Your username",
     "password_placeholder": "Your password",
-    "remember_username": "Remember username"
+    "remember_username": "Remember username",
+    "session_expired_title": "Session expired",
+    "session_expired_description": "Please log in again"
   },
   "init": {
     "welcome": "Welcome to {product}",

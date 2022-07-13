@@ -6,6 +6,14 @@
           <div class="test">
             <cv-tile :light="true" class="login-tile">
               <h2 class="login-title">{{ $t("login.title") }}</h2>
+              <NsInlineNotification
+                v-if="logoutInfo.title"
+                kind="info"
+                :title="logoutInfo.title"
+                :description="logoutInfo.description"
+                :showCloseButton="true"
+                @close="clearLogoutInfo"
+              />
               <div v-if="step === 'username'">
                 <cv-form @submit.prevent="checkUsername" class="login-form">
                   <cv-text-input
@@ -130,7 +138,7 @@ export default {
     };
   },
   computed: {
-    ...mapState(["loggedUser"]),
+    ...mapState(["loggedUser", "logoutInfo"]),
   },
   created() {
     const rememberedUsername = this.getFromStorage("username");
@@ -149,7 +157,7 @@ export default {
     }
   },
   methods: {
-    ...mapActions(["setLoggedUserInStore"]),
+    ...mapActions(["setLoggedUserInStore", "setLogoutInfoInStore"]),
     checkUsername() {
       this.error.username = "";
 
@@ -234,6 +242,13 @@ export default {
       this.password = "";
       this.focusElement("usernameInput");
       this.error.login = "";
+    },
+    clearLogoutInfo() {
+      const logoutInfo = {
+        title: "",
+        description: "",
+      };
+      this.setLogoutInfoInStore(logoutInfo);
     },
   },
 };
