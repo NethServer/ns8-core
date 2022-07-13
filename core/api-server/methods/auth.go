@@ -325,12 +325,16 @@ func Get2FAStatus(c *gin.Context) {
 	}
 
 	// response
+	var message = "2FA set for this user"
+	if !status == "1" {
+		message = "2FA not set for this user"
+	}
+
 	c.JSON(http.StatusOK, structs.Map(response.StatusOK{
 		Code:    200,
-		Message: "2FA set for this user",
+		Message: message,
 		Data:    status == "1",
 	}))
-
 }
 
 // Set2FAStatus godoc
