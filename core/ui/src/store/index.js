@@ -29,6 +29,10 @@ export default new Vuex.Store({
     clusterNodes: [],
     isUpdateInProgress: false,
     pendingTlsCertificates: [],
+    logoutInfo: {
+      title: "",
+      description: "",
+    },
   },
   getters: {
     unreadNotifications: (state, getters) => {
@@ -179,6 +183,9 @@ export default new Vuex.Store({
         (el) => el != fqdn
       );
     },
+    setLogoutInfo(state, logoutInfo) {
+      state.logoutInfo = logoutInfo;
+    },
   },
   actions: {
     createNotificationInStore(context, notification) {
@@ -264,6 +271,9 @@ export default new Vuex.Store({
     },
     removePendingTlsCertificateInStore(context, fqdn) {
       context.commit("removePendingTlsCertificate", fqdn);
+    },
+    setLogoutInfoInStore(context, logoutInfo) {
+      context.commit("setLogoutInfo", logoutInfo);
     },
   },
 });

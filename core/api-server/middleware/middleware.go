@@ -23,9 +23,10 @@
 package middleware
 
 import (
-	"github.com/pkg/errors"
-	"time"
 	"path/filepath"
+	"time"
+
+	"github.com/pkg/errors"
 
 	"github.com/fatih/structs"
 	"github.com/gin-gonic/gin"
@@ -62,8 +63,7 @@ func InitJWT() *jwt.GinJWTMiddleware {
 	authMiddleware, errDefine := jwt.New(&jwt.GinJWTMiddleware{
 		Realm:       "nethserver",
 		Key:         []byte(configuration.Config.Secret),
-		Timeout:     time.Hour * 24 * 7,  // a week
-		MaxRefresh:  time.Hour * 24 * 30, // a month
+		Timeout:     time.Hour * 24 * 14, // 2 weeks
 		IdentityKey: identityKey,
 		Authenticator: func(c *gin.Context) (interface{}, error) {
 			// check login credentials exists

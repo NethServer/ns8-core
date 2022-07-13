@@ -4,7 +4,6 @@ go 1.18
 
 require (
 	github.com/appleboy/gin-jwt/v2 v2.6.4
-	github.com/cpuguy83/go-md2man v1.0.10 // indirect
 	github.com/fatih/structs v1.1.0
 	github.com/gin-contrib/cors v1.3.1
 	github.com/gin-contrib/gzip v0.0.3
@@ -14,12 +13,10 @@ require (
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/google/uuid v1.2.0
 	github.com/mattn/go-sqlite3 v1.14.7
-	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/mpvl/unique v0.0.0-20150818121801-cbe035fff7de
 	github.com/olahol/melody v0.0.0-20180227134253-7bd65910e5ab
 	github.com/pkg/errors v0.9.1
-	github.com/spf13/cobra v1.4.0 // indirect
-	github.com/spf13/viper v1.3.2 // indirect
+	github.com/spf13/cobra v1.4.0
 	github.com/swaggo/files v0.0.0-20190704085106-630677cd5c14
 	github.com/swaggo/gin-swagger v1.2.0
 )
@@ -41,6 +38,7 @@ require (
 	github.com/go-playground/validator/v10 v10.4.1 // indirect
 	github.com/golang/protobuf v1.4.2 // indirect
 	github.com/gorilla/websocket v1.4.2 // indirect
+	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.9 // indirect
 	github.com/leodido/go-urn v1.2.0 // indirect
@@ -48,6 +46,7 @@ require (
 	github.com/mattn/go-isatty v0.0.12 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.1 // indirect
+	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/swaggo/swag v1.6.7 // indirect
 	github.com/ugorji/go/codec v1.1.7 // indirect
 	go.opentelemetry.io/otel v0.19.0 // indirect
