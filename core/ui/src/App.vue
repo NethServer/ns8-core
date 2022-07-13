@@ -280,7 +280,12 @@ export default {
 
       if (err) {
         // check if node is a worker
-        if (err.response && err.response.status == 403) {
+        if (
+          err.response &&
+          err.response.status == 403 &&
+          +err.response.data &&
+          +err.response.data.data
+        ) {
           this.isMaster = false;
           // redirect to worker page
           this.$router.replace(
@@ -372,10 +377,7 @@ export default {
           type: "success",
           toastTimeout: 5000,
           actionLabel: null,
-          action: {
-            type: "execute",
-            execute: "window.location.reload()",
-          },
+          action: null,
         };
         this.$options.sockets.notification = null;
         this.createNotification(notification);
@@ -390,10 +392,11 @@ export default {
           title: this.$t("websocket.websocket_disconnected"),
           description: this.$t("websocket.websocket_disconnected_description"),
           type: "warning",
-          actionLabel: this.$t("common.reload_page"),
+          toastTimeout: 0, // persistent notification
+          actionLabel: this.$t("login.login"),
           action: {
-            type: "execute",
-            execute: "window.location.reload()",
+            type: "callback",
+            callback: this.logout,
           },
         };
         this.$options.sockets.notification = notification;
