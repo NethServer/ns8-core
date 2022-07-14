@@ -16,9 +16,9 @@ This is just a prototype, **do not** yet use in production.
 
 NethServer 8 can be deployed on one ore more nodes in a cluster scenario.
 
-Supported distributions:
-- CentOS Stream 9
-- Debian 11 (bullseye)
+Supported distributions and architectures:
+- CentOS Stream 9 x86-64
+- Debian 11 (bullseye) x86-64
 
 Hardware requirements for a single node installation:
 - 2 vCPU/cores
