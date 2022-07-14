@@ -86,7 +86,6 @@ If you feel comfortable and more secure to use 2FA, you can enable it inside the
 #### 2FA API list
 
 -   `GET /api/2FA` Read current 2FA status
-
     ```json
     RESPONSE
     {
@@ -102,13 +101,6 @@ If you feel comfortable and more secure to use 2FA, you can enable it inside the
     }
     ```
 
--   `POST /api/2FA` Enable or Disable 2FA
-    ```json
-    BODY
-    {
-      "status": "true | false"
-    }
-    ```
 -   `DELETE /api/2FA` Revoke 2FA secret
     ```json
     BODY
@@ -118,6 +110,7 @@ If you feel comfortable and more secure to use 2FA, you can enable it inside the
       "message": "2FA revocate successfully"
     }
     ```
+
 -   `GET /api/2FA/qr-code` Get URL with Authenticator setup (can be used to generate a QR Code)
     ```json
     RESPONSE
@@ -127,6 +120,7 @@ If you feel comfortable and more secure to use 2FA, you can enable it inside the
       "message": "QR code string"
     }
     ```
+
 - `POST /api/2FA/otp-verify` Used to validate the OTP and verifiy the JWT token
    ```json
    BODY

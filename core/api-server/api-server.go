@@ -136,7 +136,6 @@ func main() {
 
 		// 2FA APIs
 		api.GET("/2FA", methods.Get2FAStatus)
-		api.POST("/2FA", methods.Set2FAStatus)
 		api.DELETE("/2FA", methods.Del2FAStatus)
 		api.GET("/2FA/qr-code", methods.QRCode)
 	}

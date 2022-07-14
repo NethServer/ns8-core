@@ -225,6 +225,22 @@ func OTPVerify(c *gin.Context) {
 		return
 	}
 
+	// init redis connection
+	redisConnection := redis.Instance()
+
+	// set auth token to valid
+	errRedis2FASet := redisConnection.HSet(ctx, "user/"+jsonOTP.Username, "2fa", true)
+
+	// check error
+	if errRedis2FASet.Err() != nil {
+		c.JSON(http.StatusBadRequest, structs.Map(response.StatusBadRequest{
+			Code:    403,
+			Message: "Error in set 2FA for user",
+			Data:    nil,
+		}))
+		return
+	}
+
 	// response
 	c.JSON(http.StatusOK, structs.Map(response.StatusOK{
 		Code:    200,
@@ -292,7 +308,7 @@ func QRCode(c *gin.Context) {
 	c.JSON(http.StatusOK, structs.Map(response.StatusOK{
 		Code:    200,
 		Message: "QR code string",
-		Data:    URL.String(),
+		Data:    gin.H{"url": URL.String(), "key": setSecret},
 	}))
 }
 
@@ -335,67 +351,6 @@ func Get2FAStatus(c *gin.Context) {
 		Message: message,
 		Data:    status == "1",
 	}))
-}
-
-// Set2FAStatus godoc
-// @Summary Set current 2FA status for user
-// @Description set current 2FA status for user
-// @Produce  json
-// @Success 200 {object} response.StatusOK{code=int,message=string,data=object}
-// @Failure 500 {object} response.StatusInternalServerError{code=int,message=string,data=object}
-// @Router /2FA [post]
-// @Tags /2FA auth
-func Set2FAStatus(c *gin.Context) {
-	// get payload
-	var status2FA models.Status2FA
-	if err := c.ShouldBindBodyWith(&status2FA, binding.JSON); err != nil {
-		c.JSON(http.StatusBadRequest, structs.Map(response.StatusBadRequest{
-			Code:    400,
-			Message: "request fields malformed",
-			Data:    err.Error(),
-		}))
-		return
-	}
-
-	// get claims from token
-	claims := jwt.ExtractClaims(c)
-
-	// init redis connection
-	redisConnection := redis.Instance()
-
-	// set auth token to valid
-	errRedis2FASet := redisConnection.HSet(ctx, "user/"+claims["id"].(string), "2fa", status2FA.Status)
-
-	// revocate all tokens, if true
-	var existsSecret = getUserSecret(claims["id"].(string))
-	if status2FA.Status && len(existsSecret) == 0 {
-		if err := redisConnection.Del(ctx, "user/"+claims["id"].(string)+"/tokens").Err(); err != nil {
-			c.JSON(http.StatusBadRequest, structs.Map(response.StatusBadRequest{
-				Code:    403,
-				Message: "Error in revocate all user tokens",
-				Data:    nil,
-			}))
-			return
-		}
-	}
-
-	// check error
-	if errRedis2FASet.Err() != nil {
-		c.JSON(http.StatusBadRequest, structs.Map(response.StatusBadRequest{
-			Code:    403,
-			Message: "Error in set 2FA for user",
-			Data:    nil,
-		}))
-		return
-	}
-
-	// response
-	c.JSON(http.StatusOK, structs.Map(response.StatusOK{
-		Code:    200,
-		Message: "2FA set successfully",
-		Data:    "",
-	}))
-
 }
 
 // Del2FAStatus godoc
