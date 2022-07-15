@@ -330,20 +330,11 @@ func Get2FAStatus(c *gin.Context) {
 	// get secret
 	status, errRedis2FAGet := redisConnection.HGet(ctx, "user/"+claims["id"].(string), "2fa").Result()
 
-	// handle redis error
-	if errRedis2FAGet != nil {
-		c.JSON(http.StatusNotFound, structs.Map(response.StatusNotFound{
-			Code:    404,
-			Message: "2FA not set for this user",
-			Data:    nil,
-		}))
-		return
-	}
-
 	// response
 	var message = "2FA set for this user"
-	if !(status == "1") {
+	if !(status == "1") || errRedis2FAGet != nil {
 		message = "2FA not set for this user"
+		status = "0"
 	}
 
 	c.JSON(http.StatusOK, structs.Map(response.StatusOK{

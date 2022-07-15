@@ -23,9 +23,10 @@
 package middleware
 
 import (
-	"github.com/pkg/errors"
 	"path/filepath"
 	"time"
+
+	"github.com/pkg/errors"
 
 	"github.com/fatih/structs"
 	"github.com/gin-gonic/gin"

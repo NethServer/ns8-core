@@ -55,6 +55,10 @@ a {
   margin-top: $spacing-07 !important;
 }
 
+.mg-top-xxlg {
+  margin-top: $spacing-08 !important;
+}
+
 .mg-bottom-sm {
   margin-bottom: $spacing-03 !important;
 }
@@ -69,6 +73,10 @@ a {
 
 .mg-bottom-xlg {
   margin-bottom: $spacing-07 !important;
+}
+
+.mg-left-sm {
+  margin-left: $spacing-03 !important;
 }
 
 @media (max-width: $breakpoint-medium) {
