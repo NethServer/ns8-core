@@ -378,11 +378,11 @@ func Del2FAStatus(c *gin.Context) {
 		return
 	}
 
-	// delete tokens
-	if errDelete := redisConnection.Del(ctx, "user/"+claims["id"].(string)+"/tokens").Err(); errDelete != nil {
+	// set 2FA to disabled
+	if errSet := redisConnection.HSet(ctx, "user/"+claims["id"].(string), "2fa", false).Err(); errSet != nil {
 		c.JSON(http.StatusBadRequest, structs.Map(response.StatusBadRequest{
 			Code:    403,
-			Message: "Error in revocate all user tokens",
+			Message: "Error in reset 2FA status for user",
 			Data:    nil,
 		}))
 		return
