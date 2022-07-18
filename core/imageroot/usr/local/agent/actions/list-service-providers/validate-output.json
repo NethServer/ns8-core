@@ -16,31 +16,46 @@
             }
         ]
     ],
-    "type": "object",
-    "required": [
-        "module_id",
-        "module_uuid",
-        "node",
-        "ui_name"
-    ],
-    "properties": {
-        "module_id": {
-            "title": "Module ID",
-            "type": "string"
-        },
-        "module_uuid": {
-            "title": "Module UUID",
-            "type": "string"
-        },
-        "node": {
-            "title": "Node ID",
-            "description": "Node identifier where the module is hosted",
-            "type": ["string"]
-        },
-        "ui_name": {
-            "title": "UI name",
-            "description": "Custom UI label of the module",
-            "type": ["string", "null"]
+    "type": "array",
+    "itmes": {
+        "type": "object",
+        "title": "Service discovery information",
+        "required": [
+            "module_id",
+            "module_uuid",
+            "node",
+            "transport",
+            "ui_name"
+        ],
+        "properties": {
+            "module_id": {
+                "title": "Module ID",
+                "type": "string"
+            },
+            "module_uuid": {
+                "title": "Module UUID",
+                "type": "string"
+            },
+            "node": {
+                "title": "Node ID",
+                "description": "Node identifier where the module is hosted",
+                "type": ["string"]
+            },
+            "transport": {
+                "title": "Transport protocol",
+                "examples": [
+                    "tcp",
+                    "udp",
+                    "http"
+                ],
+                "type": "string",
+                "minLength": 1
+            },
+            "ui_name": {
+                "title": "UI name",
+                "description": "Custom UI label of the module",
+                "type": ["string", "null"]
+            }
         }
     }
 }
