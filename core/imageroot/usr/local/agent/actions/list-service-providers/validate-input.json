@@ -1,0 +1,43 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "list-service-providers input",
+    "$id": "http://schema.nethserver.org/agent/list-service-providers-input.json",
+    "description": "Input schema of the basic list-service-providers action",
+    "examples": [
+        {
+            "service": "ldap",
+            "transport": "tcp"
+        },
+        {
+            "service": "ldap",
+            "transport": "tcp",
+            "filter": {
+                "node": "3"
+            }
+        }
+    ],
+    "type": "object",
+    "required": ["service"],
+    "properties": {
+        "service": {
+            "title": "Service name",
+            "type": "string",
+            "minLength": 1
+        },
+        "transport": {
+            "title": "Transport protocol",
+            "examples": [
+                "tcp",
+                "udp",
+                "http"
+            ],
+            "type": "string",
+            "minLength": 1
+        },
+        "filter": {
+            "title": "Filter clauses",
+            "description": "Return entries matching all the given clauses",
+            "type": "object"
+        }
+    }
+}
