@@ -234,6 +234,16 @@ func InitJWT() *jwt.GinJWTMiddleware {
 
 			c.JSON(200, gin.H{"code": 200, "expire": t, "token": token})
 		},
+		LogoutResponse: func(c *gin.Context, code int) {
+			//get claims
+			tokenObj, _ := InstanceJWT().ParseToken(c)
+			claims := jwt.ExtractClaimsFromToken(tokenObj)
+
+			// set token to invalid
+			methods.RemoveTokenValidation(claims["id"].(string), tokenObj.Raw)
+
+			c.JSON(200, gin.H{"code": 200})
+		},
 		Unauthorized: func(c *gin.Context, code int, message string) {
 			if message == "redis is not running" {
 				c.JSON(503, structs.Map(response.StatusServiceUnavailable{
