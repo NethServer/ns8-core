@@ -208,6 +208,7 @@ Legend:
 |module/{id}/roles/{role}           |SET        |glob patterns matching the actions that {role} can run. {role} is one of "owner", "reader"...|
 |module/{id}/backups                |SET        |List of backup numeric IDs|
 |module/{id}/flags                  |SET        |Images flags copied from `org.nethserver.flags` image label|
+|module/{id}/srv/{transport}/{service} | HASH   |Service discovery information for other modules. See [Service providers]({{site.baseurl}}/modules/service_providers) |
 
 ### task queue item
 
