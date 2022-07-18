@@ -425,6 +425,21 @@ func SetTokenValidation(username string, token string) bool {
 	return true
 }
 
+func RemoveTokenValidation(username string, token string) bool {
+	// init redis connection
+	redisConnection := redis.Instance()
+
+	// set auth token to invalid by removing from list
+	errRedisTokenSet := redisConnection.SRem(ctx, "user/"+username+"/tokens", token)
+
+	// check error
+	if errRedisTokenSet.Err() != nil {
+		return false
+	}
+
+	return true
+}
+
 func getUserSecret(username string) string {
 	// init redis connection
 	redisConnection := redis.Instance()
