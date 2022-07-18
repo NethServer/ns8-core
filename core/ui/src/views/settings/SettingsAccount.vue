@@ -25,9 +25,9 @@
       <cv-row>
         <cv-column>
           <cv-tile light>
-            <h6 class="mg-bottom-md">
+            <h4 class="mg-bottom-md">
               {{ $t("settings_account.change_password") }}
-            </h6>
+            </h4>
             <cv-form @submit.prevent="changeUserPassword">
               <NsTextInput
                 :label="
@@ -83,9 +83,90 @@
               </NsButton>
             </cv-form>
           </cv-tile>
+          <cv-tile light>
+            <!-- two-factor authentication -->
+            <h4>
+              {{ $t("settings_account.2fa_title_with_acronym") }}
+            </h4>
+            <div class="title-description mg-bottom-xlg">
+              {{ $t("settings_account.2fa_description") }}
+            </div>
+            <NsInlineNotification
+              v-if="error.get2FaStatus"
+              kind="error"
+              :title="$t('settings_account.cannot_retrieve_2fa_status')"
+              :description="error.get2FaStatus"
+              :showCloseButton="false"
+            />
+            <cv-button-skeleton v-else-if="loading.get2FaStatus" />
+            <template v-else>
+              <template v-if="twoFaEnabled">
+                <!-- 2fa enabled -->
+                <div class="icon-and-text mg-bottom-lg">
+                  <NsSvg :svg="CheckmarkFilled16" class="icon ns-success" />
+                  <span>{{ $t("settings_account.2fa_is_enabled") }}</span>
+                </div>
+                <div class="mg-bottom-lg">
+                  <span>
+                    {{ $t("settings_account.need_to_reconfigure_2fa") }}
+                  </span>
+                  <cv-link @click="show2FaQrCodeModal">
+                    {{ $t("settings_account.show_qr_code") }}
+                  </cv-link>
+                </div>
+                <div>
+                  <NsInlineNotification
+                    v-if="error.revoke2Fa"
+                    kind="error"
+                    :title="$t('settings_account.cannot_revoke_2fa')"
+                    :description="error.revoke2Fa"
+                    :showCloseButton="false"
+                  />
+                  <NsButton
+                    kind="danger"
+                    :icon="Power20"
+                    @click="showConfirmRevoke2FaModal"
+                  >
+                    {{ $t("settings_account.revoke_2fa") }}
+                  </NsButton>
+                </div>
+              </template>
+              <template v-else>
+                <!-- 2fa disabled -->
+                <div class="icon-and-text mg-bottom-lg">
+                  <NsSvg :svg="InformationFilled16" class="icon ns-info" />
+                  <span>{{ $t("settings_account.2fa_is_disabled") }}</span>
+                </div>
+                <NsButton
+                  kind="secondary"
+                  :icon="Power20"
+                  @click="showEnable2FaModal"
+                >
+                  {{ $t("settings_account.enable_2fa") }}
+                </NsButton>
+              </template>
+            </template>
+          </cv-tile>
         </cv-column>
       </cv-row>
     </cv-grid>
+    <!-- enable 2fa modal -->
+    <Enable2FaModal
+      :isShown="isShownEnable2FaModal"
+      @hide="hideEnable2FaModal"
+      @twoFaEnabled="onTwoFaEnabled"
+    />
+    <!-- 2fa qr code modal -->
+    <TwoFaQrCodeModal
+      :isShown="isShown2FaQrCodeModal"
+      @hide="hide2FaQrCodeModal"
+    />
+    <!-- confirm revoke 2fa modal -->
+    <ConfirmRevoke2FaModal
+      :isShown="isShownConfirmRevoke2FaModal"
+      @hide="hideConfirmRevoke2FaModal"
+      @confirm="disable2Fa"
+    />
   </div>
 </template>
 
@@ -98,15 +179,23 @@ import {
   IconService,
   PageTitleService,
 } from "@nethserver/ns8-ui-lib";
+import TwoFaQrCodeModal from "@/components/settings/2FaQrCodeModal";
+import Enable2FaModal from "@/components/settings/Enable2FaModal";
+import ConfirmRevoke2FaModal from "@/components/settings/ConfirmRevoke2FaModal";
+import TwoFaService from "@/mixins/2fa";
+import NotificationService from "@/mixins/notification";
 
 export default {
   name: "SettingsAccount",
+  components: { TwoFaQrCodeModal, Enable2FaModal, ConfirmRevoke2FaModal },
   mixins: [
     TaskService,
     UtilService,
     IconService,
     QueryParamService,
     PageTitleService,
+    TwoFaService,
+    NotificationService,
   ],
   pageTitle() {
     return this.$t("settings_account.title");
@@ -119,14 +208,22 @@ export default {
       passwordValidation: null,
       focusPasswordField: { element: "" },
       clearConfirmPasswordCommand: 0,
+      isShown2FaQrCodeModal: false,
+      isShownEnable2FaModal: false,
+      twoFaEnabled: false,
+      isShownConfirmRevoke2FaModal: false,
       loading: {
         changeUserPassword: false,
+        get2FaStatus: false,
+        revoke2Fa: false,
       },
       error: {
         changeUserPassword: "",
         currentPassword: "",
         newPassword: "",
         confirmPassword: "",
+        get2FaStatus: "",
+        revoke2Fa: "",
       },
     };
   },
@@ -136,6 +233,7 @@ export default {
     if (loginInfo) {
       this.currentUsername = loginInfo.username;
     }
+    this.retrieve2FaStatus();
   },
   beforeRouteEnter(to, from, next) {
     next((vm) => {
@@ -292,6 +390,70 @@ export default {
       this.newPassword = "";
       this.clearConfirmPasswordCommand++;
       this.loading.changeUserPassword = false;
+    },
+    show2FaQrCodeModal() {
+      this.isShown2FaQrCodeModal = true;
+    },
+    hide2FaQrCodeModal() {
+      this.isShown2FaQrCodeModal = false;
+    },
+    showEnable2FaModal() {
+      this.isShownEnable2FaModal = true;
+    },
+    hideEnable2FaModal() {
+      this.isShownEnable2FaModal = false;
+    },
+    showConfirmRevoke2FaModal() {
+      this.isShownConfirmRevoke2FaModal = true;
+    },
+    hideConfirmRevoke2FaModal() {
+      this.isShownConfirmRevoke2FaModal = false;
+    },
+    async retrieve2FaStatus() {
+      this.loading.get2FaStatus = true;
+      this.error.get2FaStatus = "";
+      const [err2FaStatus, response2FaStatus] = await to(this.get2FaStatus());
+      this.loading.get2FaStatus = false;
+
+      if (err2FaStatus) {
+        console.error("error retrieving 2FA status", err2FaStatus);
+        this.error.get2FaStatus = this.getErrorMessage(err2FaStatus);
+        return;
+      }
+      this.twoFaEnabled = response2FaStatus.data.data;
+    },
+    async disable2Fa() {
+      this.hideConfirmRevoke2FaModal();
+      this.loading.revoke2Fa = true;
+      this.error.revoke2Fa = "";
+
+      const errRevoke = await to(this.revoke2Fa())[0];
+      this.loading.revoke2Fa = false;
+
+      if (errRevoke) {
+        console.error("error revoking 2FA", errRevoke);
+        this.error.revoke2Fa = this.getErrorMessage(errRevoke);
+        return;
+      }
+
+      const notification = {
+        title: this.$t("settings_account.2fa_disabled"),
+        description: this.$t("task.completed"),
+        type: "success",
+      };
+      this.createNotification(notification);
+
+      this.retrieve2FaStatus();
+    },
+    onTwoFaEnabled() {
+      const notification = {
+        title: this.$t("settings_account.2fa_enabled"),
+        description: this.$t("task.completed"),
+        type: "success",
+      };
+      this.createNotification(notification);
+      this.isShownEnable2FaModal = false;
+      this.retrieve2FaStatus();
     },
   },
 };

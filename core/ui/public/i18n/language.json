@@ -67,7 +67,8 @@
     "choose": "Choose",
     "loading": "Loading",
     "all_nodes": "All nodes",
-    "view_instance_logs": "View {instance} logs"
+    "view_instance_logs": "View {instance} logs",
+    "done": "Done"
   },
   "error": {
     "error": "Error",
@@ -98,7 +99,7 @@
   },
   "websocket": {
     "websocket_disconnected": "Websocket disconnected",
-    "websocket_disconnected_description": "Websocket connection is unstable. Please wait until reconnection or reload page",
+    "websocket_disconnected_description": "Websocket connection is unstable. Please wait until reconnection or log in again",
     "websocket_connected": "Websocket connected",
     "websocket_connected_description": "Websocket connection established"
   },
@@ -140,7 +141,17 @@
     "password_placeholder": "Your password",
     "remember_username": "Remember username",
     "session_expired_title": "Session expired",
-    "session_expired_description": "Please log in again"
+    "session_expired_description": "Please log in again",
+    "username_required": "Username is required",
+    "password_required": "Password is required",
+    "2fa_title": "Two-factor authentication",
+    "2fa_description": "Open your authenticator app and enter the code",
+    "6_digit_code": "6-digit code",
+    "verify_code": "Verify code",
+    "2fa_code_required": "6-digit code is required",
+    "incorrect_code": "Incorrect code",
+    "need_to_reconfigure_2fa": "Need to reconfigure authenticator app?",
+    "setup_key_instructions": "Open you authenticator app and enter the <strong>2FA setup key</strong> you have previously saved"
   },
   "init": {
     "welcome": "Welcome to {product}",
@@ -351,7 +362,7 @@
     "delete_backup_repository": "Delete backup repository",
     "delete_repository_confirm": "Delete backup repository <strong>{name}</strong>?",
     "delete_repo_explanation_1": "Any scheduled backup using this repository will be deleted as well, but your backed up data will be left intact on the original repository. This action is <strong>NOT</strong> reversible.",
-    "delete_repo_explanation_2": "Ensure you have saved repository password in a safe place, or you won't be able to restore your backup data from the original repository.",
+    "delete_repo_explanation_2": "Ensure you have stored repository password in a safe place, or you won't be able to restore your backup data from the original repository.",
     "repository_password": "Repository password",
     "type_repo_password_to_confirm": "Type repository password to confirm deletion",
     "select_backup_provider": "Select backup provider",
@@ -584,7 +595,31 @@
     "current_user_password": "Current {user} password",
     "new_user_password": "New {user} password",
     "new_user_password_confirm": "Re-enter new {user} password",
-    "change_password": "Change password"
+    "change_password": "Change password",
+    "2fa_title_with_acronym": "Two-factor authentication (2FA)",
+    "2fa_description": "Two-factor authentication adds an additional layer of security to your account by requiring a verification code to sign in.",
+    "2fa_qr_code": "2FA QR code",
+    "cannot_retrieve_2fa_qr_code": "Cannot retrieve 2FA QR code",
+    "show_qr_code": "Show QR code",
+    "qr_code_description": "Scan this QR code with your authenticator app to configure 2FA authentication on your mobile device.",
+    "qr_code_description_tooltip": "You can use any 2FA app, such as Google Authenticator, Authy or FreeOTP",
+    "cannot_retrieve_2fa_status": "Cannot retrieve 2FA status",
+    "2fa_is_enabled": "Two-factor authentication is enabled",
+    "2fa_is_disabled": "Two-factor authentication is disabled",
+    "revoke_2fa": "Revoke 2FA",
+    "need_to_reconfigure_2fa": "Need to reconfigure authenticator app?",
+    "enable_2fa": "Enable 2FA",
+    "show_setup_key": "Show 2FA setup key",
+    "hide_setup_key": "Hide 2FA setup key",
+    "store_setup_key_description": "First of all, store <strong>2FA setup key</strong> in a safe place. You'll need it if you try to log in and your authenticator app is not configured (e.g. you just bought a new phone). Don't share it, it's a password",
+    "store_setup_key_suggestion": "Have you already stored <strong>2FA setup key</strong> in a safe place?",
+    "verify_code": "Verify code",
+    "i_have_stored_setup_key": "I have stored <strong>2FA setup key</strong> in a safe place",
+    "cannot_verify_code": "Cannot verify code",
+    "2fa_enabled": "Enable two-factor authentication",
+    "2fa_disabled": "Disable two-factor authentication",
+    "confirm_revoke_2fa": "Do you really want to revoke two-factor authentication?",
+    "cannot_revoke_2fa": "Cannot revoke 2FA"
   },
   "software_center": {
     "title": "Software center",

@@ -21,7 +21,7 @@
               })
             "
           ></div>
-          <NodeSelector @selectNode="onSelectNode" class="mg-top-lg" />
+          <NodeSelector @selectNode="onSelectNode" class="mg-top-xlg" />
         </template>
         <div
           v-else
