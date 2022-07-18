@@ -71,6 +71,7 @@ Yields
     "user_domain": "dp.nethserver.net",
     "module_uuid": "8d257122-0a7f-49c7-a620-08961a68cfa0",
     "module_id": "mail1",
+    "transport": "tcp",
     "ui_name": null
   }
 ]
@@ -89,3 +90,4 @@ Note that the function always adds the following attributes to the response reco
 - `module_id`
 - `module_uuid`
 - `ui_name`
+- `transport`
