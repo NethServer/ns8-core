@@ -84,6 +84,6 @@ func Init() {
 	if os.Getenv("ISSUER") != "" {
 		Config.Issuer = os.Getenv("ISSUER")
 	} else {
-		Config.Issuer = "NS8"
+		Config.Issuer = "NethServer"
 	}
 }
