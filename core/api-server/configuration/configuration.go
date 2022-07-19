@@ -68,7 +68,7 @@ func Init() {
 	if os.Getenv("SECRET") != "" {
 		Config.Secret = os.Getenv("SECRET")
 	} else {
-		Config.Secret = ""
+		os.Exit(1)
 	}
 
 	if os.Getenv("STATIC_PATH") != "" {
@@ -92,12 +92,12 @@ func Init() {
 	if os.Getenv("SECRETS_DIR") != "" {
 		Config.SecretsDir = os.Getenv("SECRETS_DIR")
 	} else {
-		Config.SecretsDir = ""
+		os.Exit(1)
 	}
 
 	if os.Getenv("TOKENS_DIR") != "" {
 		Config.TokensDir = os.Getenv("TOKENS_DIR")
 	} else {
-		Config.TokensDir = ""
+		os.Exit(1)
 	}
 }
