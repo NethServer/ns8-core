@@ -403,7 +403,7 @@ func setUserSecret(username string, secret string) (bool, string) {
 		}
 
 		// open file
-		f, errO := os.OpenFile(configuration.Config.SecretsDir+"/"+username+"/2fa", os.O_WRONLY|os.O_CREATE, 0600)
+		f, _ := os.OpenFile(configuration.Config.SecretsDir+"/"+username+"/2fa", os.O_WRONLY|os.O_CREATE, 0600)
 		defer f.Close()
 
 		// write file with secret
