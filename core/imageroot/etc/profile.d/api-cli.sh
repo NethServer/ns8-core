@@ -41,7 +41,7 @@ _apicli_completions()
     local actions=()
 
     if _apicli_wastyped "run"; then
-        actions+=($(api-cli list-actions))
+        actions+=($(api-cli list-actions "${cword}"))
         COMPREPLY+=($(compgen -W "${actions[*]}" -- "${cword}"))
     elif _apicli_wastyped "login"; then
         COMPREPLY+=($(compgen -W "--username --password --output --help" -- "${cword}"))
