@@ -68,6 +68,7 @@ func Init() {
 	if os.Getenv("SECRET") != "" {
 		Config.Secret = os.Getenv("SECRET")
 	} else {
+		os.Stderr.WriteString("SECRET variable is empty. ")
 		os.Exit(1)
 	}
 
@@ -92,12 +93,14 @@ func Init() {
 	if os.Getenv("SECRETS_DIR") != "" {
 		Config.SecretsDir = os.Getenv("SECRETS_DIR")
 	} else {
+		os.Stderr.WriteString("SECRETS_DIR variable is empty. ")
 		os.Exit(1)
 	}
 
 	if os.Getenv("TOKENS_DIR") != "" {
 		Config.TokensDir = os.Getenv("TOKENS_DIR")
 	} else {
+		os.Stderr.WriteString("TOKENS_DIR variable is empty. ")
 		os.Exit(1)
 	}
 }
