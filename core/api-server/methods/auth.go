@@ -25,9 +25,11 @@ package methods
 import (
 	"context"
 	"encoding/base32"
+	"fmt"
 	"math/rand"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 
 	jwt "github.com/appleboy/gin-jwt/v2"
@@ -360,7 +362,8 @@ func Del2FAStatus(c *gin.Context) {
 	redisConnection := redis.Instance()
 
 	// revocate secret
-	if errRevocate := redisConnection.Del(ctx, "secrets/"+claims["id"].(string), "2fa").Err(); errRevocate != nil {
+	errRevocate := os.Remove(configuration.Config.SecretsDir + "/" + claims["id"].(string) + "/2fa")
+	if errRevocate != nil {
 		c.JSON(http.StatusBadRequest, structs.Map(response.StatusBadRequest{
 			Code:    403,
 			Message: "Error in revocate 2FA for user",
@@ -388,26 +391,30 @@ func Del2FAStatus(c *gin.Context) {
 }
 
 func setUserSecret(username string, secret string) (bool, string) {
-	// init redis connection
-	redisConnection := redis.Instance()
+	fmt.Println("SECRETS_DIR: " + configuration.Config.SecretsDir)
+	// get secret
+	secretB, errGet := os.ReadFile(configuration.Config.SecretsDir + "/" + username + "/2fa")
 
-	// check if secret is already set
-	createdSecret, _ := redisConnection.HGet(ctx, "secrets/"+username, "2fa").Result()
+	fmt.Println(errGet)
 
 	// check error
-	if len(createdSecret) == 0 {
-		// set auth token to valid
-		errRedisTokenSet := redisConnection.HSet(ctx, "secrets/"+username, "2fa", secret)
+	if len(string(secretB[:])) == 0 {
+		// create file for secret
+		f, _ := os.Create(configuration.Config.SecretsDir + "/" + username + "/2fa")
+		defer f.Close()
+
+		// write file with secret
+		_, err := f.WriteString(secret)
 
 		// check error
-		if errRedisTokenSet.Err() != nil {
+		if err != nil {
 			return false, ""
 		}
 
 		return true, secret
 	}
 
-	return true, createdSecret
+	return true, string(secretB[:])
 }
 
 func SetTokenValidation(username string, token string) bool {
@@ -441,19 +448,16 @@ func RemoveTokenValidation(username string, token string) bool {
 }
 
 func getUserSecret(username string) string {
-	// init redis connection
-	redisConnection := redis.Instance()
-
 	// get secret
-	secret, errRedisSecretGet := redisConnection.HGet(ctx, "secrets/"+username, "2fa").Result()
+	secretB, err := os.ReadFile(configuration.Config.SecretsDir + "/" + username + "/2fa")
 
 	// handle redis error
-	if errRedisSecretGet != nil {
+	if err != nil {
 		return ""
 	}
 
 	// read from redis
-	return secret
+	return string(secretB[:])
 }
 
 func CheckTokenValidation(username string, token string) bool {
