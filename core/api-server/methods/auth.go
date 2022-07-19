@@ -25,9 +25,12 @@ package methods
 import (
 	"context"
 	"encoding/base32"
+	"fmt"
+	"io/ioutil"
 	"math/rand"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 
 	jwt "github.com/appleboy/gin-jwt/v2"
@@ -360,7 +363,8 @@ func Del2FAStatus(c *gin.Context) {
 	redisConnection := redis.Instance()
 
 	// revocate secret
-	if errRevocate := redisConnection.Del(ctx, "secrets/"+claims["id"].(string), "2fa").Err(); errRevocate != nil {
+	errRevocate := os.Remove(configuration.Config.SecretsDir + "/" + claims["id"].(string) + "/2fa")
+	if errRevocate != nil {
 		c.JSON(http.StatusBadRequest, structs.Map(response.StatusBadRequest{
 			Code:    403,
 			Message: "Error in revocate 2FA for user",
@@ -388,37 +392,44 @@ func Del2FAStatus(c *gin.Context) {
 }
 
 func setUserSecret(username string, secret string) (bool, string) {
-	// init redis connection
-	redisConnection := redis.Instance()
-
-	// check if secret is already set
-	createdSecret, _ := redisConnection.HGet(ctx, "secrets/"+username, "2fa").Result()
+	// get secret
+	secretB, _ := os.ReadFile(configuration.Config.SecretsDir + "/" + username + "/2fa")
 
 	// check error
-	if len(createdSecret) == 0 {
-		// set auth token to valid
-		errRedisTokenSet := redisConnection.HSet(ctx, "secrets/"+username, "2fa", secret)
+	if len(string(secretB[:])) == 0 {
+		// check if dir exists, otherwise create it
+		if _, errD := os.Stat(configuration.Config.SecretsDir + "/" + username); os.IsNotExist(errD) {
+			_ = os.MkdirAll(configuration.Config.SecretsDir+"/"+username, 0700)
+		}
+
+		// open file
+		f, _ := os.OpenFile(configuration.Config.SecretsDir+"/"+username+"/2fa", os.O_WRONLY|os.O_CREATE, 0600)
+		defer f.Close()
+
+		// write file with secret
+		_, err := f.WriteString(secret)
 
 		// check error
-		if errRedisTokenSet.Err() != nil {
+		if err != nil {
 			return false, ""
 		}
 
 		return true, secret
 	}
 
-	return true, createdSecret
+	return true, string(secretB[:])
 }
 
 func SetTokenValidation(username string, token string) bool {
-	// init redis connection
-	redisConnection := redis.Instance()
+	// open file
+	f, _ := os.OpenFile(configuration.Config.TokensDir+"/"+username, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
+	defer f.Close()
 
-	// set auth token to valid
-	errRedisTokenSet := redisConnection.SAdd(ctx, "user/"+username+"/tokens", token)
+	// write file with tokens
+	_, err := f.WriteString(token + "\n")
 
 	// check error
-	if errRedisTokenSet.Err() != nil {
+	if err != nil {
 		return false
 	}
 
@@ -426,57 +437,59 @@ func SetTokenValidation(username string, token string) bool {
 }
 
 func RemoveTokenValidation(username string, token string) bool {
-	// init redis connection
-	redisConnection := redis.Instance()
+	// read whole file
+	secrestListB, errR := ioutil.ReadFile(configuration.Config.TokensDir + "/" + username)
+	if errR != nil {
+		return false
+	}
+	secrestList := string(secrestListB)
 
-	// set auth token to invalid by removing from list
-	errRedisTokenSet := redisConnection.SRem(ctx, "user/"+username+"/tokens", token)
+	fmt.Println(secrestList)
+
+	// match token to remove
+	res := strings.Replace(secrestList, token, "", 1)
+
+	fmt.Println(res)
+
+	// open file
+	f, _ := os.OpenFile(configuration.Config.TokensDir+"/"+username, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
+	defer f.Close()
+
+	// write file with tokens
+	_, err := f.WriteString(strings.TrimSpace(res) + "\n")
 
 	// check error
-	if errRedisTokenSet.Err() != nil {
+	if err != nil {
 		return false
 	}
 
 	return true
+
 }
 
 func getUserSecret(username string) string {
-	// init redis connection
-	redisConnection := redis.Instance()
-
 	// get secret
-	secret, errRedisSecretGet := redisConnection.HGet(ctx, "secrets/"+username, "2fa").Result()
+	secretB, err := os.ReadFile(configuration.Config.SecretsDir + "/" + username + "/2fa")
 
 	// handle redis error
-	if errRedisSecretGet != nil {
+	if err != nil {
 		return ""
 	}
 
 	// read from redis
-	return secret
+	return string(secretB[:])
 }
 
 func CheckTokenValidation(username string, token string) bool {
-	// init redis connection
-	redisConnection := redis.Instance()
-
-	// get token list
-	tokens, errRedisTokenScan := redisConnection.SMembers(ctx, "user/"+username+"/tokens").Result()
-
-	// handle redis error
-	if errRedisTokenScan != nil {
-		return false
+	// read whole file
+	secrestListB, err := ioutil.ReadFile(configuration.Config.TokensDir + "/" + username)
+	if err != nil {
+		panic(err)
 	}
+	secrestList := string(secrestListB)
 
-	// loop tokens
-	var valid = false
-	for _, t := range tokens {
-		if t == token {
-			valid = true
-		}
-	}
-
-	return valid
+	// //check whether s contains substring text
+	return strings.Contains(secrestList, token)
 }
 
 func Check2FA(username string) bool {
