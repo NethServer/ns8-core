@@ -77,6 +77,22 @@ Yields
 ]
 ```
 
+The input JSON object attributes are:
+
+- `service` (mandatory): look up this service name
+- `transport` (optional): look up records with the given transport, or any
+  transport if the attribute is missing
+- `filter`: an object where each entry represents an additional filter
+  condition. Only services matching all the given conditions are returned.
+  The actual attributes depend on the record structure: service providers
+  must document which attributes they define. The `list-service-providers`
+  base implementation in any case, provides at least the following
+  attributes for convenience:
+    - `module_id` copy of `HGET module/{id}/environment MODULE_ID`
+    - `module_uuid` copy of `HGET module/{id}/environment MODULE_UUID`
+    - `ui_name`, copy of `GET module/{id}/ui_name`)
+    - `transport`, copy of `transport` of the Redis key name
+
 Python code snippet to invoke the `agent.list_service_providers()` function:
 
 ```python
@@ -84,10 +100,3 @@ import agent
 rdb = agent.redis_connect() # full read-only access on every key
 print(agent.list_service_providers(rdb, 'imap', 'tcp'))
 ```
-
-Note that the function always adds the following attributes to the response records:
-
-- `module_id`
-- `module_uuid`
-- `ui_name`
-- `transport`
