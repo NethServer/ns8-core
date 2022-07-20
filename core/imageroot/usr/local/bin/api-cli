@@ -29,6 +29,7 @@ import sys
 import getpass
 import agent
 import signal
+import fnmatch
 
 # Handled exceptions:
 from aiohttp import ClientError
@@ -153,10 +154,48 @@ def run_command(args):
 
 def list_actions_command(args):
     rdb = agent.redis_connect()
-    for krole in rdb.scan_iter('*/roles/owner'):
+
+    action_list = None
+
+    def run_list_actions(agent_id):
+        return agent.tasks.run(agent_id, 'list-actions', {}, endpoint='redis://cluster-leader')['output']
+
+    def print_matches(action_list, agent_id, paction, action_name):
+        if not action_name:
+            action_name = '*'
+        for naction in action_list:
+            if fnmatch.fnmatch(naction, paction) and fnmatch.fnmatch(naction, action_name):
+                print(agent_id + '/' + naction)
+
+    prefix = args.prefix
+    if not '*' in prefix:
+        prefix += '*' # append trailing slash
+
+    agent_type, agent_name, action_name = (prefix.split('/', 2) + [None, None, None])[0:3]
+
+    if agent_type == 'cluster': # shift positions
+        action_name = agent_name
+        agent_name = None
+        scanpat = 'cluster/roles/owner'
+    else:
+        scanpat = agent_type
+        if agent_name:
+            scanpat += '/' + agent_name
+        scanpat += '/roles/owner'
+
+    rolekeys = list(rdb.scan_iter(scanpat))
+
+    if len(rolekeys) == 1: # exact role match: dig it more
+        krole = rolekeys.pop()
         agent_id = krole.removesuffix('/roles/owner')
-        for action in rdb.smembers(krole):
-            print(f"{agent_id}/{action}")
+        action_list = run_list_actions(agent_id)
+        for pataction in rdb.smembers(krole):
+            print_matches(action_list, agent_id, pataction, action_name)
+    else: # just print out entries for agent_id completion
+        for krole in rolekeys:
+            agent_id = krole.removesuffix('roles/owner')
+            print(agent_id)
+
     return 0
 
 root_parser = argparse.ArgumentParser(description='Invoke cluster APIs from the command line')
@@ -187,6 +226,7 @@ submit_parser.add_argument('--nowait', help='do not wait for task completion. Re
 submit_parser.add_argument('--raw', help='convert output with print() instead dumping it in JSON format', action='store_true')
 
 list_actions_parser = subparsers.add_parser('list-actions', help='list actions granted to role "owner"')
+list_actions_parser.add_argument('prefix', default='', nargs='?', help='expand and filter with the given prefix')
 
 args = root_parser.parse_args()
 
