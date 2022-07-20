@@ -184,6 +184,10 @@ a {
   white-space: nowrap;
 }
 
+.cv-tab.bx--tabs--scrollable {
+  margin-bottom: $spacing-06;
+}
+
 // remove margin-top for cv-toggle without label
 .toggle-without-label .bx--toggle-input__label .bx--toggle__switch {
   margin-top: 0;

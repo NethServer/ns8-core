@@ -76,7 +76,8 @@
     "clear_selection": "Clear selection",
     "clear_filter": "Clear filter",
     "selected_l": "selected",
-    "user_input_l": "user input"
+    "user_input_l": "user input",
+    "tab_navigation": "Tab navigation"
   },
   "error": {
     "error": "Error",
