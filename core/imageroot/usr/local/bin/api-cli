@@ -160,20 +160,28 @@ def list_actions_command(args):
     def run_list_actions(agent_id):
         return agent.tasks.run(agent_id, 'list-actions', {}, endpoint='redis://cluster-leader')['output']
 
-    def print_matches(action_list, agent_id, paction):
+    def print_matches(action_list, agent_id, paction, action_name):
+        if not action_name:
+            action_name = '*'
         for naction in action_list:
-            if fnmatch.fnmatch(naction, paction):
+            if fnmatch.fnmatch(naction, paction) and fnmatch.fnmatch(naction, action_name):
                 print(agent_id + '/' + naction)
 
-    if '*' in args.prefix: # assume a complete action pattern
-        agent_id, paction = args.prefix.rsplit('/', 1)
-        print_matches(run_list_actions(), agent_id, paction)
-        return 0
+    prefix = args.prefix
+    if not '*' in prefix:
+        prefix += '*' # append trailing slash
 
-    if args.prefix not in ['module/', 'node/', ''] and args.prefix[-1] == '/':
-        scanpat = args.prefix + 'roles/owner'
+    agent_type, agent_name, action_name = (prefix.split('/', 2) + [None, None, None])[0:3]
+
+    if agent_type == 'cluster': # shift positions
+        action_name = agent_name
+        agent_name = None
+        scanpat = 'cluster/roles/owner'
     else:
-        scanpat = args.prefix + '*/roles/owner'
+        scanpat = agent_type
+        if agent_name:
+            scanpat += '/' + agent_name
+        scanpat += '/roles/owner'
 
     rolekeys = list(rdb.scan_iter(scanpat))
 
@@ -181,8 +189,8 @@ def list_actions_command(args):
         krole = rolekeys.pop()
         agent_id = krole.removesuffix('/roles/owner')
         action_list = run_list_actions(agent_id)
-        for paction in rdb.smembers(krole):
-            print_matches(action_list, agent_id, paction)
+        for pataction in rdb.smembers(krole):
+            print_matches(action_list, agent_id, pataction, action_name)
     else: # just print out entries for agent_id completion
         for krole in rolekeys:
             agent_id = krole.removesuffix('roles/owner')
