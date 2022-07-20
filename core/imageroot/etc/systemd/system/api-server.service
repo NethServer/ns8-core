@@ -10,7 +10,7 @@ Environment=AUDIT_FILE=/var/lib/nethserver/api-server/audit.db
 Environment=TOKENS_DIR=%t/api-server/tokens
 Environment=SECRETS_DIR=/var/lib/nethserver/api-server/secrets
 EnvironmentFile=-/etc/nethserver/api-server.env
-ExecStartPre=mkdir -vp -m 0700 ${SECRETS_DIR}
+ExecStartPre=mkdir -vp -m 0700 ${SECRETS_DIR}/node ${SECRETS_DIR}/module ${TOKENS_DIR}/node ${TOKENS_DIR}/module
 ExecStart=/usr/local/bin/api-server
 Restart=always
 User=api-server

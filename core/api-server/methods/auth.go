@@ -25,7 +25,6 @@ package methods
 import (
 	"context"
 	"encoding/base32"
-	"fmt"
 	"io/ioutil"
 	"math/rand"
 	"net/http"
@@ -444,12 +443,8 @@ func RemoveTokenValidation(username string, token string) bool {
 	}
 	secrestList := string(secrestListB)
 
-	fmt.Println(secrestList)
-
 	// match token to remove
 	res := strings.Replace(secrestList, token, "", 1)
-
-	fmt.Println(res)
 
 	// open file
 	f, _ := os.OpenFile(configuration.Config.TokensDir+"/"+username, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
