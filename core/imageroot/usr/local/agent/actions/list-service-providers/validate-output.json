@@ -1,0 +1,61 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "list-service-providers output",
+    "$id": "http://schema.nethserver.org/agent/list-service-providers-output.json",
+    "description": "Output schema of the basic list-service-providers action",
+    "examples": [
+        [
+            {
+                "port": "143",
+                "host": "10.5.4.1",
+                "node": "1",
+                "user_domain": "dp.nethserver.net",
+                "module_uuid": "8d257122-0a7f-49c7-a620-08961a68cfa0",
+                "module_id": "mail1",
+                "ui_name": null
+            }
+        ]
+    ],
+    "type": "array",
+    "itmes": {
+        "type": "object",
+        "title": "Service discovery information",
+        "required": [
+            "module_id",
+            "module_uuid",
+            "node",
+            "transport",
+            "ui_name"
+        ],
+        "properties": {
+            "module_id": {
+                "title": "Module ID",
+                "type": "string"
+            },
+            "module_uuid": {
+                "title": "Module UUID",
+                "type": "string"
+            },
+            "node": {
+                "title": "Node ID",
+                "description": "Node identifier where the module is hosted",
+                "type": ["string"]
+            },
+            "transport": {
+                "title": "Transport protocol",
+                "examples": [
+                    "tcp",
+                    "udp",
+                    "http"
+                ],
+                "type": "string",
+                "minLength": 1
+            },
+            "ui_name": {
+                "title": "UI name",
+                "description": "Custom UI label of the module",
+                "type": ["string", "null"]
+            }
+        }
+    }
+}
