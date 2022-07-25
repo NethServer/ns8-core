@@ -45,7 +45,7 @@ values = {
 rdb = agent.redis_connect(privileged=True)
 trx = rdb.pipeline()
 trx.hset(agent_id + '/smarthost', mapping=values)
-trx.publish(agent_id + '/event/smarthost-provider-changed', json.dumps({
+trx.publish(agent_id + '/event/smarthost-changed', json.dumps({
     'key': agent_id + '/smarthost',
 }))
 trx.execute()
