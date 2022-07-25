@@ -32,9 +32,9 @@ output example:
 
 - tls: enable STARTTLS (true/false)
 - tls_verify: verify if the certificate is valid and if the hostname is associated to the certificate (true/false)
+- username: it might be empty if the smtp server does not require an user authentication
 
-
-The module can handle account provider changes by defining an event
+The module can handle smarthost setup changes by defining an event
 handler. Create an executable script with path
 `${AGENT_INSTALL_DIR}/events/smarthost-changed/10handler` and run
 any command from it. For instance:
