@@ -36,9 +36,9 @@ values = {
     "host": data['host'],
     "username": data['username'],
     "password": data['password'],
-    "enabled": 'on' if data['enabled'] else 'off',
-    "tls": 'on' if data['tls'] else 'off',
-    "tls_verify": 'on' if data['tls_verify'] else 'off'
+    "enabled": '1' if data['enabled'] else '0',
+    "tls": '1' if data['tls'] else '0',
+    "tls_verify": '1' if data['tls_verify'] else '0'
 }
 
 # Advertise the smarthost changes:

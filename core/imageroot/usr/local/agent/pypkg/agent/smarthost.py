@@ -44,9 +44,9 @@ class SmartHost:
                 "host": conf['host'],
                 "username": conf['username'],
                 "password": conf['password'],
-                "enabled": conf['enabled'] == "on",
-                "tls": conf['tls'] == "on",
-                "tls_verify": conf['tls_verify'] == "on"
+                "enabled": conf['enabled'] == "1",
+                "tls": conf['tls'] == "1",
+                "tls_verify": conf['tls_verify'] == "1"
             }
         return data
         
