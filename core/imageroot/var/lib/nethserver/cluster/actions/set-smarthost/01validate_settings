@@ -52,7 +52,11 @@ try :
     # Enable starttls
     if tls:
         smtp.starttls(context=ctx)
-    smtp.login(username, password)
+    # we have a login, we try to authenticate.
+    if username:
+        smtp.login(username, password)
+    # without authentication, we have now way to test except 
+    # to connect to the server. we quit
     smtp.quit()
 
 except smtplib.SMTPAuthenticationError as err:
