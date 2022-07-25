@@ -128,12 +128,12 @@ Legend:
 |key|type|description|
 |---|----|-----------|
 |cluster/smarthost                      |HASH   |Settings and credentials of a SMTP smarthost provider|
-|cluster/smarthost/port                 |INTEGER|Public TCP port of the smtp server|
-|cluster/smarthost/enabled              |0\|1   |(0 disabled, 1 enabled) enable the smarthost provider|
-|cluster/smarthost/tls                  |0\|1   |(0 disabled, 1 enabled) enable STARTTLS|
-|cluster/smarthost/tls_verify           |0\|1   |(0 disabled, 1 enabled) verify if the certificate is valid and if the hostname is associated to the certificate|
-|cluster/smarthost/username             |STRING |username for smtp credentials|
-|cluster/smarthost/password             |STRING |password for smtp credentials|
+|cluster/smarthost.port                 |INTEGER|Public TCP port of the smtp server|
+|cluster/smarthost.enabled              |0\|1   |(0 disabled, 1 enabled) enable the smarthost provider|
+|cluster/smarthost.tls                  |0\|1   |(0 disabled, 1 enabled) enable STARTTLS|
+|cluster/smarthost.tls_verify           |0\|1   |(0 disabled, 1 enabled) verify if the certificate is valid and if the hostname is associated to the certificate|
+|cluster/smarthost.username             |STRING |username for smtp credentials|
+|cluster/smarthost.password             |STRING |password for smtp credentials|
 
 #### software repositories
 
