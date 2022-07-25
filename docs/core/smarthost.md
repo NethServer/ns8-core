@@ -30,13 +30,13 @@ output example:
 {"port": 587, "host": "", "username": "", "password": "", "enabled": false, "tls": true, "tls_verify": true}
 ```
 
-- tls: enable startTls (true/false)
+- tls: enable STARTTLS (true/false)
 - tls_verify: verify if the certificate is valid and if the hostname is associated to the certificate (true/false)
 
 
 The module can handle account provider changes by defining an event
 handler. Create an executable script with path
-`${AGENT_INSTALL_DIR}/events/smarthost-provider-changed/10handler` and run
+`${AGENT_INSTALL_DIR}/events/smarthost-changed/10handler` and run
 any command from it. For instance:
 
 ```shell
