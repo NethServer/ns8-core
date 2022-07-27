@@ -28,14 +28,14 @@
         "username": {
             "type": "string",
             "title":"username",
-            "description": "username to use the smarthost smtp"
+            "description": "Username to use the smarthost smtp"
         },
         "port": {
             "type": "integer",
             "title":"port",
             "minimum": 1,
             "maximum": 65535,
-            "description": "port number of the smtp smarthost"
+            "description": "Port number of the smtp smarthost"
         },
         "password": {
             "type": "string",

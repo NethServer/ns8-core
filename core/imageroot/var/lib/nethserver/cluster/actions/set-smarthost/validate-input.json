@@ -1,7 +1,7 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "set-external-provider-name input",
-    "description": "Set the UI display name of anexternal smarthost provider",
+    "description": "Set the UI display name of an external smarthost provider",
     "$id": "http://schema.nethserver.org/cluster/set-external-provider-name-input.json",
     "examples": [
         {
@@ -28,14 +28,14 @@
         "username": {
             "type": "string",
             "title":"username",
-            "description": "username to use the smarthost smtp"
+            "description": "Username to use the smarthost smtp"
         },
         "port": {
             "type": "integer",
             "title":"port",
             "minimum": 1,
             "maximum": 65535,
-            "description": "port number of the smtp smarthost"
+            "description": "Port number of the smtp smarthost"
         },
         "password": {
             "type": "string",
