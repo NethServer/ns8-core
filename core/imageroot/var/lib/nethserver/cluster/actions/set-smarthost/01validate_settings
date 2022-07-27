@@ -2,7 +2,7 @@
 
 #
 # Copyright (C) 2022 Nethesis S.r.l.
-# http://www.nethesis.it - nethserver@nethesis.it
+# http://www.nethesis.it - nethserver@nethesis.it[]
 #
 # This script is part of NethServer.
 #
@@ -31,12 +31,18 @@ import ssl
 
 data = json.load(sys.stdin)
 
+# do not validate if enabled is false
+enabled = data['enabled']
+if not enabled:
+    sys.exit(0)
+
 port =  int(data['port'])
 host = data['host']
 username = data['username']
 password = data['password']
 tls = data['tls']
 tls_verify = data['tls_verify']
+
 
 # verify the hostname and the certificate
 ctx = ssl.create_default_context()
