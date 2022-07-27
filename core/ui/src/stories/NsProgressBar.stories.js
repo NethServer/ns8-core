@@ -19,6 +19,7 @@ Determinate.args = {
   warningThreshold: 70,
   dangerThreshold: 90,
   useStatusColors: false,
+  useHealthyColor: true,
 };
 
 export const Indeterminate = Template.bind({});
@@ -29,4 +30,5 @@ Indeterminate.args = {
   warningThreshold: 70,
   dangerThreshold: 90,
   useStatusColors: false,
+  useHealthyColor: true,
 };
