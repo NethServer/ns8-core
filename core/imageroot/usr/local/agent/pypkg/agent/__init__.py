@@ -412,3 +412,29 @@ def remove_public_service(name):
         data={'service': name}
     )
     return response['exit_code'] == 0
+
+def get_smarthost_settings():
+    rdb = redis_connect()
+    conf = rdb.hgetall('cluster/smarthost')
+
+    if not conf:
+        data={
+            "port": 587,
+            "host": "",
+            "username":"",
+            "password": "",
+            "enabled": False,
+            "tls": True,
+            "tls_verify": True
+        }
+    else:
+        data={
+            "port": int(conf['port']),
+            "host": conf['host'],
+            "username": conf['username'],
+            "password": conf['password'],
+            "enabled": conf['enabled'] == "1",
+            "tls": conf['tls'] == "1",
+            "tls_verify": conf['tls_verify'] == "1"
+        }
+    return data

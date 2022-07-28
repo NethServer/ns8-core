@@ -9,9 +9,7 @@ import os
 import sys
 import json
 import agent
-from agent.smarthost import SmartHost
 
 
-sp = SmartHost()
-smtp = sp.load_smtp()
+smtp = agent.get_smarthost_settings()
 json.dump(smtp, fp=sys.stdout)
