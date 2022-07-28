@@ -103,6 +103,13 @@ Example to install Dokuwiki directly from the image registry:
 add-module ghcr.io/nethserver/dokuwiki:mydev 1
 ```
 
+If the given image is already present in the local Podman storage, no
+remote download occurs and the local image is used instead. During
+development this might be unwanted and to work around this behavior
+execute the following command in every cluster node, before `add-module`:
+
+    podman rmi ghcr.io/nethserver/dokuwiki:mydev
+
 Many applications need a configuration step after install, for more info, 
 please refer to the README of each application.
 
