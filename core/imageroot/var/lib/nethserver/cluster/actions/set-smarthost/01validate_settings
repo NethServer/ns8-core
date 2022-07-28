@@ -88,3 +88,10 @@ except ssl.SSLCertVerificationError as err:
     # the certificate is not valid probably self-signed or not valid for this hostname
     json.dump([{'field':'test_smarthost','parameter':'test_smarthost','value':err,'error':'valid_certificate_verification_error'}],fp=sys.stdout, default=str)
     sys.exit(5)
+
+except smtplib.socket.error as err:
+    agent.set_status('validation-failed')
+    # We have issued a timeout, the server is not responding or the URL is wrong
+    json.dump([{'field':'test_smarthost','parameter':'test_smarthost','value':err,'error':'connection_timeout_error'}],fp=sys.stdout, default=str)
+    sys.exit(6)
+    
