@@ -1,0 +1,22 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2022 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+import sys
+import json
+import agent
+
+outdata = []
+
+request = json.load(sys.stdin)
+
+rdb = agent.redis_connect()
+
+json.dump(agent.list_service_providers(rdb,
+    request['service'],
+    transport=request.get('transport', '*'), 
+    filters=request.get('filter', {}),
+), fp=sys.stdout)

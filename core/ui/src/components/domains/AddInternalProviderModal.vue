@@ -22,7 +22,7 @@
         <div>
           {{ $t("domains.choose_node_for_account_provider_installation") }}
         </div>
-        <NodeSelector @selectNode="onSelectNode" class="mg-top-lg" />
+        <NodeSelector @selectNode="onSelectNode" class="mg-top-xlg" />
       </template>
       <template v-if="step == 'installingProvider'">
         <NsInlineNotification

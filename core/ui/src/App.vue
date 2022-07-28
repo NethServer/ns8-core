@@ -74,8 +74,21 @@ export default {
     // check login
     const loginInfo = this.getFromStorage("loginInfo");
     if (loginInfo && loginInfo.username) {
-      // refresh authorization token
-      this.refreshToken(loginInfo);
+      const tokenDecoded = this.decodeJwtPayload(loginInfo.token);
+
+      if (tokenDecoded.exp * 1000 < Date.now()) {
+        console.log("token has expired, logout"); ////
+
+        // token has expired, logout
+        const sessionExpiredTitle = this.$t("login.session_expired_title");
+        const sessionExpiredDescription = this.$t(
+          "login.session_expired_description"
+        );
+        this.logout(sessionExpiredTitle, sessionExpiredDescription);
+      } else {
+        this.setLoggedUserInStore(loginInfo.username);
+        this.initWebSocket();
+      }
     } else {
       this.isLoaded = true;
     }
@@ -105,6 +118,7 @@ export default {
       "setClusterLabelInStore",
       "setClusterNodesInStore",
       "hideTaskErrorInStore",
+      "setLogoutInfoInStore",
     ]),
     configureKeyboardShortcuts(window) {
       window.addEventListener(
@@ -127,16 +141,6 @@ export default {
         this.setMobileSideMenuShownInStore(false);
         // disable default behavior of shortcut
         e.preventDefault();
-      }
-    },
-    async refreshToken(loginInfo) {
-      // invoke refresh token API
-      const res = await to(this.executeRefreshToken());
-      const refreshTokenError = res[0];
-
-      if (!refreshTokenError) {
-        this.setLoggedUserInStore(loginInfo.username);
-        this.initWebSocket();
       }
     },
     configureEventListeners() {
@@ -178,6 +182,8 @@ export default {
     },
     configureAxiosInterceptors() {
       const context = this;
+
+      // response interceptor
       axios.interceptors.response.use(
         function (response) {
           return response;
@@ -187,13 +193,31 @@ export default {
 
           // logout if 401 response code is intercepted
           if (error.response && error.response.status == 401) {
-            context.$root.$emit("logout");
+            console.log("axios interceptor detected 401, logout"); ////
+
+            let sessionExpiredTitle = "";
+            let sessionExpiredDescription = "";
+
+            if (
+              error.response.data &&
+              error.response.data.message === "Token is expired"
+            ) {
+              sessionExpiredTitle = context.$t("login.session_expired_title");
+              sessionExpiredDescription = context.$t(
+                "login.session_expired_description"
+              );
+            }
+            context.$root.$emit(
+              "logout",
+              sessionExpiredTitle,
+              sessionExpiredDescription
+            );
           }
           return Promise.reject(error);
         }
       );
     },
-    async logout() {
+    async logout(logoutInfoTitle, logoutInfoDescription) {
       // invoke logout API
       const res = await to(this.executeLogout());
       const logoutError = res[0];
@@ -203,6 +227,12 @@ export default {
         return;
       }
 
+      // update logout info in store
+      const logoutInfo = {
+        title: logoutInfoTitle || "",
+        description: logoutInfoDescription || "",
+      };
+      this.setLogoutInfoInStore(logoutInfo);
       this.deleteFromStorage("loginInfo");
       this.setLoggedUserInStore("");
 
@@ -216,9 +246,9 @@ export default {
         this.$router.push("/login");
       }
     },
-    retrieveRecurringClusterStatus() {
-      this.retrieveClusterStatus(false);
-    },
+    // retrieveRecurringClusterStatus() { ////
+    //   this.retrieveClusterStatus(false);
+    // },
     async retrieveClusterStatus(initial) {
       const taskAction = "get-cluster-status";
       const eventId = this.getUuid();
@@ -250,7 +280,12 @@ export default {
 
       if (err) {
         // check if node is a worker
-        if (err.response && err.response.status == 403) {
+        if (
+          err.response &&
+          err.response.status == 403 &&
+          +err.response.data &&
+          +err.response.data.data
+        ) {
           this.isMaster = false;
           // redirect to worker page
           this.$router.replace(
@@ -342,10 +377,7 @@ export default {
           type: "success",
           toastTimeout: 5000,
           actionLabel: null,
-          action: {
-            type: "execute",
-            execute: "window.location.reload()",
-          },
+          action: null,
         };
         this.$options.sockets.notification = null;
         this.createNotification(notification);
@@ -360,10 +392,11 @@ export default {
           title: this.$t("websocket.websocket_disconnected"),
           description: this.$t("websocket.websocket_disconnected_description"),
           type: "warning",
-          actionLabel: this.$t("common.reload_page"),
+          toastTimeout: 0, // persistent notification
+          actionLabel: this.$t("login.login"),
           action: {
-            type: "execute",
-            execute: "window.location.reload()",
+            type: "callback",
+            callback: this.logout,
           },
         };
         this.$options.sockets.notification = notification;

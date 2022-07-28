@@ -34,6 +34,9 @@ type Configuration struct {
 	Secret        string `json:"secret"`
 	StaticPath    string `json:"static_path"`
 	AuditFile     string `json:"audit_file"`
+	Issuer        string `json:"issuer"`
+	SecretsDir    string `json:"secrets_dir"`
+	TokensDir     string `json:"tokens_dir"`
 }
 
 var Config = Configuration{}
@@ -65,7 +68,8 @@ func Init() {
 	if os.Getenv("SECRET") != "" {
 		Config.Secret = os.Getenv("SECRET")
 	} else {
-		Config.Secret = ""
+		os.Stderr.WriteString("SECRET variable is empty. ")
+		os.Exit(1)
 	}
 
 	if os.Getenv("STATIC_PATH") != "" {
@@ -78,5 +82,25 @@ func Init() {
 		Config.AuditFile = os.Getenv("AUDIT_FILE")
 	} else {
 		Config.AuditFile = ""
+	}
+
+	if os.Getenv("ISSUER") != "" {
+		Config.Issuer = os.Getenv("ISSUER")
+	} else {
+		Config.Issuer = "NethServer"
+	}
+
+	if os.Getenv("SECRETS_DIR") != "" {
+		Config.SecretsDir = os.Getenv("SECRETS_DIR")
+	} else {
+		os.Stderr.WriteString("SECRETS_DIR variable is empty. ")
+		os.Exit(1)
+	}
+
+	if os.Getenv("TOKENS_DIR") != "" {
+		Config.TokensDir = os.Getenv("TOKENS_DIR")
+	} else {
+		os.Stderr.WriteString("TOKENS_DIR variable is empty. ")
+		os.Exit(1)
 	}
 }

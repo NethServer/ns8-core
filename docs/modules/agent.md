@@ -26,6 +26,9 @@ The core provides a set of base actions defined in
   other modules, like Traefik routes
 - `get-status`: used by the UI, it returns the current module status, like the node where the application is running, used images and volumes, systemd units status.
   This action works correctly only for rootless modules.
+- `list-service-providers`: Look up provider information for a given
+  service name and other filtering criteria. See also [Service
+  providers]({{site.baseurl}}/modules/service_providers)
 
 Every agent has also a builtin `list-actions` action. This command lists the
 actions provided by the agent of `module/traefik1`:

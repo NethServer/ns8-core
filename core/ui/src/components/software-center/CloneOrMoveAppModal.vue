@@ -26,7 +26,7 @@
       ></div>
       <div>{{ $t("software_center.select_destination_node") }}</div>
       <NodeSelector
-        class="mg-top-lg"
+        class="mg-top-xlg"
         @selectNode="onSelectNode"
         :extraInfoNode="installationNode"
         :extraInfoLabel="$t('software_center.current_node')"

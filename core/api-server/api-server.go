@@ -102,8 +102,8 @@ func main() {
 	api.POST("/login", middleware.InstanceJWT().LoginHandler)
 	api.POST("/logout", middleware.InstanceJWT().LogoutHandler)
 
-	// define refresh endpoint
-	api.GET("/refresh_token", middleware.InstanceJWT().RefreshHandler)
+	// 2FA APIs
+	api.POST("/2FA/otp-verify", methods.OTPVerify)
 
 	// define JWT middleware
 	api.Use(middleware.InstanceJWT().MiddlewareFunc())
@@ -133,6 +133,11 @@ func main() {
 		api.GET("/audit", methods.GetAudits)
 		api.GET("/audit/users", methods.GetAuditsUsers)
 		api.GET("/audit/actions", methods.GetAuditsActions)
+
+		// 2FA APIs
+		api.GET("/2FA", methods.Get2FAStatus)
+		api.DELETE("/2FA", methods.Del2FAStatus)
+		api.GET("/2FA/qr-code", methods.QRCode)
 	}
 
 	// define websocket endpoint

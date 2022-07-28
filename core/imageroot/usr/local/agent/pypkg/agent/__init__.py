@@ -413,6 +413,42 @@ def remove_public_service(name):
     )
     return response['exit_code'] == 0
 
+def list_service_providers(rdb, service, transport='*', filters={}):
+    """Look up the endpoint information about a given service. Filter
+    results by transport protocol or any other exact attribute value"""
+
+    results = []
+
+    def match_filter(record, clauses):
+        for xcl in clauses:
+            if clauses[xcl] != record.get(xcl):
+                return False
+        else:
+            return True
+
+    for rkey in rdb.scan_iter(f'*/srv/{transport}/{service}'):
+        rvalue = rdb.hgetall(rkey)
+
+        if rkey.startswith('module/'):
+            module_id = rkey[7:rkey.index('/', 7)]
+
+            if not 'module_uuid' in rvalue:
+                rvalue['module_uuid'] = rdb.hget(f'module/{module_id}/environment', 'MODULE_UUID')
+
+            if not 'node' in rvalue:
+                rvalue['node'] = rdb.hget(f'module/{module_id}/environment', 'NODE_ID')
+
+            rvalue['transport'] = rkey.split('/')[-2]
+            rvalue['module_id'] = module_id
+            rvalue['ui_name'] = rdb.get(f'module/{module_id}/ui_name')
+
+        if not match_filter(rvalue, filters):
+            continue
+
+        results.append(rvalue)
+
+    return results
+
 def get_smarthost_settings():
     rdb = redis_connect()
     conf = rdb.hgetall('cluster/smarthost')
@@ -438,3 +474,4 @@ def get_smarthost_settings():
             "tls_verify": conf['tls_verify'] == "1"
         }
     return data
+    
