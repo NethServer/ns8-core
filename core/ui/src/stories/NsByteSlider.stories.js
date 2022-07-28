@@ -1,5 +1,4 @@
 import { NsByteSlider } from "@nethserver/ns8-ui-lib";
-// import NsByteSlider from "../components/NsByteSlider.vue"; //// delete
 
 export default {
   title: "Components/NsByteSlider",
