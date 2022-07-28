@@ -57,7 +57,7 @@ class LdapclientAd(LdapclientBase):
         raise LdapclientEntryNotFound()
 
     def list_groups(self):
-        response = self.ldapconn.search(self.base_dn, '(&(objectClass=group))',
+        response = self.ldapconn.search(self.base_dn, '(&(objectClass=group)(groupType:1.2.840.113556.1.4.803:=2))',
             attributes=['cn','member','description', 'sAMAccountName'],
         )[2]
 
