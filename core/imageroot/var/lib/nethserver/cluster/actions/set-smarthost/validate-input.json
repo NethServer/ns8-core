@@ -1,8 +1,8 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "set-external-provider-name input",
-    "description": "Set the UI display name of an external smarthost provider",
-    "$id": "http://schema.nethserver.org/cluster/set-external-provider-name-input.json",
+    "title": "set-smarthost settings",
+    "description": "Set the settings of an external smarthost provider",
+    "$id": "http://schema.nethserver.org/cluster/set-smarthost.json",
     "examples": [
         {
             "host": "smtp.example.com",
