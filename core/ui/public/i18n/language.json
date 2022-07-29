@@ -731,7 +731,8 @@
       "database": "Database",
       "storage": "Storage",
       "monitoring": "Monitoring",
-      "web": "Web"
+      "web": "Web",
+      "communication": "Communication"
     }
   },
   "system_logs": {
