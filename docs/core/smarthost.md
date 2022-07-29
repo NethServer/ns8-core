@@ -15,13 +15,13 @@ Python example code:
 
 ```python
 #!/usr/bin/env python3
+
+import sys
 import json
 import agent
-from agent.smarthost import SmartHost
 
 
-sp = SmartHost()
-smtp = sp.load_smtp()
+smtp = agent.get_smarthost_settings(agent.redis_connect())
 json.dump(smtp, fp=sys.stdout)
 ```
 
