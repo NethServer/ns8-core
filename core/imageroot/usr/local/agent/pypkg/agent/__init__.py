@@ -448,3 +448,29 @@ def list_service_providers(rdb, service, transport='*', filters={}):
         results.append(rvalue)
 
     return results
+
+def get_smarthost_settings(rdb):
+    conf = rdb.hgetall('cluster/smarthost')
+
+    if not conf:
+        data={
+            "port": 587,
+            "host": "",
+            "username":"",
+            "password": "",
+            "enabled": False,
+            "tls": True,
+            "tls_verify": True
+        }
+    else:
+        data={
+            "port": int(conf['port']),
+            "host": conf['host'],
+            "username": conf['username'],
+            "password": conf['password'],
+            "enabled": conf['enabled'] == "1",
+            "tls": conf['tls'] == "1",
+            "tls_verify": conf['tls_verify'] == "1"
+        }
+    return data
+    

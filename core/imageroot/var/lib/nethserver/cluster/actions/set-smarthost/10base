@@ -1,0 +1,36 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2022 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+import agent
+import agent.tasks
+import os
+import sys
+import json
+
+
+
+agent_id = os.environ['AGENT_ID']
+data = json.load(sys.stdin)
+
+values = {
+    "port": data['port'],
+    "host": data['host'],
+    "username": data['username'],
+    "password": data['password'],
+    "enabled": '1' if data['enabled'] else '0',
+    "tls": '1' if data['tls'] else '0',
+    "tls_verify": '1' if data['tls_verify'] else '0'
+}
+
+# Advertise the smarthost changes:
+rdb = agent.redis_connect(privileged=True)
+trx = rdb.pipeline()
+trx.hset(agent_id + '/smarthost', mapping=values)
+trx.publish(agent_id + '/event/smarthost-changed', json.dumps({
+    'key': agent_id + '/smarthost',
+}))
+trx.execute()

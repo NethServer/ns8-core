@@ -1,0 +1,15 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2022 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+import os
+import sys
+import json
+import agent
+
+
+smtp = agent.get_smarthost_settings(agent.redis_connect())
+json.dump(smtp, fp=sys.stdout)
