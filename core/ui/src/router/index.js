@@ -6,6 +6,7 @@ import Settings from "../views/settings/Settings";
 import Applications from "../views/Applications";
 import SystemLogs from "../views/SystemLogs";
 import SettingsCluster from "../views/settings/SettingsCluster";
+import SettingsSmartHost from "../views/settings/SettingsSmartHost";
 import SoftwareCenterAppInstances from "../views/SoftwareCenterAppInstances";
 import Domains from "../views/Domains";
 import Nodes from "../views/Nodes";
@@ -43,6 +44,11 @@ const routes = [
     path: "/settings/cluster",
     name: "SettingsCluster",
     component: SettingsCluster,
+  },
+  {
+    path: "/settings/smarthost",
+    name: "SettingsSmarthost",
+    component: SettingsSmartHost,
   },
   {
     path: "/settings/software-repository",

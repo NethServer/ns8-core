@@ -332,7 +332,9 @@
     "list-certificates": "List certificates",
     "set-acme-server": "Set ACME server",
     "get-acme-server": "Get ACME server",
-    "get-firewall-status": "Get firewall status"
+    "get-firewall-status": "Get firewall status",
+    "get-smarthost":"Get the smarthost settings",
+    "set-smarthost":"Set the smarthost settings"
   },
   "network": {
     "title": "Network"
@@ -1023,5 +1025,29 @@
     "documentation": "Documentation",
     "helpdesk": "Helpdesk",
     "animated_icons_by": "Animated icons by"
+  },
+  "smarthost": {
+    "title":"Smarthost settings",
+    "enabled":"Enable the smarthost provider",
+    "hostname_label":"Hostname",
+    "hostname_label_tooltip":"Write the fully qualified domain name where to use the SMTP server",
+    "hostname_placeholder":"smtp.domain.com",
+    "username_label":"Username",
+    "username_label_tooltip":"Write the user account or let it blanck if the server requires no authentication",
+    "username_placeholder":"foo@domain.com",
+    "password_label":"Password",
+    "port_label":"Port",
+    "port_label_tooltip":"Write the TCP port where to reach the SMTP server",
+    "port_placeholder":"587",
+    "tls":"Enable STARTTLS encryption",
+    "tls_verify":"Verify the TLS certificate",
+    "connection_timeout_error":"The connection issued a timeout error, verify the port and the fully qualified domain name",
+    "cannot_authenticate_to_server":"We cannot authenticate, it is probably due to a bad login or bad password",
+    "cannot_connect_to_server":" We cannot connect to the SMTP Server, please try again.",
+    "connection_not_supported_by_server":"The connection is not supported by the server, you should try to enable STARTTLS",
+    "valid_certificate_verification_error":"The certificate is not valid for the server, you should try to disable the certificate verification",
+    "required":"This field is required",
+    "port_invalid_type":"It must be a valid number port (1-65535)",
+    "port_number_gte": "The port must be greater to 0 (1-65535)"
   }
 }
