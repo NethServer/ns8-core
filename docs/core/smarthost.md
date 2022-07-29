@@ -1,14 +1,14 @@
 ---
 layout: default
-title: smtp smarthost
+title: SMTP smarthost
 nav_order: 14
 parent: Core
 ---
 
-# Smtp smarthost
+# SMTP smarthost
 
-Settings and credentials for a SMTP smarthost provider are stored inside redis, 
-a module can discover it by using a python library. The cluster won't send the 
+Settings and credentials for a SMTP smarthost provider are stored inside Redis, 
+a module can discover it by using a Python library. The cluster won't send the 
 email for you, the module will do it if it has been designed to send emails. 
 
 Python example code:
