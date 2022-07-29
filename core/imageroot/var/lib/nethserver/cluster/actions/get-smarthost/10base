@@ -11,5 +11,5 @@ import json
 import agent
 
 
-smtp = agent.get_smarthost_settings()
+smtp = agent.get_smarthost_settings(agent.redis_connect())
 json.dump(smtp, fp=sys.stdout)

@@ -449,8 +449,7 @@ def list_service_providers(rdb, service, transport='*', filters={}):
 
     return results
 
-def get_smarthost_settings():
-    rdb = redis_connect()
+def get_smarthost_settings(rdb):
     conf = rdb.hgetall('cluster/smarthost')
 
     if not conf:
