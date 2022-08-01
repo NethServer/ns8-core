@@ -387,9 +387,4 @@ export default {
 
 <style scoped lang="scss">
 @import "../../styles/carbon-utils";
-
-.break-word {
-  word-wrap: break-word;
-  max-width: 20vw;
-}
 </style>
