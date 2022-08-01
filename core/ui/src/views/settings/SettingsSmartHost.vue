@@ -362,8 +362,6 @@ export default {
     },
     setSmarthostCompleted() {
       this.loading.setSmarthost = false;
-
-      //// don't do this at every task completed
       this.getSmarthost();
     },
     validateConfigureModule() {
