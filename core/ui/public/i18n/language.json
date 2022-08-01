@@ -333,8 +333,8 @@
     "set-acme-server": "Set ACME server",
     "get-acme-server": "Get ACME server",
     "get-firewall-status": "Get firewall status",
-    "get-smarthost":"Get the smarthost settings",
-    "set-smarthost":"Set the smarthost settings"
+    "get-smarthost":"Get smarthost settings",
+    "set-smarthost":"Set smarthost settings"
   },
   "network": {
     "title": "Network"
@@ -1027,13 +1027,13 @@
     "animated_icons_by": "Animated icons by"
   },
   "smarthost": {
-    "title":"Smarthost settings",
-    "enabled":"Enable the smarthost provider",
+    "title":"Smarthost",
+    "enabled":"Smarthost provider",
     "hostname_label":"Hostname",
-    "hostname_label_tooltip":"Write the fully qualified domain name where to use the SMTP server",
+    "hostname_label_tooltip":"Type the fully qualified domain name where to use the SMTP server",
     "hostname_placeholder":"smtp.domain.com",
     "username_label":"Username",
-    "username_label_tooltip":"Write the user account or let it blanck if the server requires no authentication",
+    "username_label_tooltip":"Type the user account or leave blank if the server requires no authentication",
     "username_placeholder":"foo@domain.com",
     "password_label":"Password",
     "port_label":"Port",
@@ -1048,6 +1048,6 @@
     "valid_certificate_verification_error":"The certificate is not valid for the server, you should try to disable the certificate verification",
     "required":"This field is required",
     "port_invalid_type":"It must be a valid number port (1-65535)",
-    "port_number_gte": "The port must be greater to 0 (1-65535)"
+    "port_number_gte": "The port must be greater than 0 (1-65535)"
   }
 }
