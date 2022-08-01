@@ -37,12 +37,11 @@
           :disabled="loading.addGroup || loading.alterGroup"
           ref="description"
         />
-        <cv-multi-select
+        <NsMultiSelect
           v-model="selectedUsers"
           :options="allUsersForSelect"
           :title="$t('domain_users.users') + ' (' + $t('common.optional') + ')'"
           :label="selectUsersLabel"
-          :helper-text="usersHelperText"
           :filterable="!!allUsers.length"
           :auto-filter="true"
           :auto-highlight="true"
@@ -53,10 +52,15 @@
             loading.addGroup ||
             loading.alterGroup
           "
+          showSelectedItems
+          :unselectAriaLabel="$t('common.unselect')"
+          :clearSelectionAriaLabel="$t('common.clear_selection')"
+          :clearFilterLabel="$t('common.clear_filter')"
+          :selectedLabel="$t('common.selected_l')"
+          :userInputLabel="$t('common.user_input_l')"
           class="mg-bottom-14"
           ref="users"
-        >
-        </cv-multi-select>
+        />
         <NsInlineNotification
           v-if="error.addGroup"
           kind="error"
@@ -132,15 +136,6 @@ export default {
           name: user.user,
         };
       });
-    },
-    usersHelperText() {
-      if (!this.selectedUsers.length) {
-        return "";
-      } else {
-        return (
-          this.$t("common.selected") + ": " + this.selectedUsers.join(", ")
-        );
-      }
     },
     isPrimaryButtonDisabled() {
       return (

@@ -21,6 +21,7 @@ export default {
       "showTaskErrorInStore",
       "setNotificationDrawerShownInStore",
       "setNotificationReadInStore",
+      "deleteNotificationInStore",
     ]),
     createNotification(notification) {
       // fill missing attributes
@@ -50,6 +51,10 @@ export default {
     },
     hideNotification(notificationId) {
       this.$toast.dismiss(notificationId);
+    },
+    deleteNotification(notificationId) {
+      this.$toast.dismiss(notificationId);
+      this.deleteNotificationInStore(notificationId);
     },
     showNotification(notification) {
       const toast = {

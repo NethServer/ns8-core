@@ -462,8 +462,4 @@ export default {
 
 <style scoped lang="scss">
 @import "../../styles/carbon-utils";
-
-.cv-form .bx--form-item {
-  margin-bottom: $spacing-06;
-}
 </style>

@@ -238,12 +238,6 @@ export default {
         listBackups: "",
         listCoreModules: "",
       },
-      toastVisible: true,
-      toastTitle: "Toast title",
-      toastSubTitle: "Toast subtitle",
-      toastCaption: "Toast caption",
-      lowContrast: false,
-      snippet: 'printf("A short bit of code.");',
     };
   },
   computed: {
