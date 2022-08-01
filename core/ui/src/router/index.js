@@ -45,6 +45,14 @@ const routes = [
     component: SettingsCluster,
   },
   {
+    path: "/settings/smarthost",
+    name: "SettingsSmarthost",
+    component: () =>
+      import(
+        /* webpackChunkName: "settings-smarthost" */ "../views/settings/SettingsSmarthost.vue"
+    ),
+  },
+  {
     path: "/settings/software-repository",
     name: "SettingsSoftwareRepositories",
     component: () =>
