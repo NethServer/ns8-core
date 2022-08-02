@@ -31,9 +31,9 @@ rdb = agent.redis_connect(privileged=False)
 users = []
 
 # get all user keys
-for u in rdb.keys('user/*'):
+for ukey in rdb.scan_iter('user/*'):
     # get user name
-    user = u.split("/")[1]
+    user = ukey.split("/")[1]
 
     # get user role
     role = rdb.hget('roles/' + user, 'cluster')
