@@ -49,8 +49,8 @@ const routes = [
     name: "SettingsSmarthost",
     component: () =>
       import(
-        /* webpackChunkName: "settings-smarthost" */ "../views/settings/SettingsSmarthost.vue"
-    ),
+        /* webpackChunkName: "settings-smarthost" */ "../views/settings/SettingsSmartHost.vue"
+      ),
   },
   {
     path: "/settings/software-repository",
