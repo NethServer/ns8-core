@@ -196,7 +196,7 @@ export default {
         tls:"",
         tls_verify: "",
         setSmarthost: "",
-        test_smarthost:""
+        test_smarthost: "",
       },
     };
   },
@@ -241,10 +241,7 @@ export default {
       const taskAction = "get-smarthost";
 
       // register to task completion
-      this.$root.$once(
-        taskAction + "-completed",
-        this.getSmarthostCompleted
-      );
+      this.$root.$once(taskAction + "-completed", this.getSmarthostCompleted);
 
       const res = await to(
         this.createClusterTask({
@@ -289,30 +286,16 @@ export default {
         return;
       }
       this.loading.setSmarthost = true;
-      
+
       const taskAction = "set-smarthost";
 
       // register to task completion
-      this.$root.$once(
-        taskAction + "-completed",
-        this.setSmarthostCompleted
-      );
+      this.$root.$once(taskAction + "-completed", this.setSmarthostCompleted);
       // register to task error
-      this.$root.$once(
-        taskAction+"-aborted",
-        this.setSmarthostAborted
-      );
-
-      this.$root.$once(
-        taskAction + "-validation-failed",
-        this.setSmarthostValidationFailed
-      );
-
+      this.$root.$once(taskAction + "-aborted", this.setSmarthostAborted);
+      this.$root.$once(taskAction + "-validation-failed", this.setSmarthostValidationFailed);
       // register to task completion
-      this.$root.$once(
-        taskAction + "-completed",
-        this.setSmarthostCompleted
-      );
+      this.$root.$once(taskAction + "-completed", this.setSmarthostCompleted);
 
       const res = await to(
         this.createClusterTask({
