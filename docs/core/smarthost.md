@@ -22,6 +22,8 @@ import agent
 
 
 smtp = agent.get_smarthost_settings(agent.redis_connect())
+if smtp['enabled'] == True:
+    pass
 json.dump(smtp, fp=sys.stdout)
 ```
 
