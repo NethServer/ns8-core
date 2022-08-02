@@ -117,7 +117,7 @@ func Action(socketAction models.SocketAction, s *melody.Session, wg *sync.WaitGr
 
 		// check filter
 		if len(logsAction.Filter) > 0 {
-			filter = "json | line_format \"{{.SYSLOG_TIMESTAMP}} {{.SYSLOG_IDENTIFIER}} {{.nodename}} {{.MESSAGE}}\" |= `" + logsAction.Filter + "`"
+			filter = "json | line_format \"{{.SYSLOG_IDENTIFIER}} {{.nodename}} {{.MESSAGE}}\" |= `" + logsAction.Filter + "`"
 		} else {
 			filter = "json"
 		}
