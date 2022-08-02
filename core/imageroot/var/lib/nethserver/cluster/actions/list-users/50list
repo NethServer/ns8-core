@@ -33,7 +33,7 @@ users = []
 # get all user keys
 for ukey in rdb.scan_iter('user/*'):
     # get user name
-    user = ukey.split("/")[1]
+    user = ukey.removeprefix("user/")
 
     # get user role
     role = rdb.hget('roles/' + user, 'cluster')
