@@ -1,0 +1,51 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2022 Nethesis S.r.l.
+# http://www.nethesis.it - nethserver@nethesis.it
+#
+# This script is part of NethServer.
+#
+# NethServer is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License,
+# or any later version.
+#
+# NethServer is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with NethServer.  If not, see COPYING.
+#
+
+import os
+import sys
+import json
+import agent
+import cluster.grants
+
+rdb = agent.redis_connect(privileged=False)
+
+users = []
+
+# get all user keys
+for u in rdb.keys('user/*'):
+    # get user name
+    user = u.split("/")[1]
+
+    # get user role
+    role = rdb.hget('roles/' + user, 'cluster')
+
+    # check if role is owner
+    if role == 'owner':
+
+        # get display name
+        display_name = rdb.hget('user/' + user, 'display_name')
+
+        # append to users list
+        users.append({"username" : user, "display_name": display_name})
+
+# return json
+json.dump(users, fp=sys.stdout)
