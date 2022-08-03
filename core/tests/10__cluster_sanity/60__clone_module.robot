@@ -1,14 +1,18 @@
 *** Settings ***
 Library            SSHLibrary
 Library            OperatingSystem
-Suite Setup        Setup a dummy module
-Suite Teardown     Cleanup the dummy image
 Resource           api.resource
 
 *** Variables ***
 ${DUMMY_NAME}      Dummy0000
 
 *** Test Cases ***
+Setup a dummy module
+    Build the dummy image
+    Add a dummy instance
+    Set the dummy instance name
+    Store dummy module configuration
+
 Clone a module instance
     ${clone_response} =     Run task    cluster/clone-module
                             ...         {"node":1,"module":"${DUMMY_MODULE}","replace":false}
@@ -18,7 +22,6 @@ Clone a module instance
     Modules must have the same state
     Modules must have the same volumes
     Modules must have the same name
-    [Teardown]    Remove the clone module
 
 Move a module instance
     ${clone_response} =     Run task    cluster/clone-module
@@ -31,9 +34,6 @@ Move a module instance
     Modules must have the same name
 
 *** Keywords ***
-Remove the clone module
-    Run task    cluster/remove-module    {"module_id":"${CLONE_MODULE}","preserve_data":false}
-
 Store dummy module configuration
     ${dummy_config} =   Run task    module/${DUMMY_MODULE}/get-configuration    {}
     Set Suite Variable    ${DUMMY_CONFIG}    ${dummy_config}
@@ -59,12 +59,6 @@ Modules must have the same name
     ${clone_name} =    Run task    module/${CLONE_MODULE}/get-name    {}
     Should Be Equal    ${clone_name['name']}    ${DUMMY_NAME}
 
-Setup a dummy module
-    Build the dummy image
-    Add a dummy instance
-    Set the dummy instance name
-    Store dummy module configuration
-
 Build the dummy image
     [Documentation]     Upload the dummy sources and built the image to make it
     ...                 available for tests
@@ -78,7 +72,7 @@ Add a dummy instance
     Set Suite Variable    ${DUMMY_MODULE}    ${response['module_id']}
 
 Cleanup the dummy image
-    Execute Command    podman rmi localhost/dummy:latest
+    Execute Command    podman rmi --ignore localhost/dummy:latest
 
 Set the dummy instance name
     Run task    module/${DUMMY_MODULE}/set-name    {"name":"${DUMMY_NAME}"}    decode_json=${FALSE}
