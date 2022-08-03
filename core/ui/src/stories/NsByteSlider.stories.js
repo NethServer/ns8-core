@@ -39,7 +39,7 @@ const Template = (args, { argTypes }) => ({
 export const Default = Template.bind({});
 Default.args = {
   value: "10",
-  label: "Label",
+  label: "Storage size",
   min: "1",
   max: "10240",
   step: "1",
@@ -48,6 +48,7 @@ Default.args = {
   maxLabel: "",
   showUnlimited: true,
   unlimitedLabel: "Unlimited",
+  limitedLabel: "Specify size",
   isUnlimited: false,
   byteUnit: "gib",
   showHumanReadableLabel: true,
