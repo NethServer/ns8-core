@@ -1,0 +1,16 @@
+#!/bin/bash
+
+#
+# Copyright (C) 2022 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+exec 1>&2
+set -e
+
+if [[ $EUID == 0 ]]; then
+    # Rootfull module, remove the module images
+    podman inspect -f json "${IMAGE_ID:-none}" | \
+        jq -r '.[0].Config.Labels."org.nethserver.images"' | \
+        xargs -- podman rmi --ignore "${IMAGE_ID:-none}"
+fi
