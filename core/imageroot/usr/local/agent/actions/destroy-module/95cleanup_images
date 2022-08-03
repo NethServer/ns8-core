@@ -12,5 +12,5 @@ if [[ $EUID == 0 ]]; then
     # Rootfull module, remove the module images
     podman inspect -f json "${IMAGE_ID:-none}" | \
         jq -r '.[0].Config.Labels."org.nethserver.images"' | \
-        xargs -- podman rmi --ignore "${IMAGE_ID:-none}"
+        xargs -t -- podman rmi --ignore "${IMAGE_ID:-none}" || :
 fi
