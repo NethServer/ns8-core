@@ -2,7 +2,7 @@
 
 #
 # Copyright (C) 2022 Nethesis S.r.l.
-# http://www.nethesis.it - nethserver@nethesis.it
+# SPDX-License-Identifier: GPL-3.0-or-later
 #
 # This script is part of NethServer.
 #
@@ -45,7 +45,7 @@ for ukey in rdb.scan_iter('user/*'):
         display_name = rdb.hget('user/' + user, 'display_name')
 
         # append to users list
-        users.append({"username" : user, "display_name": display_name})
+        users.append({"user" : user, "display_name": display_name})
 
 # return json
 json.dump(users, fp=sys.stdout)
