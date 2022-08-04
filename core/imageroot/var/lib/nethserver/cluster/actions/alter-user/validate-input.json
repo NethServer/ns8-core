@@ -8,7 +8,7 @@
             "user": "admin",
             "set": {
                 "display_name": "The Administrator",
-                "password": "New Password",
+                "password": "New Password"
             },
             "grant": [],
             "revoke": []

@@ -7,12 +7,12 @@
         [
           {
             "display_name": "Admin",
-            "username": "admin"
+            "user": "admin"
           },
           {
             "display_name": "People",
-            "username": "people"
-          },
+            "user": "people"
+          }
         ]
     ],
     "type": "array",
@@ -23,14 +23,14 @@
                 "description": "Display name of the user",
                 "type": "string"
             },
-            "username": {
+            "user": {
                 "description": "Unique username for the user",
                 "type": "string"
-            },
+            }
         },
         "required": [
           "display_name",
-          "username",
+          "username"
         ]
     }
 }
