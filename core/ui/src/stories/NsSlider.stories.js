@@ -27,6 +27,7 @@ Default.args = {
   maxLabel: "",
   showUnlimited: true,
   unlimitedLabel: "Forever",
+  limitedLabel: "Specify duration",
   isUnlimited: false,
   invalidMessage: "",
   disabled: false,

@@ -8,7 +8,6 @@ body {
 
 .bx--content {
   background-color: $ui-01;
-  padding-bottom: $spacing-03 !important;
 }
 
 .bx--grid.no-padding {
@@ -73,6 +72,10 @@ a {
 
 .mg-bottom-xlg {
   margin-bottom: $spacing-07 !important;
+}
+
+.no-mg-bottom {
+  margin-bottom: 0;
 }
 
 .mg-left-sm {
