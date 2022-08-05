@@ -176,11 +176,11 @@ export default {
     return {
       q: {},
       port: 587,
-      host:"",
-      username:"",
-      password:"",
+      host: "",
+      username: "",
+      password: "",
       enabled: false,
-      tls:true,
+      tls: true,
       tls_verify: true,
       loading: {
         getSmarthost: true,
@@ -189,11 +189,11 @@ export default {
       error: {
         getSmarthost: "",
         port: "",
-        host:"",
-        username:"",
-        password:"",
+        host: "",
+        username: "",
+        password: "",
         enabled: "",
-        tls:"",
+        tls: "",
         tls_verify: "",
         setSmarthost: "",
         test_smarthost: "",
@@ -293,7 +293,10 @@ export default {
       this.$root.$once(taskAction + "-completed", this.setSmarthostCompleted);
       // register to task error
       this.$root.$once(taskAction + "-aborted", this.setSmarthostAborted);
-      this.$root.$once(taskAction + "-validation-failed", this.setSmarthostValidationFailed);
+      this.$root.$once(
+        taskAction + "-validation-failed",
+        this.setSmarthostValidationFailed
+      );
       // register to task completion
       this.$root.$once(taskAction + "-completed", this.setSmarthostCompleted);
 
@@ -307,7 +310,7 @@ export default {
             port: this.enabled ? parseInt(this.port) : 587,
             tls: this.enabled ? this.tls : true,
             tls_verify: this.enabled ? this.tls_verify : true,
-            enabled: this.enabled
+            enabled: this.enabled,
           },
           extra: {
             title: this.$t("action." + taskAction),
@@ -360,7 +363,7 @@ export default {
         }
         isValidationOk = false;
       }
-      return isValidationOk
+      return isValidationOk;
     },
   },
 };
