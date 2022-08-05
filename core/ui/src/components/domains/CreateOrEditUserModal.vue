@@ -184,8 +184,6 @@ export default {
 
         if (!this.isEditing) {
           // create user
-          this.username = "";
-          this.displayName = "";
 
           // clear password fields
           this.newPassword = "";
@@ -194,9 +192,15 @@ export default {
           // edit user
           this.username = this.user.user;
           this.displayName = this.user.display_name;
+          this.selectedGroups = [];
           this.getDomainUser();
         }
-        this.selectedGroups = [];
+      } else {
+        // hiding modal
+
+        if (this.isEditing) {
+          this.clearFields();
+        }
       }
     },
   },
@@ -366,6 +370,7 @@ export default {
       }
     },
     addUserCompleted() {
+      this.clearFields();
       this.loading.addUser = false;
 
       // reload users
@@ -484,6 +489,15 @@ export default {
       const groups = taskResult.output.user.groups;
       this.selectedGroups = groups.map((g) => g.group);
       this.loading.getDomainUser = false;
+    },
+    clearFields() {
+      this.username = "";
+      this.displayName = "";
+      this.selectedGroups = [];
+
+      // clear password fields
+      this.newPassword = "";
+      this.clearConfirmPasswordCommand++;
     },
   },
 };

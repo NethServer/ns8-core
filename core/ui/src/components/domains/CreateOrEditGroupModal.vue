@@ -163,17 +163,18 @@ export default {
       if (this.isShown) {
         this.clearErrors();
 
-        if (!this.isEditing) {
-          // create group
-          this.name = "";
-          this.description = "";
-        } else {
-          // edit group
+        if (this.isEditing) {
           this.name = this.group.group;
           this.description = this.group.description;
+          this.selectedUsers = [];
           this.getDomainGroup();
         }
-        this.selectedUsers = [];
+      } else {
+        // hiding modal
+
+        if (this.isEditing) {
+          this.clearFields();
+        }
       }
     },
   },
@@ -286,6 +287,7 @@ export default {
       }
     },
     addGroupCompleted() {
+      this.clearFields();
       this.loading.addGroup = false;
 
       // reload groups
@@ -401,6 +403,11 @@ export default {
       const users = taskResult.output.group.users;
       this.selectedUsers = users.map((u) => u.user);
       this.loading.getDomainGroup = false;
+    },
+    clearFields() {
+      this.name = "";
+      this.description = "";
+      this.selectedUsers = [];
     },
   },
 };
