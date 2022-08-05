@@ -58,7 +58,7 @@ agent.run_helper('podman-pull-missing', core_url,
 
 # Get the old Podman image Id
 with subprocess.Popen(['podman', 'image', 'inspect', '-f', '{{.Id}}', core_env['CORE_IMAGE']], stdout=subprocess.PIPE, stderr=sys.stderr) as proc:
-    agent.set_env('PREV_IMAGE_ID', proc.stdout.rstrip())
+    agent.set_env('PREV_IMAGE_ID', proc.stdout.read().rstrip())
 
 # Parse the image labels
 with subprocess.Popen(['podman', 'image', 'inspect', core_url], stdout=subprocess.PIPE, stderr=sys.stderr) as proc:
