@@ -72,7 +72,7 @@ Add a dummy instance
     Set Suite Variable    ${DUMMY_MODULE}    ${response['module_id']}
 
 Cleanup the dummy image
-    Execute Command    podman rmi --ignore localhost/dummy:latest
+    Execute Command    podman rmi localhost/dummy:latest
 
 Set the dummy instance name
     Run task    module/${DUMMY_MODULE}/set-name    {"name":"${DUMMY_NAME}"}    decode_json=${FALSE}

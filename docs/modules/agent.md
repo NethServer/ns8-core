@@ -22,8 +22,9 @@ The core provides a set of base actions defined in
 
 - `create-module`: executed upon installation, it automatically downloads the module image and all images
   listed inside `org.nethserver.images` label.
-- `remove-module`: executed on module removal, modules can add here scripts to remove configuration executed on
-  other modules, like Traefik routes
+- `destroy-module`: executed on module removal; modules can add here
+  scripts to clean up configuration, like Traefik routes, Firewalld,
+  system-wide Systemd units...
 - `get-status`: used by the UI, it returns the current module status, like the node where the application is running, used images and volumes, systemd units status.
   This action works correctly only for rootless modules.
 - `list-service-providers`: Look up provider information for a given
