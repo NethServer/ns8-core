@@ -9,22 +9,19 @@
             "email": ""
           }
     ],
-    "type": "array",
-    "items": {
-        "type": "object",
-        "properties": {
-            "display_name": {
-                "description": "Display name of the user",
-                "type": "string"
-            },
-            "email": {
-                "description": "Email of the user",
-                "type": "string"
-            }
+    "type": "object",
+    "properties": {
+        "display_name": {
+            "description": "Display name of the user",
+            "type": "string"
         },
-        "required": [
-          "display_name",
-          "email"
-        ]
-    }
+        "email": {
+            "description": "Email of the user",
+            "type": "string"
+        }
+    },
+    "required": [
+      "display_name",
+      "email"
+    ]
 }

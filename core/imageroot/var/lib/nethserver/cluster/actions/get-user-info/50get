@@ -30,6 +30,12 @@ request = json.load(sys.stdin)
 # get user
 user = request['user']
 
+# check user and reject action
+if (user == 'cluster' or '/' in user):
+    agent.set_status('validation-failed')
+    json.dump([{'field':'user','parameter':'user','value':user,'error':'invalid_user'}], fp=sys.stdout)
+    sys.exit(2)
+
 # init redis db
 rdb = agent.redis_connect(privileged=False)
 
