@@ -30,7 +30,7 @@
         },
         "required": [
           "display_name",
-          "username"
+          "user"
         ]
     }
 }
