@@ -1,3 +1,7 @@
+<!--
+  Copyright (C) 2022 Nethesis S.r.l.
+  SPDX-License-Identifier: GPL-3.0-or-later
+-->
 <template>
   <cv-header aria-label="header">
     <cv-header-menu-button
@@ -76,7 +80,7 @@
       </cv-header-global-action>
       <HeaderGlobalMenu
         flip-menu
-        :label="$t('shell.account')"
+        :label="loggedUser || $t('shell.account')"
         tipPosition="bottom"
         tipAlignment="end"
       >
@@ -141,7 +145,12 @@ export default {
     };
   },
   computed: {
-    ...mapState(["notifications", "isSearchExpanded", "clusterLabel"]),
+    ...mapState([
+      "notifications",
+      "isSearchExpanded",
+      "clusterLabel",
+      "loggedUser",
+    ]),
     ...mapGetters(["unreadNotificationsCount", "ongoingNotificationsCount"]),
   },
   methods: {

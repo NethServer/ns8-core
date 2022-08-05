@@ -345,7 +345,8 @@
     "get-firewall-status": "Get firewall status",
     "get-smarthost": "Get smarthost settings",
     "set-smarthost": "Set smarthost settings",
-    "list-users": "List cluster administrators"
+    "list-users": "List cluster administrators",
+    "get-user-info": "Get user info"
   },
   "network": {
     "title": "Network"
@@ -632,7 +633,8 @@
     "2fa_enabled": "Enable two-factor authentication",
     "2fa_disabled": "Disable two-factor authentication",
     "confirm_revoke_2fa": "Do you really want to revoke two-factor authentication?",
-    "cannot_revoke_2fa": "Cannot revoke 2FA"
+    "cannot_revoke_2fa": "Cannot revoke 2FA",
+    "edit_display_name": "Edit display name"
   },
   "settings_cluster_admins": {
     "title": "Cluster administrators",
