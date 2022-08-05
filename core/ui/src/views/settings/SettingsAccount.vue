@@ -1,3 +1,7 @@
+<!--
+  Copyright (C) 2022 Nethesis S.r.l.
+  SPDX-License-Identifier: GPL-3.0-or-later
+-->
 <template>
   <div>
     <cv-grid fullWidth>
@@ -461,11 +465,6 @@ export default {
 
 <style scoped lang="scss">
 @import "../../styles/carbon-utils";
-
-.justify-flex-end {
-  display: flex;
-  justify-content: flex-end;
-}
 
 .icon-and-text {
   justify-content: flex-start;

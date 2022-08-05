@@ -1,3 +1,7 @@
+<!--
+  Copyright (C) 2022 Nethesis S.r.l.
+  SPDX-License-Identifier: GPL-3.0-or-later
+-->
 <template>
   <NsModal
     size="default"
@@ -201,7 +205,4 @@ export default {
 
 <style scoped lang="scss">
 @import "../../styles/carbon-utils";
-.mg-bottom-12 {
-  margin-bottom: 12rem;
-}
 </style>

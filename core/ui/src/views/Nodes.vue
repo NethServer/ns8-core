@@ -1,3 +1,7 @@
+<!--
+  Copyright (C) 2022 Nethesis S.r.l.
+  SPDX-License-Identifier: GPL-3.0-or-later
+-->
 <template>
   <div class="bx--grid bx--grid--full-width">
     <div class="bx--row">
@@ -221,15 +225,13 @@
               ref="newNodeLabel"
             >
             </cv-text-input>
-            <div v-if="error.setNodeLabel" class="bx--row">
-              <div class="bx--col">
-                <NsInlineNotification
-                  kind="error"
-                  :title="$t('action.set-name')"
-                  :description="error.setNodeLabel"
-                  :showCloseButton="false"
-                />
-              </div>
+            <div v-if="error.setNodeLabel">
+              <NsInlineNotification
+                kind="error"
+                :title="$t('action.set-name')"
+                :description="error.setNodeLabel"
+                :showCloseButton="false"
+              />
             </div>
           </cv-form>
         </template>

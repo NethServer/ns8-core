@@ -1,3 +1,7 @@
+<!--
+  Copyright (C) 2022 Nethesis S.r.l.
+  SPDX-License-Identifier: GPL-3.0-or-later
+-->
 <template>
   <cv-grid fullWidth>
     <cv-row>
