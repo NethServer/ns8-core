@@ -42,7 +42,7 @@ for ukey in rdb.scan_iter('user/*'):
     if role == 'owner':
 
         # get display name
-        display_name = rdb.hget('user/' + user, 'display_name')
+        display_name = rdb.hget('user/' + user, 'display_name') or ""
 
         # append to users list
         users.append({"user" : user, "display_name": display_name})
