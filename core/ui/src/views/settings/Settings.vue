@@ -70,6 +70,16 @@
           <h6>{{ $t("smarthost.title") }}</h6>
         </NsTile>
       </cv-column>
+      <cv-column :md="4" :xlg="4">
+        <NsTile
+          :light="true"
+          kind="clickable"
+          @click="goTo('/settings/cluster-admins')"
+          :icon="UserMilitary32"
+        >
+          <h6>{{ $t("settings_cluster_admins.title") }}</h6>
+        </NsTile>
+      </cv-column>
     </cv-row>
   </cv-grid>
 </template>

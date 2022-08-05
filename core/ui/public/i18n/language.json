@@ -344,7 +344,8 @@
     "get-acme-server": "Get ACME server",
     "get-firewall-status": "Get firewall status",
     "get-smarthost": "Get smarthost settings",
-    "set-smarthost": "Set smarthost settings"
+    "set-smarthost": "Set smarthost settings",
+    "list-users": "List cluster administrators"
   },
   "network": {
     "title": "Network"
@@ -632,6 +633,26 @@
     "2fa_disabled": "Disable two-factor authentication",
     "confirm_revoke_2fa": "Do you really want to revoke two-factor authentication?",
     "cannot_revoke_2fa": "Cannot revoke 2FA"
+  },
+  "settings_cluster_admins": {
+    "title": "Cluster administrators",
+    "create_admin": "Create admin",
+    "search_admin": "Search admin",
+    "no_admin": "No admin",
+    "no_admin_description": "There is no administrator configured",
+    "change_password": "Change password",
+    "edit_display_name": "Edit display name",
+    "username": "Username",
+    "display_name": "Display name",
+    "create_admin_admin": "Create admin {admin}",
+    "edit_display_name_for_admin": "Edit display name for {admin}",
+    "change_password_for_admin": "Change password for {admin}",
+    "delete_admin_admin": "Delete admin {admin}",
+    "delete_admin_description": "Delete admin <strong>{name}</strong>? It won't be able to log in anymore.",
+    "delete_admin": "Delete admin",
+    "user_already_exists": "Admin already exists",
+    "you": "You",
+    "no_display_name": "No display name"
   },
   "software_center": {
     "title": "Software center",
