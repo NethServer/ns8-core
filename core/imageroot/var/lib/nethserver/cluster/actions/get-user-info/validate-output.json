@@ -1,0 +1,27 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "get-user-info output",
+    "description": "Output schema of the get-user-info action",
+    "$id": "http://schema.nethserver.org/cluster/get-user-info-output.json",
+    "examples": [
+          {
+            "display_name": "Admin",
+            "email": ""
+          }
+    ],
+    "type": "object",
+    "properties": {
+        "display_name": {
+            "description": "Display name of the user",
+            "type": "string"
+        },
+        "email": {
+            "description": "Email of the user",
+            "type": "string"
+        }
+    },
+    "required": [
+      "display_name",
+      "email"
+    ]
+}

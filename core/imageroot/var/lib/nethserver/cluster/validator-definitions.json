@@ -27,7 +27,7 @@
             "properties": {
                 "display_name": {
                     "type": "string",
-                    "minLength": 1
+                    "minLength": 0
                 }
             }
         },

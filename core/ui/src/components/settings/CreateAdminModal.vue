@@ -6,19 +6,40 @@
   <NsModal
     size="default"
     :visible="isShown"
+    :primary-button-disabled="loading.addUser"
+    :isLoading="loading.addUser"
     @modal-hidden="onModalHidden"
-    @primary-click="changeUserPassword"
-    :primary-button-disabled="loading.alterUser"
+    @primary-click="addUser"
     class="no-pad-modal"
   >
-    <template v-if="user" slot="title">{{
-      $t("domain_users.change_password_for_user", { user: user.user })
+    <template slot="title">{{
+      $t("settings_cluster_admins.create_admin")
     }}</template>
     <template slot="content">
-      <cv-form @submit.prevent="changeUserPassword">
+      <cv-form @submit.prevent="addUser">
+        <NsTextInput
+          v-model.trim="username"
+          :label="$t('settings_cluster_admins.username')"
+          :invalid-message="error.user"
+          :disabled="loading.addUser"
+          data-modal-primary-focus
+          ref="user"
+        />
+        <NsTextInput
+          v-model.trim="displayName"
+          :label="
+            $t('settings_cluster_admins.display_name') +
+            ' (' +
+            $t('common.optional') +
+            ')'
+          "
+          :invalid-message="error.display_name"
+          :disabled="loading.addUser"
+          ref="display_name"
+        />
         <NsPasswordInput
-          :newPasswordLabel="$t('password.new_password')"
-          :confirmPasswordLabel="$t('password.re_enter_new_password')"
+          :newPasswordLabel="$t('password.password')"
+          :confirmPasswordLabel="$t('password.re_enter_password')"
           v-model="newPassword"
           @passwordValidation="onPasswordValidation"
           :newPasswordInvalidMessage="$t(error.newPassword)"
@@ -34,11 +55,13 @@
           :focus="focusPasswordField"
           :clearConfirmPasswordCommand="clearConfirmPasswordCommand"
         />
-        <div v-if="error.alterUser">
+        <!-- need to wrap error notification inside a div: custom elements like NsInlineNotification don't have scrollIntoView() function -->
+        <div ref="addUserError">
           <NsInlineNotification
+            v-if="error.addUser"
             kind="error"
-            :title="$t('action.alter-user')"
-            :description="error.alterUser"
+            :title="$t('settings_cluster_admins.create_admin')"
+            :description="error.addUser"
             :showCloseButton="false"
           />
         </div>
@@ -46,7 +69,7 @@
     </template>
     <template slot="secondary-button">{{ $t("common.cancel") }}</template>
     <template slot="primary-button">{{
-      $t("domain_users.change_password")
+      $t("settings_cluster_admins.create_admin")
     }}</template>
   </NsModal>
 </template>
@@ -56,51 +79,71 @@ import { UtilService, TaskService, IconService } from "@nethserver/ns8-ui-lib";
 import to from "await-to-js";
 
 export default {
-  name: "ChangeUserPasswordModal",
+  name: "CreateAdminModal",
   mixins: [UtilService, TaskService, IconService],
   props: {
     isShown: Boolean,
-    domain: { type: Object },
-    user: { type: [Object, null] },
+    admin: { type: [Object, null] },
   },
   data() {
     return {
+      username: "",
+      displayName: "",
+      selectedGroups: [],
       newPassword: "",
       passwordValidation: null,
       focusPasswordField: { element: "" },
       clearConfirmPasswordCommand: 0,
       loading: {
-        alterUser: false,
+        addUser: false,
       },
       error: {
-        alterUser: "",
+        addUser: "",
+        user: "",
+        display_name: "",
         newPassword: "",
         confirmPassword: "",
+        groups: "",
       },
     };
-  },
-  computed: {
-    mainProvider() {
-      return this.domain.providers[0].id;
-    },
   },
   watch: {
     isShown: function () {
       if (this.isShown) {
-        // clear password fields
+        this.clearErrors();
+
+        this.username = "";
+        this.displayName = "";
         this.newPassword = "";
         this.clearConfirmPasswordCommand++;
+      }
+    },
+    "error.addUser": function () {
+      if (this.error.addUser) {
+        // scroll to notification error
 
-        setTimeout(() => {
-          this.focusPasswordField = { element: "newPassword" };
-        }, 400);
+        this.$nextTick(() => {
+          const el = this.$refs.addUserError;
+          this.scrollToElement(el);
+        });
       }
     },
   },
   methods: {
-    validateChangeUserPassword() {
+    validateAddUser() {
       this.clearErrors();
       let isValidationOk = true;
+
+      // username
+
+      if (!this.username) {
+        this.error.user = this.$t("common.required");
+
+        if (isValidationOk) {
+          this.focusElement("user");
+          isValidationOk = false;
+        }
+      }
 
       // password validation
 
@@ -161,48 +204,64 @@ export default {
       }
       return isValidationOk;
     },
-    async changeUserPassword() {
-      if (!this.validateChangeUserPassword()) {
+    async addUser() {
+      if (!this.validateAddUser()) {
         return;
       }
-
-      this.loading.alterUser = true;
-      this.error.alterUser = "";
-      const taskAction = "alter-user";
+      this.loading.addUser = true;
+      this.error.addUser = "";
+      const taskAction = "add-user";
       const eventId = this.getUuid();
 
       // register to task error
-      this.$root.$once(
-        `${taskAction}-aborted-${eventId}`,
-        this.alterUserAborted
-      );
+      this.$root.$once(`${taskAction}-aborted-${eventId}`, this.addUserAborted);
 
       // register to task validation
       this.$root.$once(
         `${taskAction}-validation-ok-${eventId}`,
-        this.alterUserValidationOk
+        this.addUserValidationOk
       );
       this.$root.$once(
         `${taskAction}-validation-failed-${eventId}`,
-        this.alterUserValidationFailed
+        this.addUserValidationFailed
       );
 
       // register to task completion
       this.$root.$once(
         `${taskAction}-completed-${eventId}`,
-        this.alterUserCompleted
+        this.addUserCompleted
       );
 
+      const [errPasswordHash, passwordHash] = await to(
+        this.getSha256(this.newPassword)
+      );
+
+      if (errPasswordHash) {
+        console.error(`error getting password sha256`, errPasswordHash);
+        this.error.addUser = this.getErrorMessage(errPasswordHash);
+        this.loading.addUser = false;
+        return;
+      }
+
       const res = await to(
-        this.createModuleTaskForApp(this.mainProvider, {
+        this.createClusterTask({
           action: taskAction,
           data: {
-            user: this.user.user,
-            password: this.newPassword,
+            user: this.username,
+            set: {
+              display_name: this.displayName,
+            },
+            password_hash: passwordHash,
+            grant: [
+              {
+                role: "owner",
+                on: "*",
+              },
+            ],
           },
           extra: {
-            title: this.$t("domain_users.change_password_for_user", {
-              user: this.user.user,
+            title: this.$t("settings_cluster_admins.create_admin_admin", {
+              admin: this.username,
             }),
             description: this.$t("common.processing"),
             eventId,
@@ -213,33 +272,35 @@ export default {
 
       if (err) {
         console.error(`error creating task ${taskAction}`, err);
-        this.error.alterUser = this.getErrorMessage(err);
-        this.loading.alterUser = false;
+        this.error.addUser = this.getErrorMessage(err);
+        this.loading.addUser = false;
         return;
       }
     },
-    alterUserAborted(taskResult, taskContext) {
+    addUserAborted(taskResult, taskContext) {
       console.error(`${taskContext.action} aborted`, taskResult);
-      this.loading.alterUser = false;
+      this.loading.addUser = false;
 
       // hide modal so that user can see error notification
       this.$emit("hide");
     },
-    alterUserValidationOk() {
-      this.loading.alterUser = false;
+    addUserValidationOk() {
+      this.loading.addUser = false;
 
       // hide modal after validation
       this.$emit("hide");
     },
-    alterUserValidationFailed(validationErrors) {
-      this.loading.alterUser = false;
+    addUserValidationFailed(validationErrors) {
+      this.loading.addUser = false;
       let focusAlreadySet = false;
 
       for (const validationError of validationErrors) {
         const param = validationError.parameter;
 
         // set i18n error message
-        this.error[param] = this.$t("domain_users." + validationError.error);
+        this.error[param] = this.$t(
+          "settings_cluster_admins." + validationError.error
+        );
 
         if (!focusAlreadySet) {
           this.focusElement(param);
@@ -247,8 +308,11 @@ export default {
         }
       }
     },
-    alterUserCompleted() {
-      this.loading.alterUser = false;
+    addUserCompleted() {
+      this.loading.addUser = false;
+
+      // reload admins
+      this.$emit("adminCreated");
     },
     onModalHidden() {
       this.clearErrors();

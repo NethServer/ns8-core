@@ -31,6 +31,7 @@ import json
 #    "set": {
 #       "display_name": "The Administrator"
 #       "email": "admin@example.com"
+#       "password": "my-new-password"
 #    },
 #    "revoke": [{"role":"owner",  "on":"*"}],
 #    "grant":  [{"role":"reader", "on":"cluster"}],
@@ -42,8 +43,26 @@ rdb = agent.redis_connect(privileged=True)
 
 user = request['user']
 
+# check user and reject action
+if (user == 'cluster' or '/' in user):
+    agent.set_status('validation-failed')
+    json.dump([{'field':'user','parameter':'user','value':user,'error':'invalid_user'}], fp=sys.stdout)
+    sys.exit(2)
+
+# check set parameters
 if 'set' in request:
-    agent.assert_exp(rdb.hset(f'user/{user}', mapping=request['set']) >= 0)
+    if 'display_name' in request['set']:
+        # change display name
+        rdb.hset(f'user/{user}', 'display_name', request['set']['display_name'])
+
+    if 'email' in request['set']:
+        # change email
+        rdb.hset(f'user/{user}', 'email', request['set']['email'])
+
+    if 'password' in request['set']:
+        # change password
+        password = request['set']['password']
+        rdb.acl_setuser(user, passwords=[f'+{password}'], reset_passwords=True, enabled=True)
 
 for roledef in request['revoke']: # !!! revoke BEFORE grant
     cluster.grants.alter_user(rdb, user, True, roledef['role'], roledef['on'])

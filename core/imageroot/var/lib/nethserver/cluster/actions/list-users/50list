@@ -1,0 +1,36 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2022 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+import os
+import sys
+import json
+import agent
+import cluster.grants
+
+rdb = agent.redis_connect(privileged=False)
+
+users = []
+
+# get all user keys
+for ukey in rdb.scan_iter('user/*'):
+    # get user name
+    user = ukey.removeprefix("user/")
+
+    # get user role
+    role = rdb.hget('roles/' + user, 'cluster')
+
+    # check if role is owner
+    if role == 'owner':
+
+        # get display name
+        display_name = rdb.hget('user/' + user, 'display_name') or ""
+
+        # append to users list
+        users.append({"user" : user, "display_name": display_name})
+
+# return json
+json.dump(users, fp=sys.stdout)

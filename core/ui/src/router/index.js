@@ -93,6 +93,14 @@ const routes = [
       ),
   },
   {
+    path: "/settings/cluster-admins",
+    name: "ClusterAdmins",
+    component: () =>
+      import(
+        /* webpackChunkName: "cluster-admins" */ "../views/settings/ClusterAdmins.vue"
+      ),
+  },
+  {
     path: "/apps/:appId",
     name: "Applications",
     component: Applications,

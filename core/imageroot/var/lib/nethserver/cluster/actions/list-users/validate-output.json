@@ -1,0 +1,36 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "list-users output",
+    "description": "Output schema of the list-users action",
+    "$id": "http://schema.nethserver.org/cluster/list-users-output.json",
+    "examples": [
+        [
+          {
+            "display_name": "Admin",
+            "user": "admin"
+          },
+          {
+            "display_name": "People",
+            "user": "people"
+          }
+        ]
+    ],
+    "type": "array",
+    "items": {
+        "type": "object",
+        "properties": {
+            "display_name": {
+                "description": "Display name of the user",
+                "type": "string"
+            },
+            "user": {
+                "description": "Unique username for the user",
+                "type": "string"
+            }
+        },
+        "required": [
+          "display_name",
+          "user"
+        ]
+    }
+}

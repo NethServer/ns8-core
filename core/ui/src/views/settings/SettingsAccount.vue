@@ -1,3 +1,7 @@
+<!--
+  Copyright (C) 2022 Nethesis S.r.l.
+  SPDX-License-Identifier: GPL-3.0-or-later
+-->
 <template>
   <div>
     <cv-grid fullWidth>
@@ -20,6 +24,48 @@
       <cv-row>
         <cv-column class="subpage-title">
           <h3>{{ $t("settings_account.title") }}</h3>
+        </cv-column>
+      </cv-row>
+      <cv-row>
+        <cv-column>
+          <NsInlineNotification
+            v-if="error.userInfo"
+            kind="error"
+            :title="$t('action.get-user-info')"
+            :description="error.userInfo"
+            :showCloseButton="false"
+          />
+        </cv-column>
+      </cv-row>
+      <cv-row>
+        <cv-column>
+          <cv-tile light>
+            <cv-skeleton-text
+              v-if="loading.getUserInfo"
+              paragraph
+              :line-count="3"
+              width="70%"
+            ></cv-skeleton-text>
+            <div v-else class="user-info">
+              <NsPictogram title="user avatar" class="avatar">
+                <UserProfilePictogram />
+              </NsPictogram>
+              <div class="user-details">
+                <div v-if="userInfo.display_name" class="display-name">
+                  {{ userInfo.display_name }}
+                </div>
+                <div>{{ currentUsername }}</div>
+              </div>
+            </div>
+            <NsButton
+              kind="secondary"
+              :icon="Edit20"
+              @click="showEditDisplayNameModal"
+              :disabled="loading.getUserInfo"
+              class="mg-top-lg"
+              >{{ $t("settings_account.edit_display_name") }}
+            </NsButton>
+          </cv-tile>
         </cv-column>
       </cv-row>
       <cv-row>
@@ -167,6 +213,13 @@
       @hide="hideConfirmRevoke2FaModal"
       @confirm="disable2Fa"
     />
+    <!-- edit display name modal -->
+    <EditAdminDisplayNameModal
+      :isShown="isShownEditDisplayNameModal"
+      :admin="account"
+      @hide="hideEditDisplayNameModal"
+      @displayNameUpdated="getUserInfo"
+    />
   </div>
 </template>
 
@@ -184,10 +237,16 @@ import Enable2FaModal from "@/components/settings/Enable2FaModal";
 import ConfirmRevoke2FaModal from "@/components/settings/ConfirmRevoke2FaModal";
 import TwoFaService from "@/mixins/2fa";
 import NotificationService from "@/mixins/notification";
+import EditAdminDisplayNameModal from "@/components/settings/EditAdminDisplayNameModal.vue";
 
 export default {
   name: "SettingsAccount",
-  components: { TwoFaQrCodeModal, Enable2FaModal, ConfirmRevoke2FaModal },
+  components: {
+    TwoFaQrCodeModal,
+    Enable2FaModal,
+    ConfirmRevoke2FaModal,
+    EditAdminDisplayNameModal,
+  },
   mixins: [
     TaskService,
     UtilService,
@@ -212,10 +271,13 @@ export default {
       isShownEnable2FaModal: false,
       twoFaEnabled: false,
       isShownConfirmRevoke2FaModal: false,
+      userInfo: {},
+      isShownEditDisplayNameModal: false,
       loading: {
         changeUserPassword: false,
         get2FaStatus: false,
         revoke2Fa: false,
+        getUserInfo: false,
       },
       error: {
         changeUserPassword: "",
@@ -224,8 +286,17 @@ export default {
         confirmPassword: "",
         get2FaStatus: "",
         revoke2Fa: "",
+        getUserInfo: "",
       },
     };
+  },
+  computed: {
+    account() {
+      return {
+        user: this.currentUsername,
+        display_name: this.userInfo ? this.userInfo.display_name : "",
+      };
+    },
   },
   created() {
     const loginInfo = this.getFromStorage("loginInfo");
@@ -234,6 +305,7 @@ export default {
       this.currentUsername = loginInfo.username;
     }
     this.retrieve2FaStatus();
+    this.getUserInfo();
   },
   beforeRouteEnter(to, from, next) {
     next((vm) => {
@@ -455,6 +527,60 @@ export default {
       this.isShownEnable2FaModal = false;
       this.retrieve2FaStatus();
     },
+    async getUserInfo() {
+      this.loading.getUserInfo = true;
+      this.error.getUserInfo = "";
+      const taskAction = "get-user-info";
+      const eventId = this.getUuid();
+
+      // register to task error
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.getUserInfoAborted
+      );
+
+      // register to task completion
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.getUserInfoCompleted
+      );
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          data: {
+            user: this.currentUsername,
+          },
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+            eventId,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.getUserInfo = this.getErrorMessage(err);
+        return;
+      }
+    },
+    getUserInfoAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.getUserInfo = this.$t("error.generic_error");
+      this.loading.getUserInfo = false;
+    },
+    getUserInfoCompleted(taskContext, taskResult) {
+      this.userInfo = taskResult.output;
+      this.loading.getUserInfo = false;
+    },
+    showEditDisplayNameModal() {
+      this.isShownEditDisplayNameModal = true;
+    },
+    hideEditDisplayNameModal() {
+      this.isShownEditDisplayNameModal = false;
+    },
   },
 };
 </script>
@@ -462,12 +588,21 @@ export default {
 <style scoped lang="scss">
 @import "../../styles/carbon-utils";
 
-.justify-flex-end {
-  display: flex;
-  justify-content: flex-end;
-}
-
 .icon-and-text {
   justify-content: flex-start;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+
+  .avatar {
+    margin-right: $spacing-05;
+  }
+
+  .display-name {
+    font-weight: bold;
+    margin-bottom: $spacing-03;
+  }
 }
 </style>

@@ -7,15 +7,16 @@
     size="default"
     :visible="isShown"
     @modal-hidden="onModalHidden"
-    @primary-click="changeUserPassword"
+    @primary-click="alterUser"
     :primary-button-disabled="loading.alterUser"
-    class="no-pad-modal"
   >
-    <template v-if="user" slot="title">{{
-      $t("domain_users.change_password_for_user", { user: user.user })
+    <template v-if="admin" slot="title">{{
+      $t("settings_cluster_admins.change_password_for_admin", {
+        admin: admin.user,
+      })
     }}</template>
     <template slot="content">
-      <cv-form @submit.prevent="changeUserPassword">
+      <cv-form @submit.prevent="alterUser">
         <NsPasswordInput
           :newPasswordLabel="$t('password.new_password')"
           :confirmPasswordLabel="$t('password.re_enter_new_password')"
@@ -46,7 +47,7 @@
     </template>
     <template slot="secondary-button">{{ $t("common.cancel") }}</template>
     <template slot="primary-button">{{
-      $t("domain_users.change_password")
+      $t("settings_cluster_admins.change_password")
     }}</template>
   </NsModal>
 </template>
@@ -56,12 +57,11 @@ import { UtilService, TaskService, IconService } from "@nethserver/ns8-ui-lib";
 import to from "await-to-js";
 
 export default {
-  name: "ChangeUserPasswordModal",
+  name: "ChangeAdminPasswordModal",
   mixins: [UtilService, TaskService, IconService],
   props: {
     isShown: Boolean,
-    domain: { type: Object },
-    user: { type: [Object, null] },
+    admin: { type: [Object, null] },
   },
   data() {
     return {
@@ -79,11 +79,6 @@ export default {
       },
     };
   },
-  computed: {
-    mainProvider() {
-      return this.domain.providers[0].id;
-    },
-  },
   watch: {
     isShown: function () {
       if (this.isShown) {
@@ -98,7 +93,7 @@ export default {
     },
   },
   methods: {
-    validateChangeUserPassword() {
+    validateAlterUser() {
       this.clearErrors();
       let isValidationOk = true;
 
@@ -161,11 +156,10 @@ export default {
       }
       return isValidationOk;
     },
-    async changeUserPassword() {
-      if (!this.validateChangeUserPassword()) {
+    async alterUser() {
+      if (!this.validateAlterUser()) {
         return;
       }
-
       this.loading.alterUser = true;
       this.error.alterUser = "";
       const taskAction = "alter-user";
@@ -194,16 +188,21 @@ export default {
       );
 
       const res = await to(
-        this.createModuleTaskForApp(this.mainProvider, {
+        this.createClusterTask({
           action: taskAction,
           data: {
-            user: this.user.user,
-            password: this.newPassword,
+            user: this.admin.user,
+            set: { password: this.newPassword },
+            revoke: [],
+            grant: [],
           },
           extra: {
-            title: this.$t("domain_users.change_password_for_user", {
-              user: this.user.user,
-            }),
+            title: this.$t(
+              "settings_cluster_admins.change_password_for_admin",
+              {
+                admin: this.admin.user,
+              }
+            ),
             description: this.$t("common.processing"),
             eventId,
           },
@@ -239,7 +238,9 @@ export default {
         const param = validationError.parameter;
 
         // set i18n error message
-        this.error[param] = this.$t("domain_users." + validationError.error);
+        this.error[param] = this.$t(
+          "settings_cluster_admins." + validationError.error
+        );
 
         if (!focusAlreadySet) {
           this.focusElement(param);
