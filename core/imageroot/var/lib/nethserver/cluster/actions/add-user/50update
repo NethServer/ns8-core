@@ -33,7 +33,7 @@ password_hash = request['password_hash']
 
 if rdb.execute_command('ACL', 'GETUSER', user) != None:
     agent.set_status('validation-failed')
-    json.dump([{'field':'user','parameter':'user','value':user,'error':'user_already_exists'}], fp=sys.stdout) # XXX: implement library function
+    json.dump([{'field':'user','parameter':'user','value':user,'error':'user_already_exists'}], fp=sys.stdout)
     sys.exit(2)
 
 agent.assert_exp(rdb.hset(f'user/{user}', mapping={
