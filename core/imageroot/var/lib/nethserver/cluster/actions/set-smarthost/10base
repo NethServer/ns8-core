@@ -22,7 +22,7 @@ values = {
     "username": data['username'],
     "password": data['password'],
     "enabled": '1' if data['enabled'] else '0',
-    "tls": '1' if data['tls'] else '0',
+    "encrypt_smtp": data['encrypt_smtp'],
     "tls_verify": '1' if data['tls_verify'] else '0'
 }
 

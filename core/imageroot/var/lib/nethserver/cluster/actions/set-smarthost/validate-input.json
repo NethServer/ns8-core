@@ -10,7 +10,7 @@
             "username": "username",
             "password": "secret",
             "enabled": true,
-            "tls": true,
+            "encrypt_smtp": "starttls",
             "tls_verify": false
         }
     ],
@@ -21,7 +21,7 @@
             "username",
             "password",
             "enabled",
-            "tls",
+            "encrypt_smtp",
             "tls_verify"
     ],
     "properties": {
@@ -53,10 +53,12 @@
             "title": "enabled",
             "description": "Enable or disable the smarthost settings"
         },
-        "tls": {
-            "type": "boolean",
-            "title": "tls",
-            "description": "Enable or disable the starttls encryption with the server"
+        "encrypt_smtp": {
+            "type": "string",
+            "format": "regex",
+            "pattern": "^(none|starttls|tls)$",
+            "title": "encrypt_smtp",
+            "description": "Enable or disable the tls encryption with the smtp server"
         },
         "tls_verify": {
             "type": "boolean",
