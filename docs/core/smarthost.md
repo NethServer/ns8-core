@@ -29,10 +29,10 @@ json.dump(smtp, fp=sys.stdout)
 
 output example:
 ```json
-{"port": 587, "host": "", "username": "", "password": "", "enabled": false, "tls": true, "tls_verify": true}
+{"port": 587, "host": "", "username": "", "password": "", "enabled": false, "encrypt_smtp": "starttls", "tls_verify": true}
 ```
 
-- tls: enable STARTTLS (true/false)
+- encrypt_smtp: Enable or disable the smtp encryption to the server ('none','starttls',tls')
 - tls_verify: verify if the certificate is valid and if the hostname is associated to the certificate (true/false)
 - username: it might be empty if the smtp server does not require an user authentication
 
