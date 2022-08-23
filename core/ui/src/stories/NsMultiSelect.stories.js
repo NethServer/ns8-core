@@ -35,6 +35,7 @@ const vegetablesOptions = ["Salad", "Tomato", "Cucumber", "Carrot"].map(
       value: nameVal,
       disabled: false,
       type: "vegetable",
+      description: `This is ${item} description`,
     };
   }
 );
@@ -66,6 +67,7 @@ const fruitOptions = [
     value: nameVal,
     disabled: false,
     type: "fruit",
+    description: `This is ${item} description`,
   };
 });
 
@@ -94,6 +96,7 @@ Default.args = {
   maxDisplayOptions: 100,
   acceptUserInput: false,
   showItemType: false,
+  showItemDescription: false,
   selectedItemsColor: "high-contrast",
   marginBottomOnOpen: false,
   tooltipAlignment: "start",
@@ -102,8 +105,8 @@ Default.args = {
   options: fruitOptions,
 };
 
-export const ShowItemType = Template.bind({});
-ShowItemType.args = {
+export const ShowItemTypeAndDescription = Template.bind({});
+ShowItemTypeAndDescription.args = {
   autoFilter: false,
   autoHighlight: false,
   disabled: false,
@@ -127,6 +130,7 @@ ShowItemType.args = {
   maxDisplayOptions: 100,
   acceptUserInput: false,
   showItemType: true,
+  showItemDescription: true,
   selectedItemsColor: "high-contrast",
   marginBottomOnOpen: false,
   tooltipAlignment: "start",
@@ -160,6 +164,7 @@ AcceptUserInput.args = {
   maxDisplayOptions: 100,
   acceptUserInput: true,
   showItemType: true,
+  showItemDescription: false,
   selectedItemsColor: "high-contrast",
   marginBottomOnOpen: false,
   tooltipAlignment: "start",
@@ -205,6 +210,7 @@ MarginBottomOnOpen.args = {
   maxDisplayOptions: 100,
   acceptUserInput: false,
   showItemType: false,
+  showItemDescription: false,
   selectedItemsColor: "high-contrast",
   marginBottomOnOpen: true,
   tooltipAlignment: "start",
