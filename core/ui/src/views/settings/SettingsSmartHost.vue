@@ -94,34 +94,35 @@
                   <span v-html="$t('smarthost.port_label_tooltip')"></span>
                 </template>
               </NsTextInput>
-              <cv-toggle
-                :label="$t('smarthost.tls')"
-                value="statusValue"
-                :form-item="true"
-                v-model="tls"
+              <cv-combo-box
+                v-model="encrypt_smtp"
+                :label="$t('smarthost.choose')"
+                :title="$t('smarthost.encrypt_smtp')"
+                :auto-filter="true"
+                :auto-highlight="true"
+                :options="options"
                 :disabled="loading.getSmarthost || loading.setSmarthost"
+                :invalid-message="error.encrypt_smtp"
+                light
+                ref="encrypt_smtp"
               >
-                <template slot="text-left">
-                  {{ $t("common.disabled") }}
-                </template>
-                <template slot="text-right">
-                  {{ $t("common.enabled") }}
-                </template>
-              </cv-toggle>
-              <cv-toggle
-                :label="$t('smarthost.tls_verify')"
-                value="statusValue"
-                :form-item="true"
-                v-model="tls_verify"
-                :disabled="loading.getSmarthost || loading.setSmarthost"
-              >
-                <template slot="text-left">
-                  {{ $t("common.disabled") }}
-                </template>
-                <template slot="text-right">
-                  {{ $t("common.enabled") }}
-                </template>
-              </cv-toggle>
+              </cv-combo-box>
+              <template v-if="encrypt_smtp != 'none'">
+                <cv-toggle
+                  :label="$t('smarthost.tls_verify')"
+                  value="statusValue"
+                  :form-item="true"
+                  v-model="tls_verify"
+                  :disabled="loading.getSmarthost || loading.setSmarthost"
+                >
+                  <template slot="text-left">
+                    {{ $t("common.disabled") }}
+                  </template>
+                  <template slot="text-right">
+                    {{ $t("common.enabled") }}
+                  </template>
+                </cv-toggle>
+              </template>
               <div ref="setSmarthostError">
                 <cv-row v-if="error.test_smarthost">
                   <div class="bx--col">
@@ -180,8 +181,25 @@ export default {
       username: "",
       password: "",
       enabled: false,
-      tls: true,
+      encrypt_smtp: "STARTTLS",
       tls_verify: true,
+      options: [
+        {
+          name: "none",
+          label: this.$t("smarthost.none"),
+          value: "none",
+        },
+        {
+          name: "starttls",
+          label: this.$t("smarthost.starttls"),
+          value: "starttls",
+        },
+        {
+          name: "tls",
+          label: this.$t("smarthost.tls"),
+          value: "tls",
+        },
+      ],
       loading: {
         getSmarthost: true,
         setSmarthost: false,
@@ -193,10 +211,10 @@ export default {
         username: "",
         password: "",
         enabled: "",
-        tls: "",
         tls_verify: "",
         setSmarthost: "",
         test_smarthost: "",
+        encrypt_smtp: "",
       },
     };
   },
@@ -267,7 +285,7 @@ export default {
       this.username = smarthost.username;
       this.password = smarthost.password;
       this.port = smarthost.port;
-      this.tls = smarthost.tls;
+      this.encrypt_smtp = smarthost.encrypt_smtp;
       this.tls_verify = smarthost.tls_verify;
       this.enabled = smarthost.enabled;
       this.loading.getSmarthost = false;
@@ -308,7 +326,7 @@ export default {
             username: this.enabled ? this.username : "",
             password: this.enabled ? this.password : "",
             port: this.enabled ? parseInt(this.port) : 587,
-            tls: this.enabled ? this.tls : true,
+            encrypt_smtp: this.enabled ? this.encrypt_smtp : "starttls",
             tls_verify: this.enabled ? this.tls_verify : true,
             enabled: this.enabled,
           },
