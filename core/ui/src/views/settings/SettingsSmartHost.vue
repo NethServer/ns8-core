@@ -1,7 +1,7 @@
 <template>
-  <div class="bx--grid bx--grid--full-width">
-    <div class="bx--row">
-      <div class="bx--col-lg-16">
+  <cv-grid fullWidth>
+    <cv-row>
+      <cv-column>
         <cv-breadcrumb
           aria-label="breadcrumb"
           :no-trailing-slash="true"
@@ -14,25 +14,25 @@
             <span>{{ $t("smarthost.title") }}</span>
           </cv-breadcrumb-item>
         </cv-breadcrumb>
-      </div>
-    </div>
-    <div class="bx--row">
-      <div class="bx--col-lg-16 subpage-title">
+      </cv-column>
+    </cv-row>
+    <cv-row>
+      <cv-column class="subpage-title">
         <h3>{{ $t("smarthost.title") }}</h3>
-      </div>
-    </div>
-    <div v-if="error.getSmarthost" class="bx--row">
-      <div class="bx--col">
+      </cv-column>
+    </cv-row>
+    <cv-row v-if="error.getSmarthost">
+      <cv-column>
         <NsInlineNotification
           kind="error"
           :title="$t('action.get-smarthost')"
           :description="error.getSmarthost"
           :showCloseButton="false"
         />
-      </div>
-    </div>
-    <div class="bx--row">
-      <div class="bx--col">
+      </cv-column>
+    </cv-row>
+    <cv-row>
+      <cv-column>
         <cv-tile :light="true">
           <cv-form @submit.prevent="saveSettings">
             <cv-toggle
@@ -123,7 +123,7 @@
                 </template>
               </cv-toggle>
               <div ref="setSmarthostError">
-                <div v-if="error.test_smarthost" class="bx--row">
+                <cv-row v-if="error.test_smarthost">
                   <div class="bx--col">
                     <NsInlineNotification
                       kind="error"
@@ -132,7 +132,7 @@
                       :showCloseButton="false"
                     />
                   </div>
-                </div>
+                </cv-row>
               </div>
             </template>
             <NsButton
@@ -144,9 +144,9 @@
             >
           </cv-form>
         </cv-tile>
-      </div>
-    </div>
-  </div>
+      </cv-column>
+    </cv-row>
+  </cv-grid>
 </template>
 
 <script>
