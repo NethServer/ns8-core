@@ -125,14 +125,14 @@
               </template>
               <div ref="setSmarthostError">
                 <cv-row v-if="error.test_smarthost">
-                  <div class="bx--col">
+                  <cv-column>
                     <NsInlineNotification
                       kind="error"
                       :title="$t('action.set-smarthost')"
                       :description="error.test_smarthost"
                       :showCloseButton="false"
                     />
-                  </div>
+                  </cv-column>
                 </cv-row>
               </div>
             </template>
