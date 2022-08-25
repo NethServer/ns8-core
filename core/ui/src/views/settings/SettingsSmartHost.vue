@@ -368,6 +368,11 @@ export default {
       this.loading.setSmarthost = false;
       this.getSmarthost();
     },
+    setSmarthostAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.setSmarthost = this.$t("error.generic_error");
+      this.loading.setSmarthost = false;
+    },
     validateConfigureModule() {
       for (const key of Object.keys(this.error)) {
         this.error[key] = "";
