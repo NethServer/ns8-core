@@ -94,19 +94,20 @@
                   <span v-html="$t('smarthost.port_label_tooltip')"></span>
                 </template>
               </NsTextInput>
-              <cv-combo-box
+              <NsComboBox
                 v-model="encrypt_smtp"
-                :label="$t('smarthost.choose')"
+                :autoFilter="true"
+                :autoHighlight="true"
                 :title="$t('smarthost.encrypt_smtp')"
-                :auto-filter="true"
-                :auto-highlight="true"
+                :label="$t('smarthost.choose')"
                 :options="options"
-                :disabled="loading.getSmarthost || loading.setSmarthost"
+                :acceptUserInput="false"
+                :showItemType="false"
                 :invalid-message="error.encrypt_smtp"
+                :disabled="loading.getSmarthost || loading.setSmarthost"
                 light
                 ref="encrypt_smtp"
-              >
-              </cv-combo-box>
+              />
               <template v-if="encrypt_smtp != 'none'">
                 <cv-toggle
                   :label="$t('smarthost.tls_verify')"
