@@ -55,8 +55,7 @@
         },
         "encrypt_smtp": {
             "type": "string",
-            "format": "regex",
-            "pattern": "^(none|starttls|tls)$",
+            "enum": ["none", "starttls", "tls"],
             "title": "encrypt_smtp",
             "description": "Enable or disable the tls encryption with the smtp server"
         },
