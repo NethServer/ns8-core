@@ -39,12 +39,13 @@ else:
     ctx.verify_mode = ssl.CERT_NONE
 
 try :
-    if encrypt_smtp != 'tls':
+    if encrypt_smtp == 'starttls':
         smtp = smtplib.SMTP(host, port=port, timeout=10)
-        if encrypt_smtp == 'starttls':
-            smtp.starttls(context=ctx)
-    else:
+        smtp.starttls(context=ctx)
+    elif encrypt_smtp == 'tls':
         smtp = smtplib.SMTP_SSL(host, port=port, timeout=10, context=ctx)
+    else:
+        smtp = smtplib.SMTP(host, port=port, timeout=10)
 
     # we have a login, we try to authenticate.
     if username:
