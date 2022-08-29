@@ -459,7 +459,7 @@ def get_smarthost_settings(rdb):
             "username":"",
             "password": "",
             "enabled": False,
-            "tls": True,
+            "encrypt_smtp": "starttls",
             "tls_verify": True
         }
     else:
@@ -469,8 +469,8 @@ def get_smarthost_settings(rdb):
             "username": conf['username'],
             "password": conf['password'],
             "enabled": conf['enabled'] == "1",
-            "tls": conf['tls'] == "1",
+            "encrypt_smtp": conf['encrypt_smtp'],
             "tls_verify": conf['tls_verify'] == "1"
         }
     return data
-    
+

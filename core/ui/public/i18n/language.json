@@ -1073,7 +1073,11 @@
     "port_label": "Port",
     "port_label_tooltip": "Type the TCP port where to use the SMTP server",
     "port_placeholder": "587",
-    "tls": "STARTTLS encryption",
+    "encrypt_smtp": "SMTP encryption",
+    "none": "None",
+    "starttls": "STARTTLS",
+    "tls": "TLS",
+    "choose":"Choose",
     "tls_verify": "Verify the TLS certificate",
     "connection_timeout_error": "The connection issued a timeout error, verify the port and the fully qualified domain name",
     "cannot_authenticate_to_server": "The server refuses the connection, it is probably due to a bad login or bad password",
@@ -1082,6 +1086,7 @@
     "valid_certificate_verification_error": "The certificate is not valid for the server, you should try to disable the certificate verification",
     "required": "This field is required",
     "port_invalid_type": "It must be a valid number port (1-65535)",
-    "port_number_gte": "The port must be greater than 0 (1-65535)"
+    "port_number_gte": "The port must be greater than 0 (1-65535)",
+    "encrypt_smtp_enum":"It must be one of the following: none, starttls, tls"
   }
 }

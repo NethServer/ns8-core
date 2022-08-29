@@ -1,7 +1,7 @@
 <template>
-  <div class="bx--grid bx--grid--full-width">
-    <div class="bx--row">
-      <div class="bx--col-lg-16">
+  <cv-grid fullWidth>
+    <cv-row>
+      <cv-column>
         <cv-breadcrumb
           aria-label="breadcrumb"
           :no-trailing-slash="true"
@@ -14,25 +14,25 @@
             <span>{{ $t("smarthost.title") }}</span>
           </cv-breadcrumb-item>
         </cv-breadcrumb>
-      </div>
-    </div>
-    <div class="bx--row">
-      <div class="bx--col-lg-16 subpage-title">
+      </cv-column>
+    </cv-row>
+    <cv-row>
+      <cv-column class="subpage-title">
         <h3>{{ $t("smarthost.title") }}</h3>
-      </div>
-    </div>
-    <div v-if="error.getSmarthost" class="bx--row">
-      <div class="bx--col">
+      </cv-column>
+    </cv-row>
+    <cv-row v-if="error.getSmarthost">
+      <cv-column>
         <NsInlineNotification
           kind="error"
           :title="$t('action.get-smarthost')"
           :description="error.getSmarthost"
           :showCloseButton="false"
         />
-      </div>
-    </div>
-    <div class="bx--row">
-      <div class="bx--col">
+      </cv-column>
+    </cv-row>
+    <cv-row>
+      <cv-column>
         <cv-tile :light="true">
           <cv-form @submit.prevent="saveSettings">
             <cv-toggle
@@ -94,45 +94,47 @@
                   <span v-html="$t('smarthost.port_label_tooltip')"></span>
                 </template>
               </NsTextInput>
-              <cv-toggle
-                :label="$t('smarthost.tls')"
-                value="statusValue"
-                :form-item="true"
-                v-model="tls"
+              <NsComboBox
+                v-model="encrypt_smtp"
+                :autoFilter="true"
+                :autoHighlight="true"
+                :title="$t('smarthost.encrypt_smtp')"
+                :label="$t('smarthost.choose')"
+                :options="options"
+                :acceptUserInput="false"
+                :showItemType="false"
+                :invalid-message="error.encrypt_smtp"
                 :disabled="loading.getSmarthost || loading.setSmarthost"
-              >
-                <template slot="text-left">
-                  {{ $t("common.disabled") }}
-                </template>
-                <template slot="text-right">
-                  {{ $t("common.enabled") }}
-                </template>
-              </cv-toggle>
-              <cv-toggle
-                :label="$t('smarthost.tls_verify')"
-                value="statusValue"
-                :form-item="true"
-                v-model="tls_verify"
-                :disabled="loading.getSmarthost || loading.setSmarthost"
-              >
-                <template slot="text-left">
-                  {{ $t("common.disabled") }}
-                </template>
-                <template slot="text-right">
-                  {{ $t("common.enabled") }}
-                </template>
-              </cv-toggle>
+                light
+                ref="encrypt_smtp"
+              />
+              <template v-if="encrypt_smtp != 'none'">
+                <cv-toggle
+                  :label="$t('smarthost.tls_verify')"
+                  value="statusValue"
+                  :form-item="true"
+                  v-model="tls_verify"
+                  :disabled="loading.getSmarthost || loading.setSmarthost"
+                >
+                  <template slot="text-left">
+                    {{ $t("common.disabled") }}
+                  </template>
+                  <template slot="text-right">
+                    {{ $t("common.enabled") }}
+                  </template>
+                </cv-toggle>
+              </template>
               <div ref="setSmarthostError">
-                <div v-if="error.test_smarthost" class="bx--row">
-                  <div class="bx--col">
+                <cv-row v-if="error.test_smarthost">
+                  <cv-column>
                     <NsInlineNotification
                       kind="error"
                       :title="$t('action.set-smarthost')"
                       :description="error.test_smarthost"
                       :showCloseButton="false"
                     />
-                  </div>
-                </div>
+                  </cv-column>
+                </cv-row>
               </div>
             </template>
             <NsButton
@@ -144,9 +146,9 @@
             >
           </cv-form>
         </cv-tile>
-      </div>
-    </div>
-  </div>
+      </cv-column>
+    </cv-row>
+  </cv-grid>
 </template>
 
 <script>
@@ -180,8 +182,25 @@ export default {
       username: "",
       password: "",
       enabled: false,
-      tls: true,
+      encrypt_smtp: "STARTTLS",
       tls_verify: true,
+      options: [
+        {
+          name: "none",
+          label: this.$t("smarthost.none"),
+          value: "none",
+        },
+        {
+          name: "starttls",
+          label: this.$t("smarthost.starttls"),
+          value: "starttls",
+        },
+        {
+          name: "tls",
+          label: this.$t("smarthost.tls"),
+          value: "tls",
+        },
+      ],
       loading: {
         getSmarthost: true,
         setSmarthost: false,
@@ -193,10 +212,10 @@ export default {
         username: "",
         password: "",
         enabled: "",
-        tls: "",
         tls_verify: "",
         setSmarthost: "",
         test_smarthost: "",
+        encrypt_smtp: "",
       },
     };
   },
@@ -267,7 +286,7 @@ export default {
       this.username = smarthost.username;
       this.password = smarthost.password;
       this.port = smarthost.port;
-      this.tls = smarthost.tls;
+      this.encrypt_smtp = smarthost.encrypt_smtp;
       this.tls_verify = smarthost.tls_verify;
       this.enabled = smarthost.enabled;
       this.loading.getSmarthost = false;
@@ -308,7 +327,7 @@ export default {
             username: this.enabled ? this.username : "",
             password: this.enabled ? this.password : "",
             port: this.enabled ? parseInt(this.port) : 587,
-            tls: this.enabled ? this.tls : true,
+            encrypt_smtp: this.enabled ? this.encrypt_smtp : "starttls",
             tls_verify: this.enabled ? this.tls_verify : true,
             enabled: this.enabled,
           },
@@ -349,6 +368,11 @@ export default {
     setSmarthostCompleted() {
       this.loading.setSmarthost = false;
       this.getSmarthost();
+    },
+    setSmarthostAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.setSmarthost = this.$t("error.generic_error");
+      this.loading.setSmarthost = false;
     },
     validateConfigureModule() {
       for (const key of Object.keys(this.error)) {
