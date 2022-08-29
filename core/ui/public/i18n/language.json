@@ -1086,6 +1086,7 @@
     "valid_certificate_verification_error": "The certificate is not valid for the server, you should try to disable the certificate verification",
     "required": "This field is required",
     "port_invalid_type": "It must be a valid number port (1-65535)",
-    "port_number_gte": "The port must be greater than 0 (1-65535)"
+    "port_number_gte": "The port must be greater than 0 (1-65535)",
+    "encrypt_smtp_enum":"It must be one of the following: none, starttls, tls"
   }
 }
