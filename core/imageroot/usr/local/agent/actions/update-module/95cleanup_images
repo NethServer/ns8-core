@@ -31,5 +31,5 @@ diff  <(
     podman inspect -f json "${IMAGE_ID:-none}" | \
             jq -r '.[0].Config.Labels."org.nethserver.images" | split(" ") | join("\n")' | \
             sort
-) | sed -n '/< / s/< //p' | \
+) | sed -n '/^< / s/^< //p' | \
     xargs -t -- podman rmi 2>/dev/null || :
