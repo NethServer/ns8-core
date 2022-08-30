@@ -56,6 +56,10 @@ agent.run_helper('podman-pull-missing', core_url,
     progress_callback=agent.get_progress_callback(0,40)
 ).check_returncode()
 
+# Get the old Podman image Id
+with subprocess.Popen(['podman', 'image', 'inspect', '-f', '{{.Id}}', core_env['CORE_IMAGE']], stdout=subprocess.PIPE, stderr=sys.stderr) as proc:
+    agent.set_env('PREV_IMAGE_ID', proc.stdout.read().rstrip())
+
 # Parse the image labels
 with subprocess.Popen(['podman', 'image', 'inspect', core_url], stdout=subprocess.PIPE, stderr=sys.stderr) as proc:
     inspect = json.load(proc.stdout)
@@ -63,6 +67,7 @@ with subprocess.Popen(['podman', 'image', 'inspect', core_url], stdout=subproces
     inspect_image_id = inspect[0]['Id']
     inspect_image_digest = inspect[0]['Digest']
     inspect_image_repodigest = inspect[0]['RepoDigests'][0]
+    agent.set_env('IMAGE_ID', inspect_image_id)
 
 if 'org.nethserver.images' in inspect_labels:
     extra_images = inspect_labels['org.nethserver.images'].split()

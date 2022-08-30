@@ -87,7 +87,11 @@ cluster_pwhash=$(echo -n "${cluster_password}" | sha256sum | awk '{print $1}')
     printf "REDIS_PASSWORD=%s\n" "${cluster_password}"
     printf "REDIS_ADDRESS=127.0.0.1:6379\n" # Override the cluster-leader /etc/hosts record
 )
-printf "NODE_ID=1\n" > /var/lib/nethserver/cluster/state/environment
+echo "Write initial cluster environment state"
+(exec > /var/lib/nethserver/cluster/state/environment
+    printf "NODE_ID=1\n"
+    printf "IMAGE_ID=%s\n" $(podman image inspect -f '{{.Id}}' "${CORE_IMAGE}")
+)
 
 echo "Generating api-server password:"
 apiserver_password=$(podman exec redis redis-cli ACL GENPASS)
