@@ -31,7 +31,7 @@ source /etc/os-release
 echo "Install dependencies:"
 if [[ ${ID} == "centos" && "${PLATFORM_ID}" == "platform:el9" ]]; then
     dnf update -y # Fix SELinux issues with basic packages
-    dnf install -y wireguard-tools podman jq openssl firewalld catatonit
+    dnf install -y wireguard-tools podman jq openssl firewalld
     systemctl enable --now firewalld
 elif [[ "${ID}" == "debian" && "${VERSION_ID}" == "11" ]]; then
     apt-get update
