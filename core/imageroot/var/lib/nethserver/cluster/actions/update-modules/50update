@@ -24,6 +24,7 @@ import agent
 import sys
 import os
 import agent.tasks
+import cluster.modules as lmods
 
 rdb = agent.redis_connect()
 
@@ -39,8 +40,14 @@ for mf in rdb.scan_iter('module/*/flags'):
 step = len(modules)
 start = 5
 for module in modules:
+    image_name = agent.get_image_name_from_url(rdb.hget(f'module/{module}/environment', 'IMAGE_URL'))
+    try:
+        image_url = lmods.get_latest_module(image_name, rdb)
+    except lmods.LatestModuleLookupError:
+        continue
+
     upd_module_result = agent.tasks.run("cluster", "update-module",
-        data={"instances": [module]}, 
+        data={"instances": [module], "image_url": image_url},
         endpoint="redis://cluster-leader",
         progress_callback=agent.get_progress_callback(start, start + step)
     )
