@@ -105,6 +105,9 @@ def _list_repository_modules(rdb, repository_name, repository_url, skip_core_mod
 
     return modules
 
+class LatestModuleLookupError(Exception):
+    pass
+
 def get_latest_module(module, rdb):
     """Find most recent version of the given module
     """
@@ -130,7 +133,7 @@ def get_latest_module(module, rdb):
 
     # Fail if package has not been found inside the repository metadata
     if not source or not version:
-        raise Exception(f'Package not found: {module}')
+        raise LatestModuleLookupError(module)
 
     return f'{source}:{version}'
 
