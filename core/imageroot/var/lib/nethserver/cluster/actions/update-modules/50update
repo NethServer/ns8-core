@@ -39,6 +39,7 @@ for mf in rdb.scan_iter('module/*/flags'):
 
 step = len(modules)
 start = 5
+errors = 0
 for module in modules:
     image_name = agent.get_image_name_from_url(rdb.hget(f'module/{module}/environment', 'IMAGE_URL'))
     try:
@@ -52,4 +53,9 @@ for module in modules:
         progress_callback=agent.get_progress_callback(start, start + step)
     )
     start = start + step + 1
-    agent.assert_exp(upd_module_result['exit_code'] == 0)
+    if upd_module_result['exit_code'] != 0:
+        print(agent.SD_ERR + f"Failed update-module for instance {module} from image {image_url}", file=sys.stderr)
+        errors += 1
+
+if errors > 0:
+    sys.exit(2)
