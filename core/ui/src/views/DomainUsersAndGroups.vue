@@ -1,109 +1,100 @@
+<!--
+  Copyright (C) 2022 Nethesis S.r.l.
+  SPDX-License-Identifier: GPL-3.0-or-later
+-->
 <template>
-  <cv-grid fullWidth>
-    <cv-row>
-      <cv-column>
-        <cv-breadcrumb
-          aria-label="breadcrumb"
-          :no-trailing-slash="true"
-          class="breadcrumb"
-        >
-          <cv-breadcrumb-item>
-            <cv-link to="/domains">{{ $t("domains.title") }}</cv-link>
-          </cv-breadcrumb-item>
-          <cv-breadcrumb-item>
-            <span>{{
+  <div>
+    <cv-grid fullWidth>
+      <cv-row>
+        <cv-column>
+          <cv-breadcrumb
+            aria-label="breadcrumb"
+            :no-trailing-slash="true"
+            class="breadcrumb"
+          >
+            <cv-breadcrumb-item>
+              <cv-link to="/domains">{{ $t("domains.title") }}</cv-link>
+            </cv-breadcrumb-item>
+            <cv-breadcrumb-item>
+              <span>{{
+                $t("domain_users.domain_name_users_and_groups", {
+                  domain: domainName,
+                })
+              }}</span>
+            </cv-breadcrumb-item>
+          </cv-breadcrumb>
+        </cv-column>
+      </cv-row>
+      <cv-row>
+        <cv-column :md="4" :xlg="10" class="subpage-title">
+          <h3>
+            {{
               $t("domain_users.domain_name_users_and_groups", {
                 domain: domainName,
               })
-            }}</span>
-          </cv-breadcrumb-item>
-        </cv-breadcrumb>
-      </cv-column>
-    </cv-row>
-    <cv-row>
-      <cv-column :md="4" :xlg="10" class="subpage-title">
-        <h3>
-          {{
-            $t("domain_users.domain_name_users_and_groups", {
-              domain: domainName,
-            })
-          }}
-        </h3>
-      </cv-column>
-      <cv-column :md="4" :xlg="6">
-        <div class="page-toolbar">
-          <NsButton
-            kind="ghost"
-            size="field"
-            :icon="Settings20"
-            @click="goToDomainConfiguration()"
-            class="subpage-toolbar-item"
-            >{{ $t("domain_configuration.configuration") }}</NsButton
-          >
-        </div>
-      </cv-column>
-    </cv-row>
-    <cv-row v-if="error.listUserDomains">
-      <cv-column>
-        <NsInlineNotification
-          kind="error"
-          :title="$t('action.list-user-domains')"
-          :description="error.listUserDomains"
-          :showCloseButton="false"
-        />
-      </cv-column>
-    </cv-row>
-    <cv-row>
-      <cv-column>
-        <NsInlineNotification
-          kind="warning"
-          :title="$t('common.use_landscape_mode')"
-          :description="$t('common.use_landscape_mode_description')"
-          class="landscape-warning"
-        />
-      </cv-column>
-    </cv-row>
-    <!-- users -->
-    <cv-row>
-      <cv-column>
-        <h4 class="mg-bottom-md">
-          {{ $t("domain_users.users") }}
-        </h4>
-      </cv-column>
-    </cv-row>
-    <cv-row>
-      <cv-column>
-        <DomainUsers
-          :domain="domain"
-          :groups="groups"
-          @usersLoaded="onUsersLoaded"
-        />
-      </cv-column>
-    </cv-row>
-    <!-- groups -->
-    <cv-row class="mg-top-xlg">
-      <cv-column>
-        <h4
-          ref="groups"
-          :class="[
-            'mg-bottom-md',
-            { 'highlight-anchor': highlightAnchor == 'groups' },
-          ]"
-        >
-          {{ $t("domain_users.groups") }}
-        </h4>
-      </cv-column>
-    </cv-row>
-    <cv-row>
-      <cv-column>
-        <DomainGroups
-          :domain="domain"
-          :users="users"
-          @groupsLoaded="onGroupsLoaded"
-        />
-      </cv-column>
-    </cv-row>
-  </cv-grid>
+            }}
+          </h3>
+        </cv-column>
+        <cv-column :md="4" :xlg="6">
+          <div class="page-toolbar">
+            <NsButton
+              kind="ghost"
+              size="field"
+              :icon="Settings20"
+              @click="goToDomainConfiguration()"
+              class="subpage-toolbar-item"
+              >{{ $t("domain_configuration.configuration") }}</NsButton
+            >
+          </div>
+        </cv-column>
+      </cv-row>
+      <cv-row v-if="error.listUserDomains">
+        <cv-column>
+          <NsInlineNotification
+            kind="error"
+            :title="$t('action.list-user-domains')"
+            :description="error.listUserDomains"
+            :showCloseButton="false"
+          />
+        </cv-column>
+      </cv-row>
+      <cv-row>
+        <cv-column>
+          <NsInlineNotification
+            kind="warning"
+            :title="$t('common.use_landscape_mode')"
+            :description="$t('common.use_landscape_mode_description')"
+            class="landscape-warning"
+          />
+        </cv-column>
+      </cv-row>
+      <cv-row>
+        <cv-column>
+          <cv-tile light>
+            <NsTabs
+              :container="false"
+              :aria-label="$t('common.tab_navigation')"
+            >
+              <cv-tab id="tab-1" :label="$t('domain_users.users')">
+                <DomainUsers
+                  :domain="domain"
+                  :groups="groups"
+                  @usersLoaded="onUsersLoaded"
+                />
+              </cv-tab>
+              <cv-tab id="tab-2" :label="$t('domain_users.groups')">
+                <DomainGroups
+                  :domain="domain"
+                  :users="users"
+                  @groupsLoaded="onGroupsLoaded"
+                />
+              </cv-tab>
+            </NsTabs>
+          </cv-tile>
+        </cv-column>
+      </cv-row>
+    </cv-grid>
+  </div>
 </template>
 
 <script>
