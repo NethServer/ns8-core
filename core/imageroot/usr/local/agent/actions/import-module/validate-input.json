@@ -2,7 +2,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "import-module input",
     "$id": "http://schema.nethserver.org/module/import-module-input.json",
-    "description": "Clone the module state received from rsync",
+    "description": "Import the module state from an external procedure with rsync",
     "examples": [
         {
             "credentials": [
@@ -12,6 +12,17 @@
             "port": 20027,
             "volumes": [
                 "dokuwiki-data"
+            ]
+        },
+        {
+            "credentials": [
+                "samba3",
+                "s3cr3t"
+            ],
+            "port": 20028,
+            "volumes": [
+                "data",
+                "config"
             ]
         }
     ],
@@ -27,7 +38,8 @@
             "type": "array",
             "items": {
                 "type": "string",
-                "title": "Name of the volume element"
+                "name": "Volume name",
+                "description": "For rootfull modules, the given volume name is prefixed automatically with the module ID"
             }
         },
         "port": {
