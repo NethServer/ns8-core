@@ -24,10 +24,17 @@ import sys
 import agent
 import json
 import subprocess
+import os
 
 request = json.load(sys.stdin)
+is_rootfull = (os.geteuid() == 0)
+module_id = os.environ['MODULE_ID']
 
-create_volumes = set(request['volumes'])
+if is_rootfull:
+    create_volumes = set([f'{module_id}-{xvol}' for xvol in request['volumes']])
+else:
+    create_volumes = set(request['volumes'])
+
 with subprocess.Popen(['podman', 'volume', 'ls', '--format=json'], stdout=subprocess.PIPE) as vproc:
     for vobj in json.load(vproc.stdout):
         create_volumes.discard(vobj['Name']) # Discard volume if already exists
