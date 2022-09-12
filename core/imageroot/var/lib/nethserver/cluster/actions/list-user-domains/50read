@@ -34,6 +34,24 @@ external_domains = cluster.userdomains.get_external_domains(rdb)
 
 domains = external_domains | internal_domains
 
+# Add default counters object
+for kdom in domains:
+    
+    try:
+        users_count = int(rdb.get(f"cluster/counters_cache/users/{kdom}"))
+    except TypeError: 
+        users_count = None
+
+    try:
+        groups_count = int(rdb.get(f"cluster/counters_cache/groups/{kdom}"))
+    except TypeError:
+        groups_count = None
+
+    domains[kdom]['counters'] = {
+        "users": users_count,
+        "groups": groups_count,
+    }
+
 for kdom in rdb.scan_iter("module/*/user_domain"):
     module_id = kdom.split('/', 2)[1]
     user_domain = rdb.get(kdom)

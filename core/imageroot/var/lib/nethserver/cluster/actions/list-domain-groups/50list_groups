@@ -24,6 +24,7 @@ import sys
 import json
 from agent.ldapproxy import Ldapproxy
 from agent.ldapclient import Ldapclient
+import agent
 
 request = json.load(sys.stdin)
 
@@ -33,3 +34,6 @@ groups = Ldapclient.factory(**domain).list_groups()
 
 groups = sorted(groups, key=lambda rec: rec['group'].lower())
 json.dump({"groups":groups}, fp=sys.stdout)
+
+with agent.redis_connect(privileged=True) as rdb:
+    rdb.set(f"cluster/counters_cache/groups/{request['domain']}", len(groups))

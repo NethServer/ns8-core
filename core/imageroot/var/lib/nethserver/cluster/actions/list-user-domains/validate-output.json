@@ -23,6 +23,10 @@
                     "bind_password": "S3cr3t!",
                     "tls": false,
                     "tls_verify": false,
+                    "counters": {
+                        "users": null,
+                        "groups": null
+                    },
                     "providers": [
                         {
                             "id": "openldap1",
@@ -50,6 +54,10 @@
                     "bind_password": "OtherS3cr3t!",
                     "tls": true,
                     "tls_verify": true,
+                    "counters": {
+                        "users": 15,
+                        "groups": 3
+                    },
                     "providers": [
                         {
                             "id": "ldap-primary.company.org",
@@ -99,6 +107,7 @@
                 "name",
                 "location",
                 "protocol",
+                "counters",
                 "providers"
             ],
             "properties": {
@@ -114,6 +123,31 @@
                         "internal",
                         "external"
                     ]
+                },
+                "counters": {
+                    "type": "object",
+                    "title": "Counters",
+                    "description": "The cached number of users and groups returned by their respective last API calls",
+                    "required": [
+                        "users",
+                        "groups"
+                    ],
+                    "properties": {
+                        "users": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ],
+                            "title": "User counter"
+                        },
+                        "groups": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ],
+                            "title": "Group counter"
+                        }
+                    }
                 },
                 "protocol": {
                     "type": "string",
