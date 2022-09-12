@@ -4,44 +4,44 @@
 -->
 <template>
   <div>
-    <div class="bx--grid bx--grid--full-width">
-      <div class="bx--row">
-        <div class="bx--col page-title">
+    <cv-grid fullWidth>
+      <cv-row>
+        <cv-column class="page-title">
           <h2>{{ $t("domains.title") }}</h2>
-        </div>
-      </div>
-      <div v-if="error.listUserDomains" class="bx--row">
-        <div class="bx--col">
+        </cv-column>
+      </cv-row>
+      <cv-row v-if="error.listUserDomains">
+        <cv-column>
           <NsInlineNotification
             kind="error"
             :title="$t('action.list-user-domains')"
             :description="error.listUserDomains"
             :showCloseButton="false"
           />
-        </div>
-      </div>
-      <div v-if="error.removeModule" class="bx--row">
-        <div class="bx--col">
+        </cv-column>
+      </cv-row>
+      <cv-row v-if="error.removeModule">
+        <cv-column>
           <NsInlineNotification
             kind="error"
             :title="$t('action.remove-module')"
             :description="error.removeModule"
             :showCloseButton="false"
           />
-        </div>
-      </div>
-      <div v-if="error.removeExternalDomain" class="bx--row">
-        <div class="bx--col">
+        </cv-column>
+      </cv-row>
+      <cv-row v-if="error.removeExternalDomain">
+        <cv-column>
           <NsInlineNotification
             kind="error"
             :title="$t('action.remove-external-domain')"
             :description="error.removeExternalDomain"
             :showCloseButton="false"
           />
-        </div>
-      </div>
-      <div v-if="hasUnconfiguredDomainsOrProviders" class="bx--row">
-        <div class="bx--col">
+        </cv-column>
+      </cv-row>
+      <cv-row v-if="hasUnconfiguredDomainsOrProviders">
+        <cv-column>
           <NsInlineNotification
             kind="warning"
             :title="$t('domains.unconfigured_domains_or_providers_title')"
@@ -50,10 +50,10 @@
             "
             :showCloseButton="false"
           />
-        </div>
-      </div>
-      <div v-if="domainToDelete" class="bx--row">
-        <div class="bx--col">
+        </cv-column>
+      </cv-row>
+      <cv-row v-if="domainToDelete">
+        <cv-column>
           <!-- unconfigured domain being deleted -->
           <NsInlineNotification
             kind="warning"
@@ -67,33 +67,34 @@
             :showCloseButton="false"
             :timer="DELETE_DELAY"
           />
-        </div>
-      </div>
-      <div v-if="loading.listUserDomains" class="bx--row">
-        <div v-for="index in 2" :key="index" class="bx--col-md-4 bx--col-max-4">
+        </cv-column>
+      </cv-row>
+      <cv-row v-if="loading.listUserDomains">
+        <cv-column v-for="index in 2" :key="index" :md="4" :max="4">
           <cv-tile light>
             <cv-skeleton-text
               :paragraph="true"
               :line-count="8"
             ></cv-skeleton-text>
           </cv-tile>
-        </div>
-      </div>
+        </cv-column>
+      </cv-row>
       <template v-else>
         <template v-if="unconfiguredDomains.length">
-          <div class="bx--row">
-            <div class="bx--col">
+          <cv-row>
+            <cv-column>
               <h4 class="mg-bottom-md">
                 {{ $t("domains.unconfigured_domains") }}
               </h4>
-            </div>
-          </div>
+            </cv-column>
+          </cv-row>
           <!-- unconfigured domains -->
-          <div class="bx--row">
-            <div
+          <cv-row>
+            <cv-column
               v-for="(unconfiguredDomain, index) in unconfiguredDomains"
               :key="index"
-              class="bx--col-md-4 bx--col-max-4"
+              :md="4"
+              :max="4"
             >
               <NsInfoCard
                 light
@@ -163,19 +164,19 @@
                   </div>
                 </template>
               </NsInfoCard>
-            </div>
-          </div>
-          <div class="bx--row">
-            <div class="bx--col">
+            </cv-column>
+          </cv-row>
+          <cv-row>
+            <cv-column>
               <h4 class="mg-bottom-md">
                 {{ $t("domains.configured_domains") }}
               </h4>
-            </div>
-          </div>
+            </cv-column>
+          </cv-row>
         </template>
         <!-- empty state -->
-        <div v-if="!domains.length" class="bx--row">
-          <div class="bx--col">
+        <cv-row v-if="!domains.length">
+          <cv-column>
             <cv-tile kind="standard" :light="true">
               <NsEmptyState :title="$t('domains.no_domain_configured')">
                 <template #pictogram>
@@ -193,11 +194,11 @@
                 </template>
               </NsEmptyState>
             </cv-tile>
-          </div>
-        </div>
+          </cv-column>
+        </cv-row>
         <template v-else>
-          <div class="bx--row toolbar">
-            <div class="bx--col">
+          <cv-row class="toolbar">
+            <cv-column>
               <NsButton
                 kind="secondary"
                 :icon="Add20"
@@ -205,14 +206,15 @@
                 :disabled="loading.listUserDomains"
                 >{{ $t("domains.create_domain") }}
               </NsButton>
-            </div>
-          </div>
-          <div class="bx--row">
+            </cv-column>
+          </cv-row>
+          <cv-row>
             <!-- domains -->
-            <div
+            <cv-column
               v-for="domain in domains"
               :key="domain.name"
-              class="bx--col-md-4 bx--col-max-4"
+              :md="4"
+              :max="4"
             >
               <NsInfoCard light :title="domain.name" :icon="Events32">
                 <template #menu>
@@ -325,11 +327,11 @@
                   </div>
                 </template>
               </NsInfoCard>
-            </div>
-          </div>
+            </cv-column>
+          </cv-row>
         </template>
       </template>
-    </div>
+    </cv-grid>
     <!-- create domain modal -->
     <CreateDomainModal
       :isShown="isShownCreateDomainModal"
