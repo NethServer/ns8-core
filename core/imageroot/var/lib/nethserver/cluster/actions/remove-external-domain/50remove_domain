@@ -46,6 +46,8 @@ if not domain in domains:
     json.dump([{'field':'domain', 'parameter':'domain','value': domain, 'error':'domain_not_found'}], fp=sys.stdout)
     sys.exit(2)
 
+rdb.delete(f"cluster/counters_cache/users/{domain}", f"cluster/counters_cache/groups/{domain}")
+
 protocol = domains[domain]['protocol']
 
 removed_keys = rdb.delete(*list(rdb.scan_iter(f"cluster/user_domain/{protocol}/{domain}/*")))

@@ -64,3 +64,6 @@ errors = agent.tasks.runp_brief(remove_tasks,
 if errors > 0:
     print(agent.SD_ERR + f"There were errors during user domain {domk} removal. Check the subtasks for details.", file=sys.stderr)
     sys.exit(1)
+
+with agent.redis_connect(privileged=True) as rdb:
+    rdb.delete(f"cluster/counters_cache/users/{kdom}", f"cluster/counters_cache/groups/{kdom}")

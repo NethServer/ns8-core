@@ -182,6 +182,8 @@ Legend:
 |cluster/user_domain/ldap/{domain}/conf tls_verify      |STRING |Can be `on` or `off`|
 |cluster/user_domain/ldap/{domain}/providers            |LIST   |List of domain provider hosts|
 |cluster/user_domain/ldap/{domain}/ui_names             |HASH   |UI labels for domain providers. The key is the provider name, eg `ldap.ns.test:389` => `mylabel`|
+|cluster/counters_cache/users/{domain}                  |INT    |Cached number of users in the domain, updated by list APIs|
+|cluster/counters_cache/groups/{domain}                 |INT    |Cached number of groups in the domain, updated by list APIs|
 
 ### node
 
