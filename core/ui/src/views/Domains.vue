@@ -255,31 +255,38 @@
                         {{ $t("domains.ldap") }}
                       </template>
                     </div>
-                    <!-- numer of users and groups -->
-                    <div class="row">
+                    <!-- number of users and groups -->
+                    <div v-if="domain.counters" class="row">
                       <cv-link
-                        v-if="domain.numUsers"
+                        v-if="domain.counters.users != null"
                         @click="goToDomainUsersAndGroups(domain)"
                       >
                         <span>{{
-                          $tc("domain_users.num_users_c", domain.numUsers, {
-                            num: domain.numUsers,
-                          })
+                          $tc(
+                            "domain_users.num_users_c",
+                            domain.counters.users,
+                            {
+                              num: domain.counters.users,
+                            }
+                          )
                         }}</span>
                       </cv-link>
-                      <span v-if="domain.numGroups" class="bullet-separator"
-                        >&bull;</span
-                      >
-                      <cv-link
-                        v-if="domain.numGroups"
-                        @click="goToDomainUsersAndGroups(domain, 'groups')"
-                      >
-                        <span>{{
-                          $tc("domain_users.num_groups_c", domain.numGroups, {
-                            num: domain.numGroups,
-                          })
-                        }}</span>
-                      </cv-link>
+                      <template v-if="domain.counters.groups != null">
+                        <span class="bullet-separator">&bull;</span>
+                        <cv-link
+                          @click="goToDomainUsersAndGroups(domain, 'groups')"
+                        >
+                          <span>{{
+                            $tc(
+                              "domain_users.num_groups_c",
+                              domain.counters.groups,
+                              {
+                                num: domain.counters.groups,
+                              }
+                            )
+                          }}</span>
+                        </cv-link>
+                      </template>
                     </div>
                     <!-- unconfigured providers -->
                     <div
@@ -478,10 +485,6 @@ export default {
         } else {
           domain.hasUnconfiguredProviders = false;
         }
-
-        //// remove mock
-        // domain.numUsers = 12;
-        // domain.numGroups = 4;
       }
 
       this.domains = domains;
@@ -512,11 +515,11 @@ export default {
     hideDeleteDomainModal() {
       this.isShownDeleteDomainModal = false;
     },
-    goToDomainUsersAndGroups(domain, anchor) {
+    goToDomainUsersAndGroups(domain, view) {
       this.$router.push({
         name: "DomainUsersAndGroups",
         params: { domainName: domain.name },
-        hash: anchor ? "#" + anchor : "",
+        query: { view: view },
       });
     },
     deleteDomain(domain) {

@@ -74,15 +74,25 @@
             <NsTabs
               :container="false"
               :aria-label="$t('common.tab_navigation')"
+              :noDefaultToFirst="true"
+              @tab-selected="tabSelected"
             >
-              <cv-tab id="tab-1" :label="$t('domain_users.users')">
+              <cv-tab
+                id="tab-1"
+                :label="$t('domain_users.users')"
+                :selected="q.view === 'users'"
+              >
                 <DomainUsers
                   :domain="domain"
                   :groups="groups"
                   @usersLoaded="onUsersLoaded"
                 />
               </cv-tab>
-              <cv-tab id="tab-2" :label="$t('domain_users.groups')">
+              <cv-tab
+                id="tab-2"
+                :label="$t('domain_users.groups')"
+                :selected="q.view === 'groups'"
+              >
                 <DomainGroups
                   :domain="domain"
                   :users="users"
@@ -127,6 +137,9 @@ export default {
   },
   data() {
     return {
+      q: {
+        view: "",
+      },
       domainName: "",
       domain: null,
       users: [],
@@ -152,6 +165,11 @@ export default {
   created() {
     this.domainName = this.$route.params.domainName;
     this.listUserDomains();
+  },
+  mounted() {
+    if (!this.q.view) {
+      this.q.view = "users";
+    }
   },
   methods: {
     goToDomainConfiguration() {
@@ -220,6 +238,13 @@ export default {
     },
     onGroupsLoaded(groups) {
       this.groups = groups;
+    },
+    tabSelected(tabNum) {
+      if (tabNum == 0) {
+        this.q.view = "users";
+      } else if (tabNum == 1) {
+        this.q.view = "groups";
+      }
     },
   },
 };
