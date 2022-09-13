@@ -29,11 +29,8 @@ core_url='ghcr.io/nethserver/core:ns8-stable'
 source /etc/os-release
 
 echo "Install dependencies:"
-if [[ ${ID} == "centos" && "${PLATFORM_ID}" == "platform:el9" ]]; then
-    dnf update -y # Fix SELinux issues with basic packages
-    dnf install -y wireguard-tools podman jq openssl firewalld
-    systemctl enable --now firewalld
-elif [[ ${ID} == "rocky" && "${PLATFORM_ID}" == "platform:el9" ]]; then
+if [[ "${PLATFORM_ID}" == "platform:el9" ]]; then
+    [[ "${ID}" == "centos" ]] && dnf update -y # Fix SELinux issues with basic packages on CentOS Stream
     dnf install -y wireguard-tools podman jq openssl firewalld
     systemctl enable --now firewalld
 elif [[ "${ID}" == "debian" && "${VERSION_ID}" == "11" ]]; then
