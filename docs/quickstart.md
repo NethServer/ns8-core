@@ -17,6 +17,7 @@ This is just a prototype, **do not** yet use in production.
 NethServer 8 can be deployed on one ore more nodes in a cluster scenario.
 
 Supported distributions and architectures:
+- Rocky Linux 9.0 (Blue Onyx) x86-64
 - CentOS Stream 9 x86-64
 - Debian 11 (bullseye) x86-64
 
