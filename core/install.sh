@@ -33,6 +33,9 @@ if [[ ${ID} == "centos" && "${PLATFORM_ID}" == "platform:el9" ]]; then
     dnf update -y # Fix SELinux issues with basic packages
     dnf install -y wireguard-tools podman jq openssl firewalld
     systemctl enable --now firewalld
+elif [[ ${ID} == "rocky" && "${PLATFORM_ID}" == "platform:el9" ]]; then
+    dnf install -y wireguard-tools podman jq openssl firewalld
+    systemctl enable --now firewalld
 elif [[ "${ID}" == "debian" && "${VERSION_ID}" == "11" ]]; then
     apt-get update
     apt-get -y install gnupg2
