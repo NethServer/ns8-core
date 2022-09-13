@@ -226,7 +226,7 @@
               kind="info"
               :title="
                 $tc(
-                  'software_center.n_instances_will_be_updateted_c',
+                  'software_center.n_instances_will_be_updated_c',
                   numInstancesToUpdate,
                   {
                     num: numInstancesToUpdate,
