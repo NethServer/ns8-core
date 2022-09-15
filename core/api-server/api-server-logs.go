@@ -83,7 +83,7 @@ func Execute() {
 	LogsCmd.Flags().StringVarP(&entityFlag, "entity", "e", "cluster", "get logs for a specific entity: cluster, node, module")
 	LogsCmd.Flags().StringVarP(&entityNameFlag, "name", "n", "", "get logs for a specific entity name. used in node or module")
 	LogsCmd.Flags().StringVarP(&searchFlag, "search", "s", "", "get logs for a specific search string")
-	LogsCmd.Flags().StringVarP(&timezone, "timezone", "z", "", "get logs for a specific timezone")
+	LogsCmd.Flags().StringVarP(&timezone, "timezone", "z", "", "get logs in a specific timezone")
 
 	// check errors on cmd execution
 	if err := RootCmd.Execute(); err != nil {
