@@ -196,7 +196,8 @@ INPUT
       "from": "2021-01-19T10:00:00Z",
       "to": "2021-01-19T20:00:00Z",
       "entity" :"module",
-      "entity_name": "traefik1"
+      "entity_name": "traefik1",
+      "timezone": "Europe/Rome"
    }
 }
 ```
@@ -211,6 +212,7 @@ INPUT
     -   `to`: could be empty or iso8601 date string - `string` (used to search specific logs in a date range)
     -   `entity`: must be `cluster` or `node` or `module` - `string`
     -   `entity_name`: could be empty (`cluster` case) or name of the entity - `string` (ex. hostname of the node or module id like `traefik1`)
+    -   `timezone`: could be empty (default UTC) or a specific valid timezone (eg. Europe/Rome)
 
 ```json
 OUTPUT
@@ -339,6 +341,7 @@ Use "api-server-logs [command] --help" for more information about a command.
       -n, --name string     get logs for a specific entity name. used in node or module
       -s, --search string   get logs for a specific search string
       -t, --to string       get logs to a specific date. ISO8601 format
+      -z, --timezone string get logs in a specific timezone
     ```
 
 -   `version`: prints the command version

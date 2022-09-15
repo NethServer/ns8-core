@@ -26,6 +26,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"os"
 	"os/exec"
 	"strconv"
 	"strings"
@@ -90,9 +91,18 @@ func Action(socketAction models.SocketAction, s *melody.Session, wg *sync.WaitGr
 		var entity = ""
 		var from = ""
 		var to = ""
+		var timezone = "UTC"
 
-		// define basic args
+		// define basic args and envs
 		args := []string{"query", "-q", "--no-labels"}
+		envs := []string{}
+
+		// add timezone
+		if len(logsAction.TimeZone) > 0 {
+			timezone = logsAction.TimeZone
+			args = append(args, "--timezone=Local")
+			envs = append(envs, "TZ="+timezone)
+		}
 
 		// check date
 		if len(logsAction.From) > 0 {
@@ -137,8 +147,13 @@ func Action(socketAction models.SocketAction, s *melody.Session, wg *sync.WaitGr
 		args = append(args, entity)
 
 		// define command
-		fmt.Println("/usr/local/bin/logcli", args)
 		cmd := exec.Command("/usr/local/bin/logcli", args...)
+
+		// add envs
+		cmd.Env = os.Environ()
+		for e := 0; e < len(envs); e++ {
+			cmd.Env = append(cmd.Env, envs[e])
+		}
 
 		if logsAction.Mode == "tail" {
 			// execute command follow mode
