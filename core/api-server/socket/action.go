@@ -147,7 +147,6 @@ func Action(socketAction models.SocketAction, s *melody.Session, wg *sync.WaitGr
 		args = append(args, entity)
 
 		// define command
-		fmt.Println("TZ="+timezone+" /usr/local/bin/logcli", args)
 		cmd := exec.Command("/usr/local/bin/logcli", args...)
 
 		// add envs
