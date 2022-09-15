@@ -792,7 +792,11 @@
     "dump": "Dump",
     "card_title": "Logs",
     "card_description": "Show {name} logs",
-    "card_button_label": "Go to System logs"
+    "card_button_label": "Go to System logs",
+    "timezone": "Timezone",
+    "select_timezone": "Select timezone",
+    "local": "Local",
+    "utc": "UTC"
   },
   "audit_trail": {
     "title": "Audit trail",

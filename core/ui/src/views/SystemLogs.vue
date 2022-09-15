@@ -128,8 +128,10 @@
           @updateStartTime="onUpdateStartTime"
           @updateEndDate="onUpdateEndDate"
           @updateEndTime="onUpdateEndTime"
+          @updateTimezone="onUpdateTimezone"
           :light="true"
           :ref="'search-' + searchId"
+          :timezone="q.timezone"
         />
       </cv-column>
     </cv-row>
@@ -178,6 +180,7 @@ export default {
         endDate: "",
         endTime: "",
         autoStartSearch: false,
+        timezone: "local"
       },
       internalNodes: [],
       apps: [],
@@ -358,6 +361,9 @@ export default {
     },
     onUpdateEndTime(endTime) {
       this.q.endTime = endTime;
+    },
+    onUpdateTimezone(timezone) {
+      this.q.timezone = timezone;
     },
   },
 };

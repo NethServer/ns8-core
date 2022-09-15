@@ -38,6 +38,7 @@ type LogsStartAction struct {
 	To         string `json:"to" structs:"to"`
 	Entity     string `json:"entity" structs:"entity"`
 	EntityName string `json:"entity_name" structs:"entity_name"`
+	TimeZone   string `json:"timezone" structs:"timezone"`
 }
 
 type LogsStopAction struct {

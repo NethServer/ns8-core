@@ -165,6 +165,23 @@
             ></NsTimePicker>
           </cv-column>
         </cv-row>
+        <cv-row>
+          <cv-column :md="verticalLayout ? 8 : 4">
+            <cv-select
+              :label="$t('system_logs.timezone')"
+              class="mg-bottom-md"
+              v-model="internalTimezone"
+            >
+              <cv-select-option disabled selected hidden>{{$t('system_logs.select_timezone')}}</cv-select-option>
+              <cv-select-option value="local">
+                {{$t('system_logs.local')}}
+              </cv-select-option>
+              <cv-select-option value="utc">
+                {{$t('system_logs.utc')}}
+              </cv-select-option>
+            </cv-select>
+          </cv-column>
+        </cv-row>
       </template>
     </cv-grid>
     <cv-grid fullWidth class="no-padding">
@@ -218,6 +235,10 @@
                   ? $t("common.enabled")
                   : $t("common.disabled")
               }}</span></span
+            >
+            <span class="filter-collapsed"
+              ><strong>{{ $t("system_logs.timezone") }}</strong
+              >: <span>{{ internalTimezone }}</span></span
             >
           </div>
         </cv-column>
@@ -403,6 +424,10 @@ export default {
       type: String,
       default: "",
     },
+    timezone: {
+      type: String,
+      default: "",
+    },
     startSearchCommand: {
       type: Number,
       default: 0,
@@ -430,6 +455,7 @@ export default {
       internalStartTime: "",
       internalEndTime: "",
       internalMaxLines: "",
+      internalTimezone: "",
       wrapText: true,
       internalFollowLogs: false,
       outputLines: [],
@@ -493,6 +519,16 @@ export default {
     internalSearchQuery: function () {
       if (this.mainSearch) {
         this.$emit("updateSearchQuery", this.internalSearchQuery);
+      }
+    },
+    timezone: function () {
+      if (this.mainSearch) {
+        this.internalTimezone = this.timezone;
+      }
+    },
+    internalTimezone: function () {
+      if (this.mainSearch) {
+        this.$emit("updateTimezone", this.internalTimezone);
       }
     },
     context: function () {
@@ -654,6 +690,7 @@ export default {
       this.internalSelectedAppId = "";
       this.internalSelectedNodeId = "";
       this.internalSearchQuery = "";
+      this.internalTimezone = "local";
       this.internalMaxLines = "500";
       this.internalFollowLogs = false;
     },
@@ -733,6 +770,7 @@ export default {
       this.highlight = this.internalSearchQuery;
       this.clearLogs();
       let entityName;
+      let timezone = "UTC";
 
       switch (this.internalContext) {
         case "cluster":
@@ -752,6 +790,10 @@ export default {
         this.$root.$once(`logsStart-${this.searchId}`, this.onLogsStartDump);
       }
 
+      if(this.internalTimezone == 'local') {
+        timezone = Intl.DateTimeFormat().resolvedOptions().timeZone
+      }
+
       const logsStartObj = {
         action: "logs-start",
         payload: {
@@ -763,8 +805,10 @@ export default {
           entity: this.internalContext,
           entity_name: entityName,
           id: this.searchId,
+          timezone: timezone
         },
       };
+
       this.$socket.sendObj(logsStartObj);
     },
     logsStop() {
@@ -845,6 +889,7 @@ export default {
           this.$emit("updateEndDate", this.internalEndDate);
           this.$emit("updateStartTime", this.internalStartTime);
           this.$emit("updateEndTime", this.internalEndTime);
+          this.$emit("updateTimezone", this.internalTimezone);
         }
       });
     },
