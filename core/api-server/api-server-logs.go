@@ -110,7 +110,7 @@ func Logs() {
       "to": "` + toFlag + `",
       "entity": "` + entityFlag + `",
       "entity_name": "` + entityNameFlag + `",
-			"timezone": "` + timezone + `"
+      "timezone": "` + timezone + `"
    }
   }
   `
