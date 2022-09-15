@@ -93,12 +93,15 @@ func Action(socketAction models.SocketAction, s *melody.Session, wg *sync.WaitGr
 		var to = ""
 		var timezone = "UTC"
 
-		// define basic args
-		args := []string{"query", "-q", "--no-labels", "--timezone=Local"}
+		// define basic args and envs
+		args := []string{"query", "-q", "--no-labels"}
+		envs := []string{}
 
 		// add timezone
 		if len(logsAction.TimeZone) > 0 {
 			timezone = logsAction.TimeZone
+			args = append(args, "--timezone=Local")
+			envs = append(envs, "TZ="+timezone)
 		}
 
 		// check date
@@ -146,8 +149,12 @@ func Action(socketAction models.SocketAction, s *melody.Session, wg *sync.WaitGr
 		// define command
 		fmt.Println("TZ="+timezone+" /usr/local/bin/logcli", args)
 		cmd := exec.Command("/usr/local/bin/logcli", args...)
+
+		// add envs
 		cmd.Env = os.Environ()
-		cmd.Env = append(cmd.Env, "TZ="+timezone)
+		for e := 0; e < len(envs); e++ {
+			cmd.Env = append(cmd.Env, envs[e])
+		}
 
 		if logsAction.Mode == "tail" {
 			// execute command follow mode
