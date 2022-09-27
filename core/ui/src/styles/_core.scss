@@ -208,6 +208,40 @@ a {
   margin-bottom: $spacing-06;
 }
 
+.ns-card {
+  .card-content {
+    flex-direction: column;
+    text-align: center;
+
+    .row {
+      margin-bottom: $spacing-05;
+    }
+
+    .row:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  // table-like card content (used in NodeCard, FilterStatusCard, ...)
+  .table-wrapper {
+    display: flex;
+    justify-content: center;
+    margin-top: 0.5rem;
+  }
+
+  .table {
+    display: table;
+  }
+
+  .tr {
+    display: table-row;
+  }
+
+  .td {
+    display: table-cell;
+  }
+}
+
 // form content that appears on toggle activation
 .toggle-dependent {
   padding-left: $spacing-07;
@@ -742,6 +776,11 @@ ul.unordered-list {
 .ns-info-dark-bg {
   color: $inverse-support-04 !important;
   fill: $inverse-support-04 !important;
+}
+
+.ns-disabled {
+  color: #767676 !important;
+  fill: #767676 !important;
 }
 // status colors end
 
