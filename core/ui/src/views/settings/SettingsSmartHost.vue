@@ -105,7 +105,6 @@
                 :showItemType="false"
                 :invalid-message="error.encrypt_smtp"
                 :disabled="loading.getSmarthost || loading.setSmarthost"
-                light
                 ref="encrypt_smtp"
               />
               <template v-if="encrypt_smtp != 'none'">
@@ -172,12 +171,12 @@ export default {
     PageTitleService,
   ],
   pageTitle() {
-    return this.$t("settings_smarthost.title");
+    return this.$t("smarthost.title");
   },
   data() {
     return {
       q: {},
-      port: 587,
+      port: "587",
       host: "",
       username: "",
       password: "",
@@ -285,14 +284,11 @@ export default {
       this.host = smarthost.host;
       this.username = smarthost.username;
       this.password = smarthost.password;
-      this.port = smarthost.port;
+      this.port = smarthost.port.toString();
       this.encrypt_smtp = smarthost.encrypt_smtp;
       this.tls_verify = smarthost.tls_verify;
       this.enabled = smarthost.enabled;
       this.loading.getSmarthost = false;
-
-      // update cluster label in shell header
-      this.setSmarthostInStore(this.clusterLabel);
     },
     saveSettings() {
       this.setSmarthost();
