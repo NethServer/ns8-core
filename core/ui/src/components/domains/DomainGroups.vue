@@ -32,7 +32,7 @@
               :columns="i18nTableColumns"
               :rawColumns="tableColumns"
               :sortable="true"
-              :pageSizes="[5, 10, 25, 50, 100]"
+              :pageSizes="[10, 25, 50, 100]"
               :overflow-menu="domain && domain.location == 'internal'"
               isSearchable
               :searchPlaceholder="$t('domain_users.search_group')"

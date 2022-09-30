@@ -165,8 +165,8 @@
                   @click="openInstance(instance)"
                 >
                   <NsMenuItem
-                    :icon="Launch20"
-                    :label="$t('software_center.open')"
+                    :icon="Application20"
+                    :label="$t('software_center.open_app')"
                   />
                 </cv-overflow-menu-item>
                 <cv-overflow-menu-item
@@ -258,9 +258,9 @@
                   <template v-else>
                     <NsButton
                       kind="ghost"
-                      :icon="Launch20"
+                      :icon="Application20"
                       @click="openInstance(instance)"
-                      >{{ $t("software_center.open") }}</NsButton
+                      >{{ $t("software_center.open_app") }}</NsButton
                     >
                   </template>
                 </div>
