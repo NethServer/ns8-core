@@ -187,4 +187,19 @@ api-cli run cluster/restore-module --data '{"node":1, "repository":"48ce000a-79b
 
 ## Cluster configuration backup
 
-Not implemented yet, see the [card](https://trello.com/c/i5aIgxif/143-cluster-backup-restore) on project board.
+The `cluster/download-cluster-backup` API returns a random URL path where an encrypted
+archive is available for download.
+
+    curl -O http://127.0.0.1:9311/backup/$(api-cli run cluster/download-cluster-backup | jq -r .path)
+
+If the previous command is successful a file `dump.json.gz.gpg` is created
+in the current directory.
+
+The file with `.gpg` extension is encrypted with the `sha256sum` of the admin's
+password. To decrypt it run a command like this:
+
+    echo -n "${ADMIN_PASSWORD:?}" | sha256sum | awk '{print $1}' | tr -d $'\n'  | \
+        gpg --batch -d --passphrase-file /dev/stdin --pinentry-mode loopback -o dump.json.gz dump.json.gz.gpg
+
+The restore procedure can be started from the UI of a new NS8
+installation: upload the file and specify the password from the UI.
