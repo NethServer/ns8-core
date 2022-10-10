@@ -15,39 +15,24 @@ tnode_id = str(request['node_id'])
 
 rdb = agent.redis_connect(privileged=True)
 
-# Start the remove-node action on the target node, but do not wait its
-# completion:
-agent.tasks.run_nowait(
-    agent_id='node/' + tnode_id,
-    action='remove-node',
-    endpoint="redis://cluster-leader",
-)
+# Delete the node account
+rdb.execute_command('ACL', 'DELUSER', 'node/' + tnode_id)
+rdb.execute_command('ACL', 'SAVE')
 
-agent.set_progress(10)
+agent.save_acls(rdb)
+agent.set_progress(19)
 
 # Delete the target node keyspace
 node_keys = set(knode for knode in rdb.scan_iter(f'node/{tnode_id}/*'))
-node_keys.discard(f'node/{tnode_id}/tasks') # ensure we do not delete the task
 rdb.delete(*node_keys)
 
-agent.assert_exp(rdb.execute_command('ACL', 'DELUSER', 'node/' + tnode_id) == 1)
-agent.assert_exp(rdb.execute_command('ACL', 'SAVE') == 'OK')
-agent.save_acls(rdb)
-
-agent.set_progress(19)
-
-# Prepare a list of tasks to update VPN routes on remaining nodes
-update_routes_tasks = [{
-    'agent_id': knode.removesuffix('/vpn'),
-    'action': 'update-routes',
-    'data': {},
-} for knode in rdb.scan_iter('node/*/vpn')] # It's ok, the removed node record is no more present.
-
-agent.tasks.run(
+agent.tasks.run_nowait(
     agent_id='cluster',
     action='update-routes',
+    data={
+        "add":[],
+        "remove":[],
+    },
     endpoint="redis://cluster-leader",
     progress_callback=agent.get_progress_callback(20,98),
 )
-
-rdb.delete(f'node/{tnode_id}/tasks') # ensure the task key is finally removed
