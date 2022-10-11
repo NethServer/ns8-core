@@ -1,0 +1,38 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2022 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+import sys
+import json
+import agent
+import agent.tasks
+
+request = json.load(sys.stdin)
+tnode_id = str(request['node_id'])
+
+rdb = agent.redis_connect(privileged=True)
+
+# Delete the node account
+rdb.execute_command('ACL', 'DELUSER', 'node/' + tnode_id)
+rdb.execute_command('ACL', 'SAVE')
+
+agent.save_acls(rdb)
+agent.set_progress(19)
+
+# Delete the target node keyspace
+node_keys = set(knode for knode in rdb.scan_iter(f'node/{tnode_id}/*'))
+rdb.delete(*node_keys)
+
+agent.tasks.run_nowait(
+    agent_id='cluster',
+    action='update-routes',
+    data={
+        "add":[],
+        "remove":[],
+    },
+    endpoint="redis://cluster-leader",
+    progress_callback=agent.get_progress_callback(20,98),
+)
