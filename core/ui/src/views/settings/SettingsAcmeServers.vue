@@ -29,7 +29,7 @@
         <cv-column :md="4" :xlg="6">
           <div class="page-toolbar">
             <NsButton
-              kind="ghost"
+              kind="tertiary"
               size="field"
               :icon="Certificate20"
               @click="goToTlsCertificates()"

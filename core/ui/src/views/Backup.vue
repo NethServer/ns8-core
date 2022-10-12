@@ -286,7 +286,7 @@
                 </cv-overflow-menu>
               </template>
               <template #content>
-                <div class="card-content">
+                <div class="card-content-backup">
                   <div class="row">
                     {{ $t("backup." + repo.provider) }}
                   </div>
@@ -434,7 +434,7 @@
                   </cv-overflow-menu>
                 </template>
                 <template #content>
-                  <div class="card-content">
+                  <div class="card-content-backup">
                     <div class="row instance-to-repo">
                       <div class="backup-source">
                         <NsSvg :svg="Application20" class="icon" />
@@ -1150,17 +1150,17 @@ export default {
 <style scoped lang="scss">
 @import "../styles/carbon-utils";
 
-.card-content {
+.card-content-backup {
   // let flex children use all horizontal space
   flex-grow: 1;
 }
 
-.card-content .row {
+.card-content-backup .row {
   margin-bottom: $spacing-05;
   text-align: center;
 }
 
-.card-content .row:last-child {
+.card-content-backup .row:last-child {
   margin-bottom: 0;
 }
 

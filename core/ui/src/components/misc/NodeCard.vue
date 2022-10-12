@@ -1,5 +1,5 @@
 <template>
-  <cv-tile kind="standard" :light="light" class="node-card">
+  <cv-tile kind="standard" :light="light" class="node-card ns-card">
     <!-- overflow menu -->
     <slot name="menu"></slot>
     <!-- icon -->
@@ -191,7 +191,7 @@ export default {
   flex-direction: column;
   justify-content: center;
   min-height: 7rem;
-  // needed for abosulute positioning of overflow menu
+  // needed for absolute positioning of overflow menu
   position: relative;
 }
 
@@ -215,24 +215,6 @@ export default {
 
 .slot {
   margin-top: 0.5rem;
-}
-
-.table-wrapper {
-  display: flex;
-  justify-content: center;
-  margin-top: 0.5rem;
-}
-
-.table {
-  display: table;
-}
-
-.tr {
-  display: table-row;
-}
-
-.td {
-  display: table-cell;
 }
 
 .offline {

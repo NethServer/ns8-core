@@ -38,7 +38,7 @@
         <cv-column :md="4" :xlg="6">
           <div class="page-toolbar">
             <NsButton
-              kind="ghost"
+              kind="tertiary"
               size="field"
               :icon="Settings20"
               @click="goToDomainConfiguration()"
