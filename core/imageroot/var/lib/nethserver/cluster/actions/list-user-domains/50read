@@ -29,10 +29,7 @@ unconfigured_domains = []
 
 rdb = agent.redis_connect()
 
-internal_domains = cluster.userdomains.get_internal_domains(rdb) 
-external_domains = cluster.userdomains.get_external_domains(rdb)
-
-domains = external_domains | internal_domains
+domains = cluster.userdomains.list_domains(rdb)
 
 for kdom in domains:
     try:
