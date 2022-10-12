@@ -22,5 +22,3 @@ Build and serve the site locally:
 ```
 bundle exec jekyll serve
 ```
-
-bundle config set --local path 'vendor/bundle'
