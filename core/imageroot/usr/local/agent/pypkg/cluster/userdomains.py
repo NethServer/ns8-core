@@ -203,4 +203,6 @@ def get_external_domains(rdb):
 
 def list_domains(rdb):
     # Internal domains have higher precedence and override external ones:
-    return get_external_domains(rdb) | get_internal_domains(rdb)
+    domains = get_external_domains()
+    domains.update(get_internal_domains())
+    return domains
