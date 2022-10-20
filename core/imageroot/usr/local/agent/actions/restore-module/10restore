@@ -41,4 +41,4 @@ restic_args = ["restore", snapshot,
     "--target", ".", # workdir should be /srv
     "--exclude", "state/environment", # special core file exception
 ]
-agent.run_restic(rdb, repository, repopath, podman_args, restic_args).check_returncode()
+agent.run_restic(rdb, repository, repopath, podman_args, restic_args, stdout=sys.stderr).check_returncode()
