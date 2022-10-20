@@ -51,7 +51,7 @@ var actionPaths flagStringSlice
 var eventPaths flagStringSlice
 
 var pollingDuration = 5000 * time.Millisecond
-var taskExpireDuration = 24 * time.Hour
+var taskExpireDuration = 8 * time.Hour
 
 // Command arguments --actionsdir and --eventsdir can be repeated multiple
 // times. Each item is inserted into a []string.
