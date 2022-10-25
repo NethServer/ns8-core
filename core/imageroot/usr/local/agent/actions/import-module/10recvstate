@@ -33,8 +33,6 @@ username, password = request['credentials']
 rdb = agent.redis_connect()
 cluster_network = rdb.get('cluster/network')
 
-os.makedirs("./data", exist_ok=True)
-
 podman_cmd = ['podman', 'run', '--rm', '--privileged', '--network=host', '--workdir=/srv',
         '--env=RSYNCD_NETWORK=' + cluster_network,
         '--env=RSYNCD_ADDRESS=cluster-localnode',
