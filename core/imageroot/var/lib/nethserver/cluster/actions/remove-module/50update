@@ -24,6 +24,7 @@ import sys
 import json
 import agent
 import agent.tasks
+import os
 
 request = json.load(sys.stdin)
 module_id = request['module_id']
@@ -98,5 +99,15 @@ agent.assert_exp(rdb.execute_command('ACL', 'SAVE') == 'OK')
 # Clean up the local Podman image copy, if still present
 if podman_image_id:
     agent.run_helper("podman", "rmi", "--ignore", podman_image_id)
+
+# trigger an event to advertize other modules that a module has been removed
+agent_id = os.environ['AGENT_ID']
+trx = rdb.pipeline()
+trx.publish(agent_id + '/event/module-removed', json.dumps({
+    'module': module_id,
+    'node': node_id,
+}))
+
+trx.execute()
 
 json.dump({}, fp=sys.stdout)
