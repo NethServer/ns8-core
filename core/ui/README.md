@@ -7,7 +7,9 @@ You can develop NS8 UI on your workstation or inside a container.
 ## Develop NS8 UI on your workstation
 
 - `yarn install`: project setup
-- `yarn serve`: start development server
+- `yarn serve`: start development server with hot-reload
+- `yarn build`: compiles and minifies for production
+- `yarn storybook`: start Storybook webapp with hot-reload
 
 ## Develop NS8 UI inside a container
 
@@ -17,10 +19,26 @@ You have two options:
 
 ### Build and start a Podman container
 
-Build and start the container defined by `Containerfile`:
+Build the container defined by `Containerfile`:
 
-- `podman build -t ns8-core-dev .`
-- `podman run -ti -p 8080:8080 -v $(pwd):/app:Z ns8-core-dev`
+```
+podman build -t ns8-core-dev .
+```
+
+Start development server (`--network=host` is required for hot-reload):
+```
+podman run -ti -v $(pwd):/app:Z --network=host ns8-core-dev serve
+```
+
+Compiles and minifies for production:
+```
+podman run -ti -v $(pwd):/app:Z ns8-core-dev build
+```
+
+Start Storybook webapp (`--network=host` is required for hot-reload):
+```
+podman run -ti -v $(pwd):/app:Z --network=host ns8-core-dev storybook
+```
 
 ### Use VS Code Dev Containers
 
@@ -28,6 +46,6 @@ Build and start the container defined by `Containerfile`:
 - Dev Containers uses Docker by default but you can configure it to use Podman: go to `File > Preferences > Settings`, search `dev containers docker path` and type `podman` as `Docker path`
 - Open `ns8-core` directory (the repository root) in VS Code, if you haven't already
 - Open Command Palette (`CTRL+SHIFT+P`) and type `Reopen in Container`
-- Open VS Code integrated terminal, change directory to `core/ui` and then type `yarn serve` to start development server
+- Open VS Code integrated terminal, change directory to `core/ui` and then type one of the commands listed in [Develop NS8 UI on your workstation](#develop-ns8-ui-on-your-workstation), e.g. `yarn serve`
 
 Container configuration is contained inside `.devcontainer/devcontainer.json`.

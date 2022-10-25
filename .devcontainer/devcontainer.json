@@ -33,6 +33,8 @@
 	"workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,Z",
 	"workspaceFolder": "/workspace",
 
-	"runArgs": ["--userns=keep-id"],
+	// --userns=keep-id is used to correctly mount podman volume
+	// --network=host is required for hot-reload
+	"runArgs": ["--userns=keep-id", "--network=host"],
 	"containerUser": "node"
 }
