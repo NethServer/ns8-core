@@ -23,6 +23,10 @@ Well known events:
 - `account-provider-credentials-updated`: the event can be fired by account providers or LDAP proxies,
   it notifies the change of LDAP credentials (eg. `ldapservice` user) to applications
 
+Events fired by the `cluster` agent (i.e. channel is `cluster/event/<event name>`):
+- `module-added`: the event is fired at the end of the add-module process to inform other modules that a new module has been installed on the cluster
+- `module-removed`: the event is fired at the end of the remove-module process to inform other modules that a module has been removed on the cluster
+
 ## Signaling events
 
 To signal an event, just [PUBLISH](https://redis.io/commands/PUBLISH) a message to the channel.
