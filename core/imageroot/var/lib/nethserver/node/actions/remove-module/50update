@@ -42,6 +42,9 @@ if [[ -z $uid ]]; then # Rootfull module
 else # Rootless module
     loginctl disable-linger "${mid}"
     systemctl stop "user@${uid}.service"
+    if pgrep -u "${mid}"; then
+        loginctl terminate-user "${mid}"
+    fi
 
     if [[ ${preserve} == "yes" ]]; then
         userdel "${mid}"
