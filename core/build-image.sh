@@ -24,7 +24,7 @@ fi
 # Reuse existing nodebuilder-core container, to speed up builds
 if ! buildah containers --format "{{.ContainerName}}" | grep -q nodebuilder-core; then
     echo "Pulling NodeJS runtime..."
-    buildah from --name nodebuilder-core -v "${PWD}:/usr/src/core:z" docker.io/library/node:lts-slim
+    buildah from --name nodebuilder-core -v "${PWD}:/usr/src/core:z" docker.io/library/node:16-slim
 fi
 
 echo "Build statically linked Go binaries based on Musl..."
