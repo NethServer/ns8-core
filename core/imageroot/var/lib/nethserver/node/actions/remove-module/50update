@@ -38,6 +38,7 @@ if [[ -z $uid ]]; then # Rootfull module
     systemctl disable --now agent@"${mid}"
     if [[ ${preserve} == "no" ]]; then
         rm -rf "/var/lib/nethserver/${mid}"
+        podman volume rm $(podman volume ls | grep -o "${mid}-\w*")
     fi
 else # Rootless module
     loginctl disable-linger "${mid}"
