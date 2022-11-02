@@ -27,17 +27,27 @@ podman build -t ns8-core-dev .
 
 Start development server (`--network=host` is required for hot-reload):
 ```
-podman run -ti -v $(pwd):/app:Z --network=host ns8-core-dev serve
+podman run -ti -v $(pwd):/app:Z --network=host --name ns8-core --replace ns8-core-dev serve
 ```
 
 Compiles and minifies for production:
 ```
-podman run -ti -v $(pwd):/app:Z ns8-core-dev build
+podman run -ti -v $(pwd):/app:Z --name ns8-core --replace ns8-core-dev build
 ```
 
 Start Storybook webapp (`--network=host` is required for hot-reload):
 ```
-podman run -ti -v $(pwd):/app:Z --network=host ns8-core-dev storybook
+podman run -ti -v $(pwd):/app:Z --network=host --name ns8-core --replace ns8-core-dev storybook
+```
+
+Note: if you want to run development server AND run Storybook webapp at the same time you can't use above commands; you would get a `yarn` error.
+To run development server and run Storybook simultaneously:
+```
+podman run -ti -v $(pwd):/app:Z --network=host --name ns8-core --replace ns8-core-dev serve
+```
+and then
+```
+podman exec -ti ns8-core yarn storybook
 ```
 
 ### Use VS Code Dev Containers
