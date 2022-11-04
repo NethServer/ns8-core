@@ -24,9 +24,9 @@ package methods
 
 import (
 	"context"
+	"crypto/rand"
 	"encoding/base32"
 	"io/ioutil"
-	"math/rand"
 	"net/http"
 	"net/url"
 	"os"
