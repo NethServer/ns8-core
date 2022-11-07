@@ -58,7 +58,6 @@ podman exec -ti ns8-core yarn storybook
 - Open Command Palette (`CTRL+SHIFT+P`) and type `Reopen in Container`
 - Open VS Code integrated terminal: `View > Terminal`
 - Change directory to `core/ui`
-- Enter `export NODE_OPTIONS=--openssl-legacy-provider` (this is needed for Node v18)
 - Enter one of the commands listed in [Develop NS8 UI on your workstation](#develop-ns8-ui-on-your-workstation), e.g. `yarn serve`
 
 Container configuration is contained inside `.devcontainer/devcontainer.json`.
