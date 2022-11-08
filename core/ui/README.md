@@ -56,6 +56,8 @@ podman exec -ti ns8-core yarn storybook
 - Dev Containers uses Docker by default but you can configure it to use Podman: go to `File > Preferences > Settings`, search `dev containers docker path` and type `podman` as `Docker path`
 - Open `ns8-core` directory (the repository root) in VS Code, if you haven't already
 - Open Command Palette (`CTRL+SHIFT+P`) and type `Reopen in Container`
-- Open VS Code integrated terminal, change directory to `core/ui` and then type one of the commands listed in [Develop NS8 UI on your workstation](#develop-ns8-ui-on-your-workstation), e.g. `yarn serve`
+- Open VS Code integrated terminal: `View > Terminal`
+- Change directory to `core/ui`
+- Enter one of the commands listed in [Develop NS8 UI on your workstation](#develop-ns8-ui-on-your-workstation), e.g. `yarn serve`
 
 Container configuration is contained inside `.devcontainer/devcontainer.json`.
