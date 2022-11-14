@@ -38,8 +38,9 @@ trap "rm -f ${tmp_dirlist} ${tmp_srclist}" EXIT
 for userhome in /home/*[0-9]; do
     moduleid=$(basename $userhome)
     echo "Deleting rootless module ${moduleid}..."
-    systemctl stop user@$(id -u $moduleid)
     loginctl disable-linger "${moduleid}"
+    systemctl stop user@$(id -u $moduleid)
+    loginctl terminate-user "${moduleid}"
     userdel -r "${moduleid}"
 done
 
