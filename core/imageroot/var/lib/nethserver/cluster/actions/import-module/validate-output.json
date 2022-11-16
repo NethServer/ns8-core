@@ -7,7 +7,8 @@
         {
             "credentials": ["dokuwiki1", "16541c262d4c8-b1e8-4e95-a31b-8c3ed239203f"],
             "port": 20031,
-            "address": "10.5.4.1"
+            "address": "10.5.4.1",
+            "task": "module/dokuwiki1/b75964f0-766c-4869-bacd-941171753487"
         }
     ],
     "type": "object"
