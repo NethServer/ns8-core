@@ -10,6 +10,8 @@ import agent
 import os
 import json
 
+agent.set_weight(os.path.basename(__file__), 0) # Validation step, no task progress at all
+
 if os.getenv('IMPORT_IMAGE_URL'):
     agent.set_status('validation-failed')
     json.dump([{'field':'none', 'parameter':'none','value': '', 'error':'module_already_imported'}], fp=sys.stdout)
