@@ -63,4 +63,5 @@ import_task_result = agent.tasks.run_nowait("module/" + dmid, "import-module",
 
 # Return connection details
 data['address'] = rsyncd_addr
+data['task'] = import_task_result
 json.dump(data, fp=sys.stdout)
