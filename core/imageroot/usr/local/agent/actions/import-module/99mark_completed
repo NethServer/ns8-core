@@ -1,0 +1,13 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2022 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+import sys
+import agent
+import os
+
+agent.set_env('IMPORT_IMAGE_URL', os.getenv('IMAGE_URL'))
+agent.set_env('IMPORT_TASK_ID', os.getenv('AGENT_TASK_ID'))
