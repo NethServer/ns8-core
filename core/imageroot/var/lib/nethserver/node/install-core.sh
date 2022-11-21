@@ -138,6 +138,11 @@ ACL SAVE
 SAVE
 EOF
 
+    # Set default UI name
+    cat <<EOF
+SET cluster/ui_name ${CLUSTER_NAME:-''}
+EOF
+
 ) | redis-cli
 
 echo "Start API server and core agents:"
