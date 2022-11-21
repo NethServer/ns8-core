@@ -27,6 +27,7 @@ import json
 import agent
 import agent.tasks
 import cluster.grants
+import uuid
 
 request = json.load(sys.stdin)
 
@@ -46,6 +47,9 @@ ip_address = str(ipaddress.ip_network(network).network_address + NODE_ID)
 
 # Get a Redis connection
 rdb = agent.redis_connect(privileged=True)
+
+# Generate the UUID for the cluster
+rdb.setnx('cluster/uuid', str(uuid.uuid4()))
 
 #
 # Set the cluster/network and VPN settings in Redis DB
