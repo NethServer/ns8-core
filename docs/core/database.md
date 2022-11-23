@@ -67,7 +67,7 @@ server response:
 Redis is a key/value database. Some key naming rules are enforced because
 access rights are based on key name patterns. Both admin UI users and
 agents have their own Redis credentials for authentication and
-authorization. 
+authorization.
 
 Some key rule examples:
 
@@ -122,6 +122,7 @@ Legend:
 |cluster/roles/{role}                   |SET        |glob patterns matching the actions that {role} can run. {role} is one of "owner", "reader"...|
 |cluster/environment                    |HASH       |Cluster environment variables|
 |cluster/ui_name                        |STRING     |UI label for the cluster|
+|cluster/uuid                           |STRING     |Generated UUID that identifies the cluster|
 
 #### smarthost provider
 
@@ -268,4 +269,3 @@ Legend:
 |module/traefik{X}/certificate/{name}       |HASH|  |
 |module/traefik{X}/certificate/{name} key   |STRING |Base64 key of a x509 certificate|
 |module/traefik{X}/certificate/{name} cert  |STRING |Base64 x509 certificate|
-
