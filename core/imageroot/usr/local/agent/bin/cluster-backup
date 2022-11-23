@@ -67,8 +67,8 @@ for d in rdb.scan_iter('cluster/user_domain/ldap/*/conf'):
     if rdb.exists(f'cluster/user_domain/ldap/{k}/ui_names'):
         dump['cluster']['user_domain']['ldap'][k]['ui_names'] = rdb.hgetall(f'cluster/user_domain/ldap/{k}/ui_names')
 
-# cluster: vpn network, label
-for k in ['network', 'ui_name']:
+# cluster: vpn network, label, uuid
+for k in ['network', 'ui_name', 'uuid']:
     dump['cluster'][k] = rdb.get(f'cluster/{k}') or ''
 
 # cluster: favorite apps
