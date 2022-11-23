@@ -36,7 +36,7 @@ fgz.close()
 rdb = agent.redis_connect(privileged=True)
 
 # Restore simple keys
-for config in ['network', 'ui_name']:
+for config in ['network', 'ui_name', 'uuid']:
     rdb.set(f'cluster/{config}', dump['cluster'][config])
     del(dump['cluster'][config])
 
