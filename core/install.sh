@@ -30,7 +30,7 @@ source /etc/os-release
 
 echo "Install dependencies:"
 if [[ "${PLATFORM_ID}" == "platform:el9" ]]; then
-    [[ "${ID}" == "centos" ]] && dnf update -y # Fix SELinux issues with basic packages on CentOS Stream
+    dnf update -y # Fix SELinux issues with basic packages
     dnf install -y wireguard-tools podman jq openssl firewalld
     systemctl enable --now firewalld
 elif [[ "${ID}" == "debian" && "${VERSION_ID}" == "11" ]]; then
