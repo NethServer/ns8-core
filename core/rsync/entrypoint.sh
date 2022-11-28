@@ -45,6 +45,7 @@ use chroot = no
 path = /srv
 read only = no
 numeric ids = yes
+munge symlinks = no
 hosts allow = 127.0.0.1 ::1 ${RSYNCD_NETWORK:-0.0.0.0/0}
 
 [terminate]
