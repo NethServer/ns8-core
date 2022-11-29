@@ -48,6 +48,9 @@ else # Rootless module
     if [[ ${preserve} == "yes" ]]; then
         userdel "${mid}"
     else
+        # Avoid /etc/passwd locking by erasing home directory separately:
+        # it is a long operation!
+        eval rm -rf ~"${mid}"
         userdel -r "${mid}"
     fi
 fi
