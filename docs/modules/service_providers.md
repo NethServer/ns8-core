@@ -93,10 +93,13 @@ The input JSON object attributes are:
     - `ui_name`, copy of `GET module/{id}/ui_name`)
     - `transport`, copy of `transport` of the Redis key name
 
-Python code snippet to invoke the `agent.list_service_providers()` function:
+The following Python code snippet invokes `agent.list_service_providers()`
+to discover an IMAP server. It connects to the local Redis replica, so it
+works even if the leader is temporarly unreachable: this makes the service
+startup more robust.
 
 ```python
 import agent
-rdb = agent.redis_connect() # full read-only access on every key
+rdb = agent.redis_connect(host='127.0.0.1') # connect the local Redis replica
 print(agent.list_service_providers(rdb, 'imap', 'tcp'))
 ```
