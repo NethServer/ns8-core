@@ -226,6 +226,7 @@ the following way:
 
 Other possible *agent selector* values:
 
+- `self` - selects the module itself
 - `cluster` - selects the cluster agent
 - `node` - selects the node agent where the module is running
 
