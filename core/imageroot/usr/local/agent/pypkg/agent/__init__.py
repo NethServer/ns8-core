@@ -438,6 +438,9 @@ def list_service_providers(rdb, service, transport='*', filters={}):
             if not 'node' in rvalue:
                 rvalue['node'] = rdb.hget(f'module/{module_id}/environment', 'NODE_ID')
 
+            if not 'mail_hostname' in rvalue:
+                rvalue['mail_hostname'] = rdb.hget(f'module/{module_id}/environment', 'MAIL_HOSTNAME')
+
             rvalue['transport'] = rkey.split('/')[-2]
             rvalue['module_id'] = module_id
             rvalue['ui_name'] = rdb.get(f'module/{module_id}/ui_name')
