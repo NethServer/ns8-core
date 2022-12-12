@@ -32,6 +32,11 @@ import traceback
 import shlex
 import warnings
 import agent.tasks
+import socket
+import errno
+import urllib.request
+import urllib.error
+import ssl
 
 # Reference https://www.man7.org/linux/man-pages/man3/sd-daemon.3.html
 SD_EMERG   = "<0>"  # system is unusable
@@ -474,3 +479,60 @@ def get_smarthost_settings(rdb):
         }
     return data
 
+def http_route_in_use(domain='127.0.0.1', path='', expectation=404):
+    """ we search if the domain (foo.com) or the webpath (/foo) is used or not by a service
+        return true if the route is used, false is the route is not used"""
+
+    # We cannot use the domain of the server else 
+    # we cannot reach the cluster-admin
+    if domain == socket.getfqdn():
+        return True
+
+    http = 0
+    https = 0
+
+    # do not verify the certificate
+    ctx = ssl.create_default_context()
+    ctx.check_hostname = False
+    ctx.verify_mode = ssl.CERT_NONE
+    
+    # try on http
+    try:
+        req = urllib.request.Request('http://127.0.0.1'+path)
+        req.add_header('Host', domain)
+        urllib.request.urlopen(req, context=ctx)
+    except urllib.error.HTTPError as e:
+        http = e.code
+
+    # try on https
+    try:
+        req = urllib.request.Request('https://127.0.0.1'+path)
+        req.add_header('Host', domain)
+        urllib.request.urlopen(req, context=ctx)
+    except urllib.error.HTTPError as d:
+        https = d.code
+
+    if http == expectation and  https == expectation:
+        # there is no website on http or https -> OK
+        return False
+    else:
+        # path exists -> nok
+        return True
+
+def tcp_port_in_use(port):
+    """ we search if the TCP port is used or not by a service
+        return true if the post is used, false is the port is not used """
+    try:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.bind(('', port))
+        sock.close()
+        sock = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
+        sock.bind(('', port))
+        sock.close()
+        # port is Free,  no errors
+        return  False
+    except OSError as ex:
+        if ex.errno != errno.EADDRINUSE:
+            raise
+        # port is in use we have raise the error address in use
+        return  True
