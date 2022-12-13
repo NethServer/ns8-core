@@ -99,3 +99,29 @@ def alter_user(rdb, user, revoke, role, on_clause):
 
     pipe.execute()
 
+def refresh_permissions(rdb):
+    """Scan the stored authorizations and re-apply permissions to all modules"""
+    for kauth_module in rdb.scan_iter('cluster/authorizations/module/*'):
+        kmid = kauth_module.removeprefix('cluster/authorizations/module/')
+        authorizations = rdb.smembers(kauth_module) or []
+        mnode_id = rdb.hget('cluster/module_node', kmid)
+        add_module_permissions(rdb, kmid, authorizations, mnode_id)
+
+def add_module_permissions(rdb, module_id, authorizations, node_id):
+    """Parse authorizations and grant permissions to module_id"""
+    for authz in authorizations:
+        xagent, xrole = authz.split(':') # e.g. traefik@node:routeadm
+
+        if xagent.endswith("@any"):
+            agent_selector = 'module/' + xagent.removesuffix("@any") + '*' # wildcard allowed in on_clause
+        elif xagent == 'self':
+            agent_selector = 'module/' + module_id
+        else:
+            agent_selector = agent.resolve_agent_id(xagent, node_id=node_id)
+
+        alter_user(rdb,
+            user=f'module/{module_id}',
+            revoke=False,
+            role=xrole,
+            on_clause=agent_selector,
+        )

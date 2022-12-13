@@ -54,7 +54,7 @@ rdb = agent.redis_connect(privileged=True)
 
 # Skip nodes flagged as nomodules, like NS7 machines
 if rdb.sismember(f'node/{node_id}/flags', 'nomodules'):
-    print(f"Can't execute add-module on node {node_id}")
+    print(f"Can't execute add-module on node {node_id}", file=sys.stderr)
     sys.exit(1)
 
 image_url = request['image']
@@ -97,6 +97,15 @@ else:
 
 if 'org.nethserver.authorizations' in inspect_labels:
     authorizations = inspect_labels['org.nethserver.authorizations'].split()
+    for authz in authorizations:
+        # Validation assertions:
+        contains_forbidden_char = ('*' in authz or '[' in authz or '?' in authz)
+        lacks_mandatory_separator = (not ':' in authz)
+        grants_too_much_permissions = (authz == 'cluster:owner')
+        if contains_forbidden_char or lacks_mandatory_separator or grants_too_much_permissions:
+            print(agent.SD_ERR + f'Invalid org.nethserver.authorizations label value: "{authz}" image_url: {image_url}', file=sys.stderr)
+            sys.exit(2)
+
 else:
     authorizations = []
 
@@ -170,29 +179,14 @@ agent.assert_exp(rdb.execute_command('ACL', 'SAVE') == 'OK')
 
 agent.save_acls(rdb)
 
-# Grant required authorizations to the new module
-for authz in authorizations:
-    if '*' in authz:
-        print(agent.SD_WARNING + f'Cannot grant authorization "{authz}" to {module_id}. Wildcard is not allowed, use @any suffix instead.')
-        continue
-
-    xagent, xrole = authz.split(':') # e.g. traefik@node:routeadm
-
-    if xrole == 'owner':
-        print(agent.SD_WARNING + f'Cannot grant authorization "{authz}" to {module_id}. Role "{xrole}" is forbidden.')
-        continue
-
-    if xagent.endswith("@any"):
-        agent_selector = 'module/' + xagent[0:-len("@any")] + '*' # wildcard allowed in on_clause
-    else:
-        agent_selector = agent.resolve_agent_id(xagent, node_id=node_id)
-
-    cluster.grants.alter_user(rdb,
-        user=f'module/{module_id}',
-        revoke=False,
-        role=xrole,
-        on_clause=agent_selector,
-    )
+# Save the node_id and persist authorizations, to enforce labels on future modules
+rdb.hset(f'cluster/module_node', module_id, node_id)
+if authorizations:
+    rdb.sadd(f'cluster/authorizations/module/{module_id}', *authorizations)
+    # Grant permissions to the new module, so it can run APIs in create-module too:
+    cluster.grants.add_module_permissions(rdb, module_id, authorizations, node_id)
+# Now that permissions are granted, we can run the create-module action of
+# the new module.
 
 # Push the creation task for the new module.
 create_module_result = agent.tasks.run(
@@ -220,6 +214,10 @@ for userk in rdb.scan_iter('roles/*'):
     user_auths = rdb.hgetall(userk)
     if 'cluster' in user_auths and user_auths['cluster'] == 'owner':
         cluster.grants.alter_user(rdb, user=userk[len('roles/'):], revoke=False, role='owner', on_clause=f'module/{module_id}')
+
+# Scan existing modules to check if their permissions needs an update. The
+# new module is now among them:
+cluster.grants.refresh_permissions(rdb)
 
 # Save flags inside redis
 for flag in flags:

@@ -282,6 +282,8 @@ def resolve_agent_id(agent_selector, node_id=None):
     if agent_selector == 'node': # Expand to the agent id of the current node
         if node_id:
             agent_id = f'node/{node_id}'
+    elif agent_selector == 'self':
+        agent_id = os.environ['AGENT_ID']
     elif agent_selector.endswith('@node'): # Default module instance on the current node
         if node_id:
             default_instance = rdb.get(f'node/{node_id}/default_instance/{agent_selector[0:-len("@node")]}')
