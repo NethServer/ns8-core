@@ -90,6 +90,17 @@ if module_keys:
 # Delete module from favorites
 rdb.srem('cluster/favorites', module_id)
 
+# Delete module authorizations and node relation
+rdb.delete(f'cluster/authorizations/module/{module_id}')
+rdb.hdel('cluster/module_node', module_id)
+
+# Revoke module permissions, clean up permissions of other modules
+rdb.delete(f'roles/module/{module_id}')
+permpipe = rdb.pipeline()
+for ksubject in rdb.scan_iter('roles/*'):
+    rdb.hdel(ksubject, f'module/{module_id}')
+permpipe.execute()
+
 # Delete the Redis account
 agent.assert_exp(rdb.execute_command('ACL', 'DELUSER', f'module/{module_id}') == 1)
 
