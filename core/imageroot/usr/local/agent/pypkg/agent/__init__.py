@@ -36,7 +36,6 @@ import socket
 import errno
 import urllib.request
 import urllib.error
-import ssl
 
 # Reference https://www.man7.org/linux/man-pages/man3/sd-daemon.3.html
 SD_EMERG   = "<0>"  # system is unusable
