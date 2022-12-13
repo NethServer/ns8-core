@@ -479,45 +479,20 @@ def get_smarthost_settings(rdb):
         }
     return data
 
-def http_route_in_use(domain='127.0.0.1', path='', expectation=404):
-    """ we search if the domain (foo.com) or the webpath (/foo) is used or not by a service
-        return true if the route is used, false is the route is not used"""
-
-    # We cannot use the domain of the server else 
-    # we cannot reach the cluster-admin
-    if domain == socket.getfqdn():
-        return True
-
-    http = 0
-    https = 0
-
-    # do not verify the certificate
-    ctx = ssl.create_default_context()
-    ctx.check_hostname = False
-    ctx.verify_mode = ssl.CERT_NONE
-    
-    # try on http
+def http_route_in_use(domain=None, path=''):
+    """we search if the domain (foo.com) or the webpath (/foo) is used or not by a service
+    return true if the route is used, false is the route is not used"""
     try:
-        req = urllib.request.Request('http://127.0.0.1'+path)
-        req.add_header('Host', domain)
-        urllib.request.urlopen(req, context=ctx)
+        req = urllib.request.Request('http://127.0.0.1'+path, method="HEAD")
+        if domain:
+            req.add_header('Host', domain)
+        urllib.request.urlopen(req)
     except urllib.error.HTTPError as e:
-        http = e.code
+        if e.code == 404:
+            # Assume no path exists
+            return False
 
-    # try on https
-    try:
-        req = urllib.request.Request('https://127.0.0.1'+path)
-        req.add_header('Host', domain)
-        urllib.request.urlopen(req, context=ctx)
-    except urllib.error.HTTPError as d:
-        https = d.code
-
-    if http == expectation and  https == expectation:
-        # there is no website on http or https -> OK
-        return False
-    else:
-        # path exists -> nok
-        return True
+    return True
 
 def tcp_port_in_use(port):
     """ we search if the TCP port is used or not by a service
