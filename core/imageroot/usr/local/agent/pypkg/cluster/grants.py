@@ -110,14 +110,7 @@ def refresh_permissions(rdb):
 def add_module_permissions(rdb, module_id, authorizations, node_id):
     """Parse authorizations and grant permissions to module_id"""
     for authz in authorizations:
-        if '*' in authz or '[' in authz or '?' in authz:
-            continue # Redis glob patterns are forbidden
-
         xagent, xrole = authz.split(':') # e.g. traefik@node:routeadm
-
-        if xrole == 'owner':
-            print(agent.SD_WARNING + f'Cannot grant authorization "{authz}" to {module_id}. Role "{xrole}" is forbidden.')
-            continue
 
         if xagent.endswith("@any"):
             agent_selector = 'module/' + xagent.removesuffix("@any") + '*' # wildcard allowed in on_clause
