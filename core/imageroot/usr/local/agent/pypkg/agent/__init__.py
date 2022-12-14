@@ -32,6 +32,10 @@ import traceback
 import shlex
 import warnings
 import agent.tasks
+import socket
+import errno
+import urllib.request
+import urllib.error
 
 # Reference https://www.man7.org/linux/man-pages/man3/sd-daemon.3.html
 SD_EMERG   = "<0>"  # system is unusable
@@ -476,3 +480,35 @@ def get_smarthost_settings(rdb):
         }
     return data
 
+def http_route_in_use(domain=None, path=''):
+    """we search if the domain (foo.com) or the webpath (/foo) is used or not by a service
+    return true if the route is used, false is the route is not used"""
+    try:
+        req = urllib.request.Request('http://127.0.0.1'+path, method="HEAD")
+        if domain:
+            req.add_header('Host', domain)
+        urllib.request.urlopen(req)
+    except urllib.error.HTTPError as e:
+        if e.code == 404:
+            # Assume no path exists
+            return False
+
+    return True
+
+def tcp_port_in_use(port):
+    """ we search if the TCP port is used or not by a service
+        return true if the post is used, false is the port is not used """
+    try:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.bind(('', port))
+        sock.close()
+        sock = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
+        sock.bind(('', port))
+        sock.close()
+        # port is Free,  no errors
+        return  False
+    except OSError as ex:
+        if ex.errno != errno.EADDRINUSE:
+            raise
+        # port is in use we have raise the error address in use
+        return  True
