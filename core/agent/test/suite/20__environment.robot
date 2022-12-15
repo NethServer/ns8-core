@@ -6,17 +6,6 @@ Test Setup       Start command monitoring
 Test Teardown    Stop command monitoring
 
 *** Test Cases ***
-Test the dump-env command
-    Given The task is submitted    dump-environment    "ABC"
-
-    When The command is received    hset    VAR1    ABC
-    Then The agent environment contains    VAR1\=ABC
-
-    When The command is received    set    /exit_code    1
-    Then The task output should be equal to    ABC
-    And The agent environment does not contain    XXX
-    And The agent environment contains    ABC
-
 Set a variable
     Given The task is submitted    set-environment
 

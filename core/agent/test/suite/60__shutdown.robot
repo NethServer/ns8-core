@@ -28,7 +28,7 @@ Start the command monitoring and the agent
     Start the agent
 
 The agent completes successfully
-    ${res} =    Wait For Process    timeout=1200ms
+    ${res} =    Wait For Process    timeout=2000ms
     Process Should Be Stopped
     Should Be Equal As Integers    ${res.rc}    ${0}
 

@@ -1,6 +1,0 @@
-#!/bin/bash
-
-value=$(cat)
-
-# Store the input value in VAR1
-echo 'set-env VAR1 '$value >&${AGENT_COMFD}
