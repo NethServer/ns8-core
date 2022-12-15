@@ -258,7 +258,7 @@ def unset_env(name):
     __action("unset-env", name)
 
 def dump_env():
-    print(SD_DEBUG+"dump_env() is deprecated. The environment is automatically persisted to the agent state/ directory at the end of each action step.")
+    print(SD_DEBUG + "dump_env() is deprecated. The environment is now automatically persisted to the agent state/ directory at the end of each action step. See also NethServer/core#324.", file=sys.stderr)
 
 def set_status(value):
     __action("set-status", value)
