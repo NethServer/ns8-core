@@ -85,8 +85,9 @@ this command prints the agent environment of the rootfull module `promtail1`.
 
 ## Agent commands
 
-During the action execution, action steps can talk to the agent using a simple protocol.
-It is possible to set/unset environment variables, dump the environment to a well known file, etc.
+During the action execution, action steps can talk to the agent using a
+simple protocol. For instance, it is possible to set/unset environment
+variables that are persisted under the `AGENT_STATE_DIR`.
 
 See all [available action commands](https://github.com/NethServer/ns8-core/blob/main/core/agent/README.md#action-commands).
 
@@ -97,7 +98,6 @@ Python example:
 import agent
 
 agent.set_env('MYVAR', 'value')
-agent.dump_env()
 ```
 
 ## Validation

@@ -69,11 +69,22 @@ func runAction(rdb *redis.Client, actionCtx context.Context, task *models.Task) 
 		log.Printf(SD_ERR+"Action %s is not defined", task.Action)
 	}
 
-	// Get additional environment variables from the filesystem
-	environment := readEnvironmentFile()
+	// Read initial environment file contents
+	environment := readStateFile()
+	// Create a backup copy of the original environment. If the action
+	// aborts it is restored:
+	backupEnvironment := environment
+	// Write the environment state to disk if any change occurs:
+	var isStateWriteNeeded bool = false
 
 	for stepIndex, step := range actionDescriptor.Steps {
 		lastStep = step.Name
+
+		// Sync environment variables from the filesystem. Reading the
+		// environment file on every step allows to load changes produced
+		// by child actions.
+		environment = readStateFile()
+		isStateWriteNeeded = false // reset the flag on each cycle
 
 		// Special treatment for builtin validation steps
 		if step.Name == models.STEP_VALIDATE_INPUT {
@@ -169,15 +180,16 @@ func runAction(rdb *redis.Client, actionCtx context.Context, task *models.Task) 
 				switch cmd := record[0]; cmd {
 				case "set-env":
 					environment = append(environment, record[1]+"="+record[2])
+					isStateWriteNeeded = true
 				case "unset-env":
 					for i, envVar := range environment {
 						if strings.HasPrefix(envVar, record[1]+"=") {
+							// var exists at index i: slice and splice at that index:
 							environment = append(environment[:i], environment[i+1:]...)
+							isStateWriteNeeded = true
+							// the array could have duplicates, continue the iteration
 						}
 					}
-				case "dump-env":
-					dumpToFile(environment)
-					rdb.HSet(ctx, agentPrefix+"/environment", exportToRedis(environment)...).Result()
 				case "set-status":
 					if record[1] == "validation-failed" {
 						actionDescriptor.Status = "validation-failed"
@@ -264,26 +276,32 @@ func runAction(rdb *redis.Client, actionCtx context.Context, task *models.Task) 
 			break
 		}
 
+		// Write the environment state file with changes from the successful step:
+		if exitCode == 0 && isStateWriteNeeded {
+			writeStateFile(dedupEnv(environment))
+		}
+
 		actionDescriptor.SetProgressAtStep(stepIndex, 100)
 		publishStatus(rdb, progressChannel, actionDescriptor)
-
-		environment = dedupEnv(environment)
 	}
 
-	if exitCode == 0 {
-		dumpToFile(environment)
+	if exitCode != 0 { // The last step has failed, action is aborted
+		// rollback the environment state file to the original value:
+		writeStateFile(backupEnvironment)
 	}
 
 	_, err := rdb.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
+		// Use a single command pipeline to preserve data integrity.
 		if exitCode == 0 {
 			if actionDescriptor.Status == "running" {
 				actionDescriptor.Status = "completed"
 			}
-			// Persist the environment
+			// Action completed successfully. Publish the environment in a Redis HASH key.
+			// Erase the Redis key to honor unset-env:
+			pipe.Del(ctx, agentPrefix+"/environment")
+			// Re-add the environment as a Redis HASH entry:
 			if len(environment) > 0 {
 				pipe.HSet(ctx, agentPrefix+"/environment", exportToRedis(environment)...)
-			} else {
-				pipe.Del(ctx, agentPrefix+"/environment")
 			}
 		}
 		// Publish the action response
@@ -393,47 +411,9 @@ func exportToRedis(env []string) []interface{} {
 	return out
 }
 
-// Persist the environment to the current working directory
-// Systemd unit file can pickup it with EnvironmentFile option
-func dumpToFile(env []string) {
-	path, _ := os.Getwd()
-	env = dedupEnv(env)
-	f, err := os.Create("./environment")
-	if err != nil {
-		log.Printf(SD_ERR+"Can't write %s/environment file: %s", path, err)
-		return
-	}
-	for _, line := range env {
-		f.WriteString(line + "\n")
-	}
-	f.Close()
-	log.Printf("Wrote %s/environment file", path)
-}
-
 func publishStatus(client redis.Cmdable, progressChannel string, actionDescriptor models.Processor) {
 	err := client.Publish(ctx, progressChannel, actionDescriptor.ToJSON()).Err()
 	if err != nil {
 		log.Printf(SD_ERR+"Failed to publish the action status on channel %s", progressChannel)
 	}
-}
-
-// NOTE: This function is a copy of dedupEnvCase in go/exec module
-func dedupEnv(env []string) []string {
-	out := make([]string, 0, len(env))
-	saw := make(map[string]int, len(env)) // key => index into out
-	for _, kv := range env {
-		eq := strings.Index(kv, "=")
-		if eq < 0 {
-			out = append(out, kv)
-			continue
-		}
-		k := kv[:eq]
-		if dupIdx, isDup := saw[k]; isDup {
-			out[dupIdx] = kv
-			continue
-		}
-		saw[k] = len(out)
-		out = append(out, kv)
-	}
-	return out
 }

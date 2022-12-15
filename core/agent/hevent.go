@@ -84,7 +84,7 @@ func runEvent(wg *sync.WaitGroup, event *models.Event) {
 	}
 
 	// Get additional environment variables from the filesystem
-	environment := readEnvironmentFile()
+	environment := readStateFile()
 	for stepIndex, step := range handler.Steps {
 		lastStep = step.Name
 
