@@ -100,11 +100,11 @@ func runEvent(wg *sync.WaitGroup, event *models.Event) {
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 
-		log.Printf(SD_DEBUG + "Handler of %s/event/%s is starting step %s", event.Source, event.Name, step.Name)
+		log.Printf(SD_DEBUG+"Handler of %s/event/%s is starting step %s", event.Source, event.Name, step.Name)
 		if err := cmd.Start(); err != nil {
 			exitCode = 9
 			handler.Status = "aborted"
-			log.Printf(SD_ERR + "Handler of %s/event/%s failed at step %s: %v", event.Source, event.Name, step, err)
+			log.Printf(SD_ERR+"Handler of %s/event/%s failed at step %s: %v", event.Source, event.Name, step, err)
 			break
 		}
 

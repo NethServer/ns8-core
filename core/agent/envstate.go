@@ -6,10 +6,10 @@
 package main
 
 import (
+	"log"
 	"os"
 	"strings"
 	"sync"
-	"log"
 )
 
 var muxEnvironment sync.Mutex
