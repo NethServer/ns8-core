@@ -131,7 +131,7 @@ When all steps are executed successfully the action is considered `completed`. T
 - `<agent-id>/task/<task-id>/exit_code`, 0 if all steps were successful, otherwise the exit code of the failing step
 - `<agent-id>/environment`, copy of additional environment variables passed
   to the action steps. The values are stored in the local module
-  filesystem and copied to Redis if the action has completed successfully
+  filesystem and copied to Redis if the action has completed successfully.
 
 The `validation-failed` status must be set manually with the `set-status` command, described below. When the `validation-failed`
 status is set, no more steps are invoked and the action exit code is set to 10 unless another non-zero exit code is returned by
@@ -229,7 +229,7 @@ The same command in Python 3
 The `set-env` command modifies an environment variable for subsequent
 steps. If the step where the command is invoked is successful, the agent
 persists the variable value in the local filesystem `./environment` state
-file and the next step picks it up. For example
+file and the next step will pick it up. For example
 
     set-env FULLNAME "First User"
 
@@ -241,7 +241,7 @@ successfully.
 
 The `unset-env` command removes an environment variable for subsequent
 steps. If the step where the command is invoked is successful, the change
-is persisted in the local filesystem `./environment` state file and is
+is persisted in the local filesystem `./environment` state file and will be
 picked up by the next step. For example
 
     unset-env FULLNAME
