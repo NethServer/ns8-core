@@ -56,7 +56,7 @@ fi
 firewall-cmd --reload
 
 echo "Stopping the core services"
-systemctl disable --now api-server.service redis.service wg-quick@wg0.service
+systemctl disable --now api-server.service redis.service wg-quick@wg0.service phonehome.timer
 rm -vf /etc/systemd/system/redis.service.d/wireguard.conf
 userdel -r api-server
 

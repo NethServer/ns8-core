@@ -1,0 +1,55 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2022 Nethesis S.r.l.
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
+
+'''
+Get the facts for each of the agents below the cluster.
+'''
+
+import json
+import sys
+
+import agent
+import agent.tasks
+
+# setup redis connection
+redis_client = agent.redis_connect(privileged=True)
+
+# Init dictionary that returns the data
+facts = {
+    '$schema': 'https://schema.nethserver.org/facts/2022-12.json',
+    'uuid': '',
+    'installation': 'nethserver',
+    'facts': {
+        'cluster': [],
+        'nodes': {},
+        'modules': []
+    }
+}
+
+facts['uuid'] = redis_client.get('cluster/uuid')
+
+# TODO: node_id not representative, change with NODE_UUID when available.
+tasks = [{
+    'agent_id': 'node/'+redis_client.hget(key, 'NODE_ID'),
+    'action': 'get-facts'
+} for key in redis_client.scan_iter('node/*/environment')]
+
+results = agent.tasks.runp(
+    tasks,
+    extra={
+        'isNotificationHidden': True,
+    },
+    endpoint="redis://cluster-leader"
+)
+
+for item in results:
+    facts['facts']['nodes'] = item['output']
+
+json.dump(
+    facts,
+    fp=sys.stdout
+)

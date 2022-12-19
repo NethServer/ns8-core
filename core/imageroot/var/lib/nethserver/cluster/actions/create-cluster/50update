@@ -50,6 +50,8 @@ rdb = agent.redis_connect(privileged=True)
 
 # Generate the UUID for the cluster
 rdb.setnx('cluster/uuid', str(uuid.uuid4()))
+# Set default endpoint for PhoneHome
+rdb.setnx('cluster/phonehome/endpoint', 'phonehome.nethserver.org')
 
 #
 # Set the cluster/network and VPN settings in Redis DB
@@ -109,6 +111,9 @@ add2_module_failures = agent.tasks.runp_brief([
     progress_callback = agent.get_progress_callback(86, 95),
 )
 agent.assert_exp(add2_module_failures == 0)
+
+# Update completed successfully, enable the phonehome.timer
+agent.run_helper(*'systemctl enable --now phonehome.timer'.split(' ')).check_returncode()
 
 json.dump({
     "ip_address": ip_address,

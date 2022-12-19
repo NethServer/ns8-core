@@ -1,0 +1,38 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2022 Nethesis S.r.l.
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
+
+'''
+Helper script that sends into the tasks of the cluster 'get-facts', without
+passing through the API.
+The suprocess is used instead of redis library due to missing pip.
+'''
+
+import http.client
+import json
+
+import agent
+import agent.tasks
+
+result = agent.tasks.run(
+    agent_id='cluster',
+    action='get-facts',
+    extra={
+        'isNotificationHidden': True,
+    },
+    endpoint="redis://cluster-leader"
+)
+
+if result['exit_code'] == 0:
+    redis_client = agent.redis_connect(privileged=False)
+    client = http.client.HTTPSConnection(
+        redis_client.get('cluster/phonehome/endpoint')
+    )
+    client.request('POST', '/api/installation', json.dumps(result['output']), {
+        "Content-type": "application/json",
+        "Accept": "application/json"
+    })
+    client.getresponse()

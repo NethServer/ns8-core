@@ -1,0 +1,41 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2022 Nethesis S.r.l.
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
+
+'''
+Fetch all info about the node, send back what gathered to cluster.
+'''
+
+import json
+import sys
+import os
+
+platform = {}
+with open('/etc/os-release', encoding='utf-8') as file:
+    for line in file:
+        key, value = line.rstrip().split('=')
+        platform[key] = value.strip('"')
+
+core_version = ""
+with open('/etc/nethserver/core.env', encoding='utf-8') as file:
+    for line in file:
+        if 'CORE_IMAGE' in line:
+            print(core_version)
+            core_version = line[line.find(':') + 1:].strip()
+            break
+
+json.dump(
+    {
+        os.environ['AGENT_ID'].removeprefix('node/'): {
+            'distro': {
+                'name': platform['ID'],
+                'version': platform['VERSION_ID']
+            },
+            'version': core_version
+        }
+    },
+    fp=sys.stdout
+)
