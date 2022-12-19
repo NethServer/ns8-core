@@ -1,0 +1,14 @@
+#!/bin/bash
+
+#
+# Copyright (C) 2022 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+exec 1>&2
+set -e
+
+# If action "configure-module" exists, grant it to selfadm role:
+if [[ -d "${AGENT_INSTALL_DIR}"/actions/configure-module ]]; then
+    redis-exec SADD "${AGENT_ID}/roles/selfadm" "configure-module"
+fi

@@ -176,13 +176,13 @@ with the `actionsreader` role to run `list-actions` on `AGENT_ID` (e.g.
 `module/mymod1`).
 
 ```sh
-    redis-exec SADD "${AGENT_ID}/roles/actionsreader" "list-actions"
+redis-exec SADD "${AGENT_ID}/roles/actionsreader" "list-actions"
 ```
 
 Same as above, but to allow also any other action with name prefix `list-`:
 
 ```sh
-    redis-exec SADD "${AGENT_ID}/roles/actionsreader" "list-*"
+redis-exec SADD "${AGENT_ID}/roles/actionsreader" "list-*"
 ```
 
 Now it is possible to grant the role `actionsreader` on `module/mymod1` to
@@ -190,10 +190,22 @@ another agent (e.g. `module/authmod2`). This is the corresponding Redis command:
 
     HSET roles/module/authmod2 module/mymod1 actionsreader
 
-Roles are always granted by the `cluster` agent.
+If the module instance needs to run its own actions, extend the builtin
+role `selfadm`. A basic role definition is set up by the builtin step
+`10selfadm_role`. It adds `configure-module` to the `selfadm` role during
+the module instance creation. If this is undesirable, override the builtin
+step.
 
-Users with the `owner` role can use the following actions to manage users
-and their roles:
+For instance add the following command in a Bash step of
+`configure-module`:
+
+```sh
+redis-exec SADD "${AGENT_ID}/roles/selfadm" "get-configuration"
+```
+
+Roles are always granted by the `cluster` agent.  Users with the `owner`
+role on `cluster` (cluster administrators) can use the following cluster
+actions to manage users and their roles:
 
 - `add-user`
 - `remove-user`
@@ -226,7 +238,8 @@ the following way:
 
 Other possible *agent selector* values:
 
-- `self` - selects the module itself
+- `self` - selects the module itself. Note that the module instance is
+  implicitly granted the role `selfadm` on itself.
 - `cluster` - selects the cluster agent
 - `node` - selects the node agent where the module is running
 

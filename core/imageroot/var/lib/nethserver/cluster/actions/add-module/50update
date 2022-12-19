@@ -179,6 +179,12 @@ agent.assert_exp(rdb.execute_command('ACL', 'SAVE') == 'OK')
 
 agent.save_acls(rdb)
 
+# Every module is authorized for self-administration. The core implicitly
+# permits to run configure-module with the selfadm role, but the role can
+# be extended to permit more actions.
+if not 'self:selfadm' in authorizations:
+    authorizations.append('self:selfadm')
+
 # Save the node_id and persist authorizations, to enforce labels on future modules
 rdb.hset(f'cluster/module_node', module_id, node_id)
 if authorizations:
