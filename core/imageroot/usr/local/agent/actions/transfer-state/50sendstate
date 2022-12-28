@@ -47,6 +47,7 @@ rsync_cmd = [
     # high-priority, harcoded filter rules: they cannot be overriden
     '--exclude=/state/agent.env',
     '--exclude=/state/environment',
+    '--exclude=/state/apitoken.cache',
 ]
 
 if os.path.isfile('state-filter-rules.rsync'):
