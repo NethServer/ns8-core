@@ -47,11 +47,23 @@ SD_NOTICE  = "<5>"  # normal but significant condition
 SD_INFO    = "<6>"  # informational
 SD_DEBUG   = "<7>"  # debug-level messages
 
-def redis_connect(privileged=False, **kwargs):
-    """Connect to the Redis DB with the right credentials
+def redis_connect(privileged=False, use_replica=False, **kwargs):
+    """Connect to the Redis DB. If no arguments are given
+    the leader Redis instance with default read-only access rights
+    credentials is selected.
+    - Set `privileged=True` to modify Redis DB. Replica cannot be modified.
+    - Set `use_replica=True` to discover service startup configuration from
+      the local Redis replica.
+
+    Any other keyword argument is passed to redis.Redis() constructor.
     """
-    redis_host = os.getenv('REDIS_ADDRESS', '127.0.0.1:6379').split(':', 1)[0]
-    redis_port = os.getenv('REDIS_ADDRESS', '127.0.0.1:6379').split(':', 1)[1]
+    if use_replica:
+        redis_host = os.getenv('REDIS_REPLICA_ADDRESS', '127.0.0.1:6379').split(':', 1)[0]
+        redis_port = os.getenv('REDIS_REPLICA_ADDRESS', '127.0.0.1:6379').split(':', 1)[1]
+    else:
+        redis_host = os.getenv('REDIS_ADDRESS', '127.0.0.1:6379').split(':', 1)[0]
+        redis_port = os.getenv('REDIS_ADDRESS', '127.0.0.1:6379').split(':', 1)[1]
+
     if privileged:
         redis_username = os.environ['REDIS_USER'] # Fatal if missing!
         redis_password = os.environ['REDIS_PASSWORD'] # Fatal if missing!

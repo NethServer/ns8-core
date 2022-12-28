@@ -35,8 +35,13 @@ import (
 func listenEventsAsync(ctx context.Context, complete chan int) {
 	// Connect with default credentials to listen event channels with no
 	// restrictions.
-	redisAddress := os.Getenv("REDIS_ADDRESS")
+	redisAddress := os.Getenv("REDIS_REPLICA_ADDRESS")
 	if redisAddress == "" {
+		// Fallback to leader address
+		redisAddress = os.Getenv("REDIS_ADDRESS")
+	}
+	if redisAddress == "" {
+		// Fallback to local default
 		redisAddress = "127.0.0.1:6379"
 	}
 	rdb := redis.NewClient(&redis.Options{
