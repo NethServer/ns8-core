@@ -25,3 +25,12 @@ pnpm-debug.log*
 public/apps/*
 # ...but do NOT ignore libs directory
 !public/apps/libs
+
+# yarn v2 ignored
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
