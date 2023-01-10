@@ -48,10 +48,11 @@ rsync_cmd = [
     '--exclude=/state/agent.env',
     '--exclude=/state/environment',
     '--exclude=/state/apitoken.cache',
+    '--exclude=/state/state-filter-rules.rsync',
 ]
 
 if os.path.isfile('state-filter-rules.rsync'):
-    rsync_cmd += ['--filter=. state-filter-rules.rsync']
+    rsync_cmd += ['--filter=. state/state-filter-rules.rsync']
 
 rsync_cmd += [
     './', # source: workdir
