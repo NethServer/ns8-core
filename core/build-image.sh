@@ -38,7 +38,7 @@ buildah run gobuilder-core sh -c "cd /usr/src/core/api-server && go build -v -ld
 buildah run gobuilder-core sh -c "cd /usr/src/core/api-server && go build -v -ldflags=\"-extldflags=-static\" -tags sqlite_omit_load_extension api-server-logs.go"
 
 echo "Build static UI files with node..."
-buildah run --env="NODE_OPTIONS=--openssl-legacy-provider" nodebuilder-core sh -c "cd /usr/src/core/ui && yarn install && yarn build"
+buildah run --env="NODE_OPTIONS=--openssl-legacy-provider" nodebuilder-core sh -c "cd /usr/src/core/ui && yarn install --immutable && yarn build"
 
 echo "Install tidy..."
 buildah run nodebuilder-core sh -c "apt-get update && apt-get install -y tidy"
