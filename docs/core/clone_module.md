@@ -7,34 +7,46 @@ parent: Core
 
 # Cloning a module
 
-A (source) module instance can be cloned (copied) by the
-`cluster/clone-module` action. This action creates a new module instance
-(destination) that is equivalent to the source one.
+A (source) module instance can be cloned by the `cluster/clone-module`
+action. This action creates a new module instance (destination) that is
+equivalent to the source one.
 
-For example to create a clone/copy of instance `dokuwiki1` on node 1, run
+For example to create a clone of instance `dokuwiki1` on node 1, run
 
     api-cli run clone-module --data '{"module":"dokuwiki1","replace":false,"node":1}'
 
-The cluster **node** where the destination runs can be the same of the
-source instance or not; generally if the services provided by the instance
-do not require exclusive access to a particular system resource (i.e. bind
-a given TCP port number) there should be no limitation on running multiple
-instances of the same module on the same node. In the end, this kind of
-limitations must be managed by the module itself.
+The `replace` boolean specifies if the source instance can is removed when
+`clone-module` completes with success.
 
-In a nutshell, `clone-module`:
+- With `"replace":false` the cloning action makes a copy of the source
+  instance. The destination instance differs only for its MODULE_UUID.
+- With `"replace":true` the cloning action copies also the MODULE_UUID
+  value in the destination instance. Finally it removes the source instance.
 
-- Creates a new module instance for the destination using `cluster/add-module`
+The cluster `node` where the destination instance runs can be the same of
+the source instance. Generally there should be no limitation on running
+multiple module instances on the same node. In some cases the services
+provided by the instance might require exclusive access to a particular
+system resource, as binding a fixed TCP port number. In this case, avoid
+to bind the fixed port number in the action `create-module`, otherwise
+cloning becomes impossible.
+
+In a nutshell, `cluster/clone-module`:
+
+- Creates a new module instance for the destination using
+  `cluster/add-module`
 - Starts two parallel subtasks:
   - `transfer-state` on the source instance
   - `clone-module` on the destination instance
-- When both subtasks are succesfully completed and if a full **replace**
-  is required, the source instance is removed with `cluster/remove-module`
-- The destination instance has the same MODULE_UUID if replace is required
+- The destination instance copies the MODULE_UUID of the source, if
+  `replace` is true
+- When both subtasks are succesfully completed and if `replace` is true,
+  the source instance is removed with `cluster/remove-module`
 
-Modules can implement `transfer-state` and `clone-module` to correctly
-support module cloning. The core provides a partial implementation of
-those actions that is explained in the following sections.
+Modules can implement additional steps for the  `transfer-state` and
+`clone-module` to correctly support module cloning. The core provides a
+partial implementation of those actions that is explained in the following
+sections.
 
 ## Implementation of `transfer-state`
 
@@ -53,31 +65,41 @@ action input is like:
 ```
 
 Any step that runs after `05waitserver` can assume the Rsync server
-process is ready to receive data.
+process is ready to receive data.  The action implementation perform the
+transfer in two similar steps to ensure data integrity. 
 
-At step `50sendstate` all volume contents are transferred to the
-destination with a `rsync` client that runs in a privileged Podman
-container.
+At steps `10sendpayload` and `50sendstate` all volumes are transferred to
+the destination with a `rsync` client that runs in a privileged Podman
+container. This container mounts all module volumes to correctly map
+numeric UID/GIDs.
 
-This Podman container mounts all module volumes to correctly map numeric
-UID/GIDs.
+The step `10sendpayload` transfers the data for the first time, thus it is
+expected to be slower. The step `50sendstate` stops the services, quickly
+transfers the latest differences, then start the services again if the
+`replace` flag is true.
 
-Note also that
+Additional notes:
 
-* it is possible to run an additional rsync pass before `50sendstate`,
-  expecially if there is a lot of data to transfer. Look at the action
-  journal to grasp the rsync client invocation command line
+* some files are never transfered by the core steps. Hardcoded
+  high-priority exclude rules skip the following entries:
+  - `state/agent.env`
+  - `state/environment`
+  - `state/apitoken.cache`
+
+* the automatic service stop-and-start logic works for rootless modules
+  only. Rootfull modules must implement their steps to stop then start
+  each service provided by the module.
+
+* implementation of rootless stop-and-start logic is based on the Systemd
+  `transfer-state.target` unit. To exclude a service from the
+  stop-and-start cycle, add it to that target.
 
 * it is possible to add a Rsync filter to select what files/dirs are
-  transferred: just drop a `state-filter-rules.rsync` in the
-  AGENT_STATE_DIR. See `man 1 rsync` for the file syntax
+  transferred: just drop a `etc/state-filter-rules.rsync` under the
+  AGENT_INSTALL_DIR. See `man 1 rsync` for the file syntax.
 
 If the transfer is successful the Rsync client sends a "terminate"
 signal to the server.
-
-The module could add service stop/start steps before and after
-`50sendstate`. Consider the `replace` input boolean to decide if services
-should be left stopped or not.
 
 ## Implementation of `clone-module`
 
@@ -111,9 +133,10 @@ created by `create-module`.
 The `05replace` step replaces MODULE_UUID, if the `replace` flag is
 `true`.
 
-Finally `rsyncd` runs at step `10recvstate`. This step blocks until the
+Then `rsyncd` runs at step `10recvstate`. This step blocks until the
 "terminate" signal is received from the client, or the task itself is
 canceled.
 
-Additional steps implemented by the module can then adjust the module and
-finally start its services.
+Further steps implemented by the module can adjust the configuration and
+finally start the services. This can be achieved by self-invoking an
+action like `configure-module` on the module instance itself.

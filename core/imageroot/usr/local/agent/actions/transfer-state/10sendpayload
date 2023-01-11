@@ -1,23 +1,8 @@
 #!/usr/bin/env python3
 
 #
-# Copyright (C) 2022 Nethesis S.r.l.
-# http://www.nethesis.it - nethserver@nethesis.it
-#
-# This script is part of NethServer.
-#
-# NethServer is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License,
-# or any later version.
-#
-# NethServer is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with NethServer.  If not, see COPYING.
+# Copyright (C) 2023 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
 #
 
 import subprocess
@@ -32,16 +17,11 @@ port = int(request['port'])
 replace = bool(request['replace'])
 username, password = request['credentials']
 
-# Only for rootless modules, sorry:
-if os.geteuid() != 0:
-    # Stop services for state consistency:
-    agent.run_helper('systemctl', '--user', 'isolate', 'transfer-state.target')
-
 errors = 0
 os.environ['RSYNC_PASSWORD'] = password
 podman_cmd = [
     'podman', 'run', '-i', '--workdir=/srv', '--rm', '--network=host', '--privileged',
-    '--name=transfer-state-send',
+    '--name=transfer-state-payload',
     '--env=RSYNC_PASSWORD',
 ]
 
@@ -49,7 +29,6 @@ rsync_cmd = [
     'rsync',
     '-a',
     '--info=progress2',
-    '--delete-after',
 
     # high-priority, harcoded filter rules: they cannot be overriden
     '--exclude=/state/agent.env',
@@ -92,20 +71,4 @@ with subprocess.Popen(transfer_cmd, stdin=subprocess.DEVNULL, stdout=subprocess.
         else:
             buf += ch
 
-if pclient.returncode != 0:
-    print(agent.SD_ERR + "[ERROR] rsync transfer error " + str(pclient.returncode), file=sys.stderr)
-    errors += 1 # non-fatal: cleanup required!
-
-# Send a termination request to the server
-pterminate = agent.run_helper(*podman_cmd, core_env['RSYNC_IMAGE'], *f'rsync -q rsync://{username}@{address}:{port}/terminate'.split())
-if pterminate.returncode != 0:
-    print(agent.SD_ERR + "[ERROR] cannot send termination message to the rsync server. Exit code " + str(pterminate.returncode), file=sys.stderr)
-    errors += 1 # non-fatal: cleanup required!
-
-# Only for rootless modules, sorry:
-if os.geteuid() != 0 and (replace == False or errors > 0):
-    # Start the services again if we are cloning to produce a copy, or if any error occurred:
-    agent.run_helper('systemctl', '--user', 'isolate', 'default.target')
-
-if errors > 0:
-    sys.exit(1)
+sys.exit(pclient.returncode)

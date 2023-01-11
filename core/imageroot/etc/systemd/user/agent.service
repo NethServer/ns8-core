@@ -1,5 +1,6 @@
 [Unit]
 Description=Rootless module/%u agent
+Documentation=https://nethserver.github.io/ns8-core/modules/agent/
 
 [Service]
 Type=simple
@@ -18,4 +19,4 @@ Restart=always
 SyslogIdentifier=%u
 
 [Install]
-WantedBy=default.target
+WantedBy=default.target transfer-state.target

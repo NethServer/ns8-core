@@ -1,0 +1,13 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2023 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+import sys
+import os
+import agent
+
+agent.set_weight(os.path.basename(__file__), 0)
+agent.set_weight('10sendpayload', 5)
