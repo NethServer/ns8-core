@@ -9,32 +9,105 @@
 Fetch all info about the node, send back what gathered to cluster.
 '''
 
+import csv
 import json
-import sys
 import os
+import sys
+import subprocess
 
-platform = {}
-with open('/etc/os-release', encoding='utf-8') as file:
-    for line in file:
-        key, value = line.rstrip().split('=')
-        platform[key] = value.strip('"')
+import ansible_runner
 
-core_version = ""
-with open('/etc/nethserver/core.env', encoding='utf-8') as file:
-    for line in file:
-        if 'CORE_IMAGE' in line:
-            print(core_version)
-            core_version = line[line.find(':') + 1:].strip()
-            break
+
+def _run(cmd):
+    proc = subprocess.run(cmd, shell=True, check=True,
+                          capture_output=True, text=True)
+    return proc.stdout.rstrip().lstrip()
+
+
+def _get_core_version():
+    with open('/etc/nethserver/core.env', encoding='utf-8') as file:
+        for line in file:
+            if 'CORE_IMAGE' in line:
+                return line[line.find(':') + 1:].strip()
+    raise Exception('Can\'t find core version.')
+
+
+facts = ansible_runner.run(
+    module='setup',
+    host_pattern='localhost',
+    quiet=True,
+    envvars={
+        'LANG': 'C'
+    }
+).get_fact_cache('localhost')
+
+# map kernel driver to device id
+drivers = {}
+for line in _run("find /sys | grep '.*/drivers/.*/0000:.*$' | cut -d'/' -f6,7").split('\n'):
+    try:
+        (driver, bus) = line.split("/0000:")
+        drivers[bus] = driver
+    except Exception:
+        continue
+
+# lspci -n: 00:1b.0 0403: 8086:293e (rev 03)
+# fields:   bus class vendor:device revision
+pci = {}
+if os.path.isdir('/proc/bus/pci'):
+    for line in _run("lspci -n").split("\n"):
+        revision = ''
+        fields = line.split(" ", maxsplit=4)
+        (vendor, device) = fields[2].split(":")
+        if len(fields) > 3:
+            revision = fields[4]
+        pci[fields[0]] = {
+            "class_id": fields[1].rstrip(":"),
+            "vendor_id": vendor,
+            "device_id": device,
+            "revision": revision.strip(')')
+        }
+
+    # lspci -mm: 00:00.0 "Host bridge" "Intel Corporation" "82G33/G31/P35/P31 Express DRAM Controller" -p00 "Red Hat, Inc." "QEMU Virtual Machine"
+    for fields in csv.reader(_run("lspci -mm").split("\n"), delimiter=' ', quotechar='"'):
+        pci[fields[0]]['class_name'] = fields[1].strip('"')
+        pci[fields[0]]['vendor_name'] = fields[2]
+        pci[fields[0]]['device_name'] = fields[3]
+        pci[fields[0]]['driver'] = drivers.get(fields[0], '')
+
+
+virtualization = 'physical'
+if facts['ansible_virtualization_role'] == 'guest':
+    virtualization = facts['ansible_virtualization_type']
 
 json.dump(
     {
         os.environ['AGENT_ID'].removeprefix('node/'): {
+            'version': _get_core_version(),
             'distro': {
-                'name': platform['ID'],
-                'version': platform['VERSION_ID']
+                'name': facts['ansible_distribution'],
+                'version': facts['ansible_distribution_version']
             },
-            'version': core_version
+            'processors': {
+                'count': facts['ansible_processor_cores'],
+                'model': facts['ansible_processor'][2],
+                'architecture': facts['ansible_architecture']
+            },
+            'product': {
+                'name': facts['ansible_product_name'],
+                'manufacturer': facts['ansible_system_vendor']
+            },
+            'virtual': virtualization,
+            'memory': {
+                'swap': {
+                    'used_bytes': facts['ansible_memory_mb']['swap']['used'],
+                    'available_bytes': facts['ansible_memory_mb']['swap']['free']
+                },
+                'system': {
+                    'used_bytes': facts['ansible_memory_mb']['real']['used'],
+                    'available_bytes': facts['ansible_memory_mb']['real']['free']
+                }
+            },
+            'pci': list(pci.values())
         }
     },
     fp=sys.stdout
