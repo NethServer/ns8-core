@@ -65,5 +65,6 @@
     "style-loader": "^2.0.0",
     "vue-loader": "^15.9.7",
     "vue-template-compiler": "^2.6.11"
-  }
+  },
+  "packageManager": "yarn@3.3.1"
 }
