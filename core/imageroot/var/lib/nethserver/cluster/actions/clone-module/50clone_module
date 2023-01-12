@@ -38,7 +38,8 @@ node_id = int(request['node'])
 rdb = agent.redis_connect(privileged=True)
 
 secret = str(os.getpid()) + os.getenv('AGENT_TASK_ID')
-original_environment = rdb.hgetall(f'module/{smid}/environment')
+source_image_url = rdb.hget(f'module/{smid}/environment', 'IMAGE_URL')
+agent.assert_exp(source_image_url)
 rsyncd_addr = rdb.hget(f'node/{node_id}/vpn', 'ip_address')
 agent.assert_exp(rsyncd_addr)
 
@@ -53,7 +54,7 @@ svolumes = list_volumes_result['output']
 # Create the destination  module
 add_module_result = agent.tasks.run("cluster", "add-module",
     data={
-        "image": original_environment['IMAGE_URL'],
+        "image": source_image_url,
         "node": node_id,
     }, 
     endpoint="redis://cluster-leader",
@@ -82,7 +83,6 @@ server_task = {
     "data": {
         "replace": replace,
         "credentials": [smid, secret],
-        "environment": original_environment,
         "port": rsyncd_port,
         "volumes": dvolumes,
     },
