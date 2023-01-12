@@ -31,7 +31,7 @@ source /etc/os-release
 echo "Install dependencies:"
 if [[ "${PLATFORM_ID}" == "platform:el9" ]]; then
     dnf update -y # Fix SELinux issues with basic packages
-    dnf install -y wireguard-tools podman jq openssl firewalld
+    dnf install -y wireguard-tools podman jq openssl firewalld pciutils
     systemctl enable --now firewalld
 elif [[ "${ID}" == "debian" && "${VERSION_ID}" == "11" ]]; then
     apt-get update
@@ -40,10 +40,10 @@ elif [[ "${ID}" == "debian" && "${VERSION_ID}" == "11" ]]; then
     echo 'deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/Debian_11/ /' > /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list
     wget -O - https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/Debian_11/Release.key | apt-key add -
     apt-get update
-    apt-get -y install python3-venv podman wireguard uuid-runtime jq openssl psmisc firewalld
+    apt-get -y install python3-venv podman wireguard uuid-runtime jq openssl psmisc firewalld pciutils
 elif [[ "${ID}" == "ubuntu" && "${VERSION_ID}" == "20.04" && "${CI}" == "true" && "${GITHUB_ACTIONS}" == "true" ]]; then
     apt-get update
-    apt-get -y install wireguard firewalld
+    apt-get -y install wireguard firewalld pciutils
 else
     echo "System not supported"
     exit 1

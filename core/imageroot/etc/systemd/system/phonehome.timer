@@ -1,0 +1,10 @@
+[Unit]
+Description=PhoneHome Trigger
+
+[Timer]
+OnCalendar=daily
+Persistent=true
+RandomizedDelaySec=21600
+
+[Install]
+WantedBy=timers.target

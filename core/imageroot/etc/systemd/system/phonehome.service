@@ -1,0 +1,6 @@
+[Unit]
+Description=PhoneHome
+
+[Service]
+Type=oneshot
+ExecStart=runagent /usr/local/bin/phonehome
