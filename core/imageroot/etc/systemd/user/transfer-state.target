@@ -1,0 +1,4 @@
+[Unit]
+Description=Module State Integrity Target
+Documentation=https://nethserver.github.io/ns8-core/core/clone_module/#implementation-of-transfer-state
+AllowIsolate=true
