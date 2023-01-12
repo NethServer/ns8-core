@@ -15,7 +15,7 @@ For example to create a clone of instance `dokuwiki1` on node 1, run
 
     api-cli run clone-module --data '{"module":"dokuwiki1","replace":false,"node":1}'
 
-The `replace` boolean specifies if the source instance can is removed when
+The `replace` boolean specifies if the source instance should be removed when
 `clone-module` completes with success.
 
 - With `"replace":false` the cloning action makes a copy of the source
