@@ -73,10 +73,13 @@ the destination with a `rsync` client that runs in a privileged Podman
 container. This container mounts all module volumes to correctly map
 numeric UID/GIDs.
 
-The step `10sendpayload` transfers the data for the first time, thus it is
-expected to be slower. The step `50sendstate` stops the services, quickly
-transfers the latest differences, then start the services again if the
-`replace` flag is true.
+The step `10sendpayload` transfers data for the first time, thus it is
+expected to be slower.
+
+The step `50sendstate` stops the services, quickly transfers the latest
+differences. If the transfer is successful the Rsync client sends a
+"terminate" signal to the server. Then the step starts again the services
+if the `replace` flag is false.
 
 Additional notes:
 
@@ -85,6 +88,9 @@ Additional notes:
   - `state/agent.env`
   - `state/environment`
   - `state/apitoken.cache`
+
+* some additional files with `.clone-module` extension are created and
+  transfered. See `clone-module` for details.
 
 * the automatic service stop-and-start logic works for rootless modules
   only. Rootfull modules must implement their steps to stop then start
@@ -98,9 +104,6 @@ Additional notes:
   transferred: just drop a `etc/state-filter-rules.rsync` under the
   AGENT_INSTALL_DIR. See `man 1 rsync` for the file syntax.
 
-If the transfer is successful the Rsync client sends a "terminate"
-signal to the server.
-
 ## Implementation of `clone-module`
 
 The core implementation of the `clone-module` step runs a Rsync server
@@ -111,10 +114,6 @@ The action input could be:
 ```json
 {
     "credentials": ["dokuwiki1", "s3cr3t"],
-    "environment": {
-        "IMAGE_URL": "ghcr.io/nethserver/dokuwiki:latest",
-        "MODULE_UUID": "f5d24fcd-819c-4b1d-98ad-a1b2ebcee8cf"
-    },
     "port": 20027,
     "volumes": [
         "dokuwiki-data"
@@ -123,20 +122,26 @@ The action input could be:
 }
 ```
 
-Note that the `environment` object (here partially redacted) is a copy of
-the source instance module environment.
-
 At step `05create_volumes` the `volumes` input array is used to re-create
 the same set of volumes of the source module, if they are not already
 created by `create-module`.
 
-The `05replace` step replaces MODULE_UUID, if the `replace` flag is
-`true`.
+Then `rsyncd` server runs at step `10recvstate`. This server blocks the
+step until the "terminate" signal is received from the client, or the task
+itself is canceled.
 
-Then `rsyncd` runs at step `10recvstate`. This step blocks until the
-"terminate" signal is received from the client, or the task itself is
-canceled.
+If the state data transfer is successful this step merges the contents of
+`environment.clone-module` (source module environment) with the
+destination module `environment`. It also preserves the source variable
+MODULE_UUID, if the `replace` flag is `true`.
 
-Further steps implemented by the module can adjust the configuration and
-finally start the services. This can be achieved by self-invoking an
-action like `configure-module` on the module instance itself.
+Consider that even if the `state/` directory and all Podman volumes are
+copied and merged properly by the core action steps, a module often needs
+to invoke actions of other modules, too. For example, it might need to set
+up an HTTP route, add a hostname to the TLS certificate or publish some
+information in Redis. To implement this, further steps by the module can
+self-invoke an action like `configure-module`, or symlink some step of it
+directly under the `clone-module/` action directory.
+
+Finally, the `90finalize` step enables and starts the **service and timer
+Systemd units** as they are in the source module.
