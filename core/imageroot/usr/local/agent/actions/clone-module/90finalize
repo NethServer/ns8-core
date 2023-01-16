@@ -1,0 +1,25 @@
+#!/bin/bash
+
+#
+# Copyright (C) 2022 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+set -e
+exec 1>&2 # Redirect any output to the journal (stderr)
+
+# Rootfull modules must implement this step on their own!
+if [[ $EUID != 0 ]]; then
+    if [[ -s timers-target.clone-module ]]; then
+        read -ra targs < timers-target.clone-module
+        systemctl --user enable "${targs[@]}"
+    fi
+    if [[ -s default-target.clone-module ]]; then
+        read -ra dargs < default-target.clone-module
+        systemctl --user enable "${dargs[@]}"
+        systemctl --user isolate default.target
+    fi
+fi
+
+# Clean up clone-module state files
+rm -vf ./*.clone-module
