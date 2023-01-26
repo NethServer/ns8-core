@@ -1,0 +1,22 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "remove-custom-zone input",
+    "$id": "http://schema.nethserver.org/node/remove-custom-zone-input.json",
+    "description": "Remove firewall configuration for the given zone",
+    "examples": [
+        {
+            "zone": "myzone"
+        }
+    ],
+    "type": "object",
+    "required": [
+        "zone"
+    ],
+    "properties": {
+        "service": {
+            "type": "string",
+            "title": "Zone name",
+            "minLength": 1
+        }
+    }
+}
