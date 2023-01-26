@@ -448,7 +448,8 @@ def list_service_providers(rdb, service, transport='*', filters={}):
         rvalue = rdb.hgetall(rkey)
 
         if rkey.startswith('module/'):
-            module_id = rkey[7:rkey.index('/', 7)]
+            splitted_key = rkey.split('/')
+            module_id = splitted_key[1]
 
             if not 'module_uuid' in rvalue:
                 rvalue['module_uuid'] = rdb.hget(f'module/{module_id}/environment', 'MODULE_UUID')
@@ -456,7 +457,10 @@ def list_service_providers(rdb, service, transport='*', filters={}):
             if not 'node' in rvalue:
                 rvalue['node'] = rdb.hget(f'module/{module_id}/environment', 'NODE_ID')
 
-            rvalue['transport'] = rkey.split('/')[-2]
+            if splitted_key[2] != 'srv':
+                rvalue['qualifier'] = splitted_key[2]
+
+            rvalue['transport'] = splitted_key[-2]
             rvalue['module_id'] = module_id
             rvalue['ui_name'] = rdb.get(f'module/{module_id}/ui_name')
 
