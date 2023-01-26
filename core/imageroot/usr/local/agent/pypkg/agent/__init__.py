@@ -422,6 +422,21 @@ def add_public_service(name, ports):
     )
     return response['exit_code'] == 0
 
+def add_custom_zone(name, interface, ports=[], rules=[]):
+    node_id = os.environ['NODE_ID']
+    response = agent.tasks.run(
+        agent_id=f'node/{node_id}',
+        action='add-custom-zone',
+        data={
+            'zone': name,
+            'interface': interface,
+            'ports': ports,
+            'rules': rules
+        }
+    )
+    return response['exit_code'] == 0
+
+
 def remove_public_service(name):
     node_id = os.environ['NODE_ID']
     response = agent.tasks.run(
@@ -430,6 +445,16 @@ def remove_public_service(name):
         data={'service': name}
     )
     return response['exit_code'] == 0
+
+def remove_custom_zone(name):
+    node_id = os.environ['NODE_ID']
+    response = agent.tasks.run(
+        agent_id=f'node/{node_id}',
+        action='remove-custom-zone',
+        data={'zone': name}
+    )
+    return response['exit_code'] == 0
+
 
 def list_service_providers(rdb, service, transport='*', filters={}):
     """Look up the endpoint information about a given service. Filter
