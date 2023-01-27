@@ -165,6 +165,8 @@ cluster.grants.grant(rdb, action_clause="show-*", to_clause="reader", on_clause=
 cluster.grants.grant(rdb, action_clause="read-*", to_clause="reader", on_clause='node/1')
 cluster.grants.grant(rdb, action_clause="add-public-service",  to_clause="fwadm", on_clause='node/1')
 cluster.grants.grant(rdb, action_clause="remove-public-service",  to_clause="fwadm", on_clause='node/1')
+cluster.grants.grant(rdb, action_clause="add-custom-zone",  to_clause="fwadm", on_clause='node/1')
+cluster.grants.grant(rdb, action_clause="remove-custom-zone",  to_clause="fwadm", on_clause='node/1')
 EOF
 
 for arg in "${@}"; do
