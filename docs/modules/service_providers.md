@@ -30,7 +30,7 @@ requirements, typically the `host` and IP `port` entries are set.
 
 ## Raising events
 
-The service provider **must raise** one or more distinct events whenever
+The service provider **should raise** one or more distinct events whenever
 the information in its `srv` keys is changed. The event name and payload
 must be documented by the service provider. A common convention for the
 event name is:
@@ -38,9 +38,9 @@ event name is:
     service-{SERVICE_NAME}-changed
 
 The event payload is a JSON-encoded string representing an object. The
-object contains at least the `key`, `module_uuid` and `module_id`
-attributes. They are necessary to event listeners to identify the event
-source and retrieve further information as needed:
+object can contain the needed attributes to identify the source of the event.
+They are necessary to event listeners to identify the event
+source and retrieve further information as needed, an example payload can be:
 
 ```json
 {
