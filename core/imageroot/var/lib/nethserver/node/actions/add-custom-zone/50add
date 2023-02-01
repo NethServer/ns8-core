@@ -1,0 +1,38 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2023 Nethesis S.r.l.
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
+
+import sys
+import json
+import agent
+
+request = json.load(sys.stdin)
+name = request['zone']
+interface = request.get('interface')
+ports = request.get('ports')
+rules = request.get('rules')
+
+fw_cmd = ['firewall-cmd', '--permanent']
+
+if agent.run_helper('firewall-cmd', f'--info-zone={name}').returncode == 0:
+    agent.run_helper(*fw_cmd, f'--delete-zone={name}').check_returncode()
+
+# Create the zone
+agent.run_helper(*fw_cmd, f'--new-zone={name}').check_returncode()
+
+# Add interface to the zone
+agent.run_helper(*fw_cmd, f'--zone={name}', f'--add-interface={interface}').check_returncode()
+
+# Add the ports to the new zone
+for port in ports:
+    agent.run_helper(*fw_cmd, f'--zone={name}', f'--add-port={port}').check_returncode()
+
+# Add rich rules
+for rule in rules:
+    agent.run_helper(*fw_cmd, f'--zone={name}', f'--add-rich-rule={rule}').check_returncode()
+
+# Apply the configuration
+agent.run_helper('firewall-cmd', '--reload').check_returncode()

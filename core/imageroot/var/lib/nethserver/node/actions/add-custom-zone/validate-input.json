@@ -1,0 +1,48 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "add-custom-zone input",
+    "$id": "http://schema.nethserver.org/node/add-custom-zone-input.json",
+    "description": "Add firewall configuration for a custom zone",
+    "examples": [
+        {
+            "zone": "myzone",
+	    "interface": "eth0",
+            "ports": [
+                "25/tcp"
+            ],
+	    "rules": [ 
+		    "rule family=ipv4 source address=172.18.212.0/24 destination address=172.18.212.0/24 reject"
+	    ]
+        }
+    ],
+    "type": "object",
+    "required": [
+        "zone",
+        "interface",
+        "ports"
+    ],
+    "properties": {
+        "zone": {
+            "type": "string",
+            "title": "Zone name",
+            "minLength": 1
+        },
+        "interface": {
+            "type": "string",
+            "title": "Interface name to be added inside the zone",
+            "minLength": 1
+        },
+        "ports": {
+            "type": "array",
+            "title": "Firewall ports configuration",
+            "examples": ["25/tcp", "21/udp", "9000-9010/tcp"],
+            "minItems": 1
+        },
+        "rules": {
+            "type": "array",
+            "title": "Firewall rich rules",
+            "examples": ["rule family=ipv4 source address=172.18.212.1 destination address=172.18.212.0/24 accept"],
+            "minItems": 1
+        }
+    }
+}
