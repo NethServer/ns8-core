@@ -11,8 +11,7 @@ if ! buildah containers --format "{{.ContainerName}}" | grep -q gobuilder-core; 
     echo "Pulling Golang runtime..."
     golang_cache_path="${PWD}/.golang-cache"
     mkdir -vp "${golang_cache_path}/{mcache,bcache}"
-    buildah from --name gobuilder-tmp docker.io/library/golang:1.18-alpine
-    buildah run gobuilder-tmp apk add g++ gcc
+    buildah from --name gobuilder-tmp docker.io/library/golang:1.19.5-bullseye
     buildah config --env GOCACHE=/var/lib/misc/bcache --env GOMODCACHE=/var/lib/misc/mcache gobuilder-tmp
     buildah commit --rm gobuilder-tmp gobuilder-image
     buildah from --name gobuilder-core \
@@ -27,15 +26,15 @@ if ! buildah containers --format "{{.ContainerName}}" | grep -q nodebuilder-core
     buildah from --name nodebuilder-core -v "${PWD}:/usr/src/core:z" docker.io/library/node:18-slim
 fi
 
-echo "Build statically linked Go binaries based on Musl..."
+echo "Build statically linked Go binaries..."
 echo "1/2 agent..."
-buildah run gobuilder-core sh -c "cd /usr/src/core/agent && CGO_ENABLED=0 go build -v ."
+buildah run --env "CGO_ENABLED=0" gobuilder-core sh -c "cd /usr/src/core/agent && go build -v ."
 
 echo "2/2 api-server and api-server-logs..."
 # Statically link libraries and disable Sqlite extensions that expect a dynamic loader (not portable across distros)
 # Ref https://www.arp242.net/static-go.html
-buildah run gobuilder-core sh -c "cd /usr/src/core/api-server && go build -v -ldflags=\"-extldflags=-static\" -tags sqlite_omit_load_extension api-server.go"
-buildah run gobuilder-core sh -c "cd /usr/src/core/api-server && go build -v -ldflags=\"-extldflags=-static\" -tags sqlite_omit_load_extension api-server-logs.go"
+buildah run --env "CGO_ENABLED=1" gobuilder-core sh -c "cd /usr/src/core/api-server && go build -ldflags='-extldflags=-static' -tags sqlite_omit_load_extension -v api-server.go"
+buildah run --env "CGO_ENABLED=0" gobuilder-core sh -c "cd /usr/src/core/api-server && go build -v api-server-logs.go"
 
 echo "Build static UI files with node..."
 buildah run --env="NODE_OPTIONS=--openssl-legacy-provider" nodebuilder-core sh -c "cd /usr/src/core/ui && yarn install --immutable && yarn build"
