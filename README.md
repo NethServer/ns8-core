@@ -6,3 +6,5 @@ Links:
 - [Developer manual](https://nethserver.github.io/ns8-core/)
 - [API documentation](https://github.com/NethServer/ns8-scratchpad/tree/apidoc)
 - [Project roadmap](https://trello.com/b/R58gtZ8I/ns8-prototype)
+
+Translated with [Weblate](https://hosted.weblate.org/projects/ns8/).
