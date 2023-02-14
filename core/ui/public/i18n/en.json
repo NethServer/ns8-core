@@ -466,7 +466,7 @@
     "backup_of_instances_failed_c": "{instance} failed | {num} instances failed",
     "errored_backups_c": "{num} backup failed | {num} backups failed",
     "errored_backups_description": "Check out <strong>Backup scheduler</strong> below",
-    "backups_scheduled_c": "Backup scheduled | Backups scheduled",
+    "backups_scheduled_c": "Scheduled backup | Scheduled backups",
     "restore": "Restore",
     "select_instance_to_restore": "Select app instance to restore",
     "select_restore_node": "Select the node where the instance will be restored",
@@ -828,8 +828,8 @@
     "go_to_backup": "Go to Backup",
     "backups_failed_c": "{num} backup failed | {num} backups failed",
     "instances_not_backed_up_c": "{num} app not backed up | {num} apps not backed up",
-    "apps_installed_c": "App installed | Apps installed",
-    "updated_available_c": "Update available | Updates available",
+    "apps_installed_c": "Installed application| Installed applications",
+    "updated_available_c": "Available update | Available updates",
     "core_update_available": "Core update available"
   },
   "domains": {
