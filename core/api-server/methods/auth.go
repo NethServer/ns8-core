@@ -26,6 +26,7 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/base32"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -264,7 +265,7 @@ func QRCode(c *gin.Context) {
 	secret := make([]byte, 20)
 	_, err := rand.Read(secret)
 	if err != nil {
-		panic(err)
+		fmt.Println("Failed to generate random secret for QRCode", err)
 	}
 
 	// convert to string
@@ -291,7 +292,7 @@ func QRCode(c *gin.Context) {
 	// define URL
 	URL, err := url.Parse("otpauth://totp")
 	if err != nil {
-		panic(err)
+		fmt.Println("Failed to parse URL for QRCode", err)
 	}
 
 	// add params
@@ -479,7 +480,7 @@ func CheckTokenValidation(username string, token string) bool {
 	// read whole file
 	secrestListB, err := ioutil.ReadFile(configuration.Config.TokensDir + "/" + username)
 	if err != nil {
-		panic(err)
+		return false
 	}
 	secrestList := string(secrestListB)
 
