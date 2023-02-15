@@ -10,7 +10,7 @@ parent: Core
 Traefik is the proxy server used to access all HTTP/HTTPS services.
 It also handles Let's Encrypt certificate requests and renewal.
 
-See [Traefik README](https://github.com/NethServer/ns8-core/blob/main/traefik/README.md) for more info.
+See [Traefik README](https://github.com/NethServer/ns8-traefik/blob/main/README.md) for more info.
 
 Let's Encrypt certificates are automatically exported to Redis upon request and renewal.
 Certificates are saved under an hash named `/module/traefik<X>/certificate/<domain>` key,
