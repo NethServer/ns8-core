@@ -522,7 +522,7 @@
     "title": "Software repositories",
     "no_sw_repositories": "No software repository",
     "no_sw_repositories_description": "There is no software repository configured",
-    "create_repository": "Create repository",
+    "create_repository": "Add repository",
     "name": "Name",
     "url": "URL",
     "status": "Status",
