@@ -58,15 +58,15 @@ The migration procedure is still not ready but developers will work hard to make
 
 ### How can I install NethServer 8?
 
-Take a look to the [Quickstart]({{site.baseurl}}/quickstart#core-installation).
+See the [Administrator manual]({{site.admin_manual}}).
 
 ### Where can I download it?
 
-No need to download it. Just install on a [supported distribution]({{site.baseurl}}/quickstart#system-requirements).
+No need to download it. Just install on a [supported distribution]({{site.admin_manual}}/system_requirements.html).
 
 ### Can I install NethServer on a virtual machine?
 
-Yes. You can choose any hypervisor or cloud provider supporting [these distributions]({{site.baseurl}}/quickstart#system-requirements).
+Yes. You can choose any hypervisor or cloud provider supporting [these distributions]({{site.admin_manual}}/system_requirements.html).
 
 ### Can I install it on bare metal?
 
@@ -74,7 +74,7 @@ Sure. See the question below.
 
 ### What hardware is supported?
 
-Anything supported by [these distributions]({{site.baseurl}}/quickstart#system-requirements),
+Anything supported by your chosen distribution.
 
 ### Does NethServer 8 have Cockpit?
 
