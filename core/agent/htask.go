@@ -71,9 +71,7 @@ func runAction(rdb *redis.Client, actionCtx context.Context, task *models.Task) 
 
 	// Read initial environment file contents
 	environment := readStateFile()
-	// Create a backup copy of the original environment. If the action
-	// aborts it is restored:
-	backupEnvironment := environment
+
 	// Write the environment state to disk if any change occurs:
 	var isStateWriteNeeded bool = false
 
@@ -283,11 +281,6 @@ func runAction(rdb *redis.Client, actionCtx context.Context, task *models.Task) 
 
 		actionDescriptor.SetProgressAtStep(stepIndex, 100)
 		publishStatus(rdb, progressChannel, actionDescriptor)
-	}
-
-	if exitCode != 0 { // The last step has failed, action is aborted
-		// rollback the environment state file to the original value:
-		writeStateFile(backupEnvironment)
 	}
 
 	_, err := rdb.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
