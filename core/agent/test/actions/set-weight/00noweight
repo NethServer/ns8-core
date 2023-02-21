@@ -1,11 +1,18 @@
 #!/bin/sh
 
 echo "set-weight 00noweight 0" >&$AGENT_COMFD
+read -r ack <&${AGENT_ACKFD:?}
 echo "set-weight 10step1 5" >&$AGENT_COMFD
+read -r ack <&${AGENT_ACKFD:?}
 echo "set-weight 20step2 2" >&$AGENT_COMFD
+read -r ack <&${AGENT_ACKFD:?}
 echo "set-weight 30step3 1" >&$AGENT_COMFD
+read -r ack <&${AGENT_ACKFD:?}
 echo "set-weight 40step4 2" >&$AGENT_COMFD
+read -r ack <&${AGENT_ACKFD:?}
 
 # Trigger non-fatal errors:
 echo "set-weight BAD 7" >&$AGENT_COMFD
+read -r ack <&${AGENT_ACKFD:?}
 echo "set-progress 999" >&$AGENT_COMFD
+read -r ack <&${AGENT_ACKFD:?}

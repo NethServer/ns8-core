@@ -125,17 +125,22 @@ func runAction(rdb *redis.Client, actionCtx context.Context, task *models.Task) 
 
 		// Create a pipe to read control commands from action steps
 		comReadFd, comWriteFd, _ := os.Pipe()
+		// Create a second pipe, to write command acks to action steps
+		ackReadFd, ackWriteFd, _ := os.Pipe()
+
+		commandAck := []byte{10}
 		comReadLock := make(chan int, 3)
 
 		cmd := exec.Command(step.Path)
 		cmd.Env = append(append(os.Environ(), environment...),
 			"AGENT_COMFD=3", // 3 is the additional FD number where the action step can write its commands for us
+			"AGENT_ACKFD=4", // 4 is the additional FD number where the action step can read command ack from us
 			"AGENT_TASK_ID="+task.ID,
 			"AGENT_TASK_ACTION="+task.Action,
 		)
 		inputData, _ := json.Marshal(task.Data)
 		cmd.Stdin = strings.NewReader(string(inputData))
-		cmd.ExtraFiles = []*os.File{comWriteFd}
+		cmd.ExtraFiles = []*os.File{comWriteFd, ackReadFd}
 		// Run cmd in a new progress group (PG) to easily send termination signals
 		cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true, Pgid: 0}
 
@@ -173,17 +178,21 @@ func runAction(rdb *redis.Client, actionCtx context.Context, task *models.Task) 
 				switch cmd := record[0]; cmd {
 				case "set-env":
 					setEnvironmentVariable(record[1], record[2])
+					ackWriteFd.Write(commandAck)
 				case "unset-env":
 					unsetEnvironmentVariable(record[1])
+					ackWriteFd.Write(commandAck)
 				case "set-status":
 					if record[1] == "validation-failed" {
 						actionDescriptor.Status = "validation-failed"
 					} else {
 						log.Printf(SD_ERR+"set-status command failed: unknown status \"%s\"", record[1])
 					}
+					ackWriteFd.Write(commandAck)
 				case "set-weight":
 					var weight int
 					var err error
+					ackWriteFd.Write(commandAck)
 					weight, err = strconv.Atoi(record[2])
 					if err != nil {
 						log.Printf(SD_ERR+"set-weight command failed: %v", err)
@@ -197,6 +206,7 @@ func runAction(rdb *redis.Client, actionCtx context.Context, task *models.Task) 
 				case "set-progress":
 					var progress int
 					var err error
+					ackWriteFd.Write(commandAck)
 					progress, err = strconv.Atoi(record[1])
 					if err != nil {
 						log.Printf(SD_ERR+"set-progress command failed: %v", err)
@@ -209,6 +219,7 @@ func runAction(rdb *redis.Client, actionCtx context.Context, task *models.Task) 
 					}
 					publishStatus(rdb, progressChannel, actionDescriptor)
 				default:
+					ackWriteFd.Write(commandAck)
 					log.Printf(SD_ERR+"Unknown command %s", cmd)
 				}
 			}
@@ -227,6 +238,8 @@ func runAction(rdb *redis.Client, actionCtx context.Context, task *models.Task) 
 		// standard FDs are closed by Start. Our extra FD for commands must be closed manually
 		// otherwise it blocks our thread.
 		comWriteFd.Close()
+		// ...same for extra FD for command acks.
+		ackReadFd.Close()
 
 		// Block until the three coroutines (stdout, stderr, comfd) finish,
 		// or the action is canceled

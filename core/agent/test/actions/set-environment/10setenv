@@ -1,4 +1,6 @@
 #!/bin/bash
 
 echo 'set-env VAR1 VAL1' >&${AGENT_COMFD}
+read -r ack <&${AGENT_ACKFD:?}
 echo 'set-env VAR2 VAL2' >&${AGENT_COMFD}
+read -r ack <&${AGENT_ACKFD:?}

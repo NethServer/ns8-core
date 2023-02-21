@@ -262,6 +262,10 @@ def __action(*args):
     fdobj = os.fdopen(fd, mode="w", encoding='utf-8', closefd=False)
     writer = csv.writer(fdobj, delimiter=' ', quotechar='"', quoting=csv.QUOTE_MINIMAL)
     writer.writerow(args)
+    try:
+        os.read(int(os.environ['AGENT_ACKFD']), 1) # Read the ack byte from the control FD
+    except KeyError:
+        pass # Ignore error if the environment variable is not defined
 
 def set_env(name, value):
     __action("set-env", name, value)

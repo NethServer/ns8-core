@@ -224,6 +224,18 @@ The same command in Python 3
     fd = int(os.environ['AGENT_COMFD'])
     os.write(fd, 'set-progress 73\n'.encode('utf-8'))
 
+To synchronize with the agent, the client must read a `\n` byte (integer
+10) from file descriptor AGENT_ACKFD before running further commands or
+reading the `./environment` state file. For example:
+
+    read -r ack <&${AGENT_ACKFD}
+
+In Python 3
+
+    import os
+    fd = int(os.environ['AGENT_ACKFD'])
+    os.read(fd, 1)
+
 ### set-env
 
 The `set-env` command modifies an environment variable for subsequent
@@ -353,3 +365,4 @@ Differences with the action execution are:
 
 - The final event exit code is written to the agent log only
 - Commands sent to AGENT_COMFD are ignored (and redirected to the agent stderr)
+- The AGENT_ACKFD variable is not available at all
