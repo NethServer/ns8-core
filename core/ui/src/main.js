@@ -61,8 +61,8 @@ for (const f in Filters) {
 import VueI18n from "vue-i18n";
 Vue.use(VueI18n);
 const i18n = new VueI18n();
-const messages = require("../public/i18n/en.json");
 const langCode = navigator.language.substring(0, 2);
+const messages = require("../public/i18n/"+langCode+"/translation.json");
 i18n.setLocaleMessage(langCode, messages);
 i18n.locale = langCode;
 
