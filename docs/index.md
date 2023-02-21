@@ -13,6 +13,7 @@ Give it a try: [Quickstart](quickstart.md)!
 See the [FAQ](faq), explore [core internals](core), [modules architecture](modules) or the [UI implementation](ui).
 
 External links:
+- [Administrator manual]({{site.admin_manual}})
 - [Project roadmap](https://trello.com/b/R58gtZ8I/ns8-prototype)
 - [API documentation](https://github.com/NethServer/ns8-core/tree/apidoc)
 
