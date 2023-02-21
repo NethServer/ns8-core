@@ -14,10 +14,8 @@ import (
 
 var muxEnvironment sync.Mutex
 
-// Read the environment state file from the current working directory.
-func readStateFile() []string {
-	muxEnvironment.Lock()
-	defer func() { muxEnvironment.Unlock() }()
+// Read the environment file from the current working directory.
+func readEnvironmentFile() []string {
 	env := make([]string, 0)
 	content, err := os.ReadFile("./environment")
 	if err != nil {
@@ -38,9 +36,7 @@ func readStateFile() []string {
 
 // Persist the environment state file to the current working directory
 // Systemd unit file can pickup it with EnvironmentFile option
-func writeStateFile(env []string) {
-	muxEnvironment.Lock()
-	defer func() { muxEnvironment.Unlock() }()
+func writeEnvironmentFile(env []string) {
 	path, _ := os.Getwd()
 	env = dedupEnv(env)
 	f, err := os.Create("./environment")
@@ -52,7 +48,28 @@ func writeStateFile(env []string) {
 		f.WriteString(line + "\n")
 	}
 	f.Close()
-	log.Printf("Wrote %s/environment file", path)
+}
+
+func setEnvironmentVariable(varname string, varvalue string) {
+	muxEnvironment.Lock()
+	defer func() { muxEnvironment.Unlock() }()
+	environment := readEnvironmentFile()
+	environment = append(environment, varname + "=" + varvalue)
+	writeEnvironmentFile(environment)
+}
+
+func unsetEnvironmentVariable(varname string) {
+	muxEnvironment.Lock()
+	defer func() { muxEnvironment.Unlock() }()
+	environment := readEnvironmentFile()
+	for i, envVar := range environment {
+		if strings.HasPrefix(envVar, varname + "=") {
+			// var exists at index i: slice and splice at that index:
+			environment = append(environment[:i], environment[i+1:]...)
+			// the array could have duplicates, continue the iteration
+		}
+	}
+	writeEnvironmentFile(environment)
 }
 
 // NOTE: This function is a copy of dedupEnvCase in go/exec module

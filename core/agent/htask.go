@@ -69,11 +69,7 @@ func runAction(rdb *redis.Client, actionCtx context.Context, task *models.Task) 
 		log.Printf(SD_ERR+"Action %s is not defined", task.Action)
 	}
 
-	// Read initial environment file contents
-	environment := readStateFile()
-
-	// Write the environment state to disk if any change occurs:
-	var isStateWriteNeeded bool = false
+	var environment []string;
 
 	for stepIndex, step := range actionDescriptor.Steps {
 		lastStep = step.Name
@@ -81,8 +77,7 @@ func runAction(rdb *redis.Client, actionCtx context.Context, task *models.Task) 
 		// Sync environment variables from the filesystem. Reading the
 		// environment file on every step allows to load changes produced
 		// by child actions.
-		environment = readStateFile()
-		isStateWriteNeeded = false // reset the flag on each cycle
+		environment = readEnvironmentFile()
 
 		// Special treatment for builtin validation steps
 		if step.Name == models.STEP_VALIDATE_INPUT {
@@ -177,17 +172,9 @@ func runAction(rdb *redis.Client, actionCtx context.Context, task *models.Task) 
 				}
 				switch cmd := record[0]; cmd {
 				case "set-env":
-					environment = append(environment, record[1]+"="+record[2])
-					isStateWriteNeeded = true
+					setEnvironmentVariable(record[1], record[2])
 				case "unset-env":
-					for i, envVar := range environment {
-						if strings.HasPrefix(envVar, record[1]+"=") {
-							// var exists at index i: slice and splice at that index:
-							environment = append(environment[:i], environment[i+1:]...)
-							isStateWriteNeeded = true
-							// the array could have duplicates, continue the iteration
-						}
-					}
+					unsetEnvironmentVariable(record[1])
 				case "set-status":
 					if record[1] == "validation-failed" {
 						actionDescriptor.Status = "validation-failed"
@@ -272,11 +259,6 @@ func runAction(rdb *redis.Client, actionCtx context.Context, task *models.Task) 
 			exitCode = 10 // if no exit code was returned, validation-failed forces exit code 10
 			log.Printf(SD_WARNING+"Action \"%s\" validation-failed at step %s. Exit code is not set! Forced to 10", task.Action, step.Path)
 			break
-		}
-
-		// Write the environment state file with changes from the successful step:
-		if exitCode == 0 && isStateWriteNeeded {
-			writeStateFile(dedupEnv(environment))
 		}
 
 		actionDescriptor.SetProgressAtStep(stepIndex, 100)
