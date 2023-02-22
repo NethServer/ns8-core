@@ -124,7 +124,7 @@ EOF
 
     # Configure default module repository
     cat <<EOF
-HSET cluster/repository/default url ${REPOMD:-https://raw.githubusercontent.com/NethServer/ns8-repomd/repomd}/ status 1 testing ${TESTING:-0}
+HSET cluster/repository/default url ${REPOMD:-https://distfeed.nethserver.org/ns8/updates/}/ status 1 testing ${TESTING:-0}
 EOF
 
     # Setup initial ACLs
