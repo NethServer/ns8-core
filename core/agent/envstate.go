@@ -6,6 +6,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -46,15 +47,21 @@ func _readEnvironmentFileNolock() []string {
 func _writeEnvironmentFile(env []string) {
 	path, _ := os.Getwd()
 	env = dedupEnv(env)
-	f, err := os.Create("./environment")
+	filename := fmt.Sprintf(".environment-%d.tmp", os.Getpid())
+	f, err := os.Create(filename)
 	if err != nil {
-		log.Printf(SD_ERR+"Can't write %s/environment file: %s", path, err)
+		log.Printf(SD_ERR+"Can't write %s/%s file: %s", path, filename, err)
 		return
 	}
 	for _, line := range env {
 		f.WriteString(line + "\n")
 	}
 	f.Close()
+	// Move the temporary file to its final destination. This operation is atomic and
+	// avoid read concurrency with other processes
+	if err := os.Rename(filename, "environment"); err != nil {
+		log.Printf(SD_ERR+"Rename of ./%s to ./environment has failed: %s", filename, err)
+	}
 }
 
 func setEnvironmentVariable(varname string, varvalue string) {
