@@ -179,6 +179,7 @@ func runAction(rdb *redis.Client, actionCtx context.Context, task *models.Task) 
 				case "set-env":
 					environment = append(environment, record[1]+"="+record[2])
 					isStateWriteNeeded = true
+					log.Printf(SD_WARNING + "Command set-env is deprecated")
 				case "unset-env":
 					for i, envVar := range environment {
 						if strings.HasPrefix(envVar, record[1]+"=") {
@@ -188,6 +189,7 @@ func runAction(rdb *redis.Client, actionCtx context.Context, task *models.Task) 
 							// the array could have duplicates, continue the iteration
 						}
 					}
+					log.Printf(SD_WARNING + "Command unset-env is deprecated")
 				case "set-status":
 					if record[1] == "validation-failed" {
 						actionDescriptor.Status = "validation-failed"

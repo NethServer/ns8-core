@@ -104,6 +104,35 @@ def read_envfile(file_path):
 
     return env
 
+def write_envfile(file_path, envmap):
+    """Write an environment file with envmap contents
+    """
+    entries = [ek + "=" + ev for ek, ev in envmap.items()]
+    entries.sort()
+    payload = "\n".join(entries) + "\n"
+    tmpfile = ".{0}-{1!s}.tmp".format(file_path, os.getpid())
+    with open(tmpfile, 'w') as ofile:
+        ofile.write(payload)
+    os.rename(tmpfile, file_path)
+
+def set_env(var_name, var_value):
+    """Change the ./environment file contents, setting the variable "var_name" to the given "var_value"
+    """
+    envmap = read_envfile("environment")
+    envmap[var_name] = var_value
+    write_envfile("environment", envmap)
+
+def unset_env(var_name):
+    """Change the ./environment file contents, removing the variable "var_name"
+    """
+    envmap = read_envfile("environment")
+    try:
+        del envmap[var_name]
+    except KeyError:
+        pass
+    write_envfile("environment", envmap)
+
+
 def get_progress_callback(range_low, range_high):
     """Return a function that maps progress range 0-100 to range_low-range_high and
     calls internally the set_progress() function.
@@ -263,14 +292,8 @@ def __action(*args):
     writer = csv.writer(fdobj, delimiter=' ', quotechar='"', quoting=csv.QUOTE_MINIMAL)
     writer.writerow(args)
 
-def set_env(name, value):
-    __action("set-env", name, value)
-
-def unset_env(name):
-    __action("unset-env", name)
-
 def dump_env():
-    print(SD_DEBUG + "dump_env() is deprecated. The environment is now automatically persisted to the agent state/ directory at the end of each action step. See also NethServer/core#324.", file=sys.stderr)
+    print(SD_DEBUG + "dump_env() is deprecated and implemented as a no-op", file=sys.stderr)
 
 def set_status(value):
     __action("set-status", value)
