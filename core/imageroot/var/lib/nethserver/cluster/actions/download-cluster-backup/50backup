@@ -22,4 +22,12 @@
 
 exec 1>&2
 
+# save the password to the temporary file
+mkdir -p backup
+cat /dev/stdin | jq -r ".password" > backup/passphrase
+chmod 600 backup/passphrase
+
 cluster-backup
+
+# remove the password
+rm -f backup/passphrase
