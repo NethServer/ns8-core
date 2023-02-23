@@ -147,6 +147,7 @@
     "cannot_login": "Cannot log in",
     "username": "Username",
     "password": "Password",
+    "continue": "Continue",
     "username_placeholder": "Your username",
     "password_placeholder": "Your password",
     "remember_username": "Remember username",
