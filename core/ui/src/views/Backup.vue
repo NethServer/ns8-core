@@ -59,6 +59,43 @@
           </h2>
         </cv-column>
       </cv-row>
+      <!-- cluster configuration -->
+      <cv-row>
+          <cv-column>
+            <h4 class="mg-bottom-md">
+              {{ $t("backup.cluster_configuration") }}
+              <cv-interactive-tooltip
+                alignment="start"
+                direction="right"
+                class="info"
+              >
+                <template slot="trigger">
+                  <Information16 />
+                </template>
+                <template slot="content">
+                  {{ $t("backup.cluster_configuration_tooltip") }}
+                </template>
+              </cv-interactive-tooltip>
+            </h4>
+        </cv-column>
+      </cv-row>
+      <cv-row class="mg-bottom-lg">
+          <cv-column>
+            <NsButton
+              kind="secondary"
+              :icon="Download20"
+              @click="showDownloadBackupModal()"
+              >{{ $t("backup.download_cluster_configuration_backup") }}
+            </NsButton>
+          </cv-column>
+        </cv-row>
+        <cv-row>
+          <cv-column>
+            <h4 class="mg-bottom-md">
+              {{ $t("backup.apps") }}
+            </h4>
+          </cv-column>
+        </cv-row>
       <template v-if="loading.listBackupRepositories || loading.listBackups">
         <!-- repositories skeleton -->
         <cv-row>
@@ -169,43 +206,6 @@
               @action="showCreateOrEditBackupModal('notBackedUp')"
               :showCloseButton="false"
             />
-          </cv-column>
-        </cv-row>
-        <!-- cluster configuration -->
-        <cv-row>
-          <cv-column>
-            <h4 class="mg-bottom-md">
-              {{ $t("backup.cluster_configuration") }}
-              <cv-interactive-tooltip
-                alignment="start"
-                direction="right"
-                class="info"
-              >
-                <template slot="trigger">
-                  <Information16 />
-                </template>
-                <template slot="content">
-                  {{ $t("backup.cluster_configuration_tooltip") }}
-                </template>
-              </cv-interactive-tooltip>
-            </h4>
-          </cv-column>
-        </cv-row>
-        <cv-row class="mg-bottom-lg">
-          <cv-column>
-            <NsButton
-              kind="secondary"
-              :icon="Download20"
-              @click="downloadClusterConfigurationBackup()"
-              >{{ $t("backup.download_cluster_configuration_backup") }}
-            </NsButton>
-          </cv-column>
-        </cv-row>
-        <cv-row>
-          <cv-column>
-            <h4 class="mg-bottom-md">
-              {{ $t("backup.apps") }}
-            </h4>
           </cv-column>
         </cv-row>
         <!-- repositories -->
@@ -659,6 +659,11 @@
       :isShown="isShownRestoreModal"
       @hide="hideRestoreModal"
     />
+    <!-- download backup modal -->
+    <DownloadBackupModal
+      :isShown="isShownDownloadBackupModal"
+      @hide="hideDownloadBackupModal"
+    />
   </div>
 </template>
 
@@ -677,6 +682,7 @@ import RepoDetailsModal from "@/components/backup/RepoDetailsModal";
 import BackupDetailsModal from "@/components/backup/BackupDetailsModal";
 import EditRepositoryModal from "@/components/backup/EditRepositoryModal";
 import RestoreSingleInstanceModal from "@/components/backup/RestoreSingleInstanceModal";
+import DownloadBackupModal from "@/components/backup/DownloadBackupModal";
 import to from "await-to-js";
 import Information16 from "@carbon/icons-vue/es/information/16";
 
@@ -689,6 +695,7 @@ export default {
     BackupDetailsModal,
     EditRepositoryModal,
     RestoreSingleInstanceModal,
+    DownloadBackupModal,
     Information16,
   },
   mixins: [
@@ -714,6 +721,7 @@ export default {
       isShownDeleteBackupModal: false,
       isShownBackupDetailsModal: false,
       isShownRestoreModal: false,
+      isShownDownloadBackupModal: false,
       repositories: [],
       backups: [],
       unconfiguredInstances: [],
@@ -910,6 +918,12 @@ export default {
     hideRestoreModal() {
       this.isShownRestoreModal = false;
     },
+    showDownloadBackupModal() {
+      this.isShownDownloadBackupModal = true;
+    },
+    hideDownloadBackupModal() {
+      this.isShownDownloadBackupModal = false;
+    },
     async deleteRepo(repo) {
       this.error.removeBackupRepository = "";
       const taskAction = "remove-backup-repository";
@@ -1082,67 +1096,7 @@ export default {
       this.loading.alterBackup = false;
       this.listBackups();
     },
-    async downloadClusterConfigurationBackup() {
-      this.loading.downloadClusterBackup = true;
-      const taskAction = "download-cluster-backup";
 
-      // register to task error
-      this.$root.$off(taskAction + "-aborted");
-      this.$root.$once(
-        taskAction + "-aborted",
-        this.downloadClusterBackupAborted
-      );
-
-      // register to task completion
-      this.$root.$off(taskAction + "-completed");
-      this.$root.$once(
-        taskAction + "-completed",
-        this.downloadClusterBackupCompleted
-      );
-
-      const res = await to(
-        this.createClusterTask({
-          action: taskAction,
-          extra: {
-            title: this.$t("action." + taskAction),
-            isNotificationHidden: true,
-          },
-        })
-      );
-      const err = res[0];
-
-      if (err) {
-        console.error(`error creating task ${taskAction}`, err);
-        this.error.downloadClusterBackup = this.getErrorMessage(err);
-        return;
-      }
-    },
-    downloadClusterBackupAborted(taskResult, taskContext) {
-      console.error(`${taskContext.action} aborted`, taskResult);
-      this.loading.downloadClusterBackup = false;
-    },
-    downloadClusterBackupCompleted(taskContext, taskResult) {
-      this.loading.downloadClusterBackup = false;
-      const downloadUrl = `${window.location.protocol}//${window.location.hostname}/cluster-admin/backup/${taskResult.output.path}`;
-
-      const fileName =
-        "cluster-configuration-backup " +
-        this.formatDate(new Date(), "yyyy-MM-dd HH.mm") +
-        ".json.gz.gpg";
-
-      this.axios({
-        url: downloadUrl,
-        method: "GET",
-        responseType: "blob",
-      }).then((response) => {
-        const url = window.URL.createObjectURL(new Blob([response.data]));
-        const link = document.createElement("a");
-        link.href = url;
-        link.setAttribute("download", fileName);
-        document.body.appendChild(link);
-        link.click();
-      });
-    },
   },
 };
 </script>

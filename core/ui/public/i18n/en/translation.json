@@ -372,6 +372,7 @@
     "aws_short": "S3",
     "genericS3_short": "S3",
     "azure_short": "Azure",
+    "download": "Download",
     "instances": "instance | instances",
     "Instances": "Instance | Instances",
     "delete_backup_repository": "Delete backup repository",
@@ -488,13 +489,17 @@
     "backup_page_tooltip_6": "You can restore any previously backed up app or the whole cluster:",
     "backup_page_tooltip_7": "<strong>Restore an app</strong>: you can do it in the <strong>Restore</strong> section",
     "backup_page_tooltip_8": "<strong>Restore the whole cluster</strong>: you need a <strong>cluster configuration backup</strong> and a fresh installation of {productName}. This is useful in a disaster recovery scenario",
-    "download_cluster_configuration_backup": "Download backup",
+    "download_cluster_configuration_backup": "Download cluster backup",
     "restore_app": "Restore an app",
     "replace_existing_app": "Replace existing app {app}",
     "cluster_configuration": "Cluster configuration",
-    "apps": "Apps",
+    "apps": "Applications",
     "repositories_tooltip": "These are the repositories where your apps are backed up to",
-    "cluster_configuration_tooltip": "Download an encryped GPG file that you can use to restore your cluster in a disaster recovery scenario"
+    "cluster_configuration_tooltip": "Download an encryped GPG file that you can use to restore your cluster in a disaster recovery scenario",
+    "cluster_backup_password_info": "Encryption password",
+    "cluster_backup_password_info_description": "Please enter a password to encrypt the backup. You can use your current password. <br/> If you are going to enter a different password, make sure to remember it: you will need it in case of disaster recovery.",
+    "password": "Password",
+    "i_have_stored_encryption_password": "I have stored the <strong>password</strong> in a safe place"
   },
   "calendar": {
     "days": "Days",
