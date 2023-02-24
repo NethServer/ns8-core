@@ -25,10 +25,10 @@
         "properties": { "type": { "const": "url" } }
     },
      "then": {
-        "required": ["url", "tls_verify"]
+        "required": ["url", "tls_verify", "password"]
     },
     "else": {
-        "required": ["file"]
+        "required": ["file", "password"]
     },
     "properties": {
         "password": {
