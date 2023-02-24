@@ -54,6 +54,8 @@ class Ldapproxy:
                 conf[key] = self.domains[domain][key]
 
             conf['port'] = self.domains[domain]['listen_port']
+            conf['hidden_users'] = self.domains[domain]['hidden_users']
+            conf['hidden_groups'] = self.domains[domain]['hidden_groups']
 
         except:
             return None
@@ -92,6 +94,43 @@ class Ldapproxy:
             password='default',
             decode_responses=True,
         )
+
+    def get_ldap_users_search_filter_clause(self, domain):
+        mdom = self.get_domain(domain)
+        if not mdom['hidden_users']:
+            return ""
+
+        filter_clause = ""
+        if mdom['schema'] == 'ad':
+            uattr = 'sAMAccountName'
+        elif mdom['schema'] == 'rfc2307':
+            uattr = 'uid'
+        else:
+            return ""
+
+        for user in mdom['hidden_users']:
+            filter_clause += f"({uattr}={user})"
+
+        return f"(!(|{filter_clause}))"
+
+
+    def get_ldap_groups_search_filter_clause(self, domain):
+        mdom = self.get_domain(domain)
+        if not mdom['hidden_groups']:
+            return ""
+
+        filter_clause = ""
+        if mdom['schema'] == 'ad':
+            uattr = 'sAMAccountName'
+        elif mdom['schema'] == 'rfc2307':
+            uattr = 'cn'
+        else:
+            return ""
+
+        for user in mdom['hidden_groups']:
+            filter_clause += f"({uattr}={user})"
+
+        return f"(!(|{filter_clause}))"
 
 if __name__ == '__main__':
     lp = Ldapproxy()
