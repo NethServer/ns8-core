@@ -116,12 +116,13 @@ class Ldapproxy:
 
     def get_ldap_groups_search_filter_clause(self, domain):
         mdom = self.get_domain(domain)
-        if not mdom['hidden_groups']:
-            return ""
 
         filter_clause = ""
         if mdom['schema'] == 'ad':
             uattr = 'sAMAccountName'
+            # filter out non-global groups. See
+            # https://social.technet.microsoft.com/wiki/contents/articles/5392.active-directory-ldap-syntax-filters.aspx
+            filter_clause += "(!(groupType:1.2.840.113556.1.4.803:=2))"
         elif mdom['schema'] == 'rfc2307':
             uattr = 'cn'
         else:
@@ -129,6 +130,9 @@ class Ldapproxy:
 
         for user in mdom['hidden_groups']:
             filter_clause += f"({uattr}={user})"
+
+        if not filter_clause:
+            return "" # do not wrap an empty clause!
 
         return f"(!(|{filter_clause}))"
 

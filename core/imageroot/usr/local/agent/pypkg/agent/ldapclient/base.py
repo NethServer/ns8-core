@@ -58,18 +58,21 @@ class LdapclientBase:
             return ""
 
     def _get_groups_search_filter_clause(self):
-        if not self.hidden_groups:
-            return ""
-
         filter_clause = ""
         if self.schema == 'ad':
             uattr = 'sAMAccountName'
+            # filter out non-global groups. See
+            # https://social.technet.microsoft.com/wiki/contents/articles/5392.active-directory-ldap-syntax-filters.aspx
+            filter_clause += "(!(groupType:1.2.840.113556.1.4.803:=2))"
         elif self.schema == 'rfc2307':
             uattr = 'cn'
         else:
             return ""
         for user in self.hidden_groups:
             filter_clause += f"({uattr}={user})"
+
+        if not filter_clause:
+            return "" # do not wrap an empty clause!
 
         return f"(!(|{filter_clause}))"
 
