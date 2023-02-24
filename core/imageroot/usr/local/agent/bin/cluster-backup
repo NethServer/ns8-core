@@ -109,18 +109,6 @@ try:
 except:
     pass
 
-# if the passhprase does not exists, use the sha256 of admin password
+# encrypt, if the passhprase does not exists
 if os.path.isfile(f'{output_dir}/passphrase'):
     subprocess.run(['gpg', '--batch', '-c', '--pinentry-mode', 'loopback', '--passphrase-file', f'{output_dir}/passphrase', f'{output_dir}/dump.json.gz'], check = True)
-else:
-    rdb = agent.redis_connect(host='127.0.0.1', privileged = True)
-    admin = rdb.acl_getuser('admin')
-    rdb.close()
-
-    fp = tempfile.NamedTemporaryFile(mode="w", delete=False)
-    fp.write(admin['passwords'][0])
-    fp.close()
-    try:
-        subprocess.run(['gpg', '--batch', '-c', '--pinentry-mode', 'loopback', '--passphrase-file', fp.name, f'{output_dir}/dump.json.gz'], check = True)
-    finally:
-        os.remove(fp.name)
