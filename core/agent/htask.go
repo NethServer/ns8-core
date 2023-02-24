@@ -71,9 +71,7 @@ func runAction(rdb *redis.Client, actionCtx context.Context, task *models.Task) 
 
 	// Read initial environment file contents
 	environment := readStateFile()
-	// Create a backup copy of the original environment. If the action
-	// aborts it is restored:
-	backupEnvironment := environment
+
 	// Write the environment state to disk if any change occurs:
 	var isStateWriteNeeded bool = false
 
@@ -181,6 +179,7 @@ func runAction(rdb *redis.Client, actionCtx context.Context, task *models.Task) 
 				case "set-env":
 					environment = append(environment, record[1]+"="+record[2])
 					isStateWriteNeeded = true
+					log.Printf(SD_WARNING + "Command set-env is deprecated")
 				case "unset-env":
 					for i, envVar := range environment {
 						if strings.HasPrefix(envVar, record[1]+"=") {
@@ -190,6 +189,7 @@ func runAction(rdb *redis.Client, actionCtx context.Context, task *models.Task) 
 							// the array could have duplicates, continue the iteration
 						}
 					}
+					log.Printf(SD_WARNING + "Command unset-env is deprecated")
 				case "set-status":
 					if record[1] == "validation-failed" {
 						actionDescriptor.Status = "validation-failed"
@@ -283,11 +283,6 @@ func runAction(rdb *redis.Client, actionCtx context.Context, task *models.Task) 
 
 		actionDescriptor.SetProgressAtStep(stepIndex, 100)
 		publishStatus(rdb, progressChannel, actionDescriptor)
-	}
-
-	if exitCode != 0 { // The last step has failed, action is aborted
-		// rollback the environment state file to the original value:
-		writeStateFile(backupEnvironment)
 	}
 
 	_, err := rdb.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
