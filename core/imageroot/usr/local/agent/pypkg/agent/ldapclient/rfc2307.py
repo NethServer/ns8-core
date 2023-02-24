@@ -24,12 +24,12 @@ from .base import LdapclientBase
 class LdapclientRfc2307(LdapclientBase):
 
     def get_group(self, group):
-        response = self.ldapconn.search(self.base_dn, f'(&(objectClass=posixGroup)(cn={group}))',
+        response = self.ldapconn.search(self.base_dn, f'(&(objectClass=posixGroup)(cn={group}){self._get_groups_search_filter_clause()})',
             attributes=['cn', 'memberUid', 'description'],
         )[2]
 
         def lget_user(uid):
-            user = self.ldapconn.search(self.base_dn, f'(&(objectClass=posixAccount)(objectClass=inetOrgPerson)(uid={uid}))',
+            user = self.ldapconn.search(self.base_dn, f'(&(objectClass=posixAccount)(objectClass=inetOrgPerson)(uid={uid}){self._get_users_search_filter_clause()})',
                 attributes=['displayName', 'uid'],
             )[2][0]['attributes']
 
@@ -50,7 +50,7 @@ class LdapclientRfc2307(LdapclientBase):
         raise LdapclientEntryNotFound()
 
     def list_groups(self):
-        response = self.ldapconn.search(self.base_dn, '(objectClass=posixGroup)',
+        response = self.ldapconn.search(self.base_dn, f'(&(objectClass=posixGroup){self._get_groups_search_filter_clause()})',
             attributes=['cn', 'memberUid', 'description'],
         )[2]
 
@@ -66,13 +66,13 @@ class LdapclientRfc2307(LdapclientBase):
         return groups
 
     def get_user(self, user):
-        response = self.ldapconn.search(self.base_dn, f'(&(objectClass=posixAccount)(objectClass=inetOrgPerson)(uid={user}))',
+        response = self.ldapconn.search(self.base_dn, f'(&(objectClass=posixAccount)(objectClass=inetOrgPerson)(uid={user}){self._get_users_search_filter_clause()})',
             attributes=['displayName', 'uid'],
         )[2]
 
         def get_memberof(user):
             groups = []
-            gresponse = self.ldapconn.search(self.base_dn, f'(&(objectClass=posixGroup)(memberUid={user}))',
+            gresponse = self.ldapconn.search(self.base_dn, f'(&(objectClass=posixGroup)(memberUid={user}){self._get_groups_search_filter_clause()})',
                 attributes=['cn', 'memberUid', 'description'],
             )[2]
             for gentry in gresponse:
@@ -97,7 +97,7 @@ class LdapclientRfc2307(LdapclientBase):
         raise LdapclientEntryNotFound()
 
     def list_users(self):
-        response = self.ldapconn.search(self.base_dn, '(&(objectClass=posixAccount)(objectClass=inetOrgPerson))',
+        response = self.ldapconn.search(self.base_dn, f'(&(objectClass=posixAccount)(objectClass=inetOrgPerson){self._get_users_search_filter_clause()})',
             attributes=['displayName', 'uid'],
         )[2]
 

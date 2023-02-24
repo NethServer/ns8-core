@@ -22,13 +22,15 @@ import ldap3
 
 class LdapclientBase:
 
-    def __init__(self, host, port, bind_dn, bind_password, base_dn, schema, **kwargs):
+    def __init__(self, host, port, bind_dn, bind_password, base_dn, schema, hidden_users, hidden_groups, **kwargs):
         self.host = host
         self.port = int(port)
         self.bind_dn = bind_dn
         self.bind_password = bind_password
         self.base_dn = base_dn
         self.schema = schema
+        self.hidden_users = hidden_users
+        self.hidden_groups = hidden_groups
         self.extra_args = kwargs
 
         self.ldapsrv = ldap3.Server(self.host, port=self.port)
@@ -54,3 +56,36 @@ class LdapclientBase:
             return entry['attributes']['description'][0]
         except IndexError:
             return ""
+
+    def _get_groups_search_filter_clause(self):
+        if not self.hidden_groups:
+            return ""
+
+        filter_clause = ""
+        if self.schema == 'ad':
+            uattr = 'sAMAccountName'
+        elif self.schema == 'rfc2307':
+            uattr = 'cn'
+        else:
+            return ""
+        for user in self.hidden_groups:
+            filter_clause += f"({uattr}={user})"
+
+        return f"(!(|{filter_clause}))"
+
+
+    def _get_users_search_filter_clause(self):
+        if not self.hidden_users:
+            return ""
+
+        filter_clause = ""
+        if self.schema == 'ad':
+            uattr = 'sAMAccountName'
+        elif self.schema == 'rfc2307':
+            uattr = 'uid'
+        else:
+            return ""
+        for user in self.hidden_users:
+            filter_clause += f"({uattr}={user})"
+
+        return f"(!(|{filter_clause}))"
