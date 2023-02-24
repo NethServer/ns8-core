@@ -8,18 +8,15 @@
 set -e
 exec 1>&2 # Redirect any output to the journal (stderr)
 
+# Clean up clone-module state files
+trap 'rm -vf ./*.clone-module' EXIT
+
 # Rootfull modules must implement this step on their own!
-if [[ $EUID != 0 ]]; then
-    if [[ -s timers-target.clone-module ]]; then
-        read -ra targs < timers-target.clone-module
-        systemctl --user enable "${targs[@]}"
-    fi
-    if [[ -s default-target.clone-module ]]; then
-        read -ra dargs < default-target.clone-module
-        systemctl --user enable "${dargs[@]}"
-        systemctl --user isolate default.target
-    fi
+if [[ $EUID == 0 ]]; then
+    exit 0
 fi
 
-# Clean up clone-module state files
-rm -vf ./*.clone-module
+# Restore enabled state of .service and .timer units
+xargs -r -- systemctl --user enable < timers-target.clone-module
+xargs -r -- systemctl --user enable < default-target.clone-module
+systemctl --user isolate default.target
