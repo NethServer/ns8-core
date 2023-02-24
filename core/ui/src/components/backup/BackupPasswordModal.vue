@@ -3,22 +3,21 @@
     size="default"
     :visible="isShown"
     @modal-hidden="$emit('hide')"
-    @primary-click="downloadClusterConfigurationBackup"
-    :primary-button-disabled="!password || !confirmRead"
+    @primary-click="setBackupPassword"
+    :primary-button-disabled="!clusterPassword || !confirmRead"
   >
     <template slot="title">{{
-      $t("backup.download_cluster_configuration_backup")
+      $t("backup.set_cluster_backup_password")
     }}</template>
     <template slot="content">
-      <cv-form @submit.prevent="!password || !confirmRead">
+      <cv-form @submit.prevent="!clusterPassword || !confirmRead">
         <NsInlineNotification
           kind="info"
-          :title="$t('backup.cluster_backup_password_info')"
           :description="$t('backup.cluster_backup_password_info_description')"
           :showCloseButton="false"
         />
         <NsTextInput
-            v-model="password"
+            v-model="clusterPassword"
             type="password"
             :label="$t('backup.password')"
             :passwordHideLabel="$t('password.hide_password')"
@@ -35,7 +34,7 @@
       </cv-form>
     </template>
     <template slot="secondary-button">{{ $t("common.cancel") }}</template>
-    <template slot="primary-button">{{ $t("backup.download") }}</template>
+    <template slot="primary-button">{{ $t("backup.set_cluster_backup_password") }}</template>
   </NsModal>
 </template>
 
@@ -44,34 +43,37 @@ import { UtilService, TaskService, IconService, DateTimeService} from "@nethserv
 import to from "await-to-js";
 
 export default {
-  name: "DownloadBackupModal",
+  name: "PasswordBackupModal",
   mixins: [UtilService, TaskService, IconService, DateTimeService],
   props: {
     isShown: {
       type: Boolean,
       default: true,
-    },
+    }
   },
   data() {
     return {
       name: "",
-      password: "",
       confirmRead: false,
       loading: {
-        downloadClusterBackup: false
+        setBackupPassword: false
+      },
+      clusterPassword: "",
+      error: {
+        setBackupPassword: ""
       }
-    };
+    }
   },
   watch: {
     isShown: function () {
       if (this.isShown) {
-        this.password = "";
         this.confirmRead = false;
+        this.clusterPassword = "";
       }
     },
   },
   methods: {
-    async downloadClusterConfigurationBackup() {
+    async setBackupPassword() {
       this.loading.downloadClusterBackup = true;
       const taskAction = "download-cluster-backup";
 
@@ -79,20 +81,20 @@ export default {
       this.$root.$off(taskAction + "-aborted");
       this.$root.$once(
         taskAction + "-aborted",
-        this.downloadClusterBackupAborted
+        this.setBackupPasswordAborted
       );
 
       // register to task completion
       this.$root.$off(taskAction + "-completed");
       this.$root.$once(
         taskAction + "-completed",
-        this.downloadClusterBackupCompleted
+        this.setBackupPasswordCompleted
       );
 
       const res = await to(
         this.createClusterTask({
           action: taskAction,
-          data: { password: this.password },
+          data: { password: this.clusterPassword },
           extra: {
             title: this.$t("action." + taskAction),
             isNotificationHidden: true,
@@ -100,39 +102,23 @@ export default {
         })
       );
       const err = res[0];
+      this.$emit('hide');
 
       if (err) {
         console.error(`error creating task ${taskAction}`, err);
-        this.error.downloadClusterBackup = this.getErrorMessage(err);
+        this.error.setBackupPassword = this.getErrorMessage(err);
         return;
       }
     },
-    downloadClusterBackupAborted(taskResult, taskContext) {
+    setBackupPasswordAborted(taskResult, taskContext) {
       console.error(`${taskContext.action} aborted`, taskResult);
-      this.loading.downloadClusterBackup = false;
+      this.loading.setBackupPassword = false;
     },
-    downloadClusterBackupCompleted(taskContext, taskResult) {
-      this.loading.downloadClusterBackup = false;
-      const downloadUrl = `${window.location.protocol}//${window.location.hostname}/cluster-admin/backup/${taskResult.output.path}`;
-
-      const fileName =
-        "cluster-configuration-backup " +
-        this.formatDate(new Date(), "yyyy-MM-dd HH.mm") +
-        ".json.gz.gpg";
-
-      this.axios({
-        url: downloadUrl,
-        method: "GET",
-        responseType: "blob",
-      }).then((response) => {
-        const url = window.URL.createObjectURL(new Blob([response.data]));
-        const link = document.createElement("a");
-        link.href = url;
-        link.setAttribute("download", fileName);
-        document.body.appendChild(link);
-        link.click();
-      });
+    setBackupPasswordCompleted() {
+      this.loading.setBackupPassword = false;
+      this.$emit("password-set");
     },
+
   },
 };
 </script>

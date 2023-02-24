@@ -22,38 +22,14 @@
                   v-html="$t('backup.backup_page_tooltip_2')"
                   class="mg-bottom-sm"
                 ></div>
-                <h6 v-html="$t('backup.title')" class="mg-bottom-sm"></h6>
                 <div
-                  v-html="$t('backup.backup_page_tooltip_3')"
+                  v-html="
+                    $t('backup.backup_page_tooltip_8', {
+                      productName: $root.config.PRODUCT_NAME,
+                    })
+                  "
                   class="mg-bottom-sm"
                 ></div>
-                <ul class="unordered-list mg-bottom-sm">
-                  <li>
-                    <span v-html="$t('backup.backup_page_tooltip_4')"></span>
-                  </li>
-                  <li>
-                    <span v-html="$t('backup.backup_page_tooltip_5')"></span>
-                  </li>
-                </ul>
-                <h6 v-html="$t('backup.restore')" class="mg-bottom-sm"></h6>
-                <div
-                  v-html="$t('backup.backup_page_tooltip_6')"
-                  class="mg-bottom-sm"
-                ></div>
-                <ul class="unordered-list mg-bottom-sm">
-                  <li>
-                    <span v-html="$t('backup.backup_page_tooltip_7')"></span>
-                  </li>
-                  <li>
-                    <span
-                      v-html="
-                        $t('backup.backup_page_tooltip_8', {
-                          productName: $root.config.PRODUCT_NAME,
-                        })
-                      "
-                    ></span>
-                  </li>
-                </ul>
               </template>
             </cv-interactive-tooltip>
           </h2>
@@ -61,41 +37,95 @@
       </cv-row>
       <!-- cluster configuration -->
       <cv-row>
-          <cv-column>
-            <h4 class="mg-bottom-md">
-              {{ $t("backup.cluster_configuration") }}
-              <cv-interactive-tooltip
-                alignment="start"
-                direction="right"
-                class="info"
-              >
-                <template slot="trigger">
-                  <Information16 />
-                </template>
-                <template slot="content">
-                  {{ $t("backup.cluster_configuration_tooltip") }}
-                </template>
-              </cv-interactive-tooltip>
-            </h4>
+        <cv-column>
+          <h4 class="mg-bottom-md">
+            {{ $t("backup.cluster_configuration") }}
+            <cv-interactive-tooltip
+              alignment="start"
+              direction="right"
+              class="info"
+            >
+              <template slot="trigger">
+                <Information16 />
+              </template>
+              <template slot="content">
+                {{ $t("backup.cluster_configuration_tooltip") }}
+              </template>
+            </cv-interactive-tooltip>
+          </h4>
         </cv-column>
       </cv-row>
       <cv-row class="mg-bottom-lg">
-          <cv-column>
-            <NsButton
-              kind="secondary"
-              :icon="Download20"
-              @click="showDownloadBackupModal()"
-              >{{ $t("backup.download_cluster_configuration_backup") }}
-            </NsButton>
-          </cv-column>
-        </cv-row>
-        <cv-row>
-          <cv-column>
-            <h4 class="mg-bottom-md">
-              {{ $t("backup.apps") }}
-            </h4>
-          </cv-column>
-        </cv-row>
+        <cv-column
+          v-if="!isSetClusterBackupPassword && !loading.listBackupRepositories"
+        >
+          <cv-tile kind="standard" :light="true">
+            <NsEmptyState :title="$t('backup.cluster_backup_password_warning')">
+              <template #pictogram>
+                <ExclamationMarkPictogram />
+              </template>
+              <template #description>
+                <div class="mg-bottom-lg">
+                  <p>
+                    {{
+                      $t("backup.cluster_backup_password_warning_description_1")
+                    }}
+                  </p>
+                  <p>
+                    {{
+                      $t("backup.cluster_backup_password_warning_description_2")
+                    }}
+                  </p>
+                </div>
+                <div>
+                  <NsButton
+                    kind="primary"
+                    :icon="Password20"
+                    @click="showBackupPasswordModal()"
+                    >{{ $t("backup.set_cluster_backup_password") }}
+                  </NsButton>
+                </div>
+              </template>
+            </NsEmptyState>
+          </cv-tile>
+        </cv-column>
+        <cv-column
+          v-if="isSetClusterBackupPassword && !loading.listBackupRepositories"
+        >
+          <NsButton
+            kind="secondary"
+            :icon="Download20"
+            @click="downloadClusterConfigurationBackup()"
+            >{{ $t("backup.download_cluster_configuration_backup") }}
+          </NsButton>
+          <NsButton
+            kind="tertiary"
+            :icon="Password20"
+            @click="showBackupPasswordModal()"
+            class="mg-left-md"
+            >{{ $t("backup.change_cluster_backup_password") }}
+          </NsButton>
+        </cv-column>
+      </cv-row>
+      <cv-row v-if="isSetClusterBackupPassword">
+        <cv-column>
+          <h4 class="mg-bottom-md">
+            {{ $t("backup.apps") }}
+            <cv-interactive-tooltip
+              alignment="start"
+              direction="right"
+              class="info"
+            >
+              <template slot="trigger">
+                <Information16 />
+              </template>
+              <template slot="content">
+                {{ $t("backup.apps_configuration_tooltip") }}
+              </template>
+            </cv-interactive-tooltip>
+          </h4>
+        </cv-column>
+      </cv-row>
       <template v-if="loading.listBackupRepositories || loading.listBackups">
         <!-- repositories skeleton -->
         <cv-row>
@@ -131,7 +161,7 @@
         </cv-row>
       </template>
       <!-- empty state repositories -->
-      <cv-row v-else-if="!repositories.length">
+      <cv-row v-else-if="isSetClusterBackupPassword && !repositories.length">
         <cv-column>
           <cv-tile kind="standard" :light="true">
             <NsEmptyState :title="$t('backup.no_backup_repository')">
@@ -152,7 +182,7 @@
           </cv-tile>
         </cv-column>
       </cv-row>
-      <template v-else>
+      <template v-else-if="isSetClusterBackupPassword">
         <!-- errored backups -->
         <cv-row v-if="!loading.listBackups && erroredBackups.length">
           <cv-column>
@@ -514,7 +544,21 @@
         </template>
         <cv-row>
           <cv-column>
-            <h6 class="mg-bottom-md">{{ $t("backup.restore") }}</h6>
+            <h6 class="mg-bottom-md">
+              {{ $t("backup.restore") }}
+              <cv-interactive-tooltip
+                alignment="start"
+                direction="right"
+                class="info"
+              >
+                <template slot="trigger">
+                  <Information16 />
+                </template>
+                <template slot="content">
+                  {{ $t("backup.restore_tooltip") }}
+                </template>
+              </cv-interactive-tooltip>
+            </h6>
           </cv-column>
         </cv-row>
         <cv-row class="mg-bottom-xlg">
@@ -660,9 +704,10 @@
       @hide="hideRestoreModal"
     />
     <!-- download backup modal -->
-    <DownloadBackupModal
-      :isShown="isShownDownloadBackupModal"
-      @hide="hideDownloadBackupModal"
+    <BackupPasswordModal
+      :isShown="isShownBackupPasswordModal"
+      @hide="hideBackupPasswordModal"
+      @password-set.once="reloadBackupRepositories"
     />
   </div>
 </template>
@@ -682,7 +727,7 @@ import RepoDetailsModal from "@/components/backup/RepoDetailsModal";
 import BackupDetailsModal from "@/components/backup/BackupDetailsModal";
 import EditRepositoryModal from "@/components/backup/EditRepositoryModal";
 import RestoreSingleInstanceModal from "@/components/backup/RestoreSingleInstanceModal";
-import DownloadBackupModal from "@/components/backup/DownloadBackupModal";
+import BackupPasswordModal from "@/components/backup/BackupPasswordModal";
 import to from "await-to-js";
 import Information16 from "@carbon/icons-vue/es/information/16";
 
@@ -695,7 +740,7 @@ export default {
     BackupDetailsModal,
     EditRepositoryModal,
     RestoreSingleInstanceModal,
-    DownloadBackupModal,
+    BackupPasswordModal,
     Information16,
   },
   mixins: [
@@ -721,12 +766,13 @@ export default {
       isShownDeleteBackupModal: false,
       isShownBackupDetailsModal: false,
       isShownRestoreModal: false,
-      isShownDownloadBackupModal: false,
+      isShownBackupPasswordModal: false,
       repositories: [],
       backups: [],
       unconfiguredInstances: [],
       instanceSelection: "",
       isEditingBackup: false,
+      isSetClusterBackupPassword: false,
       currentRepo: {
         name: "",
         password: "",
@@ -740,6 +786,7 @@ export default {
         listBackups: true,
         alterBackup: false,
         downloadClusterBackup: false,
+        passwordClusterBackup: false,
       },
       error: {
         listBackupRepositories: "",
@@ -749,6 +796,7 @@ export default {
         runBackup: "",
         alterBackup: "",
         downloadClusterBackup: "",
+        passwordClusterBackup: "",
       },
     };
   },
@@ -803,9 +851,12 @@ export default {
       }
     },
     listBackupRepositoriesCompleted(taskContext, taskResult) {
-      let repositories = taskResult.output.sort(this.sortByProperty("name"));
+      let repositories = taskResult.output.repositories.sort(
+        this.sortByProperty("name")
+      );
       this.repositories = repositories;
       this.loading.listBackupRepositories = false;
+      this.isSetClusterBackupPassword = taskResult.output.password_exists;
       this.listBackups();
     },
     async listBackups() {
@@ -918,11 +969,11 @@ export default {
     hideRestoreModal() {
       this.isShownRestoreModal = false;
     },
-    showDownloadBackupModal() {
-      this.isShownDownloadBackupModal = true;
+    showBackupPasswordModal() {
+      this.isShownBackupPasswordModal = true;
     },
-    hideDownloadBackupModal() {
-      this.isShownDownloadBackupModal = false;
+    hideBackupPasswordModal() {
+      this.isShownBackupPasswordModal = false;
     },
     async deleteRepo(repo) {
       this.error.removeBackupRepository = "";
@@ -1096,7 +1147,72 @@ export default {
       this.loading.alterBackup = false;
       this.listBackups();
     },
+    async downloadClusterConfigurationBackup() {
+      this.loading.downloadClusterBackup = true;
+      const taskAction = "download-cluster-backup";
 
+      // register to task error
+      this.$root.$off(taskAction + "-aborted");
+      this.$root.$once(
+        taskAction + "-aborted",
+        this.downloadClusterBackupAborted
+      );
+
+      // register to task completion
+      this.$root.$off(taskAction + "-completed");
+      this.$root.$once(
+        taskAction + "-completed",
+        this.downloadClusterBackupCompleted
+      );
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          data: { password: this.clusterPassword },
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.downloadClusterBackup = this.getErrorMessage(err);
+        return;
+      }
+    },
+    downloadClusterBackupAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.loading.downloadClusterBackup = false;
+    },
+    downloadClusterBackupCompleted(taskContext, taskResult) {
+      this.loading.downloadClusterBackup = false;
+      const downloadUrl = `${window.location.protocol}//${window.location.hostname}/cluster-admin/backup/${taskResult.output.path}`;
+
+      const fileName =
+        "cluster-configuration-backup " +
+        this.formatDate(new Date(), "yyyy-MM-dd HH.mm") +
+        ".json.gz.gpg";
+
+      this.axios({
+        url: downloadUrl,
+        method: "GET",
+        responseType: "blob",
+      }).then((response) => {
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", fileName);
+        document.body.appendChild(link);
+        link.click();
+      });
+    },
+    reloadBackupRepositories() {
+      this.isSetClusterBackupPassword = true;
+      this.listBackupRepositories();
+    },
   },
 };
 </script>
