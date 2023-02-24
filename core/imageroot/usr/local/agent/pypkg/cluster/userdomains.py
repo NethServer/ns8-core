@@ -133,6 +133,8 @@ def get_internal_domains(rdb):
                 "base_dn": conf['base_dn'],
                 "bind_dn": conf['bind_dn'],
                 "bind_password": conf['bind_password'],
+                "hidden_users": list(rdb.smembers(f"cluster/user_domain/ldap/{conf['domain']}/hidden_users") or []),
+                "hidden_groups": list(rdb.smembers(f"cluster/user_domain/ldap/{conf['domain']}/hidden_groups") or []),
                 "providers": []
             }
 
@@ -143,6 +145,14 @@ def get_internal_domains(rdb):
             "host": conf['host'],
             "port": int(conf['port']),
         })
+
+        # Merge hidden user and group lists from every LDAP provider of the domain
+        for huser in filter(str.strip, conf.get('hidden_users', '').split(',')):
+            if not huser in domains[conf['domain']]["hidden_users"]:
+                domains[conf['domain']]["hidden_users"].append(huser)
+        for hgroup in filter(str.strip, conf.get('hidden_groups', '').split(',')):
+            if not hgroup in domains[conf['domain']]["hidden_groups"]:
+                domains[conf['domain']]["hidden_groups"].append(hgroup)
 
     for kud in rdb.scan_iter("module/*/user_domain"):
         module_id = kud.split('/', 2)[1]

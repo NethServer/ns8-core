@@ -149,6 +149,24 @@
                         }
                     }
                 },
+                "hidden_users": {
+                    "description": "List of users that are not visible from UI and from applications",
+                    "type": "array",
+                    "items": {
+                        "description": "A user name",
+                        "type":"string",
+                        "minLength": 1
+                    }
+                },
+                "hidden_groups": {
+                    "description": "List of groups that are not visible from UI and from applications",
+                    "type": "array",
+                    "items": {
+                        "description": "A group name",
+                        "type":"string",
+                        "minLength": 1
+                    }
+                },
                 "protocol": {
                     "type": "string",
                     "title": "Provider protocol",
