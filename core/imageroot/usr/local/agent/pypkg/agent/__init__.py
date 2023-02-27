@@ -107,7 +107,7 @@ def read_envfile(file_path):
 def write_envfile(file_path, envmap):
     """Write an environment file with envmap contents
     """
-    entries = [ek + "=" + ev for ek, ev in envmap.items()]
+    entries = [ek + "=" + str(ev) for ek, ev in envmap.items()]
     entries.sort()
     payload = "\n".join(entries) + "\n"
     tmpfile = ".{0}-{1!s}.tmp".format(file_path, os.getpid())
