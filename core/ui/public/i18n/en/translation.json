@@ -489,7 +489,7 @@
     "restore_app": "Restore an app",
     "replace_existing_app": "Replace existing app {app}",
     "cluster_configuration": "Cluster configuration",
-    "apps": "Applications",
+    "apps": "Apps",
     "repositories_tooltip": "These are the repositories where your apps are backed up to",
     "cluster_configuration_tooltip": "Download an encryped GPG file that you can use to restore the cluster in a disaster recovery scenario",
     "set_cluster_backup_password": "Set the encryption password",
@@ -499,7 +499,7 @@
     "i_have_stored_encryption_password": "I have stored the <strong>password</strong> in a safe place",
     "cluster_backup_password_warning": "You must set the encryption password",
     "cluster_backup_password_warning_description_1" :"The configuration cluster backup contains sensitive data required for a disaster recovery.",
-    "cluster_backup_password_warning_description_2" :"Set a strong encryption password, then download the backup and kept it on a safe place."
+    "cluster_backup_password_warning_description_2" :"Set a strong encryption password, then download the backup and keep it in a safe place."
   },
   "calendar": {
     "days": "Days",
