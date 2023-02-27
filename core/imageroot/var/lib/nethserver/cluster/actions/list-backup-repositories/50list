@@ -20,6 +20,7 @@
 # along with NethServer.  If not, see COPYING.
 #
 
+import os
 import json
 import sys
 import agent
@@ -27,6 +28,7 @@ import agent
 rdb = agent.redis_connect()
 
 brepos = []
+password_exists = os.path.isfile('backup/passphrase') and os.stat('backup/passphrase').st_size != 0
 
 for krepo in rdb.scan_iter('cluster/backup_repository/*'):
     parameters = rdb.hgetall(krepo)
@@ -41,4 +43,4 @@ for krepo in rdb.scan_iter('cluster/backup_repository/*'):
     brepos.append(orepo)
 
 
-json.dump(brepos, fp=sys.stdout)
+json.dump({"repositories": brepos, "password_exists": password_exists}, fp=sys.stdout)

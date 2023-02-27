@@ -25,7 +25,6 @@ import sys
 import json
 import agent
 import base64
-import hashlib
 import tempfile
 import requests
 import subprocess
@@ -44,22 +43,11 @@ utype = request['type']
 passphrase = request.get('password', '') 
 
 if passphrase:
-   # generate sha256 from passphrase and store to a temporary file
-    h = hashlib.new('sha256')
-    h.update(passphrase.encode('utf-8'))
+   # store the passphrase
     with open(tmp_pass, 'w') as fp:
-        fp.write(h.hexdigest())
+        fp.write(passphrase)
 else:
-    # use admin password from redis
-    rdb = agent.redis_connect(host='127.0.0.1', privileged = True)
-    admin = rdb.acl_getuser('admin')
-    rdb.close()
-    
-    fp = tempfile.NamedTemporaryFile(mode="w", delete=False)
-    fp.write(admin['passwords'][0])
-    fp.close()
-    tmp_pass = fp.name
-
+    errors.append({'field':'backup_password', 'parameter':'backup_password', 'value': '', 'error':'empty_passphrase'})
 
 if utype == "file":
     # decode base64 and save to a temporary file

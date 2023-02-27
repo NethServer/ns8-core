@@ -23,14 +23,12 @@
 BACKUP="/var/lib/nethserver/cluster/state/backup/dump.json.gz.gpg"
 OUT_DIR="/var/lib/nethserver/cluster/ui/backup/"
 
-if [ ! -f $BACKUP ]; then
-    echo "Backup '$BACKUP' not found"
-    exit 1
-fi
-
 rm -rf $OUT_DIR
-sha=$(sha256sum -z $BACKUP | awk '{print $1}')
-mkdir -p $OUT_DIR/$sha/
-cp $BACKUP $OUT_DIR/$sha/
-
-echo "{\"path\": \"$sha/dump.json.gz.gpg\"}"
+if [ -f "$BACKUP" ]; then
+    sha=$(sha256sum -z $BACKUP | awk '{print $1}')
+    mkdir -p $OUT_DIR/$sha/
+    cp $BACKUP $OUT_DIR/$sha/
+    echo "{\"path\": \"$sha/dump.json.gz.gpg\"}"
+else
+    echo "{\"path\": \"\"}"
+fi

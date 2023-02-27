@@ -195,10 +195,10 @@ archive is available for download.
 If the previous command is successful a file `dump.json.gz.gpg` is created
 in the current directory.
 
-The file with `.gpg` extension is encrypted with the `sha256sum` of the admin's
-password. To decrypt it run a command like this:
+The file with `.gpg` extension is encrypted with the password saved inside `/var/lib/nethserver/cluster/state/backup/passphrase`.
+To decrypt it run a command like this:
 
-    echo -n "${ADMIN_PASSWORD:?}" | sha256sum | awk '{print $1}' | tr -d $'\n'  | \
+    echo <passphrase> | \
         gpg --batch -d --passphrase-file /dev/stdin --pinentry-mode loopback -o dump.json.gz dump.json.gz.gpg
 
 The restore procedure can be started from the UI of a new NS8

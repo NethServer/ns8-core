@@ -454,44 +454,25 @@
                       v-model="restore.tlsVerify"
                       value="checkTlsVerify"
                     />
-                    <!-- advanced options -->
-                    <cv-accordion ref="accordion" class="mg-top-xlg">
-                      <cv-accordion-item
-                        :open="
-                          toggleAccordion[0] ||
-                          restore.isBackupPasswordAccordionOpenAndDisabled
-                        "
-                        :disabled="
-                          restore.isBackupPasswordAccordionOpenAndDisabled
-                        "
-                      >
-                        <template slot="title">{{
-                          $t("common.advanced")
-                        }}</template>
-                        <template slot="content">
-                          <NsTextInput
-                            type="password"
-                            :password-hide-label="$t('password.hide_password')"
-                            :password-show-label="$t('password.show_password')"
-                            v-model="restore.backupPassword"
-                            :label="$t('init.backup_password')"
-                            :placeholder="$t('init.use_admin_password')"
-                            :invalid-message="error.restore.backup_password"
-                            :disabled="loading.retrieveClusterBackup"
-                            tooltipAlignment="center"
-                            tooltipDirection="right"
-                            ref="backup_password"
-                            class="mg-top-md"
-                          >
-                            <template #tooltip>
-                              <span
-                                v-html="$t('init.backup_password_tooltip')"
-                              ></span>
-                            </template>
-                          </NsTextInput>
-                        </template>
-                      </cv-accordion-item>
-                    </cv-accordion>
+                    <NsTextInput
+                      type="password"
+                      :password-hide-label="$t('password.hide_password')"
+                      :password-show-label="$t('password.show_password')"
+                      v-model="restore.backupPassword"
+                      :label="$t('init.backup_password')"
+                      :invalid-message="error.restore.backup_password"
+                      :disabled="loading.retrieveClusterBackup"
+                      tooltipAlignment="center"
+                      tooltipDirection="right"
+                      ref="backup_password"
+                      class="mg-top-md"
+                    >
+                      <template #tooltip>
+                        <span
+                          v-html="$t('init.backup_password_tooltip')"
+                        ></span>
+                      </template>
+                    </NsTextInput>
                     <cv-button-set class="footer-buttons">
                       <NsButton
                         type="button"
@@ -549,44 +530,25 @@
                       class="validation-failed-invalid-message"
                       v-html="error.restore.backup_file"
                     ></div>
-                    <!-- advanced options -->
-                    <cv-accordion ref="accordion" class="mg-top-xlg">
-                      <cv-accordion-item
-                        :open="
-                          toggleAccordion[0] ||
-                          restore.isBackupPasswordAccordionOpenAndDisabled
-                        "
-                        :disabled="
-                          restore.isBackupPasswordAccordionOpenAndDisabled
-                        "
-                      >
-                        <template slot="title">{{
-                          $t("common.advanced")
-                        }}</template>
-                        <template slot="content">
-                          <NsTextInput
-                            type="password"
-                            :password-hide-label="$t('password.hide_password')"
-                            :password-show-label="$t('password.show_password')"
-                            v-model="restore.backupPassword"
-                            :label="$t('init.backup_password')"
-                            :placeholder="$t('init.use_admin_password')"
-                            :invalid-message="error.restore.backup_password"
-                            :disabled="loading.retrieveClusterBackup"
-                            tooltipAlignment="center"
-                            tooltipDirection="right"
-                            ref="backup_password"
-                            class="mg-top-md"
-                          >
-                            <template #tooltip>
-                              <span
-                                v-html="$t('init.backup_password_tooltip')"
-                              ></span>
-                            </template>
-                          </NsTextInput>
-                        </template>
-                      </cv-accordion-item>
-                    </cv-accordion>
+                    <NsTextInput
+                      type="password"
+                      :password-hide-label="$t('password.hide_password')"
+                      :password-show-label="$t('password.show_password')"
+                      v-model="restore.backupPassword"
+                      :label="$t('init.backup_password')"
+                      :invalid-message="error.restore.backup_password"
+                      :disabled="loading.retrieveClusterBackup"
+                      tooltipAlignment="center"
+                      tooltipDirection="right"
+                      ref="backup_password"
+                      class="mg-top-md"
+                    >
+                      <template #tooltip>
+                        <span
+                          v-html="$t('init.backup_password_tooltip')"
+                        ></span>
+                      </template>
+                    </NsTextInput>
                     <NsInlineNotification
                       v-if="error.retrieveClusterBackup"
                       kind="error"
@@ -889,8 +851,6 @@ export default {
         backupPassword: "",
         filesUploaded: [],
         base64FileUploaded: "",
-        isBackupPasswordAccordionOpenAndDisabled: false,
-        isBackupPasswordAccordionDisabled: false,
         summary: {},
         progress: 0,
         instances: [],
@@ -1646,7 +1606,6 @@ export default {
     },
     retrieveClusterBackupCompleted(taskContext, taskResult) {
       this.restore.summary = taskResult.output;
-      this.restore.isBackupPasswordAccordionOpenAndDisabled = false;
       this.restore.step = "summary";
       this.loading.retrieveClusterBackup = false;
     },

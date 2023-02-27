@@ -22,4 +22,13 @@
 
 exec 1>&2
 
+pass=$(cat /dev/stdin | jq -r '.password // empty')
+
+# save the password, if present
+if [ ! -z "$pass" ]; then
+    mkdir -p backup
+    echo $pass > backup/passphrase
+    chmod 600 backup/passphrase
+fi
+
 cluster-backup
