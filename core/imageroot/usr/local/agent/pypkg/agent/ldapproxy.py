@@ -54,8 +54,28 @@ class Ldapproxy:
                 conf[key] = self.domains[domain][key]
 
             conf['port'] = self.domains[domain]['listen_port']
-            conf['hidden_users'] = self.domains[domain]['hidden_users']
-            conf['hidden_groups'] = self.domains[domain]['hidden_groups']
+            if conf['schema'] == 'ad':
+                conf['hidden_users'] = [
+                    'Guest',
+                    'krbtgt',
+                    'ldapservice',
+                ]
+                conf['hidden_groups'] = [
+                    'DnsUpdateProxy',
+                    'Domain Computers',
+                    'Domain Controllers',
+                    'Domain Guests',
+                    'Domain Users',
+                    'Group Policy Creator Owners',
+                    'Read-only Domain Controllers',
+                    'Protected Users',
+                ]
+            elif conf['schema'] == 'rfc2307':
+                conf['hidden_users'] = []
+                conf['hidden_groups'] = ['locals']
+            else:
+                conf['hidden_users'] = []
+                conf['hidden_groups'] = []
 
         except:
             return None

@@ -92,26 +92,11 @@ For complete examples see the API implementation of
 
 ## Hidden users and groups
 
-Some users and/or groups can be hidden to UI and other applications. Each
-account provider instance can define its lists in the service record, e.g.:
-
-    redis-cli HSET module/openldap1/srv/tcp/ldap hidden_groups locals,sys hidden_users guest
-
-Additionally, two Redis keys of type "SET" can be used for customizations, e.g.:
-
-- `cluster/user_domain/ldap/dom.test/hidden_users`
-- `cluster/user_domain/ldap/dom.test/hidden_groups`
-
-After any change to hidden user/group list, raise the `user-domain-changed` event:
-
-    redis-cli PUBLISH cluster/event/user-domain-changed {"domain":"dom.test","key":"cluster/user_domain/ldap/dom.test/hidden_groups"}
-
-If both `hidden_users` and `hidden_groups` keys were changed, the event
-can be published just once.
+Some users and/or groups can be hidden to UI and other applications.
 
 Applications might need to build LDAP search filters to configure user and
 groups. The `Ldapproxy` library provides some methods that return filter
-strings that honor the above Redis keys. For example:
+strings that honor the user and group lists used by the core. For example:
 
 ```python
 from agent.ldapproxy import Ldapproxy
