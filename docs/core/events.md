@@ -13,15 +13,19 @@ address is under a module name, something like
 `module/<module_id>/event/<event_name>`.
 
 Events should respect the following rules:
-- use past tense inside the name, like `account-provider-changed`,
+- use past tense inside the name, like `ldap-provider-changed`,
   `user-domain-changed`, `module-added`...
 - accept a parameter in JSON format
 - the parameter should contain minimal required info about the event
 - optionally, the parameter can contain extra data which can ease the event usage
 
 Well known events:
-- `user-domain-changed`: the configuration of a user domain has changed
-- `account-provider-changed`: an account provider instance was removed or added to a user-domain
+- `user-domain-changed`: the user domain has become available, has been
+  removed, or its configuration has changed. The JSON parameter format is
+  `{"node_id":INT,"domain":STRING}`. The `node_id` attribute is optional.
+- `ldap-provider-changed`: an external LDAP account provider was removed
+  or added to a user-domain. The JSON parameter format is
+  `{"domain":STRING,"key":STRING}`.
 
 Events fired by the `cluster` agent (i.e. channel is `cluster/event/<event name>`):
 - `module-added`: the event is fired at the end of the add-module process to inform other modules that a new module has been installed on the cluster

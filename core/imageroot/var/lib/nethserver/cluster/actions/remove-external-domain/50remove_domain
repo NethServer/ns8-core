@@ -52,7 +52,7 @@ protocol = domains[domain]['protocol']
 
 removed_keys = rdb.delete(*list(rdb.scan_iter(f"cluster/user_domain/{protocol}/{domain}/*")))
 if removed_keys > 0:
-    rdb.publish(os.getenv('AGENT_ID') + '/event/account-provider-changed', json.dumps({
+    rdb.publish(os.getenv('AGENT_ID') + '/event/ldap-provider-changed', json.dumps({
         'domain': domain,
         'key': f"cluster/user_domain/{protocol}/{domain}/conf",
     }))
