@@ -1,0 +1,84 @@
+{
+    "settings_acme_servers": {
+        "url": "URL",
+        "title": "Server ACME"
+    },
+    "software_center": {
+        "software_updates": "Aggiornamenti"
+    },
+    "nodes": {
+        "title": "Nodi",
+        "leader": "leader"
+    },
+    "system_logs": {
+        "context_node": "Nodo"
+    },
+    "node_detail": {
+        "title": "Dettagli nodo"
+    },
+    "notification": {
+        "abort": "Annulla"
+    },
+    "audit_trail": {
+        "action": "Azione",
+        "actions": "Azioni"
+    },
+    "settings_tls_certificates": {
+        "status": "Stato"
+    },
+    "about": {
+        "documentation": "Documentazione",
+        "title": "Informazioni"
+    },
+    "smarthost": {
+        "port_placeholder": "587",
+        "password_label": "Password"
+    },
+    "domains": {
+        "ldap": "LDAP",
+        "adminuser_string_gte": "Obbligatorio",
+        "adminpass_string_gte": "Obbligatorio",
+        "samba": "Samba",
+        "configured_domains": "Domini configurati",
+        "configure_domain": "Configura dominio",
+        "openldap": "OpenLDAP",
+        "realm_pattern": "Pattern non valido",
+        "hostname_pattern": "Pattern non valido",
+        "nbdomain_pattern": "Pattern non valido"
+    },
+    "action": {
+        "configure-module": "Configura app",
+        "list-backups": "Elenca backup",
+        "list-backup-repositories": "Elenca repository di backup"
+    },
+    "backup": {
+        "configure": "Configura"
+    },
+    "login": {
+        "password": "Password"
+    },
+    "password": {
+        "password": "Password"
+    },
+    "common": {
+        "required": "Obbligatorio",
+        "processing": "Elaborazione in corso..."
+    },
+    "error": {
+        "error": "Errore",
+        "validation_error": "Errore di validazione",
+        "network_error": "Errore di rete",
+        "404": "Risorsa non trovata",
+        "network_timeout": "Timeout di rete",
+        "generic_error": "Qualcosa è andato storto",
+        "401": "Autenticazione non valida",
+        "403": "Operazione non autorizzata"
+    },
+    "task": {
+        "configure": "Configura",
+        "cannot_create_task": "Impossibile eseguire task {action}"
+    },
+    "settings": {
+        "title": "Impostazioni"
+    }
+}
