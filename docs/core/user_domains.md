@@ -56,13 +56,15 @@ domain = lp.get_domain("mydomain")
 print(domain)
 ```
 
-The module can handle account provider changes by defining an event
-handler. Create an executable script with path
-`${AGENT_INSTALL_DIR}/events/account-provider-changed/10handler` and run
-any command from it. For instance:
+The module can handle the user domain configuration changes by defining an
+event handler. Create an executable script with path
+`${AGENT_INSTALL_DIR}/events/user-domain-changed/10handler`. For instance:
 
 ```shell
-mycommand && systemctl --user reload mymodule.service
+read -r domain < <(jq -r .domain)
+if [[ "${domain}" == "mydomain" ]]; then
+    systemctl --user reload mymodule.service
+fi
 ```
 
 ## List users and groups
@@ -87,3 +89,20 @@ For complete examples see the API implementation of
 - `cluster/list-domain-users`
 - `cluster/get-domain-user`
 - `cluster/get-domain-group`
+
+## Hidden users and groups
+
+Some users and/or groups can be hidden to UI and other applications.
+
+Applications might need to build LDAP search filters to configure user and
+groups. The `Ldapproxy` library provides some methods that return filter
+strings that honor the user and group lists used by the core. For example:
+
+```python
+from agent.ldapproxy import Ldapproxy
+lp = Ldapproxy()
+users_filter = lp.get_ldap_users_search_filter_clause("mydomain")
+print(users_filter)
+groups_filter = lp.get_ldap_groups_search_filter_clause("mydomain")
+print(groups_filter)
+```

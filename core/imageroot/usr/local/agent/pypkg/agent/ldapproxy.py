@@ -54,6 +54,28 @@ class Ldapproxy:
                 conf[key] = self.domains[domain][key]
 
             conf['port'] = self.domains[domain]['listen_port']
+            if conf['schema'] == 'ad':
+                conf['hidden_users'] = [
+                    'Guest',
+                    'krbtgt',
+                    'ldapservice',
+                ]
+                conf['hidden_groups'] = [
+                    'DnsUpdateProxy',
+                    'Domain Computers',
+                    'Domain Controllers',
+                    'Domain Guests',
+                    'Domain Users',
+                    'Group Policy Creator Owners',
+                    'Read-only Domain Controllers',
+                    'Protected Users',
+                ]
+            elif conf['schema'] == 'rfc2307':
+                conf['hidden_users'] = []
+                conf['hidden_groups'] = ['locals']
+            else:
+                conf['hidden_users'] = []
+                conf['hidden_groups'] = []
 
         except:
             return None
@@ -92,6 +114,47 @@ class Ldapproxy:
             password='default',
             decode_responses=True,
         )
+
+    def get_ldap_users_search_filter_clause(self, domain):
+        mdom = self.get_domain(domain)
+        if not mdom['hidden_users']:
+            return ""
+
+        filter_clause = ""
+        if mdom['schema'] == 'ad':
+            uattr = 'sAMAccountName'
+        elif mdom['schema'] == 'rfc2307':
+            uattr = 'uid'
+        else:
+            return ""
+
+        for user in mdom['hidden_users']:
+            filter_clause += f"({uattr}={user})"
+
+        return f"(!(|{filter_clause}))"
+
+
+    def get_ldap_groups_search_filter_clause(self, domain):
+        mdom = self.get_domain(domain)
+
+        filter_clause = ""
+        if mdom['schema'] == 'ad':
+            uattr = 'sAMAccountName'
+            # filter out non-global groups. See
+            # https://social.technet.microsoft.com/wiki/contents/articles/5392.active-directory-ldap-syntax-filters.aspx
+            filter_clause += "(!(groupType:1.2.840.113556.1.4.803:=2))"
+        elif mdom['schema'] == 'rfc2307':
+            uattr = 'cn'
+        else:
+            return ""
+
+        for user in mdom['hidden_groups']:
+            filter_clause += f"({uattr}={user})"
+
+        if not filter_clause:
+            return "" # do not wrap an empty clause!
+
+        return f"(!(|{filter_clause}))"
 
 if __name__ == '__main__':
     lp = Ldapproxy()

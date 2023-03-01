@@ -55,7 +55,7 @@ if provider in providers:
     sys.exit(2)
 
 rdb.rpush(f"cluster/user_domain/{protocol}/{domain}/providers", provider)
-rdb.publish(os.getenv('AGENT_ID') + '/event/account-provider-changed', json.dumps({
+rdb.publish(os.getenv('AGENT_ID') + '/event/ldap-provider-changed', json.dumps({
     'domain': domain,
     'key': f"cluster/user_domain/{protocol}/{domain}/providers",
 }))

@@ -60,7 +60,7 @@ if not provider in providers:
 removed_elements = rdb.lrem(f"cluster/user_domain/{protocol}/{domain}/providers", 0, provider)
 if removed_elements > 0:
     rdb.hdel(f"cluster/user_domain/{protocol}/{domain}/ui_names", provider)
-    rdb.publish(os.getenv('AGENT_ID') + '/event/account-provider-changed', json.dumps({
+    rdb.publish(os.getenv('AGENT_ID') + '/event/ldap-provider-changed', json.dumps({
         'domain': domain,
         'key': f"cluster/user_domain/{protocol}/{domain}/providers",
     }))

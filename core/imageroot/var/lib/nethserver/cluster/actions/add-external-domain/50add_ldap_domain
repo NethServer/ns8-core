@@ -61,7 +61,7 @@ if protocol == 'ldap':
     #
     # Advertise new account provider setup
     #
-    trx.publish(os.getenv('AGENT_ID') + '/event/account-provider-changed', json.dumps({
+    trx.publish(os.getenv('AGENT_ID') + '/event/ldap-provider-changed', json.dumps({
         'domain': domain,
         'key': f"cluster/user_domain/ldap/{domain}/providers",
     }))

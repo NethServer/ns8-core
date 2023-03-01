@@ -33,7 +33,7 @@ class LdapclientAd(LdapclientBase):
         raise LdapclientEntryNotFound()
 
     def get_group(self, group):
-        response = self.ldapconn.search(self.base_dn, f'(&(objectClass=group)(sAMAccountName={group}))',
+        response = self.ldapconn.search(self.base_dn, f'(&(objectClass=group)(sAMAccountName={group}){self._get_groups_search_filter_clause()})',
             attributes=['member', 'description', 'sAMAccountName'],
         )[2]
 
@@ -57,7 +57,7 @@ class LdapclientAd(LdapclientBase):
         raise LdapclientEntryNotFound()
 
     def list_groups(self):
-        response = self.ldapconn.search(self.base_dn, '(&(objectClass=group))',
+        response = self.ldapconn.search(self.base_dn, f'(&(objectClass=group){self._get_groups_search_filter_clause()})',
             attributes=['cn','member','description', 'sAMAccountName'],
         )[2]
 
@@ -73,7 +73,7 @@ class LdapclientAd(LdapclientBase):
         return groups
 
     def get_user(self, user):
-        response = self.ldapconn.search(self.base_dn, f'(&(objectClass=user)(sAMAccountName={user}))',
+        response = self.ldapconn.search(self.base_dn, f'(&(objectClass=user)(sAMAccountName={user}){self._get_users_search_filter_clause()})',
             attributes=['displayName', 'sAMAccountName', 'memberOf', 'userAccountControl'],
         )[2]
 
@@ -103,7 +103,7 @@ class LdapclientAd(LdapclientBase):
         raise LdapclientEntryNotFound()
 
     def list_users(self):
-        response = self.ldapconn.search(self.base_dn, '(&(objectClass=user)(objectCategory=person))',
+        response = self.ldapconn.search(self.base_dn, f'(&(objectClass=user)(objectCategory=person){self._get_users_search_filter_clause()})',
             attributes=['displayName', 'sAMAccountName', 'userAccountControl'],
         )[2]
 
