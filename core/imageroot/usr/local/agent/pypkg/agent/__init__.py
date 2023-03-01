@@ -19,7 +19,7 @@
 #
 
 import redis
-import os
+import os, os.path
 import subprocess
 import sys
 import uuid
@@ -110,7 +110,14 @@ def write_envfile(file_path, envmap):
     entries = [ek + "=" + str(ev) for ek, ev in envmap.items()]
     entries.sort()
     payload = "\n".join(entries) + "\n"
-    tmpfile = ".{0}-{1!s}.tmp".format(file_path, os.getpid())
+    tmpfile = ".{0}-{1!s}.tmp".format(os.path.basename(file_path), os.getpid())
+
+    bdir = os.path.dirname(file_path) # Base directory
+    if bdir:
+        tmpfile = bdir + '/' + tmpfile # Prepend the base directory
+    else:
+        pass # File is in the current working directory
+
     with open(tmpfile, 'w') as ofile:
         ofile.write(payload)
     os.rename(tmpfile, file_path)
@@ -118,19 +125,21 @@ def write_envfile(file_path, envmap):
 def set_env(var_name, var_value):
     """Change the ./environment file contents, setting the variable "var_name" to the given "var_value"
     """
-    envmap = read_envfile("environment")
+    envfile_path = os.environ['AGENT_STATE_DIR'] + "/environment"
+    envmap = read_envfile(envfile_path)
     envmap[var_name] = var_value
-    write_envfile("environment", envmap)
+    write_envfile(envfile_path, envmap)
 
 def unset_env(var_name):
     """Change the ./environment file contents, removing the variable "var_name"
     """
-    envmap = read_envfile("environment")
+    envfile_path = os.environ['AGENT_STATE_DIR'] + "/environment"
+    envmap = read_envfile(envfile_path)
     try:
         del envmap[var_name]
     except KeyError:
         pass
-    write_envfile("environment", envmap)
+    write_envfile(envfile_path, envmap)
 
 
 def get_progress_callback(range_low, range_high):
