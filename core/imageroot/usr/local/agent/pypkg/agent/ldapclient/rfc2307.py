@@ -67,7 +67,7 @@ class LdapclientRfc2307(LdapclientBase):
 
     def get_user(self, user):
         response = self.ldapconn.search(self.base_dn, f'(&(objectClass=posixAccount)(objectClass=inetOrgPerson)(uid={user}){self._get_users_search_filter_clause()})',
-            attributes=['displayName', 'uid'],
+            attributes=['displayName', 'uid', 'pwdAccountLockedTime'],
         )[2]
 
         def get_memberof(user):
@@ -91,14 +91,15 @@ class LdapclientRfc2307(LdapclientBase):
                 "user": entry['attributes']['uid'][0],
                 "display_name": entry['attributes'].get('displayName') or "",
                 "groups": get_memberof(user),
-                "locked": False, # XXX still not implemented
+                "locked": entry['attributes']['pwdAccountLockedTime'] != [],
             }
 
         raise LdapclientEntryNotFound()
 
+
     def list_users(self):
         response = self.ldapconn.search(self.base_dn, f'(&(objectClass=posixAccount)(objectClass=inetOrgPerson){self._get_users_search_filter_clause()})',
-            attributes=['displayName', 'uid'],
+            attributes=['displayName', 'uid', 'pwdAccountLockedTime'],
         )[2]
 
         users = []
@@ -108,6 +109,6 @@ class LdapclientRfc2307(LdapclientBase):
             users.append({
                 "user": entry['attributes']['uid'][0],
                 "display_name": entry['attributes'].get('displayName') or "",
-                "locked": False, # XXX still not implemented
+                "locked": entry['attributes']['pwdAccountLockedTime'] != [],
             })
         return users
