@@ -29,7 +29,12 @@ import os
 import sys
 import agent
 
-os.environ.update(agent.read_envfile('/var/lib/nethserver/cluster/state/agent.env'))
+try:
+    os.environ.update(agent.read_envfile('/var/lib/nethserver/cluster/state/agent.env'))
+except FileNotFoundError:
+    # Ignore missing file error during install-core.sh, when redis is
+    # started for the first time.
+    sys.exit(0)
 
 rdb = agent.redis_connect(privileged=True)
 
@@ -46,4 +51,3 @@ if role == 'slave':
     print("ACLs loaded")
 else:
     print("ACLs loading skipped on the leader node", file=sys.stderr)
-    sys.exit(0)
