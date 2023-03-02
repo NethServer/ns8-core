@@ -1,24 +1,12 @@
-#!/usr/bin/env python3
+#!/usr/local/bin/runagent python3
 
 #
-# Copyright (C) 2021 Nethesis S.r.l.
-# http://www.nethesis.it - nethserver@nethesis.it
+# Copyright (C) 2022 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
 #
-# This script is part of NethServer.
-#
-# NethServer is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License,
-# or any later version.
-#
-# NethServer is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with NethServer.  If not, see COPYING.
-#
+
+# Read VPN route settings from local Redis replica, update the kernel
+# routing table, update Wireguard routing (AllowedIPs) setup.
 
 import agent
 import os
@@ -29,7 +17,9 @@ import json
 
 self_id = int(os.environ['NODE_ID'])
 
-with agent.redis_connect(privileged=False) as rdb:
+# Connect to the local Redis replica and read VPN configuration of each
+# node:
+with agent.redis_connect(use_replica=True) as rdb:
 
     leader_id = int(rdb.hget('cluster/environment', 'NODE_ID'))
     peers = {}
@@ -85,7 +75,7 @@ def get_wgset_endpoint_clause(endpoint):
     if not endpoint:
         return []
 
-    address, port = endpoint.split(':')
+    address, port = endpoint.rsplit(':')
 
     try:
         addrinfo = socket.getaddrinfo(address, port)
@@ -134,7 +124,5 @@ else:
     print(agent.SD_ERR + f"Error while reading wg0 routes", file=sys.stderr)
     errors += 1
 
-
-agent.assert_exp(errors == 0)
-
-print("true") # Honor output JSON schema
+if errors > 0:
+    sys.exit(2)

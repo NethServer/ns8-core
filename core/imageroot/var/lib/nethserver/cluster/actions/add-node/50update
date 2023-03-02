@@ -48,8 +48,8 @@ flags = request.get('flags', [])
 rdb = agent.redis_connect(privileged=True)
 
 #
-# 1/a. Retrieve the leader VPN attributes,
-#      required by the caller to complete the join-cluster action
+# Retrieve the leader VPN attributes, required by the caller to complete
+# the join-cluster action
 #
 leader_id = rdb.hget('cluster/environment', 'NODE_ID')
 leader_ip_address = rdb.hget(f'node/{leader_id}/vpn', 'ip_address')
@@ -62,21 +62,14 @@ leader_endpoint = rdb.hget(f'node/{leader_id}/vpn', 'endpoint')
 agent.assert_exp(leader_endpoint)
 
 #
-# 1/b. Generate a new node_id and VPN IP address
+# Generate a new node_id and VPN IP address
 #
 network = ipaddress.ip_network(rdb.get('cluster/network'))
 node_id = int(rdb.incr(f'cluster/node_sequence'))
 ip_address = str(network.network_address + node_id)
 
-# Prepare a list of tasks to update VPN routes on existing nodes
-update_routes_tasks = [{
-    'agent_id': knode.removesuffix('/vpn'),
-    'action': 'update-routes',
-    'data': {},
-} for knode in rdb.scan_iter('node/*/vpn')] # It's ok, the new node record is still not present.
-
 #
-# 1/c. Store VPN settings of the new node
+# Store VPN settings of the new node
 #
 agent.assert_exp(rdb.hset(f'node/{node_id}/vpn', mapping={
     "public_key": public_key,
@@ -94,7 +87,7 @@ for flag in flags:
 agent.assert_exp(rdb.set(f'node/{node_id}/tcp_ports_sequence', 20000) is True)
 
 #
-# 2. Create redis acls for the node agent
+# Create redis acls for the node agent
 #
 agent.assert_exp(rdb.execute_command('ACL', 'SETUSER',
     f'node/{node_id}', 'ON', '#' + node_pwh,
@@ -104,17 +97,9 @@ agent.assert_exp(rdb.execute_command('ACL', 'SETUSER',
 ) == 'OK')
 
 #
-# 3. Ask existing nodes (leader included) to update their IP routes and VPN configuration
-#
-node_errors = agent.tasks.runp_brief(
-    update_routes_tasks,
-    endpoint="redis://cluster-leader",
-)
-agent.assert_exp(node_errors == 0)
-
-#
-# 4. Additional tasks for the new node: they are picked up when the join-cluster has been completed
-#    in a random order and must not depend on each other.
+# Additional tasks for the new node: they are picked up when the
+# join-cluster has been completed in a random order and must not depend on
+# each other.
 #
 additional_tasks = [
     {
@@ -157,11 +142,6 @@ additional_tasks = [
             "check_idle_time": 0,
         }
     },
-    {
-        'agent_id': f'node/{node_id}',
-        'action': 'update-routes',
-        'data': {},
-    },
 ]
 
 if not 'nomodules' in flags:
@@ -189,6 +169,11 @@ for userk in rdb.scan_iter('roles/*'):
         rdb.hset(userk, f'node/{node_id}', 'owner')
 
 agent.save_acls(rdb)
+
+#
+# Reconfigure VPN routes
+#
+rdb.publish('cluster/event/vpn-changed', json.dumps({"node_id":node_id}))
 
 #
 # Return the new information to the caller

@@ -69,7 +69,6 @@ You can also use the shortcut command called `api-cli`.
 Usage example:
 ```
 # api-cli list-actions
-node/1/update-routes
 node/1/get-node-status
 ...
 ```
