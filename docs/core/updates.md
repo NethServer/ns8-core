@@ -16,7 +16,7 @@ Core updates include enhancements and bug fixes for the `core` image. Such image
 
 To execute the core update, use:
 
-    api-cli run update-core --data '{"core_url":"ghcr.io/nethserver/core:latest","nodes":[1, 2]}
+    api-cli run update-core --data '{"core_url":"ghcr.io/nethserver/core:latest","nodes":[1, 2]}'
 
 The cluster agent forwards the request to selected nodes.
 Each node agent downloads the new image and restart core services: agents, redis and api-server.
