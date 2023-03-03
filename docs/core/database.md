@@ -198,7 +198,6 @@ Legend:
 |node/{id}/vpn destinations         |STRING     |List of networks in CIDR notation, routed through the VPN|
 |node/{id}/vpn endpoint             |STRING     |Public IP or host name of the VPN endpoint with :port suffix|
 |node/{id}/vpn listen_port          |INTEGER    |Public UDP port of the VPN endpoint, default: `55820`|
-|node/{id}/vpn hub_id               |INTEGER    |node ID (for nodes without a public endpoint address)|
 |node/{id}/flags                    |SET        |FlagS to mark a node. Supported flags: `nomodules`, the node can't run any module|
 |node/{id}/tasks                    |QUEUE      |see [Task queue item](#task-queue-item)|
 |node/{id}/task/{id}/context        |STRING     |JSON representation of the queued task|

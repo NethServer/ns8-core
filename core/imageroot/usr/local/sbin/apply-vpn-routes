@@ -20,58 +20,42 @@ self_id = int(os.environ['NODE_ID'])
 # Connect to the local Redis replica and read VPN configuration of each
 # node:
 with agent.redis_connect(use_replica=True) as rdb:
-
     leader_id = int(rdb.hget('cluster/environment', 'NODE_ID'))
+    cluster_network = rdb.get('cluster/network')
     peers = {}
     for pkey in rdb.scan_iter('node/*/vpn'):
         node_id = int(pkey.removeprefix('node/').removesuffix('/vpn'))
         peers[node_id] = rdb.hgetall(pkey)
-        # Convert "destinations" from a space separated string to a Python set
-        peers[node_id]['destinations'] = {peers[node_id]['ip_address'] + '/32', *peers[node_id].get('destinations', '').split()}
-        # Set default hub_id value
-        if 'hub_id' in peers[node_id]:
-            peers[node_id]['hub_id'] = int(peers[node_id]['hub_id']) # convert to integer
-        else:
-            peers[node_id]['hub_id'] = node_id if peers[node_id]['endpoint'] else leader_id
-
 
 agent.assert_exp(len(peers) >= 0)
 agent.assert_exp(leader_id > 0)
+agent.assert_exp(cluster_network)
 
-#
-# Build the VPN configuration by grouping peers behind their hub nodes
-#
-ip_address = peers[self_id]['ip_address']
-listen_port = int(peers[self_id]['listen_port'])
-wgconf={}
+# Convert Redis VPN records to our VPN data model
+destmap = {}
 for node_id in peers:
+    if self_id == leader_id:
+        # The local node is the Leader and the VPN hub. One node
+        # corresponds to a VPN peer, and its destinations are the node
+        # destinations with its IP address
+        destmap.setdefault(node_id, set())
+        destmap[node_id].update(peers[node_id]['destinations'].split())
+        destmap[node_id].add(peers[node_id]['ip_address'])
 
-    hub_id = peers[node_id]['hub_id']
-    if not hub_id in peers:
-        print(agent.SD_WARNING + f"Invalid reference in node/{node_id}/vpn.hub_id = {hub_id}", file=sys.stderr)
-        hub_id = leader_id
+    elif self_id == node_id:
+        # Skip the destinations for the local node: they use default
+        # kernel routing rules.
+        pass
 
-    if node_id == self_id:
-        # Nothing to do with the running node
-        continue
-    elif node_id == hub_id:
-        # The node is an hub, ensure it is pushed to the wgconf
-        wgconf.setdefault(hub_id, peers[hub_id])
-    elif self_id == hub_id:
-        # The running node is an hub for the node
-        wgconf.setdefault(node_id, peers[node_id])
     else:
-        # The node is an edge, behind some hub node
-
-        # 1. ensure the hub is pushed to the wgconf
-        wgconf.setdefault(hub_id, peers[hub_id])
-
-        # 2. push the node destinations behind the hub
-        wgconf[hub_id]['destinations'] |= peers[node_id]['destinations']
-
-agent.save_wgconf(ip_address, listen_port=listen_port, peers=wgconf)
+        # Default VPN routing rule: send all traffic to the Leader
+        destmap.setdefault(leader_id, set())
+        destmap[leader_id].update(peers[node_id]['destinations'].split())
+        destmap[leader_id].add(peers[node_id]['ip_address'])
 
 def get_wgset_endpoint_clause(endpoint):
+    """Resolve the endpoint IP address and return the endpoint arguments
+    for the `wg set` subcommand"""
     if not endpoint:
         return []
 
@@ -87,18 +71,19 @@ def get_wgset_endpoint_clause(endpoint):
 
 errors = 0
 valid_destinations = []
-for node_id in wgconf:
+for node_id in destmap:
     # Apply immediately the new configuration to the WireGuard wg0 interface...
-    wset_proc = agent.run_helper('wg', 'set', 'wg0', 'peer', wgconf[node_id]["public_key"], 'persistent-keepalive', '25', 'allowed-ips',
-        ",".join(wgconf[node_id]["destinations"]),
-        *get_wgset_endpoint_clause(wgconf[node_id]['endpoint']),
+    wset_proc = agent.run_helper('wg', 'set', 'wg0', 'peer', peers[node_id]["public_key"],
+        'persistent-keepalive', '25',
+        'allowed-ips', ','.join(destmap[node_id]),
+        *get_wgset_endpoint_clause(peers[node_id].get('endpoint', '')),
         log_command=True,
     )
     if wset_proc.returncode != 0:
         errors +=1
         print(agent.SD_ERR + f'Runtime change of allowed-ips has failed for peer node/{node_id}', file=sys.stderr)
 
-    for xdest in wgconf[node_id]['destinations']:
+    for xdest in destmap[node_id]:
         # ...and to the system routing table
         ipreplace_proc = agent.run_helper('ip', 'route', 'replace', xdest, 'nexthop', 'dev', 'wg0', log_command=True)
         if ipreplace_proc.returncode != 0:
@@ -126,3 +111,6 @@ else:
 
 if errors > 0:
     sys.exit(2)
+
+# If commands were successful, save the configuration of wg0:
+agent.run_helper('wg-quick', 'save', 'wg0').check_returncode()

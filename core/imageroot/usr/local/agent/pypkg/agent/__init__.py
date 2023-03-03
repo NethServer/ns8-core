@@ -355,7 +355,10 @@ def resolve_agent_id(agent_selector, node_id=None):
 
     return agent_id
 
-def save_wgconf(ipaddr, listen_port=55820, peers={}):
+def initialize_wgconf(ipaddr, listen_port=55820, peers={}):
+    """Initialize wg0.conf to bootstrap the VPN link. The file is then
+       overwritten by the `wg-quick save wg0` by the Systemd unit stop
+       handler and by the `apply-vpn-routes` command"""
 
     private_key = slurp_file('/etc/nethserver/wg0.key')
     public_key = slurp_file('/etc/nethserver/wg0.pub')

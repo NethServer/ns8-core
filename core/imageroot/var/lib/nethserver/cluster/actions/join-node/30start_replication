@@ -57,7 +57,7 @@ agent.run_helper('sed', '-i',
     '/var/lib/nethserver/node/state/agent.env').check_returncode()
 
 # VPN bootstrap
-agent.save_wgconf(ip_address, listen_port, {
+agent.initialize_wgconf(ip_address, listen_port, {
     "leader-node":{"ip_address": leader_ip_address, "public_key": leader_public_key, 'endpoint': leader_endpoint }
 })
 agent.run_helper(*'systemctl restart wg-quick@wg0'.split(' ')).check_returncode()

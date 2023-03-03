@@ -73,10 +73,9 @@ agent.run_helper('sed', '-i',
     '-e', f'/cluster-localnode$/c\{ip_address} cluster-localnode',
     '/etc/hosts').check_returncode()
 
-#
-# Apply new VPN setup
-#
-agent.save_wgconf(ip_address, listen_port)
+
+# VPN bootstrap
+agent.initialize_wgconf(ip_address, listen_port)
 agent.run_helper(*'systemctl restart wg-quick@wg0'.split(' ')).check_returncode()
 
 # (Samba) account provider might want to route some IP addresses through our VPN. Define a role for that:
