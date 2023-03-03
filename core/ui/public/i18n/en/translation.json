@@ -907,7 +907,8 @@
     "unconfigured_domains": "Unconfigured domains",
     "configured_domains": "Configured domains",
     "users_and_groups": "Users and groups",
-    "domain_not_found": "Domain not found"
+    "domain_not_found": "Domain not found",
+    "domain_pattern": "Invalid domain pattern. Enter something like 'my.domain.org'"
   },
   "samba": {
     "adminuser": "Samba admin username",
