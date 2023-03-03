@@ -95,8 +95,9 @@
                     <cv-toggle
                       value="favorite"
                       small
-                      v-model="app.isFavorite"
+                      :checked="app.isFavorite"
                       class="toggle-app-favorite"
+                      @click="toggleFavorite(app)"
                     >
                       <template slot="text-left">{{
                         $t("app_drawer.favorite")
@@ -850,6 +851,10 @@ export default {
 .app-drawer
   .cv-structured-list-data.bx--structured-list-td.app-list-element:hover {
   background-color: #353535 !important;
+}
+
+.app-drawer .toggle-app-favorite .bx--toggle-input__label {
+  color: $text-03;
 }
 
 .app-drawer .toggle-app-favorite .bx--toggle-input__label .bx--toggle__switch {
