@@ -41,6 +41,7 @@ module_id = request['module_id']
 # Check if module_id is in an internal domain among multiple providers.
 # If so, run the leave-domain action before actually remove the provider.
 leave_is_required = False
+designated_survivor = ''
 for odomain in cluster.userdomains.get_internal_domains(agent.redis_connect()).values():
     # Filter out unconfigured providers: they surely do not need leave-domain
     providers = [xprov for xprov in odomain['providers'] if xprov['host'] and xprov['port']]
@@ -51,17 +52,32 @@ for odomain in cluster.userdomains.get_internal_domains(agent.redis_connect()).v
         sys.exit(2)
 
     # Check if module_id is among configured providers:
-    if [xprov for xprov in providers if xprov['id'] == module_id]:
-        leave_is_required = True
-        break
+    for provider in providers:
+        if provider['id'] == module_id:
+            leave_is_required = True
+        else:
+            designated_survivor = provider['id']
 
 remove_progress_start = 2
 if leave_is_required:
+    remove_progress_start = 40
+    acquire_retval = agent.tasks.run(
+        agent_id=f"module/{designated_survivor}",
+        action="acquire-fsmo",
+        data=None,
+        endpoint="redis://cluster-leader",
+        progress_callback=agent.get_progress_callback(2, 50),
+    )
+    if acquire_retval['exit_code'] != 0:
+        print(agent.SD_ERR + f"There was an error in module/{designated_survivor}/acquire-fsmo. Check the subtask for details.", file=sys.stderr)
+        sys.exit(3)
+
+
     remove_progress_start = 51
     leave_retval = agent.tasks.run(
         agent_id=f"module/{module_id}",
         action="leave-domain",
-        data=None,
+        data={"adminuser": request.get("adminuser", ""), "adminpass": request.get("adminpass", "")},
         endpoint="redis://cluster-leader",
         progress_callback=agent.get_progress_callback(2, 50),
     )
