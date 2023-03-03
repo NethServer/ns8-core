@@ -41,6 +41,7 @@ module_id = request['module_id']
 # Check if module_id is in an internal domain among multiple providers.
 # If so, run the leave-domain action before actually remove the provider.
 leave_is_required = False
+target_domain = None
 designated_survivor = ''
 for odomain in cluster.userdomains.get_internal_domains(agent.redis_connect()).values():
     # Filter out unconfigured providers: they surely do not need leave-domain
@@ -55,29 +56,37 @@ for odomain in cluster.userdomains.get_internal_domains(agent.redis_connect()).v
     for provider in providers:
         if provider['id'] == module_id:
             leave_is_required = True
+            target_domain = odomain
         else:
             designated_survivor = provider['id']
 
+    # Do not look for other domains, we already have all required info
+    if target_domain:
+        break
+
 remove_progress_start = 2
 if leave_is_required:
-    remove_progress_start = 40
-    acquire_retval = agent.tasks.run(
-        agent_id=f"module/{designated_survivor}",
-        action="acquire-fsmo",
-        data=None,
-        endpoint="redis://cluster-leader",
-        progress_callback=agent.get_progress_callback(2, 50),
-    )
-    if acquire_retval['exit_code'] != 0:
-        print(agent.SD_ERR + f"There was an error in module/{designated_survivor}/acquire-fsmo. Check the subtask for details.", file=sys.stderr)
-        sys.exit(3)
+    # If the domain is an Active Directory, make sure the designated survivor can retain all FSMO roles
+    if target_domain.get('schema', '') == 'ad':
+        remove_progress_start = 40
+        acquire_retval = agent.tasks.run(
+            agent_id=f"module/{designated_survivor}",
+            action="acquire-fsmo",
+            data=None,
+            endpoint="redis://cluster-leader",
+            progress_callback=agent.get_progress_callback(2, 50),
+        )
+        if acquire_retval['exit_code'] != 0:
+            print(agent.SD_ERR + f"There was an error in module/{designated_survivor}/acquire-fsmo. Check the subtask for details.", file=sys.stderr)
+            sys.exit(3)
 
-
+    rdb = agent.redis_connect()
+    ds_host = rdb.hget(f"module/{designated_survivor}/environment", "HOSTNAME")
     remove_progress_start = 51
     leave_retval = agent.tasks.run(
         agent_id=f"module/{module_id}",
         action="leave-domain",
-        data={"adminuser": request.get("adminuser", ""), "adminpass": request.get("adminpass", "")},
+        data={"adminuser": request.get("adminuser", ""), "adminpass": request.get("adminpass", ""), "designated_survivor": ds_host},
         endpoint="redis://cluster-leader",
         progress_callback=agent.get_progress_callback(2, 50),
     )
@@ -99,8 +108,3 @@ remove_retval = agent.tasks.run(
 if remove_retval['exit_code'] != 0:
     print(agent.SD_ERR + f"There was an error during {module_id} removal. Check the subtask for details.", file=sys.stderr)
     sys.exit(4)
-
-
-
-
-

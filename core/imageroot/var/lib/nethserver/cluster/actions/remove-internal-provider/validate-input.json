@@ -10,7 +10,8 @@
         {
             "module_id": "samba1",
             "adminuser": "administrator",
-            "adminpass": "Nethesis,1234"
+            "adminpass": "Nethesis,1234",
+	    "designated_survivor": "dc1.mydomain.org"
         }
     ],
     "type": "object",
@@ -28,6 +29,10 @@
             "minLength": 1
         },
         "adminpass": {
+            "type": "string",
+            "minLength": 1
+        },
+        "designated_survivor": {
             "type": "string",
             "minLength": 1
         }
