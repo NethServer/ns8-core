@@ -144,11 +144,8 @@
                           :label="$t('domain_users.change_password')"
                         />
                       </cv-overflow-menu-item>
-                      <!-- //// disable/enable user is currently not implemented on openldap -->
                       <cv-overflow-menu-item
-                        :disabled="
-                          loading.alterUser || domain.schema == 'rfc2307'
-                        "
+                        :disabled="loading.alterUser"
                         @click="enableOrDisableUser(row)"
                       >
                         <NsMenuItem
