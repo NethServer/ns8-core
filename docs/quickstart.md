@@ -19,6 +19,8 @@ development branch or alternative registries.
     curl https://raw.githubusercontent.com/NethServer/ns8-core/main/core/install.sh > install.sh 
     bash install.sh ghcr.io/nethserver/core:latest ghcr.io/nethserver/traefik:mybranch
 
+See also [module override](#module-override).
+
 The install script also accepts the following environment variables:
 - `TESTING`: override testing flag inside the `default` repository. It can be `0` (disabled) or `1` (enabled), default is `0`
 - `REPMOD`: override `default` software repository URL, it could be something like `https://mycustomrrepo.server.test/repomd`
@@ -56,3 +58,16 @@ execute the following command in every cluster node, before `add-module`:
 
 Many applications need a configuration step after install, for more info, 
 please refer to [Administrator manual]({{site.admin_manual}}).
+
+### Module override
+
+Sometimes you may need to install a specific tag for a module even from the UI.
+As an example, this can be usefull to override the image used by a
+user domain provider.
+
+Command to override the Samba module:
+```
+redis-cli hset cluster/override/modules samba ghcr.io/nethserver/samba:rootless
+```
+
+You can now provision the user domain directly from the web interface.
