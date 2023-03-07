@@ -1,0 +1,17 @@
+#!/bin/bash
+
+#
+# Copyright (C) 2023 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+set -e
+
+if [[ "${AGENT_EVENT_SOURCE}" != cluster ]]; then
+    echo "<4>[WARNING] Invalid event source: ${AGENT_EVENT_SOURCE}" >&2
+    exit 2
+fi
+
+node_id=$(jq -r .node_id)
+
+exec /usr/local/sbin/switch-leader "${node_id}"

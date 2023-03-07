@@ -1,0 +1,74 @@
+#!/usr/local/bin/runagent python3
+
+#
+# Copyright (C) 2023 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+# Become a leader node if the node_id argument refers to the local node,
+# or point to a new leader node if it differs.
+
+import agent
+import os
+import sys
+import socket
+import subprocess
+import json
+import time
+
+self_id = int(os.environ['NODE_ID'])
+
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument('node_id', type=int, help="Node ID of the new leader")
+args = parser.parse_args()
+node_id = args.node_id
+
+# This command runs under the cluster environment. It always point to the local
+# Redis instance and has admin privileges over it.
+rdb = agent.redis_connect(privileged=True)
+
+leader_id = int(rdb.hget('cluster/environment', 'NODE_ID') or "0")
+
+node_endpoint = rdb.hget(f'node/{node_id}/vpn', 'endpoint')
+if not node_endpoint:
+    print(f"[ERROR] Node {node_id} has no VPN endpoint.", file=sys.stderr)
+    sys.exit(2)
+
+node_ipaddr = rdb.hget(f'node/{node_id}/vpn', 'ip_address')
+agent.assert_exp(node_ipaddr) # FATAL error. The designed node has a malformed VPN record
+
+# Every node initally becomes a Redis master, just to fix the leader NODE_ID
+agent.assert_exp(rdb.execute_command("REPLICAOF", "NO", "ONE") == "OK")
+rdb.hset("cluster/environment", "NODE_ID", str(node_id))
+
+if node_id == self_id: # Promote this node to leader role
+    node_ipaddr="127.0.0.1" # Override IP address cluster-leader record in /etc/hosts
+
+else: # Become a replica of the new leader node
+    command_reply = rdb.execute_command("REPLICAOF", node_ipaddr, "6379")
+    if command_reply == "OK":
+        attempt = 0
+        while attempt < 100: # Retry up to 10 minutes
+            if rdb.hget("cluster/environment", "NODE_ID") == str(node_id):
+                break # Leader is in charge, VPN settings can be safely applied
+            if attempt == 1:
+                print(f"[WARNING] Waiting for cluster/environment NODE_ID to become {node_id}...", file=sys.stderr)
+            time.sleep(6)
+            attempt += 1
+        else:
+            print("[WARNING] 10 minutes timeout! The designed leader node is not in charge: VPN connection settings with other nodes might be wrong!", file=sys.stderr)
+    elif command_reply[0:2] == "OK":
+        print("[NOTICE] " + command_reply, file=sys.stderr)
+    else:
+        print("[ERROR] Redis REPLICAOF failed: " + command_reply, file=sys.stderr)
+        sys.exit(1)
+
+# Fix /etc/hosts cluster-leader record
+agent.run_helper('sed', '-i',
+    '-e', f'/cluster-leader$/c\{node_ipaddr} cluster-leader',
+    '/etc/hosts').check_returncode()
+
+# Apply new VPN routes
+agent.run_helper("apply-vpn-routes").check_returncode()
