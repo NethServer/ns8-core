@@ -72,3 +72,33 @@ agent.run_helper('sed', '-i',
 
 # Apply new VPN routes
 agent.run_helper("apply-vpn-routes").check_returncode()
+
+errors = 0 # subtask error counter
+
+# Leader: download and install UI of each module
+if node_id == self_id:
+    with agent.redis_connect() as rdb:
+        for mkey in rdb.scan_iter("module/*/environment"):
+            module_id = mkey.removeprefix("module/").removesuffix("/environment")
+            module_image_url = rdb.hget(mkey, 'IMAGE_URL')
+
+            if agent.run_helper('runagent', 'podman-pull-missing', module_image_url).returncode != 0:
+                print(f"[ERROR] {module_id} image download has failed!", file=sys.stderr)
+                errors += 1
+                continue # skip if download fails
+
+            app_dir = '/var/lib/nethserver/cluster/ui/apps/' + module_id
+            if os.path.exists(app_dir):
+                # The directory could be present but its contents are
+                # stale: remove it.
+                agent.run_helper('rm', '-rf', app_dir)
+
+            # Extract the UI code to a new module home
+            os.mkdir(app_dir)
+            os.chdir(app_dir)
+            if agent.run_helper('extract-ui', module_image_url).returncode != 0:
+                print(f"[ERROR] {module_id} UI extraction has failed!", file=sys.stderr)
+                errors += 1
+
+if errors > 0:
+    sys.exit(1)
