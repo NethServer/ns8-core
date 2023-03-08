@@ -28,14 +28,14 @@ import socket
 import hashlib
 import subprocess
 import agent.tasks
-
-def get_ip(host):
-    ip_list = socket.gethostbyaddr(host)[2]
-    return ip_list[0]
+import os
 
 rdb = agent.redis_connect(privileged=True)
 
 cluster_ui_name = rdb.get(f"cluster/ui_name") or ""
+leader_id = int(rdb.hget("cluster/environment", "NODE_ID"))
+local_id = int(os.environ['NODE_ID'])
+local_public_key = rdb.hget(f"node/{local_id}/vpn", "public_key")
 
 ret = { 'initialized': False, 'leader': False, 'nodes': [], 'leader_url': '', 'default_password': False, 'ui_name': cluster_ui_name, }
 vpn = {}
@@ -49,17 +49,23 @@ for p in admin['passwords']:
 network = rdb.get('cluster/network')
 if network is not None:
     ret["initialized"] = True
+    # The leader must have a public endpoint:
+    leader_hostname, _ = rdb.hget(f"node/{leader_id}/vpn", "endpoint").split(":", 1)
+    ret['leader_url'] = f'https://{leader_hostname}/cluster-admin/'
+    ret['leader'] = local_id == leader_id
     for node in rdb.scan_iter('node/*/vpn'):
         node_id = node.split('/')[1]
-        ip_addr = rdb.hget(node, 'ip_address')
+        ovpn = rdb.hgetall(node)
+        kvpn = ovpn['public_key']
         if rdb.sismember(f'node/{node_id}/flags', 'nomodules'):
             continue
         node_ui_name = rdb.get(f"node/{node_id}/ui_name") or ""
-        vpn[ip_addr] = {'id': int(node_id), 'ui_name': node_ui_name, 'online': False, 'vpn': { 'ip_address': ip_addr, 'listen_port': int(rdb.hget(node, 'listen_port')) } }
-        # the leader is the peer with the endpoint
-        endpoint = rdb.hget(node, 'endpoint')
-        if endpoint:
-            ret['leader_url'] = f'https://{endpoint.partition(":")[0]}/cluster-admin/'
+        vpn[kvpn] = {'id': int(node_id), 'ui_name': node_ui_name, 'online': False, 'local': False, 'vpn': {
+            'ip_address': ovpn['ip_address'],
+            'listen_port': int(ovpn['listen_port']),
+            'public_key': ovpn['public_key'],
+            'endpoint': '',
+        }}
         try:
             get_info_result = agent.tasks.run(
                 agent_id=f'node/{node_id}',
@@ -68,41 +74,37 @@ if network is not None:
             )
         except Exception as ex:
             print(f'Error executing task get-info on node/{node_id}', ex, file=sys.stderr)
-            vpn[ip_addr]['online'] = False
+            vpn[kvpn]['online'] = False
             continue
         if get_info_result['exit_code'] == 0:
-            vpn[ip_addr]['online'] = True
+            vpn[kvpn]['online'] = True
             for key in get_info_result['output'].keys():
-                vpn[ip_addr][key] = get_info_result['output'][key]
+                vpn[kvpn][key] = get_info_result['output'][key]
 
 else:
     json.dump(ret, fp=sys.stdout)
     sys.exit(0)
-
-
-if get_ip('cluster-leader') == '127.0.0.1':
-    ret["leader"] = True
 
 i = 0
 proc = subprocess.Popen(['/usr/bin/wg', 'show', 'wg0', 'dump'],stdout=subprocess.PIPE)
 for line in proc.stdout.readlines():
     parts = line.decode().rstrip().split("\t")
     if i == 0:
-        local_ip = get_ip('cluster-localnode')
-        vpn[local_ip]['vpn']['public_key'] = parts[1]
-        vpn[local_ip]['local'] = True
+        vpn[local_public_key]['vpn']['public_key'] = parts[1]
+        vpn[local_public_key]['local'] = True
     else:
-        peer_ip = parts[3].removesuffix('/32')
-        if not peer_ip in vpn:
+        kvpn = parts[0]
+        if not kvpn in vpn:
             continue # ignore unknown VPN peers
-        vpn[peer_ip]['vpn']['public_key'] = parts[0]
-        vpn[peer_ip]['vpn']['endpoint'] = parts[2].partition(':')[0]
-        vpn[peer_ip]['vpn']['last_seen'] = int(parts[4])
-        vpn[peer_ip]['vpn']['rcvd'] = int(parts[5])
-        vpn[peer_ip]['vpn']['sent'] = int(parts[6])
-        vpn[peer_ip]['vpn']['keepalive'] = int(parts[7])
-        vpn[peer_ip]['local'] = False
-    
+        endpoint = parts[2].partition(':')[0]
+        if endpoint == '(none)':
+            endpoint = ''
+        vpn[kvpn]['vpn']['endpoint'] = endpoint
+        vpn[kvpn]['vpn']['last_seen'] = int(parts[4])
+        vpn[kvpn]['vpn']['rcvd'] = int(parts[5])
+        vpn[kvpn]['vpn']['sent'] = int(parts[6])
+        vpn[kvpn]['vpn']['keepalive'] = int(parts[7])
+
     i = i+1
 
 for i in vpn.values():
