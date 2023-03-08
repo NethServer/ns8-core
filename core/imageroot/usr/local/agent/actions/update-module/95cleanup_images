@@ -18,8 +18,13 @@ export LC_ALL=C # required by sort for portability
 # remove not used images like PREV_*_IMAGE and PREV_IMAGE_URL
 # ignore errors and exit with successful exit status
 
-for varname in ${!PREV_*}; do 
-  if [[ $varname =~ _IMAGE$ || $varname =~ _URL$ ]]; then
-    podman image rm --ignore ${!varname} 2>/dev/null || :
+for imageOld in ${!PREV_*}; do
+  if [[ $imageOld =~ _IMAGE$ ]]; then
+      # remove the prefix to compare PREV_*_IMAGE != *_IMAGE
+      imageNew=${imageOld##PREV_}
+      # if not the same we remove the image
+      if [[ ${!imageNew} != ${!imageOld} ]]; then
+          podman image rm --ignore ${!imageOld} 2>/dev/null || :
+      fi
   fi
 done
