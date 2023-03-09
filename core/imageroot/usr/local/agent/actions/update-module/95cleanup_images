@@ -23,7 +23,7 @@ for imageOld in ${!PREV_*}; do
       imageNew=${imageOld##PREV_}
       # if not the same we remove the image
       if [[ "${!imageNew}" != "${!imageOld}" ]]; then
-          podman image rm ${!imageOld} 2>/dev/null || :
+          podman image rm "${!imageOld}" 2>/dev/null || :
       fi
   fi
 done
