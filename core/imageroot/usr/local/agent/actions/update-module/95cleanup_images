@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #
-# Copyright (C) 2022 Nethesis S.r.l.
+# Copyright (C) 2023 Nethesis S.r.l.
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 
@@ -14,22 +14,16 @@ set -e
 export LC_ALL=C # required by sort for portability
 
 # Find the images that are no longer required:
-# 1. generate a sorted list starting with the old module image ID,
-#    followed by its additional images, as declared by the
-#    org.nethserver.images label
-# 2. similarly, generate the list for the new image ID
-# 3. compare (diff) the lists and extract the images that are no longer
-#    required
-# 4. pass them to `podman rmi`
-diff  <(
-    echo "${PREV_IMAGE_ID}"
-    podman inspect -f json "${PREV_IMAGE_ID:-none}" | \
-            jq -r '.[0].Config.Labels."org.nethserver.images" | split(" ") | join("\n")' | \
-            sort
-) <(
-    echo "${IMAGE_ID}"
-    podman inspect -f json "${IMAGE_ID:-none}" | \
-            jq -r '.[0].Config.Labels."org.nethserver.images" | split(" ") | join("\n")' | \
-            sort
-) | sed -n '/^< / s/^< //p' | \
-    xargs -t -- podman rmi 2>/dev/null || :
+# retrieve from env all variable with the prefix PREV_
+# remove not used images like PREV_*_IMAGE if !== *_IMAGE
+# ignore errors and exit with successful exit status
+for imageOld in ${!PREV_*}; do
+  if [[ $imageOld =~ _IMAGE$ ]]; then
+      # remove the prefix to compare PREV_*_IMAGE != *_IMAGE
+      imageNew=${imageOld##PREV_}
+      # if not the same we remove the image
+      if [[ "${!imageNew}" != "${!imageOld}" ]]; then
+          podman image rm "${!imageOld}" 2>/dev/null || :
+      fi
+  fi
+done
