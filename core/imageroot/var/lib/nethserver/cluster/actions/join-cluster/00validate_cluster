@@ -8,6 +8,8 @@
 import json
 import sys
 import agent
+import agent.tasks
+from aiohttp import ClientConnectorCertificateError, ClientResponseError
 
 request = json.load(sys.stdin)
 
@@ -19,3 +21,26 @@ if network:
     agent.set_status('validation-failed')
     json.dump([{'field':'url', 'parameter':'url','value': request['url'], 'error':'cluster_network_already_set'}], fp=sys.stdout)
     sys.exit(2)
+
+try:
+    validate_auth = agent.tasks.run(
+        agent_id='cluster',
+        action='list-actions',
+        extra={
+            "title": f"New node authentication probe",
+            "description": "",
+            "isNotificationHidden": True,
+        },
+        parent='', # Our AGENT_TASK_ID is useless in another cluster: force parent to empty string
+        endpoint=request['url'].strip('/') + '/cluster-admin',
+        tls_verify=request['tls_verify'],
+        auth_token=request['jwt'],
+    )
+except ClientConnectorCertificateError:
+    agent.set_status('validation-failed')
+    json.dump([{'field':'tls_verify', 'parameter':'tls_verify','value': request['tls_verify'], 'error':'cluster_tls_verify_error'}], fp=sys.stdout)
+    sys.exit(3)
+except ClientResponseError:
+    agent.set_status('validation-failed')
+    json.dump([{'field':'jwt', 'parameter':'jwt','value': '***', 'error':'cluster_auth_error'}], fp=sys.stdout)
+    sys.exit(4)
