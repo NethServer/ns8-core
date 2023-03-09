@@ -24,6 +24,7 @@ import agent
 import json
 import sys
 import time
+import cluster.vpn
 
 request = json.load(sys.stdin)
 
@@ -57,10 +58,12 @@ agent.run_helper('sed', '-i',
     '/var/lib/nethserver/node/state/agent.env').check_returncode()
 
 # VPN bootstrap
-agent.initialize_wgconf(ip_address, listen_port, {
-    "leader-node":{"ip_address": leader_ip_address, "public_key": leader_public_key, 'endpoint': leader_endpoint }
+cluster.vpn.initialize_wgconf(ip_address, listen_port, peer={
+    "ip_address": leader_ip_address,
+    "public_key": leader_public_key,
+    "endpoint": leader_endpoint,
 })
-agent.run_helper(*'systemctl restart wg-quick@wg0'.split(' ')).check_returncode()
+agent.run_helper('systemctl', 'restart', 'wg-quick@wg0.service').check_returncode()
 
 # Fix cluster-leader and cluster-localnode addresses in /etc/hosts
 # !!! Warning !!! Full restart may be required by agents and podman containers to pick up this:

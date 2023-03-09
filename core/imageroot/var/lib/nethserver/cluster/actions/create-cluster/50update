@@ -27,6 +27,7 @@ import json
 import agent
 import agent.tasks
 import cluster.grants
+import cluster.vpn
 import uuid
 
 request = json.load(sys.stdin)
@@ -75,8 +76,8 @@ agent.run_helper('sed', '-i',
 
 
 # VPN bootstrap
-agent.initialize_wgconf(ip_address, listen_port)
-agent.run_helper(*'systemctl restart wg-quick@wg0'.split(' ')).check_returncode()
+cluster.vpn.initialize_wgconf(ip_address, listen_port)
+agent.run_helper('systemctl', 'restart', 'wg-quick@wg0.service').check_returncode()
 
 # (Samba) account provider might want to route some IP addresses through our VPN. Define a role for that:
 cluster.grants.grant(rdb, action_clause="update-routes", to_clause="accountprovider", on_clause='cluster')
