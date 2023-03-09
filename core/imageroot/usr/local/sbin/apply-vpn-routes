@@ -14,6 +14,7 @@ import sys
 import socket
 import subprocess
 import json
+import ipaddress as ipm
 
 self_id = int(os.environ['NODE_ID'])
 
@@ -69,6 +70,18 @@ def get_wgset_endpoint_clause(endpoint):
     except:
         return []
 
+# Find the networks of the local interfaces. Addresses of these networks
+# are not routed through the VPN.
+cluster_onetwork = ipm.ip_network(cluster_network, strict=False)
+skip_onetworks = []
+ipaddr_proc = subprocess.run(['ip', '-j', 'address', 'show'], stdout=subprocess.PIPE)
+ipaddr_reply = json.loads(ipaddr_proc.stdout)
+for iface in ipaddr_reply:
+    if not 'addr_info' in iface:
+        continue
+    for iaddr in iface['addr_info']:
+        skip_onetworks.append(ipm.ip_network(f"{iaddr['local']}/{iaddr['prefixlen']}", strict=False))
+
 errors = 0
 valid_destinations = []
 for node_id in destmap:
@@ -83,8 +96,26 @@ for node_id in destmap:
         errors +=1
         print(agent.SD_ERR + f'Runtime change of allowed-ips has failed for peer node/{node_id}', file=sys.stderr)
 
+    # ...and to the system routing table:
     for xdest in destmap[node_id]:
-        # ...and to the system routing table
+        push_route = False
+
+        odest = ipm.ip_address(xdest) # object form of xdest for network calculations
+        if odest in cluster_onetwork:
+            push_route = True # xdest is in the cluster network, push it
+        else:
+            for skip_onetwork in skip_onetworks:
+                if odest in skip_onetwork:
+                    push_route = False
+                    break # xdest belongs to a network with direct interface link, skip it
+            else:
+                push_route = True # xdest belongs to a remote network, push it
+
+        if not push_route:
+            print(agent.SD_INFO + f'Address {xdest} is not routed through VPN', file=sys.stderr)
+            continue
+
+        # Yes, let's route xdest through VPN:
         ipreplace_proc = agent.run_helper('ip', 'route', 'replace', xdest, 'nexthop', 'dev', 'wg0', log_command=True)
         if ipreplace_proc.returncode != 0:
             errors += 1
