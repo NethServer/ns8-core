@@ -234,6 +234,9 @@ if is_rootfull:
 else:
     rdb.sadd(f'module/{module_id}/flags', 'rootless')
 
+# remove the image from local repository, we do not need it anymore
+agent.run_helper('podman', 'image','rm', image_url, progress_callback=agent.get_progress_callback(0,33)).check_returncode()
+
 # trigger an event to advertize other modules that a new module has been addded
 agent_id = os.environ['AGENT_ID']
 trx = rdb.pipeline()
