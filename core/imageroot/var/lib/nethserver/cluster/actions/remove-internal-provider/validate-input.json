@@ -5,7 +5,13 @@
     "description": "Safely remove a user domain provider.",
     "examples": [
         {
-            "module_id": "samba1"
+            "module_id": "openldap1"
+        },
+        {
+            "module_id": "samba1",
+            "adminuser": "administrator",
+            "adminpass": "Nethesis,1234",
+	    "designated_survivor": "dc1.mydomain.org"
         }
     ],
     "type": "object",
@@ -15,6 +21,18 @@
     "properties": {
         "module_id": {
             "title": "Module identifier",
+            "type": "string",
+            "minLength": 1
+        },
+        "adminuser": {
+            "type": "string",
+            "minLength": 1
+        },
+        "adminpass": {
+            "type": "string",
+            "minLength": 1
+        },
+        "designated_survivor": {
             "type": "string",
             "minLength": 1
         }
