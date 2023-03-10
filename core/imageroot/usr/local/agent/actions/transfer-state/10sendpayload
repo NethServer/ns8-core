@@ -29,7 +29,7 @@ with open('timers-target.clone-module', 'w') as fpout:
     proc = subprocess.run('systemctl --user show timers.target -p Wants --value'.split(), text=True, capture_output=True)
     if proc.returncode != 0:
         sysm.exit(3)
-    tlist = re.sub(r"backup.\.timer", '', proc.stdout) # remove backup timers
+    tlist = re.sub(r"\bbackup[0-9]+\.timer\b", '', proc.stdout) # remove backup timers
     fpout.write(tlist)
 
 
