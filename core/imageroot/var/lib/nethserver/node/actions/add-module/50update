@@ -76,6 +76,9 @@ else: # rootless
     # Start the module agent
     agent.run_helper('loginctl', 'enable-linger', module_id).check_returncode()
 
+# remove the image from local repository, we do not need it anymore
+agent.run_helper('podman', 'image','rm', image_url).check_returncode()
+
 json.dump({
     "redis_sha256":redis_sha256,
 }, sys.stdout)
