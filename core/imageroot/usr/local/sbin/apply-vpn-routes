@@ -1,0 +1,147 @@
+#!/usr/local/bin/runagent python3
+
+#
+# Copyright (C) 2022 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+# Read VPN route settings from local Redis replica, update the kernel
+# routing table, update Wireguard routing (AllowedIPs) setup.
+
+import agent
+import os
+import sys
+import socket
+import subprocess
+import json
+import ipaddress as ipm
+
+self_id = int(os.environ['NODE_ID'])
+
+# Connect to the local Redis replica and read VPN configuration of each
+# node:
+with agent.redis_connect(use_replica=True) as rdb:
+    leader_id = int(rdb.hget('cluster/environment', 'NODE_ID'))
+    cluster_network = rdb.get('cluster/network')
+    peers = {}
+    for pkey in rdb.scan_iter('node/*/vpn'):
+        node_id = int(pkey.removeprefix('node/').removesuffix('/vpn'))
+        peers[node_id] = rdb.hgetall(pkey)
+
+agent.assert_exp(len(peers) >= 0)
+agent.assert_exp(leader_id > 0)
+agent.assert_exp(cluster_network)
+
+# Convert Redis VPN records to our VPN data model
+destmap = {}
+for node_id in peers:
+    if self_id == leader_id:
+        # The local node is the Leader and the VPN hub. One node
+        # corresponds to a VPN peer, and its destinations are the node
+        # destinations with its IP address
+        destmap.setdefault(node_id, set())
+        destmap[node_id].update(peers[node_id]['destinations'].split())
+        destmap[node_id].add(peers[node_id]['ip_address'])
+
+    elif self_id == node_id:
+        # Skip the destinations for the local node: they use default
+        # kernel routing rules.
+        pass
+
+    else:
+        # Default VPN routing rule: send all traffic to the Leader
+        destmap.setdefault(leader_id, set())
+        destmap[leader_id].update(peers[node_id]['destinations'].split())
+        destmap[leader_id].add(peers[node_id]['ip_address'])
+
+def get_wgset_endpoint_clause(endpoint):
+    """Resolve the endpoint IP address and return the endpoint arguments
+    for the `wg set` subcommand"""
+    if not endpoint:
+        return []
+
+    address, port = endpoint.rsplit(':')
+
+    try:
+        addrinfo = socket.getaddrinfo(address, port)
+        # Get the IP address (the last 0) of the first entry (first 0) from
+        # sockaddr item (index 4)
+        return ['endpoint', ':'.join([addrinfo[0][4][0], port])]
+    except:
+        return []
+
+# Find the networks of the local interfaces. Addresses of these networks
+# are not routed through the VPN.
+cluster_onetwork = ipm.ip_network(cluster_network, strict=False)
+skip_onetworks = []
+ipaddr_proc = subprocess.run(['ip', '-j', 'address', 'show'], stdout=subprocess.PIPE)
+ipaddr_reply = json.loads(ipaddr_proc.stdout)
+for iface in ipaddr_reply:
+    if not 'addr_info' in iface:
+        continue
+    for iaddr in iface['addr_info']:
+        skip_onetworks.append(ipm.ip_network(f"{iaddr['local']}/{iaddr['prefixlen']}", strict=False))
+
+errors = 0
+valid_destinations = []
+for node_id in destmap:
+    # Apply immediately the new configuration to the WireGuard wg0 interface...
+    wset_proc = agent.run_helper('wg', 'set', 'wg0', 'peer', peers[node_id]["public_key"],
+        'persistent-keepalive', '25',
+        'allowed-ips', ','.join(destmap[node_id]),
+        *get_wgset_endpoint_clause(peers[node_id].get('endpoint', '')),
+        log_command=True,
+    )
+    if wset_proc.returncode != 0:
+        errors +=1
+        print(agent.SD_ERR + f'Runtime change of allowed-ips has failed for peer node/{node_id}', file=sys.stderr)
+
+    # ...and to the system routing table:
+    for xdest in destmap[node_id]:
+        push_route = False
+
+        odest = ipm.ip_address(xdest) # object form of xdest for network calculations
+        if odest in cluster_onetwork:
+            push_route = True # xdest is in the cluster network, push it
+        else:
+            for skip_onetwork in skip_onetworks:
+                if odest in skip_onetwork:
+                    push_route = False
+                    break # xdest belongs to a network with direct interface link, skip it
+            else:
+                push_route = True # xdest belongs to a remote network, push it
+
+        if not push_route:
+            print(agent.SD_INFO + f'Address {xdest} is not routed through VPN', file=sys.stderr)
+            continue
+
+        # Yes, let's route xdest through VPN:
+        ipreplace_proc = agent.run_helper('ip', 'route', 'replace', xdest, 'nexthop', 'dev', 'wg0', log_command=True)
+        if ipreplace_proc.returncode != 0:
+            errors += 1
+            print(agent.SD_ERR + f"Runtime change of routing table has failed for destination {xdest}", file=sys.stderr)
+
+        valid_destinations.append(xdest.removesuffix('/32'))
+
+#
+# Purge the route table from stale entries
+#
+iproute_proc = subprocess.run(['ip', '-j', 'route', 'list', 'dev', 'wg0'], stdout=subprocess.PIPE)
+if iproute_proc.returncode == 0:
+    routes = json.loads(iproute_proc.stdout)
+    for route_object in routes:
+        ydest = route_object['dst']
+        if not ydest in valid_destinations:
+            ipdelete_proc = agent.run_helper('ip', 'route', 'delete', ydest, log_command=True)
+            if ipdelete_proc.returncode != 0:
+                print(agent.SD_ERR + f"Error while removing the stale destination {ydest}", file=sys.stderr)
+                errors += 1
+else:
+    print(agent.SD_ERR + f"Error while reading wg0 routes", file=sys.stderr)
+    errors += 1
+
+if errors > 0:
+    sys.exit(2)
+
+# If commands were successful, save the configuration of wg0:
+agent.run_helper('wg-quick', 'save', 'wg0').check_returncode()

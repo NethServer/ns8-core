@@ -1,6 +1,8 @@
 [Unit]
 Description=Core Redis DB
 Documentation=https://github.com/NethServer/ns8-scratchpad
+Wants=wg-quick@wg0.service
+After=wg-quick@wg0.service
 
 [Service]
 Environment=PODMAN_SYSTEMD_UNIT=%n
@@ -22,6 +24,7 @@ ExecStart=/usr/bin/podman run \
 
 ExecStartPost=/usr/bin/bash -c "while ! exec 3<>/dev/tcp/127.0.0.1/6379; do sleep 1 ; done"
 ExecStartPost=-/usr/local/bin/acl-load
+ExecStartPost=-/usr/local/sbin/apply-vpn-routes
 ExecStop=/usr/bin/podman stop --ignore --cidfile %t/redis.cid -t 10
 ExecStopPost=/usr/bin/podman rm --ignore -f --cidfile %t/redis.cid
 PIDFile=%t/redis.pid

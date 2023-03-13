@@ -355,43 +355,6 @@ def resolve_agent_id(agent_selector, node_id=None):
 
     return agent_id
 
-def save_wgconf(ipaddr, listen_port=55820, peers={}):
-
-    private_key = slurp_file('/etc/nethserver/wg0.key')
-    public_key = slurp_file('/etc/nethserver/wg0.pub')
-
-    oldmask = os.umask(0o77)
-    # Create a new file beside our target file path:
-    wgconf = open('/etc/wireguard/wg0.conf.new', 'w')
-    os.umask(oldmask)
-
-    # Write the Interface head section:
-    wgconf.write(f"[Interface]\n")
-    wgconf.write(f"Address = {ipaddr}\n")
-    wgconf.write(f"ListenPort = {listen_port}\n")
-    wgconf.write(f"PrivateKey = {private_key}\n\n")
-
-    # Append Peer sections:
-    for pkey, peer in peers.items():
-        if peer['public_key'] == public_key:
-            continue # Skip record if it refers to the local node
-
-        allowed_ips = { peer['ip_address'] + '/32' }
-        if 'destinations' in peer:
-            # The set avoids duplicate values:
-            allowed_ips.update({*peer['destinations']})
-
-        wgconf.write(f'[Peer]\n')
-        wgconf.write(f"PublicKey = {peer['public_key']}\n")
-        wgconf.write(f'AllowedIPs = {", ".join(sorted(allowed_ips))}\n')
-        wgconf.write(f'PersistentKeepalive = 25\n')
-        if 'endpoint' in peer and peer['endpoint'] != '':
-            wgconf.write(f"Endpoint = {peer['endpoint']}\n")
-
-    wgconf.close()
-    # Overwrite the target file path:
-    os.rename('/etc/wireguard/wg0.conf.new', '/etc/wireguard/wg0.conf')
-
 def assert_exp(exp, message='Assertion failed'):
     """Like the Python assert statement, this function asserts "exp" evaluates to True.
     If the assertion fails, the program is aborted and a stack trace is printed to stderr.

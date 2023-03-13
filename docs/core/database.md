@@ -5,14 +5,12 @@ nav_order: 2
 parent: Core
 ---
 
-# Database: Redis
+# Database
 
 The Redis database runs as a Podman rootfull container, bound to TCP port 6379.
 
 * TOC
 {:toc}
-
-## General
 
 Redis is not used only as a database:
   * it exchanges messages among agents and the API server
@@ -29,6 +27,24 @@ If any change occurs in the Redis database, it is persisted on the disk
 within 5 seconds. The following command prints the database path:
 
     podman volume inspect redis-data | jq -r .[].Mountpoint
+
+Redis provides blocking *pop* operations on lists. The BRPOP command is
+used by agents to wait on a queue for incoming tasks. Task queues keys
+look like `module/{module_id}/tasks`.
+
+Redis provides PUB/SUB operations on *channels*. Channels are used to
+implement the observer pattern, for instance in the following situations:
+
+1. An agent wants to notify the UI about the progress of a running task.
+   The channel name in this case looks like
+   `progress/module/{module_id}/task/{uuid}`.
+
+2. An agent wants to communicate to other agents that a particular event
+   occurred (e.g. a TLS certificate was automatically renewed). The
+   channel name in this case could be like
+   `module/{module_id}/event/{event_name}`
+
+## Access
 
 Access Redis with one of the following commands:
 
@@ -64,12 +80,60 @@ server response:
     PING
     EOF
 
+## Roles
+
+In a NS8 cluster the leader node runs Redis with *master* role. All
+**write operations** must be executed on the leader instance. Worker nodes run
+Redis with *replica* role, so they allow only **read operations**.
+
+Changes are propagated from the leader instance to the worker instances.
+The following command on the leader node describes the replication status:
+
+    redis-cli ROLE
+
+Example of the command output:
+
+    1) "master"
+    2) (integer) 57693
+    3) 1) 1) "10.5.4.2"
+          2) "6379"
+          3) "57693"
+
+The same command in a worker node has a different output. Note that the
+deprecated term _slave_ may still used by the Redis protocol to describe
+the replica role:
+
+    1) "slave"
+    2) "10.5.4.1"
+    3) (integer) 6379
+    4) "connected"
+    5) (integer) 57721
+
+Refer to the Redis official documentation for the exact meaning of the
+command output.
+
+The above command identifies the Redis leader instance by IP address and
+port number. To know the leader node ID number run this command instead
+
+    redis-cli HGET cluster/environment NODE_ID
+
+To get back the IP address of an arbitrary node, given its node ID, e.g. 3:
+
+    redis-cli HGET node/3/vpn ip_address
+
+## Schema
+
 Redis is a key/value database. Some key naming rules are enforced because
 access rights are based on key name patterns. Both admin UI users and
 agents have their own Redis credentials for authentication and
 authorization.
 
 Some key rule examples:
+
+* `cluster/environment`, `node/{node_id}/environment` The key type is
+  HASH. It stores a copy of environment variables of respectively the
+  cluster agent running on the leader node, and the agent environment of
+  *node_id*.
 
 * `module/{module_id}/environment` The key type is HASH. It stores
   a copy of environment variables of the module *module_id*.
@@ -81,30 +145,12 @@ Some key rule examples:
   suggests it is used to generate a node ID, when a new node is added to
   the cluster.
 
+Next sections describe the value stored for each database key. Key names
+follow this notation:
 
-Redis provides blocking pop operations on lists. The BRPOP command is used
-by agents to wait on a queue for incoming tasks. Task queues keys look
-like `module/{module_id}/tasks`.
-
-Redis provides PUB/SUB operations on *channels*. Channels are used to
-implement the observer pattern, for instance in the following situations:
-
-1. An agent wants to notify the UI about the progress of a running task.
-   The channel name in this case looks like
-   `progress/module/{module_id}/task/{uuid}`.
-
-2. An agent wants to communicate to other agents that a particular event
-   occurred (e.g. a TLS certificate was automatically renewed). The
-   channel name in this case could be like
-   `module/{module_id}/event/{event_name}`
-
-## Schema
-
-The complete Redis schema is frequently updated.
-
-Legend:
 - `/` logical key namespace separator
-- `.` hash field
+- `{var}` (curly braces with name) placeholder for any string value
+- ` ` (single space) hash field separator
 
 ### cluster
 
@@ -123,6 +169,7 @@ Legend:
 |cluster/task/{id}/exit_code            |INTEGER    |action exit code|
 |cluster/roles/{role}                   |SET        |glob patterns matching the actions that {role} can run. {role} is one of "owner", "reader"...|
 |cluster/environment                    |HASH       |Cluster environment variables|
+|cluster/environment NODE_ID            |INTEGER    |The node ID of the leader node |
 |cluster/ui_name                        |STRING     |UI label for the cluster|
 |cluster/uuid                           |STRING     |Generated UUID that identifies the cluster|
 
@@ -131,12 +178,12 @@ Legend:
 |key|type|description|
 |---|----|-----------|
 |cluster/smarthost                      |HASH   |Settings and credentials of a SMTP smarthost provider|
-|cluster/smarthost.port                 |INTEGER|Public TCP port of the smtp server|
-|cluster/smarthost.enabled              |0\|1   |(0 disabled, 1 enabled) enable the smarthost provider|
-|cluster/smarthost.tls                  |0\|1   |(0 disabled, 1 enabled) enable STARTTLS|
-|cluster/smarthost.tls_verify           |0\|1   |(0 disabled, 1 enabled) verify if the certificate is valid and if the hostname is associated to the certificate|
-|cluster/smarthost.username             |STRING |username for smtp credentials|
-|cluster/smarthost.password             |STRING |password for smtp credentials|
+|cluster/smarthost port                 |INTEGER|Public TCP port of the smtp server|
+|cluster/smarthost enabled              |0\|1   |(0 disabled, 1 enabled) enable the smarthost provider|
+|cluster/smarthost tls                  |0\|1   |(0 disabled, 1 enabled) enable STARTTLS|
+|cluster/smarthost tls_verify           |0\|1   |(0 disabled, 1 enabled) verify if the certificate is valid and if the hostname is associated to the certificate|
+|cluster/smarthost username             |STRING |username for smtp credentials|
+|cluster/smarthost password             |STRING |password for smtp credentials|
 
 #### software repositories
 
@@ -178,7 +225,7 @@ Legend:
 |---|----|-----------|
 |cluster/user_domain/ldap/{domain}/conf                 |HASH   |An external LDAP domain|
 |cluster/user_domain/ldap/{domain}/conf schema          |STRING |It can be `ad` or `rfc2307`|
-|cluster/user_domain/ldap/{domain}/conf bindnd          |STRING |LDAP bind DN|
+|cluster/user_domain/ldap/{domain}/conf bind_dn         |STRING |LDAP bind DN|
 |cluster/user_domain/ldap/{domain}/conf bind_password   |STRING |LDAP bind password|
 |cluster/user_domain/ldap/{domain}/conf base_dn         |STRING |LDAP base DN|
 |cluster/user_domain/ldap/{domain}/conf tls             |STRING |Can be `on` or `off`|
@@ -198,7 +245,6 @@ Legend:
 |node/{id}/vpn destinations         |STRING     |List of networks in CIDR notation, routed through the VPN|
 |node/{id}/vpn endpoint             |STRING     |Public IP or host name of the VPN endpoint with :port suffix|
 |node/{id}/vpn listen_port          |INTEGER    |Public UDP port of the VPN endpoint, default: `55820`|
-|node/{id}/vpn hub_id               |INTEGER    |node ID (for nodes without a public endpoint address)|
 |node/{id}/flags                    |SET        |FlagS to mark a node. Supported flags: `nomodules`, the node can't run any module|
 |node/{id}/tasks                    |QUEUE      |see [Task queue item](#task-queue-item)|
 |node/{id}/task/{id}/context        |STRING     |JSON representation of the queued task|

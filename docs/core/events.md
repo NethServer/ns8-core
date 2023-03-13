@@ -27,9 +27,13 @@ Well known events:
   or added to a user-domain. The JSON parameter format is
   `{"domain":STRING,"key":STRING}`.
 
+## Cluster events
+
 Events fired by the `cluster` agent (i.e. channel is `cluster/event/<event name>`):
 - `module-added`: the event is fired at the end of the add-module process to inform other modules that a new module has been installed on the cluster
 - `module-removed`: the event is fired at the end of the remove-module process to inform other modules that a module has been removed on the cluster
+- `leader-changed`: a node was promoted to leader. The `node_id` attribute
+  indicates the new leader.
 
 ## Signaling events
 

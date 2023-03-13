@@ -60,26 +60,5 @@ with rdb.pipeline() as pipe:
 
     pipe.execute()
 
-# Build the task requests, one for each node
-tasks = []
-
-for knode in rdb.scan_iter('node/*/vpn'):
-    if len(destinations) == 1 and knode in [f'node/{node_id}/vpn' for node_id in destinations]:
-        # if the update is limited to just one node, it can be skipped
-        continue
-
-    tasks.append({
-        'agent_id': knode.removesuffix('/vpn'),
-        'action': 'update-routes',
-        'data': {},
-    })
-
-# Parallel tasks run
-errors = agent.tasks.runp_brief(
-    tasks,
-    endpoint="redis://cluster-leader",
-)
-
-agent.assert_exp(errors == 0)
-
-print("true") # Honor output JSON schema
+# Reconfigure VPN routes in all nodes
+rdb.publish('cluster/event/vpn-changed', json.dumps({"node_id":node_id}))

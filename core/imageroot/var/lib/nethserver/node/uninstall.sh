@@ -57,8 +57,11 @@ firewall-cmd --reload
 
 echo "Stopping the core services"
 systemctl disable --now api-server.service redis.service wg-quick@wg0.service phonehome.timer
-rm -vf /etc/systemd/system/redis.service.d/wireguard.conf
+rm -vf /etc/systemd/system/redis.service.d/wireguard.conf \
+   '/etc/systemd/system/wg-quick@wg0.service.d/persist-wg0-config.conf' \
+   /etc/wireguard/wg0.conf
 userdel -r api-server
+ip link delete wg0 # force removal of wg0 interface
 
 echo "Wipe Redis DB"
 podman volume rm -f redis-data

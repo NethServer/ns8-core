@@ -26,13 +26,5 @@ agent.set_progress(19)
 node_keys = set(knode for knode in rdb.scan_iter(f'node/{tnode_id}/*'))
 rdb.delete(*node_keys)
 
-agent.tasks.run_nowait(
-    agent_id='cluster',
-    action='update-routes',
-    data={
-        "add":[],
-        "remove":[],
-    },
-    endpoint="redis://cluster-leader",
-    progress_callback=agent.get_progress_callback(20,98),
-)
+# Reconfigure VPN routes of remaining nodes
+rdb.publish('cluster/event/vpn-changed', json.dumps({"node_id": tnode_id}))
