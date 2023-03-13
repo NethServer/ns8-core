@@ -68,7 +68,7 @@ if is_rootfull:
 else: # rootless
     # Create the module dirs structure
     agent.run_helper('useradd', '-m', '-k', '/etc/nethserver/skel', '-s', '/bin/bash', module_id).check_returncode()
-    os.chdir(f'/home/{module_id}/.config')
+    os.chdir(os.path.expanduser("~" + module_id) + '/.config')
     save_environment(module_environment)
     redis_sha256 = save_agent_env(module_id)
     # Extract the module imageroot and fix CWD permissions recursively
