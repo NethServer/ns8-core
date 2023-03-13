@@ -35,12 +35,13 @@ cat /var/lib/nethserver/node/state/coreimage.lst > ${tmp_srclist}
 
 trap "rm -f ${tmp_dirlist} ${tmp_srclist}" EXIT
 
-for userhome in /home/*[0-9]; do
-    moduleid=$(basename $userhome)
+# Assuming user names ending with digits and with some homedir correspond
+# to rootless modules:
+for moduleid in $(awk -F: '$1 ~ /^.+[0-9]+$/ && $2 ~ /.+/ { print $1 }' </etc/passwd); do
     echo "Deleting rootless module ${moduleid}..."
     loginctl disable-linger "${moduleid}"
     systemctl stop user@$(id -u $moduleid)
-    loginctl terminate-user "${moduleid}"
+    loginctl terminate-user "${moduleid}" &>/dev/null
     userdel -r "${moduleid}"
 done
 
