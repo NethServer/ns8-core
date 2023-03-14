@@ -18,6 +18,7 @@
 # along with NethServer.  If not, see COPYING.
 #
 
+import ldap3
 from .exceptions import LdapclientEntryNotFound
 from .base import LdapclientBase
 
@@ -67,7 +68,7 @@ class LdapclientRfc2307(LdapclientBase):
 
     def get_user(self, user):
         response = self.ldapconn.search(self.base_dn, f'(&(objectClass=posixAccount)(objectClass=inetOrgPerson)(uid={user}){self._get_users_search_filter_clause()})',
-            attributes=['displayName', 'uid', 'pwdAccountLockedTime'],
+            attributes=[ldap3.ALL_ATTRIBUTES, ldap3.ALL_OPERATIONAL_ATTRIBUTES] # return all attributes because NS7 and NS8 mismatch
         )[2]
 
         def get_memberof(user):
@@ -91,7 +92,7 @@ class LdapclientRfc2307(LdapclientBase):
                 "user": entry['attributes']['uid'][0],
                 "display_name": entry['attributes'].get('displayName') or "",
                 "groups": get_memberof(user),
-                "locked": entry['attributes']['pwdAccountLockedTime'] != [],
+                "locked": entry['attributes'].get('pwdAccountLockedTime',[]) != [], # attribute not accessible on NS7 during migration
             }
 
         raise LdapclientEntryNotFound()
@@ -99,7 +100,7 @@ class LdapclientRfc2307(LdapclientBase):
 
     def list_users(self):
         response = self.ldapconn.search(self.base_dn, f'(&(objectClass=posixAccount)(objectClass=inetOrgPerson){self._get_users_search_filter_clause()})',
-            attributes=['displayName', 'uid', 'pwdAccountLockedTime'],
+            attributes=[ldap3.ALL_ATTRIBUTES, ldap3.ALL_OPERATIONAL_ATTRIBUTES] # return all attributes because NS7 and NS8 mismatch
         )[2]
 
         users = []
@@ -109,6 +110,6 @@ class LdapclientRfc2307(LdapclientBase):
             users.append({
                 "user": entry['attributes']['uid'][0],
                 "display_name": entry['attributes'].get('displayName') or "",
-                "locked": entry['attributes']['pwdAccountLockedTime'] != [],
+                "locked": entry['attributes'].get('pwdAccountLockedTime',[]) != [], # attribute not accessible on NS7 during migration
             })
         return users
