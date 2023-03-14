@@ -82,8 +82,6 @@ echo "Extracting core sources from ${core_url}:"
 mkdir -pv /var/lib/nethserver/node/state
 cid=$(podman create "${core_url}")
 podman export ${cid} | tar --totals -C / --no-overwrite-dir --no-same-owner -x -v -f - | LC_ALL=C sort | tee /var/lib/nethserver/node/state/coreimage.lst
-export CLUSTER_NAME
-CLUSTER_NAME=$(podman ps -a -f id="$cid" --format "{{.Names}}")
 podman rm -f ${cid}
 
 /var/lib/nethserver/node/install-core.sh "${modules[@]}"

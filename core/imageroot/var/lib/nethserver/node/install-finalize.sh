@@ -11,6 +11,8 @@ set -e
 # Finalize NS8 installation
 #
 
+source /etc/nethserver/core.env
+
 if [[ ! -f ~/.ssh/id_rsa.pub ]] ; then
     echo "Generating a new RSA key pair for SSH:"
     ssh-keygen -t rsa -N '' -f ~/.ssh/id_rsa
@@ -87,10 +89,7 @@ ACL SAVE
 SAVE
 EOF
 
-    # Set default UI name
-    cat <<EOF
-SET cluster/ui_name ${CLUSTER_NAME:-''}
-EOF
+    printf 'SET cluster/ui_name "%s"\n' "${CLUSTER_NAME:-NethServer 8}"
 
 ) | redis-cli
 
