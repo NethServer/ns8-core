@@ -34,16 +34,18 @@ import (
 	"strings"
 
 	jwt "github.com/appleboy/gin-jwt/v2"
+	jwtl "github.com/golang-jwt/jwt"
 	"github.com/dgryski/dgoogauth"
 	"github.com/fatih/structs"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
+	"github.com/pkg/errors"
 
 	"github.com/NethServer/ns8-core/core/api-server/configuration"
 	"github.com/NethServer/ns8-core/core/api-server/models"
 	"github.com/NethServer/ns8-core/core/api-server/redis"
 	"github.com/NethServer/ns8-core/core/api-server/response"
-	"github.com/NethServer/ns8-core/core/api-server/socket"
+	"github.com/NethServer/ns8-core/core/api-server/utils"
 )
 
 var ctx = context.Background()
@@ -178,7 +180,7 @@ func OTPVerify(c *gin.Context) {
 	}
 
 	// verify JWT
-	if !socket.ValidateAuth(jsonOTP.Token) {
+	if !ValidateAuth(jsonOTP.Token, jsonOTP.Username) {
 		c.JSON(http.StatusBadRequest, structs.Map(response.StatusBadRequest{
 			Code:    400,
 			Message: "JWT token invalid",
@@ -474,6 +476,41 @@ func getUserSecret(username string) string {
 
 	// read from redis
 	return string(secretB[:])
+}
+
+func ValidateAuth(tokenString string, username string) bool {
+	// convert token string and validate it
+	if tokenString != "" {
+		token, err := jwtl.Parse(tokenString, func(token *jwtl.Token) (interface{}, error) {
+			// validate the alg
+			if _, ok := token.Method.(*jwtl.SigningMethodHMAC); !ok {
+				return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+			}
+
+			// return secret
+			return []byte(configuration.Config.Secret), nil
+		})
+
+		if err != nil {
+			utils.LogError(errors.Wrap(err, "[SOCKET] error in JWT token validation"))
+			return false
+		}
+
+		if !CheckTokenValidation(username, tokenString) {
+			utils.LogError(errors.Wrap(err, "[SOCKET] error JWT token not found"))
+			return false
+		}
+
+		if claims, ok := token.Claims.(jwtl.MapClaims); ok && token.Valid {
+			if claims["id"] != nil {
+				return true
+			}
+		} else {
+			utils.LogError(errors.Wrap(err, "[SOCKET] error in JWT token claims"))
+			return false
+		}
+	}
+	return false
 }
 
 func CheckTokenValidation(username string, token string) bool {

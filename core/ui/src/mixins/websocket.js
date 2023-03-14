@@ -10,25 +10,38 @@ export default {
         (this.getFromStorage("loginInfo") &&
           this.getFromStorage("loginInfo").token) ||
         "";
-      this.$connect(this.$root.config.WS_ENDPOINT + "?jwt=" + jwt, {
-        format: "json",
-      });
+      var username =
+        (this.getFromStorage("loginInfo") &&
+          this.getFromStorage("loginInfo").username) ||
+        "";
+      this.$connect(
+        this.$root.config.WS_ENDPOINT + "?jwt=" + jwt + "&username=" + username,
+        {
+          format: "json",
+        }
+      );
 
       // set ws handlers only if not already set (e.g. after logout + login again)
       if (!this.$options.sockets.onmessage) {
         this.$options.sockets.onmessage = this.onMessage;
         this.$options.sockets.onopen = this.onOpen;
         this.$options.sockets.onclose = this.onClose;
+        this.$options.sockets.onerror = this.onError;
       }
     },
     closeWebSocket() {
       this.$disconnect();
     },
     onOpen() {
-      console.log("websocket connected"); ////
+      console.log("websocket onOpen"); ////
       this.$root.$emit("websocketConnected");
     },
+    onError(error) {
+      console.log("websocket onError", error); ////
+    },
     onMessage(message) {
+      console.log("websocket onMessage", message); ////
+
       const messageData = JSON.parse(message.data);
 
       switch (messageData.type) {
