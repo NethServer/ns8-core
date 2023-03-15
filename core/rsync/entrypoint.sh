@@ -52,7 +52,7 @@ hosts allow = 127.0.0.1 ::1 ${RSYNCD_NETWORK:-0.0.0.0/0}
 path = /var/empty
 read only = yes
 list = no
-early exec = kill -TERM 1
+post-xfer exec = kill -TERM 1
 EOF
 
 
