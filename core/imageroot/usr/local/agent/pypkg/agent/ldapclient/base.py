@@ -92,3 +92,8 @@ class LdapclientBase:
             filter_clause += f"({uattr}={user})"
 
         return f"(!(|{filter_clause}))"
+
+    def filter_schema_attributes(self, attr_list):
+        """Reduce the given attr_list by filtering out attribute names not
+           declared in the server schema."""
+        return [aname for aname in attr_list if aname in self.ldapsrv.schema.attribute_types]
