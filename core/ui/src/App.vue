@@ -50,6 +50,7 @@ export default {
       // CLUSTER_STATUS_TIME_INTERVAL: 10000,
       isMaster: true,
       isLoaded: false,
+      retryWsConnectionInterval: 0,
     };
   },
   computed: {
@@ -69,6 +70,7 @@ export default {
     this.$root.$on("clusterInitialized", this.onClusterInitialized);
     this.$root.$on("websocketConnected", this.onWebsocketConnected);
     this.$root.$on("websocketDisconnected", this.onWebsocketDisconnected);
+    this.$root.$on("websocketError", this.onWebsocketError);
 
     this.configureAxiosInterceptors();
     this.configureEventListeners();
@@ -79,7 +81,7 @@ export default {
       const tokenDecoded = this.decodeJwtPayload(loginInfo.token);
 
       if (tokenDecoded.exp * 1000 < Date.now()) {
-        console.log("token has expired, logout"); ////
+        console.warn("Token has expired, logout");
 
         // token has expired, logout
         const sessionExpiredTitle = this.$t("login.session_expired_title");
@@ -105,6 +107,9 @@ export default {
 
     // remove all event listeners
     this.$root.$off();
+
+    // clear ws reconnection interval
+    clearInterval(this.retryWsConnectionInterval);
   },
   methods: {
     ...mapActions([
@@ -193,22 +198,22 @@ export default {
         function (error) {
           console.error(error);
 
+          // print specific error message, if available
+          if (error.response?.data?.message) {
+            console.error(error.response.data.message);
+          }
+
           // logout if 401 response code is intercepted
-          if (error.response && error.response.status == 401) {
+          if (error.response?.status == 401) {
             console.log("axios interceptor detected 401, logout"); ////
 
-            let sessionExpiredTitle = "";
-            let sessionExpiredDescription = "";
+            const sessionExpiredTitle = context.$t(
+              "login.session_expired_title"
+            );
+            const sessionExpiredDescription = context.$t(
+              "login.session_expired_description"
+            );
 
-            if (
-              error.response.data &&
-              error.response.data.message === "Token is expired"
-            ) {
-              sessionExpiredTitle = context.$t("login.session_expired_title");
-              sessionExpiredDescription = context.$t(
-                "login.session_expired_description"
-              );
-            }
             context.$root.$emit(
               "logout",
               sessionExpiredTitle,
@@ -220,6 +225,12 @@ export default {
       );
     },
     async logout(logoutInfoTitle, logoutInfoDescription) {
+      // stop retrying websocket connection
+      if (this.retryWsConnectionInterval) {
+        clearInterval(this.retryWsConnectionInterval);
+        this.retryWsConnectionInterval = 0;
+      }
+
       // invoke logout API
       const res = await to(this.executeLogout());
       const logoutError = res[0];
@@ -246,6 +257,12 @@ export default {
       // redirect to login page
       if (this.$route.name !== "Login") {
         this.$router.push("/login");
+      }
+
+      // hide websocket reconnection notification
+      if (this.$options.sockets.notification) {
+        this.hideNotification(this.$options.sockets.notification.id);
+        this.$options.sockets.notification = null;
       }
     },
     // retrieveRecurringClusterStatus() { ////
@@ -368,6 +385,12 @@ export default {
       }
     },
     onWebsocketConnected() {
+      // stop retrying websocket connection
+      if (this.retryWsConnectionInterval) {
+        clearInterval(this.retryWsConnectionInterval);
+        this.retryWsConnectionInterval = 0;
+      }
+
       this.setWebsocketConnectedInStore(true);
       this.retrieveClusterStatus(true);
 
@@ -385,7 +408,18 @@ export default {
         this.createNotification(notification);
       }
     },
-    onWebsocketDisconnected() {
+    onWebsocketError(error) {
+      console.error("Websocket error", error);
+
+      // websocket error usually happens because token has expired, logout
+      const sessionExpiredTitle = this.$t("login.session_expired_title");
+      const sessionExpiredDescription = this.$t(
+        "login.session_expired_description"
+      );
+      this.logout(sessionExpiredTitle, sessionExpiredDescription);
+    },
+    onWebsocketDisconnected(event) {
+      console.warn("Websocket disconnected", event);
       this.setWebsocketConnectedInStore(false);
 
       // do not show "websocket disconnected" notification when logged out
@@ -395,14 +429,23 @@ export default {
           description: this.$t("websocket.websocket_disconnected_description"),
           type: "warning",
           toastTimeout: 0, // persistent notification
-          actionLabel: this.$t("login.login"),
+          actionLabel: this.$t("websocket.reload"),
           action: {
             type: "callback",
-            callback: this.logout,
+            callback: () => {
+              location.reload();
+            },
           },
         };
         this.$options.sockets.notification = notification;
         this.createNotification(notification);
+
+        // retry websocket connection
+
+        this.retryWsConnectionInterval = setInterval(() => {
+          console.log("retrying websocket connection..."); ////
+          this.initWebSocket();
+        }, 5000);
       }
     },
     createErrorNotification(err, message) {

@@ -109,9 +109,10 @@
   },
   "websocket": {
     "websocket_disconnected": "Websocket disconnected",
-    "websocket_disconnected_description": "Websocket connection is unstable. Please wait until reconnection or log in again",
+    "websocket_disconnected_description": "Websocket connection is unstable. Please wait until reconnection or reload the page",
     "websocket_connected": "Websocket connected",
-    "websocket_connected_description": "Websocket connection established"
+    "websocket_connected_description": "Websocket connection established",
+    "reload": "Reload"
   },
   "password": {
     "hide_password": "Hide password",

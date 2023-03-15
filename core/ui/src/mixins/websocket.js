@@ -37,7 +37,7 @@ export default {
       this.$root.$emit("websocketConnected");
     },
     onError(error) {
-      console.log("websocket onError", error); ////
+      this.$root.$emit("websocketError", error);
     },
     onMessage(message) {
       console.log("websocket onMessage", message); ////
@@ -86,8 +86,7 @@ export default {
       return logLines.filter((l) => l);
     },
     onClose(event) {
-      console.log("websocket close", event); ////
-      this.$root.$emit("websocketDisconnected");
+      this.$root.$emit("websocketDisconnected", event);
     },
   },
 };
