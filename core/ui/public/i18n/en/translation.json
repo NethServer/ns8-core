@@ -499,8 +499,8 @@
     "password": "Password",
     "i_have_stored_encryption_password": "I have stored the <strong>password</strong> in a safe place",
     "cluster_backup_password_warning": "You must set the encryption password",
-    "cluster_backup_password_warning_description_1" :"The configuration cluster backup contains sensitive data required for a disaster recovery.",
-    "cluster_backup_password_warning_description_2" :"Set a strong encryption password, then download the backup and keep it in a safe place."
+    "cluster_backup_password_warning_description_1": "The configuration cluster backup contains sensitive data required for a disaster recovery.",
+    "cluster_backup_password_warning_description_2": "Set a strong encryption password, then download the backup and keep it in a safe place."
   },
   "calendar": {
     "days": "Days",
@@ -1089,7 +1089,7 @@
     "none": "None",
     "starttls": "STARTTLS",
     "tls": "TLS",
-    "choose":"Choose",
+    "choose": "Choose",
     "tls_verify": "Verify the TLS certificate",
     "connection_timeout_error": "The connection issued a timeout error, verify the port and the fully qualified domain name",
     "cannot_authenticate_to_server": "The server refuses the connection, it is probably due to a bad login or bad password",
@@ -1099,6 +1099,6 @@
     "required": "This field is required",
     "port_invalid_type": "It must be a valid number port (1-65535)",
     "port_number_gte": "The port must be greater than 0 (1-65535)",
-    "encrypt_smtp_enum":"It must be one of the following: none, starttls, tls"
+    "encrypt_smtp_enum": "It must be one of the following: none, starttls, tls"
   }
 }
