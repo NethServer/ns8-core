@@ -33,24 +33,24 @@ rdb = agent.redis_connect(privileged=True)
 destinations = {}
 
 for reqitem in request.get('add', []):
-    network = reqitem['network']
+    ip_address = requitem['ip_address']
     node_id = reqitem['node_id']
 
     if not node_id in destinations:
         destinations[node_id] = {*rdb.hget(f'node/{node_id}/vpn', 'destinations').split()}
 
     # merge the new destination with existing values
-    destinations[node_id] |= {network}
+    destinations[node_id] |= {ip_address}
 
 for reqitem in request.get('remove', []):
-    network = reqitem['network']
+    ip_address = requitem['ip_address']
     node_id = reqitem['node_id']
 
     if not node_id in destinations:
         destinations[node_id] = {*rdb.hget(f'node/{node_id}/vpn', 'destinations').split()}
 
     # remove the destination from existing values
-    destinations[node_id] -= {network}
+    destinations[node_id] -= {ip_address}
 
 pipe = rdb.pipeline()
 

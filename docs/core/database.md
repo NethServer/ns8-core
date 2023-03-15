@@ -242,7 +242,7 @@ follow this notation:
 |node/{id}/vpn                      |HASH||
 |node/{id}/vpn ip_address           |STRING     |IP address in cluster/network|
 |node/{id}/vpn public_key           |STRING     |Public WireGuard VPN key|
-|node/{id}/vpn destinations         |STRING     |List of networks in CIDR notation, routed through the VPN|
+|node/{id}/vpn destinations         |STRING     |List of IP addresses routed through the VPN|
 |node/{id}/vpn endpoint             |STRING     |Public IP or host name of the VPN endpoint with :port suffix|
 |node/{id}/vpn listen_port          |INTEGER    |Public UDP port of the VPN endpoint, default: `55820`|
 |node/{id}/flags                    |SET        |FlagS to mark a node. Supported flags: `nomodules`, the node can't run any module|
