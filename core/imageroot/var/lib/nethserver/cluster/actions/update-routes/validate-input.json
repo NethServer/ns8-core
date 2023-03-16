@@ -2,16 +2,16 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "update-routes input",
     "$id": "http://schema.nethserver.org/cluster/update-routes-input.json",
-    "description": "Route traffic to the given networks through VPN nodes",
+    "description": "Route traffic to the given IP addresses through the cluster VPN",
     "examples": [
         {
             "add": [
                 {
-                    "network": "192.168.2.0/24",
+                    "ip_address": "192.168.2.12",
                     "node_id": 3
                 },
                 {
-                    "network": "192.168.3.0/24",
+                    "ip_address": "192.168.3.8",
                     "node_id": 4
                 }
             ],
@@ -45,12 +45,16 @@
             "items": {
                 "type": "object",
                 "required": [
-                    "network",
-                    "node_id"
+                    "node_id",
+                    "ip_address"
                 ],
                 "properties": {
-                    "network": {
-                        "$ref": "http://schema.nethserver.org/cluster.json#/definitions/ipv4-cidr"
+                    "ip_address": {
+                        "title": "IP address",
+                        "description": "IP address to add or remove. It should be local to the node.",
+                        "type": "string",
+                        "format": "ipv4",
+                        "minLength": 1
                     },
                     "node_id": {
                         "type": "integer",
