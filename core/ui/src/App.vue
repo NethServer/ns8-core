@@ -207,12 +207,15 @@ export default {
           if (error.response?.status == 401) {
             console.log("axios interceptor detected 401, logout"); ////
 
-            const sessionExpiredTitle = context.$t(
-              "login.session_expired_title"
-            );
-            const sessionExpiredDescription = context.$t(
-              "login.session_expired_description"
-            );
+            let sessionExpiredTitle = "";
+            let sessionExpiredDescription = "";
+
+            if (error.response?.data?.message === "Token is expired") {
+              sessionExpiredTitle = context.$t("login.session_expired_title");
+              sessionExpiredDescription = context.$t(
+                "login.session_expired_description"
+              );
+            }
 
             context.$root.$emit(
               "logout",

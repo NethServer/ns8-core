@@ -180,7 +180,7 @@ func OTPVerify(c *gin.Context) {
 	}
 
 	// verify JWT
-	if !ValidateAuth(jsonOTP.Token, jsonOTP.Username) {
+	if !ValidateAuth(jsonOTP.Token, false) {
 		c.JSON(http.StatusBadRequest, structs.Map(response.StatusBadRequest{
 			Code:    400,
 			Message: "JWT token invalid",
@@ -478,7 +478,7 @@ func getUserSecret(username string) string {
 	return string(secretB[:])
 }
 
-func ValidateAuth(tokenString string, username string) bool {
+func ValidateAuth(tokenString string, ensureTokenExists bool) bool {
 	// convert token string and validate it
 	if tokenString != "" {
 		token, err := jwtl.Parse(tokenString, func(token *jwtl.Token) (interface{}, error) {
@@ -496,13 +496,16 @@ func ValidateAuth(tokenString string, username string) bool {
 			return false
 		}
 
-		if !CheckTokenValidation(username, tokenString) {
-			utils.LogError(errors.Wrap(err, "[SOCKET] error JWT token not found"))
-			return false
-		}
-
 		if claims, ok := token.Claims.(jwtl.MapClaims); ok && token.Valid {
 			if claims["id"] != nil {
+				if ensureTokenExists {
+					username := claims["id"].(string)
+
+					if !CheckTokenValidation(username, tokenString) {
+						utils.LogError(errors.New("[SOCKET] error JWT token not found"))
+						return false
+					}
+				}
 				return true
 			}
 		} else {
