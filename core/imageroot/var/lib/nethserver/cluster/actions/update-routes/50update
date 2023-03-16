@@ -33,7 +33,7 @@ rdb = agent.redis_connect(privileged=True)
 destinations = {}
 
 for reqitem in request.get('add', []):
-    ip_address = requitem['ip_address']
+    ip_address = reqitem['ip_address']
     node_id = reqitem['node_id']
 
     if not node_id in destinations:
