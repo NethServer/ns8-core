@@ -19,14 +19,17 @@ export default {
         this.$options.sockets.onmessage = this.onMessage;
         this.$options.sockets.onopen = this.onOpen;
         this.$options.sockets.onclose = this.onClose;
+        this.$options.sockets.onerror = this.onError;
       }
     },
     closeWebSocket() {
       this.$disconnect();
     },
     onOpen() {
-      console.log("websocket connected"); ////
       this.$root.$emit("websocketConnected");
+    },
+    onError(error) {
+      this.$root.$emit("websocketError", error);
     },
     onMessage(message) {
       const messageData = JSON.parse(message.data);
@@ -73,8 +76,7 @@ export default {
       return logLines.filter((l) => l);
     },
     onClose(event) {
-      console.log("websocket close", event); ////
-      this.$root.$emit("websocketDisconnected");
+      this.$root.$emit("websocketDisconnected", event);
     },
   },
 };
