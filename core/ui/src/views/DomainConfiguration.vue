@@ -440,9 +440,9 @@
         @hide="hideAddExternalProviderModal"
       />
     </template>
-    <!-- delete provider modal -->
+    <!-- delete ldap provider modal -->
     <NsDangerDeleteModal
-      :isShown="isShownDeleteProviderModal"
+      :isShown="isShownDeleteLdapProviderModal"
       :name="currentProvider.id"
       :title="$t('domain_configuration.delete_provider')"
       :warning="$t('common.please_read_carefully')"
@@ -454,8 +454,15 @@
       :typeToConfirm="
         $t('common.type_to_confirm', { name: currentProvider.id })
       "
-      @hide="hideDeleteProviderModal"
-      @confirmDelete="deleteProvider"
+      @hide="hideDeleteLdapProviderModal"
+      @confirmDelete="deleteLdapProvider"
+    />
+    <!-- delete samba provider modal -->
+    <DeleteSambaProviderModal
+      :isShown="isShownDeleteSambaProviderModal"
+      :provider="currentProvider"
+      @hide="hideDeleteSambaProviderModal"
+      @reloadDomains="listUserDomains"
     />
     <!-- set provider label modal -->
     <NsModal
@@ -513,12 +520,17 @@ import {
 import to from "await-to-js";
 import AddInternalProviderModal from "@/components/domains/AddInternalProviderModal";
 import AddExternalProviderModal from "@/components/domains/AddExternalProviderModal";
+import DeleteSambaProviderModal from "@/components/domains/DeleteSambaProviderModal";
 import _cloneDeep from "lodash/cloneDeep";
 import { mapState } from "vuex";
 
 export default {
   name: "DomainConfiguration",
-  components: { AddInternalProviderModal, AddExternalProviderModal },
+  components: {
+    AddInternalProviderModal,
+    AddExternalProviderModal,
+    DeleteSambaProviderModal,
+  },
   mixins: [
     TaskService,
     UtilService,
@@ -534,7 +546,8 @@ export default {
       q: {},
       isShownAddInternalProviderModal: false,
       isShownAddExternalProviderModal: false,
-      isShownDeleteProviderModal: false,
+      isShownDeleteLdapProviderModal: false,
+      isShownDeleteSambaProviderModal: false,
       domainName: "",
       domain: null,
       internalNodes: [],
@@ -674,19 +687,22 @@ export default {
       }
       this.internalNodes = nodes;
     },
-    deleteProvider() {
+    deleteLdapProvider() {
       if (this.domain.location == "internal") {
-        this.deleteInternalProvider();
+        this.deleteLdapInternalProvider();
       } else {
-        this.deleteExternalProvider();
+        this.deleteLdapExternalProvider();
       }
     },
-    async deleteInternalProvider() {
+    async deleteLdapInternalProvider() {
       this.error.removeInternalProvider = "";
       const taskAction = "remove-internal-provider";
 
       // register to task completion
-      this.$root.$once(taskAction + "-completed", this.deleteProviderCompleted);
+      this.$root.$once(
+        taskAction + "-completed",
+        this.deleteLdapProviderCompleted
+      );
 
       const res = await to(
         this.createClusterTask({
@@ -708,14 +724,17 @@ export default {
         return;
       }
 
-      this.isShownDeleteProviderModal = false;
+      this.isShownDeleteLdapProviderModal = false;
     },
-    async deleteExternalProvider() {
+    async deleteLdapExternalProvider() {
       this.error.removeExternalProvider = "";
       const taskAction = "remove-external-provider";
 
       // register to task completion
-      this.$root.$once(taskAction + "-completed", this.deleteProviderCompleted);
+      this.$root.$once(
+        taskAction + "-completed",
+        this.deleteLdapProviderCompleted
+      );
 
       const res = await to(
         this.createClusterTask({
@@ -740,9 +759,9 @@ export default {
         return;
       }
 
-      this.isShownDeleteProviderModal = false;
+      this.isShownDeleteLdapProviderModal = false;
     },
-    deleteProviderCompleted() {
+    deleteLdapProviderCompleted() {
       this.listUserDomains();
     },
     hideAddInternalProviderModal() {
@@ -757,11 +776,19 @@ export default {
         this.isShownLastProviderModal = true;
         return;
       }
-      this.isShownDeleteProviderModal = true;
       this.currentProvider = provider;
+
+      if (this.domain.schema === "ad") {
+        this.isShownDeleteSambaProviderModal = true;
+      } else {
+        this.isShownDeleteLdapProviderModal = true;
+      }
     },
-    hideDeleteProviderModal() {
-      this.isShownDeleteProviderModal = false;
+    hideDeleteSambaProviderModal() {
+      this.isShownDeleteSambaProviderModal = false;
+    },
+    hideDeleteLdapProviderModal() {
+      this.isShownDeleteLdapProviderModal = false;
     },
     hideSetProviderLabelModal() {
       this.isShownSetProviderLabelModal = false;
