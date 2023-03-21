@@ -55,7 +55,7 @@
             :showCloseButton="false"
           />
           <cv-form>
-            <cv-text-input
+            <NsTextInput
               :label="$t('openldap.admuser')"
               v-model.trim="openldap.admuser"
               :helper-text="$t('openldap.enter_openldap_admin_username')"
@@ -65,8 +65,8 @@
               "
               ref="admuser"
             >
-            </cv-text-input>
-            <cv-text-input
+            </NsTextInput>
+            <NsTextInput
               :label="$t('openldap.admpass')"
               type="password"
               v-model="openldap.admpass"
@@ -79,7 +79,7 @@
               :password-show-label="$t('password.show_password')"
               ref="admpass"
               name="admpass"
-            ></cv-text-input>
+            ></NsTextInput>
           </cv-form>
           <NsInlineNotification
             v-if="error.openldap.configureModule"
@@ -99,7 +99,7 @@
             :showCloseButton="false"
           />
           <cv-form>
-            <cv-text-input
+            <NsTextInput
               :label="$t('samba.adminuser')"
               v-model.trim="samba.adminuser"
               :helper-text="$t('samba.enter_samba_admin_username')"
@@ -109,8 +109,8 @@
               "
               ref="adminuser"
             >
-            </cv-text-input>
-            <cv-text-input
+            </NsTextInput>
+            <NsTextInput
               :label="$t('samba.adminpass')"
               type="password"
               v-model="samba.adminpass"
@@ -123,7 +123,7 @@
               :password-show-label="$t('password.show_password')"
               ref="adminpass"
               name="adminpass"
-            ></cv-text-input>
+            ></NsTextInput>
             <cv-combo-box
               v-model="samba.ipaddress"
               :options="samba.ipAddressOptions"
@@ -137,7 +137,7 @@
               ref="ipaddress"
             >
             </cv-combo-box>
-            <cv-text-input
+            <NsTextInput
               :label="$t('samba.hostname')"
               v-model.trim="samba.hostname"
               :invalid-message="$t(error.samba.hostname)"
@@ -146,7 +146,7 @@
               "
               ref="hostname"
             >
-            </cv-text-input>
+            </NsTextInput>
           </cv-form>
           <NsInlineNotification
             v-if="error.samba.configureModule"
@@ -537,6 +537,7 @@ export default {
       const defaults = taskResult.output;
 
       this.samba.adminuser = defaults.adminuser;
+      this.samba.adminpass = "";
       this.samba.hostname = defaults.hostname;
 
       // ip address combo box
