@@ -72,7 +72,7 @@ if leave_is_required:
         acquire_retval = agent.tasks.run(
             agent_id=f"module/{designated_survivor}",
             action="acquire-fsmo",
-            data=None,
+            data={"adminuser": request.get("adminuser", ""), "adminpass": request.get("adminpass", "")},
             endpoint="redis://cluster-leader",
             progress_callback=agent.get_progress_callback(2, 50),
         )
