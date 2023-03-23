@@ -84,7 +84,12 @@ agent.run_helper('podman-pull-missing', *extra_images,
 ).check_returncode()
 
 agent.run_helper('install-coreimage', core_url,
-    progress_callback=agent.get_progress_callback(71,90)
+    progress_callback=agent.get_progress_callback(71,85)
+).check_returncode()
+
+# Update python requirements
+agent.run_helper('/usr/local/agent/pyenv/bin/pip3 install', '-r', '/etc/nethserver/pythonreq.txt',
+    progress_callback=agent.get_progress_callback(85,90)
 ).check_returncode()
 
 agent.run_helper('systemctl', 'daemon-reload')
