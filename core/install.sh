@@ -22,6 +22,24 @@
 
 set -e
 
+echo "Checking machine hostname"
+fqdn=$(hostname -f)
+if [[ -z "${fqdn}" || "[$fqdn}" == *localhost* ]]; then
+    echo "Current hostname '$fqdn' is not valid. The hostname must not contain 'localhost'."
+    echo "Please set a valid FQDN like 'myserver.nethserver.org'."
+    exit 2
+fi
+
+if ! grep -q "$fqdn" /etc/hosts ; then
+    echo "The machine hostname should be inside /etc/hosts, otherwise the system will be unresponsive."
+    echo "You can fix it with the following command:"
+    echo
+    echo "    echo '127.0.0.1 $fqdn' >> /etc/hosts"
+    echo
+    echo "Restart the installation when the problem has been solved."
+    exit 3
+fi
+
 echo "Restart journald:"
 systemctl restart systemd-journald.service
 
