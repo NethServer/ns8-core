@@ -143,7 +143,7 @@ If you feel comfortable and more secure to use 2FA, you can enable it inside the
 The API doc is generated using swagger. The `swagger.json` file is built
 automatically and published at:
 
-<https://raw.githubusercontent.com/NethServer/ns8-scratchpad/swagdoc/swagger.json>
+<https://raw.githubusercontent.com/NethServer/ns8-core/swagdoc/swagger.json>
 
 ## Redis
 
