@@ -24,7 +24,7 @@ set -e
 
 echo "Checking machine hostname"
 fqdn=$(hostname -f)
-if [[ -z "${fqdn}" || "[$fqdn}" == *localhost* ]]; then
+if [[ -z "${fqdn}" || "{$fqdn}" == *localhost* ]]; then
     echo "Current hostname '$fqdn' is not valid. The hostname must not contain 'localhost'."
     echo "Please set a valid FQDN like 'myserver.nethserver.org'."
     exit 2
