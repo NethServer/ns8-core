@@ -1,6 +1,6 @@
 [Unit]
 Description=Core Redis DB
-Documentation=https://github.com/NethServer/ns8-scratchpad
+Documentation=https://github.com/NethServer/ns8-core
 Wants=wg-quick@wg0.service
 After=wg-quick@wg0.service
 
