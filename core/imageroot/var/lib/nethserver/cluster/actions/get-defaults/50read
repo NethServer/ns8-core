@@ -24,11 +24,15 @@ import os
 import sys
 import json
 import agent
-import socket
+import subprocess
 
 request = json.load(sys.stdin)
 rdb = agent.redis_connect(privileged=False)
 
-ret = { "vpn": {"host": socket.gethostbyaddr(socket.gethostname())[0], "port": 55820, "network": "10.5.4.0/24"} }
+try:
+    host = subprocess.run(['hostname', '-f'], text=True, capture_output=True, check=True).stdout.strip()
+except:
+    host = "myserver.example.org"
+ret = { "vpn": {"host": host, "port": 55820, "network": "10.5.4.0/24"} }
 
 json.dump(ret, fp=sys.stdout)
