@@ -2,7 +2,6 @@ import Vue from "vue";
 import App from "./App.vue";
 import router from "./router";
 import store from "./store";
-import { loadLanguage } from "./i18n";
 
 import CarbonComponentsVue from "@carbon/vue";
 Vue.use(CarbonComponentsVue);
@@ -58,13 +57,6 @@ for (const f in Filters) {
   Vue.filter(f, Filters[f]);
 }
 
-// i18n
-import VueI18n from "vue-i18n";
-Vue.use(VueI18n);
-const i18n = new VueI18n();
-const navigatorLang = navigator.language.substring(0, 2);
-loadLanguage(navigatorLang, i18n);
-
 //// move somewhere else?
 const toastOptions = {
   containerClassName: "toastification-container",
@@ -94,13 +86,28 @@ Vue.directive("click-outside", {
 
 Vue.config.productionTip = false;
 
-window.core = new Vue({
-  router,
-  store,
-  i18n,
-  created: function () {
-    this.config = window.CONFIG;
-    this.$root.apiUrl = this.config.API_SCHEME + this.config.API_ENDPOINT;
-  },
-  render: (h) => h(App),
-}).$mount("#core");
+// i18n
+import VueI18n from "vue-i18n";
+import { loadLanguage } from "./i18n";
+
+loadI18n();
+
+async function loadI18n() {
+  const navigatorLang = navigator.language.substring(0, 2);
+  const messages = await loadLanguage(navigatorLang);
+  Vue.use(VueI18n);
+  const i18n = new VueI18n();
+  i18n.setLocaleMessage(navigatorLang, messages.default);
+  i18n.locale = navigatorLang;
+
+  window.core = new Vue({
+    router,
+    store,
+    i18n,
+    created: function () {
+      this.config = window.CONFIG;
+      this.$root.apiUrl = this.config.API_SCHEME + this.config.API_ENDPOINT;
+    },
+    render: (h) => h(App),
+  }).$mount("#core");
+}
