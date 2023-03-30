@@ -920,3 +920,14 @@ ul.unordered-list {
   background-color: $interactive-01;
 }
 // NsTimePicker end
+
+// fade transition start
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s;
+}
+.fade-enter,
+.fade-leave-to {
+  opacity: 0;
+}
+// fade transition end
