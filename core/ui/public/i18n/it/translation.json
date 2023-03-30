@@ -4,7 +4,8 @@
         "title": "Server ACME"
     },
     "software_center": {
-        "software_updates": "Aggiornamenti"
+        "software_updates": "Aggiornamenti",
+        "cluster_up_to_date": "Il cluster è aggiornato"
     },
     "nodes": {
         "title": "Nodi",
@@ -44,25 +45,76 @@
         "openldap": "OpenLDAP",
         "realm_pattern": "Pattern non valido",
         "hostname_pattern": "Pattern non valido",
-        "nbdomain_pattern": "Pattern non valido"
+        "nbdomain_pattern": "Pattern non valido",
+        "account_provider": "Account provider",
+        "delete_domain": "Delete domain",
+        "create_domain": "Create domain"
     },
     "action": {
         "configure-module": "Configura app",
         "list-backups": "Elenca backup",
-        "list-backup-repositories": "Elenca repository di backup"
+        "list-backup-repositories": "Elenca repository di backup",
+        "add-backup-repository": "Aggiungi repository per i backup",
+        "set-certificate": "Imposta certificato",
+        "add-backup": "Aggiungi backup",
+        "get-defaults": "Get defaults"
     },
     "backup": {
-        "configure": "Configura"
+        "configure": "Configura",
+        "cluster_backup_password_warning": "È necessario impostare una password di crittografia",
+        "cluster_backup_password_info_description": "Immettere una password per crittografare il backup.<br/> Per motivi di sicurezza non utilizzare la propria password di accesso.<br/> La password va conservata accuratamente, servirà in caso di disaster recovery.",
+        "apps_configuration_tooltip": "Aggiungi i tuoi repository di backup e pianifica i backup delle app",
+        "cluster_backup_password_warning_description_1": "Il backup della configurazione del cluster contiene dati sensibili necessari per eseguire un disaster recovery.",
+        "default_backup_name": "Esegui backup su {repository}",
+        "backup_name_helper": "Un nome per il backup facile da ricordare",
+        "backup_completed_successfully": "{backupName} completato con successo",
+        "backup_snapshots": "Snapshot del backup",
+        "b2_account_key": "Application key B2",
+        "b2_account_id": "Application key ID B2",
+        "no_backup_repository": "Nessun repository per i backup",
+        "title": "Backup",
+        "empty_state_repository_description": "Aggiungi un repository per configurare i backup",
+        "backblaze": "Backblaze B2",
+        "add_repository": "Aggiungi repository",
+        "schedule_backup": "Pianifica backup",
+        "aws": "Amazon S3",
+        "azure_short": "Azure",
+        "backblaze_short": "B2",
+        "delete_repo_explanation_1": "Verrà eliminato anche qualsiasi backup pianificato che utilizza questo repository, ma i dati di cui è stato eseguito il backup rimarranno intatti nel repository originale. Questa azione <strong>NON</strong> è reversibile.",
+        "url_placeholder": "Nome del bucket",
+        "repository_name_helper": "Un nome per il repository facile da ricordare",
+        "backup_repository_exists": "Esiste già un repository con questo URL",
+        "aws_access_key_id": "Access key ID AWS",
+        "aws_default_region": "Regione di default AWS",
+        "aws_secret_access_key": "Secret access key AWS",
+        "app_instances_not_backed_up": "Applicazioni prive di backup",
+        "at": "Alle",
+        "backup_details": "Dettagli del backup",
+        "backup_disabled": "Backup disabilitato",
+        "backup_enabled": "Backup abilitato",
+        "apps": "Applicazioni",
+        "backup_repository_not_accessible": "Impossibile accedere al repository",
+        "backup_repository_auth_error": "Impossibile autenticarsi",
+        "backup_name": "Nome del backup",
+        "backup_has_not_run_yet": "Il backup non è stato ancora eseguito",
+        "cluster_backup_password_warning_description_2": "Imposta una password di crittografia complessa, quindi scarica il backup e conservalo in un luogo sicuro.",
+        "set_cluster_backup_password": "Imposta password di crittografia",
+        "i_have_stored_encryption_password": "Ho conservato la <strong>password</strong> in un luogo sicuro"
     },
     "login": {
-        "password": "Password"
+        "password": "Password",
+        "password_placeholder": "La tua password",
+        "6_digit_code": "codice 6 cifre",
+        "2fa_code_required": "codice 6 cifre richiesto",
+        "username_placeholder": "Il tuo nome utente"
     },
     "password": {
         "password": "Password"
     },
     "common": {
         "required": "Obbligatorio",
-        "processing": "Elaborazione in corso..."
+        "processing": "Elaborazione in corso...",
+        "save_settings": "Save settings"
     },
     "error": {
         "error": "Errore",
@@ -72,7 +124,8 @@
         "network_timeout": "Timeout di rete",
         "generic_error": "Qualcosa è andato storto",
         "401": "Autenticazione non valida",
-        "403": "Operazione non autorizzata"
+        "403": "Operazione non autorizzata",
+        "cannot_retrieve_backups": "Impossibile recuperare i backup"
     },
     "task": {
         "configure": "Configura",
@@ -80,5 +133,21 @@
     },
     "settings": {
         "title": "Impostazioni"
+    },
+    "init": {
+        "backup_password": "Password del backup",
+        "backup_repositories": "Repository del backup",
+        "backup_date": "Data del backup"
+    },
+    "account_provider": {
+        "title": "Account provider"
+    },
+    "shell": {
+        "account_settings": "Impostazioni account",
+        "account": "Account"
+    },
+    "settings_account": {
+        "title": "Account",
+        "2fa_qr_code": "QR code 2FA"
     }
 }
