@@ -6,6 +6,7 @@ on:
       - 'infra/**'
       - 'core/tests/**'
       - 'core/test-module.sh'
+  workflow_dispatch:
 
 jobs:
   module:
