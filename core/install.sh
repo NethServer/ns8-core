@@ -30,8 +30,8 @@ if [[ -z "${fqdn}" || "${fqdn}" == *localhost* ]]; then
     exit 2
 fi
 
-if ! grep -q -E "\b${fqdn}\b" /etc/hosts ; then
-    echo "The machine hostname should be inside /etc/hosts, otherwise the system will be unresponsive."
+if ! getent hosts "${fqdn}" &>/dev/null ; then
+    echo "The machine hostname is not resolvable."
     echo "You can fix it with the following command:"
     echo
     echo "    echo '127.0.0.1 $fqdn' >> /etc/hosts"
