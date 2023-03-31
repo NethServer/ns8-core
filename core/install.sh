@@ -26,7 +26,9 @@ echo "Checking machine hostname"
 fqdn=$(hostname -f)
 if [[ -z "${fqdn}" || "${fqdn}" == *localhost* ]]; then
     echo "Current hostname '$fqdn' is not valid. The hostname must not contain 'localhost'."
-    echo "Please set a valid FQDN like 'myserver.nethserver.org'."
+    echo "Please set a FQDN like"
+    echo "- myserver.nethserver.org (real public DNS domain suffix for production)"
+    echo "- myserver.dom.test (RFC-6761 .test DNS suffix for testing and development)"
     exit 2
 fi
 
