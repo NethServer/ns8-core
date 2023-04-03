@@ -125,3 +125,14 @@ def add_module_permissions(rdb, module_id, authorizations, node_id):
             role=xrole,
             on_clause=agent_selector,
         )
+
+def check_authorizations_sanity(authorizations):
+    for authz in authorizations:
+        # Validation assertions:
+        contains_forbidden_char = ('*' in authz or '[' in authz or '?' in authz)
+        lacks_mandatory_separator = (not ':' in authz)
+        grants_too_much_permissions = (authz == 'cluster:owner')
+        if contains_forbidden_char or lacks_mandatory_separator or grants_too_much_permissions:
+            return False
+
+    return True
