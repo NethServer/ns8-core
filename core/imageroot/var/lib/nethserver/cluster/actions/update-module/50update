@@ -25,6 +25,8 @@ import agent
 import agent.tasks
 import cluster.modules
 import sys, os
+import subprocess
+import cluster.grants
 
 request = json.load(sys.stdin)
 image_url= request.get('module_url')
@@ -59,11 +61,32 @@ agent.run_helper('podman-pull-missing', image_url,
     progress_callback=agent.get_progress_callback(0,30)
 ).check_returncode()
 
+# Retrieve the image org.nethserver.authorizations label
+with subprocess.Popen(['podman', 'image', 'inspect', image_url], stdout=subprocess.PIPE, stderr=sys.stderr) as proc:
+    try:
+        authorizations = json.load(proc.stdout)[0]['Labels']['org.nethserver.authorizations'].split()
+    except:
+        authorizations = []
+
+# Run sanity checks on the org.nethserver.authorizations label:
+if not cluster.grants.check_authorizations_sanity(authorizations):
+    print(agent.SD_ERR + f'Invalid org.nethserver.authorizations label value image_url={image_url}:', authorizations, file=sys.stderr)
+    sys.exit(2)
+
 # Start the module update on each instance
 update_tasks = []
-for mid in instances:
+for module_id in instances:
+    if authorizations:
+        # Replace existing authorizations with the new image:
+        rdb.delete(f'cluster/authorizations/module/{module_id}')
+        rdb.sadd(f'cluster/authorizations/module/{module_id}', 'self:selfadm', *authorizations)
+
+        node_id = int(rdb.hget(f'cluster/module_node', module_id))
+        # Update module permissions before running update-module on it
+        cluster.grants.add_module_permissions(rdb, module_id, authorizations, node_id)
+
     update_tasks.append({
-        "agent_id": f"module/{mid}",
+        "agent_id": f"module/{module_id}",
         "action": "update-module",
         "data": {
             "module_url": image_url
