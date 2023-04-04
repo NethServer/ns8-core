@@ -84,7 +84,7 @@ The api-server could check that the action passed from route is among the user (
 -   `GET /module/:module_id/http-basic/:action` Use Basic HTTP auth for module
 
     Where:
-    - `:module`: is the name of the module to check for action
+    - `:module_id`: is the name of the module to check for action
     - `:action`: is the action to validate in the authorized actions
 
 ### 2FA (Two-Factor authentication)
