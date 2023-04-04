@@ -73,6 +73,20 @@ The finally API request should be:
 curl -s -H "Authorization: Bearer <your_token>" -X <VERB> http://localhost:8080/api/<api_name> --data '{<your_json_data}' | jq
 ```
 
+### Basic authentication
+
+There are some cases where it is necessary to validate requests coming from other servers (Caddy, Nginx, ...) using the HTTP Basic authentication method. To achieve this functionality some routes verify authentication using basic auth.
+
+The api-server could check that the action passed from route is among the user (obtained from Basic-Auth credentials) role authorized actions.
+
+#### Basic authentication API list
+
+-   `GET /module/:module_id/http-basic/:action` Use Basic HTTP auth for module
+
+    Where:
+    - `:module`: is the name of the module to check for action
+    - `:action`: is the action to validate in the authorized actions
+
 ### 2FA (Two-Factor authentication)
 
 If you feel comfortable and more secure to use 2FA, you can enable it inside the user setting page o via API. To enable these are the steps:
