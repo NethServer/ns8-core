@@ -34,11 +34,11 @@ import (
 	"strings"
 
 	jwt "github.com/appleboy/gin-jwt/v2"
-	jwtl "github.com/golang-jwt/jwt"
 	"github.com/dgryski/dgoogauth"
 	"github.com/fatih/structs"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
+	jwtl "github.com/golang-jwt/jwt"
 	"github.com/pkg/errors"
 
 	"github.com/NethServer/ns8-core/core/api-server/configuration"
@@ -391,6 +391,81 @@ func Del2FAStatus(c *gin.Context) {
 		Message: "2FA revocate successfully",
 		Data:    "",
 	}))
+}
+
+// BasicAuthModule godoc
+// @Summary Use Basic HTTP auth for module
+// @Description for a specific action, check basic auth for module
+// @Produce  json
+// @Header 200 {string} Authorization "Basic base64(username:password)"
+// @Success 200 {object} response.StatusOK{code=int,message=string,data=object}
+// @Failure 401 {object} response.StatusUnauthorized{code=int,message=string,data=object}
+// @Failure 403 {object} response.StatusForbidden{code=int,message=string,data=object}
+// @Router /module/{module_id}/http-basic/{action} [get]
+// @Tags /module basic_auth
+func BasicAuthModule(c *gin.Context) {
+	// get http basic credentials
+	username, password, _ := c.Request.BasicAuth()
+
+	// init redis connection
+	redisConnection := redis.Instance()
+
+	// check authentication
+	err := RedisAuthentication(username, password)
+	if err != nil {
+		utils.LogError(errors.Wrap(err, "[BASIC AUTH] redis authentication failed for user "+username))
+
+		// response
+		c.JSON(http.StatusUnauthorized, structs.Map(response.StatusUnauthorized{
+			Code:    401,
+			Message: "basic auth failed. username or password invalid",
+			Data:    "",
+		}))
+		return
+	}
+
+	// check authorizations
+	pathGet := "module/" + c.Param("module_id")
+	pathScan := "module/" + c.Param("module_id") + "/roles/"
+
+	// get roles of current user: HGET roles/<username>.<entity> -> <role>
+	role, errRedisRoleGet := redisConnection.HGet(ctx, "roles/"+username, pathGet).Result()
+
+	// handle redis error
+	if errRedisRoleGet != nil {
+		// response
+		c.JSON(http.StatusForbidden, structs.Map(response.StatusForbidden{
+			Code:    403,
+			Message: "basic auth failed. role not found",
+			Data:    "",
+		}))
+		return
+	}
+
+	// get action for current role and entity: SMEMBERS <entity>/<reference>/roles/<role>
+	actions, errRedisRoleScan := redisConnection.SMembers(ctx, pathScan+role).Result()
+
+	// handle redis error
+	if errRedisRoleScan != nil {
+		// response
+		c.JSON(http.StatusForbidden, structs.Map(response.StatusForbidden{
+			Code:    403,
+			Message: "basic auth failed. action not found",
+			Data:    "",
+		}))
+		return
+	}
+
+	// close redis connection
+	redisConnection.Close()
+
+	// response
+	c.JSON(http.StatusOK, structs.Map(response.StatusOK{
+		Code:    200,
+		Message: "basic auth ok",
+		Data:    actions,
+	}))
+
 }
 
 func setUserSecret(username string, secret string) (bool, string) {

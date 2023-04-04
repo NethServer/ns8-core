@@ -140,6 +140,9 @@ func main() {
 		api.GET("/2FA/qr-code", methods.QRCode)
 	}
 
+	// define basic auth routes
+	api.GET("/module/:module_id/http-basic/:action", methods.BasicAuthModule)
+
 	// define websocket endpoint
 	ws := router.Group("/ws")
 	ws.GET("", func(c *gin.Context) {
