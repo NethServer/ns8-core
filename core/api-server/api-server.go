@@ -105,6 +105,9 @@ func main() {
 	// 2FA APIs
 	api.POST("/2FA/otp-verify", methods.OTPVerify)
 
+	// define basic auth routes
+	api.GET("/module/:module_id/http-basic/:action", methods.BasicAuthModule)
+
 	// define JWT middleware
 	api.Use(middleware.InstanceJWT().MiddlewareFunc())
 	{
@@ -139,9 +142,6 @@ func main() {
 		api.DELETE("/2FA", methods.Del2FAStatus)
 		api.GET("/2FA/qr-code", methods.QRCode)
 	}
-
-	// define basic auth routes
-	api.GET("/module/:module_id/http-basic/:action", methods.BasicAuthModule)
 
 	// define websocket endpoint
 	ws := router.Group("/ws")

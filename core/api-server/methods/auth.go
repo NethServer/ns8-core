@@ -31,6 +31,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"path/filepath"
 	"strings"
 
 	jwt "github.com/appleboy/gin-jwt/v2"
@@ -410,6 +411,9 @@ func BasicAuthModule(c *gin.Context) {
 	// init redis connection
 	redisConnection := redis.Instance()
 
+	// close redis connection
+	defer redisConnection.Close()
+
 	// check authentication
 	err := RedisAuthentication(username, password)
 	if err != nil {
@@ -436,7 +440,7 @@ func BasicAuthModule(c *gin.Context) {
 		// response
 		c.JSON(http.StatusForbidden, structs.Map(response.StatusForbidden{
 			Code:    403,
-			Message: "basic auth failed. role not found",
+			Message: "basic auth failed. module not found",
 			Data:    "",
 		}))
 		return
@@ -456,8 +460,24 @@ func BasicAuthModule(c *gin.Context) {
 		return
 	}
 
-	// close redis connection
-	redisConnection.Close()
+	// verify wildcard actions
+	actionAllowed := false
+	for _, authorizedAction := range actions {
+		actionAllowed, _ = filepath.Match(authorizedAction, c.Param("action"))
+		if actionAllowed {
+			break
+		}
+	}
+
+	if !actionAllowed {
+		// response
+		c.JSON(http.StatusForbidden, structs.Map(response.StatusForbidden{
+			Code:    403,
+			Message: "basic auth failed. action not allowed",
+			Data:    "",
+		}))
+		return
+	}
 
 	// response
 	c.JSON(http.StatusOK, structs.Map(response.StatusOK{
