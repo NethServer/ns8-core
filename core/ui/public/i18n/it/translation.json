@@ -114,7 +114,11 @@
     "common": {
         "required": "Obbligatorio",
         "processing": "Elaborazione in corso...",
-        "save_settings": "Save settings"
+        "save_settings": "Save settings",
+        "enabled": "Enabled",
+        "disabled": "Disabled",
+        "delete": "Delete",
+        "advanced": "Advanced"
     },
     "error": {
         "error": "Errore",
