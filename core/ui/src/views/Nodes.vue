@@ -154,10 +154,17 @@
       <template slot="title">{{ $t("nodes.add_node_to_cluster") }}</template>
       <template slot="content">
         <ol class="mg-bottom-md">
-          <li>{{ $t("nodes.add_node_to_cluster_step_1") }}</li>
+          <li
+            v-html="
+              $t('nodes.add_node_to_cluster_step_1', {
+                product: this.$root.config.PRODUCT_NAME,
+              })
+            "
+          ></li>
           <li v-html="$t('nodes.add_node_to_cluster_step_2')"></li>
           <li v-html="$t('nodes.add_node_to_cluster_step_3')"></li>
-          <li>{{ $t("nodes.add_node_to_cluster_step_4") }}</li>
+          <li v-html="$t('nodes.add_node_to_cluster_step_4')"></li>
+          <li v-html="$t('nodes.add_node_to_cluster_step_5')"></li>
         </ol>
         <span class="join-code">{{ $t("common.join_code") }}</span>
         <!-- copy to clipboard hint -->
