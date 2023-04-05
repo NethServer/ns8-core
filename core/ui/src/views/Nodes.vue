@@ -56,11 +56,12 @@
       </cv-column>
     </cv-row>
     <cv-row v-if="loading.nodes">
-      <cv-column v-for="index in 2" :key="index" :max="4">
+      <cv-column v-for="index in 2" :key="index" :md="4" :max="4">
         <cv-tile light>
           <cv-skeleton-text
             :paragraph="true"
             :line-count="9"
+            heading
           ></cv-skeleton-text>
         </cv-tile>
       </cv-column>
