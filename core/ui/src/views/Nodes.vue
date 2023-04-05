@@ -76,7 +76,24 @@
           light
           loading
           :online="node.online"
-        />
+        >
+          <template #menu>
+            <cv-overflow-menu
+              v-if="node.id !== leaderNode.id"
+              :flip-menu="true"
+              tip-position="top"
+              tip-alignment="end"
+              class="top-right-overflow-menu"
+            >
+              <cv-overflow-menu-item danger @click="showRemoveNodeModal(node)">
+                <NsMenuItem
+                  :icon="TrashCan20"
+                  :label="$t('nodes.remove_from_cluster')"
+                />
+              </cv-overflow-menu-item>
+            </cv-overflow-menu>
+          </template>
+        </NodeCard>
         <NodeCard
           v-else
           :nodeId="node.id"
@@ -132,6 +149,16 @@
               </cv-overflow-menu-item>
               <cv-overflow-menu-item @click="goToFirewall(node)">
                 <NsMenuItem :icon="Firewall20" :label="$t('firewall.title')" />
+              </cv-overflow-menu-item>
+              <cv-overflow-menu-item
+                v-if="node.id !== leaderNode.id"
+                danger
+                @click="showRemoveNodeModal(node)"
+              >
+                <NsMenuItem
+                  :icon="TrashCan20"
+                  :label="$t('nodes.remove_from_cluster')"
+                />
               </cv-overflow-menu-item>
             </cv-overflow-menu>
           </template>
@@ -245,6 +272,12 @@
         $t("nodes.edit_node_label")
       }}</template>
     </NsModal>
+    <!-- remove node modal -->
+    <RemoveNodeModal
+      :isShown="isShownRemoveNodeModal"
+      :node="nodeToRemove"
+      @hide="hideRemoveNodeModal"
+    />
   </cv-grid>
 </template>
 
@@ -259,10 +292,11 @@ import {
 import to from "await-to-js";
 import { mapState, mapActions } from "vuex";
 import NodeCard from "@/components/misc/NodeCard";
+import RemoveNodeModal from "@/components/nodes/RemoveNodeModal";
 
 export default {
   name: "Nodes",
-  components: { NodeCard },
+  components: { NodeCard, RemoveNodeModal },
   mixins: [
     TaskService,
     UtilService,
@@ -287,6 +321,8 @@ export default {
       currentNode: null,
       newNodeLabel: "",
       isShownSetNodeLabelModal: false,
+      isShownRemoveNodeModal: false,
+      nodeToRemove: null,
       loading: {
         nodes: true,
         setNodeLabel: false,
@@ -547,6 +583,13 @@ export default {
         path: "/settings/tls-certificates",
         query: { selectedNodeId: node.id },
       });
+    },
+    showRemoveNodeModal(node) {
+      this.nodeToRemove = node;
+      this.isShownRemoveNodeModal = true;
+    },
+    hideRemoveNodeModal() {
+      this.isShownRemoveNodeModal = false;
     },
   },
 };
