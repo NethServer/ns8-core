@@ -756,6 +756,7 @@
     "updating_n_instances_c": "Updating {num} instance | Updating {num} instances",
     "num_instances_updated": "{numInstances} instances updated",
     "n_instances_will_be_updated_c": "Update of {num} instance will start in a moment... | Update of {num} instances will start in a moment...",
+    "version_version_available": "Version <strong>{version}</strong> available",
     "app_categories": {
       "collaboration": "Collaboration",
       "system_administration": "System administration",
