@@ -205,14 +205,8 @@ export default {
       // hide modal
       this.$emit("hide");
     },
-    removeInternalProviderValidationFailed(validationErrors, taskContext) {
+    removeInternalProviderValidationFailed(validationErrors) {
       this.loading.removeInternalProvider = false;
-
-      // unregister to task progress
-      this.$root.$off(
-        `${taskContext.action}-progress-${taskContext.extra.eventId}`
-      );
-
       let focusAlreadySet = false;
 
       for (const validationError of validationErrors) {
@@ -226,13 +220,8 @@ export default {
         }
       }
     },
-    removeInternalProviderCompleted(taskContext) {
+    removeInternalProviderCompleted() {
       this.loading.removeInternalProvider = false;
-
-      // unregister to task progress
-      this.$root.$off(
-        `${taskContext.action}-progress-${taskContext.extra.eventId}`
-      );
 
       // hide modal
       this.$emit("hide");

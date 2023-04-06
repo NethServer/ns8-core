@@ -3,24 +3,24 @@
   SPDX-License-Identifier: GPL-3.0-or-later
 -->
 <template>
-  <div class="bx--grid bx--grid--full-width">
-    <div class="bx--row">
-      <div class="bx--col-lg-16 page-title">
+  <cv-grid fullWidth>
+    <cv-row>
+      <cv-column class="page-title">
         <h2>{{ $t("nodes.title") }}</h2>
-      </div>
-    </div>
-    <div v-if="error.getClusterStatus" class="bx--row">
-      <div class="bx--col">
+      </cv-column>
+    </cv-row>
+    <cv-row v-if="error.getClusterStatus">
+      <cv-column>
         <NsInlineNotification
           kind="error"
           :title="$t('action.get-cluster-status')"
           :description="error.getClusterStatus"
           :showCloseButton="false"
         />
-      </div>
-    </div>
-    <div v-if="nodesOffline.length" class="bx--row">
-      <div class="bx--col">
+      </cv-column>
+    </cv-row>
+    <cv-row v-if="nodesOffline.length">
+      <cv-column>
         <NsInlineNotification
           kind="error"
           :title="
@@ -33,44 +33,41 @@
           "
           :showCloseButton="false"
         />
-      </div>
-    </div>
-    <div v-if="error.getNodeStatus" class="bx--row">
-      <div class="bx--col">
+      </cv-column>
+    </cv-row>
+    <cv-row v-if="error.getNodeStatus">
+      <cv-column>
         <NsInlineNotification
           kind="error"
           :title="$t('action.get-node-status')"
           :description="error.getNodeStatus"
           :showCloseButton="false"
         />
-      </div>
-    </div>
-    <div class="bx--row toolbar">
-      <div class="bx--col">
+      </cv-column>
+    </cv-row>
+    <cv-row class="toolbar">
+      <cv-column>
         <NsButton
           kind="secondary"
           :icon="Add20"
           @click="q.isShownAddNodeModal = true"
           >{{ $t("nodes.add_node_to_cluster") }}</NsButton
         >
-      </div>
-    </div>
-    <div class="bx--row" v-if="loading.nodes">
-      <div v-for="index in 2" :key="index" class="bx--col-md-4 bx--col-max-4">
+      </cv-column>
+    </cv-row>
+    <cv-row v-if="loading.nodes">
+      <cv-column v-for="index in 2" :key="index" :md="4" :max="4">
         <cv-tile light>
           <cv-skeleton-text
             :paragraph="true"
             :line-count="9"
+            heading
           ></cv-skeleton-text>
         </cv-tile>
-      </div>
-    </div>
-    <div class="bx--row" v-else>
-      <div
-        v-for="node in nodes"
-        :key="node.id"
-        class="bx--col-md-4 bx--col-max-4"
-      >
+      </cv-column>
+    </cv-row>
+    <cv-row v-else>
+      <cv-column v-for="node in nodes" :key="node.id" :md="4" :max="4">
         <NodeCard
           v-if="!nodesStatus[node.id]"
           :nodeId="node.id"
@@ -79,7 +76,24 @@
           light
           loading
           :online="node.online"
-        />
+        >
+          <template #menu>
+            <cv-overflow-menu
+              v-if="node.id !== leaderNode.id"
+              :flip-menu="true"
+              tip-position="top"
+              tip-alignment="end"
+              class="top-right-overflow-menu"
+            >
+              <cv-overflow-menu-item danger @click="showRemoveNodeModal(node)">
+                <NsMenuItem
+                  :icon="TrashCan20"
+                  :label="$t('nodes.remove_from_cluster')"
+                />
+              </cv-overflow-menu-item>
+            </cv-overflow-menu>
+          </template>
+        </NodeCard>
         <NodeCard
           v-else
           :nodeId="node.id"
@@ -136,6 +150,16 @@
               <cv-overflow-menu-item @click="goToFirewall(node)">
                 <NsMenuItem :icon="Firewall20" :label="$t('firewall.title')" />
               </cv-overflow-menu-item>
+              <cv-overflow-menu-item
+                v-if="node.id !== leaderNode.id"
+                danger
+                @click="showRemoveNodeModal(node)"
+              >
+                <NsMenuItem
+                  :icon="TrashCan20"
+                  :label="$t('nodes.remove_from_cluster')"
+                />
+              </cv-overflow-menu-item>
             </cv-overflow-menu>
           </template>
           <template #content>
@@ -147,8 +171,8 @@
             >
           </template>
         </NodeCard>
-      </div>
-    </div>
+      </cv-column>
+    </cv-row>
     <!-- add node modal -->
     <NsModal
       size="default"
@@ -158,10 +182,17 @@
       <template slot="title">{{ $t("nodes.add_node_to_cluster") }}</template>
       <template slot="content">
         <ol class="mg-bottom-md">
-          <li>{{ $t("nodes.add_node_to_cluster_step_1") }}</li>
+          <li
+            v-html="
+              $t('nodes.add_node_to_cluster_step_1', {
+                product: this.$root.config.PRODUCT_NAME,
+              })
+            "
+          ></li>
           <li v-html="$t('nodes.add_node_to_cluster_step_2')"></li>
           <li v-html="$t('nodes.add_node_to_cluster_step_3')"></li>
-          <li>{{ $t("nodes.add_node_to_cluster_step_4") }}</li>
+          <li v-html="$t('nodes.add_node_to_cluster_step_4')"></li>
+          <li v-html="$t('nodes.add_node_to_cluster_step_5')"></li>
         </ol>
         <span class="join-code">{{ $t("common.join_code") }}</span>
         <!-- copy to clipboard hint -->
@@ -241,7 +272,13 @@
         $t("nodes.edit_node_label")
       }}</template>
     </NsModal>
-  </div>
+    <!-- remove node modal -->
+    <RemoveNodeModal
+      :isShown="isShownRemoveNodeModal"
+      :node="nodeToRemove"
+      @hide="hideRemoveNodeModal"
+    />
+  </cv-grid>
 </template>
 
 <script>
@@ -255,10 +292,11 @@ import {
 import to from "await-to-js";
 import { mapState, mapActions } from "vuex";
 import NodeCard from "@/components/misc/NodeCard";
+import RemoveNodeModal from "@/components/nodes/RemoveNodeModal";
 
 export default {
   name: "Nodes",
-  components: { NodeCard },
+  components: { NodeCard, RemoveNodeModal },
   mixins: [
     TaskService,
     UtilService,
@@ -283,6 +321,8 @@ export default {
       currentNode: null,
       newNodeLabel: "",
       isShownSetNodeLabelModal: false,
+      isShownRemoveNodeModal: false,
+      nodeToRemove: null,
       loading: {
         nodes: true,
         setNodeLabel: false,
@@ -543,6 +583,13 @@ export default {
         path: "/settings/tls-certificates",
         query: { selectedNodeId: node.id },
       });
+    },
+    showRemoveNodeModal(node) {
+      this.nodeToRemove = node;
+      this.isShownRemoveNodeModal = true;
+    },
+    hideRemoveNodeModal() {
+      this.isShownRemoveNodeModal = false;
     },
   },
 };

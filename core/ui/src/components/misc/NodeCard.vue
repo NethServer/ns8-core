@@ -25,7 +25,11 @@
       />
     </div>
     <div v-else-if="loading" class="row node-card-skeleton">
-      <cv-skeleton-text :paragraph="true" :line-count="5"></cv-skeleton-text>
+      <cv-skeleton-text
+        :paragraph="true"
+        :line-count="6"
+        heading
+      ></cv-skeleton-text>
     </div>
     <div v-else class="table-wrapper">
       <div class="table">

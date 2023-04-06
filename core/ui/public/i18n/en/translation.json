@@ -347,7 +347,8 @@
     "get-smarthost": "Get smarthost settings",
     "set-smarthost": "Set smarthost settings",
     "list-users": "List cluster administrators",
-    "get-user-info": "Get user info"
+    "get-user-info": "Get user info",
+    "remove-node": "Remove node"
   },
   "network": {
     "title": "Network"
@@ -1005,10 +1006,11 @@
   "nodes": {
     "title": "Nodes",
     "add_node_to_cluster": "Add node to cluster",
-    "add_node_to_cluster_step_1": "Copy join code in the box below",
-    "add_node_to_cluster_step_2": "Go to <strong><code>https://NEW_NODE_IP/cluster-admin/</code></strong>",
-    "add_node_to_cluster_step_3": "Select <strong>Join cluster</strong>",
-    "add_node_to_cluster_step_4": "Paste join code",
+    "add_node_to_cluster_step_1": "Install {product} on the new node",
+    "add_node_to_cluster_step_2": "Copy the join code in the box below",
+    "add_node_to_cluster_step_3": "Go to <strong><code>https://NEW_NODE_IP/cluster-admin/</code></strong>",
+    "add_node_to_cluster_step_4": "Select <strong>Join cluster</strong>",
+    "add_node_to_cluster_step_5": "Paste the join code",
     "leader": "leader",
     "worker": "worker",
     "cpu_usage": "CPU usage",
@@ -1025,7 +1027,14 @@
     "node_is_offline": "Node is offline",
     "nodes_offline_c": "{num} node is offline | {num} nodes are offline",
     "nodes_offline_description_c": "Check node status and connectivity | Check nodes status and connectivity",
-    "node_is_offline_description": "Check node status and connectivity"
+    "node_is_offline_description": "Check node status and connectivity",
+    "remove_from_cluster": "Remove from cluster",
+    "remove_node_from_cluster": "Remove node from cluster",
+    "remove_node_confirm": "Remove <strong>{name}</strong> from the cluster? This action is <strong>NOT</strong> reversible",
+    "understood_remove_node": "I understand, remove node",
+    "validation_node_is_leader": "Cannot remove leader node",
+    "validation_node_in_use": "The node cannot be removed because the following app is installed on it: <strong>{apps}</strong> | The node cannot be removed because the following apps are installed on it: <strong>{apps}</strong>",
+    "validation_node_not_found": "Node not found"
   },
   "node_detail": {
     "title": "Node detail",

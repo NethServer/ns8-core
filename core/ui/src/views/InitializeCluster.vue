@@ -749,25 +749,27 @@
             <WelcomeLogo />
           </cv-column>
         </cv-row>
-        <cv-row>
-          <cv-column>
-            <div class="title-description">
-              {{ $t("init.redirect_cluster_description") }}
-            </div>
-          </cv-column>
-        </cv-row>
-        <cv-row class="mg-top-xlg">
-          <cv-column>
-            <a
-              :href="this.joinEndpoint + '/cluster-admin/'"
-              class="external-link-button"
-            >
-              <NsButton kind="primary" :icon="ArrowRight20">
-                {{ $t("init.redirect_cluster_link") }}
-              </NsButton>
-            </a>
-          </cv-column>
-        </cv-row>
+        <cv-tile light>
+          <cv-row>
+            <cv-column>
+              <div>
+                {{ $t("init.redirect_cluster_description") }}
+              </div>
+            </cv-column>
+          </cv-row>
+          <cv-row class="mg-top-xlg">
+            <cv-column>
+              <a
+                :href="this.joinEndpoint + '/cluster-admin/'"
+                class="external-link-button"
+              >
+                <NsButton kind="primary" :icon="ArrowRight20">
+                  {{ $t("init.redirect_cluster_link") }}
+                </NsButton>
+              </a>
+            </cv-column>
+          </cv-row>
+        </cv-tile>
       </template>
     </cv-grid>
     <SkipRestoreAppsModal
