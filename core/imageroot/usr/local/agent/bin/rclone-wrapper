@@ -81,10 +81,12 @@ else:
     raise Exception(f"Scheme {uscheme} not supported")
 
 # Build the Podman+Rclone command line
+container_name = "rclone-wrapper-" + os.environ.get('MODULE_ID', os.environ["AGENT_ID"]) + "-" + str(os.getpid())
 exec_args = [
     "podman", "run",
     "-i", "--attach=stdin", "--attach=stdout", "--attach=stderr",
     "--env=RCLONE*", "--network=host", "--rm",
+    "--name=" + container_name,
     rclone_image,
     ] + sys.argv[2:]
 
