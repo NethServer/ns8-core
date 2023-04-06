@@ -420,6 +420,7 @@ func BasicAuthModule(c *gin.Context) {
 		utils.LogError(errors.Wrap(err, "[BASIC AUTH] redis authentication failed for user "+username))
 
 		// response
+		c.Header("WWW-Authenticate", `Basic realm="restricted", charset="UTF-8"`)
 		c.JSON(http.StatusUnauthorized, structs.Map(response.StatusUnauthorized{
 			Code:    401,
 			Message: "basic auth failed. username or password invalid",
