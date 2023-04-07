@@ -186,16 +186,10 @@ export default {
 
       // hide modal
       this.$emit("hide");
-
-      // reload nodes
       this.$emit("nodeRemoved");
     },
   },
 };
 </script>
 
-<style scoped lang="scss">
-.mg-top-2 {
-  margin-top: 2rem;
-}
-</style>
+<style scoped lang="scss"></style>
