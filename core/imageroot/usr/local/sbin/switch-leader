@@ -21,9 +21,11 @@ self_id = int(os.environ['NODE_ID'])
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument('node_id', type=int, help="Node ID of the new leader")
+parser.add_argument('--endpoint', required=False, help="Override VPN endpoint setting in Redis DB")
+parser.add_argument('--node', required=True, type=int, help="Node ID of the new leader")
 args = parser.parse_args()
-node_id = args.node_id
+node_id = args.node
+node_endpoint = args.endpoint
 
 # This command runs under the cluster environment. It always point to the local
 # Redis instance and has admin privileges over it.
@@ -31,7 +33,16 @@ rdb = agent.redis_connect(privileged=True)
 
 leader_id = int(rdb.hget('cluster/environment', 'NODE_ID') or "0")
 
-node_endpoint = rdb.hget(f'node/{node_id}/vpn', 'endpoint')
+if not node_endpoint:
+    # Fall back to Redis value
+    node_endpoint = rdb.hget(f'node/{node_id}/vpn', 'endpoint')
+
+try:
+    int(node_endpoint.rsplit(":", 1)[1])
+except Exception as ex:
+    print(f"[ERROR] Missing \":port\" number suffix in VPN endpoint (internal error: {ex})", file=sys.stderr)
+    sys.exit(2)
+
 if not node_endpoint:
     print(f"[ERROR] Node {node_id} has no VPN endpoint.", file=sys.stderr)
     sys.exit(2)
@@ -42,6 +53,8 @@ agent.assert_exp(node_ipaddr) # FATAL error. The designed node has a malformed V
 # Every node initally becomes a Redis master, just to fix the leader NODE_ID
 agent.assert_exp(rdb.execute_command("REPLICAOF", "NO", "ONE") == "OK")
 rdb.hset("cluster/environment", "NODE_ID", str(node_id))
+if args.endpoint: # Fix also the node endpoint, if given
+    rdb.hset(f'node/{node_id}/vpn', 'endpoint', node_endpoint)
 
 if node_id == self_id: # Promote this node to leader role
     node_ipaddr="127.0.0.1" # Override IP address cluster-leader record in /etc/hosts
@@ -64,6 +77,9 @@ else: # Become a replica of the new leader node
     else:
         print("[ERROR] Redis REPLICAOF failed: " + command_reply, file=sys.stderr)
         sys.exit(1)
+
+# Write new Redis configuration to disk.
+agent.assert_exp(rdb.execute_command('CONFIG REWRITE') == 'OK')
 
 # Fix /etc/hosts cluster-leader record
 agent.run_helper('sed', '-i',
