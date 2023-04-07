@@ -78,7 +78,8 @@
     "selected_l": "selected",
     "user_input_l": "user input",
     "tab_navigation": "Tab navigation",
-    "warning": "Warning"
+    "warning": "Warning",
+    "remember": "Remember"
   },
   "error": {
     "error": "Error",
@@ -348,7 +349,8 @@
     "set-smarthost": "Set smarthost settings",
     "list-users": "List cluster administrators",
     "get-user-info": "Get user info",
-    "remove-node": "Remove node"
+    "remove-node": "Remove node",
+    "promote-node": "Promote node"
   },
   "network": {
     "title": "Network"
@@ -1035,7 +1037,24 @@
     "understood_remove_node": "I understand, remove node",
     "validation_node_is_leader": "Cannot remove leader node",
     "validation_node_in_use": "The node cannot be removed because the following app is installed on it: <strong>{apps}</strong> | The node cannot be removed because the following apps are installed on it: <strong>{apps}</strong>",
-    "validation_node_not_found": "Node not found"
+    "validation_node_not_found": "Node not found",
+    "remove_node_apps_confirm": "The following app is installed on {node}: <strong>{nodeApps}</strong>.<br>If you remove the node, <strong>{nodeApps} will be removed as well</strong>. | The following apps are installed on {node}: <strong>{nodeApps}</strong>.<br>If you remove the node, <strong>these apps will be removed as well</strong>.",
+    "promote_to_leader": "Promote to leader",
+    "promote_node_to_leader": "Promote node to leader",
+    "promote_node_confirm": "<strong>{name}</strong> will be promoted to leader role.",
+    "type_to_confirm_promotion": "Type <strong>{name}</strong> to confirm node promotion",
+    "node_vpn_endpoint_address": "{node} VPN endpoint address",
+    "node_vpn_endpoint_address_tooltip": "Make sure this VPN endpoint address is reachable by all other cluster nodes",
+    "node_vpn_endpoint_port": "{node} VPN endpoint port",
+    "understood_promote_node": "I understand, promote node",
+    "reset_backup_encryption_password_info": "After node promotion, go to <strong>Backup</strong> section and reset backup encryption password",
+    "new_cluster_admin_message": "From now on, cluster administration will be available at:<br><code>https://{endpointAddress}/cluster-admin/</code>",
+    "check_node_connectivity": "Check node connectivity",
+    "cannot_promote_node": "Cannot promote node",
+    "validation_node_endpoint_not_found": "Node endpoint not found",
+    "validation_node_replica_not_found": "Node replica not found",
+    "go_to_cluster_admin": "Go to cluster administration",
+    "promotion_completed": "Promotion completed"
   },
   "node_detail": {
     "title": "Node detail",
