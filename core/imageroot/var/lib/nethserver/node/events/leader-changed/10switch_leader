@@ -12,6 +12,6 @@ if [[ "${AGENT_EVENT_SOURCE}" != cluster ]]; then
     exit 2
 fi
 
-node_id=$(jq -r .node_id)
+read -r node_id endpoint < <(jq -r '.node_id, .endpoint')
 
-exec /usr/local/sbin/switch-leader "${node_id}"
+exec /usr/local/sbin/switch-leader --node "${node_id}" --endpoint "${endpoint}"

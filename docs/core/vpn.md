@@ -22,7 +22,7 @@ Changing the cluster leader implies all VPN connections must be
 reconfigured to point to the new VPN hub. The future leader node must
 provide a VPN endpoint that is reachable by any other node. For this
 reason, **be prepared in advance** to deal with a leader failure by
-configuring a reachable endpoint address on one or more worker nodes!
+providing a reachable endpoint address on one or more worker nodes!
 
 For instance if node with ID `3` has a public and static IP address
 `1.2.3.4` log on the leader node and run the following command:
@@ -37,7 +37,7 @@ When the promotion time comes and depending on the old leader node state,
 an automatic or manual procedure executes the new leader promotion.
 
 - If the old leader node is alive, it can notify the cluster nodes to do
-  the change automatically.
+  the switch automatically to the new leader
 
 - If the old leader node is dead, a manual change is needed on every node.
 
@@ -49,10 +49,15 @@ Assuming `3` is the node ID of the new leader,
 
 1. run the `promote-node` action:
 
-       api-cli run promote-node --data '{"node_id":3}'
+       api-cli run promote-node --data '{"node_id":3, "endpoint_address":"node3.example.com", "endpoint_port":55820}'
 
 In a few seconds the change is propagated to all nodes and the old leader
 becomes a worker.
+
+The endpoint address is validated with a HTTPS request. We expect that
+cluster-admin is running on the endpoint. If this check passes, but VPN
+connection fails for any reason, apply the "Dead leader" procedure
+described in the next section.
 
 ### Dead leader
 
@@ -61,7 +66,7 @@ Assuming `3` is the node ID of the new leader, for each worker node
 1. log on to the worker node
 1. run the following command for each of them:
 
-       switch-leader 3
+       switch-leader --node 3 --endpoint node3.example.com:55820
 
 The order of the nodes is not important but it is wise to start with the
 new leader node.
