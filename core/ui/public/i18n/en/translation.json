@@ -1051,7 +1051,8 @@
     "new_cluster_admin_message": "From now on, cluster administration will be available at:<br><code>https://{endpointAddress}/cluster-admin/</code>",
     "check_node_connectivity": "Check node connectivity",
     "cannot_promote_node": "Cannot promote node",
-    "validation_node_endpoint_not_found": "Node endpoint not found",
+    "validation_node_is_already_leader": "Node already has leader role",
+    "validation_endpoint_address_not_reachable": "VPN endpoint address is not reachable, please check it again. If you know what you are doing and want to skip this check, deselect <strong>Check node connectivity</strong> and try again",
     "validation_node_replica_not_found": "Node replica not found",
     "go_to_cluster_admin": "Go to cluster administration",
     "promotion_completed": "Promotion completed"

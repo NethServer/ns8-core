@@ -59,6 +59,7 @@
         <NsCheckbox
           :label="$t('nodes.check_node_connectivity')"
           v-model="checkNodeConnectivity"
+          :disabled="loading.promoteNode"
           value="checkNodeConnectivity"
         />
         <div
@@ -222,7 +223,9 @@ export default {
           action: taskAction,
           data: {
             node_id: this.node.id,
-            //// endpoint, port
+            endpoint_address: this.internalVpnEndpointAddress,
+            endpoint_port: Number(this.vpnEndpointPort),
+            endpoint_validation: this.checkNodeConnectivity,
           },
           extra: {
             title: this.$t("action." + taskAction),
@@ -239,9 +242,6 @@ export default {
         this.loading.promoteNode = false;
         return;
       }
-
-      //// remove mock
-      this.promoteNodeCompleted(); ////
     },
     promoteNodeAborted(taskResult, taskContext) {
       console.error(`${taskContext.action} aborted`, taskResult);
