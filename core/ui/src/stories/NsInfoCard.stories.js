@@ -6,6 +6,16 @@ import TrashCan20 from "@carbon/icons-vue/es/trash-can/20";
 export default {
   title: "Components/NsInfoCard",
   component: NsInfoCard,
+  argTypes: {
+    titleTooltipAlignment: {
+      options: ["start", "center", "end"],
+      control: { type: "radio" },
+    },
+    titleTooltipDirection: {
+      options: ["top", "right", "bottom", "left"],
+      control: { type: "radio" },
+    },
+  },
 };
 
 const Template = (args, { argTypes }) => ({
@@ -24,6 +34,8 @@ Default.args = {
   title: "Card title",
   description: "Card description",
   titleTooltip: "",
+  titleTooltipAlignment: "center",
+  titleTooltipDirection: "bottom",
   loading: false,
   isErrorShown: false,
   errorTitle: "",
@@ -35,8 +47,10 @@ Default.args = {
 export const TitleTooltip = Template.bind({});
 TitleTooltip.args = {
   title: "Card title with tooltip",
-  description: "Hover card title to show tooltip",
-  titleTooltip: "This is title tooltip",
+  description: "Card description",
+  titleTooltip: "This is a tooltip",
+  titleTooltipAlignment: "center",
+  titleTooltipDirection: "bottom",
   loading: false,
   isErrorShown: false,
   errorTitle: "",
@@ -50,6 +64,8 @@ Loading.args = {
   title: "Card title",
   description: "Card description",
   titleTooltip: "",
+  titleTooltipAlignment: "center",
+  titleTooltipDirection: "bottom",
   loading: true,
   isErrorShown: false,
   errorTitle: "",
@@ -63,6 +79,8 @@ Error.args = {
   title: "Card title",
   description: "Card description",
   titleTooltip: "",
+  titleTooltipAlignment: "center",
+  titleTooltipDirection: "bottom",
   loading: false,
   isErrorShown: true,
   errorTitle: "Error title",
@@ -106,6 +124,8 @@ OverflowMenu.args = {
   title: "Card title",
   description: "Card description",
   titleTooltip: "",
+  titleTooltipAlignment: "center",
+  titleTooltipDirection: "bottom",
   loading: false,
   isErrorShown: false,
   errorTitle: "",
