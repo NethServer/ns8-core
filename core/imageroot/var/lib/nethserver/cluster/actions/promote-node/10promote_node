@@ -28,6 +28,8 @@ def is_endpoint_reachable(epaddr):
 request = json.load(sys.stdin)
 
 node_id = request['node_id']
+endpoint_address = request["endpoint_address"]
+endpoint_port = request["endpoint_port"]
 self_id = int(os.environ['NODE_ID'])
 is_endpoint_validation_enabled = request.get("endpoint_validation", True)
 
@@ -36,7 +38,7 @@ if node_id == self_id:
     json.dump([{'field':'node_id', 'parameter':'node_id', 'value':node_id, 'error':'node_is_already_leader'}], fp=sys.stdout)
     sys.exit(3)
 
-if is_endpoint_validation_enabled and not is_endpoint_reachable(request["endpoint_address"]):
+if is_endpoint_validation_enabled and not is_endpoint_reachable(endpoint_address):
     agent.set_status('validation-failed')
     json.dump([{'field':'endpoint_address', 'parameter':'endpoint_address', 'value':endpoint_address, 'error':'endpoint_address_not_reachable'}], fp=sys.stdout)
     sys.exit(4)
@@ -57,6 +59,6 @@ else: # :( not found
     json.dump([{'field':'node_id', 'parameter':'node_id', 'value':node_id, 'error':'node_replica_not_found'}], fp=sys.stdout)
     sys.exit(5)
 
-vpn_endpoint = request["endpoint_address"] + ':' + str(request["endpoint_port"])
+vpn_endpoint = endpoint_address + ':' + str(endpoint_port)
 
 rdb.publish("cluster/event/leader-changed", json.dumps({"node_id": node_id, "endpoint": vpn_endpoint}))
