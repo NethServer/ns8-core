@@ -17,14 +17,31 @@ rdb = agent.redis_connect(privileged=True)
 
 # Delete the node account
 rdb.execute_command('ACL', 'DELUSER', 'node/' + tnode_id)
-rdb.execute_command('ACL', 'SAVE')
 
-agent.save_acls(rdb)
-agent.set_progress(19)
-
-# Delete the target node keyspace
 node_keys = set(knode for knode in rdb.scan_iter(f'node/{tnode_id}/*'))
-rdb.delete(*node_keys)
+
+remove_module_keys = set()
+
+# Iterate over all known modules, skipping those installed on remaining nodes
+for xmodule_id, xnode_id in rdb.hgetall('cluster/module_node').items():
+    if xnode_id != tnode_id:
+        continue
+
+    # Delete the module account
+    rdb.execute_command('ACL', 'DELUSER', 'module/' + xmodule_id)
+
+    # Store module keys to remove them later:
+    remove_module_keys |= set(kmod for kmod in rdb.scan_iter(f'module/{xmodule_id}/*')) | {
+        f'roles/module/{xmodule_id}',
+        f'cluster/authorizations/module/{xmodule_id}',
+    }
+
+# Save and propagate Redis ACLs
+rdb.execute_command('ACL', 'SAVE')
+agent.save_acls(rdb)
+
+# Delete the target node keyspace and the keys of any module installed on it:
+rdb.delete(*(node_keys | remove_module_keys))
 
 # Reconfigure VPN routes of remaining nodes
 rdb.publish('cluster/event/vpn-changed', json.dumps({"node_id": tnode_id}))
