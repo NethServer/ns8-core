@@ -124,10 +124,12 @@ for node_id in destmap:
         valid_destinations.append(xdest.removesuffix('/32'))
 
 #
-# Purge the route table from stale entries
+# Purge the route table from stale entries of removed nodes, considering
+# only IPs routed through interface wg0.
 #
 iproute_proc = subprocess.run(['ip', '-j', 'route', 'list', 'dev', 'wg0'], stdout=subprocess.PIPE)
 if iproute_proc.returncode == 0:
+    purge_destinations = set() # This set is used to take note of IPs routed through wg0 that are removed
     routes = json.loads(iproute_proc.stdout)
     for route_object in routes:
         ydest = route_object['dst']
@@ -136,6 +138,21 @@ if iproute_proc.returncode == 0:
             if ipdelete_proc.returncode != 0:
                 print(agent.SD_ERR + f"Error while removing the stale destination {ydest}", file=sys.stderr)
                 errors += 1
+            purge_destinations.add(ydest)
+
+    # Check if entries in purge_destinations must be removed from allowed-ips of each VPN peer
+    wgshow_proc = subprocess.run(['wg', 'show', 'wg0', 'allowed-ips'], stdout=subprocess.PIPE, text=True)
+    if wgshow_proc.returncode == 0:
+        for wgrecord in filter(None, wgshow_proc.stdout.split("\n")):
+            kpeer, raw_ips = wgrecord.split("\t", 1)
+            allowed_ips = set(eip.removesuffix("/32") for eip in raw_ips.split())
+            if allowed_ips.intersection(purge_destinations):
+                # Remove entries in purge_destinations that overlap with allowed_ips
+                # NOTE: allowed_ips might be empty, set it anyway: Wireguard
+                #       accepts a peer key even with no allowed ips.
+                allowed_ips -= purge_destinations
+                agent.run_helper('wg', 'set', 'wg0', 'peer', kpeer, 'allowed-ips', ",".join(allowed_ips))
+
 else:
     print(agent.SD_ERR + f"Error while reading wg0 routes", file=sys.stderr)
     errors += 1
