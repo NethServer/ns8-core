@@ -34,9 +34,9 @@
             })
           "
           v-model.trim="internalVpnEndpointAddress"
-          :invalid-message="$t(error.vpnEndpointAddress)"
+          :invalid-message="$t(error.endpoint_address)"
           :disabled="loading.promoteNode"
-          ref="vpnEndpointAddress"
+          ref="endpoint_address"
         >
           <template #tooltip>{{
             $t("nodes.node_vpn_endpoint_address_tooltip")
@@ -49,11 +49,11 @@
             })
           "
           v-model.trim="vpnEndpointPort"
-          :invalid-message="$t(error.vpnEndpointPort)"
+          :invalid-message="$t(error.endpoint_port)"
           :disabled="loading.promoteNode"
           type="number"
           class="narrow"
-          ref="vpnEndpointPort"
+          ref="endpoint_port"
         >
         </NsTextInput>
         <NsCheckbox
@@ -114,8 +114,9 @@ export default {
   },
   data() {
     return {
+      DEFAULT_ENDPOINT_PORT: "55820",
       internalVpnEndpointAddress: "",
-      vpnEndpointPort: "55820",
+      vpnEndpointPort: "",
       userInput: "",
       checkNodeConnectivity: true,
       loading: {
@@ -123,20 +124,21 @@ export default {
       },
       error: {
         promoteNode: "",
-        vpnEndpointAddress: "",
-        vpnEndpointPort: "",
+        endpoint_address: "",
+        endpoint_port: "",
       },
     };
   },
   watch: {
     isShown: function () {
       if (this.isShown) {
+        this.vpnEndpointPort = this.DEFAULT_ENDPOINT_PORT;
         this.userInput = "";
         this.internalVpnEndpointAddress = this.vpnEndpointAddress;
         this.clearErrors();
 
         setTimeout(() => {
-          this.focusElement("vpnEndpointAddress");
+          this.focusElement("endpoint_address");
         }, 300);
       }
     },
@@ -162,10 +164,10 @@ export default {
       // VPN endpoint address
 
       if (!this.internalVpnEndpointAddress) {
-        this.error.vpnEndpointAddress = this.$t("common.required");
+        this.error.endpoint_address = this.$t("common.required");
 
         if (isValidationOk) {
-          this.focusElement("vpnEndpointAddress");
+          this.focusElement("endpoint_address");
           isValidationOk = false;
         }
       }
@@ -173,10 +175,10 @@ export default {
       // VPN endpoint port
 
       if (!this.vpnEndpointPort) {
-        this.error.vpnEndpointPort = this.$t("common.required");
+        this.error.endpoint_port = this.$t("common.required");
 
         if (isValidationOk) {
-          this.focusElement("vpnEndpointPort");
+          this.focusElement("endpoint_port");
           isValidationOk = false;
         }
       }
@@ -253,12 +255,28 @@ export default {
     },
     promoteNodeValidationFailed(validationErrors) {
       this.loading.promoteNode = false;
+      let focusAlreadySet = false;
 
       for (const validationError of validationErrors) {
-        // set i18n error message
-        this.error.promoteNode = this.$t(
-          "nodes.validation_" + validationError.error
-        );
+        if (
+          validationError.parameter === "node_id" ||
+          validationError.error === "endpoint_address_not_reachable"
+        ) {
+          this.error.promoteNode = this.$t(
+            "nodes.validation_" + validationError.error
+          );
+        } else {
+          const param = validationError.parameter;
+
+          this.error[param] = this.$t(
+            "nodes.validation_" + validationError.error
+          );
+
+          if (!focusAlreadySet) {
+            this.focusElement(param);
+            focusAlreadySet = true;
+          }
+        }
       }
     },
     promoteNodeCompleted() {
