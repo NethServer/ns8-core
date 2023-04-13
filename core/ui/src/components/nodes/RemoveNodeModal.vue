@@ -243,6 +243,9 @@ export default {
 
       // reload nodes
       this.$emit("nodeRemoved");
+
+      // reload app drawer (any apps on the node have been removed)
+      this.$root.$emit("reloadAppDrawer");
     },
     async listInstalledModules() {
       this.loading.listInstalledModules = true;
