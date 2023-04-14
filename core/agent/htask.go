@@ -339,20 +339,32 @@ func listenActionsAsync(brpopCtx context.Context, complete chan int) {
 		OnConnect: setClientNameCallback,
 	})
 
+	var lastPopErr error = nil // Clear the last error buffer
+
 	for { // Action listen loop
 		var task models.Task
 
 		// Pop the task from the agent tasks queue
 		popResult, popErr := rdb.BRPop(brpopCtx, pollingDuration, agentPrefix+"/tasks").Result()
 		if popErr == redis.Nil {
+			// poll timeout, it's ok: start a new cycle
+			lastPopErr = nil // Clear the last error buffer
 			continue
 		} else if brpopCtx.Err() != nil {
 			break
 		} else if popErr != nil {
-			log.Print(SD_ERR+"Task queue pop error: ", popErr)
+			// Avoid error log repetitions: print the error only if it is
+			// different from the value in the last error buffer
+			if lastPopErr == nil || popErr.Error() != lastPopErr.Error() {
+				log.Print(SD_ERR+"Task queue pop error: ", popErr)
+				lastPopErr = popErr // set the last error buffer
+			}
 			time.Sleep(pollingDuration)
 			continue
 		}
+		// Task popped from the queue
+
+		lastPopErr = nil // Clear the last error buffer
 
 		if err := json.Unmarshal([]byte(popResult[1]), &task); err != nil {
 			log.Print(SD_ERR+"Task ignored for decoding error: ", err)
