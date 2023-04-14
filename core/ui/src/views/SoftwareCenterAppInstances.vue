@@ -118,7 +118,8 @@
             <cv-tile light>
               <cv-skeleton-text
                 :paragraph="true"
-                :line-count="8"
+                :line-count="7"
+                heading
               ></cv-skeleton-text>
             </cv-tile>
           </cv-column>
