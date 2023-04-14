@@ -1,6 +1,7 @@
 {
   "common": {
     "details": "Details",
+    "see_details": "See details",
     "copy_to_clipboard": "Copy to clipboard",
     "copied_to_clipboard": "Copied!",
     "show_more": "Show more",
@@ -749,7 +750,7 @@
     "update_available": "Update available",
     "core_update": "Core update",
     "app_updates": "App updates",
-    "update_details": "Update details",
+    "review_and_update": "Review and update",
     "core_apps": "Core apps",
     "update_all_instances": "Update all instances",
     "update_app_instances": "Update {app} instances",

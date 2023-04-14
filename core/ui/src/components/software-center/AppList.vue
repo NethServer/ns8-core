@@ -7,7 +7,8 @@
             <cv-tile kind="standard" class="app" :light="light">
               <cv-skeleton-text
                 :paragraph="true"
-                :line-count="9"
+                :line-count="7"
+                heading
               ></cv-skeleton-text>
             </cv-tile>
           </cv-column>
@@ -61,10 +62,10 @@
               <div v-if="app.id == 'core'" class="app-row">
                 <NsButton
                   kind="ghost"
-                  :icon="Search20"
+                  :icon="ArrowRight20"
                   size="field"
                   @click="showCoreAppModal()"
-                  >{{ $t("software_center.update_details") }}</NsButton
+                  >{{ $t("software_center.review_and_update") }}</NsButton
                 >
               </div>
               <div
@@ -77,14 +78,14 @@
                   <cv-link to="/domains">{{ $t("domains.title") }}</cv-link>
                 </span>
               </div>
-              <div v-else-if="tab == 'updates'">
+              <div v-else-if="tab == 'updates'" class="app-row">
                 <!-- app has an update -->
                 <NsButton
                   kind="ghost"
-                  :icon="Search20"
+                  :icon="ArrowRight20"
                   size="field"
                   @click="goToSoftwareCenterAppInstances(app)"
-                  >{{ $t("software_center.update_details") }}</NsButton
+                  >{{ $t("software_center.review_and_update") }}</NsButton
                 >
               </div>
               <div
