@@ -24,6 +24,7 @@ import (
 	"context"
 	"encoding/csv"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -339,7 +340,12 @@ func listenActionsAsync(brpopCtx context.Context, complete chan int) {
 		OnConnect: setClientNameCallback,
 	})
 
-	var lastPopErr error = nil // Clear the last error buffer
+	// Ignore the credential error on agent startup
+	//
+	// Initialize to a well-known error condition, to avoid log pollution
+	// and false alarms. When an agent is created its credentials might be
+	// still not stored in the leader node Redis instance:
+	var lastPopErr error = errors.New("WRONGPASS invalid username-password pair or user is disabled.")
 
 	for { // Action listen loop
 		var task models.Task
