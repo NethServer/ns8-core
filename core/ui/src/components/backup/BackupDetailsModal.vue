@@ -1,3 +1,7 @@
+<!--
+  Copyright (C) 2023 Nethesis S.r.l.
+  SPDX-License-Identifier: GPL-3.0-or-later
+-->
 <template>
   <NsModal size="default" :visible="isShown" @modal-hidden="$emit('hide')">
     <template slot="title">{{ $t("backup.backup_details") }}</template>
