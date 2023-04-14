@@ -160,8 +160,8 @@
                               :data-test-id="row.name + '-details'"
                             >
                               <NsMenuItem
-                                :icon="ZoomIn20"
-                                :label="$t('common.details')"
+                                :icon="ArrowRight20"
+                                :label="$t('common.see_details')"
                               />
                             </cv-overflow-menu-item>
                             <cv-overflow-menu-item
