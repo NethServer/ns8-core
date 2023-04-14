@@ -326,9 +326,9 @@
                   <div class="row actions">
                     <NsButton
                       kind="ghost"
-                      :icon="ZoomIn20"
+                      :icon="ArrowRight20"
                       @click="showRepoDetailsModal(repo)"
-                      >{{ $t("common.details") }}
+                      >{{ $t("common.see_details") }}
                     </NsButton>
                   </div>
                 </div>
@@ -531,9 +531,9 @@
                     <div class="row actions">
                       <NsButton
                         kind="ghost"
-                        :icon="ZoomIn20"
+                        :icon="ArrowRight20"
                         @click="showBackupDetailsModal(backup)"
-                        >{{ $t("common.details") }}
+                        >{{ $t("common.see_details") }}
                       </NsButton>
                     </div>
                   </div>

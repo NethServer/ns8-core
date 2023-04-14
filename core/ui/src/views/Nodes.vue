@@ -165,9 +165,9 @@
           <template #content>
             <NsButton
               kind="ghost"
-              :icon="ZoomIn20"
+              :icon="ArrowRight20"
               @click="goToNodeDetail(node.id)"
-              >{{ $t("common.details") }}</NsButton
+              >{{ $t("common.see_details") }}</NsButton
             >
           </template>
         </NodeCard>
