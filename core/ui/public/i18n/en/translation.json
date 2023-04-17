@@ -578,7 +578,8 @@
     "path_must_start_with_slash": "Path must start with a slash character \"/\"",
     "route_already_exists": "Route already exists",
     "edit_route": "Edit route",
-    "edit_route_route": "Edit route {route}"
+    "edit_route_route": "Edit route {route}",
+    "host_is_not_valid_not_localhost": "'localhost' or '127.0.0.1' can be used only if you specify a path"
   },
   "settings_tls_certificates": {
     "title": "TLS certificates",
