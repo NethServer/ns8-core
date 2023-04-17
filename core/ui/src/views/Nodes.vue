@@ -334,7 +334,7 @@ export default {
   },
   data() {
     return {
-      REFRESH_DATA_TIME_INTERVAL: 10000, //// 5000
+      REFRESH_DATA_TIME_INTERVAL: 5000,
       q: {
         isShownAddNodeModal: false,
       },
