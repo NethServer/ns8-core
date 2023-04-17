@@ -1052,7 +1052,7 @@
     "check_node_connectivity": "Check node connectivity",
     "cannot_promote_node": "Cannot promote node",
     "validation_node_is_already_leader": "Node already has leader role",
-    "validation_endpoint_address_not_reachable": "VPN endpoint address is not reachable, please check it again. If you know what you are doing and want to skip this check, deselect <strong>Check node connectivity</strong> and try again",
+    "validation_endpoint_address_not_reachable": "VPN endpoint address is not reachable, please check it again. If you know what you are doing and want to skip this check, uncheck <strong>Check node connectivity</strong> and try again",
     "validation_node_replica_not_found": "Node replica not found",
     "validation_endpoint_address_format": "Invalid format",
     "validation_endpoint_port_invalid_type": "Invalid format",
