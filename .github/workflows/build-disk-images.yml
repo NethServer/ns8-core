@@ -1,0 +1,82 @@
+name: Build NS8 disk images
+on:
+  workflow_run:
+    workflows: [core]
+    types:
+      - completed
+
+jobs:
+  core-version:
+    runs-on: ubuntu-latest
+    steps:
+      - id: python-dep
+        uses: actions/setup-python@v3
+        with:
+          python-version: 3.9
+      - id: check
+        run: |
+          pip install semver
+          python3 -c 'import semver, sys; sys.exit(1) if semver.VersionInfo.parse("${{ github.event.workflow_run.head_branch }}").prerelease else sys.exit(0)'
+  build-imges-digitalocean:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        source:
+          - digitalocean.cs
+          - digitalocean.rl
+          - digitalocean.al
+    needs:
+      - core-version
+    steps:
+      - name: Setup `packer`
+        uses: hashicorp/setup-packer@main
+      - uses: actions/checkout@v3
+        with:
+          repository: NethServer/ns8-images
+      - name: Run `packer init`
+        id: init
+        run: packer init .
+      - name: Run `packer build`
+        id: validate
+        run: packer build --only=${{ matrix.source }} .
+        env:
+          DIGITALOCEAN_TOKEN: ${{ secrets.do_token }}
+  build-imges-qemu:
+    runs-on: [self-hosted]
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        source:
+          - qemu.dn
+          - qemu.cs
+          - qemu.rl
+          - qemu.al
+    needs:
+      - core-version
+    steps:
+      - name: Setup `packer`
+        uses: hashicorp/setup-packer@main
+      - uses: actions/checkout@v3
+        with:
+          repository: NethServer/ns8-images
+      - name: Run `packer init`
+        id: init
+        run: packer init .
+      - name: Run `packer build`
+        id: validate
+        run: packer build --only=${{ matrix.source }} .
+      - id: image
+        run: |
+          IMAGE_PATH=$(cat packer-manifest.json | jq -r .builds[0].files[0].name)
+          NAME=$(basename "${IMAGE_PATH}")
+          echo "path=${IMAGE_PATH}" >> "$GITHUB_OUTPUT"
+          echo "name=${NAME}" >> "$GITHUB_OUTPUT"
+      - name: Upload NS8 image
+        uses: softprops/action-gh-release@v1
+        with:
+          name: ${{ github.event.workflow_run.head_branch }}
+          tag_name: ${{ github.event.workflow_run.head_branch }}
+          files:  ${{ steps.image.outputs.path }}
