@@ -39,7 +39,7 @@ jobs:
         run: packer init .
       - name: Run `packer build`
         id: validate
-        run: packer build --only=${{ matrix.source }} .
+        run: packer build --only=${{ matrix.source }} --var "core_version=${{ github.event.workflow_run.head_branch }}" .
         env:
           DIGITALOCEAN_TOKEN: ${{ secrets.do_token }}
   build-imges-qemu:
@@ -67,7 +67,7 @@ jobs:
         run: packer init .
       - name: Run `packer build`
         id: validate
-        run: packer build --only=${{ matrix.source }} .
+        run: packer build --only=${{ matrix.source }} --var "core_version=${{ github.event.workflow_run.head_branch }}" .
       - id: image
         run: |
           IMAGE_PATH=$(cat packer-manifest.json | jq -r .builds[0].files[0].name)
