@@ -68,15 +68,21 @@ jobs:
       - name: Run `packer build`
         id: validate
         run: packer build --only=${{ matrix.source }} --var "core_version=${{ github.event.workflow_run.head_branch }}" .
-      - id: image
+      - id: qcow2
         run: |
           IMAGE_PATH=$(cat packer-manifest.json | jq -r .builds[0].files[0].name)
-          NAME=$(basename "${IMAGE_PATH}")
           echo "path=${IMAGE_PATH}" >> "$GITHUB_OUTPUT"
-          echo "name=${NAME}" >> "$GITHUB_OUTPUT"
+      - id: vmdk
+        name: Convert to VMDK
+        run: |
+          VMDK_PATH=$(echo ${{ steps.qcow2.outputs.path }} | sed -e 's/\.qcow2$/\.vmdk/')
+          qemu-img convert -f qcow2 -O vmdk -o subformat=streamOptimized ${{ steps.qcow2.outputs.path }} $VMDK_PATH
+          echo "path=${VMDK_PATH}" >> "$GITHUB_OUTPUT"
       - name: Upload NS8 image
         uses: softprops/action-gh-release@v1
         with:
           name: ${{ github.event.workflow_run.head_branch }}
           tag_name: ${{ github.event.workflow_run.head_branch }}
-          files:  ${{ steps.image.outputs.path }}
+          files: |
+            ${{ steps.qcow2.outputs.path }}
+            ${{ steps.vmdk.outputs.path }}
