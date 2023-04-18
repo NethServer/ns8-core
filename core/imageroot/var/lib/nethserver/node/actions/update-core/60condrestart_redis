@@ -45,12 +45,4 @@ if aver >= bver:
     print('The new redis image does not update the current one. Nothing to do.', file=sys.stderr)
     sys.exit(0)
 
-if bver.major > aver.major:
-    update_type = "major"
-elif bver.minor > aver.minor:
-    update_type = "minor"
-else:
-    update_type = "patch"
-
-if update_type in ['major', 'minor']:
-    agent.run_helper('systemctl', 'restart', 'redis')
+agent.run_helper('systemctl', 'restart', 'redis.service')
