@@ -31,5 +31,5 @@ for image_url in image_urls:
     # Pull the image from the remote server, if not already available locally
     with subprocess.Popen(['podman', 'image', 'list', '-q', '-f', f'reference={re.escape(image_url)}'], stdout=subprocess.PIPE, stderr=sys.stderr) as proc:
         output = proc.stdout.read()
-        if output == b'':
-            subprocess.run(['podman', 'pull', image_url]).check_returncode()
+    if output == b'':
+        subprocess.run(['podman', 'pull', image_url]).check_returncode()
