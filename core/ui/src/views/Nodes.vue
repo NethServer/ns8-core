@@ -1,5 +1,5 @@
 <!--
-  Copyright (C) 2022 Nethesis S.r.l.
+  Copyright (C) 2023 Nethesis S.r.l.
   SPDX-License-Identifier: GPL-3.0-or-later
 -->
 <template>
@@ -174,9 +174,9 @@
           <template #content>
             <NsButton
               kind="ghost"
-              :icon="ZoomIn20"
+              :icon="ArrowRight20"
               @click="goToNodeDetail(node.id)"
-              >{{ $t("common.details") }}</NsButton
+              >{{ $t("common.see_details") }}</NsButton
             >
           </template>
         </NodeCard>

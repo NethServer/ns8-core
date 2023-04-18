@@ -1,3 +1,7 @@
+<!--
+  Copyright (C) 2023 Nethesis S.r.l.
+  SPDX-License-Identifier: GPL-3.0-or-later
+-->
 <template>
   <div>
     <cv-grid fullWidth>
@@ -81,7 +85,7 @@
             :description="
               $t('software_center.core_app_update_available_description')
             "
-            :actionLabel="$t('common.details')"
+            :actionLabel="$t('common.see_details')"
             @action="goToUpdates"
             :showCloseButton="false"
           />
@@ -95,7 +99,7 @@
                 numUpdates: appUpdates.length,
               })
             "
-            :actionLabel="$t('common.details')"
+            :actionLabel="$t('common.see_details')"
             @action="goToUpdates"
             :showCloseButton="false"
           />
@@ -146,7 +150,7 @@
 
         <section v-if="['all', 'installed', 'updates'].includes(q.view)">
           <div v-if="csbAllSelected">
-            <cv-tile v-if="!modules.length && !loading.modules" light>
+            <cv-tile v-if="!modules.length && !loading.listModules" light>
               <NsEmptyState
                 :title="$t('software_center.no_apps')"
                 key="all-empty-state"
@@ -155,7 +159,7 @@
             <AppList
               v-else
               :apps="modules"
-              :skeleton="loading.modules || loading.listCoreModules"
+              :skeleton="loading.listModules || loading.listCoreModules"
               tab="all"
               @install="openInstallModal"
               key="all-app-list"
@@ -163,7 +167,10 @@
             />
           </div>
           <div v-if="csbInstalledSelected">
-            <cv-tile v-if="!installedModules.length && !loading.modules" light>
+            <cv-tile
+              v-if="!installedModules.length && !loading.listModules"
+              light
+            >
               <NsEmptyState
                 :title="$t('software_center.no_apps')"
                 key="installed-empty-state"
@@ -172,7 +179,7 @@
             <AppList
               v-else
               :apps="installedModules"
-              :skeleton="loading.modules || loading.listCoreModules"
+              :skeleton="loading.listModules || loading.listCoreModules"
               tab="installed"
               @install="openInstallModal"
               key="installed-app-list"
@@ -184,7 +191,7 @@
             <template
               v-if="
                 isCoreUpdateAvailable &&
-                !loading.modules &&
+                !loading.listModules &&
                 !loading.listCoreModules
               "
             >
@@ -259,7 +266,7 @@
               v-if="
                 !appUpdates.length &&
                 !isCoreUpdateAvailable &&
-                !loading.modules &&
+                !loading.listModules &&
                 !loading.listCoreModules
               "
               kind="standard"
@@ -276,7 +283,7 @@
             <AppList
               v-else
               :apps="appUpdates"
-              :skeleton="loading.modules || loading.listCoreModules"
+              :skeleton="loading.listModules || loading.listCoreModules"
               tab="updates"
               @install="openInstallModal"
               key="updates-app-list"
@@ -292,7 +299,7 @@
           <AppList
             v-if="searchResults.length"
             :apps="searchResults"
-            :skeleton="loading.modules || loading.listCoreModules"
+            :skeleton="loading.listModules || loading.listCoreModules"
             tab="search"
             @install="openInstallModal"
             key="search-app-list"
@@ -384,7 +391,7 @@ export default {
       coreApp: null,
       isShownCoreAppModal: false,
       loading: {
-        modules: true,
+        listModules: true,
         cleanRepositoriesCache: false,
         listCoreModules: true,
       },
@@ -455,7 +462,7 @@ export default {
   methods: {
     ...mapActions(["setUpdateInProgressInStore"]),
     async listModules() {
-      this.loading.modules = true;
+      this.loading.listModules = true;
       this.error.listModules = "";
       const taskAction = "list-modules";
 
@@ -480,7 +487,7 @@ export default {
       }
     },
     listModulesCompleted(taskContext, taskResult) {
-      this.loading.modules = false;
+      this.loading.listModules = false;
       let modules = taskResult.output;
       modules.sort(this.sortByProperty("name"));
       let appUpdates = [];

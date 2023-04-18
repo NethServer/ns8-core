@@ -1,3 +1,7 @@
+<!--
+  Copyright (C) 2023 Nethesis S.r.l.
+  SPDX-License-Identifier: GPL-3.0-or-later
+-->
 <template>
   <div class="apps">
     <iframe id="app-frame" class="iframe-embedded" :src="iframePath"></iframe>

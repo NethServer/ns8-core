@@ -445,7 +445,7 @@ export default {
 
       if (taskStatus === "aborted" || taskStatus === "validation-failed") {
         // task error
-        actionLabel = this.$t("common.details");
+        actionLabel = this.$t("common.see_details");
         action = { type: "taskError" };
       } else {
         // task completed successfully

@@ -1,6 +1,7 @@
 {
   "common": {
     "details": "Details",
+    "see_details": "See details",
     "copy_to_clipboard": "Copy to clipboard",
     "copied_to_clipboard": "Copied!",
     "show_more": "Show more",
@@ -579,7 +580,8 @@
     "path_must_start_with_slash": "Path must start with a slash character \"/\"",
     "route_already_exists": "Route already exists",
     "edit_route": "Edit route",
-    "edit_route_route": "Edit route {route}"
+    "edit_route_route": "Edit route {route}",
+    "host_is_not_valid_not_localhost": "'localhost' or '127.0.0.1' can be used only if you specify a path"
   },
   "settings_tls_certificates": {
     "title": "TLS certificates",
@@ -751,7 +753,7 @@
     "update_available": "Update available",
     "core_update": "Core update",
     "app_updates": "App updates",
-    "update_details": "Update details",
+    "review_and_update": "Review and update",
     "core_apps": "Core apps",
     "update_all_instances": "Update all instances",
     "update_app_instances": "Update {app} instances",

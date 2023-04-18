@@ -1,3 +1,7 @@
+<!--
+  Copyright (C) 2023 Nethesis S.r.l.
+  SPDX-License-Identifier: GPL-3.0-or-later
+-->
 <template>
   <div>
     <cv-grid fullWidth>
@@ -118,7 +122,8 @@
             <cv-tile light>
               <cv-skeleton-text
                 :paragraph="true"
-                :line-count="8"
+                :line-count="7"
+                heading
               ></cv-skeleton-text>
             </cv-tile>
           </cv-column>

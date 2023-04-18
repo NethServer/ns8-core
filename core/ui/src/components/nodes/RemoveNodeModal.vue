@@ -19,36 +19,69 @@
         :title="$t('common.please_read_carefully')"
         :showCloseButton="false"
       />
-      <div
-        v-html="
-          $t('nodes.remove_node_confirm', {
-            name: node ? this.getNodeLabel(node) : '',
-          })
-        "
-      ></div>
-      <div
-        class="mg-top-xlg"
-        v-html="
-          $t('common.type_to_confirm', { name: 'node' + (node ? node.id : '') })
-        "
-      ></div>
-      <cv-form @submit.prevent="removeNode">
-        <NsTextInput
-          v-model="userInput"
-          :disabled="loading.removeNode"
+      <cv-skeleton-text
+        v-if="loading.listInstalledModules"
+        :paragraph="true"
+        :line-count="4"
+        heading
+      ></cv-skeleton-text>
+      <template v-else-if="!error.listInstalledModules">
+        <div
+          v-if="nodeApps.length"
+          v-html="
+            $tc('nodes.remove_node_apps_confirm', nodeApps.length, {
+              node: node ? this.getNodeLabel(node) : '',
+              nodeApps: nodeApps.join(', '),
+            })
+          "
           class="mg-bottom-md"
-          ref="userInput"
-        >
-        </NsTextInput>
-      </cv-form>
-      <NsInlineNotification
-        v-if="error.removeNode"
-        kind="error"
-        :title="$t('action.remove-node')"
-        :description="error.removeNode"
-        :showCloseButton="false"
-        class="mg-top-lg"
-      />
+        ></div>
+        <div
+          v-html="
+            $t('nodes.remove_node_confirm', {
+              name: node ? this.getNodeLabel(node) : '',
+            })
+          "
+        ></div>
+        <div
+          class="mg-top-xlg"
+          v-html="
+            $t('common.type_to_confirm', {
+              name: 'node' + (node ? node.id : ''),
+            })
+          "
+        ></div>
+        <cv-form @submit.prevent="removeNode">
+          <NsTextInput
+            v-model="userInput"
+            :disabled="loading.removeNode"
+            class="mg-bottom-md hide-label"
+            ref="userInput"
+          >
+          </NsTextInput>
+        </cv-form>
+      </template>
+      <!-- need to wrap error notification inside a div: custom elements like NsInlineNotification don't have scrollIntoView() function -->
+      <div ref="listInstalledModulesError">
+        <NsInlineNotification
+          v-if="error.listInstalledModules"
+          kind="error"
+          :title="$t('action.list-installed-modules')"
+          :description="error.listInstalledModules"
+          :showCloseButton="false"
+          class="mg-top-lg"
+        />
+      </div>
+      <div ref="removeNodeError">
+        <NsInlineNotification
+          v-if="error.removeNode"
+          kind="error"
+          :title="$t('action.remove-node')"
+          :description="error.removeNode"
+          :showCloseButton="false"
+          class="mg-top-lg"
+        />
+      </div>
     </template>
     <template slot="secondary-button">{{ $t("common.cancel") }}</template>
     <template slot="primary-button">{{
@@ -60,10 +93,11 @@
 <script>
 import { TaskService, UtilService } from "@nethserver/ns8-ui-lib";
 import to from "await-to-js";
+import NodeService from "@/mixins/node";
 
 export default {
   name: "RemoveNodeModal",
-  mixins: [TaskService, UtilService],
+  mixins: [TaskService, UtilService, NodeService],
   props: {
     isShown: {
       type: Boolean,
@@ -74,11 +108,14 @@ export default {
   data() {
     return {
       userInput: "",
+      nodeApps: [],
       loading: {
         removeNode: false,
+        listInstalledModules: false,
       },
       error: {
         removeNode: "",
+        listInstalledModules: "",
       },
     };
   },
@@ -87,10 +124,27 @@ export default {
       if (this.isShown) {
         this.userInput = "";
         this.clearErrors();
+        this.listInstalledModules();
+      }
+    },
+    "error.listInstalledModules": function () {
+      if (this.error.listInstalledModules) {
+        // scroll to notification error
 
-        setTimeout(() => {
-          this.focusElement("userInput");
-        }, 300);
+        this.$nextTick(() => {
+          const el = this.$refs.listInstalledModulesError;
+          this.scrollToElement(el);
+        });
+      }
+    },
+    "error.removeNode": function () {
+      if (this.error.removeNode) {
+        // scroll to notification error
+
+        this.$nextTick(() => {
+          const el = this.$refs.removeNodeError;
+          this.scrollToElement(el);
+        });
       }
     },
   },
@@ -187,6 +241,68 @@ export default {
       // hide modal
       this.$emit("hide");
       this.$emit("nodeRemoved");
+
+      // reload app drawer (any apps on the node have been removed)
+      this.$root.$emit("reloadAppDrawer");
+    },
+    async listInstalledModules() {
+      this.loading.listInstalledModules = true;
+      const taskAction = "list-installed-modules";
+      const eventId = this.getUuid();
+
+      // register to task error
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.listInstalledModulesAborted
+      );
+
+      // register to task completion
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.listInstalledModulesCompleted
+      );
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+            eventId,
+          },
+        })
+      );
+      const err = res[0];
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        const errMessage = this.getErrorMessage(err);
+        this.error.listInstalledModules = errMessage;
+        this.loading.listInstalledModules = false;
+        return;
+      }
+    },
+    listInstalledModulesAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.listInstalledModules = this.$t("error.generic_error");
+      this.loading.listInstalledModules = false;
+    },
+    listInstalledModulesCompleted(taskContext, taskResult) {
+      const appsByNode = this.getInstalledAppsByNode(taskResult.output);
+
+      const nodeApps = appsByNode[this.node.id].filter((app) => {
+        // exclude core apps (but keep account providers)
+        return (
+          !app.flags.includes("core_module") ||
+          app.flags.includes("account_provider")
+        );
+      });
+
+      this.nodeApps = nodeApps.map((app) => {
+        return app.ui_name ? `${app.ui_name} (${app.id})` : app.id;
+      });
+
+      this.loading.listInstalledModules = false;
+      this.focusElement("userInput");
     },
   },
 };

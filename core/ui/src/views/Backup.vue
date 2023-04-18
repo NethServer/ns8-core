@@ -1,3 +1,7 @@
+<!--
+  Copyright (C) 2023 Nethesis S.r.l.
+  SPDX-License-Identifier: GPL-3.0-or-later
+-->
 <template>
   <div>
     <cv-grid fullWidth>
@@ -326,9 +330,9 @@
                   <div class="row actions">
                     <NsButton
                       kind="ghost"
-                      :icon="ZoomIn20"
+                      :icon="ArrowRight20"
                       @click="showRepoDetailsModal(repo)"
-                      >{{ $t("common.details") }}
+                      >{{ $t("common.see_details") }}
                     </NsButton>
                   </div>
                 </div>
@@ -531,9 +535,9 @@
                     <div class="row actions">
                       <NsButton
                         kind="ghost"
-                        :icon="ZoomIn20"
+                        :icon="ArrowRight20"
                         @click="showBackupDetailsModal(backup)"
-                        >{{ $t("common.details") }}
+                        >{{ $t("common.see_details") }}
                       </NsButton>
                     </div>
                   </div>
