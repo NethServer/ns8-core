@@ -8,6 +8,8 @@ on:
 jobs:
   core-version:
     runs-on: ubuntu-latest
+    outputs:
+      is_stable: ${{ steps.check.outputs.is_stable }}
     steps:
       - id: python-dep
         uses: actions/setup-python@v3
@@ -19,11 +21,11 @@ jobs:
           check_core_version=$(cat <<EOF
           import semver, sys
           try:
-            sys.exit(1) if semver.VersionInfo.parse("${{ github.event.workflow_run.head_branch }}").prerelease else sys.exit(0)
-          except ValueError: sys.exit(2)
+            print("false") if semver.VersionInfo.parse("${{ github.event.workflow_run.head_branch }}").prerelease else print ("true")
+          except ValueError: print("false")
           EOF
           )
-          python3 -c "$check_core_version"
+          echo is_stable=$(python3 -c "$check_core_version") >> $GITHUB_OUTPUT
   build-imges-digitalocean:
     runs-on: ubuntu-latest
     strategy:
@@ -35,6 +37,7 @@ jobs:
           - digitalocean.al
     needs:
       - core-version
+    if: needs.core-version.outputs.is_stable == 'true'
     steps:
       - name: Setup `packer`
         uses: hashicorp/setup-packer@main
@@ -63,6 +66,7 @@ jobs:
           - qemu.al
     needs:
       - core-version
+    if: needs.core-version.outputs.is_stable == 'true'
     steps:
       - name: Setup `packer`
         uses: hashicorp/setup-packer@main
