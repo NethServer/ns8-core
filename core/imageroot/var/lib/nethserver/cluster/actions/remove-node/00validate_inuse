@@ -26,19 +26,3 @@ if leader_id == tnode_id:
     agent.set_status('validation-failed')
     json.dump([{'field':'node_id','parameter':'node_id','value': request['node_id'],'error':'node_is_leader'}], fp=sys.stdout)
     sys.exit(3)
-
-working_modules = []
-
-for kmodule_flags in rdb.scan_iter('module/*/flags'):
-    sflags = rdb.smembers(kmodule_flags)
-    if 'core_module' in sflags and 'account_provider' not in sflags:
-        continue # ignore core modules (but always include account providers)
-
-    module_prefix = kmodule_flags.removesuffix('/flags')
-    if rdb.hget(module_prefix + '/environment', 'NODE_ID') == tnode_id:
-        working_modules.append(module_prefix.removeprefix('module/')) # append module_id
-
-if working_modules:
-    agent.set_status('validation-failed')
-    json.dump([{'field':'node_id','parameter':'node_id','value': working_modules,'error':'node_in_use'}], fp=sys.stdout)
-    sys.exit(4)

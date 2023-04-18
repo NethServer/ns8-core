@@ -1036,7 +1036,8 @@
     "understood_remove_node": "I understand, remove node",
     "validation_node_is_leader": "Cannot remove leader node",
     "validation_node_in_use": "The node cannot be removed because the following app is installed on it: <strong>{apps}</strong> | The node cannot be removed because the following apps are installed on it: <strong>{apps}</strong>",
-    "validation_node_not_found": "Node not found"
+    "validation_node_not_found": "Node not found",
+    "remove_node_apps_confirm": "The following app is installed on {node}: <strong>{nodeApps}</strong>.<br>If you remove the node, <strong>{nodeApps} will be removed as well</strong>. | The following apps are installed on {node}: <strong>{nodeApps}</strong>.<br>If you remove the node, <strong>these apps will be removed as well</strong>."
   },
   "node_detail": {
     "title": "Node detail",
