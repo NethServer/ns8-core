@@ -240,8 +240,6 @@ export default {
 
       // hide modal
       this.$emit("hide");
-
-      // reload nodes
       this.$emit("nodeRemoved");
 
       // reload app drawer (any apps on the node have been removed)
@@ -310,8 +308,4 @@ export default {
 };
 </script>
 
-<style scoped lang="scss">
-.mg-top-2 {
-  margin-top: 2rem;
-}
-</style>
+<style scoped lang="scss"></style>

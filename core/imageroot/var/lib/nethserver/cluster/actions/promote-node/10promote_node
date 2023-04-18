@@ -9,27 +9,46 @@ import sys
 import json
 import agent
 import os
+import requests
+
+def is_endpoint_reachable(epaddr):
+    """
+    Check if epaddr looks like a NS8 node: does it expose a cluster-admin API/UI endpoint?
+    """
+    try:
+        oresp = requests.get(f"https://{epaddr}/cluster-admin/api/cluster/tasks", headers={"Authorization": "probe"}, verify=False, timeout=5.0)
+    except requests.ConnectionError:
+        return False
+    if oresp.status_code != 401:
+        return False
+    if not 'nethserver' in oresp.headers.get('WWW-Authenticate'):
+        return False
+    return True
 
 request = json.load(sys.stdin)
 
 node_id = request['node_id']
+endpoint_address = request["endpoint_address"]
+endpoint_port = request["endpoint_port"]
 self_id = int(os.environ['NODE_ID'])
+is_endpoint_validation_enabled = request.get("endpoint_validation", True)
 
 if node_id == self_id:
     agent.set_status('validation-failed')
     json.dump([{'field':'node_id', 'parameter':'node_id', 'value':node_id, 'error':'node_is_already_leader'}], fp=sys.stdout)
     sys.exit(3)
 
+if is_endpoint_validation_enabled and not is_endpoint_reachable(endpoint_address):
+    agent.set_status('validation-failed')
+    json.dump([{'field':'endpoint_address', 'parameter':'endpoint_address', 'value':endpoint_address, 'error':'endpoint_address_not_reachable'}], fp=sys.stdout)
+    sys.exit(4)
+
 rdb = agent.redis_connect(privileged=True)
 
 # Get the node_id vpn record
 evpn = rdb.hgetall(f'node/{node_id}/vpn')
 
-if not evpn['endpoint']:
-    agent.set_status('validation-failed')
-    json.dump([{'field':'node_id', 'parameter':'node_id', 'value':node_id, 'error':'node_endpoint_not_found'}], fp=sys.stdout)
-    sys.exit(4)
-
+# Search the node vpn IP address among redis replicas
 redis_role, master_replication_offset, redis_replicas = rdb.execute_command("role")
 for client_item in redis_replicas:
     client_ip_address, port, client_replication_offset = client_item
@@ -40,4 +59,6 @@ else: # :( not found
     json.dump([{'field':'node_id', 'parameter':'node_id', 'value':node_id, 'error':'node_replica_not_found'}], fp=sys.stdout)
     sys.exit(5)
 
-rdb.publish("cluster/event/leader-changed", json.dumps({"node_id": node_id}))
+vpn_endpoint = endpoint_address + ':' + str(endpoint_port)
+
+rdb.publish("cluster/event/leader-changed", json.dumps({"node_id": node_id, "endpoint": vpn_endpoint}))

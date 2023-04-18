@@ -236,9 +236,6 @@
                 <div v-if="instance.ui_name" class="row">
                   {{ instance.id }}
                 </div>
-                <div class="row">
-                  {{ $t("common.version") }} {{ instance.version }}
-                </div>
                 <div class="row icon-and-text">
                   <NsSvg :svg="Chip20" class="icon" />
                   <span v-if="instance.node_ui_name">{{
@@ -248,6 +245,20 @@
                     >{{ $t("common.node") }} {{ instance.node }}</span
                   >
                 </div>
+                <div class="row">
+                  {{ $t("common.version") }} {{ instance.version }}
+                </div>
+                <div
+                  v-if="isInstanceUpgradable(app, instance)"
+                  class="row"
+                  v-html="
+                    $t('software_center.version_version_available', {
+                      version: app.versions.length
+                        ? app.versions[0].tag
+                        : 'latest',
+                    })
+                  "
+                ></div>
                 <div class="row actions">
                   <!-- app is installed and can be updated -->
                   <template v-if="isInstanceUpgradable(app, instance)">

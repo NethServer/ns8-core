@@ -152,6 +152,15 @@
               </cv-overflow-menu-item>
               <cv-overflow-menu-item
                 v-if="node.id !== leaderNode.id"
+                @click="showPromoteNodeModal(node)"
+              >
+                <NsMenuItem
+                  :icon="Badge20"
+                  :label="$t('nodes.promote_to_leader')"
+                />
+              </cv-overflow-menu-item>
+              <cv-overflow-menu-item
+                v-if="node.id !== leaderNode.id"
                 danger
                 @click="showRemoveNodeModal(node)"
               >
@@ -278,6 +287,20 @@
       :node="nodeToRemove"
       @hide="hideRemoveNodeModal"
     />
+    <!-- promote node modal -->
+    <PromoteNodeModal
+      :isShown="isShownPromoteNodeModal"
+      :node="nodeToPromote"
+      :vpnEndpointAddress="nodeToPromoteHostname"
+      @hide="hidePromoteNodeModal"
+      @nodePromoted="onNodePromoted"
+    />
+    <!-- new leader modal -->
+    <NewLeaderModal
+      :isShown="isShownNewLeaderModal"
+      :endpointAddress="newLeaderEndpointAddress"
+      @hide="hideNewLeaderModal"
+    />
   </cv-grid>
 </template>
 
@@ -293,10 +316,12 @@ import to from "await-to-js";
 import { mapState, mapActions } from "vuex";
 import NodeCard from "@/components/misc/NodeCard";
 import RemoveNodeModal from "@/components/nodes/RemoveNodeModal";
+import PromoteNodeModal from "@/components/nodes/PromoteNodeModal";
+import NewLeaderModal from "@/components/nodes/NewLeaderModal";
 
 export default {
   name: "Nodes",
-  components: { NodeCard, RemoveNodeModal },
+  components: { NodeCard, RemoveNodeModal, PromoteNodeModal, NewLeaderModal },
   mixins: [
     TaskService,
     UtilService,
@@ -323,6 +348,10 @@ export default {
       isShownSetNodeLabelModal: false,
       isShownRemoveNodeModal: false,
       nodeToRemove: null,
+      isShownPromoteNodeModal: false,
+      nodeToPromote: null,
+      isShownNewLeaderModal: false,
+      newLeaderEndpointAddress: "",
       loading: {
         nodes: true,
         setNodeLabel: false,
@@ -345,6 +374,19 @@ export default {
     },
     nodesOffline() {
       return this.nodes.filter((n) => n.online == false);
+    },
+    nodeToPromoteHostname() {
+      if (!this.nodeToPromote) {
+        return "";
+      }
+      const nodeFound = this.nodes.find(
+        (node) => node.id === this.nodeToPromote.id
+      );
+
+      if (nodeFound) {
+        return nodeFound.hostname;
+      }
+      return "";
     },
   },
   watch: {
@@ -583,6 +625,23 @@ export default {
         path: "/settings/tls-certificates",
         query: { selectedNodeId: node.id },
       });
+    },
+    showPromoteNodeModal(node) {
+      this.nodeToPromote = node;
+      this.isShownPromoteNodeModal = true;
+    },
+    hidePromoteNodeModal() {
+      this.isShownPromoteNodeModal = false;
+    },
+    showNewLeaderModal() {
+      this.isShownNewLeaderModal = true;
+    },
+    hideNewLeaderModal() {
+      this.isShownNewLeaderModal = false;
+    },
+    onNodePromoted(newLeaderEndpointAddress) {
+      this.newLeaderEndpointAddress = newLeaderEndpointAddress;
+      this.showNewLeaderModal();
     },
     showRemoveNodeModal(node) {
       this.nodeToRemove = node;
