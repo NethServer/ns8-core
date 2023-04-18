@@ -43,15 +43,6 @@ if aver >= bver:
     print('The new core image does not update the current one. Nothing to do.', file=sys.stderr)
     sys.exit(0)
 
-if bver.major > aver.major:
-    update_type = "major"
-elif bver.minor > aver.minor:
-    update_type = "minor"
-else:
-    update_type = "patch"
-
-print(f'Running update type: {update_type}', file=sys.stderr)
-
 agent.run_helper('podman-pull-missing', core_url,
     progress_callback=agent.get_progress_callback(0,40)
 ).check_returncode()
@@ -94,14 +85,13 @@ agent.run_helper('/usr/local/agent/pyenv/bin/pip3', 'install', '-r', '/etc/neths
 
 agent.run_helper('systemctl', 'daemon-reload')
 
-if update_type in ['major', 'minor']:
-    # Send graceful termination signal to agents
-    agent.run_helper('killall', '-q', '-s', 'USR1', '-r', '^agent$',
-        progress_callback=agent.get_progress_callback(91,94)
-    )
-    # Restart the api-server daemon
-    agent.run_helper('systemctl', 'restart', 'api-server.service',
-        progress_callback=agent.get_progress_callback(95,99)
-    )
+# Send graceful termination signal to agents
+agent.run_helper('killall', '-q', '-s', 'USR1', '-r', '^agent$',
+    progress_callback=agent.get_progress_callback(91,94)
+)
+# Restart the api-server daemon
+agent.run_helper('systemctl', 'restart', 'api-server.service',
+    progress_callback=agent.get_progress_callback(95,99)
+)
 
 json.dump({}, fp=sys.stdout)
