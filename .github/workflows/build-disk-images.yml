@@ -1,0 +1,100 @@
+name: Build NS8 disk images
+on:
+  workflow_run:
+    workflows: [core]
+    types:
+      - completed
+
+jobs:
+  core-version:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    outputs:
+      is_stable: ${{ steps.check.outputs.is_stable }}
+    steps:
+      - id: python-dep
+        uses: actions/setup-python@v3
+        with:
+          python-version: 3.9
+      - id: check
+        run: |
+          pip install semver
+          check_core_version=$(cat <<EOF
+          import semver, sys
+          try:
+            print("false") if semver.VersionInfo.parse("${{ github.event.workflow_run.head_branch }}").prerelease else print ("true")
+          except ValueError: print("false")
+          EOF
+          )
+          echo is_stable=$(python3 -c "$check_core_version") >> $GITHUB_OUTPUT
+  build-imges-digitalocean:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        source:
+          - digitalocean.cs
+          - digitalocean.rl
+          - digitalocean.al
+    needs:
+      - core-version
+    if: needs.core-version.outputs.is_stable == 'true'
+    steps:
+      - name: Setup `packer`
+        uses: hashicorp/setup-packer@main
+      - uses: actions/checkout@v3
+        with:
+          repository: NethServer/ns8-images
+      - name: Run `packer init`
+        id: init
+        run: packer init .
+      - name: Run `packer build`
+        id: validate
+        run: packer build --only=${{ matrix.source }} --var "core_version=${{ github.event.workflow_run.head_branch }}" .
+        env:
+          DIGITALOCEAN_TOKEN: ${{ secrets.do_token }}
+  build-imges-qemu:
+    runs-on: [self-hosted]
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        source:
+          - qemu.dn
+          - qemu.cs
+          - qemu.rl
+          - qemu.al
+    needs:
+      - core-version
+    if: needs.core-version.outputs.is_stable == 'true'
+    steps:
+      - name: Setup `packer`
+        uses: hashicorp/setup-packer@main
+      - uses: actions/checkout@v3
+        with:
+          repository: NethServer/ns8-images
+      - name: Run `packer init`
+        id: init
+        run: packer init .
+      - name: Run `packer build`
+        id: validate
+        run: packer build --only=${{ matrix.source }} --var "core_version=${{ github.event.workflow_run.head_branch }}" .
+      - id: qcow2
+        run: |
+          IMAGE_PATH=$(cat packer-manifest.json | jq -r .builds[0].files[0].name)
+          echo "path=${IMAGE_PATH}" >> "$GITHUB_OUTPUT"
+      - id: vmdk
+        name: Convert to VMDK
+        run: |
+          VMDK_PATH=$(echo ${{ steps.qcow2.outputs.path }} | sed -e 's/\.qcow2$/\.vmdk/')
+          qemu-img convert -f qcow2 -O vmdk -o subformat=streamOptimized ${{ steps.qcow2.outputs.path }} $VMDK_PATH
+          echo "path=${VMDK_PATH}" >> "$GITHUB_OUTPUT"
+      - name: Upload NS8 image
+        uses: softprops/action-gh-release@v1
+        with:
+          name: ${{ github.event.workflow_run.head_branch }}
+          tag_name: ${{ github.event.workflow_run.head_branch }}
+          files: |
+            ${{ steps.qcow2.outputs.path }}
+            ${{ steps.vmdk.outputs.path }}
