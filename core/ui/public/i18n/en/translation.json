@@ -1049,7 +1049,7 @@
     "node_vpn_endpoint_address_tooltip": "Make sure this VPN endpoint address is reachable by all other cluster nodes",
     "node_vpn_endpoint_port": "{node} VPN endpoint port",
     "understood_promote_node": "I understand, promote node",
-    "reset_backup_encryption_password_info": "After node promotion, go to <strong>Backup</strong> section and setup the backup encryption password",
+    "reset_backup_encryption_password_info": "After node promotion:<ul class='unordered-list'><li>Go to <strong>Backup</strong> section and setup the backup encryption password</li><li>If you are using two-factor authentication (2FA), go to <strong>Settings / Account</strong> and enable it again</li></ul>",
     "new_cluster_admin_message": "From now on, cluster administration will be available at:<br><code>https://{endpointAddress}/cluster-admin/</code>",
     "check_node_connectivity": "Check node connectivity",
     "cannot_promote_node": "Cannot promote node",
