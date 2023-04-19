@@ -12,7 +12,6 @@ import agent
 import os
 import sys
 import socket
-import subprocess
 import json
 import time
 
@@ -58,6 +57,11 @@ if args.endpoint: # Fix also the node endpoint, if given
 
 if node_id == self_id: # Promote this node to leader role
     node_ipaddr="127.0.0.1" # Override IP address cluster-leader record in /etc/hosts
+
+    # Clean up stale secrets and disable 2FA
+    agent.run_helper(*"find /var/lib/nethserver/api-server/secrets/ -type f -name 2fa -delete".split())
+    for kuser in rdb.scan_iter("user/*"):
+        rdb.hdel(kuser, "2fa")
 
 else: # Become a replica of the new leader node
     command_reply = rdb.execute_command("REPLICAOF", node_ipaddr, "6379")
