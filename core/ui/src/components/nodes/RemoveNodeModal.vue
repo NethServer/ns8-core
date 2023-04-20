@@ -14,11 +14,6 @@
   >
     <template slot="title">{{ $t("nodes.remove_node_from_cluster") }}</template>
     <template slot="content">
-      <NsInlineNotification
-        kind="warning"
-        :title="$t('common.please_read_carefully')"
-        :showCloseButton="false"
-      />
       <cv-skeleton-text
         v-if="loading.listInstalledModules"
         :paragraph="true"
@@ -26,16 +21,30 @@
         heading
       ></cv-skeleton-text>
       <template v-else-if="!error.listInstalledModules">
-        <div
+        <NsInlineNotification
+          kind="warning"
+          :title="$t('common.please_read_carefully')"
+          :description="
+            nodeApps.length
+              ? $tc('nodes.remove_node_apps_confirm', nodeApps.length, {
+                  node: node ? this.getNodeLabel(node) : '',
+                  nodeApps: nodeApps.join(', '),
+                })
+              : ''
+          "
+          :showCloseButton="false"
+        />
+        <NsInlineNotification
           v-if="nodeApps.length"
-          v-html="
-            $tc('nodes.remove_node_apps_confirm', nodeApps.length, {
+          kind="info"
+          :title="$t('common.remember')"
+          :description="
+            $t('nodes.shutdown_node_after_removal', {
               node: node ? this.getNodeLabel(node) : '',
-              nodeApps: nodeApps.join(', '),
             })
           "
-          class="mg-bottom-md"
-        ></div>
+          :showCloseButton="false"
+        />
         <div
           v-html="
             $t('nodes.remove_node_confirm', {
