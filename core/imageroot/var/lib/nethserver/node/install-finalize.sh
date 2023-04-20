@@ -82,11 +82,14 @@ EOF
     cat <<EOF
 ACL SETUSER cluster ON #${cluster_pwhash} ~* &* +@all
 AUTH cluster "${cluster_password}"
-ACL SETUSER default ON nopass ~* &* nocommands +@read +@connection +subscribe +psubscribe +psync +replconf +ping
+ACL SETUSER default ON nopass ~* &* nocommands +@read +@connection +subscribe +psubscribe +ping
 ACL SETUSER api-server ON #${apiserver_pwhash} ~* &* nocommands +@read +@pubsub +lpush +@transaction +@connection +role +hset
-ACL SETUSER node/1 ON #${node_pwhash} resetkeys ~node/1/* resetchannels &progress/node/1/* &node/1/event/* nocommands +@read +@write +@transaction +@connection +publish
+ACL SETUSER node/1 ON #${node_pwhash} resetkeys ~node/1/* resetchannels &progress/node/1/* &node/1/event/* nocommands +@read +@write +@transaction +@connection +publish +psync +replconf
 ACL SAVE
 SAVE
+CONFIG SET masteruser node/1
+CONFIG SET masterauth ${node_password}
+CONFIG REWRITE
 EOF
 
     printf 'SET cluster/ui_name "%s"\n' "${CLUSTER_NAME:-NethServer 8}"

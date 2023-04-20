@@ -51,4 +51,4 @@ task_id = agent.tasks.run_nowait(
     endpoint="redis://cluster-leader",
 )
 
-print("Task queued as", task_id)
+print("Task queued in Redis as", task_id)
