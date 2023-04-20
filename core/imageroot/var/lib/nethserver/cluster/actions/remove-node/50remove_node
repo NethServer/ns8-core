@@ -9,6 +9,7 @@ import sys
 import json
 import agent
 import agent.tasks
+import cluster.grants
 
 request = json.load(sys.stdin)
 tnode_id = str(request['node_id'])
@@ -37,7 +38,7 @@ for xmodule_id, xnode_id in rdb.hgetall('cluster/module_node').items():
 
 # Save and propagate Redis ACLs
 rdb.execute_command('ACL', 'SAVE')
-agent.save_acls(rdb)
+cluster.grants.save_acls(rdb)
 
 # Delete the target node keyspace and the keys of any module installed on it:
 rdb.delete(*(node_keys | remove_module_keys))

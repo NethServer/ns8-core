@@ -170,7 +170,7 @@ for userk in rdb.scan_iter('roles/*'):
         rdb.hset(userk, f'node/{node_id}', 'owner')
 
 # Store ACLs on disk of leader and worker nodes:
-agent.save_acls(rdb)
+cluster.grants.save_acls(rdb)
 
 #
 # Reconfigure VPN routes
