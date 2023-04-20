@@ -45,9 +45,9 @@ func runAction(rdb *redis.Client, actionCtx context.Context, task *models.Task) 
 
 	// Redis key names where the action response is stored:
 	progressChannel := "progress/" + agentPrefix + "/task/" + task.ID
-	outputKey := agentPrefix + "/task/" + task.ID + "/output"
-	errorKey := agentPrefix + "/task/" + task.ID + "/error"
-	exitCodeKey := agentPrefix + "/task/" + task.ID + "/exit_code"
+	outputKey := "task/" + agentPrefix + "/" + task.ID + "/output"
+	errorKey := "task/" + agentPrefix + "/" + task.ID + "/error"
+	exitCodeKey := "task/" + agentPrefix + "/" + task.ID + "/exit_code"
 
 	// Action response payloads
 	var actionOutput string = ""
@@ -231,7 +231,7 @@ func runAction(rdb *redis.Client, actionCtx context.Context, task *models.Task) 
 			comReadLock <- 1
 		}()
 
-		log.Printf("%s/task/%s: %s/%s is starting", agentPrefix, task.ID, task.Action, step.Name)
+		log.Printf("task/%s/%s: %s/%s is starting", agentPrefix, task.ID, task.Action, step.Name)
 		if err := cmd.Start(); err != nil {
 			exitCode = 9
 			actionError += fmt.Sprintf("Action %s startup error at step %s: %v", task.Action, step, err)
@@ -254,7 +254,7 @@ func runAction(rdb *redis.Client, actionCtx context.Context, task *models.Task) 
 			case <-doneChan:
 				// Just send a TERM signal to the running step. It then
 				// returns an exit code and the whole action is aborted.
-				log.Printf(SD_WARNING+"%s/task/%s: Sending TERM signal to action \"%s\" at step %s", agentPrefix, task.ID, task.Action, lastStep)
+				log.Printf(SD_WARNING+"task/%s/%s: Sending TERM signal to action \"%s\" at step %s", agentPrefix, task.ID, task.Action, lastStep)
 				if err := syscall.Kill(-cmd.Process.Pid, syscall.SIGTERM); err != nil {
 					log.Print(SD_ERR+"Kill failed: ", err)
 				}
@@ -310,7 +310,7 @@ func runAction(rdb *redis.Client, actionCtx context.Context, task *models.Task) 
 	if err != nil {
 		log.Print(SD_ERR+"Redis command failed: ", err)
 	}
-	log.Printf("%s/task/%s: action \"%s\" status is \"%s\" (%d) at step %s", agentPrefix, task.ID, task.Action, actionDescriptor.Status, exitCode, lastStep)
+	log.Printf("task/%s/%s: action \"%s\" status is \"%s\" (%d) at step %s", agentPrefix, task.ID, task.Action, actionDescriptor.Status, exitCode, lastStep)
 }
 
 func listenActionsAsync(brpopCtx context.Context, complete chan int) {
@@ -378,7 +378,7 @@ func listenActionsAsync(brpopCtx context.Context, complete chan int) {
 		}
 
 		// Store the task as context
-		setErr := rdb.Set(ctx, agentPrefix+"/task/"+task.ID+"/context", popResult[1], taskExpireDuration).Err()
+		setErr := rdb.Set(ctx, "task/" + agentPrefix + "/" + task.ID + "/context", popResult[1], taskExpireDuration).Err()
 		if setErr != nil {
 			log.Print(SD_ERR+"Context set error: ", setErr)
 		}

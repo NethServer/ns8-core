@@ -69,8 +69,8 @@ The task is submitted
     ...   {"id":"id-${action_name}","action":"${action_name}","data":${task_data}}
 The task has exit code
     [Arguments]    ${expected_exit_code}
-    Redis Key Should Be Exist    ${RDB}    ${AGENT_ID}/task/${LAST_TASK_ID}/exit_code
-    ${bexit_code} =    Get From Redis    ${RDB}    ${AGENT_ID}/task/${LAST_TASK_ID}/exit_code
+    Redis Key Should Be Exist    ${RDB}    task/${AGENT_ID}/${LAST_TASK_ID}/exit_code
+    ${bexit_code} =    Get From Redis    ${RDB}    task/${AGENT_ID}/${LAST_TASK_ID}/exit_code
     ${sexit_code} =    Convert To String    ${bexit_code}
     Should Be Equal    ${sexit_code}    ${expected_exit_code}
 
@@ -81,42 +81,42 @@ The command is received
 
 The task output should contain
     [Arguments]    ${substr}
-    Redis Key Should Be Exist    ${RDB}    ${AGENT_ID}/task/${LAST_TASK_ID}/output
-    ${boutput} =    Get From Redis    ${RDB}    ${AGENT_ID}/task/${LAST_TASK_ID}/output
+    Redis Key Should Be Exist    ${RDB}    task/${AGENT_ID}/${LAST_TASK_ID}/output
+    ${boutput} =    Get From Redis    ${RDB}    task/${AGENT_ID}/${LAST_TASK_ID}/output
     ${soutput} =    Convert To String    ${boutput}
     Should contain    ${soutput}    ${substr}
 
 The task output should not contain
     [Arguments]    ${substr}
-    Redis Key Should Be Exist    ${RDB}    ${AGENT_ID}/task/${LAST_TASK_ID}/output
-    ${boutput} =    Get From Redis    ${RDB}    ${AGENT_ID}/task/${LAST_TASK_ID}/output
+    Redis Key Should Be Exist    ${RDB}    task/${AGENT_ID}/${LAST_TASK_ID}/output
+    ${boutput} =    Get From Redis    ${RDB}    task/${AGENT_ID}/${LAST_TASK_ID}/output
     ${soutput} =    Convert To String    ${boutput}
     Should not contain    ${soutput}    ${substr}
 
 The task output should be equal to
     [Arguments]    ${substr}
-    Redis Key Should Be Exist    ${RDB}    ${AGENT_ID}/task/${LAST_TASK_ID}/output
-    ${boutput} =    Get From Redis    ${RDB}    ${AGENT_ID}/task/${LAST_TASK_ID}/output
+    Redis Key Should Be Exist    ${RDB}    task/${AGENT_ID}/${LAST_TASK_ID}/output
+    ${boutput} =    Get From Redis    ${RDB}    task/${AGENT_ID}/${LAST_TASK_ID}/output
     ${soutput} =    Convert To String    ${boutput}
     Should Be Equal As Strings    ${soutput}    ${substr}
 
 The task error should contain
     [Arguments]    ${substr}
-    Redis Key Should Be Exist    ${RDB}    ${AGENT_ID}/task/${LAST_TASK_ID}/error
-    ${berror} =    Get From Redis    ${RDB}    ${AGENT_ID}/task/${LAST_TASK_ID}/error
+    Redis Key Should Be Exist    ${RDB}    task/${AGENT_ID}/${LAST_TASK_ID}/error
+    ${berror} =    Get From Redis    ${RDB}    task/${AGENT_ID}/${LAST_TASK_ID}/error
     ${serror} =    Convert To String    ${berror}
     Should contain    ${serror}    ${substr}
 
 The task error should not contain
     [Arguments]    ${substr}
-    Redis Key Should Be Exist    ${RDB}    ${AGENT_ID}/task/${LAST_TASK_ID}/error
-    ${berror} =    Get From Redis    ${RDB}    ${AGENT_ID}/task/${LAST_TASK_ID}/error
+    Redis Key Should Be Exist    ${RDB}    task/${AGENT_ID}/${LAST_TASK_ID}/error
+    ${berror} =    Get From Redis    ${RDB}    task/${AGENT_ID}/${LAST_TASK_ID}/error
     ${serror} =    Convert To String    ${berror}
     Should not contain    ${serror}    ${substr}
 
 The task error should be equal to
     [Arguments]    ${substr}
-    Redis Key Should Be Exist    ${RDB}    ${AGENT_ID}/task/${LAST_TASK_ID}/error
-    ${berror} =    Get From Redis    ${RDB}    ${AGENT_ID}/task/${LAST_TASK_ID}/error
+    Redis Key Should Be Exist    ${RDB}    task/${AGENT_ID}/${LAST_TASK_ID}/error
+    ${berror} =    Get From Redis    ${RDB}    task/${AGENT_ID}/${LAST_TASK_ID}/error
     ${serror} =    Convert To String    ${berror}
     Should Be Equal As Strings    ${serror}    ${substr}

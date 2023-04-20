@@ -32,9 +32,9 @@ import (
 func runListActions(rdb *redis.Client, task *models.Task) {
 	// Redis key names where the action response is stored:
 	progressChannel := "progress/" + agentPrefix + "/task/" + task.ID
-	outputKey := agentPrefix + "/task/" + task.ID + "/output"
-	errorKey := agentPrefix + "/task/" + task.ID + "/error"
-	exitCodeKey := agentPrefix + "/task/" + task.ID + "/exit_code"
+	outputKey := "task/" + agentPrefix + "/" + task.ID + "/output"
+	errorKey := "task/" + agentPrefix + "/" + task.ID + "/error"
+	exitCodeKey := "task/" + agentPrefix + "/" + task.ID + "/exit_code"
 
 	actionDescriptor := models.CreateOneStepProcessor(task.Action)
 	publishStatus(rdb, progressChannel, actionDescriptor)
@@ -71,9 +71,9 @@ func runListActions(rdb *redis.Client, task *models.Task) {
 func runCancelTask(rdb *redis.Client, task *models.Task, cancelFuncMap map[string]context.CancelFunc) {
 	// Redis key names where the action response is stored:
 	progressChannel := "progress/" + agentPrefix + "/task/" + task.ID
-	outputKey := agentPrefix + "/task/" + task.ID + "/output"
-	errorKey := agentPrefix + "/task/" + task.ID + "/error"
-	exitCodeKey := agentPrefix + "/task/" + task.ID + "/exit_code"
+	outputKey := "task/" + agentPrefix + "/" + task.ID + "/output"
+	errorKey := "task/" + agentPrefix + "/" + task.ID + "/error"
+	exitCodeKey := "task/" + agentPrefix + "/" + task.ID + "/exit_code"
 
 	actionError := ""
 	actionOutput := ""
@@ -101,7 +101,7 @@ func runCancelTask(rdb *redis.Client, task *models.Task, cancelFuncMap map[strin
 		// STEP 2. task-lookup
 		lastStep = "task-lookup"
 		if cancelFunc, hasTask := cancelFuncMap[request.Task]; hasTask == true {
-			log.Printf("%s/task/%s: %s/%s is starting", agentPrefix, task.ID, task.Action, lastStep)
+			log.Printf("task/%s/%s: %s/%s is starting", agentPrefix, task.ID, task.Action, lastStep)
 			cancelFunc() // STEP 3. task cancellation
 			lastStep = "cancellation"
 			exitCode = 0
@@ -131,5 +131,5 @@ func runCancelTask(rdb *redis.Client, task *models.Task, cancelFuncMap map[strin
 	if err != nil {
 		log.Print(SD_ERR+"Redis command failed: ", err)
 	}
-	log.Printf("%s/task/%s: action \"%s\" status is \"%s\" (%d) at step %s", agentPrefix, task.ID, task.Action, actionDescriptor.Status, exitCode, lastStep)
+	log.Printf("task/%s/%s: action \"%s\" status is \"%s\" (%d) at step %s", agentPrefix, task.ID, task.Action, actionDescriptor.Status, exitCode, lastStep)
 }

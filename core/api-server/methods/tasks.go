@@ -462,7 +462,7 @@ func ListenTaskEvents() {
 // @Tags /tasks cluster
 func GetClusterTasks(c *gin.Context) {
 	// define queue name
-	queueName := "cluster/task/*"
+	queueName := "task/cluster/*"
 
 	// get tasks
 	getTasks(c, queueName)
@@ -483,7 +483,7 @@ func GetClusterTaskFiles(c *gin.Context) {
 	taskID := c.Param("task_id")
 
 	// define queue name
-	filePath := "cluster/task/" + taskID
+	filePath := "task/cluster/" + taskID
 
 	// get result of file
 	getTaskFile(c, filePath)
@@ -504,7 +504,7 @@ func GetClusterTaskContext(c *gin.Context) {
 	taskID := c.Param("task_id")
 
 	// define queue name
-	filePath := "cluster/task/" + taskID
+	filePath := "task/cluster/" + taskID
 
 	// get result of file
 	getTaskContext(c, filePath)
@@ -542,7 +542,7 @@ func GetNodeTasks(c *gin.Context) {
 	nodeID := c.Param("node_id")
 
 	// define queue name
-	queueName := "node/" + nodeID + "/task/*"
+	queueName := "task/node/" + nodeID + "/*"
 
 	// get tasks
 	getTasks(c, queueName)
@@ -567,7 +567,7 @@ func GetNodeTaskFiles(c *gin.Context) {
 	taskID := c.Param("task_id")
 
 	// define queue name
-	filePath := "node/" + nodeID + "/task/" + taskID
+	filePath := "task/node/" + nodeID + "/" + taskID
 
 	// get result of file
 	getTaskFile(c, filePath)
@@ -592,7 +592,7 @@ func GetNodeTaskContext(c *gin.Context) {
 	taskID := c.Param("task_id")
 
 	// define queue name
-	filePath := "node/" + nodeID + "/task/" + taskID
+	filePath := "task/node/" + nodeID + "/" + taskID
 
 	// get result of file
 	getTaskContext(c, filePath)
@@ -630,7 +630,7 @@ func GetModuleTasks(c *gin.Context) {
 	moduleID := c.Param("module_id")
 
 	// define queue name
-	queueName := "module/" + moduleID + "/task/*"
+	queueName := "task/module/" + moduleID + "/*"
 
 	// get tasks
 	getTasks(c, queueName)
@@ -655,7 +655,7 @@ func GetModuleTaskFiles(c *gin.Context) {
 	taskID := c.Param("task_id")
 
 	// define queue name
-	filePath := "module/" + moduleID + "/task/" + taskID
+	filePath := "task/module/" + moduleID + "/" + taskID
 
 	// get result of file
 	getTaskFile(c, filePath)
@@ -680,7 +680,7 @@ func GetModuleTaskContext(c *gin.Context) {
 	taskID := c.Param("task_id")
 
 	// define queue name
-	filePath := "module/" + moduleID + "/task/" + taskID
+	filePath := "task/module/" + moduleID + "/" + taskID
 
 	// get result of file
 	getTaskContext(c, filePath)
