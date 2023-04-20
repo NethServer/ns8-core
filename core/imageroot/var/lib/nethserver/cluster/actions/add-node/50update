@@ -91,9 +91,9 @@ agent.assert_exp(rdb.set(f'node/{node_id}/tcp_ports_sequence', 20000) is True)
 #
 agent.assert_exp(rdb.execute_command('ACL', 'SETUSER',
     f'node/{node_id}', 'ON', '#' + node_pwh,
-    'resetkeys', f'~node/{node_id}/*',
+    'resetkeys', f'~node/{node_id}/*', f'~task/node/{node_id}/*',
     'resetchannels', f'&progress/node/{node_id}/*', f'&node/{node_id}/event/*',
-    'nocommands', '+@read', '+@write', '+@transaction', '+@connection', '+publish',
+    'nocommands', '+@read', '+@write', '+@transaction', '+@connection', '+publish', '-@admin',
     '+psync', '+replconf', # commands for replication
 ) == 'OK')
 
