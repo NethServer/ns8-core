@@ -5,6 +5,7 @@ cleanup_list=()
 trap 'rm -rf "${cleanup_list[@]}"' EXIT
 images=()
 repobase="${REPOBASE:-ghcr.io/nethserver}"
+redis_tag=7.0.11-alpine
 
 # Reuse existing gobuilder-core container, to speed up builds
 if ! buildah containers --format "{{.ContainerName}}" | grep -q gobuilder-core; then
@@ -85,11 +86,11 @@ buildah rm "${container}"
 images+=("${repobase}/${reponame}")
 
 echo "Building the Redis image..."
-container=$(buildah from docker.io/redis:6-alpine)
+container=$(buildah from docker.io/redis:${redis_tag})
 reponame="redis"
 # Reset upstream volume configuration: it is necessary to modify /data contents with our .conf file.
 buildah config --volume=/data- "${container}"
-buildah run "${container}" sh <<EOF
+buildah run "${container}" sh <<'EOF'
 mkdir etc
 
 cat >etc/redis.acl <<EOR
