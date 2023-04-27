@@ -136,10 +136,16 @@ def get_internal_domains(rdb):
                 "providers": []
             }
 
+        # Check if the provider can be used also as a SMB file server by
+        # LAN clients. This is possible only with Samba providers but the
+        # attribute is always set despite of that.
+        has_file_server_flag = rdb.sismember(f'module/{module_id}/flags', 'file_server')
+
         domains[conf['domain']]['providers'].append({
             "id": module_id,
             "ui_name": rdb.get(f'module/{module_id}/ui_name') or "",
             "node": int(conf['node']),
+            "file_server": has_file_server_flag,
             "host": conf['host'],
             "port": int(conf['port']),
         })
@@ -160,6 +166,7 @@ def get_internal_domains(rdb):
             "node": int(node_id),
             "host": None,
             "port": None,
+            "file_server": False, # An unconfigured internal provider cannot be a file server
         })
 
     return domains
@@ -192,6 +199,7 @@ def get_external_domains(rdb):
                 "host": host,
                 "port": int(port),
                 "id": host,
+                "file_server": False, # An external provider cannot be a file server
                 "node": None,
                 "ui_name": rdb.hget(f"cluster/user_domain/ldap/{domain_id}/ui_names", epaddr) or "",
             })
