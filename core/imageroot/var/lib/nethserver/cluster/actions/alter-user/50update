@@ -23,6 +23,7 @@
 import sys
 import agent
 import json
+import cluster.grants
 
 #
 # Sample input
@@ -70,4 +71,4 @@ for roledef in request['revoke']: # !!! revoke BEFORE grant
 for roledef in request['grant']:
     cluster.grants.alter_user(rdb, user, False, roledef['role'], roledef['on'])
 
-agent.save_acls(rdb)
+cluster.grants.save_acls(rdb)

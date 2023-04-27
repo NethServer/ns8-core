@@ -23,6 +23,7 @@
 import sys
 import agent
 import json
+import cluster.grants
 
 #
 # Sample input
@@ -45,6 +46,6 @@ rdb.delete(f'roles/{user}')
 
 agent.assert_exp(rdb.execute_command('ACL', 'DELUSER', user) == 1)
 agent.assert_exp(rdb.execute_command('ACL', 'SAVE') == 'OK')
-agent.save_acls(rdb)
+cluster.grants.save_acls(rdb)
 
 print("true")

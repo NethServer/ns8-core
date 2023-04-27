@@ -46,7 +46,7 @@ The following Redis command run the `list-actions` action on the cluster agent:
 
 Read the action output:
 
-    GET cluster/task/1a4a3965-d8d2-4c22-99d5-e17e6a5db36b/output
+    GET task/cluster/1a4a3965-d8d2-4c22-99d5-e17e6a5db36b/output
 
 The action output is a string in JSON format.
 
@@ -80,20 +80,20 @@ The action output is a string in JSON format.
 
 Read the collected stderr data from the action steps:
 
-    GET cluster/task/1a4a3965-d8d2-4c22-99d5-e17e6a5db36b/error
+    GET task/cluster/1a4a3965-d8d2-4c22-99d5-e17e6a5db36b/error
 
 Read the originally submitted task payload:
 
-    GET cluster/task/1a4a3965-d8d2-4c22-99d5-e17e6a5db36b/context
+    GET task/cluster/1a4a3965-d8d2-4c22-99d5-e17e6a5db36b/context
 
 Read the action exit code:
 
-    GET cluster/task/1a4a3965-d8d2-4c22-99d5-e17e6a5db36b/exit_code
+    GET task/cluster/1a4a3965-d8d2-4c22-99d5-e17e6a5db36b/exit_code
 
 The above keys are transient. After a few hours they are evicted. This
 command return the remaining key TTL (Time To Live), in seconds.
 
-    TTL cluster/task/1a4a3965-d8d2-4c22-99d5-e17e6a5db36b/error
+    TTL task/cluster/1a4a3965-d8d2-4c22-99d5-e17e6a5db36b/error
 
 While the action is running, some messages are sent through the progress
 channel. It is possible to get them by subscribing the channel.

@@ -57,7 +57,7 @@ async def run_redisclient_nowait(taskrq, **kwargs):
         }
         await _retry_request(rdb.lpush, f'{taskrq["agent_id"]}/tasks', json.dumps(task_obj))
 
-    return taskrq["agent_id"] + '/task/' + task_id
+    return f"task/{taskrq['agent_id']}/{task_id}"
 
 async def run_redisclient(taskrq, **kwargs):
     redis_username = os.environ['REDIS_USER'] # Fatal if missing!
@@ -74,7 +74,7 @@ async def run_redisclient(taskrq, **kwargs):
         task_id = str(uuid.uuid4())
         taskctx = {
             'id': task_id,
-            'status_path': taskrq['agent_id'] + '/task/' + task_id,
+            'status_path': f"task/{taskrq['agent_id']}/{task_id}",
             'rq': taskrq,
             'lock': asyncio.Lock(),
             'pushed': False,
@@ -131,7 +131,7 @@ async def _cancel_task(
         password=password,
         decode_responses=True,
     ) as rdb:
-        print(f'Sending cancel-task request to {agent_id}/task/{task_id}', file=sys.stderr)
+        print(f'Sending cancel-task request to task/{agent_id}/{task_id}', file=sys.stderr)
         return await rdb.lpush(f"{agent_id}/tasks", json.dumps({
             'id': str(uuid.uuid4()),
             'action': 'cancel-task',

@@ -164,14 +164,14 @@ outobj=add_module_result['output']
 agent.assert_exp(rdb.execute_command('ACL', 'SETUSER',
                     f'module/{module_id}', 'ON',
                     '#' + outobj['redis_sha256'],
-                    f'~module/{module_id}/*',
+                    'resetkeys', f'~module/{module_id}/*', f'~task/module/{module_id}/*',
                     'resetchannels', f'&progress/module/{module_id}/*', f'&module/{module_id}/event/*',
-                    '+@read', '+@write', '+@transaction', '+@connection', '+publish') == 'OK')
+                    '+@read', '+@write', '+@transaction', '+@connection', '+publish', '-@admin') == 'OK')
 
 # Persist ACLs to disk
 agent.assert_exp(rdb.execute_command('ACL', 'SAVE') == 'OK')
 
-agent.save_acls(rdb)
+cluster.grants.save_acls(rdb)
 
 # Every module is authorized for self-administration. The core implicitly
 # permits to run configure-module with the selfadm role, but the role can

@@ -55,13 +55,18 @@ agent.assert_exp(rsyncd_port > 0) # valid destination port number
 
 # Execute the import-module (rsync server)
 data={"credentials": [dmid, secret], "port": rsyncd_port, 'volumes': volumes}
-import_task_result = agent.tasks.run_nowait("module/" + dmid, "import-module",
+redis_task_key_prefix = agent.tasks.run_nowait("module/" + dmid, "import-module",
     data=data,
     endpoint="redis://cluster-leader",
     progress_callback=agent.get_progress_callback(26, 94),
 )
 
+# Extract the last Redis key component to obtain the task UUID
+task_uuid = redis_task_key_prefix.rsplit("/", 1)[1]
+# Translate the Redis task key prefix to an URL path for to quey API server
+apiserver_task_path = f"module/{dmid}/task/{task_uuid}"
+
 # Return connection details
 data['address'] = rsyncd_addr
-data['task'] = import_task_result
+data['task'] = apiserver_task_path
 json.dump(data, fp=sys.stdout)
