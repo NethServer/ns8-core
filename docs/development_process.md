@@ -196,7 +196,7 @@ You can find an overview of the whole workflow [here](https://guides.github.com/
 
 When submitting a PR, check that:
 
-1. PR is submitted against ``master`` (for current stable release)
+1. PR is submitted against the main branch (for current stable release)
 
 2. PR title contains a brief explanation of the feature, fix or enhancement
 
