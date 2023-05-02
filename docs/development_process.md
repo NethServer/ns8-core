@@ -119,9 +119,6 @@ Issues can be tagged using a set of well-known labels:
 - `invalid`: invalid issue, not a bug, duplicate or wontfix. Add a detailed description and link
   to other related issue when using this tag.
 
-Until June 2024, both NethServer 7 (NS7) and NethServer (NS8) are actively supported.
-You can use the `ns7` label label to mark the issues for NethServer 7.
-
 An issue without `bug` label is considered a new feature or an enhancement.
 
 Before introducing new labels, please discuss them with the development team
