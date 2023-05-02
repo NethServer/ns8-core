@@ -301,7 +301,7 @@ Individual commits should contain a cohesive set of changes to the code. These
 6. Wrap the body at 72 characters
 7. Use the body to explain what and why vs. how
 
-For merge commits, and commits pushed directly to master branch (*avoid whenever possible!*),
+For merge commits, and commits pushed directly to the main branch (*avoid whenever possible!*),
 also add the issue reference inside the commit body.
 
 
