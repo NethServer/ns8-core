@@ -5,31 +5,98 @@
     },
     "software_center": {
         "software_updates": "Aggiornamenti",
-        "cluster_up_to_date": "Il cluster è aggiornato"
+        "cluster_up_to_date": "Il cluster è aggiornato",
+        "authors": "Autore | Autori",
+        "app_instances_no_name": "Istanze app",
+        "app_instances": "Istanze {app}",
+        "about_to_uninstall_instance": "<strong>{instance}</strong> verrà disinstallato dal cluster",
+        "instance_label": "Etichetta istanza app",
+        "app_updates": "Aggiornamenti app",
+        "all": "Tutto",
+        "add_to_favorites": "Aggiungi ai preferiti",
+        "app_info": "Info app",
+        "apps_update_will_start_in_a_moment": "L'aggiornamento delle app inizierà a breve...",
+        "bugs": "Bug",
+        "categories": "Categoria | Categorie",
+        "clone_app": "Clona app",
+        "clone_app_description": "Clona istanza e dati di <strong>{instanceLabel}</strong> su altro nodo. L'istanza corrente non verrà modificata.",
+        "core_app_description": "Raccolta delle app principali di {productName}",
+        "core_update": "Aggiornamento di base",
+        "core_apps": "App principali",
+        "app_categories": {
+            "database": "Database",
+            "collaboration": "Collaborazione",
+            "communication": "Comunicazione"
+        },
+        "core_update_will_start_in_a_moment": "L'aggiornamento di base inizierà tra un momento...",
+        "clone": "Clona",
+        "core_app_update_available": "Aggiornamento di base disponibile",
+        "current_node": "Nodo attuale",
+        "cloning_app_to_node": "Clonazione di {instance} su {node} in corso"
     },
     "nodes": {
         "title": "Nodi",
-        "leader": "leader"
+        "leader": "leader",
+        "add_node_to_cluster": "Aggiungi nodo al cluster",
+        "add_node_to_cluster_step_2": "Copia il codice di join nel box sottostante",
+        "add_node_to_cluster_step_4": "Seleziona <strong>Join a cluster</strong>",
+        "add_node_to_cluster_step_3": "Vai a <strong><code>https://IP_NUOVO_NODO/cluster-admin/</code></strong>",
+        "cpu_load": "Carico CPU",
+        "cpu_usage": "Utilizzo CPU",
+        "cpu_load_tooltip": "Carico medio CPU negli ultimi 1 / 5 / 15 minuti",
+        "remove_node_from_cluster": "Rimuovi nodo dal cluster",
+        "remove_from_cluster": "Rimuovi dal cluster",
+        "remove_node_confirm": "Rimuovere <strong>{name}</strong> dal cluster? Questa azione <strong>NON</strong> è reversibile",
+        "add_node_to_cluster_step_1": "Installa {product} sul nuovo nodo",
+        "add_node_to_cluster_step_5": "Incolla il codice di join",
+        "node_vpn_endpoint_address_tooltip": "Assicurati che questo indirizzo dell'endpoint VPN sia raggiungibile da tutti gli altri nodi del cluster",
+        "go_to_cluster_admin": "Vai a Amministrazione cluster",
+        "new_cluster_admin_message": "Da ora in poi, l'amministrazione del cluster sarà disponibile all'indirizzo:<br><code>https://{endpointAddress}/cluster-admin/</code>",
+        "reset_backup_encryption_password_info": "Dopo la promozione del nodo:<ul class='unordered-list'><li>Vai alla sezione <strong>Backup</strong> e imposta la password di crittografia del backup</li><li>Se stai utilizzando l'autenticazione a due fattori (2FA), vai su <strong>Impostazioni / Account</strong> e abilitala nuovamente</li></ul>",
+        "validation_node_is_leader": "Impossibile rimuovere il nodo leader",
+        "nodes_offline_description_c": "Controlla lo stato e la connettività del nodo | Controlla lo stato e la connettività dei nodi",
+        "node_is_offline_description": "Controlla lo stato e la connettività del nodo",
+        "check_node_connectivity": "Controlla la connettività del nodo",
+        "cannot_promote_node": "Impossibile promuovere il nodo"
     },
     "system_logs": {
-        "context_node": "Nodo"
+        "context_node": "Nodo",
+        "context_module": "App",
+        "context_cluster": "Cluster",
+        "add_search": "Aggiungi ricerca",
+        "context": "Contesto",
+        "clear_logs": "Pulisci",
+        "collapse_filters": "Collassa filtri"
     },
     "node_detail": {
-        "title": "Dettagli nodo"
+        "title": "Dettagli nodo",
+        "cpu": "CPU",
+        "core": "Core",
+        "data_received": "Dati ricevuti",
+        "data_sent": "Dati inviati"
     },
     "notification": {
-        "abort": "Annulla"
+        "abort": "Annulla",
+        "confirm_abort": "Conferma annullamento"
     },
     "audit_trail": {
         "action": "Azione",
-        "actions": "Azioni"
+        "actions": "Azioni",
+        "cannot_retrieve_audit_trail": "Impossibile recuperare gli audit log",
+        "cannot_retrieve_audit_actions": "Impossibile recuperare il log delle azioni",
+        "cannot_retrieve_audit_users": "Impossibile recuperare il log degli utenti",
+        "auditInfo": "Audit info",
+        "title": "Audit log"
     },
     "settings_tls_certificates": {
-        "status": "Stato"
+        "status": "Stato",
+        "delete_certificate_for_fqdn": "Elimina certificato per {fqdn}"
     },
     "about": {
         "documentation": "Documentazione",
-        "title": "Informazioni"
+        "title": "Informazioni",
+        "animated_icons_by": "Icone animate di",
+        "by_company": "prodotto da"
     },
     "smarthost": {
         "port_placeholder": "587",
@@ -47,8 +114,23 @@
         "hostname_pattern": "Pattern non valido",
         "nbdomain_pattern": "Pattern non valido",
         "account_provider": "Account provider",
-        "delete_domain": "Delete domain",
-        "create_domain": "Create domain"
+        "delete_domain": "Elimina dominio",
+        "create_domain": "Crea dominio",
+        "cannot_connect_to_domain_controller_description": "Prova a instradare il traffico IP dei domain controller tramite la VPN del cluster",
+        "ipaddress_dc_conflict_check_failed": "Esiste già un provider con questo IP",
+        "empty_state_domains_description": "Crea un dominio per configurare utenti e gruppi",
+        "internal_description": "Installa un account provider su un nodo del cluster",
+        "bind_dn": "Bind DN",
+        "base_dn": "Base DN",
+        "bind_password": "Bind password",
+        "external_description": "Collega a un account provider esistente",
+        "ipaddress_bind_check_failed": "Impossibile collegarsi a una o più porte TCP",
+        "cannot_connect_to_domain_controller": "Impossibile connettersi al domain controller",
+        "configuring_account_provider": "Configurazione dell'account provider in corso, attendere...",
+        "configure_provider": "Configura provider",
+        "delete_external_domain_confirm": "Eliminare il dominio esterno <strong>{name}</strong>? I dati dell'account provider rimarranno intatti, ma se cambi idea dovrai collegare nuovamente il dominio esterno",
+        "delete_internal_domain_confirm": "Eliminare il dominio interno <strong>{name}</strong>? Tutti gli utenti, i gruppi e i dati dell'account provider verranno eliminati. Questa azione è <strong>IRREVERSIBILE</strong>",
+        "choose_node_for_account_provider_installation": "Scegli il nodo per l'installazione dell'account provider"
     },
     "action": {
         "configure-module": "Configura app",
@@ -57,7 +139,29 @@
         "add-backup-repository": "Aggiungi repository per i backup",
         "set-certificate": "Imposta certificato",
         "add-backup": "Aggiungi backup",
-        "get-defaults": "Get defaults"
+        "get-defaults": "Get defaults",
+        "get-cluster-status": "Informazioni status del cluster",
+        "join-cluster": "Join a cluster",
+        "add-favorite": "Aggiungi preferito",
+        "add-external-domain": "Aggiungi dominio esterno",
+        "add-external-provider": "Aggiungi provider esterno",
+        "add-internal-provider": "Aggiungi provider interno",
+        "add-user": "Aggiungi utente",
+        "add-group": "Aggiungi gruppo",
+        "list-users": "Elenca amministratori del cluster",
+        "restore-cluster": "Ripristina cluster",
+        "retrieve-cluster-backup": "Recupera backup del cluster",
+        "add-repository": "Aggiungi repository",
+        "alter-backup": "Modifica backup",
+        "alter-backup-repository": "Modifica repository di backup",
+        "alter-repository": "Modifica repository",
+        "create-cluster": "Crea cluster",
+        "cancel-task": "Annulla task",
+        "change-user-password": "Cambia password per l'utente",
+        "clone-module": "Clona modulo",
+        "remove-group": "Elimina gruppo",
+        "delete-certificate": "Elimina certificato",
+        "delete-route": "Elimina rotta"
     },
     "backup": {
         "configure": "Configura",
@@ -66,7 +170,7 @@
         "apps_configuration_tooltip": "Aggiungi i tuoi repository di backup e pianifica i backup delle app",
         "cluster_backup_password_warning_description_1": "Il backup della configurazione del cluster contiene dati sensibili necessari per eseguire un disaster recovery.",
         "default_backup_name": "Esegui backup su {repository}",
-        "backup_name_helper": "Un nome per il backup facile da ricordare",
+        "backup_name_helper": "Un nome facile da ricordare per il backup",
         "backup_completed_successfully": "{backupName} completato con successo",
         "backup_snapshots": "Snapshot del backup",
         "b2_account_key": "Application key B2",
@@ -82,31 +186,49 @@
         "backblaze_short": "B2",
         "delete_repo_explanation_1": "Verrà eliminato anche qualsiasi backup pianificato che utilizza questo repository, ma i dati di cui è stato eseguito il backup rimarranno intatti nel repository originale. Questa azione <strong>NON</strong> è reversibile.",
         "url_placeholder": "Nome del bucket",
-        "repository_name_helper": "Un nome per il repository facile da ricordare",
+        "repository_name_helper": "Un nome facile da ricordare per il repository",
         "backup_repository_exists": "Esiste già un repository con questo URL",
         "aws_access_key_id": "Access key ID AWS",
         "aws_default_region": "Regione di default AWS",
         "aws_secret_access_key": "Secret access key AWS",
-        "app_instances_not_backed_up": "Applicazioni prive di backup",
+        "app_instances_not_backed_up": "App prive di backup",
         "at": "Alle",
         "backup_details": "Dettagli del backup",
         "backup_disabled": "Backup disabilitato",
         "backup_enabled": "Backup abilitato",
-        "apps": "Applicazioni",
+        "apps": "App",
         "backup_repository_not_accessible": "Impossibile accedere al repository",
         "backup_repository_auth_error": "Impossibile autenticarsi",
         "backup_name": "Nome del backup",
         "backup_has_not_run_yet": "Il backup non è stato ancora eseguito",
         "cluster_backup_password_warning_description_2": "Imposta una password di crittografia complessa, quindi scarica il backup e conservalo in un luogo sicuro.",
         "set_cluster_backup_password": "Imposta password di crittografia",
-        "i_have_stored_encryption_password": "Ho conservato la <strong>password</strong> in un luogo sicuro"
+        "i_have_stored_encryption_password": "Ho conservato la <strong>password</strong> in un luogo sicuro",
+        "schedule_backup_for_instance": "Crea una pianificazione di backup per {instance}",
+        "backup_page_tooltip_8": "<strong>Disaster recovery</strong>: avrai bisogno di un backup della configurazione del cluster e di una nuova installazione di {productName}. Il disaster recovery può essere eseguito solo dalla procedura guidata di configurazione del cluster.",
+        "restore_tooltip": "Puoi ripristinare qualsiasi app precedentemente oggetto di backup o l'intero cluster:",
+        "download_cluster_configuration_backup": "Scarica backup del cluster",
+        "cluster_configuration": "Configurazione cluster",
+        "cluster_configuration_tooltip": "Scarica un file GPG crittografato da utilizzare per ripristinare il cluster in uno scenario di disaster recovery",
+        "change_cluster_backup_password": "Cambia la password di crittografia",
+        "backup_page_tooltip_2": "I dati del cluster sono composti da <strong>dati di configurazione del cluster</strong> e <strong>dati delle app</strong>.",
+        "delete_repository_confirm": "Eliminare il repository di backup <strong>{name}</strong>?",
+        "completed": "Completato",
+        "custom": "Personalizzato",
+        "daily": "Giornaliero",
+        "delete_backup_repository": "Elimina repository backup",
+        "choose_app_instances_to_backup": "Scegli le istanze dell'app di cui eseguire il backup",
+        "choose_destination_repository": "Scegli il repository di destinazione",
+        "backup_repository_auth_error_description": "Controlla le impostazioni del repository"
     },
     "login": {
         "password": "Password",
         "password_placeholder": "La tua password",
         "6_digit_code": "codice 6 cifre",
         "2fa_code_required": "codice 6 cifre richiesto",
-        "username_placeholder": "Il tuo nome utente"
+        "username_placeholder": "Il tuo nome utente",
+        "cannot_login": "Impossibile autenticarsi",
+        "continue": "Procedi"
     },
     "password": {
         "password": "Password"
@@ -117,8 +239,25 @@
         "save_settings": "Save settings",
         "enabled": "Enabled",
         "disabled": "Disabled",
-        "delete": "Delete",
-        "advanced": "Advanced"
+        "delete": "Elimina",
+        "advanced": "Avanzate",
+        "join_code": "Codice di join",
+        "cluster_label": "Etichetta cluster",
+        "all": "Tutto",
+        "cluster_label_tooltip": "Puoi assegnare al cluster un nome facile da ricordare",
+        "all_good": "Tutto bene",
+        "all_nodes": "Tutti i nodi",
+        "cancel": "Annulla",
+        "case_sensitive": "Sensibile a maiuscole e minuscole",
+        "close": "Chiudi",
+        "copied_to_clipboard": "Copiato!",
+        "copy_to_clipboard": "Copia negli appunti",
+        "clear_search": "Pulisci ricerca",
+        "collapse": "Collassa",
+        "clear_selection": "Pulisci selezione",
+        "clear_filter": "Pulisci filtro",
+        "upload_drop_target_text": "Fai clic o trascina e rilascia il file qui",
+        "core_module_c": "App principale | App principali"
     },
     "error": {
         "error": "Errore",
@@ -129,11 +268,17 @@
         "generic_error": "Qualcosa è andato storto",
         "401": "Autenticazione non valida",
         "403": "Operazione non autorizzata",
-        "cannot_retrieve_backups": "Impossibile recuperare i backup"
+        "cannot_retrieve_backups": "Impossibile recuperare i backup",
+        "cannot_retrieve_cluster_nodes": "Impossibile recuperare i nodi del cluster",
+        "cannot_retrieve_cluster_tasks": "Impossibile recuperare i task del cluster",
+        "cannot_retrieve_available_apps": "Impossibile recuperare le app disponibili",
+        "cannot_retrieve_installed_apps": "Impossibile recuperare le app installate",
+        "cannot_retrieve_task_status": "Impossibile recuperare lo stato del task"
     },
     "task": {
         "configure": "Configura",
-        "cannot_create_task": "Impossibile eseguire task {action}"
+        "cannot_create_task": "Impossibile eseguire task {action}",
+        "completed": "Completato"
     },
     "settings": {
         "title": "Impostazioni"
@@ -141,17 +286,133 @@
     "init": {
         "backup_password": "Password del backup",
         "backup_repositories": "Repository del backup",
-        "backup_date": "Data del backup"
+        "backup_date": "Data del backup",
+        "join_code_helper_text": "Puoi ottenere il codice di join accedendo",
+        "join_cluster": "Join a cluster",
+        "create_cluster": "Crea cluster",
+        "create_cluster_description": "Crea un nuovo cluster e promuovi questo nodo come leader",
+        "create_cluster_instead": "Crea invece un nuovo cluster",
+        "join_cluster_instead": "Esegui invece il join a un cluster esistente",
+        "join_cluster_description": "Aggiungi questo nodo a un cluster esistente",
+        "redirect_cluster": "Nodo Worker",
+        "invalid_join_code": "Codice di join non valido",
+        "redirect_cluster_link": "Vai a Amministrazione cluster",
+        "node_added_to_cluster": "Nodo {nodeId} aggiunto al cluster",
+        "restore_cluster": "Ripristina cluster",
+        "restore_cluster_description": "Ripristina cluster e app dal backup",
+        "restore_from_cluster_backup_file": "Ripristina da file di backup del cluster",
+        "redirect_cluster_description": "Questo nodo è ora un worker del cluster. Fare clic sul pulsante in basso per accedere alla pagina di amministrazione del cluster dal nodo principale.",
+        "upload_cluster_backup_file": "Carica file di backup del cluster",
+        "cluster_label": "Etichetta cluster",
+        "invalid_passphrase": "Password non valida. Immettere la password utilizzata per crittografare il backup del cluster.",
+        "restoring_cluster": "Ripristino del cluster in corso",
+        "creating_cluster": "Creazione cluster in corso...",
+        "change_password": "Cambia password",
+        "change_admin_password": "Cambia la password dell'amministratore",
+        "configure_node": "Configura questo nodo",
+        "current_password": "Password attuale dell'amministratore"
     },
     "account_provider": {
         "title": "Account provider"
     },
     "shell": {
         "account_settings": "Impostazioni account",
-        "account": "Account"
+        "account": "Account",
+        "app_launcher": "Avvio app"
     },
     "settings_account": {
         "title": "Account",
-        "2fa_qr_code": "QR code 2FA"
+        "2fa_qr_code": "QR code 2FA",
+        "cannot_verify_code": "Impossibile verificare il codice",
+        "cannot_revoke_2fa": "Impossibile revocare la 2FA",
+        "cannot_retrieve_2fa_qr_code": "Impossibile recuperare il QR code per la 2FA",
+        "change_password": "Cambia password",
+        "cannot_retrieve_2fa_status": "Impossibile recuperare lo stato della 2FA",
+        "current_user_password": "Password attuale di {user}"
+    },
+    "settings_sw_repositories": {
+        "repository_same_name_already_exists": "Esiste già un repository con questo nome",
+        "repository_same_url_already_exists": "Esiste già un repository con questo URL",
+        "create_repository": "Aggiungi repository"
+    },
+    "settings_cluster_admins": {
+        "no_admin": "Nessun amministratore",
+        "title": "Amministratori cluster",
+        "change_password": "Cambia password",
+        "no_admin_description": "Non ci sono amministratori configurati",
+        "edit_display_name": "Modifica nome visualizzato",
+        "username": "Nome utente",
+        "create_admin_admin": "Crea amministratore {admin}",
+        "display_name": "Nome visualizzato",
+        "delete_admin_admin": "Elimina amministratore {admin}",
+        "edit_display_name_for_admin": "Modifica nome visualizzato per {admin}",
+        "change_password_for_admin": "Cambia password per {admin}",
+        "user_already_exists": "Admin esiste già",
+        "you": "Tu",
+        "no_display_name": "Nessun nome visualizzato",
+        "create_admin": "Crea amministratore",
+        "search_admin": "Cerca amministratore",
+        "delete_admin": "Elimina amministratore",
+        "delete_admin_description": "Eliminare l'amministratore <strong>{name}</strong>? Non sarà più in grado di accedere."
+    },
+    "cluster_status": {
+        "go_to_software_center": "Vai a Software center",
+        "go_to_backup": "Vai a Backup",
+        "backups_failed_c": "{num} backup fallito | {num} backup falliti",
+        "instances_not_backed_up_c": "{num} app senza backup | {num} app senza backup",
+        "updated_available_c": "Aggiornamento disponibile | Aggiornamenti disponibili",
+        "core_update_available": "Aggiornamento di base disponibile",
+        "title": "Status cluster",
+        "go_to_nodes": "Vai a Nodi",
+        "apps_installed_c": "App installata | App installate"
+    },
+    "domain_users": {
+        "attributes": "Attributi",
+        "cannot_make_changes_to_an_external_domain": "Impossibile apportare modifiche a un dominio esterno",
+        "change_password_for_user": "Cambia password per {user}",
+        "change_password": "Cambia password",
+        "create_user": "Crea utente",
+        "delete_group_description": "Eliminare il gruppo <strong>{name}</strong>? Tutti gli utenti di questo gruppo perderanno l'accesso alle risorse associate al gruppo.",
+        "create_user_user": "Crea utente {user}",
+        "create_group_group": "Crea gruppo {group}",
+        "delete_group_group": "Elimina gruppo {group}",
+        "create_group": "Crea gruppo"
+    },
+    "domain_configuration": {
+        "add_provider": "Aggiungi provider",
+        "max_instances_reached": "Nessun nodo cluster disponibile per installare un nuovo provider. Ogni nodo può ospitare un solo provider per dominio",
+        "cannot_delete_provider": "Impossibile eliminare il provider",
+        "cannot_delete_only_provider": "Impossibile eliminare l'unico provider configurato per un dominio",
+        "delete_provider": "Elimina provider",
+        "configuration": "Configurazione",
+        "delete_provider_confirm": "Eliminare il provider <strong>{name}</strong>? Questa azione è <strong>IRREVERSIBILE</strong>"
+    },
+    "app_drawer": {
+        "all_apps": "Tutte le app"
+    },
+    "settings_cluster": {
+        "title": "Cluster"
+    },
+    "settings_http_routes": {
+        "host_tooltip": "Un esempio di host valido è: <code>myapp.example.org</code>",
+        "url_tooltip": "Un esempio di URL valido è: <code>http://127.0.0.0:2000</code>",
+        "url_helper": "URL di destinazione del backend",
+        "create_route": "Crea rotta",
+        "create_route_route": "Crea rotta {route}",
+        "delete_route_route": "Elimina rotta {route}",
+        "delete_route_description": "Eliminare rotta <strong>{name}</strong>? Qualsiasi applicazione associata a questa rotta non sarà più accessibile."
+    },
+    "samba": {
+        "choose_samba_admin_username": "Scegli il nome utente dell'amministratore di Samba",
+        "choose_samba_admin_password": "Scegli una password per l'utente amministratore di Samba"
+    },
+    "calendar": {
+        "days": "Giorni"
+    },
+    "hint": {
+        "copy_to_clipboard": "Clicca qui per copiare negli appunti"
+    },
+    "openldap": {
+        "choose_openldap_admin_password": "Scegli una password per l'utente amministratore di OpenLDAP"
     }
 }
