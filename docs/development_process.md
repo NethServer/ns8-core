@@ -37,7 +37,7 @@ Yes, if what you’re talking about will produce some code.
 By the way, it’s perfectly reasonable not to fill issues for
 occasional small fixes, like typos in translations.
 
-When implementing small fixes, always avoid commits to the master branch.
+When implementing small fixes, always avoid commits to the main branch.
 Open a [pull request](#pull-requests) and carefully describe the problem.
 Creation of issues can be avoided only for trivial fixes which require
 no QA effort.
