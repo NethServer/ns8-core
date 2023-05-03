@@ -170,10 +170,10 @@ Then create a new Pull Request (PR) to [ns8-repomd](https://github.com/NethServe
 The PR should contain:
 - a new [directory](https://github.com/NethServer/ns8-repomd/tree/main/dokuwiki) with the name of the module
 - the directory should contain:
-  - a file named [`metadata.json`]({{site.baseurl}}/modules/metadata#metadata.json) which contains all information regarding the module itself
   - a logo file named [logo.png]({{site.baseurl}}/modules/metadata#logo)
   - a screenshots directory with one ore more screenshots (optional)
 
+If the package *is not* hosted on GitHub under NethServer organization, you must also
+add a [`metadata.json`]({{site.baseurl}}/modules/metadata#metadata.json) file inside the above directory.
+
 When the PR has been merged, [repository metadata](https://github.com/NethServer/ns8-repomd/tree/repomd) will be automatically updated accordingly.
-
-
