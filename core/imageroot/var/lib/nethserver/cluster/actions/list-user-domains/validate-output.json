@@ -32,6 +32,7 @@
                             "id": "openldap1",
                             "ui_name": "",
                             "node": 1,
+                            "file_server": false,
                             "host": "10.110.32.2",
                             "port": 20003
                         },
@@ -39,6 +40,7 @@
                             "id": "openldap2",
                             "ui_name": "",
                             "node": 2,
+                            "file_server": false,
                             "host": "10.110.32.3",
                             "port": 20002
                         }
@@ -63,6 +65,7 @@
                             "id": "ldap-primary.company.org",
                             "ui_name": "Company LDAP primary",
                             "node": null,
+                            "file_server": false,
                             "host": "ldap-master.company.org",
                             "port": 636
                         },
@@ -70,6 +73,7 @@
                             "id": "ldap-replica.company.org",
                             "ui_name": "Company LDAP replica",
                             "node": null,
+                            "file_server": false,
                             "host": "ldap-replica.company.org",
                             "port": 636
                         }
@@ -268,6 +272,7 @@
                 "id",
                 "ui_name",
                 "node",
+                "file_server",
                 "host",
                 "port"
             ],
@@ -285,6 +290,10 @@
                         "null"
                     ],
                     "minimum": 1
+                },
+                "file_server": {
+                    "title": "The provider can be used as SMB file server too",
+                    "type": "boolean"
                 },
                 "host": {
                     "title": "Host name or IP address",
