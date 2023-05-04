@@ -149,7 +149,7 @@ A comment must convey the reason why it is invalid, like *"duplicate of (URL of 
 The *QA team member*.
 
 * Takes an unassigned issue with label **testing** and sets the *Assignee* field
-  to him/herself.
+  to themselves.
 
 * Tests the package, following the test case documentation written by the
   *Developer*.
