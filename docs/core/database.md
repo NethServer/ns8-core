@@ -174,6 +174,7 @@ subsections for more information.
 |cluster/environment NODE_ID            |INTEGER    |The node ID of the leader node |
 |cluster/ui_name                        |STRING     |UI label for the cluster|
 |cluster/uuid                           |STRING     |Generated UUID that identifies the cluster|
+|cluster/override/modules               |HASH       |Maps (image name) => (image URL), overriding the standard image name/URL resolution function |
 
 #### cluster/smarthost
 

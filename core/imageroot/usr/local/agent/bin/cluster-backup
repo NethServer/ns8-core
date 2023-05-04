@@ -75,7 +75,7 @@ for k in ['network', 'ui_name', 'uuid']:
 dump['cluster']['favorites'] = list(rdb.smembers(f'cluster/favorites'))
 
 # cluster: module URL override
-dump['cluster']['override']['modules'] = rdb.hgetall('override/modules')
+dump['cluster']['override']['modules'] = rdb.hgetall('cluster/override/modules')
 
 # modules: backup schedules
 for m in rdb.scan_iter('module/*/backups'):
