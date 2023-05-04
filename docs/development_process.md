@@ -343,4 +343,4 @@ Updates to modules must obey the following rules:
 
 * New behaviors must be enabled by an explicit and documented sysadmin operation
 
-* Modules must support updates from any previous release of the same branch
+* Modules must support updates from any previous release of the same major release
