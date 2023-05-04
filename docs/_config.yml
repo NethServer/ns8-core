@@ -13,8 +13,8 @@
 # you will see them accessed via {{ site.title }}, {{ site.github_repo }}, and so on.
 # You can create any custom variable you would like, and they will be accessible
 # in the templates via {{ site.myvariable }}.
-title: NethServer 8
-description: NS8 - cloud in a box
+title: NS8 dev manual
+description: NS8 - Developer manual
 remote_theme: pmarsceill/just-the-docs
 
 baseurl: /ns8-core
