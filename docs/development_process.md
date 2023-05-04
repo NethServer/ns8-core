@@ -98,7 +98,7 @@ The priority of a bug depends on:
 
 ## Issue tracker
 
-The NethServer project is hosted on GitHub and is constituted by many git
+The NethServer project is hosted on GitHub and is constituted by many Git
 repositories.  We set one of them to be the issue tracker:
 
 [https://github.com/NethServer/dev](https://github.com/NethServer/dev)
@@ -154,9 +154,9 @@ The *QA team member*.
 * Tests the package, following the test case documentation written by the
   *Developer*.
 
-* When test finishes he/she removes the **testing** label and clears the *Assignee*
-  field.  If the test is *successful*, he/she sets the **verified** label,
-  otherwise he/she alerts the *Developer* and the *Packager* to plan a new
+* When test finishes they remove the **testing** label and clears the *Assignee*
+  field.  If the test is *successful*, they set the **verified** label,
+  otherwise they alert the *Developer* and the *Packager* to plan a new
   process iteration.
 
 
