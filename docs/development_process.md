@@ -25,7 +25,7 @@ feature, inside a tracker. There are two kind of issues:
   designing a new UI panel.
 
 Bugs and enhancements will always produce some code changes inside one or more
-git repositories.
+Git repositories.
 
 Each repository is associated with one or more container images. Changes to the code
 produce new releases of modules.
