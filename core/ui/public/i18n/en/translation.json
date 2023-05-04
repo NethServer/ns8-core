@@ -770,7 +770,8 @@
       "storage": "Storage",
       "monitoring": "Monitoring",
       "web": "Web",
-      "communication": "Communication"
+      "communication": "Communication",
+      "security": "Security"
     }
   },
   "system_logs": {
