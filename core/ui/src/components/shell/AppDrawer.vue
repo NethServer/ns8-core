@@ -461,10 +461,13 @@ export default {
 
       for (let instanceList of Object.values(taskResult.output)) {
         for (let instance of instanceList) {
-          // skip instance if it's an account provider app or a core app
+          // show app instance if:
+          // - it's not a core app, OR
+          // - it's a samba file server instance
           if (
-            !instance.flags.includes("account_provider") &&
-            !instance.flags.includes("core_module")
+            !instance.flags.includes("core_module") ||
+            (instance.flags.includes("account_provider") &&
+              instance.flags.includes("file_server"))
           ) {
             apps.push(instance);
           }

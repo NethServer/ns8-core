@@ -921,6 +921,9 @@
   "samba": {
     "adminuser": "Samba admin username",
     "choose_samba_admin_username": "Choose Samba admin username",
+    "samba_admin_username_tooltip_1": "If you choose a username other than <strong>administrator</strong>:",
+    "samba_admin_username_tooltip_2": "The specified user will be added to <strong>Domain Admins</strong> group",
+    "samba_admin_username_tooltip_3": "<strong>administrator</strong> user will be disabled and a random password will be set to it",
     "adminpass": "Samba admin password",
     "adminpass_confirm": "Re-enter Samba admin password",
     "choose_samba_admin_password": "Choose a password for Samba admin user",

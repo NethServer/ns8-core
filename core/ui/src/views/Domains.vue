@@ -74,7 +74,8 @@
           <cv-tile light>
             <cv-skeleton-text
               :paragraph="true"
-              :line-count="8"
+              :line-count="6"
+              heading
             ></cv-skeleton-text>
           </cv-tile>
         </cv-column>
@@ -314,6 +315,14 @@
                         {{ domain.providers.length }}
                         {{ $tc("domains.providers", domain.providers.length) }}
                       </cv-link>
+                      <template v-if="domain.fileServerProvider">
+                        <span class="bullet-separator">&bull;</span>
+                        <cv-link
+                          @click="goToFileServer(domain.fileServerProvider)"
+                        >
+                          <span>{{ $t("samba.file_server") }}</span>
+                        </cv-link>
+                      </template>
                     </div>
                     <div class="row actions">
                       <NsButton
@@ -480,8 +489,9 @@ export default {
         domains.sort(this.sortByProperty("name"));
       }
 
-      // check for unconfigured providers
       for (const domain of domains) {
+        // check for unconfigured providers
+
         const unconfiguredProvidersFound = domain.providers.find(
           (p) => !p.host
         );
@@ -491,8 +501,17 @@ export default {
         } else {
           domain.hasUnconfiguredProviders = false;
         }
-      }
 
+        // check samba file server
+
+        const fileServerProviderFound = domain.providers.find(
+          (p) => p.file_server
+        );
+
+        if (fileServerProviderFound) {
+          domain.fileServerProvider = fileServerProviderFound;
+        }
+      }
       this.domains = domains;
 
       let unconfiguredDomains = taskResult.output.unconfigured_domains;
@@ -676,6 +695,9 @@ export default {
         params: { domainName: domain.name },
         hash: anchor ? "#" + anchor : "",
       });
+    },
+    goToFileServer(fileServerProvider) {
+      this.$router.push(`/apps/${fileServerProvider.id}`);
     },
   },
 };

@@ -128,19 +128,6 @@
               ref="adminpass"
               name="adminpass"
             ></NsTextInput>
-            <cv-combo-box
-              v-model="samba.ipaddress"
-              :options="samba.ipAddressOptions"
-              auto-highlight
-              :title="$t('samba.ipaddress')"
-              :invalid-message="$t(error.samba.ipaddress)"
-              :disabled="
-                loading.samba.configureModule || loading.samba.getDefaults
-              "
-              light
-              ref="ipaddress"
-            >
-            </cv-combo-box>
             <NsTextInput
               :label="$t('samba.hostname')"
               v-model.trim="samba.hostname"
@@ -151,6 +138,65 @@
               ref="hostname"
             >
             </NsTextInput>
+            <NsInlineNotification
+              v-if="!samba.canInstallFileServer"
+              kind="info"
+              :description="$t('samba.enable_file_server_disabled_info')"
+              :showCloseButton="false"
+            />
+            <NsToggle
+              :label="$t('samba.enable_file_server_label')"
+              value="enableFileServer"
+              :form-item="true"
+              v-model="samba.enableFileServer"
+              :disabled="
+                !samba.canInstallFileServer ||
+                loading.samba.configureModule ||
+                loading.samba.getDefaults
+              "
+              tooltipAlignment="start"
+              tooltipDirection="bottom"
+              ref="enableFileServer"
+            >
+              <template slot="tooltip">{{
+                $t("samba.enable_file_server_tooltip")
+              }}</template>
+              <template slot="text-left">{{ $t("common.disabled") }}</template>
+              <template slot="text-right">{{ $t("common.enabled") }}</template>
+            </NsToggle>
+            <NsInlineNotification
+              v-if="samba.enableFileServer"
+              kind="warning"
+              :title="$t('common.warning')"
+              :description="$t('samba.choose_ip_address_warning')"
+              :showCloseButton="false"
+            />
+            <NsComboBox
+              v-if="samba.enableFileServer"
+              v-model="samba.ipaddress"
+              :label="$t('common.choose')"
+              :options="filteredIpAddressOptions"
+              auto-highlight
+              :title="$t('samba.provider_ipaddress')"
+              :invalid-message="$t(error.samba.ipaddress)"
+              :disabled="
+                loading.samba.configureModule || loading.samba.getDefaults
+              "
+              light
+              class="mg-bottom-5"
+              ref="ipaddress"
+            >
+            </NsComboBox>
+            <NsInlineNotification
+              v-if="!samba.enableFileServer && vpnInterface"
+              kind="info"
+              :description="
+                $t('samba.provider_on_vpn_address_message', {
+                  vpnIpAddress: vpnInterface.value,
+                })
+              "
+              :showCloseButton="false"
+            />
           </cv-form>
           <NsInlineNotification
             v-if="error.samba.configureModule"
@@ -235,6 +281,8 @@ export default {
         ipaddress: "",
         ipAddressOptions: [],
         hostname: "",
+        canInstallFileServer: false,
+        enableFileServer: false,
       },
       loading: {
         openldap: {
@@ -295,6 +343,21 @@ export default {
       return (
         this.step == "installingProvider" || this.step == "configuringProvider"
       );
+    },
+    vpnInterface() {
+      return this.samba.ipAddressOptions.find((option) => {
+        return option.iface === "wg0";
+      });
+    },
+    filteredIpAddressOptions() {
+      if (this.samba.enableFileServer) {
+        // remove VPN IP address from options
+        return this.samba.ipAddressOptions.filter((option) => {
+          return option != this.vpnInterface;
+        });
+      } else {
+        return this.samba.ipAddressOptions;
+      }
     },
   },
   watch: {
@@ -543,6 +606,7 @@ export default {
       this.samba.adminuser = defaults.adminuser;
       this.samba.adminpass = "";
       this.samba.hostname = defaults.hostname;
+      this.samba.canInstallFileServer = defaults.can_install_file_server;
 
       // ip address combo box
       let index = 0;
@@ -551,6 +615,7 @@ export default {
           name: ipObject.ipaddress.replace(/\W/g, "_"),
           label: ipObject.ipaddress + " - " + ipObject.label,
           value: ipObject.ipaddress,
+          iface: ipObject.label,
         };
         this.$set(this.samba.ipAddressOptions, index, option);
         index++;
@@ -656,6 +721,11 @@ export default {
       const taskAction = "configure-module";
       const eventId = this.getUuid();
       this.configureProviderProgress = 0;
+
+      if (!this.samba.enableFileServer) {
+        // set VPN address as IP address
+        this.samba.ipaddress = this.vpnInterface.value;
+      }
 
       // register to task validation
       this.$root.$once(
@@ -917,5 +987,9 @@ export default {
   .cv-combo-box {
     margin-bottom: $spacing-06;
   }
+}
+
+.mg-bottom-5 {
+  margin-bottom: 5rem !important;
 }
 </style>
