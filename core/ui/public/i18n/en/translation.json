@@ -770,7 +770,8 @@
       "storage": "Storage",
       "monitoring": "Monitoring",
       "web": "Web",
-      "communication": "Communication"
+      "communication": "Communication",
+      "security": "Security"
     }
   },
   "system_logs": {
@@ -925,11 +926,19 @@
     "choose_samba_admin_password": "Choose a password for Samba admin user",
     "realm": "Domain",
     "ipaddress": "IP address",
+    "provider_ipaddress": "Provider IP address",
     "hostname": "Hostname",
     "nbdomain": "NetBIOS domain",
     "enter_samba_admin_username": "Login as Samba admin",
     "enter_samba_admin_password": "Enter Samba admin password",
-    "samba_configuration": "Samba configuration"
+    "samba_configuration": "Samba configuration",
+    "enable_file_server_label": "Provide file shares and authentication to Windows clients",
+    "enable_file_server_tooltip": "Enable this switch and select the desired IP address to provide Active Directory services to clients in the local private network",
+    "enable_file_server_disabled_info": "File shares and authentication to Windows clients cannot be enabled because they are already configured on another provider of this domain",
+    "provider_on_vpn_address_message": "The new provider will be configured on the VPN IP address <strong>{vpnIpAddress}</strong>",
+    "choose_ip_address_warning": "Make sure to select an IP address reachable by Windows clients. This choice is <strong>NOT</strong> reversible",
+    "file_server": "File server",
+    "open_file_server": "Open file server"
   },
   "openldap": {
     "domain": "Domain",
