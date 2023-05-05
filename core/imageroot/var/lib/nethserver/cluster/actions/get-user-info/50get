@@ -22,7 +22,7 @@ if (user == 'cluster' or '/' in user):
     sys.exit(2)
 
 # init redis db
-rdb = agent.redis_connect(privileged=False)
+rdb = agent.redis_connect(privileged=True)
 
 # get user info
 info = rdb.hgetall('user/' + user)

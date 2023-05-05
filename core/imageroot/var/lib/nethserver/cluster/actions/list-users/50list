@@ -11,7 +11,7 @@ import json
 import agent
 import cluster.grants
 
-rdb = agent.redis_connect(privileged=False)
+rdb = agent.redis_connect(privileged=True)
 
 users = []
 
