@@ -24,7 +24,7 @@ if you want to follow this guide step-by-step.
 
 Before proceed, please [login to GitHub](https://github.com/login) or [create a new account](https://github.com/signup).
 
-On your machine you will also need [git](https://git-scm.com/) and a text editor.
+On your machine you will also need [GIT](https://git-scm.com/) and a text editor.
 
 ## Step 1: clone the kickstart repository
 
@@ -35,11 +35,7 @@ generate a new repository.
 1. Name your repo with `ns8-` prefix (e.g. `ns8-mymodule`). 
    Do not end your module name with a number, like ~~`ns8-baaad2`~~!
 
-1. An automated initialization workflow will start: wait for its completion.
-   You can follow the run inside the "Actions" tab, the workflow is named "Initial commit".
-   At the end, a new `Repository initialization` commit will appear inside your git history.
-
-1. You can now clone the repository
+1. Clone the repository and follow the instructions inside the README
 
 ## Step 2: edit the code
 
