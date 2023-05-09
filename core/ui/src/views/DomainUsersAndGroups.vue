@@ -222,10 +222,6 @@ export default {
     listUserDomainsCompleted(taskContext, taskResult) {
       let domains = taskResult.output.domains;
       this.domain = domains.find((domain) => domain.name === this.domainName);
-
-      //// remove mock
-      // this.domain.location = "external";
-
       this.loading.listUserDomains = false;
     },
     onUsersLoaded(users) {

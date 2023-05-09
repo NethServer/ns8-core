@@ -428,9 +428,6 @@ export default {
         const endpoint =
           window.location.protocol + "//" + window.location.hostname;
 
-        console.log("endpoint", endpoint); ////
-        console.log("leaderListenPort", this.leaderListenPort); ////
-
         // join code is obtained by concatenating endpoint, leader VPN port and auth token with pipe character
         this.joinCode = btoa(
           endpoint + "|" + this.leaderListenPort + "|" + loginInfo.token

@@ -398,6 +398,14 @@
                     <span>{{ provider.host }}</span>
                     <span v-if="provider.port">:{{ provider.port }}</span>
                   </div>
+                  <div v-if="provider.file_server" class="row actions">
+                    <NsButton
+                      kind="ghost"
+                      :icon="Application20"
+                      @click="goToFileServer(provider)"
+                      >{{ $t("samba.open_file_server") }}</NsButton
+                    >
+                  </div>
                 </div>
               </template>
             </NsInfoCard>
@@ -967,6 +975,9 @@ export default {
         }
       }
       return this.$t("common.node") + " " + nodeId;
+    },
+    goToFileServer(provider) {
+      this.$router.push(`/apps/${provider.id}`);
     },
   },
 };
