@@ -1,11 +1,19 @@
-# NethServer 8: cloud in a box
+# NethServer 8 Core
 
-NethServer 8 (NS8), is the evolution of NethServer 7 (NS7).
+This repository contains the NethServer 8 Core source code, the developer
+documentation, CI/CD automation, and the installation procedure.
 
-Links:
-- [Developer manual](https://nethserver.github.io/ns8-core/)
-- [API documentation](https://github.com/NethServer/ns8-core/tree/apidoc)
-- [Project roadmap](https://trello.com/b/R58gtZ8I/ns8-prototype)
+* Find more information in the [Developer
+  manual](https://nethserver.github.io/ns8-core/)
+
+* Quick link to [API
+  docs](https://github.com/NethServer/ns8-core/tree/apidoc)
+
+* Translate the UI with
+  [Weblate](https://hosted.weblate.org/projects/ns8/)
+
+Useful links
+
+- [Website](https://www.nethserver.org)
+- [Project roadmap](https://trello.com/b/R58gtZ8I/ns8)
 - [Admin's manual](https://ns8.nethserver.org)
-
-Translated with [Weblate](https://hosted.weblate.org/projects/ns8/).
