@@ -228,6 +228,9 @@ export default {
 
       // reload domains
       this.$emit("reloadDomains");
+
+      // reload app drawer (samba file server might have disappeared)
+      this.$root.$emit("reloadAppDrawer");
     },
   },
 };

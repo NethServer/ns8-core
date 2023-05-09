@@ -588,6 +588,9 @@ export default {
     },
     removeInternalDomainCompleted() {
       this.listUserDomains();
+
+      // reload app drawer (samba file server might have disappeared)
+      this.$root.$emit("reloadAppDrawer");
     },
     async removeExternalDomain(domain) {
       this.error.removeExternalDomain = "";
