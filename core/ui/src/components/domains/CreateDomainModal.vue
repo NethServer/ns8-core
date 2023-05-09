@@ -1187,6 +1187,9 @@ export default {
 
       // reload domains
       this.$emit("reloadDomains");
+
+      // reload app drawer (samba file server might have appeared)
+      this.$root.$emit("reloadAppDrawer");
     },
     configureSambaModuleAborted(taskResult, taskContext) {
       console.error(`${taskContext.action} aborted`, taskResult);
