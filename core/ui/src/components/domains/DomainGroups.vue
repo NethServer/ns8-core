@@ -83,35 +83,6 @@
                 >
                   <cv-data-table-cell>{{ row.group }}</cv-data-table-cell>
                   <cv-data-table-cell>{{ row.description }}</cv-data-table-cell>
-                  <!-- //// group users -->
-                  <!-- <cv-data-table-cell>
-                    <span v-if="row.users.length < 3">
-                      {{ row.users.join(", ") }}
-                    </span>
-                    <span v-else>
-                      {{ row.users[0] }}
-                      <cv-interactive-tooltip
-                        alignment="center"
-                        direction="right"
-                        class="tooltip-with-text-trigger"
-                      >
-                        <template slot="trigger">
-                          <span class="others">
-                            {{
-                              $t("domain_users.plus_others", {
-                                num: row.users.length - 1,
-                              })
-                            }}
-                          </span>
-                        </template>
-                        <template slot="content">
-                          <div v-for="user in row.users" :key="user">
-                            {{ user }}
-                          </div>
-                        </template>
-                      </cv-interactive-tooltip>
-                    </span>
-                  </cv-data-table-cell> -->
                   <cv-data-table-cell
                     v-if="domain && domain.location == 'internal'"
                     class="table-overflow-menu-cell"
@@ -374,8 +345,4 @@ export default {
 
 <style scoped lang="scss">
 @import "../../styles/carbon-utils";
-
-// .others { ////
-//   margin-left: $spacing-02;
-// }
 </style>

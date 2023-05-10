@@ -250,10 +250,9 @@ export default {
         const parentTask = this.getTaskById(taskContext.parent);
 
         if (!parentTask) {
-          //// remove
-          console.log("parentTask not found, ignoring");
-          console.log("  taskContext", taskContext);
-          console.log("  payload", payload);
+          console.warn("parentTask not found, ignoring");
+          console.warn("  taskContext", taskContext);
+          console.warn("  payload", payload);
         } else {
           // check if subTask has already been added to subTasks list
           const subTask = parentTask.subTasks.find(

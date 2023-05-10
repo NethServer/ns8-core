@@ -50,8 +50,6 @@ export default {
   ],
   data() {
     return {
-      //// TODO later
-      // CLUSTER_STATUS_TIME_INTERVAL: 10000,
       isMaster: true,
       isLoaded: false,
       retryWsConnectionInterval: 0,
@@ -209,7 +207,7 @@ export default {
 
           // logout if 401 response code is intercepted
           if (error.response?.status == 401) {
-            console.log("axios interceptor detected 401, logout"); ////
+            console.warn("Axios interceptor detected 401, logout");
 
             let sessionExpiredTitle = "";
             let sessionExpiredDescription = "";
@@ -255,9 +253,6 @@ export default {
       this.setLogoutInfoInStore(logoutInfo);
       this.deleteFromStorage("loginInfo");
       this.setLoggedUserInStore("");
-
-      //// TODO later
-      // clearInterval(this.clusterStatusInterval);
       this.closeWebSocket();
       this.isLoaded = true;
 
@@ -272,9 +267,6 @@ export default {
         this.$options.sockets.notification = null;
       }
     },
-    // retrieveRecurringClusterStatus() { ////
-    //   this.retrieveClusterStatus(false);
-    // },
     async retrieveClusterStatus(initial) {
       const taskAction = "get-cluster-status";
       const eventId = this.getUuid();
@@ -337,24 +329,10 @@ export default {
 
       // needed to set leader listen port in store after cluster creation
       this.retrieveClusterStatus(false);
-
-      //// TODO later
-      // this.retrieveRecurringClusterStatus();
-
-      //// TODO later
-      // periodically retrieve cluster status
-      // this.clusterStatusInterval = setInterval(
-      //   this.retrieveRecurringClusterStatus,
-      //   this.CLUSTER_STATUS_TIME_INTERVAL
-      // );
     },
     getInitialClusterStatusCompleted(taskContext, taskResult) {
       if (this.isMaster) {
         const clusterStatus = taskResult.output;
-
-        //// remove mock
-        // clusterStatus.initialized = false; ////
-
         const isClusterInitialized = clusterStatus.initialized;
         this.setClusterInitializedInStore(isClusterInitialized);
         this.setLeaderListenPortAndNodesInStore(clusterStatus);
@@ -450,7 +428,7 @@ export default {
         // retry websocket connection
 
         this.retryWsConnectionInterval = setInterval(() => {
-          console.log("retrying websocket connection..."); ////
+          console.warn("Retrying websocket connection...");
           this.initWebSocket();
         }, 5000);
       }

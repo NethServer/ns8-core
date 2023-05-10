@@ -136,16 +136,6 @@
                       :label="$t('common.disabled')"
                       class="no-margin"
                     ></cv-tag>
-                    <!-- <div class="badge-container"> ////
-                        <template v-if="row.status"
-                          ><span class="green-badge left-badge"></span>
-                          {{ $t("common.enabled") }}</template
-                        >
-                        <template v-else
-                          ><span class="gray-badge left-badge"></span
-                          >{{ $t("common.disabled") }}</template
-                        >
-                      </div> -->
                   </cv-data-table-cell>
                   <cv-data-table-cell>
                     <cv-tag
@@ -160,16 +150,6 @@
                       :label="$t('common.disabled')"
                       class="no-margin"
                     ></cv-tag>
-                    <!-- <div class="badge-container"> ////
-                        <template v-if="row.testing"
-                          ><span class="green-badge left-badge"></span>
-                          {{ $t("common.enabled") }}</template
-                        >
-                        <template v-else
-                          ><span class="gray-badge left-badge"></span
-                          >{{ $t("common.disabled") }}</template
-                        >
-                      </div> -->
                   </cv-data-table-cell>
                   <cv-data-table-cell class="table-overflow-menu-cell">
                     <cv-overflow-menu flip-menu class="table-overflow-menu">

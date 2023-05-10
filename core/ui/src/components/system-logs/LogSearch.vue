@@ -176,12 +176,14 @@
               class="mg-bottom-md"
               v-model="internalTimezone"
             >
-              <cv-select-option disabled selected hidden>{{$t('system_logs.select_timezone')}}</cv-select-option>
+              <cv-select-option disabled selected hidden>{{
+                $t("system_logs.select_timezone")
+              }}</cv-select-option>
               <cv-select-option value="local">
-                {{$t('system_logs.local')}}
+                {{ $t("system_logs.local") }}
               </cv-select-option>
               <cv-select-option value="utc">
-                {{$t('system_logs.utc')}}
+                {{ $t("system_logs.utc") }}
               </cv-select-option>
             </cv-select>
           </cv-column>
@@ -302,20 +304,6 @@
                 class="mg-right mg-bottom-sm"
               />
             </div>
-            <!-- <cv-toggle ////
-                  hideLabel
-                  value="checkWrapText"
-                  :form-item="true"
-                  v-model="wrapText"
-                  class="item toggle-without-label mg-bottom-sm"
-                >
-                  <template slot="text-left">{{
-                    $t("system_logs.wrap_text")
-                  }}</template>
-                  <template slot="text-right">{{
-                    $t("system_logs.wrap_text")
-                  }}</template>
-                </cv-toggle> -->
             <div class="checkbox-filter">
               <cv-checkbox
                 :label="$t('system_logs.scroll_to_bottom')"
@@ -324,20 +312,6 @@
                 class="item mg-bottom-sm"
               />
             </div>
-            <!-- <cv-toggle ////
-                  hideLabel
-                  value="checkScrollToBottom"
-                  :form-item="true"
-                  v-model="scrollToBottom"
-                  class="item toggle-without-label mg-bottom-sm"
-                >
-                  <template slot="text-left">{{
-                    $t("system_logs.scroll_to_bottom")
-                  }}</template>
-                  <template slot="text-right">{{
-                    $t("system_logs.scroll_to_bottom")
-                  }}</template>
-                </cv-toggle> -->
           </template>
         </cv-column>
       </cv-row>
@@ -794,8 +768,8 @@ export default {
         this.$root.$once(`logsStart-${this.searchId}`, this.onLogsStartDump);
       }
 
-      if(this.internalTimezone == 'local') {
-        timezone = Intl.DateTimeFormat().resolvedOptions().timeZone
+      if (this.internalTimezone == "local") {
+        timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       }
 
       const logsStartObj = {
@@ -809,7 +783,7 @@ export default {
           entity: this.internalContext,
           entity_name: entityName,
           id: this.searchId,
-          timezone: timezone
+          timezone: timezone,
         },
       };
 

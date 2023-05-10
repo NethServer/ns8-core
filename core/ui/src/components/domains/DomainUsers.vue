@@ -96,35 +96,6 @@
                       class="disabled-tag"
                     ></cv-tag>
                   </cv-data-table-cell>
-                  <!-- //// user groups -->
-                  <!-- <cv-data-table-cell>
-                    <span v-if="row.groups.length < 3">
-                      {{ row.groups.join(", ") }}
-                    </span>
-                    <span v-else>
-                      {{ row.groups[0] }}
-                      <cv-interactive-tooltip
-                        alignment="center"
-                        direction="right"
-                        class="tooltip-with-text-trigger"
-                      >
-                        <template slot="trigger">
-                          <span class="others">
-                            {{
-                              $t("domain_users.plus_others", {
-                                num: row.groups.length - 1,
-                              })
-                            }}
-                          </span>
-                        </template>
-                        <template slot="content">
-                          <div v-for="group in row.groups" :key="group">
-                            {{ group }}
-                          </div>
-                        </template>
-                      </cv-interactive-tooltip>
-                    </span>
-                  </cv-data-table-cell> -->
                   <cv-data-table-cell
                     v-if="domain && domain.location == 'internal'"
                     class="table-overflow-menu-cell"
@@ -248,7 +219,7 @@ export default {
       isEditingUser: false,
       currentUser: null,
       userToDelete: null,
-      tableColumns: ["user", "display_name", "attributes" /*, "groups"*/], ////
+      tableColumns: ["user", "display_name", "attributes"],
       tablePage: [],
       loading: {
         listDomainUsers: false,
@@ -490,8 +461,4 @@ export default {
 
 <style scoped lang="scss">
 @import "../../styles/carbon-utils";
-
-// .others { ////
-//   margin-left: $spacing-02;
-// }
 </style>

@@ -34,3 +34,6 @@ public/apps/*
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+
+# Development configuration file
+public/config/config.development.js

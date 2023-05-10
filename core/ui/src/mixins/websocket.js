@@ -55,8 +55,6 @@ export default {
       }
     },
     handleActionMessage(messageData) {
-      // console.log("## handleActionMessage", messageData); ////
-
       const payload = messageData.payload;
 
       switch (messageData.name) {
