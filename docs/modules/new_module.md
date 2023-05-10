@@ -165,11 +165,10 @@ If you want to publish the package, first make sure the package as a tag which i
 Then create a new Pull Request (PR) to [ns8-repomd](https://github.com/NethServer/ns8-repomd/) repository.
 The PR should contain:
 - a new [directory](https://github.com/NethServer/ns8-repomd/tree/main/dokuwiki) with the name of the module
-- the directory should contain:
-  - a logo file named [logo.png]({{site.baseurl}}/modules/metadata#logo)
-  - a screenshots directory with one ore more screenshots (optional)
+- the directory should also contain a `screenshots` subdirectory with one ore more screenshots (optional)
 
-If the package *is not* hosted on GitHub under NethServer organization, you must also
-add a [`metadata.json`]({{site.baseurl}}/modules/metadata#metadata.json) file inside the above directory.
+If the package *is not* hosted on GitHub under NethServer organization, you must also add:
+- a [`metadata.json`]({{site.baseurl}}/modules/metadata#metadata.json) file
+- a logo file named [logo.png]({{site.baseurl}}/modules/metadata#logo)
 
 When the PR has been merged, [repository metadata](https://github.com/NethServer/ns8-repomd/tree/repomd) will be automatically updated accordingly.
