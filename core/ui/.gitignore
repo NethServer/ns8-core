@@ -34,3 +34,7 @@ public/apps/*
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+
+# Configuration files
+public/config/config.development.js
+public/config/config.production.js

@@ -1,0 +1,12 @@
+// Remove .sample suffix from file name and adjust configuration below to your needs
+window.CONFIG = {
+  PRODUCT_NAME: "NethServer 8",
+  PRODUCT_URL: "https://example.org/",
+  DOCS_URL: "https://example.org/",
+  HELPDESK_URL: "https://example.org/",
+  COMPANY_NAME: "Your Company",
+  COMPANY_URL: "https://example.org/",
+  API_ENDPOINT: "yourNs8Host/cluster-admin/api", // Replace yourNs8Host with an IP address or a host name
+  API_SCHEME: "https://",
+  WS_ENDPOINT: "wss://yourNs8Host/cluster-admin/ws", // Replace yourNs8Host with an IP address or a host name
+};
