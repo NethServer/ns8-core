@@ -92,7 +92,7 @@ export default {
       selectedResult: {},
       lastSearchQuery: "",
       searchFields: ["name", "description", "source", "tags", "label"],
-      minChars: 1, //// 2
+      minChars: 2,
       maxResults: 10,
       actionsResults: [],
       openAppResults: [],

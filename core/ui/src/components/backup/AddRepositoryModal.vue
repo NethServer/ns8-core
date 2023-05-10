@@ -449,7 +449,7 @@ export default {
           };
         case "azure":
           return {
-            azure_account_name: "", ////
+            azure_account_name: "",
             azure_account_key: "",
           };
       }
@@ -458,7 +458,7 @@ export default {
     validateAddBackblazeRepository() {
       // clear errors
       this.error.name = "";
-      this.error.url = ""; //// ?
+      this.error.url = "";
       this.error.repoConnection = "";
 
       this.error.backblaze.b2_account_id = "";
@@ -514,7 +514,7 @@ export default {
     validateAmazonS3Repository() {
       // clear errors
       this.error.name = "";
-      this.error.url = ""; //// ?
+      this.error.url = "";
       this.error.repoConnection = "";
 
       this.error.aws.aws_access_key_id = "";
@@ -580,21 +580,17 @@ export default {
     validateAddGenericS3Repository() {
       // clear errors
       this.error.name = "";
-      this.error.url = ""; //// ?
+      this.error.url = "";
       this.error.repoConnection = "";
-
-      ////
-      console.error("not implemented"); ////
+      console.error("not implemented");
       return false;
     },
     validateAddAzureRepository() {
       // clear errors
       this.error.name = "";
-      this.error.url = ""; //// ?
+      this.error.url = "";
       this.error.repoConnection = "";
-
-      ////
-      console.error("not implemented"); ////
+      console.error("not implemented");
       return false;
     },
     validateAddBackupRepository() {

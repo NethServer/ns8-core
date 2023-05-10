@@ -94,11 +94,6 @@ export default {
     },
     appVersion() {
       if (this.app.versions.length) {
-        //// remove mock
-        // if (this.app.name == "Dokuwiki" || this.app.name == "Nextcloud") {
-        //   return "0.0.1-alpha2";
-        // }
-
         return this.app.versions[0].tag;
       } else {
         return "latest";
@@ -181,8 +176,6 @@ export default {
       // backup notification
 
       setTimeout(() => {
-        //// todo: call list-installed-modules to check if app is eligible for backup (i.e. not samba, traefik...)
-
         const notification = {
           title: this.$t("backup.schedule_backup"),
           description: this.$t("backup.schedule_backup_for_instance", {

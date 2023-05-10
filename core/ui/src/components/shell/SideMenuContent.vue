@@ -11,10 +11,7 @@
         :active="isLinkActive('/status')"
       >
         <template v-slot:nav-icon><Activity20 /></template>
-        <!-- <div class="badge-container"> //// -->
         <span>{{ $t("cluster_status.title") }}</span>
-        <!-- <span class="green-badge right-badge"></span> ////
-        </div> -->
       </cv-side-nav-link>
       <!-- nodes -->
       <cv-side-nav-link
@@ -52,20 +49,6 @@
       </cv-side-nav-link>
       <!-- divider -->
       <cv-side-nav-divider />
-
-      <!-- <cv-side-nav-menu ////
-        :title="$t('network.title')"
-        :active="isLinkActive('/newtwork')"
-      >
-        <template v-slot:nav-icon><Network_220 /></template>
-        <cv-side-nav-menu-item href="javascript:void(0)" active>
-          Menu item
-        </cv-side-nav-menu-item>
-        <cv-side-nav-menu-item href="javascript:void(0)">
-          Menu item
-        </cv-side-nav-menu-item>
-      </cv-side-nav-menu> -->
-
       <cv-side-nav-link
         @click="goTo('/system-logs')"
         :active="isLinkActive('/system-logs')"

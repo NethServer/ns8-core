@@ -93,9 +93,6 @@
                     <cv-select-option value="monthly">
                       {{ $t("backup.monthly") }}
                     </cv-select-option>
-                    <!-- <cv-select-option value="custom"> ////
-                      {{ $t("backup.custom") }}
-                    </cv-select-option> -->
                   </cv-select>
                 </cv-column>
                 <cv-column
@@ -226,23 +223,6 @@
                 <!-- schedule description -->
                 <cv-column class="schedule-description">
                   {{ getBackupScheduleDescription(schedule) }}
-                  <!-- calendar event expression //// -->
-                  <!-- <cv-interactive-tooltip
-                    v-if="isScheduleValid"
-                    alignment="start"
-                    direction="right"
-                    class="calendar-event-expression-tooltip info"
-                  >
-                    <template slot="trigger">
-                      <Information16 />
-                    </template>
-                    <template slot="content">
-                      <h6 class="calendar-event-expression-tooltip-title">
-                        {{ $t("backup.calendar_event_expression") }}
-                      </h6>
-                      <code>{{ scheduleExpression }}</code>
-                    </template>
-                  </cv-interactive-tooltip> -->
                 </cv-column>
               </cv-row>
               <cv-row>

@@ -74,11 +74,11 @@
           </cv-text-input>
         </template>
         <!-- generic s3 -->
-        <template v-if="repository.provider == 'genericS3'">
+        <!-- <template v-if="repository.provider == 'genericS3'">
           generic s3 ////
-        </template>
+        </template> -->
         <!-- azure -->
-        <template v-if="repository.provider == 'azure'"> azure //// </template>
+        <!-- <template v-if="repository.provider == 'azure'"> azure //// </template> -->
         <!-- //// handle ALL providers -->
         <cv-text-input
           :label="$t('backup.repository_name')"
@@ -201,7 +201,7 @@ export default {
           };
         case "azure":
           return {
-            azure_account_name: "", ////
+            azure_account_name: "",
             azure_account_key: "",
           };
       }
@@ -297,18 +297,14 @@ export default {
       // clear errors
       this.error.name = "";
       this.error.repoConnection = "";
-
-      ////
-      console.error("not implemented"); ////
+      console.error("not implemented");
       return false;
     },
     validateAlterAzureRepository() {
       // clear errors
       this.error.name = "";
       this.error.repoConnection = "";
-
-      ////
-      console.error("not implemented"); ////
+      console.error("not implemented");
       return false;
     },
     validateAlterBackupRepository() {

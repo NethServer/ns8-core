@@ -490,11 +490,6 @@ export default {
 
       for (const coreApp of coreApps) {
         for (const coreInstance of coreApp.instances) {
-          //// remove mock
-          // if (coreInstance.id == "traefik1") {
-          //   coreInstance.update = "new_mock_version";
-          // }
-
           if (coreInstance.update) {
             isCoreUpdateAvailable = true;
           }

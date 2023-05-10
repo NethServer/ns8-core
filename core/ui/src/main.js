@@ -57,7 +57,6 @@ for (const f in Filters) {
   Vue.filter(f, Filters[f]);
 }
 
-//// move somewhere else?
 const toastOptions = {
   containerClassName: "toastification-container",
   toastClassName: "toastification-toast",

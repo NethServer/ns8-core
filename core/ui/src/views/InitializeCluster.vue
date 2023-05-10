@@ -1040,9 +1040,6 @@ export default {
     getClusterStatusCompleted(taskContext, taskResult) {
       const clusterStatus = taskResult.output;
 
-      //// remove mock
-      // clusterStatus.initialized = false; ////
-
       if (clusterStatus.initialized && this.isMaster) {
         // redirect to status page
         this.setClusterInitializedInStore(true);
