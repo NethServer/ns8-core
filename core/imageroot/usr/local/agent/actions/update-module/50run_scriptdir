@@ -23,6 +23,12 @@
 set -e
 exec 1>&2
 
+# B1-UPGRADE: clean up legacy log_tag.conf before restarting the module
+# containers. A system reboot is recommended, anyway.
+if [[ $EUID != 0 ]]; then
+    rm -vf ~/.config/containers/containers.conf.d/log_tag.conf
+fi
+
 if [[ ! -d "${AGENT_INSTALL_DIR}"/update-module.d/ ]]; then
     exit 0
 fi
