@@ -90,16 +90,79 @@ Modules must use query parameters for their internal navigation, using view data
 
 ## Core UI development
 
-Follow the steps below to prepare the development environment for coding core UI:
+Follow the steps below to prepare the development environment for coding NS8 core UI:
 
 - Install NethServer 8 on a development machine
-- Edit `core/ui/public/config/config.development.js`:
-  - Configure `API_ENDPOINT` and `WS_ENDPOINT` with the IP address of the NethServer 8 leader node
-- Install development tools on your workstation:
-  - Node.js and npm (LTS version, currently v16)
+- Create a copy of `core/ui/public/config/config.development.js.sample` and rename your copy to `config.development.js`:
+- Edit `config.development.js` by configuring `API_ENDPOINT` and `WS_ENDPOINT` with the IP address of your NethServer 8 leader node
+
+You can develop NS8 UI inside a container (recommended) or on your workstation.
+
+### Develop NS8 UI inside a container
+
+You have two options:
+- Build and start a Podman container, or
+- Use VS Code Dev Containers
+
+#### Build and start a Podman container
+
+Build the container defined by `Containerfile`:
+
+```
+podman build -t ns8-core-dev .
+```
+
+Start development server (`--network=host` is required for hot-reload):
+```
+podman run -ti -v $(pwd):/app:Z --network=host --name ns8-core --replace ns8-core-dev serve
+```
+
+Compiles and minifies for production:
+```
+podman run -ti -v $(pwd):/app:Z --name ns8-core --replace ns8-core-dev build
+```
+
+Start Storybook webapp (`--network=host` is required for hot-reload):
+```
+podman run -ti -v $(pwd):/app:Z --network=host --name ns8-core --replace ns8-core-dev storybook
+```
+
+Note: if you want to run development server AND run Storybook webapp at the same time you can't use above commands; you would get a `yarn` error.
+To run development server and run Storybook simultaneously:
+```
+podman run -ti -v $(pwd):/app:Z --network=host --name ns8-core --replace ns8-core-dev serve
+```
+and then
+```
+podman exec -ti ns8-core yarn storybook
+```
+
+#### Use VS Code Dev Containers
+
+- Install **Dev Containers** [Visual Studio Code](https://code.visualstudio.com/) extension (this procedure may not work con [VSCodium](https://vscodium.com/))
+- Dev Containers uses Docker by default but you can configure it to use Podman: go to `File > Preferences > Settings`, search `dev containers docker path` and type `podman` as `Docker path`
+- Open `ns8-core` directory (the repository root) in VS Code, if you haven't already
+- Open Command Palette (`CTRL+SHIFT+P`) and type `Reopen in Container`
+- Open VS Code integrated terminal: `View > Terminal`
+- Change directory to `core/ui`
+- Enter one of the following commands:
+  - `yarn install`: project setup, needed only the first time
+  - `yarn serve`: start development server with hot-reload
+  - `yarn storybook`: start Storybook webapp with hot-reload
+  - `yarn build`: compiles and minifies for production
+
+Container configuration is contained inside `.devcontainer/devcontainer.json`.
+
+### Develop NS8 UI on your workstation
+
+Developing NS8 UI inside a container is the recommended way, but if you want to do it on your workstation:
+
+- Install development tools:
+  - Node.js and npm (LTS version, currently v18)
   - Yarn
 - Run a web server on your workstation (hot reloading enabled):
   - `cd core/ui`
-  - `yarn install` (needed only the first time)
-  - `yarn serve`
-
+  - `yarn install`: project setup, needed only the first time
+  - `yarn serve`: start development server with hot-reload
+  - `yarn storybook`: start Storybook webapp with hot-reload
+  - `yarn build`: compiles and minifies for production
