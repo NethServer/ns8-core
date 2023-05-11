@@ -65,10 +65,12 @@ if 'set' in request:
         password = request['set']['password']
         rdb.acl_setuser(user, passwords=[f'+{password}'], reset_passwords=True, enabled=True)
 
-for roledef in request['revoke']: # !!! revoke BEFORE grant
+revoke_list = request.get('revoke', []) # parameter "revoke" is optional
+for roledef in revoke_list: # !!! revoke BEFORE grant
     cluster.grants.alter_user(rdb, user, True, roledef['role'], roledef['on'])
 
-for roledef in request['grant']:
+grant_list = request.get('grant', []) # parameter "grant" is optional
+for roledef in grant_list:
     cluster.grants.alter_user(rdb, user, False, roledef['role'], roledef['on'])
 
 cluster.grants.save_acls(rdb)
