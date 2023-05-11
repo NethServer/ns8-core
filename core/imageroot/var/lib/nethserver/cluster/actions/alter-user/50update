@@ -50,6 +50,11 @@ if (user == 'cluster' or '/' in user):
     json.dump([{'field':'user','parameter':'user','value':user,'error':'invalid_user'}], fp=sys.stdout)
     sys.exit(2)
 
+if rdb.execute_command('ACL', 'GETUSER', user) is None:
+    json.dump({"field": "user", "parameter": "user", "value": user, "error": "user_not_found"}, fp=sys.stdout)
+    agent.set_status('validation-failed')
+    sys.exit(3)
+
 # check set parameters
 if 'set' in request:
     if 'display_name' in request['set']:
@@ -65,10 +70,16 @@ if 'set' in request:
         password = request['set']['password']
         rdb.acl_setuser(user, passwords=[f'+{password}'], reset_passwords=True, enabled=True)
 
-for roledef in request['revoke']: # !!! revoke BEFORE grant
+    if '2fa' in request['set']:
+        # enable/disable 2fa
+        rdb.hset(f'user/{user}', '2fa', "1" if request['set']['2fa'] else "0")
+
+revoke_list = request.get('revoke', []) # parameter "revoke" is optional
+for roledef in revoke_list: # !!! revoke BEFORE grant
     cluster.grants.alter_user(rdb, user, True, roledef['role'], roledef['on'])
 
-for roledef in request['grant']:
+grant_list = request.get('grant', []) # parameter "grant" is optional
+for roledef in grant_list:
     cluster.grants.alter_user(rdb, user, False, roledef['role'], roledef['on'])
 
 cluster.grants.save_acls(rdb)

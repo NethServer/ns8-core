@@ -39,6 +39,8 @@ if rdb.execute_command('ACL', 'GETUSER', user) != None:
 agent.assert_exp(rdb.hset(f'user/{user}', mapping={
     'display_name': request['set'].get('display_name', user),
     'email': request['set'].get('email', ''),
+    # 2fa is always disabled when user is created. To enable it, the user
+    # must login and run the UI procedure from their session.
 }) >= 0)
 
 rdb.execute_command('ACL', 'DELUSER', user) # Drop the user to avoid double-password accounts

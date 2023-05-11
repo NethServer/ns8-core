@@ -17,9 +17,7 @@
     "type": "object",
     "required": [
         "user",
-        "set",
-        "grant",
-        "revoke"
+        "set"
     ],
     "properties": {
         "user": {

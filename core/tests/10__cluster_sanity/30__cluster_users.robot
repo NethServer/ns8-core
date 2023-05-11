@@ -9,7 +9,7 @@ Admin user is listed
     Should Contain    ${lusers}    "admin"
 
 Set admin user display_name
-    Run task    cluster/alter-user    {"user":"admin","set":{"display_name":"Admin"},"grant":[],"revoke":[]}
+    Run task    cluster/alter-user    {"user":"admin","set":{"display_name":"Admin"}}
 
 Check admin user display_name
     ${jinfo} =    Run task    cluster/get-user-info    {"user":"admin"}
