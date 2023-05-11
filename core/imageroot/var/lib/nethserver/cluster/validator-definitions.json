@@ -20,7 +20,8 @@
             "description": "Attributes of a User",
             "examples": [
                 {
-                    "display_name": "Mighty Admin"
+                    "display_name": "Mighty Admin",
+                    "2fa": false
                 }
             ],
             "type": "object",
@@ -28,6 +29,9 @@
                 "display_name": {
                     "type": "string",
                     "minLength": 0
+                },
+                "2fa": {
+                    "type": "boolean"
                 }
             }
         },
