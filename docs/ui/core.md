@@ -139,7 +139,7 @@ podman exec -ti ns8-core yarn storybook
 
 #### Use VS Code Dev Containers
 
-- Install **Dev Containers** [Visual Studio Code](https://code.visualstudio.com/) extension (this procedure may not work con [VSCodium](https://vscodium.com/))
+- Install Visual Studio Code extension [Dev Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) (beware: this procedure may not work on [VSCodium](https://vscodium.com/))
 - Dev Containers uses Docker by default but you can configure it to use Podman: go to `File > Preferences > Settings`, search `dev containers docker path` and type `podman` as `Docker path`
 - Open `ns8-core` directory (the repository root) in VS Code, if you haven't already
 - Open Command Palette (`CTRL+SHIFT+P`) and type `Reopen in Container`
