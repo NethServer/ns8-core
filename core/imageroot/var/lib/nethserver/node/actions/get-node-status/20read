@@ -74,7 +74,8 @@ ret['swap']['free'] = swap[2]
 ret['swap']['used'] = swap[1]
 for p in psutil.disk_partitions():
     usage = psutil.disk_usage(p[1])
-    ret['disks'].append({'device': p[0], 'mountpoint': p[1], 'fstype': p[2], 'total': usage[0], 'used': usage[1], 'free': usage[2]})
+    if not re.search(r'/var/lib/containers/storage/overlay', p[1]):
+        ret['disks'].append({'device': p[0], 'mountpoint': p[1], 'fstype': p[2], 'total': usage[0], 'used': usage[1], 'free': usage[2]})
 
 # Dump the result
 json.dump(ret, fp=sys.stdout)
