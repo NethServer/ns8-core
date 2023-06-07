@@ -99,6 +99,15 @@
                     @click="showRequestCertificateModal"
                     >{{ $t("settings_tls_certificates.request_certificate") }}
                   </NsButton>
+                  <NsButton
+                    class="mg-left-sm"
+                    kind="secondary"
+                    :icon="Add20"
+                    @click="uploadTlsCertificateState.setVisible(true)"
+                    >{{
+                      $t("settings_tls_certificates.add_custom_certificate")
+                    }}
+                  </NsButton>
                 </cv-column>
               </cv-row>
               <cv-row>
@@ -213,6 +222,10 @@
         </cv-column>
       </cv-row>
     </cv-grid>
+    <UploadTlsCertificateModal
+      :state="uploadTlsCertificateState"
+      @upload-certificate-submit="uploadCustomCertificate($event)"
+    />
     <RequestTlsCertificateModal
       :isShown="isShownRequestCertificateModal"
       :nodes="internalNodes"
@@ -262,10 +275,12 @@ import {
 import { mapState } from "vuex";
 import _cloneDeep from "lodash/cloneDeep";
 import RequestTlsCertificateModal from "@/components/settings/RequestTlsCertificateModal.vue";
+import UploadTlsCertificateModal from "@/components/settings/UploadTlsCertificateModal.vue";
+import { StateManager as UploadTlsCertificateState } from "@/components/settings/UploadTlsCertificateModal.vue";
 
 export default {
   name: "SettingsTlsCertificates",
-  components: { RequestTlsCertificateModal },
+  components: { RequestTlsCertificateModal, UploadTlsCertificateModal },
   mixins: [
     TaskService,
     UtilService,
@@ -301,6 +316,7 @@ export default {
         listCertificates: "",
         deleteCertificate: "",
       },
+      uploadTlsCertificateState: new UploadTlsCertificateState(),
     };
   },
   computed: {
@@ -463,6 +479,7 @@ export default {
       }
       this.internalNodes = nodes;
       this.traefikInstances = traefikInstances;
+      this.uploadTlsCertificateState.setTraefikInstances(traefikInstances);
       this.loading.listInstalledModules = false;
 
       this.$nextTick(() => {
@@ -630,6 +647,94 @@ export default {
     },
     goToAcmeServers() {
       this.$router.push("/settings/acme-servers");
+    },
+    async uploadCustomCertificate(event) {
+      // set component to loading
+      this.uploadTlsCertificateState.setLoading(true);
+      // clear error state
+      this.uploadTlsCertificateState.errors.keyFile = null;
+      this.uploadTlsCertificateState.errors.certFile = null;
+
+      let keyFileDecoded = await new Promise((result) => {
+        let keyFileReader = new FileReader();
+        keyFileReader.readAsBinaryString(event.keyFile);
+        keyFileReader.onerror = () => {
+          throw Error();
+        };
+        keyFileReader.onload = () => {
+          result(window.btoa(keyFileReader.result));
+        };
+      }).catch(() => {
+        this.uploadTlsCertificateState.setKeyFileError(
+          this.$t("settings_tls_certificates.unable_to_load_key_file")
+        );
+        this.uploadTlsCertificateState.setLoading(false);
+      });
+
+      let certFileDecoded = await new Promise((result) => {
+        let certFileReader = new FileReader();
+        certFileReader.readAsBinaryString(event.certFile);
+        certFileReader.onerror = () => {
+          throw Error();
+        };
+        certFileReader.onload = () => {
+          result(window.btoa(certFileReader.result));
+        };
+      }).catch(() => {
+        this.uploadTlsCertificateState.setCertFileErrors(
+          this.$t("settings_tls_certificates.unable_to_load_cert_file")
+        );
+        this.uploadTlsCertificateState.setLoading(false);
+      });
+
+      const taskAction = "upload-certificate";
+      const eventId = this.getUuid();
+
+      // abort handler
+      this.$root.$once(`${taskAction}-aborted-${eventId}`, (error) => {
+        this.uploadTlsCertificateState.setLoading(false);
+        switch (error.exit_code) {
+          case 2:
+          case 3:
+            this.uploadTlsCertificateState.setKeyFileError(error.output);
+            break;
+          case 4:
+            this.uploadTlsCertificateState.setCertFileError(error.output);
+            break;
+          default:
+            this.uploadTlsCertificateState.setKeyFileError(error.error);
+            break;
+        }
+      });
+
+      // completed task
+      this.$root.$once(`${taskAction}-completed-${eventId}`, () => {
+        this.uploadTlsCertificateState.clear();
+      });
+
+      const res = await to(
+        this.createModuleTaskForApp(event.targetInstance, {
+          action: taskAction,
+          data: {
+            keyFile: keyFileDecoded,
+            certFile: certFileDecoded,
+          },
+          extra: {
+            title: this.$t("settings_tls_certificates.add_custom_certificate"),
+            description: this.$t("common.processing"),
+            eventId,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.uploadTlsCertificateState.setKeyFileError(
+          this.$t("error.generic_error")
+        );
+        this.uploadTlsCertificateState.setLoading(false);
+      }
     },
   },
 };
