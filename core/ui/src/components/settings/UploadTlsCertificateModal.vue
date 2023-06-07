@@ -8,7 +8,7 @@
     :primaryButtonDisabled="state.isLoading() || !areFileSelected"
     :isLoading="state.isLoading()"
     @primary-click="uploadCerts()"
-    v-on:modal-hide-request="state.setVisible(false)"
+    v-on:modal-hide-request="state.clear()"
     autoHideOff
     hasFormContent
   >
@@ -49,7 +49,6 @@
                 :multiple="false"
                 :clear-on-reselect="true"
                 :drop-target-label="$t('common.click_here_to_upload')"
-                :removable="true"
                 :disabled="disabledFilePicker"
                 v-model="keyFile"
                 :class="disabledFilePicker ? 'disabled' : ''"
@@ -64,7 +63,6 @@
                 :multiple="false"
                 :clear-on-reselect="true"
                 :drop-target-label="$t('common.click_here_to_upload')"
-                :removable="true"
                 :disabled="disabledFilePicker"
                 v-model="certFile"
                 :class="disabledFilePicker ? 'disabled' : ''"
@@ -82,6 +80,7 @@
 
 <script>
 import { NsModal, NsTile } from "@nethserver/ns8-ui-lib";
+import _isEmpty from "lodash/isEmpty";
 
 export class StateManager {
   constructor() {
@@ -202,7 +201,7 @@ export default {
   },
   computed: {
     areFileSelected: function () {
-      return this.keyFile != null && this.certFile != null;
+      return !_isEmpty(this.keyFile) && !_isEmpty(this.certFile);
     },
     isNodeSelected: function () {
       return this.state.traefikInstances.some((item) => item.selected);
