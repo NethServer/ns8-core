@@ -287,7 +287,14 @@
         "node": "Nodo",
         "request_certificate_for_fqdn": "Richiedi certificato per {fqdn}",
         "fqdn_already_exists": "FQDN già esistente",
-        "fqdn": "FQDN"
+        "fqdn": "FQDN",
+        "add_custom_certificate": "Upload custom certificate",
+        "key_upload_label": "Key",
+        "key_upload_helptext": "Key that generates the certificate.",
+        "cert_upload_label": "Certificate",
+        "cert_upload_helptext": "Chain of certificates must be in the same file.",
+        "upload_certs": "Upload certificate",
+        "instance_selection_label": "Select instance to upload the file to."
     },
     "about": {
         "documentation": "Documentazione",
@@ -747,7 +754,8 @@
         "choose_an_option_or_input_any_value": "Selezionare un opzione o inserire un valore",
         "choose_options_or_input_any_value": "Scegliere un'opzione o inserire un valore",
         "finish": "Completa",
-        "got_it": "Ho capito"
+        "got_it": "Ho capito",
+        "click_here_to_upload": "Click here to upload"
     },
     "error": {
         "error": "Errore",
