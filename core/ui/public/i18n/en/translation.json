@@ -80,7 +80,8 @@
     "user_input_l": "user input",
     "tab_navigation": "Tab navigation",
     "warning": "Warning",
-    "remember": "Remember"
+    "remember": "Remember",
+    "click_here_to_upload": "Click here to upload"
   },
   "error": {
     "error": "Error",
@@ -602,7 +603,14 @@
     "pending": "Pending",
     "node": "Node",
     "request_certificate_for_fqdn": "Request certificate for {fqdn}",
-    "fqdn_already_exists": "FQDN already exists"
+    "fqdn_already_exists": "FQDN already exists",
+    "add_custom_certificate": "Upload custom certificate",
+    "key_upload_label": "Key",
+    "key_upload_helptext": "Key that generates the certificate.",
+    "cert_upload_label": "Certificate",
+    "cert_upload_helptext": "Chain of certificates must be in the same file.",
+    "upload_certs": "Upload certificate",
+    "instance_selection_label": "Select instance to upload the file to."
   },
   "settings_acme_servers": {
     "title": "ACME servers",
