@@ -15,7 +15,7 @@ When new translations are avaialable, Weblate will create a new pull request on 
 To setup the translation process:
 
 1. add [GitHub Weblate app](https://docs.weblate.org/en/latest/admin/continuous.html#github-setup) to your repository
-2. add your repository to [hosted.weblate.org]((https://hosted.weblate.org) or ask a NethServer developer to add it to ns8 Weblate project
+2. add your repository to [hosted.weblate.org](https://hosted.weblate.org) or ask a NethServer developer to add it to ns8 Weblate project
 
 You can automate the step 2 by using the following `weblate-add` script.
 
