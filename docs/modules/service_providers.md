@@ -100,6 +100,6 @@ startup more robust.
 
 ```python
 import agent
-rdb = agent.redis_connect(host='127.0.0.1') # connect the local Redis replica
+rdb = agent.redis_connect(use_replica=True) # connect the local Redis replica
 print(agent.list_service_providers(rdb, 'imap', 'tcp'))
 ```
