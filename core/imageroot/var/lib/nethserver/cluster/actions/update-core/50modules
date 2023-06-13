@@ -30,16 +30,19 @@ rdb = agent.redis_connect(privileged=True)
 
 # Update all core modules
 instances = dict()
-for mf in rdb.scan_iter('module/*/flags'):
-    flags = rdb.smembers(mf)
-    if 'core_module' in flags:
-        module_id = mf.removeprefix('module/').removesuffix('/flags')
-        image_url = rdb.hget(f'module/{module_id}/environment', 'IMAGE_URL')
-        image_id = agent.get_image_name_from_url(image_url)
-        if image_id not in instances.keys():
-            instances[image_id] = {'instances': [], 'url': ''}
-            instances[image_id]['url'] = cluster.modules.get_latest_module(image_id, rdb)
-        instances[image_id]['instances'].append(module_id)
+for oimage in cluster.modules.list_core_modules():
+    image_id = oimage['name']
+    if image_id == 'core':
+        continue # skip core: it is handled by another action step
+
+    # Prepare a list of module instances that need the update
+    module_instances = [oinstance['id'] for oinstance in oimage['instances'] if oinstance['update']]
+
+    if len(module_instances) > 0: # must be not empty
+        instances[image_id] = {
+            'url': cluster.modules.get_latest_module(image_id, rdb),
+            'instances': module_instances,
+        }
 
 update_module_tasks = []
 for mid in instances.keys():
