@@ -1,0 +1,28 @@
+#!/usr/bin/env python3
+
+# Copyright (C) 2023 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+
+import agent
+import agent.tasks
+import os
+import sys
+import json
+
+agent.set_weight(os.path.basename(__file__), 0) # Validation step, no task progress at all
+
+data = json.load(sys.stdin)
+
+# Nodes sanity check: send a "list-actions" ping task and wait the result.
+# If any node fails abort the whole action.
+ping_errors = agent.tasks.runp_brief([{"agent_id":f"node/{node_id}", "action": "list-actions"} for node_id in data["nodes"]],
+    endpoint="redis://cluster-leader",
+    progress_callback=agent.get_progress_callback(1, 30),
+)
+
+if ping_errors > 0:
+    agent.set_status('validation-failed')
+    json.dump([{'field':'nodes','parameter':'nodes','value':data["nodes"],'error':'nodes_not_reachable'}],fp=sys.stdout)
+    sys.exit(2)
