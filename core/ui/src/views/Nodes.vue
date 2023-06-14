@@ -490,7 +490,7 @@ export default {
       for (const node of this.nodes) {
         if (!node.online) {
           // node is offline
-          return;
+          continue;
         }
 
         const nodeId = node.id;
