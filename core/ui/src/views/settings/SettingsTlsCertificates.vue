@@ -181,7 +181,10 @@
                               class="icon ns-warning"
                             />
                             <NsSvg
-                              v-else-if="row.status == 'obtained'"
+                              v-else-if="
+                                row.status == 'obtained' ||
+                                row.status === 'custom'
+                              "
                               :svg="CheckmarkFilled16"
                               class="icon ns-success"
                             />
@@ -563,9 +566,12 @@ export default {
           // set-certificate in progress, show pending status
           certificate.status = "pending";
         } else {
-          certificate.status = certificate.obtained
-            ? "obtained"
-            : "not_obtained";
+          if (certificate.obtained) {
+            certificate.status =
+              certificate.type === "custom" ? "custom" : "obtained";
+          } else {
+            certificate.status = "not_obtained";
+          }
         }
         const traefikId = taskContext.extra.traefikInstance.id;
         const nodeId = taskContext.extra.traefikInstance.node;
@@ -710,6 +716,7 @@ export default {
       // completed task
       this.$root.$once(`${taskAction}-completed-${eventId}`, () => {
         this.uploadTlsCertificateState.clear();
+        this.onReloadCertificates();
       });
 
       const res = await to(
