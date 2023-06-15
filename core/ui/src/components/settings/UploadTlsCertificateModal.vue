@@ -39,41 +39,41 @@
               </NsTile>
             </cv-column>
           </cv-row>
-          <cv-row>
-            <cv-column :sm="4" :md="4">
-              <cv-file-uploader
-                :label="$t('settings_tls_certificates.key_upload_label')"
-                :helperText="
-                  $t('settings_tls_certificates.key_upload_helptext')
-                "
-                :multiple="false"
-                :clear-on-reselect="true"
-                :drop-target-label="$t('common.click_here_to_upload')"
-                :disabled="disabledFilePicker"
-                v-model="keyFile"
-                :class="disabledFilePicker ? 'disabled' : ''"
-              ></cv-file-uploader>
-            </cv-column>
-            <cv-column :sm="4" :md="4">
-              <cv-file-uploader
-                :label="$t('settings_tls_certificates.cert_upload_label')"
-                :helperText="
-                  $t('settings_tls_certificates.cert_upload_helptext')
-                "
-                :multiple="false"
-                :clear-on-reselect="true"
-                :drop-target-label="$t('common.click_here_to_upload')"
-                :disabled="disabledFilePicker"
-                v-model="certFile"
-                :class="disabledFilePicker ? 'disabled' : ''"
-              ></cv-file-uploader>
-            </cv-column>
-          </cv-row>
+          <transition name="fade" :duration="{ enter: 500, leave: 50 }">
+            <cv-row v-if="this.isNodeSelected">
+              <cv-column :sm="4" :md="4">
+                <cv-file-uploader
+                  :label="$t('settings_tls_certificates.key_upload_label')"
+                  :helperText="
+                    $t('settings_tls_certificates.key_upload_helptext')
+                  "
+                  :multiple="false"
+                  :clear-on-reselect="true"
+                  :drop-target-label="$t('common.click_here_to_upload')"
+                  :disabled="disabledFilePicker"
+                  v-model="keyFile"
+                ></cv-file-uploader>
+              </cv-column>
+              <cv-column :sm="4" :md="4">
+                <cv-file-uploader
+                  :label="$t('settings_tls_certificates.cert_upload_label')"
+                  :helperText="
+                    $t('settings_tls_certificates.cert_upload_helptext')
+                  "
+                  :multiple="false"
+                  :clear-on-reselect="true"
+                  :drop-target-label="$t('common.click_here_to_upload')"
+                  :disabled="disabledFilePicker"
+                  v-model="certFile"
+                ></cv-file-uploader>
+              </cv-column>
+            </cv-row>
+          </transition>
         </cv-grid>
       </cv-form>
     </template>
     <template slot="primary-button">
-      {{ $t("settings_tls_certificates.upload_certs") }}
+      {{ $t("settings_tls_certificates.upload") }}
     </template>
   </NsModal>
 </template>
@@ -223,9 +223,3 @@ export default {
   },
 };
 </script>
-
-<style scoped>
-.disabled {
-  opacity: 50%;
-}
-</style>
