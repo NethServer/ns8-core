@@ -27,7 +27,6 @@ import (
 	"crypto/rand"
 	"encoding/base32"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
@@ -181,7 +180,7 @@ func OTPVerify(c *gin.Context) {
 	}
 
 	// verify JWT
-	if !ValidateAuth(jsonOTP.Token, false) {
+	if !ValidateAuth(jsonOTP.Token) {
 		c.JSON(http.StatusBadRequest, structs.Map(response.StatusBadRequest{
 			Code:    400,
 			Message: "JWT token invalid",
@@ -221,16 +220,6 @@ func OTPVerify(c *gin.Context) {
 		return
 	}
 
-	// set auth token to valid
-	if !SetTokenValidation(jsonOTP.Username, jsonOTP.Token) {
-		c.JSON(http.StatusBadRequest, structs.Map(response.StatusBadRequest{
-			Code:    400,
-			Message: "Token validation set error",
-			Data:    "",
-		}))
-		return
-	}
-
 	// init redis connection
 	redisConnection := redis.Instance()
 
@@ -251,7 +240,7 @@ func OTPVerify(c *gin.Context) {
 	c.JSON(http.StatusOK, structs.Map(response.StatusOK{
 		Code:    200,
 		Message: "OTP verified",
-		Data:    jsonOTP.Token,
+		Data:    jsonOTP.Token, // add claim otpv=true
 	}))
 }
 
@@ -518,49 +507,6 @@ func setUserSecret(username string, secret string) (bool, string) {
 	return true, string(secretB[:])
 }
 
-func SetTokenValidation(username string, token string) bool {
-	// open file
-	f, _ := os.OpenFile(configuration.Config.TokensDir+"/"+username, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
-	defer f.Close()
-
-	// write file with tokens
-	_, err := f.WriteString(token + "\n")
-
-	// check error
-	if err != nil {
-		return false
-	}
-
-	return true
-}
-
-func RemoveTokenValidation(username string, token string) bool {
-	// read whole file
-	secrestListB, errR := ioutil.ReadFile(configuration.Config.TokensDir + "/" + username)
-	if errR != nil {
-		return false
-	}
-	secrestList := string(secrestListB)
-
-	// match token to remove
-	res := strings.Replace(secrestList, token, "", 1)
-
-	// open file
-	f, _ := os.OpenFile(configuration.Config.TokensDir+"/"+username, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
-	defer f.Close()
-
-	// write file with tokens
-	_, err := f.WriteString(strings.TrimSpace(res) + "\n")
-
-	// check error
-	if err != nil {
-		return false
-	}
-
-	return true
-
-}
-
 func getUserSecret(username string) string {
 	// get secret
 	secretB, err := os.ReadFile(configuration.Config.SecretsDir + "/" + username + "/2fa")
@@ -574,7 +520,7 @@ func getUserSecret(username string) string {
 	return string(secretB[:])
 }
 
-func ValidateAuth(tokenString string, ensureTokenExists bool) bool {
+func ValidateAuth(tokenString string) bool {
 	// convert token string and validate it
 	if tokenString != "" {
 		token, err := jwtl.Parse(tokenString, func(token *jwtl.Token) (interface{}, error) {
@@ -594,14 +540,6 @@ func ValidateAuth(tokenString string, ensureTokenExists bool) bool {
 
 		if claims, ok := token.Claims.(jwtl.MapClaims); ok && token.Valid {
 			if claims["id"] != nil {
-				if ensureTokenExists {
-					username := claims["id"].(string)
-
-					if !CheckTokenValidation(username, tokenString) {
-						utils.LogError(errors.New("[SOCKET] error JWT token not found"))
-						return false
-					}
-				}
 				return true
 			}
 		} else {
@@ -610,18 +548,6 @@ func ValidateAuth(tokenString string, ensureTokenExists bool) bool {
 		}
 	}
 	return false
-}
-
-func CheckTokenValidation(username string, token string) bool {
-	// read whole file
-	secrestListB, err := ioutil.ReadFile(configuration.Config.TokensDir + "/" + username)
-	if err != nil {
-		return false
-	}
-	secrestList := string(secrestListB)
-
-	// //check whether s contains substring text
-	return strings.Contains(secrestList, token)
 }
 
 func Check2FA(username string) bool {

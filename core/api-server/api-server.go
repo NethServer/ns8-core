@@ -146,7 +146,7 @@ func main() {
 	// define websocket endpoint
 	ws := router.Group("/ws")
 	ws.GET("", func(c *gin.Context) {
-		if methods.ValidateAuth(c.Query("jwt"), true) {
+		if methods.ValidateAuth(c.Query("jwt")) {
 			socketConnection.HandleRequest(c.Writer, c.Request)
 		}
 	})

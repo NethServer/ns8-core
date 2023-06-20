@@ -167,14 +167,6 @@ func InitJWT() *jwt.GinJWTMiddleware {
 				return true
 			}
 
-			// check token validation
-			claims, _ := InstanceJWT().GetClaimsFromJWT(c)
-			token, _ := InstanceJWT().ParseToken(c)
-
-			if !methods.CheckTokenValidation(claims["id"].(string), token.Raw) {
-				return false
-			}
-
 			// extract data payload and check authorizations
 			if v, ok := data.(*models.UserAuthorizations); ok {
 				authorizedActions := v.Actions
@@ -223,25 +215,9 @@ func InitJWT() *jwt.GinJWTMiddleware {
 			return false
 		},
 		LoginResponse: func(c *gin.Context, code int, token string, t time.Time) {
-			//get claims
-			tokenObj, _ := InstanceJWT().ParseTokenString(token)
-			claims := jwt.ExtractClaimsFromToken(tokenObj)
-
-			// set token to valid
-			if !claims["2fa"].(bool) {
-				methods.SetTokenValidation(claims["id"].(string), token)
-			}
-
 			c.JSON(200, gin.H{"code": 200, "expire": t, "token": token})
 		},
 		LogoutResponse: func(c *gin.Context, code int) {
-			//get claims
-			tokenObj, _ := InstanceJWT().ParseToken(c)
-			claims := jwt.ExtractClaimsFromToken(tokenObj)
-
-			// set token to invalid
-			methods.RemoveTokenValidation(claims["id"].(string), tokenObj.Raw)
-
 			c.JSON(200, gin.H{"code": 200})
 		},
 		Unauthorized: func(c *gin.Context, code int, message string) {
