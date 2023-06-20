@@ -26,6 +26,7 @@ type UserAuthorizations struct {
 	Username string   `json:"username" structs:"username"`
 	Role     string   `json:"role" structs:"role"`
 	Actions  []string `json:"actions" structs:"actions"`
+	OtpPass  bool	  `json:"otppass" structs:"otppass"`
 }
 
 type OTPJson struct {

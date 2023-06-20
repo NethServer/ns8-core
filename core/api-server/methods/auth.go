@@ -38,7 +38,6 @@ import (
 	"github.com/fatih/structs"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
-	jwtl "github.com/golang-jwt/jwt"
 	"github.com/pkg/errors"
 
 	"github.com/NethServer/ns8-core/core/api-server/configuration"
@@ -159,6 +158,24 @@ func RedisAuthorization(username string, c *gin.Context) (models.UserAuthorizati
 	return userAuthorizationsRedis, nil
 }
 
+// CheckOTP godoc
+// @Summary Check if OTP validates against the given secret
+func CheckOTP(secret string, otp string) (bool) {
+	// set OTP configuration
+	otpc := &dgoogauth.OTPConfig{
+		Secret:      secret,
+		WindowSize:  3,
+		HotpCounter: 0,
+	}
+
+	// verify OTP
+	result, err := otpc.Authenticate(otp)
+	if err == nil && result {
+		return true
+	}
+	return false
+}
+
 // OTPVerify godoc
 // @Summary After Login verify OTP for 2FA
 // @Description logout and remove JWT token
@@ -179,18 +196,8 @@ func OTPVerify(c *gin.Context) {
 		return
 	}
 
-	// verify JWT
-	if !ValidateAuth(jsonOTP.Token) {
-		c.JSON(http.StatusBadRequest, structs.Map(response.StatusBadRequest{
-			Code:    400,
-			Message: "JWT token invalid",
-			Data:    "",
-		}))
-		return
-	}
-
 	// get secret for the user
-	secret := getUserSecret(jsonOTP.Username)
+	secret := GetUserSecret(jsonOTP.Username)
 
 	// check secret
 	if len(secret) == 0 {
@@ -202,16 +209,8 @@ func OTPVerify(c *gin.Context) {
 		return
 	}
 
-	// set OTP configuration
-	otpc := &dgoogauth.OTPConfig{
-		Secret:      secret,
-		WindowSize:  3,
-		HotpCounter: 0,
-	}
-
-	// verifiy OTP
-	result, err := otpc.Authenticate(jsonOTP.OTP)
-	if err != nil || !result {
+	// Check if OTP is valid
+	if ! CheckOTP(secret, jsonOTP.OTP) {
 		c.JSON(http.StatusBadRequest, structs.Map(response.StatusBadRequest{
 			Code:    400,
 			Message: "OTP token invalid",
@@ -240,7 +239,7 @@ func OTPVerify(c *gin.Context) {
 	c.JSON(http.StatusOK, structs.Map(response.StatusOK{
 		Code:    200,
 		Message: "OTP verified",
-		Data:    jsonOTP.Token, // add claim otpv=true
+		Data:    jsonOTP.Token,
 	}))
 }
 
@@ -507,7 +506,7 @@ func setUserSecret(username string, secret string) (bool, string) {
 	return true, string(secretB[:])
 }
 
-func getUserSecret(username string) string {
+func GetUserSecret(username string) string {
 	// get secret
 	secretB, err := os.ReadFile(configuration.Config.SecretsDir + "/" + username + "/2fa")
 
@@ -518,36 +517,6 @@ func getUserSecret(username string) string {
 
 	// read from redis
 	return string(secretB[:])
-}
-
-func ValidateAuth(tokenString string) bool {
-	// convert token string and validate it
-	if tokenString != "" {
-		token, err := jwtl.Parse(tokenString, func(token *jwtl.Token) (interface{}, error) {
-			// validate the alg
-			if _, ok := token.Method.(*jwtl.SigningMethodHMAC); !ok {
-				return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
-			}
-
-			// return secret
-			return []byte(configuration.Config.Secret), nil
-		})
-
-		if err != nil {
-			utils.LogError(errors.Wrap(err, "[SOCKET] error in JWT token validation"))
-			return false
-		}
-
-		if claims, ok := token.Claims.(jwtl.MapClaims); ok && token.Valid {
-			if claims["id"] != nil {
-				return true
-			}
-		} else {
-			utils.LogError(errors.Wrap(err, "[SOCKET] error in JWT token claims"))
-			return false
-		}
-	}
-	return false
 }
 
 func Check2FA(username string) bool {
