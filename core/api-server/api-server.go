@@ -145,10 +145,11 @@ func main() {
 
 	// define websocket endpoint
 	ws := router.Group("/ws")
+	// NOTE: the middleware can be removed when JWT is validated by the socket
+	// application protocol:
+	ws.Use(middleware.InstanceJWT().MiddlewareFunc())
 	ws.GET("", func(c *gin.Context) {
-		if methods.ValidateAuth(c.Query("jwt")) {
-			socketConnection.HandleRequest(c.Writer, c.Request)
-		}
+		socketConnection.HandleRequest(c.Writer, c.Request)
 	})
 
 	// start events
