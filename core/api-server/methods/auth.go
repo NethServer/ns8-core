@@ -176,15 +176,14 @@ func CheckOTP(secret string, otp string) (bool) {
 	return false
 }
 
-// OTPVerify godoc
-// @Summary After Login verify OTP for 2FA
-// @Description logout and remove JWT token
+// Set2FAStatus godoc
+// @Summary Set the 2FA Redis flag, if OTP is verified
 // @Produce  json
 // @Success 200 {object} response.StatusOK{code=int,message=string,data=object}
-// @Failure 500 {object} response.StatusInternalServerError{code=int,message=string,data=object}
-// @Router /2FA/otp-verify [post]
-// @Tags /2FA/otp-verify auth
-func OTPVerify(c *gin.Context) {
+// @Failure 400 {object} response.StatusBadRequest{code=int,message=string,data=object}
+// @Router /2FA [post]
+// @Tags /2FA auth
+func Set2FAStatus(c *gin.Context) {
 	// get payload
 	var jsonOTP models.OTPJson
 	if err := c.ShouldBindBodyWith(&jsonOTP, binding.JSON); err != nil {
@@ -196,8 +195,11 @@ func OTPVerify(c *gin.Context) {
 		return
 	}
 
+	claims := jwt.ExtractClaims(c)
+	username := claims["id"].(string)
+
 	// get secret for the user
-	secret := GetUserSecret(jsonOTP.Username)
+	secret := GetUserSecret(username)
 
 	// check secret
 	if len(secret) == 0 {
@@ -222,16 +224,10 @@ func OTPVerify(c *gin.Context) {
 	// init redis connection
 	redisConnection := redis.Instance()
 
-	// set auth token to valid
-	errRedis2FASet := redisConnection.HSet(ctx, "user/"+jsonOTP.Username, "2fa", true)
-
-	// check error
+	// set the user 2FA flag as enabled: the next login request requires OTP.
+	errRedis2FASet := redisConnection.HSet(ctx, "user/" + username, "2fa", "1")
 	if errRedis2FASet.Err() != nil {
-		c.JSON(http.StatusBadRequest, structs.Map(response.StatusBadRequest{
-			Code:    403,
-			Message: "Error in set 2FA for user",
-			Data:    nil,
-		}))
+		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
 
@@ -239,7 +235,7 @@ func OTPVerify(c *gin.Context) {
 	c.JSON(http.StatusOK, structs.Map(response.StatusOK{
 		Code:    200,
 		Message: "OTP verified",
-		Data:    jsonOTP.Token,
+		Data:    nil,
 	}))
 }
 
@@ -356,21 +352,13 @@ func Del2FAStatus(c *gin.Context) {
 	// revocate secret
 	errRevocate := os.Remove(configuration.Config.SecretsDir + "/" + claims["id"].(string) + "/2fa")
 	if errRevocate != nil {
-		c.JSON(http.StatusBadRequest, structs.Map(response.StatusBadRequest{
-			Code:    403,
-			Message: "Error in revocate 2FA for user",
-			Data:    nil,
-		}))
+		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
 
 	// set 2FA to disabled
 	if errSet := redisConnection.HSet(ctx, "user/"+claims["id"].(string), "2fa", false).Err(); errSet != nil {
-		c.JSON(http.StatusBadRequest, structs.Map(response.StatusBadRequest{
-			Code:    403,
-			Message: "Error in reset 2FA status for user",
-			Data:    nil,
-		}))
+		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
 

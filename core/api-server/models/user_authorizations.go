@@ -30,8 +30,6 @@ type UserAuthorizations struct {
 }
 
 type OTPJson struct {
-	Username string `json:"username" structs:"username"`
-	Token    string `json:"token" structs:"token"`
 	OTP      string `json:"otp" structs:"otp"`
 }
 

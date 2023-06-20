@@ -111,7 +111,7 @@ If you feel comfortable and more secure to use 2FA, you can enable it inside the
     {
       "code": 200,
       "data": false,
-      "message": "2FA set for this user"
+      "message": "2FA not set for this user"
     }
     ```
 
@@ -135,20 +135,18 @@ If you feel comfortable and more secure to use 2FA, you can enable it inside the
     }
     ```
 
-- `POST /api/2FA/otp-verify` Used to validate the OTP and verifiy the JWT token
+- `POST /api/2FA` Used to validate the OTP
    ```json
    BODY
    {
-     "username": "edoardo",
-     "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.---.UJjrUAxn1EHbCSR0IUK07iJ2oWZPLGasvSNNhV7iyy4",
      "otp": "157720"
    }
 
    RESPONSE
    {
     "code": 200,
-    "data": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.---.UJjrUAxn1EHbCSR0IUK07iJ2oWZPLGasvSNNhV7iyy4",
-    "message": "OTP verified"
+    "data": null,
+    "message": "2FA enabled successfully"
   }
    ```
 

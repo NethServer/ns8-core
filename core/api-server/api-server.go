@@ -102,9 +102,6 @@ func main() {
 	api.POST("/login", middleware.InstanceJWT().LoginHandler)
 	api.POST("/logout", middleware.InstanceJWT().LogoutHandler)
 
-	// 2FA APIs
-	api.POST("/2FA/otp-verify", methods.OTPVerify)
-
 	// define basic auth routes
 	api.GET("/module/:module_id/http-basic/:action", methods.BasicAuthModule)
 
@@ -138,6 +135,7 @@ func main() {
 		api.GET("/audit/actions", methods.GetAuditsActions)
 
 		// 2FA APIs
+		api.POST("/2FA", methods.Set2FAStatus)
 		api.GET("/2FA", methods.Get2FAStatus)
 		api.DELETE("/2FA", methods.Del2FAStatus)
 		api.GET("/2FA/qr-code", methods.QRCode)

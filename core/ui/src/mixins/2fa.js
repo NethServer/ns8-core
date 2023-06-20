@@ -24,12 +24,22 @@ export default {
         },
       });
     },
-    verify2FaCode(username, token, otp) {
-      return this.axios.post(`${this.$root.apiUrl}/2FA/otp-verify`, {
-        username,
-        token,
-        otp,
-      });
+    verify2FaCode(otp) {
+      const token = this.getFromStorage("loginInfo")
+        ? this.getFromStorage("loginInfo").token
+        : "";
+      // enable 2FA flag, if OTP check is successful
+      return this.axios.post(
+        `${this.$root.apiUrl}/2FA`,
+        {
+          otp,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
     },
     revoke2Fa() {
       const token = this.getFromStorage("loginInfo")
