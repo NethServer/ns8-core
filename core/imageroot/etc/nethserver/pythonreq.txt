@@ -30,7 +30,7 @@ ptyprocess==0.7.0
 pyasn1==0.4.8
 pycares==4.3.0
 pycparser==2.21
-pyrsistent==0.19.3
+pyrsistent==0.18.1
 python-daemon==3.0.1
 PyYAML==6.0
 redis==4.5.5
