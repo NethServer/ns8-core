@@ -131,7 +131,7 @@ If you feel comfortable and more secure to use 2FA, you can enable it inside the
     {
       "code": 200,
       "data": "otpauth://totp/NS8:edoardo?algorithm=SHA1&digits=6&issuer=NS8&period=30&secret=KL67YBZBQJSU6FR7L4HZUYQ5OKKWNR2N",
-      "message": "QR code string"
+      "message": "4W5XXQDHH3ROJBUOHEKUEL6M44IYUOMO"
     }
     ```
 
@@ -139,14 +139,15 @@ If you feel comfortable and more secure to use 2FA, you can enable it inside the
    ```json
    BODY
    {
-     "otp": "157720"
+     "otp": "157720",
+     "secret": "4W5XXQDHH3ROJBUOHEKUEL6M44IYUOMO"
    }
 
    RESPONSE
    {
     "code": 200,
     "data": null,
-    "message": "2FA enabled successfully"
+    "message": "2FA set successfully"
   }
    ```
 

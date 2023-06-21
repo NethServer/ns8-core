@@ -24,7 +24,7 @@ export default {
         },
       });
     },
-    verify2FaCode(otp) {
+    verify2FaSecret(secret, otp) {
       const token = this.getFromStorage("loginInfo")
         ? this.getFromStorage("loginInfo").token
         : "";
@@ -33,6 +33,7 @@ export default {
         `${this.$root.apiUrl}/2FA`,
         {
           otp,
+          secret,
         },
         {
           headers: {

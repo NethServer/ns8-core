@@ -31,6 +31,7 @@ type UserAuthorizations struct {
 
 type OTPJson struct {
 	OTP      string `json:"otp" structs:"otp"`
+	Secret   string `json:"secret" structs:"secret"`
 }
 
 type Status2FA struct {

@@ -35,7 +35,6 @@ type Configuration struct {
 	StaticPath    string `json:"static_path"`
 	AuditFile     string `json:"audit_file"`
 	Issuer        string `json:"issuer"`
-	SecretsDir    string `json:"secrets_dir"`
 }
 
 var Config = Configuration{}
@@ -87,12 +86,5 @@ func Init() {
 		Config.Issuer = os.Getenv("ISSUER")
 	} else {
 		Config.Issuer = "NethServer"
-	}
-
-	if os.Getenv("SECRETS_DIR") != "" {
-		Config.SecretsDir = os.Getenv("SECRETS_DIR")
-	} else {
-		os.Stderr.WriteString("SECRETS_DIR variable is empty. ")
-		os.Exit(1)
 	}
 }
