@@ -17,8 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with NethServer.  If not, see COPYING.
 #
-
-import aioredis
+from redis import asyncio as aioredis
 import asyncio
 import json
 import os
