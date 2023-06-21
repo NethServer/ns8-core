@@ -59,6 +59,11 @@ elif [[ "${ID}" == "debian" && "${VERSION_ID}" == "11" ]]; then
     wget -O - https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/Debian_11/Release.key | apt-key add -
     apt-get update
     apt-get -y install python3-venv podman wireguard uuid-runtime jq openssl psmisc firewalld pciutils
+elif [[ "${ID}" == "debian" && "${VERSION_ID}" == "12" ]]; then
+    apt-get update
+    apt-get -y install gnupg2
+    apt-get update
+    apt-get -y install python3-venv podman wireguard uuid-runtime jq openssl psmisc firewalld pciutils
 elif [[ "${ID}" == "ubuntu" && "${VERSION_ID}" == "20.04" && "${CI}" == "true" && "${GITHUB_ACTIONS}" == "true" ]]; then
     apt-get update
     apt-get -y install wireguard firewalld pciutils
