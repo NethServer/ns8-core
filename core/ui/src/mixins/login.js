@@ -1,10 +1,11 @@
 export default {
   name: "LoginService",
   methods: {
-    executeLogin(username, password) {
+    executeLogin(username, password, otp) {
       return this.axios.post(`${this.$root.apiUrl}/login`, {
         username,
         password,
+        otp,
       });
     },
     executeLogout() {

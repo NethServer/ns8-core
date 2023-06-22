@@ -111,7 +111,7 @@ If you feel comfortable and more secure to use 2FA, you can enable it inside the
     {
       "code": 200,
       "data": false,
-      "message": "2FA set for this user"
+      "message": "2FA not set for this user"
     }
     ```
 
@@ -130,25 +130,27 @@ If you feel comfortable and more secure to use 2FA, you can enable it inside the
     RESPONSE
     {
       "code": 200,
-      "data": "otpauth://totp/NS8:edoardo?algorithm=SHA1&digits=6&issuer=NS8&period=30&secret=KL67YBZBQJSU6FR7L4HZUYQ5OKKWNR2N",
+      "data": {
+        "key": "OQPZYGNFP4E37NJUCBR7ELEONC7WSXZW",
+        "url": "otpauth://totp/NethServer:admin2fa?algorithm=SHA1\u0026digits=6\u0026issuer=NethServer\u0026period=30\u0026secret=OQPZYGNFP4E37NJUCBR7ELEONC7WSXZW"
+      },
       "message": "QR code string"
     }
     ```
 
-- `POST /api/2FA/otp-verify` Used to validate the OTP and verifiy the JWT token
+- `POST /api/2FA` Used to validate the OTP
    ```json
    BODY
    {
-     "username": "edoardo",
-     "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.---.UJjrUAxn1EHbCSR0IUK07iJ2oWZPLGasvSNNhV7iyy4",
-     "otp": "157720"
+     "otp": "157720",
+     "secret": "4W5XXQDHH3ROJBUOHEKUEL6M44IYUOMO"
    }
 
    RESPONSE
    {
     "code": 200,
-    "data": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.---.UJjrUAxn1EHbCSR0IUK07iJ2oWZPLGasvSNNhV7iyy4",
-    "message": "OTP verified"
+    "data": null,
+    "message": "2FA set successfully"
   }
    ```
 

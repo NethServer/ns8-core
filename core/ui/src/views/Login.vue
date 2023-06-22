@@ -242,13 +242,13 @@ export default {
 
         // invoke login API
         const [loginError, response] = await to(
-          this.executeLogin(this.username, this.password)
+          this.executeLogin(this.username, this.password, "")
         );
 
         this.loading.login = false;
 
         if (loginError) {
-          this.handleLoginError(loginError);
+          this.handleLoginError(loginError); // also enable OTP prompt, if 2FA is needed
           return;
         }
 
@@ -257,18 +257,22 @@ export default {
         } else {
           this.deleteFromStorage("username");
         }
+        // credentials are valid, store JWT and complete login
         this.jwtToken = response.data.token;
-        this.check2Fa();
+        this.loginSuccessful();
       }
     },
     handleLoginError(error) {
       let errorMessage = this.$t("error.generic_error");
 
-      if (error.response) {
-        switch (error.response.data.code) {
-          case 401:
+      if (error.response?.data?.code == 401) {
+        switch (error.response.data.message) {
+          case "incorrect Username or Password":
             errorMessage = this.$t("error.invalid_username_or_password");
             break;
+          case "missing OTP value":
+            this.check2Fa();
+            return;
         }
       } else if (error.message === "Network Error") {
         errorMessage = this.$t("error.network_error");
@@ -293,18 +297,11 @@ export default {
       this.setLogoutInfoInStore(logoutInfo);
     },
     check2Fa() {
-      const tokenDecoded = this.decodeJwtPayload(this.jwtToken);
-
-      if (tokenDecoded["2fa"]) {
-        // 2fa enabled
-        this.step = "2fa";
-        this.$nextTick(() => {
-          this.focusElement("twoFaCode");
-        });
-      } else {
-        // 2fa disabled
-        this.loginSuccessful();
-      }
+      // Show the OTP input to the user
+      this.step = "2fa";
+      this.$nextTick(() => {
+        this.focusElement("twoFaCode");
+      });
     },
     loginSuccessful() {
       const loginInfo = {
@@ -337,8 +334,8 @@ export default {
       this.loading.verify2FaCode = true;
 
       // invoke API
-      const [verify2FaCodeError] = await to(
-        this.verify2FaCode(this.username, this.jwtToken, this.twoFaCode)
+      const [verify2FaCodeError, response] = await to(
+        this.executeLogin(this.username, this.password, this.twoFaCode)
       );
       this.loading.verify2FaCode = false;
 
@@ -346,17 +343,18 @@ export default {
         this.handleVerify2FaError(verify2FaCodeError);
         return;
       }
+      // OTP is valid, store JWT and complete login
+      this.jwtToken = response.data.token;
       this.loginSuccessful();
     },
     handleVerify2FaError(error) {
       let errorMessage = this.$t("error.generic_error");
 
-      if (error.response) {
-        switch (error.response.data.code) {
-          case 400:
-            errorMessage = this.$t("login.incorrect_code");
-            break;
-        }
+      if (
+        error.response.data?.code == 401 &&
+        error.response.data?.message == "OTP check failed"
+      ) {
+        errorMessage = this.$t("login.incorrect_code");
       } else if (error.message === "Network Error") {
         errorMessage = this.$t("error.network_error");
       }

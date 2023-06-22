@@ -26,12 +26,12 @@ type UserAuthorizations struct {
 	Username string   `json:"username" structs:"username"`
 	Role     string   `json:"role" structs:"role"`
 	Actions  []string `json:"actions" structs:"actions"`
+	OtpPass  bool	  `json:"otppass" structs:"otppass"`
 }
 
 type OTPJson struct {
-	Username string `json:"username" structs:"username"`
-	Token    string `json:"token" structs:"token"`
 	OTP      string `json:"otp" structs:"otp"`
+	Secret   string `json:"secret" structs:"secret"`
 }
 
 type Status2FA struct {

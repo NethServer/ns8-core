@@ -45,6 +45,7 @@ import (
 type login struct {
 	Username string `form:"username" json:"username" binding:"required"`
 	Password string `form:"password" json:"password" binding:"required"`
+	Otp string `form:"otp" json:"otp,omitempty"`
 }
 
 var jwtMiddleware *jwt.GinJWTMiddleware
@@ -75,6 +76,7 @@ func InitJWT() *jwt.GinJWTMiddleware {
 			// set login credentials
 			username := loginVals.Username
 			password := loginVals.Password
+			otpValue := loginVals.Otp
 
 			// check if redis is running
 			if !methods.RedisLive() {
@@ -99,6 +101,30 @@ func InitJWT() *jwt.GinJWTMiddleware {
 				return nil, jwt.ErrFailedAuthentication
 			}
 
+			otpNeed := methods.Needs2faCheck(username)
+			if otpNeed && otpValue == "" {
+				return nil, errors.New("missing OTP value")
+			}
+
+			otpPassClaim := false
+			if otpNeed {
+				if ! methods.CheckOTP(username, otpValue) {
+					err := errors.New("OTP check failed")
+					// store login action
+					auditData := models.Audit{
+						ID:        0,
+						User:      username,
+						Action:    "login-fail",
+						Data:      "",
+						Timestamp: time.Now().UTC(),
+					}
+					audit.Store(auditData)
+					return nil, err
+				}
+				otpPassClaim = true // claim that 2FA is enabled and used
+			}
+
+			// Login is successful. Middleware returns a JWT.
 			// store login action
 			auditData := models.Audit{
 				ID:        0,
@@ -112,21 +138,19 @@ func InitJWT() *jwt.GinJWTMiddleware {
 			// return user auth model
 			return &models.UserAuthorizations{
 				Username: username,
+				OtpPass: otpPassClaim, // true if OTP passed, false if OTP is not needed
 			}, nil
 
 		},
 		PayloadFunc: func(data interface{}) jwt.MapClaims {
 			// read current user
 			if user, ok := data.(*models.UserAuthorizations); ok {
-				// check if user require 2fa
-				var required = methods.Check2FA(user.Username)
-
 				// create claims map
 				return jwt.MapClaims{
 					identityKey: user.Username,
 					"role":      "",
 					"actions":   []string{},
-					"2fa":       required,
+					"2fa":       user.OtpPass, // OTP value check result: true=success, false=not needed
 				}
 			}
 
@@ -165,14 +189,6 @@ func InitJWT() *jwt.GinJWTMiddleware {
 			}
 			if c.Request.Method == "DELETE" && c.Request.RequestURI == "/api/2FA" {
 				return true
-			}
-
-			// check token validation
-			claims, _ := InstanceJWT().GetClaimsFromJWT(c)
-			token, _ := InstanceJWT().ParseToken(c)
-
-			if !methods.CheckTokenValidation(claims["id"].(string), token.Raw) {
-				return false
 			}
 
 			// extract data payload and check authorizations
@@ -223,25 +239,9 @@ func InitJWT() *jwt.GinJWTMiddleware {
 			return false
 		},
 		LoginResponse: func(c *gin.Context, code int, token string, t time.Time) {
-			//get claims
-			tokenObj, _ := InstanceJWT().ParseTokenString(token)
-			claims := jwt.ExtractClaimsFromToken(tokenObj)
-
-			// set token to valid
-			if !claims["2fa"].(bool) {
-				methods.SetTokenValidation(claims["id"].(string), token)
-			}
-
 			c.JSON(200, gin.H{"code": 200, "expire": t, "token": token})
 		},
 		LogoutResponse: func(c *gin.Context, code int) {
-			//get claims
-			tokenObj, _ := InstanceJWT().ParseToken(c)
-			claims := jwt.ExtractClaimsFromToken(tokenObj)
-
-			// set token to invalid
-			methods.RemoveTokenValidation(claims["id"].(string), tokenObj.Raw)
-
 			c.JSON(200, gin.H{"code": 200})
 		},
 		Unauthorized: func(c *gin.Context, code int, message string) {
@@ -261,7 +261,7 @@ func InitJWT() *jwt.GinJWTMiddleware {
 			}))
 			return
 		},
-		TokenLookup:   "header: Authorization, token: jwt",
+		TokenLookup:   "header: Authorization, query: jwt",
 		TokenHeadName: "Bearer",
 		TimeFunc:      time.Now,
 	})

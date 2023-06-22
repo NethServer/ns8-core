@@ -243,12 +243,9 @@ export default {
         return;
       }
       this.loading.verify2FaCode = true;
-      const loginInfo = this.getFromStorage("loginInfo");
 
       // invoke API
-      const [verify2FaCodeError] = await to(
-        this.verify2FaCode(loginInfo.username, loginInfo.token, this.twoFaCode)
-      );
+      const [verify2FaCodeError] = await to(this.verify2FaSecret(this.setupKey, this.twoFaCode));
       this.loading.verify2FaCode = false;
 
       if (verify2FaCodeError) {

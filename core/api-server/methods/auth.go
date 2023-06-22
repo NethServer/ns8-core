@@ -27,10 +27,8 @@ import (
 	"crypto/rand"
 	"encoding/base32"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/url"
-	"os"
 	"path/filepath"
 	"strings"
 
@@ -39,7 +37,6 @@ import (
 	"github.com/fatih/structs"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
-	jwtl "github.com/golang-jwt/jwt"
 	"github.com/pkg/errors"
 
 	"github.com/NethServer/ns8-core/core/api-server/configuration"
@@ -160,15 +157,40 @@ func RedisAuthorization(username string, c *gin.Context) (models.UserAuthorizati
 	return userAuthorizationsRedis, nil
 }
 
-// OTPVerify godoc
-// @Summary After Login verify OTP for 2FA
-// @Description logout and remove JWT token
+// CheckOTP godoc
+// @Summary Check if OTP validates for the given username
+func CheckOTP(username string, otp string) (bool) {
+	secret := getUserSecret(username)
+	return checkOtpBySecret(secret, otp)
+}
+
+func checkOtpBySecret(secret string, otp string) (bool) {
+	// set OTP configuration
+	otpc := &dgoogauth.OTPConfig{
+		Secret:      secret,
+		WindowSize:  3,
+		HotpCounter: 0,
+	}
+
+	// verify OTP
+	result, err := otpc.Authenticate(otp)
+	if err == nil && result {
+		return true
+	}
+	if err != nil {
+		utils.LogError(err)
+	}
+	return false
+}
+
+// Set2FAStatus godoc
+// @Summary Set the 2FA Redis flag, if OTP is verified
 // @Produce  json
 // @Success 200 {object} response.StatusOK{code=int,message=string,data=object}
-// @Failure 500 {object} response.StatusInternalServerError{code=int,message=string,data=object}
-// @Router /2FA/otp-verify [post]
-// @Tags /2FA/otp-verify auth
-func OTPVerify(c *gin.Context) {
+// @Failure 400 {object} response.StatusBadRequest{code=int,message=string,data=object}
+// @Router /2FA [post]
+// @Tags /2FA auth
+func Set2FAStatus(c *gin.Context) {
 	// get payload
 	var jsonOTP models.OTPJson
 	if err := c.ShouldBindBodyWith(&jsonOTP, binding.JSON); err != nil {
@@ -180,78 +202,41 @@ func OTPVerify(c *gin.Context) {
 		return
 	}
 
-	// verify JWT
-	if !ValidateAuth(jsonOTP.Token, false) {
-		c.JSON(http.StatusBadRequest, structs.Map(response.StatusBadRequest{
-			Code:    400,
-			Message: "JWT token invalid",
-			Data:    "",
-		}))
-		return
-	}
-
-	// get secret for the user
-	secret := getUserSecret(jsonOTP.Username)
+	claims := jwt.ExtractClaims(c)
+	username := claims["id"].(string)
 
 	// check secret
-	if len(secret) == 0 {
-		c.JSON(http.StatusNotFound, structs.Map(response.StatusNotFound{
-			Code:    404,
-			Message: "User secret not found",
-			Data:    "",
-		}))
-		return
-	}
-
-	// set OTP configuration
-	otpc := &dgoogauth.OTPConfig{
-		Secret:      secret,
-		WindowSize:  3,
-		HotpCounter: 0,
-	}
-
-	// verifiy OTP
-	result, err := otpc.Authenticate(jsonOTP.OTP)
-	if err != nil || !result {
+	if len(jsonOTP.Secret) == 0 {
 		c.JSON(http.StatusBadRequest, structs.Map(response.StatusBadRequest{
 			Code:    400,
-			Message: "OTP token invalid",
+			Message: "Unexpected secret length",
 			Data:    "",
 		}))
 		return
 	}
 
-	// set auth token to valid
-	if !SetTokenValidation(jsonOTP.Username, jsonOTP.Token) {
+	// Check if OTP is valid
+	if ! checkOtpBySecret(jsonOTP.Secret, jsonOTP.OTP) {
 		c.JSON(http.StatusBadRequest, structs.Map(response.StatusBadRequest{
 			Code:    400,
-			Message: "Token validation set error",
+			Message: "OTP token verification failed",
 			Data:    "",
 		}))
 		return
 	}
 
-	// init redis connection
-	redisConnection := redis.Instance()
-
-	// set auth token to valid
-	errRedis2FASet := redisConnection.HSet(ctx, "user/"+jsonOTP.Username, "2fa", true)
-
-	// check error
-	if errRedis2FASet.Err() != nil {
-		c.JSON(http.StatusBadRequest, structs.Map(response.StatusBadRequest{
-			Code:    403,
-			Message: "Error in set 2FA for user",
-			Data:    nil,
-		}))
+	// set the user 2FA secret: the next login request requires OTP.
+	err := setUserSecret(username, jsonOTP.Secret)
+	if err != nil {
+		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
 
 	// response
 	c.JSON(http.StatusOK, structs.Map(response.StatusOK{
 		Code:    200,
-		Message: "OTP verified",
-		Data:    jsonOTP.Token,
+		Message: "2FA set successfully",
+		Data:    nil,
 	}))
 }
 
@@ -281,17 +266,6 @@ func QRCode(c *gin.Context) {
 	account := claims["id"].(string)
 	issuer := configuration.Config.Issuer
 
-	// set secret for user
-	result, setSecret := setUserSecret(account, secretBase32)
-	if !result {
-		c.JSON(http.StatusBadRequest, structs.Map(response.StatusBadRequest{
-			Code:    400,
-			Message: "User secret set error",
-			Data:    "",
-		}))
-		return
-	}
-
 	// define URL
 	URL, err := url.Parse("otpauth://totp")
 	if err != nil {
@@ -301,7 +275,7 @@ func QRCode(c *gin.Context) {
 	// add params
 	URL.Path += "/" + issuer + ":" + account
 	params := url.Values{}
-	params.Add("secret", setSecret)
+	params.Add("secret", secretBase32)
 	params.Add("issuer", issuer)
 	params.Add("algorithm", "SHA1")
 	params.Add("digits", "6")
@@ -314,7 +288,7 @@ func QRCode(c *gin.Context) {
 	c.JSON(http.StatusOK, structs.Map(response.StatusOK{
 		Code:    200,
 		Message: "QR code string",
-		Data:    gin.H{"url": URL.String(), "key": setSecret},
+		Data:    gin.H{"url": URL.String(), "key": secretBase32},
 	}))
 }
 
@@ -329,25 +303,25 @@ func QRCode(c *gin.Context) {
 func Get2FAStatus(c *gin.Context) {
 	// get claims from token
 	claims := jwt.ExtractClaims(c)
+	username := claims["id"].(string)
 
-	// init redis connection
-	redisConnection := redis.Instance()
+	secret := getUserSecret(username)
 
-	// get secret
-	status, errRedis2FAGet := redisConnection.HGet(ctx, "user/"+claims["id"].(string), "2fa").Result()
-
-	// response
-	var message = "2FA set for this user"
-	if !(status == "1") || errRedis2FAGet != nil {
-		message = "2FA not set for this user"
-		status = "0"
+	if secret == "" {
+		c.JSON(http.StatusOK, structs.Map(response.StatusOK{
+			Code:    200,
+			Message: "2FA not set for this user",
+			Data:    false,
+		}))
+		return
+	} else {
+		c.JSON(http.StatusOK, structs.Map(response.StatusOK{
+			Code:    200,
+			Message: "2FA set for this user",
+			Data:    true,
+		}))
+		return
 	}
-
-	c.JSON(http.StatusOK, structs.Map(response.StatusOK{
-		Code:    200,
-		Message: message,
-		Data:    status == "1",
-	}))
 }
 
 // Del2FAStatus godoc
@@ -361,28 +335,15 @@ func Get2FAStatus(c *gin.Context) {
 func Del2FAStatus(c *gin.Context) {
 	// get claims from token
 	claims := jwt.ExtractClaims(c)
+	username := claims["id"].(string)
 
 	// init redis connection
 	redisConnection := redis.Instance()
 
-	// revocate secret
-	errRevocate := os.Remove(configuration.Config.SecretsDir + "/" + claims["id"].(string) + "/2fa")
-	if errRevocate != nil {
-		c.JSON(http.StatusBadRequest, structs.Map(response.StatusBadRequest{
-			Code:    403,
-			Message: "Error in revocate 2FA for user",
-			Data:    nil,
-		}))
-		return
-	}
-
 	// set 2FA to disabled
-	if errSet := redisConnection.HSet(ctx, "user/"+claims["id"].(string), "2fa", false).Err(); errSet != nil {
-		c.JSON(http.StatusBadRequest, structs.Map(response.StatusBadRequest{
-			Code:    403,
-			Message: "Error in reset 2FA status for user",
-			Data:    nil,
-		}))
+	if err := redisConnection.HSet(ctx, "user/" + username, "2fa", "").Err(); err != nil {
+		utils.LogError(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
 
@@ -489,153 +450,28 @@ func BasicAuthModule(c *gin.Context) {
 
 }
 
-func setUserSecret(username string, secret string) (bool, string) {
-	// get secret
-	secretB, _ := os.ReadFile(configuration.Config.SecretsDir + "/" + username + "/2fa")
-
-	// check error
-	if len(string(secretB[:])) == 0 {
-		// check if dir exists, otherwise create it
-		if _, errD := os.Stat(configuration.Config.SecretsDir + "/" + username); os.IsNotExist(errD) {
-			_ = os.MkdirAll(configuration.Config.SecretsDir+"/"+username, 0700)
-		}
-
-		// open file
-		f, _ := os.OpenFile(configuration.Config.SecretsDir+"/"+username+"/2fa", os.O_WRONLY|os.O_CREATE, 0600)
-		defer f.Close()
-
-		// write file with secret
-		_, err := f.WriteString(secret)
-
-		// check error
-		if err != nil {
-			return false, ""
-		}
-
-		return true, secret
-	}
-
-	return true, string(secretB[:])
-}
-
-func SetTokenValidation(username string, token string) bool {
-	// open file
-	f, _ := os.OpenFile(configuration.Config.TokensDir+"/"+username, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
-	defer f.Close()
-
-	// write file with tokens
-	_, err := f.WriteString(token + "\n")
-
-	// check error
+func setUserSecret(username string, secret string) (error) {
+	// init redis connection
+	redisConnection := redis.Instance()
+	err := redisConnection.HSet(ctx, "user/" + username, "2fa", secret).Err()
 	if err != nil {
-		return false
+		return err
 	}
-
-	return true
-}
-
-func RemoveTokenValidation(username string, token string) bool {
-	// read whole file
-	secrestListB, errR := ioutil.ReadFile(configuration.Config.TokensDir + "/" + username)
-	if errR != nil {
-		return false
-	}
-	secrestList := string(secrestListB)
-
-	// match token to remove
-	res := strings.Replace(secrestList, token, "", 1)
-
-	// open file
-	f, _ := os.OpenFile(configuration.Config.TokensDir+"/"+username, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
-	defer f.Close()
-
-	// write file with tokens
-	_, err := f.WriteString(strings.TrimSpace(res) + "\n")
-
-	// check error
-	if err != nil {
-		return false
-	}
-
-	return true
-
+	return nil
 }
 
 func getUserSecret(username string) string {
-	// get secret
-	secretB, err := os.ReadFile(configuration.Config.SecretsDir + "/" + username + "/2fa")
-
-	// handle redis error
+	redisConnection := redis.Instance()
+	result, err := redisConnection.HGet(ctx, "user/" + username, "2fa").Result()
 	if err != nil {
 		return ""
 	}
-
-	// read from redis
-	return string(secretB[:])
+	if len(result) != 32 {
+		return ""
+	}
+	return result
 }
 
-func ValidateAuth(tokenString string, ensureTokenExists bool) bool {
-	// convert token string and validate it
-	if tokenString != "" {
-		token, err := jwtl.Parse(tokenString, func(token *jwtl.Token) (interface{}, error) {
-			// validate the alg
-			if _, ok := token.Method.(*jwtl.SigningMethodHMAC); !ok {
-				return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
-			}
-
-			// return secret
-			return []byte(configuration.Config.Secret), nil
-		})
-
-		if err != nil {
-			utils.LogError(errors.Wrap(err, "[SOCKET] error in JWT token validation"))
-			return false
-		}
-
-		if claims, ok := token.Claims.(jwtl.MapClaims); ok && token.Valid {
-			if claims["id"] != nil {
-				if ensureTokenExists {
-					username := claims["id"].(string)
-
-					if !CheckTokenValidation(username, tokenString) {
-						utils.LogError(errors.New("[SOCKET] error JWT token not found"))
-						return false
-					}
-				}
-				return true
-			}
-		} else {
-			utils.LogError(errors.Wrap(err, "[SOCKET] error in JWT token claims"))
-			return false
-		}
-	}
-	return false
-}
-
-func CheckTokenValidation(username string, token string) bool {
-	// read whole file
-	secrestListB, err := ioutil.ReadFile(configuration.Config.TokensDir + "/" + username)
-	if err != nil {
-		return false
-	}
-	secrestList := string(secrestListB)
-
-	// //check whether s contains substring text
-	return strings.Contains(secrestList, token)
-}
-
-func Check2FA(username string) bool {
-	// init redis connection
-	redisConnection := redis.Instance()
-
-	// get status
-	result, errRedisStatusGet := redisConnection.HGet(ctx, "user/"+username, "2fa").Result()
-
-	// handle redis error
-	if errRedisStatusGet != nil {
-		return false
-	}
-
-	return result == "1"
-
+func Needs2faCheck(username string) bool {
+	return getUserSecret(username) != ""
 }
