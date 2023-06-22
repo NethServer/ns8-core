@@ -294,7 +294,9 @@
         "cert_upload_label": "Certificate",
         "cert_upload_helptext": "Chain of certificates must be in the same file.",
         "upload_certs": "Upload certificate",
-        "instance_selection_label": "Select instance to upload the file to."
+        "instance_selection_label": "Select instance to upload the file to.",
+        "custom": "Uploaded",
+        "upload": "Upload"
     },
     "about": {
         "documentation": "Documentazione",
@@ -739,7 +741,7 @@
         "save": "Salva",
         "this_action_is_not_reversible": "Questa azione <strong>NON</strong> è reversibile",
         "unselect": "Deseleziona",
-        "see_details": "Vedi dettagli",
+        "see_details": "Vedi dettaglio",
         "optional": "opzionale",
         "use_landscape_mode": "Ruota il tuo dispositivo",
         "no_label": "Nessuna etichetta",
