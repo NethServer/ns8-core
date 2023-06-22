@@ -130,8 +130,11 @@ If you feel comfortable and more secure to use 2FA, you can enable it inside the
     RESPONSE
     {
       "code": 200,
-      "data": "otpauth://totp/NS8:edoardo?algorithm=SHA1&digits=6&issuer=NS8&period=30&secret=KL67YBZBQJSU6FR7L4HZUYQ5OKKWNR2N",
-      "message": "4W5XXQDHH3ROJBUOHEKUEL6M44IYUOMO"
+      "data": {
+        "key": "OQPZYGNFP4E37NJUCBR7ELEONC7WSXZW",
+        "url": "otpauth://totp/NethServer:admin2fa?algorithm=SHA1\u0026digits=6\u0026issuer=NethServer\u0026period=30\u0026secret=OQPZYGNFP4E37NJUCBR7ELEONC7WSXZW"
+      },
+      "message": "QR code string"
     }
     ```
 
