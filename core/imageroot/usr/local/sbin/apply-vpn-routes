@@ -24,8 +24,9 @@ with agent.redis_connect(use_replica=True) as rdb:
     leader_id = int(rdb.hget('cluster/environment', 'NODE_ID'))
     cluster_network = rdb.get('cluster/network')
     peers = {}
-    for pkey in rdb.scan_iter('node/*/vpn'):
-        node_id = int(pkey.removeprefix('node/').removesuffix('/vpn'))
+    for snode_id in set(rdb.hvals('cluster/module_node')):
+        pkey = f'node/{node_id}/vpn'
+        node_id = int(snode_id)
         peers[node_id] = rdb.hgetall(pkey)
 
 agent.assert_exp(len(peers) >= 0)

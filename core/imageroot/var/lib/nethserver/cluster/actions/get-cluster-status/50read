@@ -53,9 +53,8 @@ if network is not None:
     leader_hostname, _ = rdb.hget(f"node/{leader_id}/vpn", "endpoint").split(":", 1)
     ret['leader_url'] = f'https://{leader_hostname}/cluster-admin/'
     ret['leader'] = local_id == leader_id
-    for node in rdb.scan_iter('node/*/vpn'):
-        node_id = node.split('/')[1]
-        ovpn = rdb.hgetall(node)
+    for node_id in set(rdb.hvals('cluster/module_node')): # fast node_id iteration
+        ovpn = rdb.hgetall(f'node/{node_id}/vpn')
         kvpn = ovpn['public_key']
         if rdb.sismember(f'node/{node_id}/flags', 'nomodules'):
             continue

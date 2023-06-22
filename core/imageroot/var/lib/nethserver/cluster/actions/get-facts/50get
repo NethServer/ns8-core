@@ -34,9 +34,9 @@ facts['uuid'] = redis_client.get('cluster/uuid')
 
 # TODO: node_id not representative, change with NODE_UUID when available.
 tasks = [{
-    'agent_id': 'node/'+redis_client.hget(key, 'NODE_ID'),
+    'agent_id': f'node/{node_id}',
     'action': 'get-facts'
-} for key in redis_client.scan_iter('node/*/environment')]
+} for node_id in set(redis_client.hvals('cluster/module_node'))]
 
 results = agent.tasks.runp(
     tasks,

@@ -85,9 +85,8 @@ for m in rdb.scan_iter('module/*/backups'):
     dump['modules'][uuid]['backups'] = list(rdb.smembers(m))
 
 # nodes: vpn, label
-for v in rdb.scan_iter('node/*/vpn'):
-    k = v.removeprefix('node/')
-    k = k.removesuffix('/vpn')
+for node_id in set(rdb.hvals('cluster/module_node')):
+    v = f'node/{node_id}/vpn'
     if rdb.hexists(v, 'endpoint'):
         for f in ['endpoint', 'listen_port', 'destinations']:
             dump['vpn'][f] = rdb.hget(v, f)
