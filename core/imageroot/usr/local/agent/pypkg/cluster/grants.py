@@ -101,10 +101,8 @@ def alter_user(rdb, user, revoke, role, on_clause):
 
 def refresh_permissions(rdb):
     """Scan the stored authorizations and re-apply permissions to all modules"""
-    for kauth_module in rdb.scan_iter('cluster/authorizations/module/*'):
-        kmid = kauth_module.removeprefix('cluster/authorizations/module/')
-        authorizations = rdb.smembers(kauth_module) or []
-        mnode_id = rdb.hget('cluster/module_node', kmid)
+    for kmid, mnode_id in rdb.hgetall('cluster/module_node').items():
+        authorizations = rdb.smembers(f'cluster/authorizations/module/{kmid}') or []
         add_module_permissions(rdb, kmid, authorizations, mnode_id)
 
 def add_module_permissions(rdb, module_id, authorizations, node_id):

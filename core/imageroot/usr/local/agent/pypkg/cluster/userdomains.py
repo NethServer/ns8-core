@@ -117,10 +117,11 @@ def get_internal_domains(rdb):
     domains={}
     configured_providers = set()
 
-    for kldap in rdb.scan_iter("module/*/srv/tcp/ldap"):
-        module_id = kldap.split('/', 2)[1]
+    for module_id in rdb.hkeys('cluster/module_node'):
+        conf = rdb.hgetall(f"module/{module_id}/srv/tcp/ldap")
+        if not conf:
+            continue
         configured_providers.add(module_id)
-        conf = rdb.hgetall(kldap)
 
         if not conf['domain'] in domains:
             domains[conf['domain']] = {
@@ -150,13 +151,12 @@ def get_internal_domains(rdb):
             "port": int(conf['port']),
         })
 
-    for kud in rdb.scan_iter("module/*/user_domain"):
-        module_id = kud.split('/', 2)[1]
+    for module_id in rdb.hkeys('cluster/module_node'):
         if module_id in configured_providers:
             continue
 
-        domain_name = rdb.get(kud)
-        if not domain_name in domains:
+        domain_name = rdb.get(f"module/{module_id}/user_domain")
+        if not domain_name or not domain_name in domains:
             continue # skip new domain module instance
 
         node_id = rdb.hget(f'module/{module_id}/environment', 'NODE_ID')

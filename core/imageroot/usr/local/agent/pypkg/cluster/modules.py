@@ -155,9 +155,9 @@ def list_installed(rdb, skip_core_modules = False):
     installed = {}
     logos = _get_cached_logo_urls(rdb)
     # Search for installed modules
-    for m in rdb.scan_iter('module/*/environment'):
-        vars = rdb.hgetall(m)
-        module_ui_name = rdb.get(m.removesuffix('/environment') + '/ui_name') or ""
+    for module_id in rdb.hkeys('cluster/module_node'):
+        vars = rdb.hgetall(f'module/{module_id}/environment')
+        module_ui_name = rdb.get(f'module/{module_id}/ui_name') or ""
         url, sep, tag = vars['IMAGE_URL'].partition(":")
         image = url[url.rindex('/')+1:]
         logo = logos.get(image) or ''
@@ -179,8 +179,8 @@ def list_installed_core(rdb):
     (url, tag) = core_env['CORE_IMAGE'].split(":")
     installed['ghcr.io/nethserver/core'].append({ 'id': 'core', 'version': tag, 'module': 'core'})
     # Search for installed modules
-    for m in rdb.scan_iter('module/*/environment'):
-        vars = rdb.hgetall(m)
+    for module_id in rdb.hkeys('cluster/module_node'):
+        vars = rdb.hgetall(f'module/{module_id}/environment')
         if 'core_module' in rdb.smembers(f'module/{vars["MODULE_ID"]}/flags'):
             url, sep, tag = vars['IMAGE_URL'].partition(":")
             image = url[url.rindex('/')+1:]
