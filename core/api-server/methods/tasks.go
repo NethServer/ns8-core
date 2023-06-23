@@ -339,13 +339,10 @@ func createTask(c *gin.Context, queueName string) {
 	// check redis role
 	redisRole := redisConnection.Do(ctx, "role").String()
 	if !strings.Contains(redisRole, "master") {
-		// get master endpoint
-		masterEndpoint, _ := redisConnection.HGet(ctx, "node/1/vpn", "endpoint").Result()
-
-		c.JSON(http.StatusForbidden, structs.Map(response.StatusBadRequest{
+		c.JSON(http.StatusForbidden, structs.Map(response.StatusForbidden{
 			Code:    403,
 			Message: "current redis instance is not master",
-			Data:    masterEndpoint,
+			Data:    "",
 		}))
 		return
 	}
