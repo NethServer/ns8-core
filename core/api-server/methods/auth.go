@@ -61,33 +61,19 @@ func RedisLive() bool {
 	return true
 }
 
-// RedisAuthentication godoc
-// @Summary Login and get JWT token
-// @Description login and get JWT token
-// @Produce  json
-// @Param user body response.LoginRequestJWT false "The user to login"
-// @Success 200 {object} response.LoginResponseJWT
-// @Failure 500 {object} response.StatusInternalServerError{code=int,message=string,data=object}
-// @Router /login [post]
-// @Tags /login auth
 func RedisAuthentication(username string, password string) error {
-	// init redis connection
-	redisConnection := redis.Instance()
-
-	// execute redis auth: AUTH <username> <password>
-	pipe := redisConnection.Pipeline()
-	_, _ = pipe.AuthACL(ctx, username, password).Result()
-
-	// check authentication
-	_, errRedisAuth := pipe.Exec(ctx)
-	if errRedisAuth != nil {
-		return errRedisAuth
+	if username == "default" {
+		return errors.New("User is disabled")
 	}
 
-	// close redis connection
-	redisConnection.Close()
+	// init redis connection
+	redisClient := redis.Instance()
 
-	return nil
+	// connection is only to check credentials: close it at the end
+	defer redisClient.Close()
+
+	// execute redis auth: AUTH <username> <password> and return its error, if any
+	return redisClient.Conn(ctx).AuthACL(ctx, username, password).Err()
 }
 
 // RedisAuthorization godoc
