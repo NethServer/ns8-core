@@ -3,6 +3,7 @@
 # The environment is installed under /usr/local/nethserver/agent
 #
 aiodns==3.0.0
+aioredis==2.0.1
 aiohttp==3.8.4
 ansible-core==2.15.1
 ansible-runner==2.3.1
