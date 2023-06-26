@@ -24,9 +24,9 @@ jobs:
         run: |
           # Build the images
           cd core/api-server
-          buildah from --name golang -v "${PWD}:/usr/src:Z" docker.io/library/golang:1.16-alpine
+          buildah from --name golang -v "${PWD}:/usr/src:Z" docker.io/library/golang:1.19-alpine
           buildah run golang sh <<'EOF'
-          go get -u github.com/swaggo/swag/cmd/swag
+          go install github.com/swaggo/swag/cmd/swag@v1.16.1
           cd /usr/src
           swag init -g api-server.go
           EOF
