@@ -17,7 +17,11 @@
 # You should have received a copy of the GNU General Public License
 # along with NethServer.  If not, see COPYING.
 #
-from redis import asyncio as aioredis
+# we want to be compatible python 3.9 and 3.11, aioredis is inside redis 4.5.5
+try :
+    from redis import asyncio as aioredis
+except:
+    import aioredis
 import asyncio
 import json
 import os
