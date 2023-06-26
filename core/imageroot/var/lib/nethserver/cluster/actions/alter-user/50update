@@ -71,8 +71,8 @@ if 'set' in request:
         rdb.acl_setuser(user, passwords=[f'+{password}'], reset_passwords=True, enabled=True)
 
     if '2fa' in request['set']:
-        # enable/disable 2fa
-        rdb.hset(f'user/{user}', '2fa', "1" if request['set']['2fa'] else "0")
+        # forcibly disable 2fa
+        rdb.hset(f'user/{user}', '2fa', "")
 
 revoke_list = request.get('revoke', []) # parameter "revoke" is optional
 for roledef in revoke_list: # !!! revoke BEFORE grant
