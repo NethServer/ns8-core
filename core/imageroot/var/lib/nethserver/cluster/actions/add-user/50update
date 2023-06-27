@@ -45,11 +45,11 @@ agent.assert_exp(rdb.hset(f'user/{user}', mapping={
 
 rdb.execute_command('ACL', 'DELUSER', user) # Drop the user to avoid double-password accounts
 agent.assert_exp(rdb.execute_command('ACL', 'SETUSER', user, 'ON', '#'+password_hash, 'resetkeys', 'resetchannels', 'nocommands') == 'OK')
-agent.assert_exp(rdb.execute_command('ACL', 'SAVE') == 'OK')
 
 for roledef in request['grant']:
     cluster.grants.alter_user(rdb, user, False, roledef['role'], roledef['on'])
 
+# Save ACLs on the disk and propagate to worker nodes
 cluster.grants.save_acls(rdb)
 
 print("true")

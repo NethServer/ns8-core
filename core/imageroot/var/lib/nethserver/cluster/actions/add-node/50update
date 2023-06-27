@@ -169,7 +169,7 @@ for userk in rdb.scan_iter('roles/*'):
     if 'cluster' in user_auths and user_auths['cluster'] == 'owner':
         rdb.hset(userk, f'node/{node_id}', 'owner')
 
-# Store ACLs on disk of leader and worker nodes:
+# Save ACLs on the disk and propagate to worker nodes
 cluster.grants.save_acls(rdb)
 
 #

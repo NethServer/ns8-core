@@ -139,7 +139,10 @@ def check_authorizations_sanity(authorizations):
 
 def save_acls(rdb):
     """
+    Save ACLs on the cluster leader disk
     Copy current ACLs to cluster/acls key
+    Publish acl-changed event: worker nodes will run acl-load and save ACLs on their disks too
+
     This function can be executed only on the leader node
     """
 
@@ -159,5 +162,6 @@ def save_acls(rdb):
             continue
         trx.sadd("cluster/acls", acl)
 
+    trx.acl_save()
     trx.publish('cluster/event/acl-changed', 'cluster/acls')
     trx.execute()

@@ -45,7 +45,7 @@ if rdb.execute_command('ACL', 'GETUSER', user) is None:
 rdb.delete(f'roles/{user}')
 
 agent.assert_exp(rdb.execute_command('ACL', 'DELUSER', user) == 1)
-agent.assert_exp(rdb.execute_command('ACL', 'SAVE') == 'OK')
+# Save ACLs on the disk and propagate to worker nodes
 cluster.grants.save_acls(rdb)
 
 print("true")

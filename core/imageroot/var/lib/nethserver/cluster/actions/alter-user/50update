@@ -82,4 +82,5 @@ grant_list = request.get('grant', []) # parameter "grant" is optional
 for roledef in grant_list:
     cluster.grants.alter_user(rdb, user, False, roledef['role'], roledef['on'])
 
+# Save ACLs on the disk and propagate to worker nodes
 cluster.grants.save_acls(rdb)
