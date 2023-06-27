@@ -43,6 +43,8 @@ role = rdb.execute_command('ROLE')[0]
 if role == 'slave':
     for acl in rdb.smembers('cluster/acls'):
         user = acl.split(" ",2)[1]
+        if user in ["default", "cluster", "api-server"]:
+            continue # skip records of local accounts
         # replace existing user
         rdb.acl_deluser(user)
         rdb.execute_command(f'ACL set{acl}')
