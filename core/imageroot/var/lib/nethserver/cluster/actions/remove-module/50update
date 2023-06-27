@@ -25,6 +25,7 @@ import json
 import agent
 import agent.tasks
 import os
+import cluster.grants
 
 request = json.load(sys.stdin)
 module_id = request['module_id']
