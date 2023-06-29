@@ -88,7 +88,8 @@ func Action(socketAction models.SocketAction, s *melody.Session, wg *sync.WaitGr
 		// filter logs params
 		var mode = ""
 		var filter = ""
-		var entity = ""
+		var streamSelector = ""
+		var logqlPipeline = ""
 		var from = ""
 		var to = ""
 		var timezone = "UTC"
@@ -127,33 +128,33 @@ func Action(socketAction models.SocketAction, s *melody.Session, wg *sync.WaitGr
 
 		// check filter
 		if len(logsAction.Filter) > 0 {
-			filter = "json | line_format \"{{.SYSLOG_IDENTIFIER}} {{.nodename}} {{.MESSAGE}}\" |= `" + logsAction.Filter + "`"
+			filter = ` |= "` + strings.ReplaceAll(logsAction.Filter, `"`, `\"`) + `"`
 		} else {
-			filter = "json"
+			filter = ``
 		}
 
 		// switch entity
 		switch logsAction.Entity {
-		case "cluster":
-			entity = "{job=\"systemd-journal\"} | " + filter + " | line_format \"{{.nodename}} {{.MESSAGE}}\""
+		default:
+			streamSelector = `{node_id=~".+"}`
 
 		case "node":
-			entity = "{nodename=\"" + logsAction.EntityName + "\"} | " + filter + " | line_format \"{{.MESSAGE}}\""
+			streamSelector = `{node_id="`+ logsAction.EntityName +`"}`
 
 		case "module":
-			entity = "{job=\"systemd-journal\"} | " + filter + " | SYSLOG_IDENTIFIER=~\"" + logsAction.EntityName + "(/.+)?\" | line_format \"{{.SYSLOG_IDENTIFIER}} {{.MESSAGE}}\""
-
+			streamSelector = `{module_id="`+ logsAction.EntityName +`"}`
 		}
-		args = append(args, entity)
+
+		logqlPipeline = ` | json syslog_id="SYSLOG_IDENTIFIER", message="MESSAGE" | line_format "[{{.node_id}}:{{.module_id}}:{{.syslog_id}}] {{.message}}"`
+
+		// Compose and append the query strings to logcli arguments
+		args = append(args, streamSelector + logqlPipeline + filter)
 
 		// define command
 		cmd := exec.Command("/usr/local/bin/logcli", args...)
 
 		// add envs
-		cmd.Env = os.Environ()
-		for e := 0; e < len(envs); e++ {
-			cmd.Env = append(cmd.Env, envs[e])
-		}
+		cmd.Env = append(os.Environ(), envs...)
 
 		if logsAction.Mode == "tail" {
 			// execute command follow mode
