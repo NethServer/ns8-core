@@ -322,7 +322,6 @@ def resolve_agent_id(agent_selector, node_id=None):
     """Resolves agent_selector to an agent_id
     If node_id is None (default), the NODE_ID value from the environment is considered.
     """
-    rdb = redis_connect(privileged=False)
     agent_id = None
 
     if node_id is None:
@@ -335,10 +334,12 @@ def resolve_agent_id(agent_selector, node_id=None):
         agent_id = os.environ['AGENT_ID']
     elif agent_selector.endswith('@node'): # Default module instance on the current node
         if node_id:
+            rdb = redis_connect(use_replica=True)
             default_instance = rdb.get(f'node/{node_id}/default_instance/{agent_selector[0:-len("@node")]}')
             if default_instance:
                 agent_id = f'module/{default_instance}'
     elif agent_selector.endswith('@cluster'): # Default module instance for the whole cluster
+        rdb = redis_connect(use_replica=True)
         default_instance = rdb.get(f'cluster/default_instance/{agent_selector[0:-len("@cluster")]}')
         if default_instance:
             agent_id = f'module/{default_instance}'
