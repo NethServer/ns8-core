@@ -256,11 +256,11 @@ export default {
 
       for (let node of this.clusterNodes) {
         nodes.push({
-          name: node.hostname,
+          name: node.id,
           label: node.ui_name
             ? node.ui_name + " (" + this.$t("common.node") + " " + node.id + ")"
             : this.$t("common.node") + " " + node.id,
-          value: node.hostname,
+          value: node.id,
         });
       }
       nodes.sort(this.sortByProperty("label"));
