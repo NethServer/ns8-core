@@ -33,11 +33,11 @@ import fnmatch
 
 # Handled exceptions:
 from aiohttp import ClientError
-# we want to be compatible python 3.9 and 3.11, aioredis is inside redis 4.5.5
+# we want to be compatible python 3.9 and 3.11
 try :
-    from redis import asyncio as aioredis
-except:
-    from aioredis import RedisError as aioredis
+    from aioredis import RedisError # fails with Python 3.11
+except TypeError:
+    from redis import RedisError
 from agent.tasks.exceptions import TaskError
 from requests import RequestException
 
@@ -245,7 +245,7 @@ signal.signal(signal.SIGINT, sigint_handler)
 try:
     exit_code = command(args)
 
-except (ClientError, aioredis.RedisError, TaskError, RequestException) as ex:
+except (ClientError, RedisError, TaskError, RequestException) as ex:
     print(f'{ex.__class__.__name__}: {ex}', file=sys.stderr)
     exit_code = 1
 
