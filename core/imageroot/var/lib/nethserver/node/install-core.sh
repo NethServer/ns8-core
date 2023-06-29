@@ -41,8 +41,8 @@ fi
 echo "Setup Python virtual environment for agents:"
 core_dir=/usr/local/agent/pyenv
 python3.11 -mvenv ${core_dir} --upgrade-deps --system-site-packages
-${core_dir}/bin/pip3.11 install -r /etc/nethserver/pythonreq.txt
-echo "/usr/local/agent/pypkg" >$(${core_dir}/bin/python3.11 -c "import sys; print(sys.path[-1] + '/pypkg.pth')")
+${core_dir}/bin/pip3 install -r /etc/nethserver/pythonreq.txt
+echo "/usr/local/agent/pypkg" >$(${core_dir}/bin/python3 -c "import sys; print(sys.path[-1] + '/pypkg.pth')")
 
 # we must use python3.11 for agent
 rm -rf /usr/local/agent/pyenv/bin/python3
