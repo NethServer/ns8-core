@@ -40,6 +40,15 @@ if ! grep -q -E "\b${fqdn}\b" /etc/hosts ; then
     exit 3
 fi
 
+echo "Checking port 80 and 443 are not already in use"
+for port in 80 443
+do
+    if timeout 5 bash -c "< /dev/tcp/localhost/$port" &> /dev/null; then 
+        echo "The TCP port $port is already used on this host, we cannot install, we exit"
+        exit 1
+    fi
+done
+
 echo "Restart journald:"
 systemctl restart systemd-journald.service
 
