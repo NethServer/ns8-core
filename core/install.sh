@@ -43,8 +43,8 @@ fi
 echo "Checking port 80 and 443 are not already in use"
 for port in 80 443
 do
-    if timeout 5 bash -c "< /dev/tcp/localhost/$port" &> /dev/null; then 
-        echo "The TCP port $port is already used on this host, we cannot install, we exit"
+    if ss -H -l "( sport = :${port} )" | grep -q .; then
+        echo "Installation failed: port ${port} is already in use."
         exit 1
     fi
 done
