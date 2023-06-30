@@ -1,5 +1,5 @@
 [Unit]
-Description=Rootfull %I agent
+Description=Rootfull %i agent
 
 [Service]
 Type=simple
@@ -15,7 +15,7 @@ ExecStart=/usr/local/bin/agent \
     --actionsdir=${AGENT_INSTALL_DIR}/actions \
     --eventsdir=${AGENT_INSTALL_DIR}/events
 Restart=always
-SyslogIdentifier=%i
+SyslogIdentifier=agent@%i
 
 [Install]
 WantedBy=default.target
