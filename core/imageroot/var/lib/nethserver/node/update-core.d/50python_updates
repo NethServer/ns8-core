@@ -9,4 +9,10 @@ exec 1>&2
 set -e
 
 # Update Python requirements
-/usr/local/agent/pyenv/bin/pip3 install -r /etc/nethserver/pythonreq.txt
+
+pyreqfile="/etc/nethserver/$(/usr/local/agent/pyenv/bin/python3 -c 'import sys ; print("pyreq%d_%d.txt" % sys.version_info[0:2] if sys.version_info[0:2] > (3,9) else "pythonreq.txt")')"
+
+if [[ -e "${pyreqfile}" ]]; then
+    echo "Installing Python virtual environment deps from ${pyreqfile}"
+    /usr/local/agent/pyenv/bin/pip3 install -r "${pyreqfile}"
+fi
