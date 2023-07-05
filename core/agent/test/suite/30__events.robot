@@ -24,7 +24,7 @@ Error is sent to log
 
 Commands are sent to log
     When The event is raised    echo-received    payload0007
-    Then Wait until the agent log contains    set-env IGNORED DURING_EVENTS
+    Then Wait until the agent log contains    set-progress IGNORED DURING_EVENTS
     And The event exit code is    0
 
 Environment is defined

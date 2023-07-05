@@ -41,7 +41,5 @@ for image_url in images:
     print(f'Add to {agent_id} environment {var_name}={image_url}', file=sys.stderr)
     agent.set_env(var_name, image_url)
 
-agent.dump_env()
-
 # Start the download
 agent.run_helper('podman-pull-missing', *images).check_returncode()

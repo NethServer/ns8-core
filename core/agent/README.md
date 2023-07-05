@@ -208,8 +208,6 @@ a space it can be wrapped by double quotes.
 
 Available commands are:
 
-- `set-env` (deprecated, will be removed in a next release)
-- `unset-env` (deprecated, will be removed in a next release)
 - `set-status`
 - `set-progress`
 - `set-weight`
@@ -223,32 +221,6 @@ The same command in Python 3
     import os
     fd = int(os.environ['AGENT_COMFD'])
     os.write(fd, 'set-progress 73\n'.encode('utf-8'))
-
-### set-env
-
-DEPRECATED! will be removed in a next release
-
-The `set-env` command modifies an environment variable for subsequent
-steps. If the step where the command is invoked is successful, the agent
-persists the variable value in the local filesystem `./environment` state
-file and the next step will pick it up. For example
-
-    set-env FULLNAME "First User"
-
-The environment vars are also copied to the Redis DB under the
-`{agent_id}/environment` hash key, if the whole action completes
-successfully.
-
-### unset-env
-
-DEPRECATED! will be removed in a next release
-
-The `unset-env` command removes an environment variable for subsequent
-steps. If the step where the command is invoked is successful, the change
-is persisted in the local filesystem `./environment` state file and will be
-picked up by the next step. For example
-
-    unset-env FULLNAME
 
 ### set-status
 

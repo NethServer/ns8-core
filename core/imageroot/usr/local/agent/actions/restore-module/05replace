@@ -32,4 +32,3 @@ replace = data.get('replace') or False
 # Restore old MODULE_UUID
 if replace and uuid:
     agent.set_env("MODULE_UUID", uuid)
-    agent.dump_env()
