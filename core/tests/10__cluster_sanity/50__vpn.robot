@@ -11,4 +11,4 @@ WireGuard device is configured
     Should Contain    ${output}    interface: wg0
 
 WireGuard configuration file is present
-    File Should Exist    /etc/wireguard/wg0.conf
+    SSHLibrary.File Should Exist    /etc/wireguard/wg0.conf

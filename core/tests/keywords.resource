@@ -35,9 +35,9 @@ Save the journal begin timestamp
     Set Global Variable    ${JOURNAL_SINCE}    ${tsnow}
 
 Basic post install sanity checks
-    File Should Exist    /etc/nethserver/wg0.key
-    File Should Exist    /etc/nethserver/wg0.pub
-    File Should Exist    /etc/nethserver/api-server.env
+    SSHLibrary.File Should Exist    /etc/nethserver/wg0.key
+    SSHLibrary.File Should Exist    /etc/nethserver/wg0.pub
+    SSHLibrary.File Should Exist    /etc/nethserver/api-server.env
 
 Uninstall core and modules
     Put File    imageroot/var/lib/nethserver/node/uninstall.sh    .    mode=0644
