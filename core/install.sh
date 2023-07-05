@@ -58,14 +58,11 @@ source /etc/os-release
 echo "Install dependencies:"
 if [[ "${PLATFORM_ID}" == "platform:el9" ]]; then
     dnf update -y # Fix SELinux issues with basic packages
-    dnf install -y wireguard-tools podman jq openssl firewalld pciutils
+    dnf install -y wireguard-tools podman jq openssl firewalld pciutils python3.11
     systemctl enable --now firewalld
-elif [[ "${ID}" == "debian" && "${VERSION_ID}" == "11" ]]; then
+elif [[ "${ID}" == "debian" && "${VERSION_ID}" == "12" ]]; then
     apt-get update
     apt-get -y install gnupg2
-    # Add repo for podman => 3.4.2
-    echo 'deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/Debian_11/ /' > /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list
-    wget -O - https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/Debian_11/Release.key | apt-key add -
     apt-get update
     apt-get -y install python3-venv podman wireguard uuid-runtime jq openssl psmisc firewalld pciutils wget
 elif [[ "${ID}" == "ubuntu" && "${VERSION_ID}" == "20.04" && "${CI}" == "true" && "${GITHUB_ACTIONS}" == "true" ]]; then
