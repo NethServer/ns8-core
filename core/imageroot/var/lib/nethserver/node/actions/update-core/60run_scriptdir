@@ -1,0 +1,33 @@
+#!/bin/bash
+
+#
+# Copyright (C) 2023 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+set -e
+exec 1>&2
+
+if [[ ! -d "${AGENT_INSTALL_DIR}"/update-core.d/ ]]; then
+    exit 0
+fi
+
+# systemd-journal log severity codes:
+SD_DEBUG='<7>'
+SD_WARNING='<4>'
+
+shopt -s nullglob
+for script in "${AGENT_INSTALL_DIR}"/update-core.d/* ; do
+
+    if [[ ! -x "${script}" ]]; then
+        echo "${SD_DEBUG}Skipping non-executable file ${script}..."
+        continue
+    fi
+
+    echo "Running ${script}..."
+
+    if ! command ${script} ; then
+        echo "${SD_WARNING}${script} has exit code $?"
+    fi
+
+done

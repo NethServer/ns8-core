@@ -1,0 +1,18 @@
+#!/bin/bash
+
+#
+# Copyright (C) 2023 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+exec 1>&2
+set -e
+
+# Update Python requirements
+
+pyreqfile="/etc/nethserver/$(/usr/local/agent/pyenv/bin/python3 -c 'import sys ; print("pyreq%d_%d.txt" % sys.version_info[0:2] if sys.version_info[0:2] > (3,9) else "pythonreq.txt")')"
+
+if [[ -e "${pyreqfile}" ]]; then
+    echo "Installing Python virtual environment deps from ${pyreqfile}"
+    /usr/local/agent/pyenv/bin/pip3 install -r "${pyreqfile}"
+fi

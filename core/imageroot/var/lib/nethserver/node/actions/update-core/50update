@@ -1,23 +1,8 @@
 #!/usr/bin/env python3
 
 #
-# Copyright (C) 2021 Nethesis S.r.l.
-# http://www.nethesis.it - nethserver@nethesis.it
-#
-# This script is part of NethServer.
-#
-# NethServer is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License,
-# or any later version.
-#
-# NethServer is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with NethServer.  If not, see COPYING.
+# Copyright (C) 2023 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
 #
 
 import os
@@ -29,6 +14,8 @@ import semver
 
 request = json.load(sys.stdin)
 core_url = request['core_url']
+
+agent.set_weight(os.path.basename(__file__), 2)
 
 try:
     core_env = agent.read_envfile('/etc/nethserver/core.env')
@@ -74,24 +61,11 @@ agent.run_helper('podman-pull-missing', *extra_images,
     progress_callback=agent.get_progress_callback(41,70)
 ).check_returncode()
 
+# NOTE: `install-coreimage` also installs and cleans up scripts under
+# update-core.d/. When the next step runs, only scripts from the new image
+# are executed
 agent.run_helper('install-coreimage', core_url,
-    progress_callback=agent.get_progress_callback(71,85)
-).check_returncode()
-
-# Update python requirements
-agent.run_helper('/usr/local/agent/pyenv/bin/pip3', 'install', '-r', '/etc/nethserver/pythonreq.txt',
-    progress_callback=agent.get_progress_callback(85,90)
+    progress_callback=agent.get_progress_callback(71,99)
 ).check_returncode()
 
 agent.run_helper('systemctl', 'daemon-reload')
-
-# Send graceful termination signal to agents
-agent.run_helper('killall', '-q', '-s', 'USR1', '-r', '^agent$',
-    progress_callback=agent.get_progress_callback(91,94)
-)
-# Restart the api-server daemon
-agent.run_helper('systemctl', 'restart', 'api-server.service',
-    progress_callback=agent.get_progress_callback(95,99)
-)
-
-json.dump({}, fp=sys.stdout)
