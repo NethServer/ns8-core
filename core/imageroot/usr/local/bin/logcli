@@ -1,29 +1,27 @@
-#!/bin/bash
+#!/usr/local/agent/pyenv/bin/python3
 
 #
-# Copyright (C) 2021 Nethesis S.r.l.
-# http://www.nethesis.it - nethserver@nethesis.it
-#
-# This script is part of NethServer.
-#
-# NethServer is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License,
-# or any later version.
-#
-# NethServer is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with NethServer.  If not, see COPYING.
+# Copyright (C) 2023 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
 #
 
-set -e -a
+import agent
+import os
+import sys
 
-if [[ -z "${LOKI_ADDR}" ]]; then
-	source /etc/nethserver/logcli.env
-fi
 
-exec /usr/local/bin/logcli.bin "${@}"
+if 'LOKI_ADDR' in os.environ:
+    logcli_env = os.environ
+else:
+    rdb = agent.redis_connect(use_replica=True)
+    loki_agent_id = agent.resolve_agent_id("loki@cluster")
+    loki_env = rdb.hgetall(loki_agent_id + '/environment') or {}
+
+    logcli_env = os.environ.copy()
+    logcli_env.update({
+        'LOKI_ADDR': f"http://{loki_env['LOKI_ADDR']}:{loki_env['LOKI_HTTP_PORT']}",
+        'LOKI_USERNAME': loki_env['LOKI_API_AUTH_USERNAME'],
+        'LOKI_PASSWORD': loki_env['LOKI_API_AUTH_PASSWORD'],
+    })
+
+os.execve("/usr/local/bin/logcli.bin", sys.argv, logcli_env)
