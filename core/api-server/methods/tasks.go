@@ -326,16 +326,6 @@ func createTask(c *gin.Context, queueName string) {
 	// init redis connection
 	redisConnection := redis.Instance()
 
-	// check the agent is connected and alive
-	if err := redis.CheckClientIdle(c, redisConnection, strings.TrimSuffix(queueName, "/tasks"), 8); err != nil {
-		c.JSON(http.StatusNotFound, structs.Map(response.StatusNotFound{
-			Code:    404,
-			Message: "client idle check failed",
-			Data:    err.Error(),
-		}))
-		return
-	}
-
 	// check redis role
 	redisRole := redisConnection.Do(ctx, "role").String()
 	if !strings.Contains(redisRole, "master") {
@@ -343,6 +333,16 @@ func createTask(c *gin.Context, queueName string) {
 			Code:    403,
 			Message: "current redis instance is not master",
 			Data:    "",
+		}))
+		return
+	}
+
+	// check the agent is connected and alive
+	if err := redis.CheckClientIdle(c, redisConnection, strings.TrimSuffix(queueName, "/tasks"), 8); err != nil {
+		c.JSON(http.StatusNotFound, structs.Map(response.StatusNotFound{
+			Code:    404,
+			Message: "client idle check failed",
+			Data:    err.Error(),
 		}))
 		return
 	}
