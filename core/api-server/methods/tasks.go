@@ -331,8 +331,8 @@ func createTask(c *gin.Context, queueName string) {
 	if !strings.Contains(redisRole, "master") {
 		c.JSON(http.StatusForbidden, structs.Map(response.StatusForbidden{
 			Code:    403,
-			Message: "current redis instance is not master",
-			Data:    "",
+			Message: "task submission is forbidden in a worker node",
+			Data:    redis.GetLeaderHostAddress(ctx, redisConnection),
 		}))
 		return
 	}
