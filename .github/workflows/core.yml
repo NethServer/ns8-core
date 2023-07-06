@@ -1,6 +1,10 @@
 name: core
 on:
   push:
+    branches:
+      - '**'
+    tags-ignore:
+      - ns8-stable
     paths-ignore:
       - 'docs/**'
       - 'infra/**'
