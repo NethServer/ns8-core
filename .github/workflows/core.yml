@@ -23,8 +23,8 @@ jobs:
       - id: info
         name: "Retrieve runtime information"
         run: |
-          echo "::set-output name=images-dir::$(buildah info --format '{{.store.GraphRoot}}/overlay-images')"
-          echo "::set-output name=weekstamp::$(date +%YW%W)"
+          echo "images-dir=$(buildah info --format '{{.store.GraphRoot}}/overlay-images')" >> $GITHUB_OUTPUT
+          echo "weekstamp=$(date +%YW%W)" >> $GITHUB_OUTPUT
       - id: checkout
         uses: actions/checkout@v2
       - id: corecache
