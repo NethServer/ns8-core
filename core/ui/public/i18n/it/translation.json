@@ -734,7 +734,7 @@
         "select": "Seleziona",
         "none": "Nessuno",
         "x_of_y_selected": "selezionati {selected} di {total}",
-        "search": "Cerca",
+        "search": "Ricerca",
         "no_search_results": "Nessun risultato",
         "no_search_results_description": "Prova a modificare la query di ricerca",
         "success": "Successo",
