@@ -67,10 +67,11 @@ exec podman run -i -q --rm --replace --name test-agent-suite \
     --workdir="/usr/src" \
     --volume="rfenv:/usr/local/rfenv:z" \
     --volume="tstate:/srv:z" \
-    --volume="${PWD}:/usr/src:z,ro" \
+    --volume="${PWD}:/opt/src:z,ro" \
     docker.io/python:3.8-bullseye \
 bash -l -s - "${@}" <<'EOF'
 set -e
+cp -a /opt/src/. .
 if [[ ! -d /usr/local/rfenv/bin ]]; then
     python3 -mvenv /usr/local/rfenv --upgrade
     /usr/local/rfenv/bin/python3 -m pip install --upgrade pip
