@@ -142,7 +142,8 @@ images+=("${repobase}/${reponame}")
 
 if [[ -n "${CI}" ]]; then
     # Set output value for Github Actions
-    printf "::set-output name=images::%s\n" "${images[*]}"
+    printf "images=%s\n" "${images[*],,}" >> "${GITHUB_OUTPUT}"
+    printf " - %s:${IMAGETAG:-latest}\n" "${images[@],,}" >> $GITHUB_STEP_SUMMARY
 else
     printf "Publish the images with:\n\n"
     for image in "${images[@]}"; do printf "  buildah push %s docker://%s:latest\n" "${image}" "${image}" ; done

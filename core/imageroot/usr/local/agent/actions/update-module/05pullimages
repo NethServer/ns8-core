@@ -103,5 +103,3 @@ for image_url in extra_images:
 for envk, envv in env_patch.items():
     print(f'Update {agent_id} environment {envk}={envv}', file=sys.stderr)
     agent.set_env(envk, envv)
-
-agent.dump_env()

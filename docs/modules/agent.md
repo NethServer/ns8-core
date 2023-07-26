@@ -97,7 +97,7 @@ Python example:
 ```python
 import agent
 
-agent.set_env('MYVAR', 'value')
+agent.set_weight('05longstep', 2)
 ```
 
 ## Validation

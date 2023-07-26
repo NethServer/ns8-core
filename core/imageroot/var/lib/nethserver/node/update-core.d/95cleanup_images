@@ -1,0 +1,37 @@
+#!/bin/bash
+
+#
+# Copyright (C) 2023 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+exec 1>&2
+set -e
+
+# Clean up local images that are no longer required by the new core
+# version
+
+export LC_ALL=C # required by sort for portability
+
+source /etc/nethserver/core.env
+
+# Find the images that are no longer required:
+# 1. generate a sorted list starting with the old module image ID,
+#    followed by its additional images, as declared by the
+#    org.nethserver.images label
+# 2. similarly, generate the list for the new image ID
+# 3. compare (diff) the lists and extract the images that are no longer
+#    required
+# 4. pass them to `podman rmi`
+diff  <(
+    echo "${PREV_IMAGE_ID}"
+    podman inspect -f json "${PREV_IMAGE_ID:-none}" | \
+            jq -r '.[0].Config.Labels."org.nethserver.images" | split(" ") | join("\n")' | \
+            sort
+) <(
+    echo "${IMAGE_ID}"
+    podman inspect -f json "${IMAGE_ID:-none}" | \
+            jq -r '.[0].Config.Labels."org.nethserver.images" | split(" ") | join("\n")' | \
+            sort
+) | sed -n '/^< / s/^< //p' | \
+    xargs -t -- podman rmi 2>/dev/null || :

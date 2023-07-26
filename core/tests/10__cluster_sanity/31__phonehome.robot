@@ -5,7 +5,7 @@ Resource    api.resource
 
 *** Test Cases ***
 Check if phonehome.timer is enabled
-    File Should Exist    /etc/systemd/system/timers.target.wants/phonehome.timer
+    SSHLibrary.File Should Exist    /etc/systemd/system/timers.target.wants/phonehome.timer
 
 Check correct output from get-facts
     ${response} =    Run task    cluster/get-facts    null

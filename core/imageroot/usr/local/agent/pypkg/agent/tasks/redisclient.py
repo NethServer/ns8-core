@@ -18,7 +18,12 @@
 # along with NethServer.  If not, see COPYING.
 #
 
-import aioredis
+# we want to be compatible python 3.9 and 3.11, aioredis is inside redis 4.5.5
+try :
+    from redis import asyncio as aioredis
+except:
+    import aioredis
+
 import asyncio
 import json
 import os

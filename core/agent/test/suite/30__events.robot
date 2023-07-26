@@ -24,7 +24,7 @@ Error is sent to log
 
 Commands are sent to log
     When The event is raised    echo-received    payload0007
-    Then Wait until the agent log contains    set-env IGNORED DURING_EVENTS
+    Then Wait until the agent log contains    set-progress IGNORED DURING_EVENTS
     And The event exit code is    0
 
 Environment is defined
@@ -38,6 +38,12 @@ Abort stops execution
     Given The event is raised    handler-errored    payload0006
     When The event exit code is    2
     Then The agent log does not contain    NEVER REACH THIS POINT
+
+A missing step does not abort the whole event
+    When The event is raised    update-received    somepayload
+    Then The event exit code is    0
+    And The agent log does not contain    NEVER REACH THIS POINT1
+    And The agent log does not contain    NEVER REACH THIS POINT2
 
 Event aborted by agent termination
     Given The event is raised    long-run    payloadoflongrun

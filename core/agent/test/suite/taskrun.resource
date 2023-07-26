@@ -9,7 +9,7 @@ ${AGENT_ID}    %{AGENT_ID}
 
 *** Keywords ***
 Start the agent
-    Create File    /srv/state/environment
+    Create File    /srv/state/environment    VAR1=VAL1
     Create File    /srv/log/agent.log
     Start Process    /usr/src/agent
     ...    --agentid\=${AGENT_ID}

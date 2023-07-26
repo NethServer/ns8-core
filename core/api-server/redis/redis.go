@@ -45,6 +45,32 @@ func Instance() *redis.Client {
 }
 
 /*
+ * Find the leader host address from Redis
+ */
+func GetLeaderHostAddress(ctx context.Context, rdb *redis.Client) string {
+	var err error
+	var leaderNodeId string
+	var leaderHostAddress string
+
+	leaderNodeId, err = rdb.HGet(ctx, "cluster/environment", "NODE_ID").Result()
+	if err != nil {
+		return ""
+	}
+
+	leaderHostAddress, err = rdb.HGet(ctx, "node/" + leaderNodeId + "/vpn", "endpoint").Result()
+	if err != nil {
+		return ""
+	}
+
+	separatorPosition := strings.Index(leaderHostAddress, ":")
+	if separatorPosition < 1 {
+		return ""
+	}
+
+	return leaderHostAddress[0:separatorPosition]
+}
+
+/*
  * Check the client with name "searchName" has an idle time less than "limit"
  */
 func CheckClientIdle(ctx context.Context, rdb *redis.Client, searchName string, limit int) error {

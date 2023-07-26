@@ -299,16 +299,13 @@ export default {
       if (err) {
         // check if node is a worker
         if (
-          err.response &&
-          err.response.status == 403 &&
-          +err.response.data &&
-          +err.response.data.data
+          err.response?.status == 403 &&
+          err.response.data?.data != "" // should return the leader HTTP host address
         ) {
           this.isMaster = false;
           // redirect to worker page
           this.$router.replace(
-            "/init?page=redirect&endpoint=" +
-              err.response.data.data.split(":")[0]
+            "/init?page=redirect&endpoint=" + err.response.data.data
           );
           this.isLoaded = true;
         } else {
