@@ -63,7 +63,7 @@ jobs:
             elif python3 -c "import semver, sys; sys.exit(0 if semver.VersionInfo.parse(sys.argv[1]).prerelease else 1)" "${IMAGETAG}" ; then
               continue # skip prerelease tags
             fi
-            git tag -f -m "Release ${IMAGETAG:-unknown}"
+            git tag -f -m "Release ${IMAGETAG:-unknown}" ns8-stable
             git push -f origin ns8-stable
             buildah push "${image}" "docker://${image}:ns8-stable"
           done
