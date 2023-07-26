@@ -51,6 +51,8 @@ jobs:
       - id: push
         name: "Push the images"
         run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
           pip install semver
           # Push the images
           trap 'buildah logout ghcr.io' EXIT
