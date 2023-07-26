@@ -1,0 +1,11 @@
+#!/bin/bash
+
+#
+# Copyright (C) 2023 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+# NOTE: this step is retained to avoid update-core runtime failure until
+# agent ignores missing steps silently
+
+exit 0

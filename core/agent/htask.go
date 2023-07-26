@@ -210,14 +210,13 @@ func runAction(rdb *redis.Client, actionCtx context.Context, task *models.Task) 
 			comReadLock <- 1
 		}()
 
-		log.Printf("task/%s/%s: %s/%s is starting", agentPrefix, task.ID, task.Action, step.Name)
 		if err := cmd.Start(); err != nil {
-			exitCode = 9
-			actionError += fmt.Sprintf("Action %s startup error at step %s: %v", task.Action, step, err)
-			actionDescriptor.Status = "aborted"
-			log.Print(SD_ERR + actionError)
-			break
+			log.Printf(SD_WARNING + "Action %s skipped step %s: %v", task.Action, step.Name, err)
+			actionDescriptor.SetProgressAtStep(stepIndex, 100)
+			publishStatus(rdb, progressChannel, actionDescriptor)
+			continue
 		}
+		log.Printf("task/%s/%s: %s/%s is starting", agentPrefix, task.ID, task.Action, step.Name)
 
 		// standard FDs are closed by Start. Our extra FD for commands must be closed manually
 		// otherwise it blocks our thread.

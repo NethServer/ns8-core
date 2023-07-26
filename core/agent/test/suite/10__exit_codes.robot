@@ -52,3 +52,18 @@ Run list actions builtin
     Then The task output should contain    fail-validation
     And The task output should contain     run-success
     And The task output should contain     run-failure
+
+A missing step does not abort the whole action
+    Given The task is submitted    simulate-update
+    When The command is received   set  simulate-update/context
+    And The command is received    publish  pending
+    And The command is received    publish  running  progress  100
+    Then The task has exit code    0
+    And The task output should not contain    NEVER REACH THIS POINT1
+    And The task output should not contain    NEVER REACH THIS POINT2
+
+A missing step does not abort a failing action
+    Given The task is submitted    simulate-update-fail
+    When The command is received    set    /exit_code    1
+    Then The task output should not contain    NEVER REACH THIS POINT1
+    And The task output should not contain    NEVER REACH THIS POINT2

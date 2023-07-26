@@ -39,6 +39,12 @@ Abort stops execution
     When The event exit code is    2
     Then The agent log does not contain    NEVER REACH THIS POINT
 
+A missing step does not abort the whole event
+    When The event is raised    update-received    somepayload
+    Then The event exit code is    0
+    And The agent log does not contain    NEVER REACH THIS POINT1
+    And The agent log does not contain    NEVER REACH THIS POINT2
+
 Event aborted by agent termination
     Given The event is raised    long-run    payloadoflongrun
     When Send Signal To Process    SIGTERM

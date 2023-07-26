@@ -1,0 +1,6 @@
+#!/bin/bash
+
+set -e
+
+rm -f  /usr/src/test/actions/simulate-update-fail/20skipped_step
+chmod -c -x  /usr/src/test/actions/simulate-update-fail/30skipped_step
