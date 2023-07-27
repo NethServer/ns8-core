@@ -22,7 +22,7 @@ ExecStart=/usr/bin/podman run \
     --volume=redis-data:/data \
     ${REDIS_IMAGE}
 
-ExecStartPost=/usr/bin/bash -c "while ! exec 3<>/dev/tcp/127.0.0.1/6379; do sleep 1 ; done"
+ExecStartPost=-/usr/local/bin/redis-wait-ready --retries 30 --period 1
 ExecStartPost=-/usr/local/bin/acl-load
 ExecStartPost=-/usr/local/sbin/apply-vpn-routes
 ExecStop=/usr/bin/podman stop --ignore --cidfile %t/redis.cid -t 10

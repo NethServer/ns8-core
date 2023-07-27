@@ -1,8 +1,0 @@
-#!/bin/bash
-
-#
-# Copyright (C) 2023 Nethesis S.r.l.
-# SPDX-License-Identifier: GPL-3.0-or-later
-#
-
-/usr/local/sbin/apply-vpn-routes
