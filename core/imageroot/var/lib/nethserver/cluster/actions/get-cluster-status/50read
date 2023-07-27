@@ -29,8 +29,35 @@ import hashlib
 import subprocess
 import agent.tasks
 import os
+import time
 
 rdb = agent.redis_connect(privileged=True)
+client_list_cache = rdb.client_list("normal") # cache init
+
+MAX_IDLE_TIME = 8 # Two times the agent poll period (4 secs)
+
+def node_is_online(node_id, attempt=1):
+    global client_list_cache
+    if attempt > 1:
+        print(agent.SD_WARNING + "node is online ?", node_id, attempt, file=sys.stderr)
+
+    for client_item in client_list_cache:
+        if client_item['name'] == f"node/{node_id}" and client_item['cmd'] == 'brpop':
+            if int(client_item['idle']) < MAX_IDLE_TIME:
+                return True
+            else:
+                return False
+
+    if attempt > 3:
+        # Node agent is expected to issue a BRPOP immediately. If two
+        # retries has failed the node is really down
+        return False
+    else:
+        # A blocked "brpop" command was not found. Wait a while, refresh
+        # the cache and recursively run the check again.
+        time.sleep(1)
+        client_list_cache = rdb.client_list("normal")
+        return node_is_online(node_id, attempt + 1)
 
 cluster_ui_name = rdb.get(f"cluster/ui_name") or ""
 leader_id = int(rdb.hget("cluster/environment", "NODE_ID"))
@@ -60,26 +87,15 @@ if network is not None:
         if rdb.sismember(f'node/{node_id}/flags', 'nomodules'):
             continue
         node_ui_name = rdb.get(f"node/{node_id}/ui_name") or ""
-        vpn[kvpn] = {'id': int(node_id), 'ui_name': node_ui_name, 'online': False, 'local': False, 'vpn': {
+        vpn[kvpn] = {'id': int(node_id), 'ui_name': node_ui_name,'local': False,
+        'online': node_is_online(node_id),
+        'hostname': f"node{node_id}.invalid", # XXX Deprecated field: do not use it any more
+        'vpn': {
             'ip_address': ovpn['ip_address'],
             'listen_port': int(ovpn['listen_port']),
             'public_key': ovpn['public_key'],
             'endpoint': '',
         }}
-        try:
-            get_info_result = agent.tasks.run(
-                agent_id=f'node/{node_id}',
-                action='get-info',
-                endpoint="redis://cluster-leader",
-            )
-        except Exception as ex:
-            print(f'Error executing task get-info on node/{node_id}', ex, file=sys.stderr)
-            vpn[kvpn]['online'] = False
-            continue
-        if get_info_result['exit_code'] == 0:
-            vpn[kvpn]['online'] = True
-            for key in get_info_result['output'].keys():
-                vpn[kvpn][key] = get_info_result['output'][key]
 
 else:
     json.dump(ret, fp=sys.stdout)

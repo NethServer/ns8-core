@@ -16,7 +16,7 @@ ExecStart=/usr/local/bin/agent \
     --actionsdir=${AGENT_INSTALL_DIR}/actions \
     --eventsdir=${AGENT_INSTALL_DIR}/events
 Restart=always
-SyslogIdentifier=%u
+SyslogIdentifier=agent@%u
 
 [Install]
 WantedBy=default.target transfer-state.target

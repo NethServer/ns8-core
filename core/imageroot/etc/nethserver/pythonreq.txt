@@ -36,6 +36,7 @@ pyrsistent==0.19.3
 python-daemon==2.3.2
 PyYAML==6.0
 redis==3.5.3
+regex-engine==1.1.0
 requests==2.25.1
 resolvelib==0.8.1
 semver==2.13.0
