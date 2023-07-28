@@ -76,8 +76,9 @@ agent.run_helper('sed', '-i',
     '/etc/hosts').check_returncode()
 
 # Initialize the new dynamic environment for the node agent
-with open("/var/lib/nethserver/node/state/environment", "w") as fenv:
-    fenv.write(f'NODE_ID={node_id}\n')
+node_env = agent.read_envfile("/var/lib/nethserver/node/state/environment")
+node_env["NODE_ID"] = str(node_id)
+agent.write_envfile("/var/lib/nethserver/node/state/environment", node_env)
 
 # Restart the node agent to apply the new environment setup
 agent.run_helper('systemctl', 'restart', 'agent@node').check_returncode()
@@ -96,8 +97,9 @@ agent.assert_exp(rdb.execute_command('CONFIG REWRITE') == 'OK')
 # Redis DB becomes read-only: the local cluster agent is now locked out!
 
 # Fix the cluster agent dynamic environment, in case of leader promotion:
-with open("/var/lib/nethserver/cluster/state/environment", "w") as fenv:
-    fenv.write(f'NODE_ID={node_id}\n')
+cluster_env = agent.read_envfile("/var/lib/nethserver/cluster/state/environment")
+cluster_env["NODE_ID"] = str(node_id)
+agent.write_envfile("/var/lib/nethserver/cluster/state/environment", cluster_env)
 
 # Restart Redis to sync ACLs and additional VPN routes
 agent.run_helper('systemctl', 'restart', 'redis.service').check_returncode()
