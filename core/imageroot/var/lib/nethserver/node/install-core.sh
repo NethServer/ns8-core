@@ -26,12 +26,17 @@ set -e
 # Install NS8
 #
 
+source /etc/nethserver/core.env
+echo "Pulling core images:"
+for image in $(
+    source /etc/nethserver/core.env
+    podman inspect "${CORE_IMAGE}" | jq -r '.[0].Labels["org.nethserver.images"]'
+); do
+    podman pull "${image}"
+done
+
 echo "Set kernel parameters:"
 sysctl -w net.ipv4.ip_unprivileged_port_start=23 -w user.max_user_namespaces=28633 -w net.ipv4.ip_forward=1 | tee /etc/sysctl.d/80-nethserver.conf
-
-source /etc/nethserver/core.env
-echo "Pulling rclone image ${RCLONE_IMAGE}:"
-podman pull "${RCLONE_IMAGE}"
 
 if ! id "api-server" &>/dev/null; then
     echo "Create the api-server user:"
