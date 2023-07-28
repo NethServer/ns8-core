@@ -1,0 +1,21 @@
+#!/bin/bash
+
+#
+# Copyright (C) 2023 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+set -e
+exec 1>&2
+
+cd /var/lib/nethserver/node/state
+
+# Create a symlink to the correct journal storage path. It is mounted by
+# the Promtail container for scraping.
+if [ -n "$(ls -A /run/log/journal)" ]; then
+   ln -vsf /run/log/journal .
+else
+   ln -vsf /var/log/journal .
+fi
+
+systemctl enable --now promtail.service
