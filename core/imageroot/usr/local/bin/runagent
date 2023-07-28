@@ -26,7 +26,7 @@ import argparse
 import agent
 
 argp = argparse.ArgumentParser(description="Run COMMAND in the agent environment of MODULE_ID")
-argp.add_argument("-m", "--module-id", help="MODULE_ID, a rootfull module identifier (e.g. \"promtail1\", \"node\"). Default is \"cluster\". Only root can use this flag")
+argp.add_argument("-m", "--module-id", help="MODULE_ID, a rootfull module identifier (e.g. \"modrootfull1\", \"node\"). Default is \"cluster\". Only root can use this flag")
 argp.add_argument("-c", "--current-dir", action="store_true", help="Run COMMAND in current directory, instead of changing directory to AGENT_STATE_DIR")
 argp.add_argument('COMMAND', help="Command to run in the agent environment")
 argp.add_argument('ARGS', nargs=argparse.REMAINDER, help="Additional arguments for COMMAND")
