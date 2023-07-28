@@ -78,9 +78,9 @@ saved inside `/home/<module_id>/.config/state/environment`, e.g.
 `/home/myapp1/.config/state/environment`.
 
 To run a command within an agent environment, use the `runagent` wrapper. For instance
-this command prints the agent environment of the rootfull module `promtail1`.
+this command prints the agent environment of the rootfull module `modrootfull1`.
 
-    runagent -m promtail1 env
+    runagent -m modrootfull1 env
 
 
 ## Agent commands

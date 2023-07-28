@@ -7,35 +7,50 @@ parent: Core
 
 # Logs
 
-Almost everything is logged inside journalctl.
+Almost everything is logged inside the system journal.
 Recent logs are available using `journalctl` and services can be inspected using `systemctl` command.
+
 As root use `journalctl` to see messages from agents, rootfull and rootless modules.
 As rootless UNIX user (eg. `traefik1`), use `journalctl --user` to see messages only from systemd user session.
 
-By default, [Grafana Loki](https://grafana.com/oss/loki/) is installed inside the leader node, it collects the logs
-from all cluster nodes.
-A rootfull [Promtail](https://grafana.com/docs/loki/latest/clients/promtail/) container runs on all nodes,
-including the leader one. It sends all logs to the Loki server.
+By default a Loki instance is installed inside the leader node, it
+collects the logs from all cluster nodes. A rootfull Promtail container
+runs as a node service on all nodes, including the leader one. It sends
+all logs to the Loki server.
 
-From the leader node, it is possible to query the logs of all nodes.
-First, get the list of existing nodes:
-```
-# logcli labels nodename -q
-bullseye
-leader
-```
+Logs of nodes, modules and the whole cluster can be read from the Logs
+page, or with the `api-server-logs` command. The following command prints
+the last lines of log produced by module `traefik1` and waits for further
+lines, like a `tail -f`:
 
-Then, search for the logs of a node (`leader` in this example):
-{% raw %}
-```
-# logcli  query -q --no-labels '{nodename="leader"} | json | line_format "{{.MESSAGE}}"'
-2021-05-28T15:49:27Z Created slice cgroup user-libpod_pod_d32e9a0f2237ca996c90f6790ca90447b3e8cbb30d16cc91701ab8257bb704d6.slice.
-2021-05-28T15:49:27Z 2021-05-28 15:49:27.621079036 +0000 UTC m=+0.106351212 container create 6e51520a9fa4f63ac0f3dbbf89ef2ef075041dd90c5df952a35206a14691c654 (image=k8s.gcr.io/pause:3.2, name=d32e9a0f2237-infra)
-2021-05-28T15:49:27Z 2021-05-28 15:49:27.62160088 +0000 UTC m=+0.106873062 pod create d32e9a0f2237ca996c90f6790ca90447b3e8cbb30d16cc91701ab8257bb704d6 (image=, name=loki)
-2021-05-28T15:49:27Z d32e9a0f2237ca996c90f6790ca90447b3e8cbb30d16cc91701ab8257bb704d6
-2021-05-28T15:49:27Z loki.service: Found left-over process 19008 (podman pause) in control group while starting unit. Ignoring.
-2021-05-28T15:49:27Z This usually indicates unclean termination of a previous run, or service implementation deficiencies.
-```
-{% endraw %}
+    api-server-logs logs -e module -n traefik1
 
-See also [Loki](https://github.com/NethServer/ns8-core/tree/main/loki) and [Promtail](https://github.com/NethServer/ns8-core/tree/main/promtail) READMEs.
+See `api-server-logs -h` for more command invocation styles.
+
+It is also possible to query the logs of all nodes and modules with the
+`logcli` command.
+
+Get the list of existing node identifiers:
+
+    # logcli labels node_id -q
+    1
+    2
+
+Get the list of modules:
+
+    # logcli labels module_id -q
+    ldapproxy1
+    loki1
+    traefik1
+
+Example log search for module `ldapproxy1`:
+
+    # logcli  query -q --no-labels '{module_id="ldapproxy1"} | json | line_format "{{.MESSAGE}}"'
+
+The string wrapped by `''` is the log query. It is expressed in
+[LogQL](https://grafana.com/docs/loki/latest/logql/log_queries/).
+
+See also:
+- [Grafana Loki](https://grafana.com/oss/loki/)
+- [Promtail](https://grafana.com/docs/loki/latest/clients/promtail/)
+- [ns8-loki](https://github.com/NethServer/ns8-loki) module repository

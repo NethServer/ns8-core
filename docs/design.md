@@ -127,10 +127,12 @@ It runs the following components:
 
 ### Modules
 
-The core instantiates a set of *modules*. Each module instance
-runs an application (e.g. Webtop, Nextcloud) or it can be just a part of it (e.g. Promtail and Loki are parts/components of Log).
+The core instantiates a set of *modules*. Each module instance runs an
+application (e.g. Webtop, Nextcloud) or it can be just a part of it (e.g.
+Ldapproxy OpenLDAP and Samba are parts/components of User domains).
+
 In any case a module instance is made of one or more Podman rootless containers.
-In exceptional cases a module can run rootfull containers (i.e Samba, Promtail).
+In exceptional cases a module can run rootfull containers (i.e node_exporter, Crowdsec).
 
 See [Modules architecture](/modules) for more info.
 
