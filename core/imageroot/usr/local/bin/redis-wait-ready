@@ -1,0 +1,48 @@
+#!/usr/local/agent/pyenv/bin/python3
+
+#
+# Copyright (C) 2023 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+import agent
+import os
+import sys
+import time
+import argparse
+
+root_parser = argparse.ArgumentParser(description='Wait until Redis startup is complete or too many retries occurred')
+root_parser.add_argument('--retries', help='Maximum number of retries', default=3, type=int)
+root_parser.add_argument('--period', help='Number of seconds to wait between retries', default=1, type=int)
+args = root_parser.parse_args()
+
+attempt = 0
+
+try:
+    os.environ.update(agent.read_envfile('/var/lib/nethserver/cluster/state/agent.env'))
+except FileNotFoundError:
+    # Ignore missing file error during install-core.sh, when redis is
+    # started for the first time.
+    sys.exit(0)
+
+while True:
+    try:
+        # Connect the local redis instance with "cluster" credentials
+        rdb = agent.redis_connect(privileged=True, host='127.0.0.1')
+        role_reply = rdb.execute_command('ROLE')
+
+        if role_reply[0] == "master":
+            sys.exit(0)
+        elif role_reply[3] == "connected":
+            sys.exit(0) # slave/replica connected
+        else:
+            pass # still handshaking: wait
+    except Exception as ex:
+        pass # connection error: wait
+
+    attempt += 1
+    if attempt >= args.retries:
+        print("Redis is not ready. Max number of retries exceeded!", file=sys.stderr)
+        sys.exit(2) # Timeout
+
+    time.sleep(args.period)

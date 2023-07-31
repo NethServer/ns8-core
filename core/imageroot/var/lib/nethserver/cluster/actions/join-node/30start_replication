@@ -98,3 +98,6 @@ agent.assert_exp(rdb.execute_command('CONFIG REWRITE') == 'OK')
 # Fix the cluster agent dynamic environment, in case of leader promotion:
 with open("/var/lib/nethserver/cluster/state/environment", "w") as fenv:
     fenv.write(f'NODE_ID={node_id}\n')
+
+# Restart Redis to sync ACLs and additional VPN routes
+agent.run_helper('systemctl', 'restart', 'redis.service').check_returncode()
