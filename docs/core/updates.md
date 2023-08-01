@@ -26,9 +26,8 @@ The following applications are part of the core but can be updated as normal mod
 
 - ldapproxy
 - traefik
-- samba
+- samba, openldap
 - loki
-- promtail
 
 See [module updates]({{site.baseurl}}/modules/updates) for more info.
 

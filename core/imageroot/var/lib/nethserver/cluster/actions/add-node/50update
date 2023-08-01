@@ -134,15 +134,6 @@ additional_tasks = [
             "check_idle_time": 0,
         }
     },
-    {
-        'agent_id': 'cluster',
-        'action': 'add-module',
-        'data': {
-            "image": 'promtail',
-            "node": node_id,
-            "check_idle_time": 0,
-        }
-    },
 ]
 
 if not 'nomodules' in flags:

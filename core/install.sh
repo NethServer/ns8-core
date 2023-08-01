@@ -85,9 +85,9 @@ for arg in "${@}"; do
 done
 
 echo "Extracting core sources from ${core_url}:"
-mkdir -pv /var/lib/nethserver/node/state
 cid=$(podman create "${core_url}")
-podman export ${cid} | tar --totals -C / --no-overwrite-dir --no-same-owner -x -v -f - | LC_ALL=C sort | tee /var/lib/nethserver/node/state/coreimage.lst
+podman export ${cid} | tar --totals -C / --no-overwrite-dir --no-same-owner --exclude=.gitignore --exclude-caches-under -x -v -f - | LC_ALL=C sort | tee coreimage.lst
+mv -v coreimage.lst /var/lib/nethserver/node/state/coreimage.lst
 podman rm -f ${cid}
 
 /var/lib/nethserver/node/install-core.sh "${modules[@]}"

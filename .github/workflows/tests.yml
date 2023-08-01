@@ -5,7 +5,7 @@ on:
       - "labeled"
   workflow_dispatch:
 env:
-  NS8_CORE_MODULES: "core traefik loki promtail ldapproxy"
+  NS8_CORE_MODULES: "core traefik loki ldapproxy"
 
 jobs:
   ns8:

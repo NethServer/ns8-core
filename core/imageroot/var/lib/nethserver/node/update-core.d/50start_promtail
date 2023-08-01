@@ -1,0 +1,22 @@
+#!/bin/bash
+
+#
+# Copyright (C) 2023 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+exec 1>&2
+set -e
+
+if [[ -d ./promtail ]]; then
+    exit 0
+fi
+
+echo "Upgrade Promtail as core service:"
+if [ -n "$(ls -A /run/log/journal)" ]; then
+    ln -vsf /run/log/journal .
+else
+    ln -vsf /var/log/journal .
+fi
+systemctl disable --now $(ls -1 /etc/systemd/system/promtail[1-9]*.service | xargs -- basename)
+systemctl enable --now promtail.service

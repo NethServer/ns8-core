@@ -1,0 +1,141 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2023 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+import agent
+import yaml
+import sys
+import os
+import pwd
+import glob
+import regex_engine
+
+client_list = []
+rdb = agent.redis_connect(use_replica=True)
+rxgen = regex_engine.generator()
+
+# Internal Loki instance discovery, for basic use case
+loki_agent_id = agent.resolve_agent_id("loki@cluster")
+if loki_agent_id:
+    loki_env = rdb.hgetall(loki_agent_id + '/environment')
+    client_list.append({
+        "url": f'http://{loki_env["LOKI_ADDR"]}:{loki_env["LOKI_HTTP_PORT"]}/loki/api/v1/push',
+        "bearer_token": loki_env["LOKI_LOGS_INGRESS_TOKEN"],
+    })
+    print("Generating client configuration for " + loki_agent_id)
+
+if not client_list:
+    print(agent.SD_ERR + "No client configuration found. Is Loki installed?", file=sys.stderr)
+    sys.exit(1)
+
+relabel_configs = [{
+    "target_label": "node_id",
+    "replacement": os.environ["NODE_ID"]
+}]
+
+
+# Parse /etc/subuid for later usage
+module_uid_ranges = dict()
+with open("/etc/subuid", "r") as fdb:
+    for record in fdb:
+        # Split each record in 3 fields, skipping any garbage after the 3rd field
+        module_id, subuid_range_start, subuid_range_length, _ = (record + ":").split(":", 3)
+
+        try:
+            module_uid_ranges[module_id] = (int(subuid_range_start), int(subuid_range_start) + int(subuid_range_length))
+        except ValueError:
+            print(agent.SD_ERROR + "Cannot convert subuid record:", record, file=sys.stderr)
+            continue
+
+# Iterate over rootless modules.
+# Map numeric module UID (Unix user) and its subuids to NS8 module_id,
+# e.g. 1001 => traefik1
+for pwrecord in pwd.getpwall():
+    module_id = pwrecord.pw_name
+    module_uid = str(pwrecord.pw_uid)
+    module_home = pwrecord.pw_dir
+
+    # sanity check:
+    if not os.path.isdir(module_home + '/.config/state'):
+        continue # it does not look like a NS8 module home, skip it.
+
+    # 1. Generate the subuid range pattern (anchored)
+    try:
+        rxpat = rxgen.numerical_range(*module_uid_ranges[module_id])
+    except KeyError:
+        print(agent.SD_ERROR + "Cannot find subuid record for " + module_id, file=sys.stderr)
+        continue
+
+    # 2. Remove regexp anchors, because the Golang packages assumes they are already anchored
+    rxpat = rxpat.lstrip("^").rstrip("$")
+
+    # 3. Prepend module_uid to the first regexp group
+    rxpat = rxpat.replace("(", f"({module_uid}|", 1)
+
+    # module_id is a Unix user, if _UID journal field matches the user
+    # Unix uid or any of its subuids the journal record belongs to the
+    # module.
+    relabel_configs.append({
+        # NOTE: default "action" is "replace"
+        "source_labels": ["__journal__uid"],
+        "regex": rxpat,
+        "replacement": module_id,
+        "target_label": "module_id",
+    })
+    print("Generating labeling configuration for " + module_id)
+
+# Iterate over rootfull modules, matching the module_id in AGENT_STATE_DIR
+# glob patterns:
+for rfpath in glob.glob('/var/lib/nethserver/*/state'):
+    # sanity check:
+    if not os.path.isdir(rfpath):
+        continue # it does not look like a NS8 module home, skip it.
+
+    module_id = rfpath.removeprefix('/var/lib/nethserver/').removesuffix('/state')
+    if module_id in ["node", "cluster"]:
+        continue # skip core components. They are rootfull, but not modules.
+
+    # If module_id is contained in SYSLOG_IDENTIFIER, CONTAINER_NAME
+    # or _SYSTEMD_UNIT fields the journal record belongs to it.
+    relabel_configs.append({
+        # NOTE: default "action" is "replace"
+        "source_labels": [
+            "__journal__systemd_unit",
+            "__journal_syslog_identifier",
+            "__journal_container_name",
+        ],
+        "regex": '.*\\b' + module_id + '\\b.*', # match word boundaries (unanchored)
+        "replacement": module_id,
+        "target_label": "module_id",
+    })
+    print("Generating labeling configuration for " + module_id)
+
+# Configuration data. Will be converted to a YAML file:
+config = {
+    "server": {
+        "disable": True
+    },
+    "clients": client_list,
+    "scrape_configs": [{
+        "job_name": "journal",
+        "journal": {
+            "max_age": "12h",
+            "json": True,
+        },
+        "relabel_configs": relabel_configs,
+    }],
+    "positions": {
+        "filename": "/var/lib/promtail/positions.yml",
+        "sync_period": "10s",
+        "ignore_invalid_yaml": True,
+    }
+}
+
+# Move into promtail directory and write the file, preserving SELinux contexts
+os.chdir("promtail")
+with open("config.yml.tmp", "w") as ofile:
+    yaml.dump(config, ofile)
+os.rename("config.yml.tmp", "config.yml")

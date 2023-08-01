@@ -63,6 +63,8 @@ if is_rootfull:
     save_environment(module_environment)
     redis_sha256 = save_agent_env(module_id)
     agent.run_helper('extract-image', image_url).check_returncode()
+    # Refresh Promtail configuration to capture the log of the new module
+    agent.run_helper('systemctl', 'try-restart', 'promtail.service').check_returncode()
     # Start the module agent
     agent.run_helper('systemctl', 'enable', '--now', f'agent@{module_id}.service').check_returncode()
 else: # rootless
@@ -73,6 +75,8 @@ else: # rootless
     redis_sha256 = save_agent_env(module_id)
     # Extract the module imageroot and fix CWD permissions recursively
     agent.run_helper('extract-image', image_url).check_returncode()
+    # Refresh Promtail configuration to capture the log of the new module
+    agent.run_helper('systemctl', 'try-restart', 'promtail.service').check_returncode()
     # Start the module agent
     agent.run_helper('loginctl', 'enable-linger', module_id).check_returncode()
 

@@ -45,6 +45,7 @@ podman export "${cid}" | tar \
     --no-overwrite-dir \
     --no-same-owner \
     --exclude-caches-under \
+    --exclude=.gitignore \
     --strip-components="${stripcount}" \
     -x -v -f - "${imageroot}" \
     | LC_ALL=C sort \
