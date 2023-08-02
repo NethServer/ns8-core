@@ -531,4 +531,4 @@ def get_hostname():
         hostname = subprocess.run(['hostname', '-f'], text=True, capture_output=True, check=True).stdout.strip()
     except ValueError:
         hostname = "myserver.example.org"
-    return {"hostname": hostname}
+    return hostname
