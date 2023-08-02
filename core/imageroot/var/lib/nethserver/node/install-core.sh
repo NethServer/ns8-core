@@ -28,8 +28,8 @@ set -e
 
 source /etc/nethserver/core.env
 echo "Pulling core images:"
+podman pull "${CORE_IMAGE}"
 for image in $(
-    source /etc/nethserver/core.env
     podman inspect "${CORE_IMAGE}" | jq -r '.[0].Labels["org.nethserver.images"]'
 ); do
     podman pull "${image}"
