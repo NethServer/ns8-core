@@ -55,3 +55,37 @@ When writing Python-based validation scripts, use this snippet:
 ```python
 agent.set_weight(os.path.basename(__file__), 0) # Validation step, no task progress at all
 ```
+
+### Port validation
+
+we search if the TCP port is used or not by a service return true if the port is used, false is the port is not used. The code below retrieve from the json object of the UI
+
+```python
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2022 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+import os
+import sys
+import json
+import agent
+
+# retrieve json data
+data = json.load(sys.stdin)
+port = data['sftp_tcp_port']
+
+# set error validation
+agent.set_weight(os.path.basename(__file__), 0)
+
+# if we have the same port, lets go further
+if str(port) == os.environ.get('SFTP_TCP_PORT',""):
+    sys.exit(0)
+
+if agent.tcp_port_in_use(port):
+    agent.set_status('validation-failed')
+    json.dump([{'field':'sftp_tcp_port','parameter':'sftp_tcp_port','value':port,'error':'tcp_port_already_used'}],fp=sys.stdout)
+    sys.exit(1)
+```
