@@ -89,3 +89,68 @@ if agent.tcp_port_in_use(port):
     json.dump([{'field':'sftp_tcp_port','parameter':'sftp_tcp_port','value':port,'error':'tcp_port_already_used'}],fp=sys.stdout)
     sys.exit(1)
 ```
+
+
+### Web route validation
+
+we search if the domain (foo.com) or the webpath (/foo) is used or not by a service return true if the route is used, false is the route is not used. The code below retrieve from the json object of the UI
+
+- test if the domain is used (domain.com)
+```python
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2022 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+import os
+import sys
+import json
+import agent
+
+agent.set_weight(os.path.basename(__file__), 0) # Validation step, no task progress at all
+
+# retrieve json data
+data = json.load(sys.stdin)
+
+# Setup default values
+hostname = data.get("hostname")
+# do not test if it is the same host
+oldHost = os.environ.get('MODULE_HOSTNAME','')
+
+if hostname != oldHost and agent.http_route_in_use(domain=hostname):
+    agent.set_status('validation-failed')
+    json.dump([{'field':'hostname','parameter':'hostname','value':hostname,'error':'domain_already_used_in_traefik'}],fp=sys.stdout)
+    sys.exit(2)
+```
+
+- test if the web path is not used (/path)
+```python
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2022 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+import os
+import sys
+import json
+import agent
+
+agent.set_weight(os.path.basename(__file__), 0) # Validation step, no task progress at all
+
+# retrieve json data
+data = json.load(sys.stdin)
+
+# Setup default values
+path = data.get("path")
+# do not test if it is the same host
+oldPath = os.environ.get('MODULE_PATH','')
+
+if path != oldPath and agent.http_route_in_use(domain=none, path=path):
+    agent.set_status('validation-failed')
+    json.dump([{'field':'path','parameter':'path','value':path,'error':'path_already_used_in_traefik'}],fp=sys.stdout)
+    sys.exit(2)
+```
