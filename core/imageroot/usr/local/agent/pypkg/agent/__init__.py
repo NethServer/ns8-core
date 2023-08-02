@@ -525,3 +525,10 @@ def tcp_port_in_use(port):
             raise
         # port is in use we have raise the error address in use
         return  True
+
+def get_hostname():
+    try:
+        hostname = subprocess.run(['hostname', '-f'], text=True, capture_output=True, check=True).stdout.strip()
+    except ValueError:
+        hostname = "myserver.example.org"
+    return {"hostname": hostname}
