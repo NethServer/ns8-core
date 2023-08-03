@@ -500,7 +500,14 @@ def http_route_in_use(domain=None, path=''):
         req = urllib.request.Request('http://127.0.0.1'+path, method="HEAD")
         if domain:
             req.add_header('Host', domain)
-        urllib.request.urlopen(req)
+        # Build a OpenerDirector instance without 30x handlers, to avoid
+        # chasing https:// redirects. A 30x response is enough for us to
+        # infer the route exists.
+        odirector = urllib.request.OpenerDirector()
+        odirector.add_handler(urllib.request.HTTPHandler())
+        odirector.add_handler(urllib.request.HTTPDefaultErrorHandler())
+        odirector.add_handler(urllib.request.HTTPErrorProcessor())
+        odirector.open(req, timeout=5)
     except urllib.error.HTTPError as e:
         if e.code == 404:
             # Assume no path exists
