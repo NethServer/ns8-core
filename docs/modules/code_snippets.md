@@ -1,8 +1,8 @@
 ---
 layout: default
-title: hostname FQDN
+title: Code snippets
 nav_order: 14
-parent: Core
+parent: Modules
 ---
 
 # Hostname FQDN
@@ -14,15 +14,13 @@ Python example code:
 ```python
 #!/usr/bin/env python3
 
-import sys
-import json
 import agent
 
 fqdn = agent.get_hostname()
-json.dump(fqdn, fp=sys.stdout)
+print(fqdn)
 ```
 
 output example:
-```json
-{"hostname": "foo.domain.com"}
+```
+foo.domain.com
 ```
