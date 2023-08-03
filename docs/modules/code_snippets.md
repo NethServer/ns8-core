@@ -11,13 +11,11 @@ Some code examples to ease the life of module developers
 
 ## Hostname FQDN
 
-Retrieve the fully qualified domain name of the server by using a python library. In case of exception the function output a generic FQDN `myserver.example.com`
+Retrieve the fully qualified domain name of the server by using the `agent` Python library. In case of exception the function outputs the default FQDN `myserver.example.org`.
 
 Python example code:
 
 ```python
-#!/usr/bin/env python3
-
 import agent
 
 fqdn = agent.get_hostname()
@@ -31,16 +29,9 @@ foo.domain.com
 
 ## Port validation
 
-we search if the TCP port is used or not by a service return true if the port is used, false is the port is not used.
+Check if the TCP port is already used by a service. Exit with an error if the port is used.
 
 ```python
-#!/usr/bin/env python3
-
-#
-# Copyright (C) 2022 Nethesis S.r.l.
-# SPDX-License-Identifier: GPL-3.0-or-later
-#
-
 import sys
 import agent
 
@@ -52,42 +43,23 @@ if agent.tcp_port_in_use(port):
 
 ## Web route validation
 
-we search if the domain (foo.com) or the webpath (/foo) is used or not by a service return true if the route is used, false is the route is not used.
+Check if HTTP routes are handled by Traefik. The function issues an HTTP request to 127.0.0.1 port 80, setting the `Host` header in the HTTP request and/or the URL path. Any HTTP non-404 response assumes the HTTP route exists.
 
-### test if the domain is used (domain.com)
+### Test if a domain-based route is used (domain.com)
 ```python
-#!/usr/bin/env python3
-
-#
-# Copyright (C) 2022 Nethesis S.r.l.
-# SPDX-License-Identifier: GPL-3.0-or-later
-#
-
 import sys
 import agent
 
-# Setup default values
 hostname = 'foo.com'
-
 if agent.http_route_in_use(domain=hostname):
     sys.exit(2)
 ```
 
-### test if the web path is not used (/path)
+### Test if a path-based route is used (/path)
 ```python
-#!/usr/bin/env python3
-
-#
-# Copyright (C) 2022 Nethesis S.r.l.
-# SPDX-License-Identifier: GPL-3.0-or-later
-#
-
 import sys
 import agent
-
-# Setup default values
-path ='/path'
-
+path ='/path' # path fragment of the URL to check
 if agent.http_route_in_use(domain=none, path=path):
     sys.exit(2)
 ```
