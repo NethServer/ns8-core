@@ -73,6 +73,7 @@ export default {
     this.$root.$on("websocketConnected", this.onWebsocketConnected);
     this.$root.$on("websocketDisconnected", this.onWebsocketDisconnected);
     this.$root.$on("websocketError", this.onWebsocketError);
+    this.$root.$on("websocketAuthError", this.onWebsocketAuthError);
 
     this.configureAxiosInterceptors();
     this.configureEventListeners();
@@ -391,9 +392,11 @@ export default {
       }
     },
     onWebsocketError(error) {
-      console.error("Websocket error", error);
-
-      // websocket error usually happens because token has expired, logout
+      // TODO generic error, reconnection
+      console.error("WebsocketError", error);
+    },
+    onWebsocketAuthError(error) {
+      console.error("WebsocketAuthError", error);
       const sessionExpiredTitle = this.$t("login.session_expired_title");
       const sessionExpiredDescription = this.$t(
         "login.session_expired_description"

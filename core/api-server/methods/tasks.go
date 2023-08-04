@@ -439,11 +439,7 @@ func ListenTaskEvents() {
 				utils.LogError(errors.Wrap(errJSON, "[SOCKET] error converting task object to string"))
 			}
 
-			// identify all sessions associated with task id
-			if clientSession, ok := socket.Connections["/ws"]; ok {
-				// Broadcast to all sessions
-				socketConnection.BroadcastMultiple(taskJSON, clientSession)
-			}
+			socketConnection.BroadcastFilter(taskJSON, socket.ValidSessionFilter)
 		}
 	}()
 }

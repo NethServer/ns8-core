@@ -25,7 +25,8 @@ package socket
 import (
 	"encoding/json"
 	"os/exec"
-
+	"fmt"
+	"time"
 	"github.com/olahol/melody"
 
 	"github.com/pkg/errors"
@@ -36,50 +37,41 @@ import (
 
 var socketConnection *melody.Melody
 
-var Connections map[string][]*melody.Session
 var Commands map[string]map[string]*exec.Cmd
+var muClock *utils.MuClock
 
 func Instance() *melody.Melody {
 	if socketConnection == nil {
-		socketConnection := InitSocketConnection()
-		return socketConnection
+		muClock = new(utils.MuClock)
+		muClock.Sync()
+		socketConnection = melody.New()
+		socketConnection.HandleDisconnect(onDisconnect)
+		socketConnection.HandleMessage(onMessage)
+		socketConnection.HandlePong(onPong)
+		Commands = make(map[string]map[string]*exec.Cmd)
 	}
 	return socketConnection
 }
 
-func InitSocketConnection() *melody.Melody {
-	// init socket
-	socketConnection := melody.New()
-
-	// assign handlers
-	socketConnection.HandleConnect(OnConnect)
-	socketConnection.HandleDisconnect(OnDisconnect)
-	socketConnection.HandleMessage(OnMessage)
-
-	// init connection obj
-	Connections = make(map[string][]*melody.Session)
-
-	// init commands obj
-	Commands = make(map[string]map[string]*exec.Cmd)
-
-	return socketConnection
-}
-
-func OnConnect(s *melody.Session) {
-	// URL Path is the unique connection ID and append all sessions which are connected to that URL
-	Connections[s.Request.URL.Path] = append(Connections[s.Request.URL.Path], s)
-}
-
-func OnDisconnect(s *melody.Session) {
-	// reassign existing connections
-	sessions := Connections[s.Request.URL.Path]
-	var newSessions []*melody.Session
-	for _, existingSession := range sessions {
-		if s != existingSession {
-			newSessions = append(newSessions, existingSession)
+/*
+ * Check if the session is still valid every time the ping-pong websocket
+ * message is received. If a session did not send the authorize message
+ * forcibly close it.
+ */
+func onPong(s *melody.Session) {
+	muClock.Sync()
+	if ! ValidSessionFilter(s) {
+		oErrorMsg := map[string]string{
+			"type": "authorize-error",
+			"payload": "Token has expired",
 		}
+		jErrorMsg, _ := json.Marshal(oErrorMsg)
+		s.Write(jErrorMsg)
+		s.CloseWithMsg(melody.FormatCloseMessage(1000, "Bye"))
 	}
-	Connections[s.Request.URL.Path] = newSessions
+}
+
+func onDisconnect(s *melody.Session) {
 
 	// kill running processes
 	for pid := range Commands[s.Request.Header["Sec-Websocket-Key"][0]] {
@@ -88,7 +80,7 @@ func OnDisconnect(s *melody.Session) {
 	}
 }
 
-func OnMessage(s *melody.Session, msg []byte) {
+func onMessage(s *melody.Session, msg []byte) {
 	// get action received
 	var socketAction models.SocketAction
 	if errSocketAction := json.Unmarshal([]byte(msg), &socketAction); errSocketAction != nil {
@@ -97,4 +89,20 @@ func OnMessage(s *melody.Session, msg []byte) {
 
 	// switch action received
 	Action(socketAction, s, nil)
+}
+
+func ValidSessionFilter(s *melody.Session) bool {
+	if muClock.Now() > getSessionExpireTimestamp(s) {
+		return false // Session is expired
+	}
+	return true
+}
+
+func getSessionExpireTimestamp(s *melody.Session) int64 {
+	exp, ok := s.Get("exp")
+	if ! ok {
+		return 0
+	}
+	texp, _ := exp.(int64)
+	return texp
 }

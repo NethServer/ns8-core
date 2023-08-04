@@ -34,9 +34,11 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/olahol/melody"
 	"github.com/pkg/errors"
 
+	"github.com/NethServer/ns8-core/core/api-server/configuration"
 	"github.com/NethServer/ns8-core/core/api-server/models"
 	"github.com/NethServer/ns8-core/core/api-server/utils"
 )
@@ -227,6 +229,51 @@ func Action(socketAction models.SocketAction, s *melody.Session, wg *sync.WaitGr
 			}()
 		}
 
+	case "authorize":
+		authPayload, ok := socketAction.Payload.(map[string]interface{})
+		if ! ok {
+			utils.LogError(errors.New("Authorize payload is corrupt"))
+		}
+
+		// Check "jwt" attribute is a string
+		token, ok := authPayload["jwt"].(string)
+		if ! ok {
+			utils.LogError(errors.New("Unknown authorize payload"))
+		}
+
+		// Create a gin-jwt middleware instance just to validate the token
+		oTmpMiddleware, err := jwt.New(&jwt.GinJWTMiddleware{
+			Realm:     "nethserver",
+			Key:       []byte(configuration.Config.Secret),
+		})
+
+		// Parse "jwt" string and check it is a valid JWT token
+		oJwt, err := oTmpMiddleware.ParseTokenString(token)
+		if err != nil {
+			utils.LogError(errors.Wrap(err, "Websocket auth error"))
+			oErrorMsg := map[string]string{
+				"type": "authorize-error",
+				"payload": err.Error(),
+			}
+			jErrorMsg, _ := json.Marshal(oErrorMsg)
+			s.Write(jErrorMsg)
+			s.CloseWithMsg(melody.FormatCloseMessage(1000, "Bye"))
+			break
+		}
+
+		// Authentication is successful: store JWT claims to filter Melody
+		// sessions:
+		mClaims := jwt.ExtractClaimsFromToken(oJwt)
+		s.Set("claims", mClaims)
+
+		exp := int64(mClaims["exp"].(float64))
+
+		// Store the session expire timestamp. In case of conversion
+		// error, exp is zero.
+		s.Set("exp", exp)
+
+		// Do not send back any message to a successfully authorized
+		// session, just keep the socket open.
 	}
 }
 
@@ -244,10 +291,7 @@ func broadcastToAll(name string, msg interface{}) {
 		utils.LogError(errors.Wrap(err, "[SOCKET] error converting interface msg to broadcast"))
 	}
 
-	if clientSession, ok := Connections["/ws"]; ok {
-		// Broadcast to all sessions
-		socketConnection.BroadcastMultiple(actionJSON, clientSession)
-	}
+	socketConnection.BroadcastFilter(actionJSON, ValidSessionFilter)
 }
 
 func reverse(ss []string) []string {
