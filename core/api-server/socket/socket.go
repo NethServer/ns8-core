@@ -24,11 +24,9 @@ package socket
 
 import (
 	"encoding/json"
-	"os/exec"
-	"fmt"
-	"time"
-	"github.com/olahol/melody"
+	"syscall"
 
+	"github.com/olahol/melody"
 	"github.com/pkg/errors"
 
 	"github.com/NethServer/ns8-core/core/api-server/models"
@@ -36,8 +34,6 @@ import (
 )
 
 var socketConnection *melody.Melody
-
-var Commands map[string]map[string]*exec.Cmd
 var muClock *utils.MuClock
 
 func Instance() *melody.Melody {
@@ -48,7 +44,6 @@ func Instance() *melody.Melody {
 		socketConnection.HandleDisconnect(onDisconnect)
 		socketConnection.HandleMessage(onMessage)
 		socketConnection.HandlePong(onPong)
-		Commands = make(map[string]map[string]*exec.Cmd)
 	}
 	return socketConnection
 }
@@ -71,13 +66,20 @@ func onPong(s *melody.Session) {
 	}
 }
 
+/*
+ * onDisconnect
+ * - Terminate any process spawned by the session
+ */
 func onDisconnect(s *melody.Session) {
-
-	// kill running processes
-	for pid := range Commands[s.Request.Header["Sec-Websocket-Key"][0]] {
-		cmd := Commands[s.Request.Header["Sec-Websocket-Key"][0]][pid]
-		cmd.Process.Kill()
+	iChilds, keyExists := s.Get("childs")
+	if ! keyExists {
+		return // nothing to do
 	}
+	for _, pid := range iChilds.([]int) {
+		// negative pid terminates the whole process group (PG)
+		syscall.Kill(-pid, syscall.SIGTERM)
+	}
+	s.UnSet("childs")
 }
 
 func onMessage(s *melody.Session, msg []byte) {

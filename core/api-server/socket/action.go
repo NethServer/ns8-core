@@ -32,6 +32,7 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"syscall"
 
 	"github.com/gin-gonic/gin"
 	jwt "github.com/appleboy/gin-jwt/v2"
@@ -61,15 +62,26 @@ func Action(socketAction models.SocketAction, s *melody.Session, wg *sync.WaitGr
 			utils.LogError(errors.Wrap(errLogsAction, "[SOCKET] error in Logs action stop json unmarshal"))
 		}
 
-		cmd := Commands[s.Request.Header["Sec-Websocket-Key"][0]][logsAction.Pid]
-
-		// check if specific pid exists and command is valid
-		if cmd != nil {
-			if errKill := cmd.Process.Kill(); errKill != nil {
-				utils.LogError(errors.Wrap(errKill, "[SOCKET] error in command kill"))
+		// Lookup the action Pid among the child Pids spawned by the session
+		tPid, err := strconv.Atoi(logsAction.Pid)
+		if err != nil {
+			break
+		}
+		iChilds, keyExists := s.Get("childs")
+		if keyExists {
+			aChilds := iChilds.([]int)
+			for idx, xPid := range aChilds {
+				// If a match is found, the Pid belongs to the session and
+				// it can be terminated
+				if tPid == xPid {
+					// negative pid terminates the whole process group (PG)
+					syscall.Kill(-tPid, syscall.SIGTERM)
+					// update the session storage, removing the idx-element from the array
+					s.Set("childs", append(aChilds[:idx], aChilds[idx+1:]...))
+					writeSocketResponse(s, "logs-stop", gin.H{"id": logsAction.Id, "pid": logsAction.Pid, "message": "logs follow stopped"})
+					break
+				}
 			}
-
-			broadcastToAll("logs-stop", gin.H{"id": logsAction.Id, "pid": logsAction.Pid, "message": "logs follow stopped"})
 		}
 
 	case "logs-start":
@@ -158,6 +170,9 @@ func Action(socketAction models.SocketAction, s *melody.Session, wg *sync.WaitGr
 		// add envs
 		cmd.Env = append(os.Environ(), envs...)
 
+		// Run cmd in a new process group (PG) to easily send termination signals
+		cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true, Pgid: 0}
+
 		if logsAction.Mode == "tail" {
 			// execute command follow mode
 			go func() {
@@ -175,7 +190,7 @@ func Action(socketAction models.SocketAction, s *melody.Session, wg *sync.WaitGr
 					// foreach command outputs send to websocket
 					for scannerStdOut.Scan() {
 						if s != nil {
-							broadcastToAll("logs-start", gin.H{"id": logsAction.Id, "pid": pid, "message": scannerStdOut.Text()})
+							writeSocketResponse(s, "logs-start", gin.H{"id": logsAction.Id, "pid": pid, "message": scannerStdOut.Text()})
 						} else {
 							fmt.Println(scannerStdOut.Text())
 						}
@@ -188,16 +203,19 @@ func Action(socketAction models.SocketAction, s *melody.Session, wg *sync.WaitGr
 					return
 				}
 
-				// add command to command lists
 				if s != nil {
-					pid = strconv.Itoa(cmd.Process.Pid)
-					if Commands[s.Request.Header["Sec-Websocket-Key"][0]] == nil {
-						Commands[s.Request.Header["Sec-Websocket-Key"][0]] = make(map[string]*exec.Cmd)
+					// In a Melody session, store the command pid so it
+					// can be killed if connection is closed
+					var aChilds []int
+					iChilds, keyExists := s.Get("childs")
+					if keyExists {
+						aChilds = append(iChilds.([]int), cmd.Process.Pid)
+					} else {
+						aChilds = []int{cmd.Process.Pid}
 					}
-					Commands[s.Request.Header["Sec-Websocket-Key"][0]][pid] = cmd
-
+					s.Set("childs", aChilds)
 					// send feedback for command received
-					broadcastToAll("logs-start", gin.H{"id": logsAction.Id, "pid": pid, "message": ""})
+					writeSocketResponse(s, "logs-start", gin.H{"id": logsAction.Id, "pid": strconv.Itoa(cmd.Process.Pid), "message": ""})
 				}
 
 				// use Wait to avoid defunct process when killed
@@ -221,7 +239,7 @@ func Action(socketAction models.SocketAction, s *melody.Session, wg *sync.WaitGr
 				logsStringsOut := strings.Join(logsStringsR[:], "\n")
 
 				if s != nil {
-					broadcastToAll("logs-start", gin.H{"id": logsAction.Id, "pid": "", "message": logsStringsOut})
+					writeSocketResponse(s, "logs-start", gin.H{"id": logsAction.Id, "pid": "", "message": logsStringsOut})
 				} else {
 					fmt.Println(logsStringsOut)
 					defer wg.Done()
@@ -277,7 +295,7 @@ func Action(socketAction models.SocketAction, s *melody.Session, wg *sync.WaitGr
 	}
 }
 
-func broadcastToAll(name string, msg interface{}) {
+func writeSocketResponse(s *melody.Session, name string, msg interface{}) {
 	// create event object
 	event := &models.Event{}
 	event.Name = name
@@ -289,9 +307,10 @@ func broadcastToAll(name string, msg interface{}) {
 	actionJSON, err := json.Marshal(event)
 	if err != nil {
 		utils.LogError(errors.Wrap(err, "[SOCKET] error converting interface msg to broadcast"))
+		return
 	}
 
-	socketConnection.BroadcastFilter(actionJSON, ValidSessionFilter)
+	s.Write(actionJSON)
 }
 
 func reverse(ss []string) []string {
