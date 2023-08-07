@@ -158,7 +158,13 @@ B. To initialize this node as a cluster leader run:
 
 Finally, access the administration UI at:
 
+   https://<hostname_or_IP>/cluster-admin/
+
+For instance, if $(hostname -f) is resolveable 
+
    https://$(hostname -f)/cluster-admin/
+
+Enter the following credentials:
 
    User: admin
    Password: ${ADMIN_PASSWORD}
