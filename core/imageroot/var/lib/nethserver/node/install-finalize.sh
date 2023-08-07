@@ -160,7 +160,7 @@ Finally, access the administration UI at:
 
    https://<hostname_or_IP>/cluster-admin/
 
-For instance, if $(hostname -f) is resolveable 
+For instance, if $(hostname -f) is resolvable 
 
    https://$(hostname -f)/cluster-admin/
 
