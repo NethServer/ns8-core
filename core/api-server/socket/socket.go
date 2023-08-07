@@ -23,13 +23,16 @@
 package socket
 
 import (
+	"context"
 	"encoding/json"
 	"syscall"
+	"time"
 
 	"github.com/olahol/melody"
 	"github.com/pkg/errors"
 
 	"github.com/NethServer/ns8-core/core/api-server/models"
+	"github.com/NethServer/ns8-core/core/api-server/redis"
 	"github.com/NethServer/ns8-core/core/api-server/utils"
 )
 
@@ -44,6 +47,7 @@ func Instance() *melody.Melody {
 		socketConnection.HandleDisconnect(onDisconnect)
 		socketConnection.HandleMessage(onMessage)
 		socketConnection.HandlePong(onPong)
+		relayRedisProgressEvents(socketConnection)
 	}
 	return socketConnection
 }
@@ -55,7 +59,7 @@ func Instance() *melody.Melody {
  */
 func onPong(s *melody.Session) {
 	muClock.Sync()
-	if ! ValidSessionFilter(s) {
+	if ! validSessionFilter(s) {
 		oErrorMsg := map[string]string{
 			"type": "authorize-error",
 			"payload": "Token has expired",
@@ -93,7 +97,7 @@ func onMessage(s *melody.Session, msg []byte) {
 	Action(socketAction, s, nil)
 }
 
-func ValidSessionFilter(s *melody.Session) bool {
+func validSessionFilter(s *melody.Session) bool {
 	if muClock.Now() > getSessionExpireTimestamp(s) {
 		return false // Session is expired
 	}
@@ -107,4 +111,63 @@ func getSessionExpireTimestamp(s *melody.Session) int64 {
 	}
 	texp, _ := exp.(int64)
 	return texp
+}
+
+/*
+ * Subscribe Redis progress/* channels and relay events from those
+ * channels to authenticated websocket sessions
+ */
+func relayRedisProgressEvents(socketConnection *melody.Melody) {
+	ctx := context.Background()
+
+	// init redis connection
+	redisConnection := redis.Instance()
+
+	// subscribe to progress channels and listen to new messages:
+	progress := redisConnection.PSubscribe(ctx, "progress/*")
+
+	// get the channel to use
+	channel := progress.Channel()
+
+	// start routine to listen to new messages
+	go func() {
+		// iterate any messages sent on the channel
+		for msg := range channel {
+			// create event object
+			event := &models.Event{}
+			event.Name = msg.Channel
+			event.Timestamp = time.Now().UTC()
+			event.Type = "task"
+
+			if err := json.Unmarshal([]byte(msg.Payload), &event.Payload); err != nil {
+				utils.LogError(errors.Wrap(err, "[SOCKET] error converting task payload to event"))
+			}
+
+			// marshal model to json string
+			taskJSON, errJSON := json.Marshal(event)
+			if errJSON != nil {
+				utils.LogError(errors.Wrap(errJSON, "[SOCKET] error converting task object to string"))
+			}
+
+			socketConnection.BroadcastFilter(taskJSON, validSessionFilter)
+		}
+	}()
+}
+
+func writeSocketResponse(s *melody.Session, name string, msg interface{}) {
+	// create event object
+	event := &models.Event{}
+	event.Name = name
+	event.Timestamp = time.Now().UTC()
+	event.Payload = msg
+	event.Type = "action"
+
+	// convert interface to json string
+	actionJSON, err := json.Marshal(event)
+	if err != nil {
+		utils.LogError(errors.Wrap(err, "[SOCKET] error converting interface msg to broadcast"))
+		return
+	}
+
+	s.Write(actionJSON)
 }

@@ -31,7 +31,6 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-	"time"
 	"syscall"
 
 	"github.com/gin-gonic/gin"
@@ -39,7 +38,7 @@ import (
 	"github.com/olahol/melody"
 	"github.com/pkg/errors"
 
-	"github.com/NethServer/ns8-core/core/api-server/configuration"
+	"github.com/NethServer/ns8-core/core/api-server/middleware"
 	"github.com/NethServer/ns8-core/core/api-server/models"
 	"github.com/NethServer/ns8-core/core/api-server/utils"
 )
@@ -259,14 +258,8 @@ func Action(socketAction models.SocketAction, s *melody.Session, wg *sync.WaitGr
 			utils.LogError(errors.New("Unknown authorize payload"))
 		}
 
-		// Create a gin-jwt middleware instance just to validate the token
-		oTmpMiddleware, err := jwt.New(&jwt.GinJWTMiddleware{
-			Realm:     "nethserver",
-			Key:       []byte(configuration.Config.Secret),
-		})
-
 		// Parse "jwt" string and check it is a valid JWT token
-		oJwt, err := oTmpMiddleware.ParseTokenString(token)
+		oJwt, err := middleware.InstanceJWT().ParseTokenString(token)
 		if err != nil {
 			utils.LogError(errors.Wrap(err, "Websocket auth error"))
 			oErrorMsg := map[string]string{
@@ -282,7 +275,6 @@ func Action(socketAction models.SocketAction, s *melody.Session, wg *sync.WaitGr
 		// Authentication is successful: store JWT claims to filter Melody
 		// sessions:
 		mClaims := jwt.ExtractClaimsFromToken(oJwt)
-		s.Set("claims", mClaims)
 
 		exp := int64(mClaims["exp"].(float64))
 
@@ -293,24 +285,6 @@ func Action(socketAction models.SocketAction, s *melody.Session, wg *sync.WaitGr
 		// Do not send back any message to a successfully authorized
 		// session, just keep the socket open.
 	}
-}
-
-func writeSocketResponse(s *melody.Session, name string, msg interface{}) {
-	// create event object
-	event := &models.Event{}
-	event.Name = name
-	event.Timestamp = time.Now().UTC()
-	event.Payload = msg
-	event.Type = "action"
-
-	// convert interface to json string
-	actionJSON, err := json.Marshal(event)
-	if err != nil {
-		utils.LogError(errors.Wrap(err, "[SOCKET] error converting interface msg to broadcast"))
-		return
-	}
-
-	s.Write(actionJSON)
 }
 
 func reverse(ss []string) []string {

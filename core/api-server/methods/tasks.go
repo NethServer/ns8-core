@@ -35,7 +35,6 @@ import (
 	"github.com/gin-gonic/gin/binding"
 	guuid "github.com/google/uuid"
 	"github.com/mpvl/unique"
-	"github.com/pkg/errors"
 
 	jwt "github.com/appleboy/gin-jwt/v2"
 
@@ -43,8 +42,6 @@ import (
 	"github.com/NethServer/ns8-core/core/api-server/models"
 	"github.com/NethServer/ns8-core/core/api-server/redis"
 	"github.com/NethServer/ns8-core/core/api-server/response"
-	"github.com/NethServer/ns8-core/core/api-server/socket"
-	"github.com/NethServer/ns8-core/core/api-server/utils"
 )
 
 func getList(c *gin.Context, queueName string) {
@@ -404,44 +401,6 @@ func createTask(c *gin.Context, queueName string) {
 		Message: "task queued successfully",
 		Data:    task,
 	}))
-}
-
-func ListenTaskEvents() {
-	// init redis connection
-	redisConnection := redis.Instance()
-
-	// get socket instance
-	socketConnection := socket.Instance()
-
-	// subscribe to progress channels and listen to new messages:
-	progress := redisConnection.PSubscribe(ctx, "progress/*")
-
-	// get the channel to use
-	channel := progress.Channel()
-
-	// start routine to listen to new messages
-	go func() {
-		// iterate any messages sent on the channel
-		for msg := range channel {
-			// create event object
-			event := &models.Event{}
-			event.Name = msg.Channel
-			event.Timestamp = time.Now().UTC()
-			event.Type = "task"
-
-			if err := json.Unmarshal([]byte(msg.Payload), &event.Payload); err != nil {
-				utils.LogError(errors.Wrap(err, "[SOCKET] error converting task payload to event"))
-			}
-
-			// marshal model to json string
-			taskJSON, errJSON := json.Marshal(event)
-			if errJSON != nil {
-				utils.LogError(errors.Wrap(errJSON, "[SOCKET] error converting task object to string"))
-			}
-
-			socketConnection.BroadcastFilter(taskJSON, socket.ValidSessionFilter)
-		}
-	}()
 }
 
 // GetClusterTasks godoc

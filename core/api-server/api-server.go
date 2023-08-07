@@ -69,7 +69,7 @@ func main() {
 	// init audit file
 	audit.Init()
 
-	// init websocket
+	// init websocket and start listen Redis events
 	socketConnection := socket.Instance()
 
 	// init routers
@@ -145,9 +145,6 @@ func main() {
 	ws.GET("", func(c *gin.Context) {
 		socketConnection.HandleRequest(c.Writer, c.Request)
 	})
-
-	// start events
-	methods.ListenTaskEvents()
 
 	// handle missing endpoint
 	router.NoRoute(func(c *gin.Context) {
