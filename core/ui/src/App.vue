@@ -80,22 +80,10 @@ export default {
 
     // check login
     const loginInfo = this.getFromStorage("loginInfo");
-    if (loginInfo && loginInfo.username) {
-      const tokenDecoded = this.decodeJwtPayload(loginInfo.token);
-
-      if (tokenDecoded.exp * 1000 < Date.now()) {
-        console.warn("Token has expired, logout");
-
-        // token has expired, logout
-        const sessionExpiredTitle = this.$t("login.session_expired_title");
-        const sessionExpiredDescription = this.$t(
-          "login.session_expired_description"
-        );
-        this.logout(sessionExpiredTitle, sessionExpiredDescription);
-      } else {
-        this.setLoggedUserInStore(loginInfo.username);
-        this.initWebSocket();
-      }
+    if (loginInfo?.username) {
+      this.setLoggedUserInStore(loginInfo.username);
+      // verify token with WS authentication
+      this.initWebSocket();
     } else {
       this.isLoaded = true;
     }
@@ -392,7 +380,6 @@ export default {
       }
     },
     onWebsocketError(error) {
-      // TODO generic error, reconnection
       console.error("WebsocketError", error);
     },
     onWebsocketAuthError(error) {
@@ -426,10 +413,11 @@ export default {
         this.createNotification(notification);
 
         // retry websocket connection
-
         this.retryWsConnectionInterval = setInterval(() => {
-          console.warn("Retrying websocket connection...");
-          this.initWebSocket();
+          if (this.loggedUser) {
+            console.warn("Retrying websocket connection...");
+            this.initWebSocket();
+          }
         }, 5000);
       }
     },
