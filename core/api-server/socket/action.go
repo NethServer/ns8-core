@@ -136,13 +136,13 @@ func Action(socketAction models.SocketAction, s *melody.Session, wg *sync.WaitGr
 		// switch entity
 		switch logsAction.Entity {
 		default:
-			streamSelector = `{node_id=~".+"}`
+			streamSelector = `{node_id=~".+",audit=""}`
 
 		case "node":
-			streamSelector = `{node_id="`+ logsAction.EntityName +`"}`
+			streamSelector = `{node_id="`+ logsAction.EntityName +`",audit=""}`
 
 		case "module":
-			streamSelector = `{module_id="`+ logsAction.EntityName +`"}`
+			streamSelector = `{module_id="`+ logsAction.EntityName +`",audit=""}`
 		}
 
 		logqlPipeline = ` | json syslog_id="SYSLOG_IDENTIFIER", message="MESSAGE" | line_format "[{{.node_id}}:{{.module_id}}:{{.syslog_id}}] {{.message}}"`
