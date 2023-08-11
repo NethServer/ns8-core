@@ -32,7 +32,6 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/NethServer/ns8-core/core/api-server/audit"
-	"github.com/NethServer/ns8-core/core/api-server/configuration"
 	"github.com/NethServer/ns8-core/core/api-server/models"
 	"github.com/NethServer/ns8-core/core/api-server/response"
 )
@@ -61,44 +60,45 @@ func GetAudits(c *gin.Context) {
 	to := c.Query("to")
 	limit := c.Query("limit")
 
-	// define query
-	query := "SELECT * FROM audit WHERE true"
+	logql := ""
+	qargs := []string{}
 
-	// check params
+	// stream selector (audit label)
 	if len(user) > 0 {
-		users := strings.Split(user, ",")
-		query += " AND user IN (?" + strings.Repeat(",?", len(users)-1) + ")"
-	}
-
-	if len(action) > 0 {
-		actions := strings.Split(action, ",")
-		query += " AND action IN (?" + strings.Repeat(",?", len(actions)-1) + ")"
+		logql += `{audit=~"(` + strings.ReplaceAll(user, ",", "|") + `)"}`
+	} else {
+		logql += `{audit!=""}`
 	}
 
 	if len(data) > 0 {
-		data = "%" + data + "%"
-		query += " AND data LIKE ?"
+		logql += ` |= "` + data + `"`
 	}
+	
+	logql += `| json message="MESSAGE" | logfmt `
+
+	if len(action) > 0 {
+		logql += ` | action=~"(` + strings.ReplaceAll(action, ",", "|") + `)"`
+	}
+	
+	logql += ` | line_format "user={{.user}} action={{.action}} timestamp={{.__timestamp__}} data={{.data}}"`
 
 	if len(from) > 0 {
-		query += " AND timestamp >= ?"
+		qargs = append(qargs, "--from=" + from)
 	}
 
 	if len(to) > 0 {
-		query += " AND timestamp <= ?"
+		qargs = append(qargs, "--to=" + to)
 	}
-
-	// order by
-	query += " ORDER BY id desc"
 
 	// add limit
 	if len(limit) == 0 {
-		limit = "500" // if not specified, limit to 500 records
+		qargs = append(qargs, "--limit=500")
+	} else {
+		qargs = append(qargs, "--limit=" + limit)
 	}
-	query += " LIMIT " + limit
 
-	// execute query
-	results := audit.QueryArgs(query, user, action, data, from, to)
+	// execute logql
+	results := audit.QueryArgs(logql, qargs)
 
 	// store audit
 	claims := jwt.ExtractClaims(c)
@@ -110,21 +110,11 @@ func GetAudits(c *gin.Context) {
 	}
 	audit.Store(auditData)
 
-	// return results
-	if len(configuration.Config.AuditFile) == 0 {
-		c.JSON(http.StatusBadRequest, structs.Map(response.StatusBadRequest{
-			Code:    400,
-			Message: "audit is disabled. AUDIT_FILE is not set in the environment",
-			Data:    gin.H{"audits": nil},
-		}))
-	} else {
-		c.JSON(http.StatusOK, structs.Map(response.StatusOK{
-			Code:    200,
-			Message: "success",
-			Data:    gin.H{"audits": results},
-		}))
-	}
-
+	c.JSON(http.StatusOK, structs.Map(response.StatusOK{
+		Code:    200,
+		Message: "success",
+		Data:    gin.H{"audits": results},
+	}))
 }
 
 // GetAuditsUsers godoc

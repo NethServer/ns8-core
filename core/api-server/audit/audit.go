@@ -23,10 +23,10 @@
 package audit
 
 import (
+	"bufio"
 	"fmt"
 	"os"
-	"strings"
-	"time"
+	"os/exec"
 
 	"github.com/pkg/errors"
 
@@ -102,67 +102,30 @@ func Store(audit models.Audit) {
 	fmt.Printf("<5>user=%s action=%s data=%s\n", audit.User, audit.Action, audit.Data)
 }
 
-func QueryArgs(query string, args ...interface{}) []models.Audit {
+func QueryArgs(logql string, qargs []string) []models.Audit {
 	// define results
 	var results []models.Audit
 
-	// check audit file is set
-	if len(configuration.Config.AuditFile) > 0 {
-		// open db
-		db, err := sql.Open("sqlite3", configuration.Config.AuditFile)
+	qargs = append(qargs, logql)
+
+	cmd := exec.Command("/usr/local/bin/logcli", qargs...)
+	stdoutReader, _ := cmd.StdoutPipe()
+	lineReader := bufio.NewReader(stdoutReader)
+	fmt.Printf("%v\n", qargs)
+	cmd.Start()
+
+
+	for {
+		line, err := lineReader.ReadString(10) // LF
+		if line != "" {
+			results = append(results, models.Audit{Data: line})
+		}
 		if err != nil {
-			utils.LogError(errors.Wrap(err, "[AUDIT][QUERY] error in audit file schema open"))
-		}
-		defer db.Close()
-
-		// define query
-		cleanArgs := make([]interface{}, 0, len(args))
-		for _, item := range args {
-			if item != "" {
-				if strings.Contains(fmt.Sprintf("%v", item), ",") {
-					parts := strings.Split(fmt.Sprintf("%v", item), ",")
-
-					for _, element := range parts {
-						cleanArgs = append(cleanArgs, element)
-					}
-				} else {
-					cleanArgs = append(cleanArgs, item)
-				}
-			}
-		}
-
-		rows, err := db.Query(query, cleanArgs...)
-		if err != nil {
-			utils.LogError(errors.Wrap(err, "[AUDIT][QUERY] error in audit query execution"))
-		}
-		defer rows.Close()
-
-		// loop rows
-		for rows.Next() {
-			var auditRow models.Audit
-			var timestamp string
-			if err := rows.Scan(&auditRow.ID, &auditRow.User, &auditRow.Action, &auditRow.Data, &timestamp); err != nil {
-				utils.LogError(errors.Wrap(err, "[AUDIT][QUERY] error in audit query row extraction"))
-			}
-
-			// parse date
-			t, err := time.Parse(time.RFC3339, timestamp)
-
-			if err != nil {
-				utils.LogError(errors.Wrap(err, "[AUDIT][QUERY] error in audit parse timestamp"))
-			}
-
-			// append results
-			auditRow.Timestamp = t
-			results = append(results, auditRow)
-		}
-
-		// check rows error
-		errRows := rows.Err()
-		if errRows != nil {
-			utils.LogError(errors.Wrap(errRows, "[AUDIT][QUERY] error in rows query loop"))
+			break
 		}
 	}
+
+	cmd.Wait()
 
 	// return results
 	return results
