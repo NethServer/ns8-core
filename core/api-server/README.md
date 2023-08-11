@@ -177,13 +177,12 @@ automatically and published at:
 
 ## Audit
 
-Every request made to the server, using its APIs or WebSocket, is logged inside an audit db. The audit db is store in a file using a SQLite database schema. Each record is composed by:
+Every request made to the server, using its APIs or WebSocket, is sent to
+the system log. Each log record is composed by:
 
--   `ID`: the unique id of the record, autoincrement
 -   `User`: the name of the user that made the specific action
 -   `Action`: the name of the action made by the user
 -   `Data`: the payload of the action (if present)
--   `Timestamp`: the time when the specific action is executed
 
 ## Websockets
 

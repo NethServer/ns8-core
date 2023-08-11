@@ -99,35 +99,7 @@ func create() {
 }
 
 func Store(audit models.Audit) {
-	// check audit file is set
-	if len(configuration.Config.AuditFile) > 0 {
-		// open db
-		db, err := sql.Open("sqlite3", configuration.Config.AuditFile)
-		if err != nil {
-			utils.LogError(errors.Wrap(err, "[AUDIT][STORE] error in audit file schema open"))
-		}
-		defer db.Close()
-
-		// begin sqlite connection to insert
-		tx, err := db.Begin()
-		if err != nil {
-			utils.LogError(errors.Wrap(err, "[AUDIT][STORE] error in audit file schema begin"))
-		}
-
-		// define statement
-		stmt, err := tx.Prepare("INSERT INTO audit(id, user, action, data, timestamp) VALUES(null, ?, ?, ?, ?)")
-		if err != nil {
-			utils.LogError(errors.Wrap(err, "[AUDIT][STORE] error in audit file schema prepare"))
-		}
-		defer stmt.Close()
-
-		// execute statement
-		_, err = stmt.Exec(audit.User, audit.Action, audit.Data, audit.Timestamp.Format(time.RFC3339))
-		if err != nil {
-			utils.LogError(errors.Wrap(err, "[AUDIT][STORE] error in audit file schema execute"))
-		}
-		tx.Commit()
-	}
+	fmt.Printf("<5>user=%s action=%s data=%s\n", audit.User, audit.Action, audit.Data)
 }
 
 func QueryArgs(query string, args ...interface{}) []models.Audit {
