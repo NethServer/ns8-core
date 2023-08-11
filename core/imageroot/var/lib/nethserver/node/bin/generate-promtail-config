@@ -31,10 +31,19 @@ if not client_list:
     print(agent.SD_ERR + "No client configuration found. Is Loki installed?", file=sys.stderr)
     sys.exit(1)
 
-relabel_configs = [{
-    "target_label": "node_id",
-    "replacement": os.environ["NODE_ID"]
-}]
+relabel_configs = [
+    {
+        "target_label": "node_id",
+        "replacement": os.environ["NODE_ID"]
+    },
+    {
+        "target_label": "audit",
+        "source_labels": ["__journal__systemd_unit", "__journal_priority", "__journal_message"],
+        "separator": ",",
+        "regex": "api-server\\.service,5,user=(\\S+) .*",
+        "replacement": "$1",
+    },
+]
 
 
 # Parse /etc/subuid for later usage
