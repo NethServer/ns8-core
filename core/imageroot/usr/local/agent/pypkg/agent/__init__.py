@@ -207,6 +207,10 @@ def run_restic(rdb, repository, repo_path, podman_args, restic_args, **kwargs):
         restic_env["RESTIC_REPOSITORY"] = orepo['url'] + ":" + repo_path
         restic_env["B2_ACCOUNT_ID"] = orepo['b2_account_id']
         restic_env["B2_ACCOUNT_KEY"] = orepo['b2_account_key']
+    elif uschema == 'azure':
+        restic_env["RESTIC_REPOSITORY"] = orepo['url'] + ":" + repo_path
+        restic_env["AZURE_ACCOUNT_NAME"] = orepo['azure_account_name']
+        restic_env["AZURE_ACCOUNT_KEY"] = orepo['azure_account_key']
     else:
         raise Exception(f"Schema {uschema} not supported")
 
