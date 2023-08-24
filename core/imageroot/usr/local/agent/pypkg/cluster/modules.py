@@ -25,6 +25,7 @@ import semver
 import urllib
 import os.path
 import urllib.request
+from glob import glob
 
 def _urljoin(base_path, *args):
     '''replace urllib.parse.joinurl because it doesn't handle multiple parameters
@@ -35,16 +36,14 @@ def _urljoin(base_path, *args):
         parts.append(urllib.parse.quote(arg))
     return "/".join(part.strip("/") for part in parts)
 
-def _get_cached_logo_urls(rdb):
+def _get_downloaded_logos():
     logos = {}
     # Search for log inside all caches
-    for m in rdb.scan_iter('cluster/repository_cache/*'):
-        cache = rdb.hgetall(m)
-        if cache:
-            (prefix,sep,repo) = m.rpartition("/")
-            repository_url = rdb.hget(f'cluster/repository/{repo}', 'url')
-            for m in  _parse_repository_metadata(repo, repository_url, cache["updated"], cache["data"]):
-                logos[m["id"]] = m['logo']
+    for app in glob("/var/lib/nethserver/cluster/ui/apps/*"):
+        src_logos = glob(f'{app}/img/*logo*png')
+        if len(src_logos) > 0:
+            logo = src_logos[0].removeprefix("/var/lib/nethserver/cluster/ui/")
+            logos[os.path.basename(app)] = logo
     return logos
 
 def _parse_repository_metadata(repository_name, repository_url, repository_updated, repodata, skip_core_modules = False):
@@ -153,14 +152,14 @@ def list_available(rdb, skip_core_modules = False):
 
 def list_installed(rdb, skip_core_modules = False):
     installed = {}
-    logos = _get_cached_logo_urls(rdb)
+    logos = _get_downloaded_logos()
     # Search for installed modules
     for m in rdb.scan_iter('module/*/environment'):
         vars = rdb.hgetall(m)
         module_ui_name = rdb.get(m.removesuffix('/environment') + '/ui_name') or ""
         url, sep, tag = vars['IMAGE_URL'].partition(":")
         image = url[url.rindex('/')+1:]
-        logo = logos.get(image) or ''
+        logo = logos.get(vars["MODULE_ID"]) or ''
         flags = list(rdb.smembers(f'module/{vars["MODULE_ID"]}/flags')) or []
         if skip_core_modules and 'core_module' in flags:
             continue
