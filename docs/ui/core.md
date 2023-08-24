@@ -151,6 +151,14 @@ podman exec -ti ns8-core yarn storybook
   - `yarn storybook`: start Storybook webapp with hot-reload
   - `yarn build`: compiles and minifies for production
 
+Then, copy `public/config/config.development.js.sample` to `public/config/config.development.js` and edit at least the `API_ENDPOINT` and `WS_ENDPOINT` variables.
+Finally, you need to disable the CORS check. Connect to the leader node and execute:
+```
+echo GIN_MODE=debug >> /etc/nethserver/api-server.env; systemctl restart api-server
+```
+
+You should now be able to access the development UI inside your browser at `http://localhost:8081`.
+
 Container configuration is contained inside `.devcontainer/devcontainer.json`.
 
 ### Develop NS8 UI on your workstation
