@@ -34,6 +34,16 @@
                 "aws_access_key_id": "XJEMERNGRIWGN",
                 "aws_secret_access_key": "897wergjkegher987geriugheruiger789"
             }
+        },
+        {
+            "name": "repository 4",
+            "provider": "azure",
+            "password": "",
+            "url": "azure:mystorage",
+            "parameters": {
+                "azure_account_name": "ns8backup",
+                "azure_account_key": "7lBkSMdy5LeYFyjcc0Szlxlc9GDaUFxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxOrplWQJuEBRD+AStiQnppg=="
+            }
         }
     ],
     "type": "object",
@@ -101,6 +111,22 @@
                     }
                 }
             ]
+        },
+        {
+            "allOf": [
+                {
+                    "title": "Azure schema",
+                    "properties": {
+                        "provider": {
+                            "title": "Azure provider",
+                            "const": "azure"
+                        },
+                        "parameters": {
+                            "$ref": "#/$defs/azure_parameters"
+                        }
+                    }
+                }
+            ]
         }
     ],
     "$defs": {
@@ -137,6 +163,23 @@
                     "type": "string"
                 },
                 "aws_secret_access_key": {
+                    "type": "string"
+                }
+            }
+        },
+        "azure_parameters": {
+            "title": "Azure blob storage protocol parameters",
+            "type": "object",
+            "required": [
+                "azure_account_name",
+                "azure_account_key"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "azure_account_name": {
+                    "type": "string"
+                },
+                "azure_account_key": {
                     "type": "string"
                 }
             }
