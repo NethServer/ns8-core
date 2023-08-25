@@ -93,7 +93,21 @@
             :moreText="$t('common.show_more')"
             :lessText="$t('common.show_less')"
             light
-            expanded
+            >{{ getTaskError(taskErrorToShow) }}</NsCodeSnippet
+          >
+        </div>
+        <div class="stack-title">
+        {{ $t("common.full_error_stack") }}
+        </div>
+        <div class="code-snippet-wrapper">
+          <NsCodeSnippet
+            :copyTooltip="$t('common.copy_to_clipboard')"
+            :copy-feedback="$t('common.copied_to_clipboard')"
+            :feedback-aria-label="$t('common.copied_to_clipboard')"
+            :wrap-text="true"
+            :moreText="$t('common.show_more')"
+            :lessText="$t('common.show_less')"
+            light
             >{{ taskErrorToShow }}</NsCodeSnippet
           >
         </div>
@@ -150,7 +164,7 @@ export default {
         this.taskErrorToShow.context.extra &&
         this.taskErrorToShow.context.extra.logs
       );
-    },
+    }
   },
   watch: {
     isMoreInfoShown: function () {
@@ -168,6 +182,13 @@ export default {
   methods: {
     taskErrorModalHidden() {
       this.$emit("hide");
+    },
+    getTaskError() {
+      if (this.taskErrorToShow && this.taskErrorToShow.subTasks) {
+         return this.taskErrorToShow.result.error;
+      } else {
+        return "";
+      }
     },
     showCopyClipboardHint() {
       setTimeout(() => {
@@ -259,6 +280,11 @@ export default {
   display: flex;
   align-items: center;
   padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+
+.stack-title {
+  padding-top: 1rem;
   padding-bottom: 0.5rem;
 }
 </style>

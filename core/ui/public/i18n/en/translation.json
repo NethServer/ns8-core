@@ -81,7 +81,8 @@
     "tab_navigation": "Tab navigation",
     "warning": "Warning",
     "remember": "Remember",
-    "click_here_to_upload": "Click here to upload"
+    "click_here_to_upload": "Click here to upload",
+    "full_error_stack": "Full error stack"
   },
   "error": {
     "error": "Error",
