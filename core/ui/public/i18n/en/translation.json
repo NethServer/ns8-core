@@ -782,7 +782,8 @@
       "web": "Web",
       "communication": "Communication",
       "security": "Security"
-    }
+    },
+    "images_label": "Images"
   },
   "system_logs": {
     "title": "System logs",
