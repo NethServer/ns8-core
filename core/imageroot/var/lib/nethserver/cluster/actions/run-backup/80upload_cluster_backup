@@ -1,0 +1,21 @@
+#!/bin/bash
+
+#
+# Copyright (C) 2023 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+set -e
+
+config_dump="/var/lib/nethserver/cluster/state/backup/dump.json.gz.gpg"
+id=$(cat /dev/stdin | jq -r '.id // empty')
+
+if [ "x$id" == "x" ]; then
+    exit 1
+fi
+
+if [ ! -f "$config_dump" ]; then
+    /usr/local/agent/bin/cluster-backup
+fi
+
+cat "$config_dump" | /usr/local/agent/bin/rclone-wrapper "$id" rcat REMOTE_PATH/$(basename "$config_dump")
