@@ -26,6 +26,18 @@
           <div v-show="step == 'instances'">
             <div class="mg-bottom-md">
               {{ $t("backup.choose_app_instances_to_backup") }}
+              <cv-interactive-tooltip
+                alignment="start"
+                direction="right"
+                class="info"
+              >
+                <template slot="trigger">
+                  <Information16 />
+                </template>
+                <template slot="content">
+                  {{ $t("backup.cluster_configuration_info") }}
+                </template>
+              </cv-interactive-tooltip>
             </div>
             <BackupInstanceSelector
               :instances="installedModules"
@@ -293,6 +305,7 @@ import to from "await-to-js";
 import BackupInstanceSelector from "@/components/backup/BackupInstanceSelector";
 import _cloneDeep from "lodash/cloneDeep";
 import _capitalize from "lodash/capitalize";
+import Information16 from "@carbon/icons-vue/es/information/16";
 
 const DEFAULT_SCHEDULE_INTERVAL = "daily";
 const DEFAULT_SCHEDULE_MINUTE = "0";
@@ -304,7 +317,7 @@ const DEFAULT_RETENTION = "5";
 
 export default {
   name: "CreateOrEditBackupModal",
-  components: { BackupInstanceSelector },
+  components: { BackupInstanceSelector, Information16 },
   mixins: [UtilService, TaskService, IconService],
   props: {
     isShown: {
