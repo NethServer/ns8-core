@@ -84,7 +84,7 @@
             </template>
           </cv-interactive-tooltip>
         </span>
-        <div class="code-snippet-wrapper">
+        <div>
           <NsCodeSnippet
             :copyTooltip="$t('common.copy_to_clipboard')"
             :copy-feedback="$t('common.copied_to_clipboard')"
@@ -96,10 +96,10 @@
             >{{ getTaskError(taskErrorToShow) }}</NsCodeSnippet
           >
         </div>
-        <div class="stack-title">
-          {{ $t("common.full_error_stack") }}
-        </div>
-        <div class="code-snippet-wrapper">
+        <h6 class="mg-top-md mg-bottom-sm">
+          {{ $t("common.task_data") }}
+        </h6>
+        <div>
           <NsCodeSnippet
             :copyTooltip="$t('common.copy_to_clipboard')"
             :copy-feedback="$t('common.copied_to_clipboard')"
@@ -233,10 +233,6 @@ export default {
 <style scoped lang="scss">
 @import "../../styles/carbon-utils";
 
-.code-snippet-wrapper {
-  max-height: 11rem;
-}
-
 .task-hierarchy {
   margin-left: -0.8rem;
 }
@@ -280,11 +276,6 @@ export default {
   display: flex;
   align-items: center;
   padding-top: 0.5rem;
-  padding-bottom: 0.5rem;
-}
-
-.stack-title {
-  padding-top: 1rem;
   padding-bottom: 0.5rem;
 }
 </style>
