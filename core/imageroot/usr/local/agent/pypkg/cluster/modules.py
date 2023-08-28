@@ -158,6 +158,7 @@ def list_installed(rdb, skip_core_modules = False):
         vars = rdb.hgetall(m)
         module_ui_name = rdb.get(m.removesuffix('/environment') + '/ui_name') or ""
         url, sep, tag = vars['IMAGE_URL'].partition(":")
+        image = url[url.rindex('/')+1:]
         logo = logos.get(vars["MODULE_ID"]) or ''
         flags = list(rdb.smembers(f'module/{vars["MODULE_ID"]}/flags')) or []
         if skip_core_modules and 'core_module' in flags:
