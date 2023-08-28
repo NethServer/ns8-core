@@ -58,7 +58,6 @@
                   value="providerValue"
                   @click="selectAzure()"
                   class="provider-card"
-                  disabled
                 >
                   <div class="provider-card-content">
                     <div class="provider-icon">
@@ -105,7 +104,6 @@
                   value="providerValue"
                   @click="selectGenericS3()"
                   class="provider-card"
-                  disabled
                 >
                   <div class="provider-card-content">
                     <div class="provider-icon">
@@ -135,7 +133,7 @@
             :label="$t('backup.url')"
             v-model.trim="url"
             :invalid-message="error.url"
-            :placeholder="$t('backup.url_placeholder')"
+            :placeholder="$t('backup.'+selectedProviderHelper)"
             :disabled="loading.addBackupRepository"
             :prefix="selectedProviderPrefix"
             ref="url"
@@ -192,9 +190,47 @@
             ></cv-text-input>
           </template>
           <!-- azure -->
-          <template v-if="isAzureSelected"> azure //// </template>
+          <template v-if="isAzureSelected">
+            <cv-text-input
+              :label="$t('backup.azure_account_name')"
+              v-model.trim="azure.azure_account_name"
+              :invalid-message="error.azure.azure_account_name"
+              :disabled="loading.addBackupRepository"
+              ref="azure_account_name"
+            >
+            </cv-text-input>
+            <cv-text-input
+              :label="$t('backup.azure_account_key')"
+              type="password"
+              v-model.trim="azure.azure_account_key"
+              :disabled="loading.addBackupRepository"
+              :invalid-message="error.aws.azure_account_key"
+              :password-hide-label="$t('password.hide_password')"
+              :password-show-label="$t('password.show_password')"
+              ref="azure_account_key"
+            ></cv-text-input>
+             </template>
           <!-- generic s3 -->
-          <template v-if="isGenericS3Selected"> generic s3 //// </template>
+          <template v-if="isGenericS3Selected">
+            <cv-text-input
+              :label="$t('backup.genericS3_access_key_id')"
+              v-model.trim="genericS3.aws_access_key_id"
+              :invalid-message="error.genericS3.aws_access_key_id"
+              :disabled="loading.addBackupRepository"
+              ref="genericS3_access_key_id"
+            >
+            </cv-text-input>
+            <cv-text-input
+              :label="$t('backup.genericS3_secret_access_key')"
+              type="password"
+              v-model.trim="genericS3.aws_secret_access_key"
+              :disabled="loading.addBackupRepository"
+              :invalid-message="error.genericS3.aws_secret_access_key"
+              :password-hide-label="$t('password.hide_password')"
+              :password-show-label="$t('password.show_password')"
+              ref="genericS3_secret_access_key"
+            ></cv-text-input>
+          </template>
           <!-- //// handle ALL providers -->
           <cv-text-input
             :label="$t('backup.repository_name')"
@@ -278,10 +314,14 @@ export default {
         repoPrefix: "s3:s3.amazonaws.com/",
       },
       genericS3: {
-        repoPrefix: "",
+        aws_access_key_id: "",
+        aws_secret_access_key: "",
+        repoPrefix: "s3:",
       },
       azure: {
-        repoPrefix: "",
+        azure_account_key: "",
+        azure_account_name: "",
+        repoPrefix: "azure:",
       },
       //// handle all providers
       loading: {
@@ -301,8 +341,14 @@ export default {
           aws_default_region: "",
           aws_secret_access_key: "",
         },
-        genericS3: {},
-        azure: {},
+        genericS3: {
+          aws_access_key_id: "",
+          aws_default_region: "",
+        },
+        azure: {
+          azure_account_key: "",
+          azure_account_name: "",
+        },
         //// handle all providers
       },
     };
@@ -337,7 +383,20 @@ export default {
     selectedProviderPrefix() {
       return this[this.selectedProvider].repoPrefix;
     },
-  },
+    selectedProviderHelper() {
+      if (this.isBackblazeSelected) {
+        return "backblaze_placeholder";
+      } else if (this.isAmazonS3Selected) {
+        return "aws_placeholder";
+      } else if (this.isGenericS3Selected) {
+        return "s3_placeholder";
+      } else if (this.isAzureSelected) {
+        return "azure_placeholder";
+      } else {
+        return 'url_placeholder';
+      }
+    }
+     },
   watch: {
     isShown: function () {
       if (this.isShown) {
@@ -391,6 +450,12 @@ export default {
       this.aws.aws_access_key_id = "";
       this.aws.aws_default_region = "";
       this.aws.aws_secret_access_key = "";
+
+      this.genericS3.aws_access_key_id = "";
+      this.genericS3.aws_secret_access_key = "";
+
+      this.azure.azure_account_name = "";
+      this.azure.azure_account_key = "";
 
       //// handle ALL providers
     },
@@ -447,10 +512,15 @@ export default {
             aws_access_key_id: this.aws.aws_access_key_id,
             aws_secret_access_key: this.aws.aws_secret_access_key,
           };
+        case "genericS3":
+          return {
+            aws_access_key_id: this.genericS3.aws_access_key_id,
+            aws_secret_access_key: this.genericS3.aws_secret_access_key,
+          };
         case "azure":
           return {
-            azure_account_name: "",
-            azure_account_key: "",
+            azure_account_name: this.azure.azure_account_name,
+            azure_account_key: this.azure.azure_account_key,
           };
       }
       //// handle all providers
@@ -582,16 +652,113 @@ export default {
       this.error.name = "";
       this.error.url = "";
       this.error.repoConnection = "";
-      console.error("not implemented");
-      return false;
+
+      this.error.genericS3.aws_access_key_id = "";
+      this.error.genericS3.aws_default_region = "";
+      this.error.genericS3.aws_secret_access_key = "";
+
+      let isValidationOk = true;
+
+      if (!this.url) {
+        this.error.url = this.$t("common.required");
+
+        if (isValidationOk) {
+          this.focusElement("url");
+          isValidationOk = false;
+        }
+      } else if (this.url.includes(" ")) {
+        // wrong url protocol
+        this.error.url = this.$t("backup.invalid_url");
+
+        if (isValidationOk) {
+          this.focusElement("url");
+          isValidationOk = false;
+        }
+      }
+
+      if (!this.genericS3.aws_access_key_id) {
+        this.error.genericS3.aws_access_key_id = this.$t("common.required");
+
+        if (isValidationOk) {
+          this.focusElement("genericS3_access_key_id");
+          isValidationOk = false;
+        }
+      }
+
+      if (!this.genericS3.aws_secret_access_key) {
+        this.error.genericS3.aws_secret_access_key = this.$t("common.required");
+
+        if (isValidationOk) {
+          this.focusElement("genericS3_secret_access_key");
+          isValidationOk = false;
+        }
+      }
+
+      if (!this.name) {
+        this.error.name = this.$t("common.required");
+
+        if (isValidationOk) {
+          this.focusElement("name");
+          isValidationOk = false;
+        }
+      }
+      return isValidationOk;
     },
     validateAddAzureRepository() {
       // clear errors
       this.error.name = "";
       this.error.url = "";
       this.error.repoConnection = "";
-      console.error("not implemented");
-      return false;
+
+      this.error.azure.azure_account_name = "";
+      this.error.azure.azure_account_key = "";
+
+      let isValidationOk = true;
+
+      if (!this.url) {
+        this.error.url = this.$t("common.required");
+
+        if (isValidationOk) {
+          this.focusElement("url");
+          isValidationOk = false;
+        }
+      } else if (this.url.includes(" ")) {
+        // wrong url protocol
+        this.error.url = this.$t("backup.invalid_url");
+
+        if (isValidationOk) {
+          this.focusElement("url");
+          isValidationOk = false;
+        }
+      }
+
+      if (!this.azure.azure_account_name) {
+        this.error.azure.azure_account_name = this.$t("common.required");
+
+        if (isValidationOk) {
+          this.focusElement("azure_account_name");
+          isValidationOk = false;
+        }
+      }
+
+      if (!this.azure.azure_account_key) {
+        this.error.azure.azure_account_key = this.$t("common.required");
+
+        if (isValidationOk) {
+          this.focusElement("azure_account_key");
+          isValidationOk = false;
+        }
+      }
+
+      if (!this.name) {
+        this.error.name = this.$t("common.required");
+
+        if (isValidationOk) {
+          this.focusElement("name");
+          isValidationOk = false;
+        }
+      }
+      return isValidationOk;
     },
     validateAddBackupRepository() {
       switch (this.selectedProvider) {
@@ -631,7 +798,7 @@ export default {
           action: taskAction,
           data: {
             name: this.name,
-            provider: this.selectedProvider,
+            provider: this.selectedProvider == 'genericS3' ? 'generic-s3' : this.selectedProvider,
             url: this.selectedProviderPrefix + this.url,
             parameters: this.buildRepositoryParameters(),
             password: this.password,

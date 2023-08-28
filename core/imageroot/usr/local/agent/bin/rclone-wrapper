@@ -76,7 +76,12 @@ elif uscheme == "s3":
         rclone_env['RCLONE_S3_REGION'] = orepo.get("aws_default_region", "")
     elif orepo['provider'] == 'digitalocean':
         rclone_env['RCLONE_S3_PROVIDER'] = 'DigitalOcean'
-
+elif uscheme == "azure":
+    rclone_path = ':azureblob:' + upath.rstrip(":")
+    rclone_env = {
+        'RCLONE_AZUREBLOB_ACCOUNT': orepo["azure_account_name"],
+        'RCLONE_AZUREBLOB_KEY': orepo["azure_account_key"],
+    }
 else:
     raise Exception(f"Scheme {uscheme} not supported")
 
