@@ -97,7 +97,7 @@
           >
         </div>
         <div class="stack-title">
-        {{ $t("common.full_error_stack") }}
+          {{ $t("common.full_error_stack") }}
         </div>
         <div class="code-snippet-wrapper">
           <NsCodeSnippet
@@ -164,7 +164,7 @@ export default {
         this.taskErrorToShow.context.extra &&
         this.taskErrorToShow.context.extra.logs
       );
-    }
+    },
   },
   watch: {
     isMoreInfoShown: function () {
@@ -185,7 +185,7 @@ export default {
     },
     getTaskError() {
       if (this.taskErrorToShow && this.taskErrorToShow.subTasks) {
-         return this.taskErrorToShow.result.error;
+        return this.taskErrorToShow.result.error;
       } else {
         return "";
       }
