@@ -23,72 +23,70 @@
 package socket
 
 import (
+	"context"
 	"encoding/json"
-	"os/exec"
+	"syscall"
+	"time"
 
 	"github.com/olahol/melody"
-
 	"github.com/pkg/errors"
 
 	"github.com/NethServer/ns8-core/core/api-server/models"
+	"github.com/NethServer/ns8-core/core/api-server/redis"
 	"github.com/NethServer/ns8-core/core/api-server/utils"
 )
 
 var socketConnection *melody.Melody
-
-var Connections map[string][]*melody.Session
-var Commands map[string]map[string]*exec.Cmd
+var muClock *utils.MuClock
 
 func Instance() *melody.Melody {
 	if socketConnection == nil {
-		socketConnection := InitSocketConnection()
-		return socketConnection
+		muClock = new(utils.MuClock)
+		muClock.Sync()
+		socketConnection = melody.New()
+		socketConnection.HandleDisconnect(onDisconnect)
+		socketConnection.HandleMessage(onMessage)
+		socketConnection.HandlePong(onPong)
+		relayRedisProgressEvents(socketConnection)
 	}
 	return socketConnection
 }
 
-func InitSocketConnection() *melody.Melody {
-	// init socket
-	socketConnection := melody.New()
-
-	// assign handlers
-	socketConnection.HandleConnect(OnConnect)
-	socketConnection.HandleDisconnect(OnDisconnect)
-	socketConnection.HandleMessage(OnMessage)
-
-	// init connection obj
-	Connections = make(map[string][]*melody.Session)
-
-	// init commands obj
-	Commands = make(map[string]map[string]*exec.Cmd)
-
-	return socketConnection
-}
-
-func OnConnect(s *melody.Session) {
-	// URL Path is the unique connection ID and append all sessions which are connected to that URL
-	Connections[s.Request.URL.Path] = append(Connections[s.Request.URL.Path], s)
-}
-
-func OnDisconnect(s *melody.Session) {
-	// reassign existing connections
-	sessions := Connections[s.Request.URL.Path]
-	var newSessions []*melody.Session
-	for _, existingSession := range sessions {
-		if s != existingSession {
-			newSessions = append(newSessions, existingSession)
+/*
+ * Check if the session is still valid every time the ping-pong websocket
+ * message is received. If a session did not send the authorize message
+ * forcibly close it.
+ */
+func onPong(s *melody.Session) {
+	muClock.Sync()
+	if ! validSessionFilter(s) {
+		oErrorMsg := map[string]string{
+			"type": "authorize-error",
+			"payload": "Token has expired",
 		}
-	}
-	Connections[s.Request.URL.Path] = newSessions
-
-	// kill running processes
-	for pid := range Commands[s.Request.Header["Sec-Websocket-Key"][0]] {
-		cmd := Commands[s.Request.Header["Sec-Websocket-Key"][0]][pid]
-		cmd.Process.Kill()
+		jErrorMsg, _ := json.Marshal(oErrorMsg)
+		s.Write(jErrorMsg)
+		s.CloseWithMsg(melody.FormatCloseMessage(1000, "Bye"))
 	}
 }
 
-func OnMessage(s *melody.Session, msg []byte) {
+/*
+ * onDisconnect
+ * - Terminate any process spawned by the session
+ */
+func onDisconnect(s *melody.Session) {
+	iChilds, keyExists := s.Get("childs")
+	if ! keyExists {
+		return // nothing to do
+	}
+	for _, pid := range iChilds.([]int) {
+		// negative pid terminates the whole process group (PG)
+		syscall.Kill(-pid, syscall.SIGTERM)
+	}
+	s.UnSet("childs")
+}
+
+func onMessage(s *melody.Session, msg []byte) {
 	// get action received
 	var socketAction models.SocketAction
 	if errSocketAction := json.Unmarshal([]byte(msg), &socketAction); errSocketAction != nil {
@@ -97,4 +95,79 @@ func OnMessage(s *melody.Session, msg []byte) {
 
 	// switch action received
 	Action(socketAction, s, nil)
+}
+
+func validSessionFilter(s *melody.Session) bool {
+	if muClock.Now() > getSessionExpireTimestamp(s) {
+		return false // Session is expired
+	}
+	return true
+}
+
+func getSessionExpireTimestamp(s *melody.Session) int64 {
+	exp, ok := s.Get("exp")
+	if ! ok {
+		return 0
+	}
+	texp, _ := exp.(int64)
+	return texp
+}
+
+/*
+ * Subscribe Redis progress/* channels and relay events from those
+ * channels to authenticated websocket sessions
+ */
+func relayRedisProgressEvents(socketConnection *melody.Melody) {
+	ctx := context.Background()
+
+	// init redis connection
+	redisConnection := redis.Instance()
+
+	// subscribe to progress channels and listen to new messages:
+	progress := redisConnection.PSubscribe(ctx, "progress/*")
+
+	// get the channel to use
+	channel := progress.Channel()
+
+	// start routine to listen to new messages
+	go func() {
+		// iterate any messages sent on the channel
+		for msg := range channel {
+			// create event object
+			event := &models.Event{}
+			event.Name = msg.Channel
+			event.Timestamp = time.Now().UTC()
+			event.Type = "task"
+
+			if err := json.Unmarshal([]byte(msg.Payload), &event.Payload); err != nil {
+				utils.LogError(errors.Wrap(err, "[SOCKET] error converting task payload to event"))
+			}
+
+			// marshal model to json string
+			taskJSON, errJSON := json.Marshal(event)
+			if errJSON != nil {
+				utils.LogError(errors.Wrap(errJSON, "[SOCKET] error converting task object to string"))
+			}
+
+			socketConnection.BroadcastFilter(taskJSON, validSessionFilter)
+		}
+	}()
+}
+
+func writeSocketResponse(s *melody.Session, name string, msg interface{}) {
+	// create event object
+	event := &models.Event{}
+	event.Name = name
+	event.Timestamp = time.Now().UTC()
+	event.Payload = msg
+	event.Type = "action"
+
+	// convert interface to json string
+	actionJSON, err := json.Marshal(event)
+	if err != nil {
+		utils.LogError(errors.Wrap(err, "[SOCKET] error converting interface msg to broadcast"))
+		return
+	}
+
+	s.Write(actionJSON)
 }

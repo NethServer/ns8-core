@@ -781,7 +781,7 @@ export default {
           from: startUtcString,
           to: endUtcString,
           entity: this.internalContext,
-          entity_name: entityName,
+          entity_name: String(entityName),
           id: this.searchId,
           timezone: timezone,
         },

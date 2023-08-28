@@ -31,12 +31,14 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-	"time"
+	"syscall"
 
 	"github.com/gin-gonic/gin"
+	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/olahol/melody"
 	"github.com/pkg/errors"
 
+	"github.com/NethServer/ns8-core/core/api-server/middleware"
 	"github.com/NethServer/ns8-core/core/api-server/models"
 	"github.com/NethServer/ns8-core/core/api-server/utils"
 )
@@ -59,15 +61,26 @@ func Action(socketAction models.SocketAction, s *melody.Session, wg *sync.WaitGr
 			utils.LogError(errors.Wrap(errLogsAction, "[SOCKET] error in Logs action stop json unmarshal"))
 		}
 
-		cmd := Commands[s.Request.Header["Sec-Websocket-Key"][0]][logsAction.Pid]
-
-		// check if specific pid exists and command is valid
-		if cmd != nil {
-			if errKill := cmd.Process.Kill(); errKill != nil {
-				utils.LogError(errors.Wrap(errKill, "[SOCKET] error in command kill"))
+		// Lookup the action Pid among the child Pids spawned by the session
+		tPid, err := strconv.Atoi(logsAction.Pid)
+		if err != nil {
+			break
+		}
+		iChilds, keyExists := s.Get("childs")
+		if keyExists {
+			aChilds := iChilds.([]int)
+			for idx, xPid := range aChilds {
+				// If a match is found, the Pid belongs to the session and
+				// it can be terminated
+				if tPid == xPid {
+					// negative pid terminates the whole process group (PG)
+					syscall.Kill(-tPid, syscall.SIGTERM)
+					// update the session storage, removing the idx-element from the array
+					s.Set("childs", append(aChilds[:idx], aChilds[idx+1:]...))
+					writeSocketResponse(s, "logs-stop", gin.H{"id": logsAction.Id, "pid": logsAction.Pid, "message": "logs follow stopped"})
+					break
+				}
 			}
-
-			broadcastToAll("logs-stop", gin.H{"id": logsAction.Id, "pid": logsAction.Pid, "message": "logs follow stopped"})
 		}
 
 	case "logs-start":
@@ -156,6 +169,9 @@ func Action(socketAction models.SocketAction, s *melody.Session, wg *sync.WaitGr
 		// add envs
 		cmd.Env = append(os.Environ(), envs...)
 
+		// Run cmd in a new process group (PG) to easily send termination signals
+		cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true, Pgid: 0}
+
 		if logsAction.Mode == "tail" {
 			// execute command follow mode
 			go func() {
@@ -173,7 +189,7 @@ func Action(socketAction models.SocketAction, s *melody.Session, wg *sync.WaitGr
 					// foreach command outputs send to websocket
 					for scannerStdOut.Scan() {
 						if s != nil {
-							broadcastToAll("logs-start", gin.H{"id": logsAction.Id, "pid": pid, "message": scannerStdOut.Text()})
+							writeSocketResponse(s, "logs-start", gin.H{"id": logsAction.Id, "pid": pid, "message": scannerStdOut.Text()})
 						} else {
 							fmt.Println(scannerStdOut.Text())
 						}
@@ -186,16 +202,19 @@ func Action(socketAction models.SocketAction, s *melody.Session, wg *sync.WaitGr
 					return
 				}
 
-				// add command to command lists
 				if s != nil {
-					pid = strconv.Itoa(cmd.Process.Pid)
-					if Commands[s.Request.Header["Sec-Websocket-Key"][0]] == nil {
-						Commands[s.Request.Header["Sec-Websocket-Key"][0]] = make(map[string]*exec.Cmd)
+					// In a Melody session, store the command pid so it
+					// can be killed if connection is closed
+					var aChilds []int
+					iChilds, keyExists := s.Get("childs")
+					if keyExists {
+						aChilds = append(iChilds.([]int), cmd.Process.Pid)
+					} else {
+						aChilds = []int{cmd.Process.Pid}
 					}
-					Commands[s.Request.Header["Sec-Websocket-Key"][0]][pid] = cmd
-
+					s.Set("childs", aChilds)
 					// send feedback for command received
-					broadcastToAll("logs-start", gin.H{"id": logsAction.Id, "pid": pid, "message": ""})
+					writeSocketResponse(s, "logs-start", gin.H{"id": logsAction.Id, "pid": strconv.Itoa(cmd.Process.Pid), "message": ""})
 				}
 
 				// use Wait to avoid defunct process when killed
@@ -219,7 +238,7 @@ func Action(socketAction models.SocketAction, s *melody.Session, wg *sync.WaitGr
 				logsStringsOut := strings.Join(logsStringsR[:], "\n")
 
 				if s != nil {
-					broadcastToAll("logs-start", gin.H{"id": logsAction.Id, "pid": "", "message": logsStringsOut})
+					writeSocketResponse(s, "logs-start", gin.H{"id": logsAction.Id, "pid": "", "message": logsStringsOut})
 				} else {
 					fmt.Println(logsStringsOut)
 					defer wg.Done()
@@ -227,26 +246,44 @@ func Action(socketAction models.SocketAction, s *melody.Session, wg *sync.WaitGr
 			}()
 		}
 
-	}
-}
+	case "authorize":
+		authPayload, ok := socketAction.Payload.(map[string]interface{})
+		if ! ok {
+			utils.LogError(errors.New("Authorize payload is corrupt"))
+		}
 
-func broadcastToAll(name string, msg interface{}) {
-	// create event object
-	event := &models.Event{}
-	event.Name = name
-	event.Timestamp = time.Now().UTC()
-	event.Payload = msg
-	event.Type = "action"
+		// Check "jwt" attribute is a string
+		token, ok := authPayload["jwt"].(string)
+		if ! ok {
+			utils.LogError(errors.New("Unknown authorize payload"))
+		}
 
-	// convert interface to json string
-	actionJSON, err := json.Marshal(event)
-	if err != nil {
-		utils.LogError(errors.Wrap(err, "[SOCKET] error converting interface msg to broadcast"))
-	}
+		// Parse "jwt" string and check it is a valid JWT token
+		oJwt, err := middleware.InstanceJWT().ParseTokenString(token)
+		if err != nil {
+			utils.LogError(errors.Wrap(err, "Websocket auth error"))
+			oErrorMsg := map[string]string{
+				"type": "authorize-error",
+				"payload": err.Error(),
+			}
+			jErrorMsg, _ := json.Marshal(oErrorMsg)
+			s.Write(jErrorMsg)
+			s.CloseWithMsg(melody.FormatCloseMessage(1000, "Bye"))
+			break
+		}
 
-	if clientSession, ok := Connections["/ws"]; ok {
-		// Broadcast to all sessions
-		socketConnection.BroadcastMultiple(actionJSON, clientSession)
+		// Authentication is successful: store JWT claims to filter Melody
+		// sessions:
+		mClaims := jwt.ExtractClaimsFromToken(oJwt)
+
+		exp := int64(mClaims["exp"].(float64))
+
+		// Store the session expire timestamp. In case of conversion
+		// error, exp is zero.
+		s.Set("exp", exp)
+
+		// Do not send back any message to a successfully authorized
+		// session, just keep the socket open.
 	}
 }
 

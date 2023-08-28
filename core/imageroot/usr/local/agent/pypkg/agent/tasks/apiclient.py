@@ -272,10 +272,11 @@ async def _acontrol_task(taskctx, **kwargs):
     # Connect the web socket before the task is submitted to catch the
     # relevant progress messages
     async with client.ws_connect(
-        f'{endpoint}/ws?jwt=' + urllib.parse.quote_plus(_get_token(theaders)),
+        f'{endpoint}/ws',
         ssl=kwargs['ssl_ctx'],
         heartbeat=4.0,
     ) as ws:
+        await ws.send_json({"action":"authorize","payload":{"jwt":_get_token(theaders)}})
         async for msg in ws:
             if msg.type != aiohttp.WSMsgType.TEXT:
                 continue
@@ -288,7 +289,7 @@ async def _acontrol_task(taskctx, **kwargs):
             async with taskctx['lock']:
                 status_path = taskctx['status_path']
 
-            if jdata['name'] == 'progress/' + status_path:
+            if jdata.get('type') == "task" and jdata.get('name') == 'progress/' + status_path:
                 if progress_callback:
                     progress_callback(jdata['payload']['progress'])
                 if jdata['payload']['status'] in ['completed', 'aborted', 'validation-failed']:

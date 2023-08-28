@@ -6,11 +6,7 @@ export default {
   mixins: [NotificationService, TaskService, StorageService],
   methods: {
     initWebSocket() {
-      var jwt =
-        (this.getFromStorage("loginInfo") &&
-          this.getFromStorage("loginInfo").token) ||
-        "";
-      this.$connect(this.$root.config.WS_ENDPOINT + "?jwt=" + jwt, {
+      this.$connect(this.$root.config.WS_ENDPOINT, {
         format: "json",
       });
 
@@ -26,6 +22,13 @@ export default {
       this.$disconnect();
     },
     onOpen() {
+      var loginInfo = this.getFromStorage("loginInfo");
+      if (loginInfo?.token) {
+        this.$socket.sendObj({
+          action: "authorize",
+          payload: { jwt: loginInfo.token },
+        });
+      }
       this.$root.$emit("websocketConnected");
     },
     onError(error) {
@@ -41,6 +44,11 @@ export default {
         case "action":
           this.handleActionMessage(messageData);
           break;
+        case "authorize-error":
+          this.$root.$emit(`websocketAuthError`);
+          break;
+        default:
+          console.warn("Unknown message", messageData);
       }
     },
     handleTaskMessage(messageData) {

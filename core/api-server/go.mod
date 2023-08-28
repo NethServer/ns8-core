@@ -10,11 +10,10 @@ require (
 	github.com/gin-contrib/static v0.0.1
 	github.com/gin-gonic/gin v1.7.7
 	github.com/go-redis/redis/v8 v8.8.0
-	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/google/uuid v1.2.0
 	github.com/mattn/go-sqlite3 v1.14.7
 	github.com/mpvl/unique v0.0.0-20150818121801-cbe035fff7de
-	github.com/olahol/melody v0.0.0-20180227134253-7bd65910e5ab
+	github.com/olahol/melody v1.1.4
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.4.0
 	github.com/swaggo/files v0.0.0-20190704085106-630677cd5c14
@@ -25,7 +24,6 @@ require (
 	github.com/dgryski/dgoogauth v0.0.0-20190221195224-5a805980a5f3
 	github.com/go-openapi/spec v0.20.3 // indirect
 	github.com/go-openapi/swag v0.19.15 // indirect
-	github.com/gorilla/websocket v1.4.2 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/swaggo/swag v1.6.7 // indirect
 	github.com/ugorji/go v1.2.7 // indirect

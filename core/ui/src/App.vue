@@ -73,28 +73,17 @@ export default {
     this.$root.$on("websocketConnected", this.onWebsocketConnected);
     this.$root.$on("websocketDisconnected", this.onWebsocketDisconnected);
     this.$root.$on("websocketError", this.onWebsocketError);
+    this.$root.$on("websocketAuthError", this.onWebsocketAuthError);
 
     this.configureAxiosInterceptors();
     this.configureEventListeners();
 
     // check login
     const loginInfo = this.getFromStorage("loginInfo");
-    if (loginInfo && loginInfo.username) {
-      const tokenDecoded = this.decodeJwtPayload(loginInfo.token);
-
-      if (tokenDecoded.exp * 1000 < Date.now()) {
-        console.warn("Token has expired, logout");
-
-        // token has expired, logout
-        const sessionExpiredTitle = this.$t("login.session_expired_title");
-        const sessionExpiredDescription = this.$t(
-          "login.session_expired_description"
-        );
-        this.logout(sessionExpiredTitle, sessionExpiredDescription);
-      } else {
-        this.setLoggedUserInStore(loginInfo.username);
-        this.initWebSocket();
-      }
+    if (loginInfo?.username) {
+      this.setLoggedUserInStore(loginInfo.username);
+      // verify token with WS authentication
+      this.initWebSocket();
     } else {
       this.isLoaded = true;
     }
@@ -391,9 +380,10 @@ export default {
       }
     },
     onWebsocketError(error) {
-      console.error("Websocket error", error);
-
-      // websocket error usually happens because token has expired, logout
+      console.error("WebsocketError", error);
+    },
+    onWebsocketAuthError(error) {
+      console.error("WebsocketAuthError", error);
       const sessionExpiredTitle = this.$t("login.session_expired_title");
       const sessionExpiredDescription = this.$t(
         "login.session_expired_description"
@@ -423,10 +413,11 @@ export default {
         this.createNotification(notification);
 
         // retry websocket connection
-
         this.retryWsConnectionInterval = setInterval(() => {
-          console.warn("Retrying websocket connection...");
-          this.initWebSocket();
+          if (this.loggedUser) {
+            console.warn("Retrying websocket connection...");
+            this.initWebSocket();
+          }
         }, 5000);
       }
     },
