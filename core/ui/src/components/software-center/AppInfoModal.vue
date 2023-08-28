@@ -59,69 +59,72 @@
           </div>
         </div>
         <div class="key-value-setting">
-          <div>
-            <span class="label"
-              >{{ $t("software_center.documentation") }}
-            </span>
-            <span class="value">
-              <cv-link :href="app.docs.documentation_url" target="_blank">
-                {{ app.docs.documentation_url }}
-              </cv-link>
-            </span>
-          </div>
-        </div>
-        <div class="key-value-setting">
-          <span class="label">{{ $t("software_center.bugs") }}</span>
-          <span class="value">
-            <cv-link :href="app.docs.bug_url" target="_blank">
-              {{ app.docs.bug_url }}
-            </cv-link>
-          </span>
-        </div>
-        <div class="key-value-setting">
-          <div>
-            <span class="label">{{ $t("software_center.source_code") }}</span>
-            <span class="value">
-              <cv-link :href="app.docs.code_url" target="_blank">
-                {{ app.docs.code_url }}
-              </cv-link>
-            </span>
-          </div>
-        </div>
-        <div class="key-value-setting">
-          <div>
-            <span class="label"
-              >{{ $t("software_center.source_package") }}
-            </span>
-            <span class="value">
-              {{ app.source }}
-            </span>
-          </div>
-        </div>
-        <div class="key-value-setting">
           <span class="label"
             >{{ $tc("software_center.authors", app.authors.length) }}
           </span>
           <span class="value">
             <span v-if="app.authors.length == 1"
-              >{{ app.authors[0].name }}
-              <cv-link :href="'mailto:' + app.authors[0].email" target="_blank">
-                {{ app.authors[0].email }}
+              >
+              <cv-link  :href="'mailto:' + app.authors[0].email" target="_blank">
+                {{ app.authors[0].name }}
               </cv-link>
             </span>
             <ul v-else>
               <li
                 v-for="(author, index) in app.authors"
                 :key="index"
-                class="author"
               >
-                {{ author.name }}
-                <cv-link :href="'mailto:' + author.email" target="_blank">
-                  {{ author.email }}
+                <cv-link  :href="'mailto:' + author.email" target="_blank">
+                  {{ author.name }}
                 </cv-link>
               </li>
             </ul>
           </span>
+        </div>
+        <div class="key-value-setting">
+          <div>
+            <span class="label">
+              {{ $t("software_center.images_label") }}
+            </span>
+            <span class="value">
+            <span v-if="app.versions[0]['labels']['org.nethserver.images'].split(' ').length == 1"
+              >{{ app.versions[0]['labels']['org.nethserver.images'] }}
+            </span>
+            <ul class="image-list" v-else>
+              <li
+                v-for="(image, index) in app.versions[0]['labels']['org.nethserver.images'].split(' ')"
+                :key="index"
+              >
+                {{ image }}
+              </li>
+            </ul>
+            </span>
+          </div>
+        </div>
+        <div class="info-divider"></div>
+        <div class="key-value-setting">
+          <div>
+            <span>
+              <cv-link :href="app.docs.documentation_url" target="_blank">
+                {{ $t("software_center.documentation") }}
+              </cv-link>
+            </span> &bull;
+            <span>
+              <cv-link :href="app.docs.bug_url" target="_blank">
+                {{ $t("software_center.bugs") }}
+              </cv-link>
+            </span> &bull;
+            <span>
+              <cv-link :href="app.source" target="_blank">
+                {{ $t("software_center.source_package") }}
+              </cv-link>
+            </span> &bull;
+            <span>
+              <cv-link :href="app.docs.code_url" target="_blank">
+                {{ $t("software_center.source_code") }}
+              </cv-link>
+            </span>
+          </div>
         </div>
       </template>
       <template slot="secondary-button">{{ $t("common.close") }}</template>
@@ -147,7 +150,7 @@ export default {
     },
     getApplicationCategories(app) {
       return this.getAppCategories(app, this);
-    },
+    }
   },
 };
 </script>
@@ -178,7 +181,13 @@ export default {
   margin-bottom: $spacing-06;
 }
 
-.author {
-  margin-left: $spacing-05;
+.info-divider {
+  margin-top: $spacing-02;
+  margin-bottom: $spacing-03;
+  border-bottom: 1px solid $ui-04;
+}
+
+.image-list {
+  margin-left: $spacing-04;
 }
 </style>
