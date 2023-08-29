@@ -19,6 +19,17 @@
         :description="$t('nodes.reset_backup_encryption_password_info')"
         :showCloseButton="false"
       />
+      <!-- need to wrap error notification inside a div: custom elements like NsInlineNotification don't have scrollIntoView() function -->
+      <div ref="getNodeInfoError">
+        <NsInlineNotification
+          v-if="error.getNodeInfo"
+          kind="error"
+          :title="$t('nodes.cannot_retrieve_node_info')"
+          :description="error.getNodeInfo"
+          :showCloseButton="false"
+          class="mg-top-lg"
+        />
+      </div>
       <div
         v-html="
           $t('nodes.promote_node_confirm', {
@@ -26,14 +37,21 @@
           })
         "
       ></div>
-      <cv-form @submit.prevent="promoteNode" class="mg-top-lg">
+      <cv-skeleton-text
+        v-if="loading.getNodeInfo"
+        :paragraph="true"
+        :line-count="10"
+        heading
+        class="mg-top-lg"
+      ></cv-skeleton-text>
+      <cv-form v-else @submit.prevent="promoteNode" class="mg-top-lg">
         <NsTextInput
           :label="
             $t('nodes.node_vpn_endpoint_address', {
               node: node ? this.getNodeLabel(node) : '',
             })
           "
-          v-model.trim="internalVpnEndpointAddress"
+          v-model.trim="vpnEndpointAddress"
           :invalid-message="$t(error.endpoint_address)"
           :disabled="loading.promoteNode"
           ref="endpoint_address"
@@ -110,20 +128,21 @@ export default {
       default: true,
     },
     node: { type: Object },
-    vpnEndpointAddress: { type: String, required: true },
   },
   data() {
     return {
       DEFAULT_ENDPOINT_PORT: "55820",
-      internalVpnEndpointAddress: "",
+      vpnEndpointAddress: "",
       vpnEndpointPort: "",
       userInput: "",
       checkNodeConnectivity: true,
       loading: {
         promoteNode: false,
+        getNodeInfo: false,
       },
       error: {
         promoteNode: "",
+        getNodeInfo: "",
         endpoint_address: "",
         endpoint_port: "",
       },
@@ -134,12 +153,8 @@ export default {
       if (this.isShown) {
         this.vpnEndpointPort = this.DEFAULT_ENDPOINT_PORT;
         this.userInput = "";
-        this.internalVpnEndpointAddress = this.vpnEndpointAddress;
         this.clearErrors();
-
-        setTimeout(() => {
-          this.focusElement("endpoint_address");
-        }, 300);
+        this.getNodeInfo();
       }
     },
     "error.promoteNode": function () {
@@ -152,10 +167,69 @@ export default {
         });
       }
     },
+    "error.getNodeInfo": function () {
+      if (this.error.getNodeInfo) {
+        // scroll to notification error
+
+        this.$nextTick(() => {
+          const el = this.$refs.getNodeInfoError;
+          this.scrollToElement(el);
+        });
+      }
+    },
   },
   methods: {
     onModalHidden() {
       this.$emit("hide");
+    },
+    async getNodeInfo() {
+      this.error.getNodeInfo = "";
+      this.loading.getNodeInfo = true;
+      const taskAction = "get-info";
+      const eventId = this.getUuid();
+
+      // register to task error
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.getNodeInfoAborted
+      );
+
+      // register to task completion
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.getNodeInfoCompleted
+      );
+
+      const res = await to(
+        this.createNodeTask(this.node.id, {
+          action: taskAction,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+            eventId,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.getNodeInfo = this.getErrorMessage(err);
+        return;
+      }
+    },
+    getNodeInfoAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.getNodeInfo = this.$t("error.generic_error");
+      this.loading.getNodeInfo = false;
+    },
+    getNodeInfoCompleted(taskContext, taskResult) {
+      this.vpnEndpointAddress = taskResult.output.hostname;
+      this.loading.getNodeInfo = false;
+
+      setTimeout(() => {
+        this.focusElement("endpoint_address");
+      }, 300);
     },
     validatePromoteNode() {
       this.clearErrors();
@@ -163,7 +237,7 @@ export default {
 
       // VPN endpoint address
 
-      if (!this.internalVpnEndpointAddress) {
+      if (!this.vpnEndpointAddress) {
         this.error.endpoint_address = this.$t("common.required");
 
         if (isValidationOk) {
@@ -225,7 +299,7 @@ export default {
           action: taskAction,
           data: {
             node_id: this.node.id,
-            endpoint_address: this.internalVpnEndpointAddress,
+            endpoint_address: this.vpnEndpointAddress,
             endpoint_port: Number(this.vpnEndpointPort),
             endpoint_validation: this.checkNodeConnectivity,
           },
@@ -286,7 +360,7 @@ export default {
       this.$emit("hide");
 
       // show new leader modal
-      this.$emit("nodePromoted", this.internalVpnEndpointAddress);
+      this.$emit("nodePromoted", this.vpnEndpointAddress);
     },
   },
 };
