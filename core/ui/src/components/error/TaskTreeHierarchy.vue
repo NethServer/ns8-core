@@ -12,29 +12,9 @@
         />
         <span>
           <span v-html="getTaskStatusDescription(subTask, false)"></span>
-          <span v-if="isMoreInfoShown"
-            >. ID:
-            <cv-tooltip
-              alignment="center"
-              direction="top"
-              :tip="
-                justCopied
-                  ? $t('common.copied_to_clipboard')
-                  : $t('common.copy_to_clipboard')
-              "
-            >
-              <cv-link
-                v-clipboard:copy="subTask.context.id"
-                v-clipboard:success="onCopy"
-                v-clipboard:error="onCopyError"
-              >
-                {{ subTask.context.id }}
-              </cv-link></cv-tooltip
-            >
-          </span>
         </span>
       </div>
-      <TaskHierarchy
+      <TaskTreeHierarchy
         v-if="subTask.subTasks.length"
         :subTasks="subTask.subTasks"
         :isMoreInfoShown="isMoreInfoShown"
@@ -47,7 +27,7 @@
 import { TaskService } from "@nethserver/ns8-ui-lib";
 
 export default {
-  name: "TaskHierarchy",
+  name: "TaskTreeHierarchy",
   mixins: [TaskService],
   components: {},
   props: {

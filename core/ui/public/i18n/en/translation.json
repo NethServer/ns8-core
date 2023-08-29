@@ -273,7 +273,9 @@
     "subtask_failed_validation": "Subtask <strong>{task}</strong> failed validation",
     "completed": "Completed",
     "configure": "Configure",
-    "cannot_create_task": "Cannot create task {action}"
+    "cannot_create_task": "Cannot create task {action}",
+    "task_id": "Task ID",
+    "copy_task_data_to_clipboard": "Copy task trace"
   },
   "action": {
     "add-module": "Install app",

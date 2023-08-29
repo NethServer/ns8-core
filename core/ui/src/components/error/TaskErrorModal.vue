@@ -19,41 +19,40 @@
         />
         <div>
           <span v-html="getTaskStatusDescription(taskErrorToShow, true)"></span>
-          <span v-if="isMoreInfoShown"
-            >. ID:
-            <cv-tooltip
-              alignment="center"
-              direction="bottom"
-              :tip="
-                justCopied
-                  ? $t('common.copied_to_clipboard')
-                  : $t('common.copy_to_clipboard')
-              "
-            >
-              <cv-link
-                v-clipboard:copy="taskErrorToShow.context.id"
-                v-clipboard:success="onCopy"
-                v-clipboard:error="onCopyError"
-              >
-                {{ taskErrorToShow.context.id }}
-              </cv-link></cv-tooltip
-            >
-          </span>
         </div>
       </div>
       <div v-if="subTasks.length">
-        <TaskHierarchy
+        <TaskTreeHierarchy
           :subTasks="subTasks"
           :isMoreInfoShown="isMoreInfoShown"
           class="task-hierarchy"
         />
       </div>
+      <!-- copy task json task data to clipboard -->
+      <cv-tooltip
+        alignment="center"
+        direction="right"
+        :tip="
+          justCopied
+            ? $t('common.copied_to_clipboard')
+            : $t('common.copy_to_clipboard')
+        "
+        class="mg-top-md"
+      >
+        <cv-link
+          v-clipboard:copy="JSON.stringify(taskErrorToShow)"
+          v-clipboard:success="onCopy"
+          v-clipboard:error="onCopyError"
+        >
+          {{ $t("task.copy_task_data_to_clipboard") }}
+        </cv-link></cv-tooltip
+      >
       <cv-toggle
         value="moreInfoValue"
         :form-item="true"
         v-model="isMoreInfoShown"
         hide-label
-        class="mg-bottom-md"
+        class="mg-top-sm mg-bottom-md"
       >
         <template slot="text-left">{{ $t("common.more_info") }}</template>
         <template slot="text-right">{{ $t("common.more_info") }}</template>
@@ -84,19 +83,7 @@
             </template>
           </cv-interactive-tooltip>
         </span>
-        <div class="code-snippet-wrapper">
-          <NsCodeSnippet
-            :copyTooltip="$t('common.copy_to_clipboard')"
-            :copy-feedback="$t('common.copied_to_clipboard')"
-            :feedback-aria-label="$t('common.copied_to_clipboard')"
-            :wrap-text="true"
-            :moreText="$t('common.show_more')"
-            :lessText="$t('common.show_less')"
-            light
-            expanded
-            >{{ taskErrorToShow }}</NsCodeSnippet
-          >
-        </div>
+        <TaskErrorInfo :task="taskErrorToShow" />
       </template>
     </template>
     <template v-if="isLogAvailable">
@@ -115,7 +102,9 @@
 
 <script>
 import { mapState } from "vuex";
-import TaskHierarchy from "./TaskHierarchy";
+import TaskTreeHierarchy from "./TaskTreeHierarchy";
+import TaskErrorInfoHierarchy from "./TaskErrorInfoHierarchy";
+import TaskErrorInfo from "./TaskErrorInfo";
 import {
   TaskService,
   StorageService,
@@ -124,7 +113,7 @@ import {
 
 export default {
   name: "TaskErrorModal",
-  components: { TaskHierarchy },
+  components: { TaskTreeHierarchy, TaskErrorInfoHierarchy, TaskErrorInfo },
   mixins: [TaskService, StorageService, IconService],
   props: {},
   data() {
@@ -169,6 +158,13 @@ export default {
     taskErrorModalHidden() {
       this.$emit("hide");
     },
+    getTaskError() {
+      if (this.taskErrorToShow && this.taskErrorToShow.subTasks) {
+        return this.taskErrorToShow.result.error;
+      } else {
+        return "";
+      }
+    },
     showCopyClipboardHint() {
       setTimeout(() => {
         //// TODO FIX
@@ -211,10 +207,6 @@ export default {
 
 <style scoped lang="scss">
 @import "../../styles/carbon-utils";
-
-.code-snippet-wrapper {
-  max-height: 11rem;
-}
 
 .task-hierarchy {
   margin-left: -0.8rem;
