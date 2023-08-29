@@ -2002,9 +2002,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nethserver/ns8-ui-lib@npm:^0.1.25":
-  version: 0.1.25
-  resolution: "@nethserver/ns8-ui-lib@npm:0.1.25"
+"@nethserver/ns8-ui-lib@npm:^0.1.26":
+  version: 0.1.26
+  resolution: "@nethserver/ns8-ui-lib@npm:0.1.26"
   dependencies:
     "@rollup/plugin-json": ^4.1.0
     core-js: ^3.15.2
@@ -2013,7 +2013,7 @@ __metadata:
     vue-date-fns: ^2.0.1
   peerDependencies:
     vue: ^2.6.12
-  checksum: a56fe7ed8bd1462026efe4e14c88ecd78b8e59ff425140fc8e5bc88327638f7957f548a0c6a30889025c1e24c7727d2d6708b369eb7ad1abb98e6b8be3cbeb0b
+  checksum: b02f133111450add7830d3d3fb895ff321dfa7155dcdf23f24bcb99d754861ee09f59a68d940382631b960356d2f0d5be9b6bcacd7ec4192080884bc02d5b19f
   languageName: node
   linkType: hard
 
@@ -13076,7 +13076,7 @@ __metadata:
     "@carbon/icons-vue": ^10.37.0
     "@carbon/themes": ^10.34.0
     "@carbon/vue": ^2.40.0
-    "@nethserver/ns8-ui-lib": ^0.1.25
+    "@nethserver/ns8-ui-lib": ^0.1.26
     "@storybook/addon-actions": ^6.2.9
     "@storybook/addon-essentials": ^6.2.9
     "@storybook/addon-links": ^6.2.9
