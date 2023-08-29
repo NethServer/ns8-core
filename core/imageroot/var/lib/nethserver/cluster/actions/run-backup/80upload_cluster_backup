@@ -7,7 +7,7 @@
 
 set -e
 
-config_dump="/var/lib/nethserver/cluster/state/backup/dump.json.gz.gpg"
+config_dump="./backup/dump.json.gz.gpg"
 id=$(cat /dev/stdin | jq -r '.id // empty')
 
 if [ "x$id" == "x" ]; then
