@@ -689,16 +689,6 @@ export default {
         }
       }
 
-      // samba ip address
-
-      if (!this.samba.ipaddress) {
-        this.error.samba.ipaddress = "common.required";
-
-        if (isValidationOk) {
-          isValidationOk = false;
-        }
-      }
-
       // samba hostname
 
       if (!this.samba.hostname) {
@@ -706,6 +696,16 @@ export default {
 
         if (isValidationOk) {
           this.focusElement("hostname");
+          isValidationOk = false;
+        }
+      }
+
+      // samba ip address
+
+      if (this.samba.enableFileServer && !this.samba.ipaddress) {
+        this.error.samba.ipaddress = "common.required";
+
+        if (isValidationOk) {
           isValidationOk = false;
         }
       }
