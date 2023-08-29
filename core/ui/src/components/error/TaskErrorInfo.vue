@@ -27,7 +27,10 @@
         </cv-link></cv-tooltip
       >
     </div>
-    <div v-if="task.result && task.result.error" class="mg-top-sm">
+    <div
+      v-if="task.result && task.result.error && task.result.exit_code != 0"
+      class="mg-top-sm"
+    >
       <NsCodeSnippet
         :copyTooltip="$t('common.copy_to_clipboard')"
         :copy-feedback="$t('common.copied_to_clipboard')"
