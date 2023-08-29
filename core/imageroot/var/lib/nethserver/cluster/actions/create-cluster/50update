@@ -29,6 +29,7 @@ import agent.tasks
 import cluster.grants
 import cluster.vpn
 import uuid
+import pwd
 
 request = json.load(sys.stdin)
 
@@ -67,7 +68,9 @@ rdb.hset(f'node/{NODE_ID}/vpn', mapping={
 })
 
 # Our first Traefik instance is missing the VPN network: fix it here.
-rdb.set('module/traefik1/kv/http/middlewares/ApiServerMw1/ipWhiteList/sourceRange/1', network)
+agent.run_helper('sed', '-i',
+                f'/- 127.0.0.1$/a\ \ \ \ \ \ \ \ - {network}',
+                f'{pwd.getpwnam("traefik1").pw_dir}/.config/state/configs/_api.yml').check_returncode()
 
 # Update the cluster-localnode record in /etc/hosts
 agent.run_helper('sed', '-i',
