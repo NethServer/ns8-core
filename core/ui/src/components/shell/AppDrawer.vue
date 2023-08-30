@@ -89,7 +89,7 @@
                               ? app.logo
                               : require('@/assets/module_default_logo.png')
                           "
-                          :alt="app.name + ' logo'"
+                          :alt="app.id + ' logo'"
                         />
                       </div>
                       <div>
@@ -171,7 +171,7 @@
                                 ? app.logo
                                 : require('@/assets/module_default_logo.png')
                             "
-                            :alt="app.name + ' logo'"
+                            :alt="app.id + ' logo'"
                           />
                         </div>
                         {{ app.ui_name ? app.ui_name : app.id }}
@@ -207,7 +207,7 @@
                               ? app.logo
                               : require('@/assets/module_default_logo.png')
                           "
-                          :alt="app.name + ' logo'"
+                          :alt="app.id + ' logo'"
                         />
                       </div>
                       {{ app.ui_name ? app.ui_name : app.id }}
@@ -235,7 +235,7 @@
                                     ? app.logo
                                     : require('@/assets/module_default_logo.png')
                                 "
-                                :alt="app.name + ' logo'"
+                                :alt="app.id + ' logo'"
                               />
                             </div>
                             <span>{{
@@ -268,7 +268,7 @@
                                   ? app.logo
                                   : require('@/assets/module_default_logo.png')
                               "
-                              :alt="app.name + ' logo'"
+                              :alt="app.id + ' logo'"
                             />
                           </div>
                           <span>{{ app.ui_name ? app.ui_name : app.id }}</span>

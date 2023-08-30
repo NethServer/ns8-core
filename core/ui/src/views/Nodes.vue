@@ -291,7 +291,6 @@
     <PromoteNodeModal
       :isShown="isShownPromoteNodeModal"
       :node="nodeToPromote"
-      :vpnEndpointAddress="nodeToPromoteHostname"
       @hide="hidePromoteNodeModal"
       @nodePromoted="onNodePromoted"
     />
@@ -374,19 +373,6 @@ export default {
     },
     nodesOffline() {
       return this.nodes.filter((n) => n.online == false);
-    },
-    nodeToPromoteHostname() {
-      if (!this.nodeToPromote) {
-        return "";
-      }
-      const nodeFound = this.nodes.find(
-        (node) => node.id === this.nodeToPromote.id
-      );
-
-      if (nodeFound) {
-        return nodeFound.hostname;
-      }
-      return "";
     },
   },
   watch: {

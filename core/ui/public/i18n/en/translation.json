@@ -354,7 +354,8 @@
     "list-users": "List cluster administrators",
     "get-user-info": "Get user info",
     "remove-node": "Remove node",
-    "promote-node": "Promote node"
+    "promote-node": "Promote node",
+    "get-info": "Get node info"
   },
   "network": {
     "title": "Network"
@@ -1094,7 +1095,8 @@
     "validation_endpoint_port_invalid_type": "Invalid format",
     "go_to_cluster_admin": "Go to cluster administration",
     "promotion_completed": "Promotion completed",
-    "shutdown_node_after_removal": "Shut down {node} after node removal to stop the apps running on it"
+    "shutdown_node_after_removal": "Shut down {node} after node removal to stop the apps running on it",
+    "cannot_retrieve_node_info": "Cannot retrieve node info"
   },
   "node_detail": {
     "title": "Node detail",
