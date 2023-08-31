@@ -1,0 +1,18 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2023 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+import json
+import subprocess
+import sys
+
+hostname = subprocess.run(['hostname', '-s'], text=True, capture_output=True, check=True).stdout.strip()
+domain = subprocess.run(['hostname', '-d'], text=True, capture_output=True, check=True).stdout.strip()
+
+json.dump({
+    "hostname": hostname,
+    "domain": domain,
+}, fp=sys.stdout)

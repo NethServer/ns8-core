@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "get-fqdn output",
+  "$id": "http://schema.nethserver.org/node/get-fqdn-output.json",
+  "description": "Output schema of the get-fqdn action",
+  "examples": [
+    {
+      "hostname": "dn2",
+      "domain": "example.org"
+    }
+  ],
+  "type": "object",
+  "required": [
+    "hostname",
+    "domain"
+  ],
+  "properties": {
+    "hostname": {
+      "type": "string"
+    },
+    "domain": {
+      "type": "string"
+    }
+  }
+}
