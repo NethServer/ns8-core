@@ -222,11 +222,11 @@
     "creating_cluster": "Creating cluster...",
     "custom_routes": "Custom HTTP routes",
     "custom_certificates": "Uploaded certificates",
-    "fqdn_page_title": "Set hostname and domain",
-    "fqdn_page_description": "Set the fully qualified domain name (FQDN) of this cluster node",
     "hostname": "Hostname",
     "domain": "Domain",
-    "set_fqdn": "Set FQDN"
+    "set_fqdn": "Set FQDN",
+    "review_node_fqdn_title": "Review node FQDN",
+    "review_node_fqdn_description": "Set the fully qualified domain name (FQDN) of this cluster node"
   },
   "shell": {
     "skip_to_content": "Skip to content",

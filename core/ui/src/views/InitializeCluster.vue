@@ -3,7 +3,7 @@
   SPDX-License-Identifier: GPL-3.0-or-later
 -->
 <template>
-  <div>
+  <div class="initialize-cluster">
     <cv-grid class="welcome-grid">
       <cv-loading :active="isJoiningCluster" :overlay="true"></cv-loading>
       <template v-if="q.page === 'welcome'">
@@ -75,7 +75,9 @@
         </cv-row>
       </template>
       <template v-else-if="q.page === 'fqdn'">
-        <template v-if="isPasswordChangeNeeded">
+        <template
+          v-if="isPasswordChangeNeeded && $route.query.action === 'create'"
+        >
           <cv-row>
             <!-- password change needed -->
             <cv-column class="welcome">
@@ -153,81 +155,11 @@
         <!-- admin password was changed -->
         <template v-else>
           <!-- fqdn form -->
-          <cv-row>
-            <cv-column class="welcome">
-              <div>
-                <h2>{{ $t("init.fqdn_page_title") }}</h2>
-                <div class="title-description">
-                  {{ $t("init.fqdn_page_description") }}
-                </div>
-              </div>
-              <WelcomeLogo />
-            </cv-column>
-          </cv-row>
-          <cv-row>
-            <cv-column>
-              <cv-tile light>
-                <NsInlineNotification
-                  v-if="error.getFqdn"
-                  kind="error"
-                  :title="$t('action.get-fqdn')"
-                  :description="error.getFqdn"
-                  :showCloseButton="false"
-                />
-                <cv-form v-else @submit.prevent="setFqdn">
-                  <cv-skeleton-text
-                    v-if="loading.getFqdn"
-                    :paragraph="true"
-                    :line-count="5"
-                    heading
-                  ></cv-skeleton-text>
-                  <template v-else>
-                    <cv-text-input
-                      :label="$t('init.hostname')"
-                      v-model.trim="fqdnHostname"
-                      :invalid-message="$t(error.fqdnHostname)"
-                      :disabled="loading.getFqdn || loading.setFqdn"
-                      ref="hostname"
-                    >
-                    </cv-text-input>
-                    <cv-text-input
-                      :label="$t('init.domain')"
-                      v-model.trim="fqdnDomain"
-                      placeholder="example.org"
-                      :invalid-message="$t(error.fqdnDomain)"
-                      :disabled="loading.getFqdn || loading.setFqdn"
-                      ref="domain"
-                    >
-                    </cv-text-input>
-                  </template>
-                  <cv-button-set class="footer-buttons">
-                    <NsButton
-                      type="button"
-                      kind="secondary"
-                      :icon="ChevronLeft20"
-                      size="lg"
-                      @click="goToWelcomePage"
-                      >{{ $t("common.go_back") }}
-                    </NsButton>
-                    <NsButton
-                      kind="primary"
-                      :loading="loading.setFqdn"
-                      :disabled="loading.getFqdn || loading.setFqdn"
-                      size="lg"
-                      >{{ $t("init.set_fqdn") }}
-                    </NsButton>
-                  </cv-button-set>
-                </cv-form>
-                <NsInlineNotification
-                  v-if="error.setFqdn"
-                  kind="error"
-                  :title="$t('action.set-fqdn')"
-                  :description="error.setFqdn"
-                  :showCloseButton="false"
-                />
-              </cv-tile>
-            </cv-column>
-          </cv-row>
+          <SetFqdn
+            :action="$route.query.action"
+            @goBack="goToWelcomePage"
+            @fqdnSet="onFqdnSet"
+          />
         </template>
       </template>
       <template v-else-if="q.page === 'create'">
@@ -376,7 +308,7 @@
                     kind="secondary"
                     :icon="ChevronLeft20"
                     size="lg"
-                    @click="goToWelcomePage"
+                    @click="goToFqdnPage"
                     >{{ $t("common.go_back") }}
                   </NsButton>
                   <NsButton
@@ -714,8 +646,12 @@
                       <span class="value">{{ restore.summary.routes }}</span>
                     </div>
                     <div class="key-value-setting">
-                      <span class="label">{{ $t("init.custom_certificates") }}</span>
-                      <span class="value">{{ restore.summary.certificates }}</span>
+                      <span class="label">{{
+                        $t("init.custom_certificates")
+                      }}</span>
+                      <span class="value">{{
+                        restore.summary.certificates
+                      }}</span>
                     </div>
                     <div class="key-value-setting">
                       <span class="label">{{
@@ -904,6 +840,7 @@ import NotificationService from "@/mixins/notification";
 import RestoreMultipleInstancesSelector from "@/components/backup/RestoreMultipleInstancesSelector";
 import SkipRestoreAppsModal from "@/components/initialize-cluster/SkipRestoreAppsModal";
 import WelcomeLogo from "@/components/initialize-cluster/WelcomeLogo";
+import SetFqdn from "@/components/initialize-cluster/SetFqdn";
 
 export default {
   name: "InitializeCluster",
@@ -912,6 +849,7 @@ export default {
     RestoreMultipleInstancesSelector,
     SkipRestoreAppsModal,
     WelcomeLogo,
+    SetFqdn,
   },
   mixins: [
     UtilService,
@@ -931,6 +869,7 @@ export default {
       q: {
         page: "welcome",
         endpoint: null,
+        action: null,
       },
       isPasswordChangeNeeded: false,
       currentPassword: "",
@@ -952,8 +891,6 @@ export default {
       isChangingPassword: false,
       isMaster: true,
       createClusterProgress: 0,
-      fqdnHostname: "",
-      fqdnDomain: "",
       restore: {
         step: "type",
         type: "",
@@ -974,8 +911,6 @@ export default {
         restoreCluster: false,
         readBackupRepositories: false,
         restoreModules: false,
-        getFqdn: false,
-        setFqdn: false,
       },
       error: {
         currentPassword: "",
@@ -990,10 +925,6 @@ export default {
         readBackupRepositories: "",
         restoreModules: "",
         createCluster: "",
-        getFqdn: "",
-        setFqdn: "",
-        fqdnHostname: "",
-        fqdnDomain: "",
         getDefaults: "",
         restore: {
           url: "",
@@ -1005,13 +936,8 @@ export default {
   },
   watch: {
     "q.page": function () {
-      switch (this.q.page) {
-        case "fqdn":
-          this.getFqdn();
-          break;
-        case "create":
-          this.getDefaults();
-          break;
+      if (this.q.page === "create") {
+        this.getDefaults();
       }
     },
   },
@@ -1081,17 +1007,26 @@ export default {
       this.vpnEndpointPort = defaults.vpn.port.toString();
       this.vpnCidr = defaults.vpn.network;
       this.loading.getDefaults = false;
+
+      if (this.q.page === "create") {
+        this.focusElement("vpnEndpointAddress");
+      }
     },
     selectCreateCluster() {
-      this.$router.push({ path: "/init", query: { page: "fqdn" } });
+      this.$router.push({
+        path: "/init",
+        query: { page: "fqdn", action: "create" },
+      });
 
       if (this.isPasswordChangeNeeded) {
         this.focusElement("currentPassword");
       }
     },
     selectJoinCluster() {
-      this.$router.push({ path: "/init", query: { page: "join" } });
-      this.focusElement("joinCode");
+      this.$router.push({
+        path: "/init",
+        query: { page: "fqdn", action: "join" },
+      });
     },
     selectRestoreCluster() {
       this.$router.push({ path: "/init", query: { page: "restore" } });
@@ -1123,7 +1058,24 @@ export default {
       this.$router.push({ path: "/init", query: { page: "welcome" } });
     },
     goToFqdnPage() {
-      this.$router.push({ path: "/init", query: { page: "fqdn" } });
+      const action = this.$route.query.action; // "create" or "join"
+
+      this.$router.push({
+        path: "/init",
+        query: { page: "fqdn", action: action },
+      });
+    },
+    onFqdnSet() {
+      const action = this.$route.query.action; // "create" or "join"
+
+      this.$router.push({
+        path: "/init",
+        query: { page: action, action: action },
+      });
+
+      if (action === "join") {
+        this.focusElement("joinCode");
+      }
     },
     async getClusterStatus() {
       const taskAction = "get-cluster-status";
@@ -1946,161 +1898,6 @@ export default {
       // go to cluster status page
       this.getClusterStatus();
     },
-    async getFqdn() {
-      this.error.getFqdn = "";
-      this.loading.getFqdn = true;
-      const taskAction = "get-fqdn";
-      const eventId = this.getUuid();
-
-      // register to task error
-      this.$root.$once(`${taskAction}-aborted-${eventId}`, this.getFqdnAborted);
-
-      // register to task completion
-      this.$root.$once(
-        `${taskAction}-completed-${eventId}`,
-        this.getFqdnCompleted
-      );
-
-      const res = await to(
-        this.createNodeTask(1, {
-          action: taskAction,
-          extra: {
-            title: this.$t("action." + taskAction),
-            isNotificationHidden: true,
-            toastTimeout: 0, // persistent notification
-            eventId,
-          },
-        })
-      );
-      const err = res[0];
-
-      if (err) {
-        // persistent error notification
-        const notification = {
-          title: this.$t("task.cannot_create_task", { action: taskAction }),
-          description: this.getErrorMessage(err),
-          type: "error",
-          toastTimeout: 0,
-        };
-        this.createNotification(notification);
-        return;
-      }
-    },
-    getFqdnCompleted(taskContext, taskResult) {
-      this.fqdnHostname = taskResult.output.hostname;
-      this.fqdnDomain = taskResult.output.domain;
-      this.loading.getFqdn = false;
-      this.focusElement("hostname");
-    },
-    getFqdnAborted(taskResult, taskContext) {
-      console.error(`${taskContext.action} aborted`, taskResult);
-      this.loading.getFqdn = false;
-    },
-    validateSetFqdn() {
-      this.error.fqdnHostname = "";
-      this.error.fqdnDomain = "";
-      let isValidationOk = true;
-
-      // hostname
-
-      if (!this.fqdnHostname) {
-        this.error.fqdnHostname = this.$t("common.required");
-
-        if (isValidationOk) {
-          this.focusElement("hostname");
-          isValidationOk = false;
-        }
-      }
-
-      // domain
-
-      if (!this.fqdnDomain) {
-        this.error.fqdnDomain = this.$t("common.required");
-
-        if (isValidationOk) {
-          this.focusElement("domain");
-          isValidationOk = false;
-        }
-      }
-      return isValidationOk;
-    },
-    async setFqdn() {
-      if (!this.validateSetFqdn()) {
-        return;
-      }
-      this.loading.setFqdn = true;
-      this.error.setFqdn = "";
-      const taskAction = "set-fqdn";
-      const eventId = this.getUuid();
-
-      // register to task error
-      this.$root.$once(`${taskAction}-aborted-${eventId}`, this.setFqdnAborted);
-
-      this.$root.$once(
-        `${taskAction}-validation-failed-${eventId}`,
-        this.setFqdnValidationFailed
-      );
-
-      // register to task completion
-      this.$root.$once(
-        `${taskAction}-completed-${eventId}`,
-        this.setFqdnCompleted
-      );
-
-      const res = await to(
-        this.createNodeTask(1, {
-          action: taskAction,
-          data: {
-            hostname: this.fqdnHostname,
-            domain: this.fqdnDomain,
-          },
-          extra: {
-            title: this.$t("action." + taskAction),
-            description: this.$t("common.processing"),
-            toastTimeout: 0, // persistent notification
-            eventId,
-          },
-        })
-      );
-      const err = res[0];
-
-      if (err) {
-        console.error(`error creating task ${taskAction}`, err);
-        this.error.setFqdn = this.getErrorMessage(err);
-        this.loading.setFqdn = false;
-        return;
-      }
-    },
-    setFqdnAborted(taskResult, taskContext) {
-      console.error(`${taskContext.action} aborted`, taskResult);
-      this.loading.setFqdn = false;
-
-      //// remove
-      this.$router.push({ path: "/init", query: { page: "create" } });
-    },
-    setFqdnValidationFailed(validationErrors) {
-      this.loading.setFqdn = false;
-      let focusAlreadySet = false;
-
-      for (const validationError of validationErrors) {
-        const param = validationError.parameter;
-
-        // set i18n error message
-        this.error[param] = this.getI18nStringWithFallback(
-          "init." + validationError.error,
-          "error." + validationError.error
-        );
-
-        if (!focusAlreadySet) {
-          this.focusElement(param);
-          focusAlreadySet = true;
-        }
-      }
-    },
-    setFqdnCompleted() {
-      this.loading.setFqdn = false;
-      this.$router.push({ path: "/init", query: { page: "create" } });
-    },
   },
 };
 </script>
@@ -2112,36 +1909,12 @@ export default {
   max-width: 70rem;
 }
 
-.welcome {
-  margin-top: 2rem;
-  margin-bottom: 4rem;
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-}
-
-.tile-description {
-  color: $text-02;
-}
-
 .bx--form .bx--form-item {
   margin-bottom: $spacing-06;
 }
 
 .file-uploader {
   margin-bottom: 0 !important;
-}
-
-.footer-buttons {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: $spacing-07;
-
-  .cv-button {
-    position: relative;
-    top: $spacing-05;
-    left: $spacing-05;
-  }
 }
 
 @media (max-width: $breakpoint-medium) {
@@ -2164,5 +1937,29 @@ export default {
 .validation-failed .bx--file__selected-file {
   outline: 2px solid $danger-01;
   outline-offset: -2px;
+}
+
+.initialize-cluster .welcome {
+  margin-top: 2rem;
+  margin-bottom: 4rem;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+.initialize-cluster .tile-description {
+  color: $text-02;
+}
+
+.initialize-cluster .footer-buttons {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: $spacing-07;
+
+  .cv-button {
+    position: relative;
+    top: $spacing-05;
+    left: $spacing-05;
+  }
 }
 </style>
