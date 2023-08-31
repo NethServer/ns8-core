@@ -245,7 +245,7 @@ export default {
           },
           extra: {
             title: this.$t("action." + taskAction),
-            description: this.$t("common.processing"),
+            isNotificationHidden: true,
             toastTimeout: 0, // persistent notification
             eventId,
           },
