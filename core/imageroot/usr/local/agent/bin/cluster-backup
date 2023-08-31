@@ -21,11 +21,15 @@
 #
 
 import os
+import pwd
 import sys
 import json
 import agent
+import os.path
 import tempfile
 import subprocess
+import agent.tasks
+from glob import glob
 from datetime import datetime, timezone
 
 #
@@ -40,7 +44,7 @@ VERSION = "1"
 # pythonic wat to retrieve current timestamp on UTC timezone
 now = int(datetime.now(timezone.utc).replace(tzinfo=timezone.utc).timestamp())
 
-dump = { 'version': VERSION, 'timestamp': now, 'modules': {}, 'vpn': {}, 'cluster': { 'repository': {}, 'backup': {}, 'backup_repository': {}, 'user_domain': { 'ldap': {} },'override': {'modules': {} } } }
+dump = { 'version': VERSION, 'timestamp': now, 'modules': {}, 'vpn': {}, 'cluster': { 'repository': {}, 'backup': {}, 'backup_repository': {}, 'user_domain': { 'ldap': {} },'override': {'modules': {} } }, 'traefik': {} }
 
 # cluster: software repositories
 for r in rdb.scan_iter('cluster/repository/*'):
@@ -93,6 +97,23 @@ for v in rdb.scan_iter('node/*/vpn'):
             dump['vpn'][f] = rdb.hget(v, f)
 
 rdb.close()
+
+# traefik: custom route and uploaded certificates
+leader_id = rdb.hget("cluster/environment", "NODE_ID")
+for tk in rdb.scan_iter('module/traefik*/flags'):
+    tk_instance = tk.removesuffix('/flags')
+    dump_task_result = agent.tasks.run(tk_instance, "dump-custom-config",
+        data={},
+         endpoint="redis://cluster-leader",
+    )
+
+    if dump_task_result['exit_code'] == 0:
+        # instance on leader has a special name used during restore
+        if rdb.hget(f'{tk_instance}/environment', 'NODE_ID') == leader_id:
+            tk_name = 'leader'
+        else:
+            tk_name = tk_instance.removeprefix('module/')
+        dump['traefik'][tk_name] = dump_task_result['output']
 
 # dump to JSON
 os.makedirs(output_dir, exist_ok=True)

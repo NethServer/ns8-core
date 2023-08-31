@@ -219,7 +219,9 @@
     "restoring_apps_c": "Restoring {num} app | Restoring {num} apps",
     "traveling_back_in_time": "Traveling back in time...",
     "reading_backup_repositories": "Reading backup repositories...",
-    "creating_cluster": "Creating cluster..."
+    "creating_cluster": "Creating cluster...",
+    "custom_routes": "Custom HTTP routes",
+    "custom_certificates": "Uploaded certificates"
   },
   "shell": {
     "skip_to_content": "Skip to content",

@@ -21,6 +21,7 @@
 #
 
 import os
+import pwd
 import sys
 import json
 import gzip
@@ -69,3 +70,24 @@ rdb.set('cluster/backup_sequence', max_backup)
 # Restore cluster override for modules
 if 'override' in dump['cluster'] and dump['cluster']['override']['modules']:
     rdb.hset(f'cluster/override/modules', mapping=dump['cluster']['override']['modules'])
+
+# Restore traefik configuration
+if 'leader' in dump['traefik']:
+    tk_instance = rdb.get('cluster/default_instance/traefik')
+    tk_state = f"{pwd.getpwnam(tk_instance).pw_dir}/.config/state"
+    tk_flags = f"{tk_state}/manual_flags"
+    tk_configs = f"{tk_state}/configs"
+    tk_certs = f"{tk_state}/custom_certificates"
+    os.makedirs(tk_flags, exist_ok=True)
+    os.makedirs(tk_certs, exist_ok=True)
+    os.makedirs(tk_configs, exist_ok=True)
+    for route in dump['traefik']['leader']['routes'].keys():
+        with open(f'{tk_flags}/{route}', 'w') as fpm:
+            pass
+        with open(f'{tk_configs}/{route}.yml', 'w') as fpr:
+            fpr.write(dump['traefik']['leader']['routes'][route])
+    for cert in dump['traefik']['leader']['uploaded_certificates'].keys():
+        with open(f'{tk_certs}/{cert}.key', 'w') as fpk:
+            fpk.write(dump['traefik']['leader']['uploaded_certificates'][cert]['key'])
+        with open(f'{tk_certs}/{cert}.crt', 'w') as fpc:
+            fpc.write(dump['traefik']['leader']['uploaded_certificates'][cert]['crt'])

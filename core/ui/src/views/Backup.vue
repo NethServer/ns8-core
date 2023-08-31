@@ -100,13 +100,15 @@
             kind="secondary"
             :icon="Download20"
             @click="downloadClusterConfigurationBackup()"
-            >{{ $t("backup.download_cluster_configuration_backup") }}
+            :disabled="loading.downloadClusterBackup"
+            :loading="loading.downloadClusterBackup">{{ $t("backup.download_cluster_configuration_backup") }}
           </NsButton>
           <NsButton
             kind="tertiary"
             :icon="Password20"
             @click="showBackupPasswordModal()"
             class="mg-left-md"
+            :disabled="loading.downloadClusterBackup"
             >{{ $t("backup.change_cluster_backup_password") }}
           </NsButton>
         </cv-column>
