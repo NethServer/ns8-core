@@ -245,7 +245,9 @@ export default {
       this.loading.verify2FaCode = true;
 
       // invoke API
-      const [verify2FaCodeError] = await to(this.verify2FaSecret(this.setupKey, this.twoFaCode));
+      const [verify2FaCodeError] = await to(
+        this.verify2FaSecret(this.setupKey, this.twoFaCode)
+      );
       this.loading.verify2FaCode = false;
 
       if (verify2FaCodeError) {
