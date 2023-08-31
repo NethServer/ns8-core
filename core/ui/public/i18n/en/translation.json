@@ -221,7 +221,12 @@
     "reading_backup_repositories": "Reading backup repositories...",
     "creating_cluster": "Creating cluster...",
     "custom_routes": "Custom HTTP routes",
-    "custom_certificates": "Uploaded certificates"
+    "custom_certificates": "Uploaded certificates",
+    "fqdn_page_title": "Set hostname and domain",
+    "fqdn_page_description": "Set the fully qualified domain name (FQDN) of this cluster node",
+    "hostname": "Hostname",
+    "domain": "Domain",
+    "set_fqdn": "Set FQDN"
   },
   "shell": {
     "skip_to_content": "Skip to content",
@@ -357,7 +362,9 @@
     "get-user-info": "Get user info",
     "remove-node": "Remove node",
     "promote-node": "Promote node",
-    "get-info": "Get node info"
+    "get-info": "Get node info",
+    "set-fqdn": "Set FQDN",
+    "get-fqdn": "Get FQDN"
   },
   "network": {
     "title": "Network"

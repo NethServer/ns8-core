@@ -74,7 +74,7 @@
           </cv-column>
         </cv-row>
       </template>
-      <template v-else-if="q.page === 'create'">
+      <template v-else-if="q.page === 'fqdn'">
         <template v-if="isPasswordChangeNeeded">
           <cv-row>
             <!-- password change needed -->
@@ -152,6 +152,86 @@
         </template>
         <!-- admin password was changed -->
         <template v-else>
+          <!-- fqdn form -->
+          <cv-row>
+            <cv-column class="welcome">
+              <div>
+                <h2>{{ $t("init.fqdn_page_title") }}</h2>
+                <div class="title-description">
+                  {{ $t("init.fqdn_page_description") }}
+                </div>
+              </div>
+              <WelcomeLogo />
+            </cv-column>
+          </cv-row>
+          <cv-row>
+            <cv-column>
+              <cv-tile light>
+                <NsInlineNotification
+                  v-if="error.getFqdn"
+                  kind="error"
+                  :title="$t('action.get-fqdn')"
+                  :description="error.getFqdn"
+                  :showCloseButton="false"
+                />
+                <cv-form v-else @submit.prevent="setFqdn">
+                  <cv-skeleton-text
+                    v-if="loading.getFqdn"
+                    :paragraph="true"
+                    :line-count="5"
+                    heading
+                  ></cv-skeleton-text>
+                  <template v-else>
+                    <cv-text-input
+                      :label="$t('init.hostname')"
+                      v-model.trim="fqdnHostname"
+                      :invalid-message="$t(error.fqdnHostname)"
+                      :disabled="loading.getFqdn || loading.setFqdn"
+                      ref="hostname"
+                    >
+                    </cv-text-input>
+                    <cv-text-input
+                      :label="$t('init.domain')"
+                      v-model.trim="fqdnDomain"
+                      placeholder="example.org"
+                      :invalid-message="$t(error.fqdnDomain)"
+                      :disabled="loading.getFqdn || loading.setFqdn"
+                      ref="domain"
+                    >
+                    </cv-text-input>
+                  </template>
+                  <cv-button-set class="footer-buttons">
+                    <NsButton
+                      type="button"
+                      kind="secondary"
+                      :icon="ChevronLeft20"
+                      size="lg"
+                      @click="goToWelcomePage"
+                      >{{ $t("common.go_back") }}
+                    </NsButton>
+                    <NsButton
+                      kind="primary"
+                      :loading="loading.setFqdn"
+                      :disabled="loading.getFqdn || loading.setFqdn"
+                      size="lg"
+                      >{{ $t("init.set_fqdn") }}
+                    </NsButton>
+                  </cv-button-set>
+                </cv-form>
+                <NsInlineNotification
+                  v-if="error.setFqdn"
+                  kind="error"
+                  :title="$t('action.set-fqdn')"
+                  :description="error.setFqdn"
+                  :showCloseButton="false"
+                />
+              </cv-tile>
+            </cv-column>
+          </cv-row>
+        </template>
+      </template>
+      <template v-else-if="q.page === 'create'">
+        <template>
           <!-- create cluster form -->
           <cv-row>
             <cv-column class="welcome">
@@ -168,41 +248,56 @@
             <cv-column>
               <cv-tile light>
                 <template v-if="!isCreatingCluster">
-                  <cv-form @submit.prevent="createCluster">
-                    <cv-text-input
-                      :label="$t('init.vpn_endpoint_address')"
-                      v-model.trim="vpnEndpointAddress"
-                      :invalid-message="$t(error.vpnEndpointAddress)"
-                      :disabled="loading.getDefaults || isCreatingCluster"
-                      ref="vpnEndpointAddress"
-                    >
-                    </cv-text-input>
-                    <cv-text-input
-                      :label="$t('init.vpn_endpoint_port')"
-                      v-model.trim="vpnEndpointPort"
-                      :invalid-message="$t(error.vpnEndpointPort)"
-                      :disabled="loading.getDefaults || isCreatingCluster"
-                      type="number"
-                      class="narrow"
-                      ref="vpnEndpointPort"
-                    >
-                    </cv-text-input>
-                    <cv-text-input
-                      :label="$t('init.vpn_cidr')"
-                      v-model.trim="vpnCidr"
-                      :invalid-message="$t(error.vpnCidr)"
-                      :disabled="loading.getDefaults || isCreatingCluster"
-                      class="narrow"
-                      ref="vpnCidr"
-                    >
-                    </cv-text-input>
+                  <NsInlineNotification
+                    v-if="error.getDefaults"
+                    kind="error"
+                    :title="$t('action.get-defaults')"
+                    :description="error.getFqdn"
+                    :showCloseButton="false"
+                  />
+                  <cv-form v-else @submit.prevent="createCluster">
+                    <cv-skeleton-text
+                      v-if="loading.getDefaults"
+                      :paragraph="true"
+                      :line-count="7"
+                      heading
+                    ></cv-skeleton-text>
+                    <template v-else>
+                      <cv-text-input
+                        :label="$t('init.vpn_endpoint_address')"
+                        v-model.trim="vpnEndpointAddress"
+                        :invalid-message="$t(error.vpnEndpointAddress)"
+                        :disabled="loading.getDefaults || isCreatingCluster"
+                        ref="vpnEndpointAddress"
+                      >
+                      </cv-text-input>
+                      <cv-text-input
+                        :label="$t('init.vpn_endpoint_port')"
+                        v-model.trim="vpnEndpointPort"
+                        :invalid-message="$t(error.vpnEndpointPort)"
+                        :disabled="loading.getDefaults || isCreatingCluster"
+                        type="number"
+                        class="narrow"
+                        ref="vpnEndpointPort"
+                      >
+                      </cv-text-input>
+                      <cv-text-input
+                        :label="$t('init.vpn_cidr')"
+                        v-model.trim="vpnCidr"
+                        :invalid-message="$t(error.vpnCidr)"
+                        :disabled="loading.getDefaults || isCreatingCluster"
+                        class="narrow"
+                        ref="vpnCidr"
+                      >
+                      </cv-text-input>
+                    </template>
                     <cv-button-set class="footer-buttons">
                       <NsButton
                         type="button"
                         kind="secondary"
                         :icon="ChevronLeft20"
                         size="lg"
-                        @click="goToWelcomePage"
+                        @click="goToFqdnPage"
                         >{{ $t("common.go_back") }}
                       </NsButton>
                       <NsButton
@@ -807,8 +902,8 @@ import { mapActions } from "vuex";
 import to from "await-to-js";
 import NotificationService from "@/mixins/notification";
 import RestoreMultipleInstancesSelector from "@/components/backup/RestoreMultipleInstancesSelector";
-import SkipRestoreAppsModal from "@/components/misc/SkipRestoreAppsModal";
-import WelcomeLogo from "@/components/misc/WelcomeLogo";
+import SkipRestoreAppsModal from "@/components/initialize-cluster/SkipRestoreAppsModal";
+import WelcomeLogo from "@/components/initialize-cluster/WelcomeLogo";
 
 export default {
   name: "InitializeCluster",
@@ -857,6 +952,8 @@ export default {
       isChangingPassword: false,
       isMaster: true,
       createClusterProgress: 0,
+      fqdnHostname: "",
+      fqdnDomain: "",
       restore: {
         step: "type",
         type: "",
@@ -877,6 +974,8 @@ export default {
         restoreCluster: false,
         readBackupRepositories: false,
         restoreModules: false,
+        getFqdn: false,
+        setFqdn: false,
       },
       error: {
         currentPassword: "",
@@ -891,6 +990,11 @@ export default {
         readBackupRepositories: "",
         restoreModules: "",
         createCluster: "",
+        getFqdn: "",
+        setFqdn: "",
+        fqdnHostname: "",
+        fqdnDomain: "",
+        getDefaults: "",
         restore: {
           url: "",
           backup_password: "",
@@ -898,6 +1002,18 @@ export default {
         },
       },
     };
+  },
+  watch: {
+    "q.page": function () {
+      switch (this.q.page) {
+        case "fqdn":
+          this.getFqdn();
+          break;
+        case "create":
+          this.getDefaults();
+          break;
+      }
+    },
   },
   beforeRouteEnter(to, from, next) {
     next((vm) => {
@@ -967,12 +1083,10 @@ export default {
       this.loading.getDefaults = false;
     },
     selectCreateCluster() {
-      this.$router.push({ path: "/init", query: { page: "create" } });
+      this.$router.push({ path: "/init", query: { page: "fqdn" } });
 
       if (this.isPasswordChangeNeeded) {
         this.focusElement("currentPassword");
-      } else {
-        this.focusElement("vpnEndpointAddress");
       }
     },
     selectJoinCluster() {
@@ -1007,6 +1121,9 @@ export default {
     },
     goToWelcomePage() {
       this.$router.push({ path: "/init", query: { page: "welcome" } });
+    },
+    goToFqdnPage() {
+      this.$router.push({ path: "/init", query: { page: "fqdn" } });
     },
     async getClusterStatus() {
       const taskAction = "get-cluster-status";
@@ -1828,6 +1945,161 @@ export default {
     skipRestoreApps() {
       // go to cluster status page
       this.getClusterStatus();
+    },
+    async getFqdn() {
+      this.error.getFqdn = "";
+      this.loading.getFqdn = true;
+      const taskAction = "get-fqdn";
+      const eventId = this.getUuid();
+
+      // register to task error
+      this.$root.$once(`${taskAction}-aborted-${eventId}`, this.getFqdnAborted);
+
+      // register to task completion
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.getFqdnCompleted
+      );
+
+      const res = await to(
+        this.createNodeTask(1, {
+          action: taskAction,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+            toastTimeout: 0, // persistent notification
+            eventId,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        // persistent error notification
+        const notification = {
+          title: this.$t("task.cannot_create_task", { action: taskAction }),
+          description: this.getErrorMessage(err),
+          type: "error",
+          toastTimeout: 0,
+        };
+        this.createNotification(notification);
+        return;
+      }
+    },
+    getFqdnCompleted(taskContext, taskResult) {
+      this.fqdnHostname = taskResult.output.hostname;
+      this.fqdnDomain = taskResult.output.domain;
+      this.loading.getFqdn = false;
+      this.focusElement("hostname");
+    },
+    getFqdnAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.loading.getFqdn = false;
+    },
+    validateSetFqdn() {
+      this.error.fqdnHostname = "";
+      this.error.fqdnDomain = "";
+      let isValidationOk = true;
+
+      // hostname
+
+      if (!this.fqdnHostname) {
+        this.error.fqdnHostname = this.$t("common.required");
+
+        if (isValidationOk) {
+          this.focusElement("hostname");
+          isValidationOk = false;
+        }
+      }
+
+      // domain
+
+      if (!this.fqdnDomain) {
+        this.error.fqdnDomain = this.$t("common.required");
+
+        if (isValidationOk) {
+          this.focusElement("domain");
+          isValidationOk = false;
+        }
+      }
+      return isValidationOk;
+    },
+    async setFqdn() {
+      if (!this.validateSetFqdn()) {
+        return;
+      }
+      this.loading.setFqdn = true;
+      this.error.setFqdn = "";
+      const taskAction = "set-fqdn";
+      const eventId = this.getUuid();
+
+      // register to task error
+      this.$root.$once(`${taskAction}-aborted-${eventId}`, this.setFqdnAborted);
+
+      this.$root.$once(
+        `${taskAction}-validation-failed-${eventId}`,
+        this.setFqdnValidationFailed
+      );
+
+      // register to task completion
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.setFqdnCompleted
+      );
+
+      const res = await to(
+        this.createNodeTask(1, {
+          action: taskAction,
+          data: {
+            hostname: this.fqdnHostname,
+            domain: this.fqdnDomain,
+          },
+          extra: {
+            title: this.$t("action." + taskAction),
+            description: this.$t("common.processing"),
+            toastTimeout: 0, // persistent notification
+            eventId,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.setFqdn = this.getErrorMessage(err);
+        this.loading.setFqdn = false;
+        return;
+      }
+    },
+    setFqdnAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.loading.setFqdn = false;
+
+      //// remove
+      this.$router.push({ path: "/init", query: { page: "create" } });
+    },
+    setFqdnValidationFailed(validationErrors) {
+      this.loading.setFqdn = false;
+      let focusAlreadySet = false;
+
+      for (const validationError of validationErrors) {
+        const param = validationError.parameter;
+
+        // set i18n error message
+        this.error[param] = this.getI18nStringWithFallback(
+          "init." + validationError.error,
+          "error." + validationError.error
+        );
+
+        if (!focusAlreadySet) {
+          this.focusElement(param);
+          focusAlreadySet = true;
+        }
+      }
+    },
+    setFqdnCompleted() {
+      this.loading.setFqdn = false;
+      this.$router.push({ path: "/init", query: { page: "create" } });
     },
   },
 };
