@@ -8,7 +8,6 @@
 import json
 import subprocess
 import sys
-import time
 
 hostname = subprocess.run(['hostname', '-s'], text=True, capture_output=True, check=True).stdout.strip()
 domain = subprocess.run(['hostname', '-d'], text=True, capture_output=True, check=True).stdout.strip()
