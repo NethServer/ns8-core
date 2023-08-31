@@ -56,7 +56,7 @@
               <cv-text-input
                 :label="$t('init.hostname')"
                 v-model.trim="hostname"
-                :invalid-message="$t(error.hostname)"
+                :invalid-message="error.hostname"
                 :disabled="loading.getFqdn || loading.setFqdn"
                 ref="hostname"
               >
@@ -65,7 +65,7 @@
                 :label="$t('init.domain')"
                 v-model.trim="domain"
                 placeholder="example.org"
-                :invalid-message="$t(error.domain)"
+                :invalid-message="error.domain"
                 :disabled="loading.getFqdn || loading.setFqdn"
                 ref="domain"
               >

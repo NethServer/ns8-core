@@ -226,7 +226,8 @@
     "domain": "Domain",
     "set_fqdn": "Set FQDN",
     "review_node_fqdn_title": "Review node FQDN",
-    "review_node_fqdn_description": "Set the fully qualified domain name (FQDN) of this cluster node"
+    "review_node_fqdn_description": "Set the fully qualified domain name (FQDN) of this cluster node",
+    "forbidden_hostname_value": "Forbidden hostname"
   },
   "shell": {
     "skip_to_content": "Skip to content",
