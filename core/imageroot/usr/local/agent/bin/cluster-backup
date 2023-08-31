@@ -93,7 +93,7 @@ for v in rdb.scan_iter('node/*/vpn'):
     k = v.removeprefix('node/')
     k = k.removesuffix('/vpn')
     if rdb.hexists(v, 'endpoint'):
-        for f in ['endpoint', 'listen_port', 'destinations']:
+        for f in ['endpoint', 'destinations']:
             dump['vpn'][f] = rdb.hget(v, f)
 
 rdb.close()

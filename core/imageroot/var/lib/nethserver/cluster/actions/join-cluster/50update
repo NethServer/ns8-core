@@ -38,8 +38,6 @@ agent.assert_exp(jwt)
 url = request['url']
 agent.assert_exp(url)
 endpoint = request.get('endpoint', "")
-listen_port = int(request['listen_port'])
-agent.assert_exp(listen_port > 0)
 tls_verify = bool(request['tls_verify'])
 agent.assert_exp(tls_verify is not None)
 
@@ -63,7 +61,6 @@ response = agent.tasks.run(
         "node_pwh": node_pwh,
         "public_key": public_key,
         "endpoint": endpoint,
-        "listen_port": listen_port,
     },
     extra={
         "title": f"add-node {endpoint}" if endpoint else "add-node",
@@ -84,7 +81,6 @@ agent.assert_exp(node_id > 0)
 print(f"Leader response is successful: the new node ID is node/{node_id}!", file=sys.stderr)
 
 join_node_data = response['output'] # add-node response is forwarded to join-node
-join_node_data.setdefault('listen_port', listen_port) # required by WG configuration
 
 # Start the action that switches Redis to replica of the new leader.
 # join-node has to give us enough time to write our response back to the

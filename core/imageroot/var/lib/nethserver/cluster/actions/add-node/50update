@@ -41,8 +41,6 @@ public_key = request['public_key']
 agent.assert_exp(public_key)
 endpoint = request['endpoint']
 agent.assert_exp(type(endpoint) is str)
-listen_port = request['listen_port']
-agent.assert_exp(listen_port > 0)
 flags = request.get('flags', [])
 
 rdb = agent.redis_connect(privileged=True)
@@ -56,8 +54,6 @@ leader_ip_address = rdb.hget(f'node/{leader_id}/vpn', 'ip_address')
 agent.assert_exp(leader_ip_address)
 leader_public_key = rdb.hget(f'node/{leader_id}/vpn', 'public_key')
 agent.assert_exp(leader_public_key)
-leader_listen_port = rdb.hget(f'node/{leader_id}/vpn', 'listen_port')
-agent.assert_exp(leader_listen_port)
 leader_endpoint = rdb.hget(f'node/{leader_id}/vpn', 'endpoint')
 agent.assert_exp(leader_endpoint)
 
@@ -76,7 +72,6 @@ agent.assert_exp(rdb.hset(f'node/{node_id}/vpn', mapping={
     "ip_address": ip_address,
     "destinations": "",
     "endpoint": endpoint,
-    "listen_port": str(listen_port),
 }) >= 0)
 
 # Save node flags
@@ -177,5 +172,5 @@ json.dump({
     "leader_public_key": leader_public_key, # required for VPN auth
     "network": str(network), # required to set up route table
     "leader_ip_address": leader_ip_address, # required to rewrite /etc/hosts cluster-leader
-    "leader_endpoint": leader_endpoint, # required to reach the WireGuard listen_port
+    "leader_endpoint": leader_endpoint, # required to reach the VPN public endpoint
 }, sys.stdout)

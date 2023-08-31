@@ -35,11 +35,9 @@ request = json.load(sys.stdin)
 
 network = request['network']
 endpoint = request['endpoint']
-listen_port = int(request['listen_port'])
 
 agent.assert_exp(network)
 agent.assert_exp(endpoint)
-agent.assert_exp(listen_port)
 
 public_key = agent.slurp_file('/etc/nethserver/wg0.pub')
 agent.assert_exp(public_key)
@@ -63,8 +61,7 @@ rdb.hset(f'node/{NODE_ID}/vpn', mapping={
     "public_key": public_key,
     "ip_address": ip_address,
     "destinations": "",
-    "endpoint": endpoint,
-    "listen_port": listen_port,
+    "endpoint": endpoint
 })
 
 # Our first Traefik instance is missing the VPN network: fix it here.
@@ -79,7 +76,7 @@ agent.run_helper('sed', '-i',
 
 
 # VPN bootstrap
-cluster.vpn.initialize_wgconf(ip_address, listen_port)
+cluster.vpn.initialize_wgconf(ip_address)
 agent.run_helper('systemctl', 'restart', 'wg-quick@wg0.service').check_returncode()
 
 # (Samba) account provider might want to route some IP addresses through our VPN. Define a role for that:

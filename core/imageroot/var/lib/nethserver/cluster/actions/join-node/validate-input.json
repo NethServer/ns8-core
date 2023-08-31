@@ -6,7 +6,6 @@
     "examples": [
         {
             "node_id": 2,
-            "listen_port": 55820,
             "ip_address": "10.5.4.2",
             "leader_public_key": "aoBydmHg2WWv5OqYM1ZegcCdC6dev+IHnoNv3ftNY2U=",
             "network": "10.5.4.0/24",
@@ -21,8 +20,7 @@
         "network",
         "leader_public_key",
         "leader_ip_address",
-        "leader_endpoint",
-        "listen_port"
+        "leader_endpoint"
     ],
     "properties": {
         "node_id": {
@@ -61,12 +59,6 @@
                 "my.example.com:55820",
                 "1.2.3.4:55820"
             ]
-        },
-        "listen_port": {
-            "type": "integer",
-            "exclusiveMinimum": 1024,
-            "title": "WireGuard listening UDP port",
-            "description": "Listening UDP port for incoming WireGuard VPN packets"
         }
     }
 }
