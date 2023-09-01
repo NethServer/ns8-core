@@ -21,7 +21,7 @@
   >
     <template slot="title">{{ $t("settings_account.enable_2fa") }}</template>
     <template slot="content">
-      <cv-form>
+      <cv-form @submit.prevent="nextStep">
         <NsInlineNotification
           v-if="error.get2FaQrCode"
           kind="error"
@@ -245,7 +245,9 @@ export default {
       this.loading.verify2FaCode = true;
 
       // invoke API
-      const [verify2FaCodeError] = await to(this.verify2FaSecret(this.setupKey, this.twoFaCode));
+      const [verify2FaCodeError] = await to(
+        this.verify2FaSecret(this.setupKey, this.twoFaCode)
+      );
       this.loading.verify2FaCode = false;
 
       if (verify2FaCodeError) {
