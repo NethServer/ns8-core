@@ -54,7 +54,7 @@
 <script>
 import { UtilService, IconService, TaskService } from "@nethserver/ns8-ui-lib";
 import { mapState } from "vuex";
-import NodeSelector from "@/components/misc/NodeSelector";
+import NodeSelector from "@/components/nodes/NodeSelector";
 import to from "await-to-js";
 
 export default {

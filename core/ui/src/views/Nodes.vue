@@ -135,6 +135,9 @@
                   :label="$t('nodes.edit_node_label')"
                 />
               </cv-overflow-menu-item>
+              <cv-overflow-menu-item @click="showSetNodeFqdnModal(node)">
+                <NsMenuItem :icon="Wikis20" :label="$t('nodes.set_fqdn')" />
+              </cv-overflow-menu-item>
               <cv-overflow-menu-item @click="goToHttpRoutes(node)">
                 <NsMenuItem
                   :icon="Router20"
@@ -309,6 +312,12 @@
       :endpointAddress="newLeaderEndpointAddress"
       @hide="hideNewLeaderModal"
     />
+    <!-- set node FQDN modal -->
+    <SetFqdnModal
+      :isShown="isShownSetFqdnModal"
+      :node="currentNode"
+      @hide="hideSetFqdnModal"
+    />
   </cv-grid>
 </template>
 
@@ -322,14 +331,21 @@ import {
 } from "@nethserver/ns8-ui-lib";
 import to from "await-to-js";
 import { mapState, mapActions } from "vuex";
-import NodeCard from "@/components/misc/NodeCard";
+import NodeCard from "@/components/nodes/NodeCard";
 import RemoveNodeModal from "@/components/nodes/RemoveNodeModal";
 import PromoteNodeModal from "@/components/nodes/PromoteNodeModal";
 import NewLeaderModal from "@/components/nodes/NewLeaderModal";
+import SetFqdnModal from "@/components/nodes/SetFqdnModal";
 
 export default {
   name: "Nodes",
-  components: { NodeCard, RemoveNodeModal, PromoteNodeModal, NewLeaderModal },
+  components: {
+    NodeCard,
+    RemoveNodeModal,
+    PromoteNodeModal,
+    NewLeaderModal,
+    SetFqdnModal,
+  },
   mixins: [
     TaskService,
     UtilService,
@@ -360,6 +376,7 @@ export default {
       nodeToPromote: null,
       isShownNewLeaderModal: false,
       newLeaderEndpointAddress: "",
+      isShownSetFqdnModal: false,
       loading: {
         nodes: true,
         setNodeLabel: false,
@@ -605,6 +622,10 @@ export default {
         this.focusElement("newNodeLabel");
       }, 300);
     },
+    showSetNodeFqdnModal(node) {
+      this.currentNode = node;
+      this.isShownSetFqdnModal = true;
+    },
     hideSetNodeLabelModal() {
       this.isShownSetNodeLabelModal = false;
     },
@@ -666,6 +687,9 @@ export default {
     },
     hideNewLeaderModal() {
       this.isShownNewLeaderModal = false;
+    },
+    hideSetFqdnModal() {
+      this.isShownSetFqdnModal = false;
     },
     onNodePromoted(newLeaderEndpointAddress) {
       this.newLeaderEndpointAddress = newLeaderEndpointAddress;

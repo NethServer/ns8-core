@@ -1107,7 +1107,8 @@
     "go_to_cluster_admin": "Go to cluster administration",
     "promotion_completed": "Promotion completed",
     "shutdown_node_after_removal": "Shut down {node} after node removal to stop the apps running on it",
-    "cannot_retrieve_node_info": "Cannot retrieve node info"
+    "cannot_retrieve_node_info": "Cannot retrieve node info",
+    "set_fqdn": "Set FQDN"
   },
   "node_detail": {
     "title": "Node detail",
