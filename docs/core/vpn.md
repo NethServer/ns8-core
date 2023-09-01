@@ -12,9 +12,10 @@ Each node is connected to the leader using
 the leader node is the hub of the VPN links so it is connected to any
 other node.
 
-The VPN has its own network, the default is `10.5.4.0/24` and it listens on port 55820.
-Make sure this address is not already used inside your existing network and the UDP port 55820 is open on your firewall.
-You can change both configurations during cluster initialization.
+The VPN has its own network, the default is `10.5.4.0/24` and it listens
+on UDP port 55820. Make sure this address is not already used inside your
+existing network and the UDP port 55820 is open on your firewall. You can
+change the VPN network during cluster initialization.
 
 ## Promote a worker to leader
 
@@ -73,8 +74,8 @@ new leader node.
 
 ## Wireguerd configuration
 
-The VPN is configured in every node to use the interface `wg0`. To inspect
-the VPN status run
+The VPN is configured in every node to use the interface `wg0` and listens
+on UDP port 55820. To inspect the VPN status run
 
     wg show wg0
 
