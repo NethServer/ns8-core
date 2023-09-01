@@ -28,33 +28,7 @@ jobs:
           EOF
           )
           echo is_stable=$(python3 -c "$check_core_version") >> $GITHUB_OUTPUT
-  build-imges-digitalocean:
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        source:
-          - digitalocean.cs
-          - digitalocean.rl
-          - digitalocean.al
-    needs:
-      - core-version
-    if: needs.core-version.outputs.is_stable == 'true'
-    steps:
-      - name: Setup `packer`
-        uses: hashicorp/setup-packer@main
-      - uses: actions/checkout@v3
-        with:
-          repository: NethServer/ns8-images
-      - name: Run `packer init`
-        id: init
-        run: packer init .
-      - name: Run `packer build`
-        id: validate
-        run: packer build --only=${{ matrix.source }} --var "core_version=${{ github.event.workflow_run.head_branch }}" .
-        env:
-          DIGITALOCEAN_TOKEN: ${{ secrets.do_token }}
-  build-imges-qemu:
+  build-images-qemu:
     runs-on: [self-hosted]
     permissions:
       contents: write
@@ -63,11 +37,12 @@ jobs:
       matrix:
         source:
           - qemu.dn
-          - qemu.cs
           - qemu.rl
-          - qemu.al
     needs:
       - core-version
+    env:
+      DO_SPACE_NAME: 'ns8'
+      DO_SPACE_REGION: 'ams3'
     if: needs.core-version.outputs.is_stable == 'true'
     steps:
       - name: Setup `packer`
@@ -89,13 +64,23 @@ jobs:
         name: Convert to VMDK
         run: |
           VMDK_PATH=$(echo ${{ steps.qcow2.outputs.path }} | sed -e 's/\.qcow2$/\.vmdk/')
-          qemu-img convert -f qcow2 -O vmdk -o subformat=streamOptimized ${{ steps.qcow2.outputs.path }} $VMDK_PATH
+          qemu-img convert -f qcow2 -O vmdk ${{ steps.qcow2.outputs.path }} $VMDK_PATH
           echo "path=${VMDK_PATH}" >> "$GITHUB_OUTPUT"
-      - name: Upload NS8 image
-        uses: softprops/action-gh-release@v1
+      - name: Upload qcow2 NS8 image
+        uses: BetaHuhn/do-spaces-action@v2
         with:
-          name: ${{ github.event.workflow_run.head_branch }}
-          tag_name: ${{ github.event.workflow_run.head_branch }}
-          files: |
-            ${{ steps.qcow2.outputs.path }}
-            ${{ steps.vmdk.outputs.path }}
+          access_key: ${{ secrets.DO_SPACE_ACCESS_KEY }}
+          secret_key: ${{ secrets.DO_SPACE_SECRET_KEY }}
+          space_name: ${{ env.DO_SPACE_NAME }}
+          space_region: ${{ env.DO_SPACE_REGION }}
+          source: ${{ steps.qcow2.outputs.path }}
+          out_dir: ns8-images
+      - name: Upload vmdk NS8 image
+        uses: BetaHuhn/do-spaces-action@v2
+        with:
+          access_key: ${{ secrets.DO_SPACE_ACCESS_KEY }}
+          secret_key: ${{ secrets.DO_SPACE_SECRET_KEY }}
+          space_name: ${{ env.DO_SPACE_NAME }}
+          space_region: ${{ env.DO_SPACE_REGION }}
+          source: ${{ steps.vmdk.outputs.path }}
+          out_dir: ns8-images
