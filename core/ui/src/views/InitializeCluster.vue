@@ -884,7 +884,6 @@ export default {
       joinEndpoint: this.$route.query.endpoint
         ? "https://" + this.$route.query.endpoint
         : "",
-      joinPort: "",
       joinToken: "",
       isCreatingCluster: false,
       isJoiningCluster: false,
@@ -1345,7 +1344,6 @@ export default {
           data: {
             network: this.vpnCidr,
             endpoint: this.vpnEndpointAddress + ":" + this.vpnEndpointPort,
-            listen_port: parseInt(this.vpnEndpointPort),
           },
           extra: {
             title: this.$t("action." + taskAction),
@@ -1432,9 +1430,9 @@ export default {
             isValidationOk = false;
           }
         } else {
-          let [endpoint, port, token] = decoded.split("|");
+          let [endpoint, token] = decoded.split("|");
 
-          if (!(endpoint && port && token)) {
+          if (!(endpoint && token)) {
             this.error.joinCode = "init.invalid_join_code";
 
             if (isValidationOk) {
@@ -1443,7 +1441,6 @@ export default {
             }
           } else {
             this.joinEndpoint = endpoint;
-            this.joinPort = port;
             this.joinToken = token;
           }
         }
@@ -1477,7 +1474,6 @@ export default {
           data: {
             url: this.joinEndpoint,
             jwt: this.joinToken,
-            listen_port: parseInt(this.joinPort),
             tls_verify: this.tlsVerify,
           },
           extra: {

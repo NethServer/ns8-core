@@ -484,10 +484,8 @@ export default {
       if (loginInfo && loginInfo.token) {
         const endpoint = window.location.protocol + "//" + fqdn;
 
-        // join code is obtained by concatenating endpoint, leader VPN port and auth token with pipe character
-        this.joinCode = btoa(
-          endpoint + "|" + this.leaderListenPort + "|" + loginInfo.token
-        );
+        // join code is obtained by concatenating FQDN and auth token with pipe character
+        this.joinCode = btoa(endpoint + "|" + loginInfo.token);
       }
       this.loading.getFqdn = false;
     },
