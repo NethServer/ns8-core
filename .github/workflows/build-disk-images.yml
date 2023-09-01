@@ -4,6 +4,7 @@ on:
     workflows: [core]
     types:
       - completed
+  workflow_dispatch:
 
 jobs:
   core-version:
