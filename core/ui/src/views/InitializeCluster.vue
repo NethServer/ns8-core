@@ -3,7 +3,7 @@
   SPDX-License-Identifier: GPL-3.0-or-later
 -->
 <template>
-  <div>
+  <div class="initialize-cluster">
     <cv-grid class="welcome-grid">
       <cv-loading :active="isJoiningCluster" :overlay="true"></cv-loading>
       <template v-if="q.page === 'welcome'">
@@ -74,8 +74,10 @@
           </cv-column>
         </cv-row>
       </template>
-      <template v-else-if="q.page === 'create'">
-        <template v-if="isPasswordChangeNeeded">
+      <template v-else-if="q.page === 'fqdn'">
+        <template
+          v-if="isPasswordChangeNeeded && $route.query.action === 'create'"
+        >
           <cv-row>
             <!-- password change needed -->
             <cv-column class="welcome">
@@ -152,6 +154,16 @@
         </template>
         <!-- admin password was changed -->
         <template v-else>
+          <!-- fqdn form -->
+          <SetFqdn
+            :action="$route.query.action"
+            @goBack="goToWelcomePage"
+            @fqdnSet="onFqdnSet"
+          />
+        </template>
+      </template>
+      <template v-else-if="q.page === 'create'">
+        <template>
           <!-- create cluster form -->
           <cv-row>
             <cv-column class="welcome">
@@ -168,41 +180,56 @@
             <cv-column>
               <cv-tile light>
                 <template v-if="!isCreatingCluster">
-                  <cv-form @submit.prevent="createCluster">
-                    <cv-text-input
-                      :label="$t('init.vpn_endpoint_address')"
-                      v-model.trim="vpnEndpointAddress"
-                      :invalid-message="$t(error.vpnEndpointAddress)"
-                      :disabled="loading.getDefaults || isCreatingCluster"
-                      ref="vpnEndpointAddress"
-                    >
-                    </cv-text-input>
-                    <cv-text-input
-                      :label="$t('init.vpn_endpoint_port')"
-                      v-model.trim="vpnEndpointPort"
-                      :invalid-message="$t(error.vpnEndpointPort)"
-                      :disabled="loading.getDefaults || isCreatingCluster"
-                      type="number"
-                      class="narrow"
-                      ref="vpnEndpointPort"
-                    >
-                    </cv-text-input>
-                    <cv-text-input
-                      :label="$t('init.vpn_cidr')"
-                      v-model.trim="vpnCidr"
-                      :invalid-message="$t(error.vpnCidr)"
-                      :disabled="loading.getDefaults || isCreatingCluster"
-                      class="narrow"
-                      ref="vpnCidr"
-                    >
-                    </cv-text-input>
+                  <NsInlineNotification
+                    v-if="error.getDefaults"
+                    kind="error"
+                    :title="$t('action.get-defaults')"
+                    :description="error.getFqdn"
+                    :showCloseButton="false"
+                  />
+                  <cv-form v-else @submit.prevent="createCluster">
+                    <cv-skeleton-text
+                      v-if="loading.getDefaults"
+                      :paragraph="true"
+                      :line-count="7"
+                      heading
+                    ></cv-skeleton-text>
+                    <template v-else>
+                      <cv-text-input
+                        :label="$t('init.vpn_endpoint_address')"
+                        v-model.trim="vpnEndpointAddress"
+                        :invalid-message="$t(error.vpnEndpointAddress)"
+                        :disabled="loading.getDefaults || isCreatingCluster"
+                        ref="vpnEndpointAddress"
+                      >
+                      </cv-text-input>
+                      <cv-text-input
+                        :label="$t('init.vpn_endpoint_port')"
+                        v-model.trim="vpnEndpointPort"
+                        :invalid-message="$t(error.vpnEndpointPort)"
+                        :disabled="loading.getDefaults || isCreatingCluster"
+                        type="number"
+                        class="narrow"
+                        ref="vpnEndpointPort"
+                      >
+                      </cv-text-input>
+                      <cv-text-input
+                        :label="$t('init.vpn_cidr')"
+                        v-model.trim="vpnCidr"
+                        :invalid-message="$t(error.vpnCidr)"
+                        :disabled="loading.getDefaults || isCreatingCluster"
+                        class="narrow"
+                        ref="vpnCidr"
+                      >
+                      </cv-text-input>
+                    </template>
                     <cv-button-set class="footer-buttons">
                       <NsButton
                         type="button"
                         kind="secondary"
                         :icon="ChevronLeft20"
                         size="lg"
-                        @click="goToWelcomePage"
+                        @click="goToFqdnPage"
                         >{{ $t("common.go_back") }}
                       </NsButton>
                       <NsButton
@@ -281,7 +308,7 @@
                     kind="secondary"
                     :icon="ChevronLeft20"
                     size="lg"
-                    @click="goToWelcomePage"
+                    @click="goToFqdnPage"
                     >{{ $t("common.go_back") }}
                   </NsButton>
                   <NsButton
@@ -619,8 +646,12 @@
                       <span class="value">{{ restore.summary.routes }}</span>
                     </div>
                     <div class="key-value-setting">
-                      <span class="label">{{ $t("init.custom_certificates") }}</span>
-                      <span class="value">{{ restore.summary.certificates }}</span>
+                      <span class="label">{{
+                        $t("init.custom_certificates")
+                      }}</span>
+                      <span class="value">{{
+                        restore.summary.certificates
+                      }}</span>
                     </div>
                     <div class="key-value-setting">
                       <span class="label">{{
@@ -807,8 +838,9 @@ import { mapActions } from "vuex";
 import to from "await-to-js";
 import NotificationService from "@/mixins/notification";
 import RestoreMultipleInstancesSelector from "@/components/backup/RestoreMultipleInstancesSelector";
-import SkipRestoreAppsModal from "@/components/misc/SkipRestoreAppsModal";
-import WelcomeLogo from "@/components/misc/WelcomeLogo";
+import SkipRestoreAppsModal from "@/components/initialize-cluster/SkipRestoreAppsModal";
+import WelcomeLogo from "@/components/initialize-cluster/WelcomeLogo";
+import SetFqdn from "@/components/initialize-cluster/SetFqdn";
 
 export default {
   name: "InitializeCluster",
@@ -817,6 +849,7 @@ export default {
     RestoreMultipleInstancesSelector,
     SkipRestoreAppsModal,
     WelcomeLogo,
+    SetFqdn,
   },
   mixins: [
     UtilService,
@@ -836,6 +869,7 @@ export default {
       q: {
         page: "welcome",
         endpoint: null,
+        action: null,
       },
       isPasswordChangeNeeded: false,
       currentPassword: "",
@@ -891,6 +925,7 @@ export default {
         readBackupRepositories: "",
         restoreModules: "",
         createCluster: "",
+        getDefaults: "",
         restore: {
           url: "",
           backup_password: "",
@@ -898,6 +933,13 @@ export default {
         },
       },
     };
+  },
+  watch: {
+    "q.page": function () {
+      if (this.q.page === "create") {
+        this.getDefaults();
+      }
+    },
   },
   beforeRouteEnter(to, from, next) {
     next((vm) => {
@@ -965,19 +1007,26 @@ export default {
       this.vpnEndpointPort = defaults.vpn.port.toString();
       this.vpnCidr = defaults.vpn.network;
       this.loading.getDefaults = false;
-    },
-    selectCreateCluster() {
-      this.$router.push({ path: "/init", query: { page: "create" } });
 
-      if (this.isPasswordChangeNeeded) {
-        this.focusElement("currentPassword");
-      } else {
+      if (this.q.page === "create") {
         this.focusElement("vpnEndpointAddress");
       }
     },
+    selectCreateCluster() {
+      this.$router.push({
+        path: "/init",
+        query: { page: "fqdn", action: "create" },
+      });
+
+      if (this.isPasswordChangeNeeded) {
+        this.focusElement("currentPassword");
+      }
+    },
     selectJoinCluster() {
-      this.$router.push({ path: "/init", query: { page: "join" } });
-      this.focusElement("joinCode");
+      this.$router.push({
+        path: "/init",
+        query: { page: "fqdn", action: "join" },
+      });
     },
     selectRestoreCluster() {
       this.$router.push({ path: "/init", query: { page: "restore" } });
@@ -1007,6 +1056,26 @@ export default {
     },
     goToWelcomePage() {
       this.$router.push({ path: "/init", query: { page: "welcome" } });
+    },
+    goToFqdnPage() {
+      const action = this.$route.query.action; // "create" or "join"
+
+      this.$router.push({
+        path: "/init",
+        query: { page: "fqdn", action: action },
+      });
+    },
+    onFqdnSet() {
+      const action = this.$route.query.action; // "create" or "join"
+
+      this.$router.push({
+        path: "/init",
+        query: { page: action, action: action },
+      });
+
+      if (action === "join") {
+        this.focusElement("joinCode");
+      }
     },
     async getClusterStatus() {
       const taskAction = "get-cluster-status";
@@ -1840,36 +1909,12 @@ export default {
   max-width: 70rem;
 }
 
-.welcome {
-  margin-top: 2rem;
-  margin-bottom: 4rem;
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-}
-
-.tile-description {
-  color: $text-02;
-}
-
 .bx--form .bx--form-item {
   margin-bottom: $spacing-06;
 }
 
 .file-uploader {
   margin-bottom: 0 !important;
-}
-
-.footer-buttons {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: $spacing-07;
-
-  .cv-button {
-    position: relative;
-    top: $spacing-05;
-    left: $spacing-05;
-  }
 }
 
 @media (max-width: $breakpoint-medium) {
@@ -1892,5 +1937,29 @@ export default {
 .validation-failed .bx--file__selected-file {
   outline: 2px solid $danger-01;
   outline-offset: -2px;
+}
+
+.initialize-cluster .welcome {
+  margin-top: 2rem;
+  margin-bottom: 4rem;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+.initialize-cluster .tile-description {
+  color: $text-02;
+}
+
+.initialize-cluster .footer-buttons {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: $spacing-07;
+
+  .cv-button {
+    position: relative;
+    top: $spacing-05;
+    left: $spacing-05;
+  }
 }
 </style>

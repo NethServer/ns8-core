@@ -58,7 +58,7 @@
 import { UtilService, TaskService, IconService } from "@nethserver/ns8-ui-lib";
 import to from "await-to-js";
 import NotificationService from "@/mixins/notification";
-import NodeSelector from "@/components/misc/NodeSelector";
+import NodeSelector from "@/components/nodes/NodeSelector";
 import { mapState } from "vuex";
 
 export default {

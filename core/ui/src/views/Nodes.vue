@@ -135,6 +135,9 @@
                   :label="$t('nodes.edit_node_label')"
                 />
               </cv-overflow-menu-item>
+              <cv-overflow-menu-item @click="showSetNodeFqdnModal(node)">
+                <NsMenuItem :icon="Wikis20" :label="$t('nodes.set_fqdn')" />
+              </cv-overflow-menu-item>
               <cv-overflow-menu-item @click="goToHttpRoutes(node)">
                 <NsMenuItem
                   :icon="Router20"
@@ -202,44 +205,53 @@
           <li v-html="$t('nodes.add_node_to_cluster_step_3')"></li>
           <li v-html="$t('nodes.add_node_to_cluster_step_4')"></li>
           <li v-html="$t('nodes.add_node_to_cluster_step_5')"></li>
+          <li v-html="$t('nodes.add_node_to_cluster_step_6')"></li>
         </ol>
-        <span class="join-code">{{ $t("common.join_code") }}</span>
-        <!-- copy to clipboard hint -->
-        <span class="hint hint-copy-to-clipboard">
-          <cv-interactive-tooltip
-            alignment="end"
-            direction="bottom"
-            :visible="isCopyClipboardHintShown"
+        <cv-skeleton-text
+          v-if="loading.getFqdn || !leaderNode"
+          :paragraph="true"
+          :line-count="5"
+          heading
+        ></cv-skeleton-text>
+        <template v-else>
+          <span class="join-code">{{ $t("common.join_code") }}</span>
+          <!-- copy to clipboard hint -->
+          <span class="hint hint-copy-to-clipboard">
+            <cv-interactive-tooltip
+              alignment="end"
+              direction="bottom"
+              :visible="isCopyClipboardHintShown"
+            >
+              <template slot="trigger">
+                <span></span>
+              </template>
+              <template slot="content">
+                <p>
+                  {{ $t("hint.copy_to_clipboard") }}
+                </p>
+                <NsButton
+                  kind="primary"
+                  size="small"
+                  @click="isCopyClipboardHintShown = false"
+                  class="hint-button"
+                  >{{ $t("common.got_it") }}</NsButton
+                >
+              </template>
+            </cv-interactive-tooltip>
+          </span>
+          <NsCodeSnippet
+            :copyTooltip="$t('common.copy_to_clipboard')"
+            :copy-feedback="$t('common.copied_to_clipboard')"
+            :feedback-aria-label="$t('common.copied_to_clipboard')"
+            :wrap-text="true"
+            :moreText="$t('common.show_more')"
+            :lessText="$t('common.show_less')"
+            light
+            expanded
+            hideExpandButton
+            >{{ joinCode }}</NsCodeSnippet
           >
-            <template slot="trigger">
-              <span></span>
-            </template>
-            <template slot="content">
-              <p>
-                {{ $t("hint.copy_to_clipboard") }}
-              </p>
-              <NsButton
-                kind="primary"
-                size="small"
-                @click="isCopyClipboardHintShown = false"
-                class="hint-button"
-                >{{ $t("common.got_it") }}</NsButton
-              >
-            </template>
-          </cv-interactive-tooltip>
-        </span>
-        <NsCodeSnippet
-          :copyTooltip="$t('common.copy_to_clipboard')"
-          :copy-feedback="$t('common.copied_to_clipboard')"
-          :feedback-aria-label="$t('common.copied_to_clipboard')"
-          :wrap-text="true"
-          :moreText="$t('common.show_more')"
-          :lessText="$t('common.show_less')"
-          light
-          expanded
-          hideExpandButton
-          >{{ joinCode }}</NsCodeSnippet
-        >
+        </template>
       </template>
       <template slot="secondary-button">{{ $t("common.close") }}</template>
     </NsModal>
@@ -300,6 +312,12 @@
       :endpointAddress="newLeaderEndpointAddress"
       @hide="hideNewLeaderModal"
     />
+    <!-- set node FQDN modal -->
+    <SetFqdnModal
+      :isShown="isShownSetFqdnModal"
+      :node="currentNode"
+      @hide="hideSetFqdnModal"
+    />
   </cv-grid>
 </template>
 
@@ -313,14 +331,21 @@ import {
 } from "@nethserver/ns8-ui-lib";
 import to from "await-to-js";
 import { mapState, mapActions } from "vuex";
-import NodeCard from "@/components/misc/NodeCard";
+import NodeCard from "@/components/nodes/NodeCard";
 import RemoveNodeModal from "@/components/nodes/RemoveNodeModal";
 import PromoteNodeModal from "@/components/nodes/PromoteNodeModal";
 import NewLeaderModal from "@/components/nodes/NewLeaderModal";
+import SetFqdnModal from "@/components/nodes/SetFqdnModal";
 
 export default {
   name: "Nodes",
-  components: { NodeCard, RemoveNodeModal, PromoteNodeModal, NewLeaderModal },
+  components: {
+    NodeCard,
+    RemoveNodeModal,
+    PromoteNodeModal,
+    NewLeaderModal,
+    SetFqdnModal,
+  },
   mixins: [
     TaskService,
     UtilService,
@@ -333,7 +358,7 @@ export default {
   },
   data() {
     return {
-      REFRESH_DATA_TIME_INTERVAL: 5000,
+      REFRESH_DATA_TIME_INTERVAL: 10000,
       q: {
         isShownAddNodeModal: false,
       },
@@ -351,14 +376,17 @@ export default {
       nodeToPromote: null,
       isShownNewLeaderModal: false,
       newLeaderEndpointAddress: "",
+      isShownSetFqdnModal: false,
       loading: {
         nodes: true,
         setNodeLabel: false,
+        getFqdn: false,
       },
       error: {
         getClusterStatus: "",
         getNodeStatus: "",
         setNodeLabel: "",
+        getFqdn: "",
       },
     };
   },
@@ -377,9 +405,17 @@ export default {
   },
   watch: {
     "q.isShownAddNodeModal": function () {
-      if (this.q.isShownAddNodeModal) {
-        this.retrieveJoinCode();
-        this.showCopyClipboardHint();
+      if (this.q.isShownAddNodeModal && this.leaderNode) {
+        this.getLeaderFqdn();
+      }
+    },
+    leaderNode: function (newLeaderNode, oldLeaderNode) {
+      if (
+        newLeaderNode &&
+        this.q.isShownAddNodeModal &&
+        newLeaderNode.id != oldLeaderNode?.id
+      ) {
+        this.getLeaderFqdn();
       }
     },
   },
@@ -407,18 +443,57 @@ export default {
   },
   methods: {
     ...mapActions(["setClusterNodesInStore"]),
-    retrieveJoinCode() {
+    async getLeaderFqdn() {
+      this.error.getFqdn = "";
+      this.loading.getFqdn = true;
+      const taskAction = "get-fqdn";
+      const eventId = this.getUuid();
+
+      // register to task error
+      this.$root.$once(`${taskAction}-aborted-${eventId}`, this.getFqdnAborted);
+
+      // register to task completion
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.getFqdnCompleted
+      );
+
+      const res = await to(
+        this.createNodeTask(this.leaderNode.id, {
+          action: taskAction,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+            eventId,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.getFqdn = this.getErrorMessage(err);
+        this.loading.getFqdn = false;
+        return;
+      }
+    },
+    getFqdnCompleted(taskContext, taskResult) {
+      const fqdn = `${taskResult.output.hostname}.${taskResult.output.domain}`;
       const loginInfo = this.getFromStorage("loginInfo");
 
       if (loginInfo && loginInfo.token) {
-        const endpoint =
-          window.location.protocol + "//" + window.location.hostname;
+        const endpoint = window.location.protocol + "//" + fqdn;
 
         // join code is obtained by concatenating endpoint, leader VPN port and auth token with pipe character
         this.joinCode = btoa(
           endpoint + "|" + this.leaderListenPort + "|" + loginInfo.token
         );
       }
+      this.loading.getFqdn = false;
+    },
+    getFqdnAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.loading.getFqdn = false;
     },
     async getClusterStatus() {
       this.error.getClusterStatus = "";
@@ -456,19 +531,6 @@ export default {
 
       this.loading.nodes = false;
       this.retrieveNodesStatus();
-    },
-    showCopyClipboardHint() {
-      setTimeout(() => {
-        //// TODO FIX
-        // const isCopyClipboardHintShown = this.getFromStorage(
-        //   "isCopyClipboardHintShown"
-        // );
-        //
-        // if (!isCopyClipboardHintShown) {
-        //   this.isCopyClipboardHintShown = true;
-        //   this.saveToStorage("isCopyClipboardHintShown", true);
-        // }
-      }, 1000);
     },
     async retrieveNodesStatus() {
       this.error.getNodeStatus = "";
@@ -560,6 +622,10 @@ export default {
         this.focusElement("newNodeLabel");
       }, 300);
     },
+    showSetNodeFqdnModal(node) {
+      this.currentNode = node;
+      this.isShownSetFqdnModal = true;
+    },
     hideSetNodeLabelModal() {
       this.isShownSetNodeLabelModal = false;
     },
@@ -621,6 +687,9 @@ export default {
     },
     hideNewLeaderModal() {
       this.isShownNewLeaderModal = false;
+    },
+    hideSetFqdnModal() {
+      this.isShownSetFqdnModal = false;
     },
     onNodePromoted(newLeaderEndpointAddress) {
       this.newLeaderEndpointAddress = newLeaderEndpointAddress;

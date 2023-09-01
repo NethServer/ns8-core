@@ -133,7 +133,7 @@
             :label="$t('backup.url')"
             v-model.trim="url"
             :invalid-message="error.url"
-            :placeholder="$t('backup.'+selectedProviderHelper)"
+            :placeholder="$t('backup.' + selectedProviderHelper)"
             :disabled="loading.addBackupRepository"
             :prefix="selectedProviderPrefix"
             ref="url"
@@ -209,7 +209,7 @@
               :password-show-label="$t('password.show_password')"
               ref="azure_account_key"
             ></cv-text-input>
-             </template>
+          </template>
           <!-- generic s3 -->
           <template v-if="isGenericS3Selected">
             <cv-text-input
@@ -393,10 +393,10 @@ export default {
       } else if (this.isAzureSelected) {
         return "azure_placeholder";
       } else {
-        return 'url_placeholder';
+        return "url_placeholder";
       }
-    }
-     },
+    },
+  },
   watch: {
     isShown: function () {
       if (this.isShown) {
@@ -798,7 +798,10 @@ export default {
           action: taskAction,
           data: {
             name: this.name,
-            provider: this.selectedProvider == 'genericS3' ? 'generic-s3' : this.selectedProvider,
+            provider:
+              this.selectedProvider == "genericS3"
+                ? "generic-s3"
+                : this.selectedProvider,
             url: this.selectedProviderPrefix + this.url,
             parameters: this.buildRepositoryParameters(),
             password: this.password,

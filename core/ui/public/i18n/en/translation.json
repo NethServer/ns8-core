@@ -221,7 +221,13 @@
     "reading_backup_repositories": "Reading backup repositories...",
     "creating_cluster": "Creating cluster...",
     "custom_routes": "Custom HTTP routes",
-    "custom_certificates": "Uploaded certificates"
+    "custom_certificates": "Uploaded certificates",
+    "hostname": "Hostname",
+    "domain": "Domain",
+    "set_fqdn": "Set FQDN",
+    "review_node_fqdn_title": "Review node FQDN",
+    "review_node_fqdn_description": "Set the fully qualified domain name (FQDN) of this cluster node",
+    "forbidden_hostname_value": "Forbidden hostname"
   },
   "shell": {
     "skip_to_content": "Skip to content",
@@ -357,7 +363,9 @@
     "get-user-info": "Get user info",
     "remove-node": "Remove node",
     "promote-node": "Promote node",
-    "get-info": "Get node info"
+    "get-info": "Get node info",
+    "set-fqdn": "Set FQDN",
+    "get-fqdn": "Get FQDN"
   },
   "network": {
     "title": "Network"
@@ -1052,7 +1060,8 @@
     "add_node_to_cluster_step_2": "Copy the join code in the box below",
     "add_node_to_cluster_step_3": "Go to <strong><code>https://NEW_NODE_IP/cluster-admin/</code></strong>",
     "add_node_to_cluster_step_4": "Select <strong>Join cluster</strong>",
-    "add_node_to_cluster_step_5": "Paste the join code",
+    "add_node_to_cluster_step_5": "Review node FQDN",
+    "add_node_to_cluster_step_6": "Paste the join code",
     "leader": "leader",
     "worker": "worker",
     "cpu_usage": "CPU usage",
@@ -1098,7 +1107,8 @@
     "go_to_cluster_admin": "Go to cluster administration",
     "promotion_completed": "Promotion completed",
     "shutdown_node_after_removal": "Shut down {node} after node removal to stop the apps running on it",
-    "cannot_retrieve_node_info": "Cannot retrieve node info"
+    "cannot_retrieve_node_info": "Cannot retrieve node info",
+    "set_fqdn": "Set FQDN"
   },
   "node_detail": {
     "title": "Node detail",
