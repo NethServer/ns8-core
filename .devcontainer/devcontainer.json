@@ -1,7 +1,7 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
 // https://github.com/microsoft/vscode-dev-containers/tree/v0.245.2/containers/javascript-node
 {
-	"name": "Node.js",
+	"name": "ns8-core",
 	"image": "mcr.microsoft.com/devcontainers/javascript-node:0-18-bullseye",
 	// Configure tool-specific properties.
 	"customizations": {
