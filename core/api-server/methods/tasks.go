@@ -35,10 +35,12 @@ import (
 	"github.com/gin-gonic/gin/binding"
 	guuid "github.com/google/uuid"
 	"github.com/mpvl/unique"
+	"github.com/nqd/flat"
 
 	jwt "github.com/appleboy/gin-jwt/v2"
 
 	"github.com/NethServer/ns8-core/core/api-server/audit"
+	"github.com/NethServer/ns8-core/core/api-server/configuration"
 	"github.com/NethServer/ns8-core/core/api-server/models"
 	"github.com/NethServer/ns8-core/core/api-server/redis"
 	"github.com/NethServer/ns8-core/core/api-server/response"
@@ -385,12 +387,32 @@ func createTask(c *gin.Context, queueName string) {
 	// close redis connection
 	redisConnection.Close()
 
+	// convert to map and flat it
+	var jsonDyn map[string]interface{}
+	json.Unmarshal(stringTask, &jsonDyn)
+	in, _ := flat.Flatten(jsonDyn, nil)
+
+	// search for sensitve data, in sensitive list
+	for k, _ := range in {
+		for _, s := range configuration.Config.SensitiveList {
+			if strings.Contains(strings.ToLower(k), strings.ToLower(s)) {
+				in[k] = "XXX"
+			}
+		}
+	}
+
+	// unflat the map
+	out, _ := flat.Unflatten(in, nil)
+
+	// convert to json string
+	jsonOut, _ := json.Marshal(out)
+
 	// store to audit
 	auditData := models.Audit{
 		ID:        0,
 		User:      task.User,
 		Action:    "create-task",
-		Data:      string(stringTask),
+		Data:      string(jsonOut),
 		Timestamp: time.Now().UTC(),
 	}
 	audit.Store(auditData)

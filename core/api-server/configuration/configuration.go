@@ -24,17 +24,19 @@ package configuration
 
 import (
 	"os"
+	"strings"
 )
 
 type Configuration struct {
-	ListenAddress string `json:"listen_address"`
-	RedisAddress  string `json:"redis_address"`
-	RedisUser     string `json:"redis_user"`
-	RedisPassword string `json:"redis_password"`
-	Secret        string `json:"secret"`
-	StaticPath    string `json:"static_path"`
-	AuditFile     string `json:"audit_file"`
-	Issuer        string `json:"issuer"`
+	ListenAddress string   `json:"listen_address"`
+	RedisAddress  string   `json:"redis_address"`
+	RedisUser     string   `json:"redis_user"`
+	RedisPassword string   `json:"redis_password"`
+	Secret        string   `json:"secret"`
+	StaticPath    string   `json:"static_path"`
+	AuditFile     string   `json:"audit_file"`
+	Issuer        string   `json:"issuer"`
+	SensitiveList []string `json:"sensitive_list"`
 }
 
 var Config = Configuration{}
@@ -86,5 +88,11 @@ func Init() {
 		Config.Issuer = os.Getenv("ISSUER")
 	} else {
 		Config.Issuer = "NethServer"
+	}
+
+	if os.Getenv("SENSITIVE_LIST") != "" {
+		Config.SensitiveList = strings.Split(os.Getenv("SENSITIVE_LIST"), ",")
+	} else {
+		Config.SensitiveList = []string{"password", "secret", "token"}
 	}
 }
