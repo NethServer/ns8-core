@@ -115,7 +115,8 @@
         "version_version_available": "Versione <strong>{version}</strong> disponibile",
         "update_available": "Aggiornamento disponibile",
         "updates": "Aggiornamenti",
-        "source": "Sorgente"
+        "source": "Sorgente",
+        "images_label": "Images"
     },
     "nodes": {
         "title": "Nodi",
@@ -169,7 +170,11 @@
         "validation_endpoint_port_invalid_type": "Formato non valido",
         "promotion_completed": "Promozione completata",
         "shutdown_node_after_removal": "Spegnere {node} dopo la rimozione del nodo per fermare le applicazioni in esecuzione su di esso",
-        "remove_node_apps_confirm": "La seguente applicazione è installata su {node}: <strong>{nodeApps}</strong>.<br>Se si rimuove questo nodo, anche <strong>{nodeApps} verrà rimosso</strong>. | Le seguenti applicazioni sono installate su {node}: <strong>{nodeApps}</strong>.<br>Se si rimuove questo nodo, anche <strong>queste applicazioni saranno rimosse</strong>."
+        "remove_node_apps_confirm": "La seguente applicazione è installata su {node}: <strong>{nodeApps}</strong>.<br>Se si rimuove questo nodo, anche <strong>{nodeApps} verrà rimosso</strong>. | Le seguenti applicazioni sono installate su {node}: <strong>{nodeApps}</strong>.<br>Se si rimuove questo nodo, anche <strong>queste applicazioni saranno rimosse</strong>.",
+        "cannot_retrieve_node_info": "Cannot retrieve node info",
+        "add_node_to_cluster_step_6": "Paste the join code",
+        "set_fqdn": "Set FQDN",
+        "node_vpn_endpoint_port_tooltip": "Worker nodes use this port number to connect to the leader. It can differ from the WireGuard listening port 55820. Change this port number only if there is a port-forwarding appliance between the workers and the leader"
     },
     "system_logs": {
         "context_node": "Nodo",
@@ -347,7 +352,7 @@
         "nbdomain_pattern": "Pattern non valido",
         "account_provider": "Account provider",
         "delete_domain": "Elimina dominio",
-        "create_domain": "Creare dominio",
+        "create_domain": "Crea dominio",
         "cannot_connect_to_domain_controller_description": "Prova a instradare il traffico IP dei domain controller tramite la VPN del cluster",
         "ipaddress_dc_conflict_check_failed": "Esiste già un provider con questo IP",
         "empty_state_domains_description": "Crea un dominio per configurare utenti e gruppi",
@@ -483,7 +488,10 @@
         "read-backup-repository": "Leggi il repository di backup",
         "read-backup-repositories": "Leggi i repository di backup",
         "restore-modules": "Ripristina le app",
-        "restore-module": "Ripristina app"
+        "restore-module": "Ripristina app",
+        "get-info": "Get node info",
+        "set-fqdn": "Set FQDN",
+        "get-fqdn": "Get FQDN"
     },
     "backup": {
         "configure": "Configura",
@@ -630,7 +638,16 @@
         "not_backed_up_instances_selected": "Le istanze non oggetto di backup sono attualmente selezionate",
         "restore_app": "Ripristina un'app",
         "replace_existing_app": "Sostituisci l'app esistente {app}",
-        "repositories_tooltip": "Questi sono i repository in cui viene eseguito il backup delle app"
+        "repositories_tooltip": "Questi sono i repository in cui viene eseguito il backup delle app",
+        "azure_placeholder": "container-name",
+        "backblaze_placeholder": "bucket-name",
+        "aws_placeholder": "bucket-name",
+        "s3_placeholder": "minio.myserver.org/bucket-name",
+        "genericS3_access_key_id": "Access key ID",
+        "genericS3_secret_access_key": "Secret access key",
+        "azure_account_name": "Azure account name",
+        "azure_account_key": "Azure storage account key",
+        "cluster_configuration_info": "Additionally, the cluster configuration is automatically backed up to a repository during each scheduled run."
     },
     "login": {
         "password": "Password",
@@ -799,7 +816,9 @@
         "task_failed_validation": "La validazione del task <strong>{task}</strong> è fallita",
         "subtask_failed": "Subtask <strong>{task}</strong> fallito",
         "task_running": "Il task <strong>{task}</strong> è in esecuzione",
-        "subtask_completed": "Subtask <strong>{task}</strong> completato"
+        "subtask_completed": "Subtask <strong>{task}</strong> completato",
+        "task_id": "Task ID",
+        "copy_task_data_to_clipboard": "Copy task trace"
     },
     "settings": {
         "title": "Impostazioni"
@@ -855,7 +874,18 @@
         "skip_apps_restore_2": "È possibile ripristinare le applicazioni in seguito dalla pagina <strong>Backup</strong>",
         "restoring_apps_c": "Ripristino {num} app | Ripristino {num} app",
         "traveling_back_in_time": "Viaggiando indietro nel tempo...",
-        "reading_backup_repositories": "Lettura dei repository di backup..."
+        "reading_backup_repositories": "Lettura dei repository di backup...",
+        "custom_routes": "Custom HTTP routes",
+        "custom_certificates": "Uploaded certificates",
+        "hostname": "Nome host",
+        "domain": "Dominio",
+        "set_fqdn": "Set FQDN",
+        "review_node_fqdn_title": "Review node FQDN",
+        "review_node_fqdn_description": "Set the fully qualified domain name (FQDN) of this cluster node",
+        "forbidden_hostname_value": "Forbidden hostname",
+        "vpn_endpoint_address_tooltip": "Worker nodes use this address to connect to the leader. Ensure it is correctly resolved and reachable by worker nodes",
+        "vpn_endpoint_port_tooltip": "Worker nodes use this port number to connect to the leader. It can differ from the WireGuard listening port 55820. Change this port number only if there is a port-forwarding appliance between the workers and the leader",
+        "vpn_cidr_tooltip": "This is the VPN network used by cluster nodes to communicate. Ensure this network does not conflict with existing ones. Note that VPN network cannot be changed later"
     },
     "account_provider": {
         "title": "Account provider"
