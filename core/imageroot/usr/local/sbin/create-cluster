@@ -54,7 +54,6 @@ result = agent.tasks.run(
     data={
         "network": args.network,
         "endpoint": args.endpoint,
-        "listen_port": int(endpoint_port),
     },
     extra={
         'title': "cluster/create-cluster",

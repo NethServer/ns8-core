@@ -92,7 +92,7 @@ if network is not None:
         'hostname': f"node{node_id}.invalid", # XXX Deprecated field: do not use it any more
         'vpn': {
             'ip_address': ovpn['ip_address'],
-            'listen_port': int(ovpn['listen_port']),
+            'listen_port': 55820,
             'public_key': ovpn['public_key'],
             'endpoint': '',
         }}

@@ -7,15 +7,13 @@
         {
             "tls_verify": true,
             "url": "https://my.example.com",
-            "jwt": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJmb28iOiJiYXIiLCJpYXQiOjE0MzQ0Nzk4ODN9.HQyx15jWm1upqsrKSf89X_iP0sg7N46a9pqBVGPMYdiqZeuU_ZZOdU-zizHJoIHMIJxtEWzpSMaVubJW0AJsTqjqQf6GoJ4cmFAfmfUFXmMC4Xv5oc4UqvGizpoLjfZedd834PcwbS-WskZcL4pVNmBIGRtDXkoU1j2X1P5M_sNJ9lYZ5vITyqe4MYJovQzNdQziUNhcMI5wkXncV7XzGInBeQsPquASWVG4gb3Y--k1P3xWA4Df3rKeEQBbInDKXczvDpfIlTojx4Ch8OM8vXWWNxW-mIQrV31wRrS9XtNoig7irx8N0MzokiYKrQ8WP_ezPicHvVPIHhz-InOw",
-            "listen_port": 55820
+            "jwt": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJmb28iOiJiYXIiLCJpYXQiOjE0MzQ0Nzk4ODN9.HQyx15jWm1upqsrKSf89X_iP0sg7N46a9pqBVGPMYdiqZeuU_ZZOdU-zizHJoIHMIJxtEWzpSMaVubJW0AJsTqjqQf6GoJ4cmFAfmfUFXmMC4Xv5oc4UqvGizpoLjfZedd834PcwbS-WskZcL4pVNmBIGRtDXkoU1j2X1P5M_sNJ9lYZ5vITyqe4MYJovQzNdQziUNhcMI5wkXncV7XzGInBeQsPquASWVG4gb3Y--k1P3xWA4Df3rKeEQBbInDKXczvDpfIlTojx4Ch8OM8vXWWNxW-mIQrV31wRrS9XtNoig7irx8N0MzokiYKrQ8WP_ezPicHvVPIHhz-InOw"
         }
     ],
     "required": [
         "tls_verify",
         "url",
-        "jwt",
-        "listen_port"
+        "jwt"
     ],
     "properties": {
         "tls_verify": {
@@ -38,14 +36,8 @@
             "title": "JWT authorization token",
             "minLength": 1
         },
-        "listen_port": {
-            "type": "integer",
-            "exclusiveMinimum": 1024,
-            "title": "WireGuard listening UDP port",
-            "description": "Listening UDP port for incoming WireGuard VPN packets"
-        },
         "endpoint": {
-            "description": "The public WireGuard VPN endpoint in `hostname:port` form. The given port may differ from the @listen_port property as it depends on external configurations (i.e. port-forwards)",
+            "description": "The public WireGuard VPN endpoint in `hostname:port` form. The given port may differ from 55820 as it depends on external configurations (i.e. port-forwards)",
             "examples": [
                 "my.example.com:55820",
                 "1.2.3.4:60000"

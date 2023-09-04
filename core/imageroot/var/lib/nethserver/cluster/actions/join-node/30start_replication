@@ -33,7 +33,6 @@ node_id = int(request['node_id'])
 leader_ip_address = request['leader_ip_address']
 leader_public_key = request['leader_public_key']
 leader_endpoint = request['leader_endpoint']
-listen_port = int(request['listen_port'])
 
 # Grab the node password, to initialize Redis replication credentials
 node_password = agent.read_envfile('/var/lib/nethserver/node/state/agent.env')["REDIS_PASSWORD"]
@@ -61,7 +60,7 @@ agent.run_helper('sed', '-i',
     '/var/lib/nethserver/node/state/agent.env').check_returncode()
 
 # VPN bootstrap
-cluster.vpn.initialize_wgconf(ip_address, listen_port, peer={
+cluster.vpn.initialize_wgconf(ip_address, peer={
     "ip_address": leader_ip_address,
     "public_key": leader_public_key,
     "endpoint": leader_endpoint,

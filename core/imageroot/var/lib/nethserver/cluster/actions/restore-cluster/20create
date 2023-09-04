@@ -47,7 +47,6 @@ create_retval = agent.tasks.run(
     data={
         "network": dump["cluster"]["network"],
         "endpoint": dump["vpn"]["endpoint"],
-        "listen_port": int(dump["vpn"]["listen_port"])
     },
     endpoint="redis://cluster-leader",
     progress_callback=agent.get_progress_callback(1, 99)

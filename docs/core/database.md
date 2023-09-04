@@ -277,7 +277,6 @@ of the node (e.g. `node/1/...`).
 |node/{id}/vpn public_key           |STRING     |Public WireGuard VPN key|
 |node/{id}/vpn destinations         |STRING     |List of IP addresses routed through the VPN|
 |node/{id}/vpn endpoint             |STRING     |Public IP or host name of the VPN endpoint with :port suffix|
-|node/{id}/vpn listen_port          |INTEGER    |Public UDP port used by the VPN for listening, default `55820`|
 |node/{id}/flags                    |SET        |Flags to mark a node. Supported flags: `nomodules`, the node can't run any module|
 |node/{id}/roles/{role}             |SET        |glob patterns matching the actions that {role} can run. {role} is one of "owner", "reader"...|
 |node/{id}/tcp_ports_sequence       |INTEGER    |Lower boundary for the next TCP_PORTS_RANGE allocation, default: `20000`|

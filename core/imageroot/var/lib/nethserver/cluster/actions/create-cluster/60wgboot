@@ -22,19 +22,19 @@
 
 #
 # 1. Enable wg0 at system boot
-# 2. Configure firewalld to open Wireguard "listen_port"
+# 2. Configure firewalld to trust the VPN network
 #
 
 set -e
 exec 1>&2
 systemctl enable wg-quick@wg0.service
 
-readarray -t request < <(jq -r '.listen_port, .network')
+read -r network < <(jq -r '.network')
 # 0. Allow connections to the wireguard UDP port from
 #    the default firewall zone.
 # 1. Trust connections from the wireguard VPN
 firewall-cmd --permanent --new-service=ns-wireguard
 firewall-cmd --permanent --add-service=ns-wireguard
-firewall-cmd --permanent --service=ns-wireguard --add-port="${request[0]}/udp"
-firewall-cmd --permanent --zone=trusted --add-source="${request[1]}"
+firewall-cmd --permanent --service=ns-wireguard --add-port=55820/udp
+firewall-cmd --permanent --zone=trusted --add-source="${network}"
 firewall-cmd --reload
