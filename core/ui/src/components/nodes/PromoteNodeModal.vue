@@ -54,6 +54,8 @@
           v-model.trim="vpnEndpointAddress"
           :invalid-message="$t(error.endpoint_address)"
           :disabled="loading.promoteNode"
+          tooltipAlignment="end"
+          tooltipDirection="right"
           ref="endpoint_address"
         >
           <template #tooltip>{{
@@ -70,9 +72,14 @@
           :invalid-message="$t(error.endpoint_port)"
           :disabled="loading.promoteNode"
           type="number"
+          tooltipAlignment="end"
+          tooltipDirection="right"
           class="narrow"
           ref="endpoint_port"
         >
+          <template #tooltip>{{
+            $t("nodes.node_vpn_endpoint_port_tooltip")
+          }}</template>
         </NsTextInput>
         <NsCheckbox
           :label="$t('nodes.check_node_connectivity')"
