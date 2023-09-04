@@ -53,12 +53,25 @@ export default {
       isMaster: true,
       isLoaded: false,
       retryWsConnectionInterval: 0,
+      welcomeMsg: [
+        " _   _        _    _       _____                                  ___ ",
+        "| \\ | |      | |  | |     / ____|                                / _ \\",
+        "|  \\| |  ___ | |_ | |__  | (___    ___  _ __ __   __ ___  _ __  | (_) ",
+        "| . ` | / _ \\| __|| '_ \\  \\___ \\  / _ \\| '__|\\ \\ / // _ \\| '__|  > _ <",
+        "| |\\  ||  __/| |_ | | | | ____) ||  __/| |    \\ V /|  __/| |    | (_) ",
+        "|_| \\_| \\___| \\__||_| |_||_____/  \\___||_|     \\_/  \\___||_|     \\___/",
+        "                                                                      ",
+        "                                                                      ",
+      ].join("\n"),
     };
   },
   computed: {
     ...mapState(["loggedUser", "isClusterInitialized"]),
   },
   created() {
+    // print message on console
+    console.log("%c" + this.welcomeMsg, "background: #0090de; color: white;");
+
     // register to events
     this.$root.$on("login", this.initWebSocket);
     this.$root.$on("logout", this.logout);
