@@ -25,6 +25,7 @@ require (
 	github.com/go-openapi/spec v0.20.3 // indirect
 	github.com/go-openapi/swag v0.19.15 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
+	github.com/nqd/flat v0.2.0 // indirect
 	github.com/swaggo/swag v1.6.7 // indirect
 	github.com/ugorji/go v1.2.7 // indirect
 	golang.org/x/net v0.0.0-20210420072503-d25e30425868 // indirect
