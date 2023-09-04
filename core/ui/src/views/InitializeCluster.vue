@@ -195,33 +195,69 @@
                       heading
                     ></cv-skeleton-text>
                     <template v-else>
-                      <cv-text-input
-                        :label="$t('init.vpn_endpoint_address')"
-                        v-model.trim="vpnEndpointAddress"
-                        :invalid-message="$t(error.vpnEndpointAddress)"
-                        :disabled="loading.getDefaults || isCreatingCluster"
-                        ref="vpnEndpointAddress"
-                      >
-                      </cv-text-input>
-                      <cv-text-input
-                        :label="$t('init.vpn_endpoint_port')"
-                        v-model.trim="vpnEndpointPort"
-                        :invalid-message="$t(error.vpnEndpointPort)"
-                        :disabled="loading.getDefaults || isCreatingCluster"
-                        type="number"
-                        class="narrow"
-                        ref="vpnEndpointPort"
-                      >
-                      </cv-text-input>
-                      <cv-text-input
+                      <NsTextInput
                         :label="$t('init.vpn_cidr')"
                         v-model.trim="vpnCidr"
                         :invalid-message="$t(error.vpnCidr)"
                         :disabled="loading.getDefaults || isCreatingCluster"
+                        tooltipAlignment="end"
+                        tooltipDirection="right"
                         class="narrow"
                         ref="vpnCidr"
                       >
-                      </cv-text-input>
+                        <template #tooltip>
+                          <span v-html="$t('init.vpn_cidr_tooltip')"></span>
+                        </template>
+                      </NsTextInput>
+                      <!-- advanced options -->
+                      <cv-accordion ref="accordion">
+                        <cv-accordion-item :open="isOpenCreateClusterAccordion">
+                          <template slot="title">{{
+                            $t("common.advanced")
+                          }}</template>
+                          <template slot="content">
+                            <NsTextInput
+                              :label="$t('init.vpn_endpoint_address')"
+                              v-model.trim="vpnEndpointAddress"
+                              :invalid-message="$t(error.vpnEndpointAddress)"
+                              :disabled="
+                                loading.getDefaults || isCreatingCluster
+                              "
+                              tooltipAlignment="end"
+                              tooltipDirection="right"
+                              class="mg-top-sm"
+                              ref="vpnEndpointAddress"
+                            >
+                              <template #tooltip>
+                                <span
+                                  v-html="
+                                    $t('init.vpn_endpoint_address_tooltip')
+                                  "
+                                ></span>
+                              </template>
+                            </NsTextInput>
+                            <NsTextInput
+                              :label="$t('init.vpn_endpoint_port')"
+                              v-model.trim="vpnEndpointPort"
+                              :invalid-message="$t(error.vpnEndpointPort)"
+                              :disabled="
+                                loading.getDefaults || isCreatingCluster
+                              "
+                              type="number"
+                              tooltipAlignment="end"
+                              tooltipDirection="right"
+                              class="narrow"
+                              ref="vpnEndpointPort"
+                            >
+                              <template #tooltip>
+                                <span
+                                  v-html="$t('init.vpn_endpoint_port_tooltip')"
+                                ></span>
+                              </template>
+                            </NsTextInput>
+                          </template>
+                        </cv-accordion-item>
+                      </cv-accordion>
                     </template>
                     <cv-button-set class="footer-buttons">
                       <NsButton
@@ -891,6 +927,7 @@ export default {
       isChangingPassword: false,
       isMaster: true,
       createClusterProgress: 0,
+      isOpenCreateClusterAccordion: false,
       restore: {
         step: "type",
         type: "",
@@ -1272,6 +1309,7 @@ export default {
 
       if (!this.vpnEndpointAddress) {
         this.error.vpnEndpointAddress = "common.required";
+        this.isOpenCreateClusterAccordion = true;
 
         if (isValidationOk) {
           this.focusElement("vpnEndpointAddress");
@@ -1281,6 +1319,7 @@ export default {
 
       if (!this.vpnEndpointPort) {
         this.error.vpnEndpointPort = "common.required";
+        this.isOpenCreateClusterAccordion = true;
 
         if (isValidationOk) {
           this.focusElement("vpnEndpointPort");
