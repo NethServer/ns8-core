@@ -974,7 +974,7 @@
         "instances_not_backed_up_c": "{num} app senza backup | {num} app senza backup",
         "updated_available_c": "Aggiornamento disponibile | Aggiornamenti disponibili",
         "core_update_available": "Aggiornamento di base disponibile",
-        "title": "Status cluster",
+        "title": "Stato del cluster",
         "go_to_nodes": "Vai a Nodi",
         "apps_installed_c": "App installata | App installate"
     },
