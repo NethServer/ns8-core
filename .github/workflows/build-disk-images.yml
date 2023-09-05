@@ -55,7 +55,7 @@ jobs:
         run: packer init .
       - name: Run `packer build`
         id: validate
-        run: packer build --only=${{ matrix.source }} --var "core_version=${{ github.event.workflow_run.head_branch }}" .
+        run: packer build --only=${{ matrix.source }} .
       - id: qcow2
         run: |
           IMAGE_PATH=$(cat packer-manifest.json | jq -r .builds[0].files[0].name)
