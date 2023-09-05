@@ -7,12 +7,13 @@ parent: User Interface
 
 # Core User Interface
 
-* TOC
-{:toc}
+- TOC
+  {:toc}
 
 ## Components
 
 Core UI includes the following components:
+
 - Login page
 - Shell
   - Side menu
@@ -48,10 +49,12 @@ Shortcuts will be available from the search bar inside the UI.
 Examples of shortcuts could be something like "Add a user" or "Show application X logs".
 
 Shortcuts are described inside a `shortcuts.json` file which must be inside the `ui` path:
+
 - core: `/var/lib/nethserver/cluster/ui/shortcuts.json`
 - applications: `/var/lib/nethserver/cluster/ui/apps/<app>/shortcuts.json`
 
 A `shorcuts.json` must always contain the following fields:
+
 - `name`: the action name
 - `description`: a text which describes the action
 - `tags`: a list of tags to ease the research
@@ -95,12 +98,18 @@ Follow the steps below to prepare the development environment for coding NS8 cor
 - Install NethServer 8 on a development machine
 - Create a copy of `core/ui/public/config/config.development.js.sample` and rename your copy to `config.development.js`:
 - Edit `config.development.js` by configuring `API_ENDPOINT` and `WS_ENDPOINT` with the IP address of your NethServer 8 leader node
+- Disable CORS check. Connect to the leader node and execute:
+
+```
+echo GIN_MODE=debug >> /etc/nethserver/api-server.env; systemctl restart api-server
+```
 
 You can develop NS8 UI inside a container (recommended) or on your workstation.
 
 ### Develop NS8 UI inside a container
 
 You have two options:
+
 - Build and start a Podman container, or
 - Use VS Code Dev Containers
 
@@ -113,29 +122,37 @@ podman build -t ns8-core-dev .
 ```
 
 Start development server (`--network=host` is required for hot-reload):
+
 ```
 podman run -ti -v $(pwd):/app:Z --network=host --name ns8-core --replace ns8-core-dev serve
 ```
 
 Compiles and minifies for production:
+
 ```
 podman run -ti -v $(pwd):/app:Z --name ns8-core --replace ns8-core-dev build
 ```
 
 Start Storybook webapp (`--network=host` is required for hot-reload):
+
 ```
 podman run -ti -v $(pwd):/app:Z --network=host --name ns8-core --replace ns8-core-dev storybook
 ```
 
 Note: if you want to run development server AND run Storybook webapp at the same time you can't use above commands; you would get a `yarn` error.
 To run development server and run Storybook simultaneously:
+
 ```
 podman run -ti -v $(pwd):/app:Z --network=host --name ns8-core --replace ns8-core-dev serve
 ```
+
 and then
+
 ```
 podman exec -ti ns8-core yarn storybook
 ```
+
+Remember to [prepare your development environment](#core-ui-development) before start coding.
 
 #### Use VS Code Dev Containers
 
@@ -151,15 +168,9 @@ podman exec -ti ns8-core yarn storybook
   - `yarn storybook`: start Storybook webapp with hot-reload
   - `yarn build`: compiles and minifies for production
 
-Then, copy `public/config/config.development.js.sample` to `public/config/config.development.js` and edit at least the `API_ENDPOINT` and `WS_ENDPOINT` variables.
-Finally, you need to disable the CORS check. Connect to the leader node and execute:
-```
-echo GIN_MODE=debug >> /etc/nethserver/api-server.env; systemctl restart api-server
-```
-
-You should now be able to access the development UI inside your browser at `http://localhost:8081`.
-
 Container configuration is contained inside `.devcontainer/devcontainer.json`.
+
+Remember to [prepare your development environment](#core-ui-development) before start coding.
 
 ### Develop NS8 UI on your workstation
 
@@ -174,3 +185,5 @@ Developing NS8 UI inside a container is the recommended way, but if you want to 
   - `yarn serve`: start development server with hot-reload
   - `yarn storybook`: start Storybook webapp with hot-reload
   - `yarn build`: compiles and minifies for production
+
+Remember to [prepare your development environment](#core-ui-development) before start coding.
