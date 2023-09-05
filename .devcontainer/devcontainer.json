@@ -11,7 +11,9 @@
 			"extensions": [
 				"dbaeumer.vscode-eslint",
 				"esbenp.prettier-vscode",
-				"octref.vetur"
+				"octref.vetur",
+				"shenjiaolong.vue-helper",
+				"waderyan.gitblame"
 			]
 		}
 	},

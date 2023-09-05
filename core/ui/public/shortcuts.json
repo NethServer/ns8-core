@@ -1,17 +1,336 @@
 [
-    {
-        "name": {
-            "en": "Audit trail",
-            "it": "Registro di audit"
-        },
-        "description": {
-            "en": "Show audit trail",
-            "it": "Visualizza registro di audit"
-        },
-        "tags": {
-            "en": ["audit", "trail", "logs", "operation"],
-            "it": ["audit", "trail", "logs", "operazioni"]
-        },
-        "path": "audit-trail"
-    }
+  {
+    "name": {
+      "en": "Add cluster node",
+      "it": "Aggiungi nodo cluster"
+    },
+    "description": {
+      "en": "Add a node to the cluster",
+      "it": "Aggiungi un nodo al cluster"
+    },
+    "tags": {
+      "en": ["nodes"],
+      "it": ["nodi"]
+    },
+    "path": "nodes?isShownAddNodeModal=true"
+  },
+  {
+    "name": {
+      "en": "Check for updates",
+      "it": "Controlla aggiornamenti"
+    },
+    "description": {
+      "en": "Check if core or app updates are available",
+      "it": "Controlla se sono disponibili aggiornamenti per il core o le app"
+    },
+    "tags": {
+      "en": ["system", "update"],
+      "it": ["aggiornamento", "sistema"]
+    },
+    "path": "software-center?view=updates"
+  },
+  {
+    "name": {
+      "en": "Cluster status",
+      "it": "Stato del cluster"
+    },
+    "description": {
+      "en": "Go to Cluster status",
+      "it": "Vai a Stato del cluster"
+    },
+    "tags": {
+      "en": ["dashboard"],
+      "it": ["dashboard"]
+    },
+    "path": "status"
+  },
+  {
+    "name": {
+      "en": "Nodes",
+      "it": "Nodi"
+    },
+    "description": {
+      "en": "Go to Nodes",
+      "it": "Vai a Nodi"
+    },
+    "tags": {
+      "en": ["node"],
+      "it": ["nodo"]
+    },
+    "path": "nodes"
+  },
+  {
+    "name": {
+      "en": "Domains and users",
+      "it": "Domini e utenti"
+    },
+    "description": {
+      "en": "Go to Domains and users",
+      "it": "Vai a Domini e utenti"
+    },
+    "tags": {
+      "en": ["domain", "providers", "openldap", "samba", "group", "groups"],
+      "it": ["dominio", "provider", "openldap", "samba", "gruppo", "gruppi"]
+    },
+    "path": "domains"
+  },
+  {
+    "name": {
+      "en": "Software center",
+      "it": "Software center"
+    },
+    "description": {
+      "en": "Go to Software center",
+      "it": "Vai a Software center"
+    },
+    "tags": {
+      "en": ["apps", "applications", "modules", "core", "store"],
+      "it": ["app", "applicazioni", "moduli", "core", "store"]
+    },
+    "path": "software-center"
+  },
+  {
+    "name": {
+      "en": "Backup",
+      "it": "Backup"
+    },
+    "description": {
+      "en": "Go to Backup",
+      "it": "Vai a Backup"
+    },
+    "tags": {
+      "en": [
+        "encryption",
+        "restore",
+        "configuration",
+        "apps",
+        "data",
+        "gpg",
+        "disaster",
+        "recovery",
+        "repository",
+        "schedule"
+      ],
+      "it": [
+        "cifratura",
+        "ripristino",
+        "configurazione",
+        "app",
+        "dati",
+        "gpg",
+        "disaster",
+        "recovery",
+        "repository",
+        "schedule",
+        "pianifica"
+      ]
+    },
+    "path": "backup"
+  },
+  {
+    "name": {
+      "en": "System logs",
+      "it": "Log di sistema"
+    },
+    "description": {
+      "en": "Go to System logs",
+      "it": "Vai a Log di sistema"
+    },
+    "tags": {
+      "en": ["search", "error", "errors"],
+      "it": ["ricerca", "errore", "errori"]
+    },
+    "path": "system-logs"
+  },
+  {
+    "name": {
+      "en": "Audit trail",
+      "it": "Audit log"
+    },
+    "description": {
+      "en": "Go to Audit trail",
+      "it": "Vai ad Audit log"
+    },
+    "tags": {
+      "en": ["audit", "trail", "logs", "operation"],
+      "it": ["audit", "trail", "logs", "operazioni"]
+    },
+    "path": "audit-trail"
+  },
+  {
+    "name": {
+      "en": "Settings",
+      "it": "Impostazioni"
+    },
+    "description": {
+      "en": "Go to Settings",
+      "it": "Vai a Impostazioni"
+    },
+    "tags": {
+      "en": ["preferences", "system"],
+      "it": ["preferenze", "sistema"]
+    },
+    "path": "settings"
+  },
+  {
+    "name": {
+      "en": "About",
+      "it": "Informazioni"
+    },
+    "description": {
+      "en": "Go to About",
+      "it": "Vai a Informazioni"
+    },
+    "tags": {
+      "en": ["documentation", "helpdesk", "product", "company"],
+      "it": ["documentazione", "helpdesk", "prodotto", "azienda"]
+    },
+    "path": "about"
+  },
+  {
+    "name": {
+      "en": "Cluster settings",
+      "it": "Impostazioni cluster"
+    },
+    "description": {
+      "en": "Go to Cluster settings",
+      "it": "Vai a Impostazioni cluster"
+    },
+    "tags": {
+      "en": ["label"],
+      "it": ["etichetta"]
+    },
+    "path": "settings/cluster"
+  },
+  {
+    "name": {
+      "en": "Account settings",
+      "it": "Impostazioni account"
+    },
+    "description": {
+      "en": "Go to Account settings",
+      "it": "Vai a Impostazioni account"
+    },
+    "tags": {
+      "en": [
+        "display name",
+        "password",
+        "two-factor",
+        "authentication",
+        "2fa",
+        "user"
+      ],
+      "it": [
+        "nome visualizzato",
+        "password",
+        "autenticazione",
+        "due fattori",
+        "2fa",
+        "utente"
+      ]
+    },
+    "path": "settings/account"
+  },
+  {
+    "name": {
+      "en": "Software repositories",
+      "it": "Repository software"
+    },
+    "description": {
+      "en": "Go to Software repositories",
+      "it": "Vai a Impostazioni repository"
+    },
+    "tags": {
+      "en": ["settings", "url"],
+      "it": ["impostazioni", "url"]
+    },
+    "path": "settings/software-repository"
+  },
+  {
+    "name": {
+      "en": "HTTP routes",
+      "it": "Rotte HTTP"
+    },
+    "description": {
+      "en": "Go to HTTP routes",
+      "it": "Vai a Rotte HTTP"
+    },
+    "tags": {
+      "en": ["settings", "url", "host", "path", "traefik"],
+      "it": ["impostazioni", "url", "host", "path", "percorso", "traefik"]
+    },
+    "path": "settings/http-routes"
+  },
+  {
+    "name": {
+      "en": "TLS certificates",
+      "it": "Certificati TLS"
+    },
+    "description": {
+      "en": "Go to TLS certificates",
+      "it": "Vai a Certificati TLS"
+    },
+    "tags": {
+      "en": [
+        "settings",
+        "certificates",
+        "let's encrypt",
+        "acme server",
+        "traefik"
+      ],
+      "it": [
+        "impostazioni",
+        "certificato",
+        "let's encrypt",
+        "server acme",
+        "traefik"
+      ]
+    },
+    "path": "settings/tls-certificates"
+  },
+  {
+    "name": {
+      "en": "ACME servers",
+      "it": "Server ACME"
+    },
+    "description": {
+      "en": "Go to ACME servers",
+      "it": "Vai a Server ACME"
+    },
+    "tags": {
+      "en": ["settings", "certificates", "let's encrypt", "tls", "traefik"],
+      "it": ["impostazioni", "certificato", "let's encrypt", "tls", "traefik"]
+    },
+    "path": "settings/acme-servers"
+  },
+  {
+    "name": {
+      "en": "Smarthost",
+      "it": "Smarthost"
+    },
+    "description": {
+      "en": "Go to Smarthost",
+      "it": "Vai a Smarthost"
+    },
+    "tags": {
+      "en": ["settings", "smtp", "email"],
+      "it": ["impostazioni", "smtp", "email"]
+    },
+    "path": "settings/smarthost"
+  },
+  {
+    "name": {
+      "en": "Cluster administrators",
+      "it": "Amministratori cluster"
+    },
+    "description": {
+      "en": "Go to Cluster administrators",
+      "it": "Vai a Amministratori cluster"
+    },
+    "tags": {
+      "en": ["settings", "password"],
+      "it": ["impostazioni", "password"]
+    },
+    "path": "settings/cluster-admins"
+  }
 ]

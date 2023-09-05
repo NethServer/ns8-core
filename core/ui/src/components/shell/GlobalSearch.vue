@@ -44,11 +44,11 @@
         <div class="search-result-column name">
           <div class="flex">
             <Settings20 class="result-icon" />
-            <span>{{ result.name }}</span>
+            <span class="font-weight-600">{{ result.name }}</span>
           </div>
           <div
-            v-if="result.source != 'core'"
-            class="source source-small-screen"
+            v-if="result.source != 'core' && result.source !== result.name"
+            class="source"
           >
             {{ result.source }}
           </div>
@@ -56,14 +56,6 @@
         <div class="search-result-column description">
           <div class="flex">
             <span>{{ result.description }}</span>
-          </div>
-        </div>
-        <div
-          v-if="result.source != 'core'"
-          class="search-result-column source source-large-screen"
-        >
-          <div class="flex">
-            <span>{{ result.source }}</span>
           </div>
         </div>
       </div>
@@ -90,7 +82,6 @@ export default {
       showResults: false,
       results: [],
       selectedResult: {},
-      lastSearchQuery: "",
       searchFields: ["name", "description", "source", "tags", "label"],
       minChars: 2,
       maxResults: 10,
@@ -231,12 +222,6 @@ export default {
         this.showResults = false;
         return;
       }
-
-      if (queryText === this.lastSearchQuery) {
-        return;
-      }
-
-      this.lastSearchQuery = queryText;
 
       // search
       this.results = this.allResults.filter((option) => {
@@ -388,6 +373,7 @@ export default {
   display: flex;
   align-items: center;
   padding: $spacing-07 $spacing-05;
+  width: 50%;
 }
 
 .flex {
@@ -406,6 +392,16 @@ export default {
   color: #c6c6c6;
 }
 
+.font-weight-600 {
+  font-weight: 600;
+}
+
+.source {
+  display: inline-block;
+  margin-top: $spacing-03;
+  justify-content: flex-end;
+}
+
 .result-icon {
   margin-right: $spacing-03;
   display: none; //// remove when icons will be implemented
@@ -422,22 +418,10 @@ export default {
   box-shadow: inset 0px 0px 0px 2px $focus;
 }
 
-.source-small-screen {
-  display: none;
-}
-
 @media (max-width: $breakpoint-medium) {
-  .source-small-screen {
-    display: inline-block;
-    margin-top: $spacing-03;
-  }
-
-  .source-large-screen {
-    display: none;
-  }
-
   .search-result-column.description {
     text-align: right;
+    justify-content: flex-end;
   }
 }
 </style>
