@@ -42,7 +42,7 @@
                       kind="primary"
                       :icon="ArrowRight20"
                       class="login-button"
-                      >{{ $t('login.continue') }}</cv-button
+                      >{{ $t("login.continue") }}</cv-button
                     >
                   </div>
                 </cv-form>

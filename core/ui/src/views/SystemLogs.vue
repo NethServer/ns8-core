@@ -184,7 +184,7 @@ export default {
         endDate: "",
         endTime: "",
         autoStartSearch: false,
-        timezone: "local"
+        timezone: "local",
       },
       internalNodes: [],
       apps: [],
