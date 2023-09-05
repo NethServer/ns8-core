@@ -1,23 +1,8 @@
 #!/bin/bash
 
 #
-# Copyright (C) 2021 Nethesis S.r.l.
-# http://www.nethesis.it - nethserver@nethesis.it
-#
-# This script is part of NethServer.
-#
-# NethServer is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License,
-# or any later version.
-#
-# NethServer is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with NethServer.  If not, see COPYING.
+# Copyright (C) 2023 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
 #
 
 set -e
@@ -47,9 +32,6 @@ elif [[ "${ID}" == "debian" && "${VERSION_ID}" == "12" ]]; then
     apt-get -y install gnupg2
     apt-get update
     apt-get -y install python3-venv podman wireguard uuid-runtime jq openssl psmisc firewalld pciutils wget
-elif [[ "${ID}" == "ubuntu" && "${VERSION_ID}" == "20.04" && "${CI}" == "true" && "${GITHUB_ACTIONS}" == "true" ]]; then
-    apt-get update
-    apt-get -y install wireguard firewalld pciutils
 else
     echo "System not supported"
     exit 1
