@@ -13,7 +13,8 @@
         "esbenp.prettier-vscode",
         "octref.vetur",
         "shenjiaolong.vue-helper",
-        "waderyan.gitblame"
+        "waderyan.gitblame",
+        "streetsidesoftware.code-spell-checker"
       ]
     }
   },
