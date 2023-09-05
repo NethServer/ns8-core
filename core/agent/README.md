@@ -74,7 +74,10 @@ following structure:
 
 When a task is popped the agent
 
-1. write the task payload to Redis key `task/<agent-id>/<task-id>/context`
+1. write the task payload to Redis key
+   `task/<agent-id>/<task-id>/context`. Any attribute of the task `data`
+   that ends with `password`, `secret`, or `token` has value replaced with
+   the string `XXX`.
 
 2. starts the action in background (more details about Action in the next
    section)
