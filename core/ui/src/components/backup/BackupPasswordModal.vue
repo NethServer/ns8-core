@@ -21,13 +21,13 @@
           :showCloseButton="false"
         />
         <NsTextInput
-            v-model="clusterPassword"
-            type="password"
-            :label="$t('backup.password')"
-            :passwordHideLabel="$t('password.hide_password')"
-            :passwordShowLabel="$t('password.show_password')"
-            class="confirm-password"
-            ref="confirmPassword"
+          v-model="clusterPassword"
+          type="password"
+          :label="$t('backup.password')"
+          :passwordHideLabel="$t('password.hide_password')"
+          :passwordShowLabel="$t('password.show_password')"
+          class="confirm-password"
+          ref="confirmPassword"
         />
         <NsCheckbox
           :label="$t('backup.i_have_stored_encryption_password')"
@@ -38,12 +38,19 @@
       </cv-form>
     </template>
     <template slot="secondary-button">{{ $t("common.cancel") }}</template>
-    <template slot="primary-button">{{ $t("backup.set_cluster_backup_password") }}</template>
+    <template slot="primary-button">{{
+      $t("backup.set_cluster_backup_password")
+    }}</template>
   </NsModal>
 </template>
 
 <script>
-import { UtilService, TaskService, IconService, DateTimeService} from "@nethserver/ns8-ui-lib";
+import {
+  UtilService,
+  TaskService,
+  IconService,
+  DateTimeService,
+} from "@nethserver/ns8-ui-lib";
 import to from "await-to-js";
 
 export default {
@@ -53,20 +60,20 @@ export default {
     isShown: {
       type: Boolean,
       default: true,
-    }
+    },
   },
   data() {
     return {
       name: "",
       confirmRead: false,
       loading: {
-        setBackupPassword: false
+        setBackupPassword: false,
       },
       clusterPassword: "",
       error: {
-        setBackupPassword: ""
-      }
-    }
+        setBackupPassword: "",
+      },
+    };
   },
   watch: {
     isShown: function () {
@@ -83,10 +90,7 @@ export default {
 
       // register to task error
       this.$root.$off(taskAction + "-aborted");
-      this.$root.$once(
-        taskAction + "-aborted",
-        this.setBackupPasswordAborted
-      );
+      this.$root.$once(taskAction + "-aborted", this.setBackupPasswordAborted);
 
       // register to task completion
       this.$root.$off(taskAction + "-completed");
@@ -106,7 +110,7 @@ export default {
         })
       );
       const err = res[0];
-      this.$emit('hide');
+      this.$emit("hide");
 
       if (err) {
         console.error(`error creating task ${taskAction}`, err);
@@ -122,7 +126,6 @@ export default {
       this.loading.setBackupPassword = false;
       this.$emit("password-set");
     },
-
   },
 };
 </script>

@@ -184,7 +184,7 @@ export default {
         endDate: "",
         endTime: "",
         autoStartSearch: false,
-        timezone: "local"
+        timezone: "local",
       },
       internalNodes: [],
       apps: [],
@@ -256,11 +256,11 @@ export default {
 
       for (let node of this.clusterNodes) {
         nodes.push({
-          name: node.id,
+          name: node.id.toString(),
           label: node.ui_name
             ? node.ui_name + " (" + this.$t("common.node") + " " + node.id + ")"
             : this.$t("common.node") + " " + node.id,
-          value: node.id,
+          value: node.id.toString(),
         });
       }
       nodes.sort(this.sortByProperty("label"));

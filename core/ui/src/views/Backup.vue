@@ -101,7 +101,8 @@
             :icon="Download20"
             @click="downloadClusterConfigurationBackup()"
             :disabled="loading.downloadClusterBackup"
-            :loading="loading.downloadClusterBackup">{{ $t("backup.download_cluster_configuration_backup") }}
+            :loading="loading.downloadClusterBackup"
+            >{{ $t("backup.download_cluster_configuration_backup") }}
           </NsButton>
           <NsButton
             kind="tertiary"

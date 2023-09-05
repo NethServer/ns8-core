@@ -63,18 +63,14 @@
             >{{ $tc("software_center.authors", app.authors.length) }}
           </span>
           <span class="value">
-            <span v-if="app.authors.length == 1"
-              >
-              <cv-link  :href="'mailto:' + app.authors[0].email" target="_blank">
+            <span v-if="app.authors.length == 1">
+              <cv-link :href="'mailto:' + app.authors[0].email" target="_blank">
                 {{ app.authors[0].name }}
               </cv-link>
             </span>
             <ul v-else>
-              <li
-                v-for="(author, index) in app.authors"
-                :key="index"
-              >
-                <cv-link  :href="'mailto:' + author.email" target="_blank">
+              <li v-for="(author, index) in app.authors" :key="index">
+                <cv-link :href="'mailto:' + author.email" target="_blank">
                   {{ author.name }}
                 </cv-link>
               </li>
@@ -87,17 +83,23 @@
               {{ $t("software_center.images_label") }}
             </span>
             <span class="value">
-            <span v-if="app.versions[0]['labels']['org.nethserver.images'].split(' ').length == 1"
-              >{{ app.versions[0]['labels']['org.nethserver.images'] }}
-            </span>
-            <ul class="image-list" v-else>
-              <li
-                v-for="(image, index) in app.versions[0]['labels']['org.nethserver.images'].split(' ')"
-                :key="index"
-              >
-                {{ image }}
-              </li>
-            </ul>
+              <span
+                v-if="
+                  app.versions[0]['labels']['org.nethserver.images'].split(' ')
+                    .length == 1
+                "
+                >{{ app.versions[0]["labels"]["org.nethserver.images"] }}
+              </span>
+              <ul class="image-list" v-else>
+                <li
+                  v-for="(image, index) in app.versions[0]['labels'][
+                    'org.nethserver.images'
+                  ].split(' ')"
+                  :key="index"
+                >
+                  {{ image }}
+                </li>
+              </ul>
             </span>
           </div>
         </div>
@@ -108,17 +110,20 @@
               <cv-link :href="app.docs.documentation_url" target="_blank">
                 {{ $t("software_center.documentation") }}
               </cv-link>
-            </span> &bull;
+            </span>
+            &bull;
             <span>
               <cv-link :href="app.docs.bug_url" target="_blank">
                 {{ $t("software_center.bugs") }}
               </cv-link>
-            </span> &bull;
+            </span>
+            &bull;
             <span>
               <cv-link :href="app.source" target="_blank">
                 {{ $t("software_center.source_package") }}
               </cv-link>
-            </span> &bull;
+            </span>
+            &bull;
             <span>
               <cv-link :href="app.docs.code_url" target="_blank">
                 {{ $t("software_center.source_code") }}
@@ -150,7 +155,7 @@ export default {
     },
     getApplicationCategories(app) {
       return this.getAppCategories(app, this);
-    }
+    },
   },
 };
 </script>
