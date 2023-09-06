@@ -7,14 +7,15 @@ parent: User Interface
 
 # Modules User Interface
 
-* TOC
-{:toc}
+- TOC
+  {:toc}
 
 ## Guidelines
 
 Users can open modules UI from the App drawer or using Global search.
 
 Every NS8 module follows the same UI guidelines in order to provide a uniform user experience. Almost every module has at least these standard pages:
+
 - Status
 - Settings
 - About
@@ -49,4 +50,3 @@ Follow the steps below to prepare the development environment for coding modules
   - `yarn install` (needed only the first time)
   - `yarn watch`
   - on you NS8 machine: `sshfs USER@WORKSTATION:PATH_TO_MODULE/ui/dist/ /var/lib/nethserver/cluster/ui/apps/your_module1/ -o allow_other,default_permissions`
-
