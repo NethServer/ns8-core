@@ -92,12 +92,23 @@
           </div>
         </div>
         <div class="tr" v-for="(disk, index) in disksUsage" :key="index">
-          <div class="td label">{{ disk.diskId }} {{ diskUsageLabel }}</div>
-          <div :class="['td', { warning: disk.usage >= diskWarningTh }]">
-            {{ disk.usage }}%
-          </div>
+          <template v-if="index < 2 || showAllDisks">
+            <div class="td label">{{ disk.diskId }} {{ diskUsageLabel }}</div>
+            <div :class="['td', { warning: disk.usage >= diskWarningTh }]">
+              {{ disk.usage }}%
+            </div>
+          </template>
         </div>
       </div>
+    </div>
+    <!-- show all disks -->
+    <div
+      v-if="!loading && disksUsage.length > 2 && !showAllDisks"
+      class="show-all-disks mg-bottom-xs"
+    >
+      <cv-link @click="showAllDisks = true">
+        {{ $t("nodes.show_all_disks") }}
+      </cv-link>
     </div>
     <div class="row slot">
       <!-- Extra content -->
@@ -190,6 +201,11 @@ export default {
     loading: Boolean,
     light: Boolean,
   },
+  data() {
+    return {
+      showAllDisks: false,
+    };
+  },
 };
 </script>
 
@@ -227,5 +243,9 @@ export default {
 
 .offline {
   margin-top: 1rem;
+}
+
+.show-all-disks {
+  text-align: center;
 }
 </style>
