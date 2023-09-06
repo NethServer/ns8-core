@@ -198,7 +198,7 @@ export default {
       const taskStatus = payload.status;
 
       if (!contextResponse.data.data) {
-        console.log(
+        console.warn(
           "task context not found, skipping",
           taskId,
           taskPath,
@@ -210,7 +210,7 @@ export default {
       const taskContext = contextResponse.data.data.context;
       let taskResult;
 
-      console.log(taskPath, taskContext, payload); ////
+      console.debug(taskPath, taskContext, payload); ////
 
       if (["completed", "aborted", "validation-failed"].includes(taskStatus)) {
         // get output and error
