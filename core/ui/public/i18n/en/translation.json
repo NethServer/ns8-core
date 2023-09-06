@@ -1112,7 +1112,8 @@
     "promotion_completed": "Promotion completed",
     "shutdown_node_after_removal": "Shut down {node} after node removal to stop the apps running on it",
     "cannot_retrieve_node_info": "Cannot retrieve node info",
-    "set_fqdn": "Set FQDN"
+    "set_fqdn": "Set FQDN",
+    "show_all_disks": "Show all disks"
   },
   "node_detail": {
     "title": "Node detail",
@@ -1125,6 +1126,7 @@
     "usage": "Usage",
     "load": "Load",
     "core": "Core",
+    "num_core": "{num}-core",
     "disk": "Disk",
     "disks": "Disks",
     "device": "Device",
