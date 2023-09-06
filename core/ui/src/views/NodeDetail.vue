@@ -134,19 +134,24 @@
               </template>
             </div>
             <template v-if="!loading.nodeStatus">
-              <div
-                v-for="(core, index) in nodeStatus.cpu.info"
-                :key="index"
-                class="mg-bottom-sm"
-              >
-                <span class="label"
-                  >{{ $t("node_detail.core") }} {{ index + 1 }}</span
-                >
+              <template v-if="nodeStatus.cpu.info.length">
+                <!-- single core -->
                 <span
-                  >{{ nodeStatus.cpu.info[index].vendor }} -
-                  {{ nodeStatus.cpu.info[index].model }}</span
+                  v-if="nodeStatus.cpu.info.length == 1"
+                  class="label mg-bottom-xs"
+                  >{{ $t("node_detail.core") }}</span
                 >
-              </div>
+                <!-- multi core -->
+                <span v-else class="label mg-bottom-xs">{{
+                  $t("node_detail.num_core", {
+                    num: nodeStatus.cpu.info.length,
+                  })
+                }}</span>
+                <span
+                  >{{ nodeStatus.cpu.info[0].vendor }} -
+                  {{ nodeStatus.cpu.info[0].model }}</span
+                >
+              </template>
             </template>
           </cv-tile>
         </div>
@@ -527,7 +532,8 @@ export default {
 
 .label {
   font-weight: bold;
-  margin-right: 0.5rem;
+  display: inline-block;
+  margin-right: $spacing-03;
 }
 
 .warning {

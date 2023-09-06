@@ -1125,6 +1125,7 @@
     "usage": "Usage",
     "load": "Load",
     "core": "Core",
+    "num_core": "{num}-core",
     "disk": "Disk",
     "disks": "Disks",
     "device": "Device",
