@@ -79,6 +79,20 @@ The command is received
     ${regexp} =    Catenate    SEPARATOR=.+    @{args}
     Read Until Regexp    ${regexp}
 
+The task context should contain
+    [Arguments]    ${substr}
+    Redis Key Should Be Exist    ${RDB}    task/${AGENT_ID}/${LAST_TASK_ID}/context
+    ${bcontext} =    Get From Redis    ${RDB}    task/${AGENT_ID}/${LAST_TASK_ID}/context
+    ${scontext} =    Convert To String    ${bcontext}
+    Should contain    ${scontext}    ${substr}
+
+The task context should not contain
+    [Arguments]    ${substr}
+    Redis Key Should Be Exist    ${RDB}    task/${AGENT_ID}/${LAST_TASK_ID}/context
+    ${bcontext} =    Get From Redis    ${RDB}    task/${AGENT_ID}/${LAST_TASK_ID}/context
+    ${scontext} =    Convert To String    ${bcontext}
+    Should not contain    ${scontext}    ${substr}
+
 The task output should contain
     [Arguments]    ${substr}
     Redis Key Should Be Exist    ${RDB}    task/${AGENT_ID}/${LAST_TASK_ID}/output

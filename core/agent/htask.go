@@ -36,6 +36,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/nqd/flat"
 	"github.com/NethServer/ns8-core/core/agent/models"
 	"github.com/NethServer/ns8-core/core/agent/validation"
 	"github.com/go-redis/redis/v8"
@@ -348,7 +349,7 @@ func listenActionsAsync(brpopCtx context.Context, complete chan int) {
 		}
 
 		// Store the task as context
-		setErr := rdb.Set(ctx, "task/" + agentPrefix + "/" + task.ID + "/context", popResult[1], taskExpireDuration).Err()
+		setErr := rdb.Set(ctx, "task/" + agentPrefix + "/" + task.ID + "/context", obscureTaskInput(popResult[1]), taskExpireDuration).Err()
 		if setErr != nil {
 			log.Print(SD_ERR+"Context set error: ", setErr)
 		}
@@ -399,4 +400,23 @@ func publishStatus(client redis.Cmdable, progressChannel string, actionDescripto
 	if err != nil {
 		log.Printf(SD_ERR+"Failed to publish the action status on channel %s", progressChannel)
 	}
+}
+
+func obscureTaskInput(payload string) string {
+	var jsonDyn map[string]interface{}
+	json.Unmarshal([]byte(payload), &jsonDyn)
+	flattenedInput, _ := flat.Flatten(jsonDyn, nil)
+	sensitiveList := []string{"password", "secret", "token"}
+	// search for sensitve data, in sensitive list
+	for k, _ := range flattenedInput {
+		for _, s := range sensitiveList {
+			if strings.HasPrefix(k, "data.") && strings.HasSuffix("." + strings.ToLower(k), strings.ToLower(s)) {
+				flattenedInput[k] = "XXX"
+			}
+		}
+	}
+	obscuredTask, _ := flat.Unflatten(flattenedInput, nil)
+	// convert to JSON string
+	taskJson, _ := json.Marshal(obscuredTask)
+	return string(taskJson[:])
 }

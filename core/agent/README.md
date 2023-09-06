@@ -72,9 +72,18 @@ following structure:
 }
 ```
 
-When a task is popped the agent starts the action is execution in
-background and immediately blocks again waiting for more tasks on the
-Redis list.
+When a task is popped the agent
+
+1. write the task payload to Redis key
+   `task/<agent-id>/<task-id>/context`. Any attribute of the task `data`
+   that ends with `password`, `secret`, or `token` has value replaced with
+   the string `XXX`.
+
+2. starts the action in background (more details about Action in the next
+   section)
+
+3. immediately returns to wait for more tasks on the Redis list while the
+   action is running
 
 ## Actions execution model
 
@@ -126,9 +135,9 @@ invoked.
 
 When all steps are executed successfully the action is considered `completed`. Then the following keys are set in Redis DB
 
-- `<agent-id>/task/<task-id>/output`, collects data sent to FD 1 by all steps
-- `<agent-id>/task/<task-id>/error`, collects data sent to FD 2 by all steps
-- `<agent-id>/task/<task-id>/exit_code`, 0 if all steps were successful, otherwise the exit code of the failing step
+- `task/<agent-id>/<task-id>/output`, collects data sent to FD 1 by all steps
+- `task/<agent-id>/<task-id>/error`, collects data sent to FD 2 by all steps
+- `task/<agent-id>/<task-id>/exit_code`, 0 if all steps were successful, otherwise the exit code of the failing step
 - `<agent-id>/environment`, copy of additional environment variables passed
   to the action steps. The values are stored in the local module
   filesystem and copied to Redis if the action has completed successfully.

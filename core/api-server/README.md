@@ -182,7 +182,9 @@ Every request made to the server, using its APIs or WebSocket, is logged inside 
 -   `ID`: the unique id of the record, autoincrement
 -   `User`: the name of the user that made the specific action
 -   `Action`: the name of the action made by the user
--   `Data`: the payload of the action (if present)
+-   `Data`: the payload of the action (if present). To avoid storing
+    passwords in clear-text, any attribute in `Data` matching any of the
+    substrings "password", "secret", "token" is forced to value "XXX".
 -   `Timestamp`: the time when the specific action is executed
 
 ## Websockets
