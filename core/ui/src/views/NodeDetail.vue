@@ -373,8 +373,8 @@ export default {
   data() {
     return {
       q: {},
-      NODE_STATUS_TIME_INTERVAL: 5000,
-      CLUSTER_STATUS_TIME_INTERVAL: 5000,
+      NODE_STATUS_TIME_INTERVAL: 30000,
+      CLUSTER_STATUS_TIME_INTERVAL: 30000,
       CPU_LOAD_WARNING_TH: 90,
       LAST_SEEN_WARNING_TH: 5 * 60 * 1000, // milliseconds: 5 minutes
       nodeId: "",
