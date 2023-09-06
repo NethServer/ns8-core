@@ -118,6 +118,8 @@ You have two options:
 Build the container defined by `Containerfile`:
 
 ```
+cd core/ui
+
 podman build -t ns8-core-dev .
 ```
 

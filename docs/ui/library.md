@@ -66,3 +66,36 @@ Developing NS8 UI library inside a container is the recommended way, but if you 
 - `npm install`: project setup, needed only the first time
 - `npm run build`: compile and minify for production
 - `npm publish`: publish NPM package
+
+## Import NS8 UI library components
+
+To import the latest version of NS8 UI library:
+
+```
+yarn add @nethserver/ns8-ui-lib
+```
+
+### Import library components and mixins
+
+To globally include NS8 components, edit `main.js` of the project importing the library:
+
+```js
+// main.js
+
+import ns8Lib from "@nethserver/ns8-ui-lib";
+Vue.use(ns8Lib);
+```
+
+To import a specific mixin inside a component (e.g. `TaskService` mixin) of the project importing the library:
+
+```js
+// ComponentName.vue
+
+import { TaskService } from "@nethserver/ns8-ui-lib";
+
+export default {
+  name: "ComponentName",
+  mixins: [TaskService],
+  ...
+}
+```
