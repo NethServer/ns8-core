@@ -36,7 +36,6 @@ jobs:
       fail-fast: false
       matrix:
         source:
-          - qemu.dn
           - qemu.rl
     needs:
       - core-version
