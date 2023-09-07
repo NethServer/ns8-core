@@ -36,7 +36,6 @@ jobs:
       fail-fast: false
       matrix:
         source:
-          - qemu.dn
           - qemu.rl
     needs:
       - core-version
@@ -66,6 +65,12 @@ jobs:
           VMDK_PATH=$(echo ${{ steps.qcow2.outputs.path }} | sed -e 's/\.qcow2$/\.vmdk/')
           qemu-img convert -f qcow2 -O vmdk ${{ steps.qcow2.outputs.path }} $VMDK_PATH
           echo "path=${VMDK_PATH}" >> "$GITHUB_OUTPUT"
+      - id: checksum
+        name: Create checksum
+        run: |
+          cd $(dirname ${{ steps.qcow2.outputs.path }})
+          sha256sum $(basename ${{ steps.qcow2.outputs.path }}) > ../CHECKSUM
+          sha256sum $(basename ${{ steps.vmdk.outputs.path }}) >> ../CHECKSUM
       - name: Upload qcow2 NS8 image
         uses: BetaHuhn/do-spaces-action@v2
         with:
@@ -83,4 +88,13 @@ jobs:
           space_name: ${{ env.DO_SPACE_NAME }}
           space_region: ${{ env.DO_SPACE_REGION }}
           source: ${{ steps.vmdk.outputs.path }}
+          out_dir: ns8-images
+      - name: Upload checksum
+        uses: BetaHuhn/do-spaces-action@v2
+        with:
+          access_key: ${{ secrets.DO_SPACE_ACCESS_KEY }}
+          secret_key: ${{ secrets.DO_SPACE_SECRET_KEY }}
+          space_name: ${{ env.DO_SPACE_NAME }}
+          space_region: ${{ env.DO_SPACE_REGION }}
+          source: CHECKSUM
           out_dir: ns8-images
