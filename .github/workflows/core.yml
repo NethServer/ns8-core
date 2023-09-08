@@ -32,7 +32,7 @@ jobs:
       - id: checkout
         uses: actions/checkout@v3
       - id: corecache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             ${{ steps.info.outputs.images-dir }}
@@ -45,9 +45,9 @@ jobs:
         env:
           REPOBASE: ghcr.io/${{needs.module.outputs.owner}}
       - id: python-dep
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v3
         with:
-          python-version: 3.9
+          python-version: 3.11
       - id: push
         name: "Push the images"
         run: |
