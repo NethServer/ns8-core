@@ -1,5 +1,6 @@
 [Unit]
 Description=Promtail logs collector for Loki
+After=redis.service
 
 [Service]
 Type=forking
