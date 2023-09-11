@@ -118,7 +118,7 @@ following command:
 The `apply-vpn-routes` command is the handler of the "vpn-changed" and
 "leader-changed" events. It is also executed at system startup, after
 Redis is synchronized with the leader node (or is the cluster leader by
-itself). That command:
+itself). The command:
 
 * reads VPN and IP routing settings from Redis
 * applies changes to runtime WireGuard and IP routing configuration, to
