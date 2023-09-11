@@ -105,17 +105,23 @@ peer: nvu810d2Q3LGUwJNmJawXj7u16+JUukgreQo4NCcACc=
 Configuration file is saved inside `/etc/wireguard/wg0.conf`, public and private keys are saved inside `/etc/nethserver/wg0.{pub,key}`.
 
 The configuration file is initialized by `create-cluster` and `join-node`
-actions. Its contents reflect the `wg0` VPN runtime settings, which are
-dumped by the `apply-vpn-routes` command (handler of the "vpn-changed" and
-"leader-changed" events) and by `systemctl stop wg-quick@wg0`, using the
-`wg-quick save` command.
-
-Local modification to the configuration file can be merged into the
-runtime state with the following command:
+actions. Local modification to the configuration file can be merged into
+the runtime state with the following command:
 
     systemctl reload wg-quick@wg0
 
 Runtime changes can be persisted to the configuration file with the
-following command, until the next `apply-vpn-routes` run:
+following command:
 
     wg-quick save wg0
+
+The `apply-vpn-routes` command is the handler of the "vpn-changed" and
+"leader-changed" events. It is also executed at system startup, after
+Redis is synchronized with the leader node (or is the cluster leader by
+itself). That command:
+
+* reads VPN and IP routing settings from Redis
+* applies changes to runtime WireGuard and IP routing configuration, to
+  reflect the configuration from Redis
+* invokes `wg-quick save wg0` to overwrite the `wg0.conf` configuration
+  file
