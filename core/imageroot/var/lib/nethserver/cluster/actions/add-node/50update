@@ -80,6 +80,7 @@ for flag in flags:
 
 # Initialize the node ports sequence
 agent.assert_exp(rdb.set(f'node/{node_id}/tcp_ports_sequence', 20000) is True)
+agent.assert_exp(rdb.set(f'node/{node_id}/udp_ports_sequence', 20000) is True)
 
 #
 # Create redis acls for the node agent
