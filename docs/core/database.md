@@ -280,6 +280,7 @@ of the node (e.g. `node/1/...`).
 |node/{id}/flags                    |SET        |Flags to mark a node. Supported flags: `nomodules`, the node can't run any module|
 |node/{id}/roles/{role}             |SET        |glob patterns matching the actions that {role} can run. {role} is one of "owner", "reader"...|
 |node/{id}/tcp_ports_sequence       |INTEGER    |Lower boundary for the next TCP_PORTS_RANGE allocation, default: `20000`|
+|node/{id}/udp_ports_sequence       |INTEGER    |Lower boundary for the next UDP_PORTS_RANGE allocation, default: `20000`|
 |node/{id}/default_instance/{image} |STRING     |A module ID for the given image ID|
 |node/{id}/environment              |HASH       |Node environment variables|
 |node/{id}/ui_name                  |STRING     |UI label for the node|

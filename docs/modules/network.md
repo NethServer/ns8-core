@@ -17,10 +17,10 @@ zones:
 
 As a general rule, any module which doesn't require a well-known port,
 should request a random port using `org.nethserver.tcp-ports-demand`
-label.
+and `org.nethserver.udp-ports-demand` labels.
 
 The following example creates a private network namespace and starts a TCP
-proxy to connect port 8080 inside the container from `${TCP_PORT}`:
+proxy to connect port 8080 inside the container from `${TCP_PORT}` or `${UDP_PORT}`:
 
     /usr/bin/podman run ... --publish ${TCP_PORT}:8080 ...
 

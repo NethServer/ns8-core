@@ -60,6 +60,7 @@ Main environment variables are:
 - `NODE_ID`: the node ID where the action is running, i.e. `1`
 - `<name>_IMAGE`: see [Image download](#image-download)
 - `TCP_PORT`, `TCP_PORTS`, `TCP_PORTS_RANGE`: see [Port allocation](#port-allocation)
+- `UDP_PORT`, `UDP_PORTS`, `UDP_PORTS_RANGE`: see [Port allocation](#port-allocation)
 
 Other available variables:
 - `AGENT_COMFD`: the file descriptor to talk to the agent via [action commands](#action-commands)
