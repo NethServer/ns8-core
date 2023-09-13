@@ -71,6 +71,7 @@ node_pwhash=$(echo -n "${node_password}" | sha256sum | awk '{print $1}')
     cat <<EOF
 SET cluster/node_sequence 1
 SET node/1/tcp_ports_sequence 20000
+SET node/1/udp_ports_sequence 20000
 EOF
 
     # Configure default module repository
