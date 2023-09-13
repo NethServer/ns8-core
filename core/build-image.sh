@@ -109,7 +109,6 @@ aclfile "/data/etc/redis.acl"
 dir "/data"
 masteruser default
 masterauth nopass
-notify-keyspace-events AKE
 EOR
 
 EOF
