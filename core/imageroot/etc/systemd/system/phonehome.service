@@ -3,4 +3,4 @@ Description=PhoneHome
 
 [Service]
 Type=oneshot
-ExecStart=runagent /usr/local/bin/phonehome
+ExecStart=/usr/local/bin/phonehome
