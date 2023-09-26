@@ -1,0 +1,18 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2023 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+import os
+import sys
+import json
+import agent
+
+odir = '/etc/nethserver/tun'
+request = json.load(sys.stdin)
+tun = request['tun']
+
+agent.run_helper('systemctl', 'disable', '--now', f'tun-manager@{tun}').check_returncode()
+os.unlink(f'{odir}/{tun}.env')

@@ -1,0 +1,24 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2023 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+import os
+import sys
+import json
+import agent
+
+odir = '/etc/nethserver/tun'
+request = json.load(sys.stdin)
+tun = request['tun']
+ip = request['ip']
+
+os.makedirs(odir, exist_ok=True)
+
+with open(f'{odir}/{tun}.env', 'w') as fp:
+    fp.write(f"TUN={tun}\n")
+    fp.write(f"IP={ip}\n")
+
+agent.run_helper('systemctl', 'enable', '--now', f'tun-manager@{tun}').check_returncode()
