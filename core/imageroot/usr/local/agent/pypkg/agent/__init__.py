@@ -398,6 +398,24 @@ def add_public_service(name, ports):
     )
     return response['exit_code'] == 0
 
+def add_tun(name, ip):
+    node_id = os.environ['NODE_ID']
+    response = agent.tasks.run(
+        agent_id=f'node/{node_id}',
+        action='add-tun',
+        data={'tun': name, 'ip': ip}
+    )
+    return response['exit_code'] == 0
+
+def remove_tun(name):
+    node_id = os.environ['NODE_ID']
+    response = agent.tasks.run(
+        agent_id=f'node/{node_id}',
+        action='remove-tun',
+        data={'tun': name}
+    )
+    return response['exit_code'] == 0
+
 def add_custom_zone(name, interface, ports=[], rules=[]):
     node_id = os.environ['NODE_ID']
     response = agent.tasks.run(
