@@ -1,0 +1,29 @@
+#!/bin/bash
+
+#
+# Copyright (C) 2023 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+#
+# Manage tun devices.
+# The script requires the following env variables:
+# - TUN: the name of the tun
+# - IP: the IP of the tun with a mask (eg. 10.0.0.1/255.255.255.0 or 10.0.0.1/24)
+#
+
+if [[ -z "$TUN"  || -z "$IP" ]]; then
+    exit 1
+fi
+
+action=${1:?missing action parameter}
+
+if [ "$action" == "add" ]; then
+    ip tuntap add dev "$TUN" mod tun
+    ip addr add "$IP" dev "$TUN"
+    ip link set dev "$TUN" up
+elif [ "$action" == "remove" ]; then
+    ip tuntap del dev "$TUN" mod tun
+else
+    exit 2
+fi
