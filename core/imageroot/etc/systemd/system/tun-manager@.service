@@ -1,0 +1,13 @@
+[Unit]
+Description=NethServer 8 tun device manager
+After=network-online.target
+
+[Service]
+Type=oneshot
+EnvironmentFile=/etc/nethserver/tun/%i.env
+ExecStart=/usr/local/sbin/tun-manager add
+ExecStop=/usr/local/sbin/tun-manager remove
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

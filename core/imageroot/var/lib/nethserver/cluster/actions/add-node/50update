@@ -149,6 +149,13 @@ cluster.grants.grant(rdb, "remove-public-service", f'node/{node_id}', "fwadm")
 cluster.grants.grant(rdb, "add-custom-zone",  f'node/{node_id}', "fwadm")
 cluster.grants.grant(rdb, "remove-custom-zone", f'node/{node_id}', "fwadm")
 
+cluster.grants.grant(rdb, "add-public-service",  f'node/{node_id}', "tunadm")
+cluster.grants.grant(rdb, "remove-public-service", f'node/{node_id}', "tunadm")
+cluster.grants.grant(rdb, "add-custom-zone",  f'node/{node_id}', "tunadm")
+cluster.grants.grant(rdb, "remove-custom-zone", f'node/{node_id}', "tunadm")
+cluster.grants.grant(rdb, "add-tun",  f'node/{node_id}', "tunadm")
+cluster.grants.grant(rdb, "remove-tun", f'node/{node_id}', "tunadm")
+
 # Grant on cascade the owner role on the new node, to users with the owner
 # role on cluster
 for userk in rdb.scan_iter('roles/*'):
