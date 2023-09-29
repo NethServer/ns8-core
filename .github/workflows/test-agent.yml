@@ -18,7 +18,7 @@ jobs:
           mkdir -p tstate
           podman volume export tstate | tar -C tstate -v -x -f -
         if: always()
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: test-agent
           path: tstate/
