@@ -1,0 +1,5 @@
+#!/bin/bash
+
+printf '{
+  "objects": [{"id":123456}]
+}\n'

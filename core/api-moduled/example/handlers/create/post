@@ -1,0 +1,6 @@
+#!/bin/bash
+
+printf '{
+    "id": 123456,
+    "user": "%s"
+}\n' $JWT_USER
