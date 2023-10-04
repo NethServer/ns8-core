@@ -7,18 +7,18 @@ package main
 
 import (
 	"bytes"
-	"io"
-	"net/http"
-	"os"
-	"log"
-	"os/exec"
 	"encoding/json"
+	"github.com/NethServer/ns8-core/core/api-moduled/validation"
 	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
-	"github.com/NethServer/ns8-core/core/api-moduled/validation"
+	"io"
+	"log"
+	"net/http"
+	"os"
+	"os/exec"
 	"time"
 )
 
@@ -80,8 +80,8 @@ func main() {
 
 	router.NoRoute(ijwt.MiddlewareFunc(), func(ginCtx *gin.Context) {
 		ginCtx.JSON(http.StatusNotFound, gin.H{
-			"code":		http.StatusNotFound,
-			"status": 	"Not found",
+			"code":   http.StatusNotFound,
+			"status": "Not found",
 		})
 	})
 
@@ -113,26 +113,26 @@ func mapHandlers(routerGroup *gin.RouterGroup, baseHandlerDir string) {
 		if entry.IsDir() && entry.Name() != "login" {
 			var handlerDir = baseHandlerDir + "/" + entry.Name() + "/"
 			if _, err := os.Stat(handlerDir + "post"); err == nil {
-				routerGroup.POST(entry.Name(), func (ginCtx *gin.Context) {
+				routerGroup.POST(entry.Name(), func(ginCtx *gin.Context) {
 					requestBytes, _ := io.ReadAll(ginCtx.Request.Body)
 
 					//
 					// INPUT validation
 					//
-					if _, err := os.Stat(handlerDir + "validate-input.json") ; err == nil {
-						errData, errInfo := validation.ValidatePayload(handlerDir + "validate-input.json", requestBytes)
+					if _, err := os.Stat(handlerDir + "validate-input.json"); err == nil {
+						errData, errInfo := validation.ValidatePayload(handlerDir+"validate-input.json", requestBytes)
 						if errInfo != nil {
-							logger.Println(SD_ERR + "Input validation error", errInfo)
+							logger.Println(SD_ERR+"Input validation error:", errInfo)
 							ginCtx.JSON(http.StatusInternalServerError, gin.H{
-								"code":	http.StatusInternalServerError,
-								"status":	"Internal server error",
+								"code":   http.StatusInternalServerError,
+								"status": "Internal server error",
 							})
 							return
 						} else if len(errData) > 0 {
 							ginCtx.JSON(http.StatusBadRequest, gin.H{
-								"code":		http.StatusBadRequest,
-								"status":	"Bad request",
-								"error":	errData,
+								"code":   http.StatusBadRequest,
+								"status": "Bad request",
+								"error":  errData,
 							})
 							return
 						}
@@ -147,26 +147,26 @@ func mapHandlers(routerGroup *gin.RouterGroup, baseHandlerDir string) {
 					cmd.Env = prepareEnvironment(ginCtx)
 					responseBytes, cerr := cmd.Output()
 					if cerr != nil {
-						logger.Println(SD_ERR + "Error from", cmd.String() + ":", cerr)
+						logger.Println(SD_ERR+"Error from", cmd.String()+":", cerr)
 					}
 
 					//
 					// OUTPUT validation
 					//
 					if _, err := os.Stat(handlerDir + "validate-output.json"); err == nil {
-						errData, errInfo := validation.ValidatePayload(handlerDir + "validate-output.json", responseBytes)
+						errData, errInfo := validation.ValidatePayload(handlerDir+"validate-output.json", responseBytes)
 						if errInfo != nil {
-							logger.Println(SD_ERR + "Output validation error", errInfo)
+							logger.Println(SD_ERR+"Output validation error:", errInfo)
 							ginCtx.JSON(http.StatusInternalServerError, gin.H{
-								"code":	http.StatusInternalServerError,
-								"status":	"Internal server error",
+								"code":   http.StatusInternalServerError,
+								"status": "Internal server error",
 							})
 							return
 						} else if len(errData) > 0 {
 							ginCtx.JSON(http.StatusInternalServerError, gin.H{
-								"code":		http.StatusInternalServerError,
-								"status":	"Internal server error",
-								"error":	errData,
+								"code":   http.StatusInternalServerError,
+								"status": "Internal server error",
+								"error":  errData,
 							})
 							return
 						}
@@ -178,11 +178,11 @@ func mapHandlers(routerGroup *gin.RouterGroup, baseHandlerDir string) {
 					var responsePayload gin.H
 					jerr := json.Unmarshal(responseBytes, &responsePayload)
 					if jerr != nil {
-						logger.Println(SD_ERR + "JSON Unmarshal() error:", jerr)
-						logger.Println(SD_DEBUG + "Response buffer", string(responseBytes[:]))
+						logger.Println(SD_ERR+"JSON Unmarshal() error:", jerr)
+						logger.Println(SD_DEBUG+"Response buffer", string(responseBytes[:]))
 						ginCtx.JSON(http.StatusInternalServerError, gin.H{
-							"code":	http.StatusInternalServerError,
-							"status":	"Internal server error",
+							"code":   http.StatusInternalServerError,
+							"status": "Internal server error",
 						})
 						return
 					}
@@ -213,19 +213,19 @@ func createJwtInstance(baseHandlerDir string) *jwt.GinJWTMiddleware {
 			cmd.Env = prepareEnvironment(ginCtx)
 			responseBytes, cerr := cmd.Output()
 			if cerr != nil {
-				logger.Println(SD_ERR + "Error from", cmd.String() + ":", cerr)
+				logger.Println(SD_ERR+"Error from", cmd.String()+":", cerr)
 				return nil, jwt.ErrFailedAuthentication
 			}
 			var responsePayload gin.H
 			jerr := json.Unmarshal(responseBytes, &responsePayload)
 			if jerr != nil {
-				logger.Println(SD_ERR + "Login response error: ", jerr)
+				logger.Println(SD_ERR+"Login response error: ", jerr)
 				return nil, jwt.ErrFailedAuthentication
 			}
-			return responsePayload, nil	// Authentication is successful
+			return responsePayload, nil // Authentication is successful
 		},
 		PayloadFunc: func(data interface{}) jwt.MapClaims {
-			if claims, ok := data.(gin.H) ; ok {
+			if claims, ok := data.(gin.H); ok {
 				return jwt.MapClaims(claims)
 			}
 			logger.Println(SD_CRIT + "PayloadFunc error: login output cannot be converted to jwt claims")
@@ -235,7 +235,7 @@ func createJwtInstance(baseHandlerDir string) *jwt.GinJWTMiddleware {
 
 	// check middleware errors
 	if errDefine != nil {
-		logger.Println(SD_ERR + "JWT middleware definition error:", errDefine)
+		logger.Println(SD_ERR+"JWT middleware definition error:", errDefine)
 	}
 
 	// init middleware
@@ -243,7 +243,7 @@ func createJwtInstance(baseHandlerDir string) *jwt.GinJWTMiddleware {
 
 	// check error on initialization
 	if errInit != nil {
-		logger.Println(SD_ERR + "JWT middleware initialization error:", errInit)
+		logger.Println(SD_ERR+"JWT middleware initialization error:", errInit)
 	}
 
 	return jwtInstance
