@@ -1,5 +1,7 @@
 #!/bin/bash
 
+env 1>&2
+
 printf '{
     "id": 123456,
     "user": "%s"

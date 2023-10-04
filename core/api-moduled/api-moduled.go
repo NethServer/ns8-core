@@ -17,12 +17,12 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
+	"github.com/spf13/viper"
 	"github.com/NethServer/ns8-core/core/api-moduled/validation"
 	"time"
 )
 
 var logger *log.Logger
-var identityKey string
 
 // Reference: https://www.man7.org/linux/man-pages/man3/sd-daemon.3.html
 const (
@@ -37,13 +37,22 @@ const (
 )
 
 func main() {
-
-	identityKey = os.Getenv("JWT_IDKEY")
-	if len(identityKey) == 0 {
-		identityKey = "uid"
-	}
+	viper.SetEnvPrefix("AMLD")
+	viper.SetDefault("handler_dir", "./handlers/")
+	viper.SetDefault("public_dir", "./public/")
+	viper.SetDefault("bind_address", ":9313")
+	viper.SetDefault("id_key", "uid")
+	viper.SetDefault("jwt_secret", "")
+	viper.SetDefault("jwt_timeout", time.Hour*4)
+	viper.SetDefault("jwt_token_lookup", "header: Authorization")
+	viper.SetDefault("jwt_realm", "api-moduled")
+	viper.AutomaticEnv()
 
 	logger = log.New(os.Stderr, "", 0)
+
+	if len(viper.GetString("jwt_secret")) == 0 {
+		logger.Println(SD_WARNING + "AMLD_JWT_SECRET environment variable is empty! JWT tokens are unsecure.")
+	}
 
 	router := gin.New()
 	router.Use(
@@ -61,13 +70,13 @@ func main() {
 		router.Use(cors.New(corsConf))
 	}
 
-	ijwt := createJwtInstance("./handlers") // XXX hardcoded handlers root path
+	ijwt := createJwtInstance(viper.GetString("handler_dir"))
 
 	api := router.Group("/api")
 	api.POST("/login", ijwt.LoginHandler)
 	api.Use(ijwt.MiddlewareFunc()) // next API route definitions require the Authorization header
 	api.POST("/logout", ijwt.LogoutHandler)
-	mapHandlers(api, "./handlers") // XXX hardcoded handlers root path
+	mapHandlers(api, viper.GetString("handler_dir"))
 
 	router.NoRoute(ijwt.MiddlewareFunc(), func(ginCtx *gin.Context) {
 		ginCtx.JSON(http.StatusNotFound, gin.H{
@@ -76,9 +85,21 @@ func main() {
 		})
 	})
 
-	router.Static("/", "public")
+	router.Static("/", viper.GetString("public_dir"))
 
-	router.Run(":9313") // XXX hardcoded listen address
+	router.Run(viper.GetString("bind_address"))
+}
+
+func prepareEnvironment(ginCtx *gin.Context) []string {
+	claims := jwt.ExtractClaims(ginCtx)
+	jclaims, _ := json.Marshal(claims)
+	jwt_id, _ := claims[viper.GetString("id_key")].(string)
+	env := []string{
+		"PATH=" + os.Getenv("PATH"),
+		"JWT_ID=" + jwt_id,
+		"JWT_CLAIMS=" + string(jclaims),
+	}
+	return env
 }
 
 func mapHandlers(routerGroup *gin.RouterGroup, baseHandlerDir string) {
@@ -123,11 +144,7 @@ func mapHandlers(routerGroup *gin.RouterGroup, baseHandlerDir string) {
 					cmd := exec.Command(handlerDir + "post")
 					cmd.Stdin = bytes.NewReader(requestBytes)
 					cmd.Stderr = os.Stderr
-					cmd.Env = append(os.Environ(), // XXX sanitize the environment!!
-						"JWT_USER=unknown", // XXX read user from jwt
-						"JWT_ROLES=role1,role2", // XXX read roles from jwt
-						"JWT_SCOPES=scope1,scope2", // XXX read scopes from jwt
-					)
+					cmd.Env = prepareEnvironment(ginCtx)
 					responseBytes, cerr := cmd.Output()
 					if cerr != nil {
 						logger.Println(SD_ERR + "Error from", cmd.String() + ":", cerr)
@@ -178,28 +195,22 @@ func mapHandlers(routerGroup *gin.RouterGroup, baseHandlerDir string) {
 }
 
 func createJwtInstance(baseHandlerDir string) *jwt.GinJWTMiddleware {
-	// define jwt middleware
-
-	jwtSecretKey := os.Getenv("JWT_SECRET")
-	if len(jwtSecretKey) == 0 {
-		logger.Println(SD_WARNING + "Missing configuration: set JWT_SECRET in the environment.")
-	}
 
 	jwtInstance, errDefine := jwt.New(&jwt.GinJWTMiddleware{
-		Realm:       	"nethserver",
-		Key:         	[]byte(jwtSecretKey),
-		Timeout:     	time.Hour, // XXX get JWT timeout
-		IdentityKey:	identityKey,
-		TokenLookup:  	"header: Authorization, query: jwt",
-		TokenHeadName:	"Bearer",
-		TimeFunc:     	time.Now,
+		Realm:         viper.GetString("jwt_realm"),
+		Key:           []byte(viper.GetString("jwt_secret")),
+		Timeout:       viper.GetDuration("jwt_timeout"),
+		IdentityKey:   viper.GetString("id_key"),
+		TokenLookup:   viper.GetString("jwt_token_lookup"),
+		TokenHeadName: "Bearer",
+		TimeFunc:      time.Now,
 
 		Authenticator: func(ginCtx *gin.Context) (interface{}, error) {
 			requestBytes, _ := io.ReadAll(ginCtx.Request.Body)
 			cmd := exec.Command(baseHandlerDir + "/login/post")
 			cmd.Stdin = bytes.NewReader(requestBytes)
 			cmd.Stderr = os.Stderr
-			cmd.Env = os.Environ() // XXX sanitize the environment!!
+			cmd.Env = prepareEnvironment(ginCtx)
 			responseBytes, cerr := cmd.Output()
 			if cerr != nil {
 				logger.Println(SD_ERR + "Error from", cmd.String() + ":", cerr)
