@@ -207,6 +207,24 @@ func createJwtInstance(baseHandlerDir string) *jwt.GinJWTMiddleware {
 
 		Authenticator: func(ginCtx *gin.Context) (interface{}, error) {
 			requestBytes, _ := io.ReadAll(ginCtx.Request.Body)
+
+			//
+			// INPUT validation
+			//
+			if _, err := os.Stat(baseHandlerDir+"/login/validate-input.json"); err == nil {
+				errData, errInfo := validation.ValidatePayload(baseHandlerDir+"/login/validate-input.json", requestBytes)
+				if errInfo != nil {
+					logger.Println(SD_ERR+"Input validation error:", errInfo)
+					return nil, jwt.ErrFailedAuthentication
+				} else if len(errData) > 0 {
+					logger.Println(SD_ERR+"Input validation error:", errData)
+					return nil, jwt.ErrFailedAuthentication
+				}
+			}
+
+			///
+			/// Run login
+			///
 			cmd := exec.Command(baseHandlerDir + "/login/post")
 			cmd.Stdin = bytes.NewReader(requestBytes)
 			cmd.Stderr = os.Stderr
