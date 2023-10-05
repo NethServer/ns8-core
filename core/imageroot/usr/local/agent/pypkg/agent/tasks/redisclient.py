@@ -80,6 +80,7 @@ async def run_redisclient(taskrq, **kwargs):
         taskctx = {
             'id': task_id,
             'status_path': f"task/{taskrq['agent_id']}/{task_id}",
+            'progress_channel': f"progress/{taskrq['agent_id']}/task/{task_id}",
             'rq': taskrq,
             'lock': asyncio.Lock(),
             'pushed': False,
@@ -184,7 +185,7 @@ async def _aread_status(rdb, status_path):
 async def _acontrol_task(rdb, taskctx, **kwargs):
     progress_callback = kwargs['progress_callback']
     async with rdb.pubsub() as pubsub:
-        await _retry_request(pubsub.subscribe, 'progress/' + taskctx['status_path'])
+        await _retry_request(pubsub.subscribe, taskctx['progress_channel'])
 
         if taskctx['lock'].locked() and taskctx['pushed'] is False:
             taskrq = taskctx['rq']
