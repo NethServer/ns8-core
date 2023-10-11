@@ -39,12 +39,6 @@ To update an instance from command line, use:
 If the given `module_url` is already present in the local Podman storage,
 no remote download occurs and the local image is used instead. During
 development this might be unwanted and to work around this behavior
-execute the following command in every cluster node, before running
-`update-module`:
+set the flag `"force": true` to the `update-module` action:
 
-    podman rmi ghcr.io/nethserver/mymodule:latest
-
-Depending on the module implementation, the module Podman local storage
-might store auxiliary module images that must be removed as well. E.g.
-
-    ssh mymodule1@localhost podman rmi docker.io/library/postgres:13-alpine
+    api-cli run update-module --data '{"module_url":"ghcr.io/nethserver/mymodule:latest","instances":["mymodule1"],"force":true}'
