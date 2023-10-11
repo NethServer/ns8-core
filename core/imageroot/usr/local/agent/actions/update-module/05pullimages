@@ -33,8 +33,9 @@ os.chdir(os.environ['AGENT_INSTALL_DIR']) # fail fast!
 
 request = json.load(sys.stdin)
 image_url = request['module_url']
+force = "force" in request and request["force"] is True
 
-if image_url == os.getenv('IMAGE_URL'):
+if not force and image_url == os.getenv('IMAGE_URL'):
     print(agent.SD_WARNING + f"The module URL {image_url} is already installed", file=sys.stderr)
     sys.exit(0)
 
@@ -44,10 +45,15 @@ os.kill(os.getppid(), signal.SIGUSR1)
 
 agent.set_weight('05pullimages', '5')
 
-# Download the requested image
-agent.run_helper('podman-pull-missing', image_url,
-    progress_callback = agent.get_progress_callback(1, 30)
-).check_returncode()
+if not force:
+    # Download the requested image
+    agent.run_helper('podman-pull-missing', image_url,
+        progress_callback = agent.get_progress_callback(1, 30)
+    ).check_returncode()
+else:
+    agent.run_helper('podman', 'pull', image_url,
+      progress_callback = agent.get_progress_callback(1, 30)
+    ).check_returncode()
 
 # Parse the image labels
 with subprocess.Popen(['podman', 'image', 'inspect', image_url], stdout=subprocess.PIPE, stderr=sys.stderr) as proc:
@@ -62,10 +68,15 @@ if 'org.nethserver.images' in inspect_labels:
 else:
     extra_images = []
 
-# Start the download of extra images
-agent.run_helper('podman-pull-missing', *extra_images,
-    progress_callback = agent.get_progress_callback(31, 80)
-).check_returncode()
+if not force:
+    # Start the download of extra images
+    agent.run_helper('podman-pull-missing', *extra_images,
+        progress_callback = agent.get_progress_callback(31, 80)
+    ).check_returncode()
+else:
+    agent.run_helper('podman', 'pull', *extra_images,
+        progress_callback = agent.get_progress_callback(31, 80)
+    ).check_returncode()
 
 # Extract and install the imageroot contents. See chdir() at the beginning
 # of this script.
