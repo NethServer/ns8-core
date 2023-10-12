@@ -17,6 +17,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strings"
 	"os"
 	"os/exec"
 	"time"
@@ -46,6 +47,7 @@ func main() {
 	viper.SetDefault("jwt_timeout", time.Hour*4)
 	viper.SetDefault("jwt_token_lookup", "header: Authorization")
 	viper.SetDefault("jwt_realm", "api-moduled")
+	viper.SetDefault("export_env", "")
 	viper.AutomaticEnv()
 
 	logger = log.New(os.Stderr, "", 0)
@@ -98,6 +100,9 @@ func prepareEnvironment(ginCtx *gin.Context) []string {
 		"PATH=" + os.Getenv("PATH"),
 		"JWT_ID=" + jwt_id,
 		"JWT_CLAIMS=" + string(jclaims),
+	}
+	for _, varname := range strings.Split(viper.GetString("export_env"), " ") {
+		env = append(env, varname + "=" + os.Getenv(varname))
 	}
 	return env
 }

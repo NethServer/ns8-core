@@ -56,6 +56,7 @@ passed:
   environment
 - `JWT_ID`, the value of the identity key in the JWT claims payload
 - `JWT_CLAIMS`, the JWT claims payload, in JSON-encoded form
+- other variables listed in `AMLD_EXPORT_ENV`
 
 The command stderr is sent to the server log.
 
