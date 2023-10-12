@@ -66,9 +66,7 @@ class LdapclientRfc2307(LdapclientBase):
         return groups
 
     def get_user(self, user):
-        response = self.ldapconn.search(self.base_dn, f'(&(objectClass=posixAccount)(objectClass=inetOrgPerson)(uid={user}){self._get_users_search_filter_clause()})',
-            attributes=['displayName', 'uid'] + self.filter_schema_attributes(['pwdAccountLockedTime']),
-        )[2]
+        entry = self.get_user_entry(user)
 
         def get_memberof(user):
             groups = []
@@ -84,18 +82,25 @@ class LdapclientRfc2307(LdapclientBase):
                 })
             return groups
 
+        return {
+            "user": entry['attributes']['uid'][0],
+            "display_name": entry['attributes'].get('displayName') or "",
+            "groups": get_memberof(user),
+            "locked": entry['attributes'].get('pwdAccountLockedTime', []) != [],
+        }
+
+    def get_user_entry(self, user, lextra_attributes=[]):
+        response = self.ldapconn.search(self.base_dn, f'(&(objectClass=posixAccount)(objectClass=inetOrgPerson)(uid={user}){self._get_users_search_filter_clause()})',
+            attributes=['displayName', 'uid'] + self.filter_schema_attributes(['pwdAccountLockedTime'] + lextra_attributes),
+        )[2]
+
         for entry in response:
             if entry['type'] != 'searchResEntry':
                 continue # ignore referrals
-            return {
-                "user": entry['attributes']['uid'][0],
-                "display_name": entry['attributes'].get('displayName') or "",
-                "groups": get_memberof(user),
-                "locked": entry['attributes'].get('pwdAccountLockedTime', []) != [],
-            }
+
+            return entry
 
         raise LdapclientEntryNotFound()
-
 
     def list_users(self):
         response = self.ldapconn.search(self.base_dn, f'(&(objectClass=posixAccount)(objectClass=inetOrgPerson){self._get_users_search_filter_clause()})',
