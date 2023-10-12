@@ -13,6 +13,10 @@
         "module_url": {
             "type": "string",
             "minLength": 1
+        },
+        "force": {
+            "type": "boolean",
+             "default": false
         }
     }
 }
