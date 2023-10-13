@@ -17,9 +17,9 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"strings"
 	"os"
 	"os/exec"
+	"strings"
 	"time"
 )
 
@@ -102,7 +102,7 @@ func prepareEnvironment(ginCtx *gin.Context) []string {
 		"JWT_CLAIMS=" + string(jclaims),
 	}
 	for _, varname := range strings.Split(viper.GetString("export_env"), " ") {
-		env = append(env, varname + "=" + os.Getenv(varname))
+		env = append(env, varname+"="+os.Getenv(varname))
 	}
 	return env
 }
@@ -111,7 +111,7 @@ func mapHandlers(routerGroup *gin.RouterGroup, baseHandlerDir string) {
 
 	entries, err := os.ReadDir(baseHandlerDir)
 	if err != nil {
-		logger.Println(SD_ERR + "mapHandlers:", err)
+		logger.Println(SD_ERR+"mapHandlers:", err)
 		return
 	}
 	for _, entry := range entries {
@@ -216,7 +216,7 @@ func createJwtInstance(baseHandlerDir string) *jwt.GinJWTMiddleware {
 			//
 			// INPUT validation
 			//
-			if _, err := os.Stat(baseHandlerDir+"/login/validate-input.json"); err == nil {
+			if _, err := os.Stat(baseHandlerDir + "/login/validate-input.json"); err == nil {
 				errData, errInfo := validation.ValidatePayload(baseHandlerDir+"/login/validate-input.json", requestBytes)
 				if errInfo != nil {
 					logger.Println(SD_ERR+"Input validation error:", errInfo)
