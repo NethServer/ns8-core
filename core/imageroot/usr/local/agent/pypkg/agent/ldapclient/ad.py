@@ -33,7 +33,9 @@ class LdapclientAd(LdapclientBase):
         raise LdapclientEntryNotFound()
 
     def get_group(self, group):
-        response = self.ldapconn.search(self.base_dn, f'(&(objectClass=group)(sAMAccountName={group}){self._get_groups_search_filter_clause()})',
+        # Escape group string to build the filter assertion:
+        escgroup = ldap3.utils.conv.escape_filter_chars(group)
+        response = self.ldapconn.search(self.base_dn, f'(&(objectClass=group)(sAMAccountName={escgroup}){self._get_groups_search_filter_clause()})',
             attributes=['member', 'description', 'sAMAccountName'],
         )[2]
 
@@ -96,7 +98,9 @@ class LdapclientAd(LdapclientBase):
         }
 
     def get_user_entry(self, user, lextra_attributes=[]):
-        response = self.ldapconn.search(self.base_dn, f'(&(objectClass=user)(sAMAccountName={user}){self._get_users_search_filter_clause()})',
+        # Escape user string to build the filter assertion:
+        escuser = ldap3.utils.conv.escape_filter_chars(user)
+        response = self.ldapconn.search(self.base_dn, f'(&(objectClass=user)(sAMAccountName={escuser}){self._get_users_search_filter_clause()})',
             attributes=['displayName', 'sAMAccountName', 'memberOf', 'userAccountControl'] + self.filter_schema_attributes(lextra_attributes),
         )[2]
 
