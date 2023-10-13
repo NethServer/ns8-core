@@ -83,8 +83,15 @@ command, implementing the following protocol:
   * Ensure the claims include the JWT identifier attribute, matching
     `JWT_ID` configuration.
   * The command exit code must be 0.
-- If the login fails, exit code must be non-zero; write errors to stderr
-  as usual.
+- If the login fails, exit code must be between 2 and 7 for bad
+  credentials. A value of 1 or 8 and above is considered a generic error.
+  Different log lines are printed to stderr accordingly. For example:
+
+      Bad login attempt! Exit code 2; remote address: 1.2.3.4
+
+  In case of internal error
+
+      Error from /home/openldap1/.config/api-moduled/handlers/login/post: exit code 1
 
 Note that for the `login` handler, the `validate-output.json` file is
 ignored. This is an example of `/api/login` response payload:

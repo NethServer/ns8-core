@@ -8,6 +8,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"github.com/NethServer/ns8-core/core/api-moduled/validation"
 	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-contrib/cors"
@@ -236,14 +237,22 @@ func createJwtInstance(baseHandlerDir string) *jwt.GinJWTMiddleware {
 			cmd.Env = prepareEnvironment(ginCtx)
 			responseBytes, cerr := cmd.Output()
 			if cerr != nil {
-				logger.Println(SD_ERR+"Error from", cmd.String()+":", cerr)
-				return nil, jwt.ErrFailedAuthentication
+				// Consider exit code 2-7 as a bad login attempt that must
+				// be logged properly. The first logged IP should be
+				// ignored if the service runs behind a proxy
+				if cmd.ProcessState.ExitCode() > 1 && cmd.ProcessState.ExitCode() < 8 {
+					logger.Printf(SD_NOTICE+"Bad login attempt! Exit code %d; remote address: %s\n", cmd.ProcessState.ExitCode(), ginCtx.ClientIP())
+					return nil, jwt.ErrFailedAuthentication
+				} else {
+					logger.Printf(SD_ERR+"Error from %s: exit code %d\n", cmd.String(), cmd.ProcessState.ExitCode())
+					return nil, errors.New("internal error")
+				}
 			}
 			var responsePayload gin.H
 			jerr := json.Unmarshal(responseBytes, &responsePayload)
 			if jerr != nil {
 				logger.Println(SD_ERR+"Login response error: ", jerr)
-				return nil, jwt.ErrFailedAuthentication
+				return nil, errors.New("internal error")
 			}
 			ginCtx.Set("JWT_PAYLOAD", jwt.MapClaims(responsePayload))
 			return responsePayload, nil // Authentication is successful
