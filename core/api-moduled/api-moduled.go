@@ -245,6 +245,7 @@ func createJwtInstance(baseHandlerDir string) *jwt.GinJWTMiddleware {
 				logger.Println(SD_ERR+"Login response error: ", jerr)
 				return nil, jwt.ErrFailedAuthentication
 			}
+			ginCtx.Set("JWT_PAYLOAD", jwt.MapClaims(responsePayload))
 			return responsePayload, nil // Authentication is successful
 		},
 		PayloadFunc: func(data interface{}) jwt.MapClaims {
@@ -253,6 +254,15 @@ func createJwtInstance(baseHandlerDir string) *jwt.GinJWTMiddleware {
 			}
 			logger.Println(SD_CRIT + "PayloadFunc error: login output cannot be converted to jwt claims")
 			return nil
+		},
+		LoginResponse: func(ginCtx *gin.Context, code int, token string, texp time.Time) {
+			ginCtx.JSON(http.StatusOK, gin.H{
+				"code":    http.StatusOK,
+				"token":   token,
+				"expire":  texp.Format(time.RFC3339),
+				"message": "login succeeded",
+				"claims":  jwt.ExtractClaims(ginCtx),
+			})
 		},
 	})
 

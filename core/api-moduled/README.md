@@ -87,4 +87,32 @@ command, implementing the following protocol:
   as usual.
 
 Note that for the `login` handler, the `validate-output.json` file is
-ignored.
+ignored. This is an example of `/api/login` response payload:
+
+```json
+{
+  "claims": {
+    "groups": [],
+    "uid": "first.user"
+  },
+  "expire": "2023-10-13T14:11:27Z",
+  "message": "login succeeded",
+  "code": 200,
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2OTcyMDYyODcsImdyb3VwcyI6W10sIm9yaWdfaWF0IjoxNjk3MTkxODg3LCJ1aWQiOiJmaXJzdC51c2VyIn0.ItWqHn94-vLWB3sIS5ontvKqJhcIrnxoYn-yG4hY9xw"
+}
+```
+
+Format description:
+
+- The `claims` attribute is a copy of JWT claims
+- JWT itself is returned as a string in the `token` attribute
+- `expire` timestamp corresponds to the JWT `exp` date
+
+In case of login failure, HTTP status 401 is returned, with a similar payload:
+
+```json
+{
+  "code": 401,
+  "message": "incorrect Username or Password"
+}
+```
