@@ -100,6 +100,7 @@ ignored. This is an example of `/api/login` response payload:
 {
   "claims": {
     "groups": [],
+    "scope" : ["change-password"],
     "uid": "first.user"
   },
   "expire": "2023-10-13T14:11:27Z",
@@ -111,7 +112,9 @@ ignored. This is an example of `/api/login` response payload:
 
 Format description:
 
-- The `claims` attribute is a copy of JWT claims
+- The `claims` attribute is a copy of JWT claims. The `claims.scope`
+  attribute is used for authorization checks, as explained in the next
+  section.
 - JWT itself is returned as a string in the `token` attribute
 - `expire` timestamp corresponds to the JWT `exp` date
 
@@ -123,3 +126,14 @@ In case of login failure, HTTP status 401 is returned, with a similar payload:
   "message": "incorrect Username or Password"
 }
 ```
+
+## Authorization
+
+The `login` script can optionally return a `scope` claim, so the token can
+be used only for a restricted list of handlers.
+
+- If the `scope` claim is not set, the token is valid for any handler.
+- Otherwise, if the `scope` claim is set and its value is an array of
+  strings, on each request the handler name is seeked in the array. If a
+  match is found, the request is authorized, otherwise a `403` status is
+  returned to the client.

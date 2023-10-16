@@ -273,6 +273,30 @@ func createJwtInstance(baseHandlerDir string) *jwt.GinJWTMiddleware {
 				"claims":  jwt.ExtractClaims(ginCtx),
 			})
 		},
+		Authorizator: func(data interface{}, ginCtx *gin.Context) bool {
+			claims := jwt.ExtractClaims(ginCtx)
+
+			scopeValue, scopeClaimExists := claims["scope"]
+			if !scopeClaimExists {
+				// The token scope is unlimited: auth ok.
+				return true
+			}
+
+			if scope, ok := scopeValue.([]interface{}); ok {
+				// Check if the wanted handler is in the scope
+				for _, elemValue := range scope {
+					elem, ok := elemValue.(string)
+					if ok && strings.HasSuffix(ginCtx.FullPath(), "/" + elem) {
+						// The token scope matches request path: auth ok.
+						return true
+					}
+				}
+			} else {
+				logger.Printf(SD_CRIT+"Authorizator: invalid token scope type \"%T\". Value: %#v\n", ginCtx.FullPath(), scope, scope)
+			}
+
+			return false
+		},
 	})
 
 	// check middleware errors
