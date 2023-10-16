@@ -20,6 +20,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"path"
 	"strings"
 	"time"
 )
@@ -79,7 +80,7 @@ func main() {
 	api.POST("/login", ijwt.LoginHandler)
 	api.Use(ijwt.MiddlewareFunc()) // next API route definitions require the Authorization header
 	api.POST("/logout", ijwt.LogoutHandler)
-	mapHandlers(api, viper.GetString("handler_dir"))
+	api.POST("/:handler", apiPostHandler)
 
 	router.NoRoute(ijwt.MiddlewareFunc(), func(ginCtx *gin.Context) {
 		ginCtx.JSON(http.StatusNotFound, gin.H{
@@ -108,96 +109,95 @@ func prepareEnvironment(ginCtx *gin.Context) []string {
 	return env
 }
 
-func mapHandlers(routerGroup *gin.RouterGroup, baseHandlerDir string) {
+func apiPostHandler(ginCtx *gin.Context) {
 
-	entries, err := os.ReadDir(baseHandlerDir)
-	if err != nil {
-		logger.Println(SD_ERR+"mapHandlers:", err)
+	pHandler := path.Base(ginCtx.Param("handler"))
+	handlerDir := path.Clean(viper.GetString("handler_dir")+"/"+pHandler) + "/"
+
+	// Check if handler directory exists, return 404 otherwise:
+	if _, err := os.Stat(handlerDir); err != nil {
+		ginCtx.Error(err)
+		ginCtx.JSON(http.StatusNotFound, gin.H{
+			"code":   http.StatusNotFound,
+			"status": "Not found",
+		})
 		return
 	}
-	for _, entry := range entries {
-		if entry.IsDir() && entry.Name() != "login" {
-			var handlerDir = baseHandlerDir + "/" + entry.Name() + "/"
-			if _, err := os.Stat(handlerDir + "post"); err == nil {
-				routerGroup.POST(entry.Name(), func(ginCtx *gin.Context) {
-					requestBytes, _ := io.ReadAll(ginCtx.Request.Body)
 
-					//
-					// INPUT validation
-					//
-					if _, err := os.Stat(handlerDir + "validate-input.json"); err == nil {
-						errData, errInfo := validation.ValidatePayload(handlerDir+"validate-input.json", requestBytes)
-						if errInfo != nil {
-							logger.Println(SD_ERR+"Input validation error:", errInfo)
-							ginCtx.JSON(http.StatusInternalServerError, gin.H{
-								"code":   http.StatusInternalServerError,
-								"status": "Internal server error",
-							})
-							return
-						} else if len(errData) > 0 {
-							ginCtx.JSON(http.StatusBadRequest, gin.H{
-								"code":   http.StatusBadRequest,
-								"status": "Bad request",
-								"error":  errData,
-							})
-							return
-						}
-					}
+	requestBytes, _ := io.ReadAll(ginCtx.Request.Body)
 
-					///
-					/// COMMAND execution
-					///
-					cmd := exec.Command(handlerDir + "post")
-					cmd.Stdin = bytes.NewReader(requestBytes)
-					cmd.Stderr = os.Stderr
-					cmd.Env = prepareEnvironment(ginCtx)
-					responseBytes, cerr := cmd.Output()
-					if cerr != nil {
-						logger.Println(SD_ERR+"Error from", cmd.String()+":", cerr)
-					}
-
-					//
-					// OUTPUT validation
-					//
-					if _, err := os.Stat(handlerDir + "validate-output.json"); err == nil {
-						errData, errInfo := validation.ValidatePayload(handlerDir+"validate-output.json", responseBytes)
-						if errInfo != nil {
-							logger.Println(SD_ERR+"Output validation error:", errInfo)
-							ginCtx.JSON(http.StatusInternalServerError, gin.H{
-								"code":   http.StatusInternalServerError,
-								"status": "Internal server error",
-							})
-							return
-						} else if len(errData) > 0 {
-							ginCtx.JSON(http.StatusInternalServerError, gin.H{
-								"code":   http.StatusInternalServerError,
-								"status": "Internal server error",
-								"error":  errData,
-							})
-							return
-						}
-					}
-
-					///
-					/// Response output
-					///
-					var responsePayload gin.H
-					jerr := json.Unmarshal(responseBytes, &responsePayload)
-					if jerr != nil {
-						logger.Println(SD_ERR+"JSON Unmarshal() error:", jerr)
-						logger.Println(SD_DEBUG+"Response buffer", string(responseBytes[:]))
-						ginCtx.JSON(http.StatusInternalServerError, gin.H{
-							"code":   http.StatusInternalServerError,
-							"status": "Internal server error",
-						})
-						return
-					}
-					ginCtx.JSON(http.StatusOK, responsePayload)
-					return
-				})
-			}
+	//
+	// INPUT validation
+	//
+	if _, err := os.Stat(handlerDir + "validate-input.json"); err == nil {
+		errData, errInfo := validation.ValidatePayload(handlerDir+"validate-input.json", requestBytes)
+		if errInfo != nil {
+			logger.Println(SD_ERR+"Input validation error:", errInfo)
+			ginCtx.JSON(http.StatusInternalServerError, gin.H{
+				"code":   http.StatusInternalServerError,
+				"status": "Internal server error",
+			})
+			return
+		} else if len(errData) > 0 {
+			ginCtx.JSON(http.StatusBadRequest, gin.H{
+				"code":   http.StatusBadRequest,
+				"status": "Bad request",
+				"error":  errData,
+			})
+			return
 		}
 	}
+
+	///
+	/// COMMAND execution
+	///
+	cmd := exec.Command(handlerDir + "post")
+	cmd.Stdin = bytes.NewReader(requestBytes)
+	cmd.Stderr = os.Stderr
+	cmd.Env = prepareEnvironment(ginCtx)
+	responseBytes, cerr := cmd.Output()
+	if cerr != nil {
+		logger.Println(SD_ERR+"Error from", cmd.String()+":", cerr)
+	}
+
+	//
+	// OUTPUT validation
+	//
+	if _, err := os.Stat(handlerDir + "validate-output.json"); err == nil {
+		errData, errInfo := validation.ValidatePayload(handlerDir+"validate-output.json", responseBytes)
+		if errInfo != nil {
+			logger.Println(SD_ERR+"Output validation error:", errInfo)
+			ginCtx.JSON(http.StatusInternalServerError, gin.H{
+				"code":   http.StatusInternalServerError,
+				"status": "Internal server error",
+			})
+			return
+		} else if len(errData) > 0 {
+			ginCtx.JSON(http.StatusInternalServerError, gin.H{
+				"code":   http.StatusInternalServerError,
+				"status": "Internal server error",
+				"error":  errData,
+			})
+			return
+		}
+	}
+
+	///
+	/// Response output
+	///
+	var responsePayload gin.H
+	jerr := json.Unmarshal(responseBytes, &responsePayload)
+	if jerr != nil {
+		logger.Println(SD_ERR+"JSON Unmarshal() error:", jerr)
+		logger.Println(SD_DEBUG+"Response buffer", string(responseBytes[:]))
+		ginCtx.JSON(http.StatusInternalServerError, gin.H{
+			"code":   http.StatusInternalServerError,
+			"status": "Internal server error",
+		})
+		return
+	}
+	ginCtx.JSON(http.StatusOK, responsePayload)
+	return
 }
 
 func createJwtInstance(baseHandlerDir string) *jwt.GinJWTMiddleware {
@@ -276,8 +276,14 @@ func createJwtInstance(baseHandlerDir string) *jwt.GinJWTMiddleware {
 		Authorizator: func(data interface{}, ginCtx *gin.Context) bool {
 			claims := jwt.ExtractClaims(ginCtx)
 
+			if ginCtx.FullPath() == "/api/logout" {
+				return true // logout is always allowed
+			} else if !strings.HasPrefix(ginCtx.FullPath(), "/api/") {
+				return true // static paths are always allowed
+			}
+
 			scopeValue, scopeClaimExists := claims["scope"]
-			if !scopeClaimExists {
+			if ! scopeClaimExists {
 				// The token scope is unlimited: auth ok.
 				return true
 			}
@@ -286,7 +292,7 @@ func createJwtInstance(baseHandlerDir string) *jwt.GinJWTMiddleware {
 				// Check if the wanted handler is in the scope
 				for _, elemValue := range scope {
 					elem, ok := elemValue.(string)
-					if ok && strings.HasSuffix(ginCtx.FullPath(), "/" + elem) {
+					if ok && ginCtx.Param("handler") == elem {
 						// The token scope matches request path: auth ok.
 						return true
 					}
