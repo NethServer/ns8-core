@@ -33,7 +33,9 @@ class LdapclientAd(LdapclientBase):
         raise LdapclientEntryNotFound()
 
     def get_group(self, group):
-        response = self.ldapconn.search(self.base_dn, f'(&(objectClass=group)(sAMAccountName={group}){self._get_groups_search_filter_clause()})',
+        # Escape group string to build the filter assertion:
+        escgroup = ldap3.utils.conv.escape_filter_chars(group)
+        response = self.ldapconn.search(self.base_dn, f'(&(objectClass=group)(sAMAccountName={escgroup}){self._get_groups_search_filter_clause()})',
             attributes=['member', 'description', 'sAMAccountName'],
         )[2]
 
@@ -73,9 +75,7 @@ class LdapclientAd(LdapclientBase):
         return groups
 
     def get_user(self, user):
-        response = self.ldapconn.search(self.base_dn, f'(&(objectClass=user)(sAMAccountName={user}){self._get_users_search_filter_clause()})',
-            attributes=['displayName', 'sAMAccountName', 'memberOf', 'userAccountControl'],
-        )[2]
+        entry = self.get_user_entry(user)
 
         def lget_group(dn):
             group = self._get_dn_attributes(dn, attributes=['sAMAccountName', 'description'])
@@ -90,15 +90,25 @@ class LdapclientAd(LdapclientBase):
                 "description": description,
             }
 
+        return {
+            "user": entry['attributes']['sAMAccountName'],
+            "display_name": entry['attributes'].get('displayName') or "",
+            "groups": [lget_group(dn) for dn in entry['attributes']['memberOf']],
+            "locked": bool(entry['attributes']['userAccountControl'] & 0x2), # ACCOUNTDISABLE
+        }
+
+    def get_user_entry(self, user, lextra_attributes=[]):
+        # Escape user string to build the filter assertion:
+        escuser = ldap3.utils.conv.escape_filter_chars(user)
+        response = self.ldapconn.search(self.base_dn, f'(&(objectClass=user)(sAMAccountName={escuser}){self._get_users_search_filter_clause()})',
+            attributes=['displayName', 'sAMAccountName', 'memberOf', 'userAccountControl'] + self.filter_schema_attributes(lextra_attributes),
+        )[2]
+
         for entry in response:
             if entry['type'] != 'searchResEntry':
                 continue # ignore referrals
-            return {
-                "user": entry['attributes']['sAMAccountName'],
-                "display_name": entry['attributes'].get('displayName') or "",
-                "groups": [lget_group(dn) for dn in entry['attributes']['memberOf']],
-                "locked": bool(entry['attributes']['userAccountControl'] & 0x2), # ACCOUNTDISABLE
-            }
+
+            return entry
 
         raise LdapclientEntryNotFound()
 

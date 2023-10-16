@@ -18,18 +18,23 @@
 # along with NethServer.  If not, see COPYING.
 #
 
+import ldap3
 from .exceptions import LdapclientEntryNotFound
 from .base import LdapclientBase
 
 class LdapclientRfc2307(LdapclientBase):
 
     def get_group(self, group):
-        response = self.ldapconn.search(self.base_dn, f'(&(objectClass=posixGroup)(cn={group}){self._get_groups_search_filter_clause()})',
+        # Escape group string to build the filter assertion:
+        escgroup = ldap3.utils.conv.escape_filter_chars(group)
+        response = self.ldapconn.search(self.base_dn, f'(&(objectClass=posixGroup)(cn={escgroup}){self._get_groups_search_filter_clause()})',
             attributes=['cn', 'memberUid', 'description'],
         )[2]
 
         def lget_user(uid):
-            user = self.ldapconn.search(self.base_dn, f'(&(objectClass=posixAccount)(objectClass=inetOrgPerson)(uid={uid}){self._get_users_search_filter_clause()})',
+            # Escape uid string to build the filter assertion:
+            escuid = ldap3.utils.conv.escape_filter_chars(uid)
+            user = self.ldapconn.search(self.base_dn, f'(&(objectClass=posixAccount)(objectClass=inetOrgPerson)(uid={escuid}){self._get_users_search_filter_clause()})',
                 attributes=['displayName', 'uid'],
             )[2][0]['attributes']
 
@@ -66,13 +71,13 @@ class LdapclientRfc2307(LdapclientBase):
         return groups
 
     def get_user(self, user):
-        response = self.ldapconn.search(self.base_dn, f'(&(objectClass=posixAccount)(objectClass=inetOrgPerson)(uid={user}){self._get_users_search_filter_clause()})',
-            attributes=['displayName', 'uid'] + self.filter_schema_attributes(['pwdAccountLockedTime']),
-        )[2]
+        entry = self.get_user_entry(user)
 
         def get_memberof(user):
+            # Escape user string to build the filter assertion:
+            escuser = ldap3.utils.conv.escape_filter_chars(user)
             groups = []
-            gresponse = self.ldapconn.search(self.base_dn, f'(&(objectClass=posixGroup)(memberUid={user}){self._get_groups_search_filter_clause()})',
+            gresponse = self.ldapconn.search(self.base_dn, f'(&(objectClass=posixGroup)(memberUid={escuser}){self._get_groups_search_filter_clause()})',
                 attributes=['cn', 'memberUid', 'description'],
             )[2]
             for gentry in gresponse:
@@ -84,18 +89,27 @@ class LdapclientRfc2307(LdapclientBase):
                 })
             return groups
 
+        return {
+            "user": entry['attributes']['uid'][0],
+            "display_name": entry['attributes'].get('displayName') or "",
+            "groups": get_memberof(user),
+            "locked": entry['attributes'].get('pwdAccountLockedTime', []) != [],
+        }
+
+    def get_user_entry(self, user, lextra_attributes=[]):
+        # Escape user string to build the filter assertion:
+        escuser = ldap3.utils.conv.escape_filter_chars(user)
+        response = self.ldapconn.search(self.base_dn, f'(&(objectClass=posixAccount)(objectClass=inetOrgPerson)(uid={escuser}){self._get_users_search_filter_clause()})',
+            attributes=['displayName', 'uid'] + self.filter_schema_attributes(['pwdAccountLockedTime'] + lextra_attributes),
+        )[2]
+
         for entry in response:
             if entry['type'] != 'searchResEntry':
                 continue # ignore referrals
-            return {
-                "user": entry['attributes']['uid'][0],
-                "display_name": entry['attributes'].get('displayName') or "",
-                "groups": get_memberof(user),
-                "locked": entry['attributes'].get('pwdAccountLockedTime', []) != [],
-            }
+
+            return entry
 
         raise LdapclientEntryNotFound()
-
 
     def list_users(self):
         response = self.ldapconn.search(self.base_dn, f'(&(objectClass=posixAccount)(objectClass=inetOrgPerson){self._get_users_search_filter_clause()})',
