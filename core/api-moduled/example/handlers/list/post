@@ -1,0 +1,7 @@
+#!/bin/bash
+
+env 1>&2
+
+printf '{
+  "objects": [{"id":123456}]
+}\n'

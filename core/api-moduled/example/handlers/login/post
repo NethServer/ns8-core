@@ -1,0 +1,6 @@
+#!/bin/bash
+
+
+env 1>&2
+
+exec jq '{"uid":.username,"scopes":["s1","s2"],"groups":["domain admins"]}'

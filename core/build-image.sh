@@ -12,7 +12,7 @@ if ! buildah containers --format "{{.ContainerName}}" | grep -q gobuilder-core; 
     echo "Pulling Golang runtime..."
     golang_cache_path="${PWD}/.golang-cache"
     mkdir -vp "${golang_cache_path}/{mcache,bcache}"
-    buildah from --name gobuilder-tmp docker.io/library/golang:1.19.5-bullseye
+    buildah from --name gobuilder-tmp docker.io/library/golang:1.21.1-bullseye
     buildah config --env GOCACHE=/var/lib/misc/bcache --env GOMODCACHE=/var/lib/misc/mcache gobuilder-tmp
     buildah commit --rm gobuilder-tmp gobuilder-image
     buildah from --name gobuilder-core \
@@ -28,14 +28,17 @@ if ! buildah containers --format "{{.ContainerName}}" | grep -q nodebuilder-core
 fi
 
 echo "Build statically linked Go binaries..."
-echo "1/2 agent..."
+echo "1/3 agent..."
 buildah run --env "CGO_ENABLED=0" gobuilder-core sh -c "cd /usr/src/core/agent && go build -v ."
 
-echo "2/2 api-server and api-server-logs..."
+echo "2/3 api-server and api-server-logs..."
 # Statically link libraries and disable Sqlite extensions that expect a dynamic loader (not portable across distros)
 # Ref https://www.arp242.net/static-go.html
 buildah run --env "CGO_ENABLED=1" gobuilder-core sh -c "cd /usr/src/core/api-server && go build -ldflags='-extldflags=-static' -tags sqlite_omit_load_extension -v api-server.go"
 buildah run --env "CGO_ENABLED=0" gobuilder-core sh -c "cd /usr/src/core/api-server && go build -v api-server-logs.go"
+
+echo "3/3 api-moduled..."
+buildah run --env "CGO_ENABLED=0" gobuilder-core sh -c "cd /usr/src/core/api-moduled && go build -v ."
 
 echo "Build static UI files with node..."
 buildah run --env="NODE_OPTIONS=--openssl-legacy-provider" nodebuilder-core sh -c "cd /usr/src/core/ui && yarn install --immutable && yarn build"
@@ -66,6 +69,7 @@ buildah add "${container}" agent/agent /usr/local/bin/agent
 buildah add "${container}" api-server/api-server /usr/local/bin/api-server
 buildah add "${container}" api-server/api-server-logs /usr/local/bin/api-server-logs
 buildah add "${container}" ui/dist /var/lib/nethserver/cluster/ui
+buildah add "${container}" api-moduled/api-moduled /usr/local/bin/api-moduled
 buildah add "${container}" install.sh /var/lib/nethserver/node/install.sh
 core_env_file=$(mktemp)
 cleanup_list+=("${core_env_file}")

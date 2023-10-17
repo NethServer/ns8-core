@@ -1,0 +1,18 @@
+[Unit]
+Description=API Module Daemon (AMLD)
+ConditionPathExists=%S/state/api-moduled.env
+
+[Service]
+Type=simple
+Environment=AMLD_HANDLER_DIR=%S/api-moduled/handlers
+Environment=AMLD_PUBLIC_DIR=%S/api-moduled/public
+Environment=AMLD_JWT_REALM=%u
+Environment=GIN_MODE=release
+EnvironmentFile=%S/state/api-moduled.env
+WorkingDirectory=%S/state
+ExecStart=/usr/local/bin/runagent /usr/local/bin/api-moduled
+Restart=always
+SyslogIdentifier=%N
+
+[Install]
+WantedBy=default.target
