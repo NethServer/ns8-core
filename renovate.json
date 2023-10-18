@@ -1,0 +1,42 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:base"
+  ],
+  "ignorePaths": [
+    "**/ui/**"
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "fileMatch": [
+        "test-module.sh"
+      ],
+      "matchStrings": [
+        "ghcr\\.io/marketsquare/robotframework-browser/rfbrowser-stable:(?<currentValue>[^\\s]+)"
+      ],
+      "depNameTemplate": "MarketSquare/robotframework-browser",
+      "datasourceTemplate": "github-releases"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": [
+        "build-image.sh"
+      ],
+      "matchStrings": [
+        "\\bdocker\\.io/(?<depName>.+):(?<currentValue>[-0-9\\.a-z]+)"
+      ],
+      "datasourceTemplate": "docker"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": [
+        "build-image.sh"
+      ],
+      "matchStrings": [
+        "https://github\\.com/(?<depName>.+?)/releases/download/(?<currentValue>.+?)/logcli-linux-amd64\\.zip"
+      ],
+      "datasourceTemplate": "github-tags"
+    }
+  ]
+}
