@@ -1,2 +1,2 @@
 robotframework==4.1.2
-robotframework-redislibrary==1.2.3
+robotframework-redislibrary==1.2.5
