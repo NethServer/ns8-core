@@ -5,7 +5,6 @@ cleanup_list=()
 trap 'rm -rf "${cleanup_list[@]}"' EXIT
 images=()
 repobase="${REPOBASE:-ghcr.io/nethserver}"
-redis_tag=7.0.11-alpine
 
 # Reuse existing gobuilder-core container, to speed up builds
 if ! buildah containers --format "{{.ContainerName}}" | grep -q gobuilder-core; then
@@ -91,7 +90,7 @@ buildah rm "${container}"
 images+=("${repobase}/${reponame}")
 
 echo "Building the Redis image..."
-container=$(buildah from docker.io/redis:${redis_tag})
+container=$(buildah from docker.io/library/redis:7.0.11-alpine)
 reponame="redis"
 # Reset upstream volume configuration: it is necessary to modify /data contents with our .conf file.
 buildah config --volume=/data- "${container}"
@@ -122,7 +121,7 @@ buildah rm "${container}"
 images+=("${repobase}/${reponame}")
 
 echo "Building the restic image..."
-container=$(buildah from alpine)
+container=$(buildah from docker.io/library/alpine:3.18.4)
 reponame="restic"
 buildah run ${container} -- apk add --no-cache restic
 buildah config --cmd [] ${container}
@@ -132,7 +131,7 @@ buildah rm "${container}"
 images+=("${repobase}/${reponame}")
 
 echo "Building the rsync image..."
-container=$(buildah from alpine)
+container=$(buildah from docker.io/library/alpine:3.18.4)
 reponame="rsync"
 buildah run ${container} -- apk add --no-cache rsync
 buildah add "${container}" rsync/entrypoint.sh /entrypoint.sh
