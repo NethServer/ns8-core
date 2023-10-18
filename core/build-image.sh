@@ -74,7 +74,6 @@ core_env_file=$(mktemp)
 cleanup_list+=("${core_env_file}")
 printf "CORE_IMAGE=${repobase}/core:%s\n" "${IMAGETAG:-latest}" >> "${core_env_file}"
 printf "REDIS_IMAGE=${repobase}/redis:%s\n" "${IMAGETAG:-latest}" >> "${core_env_file}"
-printf "RCLONE_IMAGE=docker.io/rclone/rclone:1.57.0\n" >> "${core_env_file}"
 printf "RSYNC_IMAGE=${repobase}/rsync:%s\n" "${IMAGETAG:-latest}" >> "${core_env_file}"
 printf "RESTIC_IMAGE=${repobase}/restic:%s\n" "${IMAGETAG:-latest}" >> "${core_env_file}"
 printf "PROMTAIL_IMAGE=docker.io/grafana/promtail:2.8.2\n" >> "${core_env_file}"
@@ -82,7 +81,7 @@ chmod -c 644 "${core_env_file}"
 source "${core_env_file}"
 buildah add "${container}" ${core_env_file} /etc/nethserver/core.env
 buildah config \
-    --label="org.nethserver.images=${REDIS_IMAGE} ${RCLONE_IMAGE} ${RSYNC_IMAGE} ${RESTIC_IMAGE} ${PROMTAIL_IMAGE}" \
+    --label="org.nethserver.images=${REDIS_IMAGE} ${RSYNC_IMAGE} ${RESTIC_IMAGE} ${PROMTAIL_IMAGE}" \
     --label="org.nethserver.flags=core_module" \
     --entrypoint=/ "${container}"
 buildah commit "${container}" "${repobase}/${reponame}"
@@ -120,10 +119,10 @@ buildah commit "${container}" "${repobase}/${reponame}"
 buildah rm "${container}"
 images+=("${repobase}/${reponame}")
 
-echo "Building the restic image..."
+echo "Building the restic/rclone image..."
 container=$(buildah from docker.io/library/alpine:3.18.4)
 reponame="restic"
-buildah run ${container} -- apk add --no-cache restic
+buildah run ${container} -- apk add --no-cache restic rclone
 buildah config --cmd [] ${container}
 buildah config --entrypoint '["/usr/bin/restic"]' ${container}
 buildah commit "${container}" "${repobase}/${reponame}"
