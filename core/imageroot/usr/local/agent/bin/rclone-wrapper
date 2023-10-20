@@ -67,6 +67,14 @@ elif uscheme == "azure":
         'RCLONE_AZUREBLOB_ACCOUNT': orepo["azure_account_name"],
         'RCLONE_AZUREBLOB_KEY': orepo["azure_account_key"],
     }
+elif uscheme == "smb":
+    rclone_path = ':smb:' + upath.rstrip(":")
+    rclone_env = {
+        "RCLONE_SMB_HOST": orepo["smb_host"],
+        "RCLONE_SMB_USER": orepo["smb_user"],
+        "RCLONE_SMB_PASS": orepo["smb_pass"],
+        "RCLONE_SMB_DOMAIN": orepo["smb_domain"],
+    }
 else:
     raise Exception(f"Scheme {uscheme} not supported")
 
@@ -75,9 +83,10 @@ container_name = "rclone-wrapper-" + os.environ.get('MODULE_ID', os.environ["AGE
 exec_args = [
     "podman", "run",
     "-i", "--attach=stdin", "--attach=stdout", "--attach=stderr",
+    "--log-driver=none",
     "--env=RCLONE*", "--network=host", "--rm",
     "--name=" + container_name,
-    '--entrypoint=["/usr/bin/rclone"]',
+    '--entrypoint=["/usr/local/bin/rclone-wrapper"]',
     rclone_image,
     ] + sys.argv[2:]
 
