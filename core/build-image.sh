@@ -122,9 +122,13 @@ images+=("${repobase}/${reponame}")
 echo "Building the restic/rclone image..."
 container=$(buildah from docker.io/library/alpine:3.18.4)
 reponame="restic"
+buildah add "${container}" restic/ /
 buildah run ${container} -- apk add --no-cache restic rclone
-buildah config --cmd [] ${container}
-buildah config --entrypoint '["/usr/bin/restic"]' ${container}
+buildah config \
+    --cmd='[]' \
+    --entrypoint='["/usr/bin/restic"]' \
+    --env='RCLONE_CONFIG=/dev/null' \
+    ${container}
 buildah commit "${container}" "${repobase}/${reponame}"
 buildah rm "${container}"
 images+=("${repobase}/${reponame}")
