@@ -416,13 +416,17 @@ export default {
       let i18nParams = {};
 
       if (taskExtra.completion.extraTextParams) {
-        for (const param of taskExtra.completion.extraTextParams) {
+        for (const param of Object.values(
+          taskExtra.completion.extraTextParams
+        )) {
           i18nParams[param] = taskExtra[param];
         }
       }
 
       if (taskExtra.completion.outputTextParams) {
-        for (const param of taskExtra.completion.outputTextParams) {
+        for (const param of Object.values(
+          taskExtra.completion.outputTextParams
+        )) {
           i18nParams[param] = taskOutput[param];
         }
       }
