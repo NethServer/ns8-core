@@ -1,0 +1,1 @@
+{"$schema":"http://json-schema.org/draft-07/schema#","title":"run-backup input","$id":"http://schema.nethserver.org/agent/run-backup-input.json","description":"Run the given backup immediately","examples":[{"id":5}],"type":"object","required":["id"],"properties":{"id":{"title":"Backup ID","type":"integer","minimum":1}}}
