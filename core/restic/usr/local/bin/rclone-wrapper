@@ -1,0 +1,15 @@
+#!/bin/sh
+
+#
+# Copyright (C) 2023 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+# Rclone expects the password is in obscured format
+
+if [ -n "${RCLONE_SMB_PASS}" ]; then
+    RCLONE_SMB_PASS="$(/usr/bin/rclone obscure "${RCLONE_SMB_PASS}")"
+    export RCLONE_SMB_PASS
+fi
+
+exec /usr/bin/rclone "${@}"

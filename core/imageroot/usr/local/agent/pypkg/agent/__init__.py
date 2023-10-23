@@ -211,12 +211,22 @@ def run_restic(rdb, repository, repo_path, podman_args, restic_args, **kwargs):
         restic_env["RESTIC_REPOSITORY"] = orepo['url'] + ":" + repo_path
         restic_env["AZURE_ACCOUNT_NAME"] = orepo['azure_account_name']
         restic_env["AZURE_ACCOUNT_KEY"] = orepo['azure_account_key']
+    elif uschema == 'smb':
+        restic_env["RESTIC_REPOSITORY"] = 'rclone::' + orepo['url'].rstrip("/") + "/" + repo_path
+        restic_env["RCLONE_SMB_HOST"] = orepo["smb_host"]
+        restic_env["RCLONE_SMB_USER"] = orepo["smb_user"]
+        restic_env["RCLONE_SMB_PASS"] = orepo["smb_pass"]
+        restic_env["RCLONE_SMB_DOMAIN"] = orepo["smb_domain"]
+        restic_args.insert(0, "--option=rclone.program=/usr/local/bin/rclone-wrapper")
     else:
         raise Exception(f"Schema {uschema} not supported")
 
     # Build the Podman command line to run Restic
     container_name = "restic-" + os.environ.get('MODULE_ID', os.environ["AGENT_ID"]) + "-" + str(os.getpid())
-    podman_cmd = ['podman', 'run', '-i', '--rm', f'--name={container_name}', '--privileged', '--network=host', '--volume=restic-cache:/var/cache/restic']
+    podman_cmd = ['podman', 'run', '-i', '--rm', f'--name={container_name}', '--privileged', '--network=host',
+        '--volume=restic-cache:/var/cache/restic',
+        "--log-driver=none",
+    ]
 
     for envvar in restic_env:
         podman_cmd.extend(['-e', envvar]) # Import Restic environment variables
