@@ -89,7 +89,7 @@ buildah rm "${container}"
 images+=("${repobase}/${reponame}")
 
 echo "Building the Redis image..."
-container=$(buildah from docker.io/library/redis:7.0.11-alpine)
+container=$(buildah from docker.io/library/redis:7.2.2-alpine)
 reponame="redis"
 # Reset upstream volume configuration: it is necessary to modify /data contents with our .conf file.
 buildah config --volume=/data- "${container}"
