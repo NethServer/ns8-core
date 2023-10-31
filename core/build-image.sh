@@ -23,7 +23,7 @@ fi
 # Reuse existing nodebuilder-core container, to speed up builds
 if ! buildah containers --format "{{.ContainerName}}" | grep -q nodebuilder-core; then
     echo "Pulling NodeJS runtime..."
-    buildah from --name nodebuilder-core -v "${PWD}:/usr/src/core:z" docker.io/library/node:18-slim
+    buildah from --name nodebuilder-core -v "${PWD}:/usr/src/core:z" docker.io/library/node:18.18.2-slim
 fi
 
 echo "Build statically linked Go binaries..."
@@ -54,7 +54,7 @@ logcli_tmp_dir=$(mktemp -d)
 cleanup_list+=("${logcli_tmp_dir}")
 (
     cd "${logcli_tmp_dir}"
-    curl -L -O https://github.com/grafana/loki/releases/download/v2.2.1/logcli-linux-amd64.zip
+    curl -L -O https://github.com/grafana/loki/releases/download/v2.9.2/logcli-linux-amd64.zip
     python -mzipfile -e logcli-linux-amd64.zip .
     chmod -c 755 logcli-linux-amd64
 )
@@ -74,15 +74,14 @@ core_env_file=$(mktemp)
 cleanup_list+=("${core_env_file}")
 printf "CORE_IMAGE=${repobase}/core:%s\n" "${IMAGETAG:-latest}" >> "${core_env_file}"
 printf "REDIS_IMAGE=${repobase}/redis:%s\n" "${IMAGETAG:-latest}" >> "${core_env_file}"
-printf "RCLONE_IMAGE=docker.io/rclone/rclone:1.57.0\n" >> "${core_env_file}"
 printf "RSYNC_IMAGE=${repobase}/rsync:%s\n" "${IMAGETAG:-latest}" >> "${core_env_file}"
 printf "RESTIC_IMAGE=${repobase}/restic:%s\n" "${IMAGETAG:-latest}" >> "${core_env_file}"
-printf "PROMTAIL_IMAGE=docker.io/grafana/promtail:2.8.2\n" >> "${core_env_file}"
+printf "PROMTAIL_IMAGE=docker.io/grafana/promtail:2.9.2\n" >> "${core_env_file}"
 chmod -c 644 "${core_env_file}"
 source "${core_env_file}"
 buildah add "${container}" ${core_env_file} /etc/nethserver/core.env
 buildah config \
-    --label="org.nethserver.images=${REDIS_IMAGE} ${RCLONE_IMAGE} ${RSYNC_IMAGE} ${RESTIC_IMAGE} ${PROMTAIL_IMAGE}" \
+    --label="org.nethserver.images=${REDIS_IMAGE} ${RSYNC_IMAGE} ${RESTIC_IMAGE} ${PROMTAIL_IMAGE}" \
     --label="org.nethserver.flags=core_module" \
     --entrypoint=/ "${container}"
 buildah commit "${container}" "${repobase}/${reponame}"
@@ -90,7 +89,7 @@ buildah rm "${container}"
 images+=("${repobase}/${reponame}")
 
 echo "Building the Redis image..."
-container=$(buildah from docker.io/library/redis:7.0.11-alpine)
+container=$(buildah from docker.io/library/redis:7.2.2-alpine)
 reponame="redis"
 # Reset upstream volume configuration: it is necessary to modify /data contents with our .conf file.
 buildah config --volume=/data- "${container}"
@@ -120,12 +119,16 @@ buildah commit "${container}" "${repobase}/${reponame}"
 buildah rm "${container}"
 images+=("${repobase}/${reponame}")
 
-echo "Building the restic image..."
+echo "Building the restic/rclone image..."
 container=$(buildah from docker.io/library/alpine:3.18.4)
 reponame="restic"
-buildah run ${container} -- apk add --no-cache restic
-buildah config --cmd [] ${container}
-buildah config --entrypoint '["/usr/bin/restic"]' ${container}
+buildah add "${container}" restic/ /
+buildah run ${container} -- apk add --no-cache restic rclone
+buildah config \
+    --cmd='[]' \
+    --entrypoint='["/usr/bin/restic"]' \
+    --env='RCLONE_CONFIG=/dev/null' \
+    ${container}
 buildah commit "${container}" "${repobase}/${reponame}"
 buildah rm "${container}"
 images+=("${repobase}/${reponame}")

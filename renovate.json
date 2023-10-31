@@ -6,19 +6,20 @@
   "ignorePaths": [
     "**/ui/**"
   ],
-  "regexManagers": [
+  "customManagers": [
     {
+      "customType": "regex",
       "fileMatch": [
         "test-module.sh"
       ],
       "matchStrings": [
         "ghcr\\.io/marketsquare/robotframework-browser/rfbrowser-stable:(?<currentValue>[^\\s]+)"
       ],
-      "datasourceTemplate": "docker",
-      "registryUrlTemplate": "ghcr.io/marketsquare",
-      "depNameTemplate": "robotframework-browser/rfbrowser-stable"
+      "depNameTemplate": "MarketSquare/robotframework-browser",
+      "datasourceTemplate": "github-releases"
     },
     {
+      "customType": "regex",
       "fileMatch": [
         "build-image.sh"
       ],
@@ -28,6 +29,7 @@
       "datasourceTemplate": "docker"
     },
     {
+      "customType": "regex",
       "fileMatch": [
         "build-image.sh"
       ],
