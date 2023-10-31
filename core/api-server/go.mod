@@ -11,7 +11,7 @@ require (
 	github.com/gin-gonic/gin v1.9.1
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/google/uuid v1.2.0
-	github.com/mattn/go-sqlite3 v1.14.7
+	github.com/mattn/go-sqlite3 v1.14.17
 	github.com/mpvl/unique v0.0.0-20150818121801-cbe035fff7de
 	github.com/olahol/melody v1.1.4
 	github.com/pkg/errors v0.9.1
