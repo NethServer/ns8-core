@@ -45,7 +45,7 @@ jobs:
         env:
           REPOBASE: ghcr.io/${{needs.module.outputs.owner}}
       - id: python-dep
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v4
         with:
           python-version: 3.11
       - id: push
