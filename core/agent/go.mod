@@ -3,7 +3,7 @@ module github.com/NethServer/ns8-core/core/agent
 go 1.18
 
 require (
-	github.com/go-redis/redis/v8 v8.11.5
+	github.com/go-redis/redis/v9 v9.3.0
 	github.com/xeipuuv/gojsonschema v1.2.0
 )
 

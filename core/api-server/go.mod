@@ -9,7 +9,7 @@ require (
 	github.com/gin-contrib/gzip v0.0.6
 	github.com/gin-contrib/static v0.0.1
 	github.com/gin-gonic/gin v1.9.1
-	github.com/go-redis/redis/v8 v8.11.5
+	github.com/go-redis/redis/v9 v9.3.0
 	github.com/google/uuid v1.4.0
 	github.com/mattn/go-sqlite3 v1.14.17
 	github.com/mpvl/unique v0.0.0-20150818121801-cbe035fff7de
