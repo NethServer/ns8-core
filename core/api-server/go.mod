@@ -28,7 +28,7 @@ require (
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/nqd/flat v0.2.0
 	github.com/satori/go.uuid v1.2.0 // indirect
-	github.com/swaggo/files v1.0.1
+	github.com/swaggo/files/v2 v2.0.0
 	github.com/ugorji/go v1.2.7 // indirect
 	github.com/urfave/cli v1.20.0 // indirect
 	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect
