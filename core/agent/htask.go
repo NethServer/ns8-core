@@ -39,7 +39,7 @@ import (
 	"github.com/nqd/flat"
 	"github.com/NethServer/ns8-core/core/agent/models"
 	"github.com/NethServer/ns8-core/core/agent/validation"
-	"github.com/go-redis/redis/v8"
+	"github.com/redis/go-redis/v9"
 )
 
 func runAction(rdb *redis.Client, actionCtx context.Context, task *models.Task) {
