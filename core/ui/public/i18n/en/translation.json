@@ -368,7 +368,9 @@
     "promote-node": "Promote node",
     "get-info": "Get node info",
     "set-fqdn": "Set FQDN",
-    "get-fqdn": "Get FQDN"
+    "get-fqdn": "Get FQDN",
+    "get-password-policy": "Get password policy",
+    "set-password-policy": "Set password policy"
   },
   "network": {
     "title": "Network"
@@ -953,7 +955,26 @@
     "configured_domains": "Configured domains",
     "users_and_groups": "Users and groups",
     "domain_not_found": "Domain not found",
-    "domain_pattern": "Invalid domain pattern. Enter something like 'my.domain.org'"
+    "domain_pattern": "Invalid domain pattern. Enter something like 'my.domain.org'",
+    "policy_password": "Password",
+    "expiration": "Expiration",
+    "strength": "Strength",
+    "edit_password_policy": "Edit password policy",
+    "password_expiration": "Password expiration",
+    "enable_the_password_expiration":"The password policy could be set to match a minimum and maximum day to force user to change their password",
+    "expiration_min_age": "Minimal expiration age",
+    "expiration_max_age": "Maximal expiration age",
+    "days": "days",
+    "enable_the_policy_strength": "Enable password strength",
+    "enable_the_policy_strength_tips": "The password strength policy can be enforced or relaxed for users",
+    "strength_history_length": "Password history length",
+    "times": "times",
+    "strength_password_min_length": "Password minimal length",
+    "caracters": "characters",
+    "strength_complexity_check": "Enforce password complexity",
+    "enable_complexity_check_tips":"Enforce complexity by requesting uppercase, lowercase, numbers and symbols",
+    "specify_duration": "specify the duration",
+    "specify_times": "specify the number of times"
   },
   "samba": {
     "adminuser": "Samba admin username",
