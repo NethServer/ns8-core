@@ -10,7 +10,7 @@ jobs:
     name: Test agent
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - run: bash test-agent.sh
         working-directory: core/agent
       - run: |
