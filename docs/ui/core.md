@@ -104,7 +104,9 @@ Follow the steps below to prepare the development environment for coding NS8 cor
 echo GIN_MODE=debug >> /etc/nethserver/api-server.env; systemctl restart api-server
 ```
 
-You can develop NS8 UI inside a container (recommended) or on your workstation. You need to accept the first time the selfsigned certificate of the server in a new tab of your browser : `https://IP_address/cluster-admin/api/login`
+You can develop NS8 UI inside a container (recommended) or on your workstation. 
+The first time, you have to accept the self signed certificate of the server in a new tab 
+of your browser: `https://<IP_address>/cluster-admin/api/login`
 
 ### Develop NS8 UI inside a container
 
