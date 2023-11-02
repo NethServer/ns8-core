@@ -23,6 +23,6 @@ require (
 	github.com/dgryski/dgoogauth v0.0.0-20190221195224-5a805980a5f3
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/nqd/flat v0.2.0
-	github.com/swaggo/files v1.0.1
+	github.com/swaggo/files/v2 v2.0.0
 	github.com/swaggo/files/v2 v2.0.0
 )
