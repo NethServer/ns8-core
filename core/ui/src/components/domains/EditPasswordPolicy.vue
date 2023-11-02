@@ -103,7 +103,7 @@
             maxLabel=""
             :limitedLabel="$t('domains.specify_times')"
             :invalidMessage="error.strength.password_min_length"
-            :unitLabel="$t('domains.caracters')"
+            :unitLabel="$t('domains.unit_characters')"
           />
           <NsToggle
             v-if="policy.strength.enforced"
