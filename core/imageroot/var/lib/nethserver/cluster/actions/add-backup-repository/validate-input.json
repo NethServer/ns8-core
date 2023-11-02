@@ -44,6 +44,18 @@
                 "azure_account_name": "ns8backup",
                 "azure_account_key": "7lBkSMdy5LeYFyjcc0Szlxlc9GDaUFxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxOrplWQJuEBRD+AStiQnppg=="
             }
+        },
+        {
+            "name": "repository 5",
+            "provider": "smb",
+            "password": "",
+            "url": "rclone::smb:myshare/subpath",
+            "parameters": {
+                "rclone_smb_host": "10.114.0.2",
+                "rclone_smb_user": "backup-agent",
+                "rclone_smb_pass": "Nethesis,1234",
+                "rclone_smb_domain": "NTDOM"
+            }
         }
     ],
     "type": "object",
@@ -127,6 +139,25 @@
                     }
                 }
             ]
+        },
+        {
+            "allOf": [
+                {
+                    "title": "SMB schema",
+                    "properties": {
+                        "provider": {
+                            "title": "SMB provider",
+                            "const": "smb"
+                        },
+                        "url": {
+                            "pattern": "^smb:.+$"
+                        },
+                        "parameters": {
+                            "$ref": "#/$defs/smb_parameters"
+                        }
+                    }
+                }
+            ]
         }
     ],
     "$defs": {
@@ -181,6 +212,38 @@
                 },
                 "azure_account_key": {
                     "type": "string"
+                }
+            }
+        },
+        "smb_parameters": {
+            "title": "SMB Rclone parameters",
+            "type": "object",
+            "required": [
+                "smb_host",
+                "smb_user",
+                "smb_pass",
+                "smb_domain"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "smb_host": {
+                    "type": "string",
+                    "description": "Host name or IP address",
+                    "format": "hostname",
+                    "minLength": 1
+                },
+                "smb_user": {
+                    "type": "string",
+                    "description": "User name for share connection",
+                    "minLength": 1
+                },
+                "smb_pass": {
+                    "type": "string",
+                    "description": "User password for share connection"
+                },
+                "smb_domain": {
+                    "type": "string",
+                    "description": "The short form (NT-style) domain name"
                 }
             }
         }

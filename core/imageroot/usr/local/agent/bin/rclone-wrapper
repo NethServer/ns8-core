@@ -2,22 +2,7 @@
 
 #
 # Copyright (C) 2023 Nethesis S.r.l.
-# http://www.nethesis.it - nethserver@nethesis.it
-#
-# This script is part of NethServer.
-#
-# NethServer is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License,
-# or any later version.
-#
-# NethServer is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with NethServer.  If not, see COPYING.
+# SPDX-License-Identifier: GPL-3.0-or-later
 #
 
 import sys
@@ -25,7 +10,7 @@ import agent
 import os
 
 core_env = agent.read_envfile("/etc/nethserver/core.env")
-rclone_image = core_env["RCLONE_IMAGE"]
+rclone_image = core_env["RESTIC_IMAGE"]
 
 rdb = agent.redis_connect(privileged=False, host="127.0.0.1")
 try:
@@ -82,6 +67,14 @@ elif uscheme == "azure":
         'RCLONE_AZUREBLOB_ACCOUNT': orepo["azure_account_name"],
         'RCLONE_AZUREBLOB_KEY': orepo["azure_account_key"],
     }
+elif uscheme == "smb":
+    rclone_path = ':smb:' + upath.rstrip(":")
+    rclone_env = {
+        "RCLONE_SMB_HOST": orepo["smb_host"],
+        "RCLONE_SMB_USER": orepo["smb_user"],
+        "RCLONE_SMB_PASS": orepo["smb_pass"],
+        "RCLONE_SMB_DOMAIN": orepo["smb_domain"],
+    }
 else:
     raise Exception(f"Scheme {uscheme} not supported")
 
@@ -90,8 +83,10 @@ container_name = "rclone-wrapper-" + os.environ.get('MODULE_ID', os.environ["AGE
 exec_args = [
     "podman", "run",
     "-i", "--attach=stdin", "--attach=stdout", "--attach=stderr",
+    "--log-driver=none",
     "--env=RCLONE*", "--network=host", "--rm",
     "--name=" + container_name,
+    '--entrypoint=["/usr/local/bin/rclone-wrapper"]',
     rclone_image,
     ] + sys.argv[2:]
 

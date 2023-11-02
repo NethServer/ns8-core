@@ -19,10 +19,10 @@ on:
 jobs:
   push_image:
     name: 'Build API docs for ${{ github.head_ref }}'
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - id: checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - id: configure
         name: "Configure git environment"
         run: |

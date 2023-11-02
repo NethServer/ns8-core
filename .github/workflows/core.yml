@@ -30,7 +30,7 @@ jobs:
           echo "images-dir=$(buildah info --format '{{.store.GraphRoot}}/overlay-images')" >> $GITHUB_OUTPUT
           echo "weekstamp=$(date +%YW%W)" >> $GITHUB_OUTPUT
       - id: checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - id: corecache
         uses: actions/cache@v3
         with:
@@ -45,7 +45,7 @@ jobs:
         env:
           REPOBASE: ghcr.io/${{needs.module.outputs.owner}}
       - id: python-dep
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v4
         with:
           python-version: 3.11
       - id: push
