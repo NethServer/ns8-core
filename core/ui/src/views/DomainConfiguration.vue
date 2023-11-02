@@ -1226,9 +1226,6 @@ export default {
 .password-snippet {
   margin-bottom: $spacing-07;
 }
-.left-margin {
-  margin-left: 1rem;
-}
 .right-margin {
   margin-right: 1rem;
 }
