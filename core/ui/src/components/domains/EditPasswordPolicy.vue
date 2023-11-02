@@ -11,7 +11,6 @@
   >
     <template slot="title">{{ $t("domains.edit_password_policy") }}</template>
     <template slot="content">
-      <template>
         <cv-form @submit.prevent="setPasswordPolicy">
           <NsToggle
             :label="$t('domains.password_expiration')"
@@ -129,11 +128,10 @@
             :showCloseButton="false"
           />
         </cv-form>
-      </template>
     </template>
     <template slot="secondary-button">{{ $t("common.cancel") }}</template>
     <template slot="primary-button">{{
-      $t("domain_configuration.edit_provider_label")
+      $t("domains.edit_password_policy")
     }}</template>
   </NsModal>
 </template>
