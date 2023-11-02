@@ -48,16 +48,9 @@
           </div>
         </cv-column>
       </cv-row>
-      <!-- domain settings -->
       <cv-row>
-        <cv-column>
-          <h4 class="mg-bottom-md">
-            {{ $t("domain_configuration.settings") }}
-          </h4>
-        </cv-column>
-      </cv-row>
-      <cv-row v-if="!domain">
-        <cv-column :md="4">
+        <!-- domain settings -->
+        <cv-column v-if="!domain" :md="4">
           <cv-tile light>
             <cv-skeleton-text
               :paragraph="true"
@@ -65,9 +58,7 @@
             ></cv-skeleton-text>
           </cv-tile>
         </cv-column>
-      </cv-row>
-      <cv-row v-else>
-        <cv-column :md="4">
+        <cv-column v-else :md="4">
           <cv-tile light>
             <div class="key-value-setting">
               <span class="label">{{ $t("domains.schema") }}</span>
@@ -141,10 +132,8 @@
             </div>
           </cv-tile>
         </cv-column>
-      </cv-row>
-      <!-- password policy -->
-      <cv-row v-if="loading.ListPasswordPolicy">
-        <cv-column :md="4">
+        <!-- password policy -->
+        <cv-column v-if="loading.ListPasswordPolicy" :md="4">
           <cv-tile light>
             <cv-skeleton-text
               :paragraph="true"
@@ -152,9 +141,7 @@
             ></cv-skeleton-text>
           </cv-tile>
         </cv-column>
-      </cv-row>
-      <cv-row v-else>
-        <cv-column :md="4">
+        <cv-column :md="4" v-else>
           <NsInfoCard
             light
             :title="$t('domains.policy_password')"
