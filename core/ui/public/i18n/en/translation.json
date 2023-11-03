@@ -108,7 +108,8 @@
     "host_format": "Invalid host format",
     "ipaddress_format": "Invalid IP address format",
     "path_pattern": "Invalid path pattern",
-    "fqdn_format": "Invalid FQDN format"
+    "fqdn_format": "Invalid FQDN format",
+    "cannot_retrieve_users_admin_configuration":"Cannot retrieve users portal administration"
   },
   "websocket": {
     "websocket_disconnected": "Websocket disconnected",
@@ -974,7 +975,11 @@
     "strength_complexity_check": "Enforce password complexity",
     "enable_complexity_check_tips":"Enforce complexity by requesting uppercase, lowercase, numbers and symbols",
     "specify_duration": "specify the duration",
-    "specify_times": "specify the number of times"
+    "specify_times": "specify the number of times",
+    "users_admin_page_title":"User portal",
+    "open_users_admin_portal": "Open user portal",
+    "users_admin_page_tooltips": "User portal permits domain users to change their own password. The portal is accessible to users also on any node running the domain provider replica. The generic URL is https://{node_fqdn_or_ip}/users-admin/{domain}/",
+    "users_admin_page_description":"User administration self service portal"
   },
   "samba": {
     "adminuser": "Samba admin username",
