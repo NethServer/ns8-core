@@ -41,8 +41,4 @@ jobs:
           TREE=$(git write-tree --prefix=core/api-server/docs)
           COMMIT=$(git commit-tree -m "${COMMIT_MESSAGE}" ${TREE})
           git push -f origin $COMMIT:refs/heads/${REMOTE_BRANCH}
-          echo "OpenAPI documentation has been published to"
-          echo ""
-          echo "    https://github.com/${{ github.repository }}/tree/${REMOTE_BRANCH}"
-          echo ""
-
+          echo "OpenAPI documentation has been published to https://github.com/${{ github.repository }}/tree/${REMOTE_BRANCH}" >> $GITHUB_STEP_SUMMARY
