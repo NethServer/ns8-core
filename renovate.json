@@ -38,5 +38,12 @@
       ],
       "datasourceTemplate": "github-tags"
     }
+  ],
+  "packageRules": [
+    {
+      "matchDatasources": ["go"],
+      "matchPackageNames": ["github.com/go-redis/redis/v8"],
+      "allowedVersions": "< 9"
+    }
   ]
 }

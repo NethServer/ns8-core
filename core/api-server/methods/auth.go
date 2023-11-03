@@ -73,7 +73,7 @@ func RedisAuthentication(username string, password string) error {
 	defer redisClient.Close()
 
 	// execute redis auth: AUTH <username> <password> and return its error, if any
-	return redisClient.Conn().AuthACL(ctx, username, password).Err()
+	return redisClient.Conn(ctx).AuthACL(ctx, username, password).Err()
 }
 
 // RedisAuthorization godoc
