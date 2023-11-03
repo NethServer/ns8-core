@@ -961,7 +961,7 @@
     "strength": "Strength policy",
     "edit_password_policy": "Edit password policy",
     "password_expiration": "Password age",
-    "enable_the_password_expiration":"The minimum password age setting determines the period of time (in days) that a password must be used before the user can change it. The Maximum password age setting determines the period of time (in days) that a password can be used before the system requires the user to change it",
+    "enable_the_password_expiration":"The minimum password age setting determines the period of time (in days) that a password must be used before the user can change it. The maximum password age setting determines the period of time (in days) that a password can be used before the system requires the user to change it",
     "expiration_min_age": "Minimum password age",
     "expiration_max_age": "Maximum password age",
     "days": "days",
