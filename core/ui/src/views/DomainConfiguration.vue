@@ -50,7 +50,7 @@
       </cv-row>
       <cv-row>
         <!-- domain settings -->
-        <cv-column v-if="!domain" :md="4">
+        <cv-column v-if="!domain" :md="4" :max="4">
           <cv-tile light>
             <cv-skeleton-text
               :paragraph="true"
@@ -58,7 +58,7 @@
             ></cv-skeleton-text>
           </cv-tile>
         </cv-column>
-        <cv-column v-else :md="4">
+        <cv-column v-else :md="4" :max="4">
           <cv-tile light>
             <div class="key-value-setting">
               <span class="label">{{ $t("domains.schema") }}</span>
@@ -133,7 +133,7 @@
           </cv-tile>
         </cv-column>
         <!-- password policy -->
-        <cv-column v-if="loading.ListPasswordPolicy" :md="4">
+        <cv-column v-if="loading.ListPasswordPolicy" :md="4" :max="4">
           <cv-tile light>
             <cv-skeleton-text
               :paragraph="true"
@@ -141,7 +141,7 @@
             ></cv-skeleton-text>
           </cv-tile>
         </cv-column>
-        <cv-column :md="4" v-else>
+        <cv-column :md="4" :max="4" v-else>
           <NsInfoCard
             light
             :title="$t('domains.policy_password')"
@@ -202,6 +202,33 @@
                   ></cv-tag>
                 </div>
               </div>
+            </template>
+          </NsInfoCard>
+        </cv-column>
+        <!-- user portal link -->
+        <cv-column :md="4" :max="4">
+          <NsInfoCard
+            light
+            :title="$t('domains.users_admin_page_title')"
+            :titleTooltip="$t('domains.users_admin_page_tooltips')"
+            titleTooltipAlignment="center"
+            titleTooltipDirection="bottom"
+            :description="$t('domains.users_admin_page_description')"
+            :icon="Wikis32"
+            :loading="loading.getFqdn"
+            :isErrorShown="!!error.getFqdn"
+            :errorTitle="$t('error.cannot_retrieve_users_admin_configuration')"
+            :errorDescription="error.getFqdn"
+          >
+            <template slot="content">
+              <NsButton
+                v-show="!loading.getFqdn"
+                kind="ghost"
+                :icon="Password20"
+                @click="goToUserAdminPage()"
+              >
+                {{ $t("domains.open_users_admin_portal") }}
+              </NsButton>
             </template>
           </NsInfoCard>
         </cv-column>
@@ -638,6 +665,8 @@ export default {
       isShownDeleteSambaProviderModal: false,
       isShownPasswordPolicyModal: false,
       domainName: "",
+      hostnameNode: "",
+      domainNode: "",
       policy: {
         expiration: {
           enforced: false,
@@ -670,6 +699,7 @@ export default {
         ListPasswordPolicy: true,
         setProviderLabel: false,
         addExternalProvider: false,
+        getFqdn: true,
       },
       error: {
         listUserDomains: "",
@@ -678,6 +708,7 @@ export default {
         removeExternalProvider: "",
         ListPasswordPolicy: "",
         setPasswordPolicy: "",
+        getFqdn: "",
       },
     };
   },
@@ -685,6 +716,9 @@ export default {
     ...mapState(["clusterNodes"]),
     mainProvider() {
       return this.domain.providers[0].id;
+    },
+    mainNode() {
+      return this.domain.providers[0].node;
     },
     unconfiguredProviders() {
       if (!this.domain) {
@@ -749,6 +783,7 @@ export default {
         (d) => d.name == this.domainName
       );
       this.ListPasswordPolicy();
+      this.getFqdn();
       this.loading.listUserDomains = false;
       //// fix? maybe available nodes will be retrieved by a dedicated api
       this.initNodes();
@@ -800,7 +835,50 @@ export default {
 
       this.loading.ListPasswordPolicy = false;
     },
+    async getFqdn() {
+      this.error.getFqdn = "";
+      this.loading.getFqdn = true;
+      const taskAction = "get-fqdn";
+      const eventId = this.getUuid();
 
+      // register to task error
+      this.$root.$once(`${taskAction}-aborted-${eventId}`, this.getFqdnAborted);
+
+      // register to task completion
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.getFqdnCompleted
+      );
+
+      const res = await to(
+        this.createNodeTask(this.mainNode, {
+          action: taskAction,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+            eventId,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.getFqdn = this.getErrorMessage(err);
+        return;
+      }
+    },
+    getFqdnCompleted(taskContext, taskResult) {
+      this.hostnameNode = taskResult.output.hostname;
+      this.domainNode = taskResult.output.domain;
+      this.loading.getFqdn = false;
+
+      console.log(taskResult.output);
+    },
+    getFqdnAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.loading.getFqdn = false;
+    },
     async setPasswordPolicy() {
       this.loading.ListPasswordPolicy = true;
       this.error.setPasswordPolicy = "";
@@ -1189,6 +1267,18 @@ export default {
         name: "DomainUsersAndGroups",
         params: { domainName: this.domainName },
       });
+    },
+    goToUserAdminPage() {
+      window.open(
+        "https://" +
+          this.hostnameNode +
+          "." +
+          this.domainNode +
+          "/users-admin/" +
+          this.domainName +
+          "/",
+        "_blank"
+      );
     },
     getNodeLabel(nodeId) {
       const node = this.internalNodes.find((n) => n.id == nodeId);
