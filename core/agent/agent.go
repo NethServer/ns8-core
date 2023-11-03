@@ -29,7 +29,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/redis/go-redis/v9"
+	"github.com/go-redis/redis/v8"
 )
 
 // Reference: https://www.man7.org/linux/man-pages/man3/sd-daemon.3.html

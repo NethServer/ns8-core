@@ -29,7 +29,7 @@ import (
 	"fmt"
 	"github.com/NethServer/ns8-core/core/api-server/configuration"
 
-	"github.com/redis/go-redis/v9"
+	"github.com/go-redis/redis/v8"
 )
 
 func Instance() *redis.Client {
