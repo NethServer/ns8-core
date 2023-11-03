@@ -969,7 +969,7 @@
     "enable_the_policy_strength_tips": "If enabled, users must comply with some minimal password requirements",
     "strength_history_length": "Password history length",
     "times": "times",
-    "strength_password_min_length": "Password minimal length",
+    "strength_password_min_length": "Password minimum length",
     "unit_characters": "characters",
     "strength_complexity_check": "Enforce password complexity",
     "enable_complexity_check_tips":"Enforce complexity by requesting uppercase, lowercase, numbers and symbols",
