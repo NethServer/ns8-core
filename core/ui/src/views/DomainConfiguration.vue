@@ -48,16 +48,9 @@
           </div>
         </cv-column>
       </cv-row>
-      <!-- domain settings -->
       <cv-row>
-        <cv-column>
-          <h4 class="mg-bottom-md">
-            {{ $t("domain_configuration.settings") }}
-          </h4>
-        </cv-column>
-      </cv-row>
-      <cv-row v-if="!domain">
-        <cv-column :md="4">
+        <!-- domain settings -->
+        <cv-column v-if="!domain" :md="4">
           <cv-tile light>
             <cv-skeleton-text
               :paragraph="true"
@@ -65,9 +58,7 @@
             ></cv-skeleton-text>
           </cv-tile>
         </cv-column>
-      </cv-row>
-      <cv-row v-else>
-        <cv-column :md="4">
+        <cv-column v-else :md="4">
           <cv-tile light>
             <div class="key-value-setting">
               <span class="label">{{ $t("domains.schema") }}</span>
@@ -141,7 +132,81 @@
             </div>
           </cv-tile>
         </cv-column>
+        <!-- password policy -->
+        <cv-column v-if="loading.ListPasswordPolicy" :md="4">
+          <cv-tile light>
+            <cv-skeleton-text
+              :paragraph="true"
+              :line-count="7"
+            ></cv-skeleton-text>
+          </cv-tile>
+        </cv-column>
+        <cv-column :md="4" v-else>
+          <NsInfoCard
+            light
+            :title="$t('domains.policy_password')"
+            :icon="Password32"
+          >
+            <template #menu>
+              <cv-overflow-menu
+                :flip-menu="true"
+                tip-position="top"
+                tip-alignment="end"
+                class="top-right-overflow-menu"
+              >
+                <cv-overflow-menu-item @click="showPasswordPolicy()">
+                  <NsMenuItem
+                    :icon="Edit20"
+                    :label="$t('domains.edit_password_policy')"
+                  />
+                </cv-overflow-menu-item>
+              </cv-overflow-menu>
+            </template>
+            <template #content>
+              <div class="provider-card-content">
+                <div class="row">
+                  <span class="label right-margin">{{
+                    $t("domains.expiration")
+                  }}</span>
+
+                  <cv-tag
+                    v-if="policy.expiration.enforced"
+                    kind="green"
+                    :label="$t('common.enabled')"
+                    size="sm"
+                    class="no-margin"
+                  ></cv-tag>
+                  <cv-tag
+                    v-else
+                    kind="high-contrast"
+                    :label="$t('common.disabled')"
+                    size="sm"
+                    class="no-margin"
+                  ></cv-tag>
+                </div>
+                <div class="row">
+                  <span class="label right-margin">{{
+                    $t("domains.strength")
+                  }}</span>
+                  <cv-tag
+                    v-if="policy.strength.enforced"
+                    kind="green"
+                    :label="$t('common.enabled')"
+                    size="sm"
+                  ></cv-tag>
+                  <cv-tag
+                    v-else
+                    kind="high-contrast"
+                    :label="$t('common.disabled')"
+                    size="sm"
+                  ></cv-tag>
+                </div>
+              </div>
+            </template>
+          </NsInfoCard>
+        </cv-column>
       </cv-row>
+      <!-- domain provider -->
       <cv-row>
         <cv-column>
           <h4
@@ -476,6 +541,13 @@
       @hide="hideDeleteSambaProviderModal"
       @reloadDomains="listUserDomains"
     />
+    <!-- Password policy -->
+    <EditPasswordPolicy
+      :isShown="isShownPasswordPolicyModal"
+      :policy="policy"
+      @hide="hideisShownPasswordPolicyModal"
+      @confirm="setPasswordPolicy()"
+    />
     <!-- set provider label modal -->
     <NsModal
       size="default"
@@ -533,6 +605,8 @@ import to from "await-to-js";
 import AddInternalProviderModal from "@/components/domains/AddInternalProviderModal";
 import AddExternalProviderModal from "@/components/domains/AddExternalProviderModal";
 import DeleteSambaProviderModal from "@/components/domains/DeleteSambaProviderModal";
+import EditPasswordPolicy from "@/components/domains/EditPasswordPolicy";
+import Password32 from "@carbon/icons-vue/es/password/32";
 import _cloneDeep from "lodash/cloneDeep";
 import { mapState } from "vuex";
 
@@ -542,6 +616,7 @@ export default {
     AddInternalProviderModal,
     AddExternalProviderModal,
     DeleteSambaProviderModal,
+    EditPasswordPolicy,
   },
   mixins: [
     TaskService,
@@ -555,12 +630,27 @@ export default {
   },
   data() {
     return {
+      Password32,
       q: {},
       isShownAddInternalProviderModal: false,
       isShownAddExternalProviderModal: false,
       isShownDeleteLdapProviderModal: false,
       isShownDeleteSambaProviderModal: false,
+      isShownPasswordPolicyModal: false,
       domainName: "",
+      policy: {
+        expiration: {
+          enforced: false,
+          min_age: 0,
+          max_age: 0,
+        },
+        strength: {
+          complexity_check: false,
+          enforced: false,
+          history_length: 5,
+          password_min_length: 8,
+        },
+      },
       domain: null,
       internalNodes: [],
       isShownLastProviderModal: false,
@@ -577,6 +667,7 @@ export default {
       providerToDelete: null,
       loading: {
         listUserDomains: true,
+        ListPasswordPolicy: true,
         setProviderLabel: false,
         addExternalProvider: false,
       },
@@ -585,11 +676,16 @@ export default {
         removeInternalProvider: "",
         setProviderLabel: "",
         removeExternalProvider: "",
+        ListPasswordPolicy: "",
+        setPasswordPolicy: "",
       },
     };
   },
   computed: {
     ...mapState(["clusterNodes"]),
+    mainProvider() {
+      return this.domain.providers[0].id;
+    },
     unconfiguredProviders() {
       if (!this.domain) {
         return [];
@@ -652,16 +748,142 @@ export default {
       this.domain = taskResult.output.domains.find(
         (d) => d.name == this.domainName
       );
+      this.ListPasswordPolicy();
       this.loading.listUserDomains = false;
-
       //// fix? maybe available nodes will be retrieved by a dedicated api
       this.initNodes();
-
       // scroll to anchor if route URL contains a hash (#)
       setTimeout(() => {
         this.checkAndScrollToAnchor();
       }, 100);
     },
+    async ListPasswordPolicy() {
+      this.loading.ListPasswordPolicy = true;
+      this.error.ListPasswordPolicy = "";
+      const taskAction = "get-password-policy";
+      const eventId = this.getUuid();
+      // register to task completion
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.ListPasswordPolicyCompleted
+      );
+      const res = await to(
+        this.createModuleTaskForApp(this.mainProvider, {
+          action: taskAction,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+            eventId,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.ListPasswordPolicy = this.getErrorMessage(err);
+        return;
+      }
+    },
+    ListPasswordPolicyCompleted(taskContext, taskResult) {
+      const Config = taskResult.output;
+      this.policy.expiration.enforced = Config.expiration.enforced;
+      this.policy.expiration.max_age = Config.expiration.max_age.toString();
+      this.policy.expiration.min_age = Config.expiration.min_age.toString();
+
+      this.policy.strength.enforced = Config.strength.enforced;
+      this.policy.strength.complexity_check = Config.strength.complexity_check;
+      this.policy.strength.history_length =
+        Config.strength.history_length.toString();
+      this.policy.strength.password_min_length =
+        Config.strength.password_min_length.toString();
+
+      this.loading.ListPasswordPolicy = false;
+    },
+
+    async setPasswordPolicy() {
+      this.loading.ListPasswordPolicy = true;
+      this.error.setPasswordPolicy = "";
+      const taskAction = "set-password-policy";
+      const eventId = this.getUuid();
+
+      // register to task error
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.setPasswordPolicyAborted
+      );
+      //register to task validation error
+      this.$root.$once(
+        `${taskAction}-validation-failed-${eventId}`,
+        this.setPasswordPolicyValidationFailed
+      );
+
+      // register to task completion
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.setPasswordPolicyCompleted
+      );
+
+      const res = await to(
+        this.createModuleTaskForApp(this.mainProvider, {
+          action: taskAction,
+          data: {
+            expiration: {
+              enforced: this.policy.expiration.enforced,
+              min_age: parseInt(this.policy.expiration.min_age),
+              max_age: parseInt(this.policy.expiration.max_age),
+            },
+            strength: {
+              complexity_check: this.policy.strength.complexity_check,
+              enforced: this.policy.strength.enforced,
+              history_length: parseInt(this.policy.strength.history_length),
+              password_min_length: parseInt(
+                this.policy.strength.password_min_length
+              ),
+            },
+          },
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+            eventId,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.setPasswordPolicy = this.getErrorMessage(err);
+        this.loading.ListPasswordPolicy = false;
+        this.isShownPasswordPolicyModal = false;
+
+        this.hideisShownPasswordPolicyModal();
+        return;
+      }
+    },
+    setPasswordPolicyAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.loading.ListPasswordPolicy = false;
+
+      // hide modal so that user can see error notification
+      this.hideisShownPasswordPolicyModal();
+    },
+    setPasswordPolicyValidationFailed(validationErrors) {
+      this.loading.ListPasswordPolicy = false;
+      this.hideisShownPasswordPolicyModal();
+
+      for (const validationError of validationErrors) {
+        const param = validationError.parameter;
+
+        // set i18n error message
+        this.error[param] = this.$t("domains." + validationError.error);
+      }
+    },
+    setPasswordPolicyCompleted() {
+      this.hideisShownPasswordPolicyModal();
+      this.listUserDomains();
+    },
+
     showAddProviderModal() {
       if (this.domain.location == "internal") {
         this.showAddInternalProviderModal();
@@ -805,6 +1027,9 @@ export default {
     hideSetProviderLabelModal() {
       this.isShownSetProviderLabelModal = false;
     },
+    hideisShownPasswordPolicyModal() {
+      this.isShownPasswordPolicyModal = false;
+    },
     showSetProviderLabelModal(provider) {
       this.currentProvider = provider;
       this.newProviderLabel = provider.ui_name;
@@ -812,6 +1037,9 @@ export default {
       setTimeout(() => {
         this.focusElement("newProviderLabel");
       }, 300);
+    },
+    showPasswordPolicy() {
+      this.isShownPasswordPolicyModal = true;
     },
     setProviderLabel() {
       if (this.domain.location == "internal") {
@@ -997,5 +1225,8 @@ export default {
 
 .password-snippet {
   margin-bottom: $spacing-07;
+}
+.right-margin {
+  margin-right: 1rem;
 }
 </style>
