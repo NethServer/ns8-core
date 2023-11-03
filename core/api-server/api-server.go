@@ -32,9 +32,6 @@ import (
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
 
-	swaggerFiles "github.com/swaggo/files"
-	ginSwagger "github.com/swaggo/gin-swagger"
-
 	"github.com/NethServer/ns8-core/core/api-server/audit"
 	"github.com/NethServer/ns8-core/core/api-server/configuration"
 	"github.com/NethServer/ns8-core/core/api-server/methods"
@@ -154,9 +151,6 @@ func main() {
 			Data:    nil,
 		}))
 	})
-
-	// handle API docs route
-	router.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	// run server
 	router.Run(configuration.Config.ListenAddress)

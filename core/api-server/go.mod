@@ -15,14 +15,11 @@ require (
 	github.com/olahol/melody v1.1.4
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.7.0
-	github.com/swaggo/gin-swagger v1.6.0
 )
 
 require (
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/dgryski/dgoogauth v0.0.0-20190221195224-5a805980a5f3
 	github.com/go-redis/redis/v8 v8.11.5
-	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/nqd/flat v0.2.0
-	github.com/swaggo/files v1.0.1
 )
