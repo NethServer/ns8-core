@@ -21,7 +21,7 @@ require (
 require (
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/dgryski/dgoogauth v0.0.0-20190221195224-5a805980a5f3
-	github.com/go-redis/redis/v8 v8.11.5
+	github.com/go-redis/redis/v9 v9.3.0
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/nqd/flat v0.2.0
 	github.com/swaggo/files v1.0.1
