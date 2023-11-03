@@ -20,9 +20,20 @@
 # along with NethServer.  If not, see COPYING.
 #
 
+# shellcheck shell=bash
+
 set -e
 
-if [[ -t 0 ]]; then
+has_no_raw_option() {
+    for arg in "${@}"; do
+        if [[ ${arg} == "-r" || ${arg} == "--raw" ]]; then
+            return 1
+        fi
+    done
+    return 0
+}
+
+if [[ -t 0 ]] && has_no_raw_option "${@}"; then
     with_tty=1
 fi
 
