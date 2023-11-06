@@ -204,6 +204,7 @@
                         <cv-data-table-cell>
                           <div class="justify-flex-end">
                             <cv-icon-button
+                              v-if="row.type !== 'route'"
                               :label="$t('common.delete')"
                               kind="danger"
                               :icon="TrashCan20"
