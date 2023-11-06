@@ -20,9 +20,20 @@
 # along with NethServer.  If not, see COPYING.
 #
 
+# shellcheck shell=bash
+
 set -e
 
-if [[ -t 0 ]]; then
+has_no_raw_option() {
+    for arg in "${@}"; do
+        if [[ ${arg} == "-r" || ${arg} == "--raw" ]]; then
+            return 1
+        fi
+    done
+    return 0
+}
+
+if [[ -t 0 ]] && has_no_raw_option "${@}"; then
     with_tty=1
 fi
 
@@ -36,6 +47,7 @@ if [[ $(id -u) == 0 ]]; then
     # For the root user, spawn a redis-cli command in the rootfull Redis container
     exec podman exec -e REDISCLI_AUTH -i ${with_tty:+-t} redis redis-cli -h "${redis_host}" --user "${redis_user}" "${@}"
 else
+    source /etc/nethserver/core.env
     # For non-root users, run a temporary container
-    exec podman run -e REDISCLI_AUTH -i ${with_tty:+-t} --network=host --rm ghcr.io/nethserver/redis:latest redis-cli -h "${redis_host}" --user "${redis_user}" "${@}"
+    exec podman run -e REDISCLI_AUTH -i ${with_tty:+-t} --network=host --rm "${REDIS_IMAGE:?}" redis-cli -h "${redis_host}" --user "${redis_user}" "${@}"
 fi
