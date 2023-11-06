@@ -204,8 +204,8 @@
                         <cv-data-table-cell>
                           <div class="justify-flex-end">
                             <cv-icon-button
-                              v-if="row.type !== 'route'"
-                              :label="$t('common.delete')"
+                              :disabled="row.type === 'route'"
+                              :label="row.type === 'route' ? $t('settings_tls_certificates.certificate_tls_tooltips') :  $t('common.delete')"
                               kind="danger"
                               :icon="TrashCan20"
                               size="small"
