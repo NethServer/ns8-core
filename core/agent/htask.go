@@ -36,7 +36,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/nqd/flat"
 	"github.com/NethServer/ns8-core/core/agent/models"
 	"github.com/NethServer/ns8-core/core/agent/validation"
 	"github.com/go-redis/redis/v8"
@@ -402,21 +401,54 @@ func publishStatus(client redis.Cmdable, progressChannel string, actionDescripto
 	}
 }
 
-func obscureTaskInput(payload string) string {
-	var jsonDyn map[string]interface{}
-	json.Unmarshal([]byte(payload), &jsonDyn)
-	flattenedInput, _ := flat.Flatten(jsonDyn, nil)
+func obscureTaskInput(jsonStr string) string {
+	var jsonData map[string]interface{}
+	if err := json.Unmarshal([]byte(jsonStr), &jsonData); err != nil {
+		log.Println(SD_ERR+"Error unmarshalling JSON:", err)
+		return jsonStr
+	}
+
+	recursiveObscureSensitiveKeys(jsonData)
+
+	updatedJson, err := json.Marshal(jsonData)
+	if err != nil {
+		log.Println(SD_ERR+"Error marshalling JSON:", err)
+		return jsonStr
+	}
+
+	return string(updatedJson)
+}
+
+func isSensitive(target string) bool {
 	sensitiveList := []string{"password", "secret", "token"}
-	// search for sensitve data, in sensitive list
-	for k, _ := range flattenedInput {
-		for _, s := range sensitiveList {
-			if strings.HasPrefix(k, "data.") && strings.HasSuffix("." + strings.ToLower(k), strings.ToLower(s)) {
-				flattenedInput[k] = "XXX"
-			}
+	ltarget := strings.ToLower(target)
+	for _, sensitive := range sensitiveList {
+		if strings.HasSuffix(ltarget, sensitive) {
+			return true
 		}
 	}
-	obscuredTask, _ := flat.Unflatten(flattenedInput, nil)
-	// convert to JSON string
-	taskJson, _ := json.Marshal(obscuredTask)
-	return string(taskJson[:])
+	return false
+}
+
+func recursiveObscureSensitiveKeys(data interface{}) {
+	switch v := data.(type) {
+	case map[string]interface{}:
+		// It's an object, so iterate through its key-value pairs
+		for key, value := range v {
+			// Recursively update the value
+			recursiveObscureSensitiveKeys(value)
+
+			// Check for sensitive keys
+			if isSensitive(key) {
+				v[key] = "XXX" // replace the secret value
+			}
+		}
+
+	case []interface{}:
+		// It's an array, so iterate through its elements
+		for _, item := range v {
+			// Recursively update the element
+			recursiveObscureSensitiveKeys(item)
+		}
+	}
 }
