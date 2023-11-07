@@ -163,7 +163,7 @@ api-cli run run-backup --data '{"id":1}'
 ```
 
 For debugging purposes, you can also launch systemd units:
-- rootless container, eg. `dokuwiki1`: `ssh dokuwiki1@localhost "systemctl --user start backup1.service"`
+- rootless container, eg. `dokuwiki1`: `runagent -m dokuwiki1 systemctl --user start backup1.service`
 - rootfull container, eg. `samba1`: systemctl start backup1-samba1.service
 
 To remove the backup use:
