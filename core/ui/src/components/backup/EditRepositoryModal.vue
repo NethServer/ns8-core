@@ -492,6 +492,7 @@ export default {
 
       for (const validationError of validationErrors) {
         const param = validationError.parameter;
+
         if (validationError.error == "backup_repository_not_accessible") {
           // show error nontification
           this.error.repoConnection = "error";
