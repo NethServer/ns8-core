@@ -63,10 +63,30 @@
                     "properties": {
                         "provider": {
                             "title": "S3 providers",
-                            "enum": ["aws", "digitalocean", "generic-s3"]
+                            "enum": [
+                                "aws",
+                                "digitalocean",
+                                "generic-s3"
+                            ]
                         },
                         "parameters": {
                             "$ref": "#/$defs/s3_parameters"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "allOf": [
+                {
+                    "title": "SMB schema",
+                    "properties": {
+                        "provider": {
+                            "title": "SMB provider",
+                            "const": "smb"
+                        },
+                        "parameters": {
+                            "$ref": "#/$defs/smb_parameters"
                         }
                     }
                 }
@@ -108,6 +128,38 @@
                 },
                 "aws_secret_access_key": {
                     "type": "string"
+                }
+            }
+        },
+        "smb_parameters": {
+            "title": "SMB Rclone parameters",
+            "type": "object",
+            "required": [
+                "smb_host",
+                "smb_user",
+                "smb_pass",
+                "smb_domain"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "smb_host": {
+                    "type": "string",
+                    "description": "Host name or IP address",
+                    "format": "hostname",
+                    "minLength": 1
+                },
+                "smb_user": {
+                    "type": "string",
+                    "description": "User name for share connection",
+                    "minLength": 1
+                },
+                "smb_pass": {
+                    "type": "string",
+                    "description": "User password for share connection"
+                },
+                "smb_domain": {
+                    "type": "string",
+                    "description": "The short form (NT-style) domain name"
                 }
             }
         }
