@@ -542,7 +542,6 @@
     "samba":"Windows file share (SMB2/3)",
     "samba_placeholder":"Share name",
     "smb_short": "SMB"
-
   },
   "calendar": {
     "days": "Days",
