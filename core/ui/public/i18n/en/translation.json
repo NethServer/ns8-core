@@ -534,7 +534,15 @@
     "i_have_stored_encryption_password": "I have stored the <strong>password</strong> in a safe place",
     "cluster_backup_password_warning": "You must set the encryption password",
     "cluster_backup_password_warning_description_1": "The configuration cluster backup contains sensitive data required for a disaster recovery.",
-    "cluster_backup_password_warning_description_2": "Set a strong encryption password, then download the backup and keep it in a safe place."
+    "cluster_backup_password_warning_description_2": "Set a strong encryption password, then download the backup and keep it in a safe place.",
+    "smb_host":"SMB host",
+    "smb_user":"SMB user",
+    "smb_pass": "SMB password",
+    "smb_domain":"SMB domain",
+    "samba":"Windows file share (SMB2/3)",
+    "samba_placeholder":"Share name",
+    "smb_short": "SMB"
+
   },
   "calendar": {
     "days": "Days",
