@@ -535,14 +535,14 @@
     "cluster_backup_password_warning": "You must set the encryption password",
     "cluster_backup_password_warning_description_1": "The configuration cluster backup contains sensitive data required for a disaster recovery.",
     "cluster_backup_password_warning_description_2": "Set a strong encryption password, then download the backup and keep it in a safe place.",
-    "smb_host":"SMB host",
-    "smb_user":"SMB user",
-    "smb_pass": "SMB password",
-    "smb_domain":"SMB domain",
-    "samba":"Windows file share (SMB2/3)",
+    "smb_host":"Host name or IP address",
+    "smb_user":"User name",
+    "smb_pass": "Password",
+    "smb_domain":"Domain name (NT/Workgroup)",
+    "samba":"Windows file share",
     "samba_placeholder":"Share name",
     "smb_short": "SMB",
-    "samba_tooltips":"The SMB1/CIFS is not supported"
+    "samba_tooltips":"Only shares with SMB2/3 protocols are supported. Deprecated SMB1/CIFS shares are not secure and cannot be accessed."
   },
   "calendar": {
     "days": "Days",
