@@ -641,7 +641,8 @@
     "cert_upload_label": "Certificate",
     "cert_upload_helptext": "Chain of certificates must be in the same file.",
     "upload_certs": "Upload certificate",
-    "instance_selection_label": "Select instance to upload the file to."
+    "instance_selection_label": "Select instance to upload the file to.",
+    "certificate_tls_tooltips":"The certificate is required by a HTTP route"
   },
   "settings_acme_servers": {
     "title": "ACME servers",
