@@ -12,12 +12,17 @@ those are the so-called *rootless* containers.  In NethServer 8, we borrow
 the same word from Podman and use it in the context of modules, together
 with its opposite, *rootfull*.
 
-To inspect and modify a rootless module start a SSH session. SSH is
-preferred to `su - <user>` because the latter does not properly initialize
-the Systemd session environment. For instance, to check if Traefik is running:
+To inspect and modify a rootless module start Bash with the `runagent`
+command to  properly initialize the Systemd runtime environment. For
+instance, to check if Traefik is running:
+
+    runagent -m traefik1 bash -l
+    systemctl --user status traefik
+
+As alternative use SSH:
 
     ssh traefik1@localhost
-    systemctl --user status
+    systemctl --user status traefik
 
 Let's see the differences of rootless modules vs rootfull modules.
 

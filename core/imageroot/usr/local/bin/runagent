@@ -24,9 +24,10 @@ import os
 import sys
 import argparse
 import agent
+import pwd
 
 argp = argparse.ArgumentParser(description="Run COMMAND in the agent environment of MODULE_ID")
-argp.add_argument("-m", "--module-id", help="MODULE_ID, a rootfull module identifier (e.g. \"modrootfull1\", \"node\"). Default is \"cluster\". Only root can use this flag")
+argp.add_argument("-m", "--module-id", help="MODULE_ID, a module identifier (e.g. \"module1\", \"node\"). Default is \"cluster\". Only root can use this flag")
 argp.add_argument("-c", "--current-dir", action="store_true", help="Run COMMAND in current directory, instead of changing directory to AGENT_STATE_DIR")
 argp.add_argument('COMMAND', help="Command to run in the agent environment")
 argp.add_argument('ARGS', nargs=argparse.REMAINDER, help="Additional arguments for COMMAND")
@@ -65,9 +66,30 @@ elif os.path.isdir(f"/var/lib/nethserver/{mid}"):
     os.environ['AGENT_INSTALL_DIR'] = f"/var/lib/nethserver/{mid}"
     os.environ['AGENT_STATE_DIR'] = f"/var/lib/nethserver/{mid}/state"
 else:
-    print(f"[FATAL] Cannot find environment for module {mid}", file=sys.stderr)
-    print(f"[FATAL] Try to run the command as:   runuser -u {mid} -- {sys.argv[0]} {args.COMMAND} {' '.join(args.ARGS)}", file=sys.stderr)
-    sys.exit(1)
+    # if module id is a local Unix user, change process UID and GID
+    # and exec() again
+    try:
+        module_uid = pwd.getpwnam(mid)[2]
+    except:
+        print(f"[FATAL] Cannot find module {mid} in the local node", file=sys.stderr)
+        sys.exit(1)
+
+    # Prepare to run rootless: drop -m arguments
+    rargv = list(sys.argv)
+    for targ in ["-m", "--module-id"]:
+        try:
+            idx = rargv.index(targ)
+        except ValueError:
+            continue
+        rargv.pop(idx) # drop -m
+        rargv.pop(idx) # drop the value
+
+    xdg_runtime_dir=f"/run/user/{module_uid}"
+    if os.path.isdir(xdg_runtime_dir):
+        os.execvp("/usr/sbin/runuser", ["runuser", "-s", "/usr/bin/env", "-l", mid, "--", f"XDG_RUNTIME_DIR={xdg_runtime_dir}"] + rargv)
+    else:
+        print(f"[FATAL] Cannot find runtime directory for {mid}", file=sys.stderr)
+        sys.exit(1)
 
 if not args.current_dir:
     os.chdir(os.environ['AGENT_STATE_DIR'])
