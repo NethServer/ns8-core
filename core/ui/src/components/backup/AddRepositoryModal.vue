@@ -118,6 +118,38 @@
                   </div>
                 </NsTile>
               </cv-column>
+              <!-- samba -->
+              <cv-column :md="4">
+                <NsTile
+                  :light="true"
+                  kind="selectable"
+                  v-model="isSambaSelected"
+                  value="providerValue"
+                  @click="selectSamba()"
+                  class="provider-card"
+                >
+                  <div class="provider-card-content">
+                    <div class="provider-icon">
+                      <img
+                        :src="require('@/assets/samba.png')"
+                        alt="samba logo"
+                      />
+                    </div>
+                    <h6>
+                      {{ $t("backup.samba") }}
+                      <cv-interactive-tooltip
+                        alignment="center"
+                        direction="bottom"
+                        class="info"
+                      >
+                        <template slot="content">
+                          {{ $t("backup.samba_tooltips") }}
+                        </template>
+                      </cv-interactive-tooltip>
+                    </h6>
+                  </div>
+                </NsTile>
+              </cv-column>
             </cv-row>
           </cv-grid>
         </template>
@@ -231,6 +263,43 @@
               ref="genericS3_secret_access_key"
             ></cv-text-input>
           </template>
+          <!-- samba -->
+          <template v-if="isSambaSelected">
+            <cv-text-input
+              :label="$t('backup.smb_host')"
+              v-model.trim="smb.smb_host"
+              :invalid-message="error.smb.smb_host"
+              :disabled="loading.addBackupRepository"
+              ref="smb_host"
+            >
+            </cv-text-input>
+            <cv-text-input
+              :label="$t('backup.smb_domain')"
+              v-model.trim="smb.smb_domain"
+              :invalid-message="error.smb.smb_domain"
+              :disabled="loading.addBackupRepository"
+              ref="smb_domain"
+            >
+            </cv-text-input>
+            <cv-text-input
+              :label="$t('backup.smb_user')"
+              v-model.trim="smb.smb_user"
+              :invalid-message="error.smb.smb_user"
+              :disabled="loading.addBackupRepository"
+              ref="smb_user"
+            >
+            </cv-text-input>
+            <cv-text-input
+              :label="$t('backup.smb_pass')"
+              type="password"
+              v-model.trim="smb.smb_pass"
+              :disabled="loading.addBackupRepository"
+              :invalid-message="error.smb.smb_pass"
+              :password-hide-label="$t('password.hide_password')"
+              :password-show-label="$t('password.show_password')"
+              ref="smb_pass"
+            ></cv-text-input>
+          </template>
           <!-- //// handle ALL providers -->
           <cv-text-input
             :label="$t('backup.repository_name')"
@@ -299,6 +368,7 @@ export default {
       isAzureSelected: false,
       isAmazonS3Selected: false,
       isGenericS3Selected: false,
+      isSambaSelected: false,
       name: "",
       url: "",
       password: "",
@@ -312,6 +382,13 @@ export default {
         aws_default_region: "",
         aws_secret_access_key: "",
         repoPrefix: "s3:s3.amazonaws.com/",
+      },
+      smb: {
+        smb_host: "",
+        smb_user: "",
+        smb_pass: "",
+        smb_domain: "",
+        repoPrefix: "smb:",
       },
       genericS3: {
         aws_access_key_id: "",
@@ -340,6 +417,12 @@ export default {
           aws_access_key_id: "",
           aws_default_region: "",
           aws_secret_access_key: "",
+        },
+        smb: {
+          smb_host: "",
+          smb_user: "",
+          smb_pass: "",
+          smb_domain: "",
         },
         genericS3: {
           aws_access_key_id: "",
@@ -375,6 +458,8 @@ export default {
         return "genericS3";
       } else if (this.isAzureSelected) {
         return "azure";
+      } else if (this.isSambaSelected) {
+        return "smb";
       } else {
         return null;
       }
@@ -392,6 +477,8 @@ export default {
         return "s3_placeholder";
       } else if (this.isAzureSelected) {
         return "azure_placeholder";
+      } else if (this.isSambaSelected) {
+        return "samba_placeholder";
       } else {
         return "url_placeholder";
       }
@@ -441,6 +528,7 @@ export default {
       this.isBackblazeSelected = false;
       this.isAmazonS3Selected = false;
       this.isAzureSelected = false;
+      this.isSambaSelected = false;
       this.name = "";
       this.url = "";
 
@@ -456,6 +544,11 @@ export default {
 
       this.azure.azure_account_name = "";
       this.azure.azure_account_key = "";
+
+      this.smb.smb_host = "";
+      this.smb.smb_user = "";
+      this.smb.smb_pass = "";
+      this.smb.smb_domain = "";
 
       //// handle ALL providers
     },
@@ -480,24 +573,35 @@ export default {
       this.isAzureSelected = false;
       this.isAmazonS3Selected = false;
       this.isGenericS3Selected = false;
+      this.isSambaSelected = false;
     },
     selectAmazonS3() {
       //// handle ALL providers
       this.isBackblazeSelected = false;
       this.isAzureSelected = false;
       this.isGenericS3Selected = false;
+      this.isSambaSelected = false;
+    },
+    selectSamba() {
+      //// handle ALL providers
+      this.isBackblazeSelected = false;
+      this.isAzureSelected = false;
+      this.isGenericS3Selected = false;
+      this.isAmazonS3Selected = false;
     },
     selectGenericS3() {
       //// handle ALL providers
       this.isBackblazeSelected = false;
       this.isAzureSelected = false;
       this.isAmazonS3Selected = false;
+      this.isSambaSelected = false;
     },
     selectAzure() {
       //// handle ALL providers
       this.isBackblazeSelected = false;
       this.isAmazonS3Selected = false;
       this.isGenericS3Selected = false;
+      this.isSambaSelected = false;
     },
     buildRepositoryParameters() {
       switch (this.selectedProvider) {
@@ -521,6 +625,13 @@ export default {
           return {
             azure_account_name: this.azure.azure_account_name,
             azure_account_key: this.azure.azure_account_key,
+          };
+        case "smb":
+          return {
+            smb_host: this.smb.smb_host,
+            smb_user: this.smb.smb_user,
+            smb_pass: this.smb.smb_pass,
+            smb_domain: this.smb.smb_domain,
           };
       }
       //// handle all providers
@@ -760,6 +871,82 @@ export default {
       }
       return isValidationOk;
     },
+    validateAddSambaRepository() {
+      // clear errors
+      this.error.name = "";
+      this.error.url = "";
+      this.error.repoConnection = "";
+
+      this.error.smb.smb_host = "";
+      this.error.smb.smb_user = "";
+      this.error.smb.smb_pass = "";
+      this.error.smb.smb_domain = "";
+
+      let isValidationOk = true;
+
+      if (!this.url) {
+        this.error.url = this.$t("common.required");
+
+        if (isValidationOk) {
+          this.focusElement("url");
+          isValidationOk = false;
+        }
+      } else if (this.url.includes(" ")) {
+        // wrong url protocol
+        this.error.url = this.$t("backup.invalid_url");
+
+        if (isValidationOk) {
+          this.focusElement("url");
+          isValidationOk = false;
+        }
+      }
+
+      if (!this.smb.smb_host) {
+        this.error.smb.smb_host = this.$t("common.required");
+
+        if (isValidationOk) {
+          this.focusElement("smb_host");
+          isValidationOk = false;
+        }
+      }
+
+      if (!this.smb.smb_user) {
+        this.error.smb.smb_user = this.$t("common.required");
+
+        if (isValidationOk) {
+          this.focusElement("smb_user");
+          isValidationOk = false;
+        }
+      }
+
+      if (!this.smb.smb_domain) {
+        this.error.smb.smb_domain = this.$t("common.required");
+
+        if (isValidationOk) {
+          this.focusElement("smb_domain");
+          isValidationOk = false;
+        }
+      }
+
+      if (!this.smb.smb_pass) {
+        this.error.smb.smb_pass = this.$t("common.required");
+
+        if (isValidationOk) {
+          this.focusElement("smb_pass");
+          isValidationOk = false;
+        }
+      }
+
+      if (!this.name) {
+        this.error.name = this.$t("common.required");
+
+        if (isValidationOk) {
+          this.focusElement("name");
+          isValidationOk = false;
+        }
+      }
+      return isValidationOk;
+    },
     validateAddBackupRepository() {
       switch (this.selectedProvider) {
         case "backblaze":
@@ -770,6 +957,8 @@ export default {
           return this.validateAmazonS3Repository();
         case "genericS3":
           return this.validateAddGenericS3Repository();
+        case "smb":
+          return this.validateAddSambaRepository();
       }
     },
     async addBackupRepository() {

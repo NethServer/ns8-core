@@ -73,6 +73,43 @@
           >
           </cv-text-input>
         </template>
+        <!-- samba -->
+        <template v-if="repository.provider == 'smb'">
+          <cv-text-input
+            :label="$t('backup.smb_host')"
+            v-model.trim="smb.smb_host"
+            :invalid-message="error.smb.smb_host"
+            :disabled="loading.addBackupRepository"
+            ref="smb_host"
+          >
+          </cv-text-input>
+          <cv-text-input
+            :label="$t('backup.smb_domain')"
+            v-model.trim="smb.smb_domain"
+            :invalid-message="error.smb.smb_domain"
+            :disabled="loading.addBackupRepository"
+            ref="smb_domain"
+          >
+          </cv-text-input>
+          <cv-text-input
+            :label="$t('backup.smb_user')"
+            v-model.trim="smb.smb_user"
+            :invalid-message="error.smb.smb_user"
+            :disabled="loading.addBackupRepository"
+            ref="smb_user"
+          >
+          </cv-text-input>
+          <cv-text-input
+            :label="$t('backup.smb_pass')"
+            type="password"
+            v-model.trim="smb.smb_pass"
+            :disabled="loading.addBackupRepository"
+            :invalid-message="error.smb.smb_pass"
+            :password-hide-label="$t('password.hide_password')"
+            :password-show-label="$t('password.show_password')"
+            ref="smb_pass"
+          ></cv-text-input>
+        </template>
         <!-- generic s3 -->
         <!-- <template v-if="repository.provider == 'genericS3'">
           generic s3 ////
@@ -134,6 +171,12 @@ export default {
       },
       genericS3: {},
       azure: {},
+      smb: {
+        smb_host: "",
+        smb_user: "",
+        smb_pass: "",
+        smb_domain: "",
+      },
       //// handle all providers
       loading: {
         alterBackupRepository: false,
@@ -152,6 +195,12 @@ export default {
         },
         genericS3: {},
         azure: {},
+        smb: {
+          smb_host: "",
+          smb_user: "",
+          smb_pass: "",
+          smb_domain: "",
+        },
         //// handle all providers
       },
     };
@@ -179,6 +228,12 @@ export default {
               this.aws.aws_secret_access_key =
                 this.repository.parameters.aws_secret_access_key;
               break;
+            case "smb":
+              this.smb.smb_host = this.repository.parameters.smb_host;
+              this.smb.smb_domain = this.repository.parameters.smb_domain;
+              this.smb.smb_user = this.repository.parameters.smb_user;
+              this.smb.smb_pass = this.repository.parameters.smb_pass;
+              break;
             //// handle ALL providers
           }
         });
@@ -203,6 +258,13 @@ export default {
           return {
             azure_account_name: "",
             azure_account_key: "",
+          };
+        case "smb":
+          return {
+            smb_host: this.smb.smb_host,
+            smb_user: this.smb.smb_user,
+            smb_pass: this.smb.smb_pass,
+            smb_domain: this.smb.smb_domain,
           };
       }
       //// handle all providers
@@ -293,6 +355,65 @@ export default {
       }
       return isValidationOk;
     },
+    validateAlterSambaRepository() {
+      // clear errors
+      this.error.name = "";
+      this.error.url = "";
+      this.error.repoConnection = "";
+
+      this.error.smb.smb_host = "";
+      this.error.smb.smb_user = "";
+      this.error.smb.smb_pass = "";
+      this.error.smb.smb_domain = "";
+
+      let isValidationOk = true;
+
+      if (!this.smb.smb_host) {
+        this.error.smb.smb_host = this.$t("common.required");
+
+        if (isValidationOk) {
+          this.focusElement("smb_host");
+          isValidationOk = false;
+        }
+      }
+
+      if (!this.smb.smb_user) {
+        this.error.smb.smb_user = this.$t("common.required");
+
+        if (isValidationOk) {
+          this.focusElement("smb_user");
+          isValidationOk = false;
+        }
+      }
+
+      if (!this.smb.smb_domain) {
+        this.error.smb.smb_domain = this.$t("common.required");
+
+        if (isValidationOk) {
+          this.focusElement("smb_domain");
+          isValidationOk = false;
+        }
+      }
+
+      if (!this.smb.smb_pass) {
+        this.error.smb.smb_pass = this.$t("common.required");
+
+        if (isValidationOk) {
+          this.focusElement("smb_pass");
+          isValidationOk = false;
+        }
+      }
+
+      if (!this.name) {
+        this.error.name = this.$t("common.required");
+
+        if (isValidationOk) {
+          this.focusElement("name");
+          isValidationOk = false;
+        }
+      }
+      return isValidationOk;
+    },
     validateAlterGenericS3Repository() {
       // clear errors
       this.error.name = "";
@@ -317,6 +438,8 @@ export default {
           return this.validateAmazonS3Repository();
         case "genericS3":
           return this.validateAlterGenericS3Repository();
+        case "smb":
+          return this.validateAlterSambaRepository();
       }
     },
     async alterBackupRepository() {
