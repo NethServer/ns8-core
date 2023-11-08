@@ -541,7 +541,8 @@
     "smb_domain":"SMB domain",
     "samba":"Windows file share (SMB2/3)",
     "samba_placeholder":"Share name",
-    "smb_short": "SMB"
+    "smb_short": "SMB",
+    "samba_tooltips":"The SMB1/CIFS is not supported"
   },
   "calendar": {
     "days": "Days",

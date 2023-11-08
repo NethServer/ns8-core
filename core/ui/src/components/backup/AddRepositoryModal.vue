@@ -137,6 +137,15 @@
                     </div>
                     <h6>
                       {{ $t("backup.samba") }}
+                      <cv-interactive-tooltip
+                        alignment="center"
+                        direction="bottom"
+                        class="info"
+                      >
+                        <template slot="content">
+                          {{ $t("backup.samba_tooltips") }}
+                        </template>
+                      </cv-interactive-tooltip>
                     </h6>
                   </div>
                 </NsTile>
