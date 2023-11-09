@@ -1,0 +1,27 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2023 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+import os
+import sys
+import json
+import agent
+
+rdb = agent.redis_connect()
+
+endpoints = []
+
+for node_id in set(rdb.hvals('cluster/module_node')):
+    ip_address = rdb.hget(f"node/{node_id}/vpn", "ip_address")
+    if not ip_address:
+        continue
+    ui_label = rdb.get(f"node/{node_id}/ui_name") or f"Node {node_id}"
+    endpoints.append({
+        "ui_label": ui_label,
+        "url": f"webdav:http://{ip_address}:4694",
+    })
+
+json.dump({"endpoints": endpoints}, fp=sys.stdout)

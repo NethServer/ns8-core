@@ -50,7 +50,7 @@ renv = dict(os.environ) # copy the environment
 renv.update(request['parameters']) # merge parameters
 renv['url'] = url # add url
 renv['provider'] = request['provider'] # add provider
-pvalidate = subprocess.run(['rclone-wrapper', '0', 'size', '-q', '--json', 'REMOTE_PATH'], text=True, capture_output=True, env=renv)
+pvalidate = subprocess.run(['rclone-wrapper', '0', '--low-level-retries', '1', '--contimeout', '10s', 'size', '-q', '--json', 'REMOTE_PATH'], text=True, capture_output=True, env=renv)
 if pvalidate.returncode != 0:
     agent.set_status('validation-failed')
     json.dump([{'field':'parameters','parameter':'parameters','value':pvalidate.stderr,'error':'backup_repository_not_accessible'}], fp=sys.stdout)
