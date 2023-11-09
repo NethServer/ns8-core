@@ -123,11 +123,18 @@ echo "Building the restic/rclone image..."
 container=$(buildah from docker.io/library/alpine:3.18.4)
 reponame="restic"
 buildah add "${container}" restic/ /
-buildah run ${container} -- apk add --no-cache restic rclone
+buildah run ${container} sh <<'EOF'
+apk add --no-cache restic rclone
+addgroup -S restic
+adduser -S -D -H -h /dev/null -s /sbin/nologin -G restic restic
+mkdir -v -p -m 0750 /srv/repo
+chown -c restic:restic /srv/repo
+EOF
 buildah config \
     --cmd='[]' \
     --entrypoint='["/usr/bin/restic"]' \
     --env='RCLONE_CONFIG=/dev/null' \
+    --volume=/srv/repo \
     ${container}
 buildah commit "${container}" "${repobase}/${reponame}"
 buildah rm "${container}"
