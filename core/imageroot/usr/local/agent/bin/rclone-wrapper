@@ -8,6 +8,7 @@
 import sys
 import agent
 import os
+from urllib.parse import urlparse
 
 core_env = agent.read_envfile("/etc/nethserver/core.env")
 rclone_image = core_env["RESTIC_IMAGE"]
@@ -74,6 +75,12 @@ elif uscheme == "smb":
         "RCLONE_SMB_USER": orepo["smb_user"],
         "RCLONE_SMB_PASS": orepo["smb_pass"],
         "RCLONE_SMB_DOMAIN": orepo["smb_domain"],
+    }
+elif uscheme == "webdav":
+    ourl = urlparse(upath)
+    rclone_path = ':webdav:' + ourl.path.rstrip("/")
+    rclone_env = {
+        "RCLONE_WEBDAV_URL": ourl.scheme + '://' + ourl.netloc
     }
 else:
     raise Exception(f"Scheme {uscheme} not supported")
