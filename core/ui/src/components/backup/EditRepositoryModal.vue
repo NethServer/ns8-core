@@ -171,6 +171,7 @@ export default {
       },
       genericS3: {},
       azure: {},
+      cluster: {},
       smb: {
         smb_host: "",
         smb_user: "",
@@ -195,6 +196,7 @@ export default {
         },
         genericS3: {},
         azure: {},
+        cluster: {},
         smb: {
           smb_host: "",
           smb_user: "",
@@ -259,6 +261,8 @@ export default {
             azure_account_name: "",
             azure_account_key: "",
           };
+        case "cluster":
+          return {};
         case "smb":
           return {
             smb_host: this.smb.smb_host,
@@ -428,6 +432,24 @@ export default {
       console.error("not implemented");
       return false;
     },
+    validateAlterClusterRepository() {
+      // clear errors
+      this.error.name = "";
+      this.error.url = "";
+      this.error.repoConnection = "";
+
+      let isValidationOk = true;
+
+      if (!this.name) {
+        this.error.name = this.$t("common.required");
+
+        if (isValidationOk) {
+          this.focusElement("name");
+          isValidationOk = false;
+        }
+      }
+      return isValidationOk;
+    },
     validateAlterBackupRepository() {
       switch (this.repository.provider) {
         case "backblaze":
@@ -440,6 +462,8 @@ export default {
           return this.validateAlterGenericS3Repository();
         case "smb":
           return this.validateAlterSambaRepository();
+        case "cluster":
+          return this.validateAlterClusterRepository();
       }
     },
     async alterBackupRepository() {

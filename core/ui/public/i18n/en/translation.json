@@ -543,7 +543,11 @@
     "samba":"Windows file share",
     "samba_placeholder":"Share name",
     "smb_short": "SMB",
-    "samba_tooltips":"Only shares with SMB2/3 protocols are supported. Deprecated SMB1/CIFS shares are not secure and cannot be accessed."
+    "samba_tooltips":"Only shares with SMB2/3 protocols are supported. Deprecated SMB1/CIFS shares are not secure and cannot be accessed.",
+    "cluster": "Local storage",
+    "cluster_short": "Cluster",
+    "node": "Node",
+    "cluster_placeholder": "Choose a node in the cluster"
   },
   "calendar": {
     "days": "Days",
