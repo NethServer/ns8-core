@@ -36,6 +36,7 @@ import socket
 import errno
 import urllib.request
 import urllib.error
+from urllib.parse import urlparse
 
 # Reference https://www.man7.org/linux/man-pages/man3/sd-daemon.3.html
 SD_EMERG   = "<0>"  # system is unusable
@@ -218,6 +219,10 @@ def run_restic(rdb, repository, repo_path, podman_args, restic_args, **kwargs):
         restic_env["RCLONE_SMB_PASS"] = orepo["smb_pass"]
         restic_env["RCLONE_SMB_DOMAIN"] = orepo["smb_domain"]
         restic_args.insert(0, "--option=rclone.program=/usr/local/bin/rclone-wrapper")
+    elif uschema == 'webdav' and orepo['provider'] == 'cluster':
+        ourl = urlparse(upath)
+        restic_env["RESTIC_REPOSITORY"] = 'rclone::webdav:' + ourl.path.rstrip("/") + "/" + repo_path
+        restic_env["RCLONE_WEBDAV_URL"] = ourl.scheme + '://' + ourl.netloc
     else:
         raise Exception(f"Schema {uschema} not supported")
 

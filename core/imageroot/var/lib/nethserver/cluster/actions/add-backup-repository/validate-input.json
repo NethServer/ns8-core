@@ -56,6 +56,13 @@
                 "rclone_smb_pass": "Nethesis,1234",
                 "rclone_smb_domain": "NTDOM"
             }
+        },
+        {
+            "name": "repository 6",
+            "provider": "cluster",
+            "password": "",
+            "url": "webdav:http://10.5.4.2:4694",
+            "parameters": {}
         }
     ],
     "type": "object",
@@ -158,6 +165,25 @@
                     }
                 }
             ]
+        },
+        {
+            "allOf": [
+                {
+                    "title": "Local storage",
+                    "properties": {
+                        "provider": {
+                            "title": "Cluster internal provider",
+                            "const": "cluster"
+                        },
+                        "url": {
+                            "pattern": "^webdav:.+$"
+                        },
+                        "parameters": {
+                            "$ref": "#/$defs/cluster_parameters"
+                        }
+                    }
+                }
+            ]
         }
     ],
     "$defs": {
@@ -246,6 +272,12 @@
                     "description": "The short form (NT-style) domain name"
                 }
             }
+        },
+        "cluster_parameters": {
+            "title": "Cluster-internal Rclone parameters",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
         }
     }
 }
