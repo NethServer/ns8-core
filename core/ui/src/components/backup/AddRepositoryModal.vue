@@ -150,6 +150,29 @@
                   </div>
                 </NsTile>
               </cv-column>
+              <!-- Cluster -->
+              <cv-column :md="4">
+                <NsTile
+                  :light="true"
+                  kind="selectable"
+                  v-model="isClusterSelected"
+                  value="providerValue"
+                  @click="selectCluster()"
+                  class="provider-card"
+                >
+                  <div class="provider-card-content">
+                    <div class="provider-icon">
+                      <img
+                        :src="require('@/assets/logo.png')"
+                        alt="cluster logo"
+                      />
+                    </div>
+                    <h6>
+                      {{ $t("backup.cluster") }}
+                    </h6>
+                  </div>
+                </NsTile>
+              </cv-column>
             </cv-row>
           </cv-grid>
         </template>
@@ -161,16 +184,35 @@
             :description="$t('backup.backup_repository_auth_error_description')"
             :showCloseButton="false"
           />
-          <NsTextInput
-            :label="$t('backup.url')"
-            v-model.trim="url"
-            :invalid-message="error.url"
-            :placeholder="$t('backup.' + selectedProviderHelper)"
-            :disabled="loading.addBackupRepository"
-            :prefix="selectedProviderPrefix"
-            ref="url"
-          >
-          </NsTextInput>
+          <template v-if="!isClusterSelected">
+            <NsTextInput
+              :label="$t('backup.url')"
+              v-model.trim="url"
+              :invalid-message="error.url"
+              :placeholder="$t('backup.' + selectedProviderHelper)"
+              :disabled="loading.addBackupRepository"
+              :prefix="selectedProviderPrefix"
+              ref="url"
+            >
+            </NsTextInput>
+          </template>
+          <template v-else>
+            <NsComboBox
+              :options="endpoints"
+              v-model.trim="url"
+              :autoFilter="true"
+              :autoHighlight="true"
+              :title="$t('backup.node')"
+              :label="$t('backup.' + selectedProviderHelper)"
+              :acceptUserInput="false"
+              :showItemType="true"
+              :invalid-message="$t(error.url)"
+              tooltipAlignment="start"
+              tooltipDirection="top"
+              ref="url"
+            >
+            </NsComboBox>
+          </template>
           <!-- backblaze -->
           <template v-if="isBackblazeSelected">
             <cv-text-input
@@ -369,6 +411,8 @@ export default {
       isAmazonS3Selected: false,
       isGenericS3Selected: false,
       isSambaSelected: false,
+      isClusterSelected: false,
+      endpoints: [],
       name: "",
       url: "",
       password: "",
@@ -399,6 +443,9 @@ export default {
         azure_account_key: "",
         azure_account_name: "",
         repoPrefix: "azure:",
+      },
+      cluster: {
+        repoPrefix: "",
       },
       //// handle all providers
       loading: {
@@ -460,6 +507,8 @@ export default {
         return "azure";
       } else if (this.isSambaSelected) {
         return "smb";
+      } else if (this.isClusterSelected) {
+        return "cluster";
       } else {
         return null;
       }
@@ -479,6 +528,8 @@ export default {
         return "azure_placeholder";
       } else if (this.isSambaSelected) {
         return "samba_placeholder";
+      } else if (this.isClusterSelected) {
+        return "cluster_placeholder";
       } else {
         return "url_placeholder";
       }
@@ -491,6 +542,7 @@ export default {
         this.step = this.steps[0];
         this.clearFields();
         this.clearErrors();
+        this.listBackupEndpoints();
       }
     },
     step: function () {
@@ -529,6 +581,7 @@ export default {
       this.isAmazonS3Selected = false;
       this.isAzureSelected = false;
       this.isSambaSelected = false;
+      this.isClusterSelected = false;
       this.name = "";
       this.url = "";
 
@@ -574,6 +627,7 @@ export default {
       this.isAmazonS3Selected = false;
       this.isGenericS3Selected = false;
       this.isSambaSelected = false;
+      this.isClusterSelected = false;
     },
     selectAmazonS3() {
       //// handle ALL providers
@@ -581,6 +635,7 @@ export default {
       this.isAzureSelected = false;
       this.isGenericS3Selected = false;
       this.isSambaSelected = false;
+      this.isClusterSelected = false;
     },
     selectSamba() {
       //// handle ALL providers
@@ -588,6 +643,7 @@ export default {
       this.isAzureSelected = false;
       this.isGenericS3Selected = false;
       this.isAmazonS3Selected = false;
+      this.isClusterSelected = false;
     },
     selectGenericS3() {
       //// handle ALL providers
@@ -595,6 +651,7 @@ export default {
       this.isAzureSelected = false;
       this.isAmazonS3Selected = false;
       this.isSambaSelected = false;
+      this.isClusterSelected = false;
     },
     selectAzure() {
       //// handle ALL providers
@@ -602,6 +659,15 @@ export default {
       this.isAmazonS3Selected = false;
       this.isGenericS3Selected = false;
       this.isSambaSelected = false;
+      this.isClusterSelected = false;
+    },
+    selectCluster() {
+      //// handle ALL providers
+      this.isBackblazeSelected = false;
+      this.isAmazonS3Selected = false;
+      this.isGenericS3Selected = false;
+      this.isSambaSelected = false;
+      this.isAzureSelected = false;
     },
     buildRepositoryParameters() {
       switch (this.selectedProvider) {
@@ -633,6 +699,8 @@ export default {
             smb_pass: this.smb.smb_pass,
             smb_domain: this.smb.smb_domain,
           };
+        case "cluster":
+          return {};
       }
       //// handle all providers
     },
@@ -947,6 +1015,41 @@ export default {
       }
       return isValidationOk;
     },
+    validateAddClusterRepository() {
+      // clear errors
+      this.error.name = "";
+      this.error.url = "";
+      this.error.repoConnection = "";
+
+      let isValidationOk = true;
+
+      if (!this.url) {
+        this.error.url = this.$t("common.required");
+
+        if (isValidationOk) {
+          this.focusElement("url");
+          isValidationOk = false;
+        }
+      } else if (this.url.includes(" ")) {
+        // wrong url protocol
+        this.error.url = this.$t("backup.invalid_url");
+
+        if (isValidationOk) {
+          this.focusElement("url");
+          isValidationOk = false;
+        }
+      }
+
+      if (!this.name) {
+        this.error.name = this.$t("common.required");
+
+        if (isValidationOk) {
+          this.focusElement("name");
+          isValidationOk = false;
+        }
+      }
+      return isValidationOk;
+    },
     validateAddBackupRepository() {
       switch (this.selectedProvider) {
         case "backblaze":
@@ -959,6 +1062,8 @@ export default {
           return this.validateAddGenericS3Repository();
         case "smb":
           return this.validateAddSambaRepository();
+        case "cluster":
+          return this.validateAddClusterRepository();
       }
     },
     async addBackupRepository() {
@@ -1037,6 +1142,52 @@ export default {
     },
     getProviderShortName() {
       return this.$t(`backup.${this.selectedProvider}_short`);
+    },
+    async listBackupEndpoints() {
+      this.loading.listBackupEndpoints = true;
+      this.error.listBackupEndpoints = "";
+      const taskAction = "list-cluster-backup-endpoints";
+
+      // register to task completion
+      this.$root.$once(
+        taskAction + "-completed",
+        this.listBackupEndpointsCompleted
+      );
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.listBackupEndpoints = this.getErrorMessage(err);
+        return;
+      }
+    },
+    listBackupEndpointsCompleted(taskContext, taskResult) {
+      let endpoints = taskResult.output.endpoints.sort(
+        this.sortByProperty("ui_label")
+      );
+
+      // Function to convert each JSON object
+      function convertToObject(endpoints) {
+        return {
+          name: endpoints.ui_label,
+          label: endpoints.ui_label,
+          value: endpoints.url,
+        };
+      }
+
+      // Iterate through the array and create new objects
+      this.endpoints = endpoints.map(convertToObject);
+      this.loading.listBackupEndpoints = false;
     },
   },
 };
