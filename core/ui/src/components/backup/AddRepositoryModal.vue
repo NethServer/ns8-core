@@ -385,6 +385,7 @@
 <script>
 import { UtilService, TaskService, IconService } from "@nethserver/ns8-ui-lib";
 import to from "await-to-js";
+import last from "lodash/last";
 
 export default {
   name: "AddRepositoryModal",
@@ -1114,22 +1115,37 @@ export default {
         return;
       }
     },
+    getValidationErrorField(validationError) {
+      // error field could be "parameters.fieldName", let's take "fieldName" only
+      const fieldTokens = validationError.field.split(".");
+      return last(fieldTokens);
+    },
     addBackupRepositoryValidationFailed(validationErrors) {
       this.loading.addBackupRepository = false;
       let focusAlreadySet = false;
 
       for (const validationError of validationErrors) {
-        const param = validationError.parameter;
+        let field = this.getValidationErrorField(validationError);
 
         if (validationError.error == "backup_repository_not_accessible") {
-          // show error nontification
+          // show error notification
           this.error.repoConnection = "error";
-        } else {
+        } else if (field !== "(root)") {
           // set i18n error message
-          this.error[param] = this.$t("backup." + validationError.error);
-
+          if (
+            // we could have error.property and error.provider.property
+            field === "name" ||
+            field === "url" ||
+            field === "repoConnection"
+          ) {
+            this.error[field] = this.$t("backup." + validationError.error);
+          } else {
+            this.error[this.selectedProvider][field] = this.$t(
+              "backup." + validationError.error
+            );
+          }
           if (!focusAlreadySet) {
-            this.focusElement(param);
+            this.focusElement(field);
             focusAlreadySet = true;
           }
         }
