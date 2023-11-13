@@ -87,9 +87,11 @@ def _list_repository_modules(rdb, repository_name, repository_url, skip_core_mod
 
     try:
         url = urllib.parse.urljoin(repository_url, "repodata.json")
-        with urllib.request.urlopen(url) as req:
-            repodata = req.read().decode()
-    except:
+        req = urllib.request.Request(url=url, headers={'User-Agent': 'ns8-downloader'})
+        with urllib.request.urlopen(req) as resp:
+            repodata = resp.read().decode()
+    except Exception as ex:
+        print(ex, file=sys.stderr)
         # If repository is not accessible or invalid, just return an empty array
         return []
 
