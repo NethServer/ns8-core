@@ -4,6 +4,7 @@ Description=Rclone WebDAV server
 [Service]
 Environment=PODMAN_SYSTEMD_UNIT=%n
 Environment=OPTIONS=
+Environment=BACKUP_VOLUME=rclone-webdav
 EnvironmentFile=/etc/nethserver/core.env
 EnvironmentFile=-/var/lib/nethserver/node/state/rclone-webdav.env
 Restart=always
@@ -18,7 +19,7 @@ ExecStart=/usr/bin/podman run \
     --replace --name=%N \
     --network=host \
     --user=restic:restic \
-    --volume=restic-data:/srv/repo:z \
+    --volume=${BACKUP_VOLUME}:/srv/repo:z \
     --entrypoint=[] \
     ${RESTIC_IMAGE} rclone serve webdav /srv/repo --addr :4694 $OPTIONS
 
