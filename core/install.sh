@@ -7,6 +7,33 @@
 
 set -e
 
+print_ns_yum_config ()
+{
+    cat <<'EOF'
+#
+# nethserver.repo -- YUM repositories for Rocky Linux, added by NS8 install.sh
+#
+
+[ns-baseos]
+name=NS8 Rocky Linux $releasever - BaseOS
+mirrorlist=http://mirrorlist.nethserver.org/rockylinux?arch=$basearch&repo=BaseOS-$releasever$rltype
+gpgcheck=1
+enabled=1
+countme=1
+metadata_expire=6h
+gpgkey=http://mirrorlist.nethserver.org/rpm-gpg-key-ns8
+
+[ns-appstream]
+name=NS8 Rocky Linux $releasever - AppStream
+mirrorlist=http://mirrorlist.nethserver.org/rockylinux?arch=$basearch&repo=AppStream-$releasever$rltype
+gpgcheck=1
+enabled=1
+countme=1
+metadata_expire=6h
+gpgkey=http://mirrorlist.nethserver.org/rpm-gpg-key-ns8
+EOF
+}
+
 echo "Checking port 80 and 443 are not already in use"
 for port in 80 443
 do
@@ -24,6 +51,10 @@ source /etc/os-release
 
 echo "Install dependencies:"
 if [[ "${PLATFORM_ID}" == "platform:el9" ]]; then
+    if [[ "${ID}" == rocky ]]; then
+        print_ns_yum_config > /etc/yum.repos.d/nethserver.repo
+        dnf config-manager --save --set-disabled appstream baseos extras
+    fi
     dnf update -y # Fix SELinux issues with basic packages
     dnf install -y wireguard-tools podman jq openssl firewalld pciutils python3.11
     systemctl enable --now firewalld

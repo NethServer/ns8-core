@@ -1,0 +1,17 @@
+[ns-baseos]
+name=NS8 Rocky Linux $releasever - BaseOS
+mirrorlist=http://mirrorlist.nethserver.org/rockylinux?arch=$basearch&repo=BaseOS-$releasever$rltype
+gpgcheck=1
+enabled=1
+countme=1
+metadata_expire=6h
+gpgkey=http://mirrorlist.nethserver.org/rpm-gpg-key-ns8
+
+[ns-appstream]
+name=NS8 Rocky Linux $releasever - AppStream
+mirrorlist=http://mirrorlist.nethserver.org/rockylinux?arch=$basearch&repo=AppStream-$releasever$rltype
+gpgcheck=1
+enabled=1
+countme=1
+metadata_expire=6h
+gpgkey=http://mirrorlist.nethserver.org/rpm-gpg-key-ns8
