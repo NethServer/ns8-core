@@ -54,9 +54,13 @@ A process for a new feature should be something like this:
 
 - open a new topic on [http://community.nethserver.org](http://community.nethserver.org) and discuss it
 
+- if a feature is planned for the future it is also recorded in a [project
+  draft card](https://github.com/orgs/NethServer/projects/8)
+
 - ongoing development can be tracked inside a [draft pull request](#draft-pull-requests)
 
-- open the issue on GitHub [https://github.com/NethServer/dev/issues/new](https://github.com/NethServer/dev/issues/new)
+- once the work on the feature starts, open the issue on GitHub
+  [https://github.com/NethServer/dev/issues/new](https://github.com/NethServer/dev/issues/new)
 
 
 ### Writing issues
@@ -103,11 +107,16 @@ repositories.  We set one of them to be the issue tracker:
 
 [https://github.com/NethServer/dev](https://github.com/NethServer/dev)
 
-Issues created on developer help coordinating the development process, determining
+Issues created on it help coordinating the development process, determining
 who is in charge of what.
 
-Before the first stable release, the issue tracker is not used.
-Everything is tracked under a [temporary public board](https://trello.com/b/R58gtZ8I/ns8-project-alpha).
+Issues recorded in the tracker are a fundamental source of information for
+future changes and a reference for documentation and support requests.
+
+Issues recorded as project draft cards constitute the project roadmap and
+are published here:
+
+[https://github.com/orgs/NethServer/projects/8](https://github.com/orgs/NethServer/projects/8)
 
 ## Issue labels
 
@@ -129,7 +138,9 @@ and make sure to describe carefully the new label inside the [label page](https:
 
 The *Developer*.
 
-- Sets the *Assignee* to himself.
+- Sets *Assignee* to himself.
+
+- Sets the *Project* to `NethServer 8`
 
 - Bundle his commits as one or more GitHub [pull requests](#pull-request)
 
