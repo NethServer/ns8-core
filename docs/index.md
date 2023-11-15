@@ -30,7 +30,7 @@ Look at [core internals](core), [modules architecture](modules) or the [UI imple
 
 External links:
 - [Administrator manual]({{site.admin_manual}})
-- [Project roadmap](https://trello.com/b/R58gtZ8I/ns8-prototype)
+- [Project roadmap](https://github.com/orgs/NethServer/projects/8)
 - [API documentation](https://github.com/NethServer/ns8-core/tree/apidoc)
 
 Do you need help? Ask the [community](https://community.nethserver.org/)

@@ -15,5 +15,5 @@ documentation, CI/CD automation, and the installation procedure.
 Useful links
 
 - [Website](https://www.nethserver.org)
-- [Project roadmap](https://trello.com/b/R58gtZ8I/ns8)
+- [Project roadmap](https://github.com/orgs/NethServer/projects/8)
 - [Admin's manual](https://ns8.nethserver.org)
