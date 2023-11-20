@@ -26,6 +26,7 @@ import urllib
 import os.path
 import urllib.request
 from glob import glob
+import sys
 
 def _urljoin(base_path, *args):
     '''replace urllib.parse.joinurl because it doesn't handle multiple parameters
