@@ -16,4 +16,4 @@ Useful links
 
 - [Website](https://www.nethserver.org)
 - [Project roadmap](https://github.com/orgs/NethServer/projects/8)
-- [Admin's manual](https://ns8.nethserver.org)
+- [Admin's manual](https://docs.nethserver.org/projects/ns8)
