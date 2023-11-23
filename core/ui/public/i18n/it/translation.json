@@ -81,7 +81,7 @@
         "open_app": "Apri app",
         "update": "Aggiorna",
         "choose_node_for_installation": "Selezionare il nodo di installazione per <strong>{app} v{version}</strong>",
-        "about_to_install_app": "<strong>{app} v{version}</strong> verrà installata su <strong>{node}</strong>",
+        "about_to_install_app": "<strong>{app} {version}</strong> verrà installata su <strong>{node}</strong>",
         "instance_uninstallation": "Disinstalla {istanza}",
         "no_instance_installed": "Nessuna istanza installata",
         "instance": "Istanza",

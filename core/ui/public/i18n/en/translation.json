@@ -760,7 +760,7 @@
     "authors": "Author | Authors",
     "app_installation": "Install {app}",
     "choose_node_for_installation": "Select installation node for <strong>{app} v{version}</strong>",
-    "about_to_install_app": "<strong>{app} v{version}</strong> will be installed on <strong>{node}</strong>",
+    "about_to_install_app": "<strong>{app} {version}</strong> will be installed on <strong>{node}</strong>",
     "installing_on_node": "Installing on {node}",
     "instance_installed_on_node": "{module_id} installed on {node}",
     "app_instances": "{app} instances",
