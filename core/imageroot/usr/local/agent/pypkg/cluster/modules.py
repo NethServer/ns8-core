@@ -47,13 +47,19 @@ def _get_downloaded_logos():
             logos[os.path.basename(app)] = logo
     return logos
 
-def _parse_repository_metadata(repository_name, repository_url, repository_updated, repodata, skip_core_modules = False):
+def _parse_repository_metadata(repository_name, repository_url, repository_updated, repodata, skip_core_modules = False, skip_testing_versions = False):
     modules = []
 
     try:
         repodata = json.loads(repodata)
     except:
         return modules
+
+    def ignore_testing(version):
+        if skip_testing_versions and version["testing"] is True:
+            return False
+        else:
+            return True
 
     for package in repodata:
         # Skip core modules if flag is enabled
@@ -75,16 +81,20 @@ def _parse_repository_metadata(repository_name, repository_url, repository_updat
            screenshots.append(_urljoin(repository_url, package["id"], s))
         package["screenshots"] = screenshots
 
-        modules.append(package)
+        # Filter
+        package["versions"] = list(filter(ignore_testing, package["versions"]))
+
+        if len(package["versions"]) > 0:
+            modules.append(package)
 
     return modules
 
 
-def _list_repository_modules(rdb, repository_name, repository_url, skip_core_modules = False):
+def _list_repository_modules(rdb, repository_name, repository_url, skip_core_modules = False, skip_testing_versions=False):
     key = f'cluster/repository_cache/{repository_name}'
     cache = rdb.hgetall(key)
     if cache:
-        return _parse_repository_metadata(repository_name, repository_url, cache["updated"], cache["data"], skip_core_modules)
+        return _parse_repository_metadata(repository_name, repository_url, cache["updated"], cache["data"], skip_core_modules, skip_testing_versions)
 
     try:
         url = urllib.parse.urljoin(repository_url, "repodata.json")
@@ -97,7 +107,7 @@ def _list_repository_modules(rdb, repository_name, repository_url, skip_core_mod
         return []
 
     updated = req.headers.get('Last-Modified', "")
-    modules = _parse_repository_metadata(repository_name, repository_url, updated, repodata, skip_core_modules)
+    modules = _parse_repository_metadata(repository_name, repository_url, updated, repodata, skip_core_modules, skip_testing_versions)
     # Save inside the cache if data is valid
     if modules:
         # Save also repodata file date
@@ -148,8 +158,9 @@ def list_available(rdb, skip_core_modules = False):
         # Skip disabled repositories
         if int(repo["status"]) == 0:
             continue
-        
-        modules.extend(_list_repository_modules(rdb, os.path.basename(m), repo["url"], skip_core_modules))
+
+        skip_testing_versions = repo["testing"] != "1"
+        modules.extend(_list_repository_modules(rdb, os.path.basename(m), repo["url"], skip_core_modules, skip_testing_versions))
 
     return modules
 
