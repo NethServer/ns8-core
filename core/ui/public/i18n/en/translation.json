@@ -794,7 +794,7 @@
     "app_now_renamed": "{instance} (now {module_id})",
     "uninstall_app": "Uninstall <strong>{name}</strong>? App data will be deleted too. This action is <strong>NOT</strong> reversible",
     "update_app": "Update {app}",
-    "about_to_update_app": "<strong>{app} {version}</strong> will be updated to <strong>v{newVersion}</strong>",
+    "about_to_update_app": "<strong>{app} {version}</strong> will be updated to <strong>{newVersion}</strong>",
     "updating_to_version": "Updating to version {version}",
     "core_app_name": "{productName} core",
     "core_app_description": "Collection of {productName} core apps",
