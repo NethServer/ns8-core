@@ -54,6 +54,7 @@ if [[ "${PLATFORM_ID}" == "platform:el9" ]]; then
     if [[ "${ID}" == rocky ]]; then
         print_ns_yum_config > /etc/yum.repos.d/nethserver.repo
         dnf config-manager --save --set-disabled appstream baseos extras
+        rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-Rocky-9
     fi
     dnf update -y # Fix SELinux issues with basic packages
     dnf install -y wireguard-tools podman jq openssl firewalld pciutils python3.11
