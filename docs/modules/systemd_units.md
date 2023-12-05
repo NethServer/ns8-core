@@ -28,7 +28,7 @@ escaped or quoted:
    tokens, and values coming from the user's input.
 
 See [Dokuwiki
-unit](https://github.com/NethServer/ns8-core/blob/main/dokuwiki/README.md#dokuwiki)
+unit](https://github.com/NethServer/ns8-dokuwiki/blob/main/imageroot/systemd/user/dokuwiki.service)
 as an example.
 
 

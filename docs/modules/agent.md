@@ -40,10 +40,10 @@ As a convention, all modules with a UI should also implement the following actio
 
 - `configure-module`: it validates the user input and applies the
   configuration, see [Dokuwiki
-  example](https://github.com/NethServer/ns8-core/blob/main/dokuwiki/imageroot/actions/configure-module)
+  example](https://github.com/NethServer/ns8-dokuwiki/tree/main/imageroot/actions/configure-module)
 - `get-configuration`: it should return current configuration, the output
   should be equal or similar to configure-module input, see [Dokuwiki
-  example](https://github.com/NethServer/ns8-core/blob/main/dokuwiki/imageroot/actions/get-configuration)
+  example](https://github.com/NethServer/ns8-dokuwiki/tree/main/imageroot/actions/get-configuration)
 
 
 ## Agent environment
