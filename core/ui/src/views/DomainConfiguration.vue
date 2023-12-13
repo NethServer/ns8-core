@@ -726,7 +726,7 @@ export default {
       return this.domain.providers[0].node;
     },
     unconfiguredProviders() {
-      if (!this.domain.providers) {
+      if (!this.domain?.providers) {
         return [];
       }
       let unconfiguredProviders = this.domain.providers.filter((p) => !p.host);
