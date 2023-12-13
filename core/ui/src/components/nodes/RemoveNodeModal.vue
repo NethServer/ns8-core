@@ -297,8 +297,11 @@ export default {
     },
     listInstalledModulesCompleted(taskContext, taskResult) {
       const appsByNode = this.getInstalledAppsByNode(taskResult.output);
-
-      const nodeApps = appsByNode[this.node.id].filter((app) => {
+      let nodeApps = [];
+      if (this.node.id in appsByNode) {
+        nodeApps = appsByNode[this.node.id];
+      }
+      nodeApps = nodeApps.filter((app) => {
         // exclude core apps (but keep account providers)
         return (
           !app.flags.includes("core_module") ||
