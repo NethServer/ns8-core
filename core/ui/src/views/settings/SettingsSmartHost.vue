@@ -67,26 +67,6 @@
                 </template>
               </NsTextInput>
               <NsTextInput
-                v-model.trim="username"
-                :placeholder="$t('smarthost.username_placeholder')"
-                :label="$t('smarthost.username_label')"
-                :invalid-message="error.username"
-                :disabled="loading.getSmarthost || loading.setSmarthost"
-                ref="username"
-              >
-                <template slot="tooltip">
-                  <span v-html="$t('smarthost.username_label_tooltip')"></span>
-                </template>
-              </NsTextInput>
-              <NsTextInput
-                :label="$t('smarthost.password_label')"
-                v-model="password"
-                :invalid-message="$t(error.password)"
-                type="password"
-                ref="password"
-              >
-              </NsTextInput>
-              <NsTextInput
                 v-model.trim="port"
                 :label="$t('smarthost.port_label')"
                 :placeholder="$t('smarthost.port_placeholder')"
@@ -127,6 +107,26 @@
                   </template>
                 </cv-toggle>
               </template>
+              <NsTextInput
+                v-model.trim="username"
+                :placeholder="$t('smarthost.username_placeholder')"
+                :label="$t('smarthost.username_label')"
+                :invalid-message="error.username"
+                :disabled="loading.getSmarthost || loading.setSmarthost"
+                ref="username"
+              >
+                <template slot="tooltip">
+                  <span v-html="$t('smarthost.username_label_tooltip')"></span>
+                </template>
+              </NsTextInput>
+              <NsTextInput
+                :label="$t('smarthost.password_label')"
+                v-model="password"
+                :invalid-message="$t(error.password)"
+                type="password"
+                ref="password"
+              >
+              </NsTextInput>
               <div ref="setSmarthostError">
                 <cv-row v-if="error.test_smarthost">
                   <cv-column>
