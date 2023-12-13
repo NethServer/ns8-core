@@ -62,9 +62,6 @@
                 :disabled="loading.getSmarthost || loading.setSmarthost"
                 ref="host"
               >
-                <template slot="tooltip">
-                  <span v-html="$t('smarthost.hostname_label_tooltip')"></span>
-                </template>
               </NsTextInput>
               <NsTextInput
                 v-model.trim="port"
@@ -74,9 +71,6 @@
                 :disabled="loading.getSmarthost || loading.setSmarthost"
                 ref="port"
               >
-                <template slot="tooltip">
-                  <span v-html="$t('smarthost.port_label_tooltip')"></span>
-                </template>
               </NsTextInput>
               <NsComboBox
                 v-model="encrypt_smtp"
@@ -111,13 +105,11 @@
                 v-model.trim="username"
                 :placeholder="$t('smarthost.username_placeholder')"
                 :label="$t('smarthost.username_label')"
+                :helper-text="$t('smarthost.username_helper')"
                 :invalid-message="error.username"
                 :disabled="loading.getSmarthost || loading.setSmarthost"
                 ref="username"
               >
-                <template slot="tooltip">
-                  <span v-html="$t('smarthost.username_label_tooltip')"></span>
-                </template>
               </NsTextInput>
               <NsTextInput
                 :label="$t('smarthost.password_label')"
