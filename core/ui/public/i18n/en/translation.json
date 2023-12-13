@@ -1203,8 +1203,8 @@
     "animated_icons_by": "Animated icons by"
   },
   "smarthost": {
-    "title": "Smarthost",
-    "enabled": "Smarthost provider",
+    "title": "Email notifications",
+    "enabled": "Send notifications with an SMTP server",
     "hostname_label": "Hostname",
     "hostname_label_tooltip": "Enter the fully qualified domain name of the SMTP server",
     "hostname_placeholder": "smtp.domain.com",

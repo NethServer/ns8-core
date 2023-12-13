@@ -305,12 +305,12 @@
   },
   {
     "name": {
-      "en": "Smarthost",
-      "it": "Smarthost"
+      "en": "Email notifications",
+      "it": "Notifiche email"
     },
     "description": {
-      "en": "Go to Smarthost",
-      "it": "Vai a Smarthost"
+      "en": "Go to Email notifications",
+      "it": "Vai a Notifiche email"
     },
     "tags": {
       "en": ["settings", "smtp", "email"],
