@@ -133,82 +133,85 @@
           </cv-tile>
         </cv-column>
         <!-- password policy -->
-        <cv-column v-if="loading.ListPasswordPolicy" :md="4" :max="4">
-          <cv-tile light>
-            <cv-skeleton-text
-              :paragraph="true"
-              :line-count="7"
-            ></cv-skeleton-text>
-          </cv-tile>
-        </cv-column>
-        <cv-column :md="4" :max="4" v-else>
-          <NsInfoCard
-            light
-            :title="$t('domains.policy_password')"
-            :icon="Password32"
-          >
-            <template #menu>
-              <cv-overflow-menu
-                :flip-menu="true"
-                tip-position="top"
-                tip-alignment="end"
-                class="top-right-overflow-menu"
-              >
-                <cv-overflow-menu-item @click="showPasswordPolicy()">
-                  <NsMenuItem
-                    :icon="Edit20"
-                    :label="$t('domains.edit_password_policy')"
-                  />
-                </cv-overflow-menu-item>
-              </cv-overflow-menu>
-            </template>
-            <template #content>
-              <div class="provider-card-content">
-                <div class="row">
-                  <span class="label right-margin">{{
-                    $t("domains.expiration")
-                  }}</span>
+        <template v-if="domain.location === 'internal'">
+          <cv-column v-if="loading.ListPasswordPolicy" :md="4" :max="4">
+            <cv-tile light>
+              <cv-skeleton-text
+                :paragraph="true"
+                :line-count="7"
+              ></cv-skeleton-text>
+            </cv-tile>
+          </cv-column>
+          <cv-column :md="4" :max="4" v-else>
+            <NsInfoCard
+              light
+              :title="$t('domains.policy_password')"
+              :icon="Password32"
+            >
+              <template #menu>
+                <cv-overflow-menu
+                  :flip-menu="true"
+                  tip-position="top"
+                  tip-alignment="end"
+                  class="top-right-overflow-menu"
+                >
+                  <cv-overflow-menu-item @click="showPasswordPolicy()">
+                    <NsMenuItem
+                      :icon="Edit20"
+                      :label="$t('domains.edit_password_policy')"
+                    />
+                  </cv-overflow-menu-item>
+                </cv-overflow-menu>
+              </template>
+              <template #content>
+                <div class="provider-card-content">
+                  <div class="row">
+                    <span class="label right-margin">{{
+                      $t("domains.expiration")
+                    }}</span>
 
-                  <cv-tag
-                    v-if="policy.expiration.enforced"
-                    kind="green"
-                    :label="$t('common.enabled')"
-                    size="sm"
-                    class="no-margin"
-                  ></cv-tag>
-                  <cv-tag
-                    v-else
-                    kind="high-contrast"
-                    :label="$t('common.disabled')"
-                    size="sm"
-                    class="no-margin"
-                  ></cv-tag>
+                    <cv-tag
+                      v-if="policy.expiration.enforced"
+                      kind="green"
+                      :label="$t('common.enabled')"
+                      size="sm"
+                      class="no-margin"
+                    ></cv-tag>
+                    <cv-tag
+                      v-else
+                      kind="high-contrast"
+                      :label="$t('common.disabled')"
+                      size="sm"
+                      class="no-margin"
+                    ></cv-tag>
+                  </div>
+                  <div class="row">
+                    <span class="label right-margin">{{
+                      $t("domains.strength")
+                    }}</span>
+                    <cv-tag
+                      v-if="policy.strength.enforced"
+                      kind="green"
+                      :label="$t('common.enabled')"
+                      size="sm"
+                    ></cv-tag>
+                    <cv-tag
+                      v-else
+                      kind="high-contrast"
+                      :label="$t('common.disabled')"
+                      size="sm"
+                    ></cv-tag>
+                  </div>
                 </div>
-                <div class="row">
-                  <span class="label right-margin">{{
-                    $t("domains.strength")
-                  }}</span>
-                  <cv-tag
-                    v-if="policy.strength.enforced"
-                    kind="green"
-                    :label="$t('common.enabled')"
-                    size="sm"
-                  ></cv-tag>
-                  <cv-tag
-                    v-else
-                    kind="high-contrast"
-                    :label="$t('common.disabled')"
-                    size="sm"
-                  ></cv-tag>
-                </div>
-              </div>
-            </template>
-          </NsInfoCard>
-        </cv-column>
+              </template>
+            </NsInfoCard>
+          </cv-column>
+        </template>
         <!-- user portal link -->
         <cv-column :md="4" :max="4">
           <NsInfoCard
             light
+            v-if="domain.location == 'internal'"
             :title="$t('domains.users_admin_page_title')"
             :titleTooltip="$t('domains.users_admin_page_tooltips')"
             titleTooltipAlignment="center"
@@ -680,7 +683,9 @@ export default {
           password_min_length: 8,
         },
       },
-      domain: null,
+      domain: {
+        location: "internal",
+      },
       internalNodes: [],
       isShownLastProviderModal: false,
       currentProvider: {
@@ -721,7 +726,7 @@ export default {
       return this.domain.providers[0].node;
     },
     unconfiguredProviders() {
-      if (!this.domain) {
+      if (!this.domain.providers) {
         return [];
       }
       let unconfiguredProviders = this.domain.providers.filter((p) => !p.host);
@@ -782,8 +787,10 @@ export default {
       this.domain = taskResult.output.domains.find(
         (d) => d.name == this.domainName
       );
-      this.ListPasswordPolicy();
-      this.getFqdn();
+      if (this.domain.location === "internal") {
+        this.ListPasswordPolicy();
+        this.getFqdn();
+      }
       this.loading.listUserDomains = false;
       //// fix? maybe available nodes will be retrieved by a dedicated api
       this.initNodes();
@@ -872,8 +879,6 @@ export default {
       this.hostnameNode = taskResult.output.hostname;
       this.domainNode = taskResult.output.domain;
       this.loading.getFqdn = false;
-
-      console.log(taskResult.output);
     },
     getFqdnAborted(taskResult, taskContext) {
       console.error(`${taskContext.action} aborted`, taskResult);
