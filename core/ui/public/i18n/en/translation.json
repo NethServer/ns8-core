@@ -1219,7 +1219,7 @@
     "tls": "TLS",
     "choose": "Choose",
     "tls_verify": "Verify the TLS certificate",
-    "connection_timeout_error": "The connection issued a timeout error, verify the port and the fully qualified domain name",
+    "connection_timeout_error": "The connection issued a timeout error, verify the SMTP port number and the SMTP server name",
     "cannot_authenticate_to_server": "The server refuses the connection, it is probably due to a bad login or bad password",
     "cannot_connect_to_server": "The server refuses the connection, please try again.",
     "connection_not_supported_by_server": "The connection is not supported by the server, you should try to enable STARTTLS",
