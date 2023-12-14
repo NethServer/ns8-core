@@ -31,6 +31,7 @@ request = json.load(sys.stdin)
 module_id = request['module_id']
 agent.assert_exp(module_id)
 preserve_data = request['preserve_data']
+forced_removal = request.get('force', False)
 agent.assert_exp(preserve_data is not None)
 
 #
@@ -50,29 +51,41 @@ except Exception as ex:
 
 podman_image_id = rdb.hget(f'module/{module_id}/environment', 'IMAGE_ID') or ""
 
-# Invoke the module destructor, if defined. Rootfull modules must
-# implement one, to stop running services.
-destroy_module_result = agent.tasks.run(
-    agent_id=f'module/{module_id}',
-    action='destroy-module',
-    data={
-        "module_id": module_id,
-        "preserve_data": preserve_data,
-    },
-    endpoint="redis://cluster-leader",
-)
-agent.assert_exp(destroy_module_result['exit_code'] == 0)
+try:
+    # Invoke the module destructor, if defined. Rootfull modules must
+    # implement one, to stop running services.
+    destroy_module_result = agent.tasks.run(
+        agent_id=f'module/{module_id}',
+        action='destroy-module',
+        data={
+            "module_id": module_id,
+            "preserve_data": preserve_data,
+        },
+        endpoint="redis://cluster-leader",
+    )
+    agent.assert_exp(destroy_module_result['exit_code'] == 0)
+except Exception as ex:
+    if forced_removal:
+        print(agent.SD_WARNING + "Destroy module failed:", ex, file=sys.stderr)
+    else:
+        raise ex
 
-remove_module_result = agent.tasks.run(
-    agent_id=f'node/{node_id}',
-    action='remove-module',
-    data={
-        "module_id": module_id,
-        "preserve_data": preserve_data,
-    },
-    endpoint="redis://cluster-leader",
-)
-agent.assert_exp(remove_module_result['exit_code'] == 0) # The node remove-module action must succeed
+try:
+    remove_module_result = agent.tasks.run(
+        agent_id=f'node/{node_id}',
+        action='remove-module',
+        data={
+            "module_id": module_id,
+            "preserve_data": preserve_data,
+        },
+        endpoint="redis://cluster-leader",
+    )
+    agent.assert_exp(remove_module_result['exit_code'] == 0) # The node remove-module action must succeed
+except Exception as ex:
+    if forced_removal:
+        print(agent.SD_WARNING + "Remove module from node has failed:", ex, file=sys.stderr)
+    else:
+        raise ex
 
 # If module_id is registered as default_instance, forget it:
 for kdef in rdb.scan_iter('*/default_instance/*'):
