@@ -74,9 +74,10 @@ SET node/1/tcp_ports_sequence 20001
 SET node/1/udp_ports_sequence 20001
 EOF
 
-    # Configure default module repository
+    # Configure default module repositories
     cat <<EOF
-HSET cluster/repository/default url ${REPOMD:-https://distfeed.nethserver.org/ns8/updates/}/ status 1 testing ${TESTING:-0}
+HSET cluster/repository/default url ${REPOMD:-https://distfeed.nethserver.org/ns8/updates/} status 1 testing ${TESTING:-0}
+HSET cluster/repository/nethforge url https://forge.nethserver.org/ns8/updates/ status 0 testing ${TESTING:-0}
 EOF
 
     # Setup initial ACLs

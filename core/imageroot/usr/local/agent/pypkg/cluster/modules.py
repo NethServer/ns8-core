@@ -96,13 +96,13 @@ def _list_repository_modules(rdb, repository_name, repository_url, skip_core_mod
     if cache:
         return _parse_repository_metadata(repository_name, repository_url, cache["updated"], cache["data"], skip_core_modules, skip_testing_versions)
 
+    url = _urljoin(repository_url, "repodata.json")
     try:
-        url = urllib.parse.urljoin(repository_url, "repodata.json")
         req = urllib.request.Request(url=url, headers={'User-Agent': 'ns8-downloader'})
         with urllib.request.urlopen(req) as resp:
             repodata = resp.read().decode()
     except Exception as ex:
-        print(ex, file=sys.stderr)
+        print(f"Fetching {url}:", ex, file=sys.stderr)
         # If repository is not accessible or invalid, just return an empty array
         return []
 
