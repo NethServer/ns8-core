@@ -788,7 +788,7 @@ export default {
         (d) => d.name == this.domainName
       );
       if (this.domain.location === "internal") {
-        this.ListPasswordPolicy();
+        this.listPasswordPolicy();
         this.getFqdn();
       }
       this.loading.listUserDomains = false;
@@ -799,7 +799,7 @@ export default {
         this.checkAndScrollToAnchor();
       }, 100);
     },
-    async ListPasswordPolicy() {
+    async listPasswordPolicy() {
       this.loading.ListPasswordPolicy = true;
       this.error.ListPasswordPolicy = "";
       const taskAction = "get-password-policy";
