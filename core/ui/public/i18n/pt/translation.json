@@ -1,0 +1,69 @@
+{
+    "error": {
+        "403": "Operação não autorizada",
+        "401": "Autenticação inválida",
+        "generic_error": "Algo deu errado",
+        "error": "Erro",
+        "network_timeout": "Tempo limite da rede",
+        "404": "Recurso não encontrado",
+        "network_error": "Erro de rede",
+        "validation_error": "Erros de validação"
+    },
+    "common": {
+        "required": "Obrigatório"
+    },
+    "settings_account": {
+        "2fa_qr_code": "Código QR 2FA",
+        "title": "Conta"
+    },
+    "about": {
+        "title": "Sobre"
+    },
+    "action": {
+        "list-backup-repositories": "Listar repositórios de backup",
+        "add-group": "Adicionar grupo",
+        "add-external-provider": "Adicionar provedor externo",
+        "add-external-domain": "Adicionar domínio externo",
+        "list-backups": "Listar backups",
+        "add-backup-repository": "Adicionar repositório de backup",
+        "add-backup": "Adicionar backup",
+        "add-favorite": "Adicionar aos favoritos"
+    },
+    "domains": {
+        "account_provider": "Provedor de conta"
+    },
+    "task": {
+        "cannot_create_task": "Não é possível criar a tarefa {action}"
+    },
+    "audit_trail": {
+        "actions": "Ações",
+        "action": "Ação"
+    },
+    "backup": {
+        "genericS3_access_key_id": "ID da chave de acesso",
+        "empty_state_repository_description": "Adicione um repositório para configurar o backup"
+    },
+    "login": {
+        "2fa_code_required": "É necessário um código de 6 dígitos",
+        "6_digit_code": "Código de 6 dígitos"
+    },
+    "shell": {
+        "account_settings": "Configurações de conta",
+        "account": "Conta"
+    },
+    "account_provider": {
+        "title": "Provedor de conta"
+    },
+    "settings_acme_servers": {
+        "title": "Servidores ACME"
+    },
+    "settings": {
+        "title": "Configurações"
+    },
+    "notification": {
+        "abort": "Abortar"
+    },
+    "smarthost": {
+        "port_placeholder": "587"
+    }
+}
