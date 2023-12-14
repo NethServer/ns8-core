@@ -1,0 +1,196 @@
+{
+    "error": {
+        "403": "Eragiketa baimendu gabea",
+        "401": "Autentifikazio baliogabea",
+        "generic_error": "Zerbait okertu da",
+        "error": "Errorea",
+        "network_timeout": "Sarearen denbora-muga",
+        "404": "Baliabidea ez da aurkitu",
+        "network_error": "Sare-errorea",
+        "validation_error": "Balioztatze-errorea"
+    },
+    "about": {
+        "animated_icons_by": "Ikono animatuen egilea",
+        "title": "Honi buruz"
+    },
+    "common": {
+        "required": "Beharrezkoa",
+        "show_more": "Gehiago erakutsi",
+        "all": "Guztiak",
+        "all_good": "Dena ondo",
+        "optional": "aukerakoa",
+        "copy_to_clipboard": "Kopiatu",
+        "all_nodes": "Nodo guztiak",
+        "show_less": "Gutxiago erakutsi",
+        "clear_filter": "Iragazkia garbitu",
+        "advanced": "Aurreratua",
+        "details": "Xehetasunak",
+        "edit": "Editatu",
+        "selected": "Hautatuta",
+        "collapse": "Tolestu",
+        "clear_search": "Garbitu bilaketa",
+        "more_info": "Informazio gehiago",
+        "enable": "Gaitu",
+        "choose": "Aukeratu",
+        "cancel": "Utzi",
+        "version": "Bertsioa",
+        "settings": "Ezarpenak",
+        "disabled": "Desgaituta",
+        "disable": "Desgaitu",
+        "menu": "Menua",
+        "expand": "Zabaldu",
+        "close": "Itxi",
+        "enabled": "Gaituta",
+        "delete": "Ezabatu"
+    },
+    "backup": {
+        "aws": "Amazon S3",
+        "backup_name_helper": "Babeskopiarako gogoratzeko erraza den izen bat",
+        "repository_name_helper": "Biltegiko gogoratzeko erraza den izen bat",
+        "cluster_configuration_info": "Gainera, kluster konfigurazioaren babeskopia automatikoki egiten da biltegi batean programatutako exekuzio bakoitzean.",
+        "genericS3_access_key_id": "Sarbide-gako ID-a",
+        "empty_state_repository_description": "Biltegi bat gehitu babeskopia konfiguratzeko",
+        "apps_configuration_tooltip": "Zure babeskopien biltegiak gehitu eta aplikazioen babeskopien programazioa konfiguratu",
+        "add_repository": "Biltegi bat gehitu",
+        "app_instances_not_backed_up": "Aplikazioen babeskopia egin gabea",
+        "delete_repo_explanation_1": "Biltegi hau ezabatuz gero programatutako babeskopiak ere ezabatu egingo dira, baina babeskopia egin dituzun datuak jatorrizko biltegian utziko dira. Ekintza hau <strong>EZ</strong> da itzulgarria.",
+        "title": "Babes-kopia",
+        "apps": "Aplikazioak",
+        "completed": "Bukatuta",
+        "custom": "Pertsonalizatutako",
+        "daily": "Egunero",
+        "configure": "Konfiguratu"
+    },
+    "settings_sw_repositories": {
+        "create_repository": "Biltegi bat gehitu"
+    },
+    "settings_account": {
+        "2fa_qr_code": "2FA QR kodea",
+        "title": "Kontua",
+        "change_password": "Pasahitza aldatu"
+    },
+    "settings_http_routes": {
+        "host_tooltip": "Baliozko ostalari baten adibidea bat: <code>nireapp.domeinua.eus</code>",
+        "url_tooltip": "Baliozko URLaren adibide bat: <code>http://127.0.0.0:2000</code>"
+    },
+    "action": {
+        "add-user": "Erabiltzaile bat gehitu",
+        "list-backup-repositories": "Babeskopien biltegiak ikusi",
+        "add-group": "Talde bat gehitu",
+        "add-external-provider": "Kanpoko hornitzailea gehitu",
+        "add-external-domain": "Kanpoko domeinua gehitu",
+        "list-backups": "Babeskopiak ikusi",
+        "list-modules": "Aplikazioak ikusi",
+        "add-backup-repository": "Babeskopia biltegia gehitu",
+        "add-backup": "Babeskopia gehitu",
+        "alter-backup-repository": "Babeskopien biltegia aldatu",
+        "add-favorite": "Gogokoenetara gehitu",
+        "add-internal-provider": "Barne hornitzailea gehitu",
+        "alter-repository": "Biltegia aldatu",
+        "alter-backup": "Babeskopia aldatu",
+        "add-repository": "Biltegi bat gehitu",
+        "remove-user": "Erabiltzailea ezabatu"
+    },
+    "shell": {
+        "app_launcher": "Aplikazioen abiarazlea",
+        "account_settings": "Kontu ezarpenak",
+        "account": "Kontua"
+    },
+    "app_drawer": {
+        "list": "Ikusi",
+        "all_apps": "Aplikazio guztiak"
+    },
+    "settings_cluster_admins": {
+        "user_already_exists": "Administratzaile bat dagoeneko badago",
+        "change_password": "Pasahitza aldatu",
+        "display_name": "Erakusteko izena"
+    },
+    "domains": {
+        "account_provider": "Kontu hornitzailea",
+        "expiration": "Adin politika",
+        "days": "egunak"
+    },
+    "system_logs": {
+        "context_module": "Aplikazioa",
+        "clear_logs": "Ezabatu",
+        "add_search": "Bilaketa gehitu",
+        "context": "Testuingurua"
+    },
+    "task": {
+        "cannot_create_task": "Ezin da zeregina {action} sortu",
+        "completed": "Bukatuta",
+        "configure": "Konfiguratu"
+    },
+    "audit_trail": {
+        "actions": "Ekintzak",
+        "action": "Ekintza"
+    },
+    "nodes": {
+        "reset_backup_encryption_password_info": "Nodoen sustapena egin ondoren, <strong>Babeskopia</strong> atalera joan eta babeskopia enkriptatzeko pasahitza konfiguratu",
+        "add_node_to_cluster": "Gehitu nodoa kluster-era",
+        "disk": "Diska"
+    },
+    "init": {
+        "join_cluster_description": "Lehendik dagoen kluster batera nodo hau gehitu",
+        "backup_date": "Babeskopia data",
+        "change_password": "Pasahitza aldatu"
+    },
+    "login": {
+        "2fa_code_required": "6 digituko kodea beharrezkoa da",
+        "6_digit_code": "6 digituko kodea",
+        "continue": "Jarraitu"
+    },
+    "software_center": {
+        "app_info": "Aplikazioaren informazioa",
+        "all": "Guztiak",
+        "add_to_favorites": "Gogokoetara gehitu",
+        "app_instances_no_name": "{app} instantziak",
+        "app_instances": "{app} instantzia",
+        "instance_label": "Aplikazio instantziaren etiketa",
+        "app_updates": "Aplikazioen eguneraketak",
+        "app_categories": {
+            "communication": "Komunikazioa",
+            "database": "Datu-basea"
+        },
+        "clone": "Klonatu",
+        "details": "Xehetasunak"
+    },
+    "account_provider": {
+        "title": "Kontu hornitzailea"
+    },
+    "settings_acme_servers": {
+        "title": "ACME zerbitzariak"
+    },
+    "settings": {
+        "title": "Ezarpenak"
+    },
+    "notification": {
+        "abort": "Abortatu"
+    },
+    "domain_configuration": {
+        "add_provider": "Hornitzailea gehitu",
+        "configuration": "Ezarpenak"
+    },
+    "smarthost": {
+        "port_placeholder": "587",
+        "choose": "Aukeratu"
+    },
+    "domain_users": {
+        "change_password": "Pasahitza aldatu",
+        "attributes": "Atributuak",
+        "display_name": "Erakusteko izena",
+        "create_group": "Talde bat sortu",
+        "disable": "Desgaitu",
+        "description": "Azalpena"
+    },
+    "settings_tls_certificates": {
+        "cert_upload_label": "Ziurtagiria"
+    },
+    "calendar": {
+        "days": "Egunak"
+    },
+    "node_detail": {
+        "disk": "Diska",
+        "device": "Tresna"
+    }
+}
