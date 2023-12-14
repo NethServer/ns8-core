@@ -208,10 +208,9 @@
           </cv-column>
         </template>
         <!-- user portal link -->
-        <cv-column :md="4" :max="4">
+        <cv-column v-if="domain.location === 'internal'" :md="4" :max="4">
           <NsInfoCard
             light
-            v-if="domain.location == 'internal'"
             :title="$t('domains.users_admin_page_title')"
             :titleTooltip="$t('domains.users_admin_page_tooltips')"
             titleTooltipAlignment="center"
