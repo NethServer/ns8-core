@@ -683,7 +683,7 @@ export default {
         },
       },
       domain: {
-        location: "internal",
+        location: "",
       },
       internalNodes: [],
       isShownLastProviderModal: false,
