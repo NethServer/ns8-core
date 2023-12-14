@@ -44,13 +44,16 @@ else # Rootless module
     loginctl disable-linger "${mid}"
     systemctl stop "user@${uid}.service"
     loginctl terminate-user "${mid}" &>/dev/null || :
+    # Terminate interactive shells and processes out of lingering sessions:
+    killall -s HUP -u "${mid}" || :
+    killall -u "${mid}" || :
 
     if [[ ${preserve} == "yes" ]]; then
-        userdel "${mid}"
+        userdel -f "${mid}"
     else
         # Avoid /etc/passwd locking by erasing home directory separately:
         # it is a long operation!
         rm -rf "$(getent passwd "${mid}" | awk -F : '{ print $6 }')"
-        userdel -r "${mid}"
+        userdel -f -r "${mid}"
     fi
 fi
