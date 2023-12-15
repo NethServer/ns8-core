@@ -6,7 +6,8 @@
     "examples": [
         {
             "module_id": "dokuwiki3",
-            "preserve_data": false
+            "preserve_data": false,
+            "force": false
         }
     ],
     "type": "object",
@@ -27,6 +28,11 @@
             "type": "boolean",
             "title": "Preserve data flag",
             "description": "If set to `false`, any module data on disk is erased"
+        },
+        "force": {
+            "type": "boolean",
+            "title": "Force removal from the cluster even if not responding",
+            "description": "The module instance is erased from Redis"
         }
     }
 }

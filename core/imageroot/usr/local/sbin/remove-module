@@ -28,7 +28,8 @@ import argparse
 
 parser = argparse.ArgumentParser()
 parser.add_argument('module')
-parser.add_argument('--no-preserve', dest='preserve_data', default=True, action='store_false')
+parser.add_argument('--no-preserve', dest='preserve_data', default=True, action='store_false', help="erase also the module home directory")
+parser.add_argument('--force', default=False, action='store_true', help="unconditionally erase the module from Redis (dangerous)")
 args = parser.parse_args()
 
 result = agent.tasks.run(
@@ -37,6 +38,7 @@ result = agent.tasks.run(
     data={
         'module_id': args.module,
         'preserve_data': bool(args.preserve_data),
+        'force': args.force,
     },
     extra={
         'title': "cluster/remove-module",
