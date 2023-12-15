@@ -138,7 +138,7 @@ done
 echo "Install Traefik:"
 add-module traefik 1
 
-echo "Setting default admin password:"
+echo "Setting admin password${ADMIN_PASSWORD:- to default Nethesis,1234}:"
 ADMIN_PASSWORD="${ADMIN_PASSWORD:-Nethesis,1234}"
 add-user --role owner --password "${ADMIN_PASSWORD}" admin
 
@@ -165,7 +165,7 @@ B. To initialize this node as a cluster leader run:
 
    For instance:
 
-      create-cluster leader.example.com:55820 10.5.4.0/24 Nethesis,1234
+      create-cluster $(hostname -f):55820 10.5.4.0/24 Nethesis,1234
 
 Default credentials for cluster-admin UI:
 
