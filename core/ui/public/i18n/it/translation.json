@@ -32,6 +32,7 @@
         "core_update": "Aggiornamento di base",
         "core_apps": "App di base",
         "app_categories": {
+            "development": "Sviluppo",
             "database": "Database",
             "collaboration": "Collaborazione",
             "communication": "Comunicazione",

@@ -815,6 +815,7 @@
         "n_instances_will_be_updated_c": "Update of {num} instance will start in a moment... | Update of {num} instances will start in a moment...",
         "version_version_available": "Version <strong>{version}</strong> available",
         "app_categories": {
+            "development": "Development",
             "collaboration": "Collaboration",
             "system_administration": "System administration",
             "office": "Office",
