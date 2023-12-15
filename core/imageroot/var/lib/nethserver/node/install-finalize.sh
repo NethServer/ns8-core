@@ -138,14 +138,16 @@ done
 echo "Install Traefik:"
 add-module traefik 1
 
-echo "Setting default admin password:"
+echo "Setting admin password${ADMIN_PASSWORD:- to default Nethesis,1234}:"
 ADMIN_PASSWORD="${ADMIN_PASSWORD:-Nethesis,1234}"
 add-user --role owner --password "${ADMIN_PASSWORD}" admin
 
-cat - <<EOF
+# Exit immediately if home directory is not writable
+touch ~/NS8-README.txt || exit 0
+cat - > ~/NS8-README.txt <<EOF
 
-NethServer 8 Core
-----------------------------------------------------------------------------
+NethServer 8
+------------
 
 Finish the cluster configuration by running one of the following procedures.
 
@@ -155,7 +157,7 @@ A. To join this node to an already existing cluster run:
 
    For instance:
 
-      join-cluster https://cluster.example.com eyJhbGc...NiIsInR5c
+      join-cluster https://leader.example.com eyJhbGc...NiIsInR5c
 
 B. To initialize this node as a cluster leader run:
 
@@ -163,18 +165,15 @@ B. To initialize this node as a cluster leader run:
 
    For instance:
 
-      create-cluster $(hostname -f):55820 10.5.4.0/24 ${ADMIN_PASSWORD}
+      create-cluster $(hostname -f):55820 10.5.4.0/24 Nethesis,1234
 
-Finally, access the administration UI at:
-
-   https://<hostname_or_IP>/cluster-admin/
-
-For instance, if $(hostname -f) is resolvable 
-
-   https://$(hostname -f)/cluster-admin/
-
-Enter the following credentials:
+Default credentials for cluster-admin UI:
 
    User: admin
-   Password: ${ADMIN_PASSWORD}
+   Password: Nethesis,1234
 EOF
+
+# Print the links to cluster-admin UI:
+if [[ -r /etc/motd.d/api-server ]]; then
+    cat /etc/motd.d/api-server | tee -a ~/NS8-README.txt
+fi

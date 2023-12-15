@@ -1,0 +1,8 @@
+[Unit]
+Description=api-server motd updater service
+Wants=network-online.target
+After=network-online.target api-server.service
+
+[Service]
+Type=oneshot
+ExecStart=-/usr/local/bin/api-server-motd
