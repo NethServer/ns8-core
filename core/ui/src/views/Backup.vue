@@ -34,6 +34,10 @@
                   "
                   class="mg-bottom-sm"
                 ></div>
+                <div
+                  v-html="$t('backup.backup_page_tooltip_manual')"
+                  class="mg-bottom-sm"
+                ></div>
               </template>
             </cv-interactive-tooltip>
           </h2>
