@@ -184,25 +184,14 @@
             :description="$t('backup.backup_repository_auth_error_description')"
             :showCloseButton="false"
           />
-          <template v-if="!isClusterSelected">
-            <NsTextInput
-              :label="$t('backup.url')"
-              v-model.trim="url"
-              :invalid-message="error.url"
-              :placeholder="$t('backup.' + selectedProviderHelper)"
-              :disabled="loading.addBackupRepository"
-              ref="url"
-            >
-            </NsTextInput>
-          </template>
-          <template v-else>
+          <template v-if="isClusterSelected">
             <NsComboBox
               :options="endpoints"
               v-model.trim="url"
               :autoFilter="true"
               :autoHighlight="true"
               :title="$t('backup.node')"
-              :label="$t('backup.' + selectedProviderHelper)"
+              :label="$t('backup.cluster_placeholder')"
               :acceptUserInput="false"
               :showItemType="true"
               :invalid-message="$t(error.url)"
@@ -214,6 +203,14 @@
           </template>
           <!-- backblaze -->
           <template v-if="isBackblazeSelected">
+            <cv-text-input
+              :label="$t('backup.backblaze_url_label')"
+              v-model.trim="url"
+              :invalid-message="error.url"
+              :disabled="loading.addBackupRepository"
+              ref="url"
+            >
+            </cv-text-input>
             <cv-text-input
               :label="$t('backup.b2_account_id')"
               v-model.trim="backblaze.b2_account_id"
@@ -235,6 +232,14 @@
           </template>
           <!-- amazon s3 -->
           <template v-if="isAmazonS3Selected">
+            <cv-text-input
+              :label="$t('backup.aws_url_label')"
+              v-model.trim="url"
+              :invalid-message="error.url"
+              :disabled="loading.addBackupRepository"
+              ref="url"
+            >
+            </cv-text-input>
             <cv-text-input
               :label="$t('backup.aws_access_key_id')"
               v-model.trim="aws.aws_access_key_id"
@@ -265,6 +270,14 @@
           <!-- azure -->
           <template v-if="isAzureSelected">
             <cv-text-input
+              :label="$t('backup.azure_url_label')"
+              v-model.trim="url"
+              :invalid-message="error.url"
+              :disabled="loading.addBackupRepository"
+              ref="url"
+            >
+            </cv-text-input>
+            <cv-text-input
               :label="$t('backup.azure_account_name')"
               v-model.trim="azure.azure_account_name"
               :invalid-message="error.azure.azure_account_name"
@@ -285,6 +298,18 @@
           </template>
           <!-- generic s3 -->
           <template v-if="isGenericS3Selected">
+            <NsTextInput
+              :label="$t('backup.genericS3_url_label')"
+              v-model.trim="url"
+              :invalid-message="error.url"
+              :placeholder="$t('backup.genericS3_placeholder')"
+              :disabled="loading.addBackupRepository"
+              ref="url"
+            >
+              <template slot="tooltip">
+                <span v-html="$t('backup.genericS3_url_tooltip')"></span>
+              </template>
+            </NsTextInput>
             <cv-text-input
               :label="$t('backup.genericS3_access_key_id')"
               v-model.trim="genericS3.aws_access_key_id"
@@ -312,6 +337,14 @@
               :invalid-message="error.smb.smb_host"
               :disabled="loading.addBackupRepository"
               ref="smb_host"
+            >
+            </cv-text-input>
+            <cv-text-input
+              :label="$t('backup.smb_url_label')"
+              v-model.trim="url"
+              :invalid-message="error.url"
+              :disabled="loading.addBackupRepository"
+              ref="url"
             >
             </cv-text-input>
             <cv-text-input
@@ -517,23 +550,6 @@ export default {
     selectedProviderPrefix() {
       return this[this.selectedProvider].repoPrefix;
     },
-    selectedProviderHelper() {
-      if (this.isBackblazeSelected) {
-        return "backblaze_placeholder";
-      } else if (this.isAmazonS3Selected) {
-        return "aws_placeholder";
-      } else if (this.isGenericS3Selected) {
-        return "s3_placeholder";
-      } else if (this.isAzureSelected) {
-        return "azure_placeholder";
-      } else if (this.isSambaSelected) {
-        return "samba_placeholder";
-      } else if (this.isClusterSelected) {
-        return "cluster_placeholder";
-      } else {
-        return "url_placeholder";
-      }
-    },
   },
   watch: {
     isShown: function () {
@@ -571,7 +587,11 @@ export default {
           repoNameSuffix++;
         }
         this.name = repoName;
-        this.focusElement("url");
+        if (this.selectedProvider == "smb") {
+          this.focusElement("smb_host");
+        } else {
+          this.focusElement("url");
+        }
       }
     },
   },
