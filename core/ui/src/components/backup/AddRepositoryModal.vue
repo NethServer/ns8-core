@@ -339,14 +339,18 @@
               ref="smb_host"
             >
             </cv-text-input>
-            <cv-text-input
+            <NsTextInput
               :label="$t('backup.smb_url_label')"
               v-model.trim="url"
               :invalid-message="error.url"
               :disabled="loading.addBackupRepository"
+              :placeholder="$t('backup.smb_url_placeholder')"
               ref="url"
             >
-            </cv-text-input>
+              <template slot="tooltip">
+                <span v-html="$t('backup.smb_url_tooltip')"></span>
+              </template>
+            </NsTextInput>
             <cv-text-input
               :label="$t('backup.smb_domain')"
               v-model.trim="smb.smb_domain"

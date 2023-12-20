@@ -539,6 +539,8 @@
         "cluster_backup_password_warning_description_1": "The configuration cluster backup contains sensitive data required for a disaster recovery.",
         "cluster_backup_password_warning_description_2": "Set a strong encryption password, then download the backup and keep it in a safe place.",
         "smb_host": "Host name or IP address",
+        "smb_url_tooltip": "It is possible to specify a share subfolder path using the \"/\" slash separator",
+        "smb_url_placeholder": "e.g. myshare or myshare/subfolder",
         "smb_user": "User name",
         "smb_pass": "Password",
         "smb_domain": "Domain name (NT/Workgroup)",
