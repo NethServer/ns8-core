@@ -191,7 +191,6 @@
               :invalid-message="error.url"
               :placeholder="$t('backup.' + selectedProviderHelper)"
               :disabled="loading.addBackupRepository"
-              :prefix="selectedProviderPrefix"
               ref="url"
             >
             </NsTextInput>
