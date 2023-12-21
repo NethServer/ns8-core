@@ -26,11 +26,10 @@ import argparse
 import agent
 import pwd
 
-argp = argparse.ArgumentParser(description="Run COMMAND in the agent environment of MODULE_ID")
+argp = argparse.ArgumentParser(description="Run a command in the agent environment of MODULE_ID")
 argp.add_argument("-m", "--module-id", help="MODULE_ID, a module identifier (e.g. \"module1\", \"node\"). Default is \"cluster\". Only root can use this flag")
-argp.add_argument("-c", "--current-dir", action="store_true", help="Run COMMAND in current directory, instead of changing directory to AGENT_STATE_DIR")
-argp.add_argument('COMMAND', help="Command to run in the agent environment")
-argp.add_argument('ARGS', nargs=argparse.REMAINDER, help="Additional arguments for COMMAND")
+argp.add_argument("-c", "--current-dir", action="store_true", help="Run in current directory, instead of changing directory to the state directory, defined in the AGENT_STATE_DIR environment variable")
+argp.add_argument('ARGS', metavar="COMMAND", nargs=(argparse.REMAINDER if sys.stdout.isatty() else '+'), help="The list of command to execute and arguments for it. Optional only if running within a terminal. In that case \"bash -l\" is assumed")
 args = argp.parse_args()
 
 def read_env(file_path):
@@ -96,4 +95,10 @@ if not args.current_dir:
 
 os.environ['AGENT_ID'] = os.environ['REDIS_USER']
 
-os.execvp(args.COMMAND, [args.COMMAND] + args.ARGS)
+if len(args.ARGS) == 0:
+    print("runagent: starting bash -l", file=sys.stderr)
+    print("runagent: working directory:", os.getcwd(), file=sys.stderr)
+    # If not ARGS are given, fall back to Bash login shell
+    args.ARGS.extend(['bash', '-l'])
+
+os.execvp(args.ARGS[0], args.ARGS)
