@@ -16,7 +16,7 @@ To inspect and modify a rootless module start Bash with the `runagent`
 command to  properly initialize the Systemd runtime environment. For
 instance, to check if Traefik is running:
 
-    runagent -m traefik1 bash -l
+    runagent -m traefik1
     systemctl --user status traefik
 
 As alternative use SSH:
