@@ -52,7 +52,6 @@ export default {
     return {
       isMaster: true,
       isLoaded: false,
-      retryWsConnectionInterval: 0,
       welcomeMsg: [
         " _   _        _    _       _____                                  ___ ",
         "| \\ | |      | |  | |     / ____|                                / _ \\",
@@ -111,9 +110,6 @@ export default {
 
     // remove all event listeners
     this.$root.$off();
-
-    // clear ws reconnection interval
-    clearInterval(this.retryWsConnectionInterval);
   },
   methods: {
     ...mapActions([
@@ -232,12 +228,6 @@ export default {
       );
     },
     async logout(logoutInfoTitle, logoutInfoDescription) {
-      // stop retrying websocket connection
-      if (this.retryWsConnectionInterval) {
-        clearInterval(this.retryWsConnectionInterval);
-        this.retryWsConnectionInterval = 0;
-      }
-
       // invoke logout API
       const res = await to(this.executeLogout());
       const logoutError = res[0];
@@ -369,12 +359,6 @@ export default {
       }
     },
     onWebsocketConnected() {
-      // stop retrying websocket connection
-      if (this.retryWsConnectionInterval) {
-        clearInterval(this.retryWsConnectionInterval);
-        this.retryWsConnectionInterval = 0;
-      }
-
       this.setWebsocketConnectedInStore(true);
       this.retrieveClusterStatus(true);
 
@@ -424,14 +408,6 @@ export default {
         };
         this.$options.sockets.notification = notification;
         this.createNotification(notification);
-
-        // retry websocket connection
-        this.retryWsConnectionInterval = setInterval(() => {
-          if (this.loggedUser) {
-            console.warn("Retrying websocket connection...");
-            this.initWebSocket();
-          }
-        }, 5000);
       }
     },
     createErrorNotification(err, message) {
