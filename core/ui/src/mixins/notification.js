@@ -11,7 +11,7 @@ export default {
   name: "NotificationService",
   mixins: [UtilService, TaskService],
   computed: {
-    ...mapState(["notifications"]),
+    ...mapState(["notifications", "taskPollingTimers"]),
     ...mapGetters(["getNotificationById", "getTaskById"]),
   },
   methods: {
@@ -22,6 +22,7 @@ export default {
       "setNotificationDrawerShownInStore",
       "setNotificationReadInStore",
       "deleteNotificationInStore",
+      "setPollingTimerForTaskInStore",
     ]),
     createNotification(notification) {
       // fill missing attributes
@@ -375,6 +376,40 @@ export default {
             validated: taskValidated,
           },
         };
+
+        if (this.taskPollingTimers[taskId]) {
+          clearTimeout(this.taskPollingTimers[taskId]);
+          this.setPollingTimerForTaskInStore({
+            taskId: taskId,
+            timeoutId: undefined,
+          });
+        }
+
+        if (taskStatus == "running") {
+          let timeoutId = setTimeout(async () => {
+            const [err, statusResponse] = await to(
+              this.getTaskStatus(taskPath)
+            );
+            if (err) {
+              this.handleProgressTaskMessage(taskPath, taskId, payload);
+              return;
+            }
+            let myPayload = payload;
+            if (statusResponse?.data?.data) {
+              let exitCode = statusResponse.data.data["exit_code"];
+              myPayload = {
+                progress: 100,
+                status: exitCode == 0 ? "completed" : "aborted",
+              };
+            }
+            this.handleProgressTaskMessage(taskPath, taskId, myPayload);
+          }, 10000);
+
+          this.setPollingTimerForTaskInStore({
+            taskId: taskId,
+            timeoutId: timeoutId,
+          });
+        }
 
         if (taskResult) {
           notification.task.result = taskResult;
