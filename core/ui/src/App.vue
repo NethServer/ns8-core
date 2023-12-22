@@ -409,6 +409,14 @@ export default {
         this.$options.sockets.notification = notification;
         this.createNotification(notification);
       }
+
+      // retry web socket connection if still logged-in
+      setTimeout(() => {
+        if (this.loggedUser) {
+          console.warn("Retrying websocket connection...");
+          this.initWebSocket();
+        }
+      }, 5000);
     },
     createErrorNotification(err, message) {
       const notification = {
