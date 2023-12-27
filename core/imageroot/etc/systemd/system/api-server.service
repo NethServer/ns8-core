@@ -11,6 +11,7 @@ Environment=AUDIT_FILE=/var/lib/nethserver/api-server/audit.db
 EnvironmentFile=-/etc/nethserver/api-server.env
 ExecStart=/usr/local/bin/api-server
 ExecStartPost=-+/usr/local/bin/api-server-motd
+ExecStopPost=+rm -vf /etc/issue.d/api-server.issue /etc/motd.d/api-server
 Restart=always
 User=api-server
 RuntimeDirectory=api-server/tokens
