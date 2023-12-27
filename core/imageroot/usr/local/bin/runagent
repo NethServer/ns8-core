@@ -26,33 +26,26 @@ import argparse
 import agent
 import pwd
 
-argp = argparse.ArgumentParser(
-    description="Run a command in the agent environment of MODULE_ID",
-    usage="runagent [-h] [-m MODULE_ID] [-c] [--] command [arg ...]",
-)
-argp.add_argument("-m", "--module-id", help="MODULE_ID, a module identifier (e.g. \"module1\", \"node\"). Default is \"cluster\". Only root can use this flag")
-argp.add_argument("-c", "--current-dir", action="store_true", help="Run in current directory, instead of changing directory to the state directory, defined in the AGENT_STATE_DIR environment variable")
-args, arest = argp.parse_known_args()
+argp = argparse.ArgumentParser(description="Run COMMAND in the agent environment of MODULE_ID")
+argp.add_argument("-m", "--module-id", help="MODULE_ID, a module identifier (e.g. \"module1\", \"node\"). Default is \"cluster\". Only root can use this flag", default="cluster")
+argp.add_argument("-c", "--current-dir", action="store_true", help="Run COMMAND in current directory, instead of changing directory to AGENT_STATE_DIR")
+argp.add_argument('COMMAND', nargs='?', help="Command to run in the agent environment")
+argp.add_argument('ARGS', nargs=argparse.REMAINDER, help="Additional arguments for COMMAND")
+args = argp.parse_args()
+
+def get_username():
+    return pwd.getpwuid(os.geteuid())[0]
 
 def read_env(file_path):
     env = agent.read_envfile(file_path)
     os.environ.update(env)
 
-#
-# Establish the default module id value. Can be overridden by -m
-#
-if os.geteuid() == 0:
-    if args.module_id:
-        mid = args.module_id
-    else:
-        mid = 'cluster'
-elif args.module_id:
-    # -m is not allowed for non-root users
-    argp.print_help()
-    sys.exit(1)
+mid = args.module_id
 
 if os.geteuid() != 0:
     # rootless module
+    if mid not in ['cluster', get_username()]:
+        print(f"runagent: [WARNING] Arguments ignored in rootless mode: --module-id {mid}", file=sys.stderr)
     home_dir = os.path.expanduser("~")
     read_env("/etc/nethserver/agent.env")
     read_env(f"{home_dir}/.config/state/agent.env")
@@ -75,19 +68,9 @@ else:
         print(f"runagent: [FATAL] Cannot find module {mid} in the local node", file=sys.stderr)
         sys.exit(1)
 
-    # Prepare to run rootless: drop -m arguments
-    rargv = list(sys.argv)
-    for targ in ["-m", "--module-id"]:
-        try:
-            idx = rargv.index(targ)
-        except ValueError:
-            continue
-        rargv.pop(idx) # drop -m
-        rargv.pop(idx) # drop the value
-
     xdg_runtime_dir=f"/run/user/{module_uid}"
     if os.path.isdir(xdg_runtime_dir):
-        os.execvp("/usr/sbin/runuser", ["runuser", "-s", "/usr/bin/env", "-l", mid, "--", f"XDG_RUNTIME_DIR={xdg_runtime_dir}"] + rargv)
+        os.execvp("/usr/sbin/runuser", ["runuser", "-s", "/usr/bin/env", "-l", mid, "--", f"XDG_RUNTIME_DIR={xdg_runtime_dir}"] + sys.argv)
     else:
         print(f"runagent: [FATAL] Cannot find runtime directory for {mid}", file=sys.stderr)
         sys.exit(1)
@@ -97,17 +80,13 @@ if not args.current_dir:
 
 os.environ['AGENT_ID'] = os.environ['REDIS_USER']
 
-if len(arest) > 0 and arest[0] == '--':
-    arest.pop(0) # discard sub command args separator
-
-if len(arest) == 0:
+if args.COMMAND is None:
     if sys.stdout.isatty():
         print("runagent: [INFO] starting bash -l", file=sys.stderr)
         print("runagent: [INFO] working directory:", os.getcwd(), file=sys.stderr)
-        # If no remaining args are given, fall back to Bash login shell
-        arest = ['bash', '-l']
+        os.execvp('/usr/bin/bash', ['bash', '-l'])
     else:
         print(f"runagent: [FATAL] No command given", file=sys.stderr)
         sys.exit(2)
 
-os.execvp(arest[0], arest)
+os.execvp(args.COMMAND, [args.COMMAND] + args.ARGS)
