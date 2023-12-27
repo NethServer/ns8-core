@@ -11,7 +11,7 @@ export default {
   name: "NotificationService",
   mixins: [UtilService, TaskService],
   computed: {
-    ...mapState(["notifications"]),
+    ...mapState(["notifications", "taskPollingTimers"]),
     ...mapGetters(["getNotificationById", "getTaskById"]),
   },
   methods: {
@@ -22,6 +22,7 @@ export default {
       "setNotificationDrawerShownInStore",
       "setNotificationReadInStore",
       "deleteNotificationInStore",
+      "setPollingTimerForTaskInStore",
     ]),
     createNotification(notification) {
       // fill missing attributes
@@ -375,6 +376,58 @@ export default {
             validated: taskValidated,
           },
         };
+
+        // POLLING: clear the task timer because a message has been
+        // received:
+        if (this.taskPollingTimers[taskId]) {
+          clearTimeout(this.taskPollingTimers[taskId]);
+          this.setPollingTimerForTaskInStore({
+            taskId: taskId,
+            timeoutId: undefined,
+          });
+        }
+
+        // POLLING: set the task timer for running tasks
+        if (taskStatus == "running") {
+          // The poll period is two times the agent task heartbeat period:
+          // in normal conditions it never triggers its handler function.
+          let taskProgressPollPeriod = 8100;
+          let timeoutId = setTimeout(async () => {
+            // POLLING: if the task heartbeat is lost and the poll period
+            // is elapsed, we send an HTTP request to check the task
+            // status. Typical scenario: the api-server was restarted and
+            // some websocket messages were lost.
+            const [err, statusResponse] = await to(
+              this.getTaskStatus(taskPath)
+            );
+            if (err) {
+              // If the task status is not found (404), run the message
+              // handler again to activate the timer one more time:
+              this.handleProgressTaskMessage(taskPath, taskId, payload);
+              return;
+            }
+            let myPayload = payload; // initialized with a fallback payload
+            if (statusResponse?.data?.data) {
+              // The task status is consistent: use it to synthesize a
+              // message payload that reflects the completed task status
+              let exitCode = statusResponse.data.data["exit_code"];
+              myPayload = {
+                progress: 100,
+                status: exitCode == 0 ? "completed" : "aborted",
+              };
+            }
+            // Run again the message handler with our synthesized payload
+            this.handleProgressTaskMessage(taskPath, taskId, myPayload);
+          }, taskProgressPollPeriod);
+
+          // POLLING: store the task timer to retrieve it later. In normal
+          // conditions a new message is received and the task timer is
+          // cleared before its period is elapsed.
+          this.setPollingTimerForTaskInStore({
+            taskId: taskId,
+            timeoutId: timeoutId,
+          });
+        }
 
         if (taskResult) {
           notification.task.result = taskResult;

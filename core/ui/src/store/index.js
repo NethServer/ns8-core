@@ -7,6 +7,7 @@ Vue.use(Vuex);
 export default new Vuex.Store({
   state: {
     notifications: [],
+    taskPollingTimers: {},
     isNotificationDrawerShown: false,
     isMobileSideMenuShown: false,
     isAppDrawerShown: false,
@@ -92,6 +93,9 @@ export default new Vuex.Store({
     },
   },
   mutations: {
+    setPollingTimerForTask(state, obj) {
+      state.taskPollingTimers[obj.taskId] = obj.timeoutId;
+    },
     createNotification(state, notification) {
       state.notifications.unshift(notification);
     },
@@ -193,6 +197,9 @@ export default new Vuex.Store({
     },
   },
   actions: {
+    setPollingTimerForTaskInStore(context, obj) {
+      context.commit("setPollingTimerForTask", obj);
+    },
     createNotificationInStore(context, notification) {
       context.commit("createNotification", notification);
     },
