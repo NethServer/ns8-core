@@ -26,11 +26,13 @@ import argparse
 import agent
 import pwd
 
-argp = argparse.ArgumentParser(description="Run a command in the agent environment of MODULE_ID")
+argp = argparse.ArgumentParser(
+    description="Run a command in the agent environment of MODULE_ID",
+    usage="runagent [-h] [-m MODULE_ID] [-c] [--] command [arg ...]",
+)
 argp.add_argument("-m", "--module-id", help="MODULE_ID, a module identifier (e.g. \"module1\", \"node\"). Default is \"cluster\". Only root can use this flag")
 argp.add_argument("-c", "--current-dir", action="store_true", help="Run in current directory, instead of changing directory to the state directory, defined in the AGENT_STATE_DIR environment variable")
-argp.add_argument('ARGS', metavar="COMMAND", nargs=(argparse.REMAINDER if sys.stdout.isatty() else '+'), help="The list of command to execute and arguments for it. Optional only if running within a terminal. In that case \"bash -l\" is assumed")
-args = argp.parse_args()
+args, arest = argp.parse_known_args()
 
 def read_env(file_path):
     env = agent.read_envfile(file_path)
@@ -70,7 +72,7 @@ else:
     try:
         module_uid = pwd.getpwnam(mid)[2]
     except:
-        print(f"[FATAL] Cannot find module {mid} in the local node", file=sys.stderr)
+        print(f"runagent: [FATAL] Cannot find module {mid} in the local node", file=sys.stderr)
         sys.exit(1)
 
     # Prepare to run rootless: drop -m arguments
@@ -87,7 +89,7 @@ else:
     if os.path.isdir(xdg_runtime_dir):
         os.execvp("/usr/sbin/runuser", ["runuser", "-s", "/usr/bin/env", "-l", mid, "--", f"XDG_RUNTIME_DIR={xdg_runtime_dir}"] + rargv)
     else:
-        print(f"[FATAL] Cannot find runtime directory for {mid}", file=sys.stderr)
+        print(f"runagent: [FATAL] Cannot find runtime directory for {mid}", file=sys.stderr)
         sys.exit(1)
 
 if not args.current_dir:
@@ -95,10 +97,17 @@ if not args.current_dir:
 
 os.environ['AGENT_ID'] = os.environ['REDIS_USER']
 
-if len(args.ARGS) == 0:
-    print("runagent: starting bash -l", file=sys.stderr)
-    print("runagent: working directory:", os.getcwd(), file=sys.stderr)
-    # If not ARGS are given, fall back to Bash login shell
-    args.ARGS.extend(['bash', '-l'])
+if len(arest) > 0 and arest[0] == '--':
+    arest.pop(0) # discard sub command args separator
 
-os.execvp(args.ARGS[0], args.ARGS)
+if len(arest) == 0:
+    if sys.stdout.isatty():
+        print("runagent: [INFO] starting bash -l", file=sys.stderr)
+        print("runagent: [INFO] working directory:", os.getcwd(), file=sys.stderr)
+        # If no remaining args are given, fall back to Bash login shell
+        arest = ['bash', '-l']
+    else:
+        print(f"runagent: [FATAL] No command given", file=sys.stderr)
+        sys.exit(2)
+
+os.execvp(arest[0], arest)
