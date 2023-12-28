@@ -106,3 +106,77 @@ print(users_filter)
 groups_filter = lp.get_ldap_groups_search_filter_clause("mydomain")
 print(groups_filter)
 ```
+
+## Bind modules and account domains
+
+If a module wants to use an account domain it must be granted API
+permissions. Add the `accountconsumer` role to the
+`org.nethserver.authorizations` label of the module image. For instance
+set
+
+    org.nethserver.authorizations=node:accountconsumer
+
+Then the module can execute a bind procedure, so the core is aware of
+existing relations between modules and account domains. When such
+relations are formally established the core can
+
+- limit/grant access to LDAP resources
+- show the relations in the web user interfaces
+
+For example, a module that uses one domain at a time can unbind the old
+domain and bind the new one with a script like this:
+
+```python
+import agent
+import json
+import os
+import sys
+
+request = json.load(sys.stdin)
+
+# Store domain name for services configuration:
+agent.set_env("LDAP_USER_DOMAIN", request["ldap_domain"])
+
+# Bind the new domain, overriding previous values (unbind)
+agent.bind_user_domains([request["ldap_domain"]])
+```
+
+At any time, retrieve the list of domains currently bound:
+
+```python
+import agent
+rdb = agent.redis_connect(use_replica=True)
+domlist = agent.get_bound_domain_list(rdb)
+```
+
+When the module or the domain is removed from the cluster, the relation
+cleanup occurs automatically.
+
+If the module wants to be notified of any change to the relation between
+modules and user domains it can subscribe the `module-domain-changed`
+event. For instance, this is the payload of such event:
+
+```json
+{
+    "modules": ["mymodule1"],
+    "domains": ["mydomain.test"]
+}
+```
+
+The event paylod contains a list of module and domains that were affected
+by the relation change. Modules and domains can be either added or
+removed: they are listed to ease the implementation of event handlers in
+both account provider and account client modules.
+
+For instance, the following Python excerpt checks if the module domain was
+changed:
+
+```python
+event = json.load(sys.stdin)
+if not os.environ["LDAP_USER_DOMAIN"] in event["domains"]:
+    sys.exit(0) # nothing to do if our domain is among affected domains
+
+# Handle the event by some means, for example
+# - rewrite some config file
+# - reload some service running in a container
+```

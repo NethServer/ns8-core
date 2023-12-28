@@ -168,6 +168,7 @@ subsections for more information.
 |cluster/node_sequence                  |INTEGER    |generate node IDs, default: `0` |
 |cluster/module_sequence/{image}        |INTEGER    |module sequence to generate instances of image ID, default: `0` |
 |cluster/module_node                    |HASH       |The module-node association, used for roles assignment|
+|cluster/module_domains                 |HASH       |Store relation of modules with user domains. Hash key is MODULE_ID, hash value is a list of domains separated by spaces, e.g. `mydom1.tld mydom2.tld mydom3.tld`|
 |cluster/authorizations/{agent_id}      |SET        |Authorization labels persistence, to enforce labels on future modules|
 |cluster/roles/{role}                   |SET        |glob patterns matching the actions that {role} can run. {role} is one of "owner", "reader"...|
 |cluster/environment                    |HASH       |Cluster environment variables|
