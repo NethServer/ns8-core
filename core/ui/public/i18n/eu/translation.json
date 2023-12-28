@@ -286,7 +286,17 @@
         "select_instance_to_restore": "Select app instance to restore",
         "no_instance_to_restore": "No app instance to restore",
         "default_backup_name": "Backup to {repository}",
-        "every_hour": "Every hour"
+        "every_hour": "Every hour",
+        "aws_url_label": "AWS bucket name",
+        "smb_url_label": "Share name",
+        "genericS3_url_label": "Bucket address",
+        "genericS3_placeholder": "e.g. myminio.example.com/mybucket",
+        "smb_url_placeholder": "e.g. myshare or myshare/subfolder",
+        "backup_page_tooltip_manual": "For more information <a href=\"https://docs.nethserver.org/projects/ns8/en/latest/backup.html\">go to the Backup and restore manual page</a>.",
+        "azure_url_label": "Azure container name",
+        "backblaze_url_label": "B2 bucket name",
+        "smb_url_tooltip": "It is possible to specify a share subfolder path using the \"/\" slash separator",
+        "genericS3_url_tooltip": "Enter an address with format server_fqdn/bucket_name. Note: the server must have a valid TLS certificate"
     },
     "settings_sw_repositories": {
         "create_repository": "Biltegi bat gehitu",
