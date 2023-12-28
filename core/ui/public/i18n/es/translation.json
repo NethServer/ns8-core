@@ -1,13 +1,13 @@
 {
     "error": {
-        "403": "Operación no autorizada",
-        "401": "Autentificación no válida",
-        "generic_error": "Algo ha salido mal",
+        "403": "Operation not authorized",
+        "401": "Invalid authentication",
+        "generic_error": "Something went wrong",
         "error": "Error",
-        "network_timeout": "Tiempo de espera de red agotado",
-        "404": "Recurso no encontrado",
-        "network_error": "Fallo de red",
-        "validation_error": "Fallo en la validación",
+        "network_timeout": "Network timeout",
+        "404": "Resource not found",
+        "network_error": "Network error",
+        "validation_error": "Validation error",
         "fqdn_format": "Formato FQDN no válido",
         "cannot_retrieve_cluster_tasks": "No se pueden recuperar las tareas del clúster",
         "invalid_username_or_password": "Usuario o contraseña no válido",
@@ -29,7 +29,7 @@
     },
     "about": {
         "animated_icons_by": "Iconos animados por",
-        "title": "Acerca de",
+        "title": "About",
         "documentation": "Documentación",
         "by_company": "por",
         "helpdesk": "Centro de ayuda"
@@ -130,7 +130,7 @@
         "users_admin_page_description": "Portal de autoservicio de administración de usuarios"
     },
     "common": {
-        "required": "Obligatorio",
+        "required": "Required",
         "all": "Todos",
         "all_good": "Todo está bien",
         "hide": "Ocultar",
@@ -138,7 +138,7 @@
         "join_code": "Código de unión",
         "copied_to_clipboard": "¡Copiado!",
         "edit": "Editar",
-        "save": "Guardar",
+        "save": "Save",
         "collapse": "Contraer",
         "understood_delete": "Entiendo, borrar",
         "go_back": "Volver",
@@ -154,7 +154,7 @@
         "enable": "Habilitar",
         "choose": "Elige",
         "delete": "Borrar",
-        "cancel": "Cancelar",
+        "cancel": "Cancel",
         "finish": "Finalizar",
         "core_module_c": "Aplicación principal | Aplicaciones principales",
         "node": "Nodo",
@@ -290,7 +290,7 @@
         "enabling_backup": "Habilitando {backupName}",
         "repository_name": "Nombre del repositorio",
         "backups_scheduled_c": "Copia de seguridad programada | Copias de seguridad programadas",
-        "invalid_url": "URL no válida",
+        "invalid_url": "Valor o formato no válido",
         "delete_scheduled_backup": "Eliminar copia de seguridad programada",
         "disabling_backup": "Deshabilitando {backupName}",
         "apps_configuration_tooltip": "Agregue sus repositorios de respaldo y configure la programación de respaldo de aplicaciones",
@@ -361,7 +361,7 @@
         "smb_user": "Nombre de usuario",
         "select_restore_node": "Selecciona el nodo donde se restaurará la instancia",
         "running_backup_name": "Creando {backupName}",
-        "backup_page_tooltip_8": "<strong>Recuperación ante desastres</strong>: Necesitarás una copia de seguridad de la configuración del clúster y una nueva instalación de {productName}. La recuperación ante desastres sólo se puede lograr desde el asistente de configuración del clúster.",
+        "backup_page_tooltip_8": "<strong>Recuperación ante desastres</strong>: necesitarás una copia de seguridad de la configuración del clúster y una nueva instalación de {productName}. La recuperación ante desastres sólo se puede lograr desde el asistente de configuración del clúster.",
         "smb_short": "SMB",
         "custom_schedule_tooltip_more_info": "Ver:",
         "repo_password_tooltip": "Esta contraseña se utiliza para cifrar datos en el repositorio. Guarda esta contraseña en un lugar seguro; de lo contrario, no podrás restaurar los datos respaldados",
@@ -381,7 +381,17 @@
         "delete_backup_explanation_1": "Ya no se realizará una copia de seguridad de <strong>{instanceName}</strong>. Si cambias de opinión, deberás programar una nueva copia de seguridad. | Ya no se realizará una copia de seguridad de <strong>{numInstances} instancias de aplicación</strong>. Si cambias de opinión, deberás programar una nueva copia de seguridad.",
         "disabled_backups_description": "Hay {num} copia de seguridad deshabilitada | Hay {num} copias de seguridad deshabilitadas",
         "total_size": "Tamaño total",
-        "select_instance_to_restore": "Seleccionar la instancia de la aplicación para restaurar"
+        "select_instance_to_restore": "Seleccionar la instancia de la aplicación para restaurar",
+        "aws_url_label": "Nombre del depósito de AWS",
+        "smb_url_label": "Nombre de recurso compartido",
+        "genericS3_url_label": "Dirección del depósito",
+        "genericS3_placeholder": "p.e.: miminio.dominio.es/mibucket",
+        "smb_url_placeholder": "p.ej.: micompartido o micompartido/subcarpeta",
+        "backup_page_tooltip_manual": "Para obtener más información <a href=\"https://docs.nethserver.org/projects/ns8/en/latest/backup.html\">ve a la página del manual Copia de seguridad y restauración</a>.",
+        "azure_url_label": "Nombre del contenedor de Azure",
+        "backblaze_url_label": "Nombre del depósito de B2",
+        "smb_url_tooltip": "Es posible especificar una ruta de subcarpeta compartida utilizando la barra diagonal \"/\"",
+        "genericS3_url_tooltip": "Escribe una dirección con el formato server_fqdn/nombre_del_depósito. Nota: el servidor debe tener un certificado TLS válido"
     },
     "settings_http_routes": {
         "host_tooltip": "Un ejemplo de host válido es: <code>miapp.ejemplo.org</code>",
@@ -433,8 +443,8 @@
         "search": "Buscar"
     },
     "action": {
-        "list-backup-repositories": "Mostrar repositorios de la copia de seguridad",
-        "list-backups": "Mostrar las copias de seguridad",
+        "list-backup-repositories": "List backup repositories",
+        "list-backups": "List backups",
         "configure-module": "Configurar aplicación",
         "alter-backup-repository": "Modificar el repositorio de respaldo",
         "alter-repository": "Modificar el respaldo",
@@ -683,7 +693,7 @@
         "vertical_layout": "Diseño vertical"
     },
     "task": {
-        "cannot_create_task": "No se puede crear la tarea {action}",
+        "cannot_create_task": "Cannot create task {action}",
         "completed": "Completado",
         "copy_task_data_to_clipboard": "Copiar seguimiento de tarea",
         "configure": "Configurar",
@@ -715,7 +725,7 @@
         "no_sw_repositories_description": "No hay ningún repositorio de software configurado"
     },
     "settings": {
-        "title": "Ajustes"
+        "title": "Settings"
     },
     "init": {
         "restoring_cluster": "Restaurando clúster",
