@@ -67,3 +67,6 @@ if errors > 0:
 
 with agent.redis_connect(privileged=True) as rdb:
     rdb.delete(f"cluster/counters_cache/users/{kdom}", f"cluster/counters_cache/groups/{kdom}")
+
+# TODO: remove HASH items matching kdom from cluster/module_domains
+# TODO: raise module-domain-changed for matching modules and domain

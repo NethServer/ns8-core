@@ -1,0 +1,21 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2024 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+import sys
+import json
+import agent
+import os
+
+request = json.load(sys.stdin)
+
+domain_list = request["domains"]
+module_id = os.environ["AGENT_TASK_USER"]
+
+# TODO: 0) validation: module_id must refer to a module instance (not to a cluster-admin user)
+# TODO: 1) store the new relation records in Redis cluster/module_domains, overwriting any previous record:
+#          e.g. HSET cluster/module_domains {module_id} " ".join(domain_list)
+#       2) raise the event with relation record diffs {"modules":[module_id],"domains":[ union of domain_list AND the old domain_list ]}
