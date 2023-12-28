@@ -203,6 +203,7 @@ A running action step receives the **current working directory** value and its o
     * `AGENT_COMFD` (integer) The file descriptor number where **action commands** (see below) can be writte to
     * `AGENT_TASK_ID` (string) The unique identifier of the Task that started the Action
     * `AGENT_TASK_ACTION` (string) The Action name
+    * `AGENT_TASK_USER` (string) The user invoking the action, if available
 
 ## Action commands
 
