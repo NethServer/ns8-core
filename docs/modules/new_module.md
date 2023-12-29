@@ -156,19 +156,26 @@ to the application at `https://your.server.fqdn/mymodule`.
 
 Repeat steps from 2 to 4 until you're module is ready for prime time!
 
-## Step 5: publish to NS8 software repository
+## Step 5: publish to a NS8 software repository
 
 This step is optional. Follow below instructions only if you want to make your package
-publicly available from a software repository accessible inside the administration UI.
+publicly available from a software repository accessible inside the cluster admin UI.
 
-If you want to publish the package, first make sure the package as a tag which is a valid semantic version.
-Then create a new Pull Request (PR) to [ns8-repomd](https://github.com/NethServer/ns8-repomd/) repository.
+If you want to publish the package, ensure the image is properly tagged in your container image registry.
+The tag must be in valid [Semver v2 syntax](https://semver.org/spec/v2.0.0.html).
+Then create a new Pull Request (PR), to one of the following community repositories:
+
+- `default` repository of NS8 applications, [ns8-repomd](https://github.com/NethServer/ns8-repomd)
+- `nethforge` repository of community add-ons, [ns8-nethforge](https://github.com/NethServer/ns8-nethforge)
+
 The PR should contain:
 - a new [directory](https://github.com/NethServer/ns8-repomd/tree/main/dokuwiki) with the name of the module
 - the directory should also contain a `screenshots` subdirectory with one ore more screenshots (optional)
 
-If the package *is not* hosted on GitHub under NethServer organization, you must also add:
+If the package is hosted on GitHub Packages registry under the NethServer organization the following files con be omitted:
 - a [`metadata.json`]({{site.baseurl}}/modules/metadata#metadata.json) file
 - a logo file named [logo.png]({{site.baseurl}}/modules/metadata#logo)
 
-When the PR has been merged, [repository metadata](https://github.com/NethServer/ns8-repomd/tree/repomd) will be automatically updated accordingly.
+On the contrary, for the NethForge they are mandatory.
+
+When the PR has been merged, repository metadata will be automatically updated.
