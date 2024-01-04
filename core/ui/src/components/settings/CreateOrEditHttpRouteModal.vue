@@ -20,13 +20,14 @@
       <cv-form @submit.prevent="createOrEditRoute">
         <NsTextInput
           v-model.trim="instance"
+          :placeholder="$t('settings_http_routes.name_placeholder')"
           :label="$t('settings_http_routes.name')"
           :invalid-message="error.instance"
           :disabled="isEditing || loading.setRoute"
           data-modal-primary-focus
           ref="instance"
         />
-        <cv-combo-box
+        <NsComboBox
           v-model="selectedNodeId"
           :label="$t('common.choose')"
           :title="$t('common.node')"
@@ -36,11 +37,19 @@
           :disabled="isEditing || loading.setRoute"
           :invalid-message="error.node"
           light
+          tooltipAlignment="start"
+          tooltipDirection="top"
           ref="node"
         >
-        </cv-combo-box>
+          <template slot="tooltip">
+            {{
+              $t('settings_http_routes.node_helper')
+            }}
+          </template>
+        </NsComboBox>
         <NsTextInput
           v-model.trim="url"
+          :placeholder="$t('settings_http_routes.url_placeholder')"
           :label="$t('settings_http_routes.url')"
           :helper-text="$t('settings_http_routes.url_helper')"
           :invalid-message="error.url"
@@ -53,6 +62,7 @@
         </NsTextInput>
         <NsTextInput
           v-model.trim="host"
+          :placeholder="$t('settings_http_routes.host_placeholder')"
           :label="
             $t('settings_http_routes.host') + ' (' + $t('common.optional') + ')'
           "
@@ -67,6 +77,7 @@
         </NsTextInput>
         <NsTextInput
           v-model.trim="path"
+          :placeholder="$t('settings_http_routes.path_placeholder')"
           :label="
             $t('settings_http_routes.path') + ' (' + $t('common.optional') + ')'
           "
