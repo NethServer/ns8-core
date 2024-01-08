@@ -227,7 +227,7 @@ def run_restic(rdb, repository, repo_path, podman_args, restic_args, **kwargs):
         raise Exception(f"Schema {uschema} not supported")
 
     # Build the Podman command line to run Restic
-    container_name = "restic-" + os.environ.get('MODULE_ID', os.environ["AGENT_ID"]) + "-" + str(os.getpid())
+    container_name = "backup-restic"
     podman_cmd = ['podman', 'run', '-i', '--rm', f'--name={container_name}', '--privileged', '--network=host',
         '--volume=restic-cache:/var/cache/restic',
         "--log-driver=none",
