@@ -22,3 +22,6 @@ sed -i -E "/^[^#].+\s${old_hostname}(\s|$)/ s/^/# commented by set-fqdn #/" /etc
 
 # Append to /etc/hosts according to hostname man page:
 printf "127.0.1.1 %s %s\n" "${hostname}.${domain}" "${hostname}" >> /etc/hosts
+
+# write the MOTD and exit
+/usr/bin/systemctl start api-server-motd.service
