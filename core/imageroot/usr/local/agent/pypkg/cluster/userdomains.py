@@ -214,3 +214,15 @@ def list_domains(rdb):
     domains = get_external_domains(rdb)
     domains.update(get_internal_domains(rdb))
     return domains
+
+def get_domain_modules(rdb, domain):
+    """Return a list of module identifiers that are bound to the given domain"""
+
+    module_list = []
+    rawrel = rdb.hgetall("cluster/module_domains") or {}
+    for (key, val) in rawrel.items():
+        pdomains = val.split()
+        if domain in pdomains:
+            module_list.append(key)
+
+    return module_list
