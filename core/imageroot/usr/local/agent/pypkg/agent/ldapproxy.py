@@ -18,6 +18,8 @@
 # along with NethServer.  If not, see COPYING.
 #
 
+import sys
+import agent
 import redis
 import os
 import cluster.userdomains
@@ -94,9 +96,19 @@ class Ldapproxy:
         except TypeError:
             pass
 
+        # Retrieve the list of bound user domains, to check warning
+        # conditions:
+        bound_domain_list = agent.get_bound_domain_list(rdb)
+
         domains = {}
         configured_domains = cluster.userdomains.list_domains(rdb)
         for domain in configured_domains:
+            if "MODULE_ID" in os.environ and domain not in bound_domain_list:
+                # Warn only if the module is running under a module environment
+                print(agent.SD_WARNING + \
+                    f'agent.ldapproxy: domain {domain} should not be used by ' + \
+                    f'{os.getenv("MODULE_ID")}. Invoke agent.bind_user_domains(' + \
+                    f'["{domain}"]) to fix this warning.', file=sys.stderr)
             dhx = configured_domains[domain]
             domains.setdefault(domain, dhx)
 

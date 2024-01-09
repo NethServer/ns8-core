@@ -576,3 +576,34 @@ def get_hostname():
     except ValueError:
         hostname = "myserver.example.org"
     return hostname
+
+def bind_user_domains(domain_list, check=True):
+    """Associate the caller module with a new list of user domains. The
+    previous list is discarded."""
+    response = agent.tasks.run(
+        agent_id='cluster',
+        action='bind-user-domains',
+        data={
+            'domains': domain_list,
+        }
+    )
+    if check:
+        assert_exp(response['exit_code'] == 0)
+    else:
+        return response['exit_code'] == 0
+
+def get_bound_domain_list(rdb, module_id=None):
+    """Return an array of domain names, bound to module_id.
+    If the module_id argument is omitted return bound domains
+    for the current module."""
+    if module_id is None:
+        module_id = os.getenv("MODULE_ID")
+
+    if module_id is None:
+        return []
+
+    rval = rdb.hget("cluster/module_domains", module_id)
+    if rval is not None:
+        return rval.split()
+    else:
+        return []
