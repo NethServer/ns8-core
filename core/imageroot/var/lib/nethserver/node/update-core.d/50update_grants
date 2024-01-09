@@ -1,0 +1,13 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2024 Nethesis S.r.l.
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
+
+import agent
+import cluster.grants
+
+rdb = agent.redis_connect(privileged=True)
+
+cluster.grants.grant(rdb, action_clause="bind-user-domains",  to_clause="accountconsumer", on_clause='cluster')
