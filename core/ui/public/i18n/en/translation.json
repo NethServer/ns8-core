@@ -628,7 +628,7 @@
         "edit_route": "Edit route",
         "edit_route_route": "Edit route {route}",
         "host_is_not_valid_not_localhost": "'localhost' or '127.0.0.1' can be used only if you specify a path",
-        "name_placeholder": "E.g myroute",
+        "name_placeholder": "E.g. myroute",
         "host_placeholder": "E.g. myapp.example.org",
         "path_placeholder": "E.g. /foo",
         "url_placeholder": "E.g. http://127.0.0.1:2000",
