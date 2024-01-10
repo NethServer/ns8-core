@@ -65,7 +65,7 @@
           value="stripPrefixValue"
           :form-item="true"
           v-model="skipCertVerify"
-          :disabled="loading.setRoute || url.startsWith('http://')"
+          :disabled="loading.setRoute || !url.startsWith('https://')"
           ref="skipCertVerify"
         >
           <template slot="tooltip">
@@ -221,7 +221,7 @@ export default {
       this.updateSelectedNodeId();
     },
     url(newUrl) {
-      if (newUrl.startsWith('http://')) {
+      if (! newUrl.startsWith('https://')) {
         this.skipCertVerify = false;
     }
   },
