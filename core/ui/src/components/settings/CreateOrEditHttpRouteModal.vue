@@ -65,7 +65,7 @@
           value="stripPrefixValue"
           :form-item="true"
           v-model="skipCertVerify"
-          :disabled="loading.setRoute || !url.startsWith('https://')"
+          :disabled="loading.setRoute || url.startsWith('http://')"
           ref="skipCertVerify"
         >
           <template slot="tooltip">
