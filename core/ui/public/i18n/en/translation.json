@@ -633,7 +633,7 @@
         "path_placeholder": "E.g. /foo",
         "url_placeholder": "E.g. http://127.0.0.1:2000",
         "node_helper": "Select the node where the route will be created",
-        "skipCertVerify": "Skip certificate validation",
+        "skip_cert_verify": "Skip certificate validation",
         "skipCertVerify_tooltip": "Skip certificate validation for the backend target URL"
     },
     "settings_tls_certificates": {

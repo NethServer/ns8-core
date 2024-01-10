@@ -61,12 +61,12 @@
           </template>
         </NsTextInput>
         <NsToggle
-          :label="$t('settings_http_routes.skipCertVerify')"
+          :label="$t('settings_http_routes.skip_cert_verify')"
           value="stripPrefixValue"
           :form-item="true"
-          v-model="skipCertVerify"
+          v-model="skip_cert_verify"
           :disabled="loading.setRoute || !url.startsWith('https://')"
-          ref="skipCertVerify"
+          ref="skip_cert_verify"
         >
           <template slot="tooltip">
             <span
@@ -198,7 +198,7 @@ export default {
       url: "",
       host: "",
       path: "",
-      skipCertVerify: false,
+      skip_cert_verify: false,
       lets_encrypt: false,
       http2https: false,
       strip_prefix: false,
@@ -206,7 +206,7 @@ export default {
         setRoute: false,
       },
       error: {
-        skipCertVerify: "",
+        skip_cert_verify: "",
         setRoute: "",
         instance: "",
         node: "",
@@ -222,7 +222,7 @@ export default {
     },
     url(newUrl) {
       if (! newUrl.startsWith('https://')) {
-        this.skipCertVerify = false;
+        this.skip_cert_verify = false;
     }
   },
     isShown: function () {
@@ -239,7 +239,7 @@ export default {
           this.strip_prefix = this.route.strip_prefix;
           this.lets_encrypt = this.route.lets_encrypt;
           this.http2https = this.route.http2https;
-          this.skipCertVerify = this.route.skipCertVerify;
+          this.skip_cert_verify = this.route.skip_cert_verify;
         }
       } else {
         // closing modal
@@ -407,7 +407,7 @@ export default {
         lets_encrypt: this.lets_encrypt,
         http2https: this.http2https,
         user_created: true,
-        skipCertVerify: this.skipCertVerify,
+        skip_cert_verify: this.skip_cert_verify,
       };
 
       if (this.host) {
@@ -494,7 +494,7 @@ export default {
       this.lets_encrypt = false;
       this.http2https = false;
       this.strip_prefix = false;
-      this.skipCertVerify = false;
+      this.skip_cert_verify = false;
     },
   },
 };

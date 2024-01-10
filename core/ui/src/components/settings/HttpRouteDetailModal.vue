@@ -18,14 +18,14 @@
       </div>
       <div class="key-value-setting">
         <span class="label">{{
-          $t("settings_http_routes.skipCertVerify")
+          $t("settings_http_routes.skip_cert_verify")
         }}</span>
         <span class="value">
           <cv-tag
-            :kind="route.skipCertVerify ? 'green' : 'high-contrast'"
+            :kind="route.skip_cert_verify ? 'green' : 'high-contrast'"
             size="sm"
             :label="
-              route.skipCertVerify ? $t('common.enabled') : $t('common.disabled')
+              route.skip_cert_verify ? $t('common.enabled') : $t('common.disabled')
             "
             class="no-margin"
           ></cv-tag>
