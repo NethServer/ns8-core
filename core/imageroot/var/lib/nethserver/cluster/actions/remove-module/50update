@@ -107,8 +107,6 @@ rdb.srem('cluster/favorites', module_id)
 rdb.delete(f'cluster/authorizations/module/{module_id}')
 rdb.hdel('cluster/module_node', module_id)
 
-rdb.hdel("cluster/module_domains", module_id)
-
 # Revoke module permissions, clean up permissions of other modules
 rdb.delete(f'roles/module/{module_id}')
 permpipe = rdb.pipeline()
@@ -134,10 +132,14 @@ trx.publish(agent_id + '/event/module-removed', json.dumps({
     'node': node_id,
 }))
 
-# we raise the event with an empty list of domains, so that the module can be removed from the UI of userpages
+# we get the list of domains from the cluster/module_domains hash
+values = rdb.hget("cluster/module_domains", module_id) or ""
+# Delete module_id key in module_domains hash
+rdb.hdel("cluster/module_domains", module_id)
+# we trigger the event module-domain-changed with the list of domains
 trx.publish(agent_id + '/event/module-domain-changed', json.dumps({
     "modules": [module_id],
-    "domains": []
+    "domains": values.split()
 }))
 
 trx.execute()
