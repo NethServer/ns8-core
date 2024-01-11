@@ -1,0 +1,45 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2024 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+import agent
+import agent.tasks
+import os
+import sys
+import json
+import requests, urllib3.util
+
+def _get_http_session():
+    osession = requests.Session()
+    osession.timeout = 15 # Timout for HTTP connections
+    oretries = urllib3.util.Retry(
+        total=3,
+        backoff_factor=0.1,
+        allowed_methods={'POST', 'GET'},
+    )
+    osession.mount('https://', requests.adapters.HTTPAdapter(max_retries=oretries))
+    return osession
+
+def fetch_subscription_info_nsent(rdb, attributes):
+    auth_token = attributes['auth_token']
+
+    psession = _get_http_session()
+    myresp = psession.post("https://my.nethesis.it/api/systems/info", data={"secret":auth_token})
+    dinfo = myresp.json()
+
+    return {
+        "system_url": f"https://my.nethesis.it/#/server/{dinfo['id']}",
+    }
+
+
+rdb = agent.redis_connect(privileged=True)
+hsubscription = rdb.hgetall("cluster/subscription") or {}
+if not hsubscription:
+    hsubscription = None
+elif hsubscription["provider"] == "nsent":
+    hsubscription.update(fetch_subscription_info_nsent(rdb, hsubscription))
+
+json.dump({"subscription": hsubscription}, fp=sys.stdout)
