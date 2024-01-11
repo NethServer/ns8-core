@@ -15,7 +15,37 @@ request = json.load(sys.stdin)
 domain_list = request["domains"]
 module_id = os.environ["AGENT_TASK_USER"]
 
+
 # TODO: 0) validation: module_id must refer to a module instance (not to a cluster-admin user)
+rdb = agent.redis_connect(privileged=False)
+try:
+    test = int(rdb.hget(f'module/{module_id}/environment', 'NODE_ID'))
+    print('win')
+except Exception as ex:
+    print('fail')
+    sys.exit(0)
 # TODO: 1) store the new relation records in Redis cluster/module_domains, overwriting any previous record:
 #          e.g. HSET cluster/module_domains {module_id} " ".join(domain_list)
+
+previous_domains = rdb.hget(f'cluster/module_domains', module_id)
+if previous_domains is None:
+    previous_domains = ""
+
+rdb = agent.redis_connect(privileged=True)
+rdb.hset(f'cluster/module_domains', module_id, " ".join(domain_list))
+domains = rdb.hget(f'cluster/module_domains', module_id)
 #       2) raise the event with relation record diffs {"modules":[module_id],"domains":[ union of domain_list AND the old domain_list ]}
+# Advertise the smarthost changes:
+
+agent_id = os.environ['AGENT_ID']
+
+# Update the values dictionary with the union of domain_list and the old domain_list
+# TODO @davidep : I'm not sure about the mapping syntax here
+values = {"modules": module_id, "domains": domains, "old_domains": previous_domains}
+
+trx = rdb.pipeline()
+trx.hset(agent_id + '/module-domain-changed', mapping=values)
+trx.publish(agent_id + '/event/module-domain-changed', json.dumps({
+    'key': agent_id + '/event/module-domain-changed',
+}))
+trx.execute()
