@@ -60,6 +60,22 @@
             <span v-html="$t('settings_http_routes.url_tooltip')"></span>
           </template>
         </NsTextInput>
+        <NsToggle
+          :label="$t('settings_http_routes.skip_cert_verify')"
+          value="stripPrefixValue"
+          :form-item="true"
+          v-model="skip_cert_verify"
+          :disabled="loading.setRoute || !url.startsWith('https://')"
+          ref="skip_cert_verify"
+        >
+          <template slot="tooltip">
+            <span
+              v-html="$t('settings_http_routes.skipCertVerify_tooltip')"
+            ></span>
+          </template>
+          <template slot="text-left">{{ $t("common.disabled") }}</template>
+          <template slot="text-right">{{ $t("common.enabled") }}</template>
+        </NsToggle>
         <NsTextInput
           v-model.trim="host"
           :placeholder="$t('settings_http_routes.host_placeholder')"
@@ -182,6 +198,7 @@ export default {
       url: "",
       host: "",
       path: "",
+      skip_cert_verify: false,
       lets_encrypt: false,
       http2https: false,
       strip_prefix: false,
@@ -189,6 +206,7 @@ export default {
         setRoute: false,
       },
       error: {
+        skip_cert_verify: "",
         setRoute: "",
         instance: "",
         node: "",
@@ -202,7 +220,11 @@ export default {
     defaultNodeId: function () {
       this.updateSelectedNodeId();
     },
-
+    url(newUrl) {
+      if (! newUrl.startsWith('https://')) {
+        this.skip_cert_verify = false;
+    }
+  },
     isShown: function () {
       if (this.isShown) {
         this.clearErrors();
@@ -217,6 +239,7 @@ export default {
           this.strip_prefix = this.route.strip_prefix;
           this.lets_encrypt = this.route.lets_encrypt;
           this.http2https = this.route.http2https;
+          this.skip_cert_verify = this.route.skip_cert_verify;
         }
       } else {
         // closing modal
@@ -384,6 +407,7 @@ export default {
         lets_encrypt: this.lets_encrypt,
         http2https: this.http2https,
         user_created: true,
+        skip_cert_verify: this.skip_cert_verify,
       };
 
       if (this.host) {
@@ -470,6 +494,7 @@ export default {
       this.lets_encrypt = false;
       this.http2https = false;
       this.strip_prefix = false;
+      this.skip_cert_verify = false;
     },
   },
 };

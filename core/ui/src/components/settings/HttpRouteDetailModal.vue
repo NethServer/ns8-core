@@ -16,6 +16,21 @@
         <span class="label">{{ $t("settings_http_routes.url") }}</span>
         <span class="value">{{ route.url }}</span>
       </div>
+      <div class="key-value-setting">
+        <span class="label">{{
+          $t("settings_http_routes.skip_cert_verify")
+        }}</span>
+        <span class="value">
+          <cv-tag
+            :kind="route.skip_cert_verify ? 'green' : 'high-contrast'"
+            size="sm"
+            :label="
+              route.skip_cert_verify ? $t('common.enabled') : $t('common.disabled')
+            "
+            class="no-margin"
+          ></cv-tag>
+        </span>
+      </div>
       <div v-if="route.host" class="key-value-setting">
         <span class="label">{{ $t("settings_http_routes.host") }}</span>
         <span class="value">{{ route.host }}</span>
