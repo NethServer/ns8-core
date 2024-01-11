@@ -23,9 +23,7 @@ except Exception as ex:
     print(f"Error: to validate a module_id instance {ex}", file=sys.stderr)
     sys.exit(0)
 
-previous_domains = rdb.hget(f'cluster/module_domains', module_id)
-if previous_domains is None:
-    previous_domains = ""
+previous_domains = rdb.hget(f'cluster/module_domains', module_id) or ""
 
 rdb = agent.redis_connect(privileged=True)
 rdb.hset(f'cluster/module_domains', module_id, " ".join(domain_list))
