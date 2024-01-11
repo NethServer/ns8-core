@@ -68,7 +68,6 @@ if errors > 0:
 with agent.redis_connect(privileged=True) as rdb:
     rdb.delete(f"cluster/counters_cache/users/{kdom}", f"cluster/counters_cache/groups/{kdom}")
 
-# TODO: remove HASH items matching kdom from cluster/module_domains
 with agent.redis_connect(privileged=True) as rdb:
     # Iterate over the hash and find the matching value, remove the key from the hash or update the value to '' if no more domains
     for key, value in rdb.hscan_iter("cluster/module_domains"):
@@ -77,8 +76,6 @@ with agent.redis_connect(privileged=True) as rdb:
         if kdom in values:
             values.remove(kdom)
             new_value = ' '.join(values)
-            # we could remove the key if no more domains are left, but we need to keep the key to raise the event
-            # what to do @davidep ?
             if new_value == '':
                # no more domains, remove the key
                print(f"Removing {key} from cluster/module_domains", file=sys.stderr)
@@ -87,16 +84,11 @@ with agent.redis_connect(privileged=True) as rdb:
                # update the value with the new list of domains
                print(f"Updating {key} to {new_value} in cluster/module_domains", file=sys.stderr)
                rdb.hset("cluster/module_domains", key, new_value)
-            # if new_value == None:
-            #     new_value = ''
-            # print(f"Updating {key} to {new_value} in cluster/module_domains", file=sys.stderr)
-            # rdb.hset("cluster/module_domains", key, new_value)
 
-            # TODO: raise module-domain-changed for matching modules and domains
             agent_id = os.environ['AGENT_ID']
             trx = rdb.pipeline()
             trx.publish(agent_id + '/event/module-domain-changed', json.dumps({
                "modules": [key],
-               "domains": [new_value.split()]
+               "domains": new_value.split()
             }))
             trx.execute()
