@@ -35,7 +35,7 @@ python-daemon==3.0.1
 PyYAML==6.0
 redis==5.0.1
 regex-engine==1.1.0
-requests==2.28.1
+requests==2.31.0
 resolvelib==1.0.1
 semver==3.0.1
 six==1.16.0

@@ -7,7 +7,7 @@ idna==3.3
 paramiko==2.9.2
 pycparser==2.21
 PyNaCl==1.4.0
-requests==2.26.0
+requests==2.31.0
 robotframework==4.1.2
 robotframework-assertion-engine==0.2.0
 robotframework-browser==10.0.3
