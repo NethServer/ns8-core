@@ -68,27 +68,32 @@ if errors > 0:
 with agent.redis_connect(privileged=True) as rdb:
     rdb.delete(f"cluster/counters_cache/users/{kdom}", f"cluster/counters_cache/groups/{kdom}")
 
+# Iterate over the hash and find the matching value, remove the domains and  update the value to '' if no more domains
 with agent.redis_connect(privileged=True) as rdb:
-    # Iterate over the hash and find the matching value, remove the key from the hash or update the value to '' if no more domains
     for key, value in rdb.hscan_iter("cluster/module_domains"):
         print(f"Checking {key} {value}", file=sys.stderr)
         values = value.split()
         if kdom in values:
             values.remove(kdom)
             new_value = ' '.join(values)
-            if new_value == '':
-               # no more domains, remove the key
-               print(f"Removing {key} from cluster/module_domains", file=sys.stderr)
-               rdb.hdel("cluster/module_domains", key)
-            else:
-               # update the value with the new list of domains
-               print(f"Updating {key} to {new_value} in cluster/module_domains", file=sys.stderr)
-               rdb.hset("cluster/module_domains", key, new_value)
+            print(f"Updating {key} to {new_value} in cluster/module_domains", file=sys.stderr)
+            rdb.hset("cluster/module_domains", key, new_value)
 
-            agent_id = os.environ['AGENT_ID']
-            trx = rdb.pipeline()
-            trx.publish(agent_id + '/event/module-domain-changed', json.dumps({
-               "modules": [key],
-               "domains": new_value.split()
-            }))
-            trx.execute()
+# iterate over the hash and trigger one time the event
+with agent.redis_connect(privileged=True) as rdb:
+    keys_set = set()
+    values_set = set()
+    for key, value in rdb.hscan_iter("cluster/module_domains"):
+        keys_set.add(key)
+        # Iterate over the value and push each element into values_set
+        for element in value.split():
+            values_set.add(element)
+        print(f"Checking cluster/module_domains keys:{list(keys_set)} values:{list(values_set)}", file=sys.stderr)
+
+agent_id = os.environ['AGENT_ID']
+trx = rdb.pipeline()
+trx.publish(agent_id + '/event/module-domain-changed', json.dumps({
+    "modules": list(keys_set),
+    "domains": list(values_set)
+}))
+trx.execute()
