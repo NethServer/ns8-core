@@ -109,6 +109,7 @@ rdb.hdel('cluster/module_node', module_id)
 
 # TODO: remove HASH key matching module_id from cluster/module_domains
 #       e.g. HDEL cluster/module_domains {module_id}
+rdb.hdel("cluster/module_domains", module_id)
 
 # Revoke module permissions, clean up permissions of other modules
 rdb.delete(f'roles/module/{module_id}')
@@ -134,7 +135,15 @@ trx.publish(agent_id + '/event/module-removed', json.dumps({
     'module': module_id,
     'node': node_id,
 }))
+
 # TODO: raise module-domain-changed
+# we raise the event with an empty list of domains, so that the module can be removed from the UI of userpages
+values = {"modules": module_id, "domains": ""}
+trx.hset(agent_id + '/module-domain-changed', mapping=values)
+trx.publish(agent_id + '/event/module-domain-changed', json.dumps({
+    'key': agent_id + '/event/module-domain-changed',
+}))
+
 trx.execute()
 
 json.dump({}, fp=sys.stdout)
