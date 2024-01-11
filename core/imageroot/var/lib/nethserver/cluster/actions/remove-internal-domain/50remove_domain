@@ -79,6 +79,7 @@ with agent.redis_connect(privileged=True) as rdb:
             new_value = ' '.join(values)
             # we could remove the key if no more domains are left, but we need to keep the key to raise the event
             # what to do @davidep ?
+
             #if new_value == '':
             #    # no more domains, remove the key
             #    print(f"Removing {key} from cluster/module_domains", file=sys.stderr)
@@ -94,10 +95,9 @@ with agent.redis_connect(privileged=True) as rdb:
 
             # TODO: raise module-domain-changed for matching modules and domains
             agent_id = os.environ['AGENT_ID']
-            values = {"modules": key, "domains": new_value}
             trx = rdb.pipeline()
-            trx.hset(agent_id + '/module-domain-changed', mapping=values)
             trx.publish(agent_id + '/event/module-domain-changed', json.dumps({
-                'key': agent_id + '/event/module-domain-changed',
+               "modules": [key],
+               "domains": [new_value]
             }))
             trx.execute()

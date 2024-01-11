@@ -41,11 +41,12 @@ agent_id = os.environ['AGENT_ID']
 
 # Update the values dictionary with the union of domain_list and the old domain_list
 # TODO @davidep : I'm not sure about the mapping syntax here
-values = {"modules": module_id, "domains": domains, "old_domains": previous_domains}
+#values = {"modules": module_id, "domains": domains, "old_domains": previous_domains}
 
 trx = rdb.pipeline()
-trx.hset(agent_id + '/module-domain-changed', mapping=values)
 trx.publish(agent_id + '/event/module-domain-changed', json.dumps({
-    'key': agent_id + '/event/module-domain-changed',
+    "modules": [module_id],
+    "domains": domains.split(),
+    "old_domains": previous_domains.split()
 }))
 trx.execute()

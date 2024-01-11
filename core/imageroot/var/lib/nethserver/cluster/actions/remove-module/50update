@@ -138,10 +138,9 @@ trx.publish(agent_id + '/event/module-removed', json.dumps({
 
 # TODO: raise module-domain-changed
 # we raise the event with an empty list of domains, so that the module can be removed from the UI of userpages
-values = {"modules": module_id, "domains": ""}
-trx.hset(agent_id + '/module-domain-changed', mapping=values)
 trx.publish(agent_id + '/event/module-domain-changed', json.dumps({
-    'key': agent_id + '/event/module-domain-changed',
+    "modules": [module_id],
+    "domains": []
 }))
 
 trx.execute()
