@@ -114,7 +114,7 @@ permissions. Add the `accountconsumer` role to the
 `org.nethserver.authorizations` label of the module image. For instance
 set
 
-    org.nethserver.authorizations=node:accountconsumer
+    org.nethserver.authorizations=cluster:accountconsumer
 
 Then the module can execute a bind procedure, so the core is aware of
 existing relations between modules and account domains. When such
