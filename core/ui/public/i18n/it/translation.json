@@ -1153,7 +1153,14 @@
         "path_must_start_with_slash": "Il percorso deve iniziare con il carattere \"/\"",
         "route_already_exists": "La rotta esiste già",
         "host_is_not_valid_not_localhost": "'localhost' o '127.0.0.1' possono essere utilizzati solo se si specifica un percorso",
-        "http2https": "Da HTTP a HTTPS"
+        "http2https": "Da HTTP a HTTPS",
+        "node_helper": "Select the node where the route will be created",
+        "url_placeholder": "E.g. http://127.0.0.1:2000",
+        "path_placeholder": "E.g. /foo",
+        "name_placeholder": "E.g myroute",
+        "host_placeholder": "E.g. myapp.example.org",
+        "skipCertVerify_tooltip": "Skip certificate validation for the backend target URL",
+        "skip_cert_verify": "Skip certificate validation"
     },
     "samba": {
         "choose_samba_admin_username": "Scegli il nome utente dell'amministratore di Samba",
