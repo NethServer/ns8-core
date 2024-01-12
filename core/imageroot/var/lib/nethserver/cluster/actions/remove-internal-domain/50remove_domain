@@ -88,7 +88,7 @@ with agent.redis_connect(privileged=True) as rdb:
         # Iterate over the value and push each element into values_set
         for element in value.split():
             values_set.add(element)
-        print(f"Checking cluster/module_domains keys:{list(keys_set)} values:{list(values_set)}", file=sys.stderr)
+    print(f"Checking cluster/module_domains keys:{list(keys_set)} values:{list(values_set)}", file=sys.stderr)
 
 agent_id = os.environ['AGENT_ID']
 trx = rdb.pipeline()
