@@ -62,13 +62,13 @@ if [[ "${PLATFORM_ID}" == "platform:el9" ]]; then
         rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-Rocky-9
     fi
     dnf update -y # Fix SELinux issues with basic packages
-    dnf install -y wireguard-tools podman jq openssl firewalld pciutils python3.11
+    dnf install -y wireguard-tools podman curl jq openssl firewalld pciutils python3.11
     systemctl enable --now firewalld
 elif [[ "${ID}" == "debian" && "${VERSION_ID}" == "12" ]]; then
     apt-get update
     apt-get -y install gnupg2
     apt-get update
-    apt-get -y install python3-venv podman wireguard uuid-runtime jq openssl psmisc firewalld pciutils wget
+    apt-get -y install python3-venv podman wireguard uuid-runtime curl jq openssl psmisc firewalld pciutils wget
 else
     echo "System not supported"
     exit 1
