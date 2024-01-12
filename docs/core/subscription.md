@@ -17,6 +17,18 @@ The Redis HASH key `cluster/subscription` holds the attributes of the subscripti
   is started on the leader node. Password is set to a random UUID value.
   The account is removed when the support session is stopped
 
+## APIs
+
+Cluster:
+
+- `get-subscription`
+- `set-subscription`
+
+Node:
+
+- `get-support-session`
+- `start-support-session`
+- `stop-support-session`
 
 ## Events
 

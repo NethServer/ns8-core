@@ -1,0 +1,10 @@
+#!/bin/bash
+
+#
+# Copyright (C) 2024 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+systemctl start support.service 1>&2
+
+jq -c -n --arg session_id "$(grep VPN_PASSWORD support.env | cut -f 2 -d =)" '{"session_id": $session_id}'
