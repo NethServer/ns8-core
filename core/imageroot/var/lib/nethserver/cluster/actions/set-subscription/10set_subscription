@@ -64,6 +64,8 @@ def terminate_nsent(rdb, attributes):
     })
     ofreekey = freekeyresp.json()
 
+    agent.run_helper("systemctl", "disable", "--now", "send-heartbeat.service", "send-inventory.timer")
+
     return ofreekey
 
 def subscribe_nsent(rdb, attributes):
@@ -85,6 +87,9 @@ def subscribe_nsent(rdb, attributes):
     })
     trx.publish('cluster/event/subscription-changed', json.dumps({"action": "subscribed"}))
     trx.execute()
+
+    agent.run_helper("send-inventory")
+    agent.run_helper("systemctl", "enable", "--now", "send-inventory.timer", "send-heartbeat.service")
 
     return dinfo
 

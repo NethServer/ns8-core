@@ -1,0 +1,7 @@
+[Unit]
+Description=Subscription inventory
+
+[Service]
+Type=simple
+ExecStart=runagent send-inventory
+SyslogIdentifier=send-inventory

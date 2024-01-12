@@ -1,0 +1,11 @@
+[Unit]
+Description=Trigger sending inventory for subscription
+
+[Timer]
+OnBootSec=600
+OnCalendar=1:00:00
+Persistent=true
+RandomizedDelaySec=21600
+
+[Install]
+WantedBy=timers.target
