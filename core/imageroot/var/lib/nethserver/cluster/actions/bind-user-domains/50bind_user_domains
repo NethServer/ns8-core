@@ -13,8 +13,7 @@ import os
 request = json.load(sys.stdin)
 
 domain_list = request["domains"]
-module_id = os.environ["AGENT_TASK_USER"]
-
+module_id = os.environ["AGENT_TASK_USER"].removeprefix('module/')
 
 rdb = agent.redis_connect(privileged=False)
 try:
