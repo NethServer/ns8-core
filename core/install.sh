@@ -34,6 +34,11 @@ gpgkey=http://mirrorlist.nethserver.org/rpm-gpg-key-ns8
 EOF
 }
 
+if [[ $EUID != 0 ]]; then
+    echo "This script must be executed with root privileges."
+    exit 1
+fi
+
 echo "Checking port 80 and 443 are not already in use"
 for port in 80 443
 do
