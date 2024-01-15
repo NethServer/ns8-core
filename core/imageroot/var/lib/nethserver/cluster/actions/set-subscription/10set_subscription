@@ -45,6 +45,8 @@ def terminate_subscription(rdb):
     try:
         if hsubscription["provider"] == 'nsent':
             output = terminate_nsent(rdb, hsubscription)
+        elif hsubscription["provider"] == 'nscom':
+            output = terminate_nscom(rdb, hsubscription)
     except Exception as ex:
         print(agent.SD_WARNING + "Terminate error", ex, file=sys.stderr)
 
@@ -62,17 +64,31 @@ def terminate_nsent(rdb, attributes):
         "lk": attributes["system_id"],
         "secret":attributes["auth_token"],
     })
-    ofreekey = freekeyresp.json()
+    try:
+        ofreekey = freekeyresp.json()
+    except:
+        ofreekey = {} # Ignore remote request failures and disable client services, always.
 
     agent.run_helper("systemctl", "disable", "--now", "send-heartbeat.service", "send-inventory.timer")
 
     return ofreekey
 
-def subscribe_nsent(rdb, attributes):
-    auth_token = attributes['auth_token']
+def terminate_nscom(rdb, attributes):
+    psession = _get_http_session()
+
+    # Remote call not defined. The sysadmin must delete the system from nethserver.com web interface.
+    # Here we just disable the client services
+
+    agent.run_helper("systemctl", "disable", "--now", "send-heartbeat.service", "send-inventory.timer")
+
+    return {}
+
+def subscribe_nsent(rdb, osubscription):
+    auth_token = osubscription['auth_token']
 
     psession = _get_http_session()
-    myresp = psession.post("https://my.nethesis.it/api/systems/info", data={"secret":auth_token})
+    myresp = psession.post("https://my.nethesis.it/api/systems/info", data={"secret": auth_token})
+    myresp.raise_for_status()
     dinfo = myresp.json()
 
     system_id = dinfo['uuid']
@@ -91,7 +107,40 @@ def subscribe_nsent(rdb, attributes):
     agent.run_helper("send-inventory")
     agent.run_helper("systemctl", "enable", "--now", "send-inventory.timer", "send-heartbeat.service")
 
-    return dinfo
+    return {
+        "system_id": system_id,
+        "provider": "nsent",
+    }
+
+
+def subscribe_nscom(rdb, osubscription):
+    auth_token = osubscription['auth_token']
+
+    psession = _get_http_session()
+    myresp = psession.get("https://my.nethserver.com/api/machine/info", headers={"Authorization": "token " + auth_token})
+    myresp.raise_for_status()
+    dinfo = myresp.json()
+
+    system_id = dinfo['uuid']
+
+    trx = rdb.pipeline()
+    trx.hset("cluster/subscription", mapping={
+        "provider": "nscom",
+        'system_id': system_id,
+        'auth_token': auth_token,
+        'vpn_cert_cn': "C=IT, ST=PU, L=Pesaro, O=Nethesis, OU=Support, CN=Nethesis CA, name=sos, emailAddress=support@nethesis.it",
+        'support_user': 'nethsupport',
+    })
+    trx.publish('cluster/event/subscription-changed', json.dumps({"action": "subscribed"}))
+    trx.execute()
+
+    agent.run_helper("send-inventory")
+    agent.run_helper("systemctl", "enable", "--now", "send-inventory.timer", "send-heartbeat.service")
+
+    return {
+        "system_id": system_id,
+        "provider": "nscom",
+    }
 
 
 rdb = agent.redis_connect(privileged=True)
@@ -99,12 +148,20 @@ rdb = agent.redis_connect(privileged=True)
 if osubscription is None:
     output = terminate_subscription(rdb)
 else:
+    output = {}
     if rdb.exists("cluster/subscription"):
         _exit_validation_error("", "", "system_already_subscribed")
 
-    if osubscription['provider'] == 'nsent':
-        output = subscribe_nsent(rdb, osubscription['attributes'])
+    prev_exceptions = []
+    for subscribe_function in [subscribe_nsent, subscribe_nscom]:
+        try:
+            output = subscribe_function(rdb, osubscription)
+            break
+        except (requests.exceptions.HTTPError, KeyError) as ex:
+            prev_exceptions.append(ex)
     else:
-        raise Exception("Unknown provider " + str(osubscription['provider']))
+        if prev_exceptions:
+            print(agent.SD_ERR + "Subscription failed!", prev_exceptions, file=sys.stderr)
+            _exit_validation_error("auth_token", "***", "unknown_token", 3)
 
 json.dump(output, fp=sys.stdout)

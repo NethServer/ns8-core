@@ -28,11 +28,41 @@ def fetch_subscription_info_nsent(rdb, attributes):
 
     psession = _get_http_session()
     myresp = psession.post("https://my.nethesis.it/api/systems/info", data={"secret":auth_token})
+    myresp.raise_for_status()
     dinfo = myresp.json()
 
-    return {
+    info = {
+        "auth_token": "********",
         "system_url": f"https://my.nethesis.it/#/server/{dinfo['id']}",
+        "plan_name": dinfo['subscription']['subscription_plan']['name'],
+        "expires": dinfo['subscription']['valid_until'] > 0,
+        "expire_date": str(dinfo['subscription']['valid_until']),
+        "status": "active",
     }
+    return info
+
+def fetch_subscription_info_nscom(rdb, attributes):
+    auth_token = attributes['auth_token']
+
+    psession = _get_http_session()
+    myresp = psession.get("https://my.nethserver.com/api/machine/info", headers={"Authorization": "token " + auth_token})
+    myresp.raise_for_status()
+    dinfo = myresp.json()
+
+    plan_name = "%s (%s)" % (
+        dinfo['subscription']['subscription_plan']['name'],
+        dinfo['subscription']['subscription_plan']['description'],
+    )
+
+    info = {
+        "auth_token": "********",
+        "system_url": f"https://my.nethserver.com/servers/{dinfo['subscription']['id']}",
+        "plan_name": plan_name,
+        "expires": True,
+        "expire_date": str(dinfo['subscription']['valid_until']),
+        "status": "active",
+    }
+    return info
 
 
 rdb = agent.redis_connect(privileged=True)
@@ -41,5 +71,7 @@ if not hsubscription:
     hsubscription = None
 elif hsubscription["provider"] == "nsent":
     hsubscription.update(fetch_subscription_info_nsent(rdb, hsubscription))
+elif hsubscription["provider"] == "nscom":
+    hsubscription.update(fetch_subscription_info_nscom(rdb, hsubscription))
 
 json.dump({"subscription": hsubscription}, fp=sys.stdout)

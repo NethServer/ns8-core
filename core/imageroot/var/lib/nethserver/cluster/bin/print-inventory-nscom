@@ -137,10 +137,12 @@ data = {
     },
     "memory": {
         "system": {
+            "available_bytes": podman_info["host"]["memFree"],
             "used_bytes": podman_info["host"]["memTotal"] - podman_info["host"]["memFree"],
             "total_bytes": podman_info["host"]["memTotal"],
         },
         "swap": {
+            "available_bytes": podman_info["host"]["swapFree"],
             "used_bytes": podman_info["host"]["swapTotal"] - podman_info["host"]["swapFree"],
             "total_bytes": podman_info["host"]["swapTotal"],
         },

@@ -22,31 +22,10 @@
     "properties": {
         "subscription": {
             "description": "Setting a null subscription, clears all existing subscription attributes and stops any running service",
-            "oneOf": [
-                {
-                    "type": "null"
-                },
-                {
-                    "type": "object",
-                    "required": [
-                        "attributes"
-                    ],
-                    "properties": {
-                        "provider": {
-                            "const": "nsent"
-                        },
-                        "attributes": {
-                            "$ref": "#/$defs/nsent"
-                        }
-                    }
-                }
-            ]
-        }
-    },
-    "$defs": {
-        "nsent": {
-            "type": "object",
-            "title": "Enterprise subscription by Nethesis",
+            "type": [
+                "object",
+                "null"
+            ],
             "required": [
                 "auth_token"
             ],

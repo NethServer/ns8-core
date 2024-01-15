@@ -31,6 +31,16 @@ function send_heartbeat_nsent ()
         "https://my.nethesis.it/isa/heartbeats/store" >/dev/null || :
 }
 
+function send_heartbeat_nscom ()
+{
+    jq -n -c --arg system_id "${system_id:?}" '{"lk":$system_id}' | \
+    curl -m 180 --retry 3 -L -s \
+        --header "Accept: application/json"  \
+        --header "Authorization: token ${auth_token:?}"  \
+        --header "Content-Type: application/json" \
+        --data @- \
+        "https://my.nethserver.com/api/machine/heartbeats/store" >/dev/null || :
+}
 
 sendfunc="send_heartbeat_${provider}"
 if [[ $(type -t "${sendfunc}") != function ]]; then
