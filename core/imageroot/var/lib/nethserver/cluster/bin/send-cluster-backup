@@ -1,0 +1,60 @@
+#!/bin/bash
+
+#
+# Copyright (C) 2024 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+set -e
+
+# Parse subscription configuration from Redis
+while IFS='=' read -r key value; do
+    declare "${key}"="${value}"
+done < <(redis-hgetall cluster/subscription)
+
+function exit_error ()
+{
+    echo "[ERROR]" "${@}" 1>&2
+    exit 1
+}
+
+function send_cluster_backup_nsent ()
+{
+    curl -X POST \
+        --silent \
+        --user-agent NethBackup \
+        --location-trusted \
+        --user "${system_id:?}:${auth_token:?}" \
+        --header 'NethBackup-Action: backup-send' \
+        --header "NethBackup-Parameters: LK=${system_id:?}&fname=dump.json.gz.gpg" \
+        --data-binary "@${encrypted_file}" \
+        https://backupd.nethesis.it/backup >/dev/null
+}
+
+sendfunc="send_cluster_backup_${provider:?missing subscription config}"
+if [[ $(type -t "${sendfunc}") != function ]]; then
+    echo "[WARNING] Invalid provider, ignored: ${provider}" 1>&2
+    exit 0
+fi
+
+if [[ -f backup/dump.md5 ]]; then
+    prev_backup_hash="$(< backup/dump.md5)"
+else
+    prev_backup_hash="never_uploaded"
+fi
+
+backup_file=backup/dump.json.gz
+encrypted_file=backup/dump.json.gz.gpg
+backup_hash=$(md5sum "${backup_file}" | awk '{ print $1 }')
+
+if [[ "${prev_backup_hash}" == "${backup_hash}" ]]; then
+    echo "Backup file already uploaded, nothing to do" 1>&2
+elif [[ -f "${encrypted_file}" ]]; then
+    ${sendfunc}
+    # Backup upload successful, update the reference file
+    echo "${backup_hash}" > backup/dump.md5
+    echo "Backup uploaded to provider ${provider} with hash ${backup_hash}" 1>&2
+else
+    echo "[ERROR] Could not find ${encrypted_file} for upload" 1>&2
+    exit 1
+fi

@@ -69,7 +69,7 @@ def terminate_nsent(rdb, attributes):
     except:
         ofreekey = {} # Ignore remote request failures and disable client services, always.
 
-    agent.run_helper("systemctl", "disable", "--now", "send-heartbeat.service", "send-inventory.timer")
+    agent.run_helper("systemctl", "disable", "--now", "send-heartbeat.service", "send-inventory.timer", "send-backup.timer")
 
     return ofreekey
 
@@ -104,8 +104,9 @@ def subscribe_nsent(rdb, osubscription):
     trx.publish('cluster/event/subscription-changed', json.dumps({"action": "subscribed"}))
     trx.execute()
 
-    agent.run_helper("send-inventory")
-    agent.run_helper("systemctl", "enable", "--now", "send-inventory.timer", "send-heartbeat.service")
+    agent.run_helper("systemctl", "start", "send-inventory")
+    agent.run_helper("systemctl", "enable", "--now", "send-inventory.timer", "send-heartbeat.service", "send-backup.timer")
+    agent.run_helper("systemctl", "start", "send-backup")
 
     return {
         "system_id": system_id,
@@ -134,7 +135,7 @@ def subscribe_nscom(rdb, osubscription):
     trx.publish('cluster/event/subscription-changed', json.dumps({"action": "subscribed"}))
     trx.execute()
 
-    agent.run_helper("send-inventory")
+    agent.run_helper("systemctl", "start", "send-inventory")
     agent.run_helper("systemctl", "enable", "--now", "send-inventory.timer", "send-heartbeat.service")
 
     return {

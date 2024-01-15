@@ -5,7 +5,7 @@ Description=Subscription heartbeat
 Type=simple
 ExecStart=runagent send-heartbeat 600
 Restart=on-failure
-SyslogIdentifier=send-heartbeat
+SyslogIdentifier=%N
 
 [Install]
 WantedBy=default.target
