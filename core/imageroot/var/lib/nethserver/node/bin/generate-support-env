@@ -28,8 +28,8 @@ cert_file = os.getenv("SUPPORT_VPN_CERT_FILE", os.environ["AGENT_INSTALL_DIR"] +
 cert_cn = os.getenv("SUPPORT_VPN_CERT_COMMON_NAME", hsubscription.get("vpn_cert_cn"))
 
 support_env = {
-    "VPN_PEER_HOST": os.getenv("SUPPORT_VPN_PEER_HOST", "sos.nethesis.it"),
-    "VPN_PEER_PORT": os.getenv("SUPPORT_VPN_PEER_PORT", "1194"),
+    "VPN_PEER_HOST": os.getenv("SUPPORT_VPN_PEER_HOST", hsubscription.get('vpn_peer_host', "sos.nethesis.it")),
+    "VPN_PEER_PORT": os.getenv("SUPPORT_VPN_PEER_PORT", hsubscription.get('vpn_peer_port', "1194")),
     "VPN_USERNAME": os.getenv("SUPPORT_VPN_USERNAME", hsubscription["system_id"] + '-node' + os.environ['NODE_ID']),
     "VPN_PASSWORD": vpn_password,
     "VPN_CERT_FILE": "support.pem",
