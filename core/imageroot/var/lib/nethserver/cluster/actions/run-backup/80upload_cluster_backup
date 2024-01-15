@@ -15,7 +15,7 @@ if [ "x$id" == "x" ]; then
 fi
 
 if [ ! -f "$config_dump" ]; then
-    /usr/local/agent/bin/cluster-backup
+    cluster-backup
 fi
 
 cat "$config_dump" | /usr/local/agent/bin/rclone-wrapper "$id" rcat REMOTE_PATH/$(basename "$config_dump")
