@@ -116,10 +116,11 @@ for tk in rdb.scan_iter('module/traefik*/flags'):
 os.makedirs(output_dir, exist_ok=True)
 
 with open(f'{output_dir}/dump.json', 'w') as fp:
-    fp.write(json.dumps(dump))
+    # Sort the keys, for idempotency
+    json.dump(dump, sort_keys=True, fp=fp)
 
-# compress the JSON dump
-subprocess.run(['gzip', '-f', f'{output_dir}/dump.json'], check = True)
+# compress the JSON dump, without timestamp information for idempotency
+subprocess.run(['gzip', '-n', '-f', f'{output_dir}/dump.json'], check = True)
 
 # remove existing gpg file, otherwise gpg will fail
 try:
