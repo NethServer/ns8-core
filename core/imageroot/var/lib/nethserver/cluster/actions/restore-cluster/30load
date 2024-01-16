@@ -91,3 +91,7 @@ if 'leader' in dump['traefik']:
             fpk.write(dump['traefik']['leader']['uploaded_certificates'][cert]['key'])
         with open(f'{tk_certs}/{cert}.crt', 'w') as fpc:
             fpc.write(dump['traefik']['leader']['uploaded_certificates'][cert]['crt'])
+
+# Restore subscription info, if present
+if 'subscription' in dump['cluster'] and dump['cluster']['subscription']:
+    rdb.hset('cluster/subscription', mapping=dump['cluster']['subscription'])

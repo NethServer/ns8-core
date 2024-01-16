@@ -39,9 +39,12 @@ output_dir = f'{os.environ["AGENT_STATE_DIR"]}/backup'
 
 rdb = agent.redis_connect(host='127.0.0.1')
 
-VERSION = "1"
+VERSION = "2"
 
-dump = { 'version': VERSION, 'modules': {}, 'vpn': {}, 'cluster': { 'repository': {}, 'backup': {}, 'backup_repository': {}, 'user_domain': { 'ldap': {} },'override': {'modules': {} } }, 'traefik': {} }
+dump = { 'version': VERSION, 'modules': {}, 'vpn': {}, 'cluster': { 'subscription': {}, 'repository': {}, 'backup': {}, 'backup_repository': {}, 'user_domain': { 'ldap': {} },'override': {'modules': {} } }, 'traefik': {} }
+
+# cluster: subscription
+dump['cluster']['subscription'] = rdb.hgetall('cluster/subscription') or {}
 
 # cluster: software repositories
 for r in rdb.scan_iter('cluster/repository/*'):
