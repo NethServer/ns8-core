@@ -70,7 +70,7 @@
             :id="instance.path"
           />
           <div>
-            <div>{{ instance.instance }}</div>
+            <div>{{ instance.installed_instance }}</div>
             <div class="instance-description">
               {{ instance.repository_name }}
               <cv-interactive-tooltip
