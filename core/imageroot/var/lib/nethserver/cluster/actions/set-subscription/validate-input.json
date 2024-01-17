@@ -6,10 +6,7 @@
     "examples": [
         {
             "subscription": {
-                "provider": "nsent",
-                "attributes": {
-                    "auth_token": "d489701d76b1424e9dacb08b73741ef6d489701d76b1424e9dacb08b73741ef6"
-                }
+                "auth_token": "d489701d76b1424e9dacb08b73741ef6d489701d76b1424e9dacb08b73741ef6"
             }
         }
     ],
