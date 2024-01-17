@@ -1,0 +1,76 @@
+#!/bin/bash
+
+#
+# Copyright (C) 2024 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+set -e
+
+
+export REDIS_USER="default"
+export REDIS_PASSWORD="default"
+export REDIS_ADDRESS="127.0.0.1:6379"
+
+provider=""
+leader_id=$(redis-exec hget cluster/environment NODE_ID)
+
+# Parse subscription configuration from Redis
+while IFS='=' read -r key value; do
+    declare "${key}"="${value}"
+done < <(redis-hgetall cluster/subscription)
+
+function is_leader()
+{
+    if [[ "${NODE_ID}" == "${leader_id}" ]] ; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+function enable_nsent()
+{
+    if is_leader ; then
+        if ! systemctl -q is-active send-inventory.timer; then
+            # First time, send inventory and backup immediately
+            systemctl start send-inventory
+            systemctl start send-backup
+        fi
+        systemctl enable --now send-heartbeat.service send-inventory.timer send-backup.timer
+    else
+        # Some services must be disabled in worker nodes
+        systemctl disable --now send-heartbeat.service send-inventory.timer send-backup.timer
+    fi
+    systemctl enable --now node-monitor.service
+    systemctl enable check-subscription.service
+}
+
+function enable_nscom()
+{
+    # similar to nsent, without send-backup.timer
+    if is_leader ; then
+        if ! systemctl -q is-active send-inventory.timer; then
+            # First time, send inventory and backup immediately
+            systemctl start send-inventory
+        fi
+        systemctl enable --now send-heartbeat.service send-inventory.timer
+    else
+        # Some services must be disabled in worker nodes
+        systemctl disable --now send-heartbeat.service send-inventory.timer
+    fi
+    systemctl enable --now node-monitor.service
+    systemctl enable check-subscription.service
+}
+
+if [[ "${provider}" == "nsent" ]]; then
+    enable_nsent
+elif [[ "${provider}" == "nscom" ]]; then
+    enable_nscom
+else
+    systemctl disable --now \
+        node-monitor.service \
+        send-heartbeat.service \
+        send-inventory.timer \
+        send-backup.timer
+fi

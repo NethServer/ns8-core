@@ -9,6 +9,10 @@ set -e
 
 period="${1:-0}"
 
+export REDIS_USER="default"
+export REDIS_PASSWORD="default"
+export REDIS_ADDRESS="127.0.0.1:6379"
+
 # Parse subscription configuration from Redis
 while IFS='=' read -r key value; do
     declare "${key}"="${value}"
@@ -16,7 +20,7 @@ done < <(redis-hgetall cluster/subscription)
 
 function exit_error ()
 {
-    echo "[ERROR]" "${@}" 1>&2
+    echo "<7>[ERROR]" "${@}" 1>&2
     exit 1
 }
 
@@ -44,7 +48,7 @@ function send_heartbeat_nscom ()
 
 sendfunc="send_heartbeat_${provider}"
 if [[ $(type -t "${sendfunc}") != function ]]; then
-    echo "[WARNING] Invalid provider, ignored: ${provider:-None}" 1>&2
+    echo "<4>[WARNING] Invalid provider, ignored: ${provider:-None}" 1>&2
     exit 0
 fi
 

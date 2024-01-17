@@ -69,18 +69,9 @@ def terminate_nsent(rdb, attributes):
     except:
         ofreekey = {} # Ignore remote request failures and disable client services, always.
 
-    agent.run_helper("systemctl", "disable", "--now", "send-heartbeat.service", "send-inventory.timer", "send-backup.timer")
-
     return ofreekey
 
 def terminate_nscom(rdb, attributes):
-    psession = _get_http_session()
-
-    # Remote call not defined. The sysadmin must delete the system from nethserver.com web interface.
-    # Here we just disable the client services
-
-    agent.run_helper("systemctl", "disable", "--now", "send-heartbeat.service", "send-inventory.timer")
-
     return {}
 
 def subscribe_nsent(rdb, osubscription):
@@ -103,10 +94,6 @@ def subscribe_nsent(rdb, osubscription):
     })
     trx.publish('cluster/event/subscription-changed', json.dumps({"action": "subscribed"}))
     trx.execute()
-
-    agent.run_helper("systemctl", "start", "send-inventory")
-    agent.run_helper("systemctl", "enable", "--now", "send-inventory.timer", "send-heartbeat.service", "send-backup.timer")
-    agent.run_helper("systemctl", "start", "send-backup")
 
     return {
         "system_id": system_id,
@@ -135,8 +122,6 @@ def subscribe_nscom(rdb, osubscription):
     trx.publish('cluster/event/subscription-changed', json.dumps({"action": "subscribed"}))
     trx.execute()
 
-    agent.run_helper("systemctl", "start", "send-inventory")
-    agent.run_helper("systemctl", "enable", "--now", "send-inventory.timer", "send-heartbeat.service")
 
     return {
         "system_id": system_id,

@@ -1,0 +1,12 @@
+[Unit]
+Description=Subscription boot services status check
+Wants=redis.service
+After=redis.service
+
+[Service]
+Type=oneshot
+ExecStart=runagent -m node check-subscription
+SyslogIdentifier=%N
+
+[Install]
+WantedBy=default.target
