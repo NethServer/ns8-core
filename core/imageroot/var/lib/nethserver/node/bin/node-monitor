@@ -98,7 +98,7 @@ async def check_systemload():
     with open("/proc/loadavg", encoding='utf-8', newline="\n") as fload:
         fields = fload.readline().split()
     # consider critical 5 minutes load average greater than CPU count
-    if float(fields[1]) > cpu_count:
+    if float(fields[0]) > cpu_count:
         state = CRITICAL
     else:
         state = CLEAR
@@ -131,10 +131,10 @@ async def monitor_loop(check_function, fargs=[], fkwargs={}, period=2, histeresy
 async def main():
     # Run each check inside a monitor loop in parallel:
     await asyncio.gather(
-        monitor_loop(check_swap, period=3, histeresys=10),
-        monitor_loop(check_systemload, period=5, histeresys=12),
-        monitor_loop(check_mountpoints, fargs=['/', 'root'], period=15, histeresys=4),
-        monitor_loop(check_mountpoints, fargs=['/boot', 'boot'], period=15, histeresys=4),
+        monitor_loop(check_swap, period=3, histeresys=10), # 30 seconds
+        monitor_loop(check_systemload, period=5, histeresys=24), # 2 minutes
+        monitor_loop(check_mountpoints, fargs=['/', 'root'], period=15, histeresys=4), # 1 minute
+        monitor_loop(check_mountpoints, fargs=['/boot', 'boot'], period=15, histeresys=4), # 1 minute
     )
 
 asyncio.run(main())
