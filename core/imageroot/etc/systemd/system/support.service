@@ -1,0 +1,34 @@
+[Unit]
+Description=Remote support
+Documentation=https://github.com/NethServer/ns8-core
+
+[Service]
+Environment=PODMAN_SYSTEMD_UNIT=%n
+EnvironmentFile=/etc/nethserver/core.env
+TimeoutStopSec=70
+ExecStartPre=runagent -m node support-sshkeyctl add
+ExecStartPre=runagent -m node generate-support-env
+ExecStartPre=/bin/rm -f %t/support.pid %t/support.cid
+ExecStart=runagent -m node podman run \
+    --conmon-pidfile=%t/support.pid \
+    --cidfile=%t/support.cid \
+    --cgroups=no-conmon \
+    --detach \
+    --log-opt=tag=%N \
+    --replace --name=%N \
+    --cap-add net_admin \
+    --device /dev/net/tun \
+    --env-file=./support.env \
+    --volume=./support.pem:/var/lib/openvpn/support.pem:z \
+    --network=slirp4netns:allow_host_loopback=true \
+    ${SUPPORT_IMAGE}
+ExecStartPost=runagent -m node bash -c "nsenter -t $$(podman ps --format='{{.Pid}}' --filter=id=$$(< %t/support.cid)) -n -- nft -f $${AGENT_INSTALL_DIR}/etc/support/nft.conf"
+ExecStartPost=runagent -m cluster support-clusteradminctl add
+ExecStartPost=runagent -m node bash -c "printf '<5>Transmit the following session ID to the support team: %%s\n' $$(sed -n '/^VPN_PASSWORD=/ { s/^VPN_PASSWORD=// ; p }' support.env)"
+ExecStop=/usr/bin/podman stop --ignore --cidfile %t/support.cid -t 10
+ExecStopPost=runagent -m node support-sshkeyctl remove
+ExecStopPost=runagent -m cluster support-clusteradminctl remove
+ExecStopPost=/usr/bin/podman rm --ignore -f --cidfile %t/support.cid
+PIDFile=%t/support.pid
+Type=forking
+SyslogIdentifier=support

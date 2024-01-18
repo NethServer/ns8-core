@@ -1,0 +1,30 @@
+#!/bin/bash
+
+#
+# Copyright (C) 2024 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+exec 1>&2
+set -e
+
+if ! grep -q '^PATH=' /var/lib/nethserver/node/state/agent.env ; then
+    echo "Fixing PATH in node agent.env"
+    printf "PATH=/var/lib/nethserver/node/bin:/usr/local/agent/pyenv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/usr/local/agent/bin\n" >> /var/lib/nethserver/node/state/agent.env
+fi
+
+if ! grep -q '^PYTHONPATH=' /var/lib/nethserver/node/state/agent.env ; then
+    echo "Fixing PYTHONPATH in node agent.env"
+    printf "PYTHONPATH=/var/lib/nethserver/node/pypkg\n" >> /var/lib/nethserver/node/state/agent.env
+fi
+
+if ! grep -q '^PATH=' /var/lib/nethserver/cluster/state/agent.env ; then
+    echo "Fixing PATH in cluster agent.env"
+    printf "PATH=/var/lib/nethserver/cluster/bin:/usr/local/agent/pyenv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/usr/local/agent/bin\n" >> /var/lib/nethserver/cluster/state/agent.env
+fi
+
+if ! grep -q '^PYTHONPATH=' /var/lib/nethserver/cluster/state/agent.env ; then
+    echo "Fixing PYTHONPATH in cluster agent.env"
+    printf "PYTHONPATH=/var/lib/nethserver/cluster/pypkg\n" >> /var/lib/nethserver/cluster/state/agent.env
+fi
+

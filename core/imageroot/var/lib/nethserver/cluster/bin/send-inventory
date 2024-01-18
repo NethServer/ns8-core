@@ -1,0 +1,64 @@
+#!/bin/bash
+
+#
+# Copyright (C) 2024 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+set -e
+
+# Parse subscription configuration from Redis
+while IFS='=' read -r key value; do
+    declare "${key}"="${value}"
+done < <(redis-hgetall cluster/subscription)
+
+function exit_error ()
+{
+    echo "[ERROR]" "${@}" 1>&2
+    exit 1
+}
+
+function send_inventory_nsent ()
+{
+    print-inventory-ns | jq -c \
+        --arg system_id "${system_id:?}" \
+        '{"data":{"lk":$system_id,"data":.}}' | \
+    curl -m 180 --retry 3 -L -s \
+        --header "Accept: application/json"  \
+        --header "Authorization: token ${auth_token:?}"  \
+        --header "Content-Type: application/json" \
+        --data @- \
+        "https://my.nethesis.it/isa/inventory/store/" >>/dev/null || :
+
+    # Update the registration date after inventory was submitted for the
+    # first time:
+    jq -n -c \
+        --arg auth_token "${auth_token:?}" \
+        '{"secret":$auth_token}' | \
+    curl -m 180 --retry 3 -L -s \
+        --header "Content-Type: application/json" \
+        --header "Accept: application/json"  \
+        --data @- \
+        https://my.nethesis.it/api/systems/info >>/dev/null || :
+}
+
+function send_inventory_nscom ()
+{
+    print-inventory-ns | jq -c \
+        --arg system_id "${system_id:?}" \
+        '{"data":{"lk":$system_id,"data":.}}' | \
+    curl -m 180 --retry 3 -L -s \
+        --header "Accept: application/json"  \
+        --header "Authorization: token ${auth_token:?}"  \
+        --header "Content-Type: application/json" \
+        --data @- \
+        "${dartagnan_url:?}/machine/inventories/store/" >>/dev/null || :
+}
+
+sendfunc="send_inventory_${provider}"
+if [[ $(type -t "${sendfunc}") != function ]]; then
+    echo "[WARNING] Invalid provider, ignored: ${provider}" 1>&2
+    exit 0
+fi
+
+${sendfunc}

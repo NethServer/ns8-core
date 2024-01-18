@@ -34,9 +34,9 @@ import fnmatch
 # Handled exceptions:
 from aiohttp import ClientError
 # we want to be compatible python 3.9 and 3.11
-try :
+try:
     from aioredis import RedisError # fails with Python 3.11
-except TypeError:
+except:
     from redis import RedisError
 from agent.tasks.exceptions import TaskError
 from requests import RequestException

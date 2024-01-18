@@ -175,6 +175,7 @@ subsections for more information.
 |cluster/ui_name                        |STRING     |UI label for the cluster|
 |cluster/uuid                           |STRING     |Generated UUID that identifies the cluster|
 |cluster/override/modules               |HASH       |Maps (image name) => (image URL), overriding the standard image name/URL resolution function |
+|cluster/subscription                   |HASH       |[Subscription]({{site.baseurl}}/core/subscription) attributes in key/value pairs|
 
 #### cluster/smarthost
 

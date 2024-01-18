@@ -1,0 +1,33 @@
+#!/bin/bash
+
+#
+# Copyright (C) 2024 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+set -e
+
+
+authkeys_file=/root/.ssh/authorized_keys
+cmd_action=${1:?missing action argument: add, remove}
+key_comment=${2:-support-sshkeyctl}
+pubkey_file=${3:-${AGENT_INSTALL_DIR:?}/etc/support/ssh-rsa.pub}
+
+function add_ssh_key
+{
+    local keyopts
+    keyopts=$(printf 'expiry-time="%s",from="127.0.0.1"' "$(date -d 'next month' +'%Y%m%dZ')")
+    umask 077
+    printf "%s %s %s\n" "${keyopts}" "$(cat "${pubkey_file}")" "${key_comment}" >> "${authkeys_file}"
+}
+
+function remove_ssh_key
+{
+    sed -i "/ ${key_comment}\$/ d" "${authkeys_file}"
+}
+
+if [[ "${cmd_action}" == "add" ]]; then
+    add_ssh_key
+elif [[ "${cmd_action}" == "remove" ]]; then
+    remove_ssh_key
+fi

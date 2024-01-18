@@ -1,0 +1,27 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2024 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+import sys
+import os
+import agent
+
+rdb = agent.redis_connect(use_replica=True)
+
+osubscription = rdb.hgetall('cluster/subscription')
+node_name = rdb.get(f'node/{os.environ["NODE_ID"]}/ui_name') or f'node/{os.environ["NODE_ID"]}'
+
+if osubscription:
+    agent.write_envfile("node-monitor.env", {
+        "NMON_NODE_NAME": node_name,
+        "NMON_ALERT_AUTH_TOKEN": osubscription["auth_token"],
+        "NMON_ALERT_PROVIDER": osubscription["provider"],
+        "NMON_ALERT_SYSTEM_ID": osubscription["system_id"],
+        "NMON_DARTAGNAN_URL": osubscription.get("dartagnan_url", ""),
+    })
+else:
+    print(agent.SD_WARNING + "Could not retrieve subscription information from Redis", file=sys.stderr)
+    agent.write_envfile("node-monitor.env", {})

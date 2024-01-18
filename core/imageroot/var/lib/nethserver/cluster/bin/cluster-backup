@@ -30,7 +30,6 @@ import tempfile
 import subprocess
 import agent.tasks
 from glob import glob
-from datetime import datetime, timezone
 
 #
 # Dump cluster configuration in JSON format and print it to stdout
@@ -40,11 +39,12 @@ output_dir = f'{os.environ["AGENT_STATE_DIR"]}/backup'
 
 rdb = agent.redis_connect(host='127.0.0.1')
 
-VERSION = "1"
-# pythonic wat to retrieve current timestamp on UTC timezone
-now = int(datetime.now(timezone.utc).replace(tzinfo=timezone.utc).timestamp())
+VERSION = "2"
 
-dump = { 'version': VERSION, 'timestamp': now, 'modules': {}, 'vpn': {}, 'cluster': { 'repository': {}, 'backup': {}, 'backup_repository': {}, 'user_domain': { 'ldap': {} },'override': {'modules': {} } }, 'traefik': {} }
+dump = { 'version': VERSION, 'modules': {}, 'vpn': {}, 'cluster': { 'subscription': {}, 'repository': {}, 'backup': {}, 'backup_repository': {}, 'user_domain': { 'ldap': {} },'override': {'modules': {} } }, 'traefik': {} }
+
+# cluster: subscription
+dump['cluster']['subscription'] = rdb.hgetall('cluster/subscription') or {}
 
 # cluster: software repositories
 for r in rdb.scan_iter('cluster/repository/*'):
@@ -119,10 +119,11 @@ for tk in rdb.scan_iter('module/traefik*/flags'):
 os.makedirs(output_dir, exist_ok=True)
 
 with open(f'{output_dir}/dump.json', 'w') as fp:
-    fp.write(json.dumps(dump))
+    # Sort the keys, for idempotency
+    json.dump(dump, sort_keys=True, fp=fp)
 
-# compress the JSON dump
-subprocess.run(['gzip', '-f', f'{output_dir}/dump.json'], check = True)
+# compress the JSON dump, without timestamp information for idempotency
+subprocess.run(['gzip', '-n', '-f', f'{output_dir}/dump.json'], check = True)
 
 # remove existing gpg file, otherwise gpg will fail
 try:

@@ -1,0 +1,19 @@
+#!/bin/bash
+
+#
+# Copyright (C) 2024 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+
+
+if [[ "$(systemctl is-active support.service)" == "active" ]]; then
+    jactive=true
+else
+    jactive=false
+fi
+
+jq -c -n \
+    --argjson active "${jactive}" \
+    --arg session_id "$(grep VPN_PASSWORD support.env | cut -f 2 -d =)" \
+    '{"session_id": $session_id, "active": $active}'

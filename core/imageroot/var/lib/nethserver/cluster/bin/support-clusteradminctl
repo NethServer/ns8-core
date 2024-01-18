@@ -1,0 +1,84 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2024 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+import agent
+import sys
+import os
+import uuid
+import subprocess
+import agent.tasks
+import hashlib
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument('action', choices=['add', 'remove'])
+args = parser.parse_args()
+
+try:
+    list_users_result = agent.tasks.run(
+        agent_id='cluster',
+        action='list-users',
+        extra={'isNotificationHidden': True},
+        endpoint="redis://127.0.0.1",
+    )
+except agent.tasks.exceptions.TaskSubmissionCheckFailed:
+    print(agent.SD_WARNING + "cluster-admin support account can be enabled only from sessions running on the leader node", file=sys.stderr)
+    # Running in a worker node, ignore
+    sys.exit(0)
+
+def action_add():
+    global hsubscription, support_env
+
+    # Create a new cluster-admin user account
+    password_hash = hashlib.sha256(support_env['VPN_PASSWORD'].encode()).hexdigest()
+    add_user_result = agent.tasks.run(
+        agent_id='cluster',
+        action='add-user',
+        data={
+            'user': hsubscription['support_user'],
+            'password_hash': password_hash,
+            'set': {},
+            'grant': [{"role": "owner", "on": "*" }],
+        },
+        extra={
+            'isNotificationHidden': False,
+            'title': 'Add user ' + hsubscription['support_user'],
+        },
+        endpoint="redis://127.0.0.1",
+    )
+
+    agent.assert_exp(add_user_result['exit_code'] == 0, 'cluster/alter-user action has failed')
+
+def action_remove():
+    global hsubscription
+    agent.tasks.run(
+        agent_id='cluster',
+        action='remove-user',
+        data={
+            'user': hsubscription['support_user'],
+        },
+        extra={
+            'isNotificationHidden': False,
+            'title': 'Remove user ' + hsubscription['support_user'],
+        },
+        endpoint="redis://127.0.0.1",
+    )
+
+rdb = agent.redis_connect()
+hsubscription = rdb.hgetall("cluster/subscription")
+support_env = agent.read_envfile("/var/lib/nethserver/node/state/support.env")
+
+
+have_support_user = len(list(filter(lambda e: e['user'] == hsubscription['support_user'], list_users_result['output']))) > 0
+
+if args.action == 'add':
+    if have_support_user:
+        action_remove() # ensure the user is always created from scratch
+    action_add()
+elif args.action == 'remove':
+    if have_support_user:
+        action_remove()

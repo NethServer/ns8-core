@@ -1,0 +1,41 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2024 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+import agent
+import sys
+import os
+import uuid
+import subprocess
+
+# URL namespace to generate UUID type "sha1-based":
+BASE_URL = "http://ns8.nethserver.org/support/"
+
+rdb = agent.redis_connect(use_replica=True)
+
+hsubscription = rdb.hgetall("cluster/subscription")
+
+# Retrieve from env or generate the VPN password (Used by Windmill as
+# session ID)
+vpn_password = os.getenv("SUPPORT_VPN_PASSWORD", str(uuid.uuid5(uuid.NAMESPACE_URL, BASE_URL + str(uuid.uuid4()))))
+
+# Retrieve from env or use the default certificate file path
+cert_file = os.getenv("SUPPORT_VPN_CERT_FILE", os.environ["AGENT_INSTALL_DIR"] + '/etc/support/openvpn.pem')
+
+cert_cn = os.getenv("SUPPORT_VPN_CERT_COMMON_NAME", hsubscription.get("vpn_cert_cn"))
+
+support_env = {
+    "VPN_PEER_HOST": os.getenv("SUPPORT_VPN_PEER_HOST", hsubscription.get('vpn_peer_host', "sos.nethesis.it")),
+    "VPN_PEER_PORT": os.getenv("SUPPORT_VPN_PEER_PORT", hsubscription.get('vpn_peer_port', "1194")),
+    "VPN_USERNAME": os.getenv("SUPPORT_VPN_USERNAME", hsubscription["system_id"] + '-node' + os.environ['NODE_ID']),
+    "VPN_PASSWORD": vpn_password,
+    "VPN_CERT_FILE": "support.pem",
+    "VPN_CERT_COMMON_NAME": cert_cn,
+    "VPN_INACTIVE": os.getenv("SUPPORT_VPN_INACTIVE", "604800"), # default is one week
+}
+
+agent.write_envfile("support.env", support_env)
+agent.run_helper("cp", "-v", "-f", cert_file, "support.pem")

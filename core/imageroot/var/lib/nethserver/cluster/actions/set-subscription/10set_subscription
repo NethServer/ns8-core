@@ -1,0 +1,155 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2024 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+import agent
+import agent.tasks
+import os
+import sys
+import json
+import requests, urllib3.util
+
+osubscription = json.load(sys.stdin)['subscription']
+
+def _exit_validation_error(field, value, error, exit_code=2):
+    agent.set_status('validation-failed')
+    json.dump([{
+            'field': field,
+            'parameter': field,
+            'value': value,
+            'error': error
+        }],
+        fp=sys.stdout)
+    sys.exit(exit_code)
+
+def _get_http_session():
+    osession = requests.Session()
+    osession.timeout = 15 # Timout for HTTP connections
+    oretries = urllib3.util.Retry(
+        total=3,
+        backoff_factor=0.1,
+        allowed_methods={'POST', 'GET'},
+    )
+    osession.mount('https://', requests.adapters.HTTPAdapter(max_retries=oretries))
+    return osession
+
+def terminate_subscription(rdb):
+    hsubscription = rdb.hgetall("cluster/subscription")
+    if not hsubscription:
+        _exit_validation_error("", "", "system_not_subscribed")
+
+    output = None
+    try:
+        if hsubscription["provider"] == 'nsent':
+            output = terminate_nsent(rdb, hsubscription)
+        elif hsubscription["provider"] == 'nscom':
+            output = terminate_nscom(rdb, hsubscription)
+    except Exception as ex:
+        print(agent.SD_WARNING + "Terminate error", ex, file=sys.stderr)
+
+    trx = rdb.pipeline()
+    trx.delete("cluster/subscription")
+    trx.publish('cluster/event/subscription-changed', json.dumps({"action": "terminated"}))
+    trx.execute()
+
+    return output
+
+def terminate_nsent(rdb, attributes):
+    psession = _get_http_session()
+
+    freekeyresp = psession.post("https://my.nethesis.it/api/Utils/freekey", data={
+        "lk": attributes["system_id"],
+        "secret":attributes["auth_token"],
+    })
+    try:
+        ofreekey = freekeyresp.json()
+    except:
+        ofreekey = {} # Ignore remote request failures and disable client services, always.
+
+    return ofreekey
+
+def terminate_nscom(rdb, attributes):
+    return {}
+
+def subscribe_nsent(rdb, osubscription):
+    auth_token = osubscription['auth_token']
+
+    psession = _get_http_session()
+    myresp = psession.post("https://my.nethesis.it/api/systems/info", data={"secret": auth_token})
+    myresp.raise_for_status()
+    dinfo = myresp.json()
+
+    system_id = dinfo['uuid']
+
+    trx = rdb.pipeline()
+    trx.hset("cluster/subscription", mapping={
+        "provider": "nsent",
+        'system_id': system_id,
+        'auth_token': auth_token,
+        'vpn_cert_cn': "C=IT, ST=PU, L=Pesaro, O=Nethesis, OU=Support, CN=Nethesis CA, name=sos, emailAddress=support@nethesis.it",
+        'support_user': 'nethsupport',
+    })
+    trx.publish('cluster/event/subscription-changed', json.dumps({"action": "subscribed"}))
+    trx.execute()
+
+    return {
+        "system_id": system_id,
+        "provider": "nsent",
+    }
+
+
+def subscribe_nscom(rdb, osubscription):
+    auth_token = osubscription['auth_token']
+    dartagnan_url = os.getenv('DARTAGNAN_URL', 'https://my.nethserver.com/api')
+
+    psession = _get_http_session()
+    myresp = psession.get(f"{dartagnan_url}/machine/info", headers={"Authorization": "token " + auth_token})
+    myresp.raise_for_status()
+    dinfo = myresp.json()
+
+    system_id = dinfo['uuid']
+
+    trx = rdb.pipeline()
+    trx.hset("cluster/subscription", mapping={
+        "provider": "nscom",
+        'system_id': system_id,
+        'auth_token': auth_token,
+        'vpn_cert_cn': "C=IT, ST=PU, L=Pesaro, O=Nethesis, OU=Support, CN=Nethesis CA, name=sos, emailAddress=support@nethesis.it",
+        'support_user': 'nethsupport',
+        'dartagnan_url': dartagnan_url,
+    })
+    trx.publish('cluster/event/subscription-changed', json.dumps({"action": "subscribed"}))
+    trx.execute()
+
+
+    return {
+        "system_id": system_id,
+        "provider": "nscom",
+    }
+
+
+rdb = agent.redis_connect(privileged=True)
+
+if osubscription is None:
+    output = terminate_subscription(rdb)
+else:
+    output = {}
+    if rdb.exists("cluster/subscription"):
+        _exit_validation_error("", "", "system_already_subscribed")
+
+    prev_exceptions = []
+    for subscribe_function in [subscribe_nsent, subscribe_nscom]:
+        try:
+            output = subscribe_function(rdb, osubscription)
+            break
+        except (requests.exceptions.HTTPError, KeyError) as ex:
+            prev_exceptions.append(ex)
+    else:
+        if prev_exceptions:
+            print(agent.SD_ERR + "Subscription failed!", prev_exceptions, file=sys.stderr)
+            _exit_validation_error("auth_token", "***", "unknown_token", 3)
+
+json.dump(output, fp=sys.stdout)

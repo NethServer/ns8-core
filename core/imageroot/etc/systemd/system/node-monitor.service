@@ -1,0 +1,15 @@
+[Unit]
+Description=Node monitoring
+Wants=redis.service
+After=redis.service
+
+[Service]
+Type=simple
+OOMScoreAdjust=-1
+ExecStartPre=-runagent -m node write-node-monitor-envfile
+ExecStart=runagent -m node node-monitor
+Restart=always
+SyslogIdentifier=%N
+
+[Install]
+WantedBy=default.target

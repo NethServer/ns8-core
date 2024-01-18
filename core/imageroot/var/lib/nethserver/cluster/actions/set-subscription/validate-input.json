@@ -1,0 +1,38 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "set-subscription",
+    "description": "Set up support subscription",
+    "$id": "http://schema.nethserver.org/cluster/set-subscription.json",
+    "examples": [
+        {
+            "subscription": {
+                "auth_token": "d489701d76b1424e9dacb08b73741ef6d489701d76b1424e9dacb08b73741ef6"
+            }
+        }
+    ],
+    "type": [
+        "object"
+    ],
+    "required": [
+        "subscription"
+    ],
+    "properties": {
+        "subscription": {
+            "description": "Setting a null subscription, clears all existing subscription attributes and stops any running service",
+            "type": [
+                "object",
+                "null"
+            ],
+            "required": [
+                "auth_token"
+            ],
+            "properties": {
+                "auth_token": {
+                    "type": "string",
+                    "minLength": 32,
+                    "maxLength": 128
+                }
+            }
+        }
+    }
+}

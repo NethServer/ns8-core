@@ -115,5 +115,8 @@ if node_id == self_id:
                 print(f"[ERROR] {module_id} UI extraction has failed!", file=sys.stderr)
                 errors += 1
 
+# Enable/Disable the subscription services
+agent.run_helper("systemctl", "start", "check-subscription")
+
 if errors > 0:
     sys.exit(1)

@@ -1,0 +1,9 @@
+[Unit]
+Description=Subscription cluster cloud backup
+ConditionPathExists=/var/lib/nethserver/cluster/state/backup/passphrase
+
+[Service]
+Type=oneshot
+ExecStart=runagent cluster-backup
+ExecStart=runagent send-cluster-backup
+SyslogIdentifier=%N

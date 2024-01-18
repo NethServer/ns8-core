@@ -3,7 +3,6 @@
 # The environment is installed under /usr/local/nethserver/agent
 #
 aiodns==3.0.0
-aioredis==2.0.1
 aiohttp==3.8.4
 ansible-core==2.15.1
 ansible-runner==2.3.1
@@ -34,9 +33,9 @@ pycparser==2.21
 pyrsistent==0.18.1
 python-daemon==3.0.1
 PyYAML==6.0
-redis==4.5.5
+redis==5.0.1
 regex-engine==1.1.0
-requests==2.28.1
+requests==2.31.0
 resolvelib==1.0.1
 semver==3.0.1
 six==1.16.0

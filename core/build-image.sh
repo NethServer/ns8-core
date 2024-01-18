@@ -76,12 +76,13 @@ printf "CORE_IMAGE=${repobase}/core:%s\n" "${IMAGETAG:-latest}" >> "${core_env_f
 printf "REDIS_IMAGE=${repobase}/redis:%s\n" "${IMAGETAG:-latest}" >> "${core_env_file}"
 printf "RSYNC_IMAGE=${repobase}/rsync:%s\n" "${IMAGETAG:-latest}" >> "${core_env_file}"
 printf "RESTIC_IMAGE=${repobase}/restic:%s\n" "${IMAGETAG:-latest}" >> "${core_env_file}"
+printf "SUPPORT_IMAGE=${repobase}/support:%s\n" "${IMAGETAG:-latest}" >> "${core_env_file}"
 printf "PROMTAIL_IMAGE=docker.io/grafana/promtail:2.9.2\n" >> "${core_env_file}"
 chmod -c 644 "${core_env_file}"
 source "${core_env_file}"
 buildah add "${container}" ${core_env_file} /etc/nethserver/core.env
 buildah config \
-    --label="org.nethserver.images=${REDIS_IMAGE} ${RSYNC_IMAGE} ${RESTIC_IMAGE} ${PROMTAIL_IMAGE}" \
+    --label="org.nethserver.images=${REDIS_IMAGE} ${RSYNC_IMAGE} ${RESTIC_IMAGE} ${PROMTAIL_IMAGE} ${SUPPORT_IMAGE}" \
     --label="org.nethserver.flags=core_module" \
     --entrypoint=/ "${container}"
 buildah commit "${container}" "${repobase}/${reponame}"
@@ -148,6 +149,23 @@ buildah add "${container}" rsync/entrypoint.sh /entrypoint.sh
 buildah config \
     --entrypoint='["/entrypoint.sh"]' \
     --cmd='["rsync", "--daemon", "--no-detach"]' \
+    ${container}
+buildah commit "${container}" "${repobase}/${reponame}"
+buildah rm "${container}"
+images+=("${repobase}/${reponame}")
+
+echo "Building the support image..."
+container=$(buildah from docker.io/library/alpine:3.18.4)
+reponame="support"
+buildah run ${container} -- sh <<'EOF'
+apk add --no-cache openvpn gettext-envsubst
+mkdir -v -p -m 0700 /var/lib/openvpn
+chown -c openvpn:openvpn /var/lib/openvpn
+EOF
+buildah add "${container}" support/ /
+buildah config \
+    --entrypoint='["/entrypoint.sh"]' \
+    --cmd='[]' \
     ${container}
 buildah commit "${container}" "${repobase}/${reponame}"
 buildah rm "${container}"
