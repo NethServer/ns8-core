@@ -66,6 +66,7 @@ Other available variables:
 - `AGENT_COMFD`: the file descriptor to talk to the agent via [action commands](#action-commands)
 - `AGENT_TASK_ID`: the unique ID of current task, i.e. `c0b8b976-9444-42d5-a40b-142a6a483a84`
 - `AGENT_TASK_ACTION`: the name of executed action, i.e.: `create-module`
+- `AGENT_TASK_USER`: the name of the user that created the action, if available. For example, `admin`
 - `AGENT_INSTALL_DIR`
 - `AGENT_STATE_DIR`
 - `AGENT_ID`

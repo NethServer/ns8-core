@@ -131,6 +131,7 @@ func runAction(rdb *redis.Client, actionCtx context.Context, task *models.Task) 
 			"AGENT_COMFD=3", // 3 is the additional FD number where the action step can write its commands for us
 			"AGENT_TASK_ID="+task.ID,
 			"AGENT_TASK_ACTION="+task.Action,
+			"AGENT_TASK_USER="+task.User,
 		)
 		inputData, _ := json.Marshal(task.Data)
 		cmd.Stdin = strings.NewReader(string(inputData))

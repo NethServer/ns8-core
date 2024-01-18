@@ -1,0 +1,38 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2024 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+import sys
+import json
+import agent
+import os
+
+request = json.load(sys.stdin)
+
+domain_list = request["domains"]
+module_id = os.environ["AGENT_TASK_USER"].removeprefix('module/')
+
+rdb = agent.redis_connect(privileged=False)
+try:
+    test = int(rdb.hget(f'module/{module_id}/environment', 'NODE_ID'))
+except Exception as ex:
+    print(f"Error: to validate a module_id instance {ex}", file=sys.stderr)
+    sys.exit(0)
+
+previous_domains = rdb.hget(f'cluster/module_domains', module_id) or ""
+
+rdb = agent.redis_connect(privileged=True)
+rdb.hset(f'cluster/module_domains', module_id, " ".join(domain_list))
+
+union_domains = set(domain_list) | set(previous_domains.split())
+
+agent_id = os.environ['AGENT_ID']
+trx = rdb.pipeline()
+trx.publish(agent_id + '/event/module-domain-changed', json.dumps({
+    "modules": [module_id],
+    "domains": list(union_domains)
+}))
+trx.execute()

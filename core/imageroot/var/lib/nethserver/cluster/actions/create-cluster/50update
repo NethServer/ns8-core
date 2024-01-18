@@ -80,9 +80,6 @@ agent.run_helper('systemctl', 'stop', 'wg-quick@wg0.service')
 cluster.vpn.initialize_wgconf(ip_address)
 agent.run_helper('systemctl', 'start', 'wg-quick@wg0.service').check_returncode()
 
-# (Samba) account provider might want to route some IP addresses through our VPN. Define a role for that:
-cluster.grants.grant(rdb, action_clause="update-routes", to_clause="accountprovider", on_clause='cluster')
-
 #
 # Install core modules
 #

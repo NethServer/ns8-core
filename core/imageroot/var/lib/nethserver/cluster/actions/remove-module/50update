@@ -132,6 +132,16 @@ trx.publish(agent_id + '/event/module-removed', json.dumps({
     'node': node_id,
 }))
 
+# we get the list of domains from the cluster/module_domains hash
+values = rdb.hget("cluster/module_domains", module_id) or ""
+# Delete module_id key in module_domains hash
+trx.hdel("cluster/module_domains", module_id)
+# we trigger the event module-domain-changed with the list of domains
+trx.publish(agent_id + '/event/module-domain-changed', json.dumps({
+    "modules": [module_id],
+    "domains": values.split()
+}))
+
 trx.execute()
 
 json.dump({}, fp=sys.stdout)

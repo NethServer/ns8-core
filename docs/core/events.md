@@ -26,6 +26,10 @@ Well known events:
 - `ldap-provider-changed`: an external LDAP account provider was removed
   or added to a user-domain. The JSON parameter format is
   `{"domain":STRING,"key":STRING}`.
+- `module-domain-changed`: the relation between modules and user domains
+  has been changed. The JSON parameter format is `{"domains":[DOMAIN1,
+  DOMAIN2 ...], "modules":[MODULE_ID1, MODULE_ID2...]}` and reflects the
+  domains and modules affected by the latest change.
 
 ## Cluster events
 

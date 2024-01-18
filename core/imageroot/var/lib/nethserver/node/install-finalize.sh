@@ -131,6 +131,10 @@ cluster.grants.grant(rdb, action_clause="add-public-service",  to_clause="tunadm
 cluster.grants.grant(rdb, action_clause="remove-public-service",  to_clause="tunadm", on_clause='node/1')
 cluster.grants.grant(rdb, action_clause="add-custom-zone",  to_clause="tunadm", on_clause='node/1')
 cluster.grants.grant(rdb, action_clause="remove-custom-zone",  to_clause="tunadm", on_clause='node/1')
+
+cluster.grants.grant(rdb, action_clause="update-routes", to_clause="accountprovider", on_clause='cluster')
+cluster.grants.grant(rdb, action_clause="bind-user-domains",  to_clause="accountconsumer", on_clause='cluster')
+cluster.grants.grant(rdb, action_clause="list-modules",  to_clause="accountprovider", on_clause='cluster')
 EOF
 
 for arg in "${@}"; do

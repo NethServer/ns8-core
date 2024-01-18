@@ -66,7 +66,7 @@ The task is submitted
     Set Test Variable    ${LAST_TASK_ID}    id-${action_name}
     Push Item To First Index In List Redis    ${RDB}
     ...   ${AGENT_ID}/tasks
-    ...   {"id":"id-${action_name}","action":"${action_name}","data":${task_data}}
+    ...   {"user":"admin","id":"id-${action_name}","action":"${action_name}","data":${task_data}}
 The task has exit code
     [Arguments]    ${expected_exit_code}
     Redis Key Should Be Exist    ${RDB}    task/${AGENT_ID}/${LAST_TASK_ID}/exit_code
