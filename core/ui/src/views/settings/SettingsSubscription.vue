@@ -31,7 +31,7 @@
           <NsInlineNotification
             v-if="error.cluster_subscription"
             kind="error"
-            :title="$t('action.cluster-subscription')"
+            :title="$t('action.get-subscription')"
             :description="error.cluster_subscription"
             :showCloseButton="false"
           />
@@ -229,6 +229,8 @@ import {
   IconService,
   PageTitleService,
 } from "@nethserver/ns8-ui-lib";
+import { mapActions } from "vuex";
+
 import NotificationService from "@/mixins/notification";
 import Play20 from "@carbon/icons-vue/es/play/20";
 import Stop20 from "@carbon/icons-vue/es/stop/20";
@@ -265,7 +267,7 @@ export default {
       status: "inactive",
       active: false,
       session_id: "",
-      with_remote_support: false,
+      with_remote_support: true,
       loading: {
         getSubscription: false,
         get_support: false,
@@ -300,6 +302,7 @@ export default {
     next();
   },
   methods: {
+    ...mapActions(["setSubscriptionInStore"]),
     async getSubscription() {
       this.clearErrors();
       this.loading.getSubscription = true;
@@ -312,7 +315,7 @@ export default {
       );
 
       const res = await to(
-        this.createNodeTask(this.nodeId, {
+        this.createClusterTask({
           action: taskAction,
           extra: {
             title: this.$t("action." + taskAction),
@@ -320,6 +323,7 @@ export default {
           },
         })
       );
+
       const err = res[0];
 
       if (err) {
@@ -331,6 +335,7 @@ export default {
     },
     getSubscriptionCompleted(taskContext, taskResult) {
       const output = taskResult.output;
+      console.log(taskResult);
       this.auth_token = output.subscription.auth_token;
       this.system_id = output.subscription.system_id;
       this.vpn_cert_cn = output.subscription.vpn_cert_cn;
@@ -363,7 +368,7 @@ export default {
       this.$root.$once(taskAction + "-aborted", this.setSubscriptionFailed);
 
       const res = await to(
-        this.createNodeTask(this.nodeId, {
+        this.createClusterTask({
           action: taskAction,
           data: {
             subscription: {
@@ -425,7 +430,7 @@ export default {
       );
 
       const res = await to(
-        this.createNodeTask(this.nodeId, {
+        this.createNodeTask(1, {
           action: taskAction,
           extra: {
             title: this.$t("action." + taskAction),
@@ -464,7 +469,7 @@ export default {
       this.$root.$once(taskAction + "-aborted", this.startSessionSupportFailed);
 
       const res = await to(
-        this.createNodeTask(this.nodeId, {
+        this.createNodeTask(1, {
           action: taskAction,
           data: {
             session_id: this.session_id,
@@ -528,7 +533,7 @@ export default {
       this.$root.$once(taskAction + "-aborted", this.stopSessionSupportFailed);
 
       const res = await to(
-        this.createNodeTask(this.nodeId, {
+        this.createNodeTask(1, {
           action: taskAction,
           extra: {
             title: this.$t("action." + taskAction),
