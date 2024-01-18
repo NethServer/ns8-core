@@ -20,7 +20,7 @@ function exit_error ()
 
 function send_inventory_nsent ()
 {
-    print-inventory-nsent | jq -c \
+    print-inventory-ns | jq -c \
         --arg system_id "${system_id:?}" \
         '{"data":{"lk":$system_id,"data":.}}' | \
     curl -m 180 --retry 3 -L -s \
@@ -44,7 +44,7 @@ function send_inventory_nsent ()
 
 function send_inventory_nscom ()
 {
-    print-inventory-nscom | jq -c \
+    print-inventory-ns | jq -c \
         --arg system_id "${system_id:?}" \
         '{"data":{"lk":$system_id,"data":.}}' | \
     curl -m 180 --retry 3 -L -s \
