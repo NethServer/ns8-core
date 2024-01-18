@@ -64,7 +64,11 @@ async def raise_alert(value, alert):
         svalue = 'CRITICAL'
     else:
         svalue = 'UNKNOWN'
-    print('ALERT', svalue, alert, file=sys.stderr)
+    if alert.startswith('load'):
+        print('NOTICE', svalue, alert, file=sys.stderr)
+        return # do not send load alarm at all, just log it
+    else:
+        print('ALERT', svalue, alert, file=sys.stderr)
     if alert_provider == 'nsent':
         await send_alert('https://my.nethesis.it/isa/alerts/store', value, alert)
     elif alert_provider == 'nscom':
@@ -98,17 +102,17 @@ async def check_mountpoints(mp_path, mp_name=None):
 async def check_systemload():
     with open("/proc/loadavg", encoding='utf-8', newline="\n") as fload:
         fields = fload.readline().split()
-    # consider critical 5 minutes load average greater than CPU count
+    # consider critical 1 minute load average greater than CPU count
     if float(fields[0]) > cpu_count:
         state = CRITICAL
     else:
         state = CLEAR
     return (state, 'load:high:' + node_name)
 
-async def monitor_loop(check_function, fargs=[], fkwargs={}, period=2, histeresys=4):
-    # histeresys counts how many past checks are considered to build the
+async def monitor_loop(check_function, fargs=[], fkwargs={}, period=2, hysteresis=4):
+    # hysteresis counts how many past checks are considered to build the
     # alarm state
-    state_buffer = [CLEAR,] * histeresys
+    state_buffer = [CLEAR,] * hysteresis
     alarm_state = UNKNOWN # force initial transition to CLEAR
     head = 0
 
@@ -127,15 +131,15 @@ async def monitor_loop(check_function, fargs=[], fkwargs={}, period=2, histeresy
             alarm_state = value
             await raise_alert(value, alert)
         await asyncio.sleep(period)
-        head = (head + 1) % histeresys
+        head = (head + 1) % hysteresis
 
 async def main():
     # Run each check inside a monitor loop in parallel:
     await asyncio.gather(
-        monitor_loop(check_swap, period=3, histeresys=10), # 30 seconds
-        monitor_loop(check_systemload, period=5, histeresys=24), # 2 minutes
-        monitor_loop(check_mountpoints, fargs=['/', 'root'], period=15, histeresys=4), # 1 minute
-        monitor_loop(check_mountpoints, fargs=['/boot', 'boot'], period=15, histeresys=4), # 1 minute
+        monitor_loop(check_swap, period=3, hysteresis=10), # 30 seconds
+        monitor_loop(check_systemload, period=5, hysteresis=24), # 2 minutes
+        monitor_loop(check_mountpoints, fargs=['/', 'root'], period=15, hysteresis=4), # 1 minute
+        monitor_loop(check_mountpoints, fargs=['/boot', 'boot'], period=15, hysteresis=4), # 1 minute
     )
 
 asyncio.run(main())
