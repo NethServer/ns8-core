@@ -373,7 +373,8 @@
         "set-fqdn": "Set FQDN",
         "get-fqdn": "Get FQDN",
         "get-password-policy": "Get password policy",
-        "set-password-policy": "Set password policy"
+        "set-password-policy": "Set password policy",
+        "register-cluster-subscription": "Register cluster subscription"
     },
     "network": {
         "title": "Network"
