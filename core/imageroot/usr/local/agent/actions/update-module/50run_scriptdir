@@ -33,15 +33,22 @@ if [[ ! -d "${AGENT_INSTALL_DIR}"/update-module.d/ ]]; then
     exit 0
 fi
 
+# systemd-journal log severity codes:
+SD_DEBUG='<7>'
+SD_WARNING='<4>'
+
+shopt -s nullglob
 for script in "${AGENT_INSTALL_DIR}"/update-module.d/* ; do
 
     if [[ ! -x "${script}" ]]; then
-        echo "Skipping non-executable file ${script}..."
+        echo "${SD_DEBUG}Skipping non-executable file ${script}..."
         continue
     fi
 
     echo "Running ${script}..."
 
-    command ${script}
+    if ! command ${script} ; then
+        echo "${SD_WARNING}${script} has exit code $?"
+    fi
 
 done
