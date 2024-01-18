@@ -81,7 +81,9 @@
         "tab_navigation": "Tab navigation",
         "warning": "Warning",
         "remember": "Remember",
-        "click_here_to_upload": "Click here to upload"
+        "click_here_to_upload": "Click here to upload",
+        "not_active": "Not active",
+        "active": "Active"
     },
     "error": {
         "error": "Error",
@@ -574,6 +576,29 @@
     },
     "settings_cluster": {
         "title": "Cluster"
+    },
+
+    "settings_subscription":{
+        "title": "Subscription",
+        "cluster_subscription": "Cluster subscription",
+        "cluster_subscription_description": "The cluster subscription is used to enable the cluster features and to receive updates for the cluster nodes.",
+        "subscription_status": "Subscription status",
+        "authentication_token": "Authentication token",
+        "authentication_token_helper": "The authentication token is used to authenticate the cluster nodes to the subscription service.",
+        "request_subscription": "Request",
+        "remove_subscription": "Remove",
+        "authentication_token_placeholder": "Paste the authentication token",
+        "system_id": "System ID",
+        "plan_name": "Plan name",
+        "expire_date": "Expiration",
+        "status": "Status",
+        "remote_support": "Remote support",
+        "remote_support_description": "Remote support is used to allow Nethesis support team to access your cluster nodes for troubleshooting purposes.",
+        "start_session_support": "Start session",
+        "session_id": "Session ID",
+        "paste_session_id_to_support_team": "Paste the session ID to the support team",
+        "remote_support_in_progress": "Remote support in progress",
+        "stop_session_support": "Stop session"
     },
     "settings_sw_repositories": {
         "title": "Software repositories",
