@@ -1,0 +1,1 @@
+{"$schema":"http://json-schema.org/draft-07/schema#","title":"remove-repository output","$id":"http://schema.nethserver.org/cluster/remove-repository-output.json","description":"Output schema of the remove-repository action","examples":[true],"type":"boolean"}
