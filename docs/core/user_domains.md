@@ -116,7 +116,7 @@ set
 
     org.nethserver.authorizations=cluster:accountconsumer
 
-Then the module can execute a bind procedure, so the core is aware of
+The module can now execute a bind procedure, so the core is aware of
 existing relations between modules and account domains. When such
 relations are formally established the core can
 
@@ -128,17 +128,11 @@ domain and bind the new one with a script like this:
 
 ```python
 import agent
-import json
-import os
-import sys
 
-request = json.load(sys.stdin)
-
-# Store domain name for services configuration:
-agent.set_env("LDAP_USER_DOMAIN", request["ldap_domain"])
+ldap_user_domain = "dept1.example.org"
 
 # Bind the new domain, overriding previous values (unbind)
-agent.bind_user_domains([request["ldap_domain"]])
+agent.bind_user_domains([ldap_user_domain])
 ```
 
 At any time, retrieve the list of domains currently bound:
