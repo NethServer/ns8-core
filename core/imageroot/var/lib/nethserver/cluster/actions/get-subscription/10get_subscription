@@ -38,6 +38,7 @@ def fetch_subscription_info_nsent(rdb, attributes):
         "expires": dinfo['subscription']['valid_until'] > 0,
         "expire_date": str(dinfo['subscription']['valid_until']),
         "status": "active",
+        "with_remote_support": True,
     }
     return info
 
@@ -61,6 +62,7 @@ def fetch_subscription_info_nscom(rdb, attributes):
         "expires": True,
         "expire_date": str(dinfo['subscription']['valid_until']),
         "status": "active",
+        "with_remote_support": False,
     }
     return info
 
