@@ -2,7 +2,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "get-support-session output",
     "$id": "http://schema.nethserver.org/node/get-support-session-output.json",
-    "description": "Just an empty object, representing a successful response",
+    "description": "Return the support session status",
     "examples": [
         {
             "session_id": "811630de-67f4-5b6d-8b2f-7cc01f592b1b",
@@ -20,10 +20,12 @@
     ],
     "properties": {
         "session_id": {
-            "type": "string"
+            "type": "string",
+            "description": "Last opened session identifier for the support team"
         },
         "active": {
-            "type": "boolean"
+            "type": "boolean",
+            "description": "If the opened session is still active or not"
         }
     }
 }
