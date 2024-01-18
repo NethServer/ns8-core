@@ -139,7 +139,7 @@ def get_internal_domains(rdb):
         # Check if the provider can be used also as a SMB file server by
         # LAN clients. This is possible only with Samba providers but the
         # attribute is always set despite of that.
-        has_file_server_flag = rdb.sismember(f'module/{module_id}/flags', 'file_server')
+        has_file_server_flag = bool(rdb.sismember(f'module/{module_id}/flags', 'file_server'))
 
         domains[conf['domain']]['providers'].append({
             "id": module_id,
