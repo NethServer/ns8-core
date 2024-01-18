@@ -103,9 +103,10 @@ def subscribe_nsent(rdb, osubscription):
 
 def subscribe_nscom(rdb, osubscription):
     auth_token = osubscription['auth_token']
+    dartagnan_url = os.getenv('DARTAGNAN_URL', 'https://my.nethserver.com/api')
 
     psession = _get_http_session()
-    myresp = psession.get("https://my.nethserver.com/api/machine/info", headers={"Authorization": "token " + auth_token})
+    myresp = psession.get(f"{dartagnan_url}/machine/info", headers={"Authorization": "token " + auth_token})
     myresp.raise_for_status()
     dinfo = myresp.json()
 
@@ -118,6 +119,7 @@ def subscribe_nscom(rdb, osubscription):
         'auth_token': auth_token,
         'vpn_cert_cn': "C=IT, ST=PU, L=Pesaro, O=Nethesis, OU=Support, CN=Nethesis CA, name=sos, emailAddress=support@nethesis.it",
         'support_user': 'nethsupport',
+        'dartagnan_url': dartagnan_url,
     })
     trx.publish('cluster/event/subscription-changed', json.dumps({"action": "subscribed"}))
     trx.execute()

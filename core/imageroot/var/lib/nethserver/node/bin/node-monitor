@@ -24,6 +24,7 @@ node_name = 'node_' + os.environ['NODE_ID']
 auth_token = nmenv.get("NMON_ALERT_AUTH_TOKEN")
 alert_provider = nmenv.get("NMON_ALERT_PROVIDER")
 system_id = nmenv.get("NMON_ALERT_SYSTEM_ID")
+dartagnan_url = nmenv.get("NMON_DARTAGNAN_URL")
 cpu_count = multiprocessing.cpu_count()
 
 def parse_meminfo():
@@ -67,7 +68,7 @@ async def raise_alert(value, alert):
     if alert_provider == 'nsent':
         await send_alert('https://my.nethesis.it/isa/alerts/store', value, alert)
     elif alert_provider == 'nscom':
-        await send_alert('https://my.nethserver.com/api/machine/alerts/store', value, alert)
+        await send_alert(f'{dartagnan_url}/machine/alerts/store', value, alert)
 
 async def check_swap():
     meminfo = parse_meminfo()

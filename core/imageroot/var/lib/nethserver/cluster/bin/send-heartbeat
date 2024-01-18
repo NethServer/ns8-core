@@ -43,7 +43,7 @@ function send_heartbeat_nscom ()
         --header "Authorization: token ${auth_token:?}"  \
         --header "Content-Type: application/json" \
         --data @- \
-        "https://my.nethserver.com/api/machine/heartbeats/store" >/dev/null || :
+        "${dartagnan_url:?}/machine/heartbeats/store" >/dev/null || :
 }
 
 sendfunc="send_heartbeat_${provider}"

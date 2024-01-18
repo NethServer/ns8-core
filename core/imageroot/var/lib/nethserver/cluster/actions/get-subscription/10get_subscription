@@ -45,7 +45,7 @@ def fetch_subscription_info_nscom(rdb, attributes):
     auth_token = attributes['auth_token']
 
     psession = _get_http_session()
-    myresp = psession.get("https://my.nethserver.com/api/machine/info", headers={"Authorization": "token " + auth_token})
+    myresp = psession.get(f"{attributes['dartagnan_url']}/machine/info", headers={"Authorization": "token " + auth_token})
     myresp.raise_for_status()
     dinfo = myresp.json()
 

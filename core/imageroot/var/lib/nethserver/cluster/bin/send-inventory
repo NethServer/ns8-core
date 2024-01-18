@@ -52,7 +52,7 @@ function send_inventory_nscom ()
         --header "Authorization: token ${auth_token:?}"  \
         --header "Content-Type: application/json" \
         --data @- \
-        "https://my.nethserver.com/api/machine/inventories/store/" >>/dev/null || :
+        "${dartagnan_url:?}/machine/inventories/store/" >>/dev/null || :
 }
 
 sendfunc="send_inventory_${provider}"

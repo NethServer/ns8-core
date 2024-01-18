@@ -20,6 +20,7 @@ if osubscription:
         "NMON_ALERT_AUTH_TOKEN": osubscription["auth_token"],
         "NMON_ALERT_PROVIDER": osubscription["provider"],
         "NMON_ALERT_SYSTEM_ID": osubscription["system_id"],
+        "NMON_DARTAGNAN_URL": osubscription.get("dartagnan_url", ""),
     })
 else:
     print(agent.SD_WARNING + "Could not retrieve subscription information from Redis", file=sys.stderr)
