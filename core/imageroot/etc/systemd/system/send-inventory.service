@@ -1,5 +1,5 @@
 [Unit]
-Description=Subscription inventory
+Description=Send the system inventory remotely
 
 [Service]
 Type=oneshot
