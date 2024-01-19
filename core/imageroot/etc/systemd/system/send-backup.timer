@@ -1,11 +1,14 @@
 [Unit]
-Description=Trigger sending cluster backup for subscription
+Description=Execute the cluster backup overnight
 
 [Timer]
-OnBootSec=600
-OnCalendar=3:00:00
+# This timer settings assign a fixed time between 00:00 and 06:00 AM to
+# start the send-backup.service unit. If the node was powered off at that
+# time the timer should trigger as soon as it gets powered on again.
+OnCalendar=00:00:00
+RandomizedDelaySec=6h
+FixedRandomDelay=true
 Persistent=true
-RandomizedDelaySec=21600
 
 [Install]
 WantedBy=timers.target

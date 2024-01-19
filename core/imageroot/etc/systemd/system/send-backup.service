@@ -1,5 +1,5 @@
 [Unit]
-Description=Subscription cluster cloud backup
+Description=Store the encrypted cluster backup remotely
 ConditionPathExists=/var/lib/nethserver/cluster/state/backup/passphrase
 
 [Service]
