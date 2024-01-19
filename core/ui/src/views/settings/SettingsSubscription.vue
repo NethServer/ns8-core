@@ -47,10 +47,16 @@
               {{ $t("settings_subscription.cluster_subscription_description") }}
             </div>
             <cv-form @submit.prevent="setSubscription">
-              <template v-if="status == 'inactive'">
+              <cv-skeleton-text
+                v-if="loading.getSubscription"
+                :paragraph="true"
+                :line-count="6"
+                width="80%"
+              ></cv-skeleton-text>
+              <template v-if="!loading.getSubscription && subscription.status == 'inactive'">
                 <NsTextInput
                   :label="$t('settings_subscription.authentication_token')"
-                  v-model="auth_token"
+                  v-model="subscription.auth_token"
                   :invalid-message="$t(error.auth_token)"
                   :placeholder="
                     $t('settings_subscription.authentication_token_placeholder')
@@ -63,24 +69,24 @@
                 >
                 </NsTextInput>
               </template>
-              <template v-else>
+              <template v-if="!loading.getSubscription && subscription.status == 'active'">
                 <div class="key-value-setting">
                   <span class="label">{{
                     $t("settings_subscription.system_id")
                   }}</span>
-                  <span class="value">{{ system_id }}</span>
+                  <span class="value">{{ subscription.system_id }}</span>
                 </div>
                 <div class="key-value-setting">
                   <span class="label">{{
                     $t("settings_subscription.plan_name")
                   }}</span>
-                  <span class="value">{{ plan_name }}</span>
+                  <span class="value">{{ subscription.plan_name }}</span>
                 </div>
                 <div class="key-value-setting">
                   <span class="label">{{
                     $t("settings_subscription.expire_date")
                   }}</span>
-                  <span class="value">{{ expire_date }}</span>
+                  <span class="value">{{ subscription.expire_date }}</span>
                 </div>
                 <div class="key-value-setting">
                   <span class="label">{{
@@ -88,7 +94,7 @@
                   }}</span>
                   <span class="value">
                     <cv-tag
-                      v-if="status"
+                      v-if="subscription.status"
                       kind="green"
                       :label="$t('common.active')"
                       size="sm"
@@ -113,8 +119,8 @@
               />
               <NsButton
                 kind="primary"
-                v-if="status == 'inactive'"
-                :loading="loading.getSubscription || loading.setSubscription"
+                v-if="!loading.getSubscription && subscription.status == 'inactive'"
+                :loading="loading.getSubscription"
                 :disabled="
                   loading.register_cluster_subsciption ||
                   loading.setSubscription
@@ -122,22 +128,26 @@
                 :icon="Badge20"
                 >{{ $t("settings_subscription.request_subscription") }}
               </NsButton>
-              <NsButton
-                v-if="status == 'active'"
-                kind="tertiary"
-                :loading="loading.getSubscription || loading.setSubscription"
-                :disabled="
-                  loading.register_cluster_subsciption ||
-                  loading.setSubscription
-                "
-                :icon="TrashCan20"
-                >{{ $t("settings_subscription.remove_subscription") }}
-              </NsButton>
             </cv-form>
+            <NsButton
+              v-if="subscription.status == 'active'"
+              kind="tertiary"
+              :loading="loading.getSubscription || loading.setSubscription"
+              :disabled="
+                loading.register_cluster_subsciption || loading.setSubscription
+              "
+              @click="removesubscription"
+              :icon="TrashCan20"
+              >{{ $t("settings_subscription.remove_subscription") }}
+            </NsButton>
           </cv-tile>
         </cv-column>
       </cv-row>
-      <cv-row v-if="with_remote_support">
+      <cv-row
+        v-if="
+          subscription.with_remote_support && subscription.status == 'active'
+        "
+      >
         <cv-column>
           <cv-tile light>
             <h4>
@@ -147,21 +157,14 @@
               {{ $t("settings_subscription.remote_support_description") }}
             </div>
             <NsInlineNotification
-              v-if="error.get_support"
+              v-if="error.getSupportSession"
               kind="error"
               :title="
                 $t('settings_subscription.cannot_retrieve_get_support_status')
               "
-              :description="error.get_support"
+              :description="error.getSupportSession"
               :showCloseButton="false"
             />
-            <cv-skeleton-text
-              v-if="loading.getSubscription"
-              :paragraph="true"
-              :line-count="5"
-              heading
-            ></cv-skeleton-text>
-            <template v-else>
               <template v-if="!active">
                 <div>
                   <NsInlineNotification
@@ -217,11 +220,30 @@
                   {{ $t("settings_subscription.stop_session_support") }}
                 </NsButton>
               </template>
-            </template>
           </cv-tile>
         </cv-column>
       </cv-row>
     </cv-grid>
+    <NsDangerDeleteModal
+      :isShown="isShownRemoveSubcription"
+      :name="$t('settings_subscription.remove')"
+      :title="$t('settings_subscription.remove_cluster_subscription_title')"
+      :warning="$t('common.please_read_carefully')"
+      :description="
+        $t('settings_subscription.remove_cluster_subscription_description')
+      "
+      :typeToConfirm="
+        $t('common.type_to_confirm', {
+          name: $t('settings_subscription.remove'),
+        })
+      "
+      :isErrorShown="!!error.removeSubscription"
+      :errorTitle="$t('action.remove-subscription')"
+      :errorDescription="error.removeSubscription"
+      @hide="hideDeleteCertificateModal"
+      @confirmDelete="removeSubscription"
+      data-test-id="remove_subscription_modal"
+    />
   </div>
 </template>
 
@@ -234,7 +256,7 @@ import {
   IconService,
   PageTitleService,
 } from "@nethserver/ns8-ui-lib";
-import { mapActions } from "vuex";
+import { mapGetters } from "vuex";
 
 import NotificationService from "@/mixins/notification";
 import Play20 from "@carbon/icons-vue/es/play/20";
@@ -255,43 +277,43 @@ export default {
   },
   data() {
     return {
+      isShownRemoveSubcription: false,
       Play20,
       Stop20,
-      auth_token: "",
-      system_id: "",
-      vpn_cert_cn:
-        "C=IT, ST=PU, L=Pesaro, O=Nethesis, OU=Support, CN=Nethesis CA, name=sos, emailAddress=support@nethesis.it",
-      dartagnan_url: "https://my.nethserver.com/api",
-      support_user: "nethsupport",
-      provider: "nscom",
-      system_url: "https://my.nethserver.com/servers/5329",
-      plan_name: { name: "", description: "" },
-      expires: true,
-      expire_date: "",
-      status: "inactive",
+      subscription: {
+        auth_token: "",
+        system_id: "",
+        vpn_cert_cn:
+          "C=IT, ST=PU, L=Pesaro, O=Nethesis, OU=Support, CN=Nethesis CA, name=sos, emailAddress=support@nethesis.it",
+        dartagnan_url: "https://my.nethserver.com/api",
+        support_user: "nethsupport",
+        provider: "nscom",
+        system_url: "https://my.nethserver.com/servers/5329",
+        plan_name: { name: "", description: "" },
+        expires: true,
+        expire_date: "",
+        status: "inactive",
+        with_remote_support: false,
+      },
       active: false,
       session_id: "",
-      with_remote_support: false,
       loading: {
         getSubscription: false,
-        get_support: false,
         setSubscription: false,
       },
       error: {
         status: "",
         auth_token: "",
         getSubscription: "",
-        get_support: "",
         setSubscription: "",
         request_support: "",
         startSessionSupport: "",
+        removeSubscription: "",
       },
     };
   },
-  computed: {},
+  computed: { ...mapGetters(["leaderNode"]) },
   created() {
-    this.nodeId = this.$route.params.nodeId;
-
     this.getSubscription();
     this.getSupportSession();
   },
@@ -306,7 +328,12 @@ export default {
     next();
   },
   methods: {
-    ...mapActions(["setSubscriptionInStore"]),
+    removesubscription() {
+      this.isShownRemoveSubcription = true;
+    },
+    hideDeleteCertificateModal() {
+      this.isShownRemoveSubcription = false;
+    },
     async getSubscription() {
       this.clearErrors();
       this.loading.getSubscription = true;
@@ -340,22 +367,11 @@ export default {
     getSubscriptionCompleted(taskContext, taskResult) {
       const output = taskResult.output;
       if (output.subscription == null) {
-        this.status = "inactive";
+        this.subscription.status = "inactive";
         this.loading.getSubscription = false;
         return;
       }
-      this.auth_token = output.subscription.auth_token;
-      this.system_id = output.subscription.system_id;
-      this.vpn_cert_cn = output.subscription.vpn_cert_cn;
-      this.dartagnan_url = output.subscription.dartagnan_url;
-      this.support_user = output.subscription.support_user;
-      this.provider = output.subscription.provider;
-      this.system_url = output.subscription.system_url;
-      this.plan_name = output.subscription.plan_name;
-      this.expires = output.subscription.expires;
-      this.expire_date = output.subscription.expire_date;
-      this.status = output.subscription.status;
-      this.with_remote_support = output.subscription.with_remote_support;
+      this.subscription = output.subscription;
       this.loading.getSubscription = false;
     },
     async setSubscription() {
@@ -378,10 +394,7 @@ export default {
         this.createClusterTask({
           action: taskAction,
           data: {
-            subscription:
-              this.status === "inactive"
-                ? { auth_token: this.auth_token }
-                : null,
+            subscription: { auth_token: this.subscription.auth_token },
           },
           extra: {
             title: this.$t("action." + taskAction),
@@ -400,7 +413,7 @@ export default {
     },
     setSubscriptionFailed(validationErrors) {
       this.loading.setSubscription = false;
-      this.status = "inactive";
+      this.subscription.status = "inactive";
 
       let focusAlreadySet = false;
 
@@ -419,11 +432,78 @@ export default {
         }
       }
     },
-
     setSubscriptionCompleted() {
-      this.status = "active";
-      this.auth_token = "";
+      // if active, we remove subscription and force stop session support
+      if (this.subscription.status == "active") {
+        this.stopSessionSupport();
+      }
+      this.subscription.auth_token = "";
       this.loading.setSubscription = false;
+      this.getSubscription();
+    },
+    async removeSubscription() {
+      this.error.getSubscription = "";
+      this.error.removeSubscription = "";
+      this.loading.setSubscription = true;
+
+      const taskAction = "set-subscription";
+
+      // register to task completion
+      this.$root.$once(
+        taskAction + "-completed",
+        this.removeSubscriptionCompleted
+      );
+
+      // register to task error
+      this.$root.$once(taskAction + "-aborted", this.removeSubscriptionFailed);
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          data: {
+            subscription: null,
+          },
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.removeSubscription = this.getErrorMessage(err);
+        this.loading.getSubscription = false;
+        return;
+      }
+    },
+    removeSubscriptionFailed(validationErrors) {
+      this.loading.setSubscription = false;
+
+      let focusAlreadySet = false;
+
+      for (const validationError of validationErrors) {
+        const param = validationError.parameter;
+
+        // set i18n error message
+        this.error[param] = this.getI18nStringWithFallback(
+          "subscription." + validationError.error,
+          "error." + validationError.error
+        );
+
+        if (!focusAlreadySet) {
+          this.focusElement(param);
+          focusAlreadySet = true;
+        }
+      }
+    },
+    removeSubscriptionCompleted() {
+      // if active, we remove subscription and force stop session support
+      this.stopSessionSupport();
+      this.subscription.auth_token = "";
+      this.loading.setSubscription = false;
+      this.hideDeleteCertificateModal();
       this.getSubscription();
     },
 
@@ -439,7 +519,7 @@ export default {
       );
 
       const res = await to(
-        this.createNodeTask(1, {
+        this.createNodeTask(this.leaderNode.id, {
           action: taskAction,
           extra: {
             title: this.$t("action." + taskAction),
@@ -478,7 +558,7 @@ export default {
       this.$root.$once(taskAction + "-aborted", this.startSessionSupportFailed);
 
       const res = await to(
-        this.createNodeTask(1, {
+        this.createNodeTask(this.leaderNode.id, {
           action: taskAction,
           data: {
             session_id: this.session_id,
@@ -542,7 +622,7 @@ export default {
       this.$root.$once(taskAction + "-aborted", this.stopSessionSupportFailed);
 
       const res = await to(
-        this.createNodeTask(1, {
+        this.createNodeTask(this.leaderNode.id, {
           action: taskAction,
           extra: {
             title: this.$t("action." + taskAction),

@@ -374,7 +374,13 @@
         "get-fqdn": "Get FQDN",
         "get-password-policy": "Get password policy",
         "set-password-policy": "Set password policy",
-        "register-cluster-subscription": "Register cluster subscription"
+        "register-cluster-subscription": "Register cluster subscription",
+        "remove-subscription": "Remove cluster subscription",
+        "get-support-session": "Get support session",
+        "set-subscription": "Set subscription",
+        "get-subscription": "Get subscription",
+        "start-support-session": "Start support session",
+        "stop-support-session": "Stop support session"
     },
     "network": {
         "title": "Network"
@@ -599,7 +605,10 @@
         "session_id": "Session ID",
         "paste_session_id_to_support_team": "Paste the session ID to the support team",
         "remote_support_in_progress": "Remote support in progress",
-        "stop_session_support": "Stop session"
+        "stop_session_support": "Stop session",
+        "remove": "remove",
+        "remove_cluster_subscription_title": "Remove the cluster subscription",
+        "remove_cluster_subscription_description": "You are going to remove the subscription plan. This will disable the subscription features."
     },
     "settings_sw_repositories": {
         "title": "Software repositories",
@@ -935,7 +944,9 @@
         "instances_not_backed_up_c": "{num} app not backed up | {num} apps not backed up",
         "apps_installed_c": "Installed application| Installed applications",
         "updated_available_c": "Available update | Available updates",
-        "core_update_available": "Core update available"
+        "core_update_available": "Core update available",
+        "subscription_status": "Subscription status",
+        "go_to_subscription": "Go to Subscription"
     },
     "domains": {
         "title": "Domains and users",
