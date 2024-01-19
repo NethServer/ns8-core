@@ -29,10 +29,10 @@
       <cv-row>
         <cv-column>
           <NsInlineNotification
-            v-if="error.cluster_subscription"
+            v-if="error.status"
             kind="error"
             :title="$t('action.get-subscription')"
-            :description="error.cluster_subscription"
+            :description="error.status"
             :showCloseButton="false"
           />
         </cv-column>
@@ -47,7 +47,7 @@
               {{ $t("settings_subscription.cluster_subscription_description") }}
             </div>
             <cv-form @submit.prevent="setSubscription">
-              <template v-if="!cluster_subscription">
+              <template v-if="status == 'inactive'">
                 <NsTextInput
                   :label="$t('settings_subscription.authentication_token')"
                   v-model="auth_token"
@@ -113,7 +113,7 @@
               />
               <NsButton
                 kind="primary"
-                v-if="!cluster_subscription"
+                v-if="status == 'inactive'"
                 :loading="loading.getSubscription || loading.setSubscription"
                 :disabled="
                   loading.register_cluster_subsciption ||
@@ -123,7 +123,7 @@
                 >{{ $t("settings_subscription.request_subscription") }}
               </NsButton>
               <NsButton
-                v-if="cluster_subscription"
+                v-if="status == 'active'"
                 kind="tertiary"
                 :loading="loading.getSubscription || loading.setSubscription"
                 :disabled="
@@ -155,7 +155,12 @@
               :description="error.get_support"
               :showCloseButton="false"
             />
-            <cv-button-skeleton v-else-if="loading.get_support" />
+            <cv-skeleton-text
+              v-if="loading.getSubscription"
+              :paragraph="true"
+              :line-count="5"
+              heading
+            ></cv-skeleton-text>
             <template v-else>
               <template v-if="!active">
                 <div>
@@ -252,7 +257,6 @@ export default {
     return {
       Play20,
       Stop20,
-      cluster_subscription: false,
       auth_token: "",
       system_id: "",
       vpn_cert_cn:
@@ -267,14 +271,14 @@ export default {
       status: "inactive",
       active: false,
       session_id: "",
-      with_remote_support: true,
+      with_remote_support: false,
       loading: {
         getSubscription: false,
         get_support: false,
         setSubscription: false,
       },
       error: {
-        cluster_subscription: "",
+        status: "",
         auth_token: "",
         getSubscription: "",
         get_support: "",
@@ -335,7 +339,11 @@ export default {
     },
     getSubscriptionCompleted(taskContext, taskResult) {
       const output = taskResult.output;
-      console.log(taskResult);
+      if (output.subscription == null) {
+        this.status = "inactive";
+        this.loading.getSubscription = false;
+        return;
+      }
       this.auth_token = output.subscription.auth_token;
       this.system_id = output.subscription.system_id;
       this.vpn_cert_cn = output.subscription.vpn_cert_cn;
@@ -354,7 +362,6 @@ export default {
       this.error.getSubscription = "";
       this.error.setSubscription = "";
       this.loading.setSubscription = true;
-      this.cluster_subscription = false;
 
       const taskAction = "set-subscription";
 
@@ -371,9 +378,10 @@ export default {
         this.createClusterTask({
           action: taskAction,
           data: {
-            subscription: {
-              auth_token: this.auth_token,
-            },
+            subscription:
+              this.status === "inactive"
+                ? { auth_token: this.auth_token }
+                : null,
           },
           extra: {
             title: this.$t("action." + taskAction),
@@ -392,7 +400,7 @@ export default {
     },
     setSubscriptionFailed(validationErrors) {
       this.loading.setSubscription = false;
-      this.cluster_subscription = false;
+      this.status = "inactive";
 
       let focusAlreadySet = false;
 
@@ -413,7 +421,8 @@ export default {
     },
 
     setSubscriptionCompleted() {
-      this.cluster_subscription = true;
+      this.status = "active";
+      this.auth_token = "";
       this.loading.setSubscription = false;
       this.getSubscription();
     },
@@ -492,7 +501,7 @@ export default {
     },
     startSessionSupportFailed(validationErrors) {
       this.loading.startSessionSupport = false;
-      this.cluster_subscription = false;
+      this.status = false;
 
       let focusAlreadySet = false;
 
@@ -553,7 +562,7 @@ export default {
     },
     stopSessionSupportFailed(validationErrors) {
       this.loading.stopSessionSupport = false;
-      this.cluster_subscription = false;
+      this.status = false;
 
       let focusAlreadySet = false;
 
