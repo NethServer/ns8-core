@@ -176,6 +176,7 @@
                   />
 
                   <NsButton
+                    :loading="loading.startSessionSupport"
                     kind="secondary"
                     :icon="Play20"
                     @click="startSessionSupport"
@@ -212,6 +213,7 @@
                   }}</span>
                 </div>
                 <NsButton
+                  :loading="loading.stopSessionSupport"
                   class="mg-top-sm mg-bottom-lg"
                   kind="primary"
                   :icon="Stop20"
@@ -296,6 +298,8 @@ export default {
       loading: {
         getSubscription: false,
         setSubscription: false,
+        startSessionSupport: false,
+        stopSessionSupport: false,
       },
       error: {
         status: "",
@@ -371,7 +375,6 @@ export default {
       this.loading.getSubscription = false;
     },
     async setSubscription() {
-      this.error.getSubscription = "";
       this.error.setSubscription = "";
       this.loading.setSubscription = true;
 
@@ -394,7 +397,7 @@ export default {
           },
           extra: {
             title: this.$t("action." + taskAction),
-            isNotificationHidden: true,
+            isNotificationHidden: false,
           },
         })
       );
@@ -461,7 +464,7 @@ export default {
           },
           extra: {
             title: this.$t("action." + taskAction),
-            isNotificationHidden: true,
+            isNotificationHidden: false,
           },
         })
       );
