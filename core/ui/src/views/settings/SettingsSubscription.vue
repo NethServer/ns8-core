@@ -224,26 +224,22 @@
         </cv-column>
       </cv-row>
     </cv-grid>
-    <NsDangerDeleteModal
-      :isShown="isShownRemoveSubcription"
-      :name="$t('settings_subscription.remove')"
-      :title="$t('settings_subscription.remove_cluster_subscription_title')"
-      :warning="$t('common.please_read_carefully')"
-      :description="
-        $t('settings_subscription.remove_cluster_subscription_description')
-      "
-      :typeToConfirm="
-        $t('common.type_to_confirm', {
-          name: $t('settings_subscription.remove'),
-        })
-      "
-      :isErrorShown="!!error.removeSubscription"
-      :errorTitle="$t('action.remove-subscription')"
-      :errorDescription="error.removeSubscription"
-      @hide="hideDeleteCertificateModal"
-      @confirmDelete="removeSubscription"
-      data-test-id="remove_subscription_modal"
-    />
+    <NsModal
+      size="default"
+      kind="danger"
+      :visible="isShownRemoveSubcription"
+      @modal-hidden="hideDeleteCertificateModal"
+      @primary-click="removeSubscription"
+    >
+      <template slot="title">{{
+        $t('settings_subscription.remove_cluster_subscription_title')
+      }}</template>
+      <template slot="content">
+        <div>{{ $t('settings_subscription.remove_cluster_subscription_description') }}</div>
+      </template>
+      <template slot="secondary-button">{{ $t("common.cancel") }}</template>
+      <template slot="primary-button">{{$t('common.remove')}}</template>
+    </NsModal>
   </div>
 </template>
 
