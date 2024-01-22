@@ -61,7 +61,7 @@
                   :placeholder="
                     $t('settings_subscription.authentication_token_placeholder')
                   "
-                  ref="auth_token"
+                  ref="subscription.auth_token"
                   :helper-text="
                     $t('settings_subscription.authentication_token_helper')
                   "
@@ -122,8 +122,7 @@
                 v-if="!loading.getSubscription && subscription.status == 'inactive'"
                 :loading="loading.getSubscription"
                 :disabled="
-                  loading.register_cluster_subsciption ||
-                  loading.setSubscription
+                  loading.getSubscription
                 "
                 :icon="Badge20"
                 >{{ $t("settings_subscription.request_subscription") }}
@@ -134,7 +133,7 @@
               kind="tertiary"
               :loading="loading.getSubscription || loading.setSubscription"
               :disabled="
-                loading.register_cluster_subsciption || loading.setSubscription
+                loading.getSubscription
               "
               @click="removesubscription"
               :icon="TrashCan20"
@@ -405,8 +404,8 @@ export default {
 
       if (err) {
         console.error(`error creating task ${taskAction}`, err);
-        this.error.getSubscription = this.getErrorMessage(err);
-        this.loading.getSubscription = false;
+        this.error.setSubscription = this.getErrorMessage(err);
+        this.loading.setSubscription = false;
         return;
       }
     },
@@ -432,16 +431,11 @@ export default {
       }
     },
     setSubscriptionCompleted() {
-      // if active, we remove subscription and force stop session support
-      if (this.subscription.status == "active") {
-        this.stopSessionSupport();
-      }
       this.subscription.auth_token = "";
       this.loading.setSubscription = false;
       this.getSubscription();
     },
     async removeSubscription() {
-      this.error.getSubscription = "";
       this.error.removeSubscription = "";
       this.loading.setSubscription = true;
 
@@ -473,7 +467,7 @@ export default {
       if (err) {
         console.error(`error creating task ${taskAction}`, err);
         this.error.removeSubscription = this.getErrorMessage(err);
-        this.loading.getSubscription = false;
+        this.loading.setSubscription = false;
         return;
       }
     },
@@ -498,7 +492,7 @@ export default {
       }
     },
     removeSubscriptionCompleted() {
-      // if active, we remove subscription and force stop session support
+      // if inactive, we remove subscription and force stop session support
       this.stopSessionSupport();
       this.subscription.auth_token = "";
       this.loading.setSubscription = false;
@@ -507,7 +501,7 @@ export default {
     },
 
     async getSupportSession() {
-      // this.error.getSupportSession = "";
+      this.error.getSupportSession = "";
       this.active = false;
       const taskAction = "get-support-session";
 
@@ -573,14 +567,13 @@ export default {
 
       if (err) {
         console.error(`error creating task ${taskAction}`, err);
-        this.error.getSubscription = this.getErrorMessage(err);
-        this.loading.getSubscription = false;
+        this.error.request_support = this.getErrorMessage(err);
+        this.loading.startSessionSupport = false;
         return;
       }
     },
     startSessionSupportFailed(validationErrors) {
       this.loading.startSessionSupport = false;
-      this.status = false;
 
       let focusAlreadySet = false;
 
@@ -634,14 +627,13 @@ export default {
 
       if (err) {
         console.error(`error creating task ${taskAction}`, err);
-        this.error.getSubscription = this.getErrorMessage(err);
-        this.loading.getSubscription = false;
+        this.error.request_support = this.getErrorMessage(err);
+        this.loading.stopSessionSupport = false;
         return;
       }
     },
     stopSessionSupportFailed(validationErrors) {
       this.loading.stopSessionSupport = false;
-      this.status = false;
 
       let focusAlreadySet = false;
 
