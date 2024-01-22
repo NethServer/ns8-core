@@ -605,7 +605,6 @@
         "paste_session_id_to_support_team": "Paste the session ID to the support team",
         "remote_support_in_progress": "Remote support in progress",
         "stop_session_support": "Stop session",
-        "remove": "remove",
         "remove_cluster_subscription_title": "Remove the cluster subscription",
         "remove_cluster_subscription_description": "You are going to remove the subscription plan. This will disable the subscription features.",
         "no_expiration": "No expiration"
