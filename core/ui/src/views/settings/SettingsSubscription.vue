@@ -29,10 +29,10 @@
       <cv-row>
         <cv-column>
           <NsInlineNotification
-            v-if="error.status"
+            v-if="error.getSubscription"
             kind="error"
             :title="$t('action.get-subscription')"
-            :description="error.status"
+            :description="error.getSubscription"
             :showCloseButton="false"
           />
         </cv-column>
@@ -65,7 +65,7 @@
                   :placeholder="
                     $t('settings_subscription.authentication_token_placeholder')
                   "
-                  ref="subscription.auth_token"
+                  ref="auth_token"
                   :helper-text="
                     $t('settings_subscription.authentication_token_helper')
                   "
@@ -123,10 +123,10 @@
                 </div>
               </template>
               <NsInlineNotification
-                v-if="error.getSubscription"
+                v-if="error.setSubscription"
                 kind="error"
                 :title="$t('action.register-cluster-subscription')"
-                :description="error.getSubscription"
+                :description="error.setSubscription"
                 :showCloseButton="false"
               />
               <NsButton
@@ -348,7 +348,7 @@ export default {
       this.isShownRemoveSubcription = false;
     },
     async getSubscription() {
-      this.clearErrors();
+      this.error.getSubscription = "";
       this.loading.getSubscription = true;
       const taskAction = "get-subscription";
 
