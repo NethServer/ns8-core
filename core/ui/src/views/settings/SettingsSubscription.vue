@@ -86,7 +86,7 @@
                   <span class="label">{{
                     $t("settings_subscription.expire_date")
                   }}</span>
-                  <span class="value">{{ subscription.expire_date }}</span>
+                  <span class="value">{{ subscription.expire_date === "-1" ? $t("settings_subscription.no_expiration") :  subscription.expire_date }}</span>
                 </div>
                 <div class="key-value-setting">
                   <span class="label">{{
