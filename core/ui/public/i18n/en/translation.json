@@ -81,7 +81,9 @@
         "tab_navigation": "Tab navigation",
         "warning": "Warning",
         "remember": "Remember",
-        "click_here_to_upload": "Click here to upload"
+        "click_here_to_upload": "Click here to upload",
+        "not_active": "Not active",
+        "active": "Active"
     },
     "error": {
         "error": "Error",
@@ -371,7 +373,14 @@
         "set-fqdn": "Set FQDN",
         "get-fqdn": "Get FQDN",
         "get-password-policy": "Get password policy",
-        "set-password-policy": "Set password policy"
+        "set-password-policy": "Set password policy",
+        "register-cluster-subscription": "Register cluster subscription",
+        "remove-subscription": "Remove cluster subscription",
+        "get-support-session": "Get support session",
+        "set-subscription": "Set subscription",
+        "get-subscription": "Get subscription",
+        "start-support-session": "Start support session",
+        "stop-support-session": "Stop support session"
     },
     "network": {
         "title": "Network"
@@ -574,6 +583,31 @@
     },
     "settings_cluster": {
         "title": "Cluster"
+    },
+    "settings_subscription": {
+        "title": "Subscription",
+        "cluster_subscription": "Cluster subscription",
+        "cluster_subscription_description": "The cluster subscription is used to enable the cluster features and to receive updates for the cluster nodes.",
+        "subscription_status": "Subscription status",
+        "authentication_token": "Authentication token",
+        "authentication_token_helper": "The authentication token is used to authenticate the cluster nodes to the subscription service.",
+        "request_subscription": "Request",
+        "remove_subscription": "Remove",
+        "authentication_token_placeholder": "Paste the authentication token",
+        "system_id": "System ID",
+        "plan_name": "Plan name",
+        "expire_date": "Expiration",
+        "status": "Status",
+        "remote_support": "Remote support",
+        "remote_support_description": "Remote support is used to allow Nethesis support team to access your cluster nodes for troubleshooting purposes.",
+        "start_session_support": "Start session",
+        "session_id": "Session ID",
+        "paste_session_id_to_support_team": "Paste the session ID to the support team",
+        "remote_support_in_progress": "Remote support in progress",
+        "stop_session_support": "Stop session",
+        "remove": "remove",
+        "remove_cluster_subscription_title": "Remove the cluster subscription",
+        "remove_cluster_subscription_description": "You are going to remove the subscription plan. This will disable the subscription features."
     },
     "settings_sw_repositories": {
         "title": "Software repositories",
@@ -909,7 +943,9 @@
         "instances_not_backed_up_c": "{num} app not backed up | {num} apps not backed up",
         "apps_installed_c": "Installed application| Installed applications",
         "updated_available_c": "Available update | Available updates",
-        "core_update_available": "Core update available"
+        "core_update_available": "Core update available",
+        "subscription_status": "Subscription status",
+        "go_to_subscription": "Go to Subscription"
     },
     "domains": {
         "title": "Domains and users",
