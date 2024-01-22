@@ -336,15 +336,15 @@
   {
     "name": {
       "en": "Cluster subscription",
-      "it": "Abbonamento al cluster"
+      "it": "Sottoscrizione cluster"
     },
     "description": {
       "en": "Go to Cluster subscription",
-      "it": "Vai a Abbonamento al cluster"
+      "it": "Vai a Sottoscrizione cluster"
     },
     "tags": {
-      "en": ["subscription", "support","remote"],
-      "it": ["Abbonamento", "supporto","remoto"]
+      "en": ["subscription", "support", "remote", "register"],
+      "it": ["sottoscrizione", "supporto", "remoto", "registrazione"]
     },
     "path": "settings/subscription"
   }
