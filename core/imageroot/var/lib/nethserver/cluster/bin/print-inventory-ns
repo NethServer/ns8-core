@@ -11,6 +11,8 @@ import os
 import sys
 import ipaddress as ipm
 import agent
+from agent.ldapproxy import Ldapproxy
+from agent.ldapclient import Ldapclient
 
 def _run(cmd):
     try:
@@ -109,6 +111,48 @@ def _get_os_release():
 
     return os_release
 
+def _get_user_domains():
+    try:
+        rdb = agent.redis_connect()
+        huser_domains = rdb.hgetall('cluster/module_domains') or {}
+        rdb.close()
+    except Exception as ex:
+        print(agent.SD_ERR + f"Failed to retrieve Redis key cluster/module_domains", str(ex), file=sys.stderr)
+        huser_domains = {}
+
+    user_domains = {}
+    for module_id, rdomains in huser_domains.items():
+        module_name = module_id.rstrip('0123456789')
+
+        for sdomain in rdomains.split():
+            if not sdomain in user_domains:
+                try:
+                    domparams = Ldapproxy().get_domain(sdomain)
+                    # Fetch domain and calculate active users
+                    cldap = Ldapclient.factory(**domparams)
+                    lusers = cldap.list_users()
+                    lgroups = cldap.list_groups()
+                except Exception as ex:
+                    print(agent.SD_ERR + f"Failed to count accounts of LDAP domain {sdomain}", str(ex), file=sys.stderr)
+                    lusers = []
+                    lgroups = []
+
+                user_domains[sdomain] = {
+                    "name": sdomain,
+                    "type": "user_domain",
+                    "props": {
+                        "ActiveUsers": sum(bool(user.get("locked", False)) == False for user in lusers),
+                        "TotalUsers": len(lusers),
+                        "TotalGroups": len(lgroups),
+                        module_name + "_count": 0,
+                    },
+                }
+            # Increment the counter of application instances
+            user_domains[sdomain]['props'][module_name + "_count"] += 1
+
+    return list(user_domains.values())
+
+
 podman_info = _run_json('podman system info -f json')
 cpu_info = _run_json('lscpu -J')['lscpu']
 board = _run("cat /sys/devices/virtual/dmi/id/board_name") or "board.unknown"
@@ -134,7 +178,8 @@ data = {
             { "name": "dns", "type": "configuration", "props": {"NameServers": _get_nameservers()} },
             { "name" : "SystemName", "type" : _run("hostname -s") },
             { "name" : "DomainName", "type" : _run("hostname -d") }
-        ]
+        ],
+        "user_domains" : _get_user_domains(),
     },
     "memory": {
         "system": {
