@@ -53,7 +53,11 @@
                 :line-count="6"
                 width="80%"
               ></cv-skeleton-text>
-              <template v-if="!loading.getSubscription && subscription.status == 'inactive'">
+              <template
+                v-if="
+                  !loading.getSubscription && subscription.status == 'inactive'
+                "
+              >
                 <NsTextInput
                   :label="$t('settings_subscription.authentication_token')"
                   v-model="subscription.auth_token"
@@ -69,7 +73,11 @@
                 >
                 </NsTextInput>
               </template>
-              <template v-if="!loading.getSubscription && subscription.status == 'active'">
+              <template
+                v-if="
+                  !loading.getSubscription && subscription.status == 'active'
+                "
+              >
                 <div class="key-value-setting">
                   <span class="label">{{
                     $t("settings_subscription.system_id")
@@ -86,7 +94,11 @@
                   <span class="label">{{
                     $t("settings_subscription.expire_date")
                   }}</span>
-                  <span class="value">{{ subscription.expire_date === "-1" ? $t("settings_subscription.no_expiration") :  subscription.expire_date }}</span>
+                  <span class="value">{{
+                    subscription.expire_date === "-1"
+                      ? $t("settings_subscription.no_expiration")
+                      : subscription.expire_date
+                  }}</span>
                 </div>
                 <div class="key-value-setting">
                   <span class="label">{{
@@ -119,11 +131,11 @@
               />
               <NsButton
                 kind="primary"
-                v-if="!loading.getSubscription && subscription.status == 'inactive'"
-                :loading="loading.getSubscription"
-                :disabled="
-                  loading.getSubscription
+                v-if="
+                  !loading.getSubscription && subscription.status == 'inactive'
                 "
+                :loading="loading.getSubscription"
+                :disabled="loading.getSubscription"
                 :icon="Badge20"
                 >{{ $t("settings_subscription.request_subscription") }}
               </NsButton>
@@ -132,9 +144,7 @@
               v-if="subscription.status == 'active'"
               kind="tertiary"
               :loading="loading.getSubscription || loading.setSubscription"
-              :disabled="
-                loading.getSubscription
-              "
+              :disabled="loading.getSubscription"
               @click="removesubscription"
               :icon="TrashCan20"
               >{{ $t("settings_subscription.remove_subscription") }}
@@ -164,63 +174,63 @@
               :description="error.getSupportSession"
               :showCloseButton="false"
             />
-              <template v-if="!active">
-                <div>
-                  <NsInlineNotification
-                    v-if="error.request_support"
-                    kind="error"
-                    :title="$t('settings_subscription.cannot_request_support')"
-                    :description="error.request_support"
-                    :showCloseButton="false"
-                  />
+            <template v-if="!active">
+              <div>
+                <NsInlineNotification
+                  v-if="error.request_support"
+                  kind="error"
+                  :title="$t('settings_subscription.cannot_request_support')"
+                  :description="error.request_support"
+                  :showCloseButton="false"
+                />
 
-                  <NsButton
-                    :loading="loading.startSessionSupport"
-                    kind="secondary"
-                    :icon="Play20"
-                    @click="startSessionSupport"
-                  >
-                    {{ $t("settings_subscription.start_session_support") }}
-                  </NsButton>
-                </div>
-              </template>
-              <template v-else>
-                <span class="label">
-                  {{ $t("settings_subscription.session_id") }}
-                </span>
-                <NsCodeSnippet
-                  :copyTooltip="$t('common.copy_to_clipboard')"
-                  :copy-feedback="$t('common.copied_to_clipboard')"
-                  :feedback-aria-label="$t('common.copied_to_clipboard')"
-                  :wrap-text="true"
-                  :moreText="$t('common.show_more')"
-                  :lessText="$t('common.show_less')"
-                  :helper-text="$t('settings_tls_certificates.fqdn_helper')"
-                  hideExpandButton
-                  class="mg-top-sm"
-                  >{{ session_id }}</NsCodeSnippet
-                >
-                <div class="mg-top-sm mg-bottom-lg helper-text">
-                  {{
-                    $t("settings_subscription.paste_session_id_to_support_team")
-                  }}
-                </div>
-                <div class="mg-top-sm icon-and-text mg-bottom-lg">
-                  <NsSvg :svg="InformationFilled16" class="icon ns-info" />
-                  <span>{{
-                    $t("settings_subscription.remote_support_in_progress")
-                  }}</span>
-                </div>
                 <NsButton
-                  :loading="loading.stopSessionSupport"
-                  class="mg-top-sm mg-bottom-lg"
-                  kind="primary"
-                  :icon="Stop20"
-                  @click="stopSessionSupport"
+                  :loading="loading.startSessionSupport"
+                  kind="secondary"
+                  :icon="Play20"
+                  @click="startSessionSupport"
                 >
-                  {{ $t("settings_subscription.stop_session_support") }}
+                  {{ $t("settings_subscription.start_session_support") }}
                 </NsButton>
-              </template>
+              </div>
+            </template>
+            <template v-else>
+              <span class="label">
+                {{ $t("settings_subscription.session_id") }}
+              </span>
+              <NsCodeSnippet
+                :copyTooltip="$t('common.copy_to_clipboard')"
+                :copy-feedback="$t('common.copied_to_clipboard')"
+                :feedback-aria-label="$t('common.copied_to_clipboard')"
+                :wrap-text="true"
+                :moreText="$t('common.show_more')"
+                :lessText="$t('common.show_less')"
+                :helper-text="$t('settings_tls_certificates.fqdn_helper')"
+                hideExpandButton
+                class="mg-top-sm"
+                >{{ session_id }}</NsCodeSnippet
+              >
+              <div class="mg-top-sm mg-bottom-lg helper-text">
+                {{
+                  $t("settings_subscription.paste_session_id_to_support_team")
+                }}
+              </div>
+              <div class="mg-top-sm icon-and-text mg-bottom-lg">
+                <NsSvg :svg="InformationFilled16" class="icon ns-info" />
+                <span>{{
+                  $t("settings_subscription.remote_support_in_progress")
+                }}</span>
+              </div>
+              <NsButton
+                :loading="loading.stopSessionSupport"
+                class="mg-top-sm mg-bottom-lg"
+                kind="primary"
+                :icon="Stop20"
+                @click="stopSessionSupport"
+              >
+                {{ $t("settings_subscription.stop_session_support") }}
+              </NsButton>
+            </template>
           </cv-tile>
         </cv-column>
       </cv-row>
@@ -233,13 +243,17 @@
       @primary-click="removeSubscription"
     >
       <template slot="title">{{
-        $t('settings_subscription.remove_cluster_subscription_title')
+        $t("settings_subscription.remove_cluster_subscription_title")
       }}</template>
       <template slot="content">
-        <div>{{ $t('settings_subscription.remove_cluster_subscription_description') }}</div>
+        <div>
+          {{
+            $t("settings_subscription.remove_cluster_subscription_description")
+          }}
+        </div>
       </template>
       <template slot="secondary-button">{{ $t("common.cancel") }}</template>
-      <template slot="primary-button">{{$t('common.remove')}}</template>
+      <template slot="primary-button">{{ $t("common.remove") }}</template>
     </NsModal>
   </div>
 </template>
