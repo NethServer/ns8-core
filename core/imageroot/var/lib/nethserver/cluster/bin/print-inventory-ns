@@ -116,6 +116,7 @@ dmi_product = _run("cat /sys/devices/virtual/dmi/id/product_name") or "product.u
 os_release = _get_os_release()
 
 data = {
+    "public_ip": _run('curl https://ifconfig.co'),
     "arp_macs": _run('grep -v IP /proc/net/arp | wc -l'),
     "dmi": { "product": { "name": dmi_product, "uuid": _run("cat /sys/class/dmi/id/product_uuid") }, "bios": { "version": _run("cat /sys/devices/virtual/dmi/id/bios_version"), "vendor": _run("cat /sys/devices/virtual/dmi/id/bios_vendor")}, "board": { "product": board, "manufacturer": _run("cat /sys/devices/virtual/dmi/id/sys_vendor") }},
     "virtual": _get_cpu_field("Hypervisor vendor", cpu_info) if _get_cpu_field("Hypervisor vendor", cpu_info) else 'physical',
