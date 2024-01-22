@@ -109,6 +109,46 @@
       <cv-column :md="4" :max="4">
         <NsInfoCard
           light
+          :title="$t('cluster_status.subscription_status')"
+          :icon="Badge32"
+          :loading="loading.getSubscription"
+          :isErrorShown="error.getSubscription"
+          :errorTitle="$t('error.cannot_retrieve_subscription_status')"
+          :errorDescription="error.getSubscription"
+          class="min-height-card"
+        >
+          <template slot="content">
+            <div class="card-rows">
+              <div class="card-row">
+                <div v-if="!loading.getSubscription" class="card-row ">
+                  <cv-tag
+                    v-if="subscription_status === 'active'"
+                    kind="green"
+                    :label="$t('common.active')"
+                  ></cv-tag>
+                  <cv-tag
+                    v-else
+                    kind="high-contrast"
+                    :label="$t('common.not_active')"
+                  ></cv-tag>
+                </div>
+              </div>
+            <div class="card-row">
+              <NsButton
+                kind="ghost"
+                :icon="ArrowRight20"
+                @click="$router.push('/settings/subscription')"
+              >
+                {{ $t("cluster_status.go_to_subscription") }}
+              </NsButton>
+            </div>
+            </div>
+          </template>
+        </NsInfoCard>
+      </cv-column>
+      <cv-column :md="4" :max="4">
+        <NsInfoCard
+          light
           :title="backups.length.toString()"
           :description="$tc('backup.backups_scheduled_c', backups.length)"
           :icon="Save32"
@@ -228,11 +268,13 @@ export default {
       backups: [],
       instancesNotBackedUp: [],
       isCoreUpdateAvailable: false,
+      subscription_status: "inactive",
       loading: {
         getClusterStatus: true,
         listModules: true,
         listBackups: true,
         listCoreModules: true,
+        getSubscription: true,
       },
       error: {
         name: "",
@@ -241,6 +283,7 @@ export default {
         listModules: "",
         listBackups: "",
         listCoreModules: "",
+        getSubscription: "",
       },
     };
   },
@@ -329,6 +372,47 @@ export default {
       this.listModules();
       this.listCoreModules();
       this.listBackups();
+      this.getSubscription();
+    },
+    async getSubscription() {
+      this.clearErrors();
+      this.loading.getSubscription = true;
+      const taskAction = "get-subscription";
+
+      // register to task completion
+      this.$root.$once(
+        taskAction + "-completed",
+        this.getSubscriptionCompleted
+      );
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+          },
+        })
+      );
+
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.getSubscription = this.getErrorMessage(err);
+        this.loading.getSubscription = false;
+        return;
+      }
+    },
+    getSubscriptionCompleted(taskContext, taskResult) {
+      const output = taskResult.output;
+      if (output.subscription == null) {
+        this.status = "inactive";
+        this.loading.getSubscription = false;
+        return;
+      }
+      this.subscription_status = output.subscription.status;
+      this.loading.getSubscription = false;
     },
     async getClusterStatus() {
       this.error.getClusterStatus = "";
