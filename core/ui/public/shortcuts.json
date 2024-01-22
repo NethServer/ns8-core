@@ -332,5 +332,20 @@
       "it": ["impostazioni", "password"]
     },
     "path": "settings/cluster-admins"
+  },
+  {
+    "name": {
+      "en": "Cluster subscription",
+      "it": "Abbonamento al cluster"
+    },
+    "description": {
+      "en": "Go to Cluster subscription",
+      "it": "Vai a Abbonamento al cluster"
+    },
+    "tags": {
+      "en": ["subscription", "support","remote"],
+      "it": ["Abbonamento", "supporto","remoto"]
+    },
+    "path": "settings/subscription"
   }
 ]
