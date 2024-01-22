@@ -82,7 +82,7 @@
         "warning": "Warning",
         "remember": "Remember",
         "click_here_to_upload": "Click here to upload",
-        "not_active": "Not active",
+        "not_active": "Inactive",
         "active": "Active"
     },
     "error": {
@@ -607,7 +607,8 @@
         "stop_session_support": "Stop session",
         "remove": "remove",
         "remove_cluster_subscription_title": "Remove the cluster subscription",
-        "remove_cluster_subscription_description": "You are going to remove the subscription plan. This will disable the subscription features."
+        "remove_cluster_subscription_description": "You are going to remove the subscription plan. This will disable the subscription features.",
+        "no_expiration": "No expiration"
     },
     "settings_sw_repositories": {
         "title": "Software repositories",
@@ -944,7 +945,7 @@
         "apps_installed_c": "Installed application| Installed applications",
         "updated_available_c": "Available update | Available updates",
         "core_update_available": "Core update available",
-        "subscription_status": "Subscription status",
+        "subscription_status": "Subscription",
         "go_to_subscription": "Go to Subscription"
     },
     "domains": {
