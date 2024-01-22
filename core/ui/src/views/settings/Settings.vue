@@ -34,6 +34,16 @@
         <NsTile
           :light="true"
           kind="clickable"
+          @click="goTo('/settings/subscription')"
+          :icon="Badge32"
+        >
+          <h6>{{ $t("settings_subscription.title") }}</h6>
+        </NsTile>
+      </cv-column>
+      <cv-column :md="4" :xlg="4">
+        <NsTile
+          :light="true"
+          kind="clickable"
           @click="goTo('/settings/software-repository')"
           :icon="Application32"
         >
