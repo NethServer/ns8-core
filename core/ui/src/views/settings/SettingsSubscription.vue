@@ -398,6 +398,7 @@ export default {
         taskAction + "-completed",
         this.setSubscriptionCompleted
       );
+      this.$root.$once(taskAction + "-aborted", this.setSubscriptionAborted);
 
       // register to task error
       this.$root.$once(taskAction + "-aborted", this.setSubscriptionFailed);
@@ -422,6 +423,11 @@ export default {
         this.loading.setSubscription = false;
         return;
       }
+    },
+    setSubscriptionAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.setSubscription = this.$t("error.generic_error");
+      this.loading.setSubscription = false;
     },
     setSubscriptionFailed(validationErrors) {
       this.loading.setSubscription = false;
