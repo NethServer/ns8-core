@@ -588,7 +588,7 @@
     "settings_subscription": {
         "title": "Subscription",
         "cluster_subscription": "Cluster subscription",
-        "cluster_subscription_description": "Log in to one of the following web portals to manage the subscription:",
+        "cluster_subscription_description": "Log in to <a href='https://{enterprise}' target='_blank'>my.nethesis.it</a> or <a href='https://{subscription}' target='_blank'>my.nethserver.com</a> to manage the subscription:",
         "subscription_status": "Subscription status",
         "authentication_token": "Authentication token",
         "authentication_token_helper": "Obtain a registration token from the subscription web portal",
@@ -610,9 +610,7 @@
         "remove_cluster_subscription_description": "You are going to remove the subscription plan. This will disable the subscription features.",
         "no_expiration": "No expiration",
         "unknown_token": "Unknown token",
-        "must_be_32_chars_but_less_than_128": "Must be between 32 and 128 characters",
-        "enterprise":"Enterprise",
-        "subscription":"Subscription"
+        "must_be_32_chars_but_less_than_128": "Must be between 32 and 128 characters"
     },
     "settings_sw_repositories": {
         "title": "Software repositories",
