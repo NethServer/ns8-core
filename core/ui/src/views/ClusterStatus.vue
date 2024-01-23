@@ -85,7 +85,15 @@
                   ></cv-tag>
                 </div>
               </div>
-            <div class="card-row">
+              <div v-if="support_active && !loading.getSubscription" class="card-row">
+                <div class="mg-top-sm icon-and-text">
+                  <NsSvg :svg="InformationFilled16" class="icon ns-info" />
+                  <span>{{
+                    $t("settings_subscription.remote_support_in_progress")
+                  }}</span>
+                </div>
+              </div>
+            <div v-if="!loading.getSubscription" class="card-row">
               <NsButton
                 kind="ghost"
                 :icon="ArrowRight20"
@@ -228,6 +236,7 @@ import Information16 from "@carbon/icons-vue/es/information/16";
 import { mapState, mapActions } from "vuex";
 import to from "await-to-js";
 import WebSocketService from "@/mixins/websocket";
+import { mapGetters } from "vuex";
 import {
   QueryParamService,
   UtilService,
@@ -269,12 +278,14 @@ export default {
       instancesNotBackedUp: [],
       isCoreUpdateAvailable: false,
       subscription_status: "inactive",
+      support_active: false,
       loading: {
         getClusterStatus: true,
         listModules: true,
         listBackups: true,
         listCoreModules: true,
         getSubscription: true,
+        getSupportSession: true,
       },
       error: {
         name: "",
@@ -294,6 +305,7 @@ export default {
       "isWebsocketConnected",
       "isClusterInitialized",
     ]),
+    ...mapGetters(["leaderNode"]),
     erroredBackups() {
       return this.backups.filter((b) => b.errorInstances.length);
     },
@@ -374,6 +386,42 @@ export default {
       this.listBackups();
       this.getSubscription();
     },
+    async getSupportSession() {
+      this.error.getSupportSession = "";
+      // this.support_active = false;
+      this.loading.getSupportSession = true;
+      const taskAction = "get-support-session";
+
+      // register to task completion
+      this.$root.$once(
+        taskAction + "-completed",
+        this.getSupportSessionCompleted
+      );
+
+      const res = await to(
+        this.createNodeTask(this.leaderNode.id, {
+          action: taskAction,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.getSupportSession = this.getErrorMessage(err);
+        this.loading.getSupportSession = false;
+        return;
+      }
+    },
+    getSupportSessionCompleted(taskContext, taskResult) {
+      const output = taskResult.output;
+      console.log(output);
+      this.support_active = output.active;
+      this.loading.getSupportSession = false;
+    },
     async getSubscription() {
       this.clearErrors();
       this.loading.getSubscription = true;
@@ -411,8 +459,10 @@ export default {
         this.loading.getSubscription = false;
         return;
       }
+      this.getSupportSession();
       this.subscription_status = output.subscription.status;
       this.loading.getSubscription = false;
+
     },
     async getClusterStatus() {
       this.error.getClusterStatus = "";
