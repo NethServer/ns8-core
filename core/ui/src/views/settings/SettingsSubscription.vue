@@ -97,7 +97,7 @@
                   <span class="value">{{
                     subscription.expire_date === "-1"
                       ? $t("settings_subscription.no_expiration")
-                      : subscription.expire_date
+                      : formatDate(new Date(subscription.expire_date), "yyyy-MM-dd")
                   }}</span>
                 </div>
                 <div class="key-value-setting">
@@ -271,6 +271,7 @@ import {
   TaskService,
   IconService,
   PageTitleService,
+  DateTimeService
 } from "@nethserver/ns8-ui-lib";
 import { mapGetters } from "vuex";
 
@@ -287,6 +288,7 @@ export default {
     QueryParamService,
     PageTitleService,
     NotificationService,
+    DateTimeService,
   ],
   pageTitle() {
     return this.$t("settings_subscription.title");
