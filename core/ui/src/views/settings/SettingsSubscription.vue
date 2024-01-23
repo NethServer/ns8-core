@@ -190,6 +190,7 @@
 
                 <NsButton
                   :loading="loading.startSessionSupport"
+                  :disabled="loading.startSessionSupport"
                   kind="secondary"
                   :icon="Play20"
                   @click="startSessionSupport"
@@ -226,6 +227,7 @@
               </div>
               <NsButton
                 :loading="loading.stopSessionSupport"
+                :disabled="loading.stopSessionSupport"
                 class="mg-top-sm mg-bottom-lg"
                 kind="primary"
                 :icon="Stop20"
@@ -446,8 +448,7 @@ export default {
 
         // set i18n error message
         this.error[param] = this.getI18nStringWithFallback(
-          "settings_subscription." + validationError.error,
-          "error." + validationError.error
+          "settings_subscription." + validationError.error
         );
 
         if (!focusAlreadySet) {
