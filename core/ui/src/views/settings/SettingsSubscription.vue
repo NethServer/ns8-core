@@ -134,8 +134,8 @@
                 v-if="
                   !loading.getSubscription && subscription.status == 'inactive'
                 "
-                :loading="loading.getSubscription"
-                :disabled="loading.getSubscription"
+                :loading="loading.getSubscription || loading.setSubscription"
+                :disabled="loading.getSubscription || loading.setSubscription"
                 :icon="Badge20"
                 >{{ $t("settings_subscription.request_subscription") }}
               </NsButton>
@@ -144,7 +144,7 @@
               v-if="subscription.status == 'active'"
               kind="tertiary"
               :loading="loading.getSubscription || loading.setSubscription"
-              :disabled="loading.getSubscription"
+              :disabled="loading.getSubscription || loading.setSubscription"
               @click="removesubscription"
               :icon="TrashCan20"
               >{{ $t("settings_subscription.remove_subscription") }}
