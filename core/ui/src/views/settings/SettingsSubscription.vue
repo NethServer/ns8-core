@@ -163,7 +163,11 @@
               {{ $t("settings_subscription.remote_support") }}
             </h4>
             <div class="title-description mg-bottom-xlg">
-              {{ $t("settings_subscription.remote_support_description") }}
+              {{
+                $t("settings_subscription.remote_support_description", {
+                  productName: $root.config.PRODUCT_NAME,
+                })
+              }}
             </div>
             <NsInlineNotification
               v-if="error.getSupportSession"
@@ -205,7 +209,6 @@
                 :wrap-text="true"
                 :moreText="$t('common.show_more')"
                 :lessText="$t('common.show_less')"
-                :helper-text="$t('settings_tls_certificates.fqdn_helper')"
                 hideExpandButton
                 class="mg-top-sm"
                 >{{ session_id }}</NsCodeSnippet
@@ -294,12 +297,6 @@ export default {
       subscription: {
         auth_token: "",
         system_id: "",
-        vpn_cert_cn:
-          "C=IT, ST=PU, L=Pesaro, O=Nethesis, OU=Support, CN=Nethesis CA, name=sos, emailAddress=support@nethesis.it",
-        dartagnan_url: "https://my.nethserver.com/api",
-        support_user: "nethsupport",
-        provider: "nscom",
-        system_url: "https://my.nethserver.com/servers/5329",
         plan_name: { name: "", description: "" },
         expires: true,
         expire_date: "",
@@ -322,6 +319,7 @@ export default {
         request_support: "",
         startSessionSupport: "",
         removeSubscription: "",
+        unknown_token: "",
       },
     };
   },
@@ -389,19 +387,27 @@ export default {
     },
     async setSubscription() {
       this.error.setSubscription = "";
+      this.error.auth_token = "";
       this.loading.setSubscription = true;
-
       const taskAction = "set-subscription";
 
       // register to task completion
       this.$root.$once(
-        taskAction + "-completed",
+        `${taskAction}-completed`,
         this.setSubscriptionCompleted
       );
-      this.$root.$once(taskAction + "-aborted", this.setSubscriptionAborted);
+
+      // register to task aborted
+      this.$root.$once(
+        `${taskAction}-aborted`,
+        this.setSubscriptionAborted
+      );
 
       // register to task error
-      this.$root.$once(taskAction + "-aborted", this.setSubscriptionFailed);
+      this.$root.$once(
+        `${taskAction}-validation-failed`,
+        this.setSubscriptionFailed
+      );
 
       const res = await to(
         this.createClusterTask({
@@ -440,7 +446,7 @@ export default {
 
         // set i18n error message
         this.error[param] = this.getI18nStringWithFallback(
-          "subscription." + validationError.error,
+          "settings_subscription." + validationError.error,
           "error." + validationError.error
         );
 
@@ -468,7 +474,10 @@ export default {
       );
 
       // register to task error
-      this.$root.$once(taskAction + "-aborted", this.removeSubscriptionFailed);
+      this.$root.$once(
+        taskAction + "validation-failed",
+        this.removeSubscriptionFailed
+      );
 
       const res = await to(
         this.createClusterTask({
@@ -501,7 +510,7 @@ export default {
 
         // set i18n error message
         this.error[param] = this.getI18nStringWithFallback(
-          "subscription." + validationError.error,
+          "settings_subscription." + validationError.error,
           "error." + validationError.error
         );
 
@@ -568,7 +577,10 @@ export default {
       );
 
       // register to task error
-      this.$root.$once(taskAction + "-aborted", this.startSessionSupportFailed);
+      this.$root.$once(
+        taskAction + "validation-failed",
+        this.startSessionSupportFailed
+      );
 
       const res = await to(
         this.createNodeTask(this.leaderNode.id, {
@@ -602,7 +614,7 @@ export default {
 
         // set i18n error message
         this.error[param] = this.getI18nStringWithFallback(
-          "subscription." + validationError.error,
+          "settings_subscription." + validationError.error,
           "error." + validationError.error
         );
 
@@ -631,7 +643,10 @@ export default {
       );
 
       // register to task error
-      this.$root.$once(taskAction + "-aborted", this.stopSessionSupportFailed);
+      this.$root.$once(
+        taskAction + "validation-failed",
+        this.stopSessionSupportFailed
+      );
 
       const res = await to(
         this.createNodeTask(this.leaderNode.id, {
@@ -662,7 +677,7 @@ export default {
 
         // set i18n error message
         this.error[param] = this.getI18nStringWithFallback(
-          "subscription." + validationError.error,
+          "settings_subscription." + validationError.error,
           "error." + validationError.error
         );
 
