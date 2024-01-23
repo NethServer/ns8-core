@@ -389,7 +389,22 @@ export default {
       this.subscription = output.subscription;
       this.loading.getSubscription = false;
     },
+    validateConfigureModule() {
+      this.clearErrors(this);
+      let isValidationOk = true;
+      // validate auth_token if length is <= 32 and > 128
+      if (this.subscription.auth_token.length <= 32 || this.subscription.auth_token.length > 128 ) {
+        this.error.auth_token = this.$t("settings_subscription.must_be_32_chars_but_less_than_128");
+        this.focusElement("auth_token");
+        isValidationOk = false;
+      }
+      return isValidationOk;
+    },
     async setSubscription() {
+      const isValidationOk = this.validateConfigureModule();
+      if (!isValidationOk) {
+        return;
+      }
       this.error.setSubscription = "";
       this.error.auth_token = "";
       this.loading.setSubscription = true;
