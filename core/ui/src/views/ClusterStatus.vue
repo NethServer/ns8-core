@@ -61,6 +61,46 @@
       <cv-column :md="4" :max="4">
         <NsInfoCard
           light
+          :title="$t('cluster_status.subscription_status')"
+          :icon="Badge32"
+          :loading="loading.getSubscription"
+          :isErrorShown="error.getSubscription"
+          :errorTitle="$t('error.cannot_retrieve_subscription_status')"
+          :errorDescription="error.getSubscription"
+          class="min-height-card"
+        >
+          <template slot="content">
+            <div class="card-rows">
+              <div class="card-row">
+                <div v-if="!loading.getSubscription" class="card-row ">
+                  <cv-tag
+                    v-if="subscription_status === 'active'"
+                    kind="green"
+                    :label="$t('common.active')"
+                  ></cv-tag>
+                  <cv-tag
+                    v-else
+                    kind="high-contrast"
+                    :label="$t('common.not_active')"
+                  ></cv-tag>
+                </div>
+              </div>
+            <div class="card-row">
+              <NsButton
+                kind="ghost"
+                :icon="ArrowRight20"
+                @click="$router.push('/settings/subscription')"
+              >
+                {{ $t("cluster_status.go_to_subscription") }}
+              </NsButton>
+            </div>
+            </div>
+          </template>
+        </NsInfoCard>
+      </cv-column>
+      <cv-column :md="4" :max="4">
+        <NsInfoCard
+          light
           :title="installedModules.length.toString()"
           :description="
             $tc('cluster_status.apps_installed_c', installedModules.length)
@@ -103,46 +143,6 @@
             >
               {{ $t("cluster_status.go_to_nodes") }}
             </NsButton>
-          </template>
-        </NsInfoCard>
-      </cv-column>
-      <cv-column :md="4" :max="4">
-        <NsInfoCard
-          light
-          :title="$t('cluster_status.subscription_status')"
-          :icon="Badge32"
-          :loading="loading.getSubscription"
-          :isErrorShown="error.getSubscription"
-          :errorTitle="$t('error.cannot_retrieve_subscription_status')"
-          :errorDescription="error.getSubscription"
-          class="min-height-card"
-        >
-          <template slot="content">
-            <div class="card-rows">
-              <div class="card-row">
-                <div v-if="!loading.getSubscription" class="card-row ">
-                  <cv-tag
-                    v-if="subscription_status === 'active'"
-                    kind="green"
-                    :label="$t('common.active')"
-                  ></cv-tag>
-                  <cv-tag
-                    v-else
-                    kind="high-contrast"
-                    :label="$t('common.not_active')"
-                  ></cv-tag>
-                </div>
-              </div>
-            <div class="card-row">
-              <NsButton
-                kind="ghost"
-                :icon="ArrowRight20"
-                @click="$router.push('/settings/subscription')"
-              >
-                {{ $t("cluster_status.go_to_subscription") }}
-              </NsButton>
-            </div>
-            </div>
           </template>
         </NsInfoCard>
       </cv-column>
