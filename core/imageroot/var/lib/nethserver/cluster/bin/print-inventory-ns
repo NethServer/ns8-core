@@ -111,46 +111,52 @@ def _get_os_release():
 
     return os_release
 
-def _get_user_domains():
-    try:
-        rdb = agent.redis_connect()
-        huser_domains = rdb.hgetall('cluster/module_domains') or {}
-        rdb.close()
-    except Exception as ex:
-        print(agent.SD_ERR + f"Failed to retrieve Redis key cluster/module_domains", str(ex), file=sys.stderr)
-        huser_domains = {}
+def _get_cluster_views():
+    rdb = agent.redis_connect(use_replica=True)
+    hmodule_domains = rdb.hgetall('cluster/module_domains') or {}
+    hmodule_node = rdb.hgetall('cluster/module_node') or {}
+    def get_domain_counters(kdom):
+        try:
+            domparams = Ldapproxy().get_domain(kdom)
+            # Fetch domain and calculate active users
+            cldap = Ldapclient.factory(**domparams)
+            lusers = cldap.list_users()
+            lgroups = cldap.list_groups()
+        except Exception as ex:
+            print(agent.SD_ERR + f"Failed to count accounts of LDAP domain {kdom}", str(ex), file=sys.stderr)
+            lusers = []
+            lgroups = []
+        return {
+            "active_users": sum(bool(user.get("locked", False)) == False for user in lusers),
+            "total_users": len(lusers),
+            "total_groups": len(lgroups),
+        }
 
-    user_domains = {}
-    for module_id, rdomains in huser_domains.items():
+    oud_map = {}
+    omodule_domain_table = []
+    for module_id, dom_list in hmodule_domains.items():
         module_name = module_id.rstrip('0123456789')
+        for kdom in dom_list.split():
+            if not kdom in oud_map:
+                oud_map[kdom] = {"domain_id": kdom}
+                # Long operation: do it once for each domain:
+                oud_map[kdom].update(get_domain_counters(kdom))
 
-        for sdomain in rdomains.split():
-            if not sdomain in user_domains:
-                try:
-                    domparams = Ldapproxy().get_domain(sdomain)
-                    # Fetch domain and calculate active users
-                    cldap = Ldapclient.factory(**domparams)
-                    lusers = cldap.list_users()
-                    lgroups = cldap.list_groups()
-                except Exception as ex:
-                    print(agent.SD_ERR + f"Failed to count accounts of LDAP domain {sdomain}", str(ex), file=sys.stderr)
-                    lusers = []
-                    lgroups = []
+            oud_map[kdom].setdefault(module_name + "_count", 0)
+            oud_map[kdom][module_name + "_count"] += 1
 
-                user_domains[sdomain] = {
-                    "name": sdomain,
-                    "type": "user_domain",
-                    "props": {
-                        "ActiveUsers": sum(bool(user.get("locked", False)) == False for user in lusers),
-                        "TotalUsers": len(lusers),
-                        "TotalGroups": len(lgroups),
-                        module_name + "_count": 0,
-                    },
-                }
-            # Increment the counter of application instances
-            user_domains[sdomain]['props'][module_name + "_count"] += 1
+            omodule_domain_table.append({
+                "module_id": module_id,
+                "instance_of": module_name,
+                "domain_id": kdom,
+                "node_id": hmodule_node.get(module_id, "0"),
+                "active_users": oud_map[kdom]["active_users"],
+            })
 
-    return list(user_domains.values())
+    return {
+        "cluster_module_domain_table": omodule_domain_table,
+        "cluster_user_domains_table": list(oud_map.values()),
+    }
 
 
 podman_info = _run_json('podman system info -f json')
@@ -179,7 +185,6 @@ data = {
             { "name" : "SystemName", "type" : _run("hostname -s") },
             { "name" : "DomainName", "type" : _run("hostname -d") }
         ],
-        "user_domains" : _get_user_domains(),
     },
     "memory": {
         "system": {
@@ -200,5 +205,7 @@ data = {
         "python": _run("python --version | awk '{ print $2 }'")
     }
 }
+
+data.update(_get_cluster_views())
 
 print(json.dumps(data))
