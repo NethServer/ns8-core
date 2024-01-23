@@ -111,7 +111,8 @@
         "ipaddress_format": "Invalid IP address format",
         "path_pattern": "Invalid path pattern",
         "fqdn_format": "Invalid FQDN format",
-        "cannot_retrieve_users_admin_configuration": "Cannot retrieve users portal administration"
+        "cannot_retrieve_users_admin_configuration": "Cannot retrieve users portal administration",
+        "cannot_retrieve_subscription_status": "Cannot retrieve subscription status"
     },
     "websocket": {
         "websocket_disconnected": "Websocket disconnected",
