@@ -520,7 +520,14 @@
         "set-fqdn": "Imposta FQDN",
         "get-fqdn": "Ottieni FQDN",
         "get-password-policy": "Ottieni regole password",
-        "set-password-policy": "Imposta regole password"
+        "set-password-policy": "Imposta regole password",
+        "set-subscription": "Set subscription",
+        "remove-subscription": "Remove cluster subscription",
+        "get-support-session": "Get support session",
+        "stop-support-session": "Stop support session",
+        "start-support-session": "Start support session",
+        "get-subscription": "Get subscription",
+        "register-cluster-subscription": "Register cluster subscription"
     },
     "backup": {
         "configure": "Configura",
@@ -827,7 +834,9 @@
         "choose_options_or_input_any_value": "Scegliere un'opzione o inserire un valore",
         "finish": "Completa",
         "got_it": "Ho capito",
-        "click_here_to_upload": "Clicca qui per l'upload"
+        "click_here_to_upload": "Clicca qui per l'upload",
+        "not_active": "Inactive",
+        "active": "Active"
     },
     "error": {
         "error": "Errore",
@@ -855,7 +864,8 @@
         "invalid_24h_pattern": "Modello di 24 ore non valido",
         "invalid_username_or_password": "Nome utente o password non validi",
         "invalid_value": "Valore non valido",
-        "cannot_retrieve_users_admin_configuration": "Portale gestione utenti non disponibile"
+        "cannot_retrieve_users_admin_configuration": "Portale gestione utenti non disponibile",
+        "cannot_retrieve_subscription_status": "Cannot retrieve subscription status"
     },
     "task": {
         "configure": "Configura",
@@ -1030,7 +1040,9 @@
         "core_update_available": "Aggiornamento di base disponibile",
         "title": "Stato del cluster",
         "go_to_nodes": "Vai a Nodi",
-        "apps_installed_c": "App installata | App installate"
+        "apps_installed_c": "App installata | App installate",
+        "go_to_subscription": "Go to Subscription",
+        "subscription_status": "Subscription"
     },
     "domain_users": {
         "attributes": "Attributi",
@@ -1248,5 +1260,34 @@
     },
     "network": {
         "title": "Rete"
+    },
+    "settings_subscription": {
+        "authentication_token_helper": "Obtain a registration token from the subscription web portal",
+        "authentication_token": "Authentication token",
+        "title": "Subscription",
+        "cluster_subscription": "Cluster subscription",
+        "remote_support_description": "Allow {productName} support team to remotely access your cluster",
+        "remove_cluster_subscription_description": "You are going to remove the subscription plan. This will disable the subscription features.",
+        "stop_session_support": "End session",
+        "unknown_token": "Unknown token",
+        "subscription_cannot_be_enabled": "Subscription is not available",
+        "remove_subscription": "Remove subscription",
+        "must_be_32_chars_but_less_than_128": "Must be between 32 and 128 characters",
+        "expire_date": "Expiration",
+        "status": "Status",
+        "remove_cluster_subscription_title": "Remove the cluster subscription",
+        "no_expiration": "No expiration",
+        "paste_session_id_to_support_team": "Paste the session ID to the support team",
+        "remote_support_in_progress": "Remote support session in progress",
+        "remote_support": "Remote support",
+        "plan_name": "Plan",
+        "request_subscription": "Register",
+        "system_id": "System ID",
+        "cluster_subscription_description": "Log in to {enterprise} or {subscription} to manage the subscription",
+        "os_not_supported": "Operating system is not supported",
+        "authentication_token_placeholder": "Paste the token here",
+        "subscription_status": "Subscription status",
+        "session_id": "Session ID",
+        "start_session_support": "Start session"
     }
 }
