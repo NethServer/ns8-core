@@ -25,6 +25,7 @@ import agent
 import agent.tasks
 import sys, os
 import cluster.modules
+import cluster.grants
 
 request = json.load(sys.stdin)
 core_url = request.get('core_url', '')
@@ -57,25 +58,6 @@ for node_id in nodes_list:
 update_errors = agent.tasks.runp_brief(update_tasks,
     endpoint = "redis://cluster-leader",
     progress_callback=agent.get_progress_callback(31, 95),
-)
-
-grant_tasks = []
-for node_id in nodes_list:
-    # Refresh owner/reader grants on the cluster and node agents of updated nodes
-    grants = []
-    for action in ['*', 'list-*', 'get-*', 'show-*', 'read-*']:
-        role = 'owner' if action == '*' else 'reader'
-        grants.append({"action": action, "to": role, "on": f'node/{node_id}'})
-
-    grant_tasks.append({
-        'agent_id': 'cluster',
-        'action': 'grant-actions',
-        'data': grants,
-    })
-
-agent.tasks.runp_nowait(
-    grant_tasks,
-    endpoint = "redis://cluster-leader"
 )
 
 agent.assert_exp(update_errors == 0)
