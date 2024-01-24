@@ -2,13 +2,35 @@
 
 #
 # Copyright (C) 2024 Nethesis S.r.l.
-# SPDX-License-Identifier: AGPL-3.0-or-later
+# SPDX-License-Identifier: GPL-3.0-or-later
 #
 
+import os
+import sys
 import agent
 import cluster.grants
 
-rdb = agent.redis_connect(privileged=True)
+cluster_password = agent.read_envfile("/var/lib/nethserver/cluster/state/agent.env").get("REDIS_PASSWORD", "default")
 
+# Running under the node agent, open the connection as the cluster agent:
+rdb = agent.redis_connect(
+    username="cluster",
+    password=cluster_password,
+    host="127.0.0.1",
+    port="6379",
+)
+
+if os.environ["NODE_ID"] != rdb.hget("cluster/environment", "NODE_ID"):
+    sys.exit(0) # worker node, exit here.
+
+#
+# Update existing grants for features  #6814, #6825
+#
 cluster.grants.grant(rdb, action_clause="bind-user-domains",  to_clause="accountconsumer", on_clause='cluster')
 cluster.grants.grant(rdb, action_clause="list-modules",  to_clause="accountprovider", on_clause='cluster')
+#
+# END of grant updates -- Do not add more grants: this script will be
+# removed in future releases An equivalent script will be implemented
+# under cluster/pre-update-modules.d/
+#
+cluster.grants.refresh_permissions(rdb)
