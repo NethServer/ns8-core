@@ -58,10 +58,8 @@
               <span
                 v-html="
                   $t('settings_subscription.cluster_subscription_description', {
-                    enterprise:
-                      enterprise_link,
-                    subscription:
-                      subscription_link,
+                    enterprise: enterprise_link,
+                    subscription: subscription_link,
                   })
                 "
               ></span>
@@ -118,7 +116,10 @@
                   <span class="value">{{
                     subscription.expire_date === "-1"
                       ? $t("settings_subscription.no_expiration")
-                      : formatDate(new Date(subscription.expire_date), "yyyy-MM-dd")
+                      : formatDate(
+                          new Date(subscription.expire_date),
+                          "yyyy-MM-dd"
+                        )
                   }}</span>
                 </div>
                 <div class="key-value-setting">
@@ -156,7 +157,11 @@
                   !loading.getSubscription && subscription.status == 'inactive'
                 "
                 :loading="loading.getSubscription || loading.setSubscription"
-                :disabled="loading.getSubscription || loading.setSubscription || subscription.error === 'os_not_supported'"
+                :disabled="
+                  loading.getSubscription ||
+                  loading.setSubscription ||
+                  subscription.error === 'os_not_supported'
+                "
                 :icon="Badge20"
                 >{{ $t("settings_subscription.request_subscription") }}
               </NsButton>
@@ -292,7 +297,7 @@ import {
   TaskService,
   IconService,
   PageTitleService,
-  DateTimeService
+  DateTimeService,
 } from "@nethserver/ns8-ui-lib";
 import { mapGetters } from "vuex";
 
@@ -319,8 +324,10 @@ export default {
       isShownRemoveSubcription: false,
       Play20,
       Stop20,
-      enterprise_link:"<a href='https://my.nethesis.it' target=_blank'>my.nethesis.it</a>",
-      subscription_link:"<a href='https://my.nethserver.com' target=_blank'>my.nethserver.com</a>",
+      enterprise_link:
+        "<a href='https://my.nethesis.it' target=_blank'>my.nethesis.it</a>",
+      subscription_link:
+        "<a href='https://my.nethserver.com' target=_blank'>my.nethserver.com</a>",
       subscription: {
         auth_token: "",
         system_id: "",
@@ -329,7 +336,7 @@ export default {
         expire_date: "",
         status: "inactive",
         with_remote_support: false,
-        error: ""
+        error: "",
       },
       active: false,
       session_id: "",
@@ -418,8 +425,13 @@ export default {
       this.clearErrors(this);
       let isValidationOk = true;
       // validate auth_token if length is <= 32 and > 128
-      if (this.subscription.auth_token.length <= 32 || this.subscription.auth_token.length > 128 ) {
-        this.error.auth_token = this.$t("settings_subscription.must_be_32_chars_but_less_than_128");
+      if (
+        this.subscription.auth_token.length <= 32 ||
+        this.subscription.auth_token.length > 128
+      ) {
+        this.error.auth_token = this.$t(
+          "settings_subscription.must_be_32_chars_but_less_than_128"
+        );
         this.focusElement("auth_token");
         isValidationOk = false;
       }
@@ -442,10 +454,7 @@ export default {
       );
 
       // register to task aborted
-      this.$root.$once(
-        `${taskAction}-aborted`,
-        this.setSubscriptionAborted
-      );
+      this.$root.$once(`${taskAction}-aborted`, this.setSubscriptionAborted);
 
       // register to task error
       this.$root.$once(
