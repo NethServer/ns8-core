@@ -140,6 +140,15 @@ else:
     if rdb.exists("cluster/subscription"):
         _exit_validation_error("", "", "system_already_subscribed")
 
+    try:
+        os_release = agent.read_envfile("/etc/os-release")
+        if os_release["ID"] != '"rocky"' or \
+            os_release["PLATFORM_ID"] != '"platform:el9"':
+            raise Exception("Invalid OS")
+    except Exception as ex:
+        print(agent.SD_WARNING, ex, file=sys.stderr)
+        _exit_validation_error("", "", "os_not_supported")
+
     prev_exceptions = []
     for subscribe_function in [subscribe_nsent, subscribe_nscom]:
         try:

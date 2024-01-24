@@ -332,5 +332,20 @@
       "it": ["impostazioni", "password"]
     },
     "path": "settings/cluster-admins"
+  },
+  {
+    "name": {
+      "en": "Cluster subscription",
+      "it": "Sottoscrizione cluster"
+    },
+    "description": {
+      "en": "Go to Cluster subscription",
+      "it": "Vai a Sottoscrizione cluster"
+    },
+    "tags": {
+      "en": ["subscription", "support", "remote", "register"],
+      "it": ["sottoscrizione", "supporto", "remoto", "registrazione"]
+    },
+    "path": "settings/subscription"
   }
 ]

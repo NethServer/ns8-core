@@ -81,7 +81,9 @@
         "tab_navigation": "Tab navigation",
         "warning": "Warning",
         "remember": "Remember",
-        "click_here_to_upload": "Click here to upload"
+        "click_here_to_upload": "Click here to upload",
+        "not_active": "Inactive",
+        "active": "Active"
     },
     "error": {
         "error": "Error",
@@ -109,7 +111,8 @@
         "ipaddress_format": "Invalid IP address format",
         "path_pattern": "Invalid path pattern",
         "fqdn_format": "Invalid FQDN format",
-        "cannot_retrieve_users_admin_configuration": "Cannot retrieve users portal administration"
+        "cannot_retrieve_users_admin_configuration": "Cannot retrieve users portal administration",
+        "cannot_retrieve_subscription_status": "Cannot retrieve subscription status"
     },
     "websocket": {
         "websocket_disconnected": "Websocket disconnected",
@@ -371,7 +374,14 @@
         "set-fqdn": "Set FQDN",
         "get-fqdn": "Get FQDN",
         "get-password-policy": "Get password policy",
-        "set-password-policy": "Set password policy"
+        "set-password-policy": "Set password policy",
+        "register-cluster-subscription": "Register cluster subscription",
+        "remove-subscription": "Remove cluster subscription",
+        "get-support-session": "Get support session",
+        "set-subscription": "Set subscription",
+        "get-subscription": "Get subscription",
+        "start-support-session": "Start support session",
+        "stop-support-session": "Stop support session"
     },
     "network": {
         "title": "Network"
@@ -574,6 +584,35 @@
     },
     "settings_cluster": {
         "title": "Cluster"
+    },
+    "settings_subscription": {
+        "title": "Subscription",
+        "cluster_subscription": "Cluster subscription",
+        "cluster_subscription_description": "Log in to {enterprise} or {subscription} to manage the subscription",
+        "subscription_status": "Subscription status",
+        "authentication_token": "Authentication token",
+        "authentication_token_helper": "Obtain a registration token from the subscription web portal",
+        "request_subscription": "Register",
+        "remove_subscription": "Remove subscription",
+        "authentication_token_placeholder": "Paste the token here",
+        "system_id": "System ID",
+        "plan_name": "Plan",
+        "expire_date": "Expiration",
+        "status": "Status",
+        "remote_support": "Remote support",
+        "remote_support_description": "Allow {productName} support team to remotely access your cluster",
+        "start_session_support": "Start session",
+        "session_id": "Session ID",
+        "paste_session_id_to_support_team": "Paste the session ID to the support team",
+        "remote_support_in_progress": "Remote support session in progress",
+        "stop_session_support": "End session",
+        "remove_cluster_subscription_title": "Remove the cluster subscription",
+        "remove_cluster_subscription_description": "You are going to remove the subscription plan. This will disable the subscription features.",
+        "no_expiration": "No expiration",
+        "unknown_token": "Unknown token",
+        "must_be_32_chars_but_less_than_128": "Must be between 32 and 128 characters",
+        "os_not_supported": "Operating system is not supported",
+        "subscription_cannot_be_enabled": "Subscription is not available"
     },
     "settings_sw_repositories": {
         "title": "Software repositories",
@@ -909,7 +948,9 @@
         "instances_not_backed_up_c": "{num} app not backed up | {num} apps not backed up",
         "apps_installed_c": "Installed application| Installed applications",
         "updated_available_c": "Available update | Available updates",
-        "core_update_available": "Core update available"
+        "core_update_available": "Core update available",
+        "subscription_status": "Subscription",
+        "go_to_subscription": "Go to Subscription"
     },
     "domains": {
         "title": "Domains and users",

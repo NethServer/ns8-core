@@ -93,6 +93,14 @@ const routes = [
       ),
   },
   {
+    path: "/settings/subscription",
+    name: "SettingsSubscription",
+    component: () =>
+      import(
+        /* webpackChunkName: "subscription" */ "../views/settings/SettingsSubscription.vue"
+      ),
+  },
+  {
     path: "/settings/cluster-admins",
     name: "ClusterAdmins",
     component: () =>

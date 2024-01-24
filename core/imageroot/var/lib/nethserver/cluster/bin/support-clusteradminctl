@@ -45,7 +45,7 @@ def action_add():
             'grant': [{"role": "owner", "on": "*" }],
         },
         extra={
-            'isNotificationHidden': False,
+            'isNotificationHidden': True,
             'title': 'Add user ' + hsubscription['support_user'],
         },
         endpoint="redis://127.0.0.1",
@@ -62,7 +62,7 @@ def action_remove():
             'user': hsubscription['support_user'],
         },
         extra={
-            'isNotificationHidden': False,
+            'isNotificationHidden': True,
             'title': 'Remove user ' + hsubscription['support_user'],
         },
         endpoint="redis://127.0.0.1",

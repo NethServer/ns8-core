@@ -3,5 +3,19 @@
     "title": "get-subscription",
     "description": "Get support subscription attributes",
     "$id": "http://schema.nethserver.org/cluster/get-subscription.json",
-    "examples": []
+    "examples": [],
+    "type": [
+        "object"
+    ],
+    "required": [
+        "subscription"
+    ],
+    "properties": {
+        "subscription": {
+            "type": [
+                "object",
+                "null"
+            ]
+        }
+    }
 }

@@ -61,6 +61,54 @@
       <cv-column :md="4" :max="4">
         <NsInfoCard
           light
+          :title="$t('cluster_status.subscription_status')"
+          :icon="Badge32"
+          :loading="loading.getSubscription"
+          :isErrorShown="error.getSubscription"
+          :errorTitle="$t('error.cannot_retrieve_subscription_status')"
+          :errorDescription="error.getSubscription"
+          class="min-height-card"
+        >
+          <template slot="content">
+            <div class="card-rows">
+              <div class="card-row">
+                <div v-if="!loading.getSubscription" class="card-row ">
+                  <cv-tag
+                    v-if="subscription_status === 'active'"
+                    kind="green"
+                    :label="$t('common.active')"
+                  ></cv-tag>
+                  <cv-tag
+                    v-else
+                    kind="high-contrast"
+                    :label="$t('common.not_active')"
+                  ></cv-tag>
+                </div>
+              </div>
+              <div v-if="support_active && !loading.getSubscription" class="card-row">
+                <div class="mg-top-sm icon-and-text">
+                  <NsSvg :svg="InformationFilled16" class="icon ns-info" />
+                  <span>{{
+                    $t("settings_subscription.remote_support_in_progress")
+                  }}</span>
+                </div>
+              </div>
+            <div v-if="!loading.getSubscription" class="card-row">
+              <NsButton
+                kind="ghost"
+                :icon="ArrowRight20"
+                @click="$router.push('/settings/subscription')"
+              >
+                {{ $t("cluster_status.go_to_subscription") }}
+              </NsButton>
+            </div>
+            </div>
+          </template>
+        </NsInfoCard>
+      </cv-column>
+      <cv-column :md="4" :max="4">
+        <NsInfoCard
+          light
           :title="installedModules.length.toString()"
           :description="
             $tc('cluster_status.apps_installed_c', installedModules.length)
@@ -188,6 +236,7 @@ import Information16 from "@carbon/icons-vue/es/information/16";
 import { mapState, mapActions } from "vuex";
 import to from "await-to-js";
 import WebSocketService from "@/mixins/websocket";
+import { mapGetters } from "vuex";
 import {
   QueryParamService,
   UtilService,
@@ -228,11 +277,15 @@ export default {
       backups: [],
       instancesNotBackedUp: [],
       isCoreUpdateAvailable: false,
+      subscription_status: "inactive",
+      support_active: false,
       loading: {
         getClusterStatus: true,
         listModules: true,
         listBackups: true,
         listCoreModules: true,
+        getSubscription: true,
+        getSupportSession: true,
       },
       error: {
         name: "",
@@ -241,6 +294,7 @@ export default {
         listModules: "",
         listBackups: "",
         listCoreModules: "",
+        getSubscription: "",
       },
     };
   },
@@ -251,6 +305,7 @@ export default {
       "isWebsocketConnected",
       "isClusterInitialized",
     ]),
+    ...mapGetters(["leaderNode"]),
     erroredBackups() {
       return this.backups.filter((b) => b.errorInstances.length);
     },
@@ -329,6 +384,85 @@ export default {
       this.listModules();
       this.listCoreModules();
       this.listBackups();
+      this.getSubscription();
+    },
+    async getSupportSession() {
+      this.error.getSupportSession = "";
+      // this.support_active = false;
+      this.loading.getSupportSession = true;
+      const taskAction = "get-support-session";
+
+      // register to task completion
+      this.$root.$once(
+        taskAction + "-completed",
+        this.getSupportSessionCompleted
+      );
+
+      const res = await to(
+        this.createNodeTask(this.leaderNode.id, {
+          action: taskAction,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.getSupportSession = this.getErrorMessage(err);
+        this.loading.getSupportSession = false;
+        return;
+      }
+    },
+    getSupportSessionCompleted(taskContext, taskResult) {
+      const output = taskResult.output;
+      console.log(output);
+      this.support_active = output.active;
+      this.loading.getSupportSession = false;
+    },
+    async getSubscription() {
+      this.clearErrors();
+      this.loading.getSubscription = true;
+      const taskAction = "get-subscription";
+
+      // register to task completion
+      this.$root.$once(
+        taskAction + "-completed",
+        this.getSubscriptionCompleted
+      );
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+          },
+        })
+      );
+
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.getSubscription = this.getErrorMessage(err);
+        this.loading.getSubscription = false;
+        return;
+      }
+    },
+    getSubscriptionCompleted(taskContext, taskResult) {
+      const output = taskResult.output;
+      if (output.subscription == null) {
+        this.status = "inactive";
+        this.loading.getSubscription = false;
+        return;
+      }
+      this.getSupportSession();
+      this.subscription_status = output.subscription.status;
+      this.loading.getSubscription = false;
+
     },
     async getClusterStatus() {
       this.error.getClusterStatus = "";

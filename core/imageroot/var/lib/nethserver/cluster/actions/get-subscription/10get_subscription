@@ -66,6 +66,25 @@ def fetch_subscription_info_nscom(rdb, attributes):
     }
     return info
 
+def _exit_validation_error(field, value, error, exit_code=2):
+    agent.set_status('validation-failed')
+    json.dump([{
+            'field': field,
+            'parameter': field,
+            'value': value,
+            'error': error
+        }],
+        fp=sys.stdout)
+    sys.exit(exit_code)
+
+try:
+    os_release = agent.read_envfile("/etc/os-release")
+    if os_release["ID"] != '"rocky"' or \
+        os_release["PLATFORM_ID"] != '"platform:el9"':
+        raise Exception("Invalid OS")
+except Exception as ex:
+    json.dump({"subscription": None, "error": "os_not_supported"}, fp=sys.stdout)
+    sys.exit(0)
 
 rdb = agent.redis_connect(privileged=True)
 hsubscription = rdb.hgetall("cluster/subscription") or {}
