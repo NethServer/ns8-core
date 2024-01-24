@@ -25,7 +25,8 @@
         "cannot_retrieve_task_status": "No se puede recuperar el estado de la tarea",
         "cannot_retrieve_cluster_nodes": "No se pueden recuperar los nodos del clúster",
         "cannot_retrieve_users_admin_configuration": "No se puede recuperar la administración del portal de usuarios",
-        "must_be_between": "Debe estar entre {min} y {max}"
+        "must_be_between": "Debe estar entre {min} y {max}",
+        "cannot_retrieve_subscription_status": "Cannot retrieve subscription status"
     },
     "about": {
         "animated_icons_by": "Iconos animados por",
@@ -211,7 +212,9 @@
         "success": "Completado",
         "search": "Buscar",
         "type_to_confirm": "Escribe <strong>{name}</strong> para confirmar la eliminación",
-        "remove": "Eliminar"
+        "remove": "Eliminar",
+        "not_active": "Inactive",
+        "active": "Active"
     },
     "backup": {
         "aws": "Amazon S3",
@@ -531,7 +534,14 @@
         "update-module": "Actualizar módulo",
         "set-route": "Establecer ruta",
         "update-modules": "Actualizar módulos",
-        "remove-module": "Eliminar aplicación"
+        "remove-module": "Eliminar aplicación",
+        "remove-subscription": "Remove cluster subscription",
+        "set-subscription": "Set subscription",
+        "get-support-session": "Get support session",
+        "stop-support-session": "Stop support session",
+        "start-support-session": "Start support session",
+        "get-subscription": "Get subscription",
+        "register-cluster-subscription": "Register cluster subscription"
     },
     "settings_cluster_admins": {
         "user_already_exists": "El administrador ya existe",
@@ -929,7 +939,9 @@
         "go_to_software_center": "Ir al Centro de software",
         "core_update_available": "Actualización principal disponible",
         "instances_not_backed_up_c": "{num} aplicación no respaldada | {num} aplicaciones no respaldadas",
-        "backups_failed_c": "{num} copia de seguridad fallida | {num} copias de seguridad fallidas"
+        "backups_failed_c": "{num} copia de seguridad fallida | {num} copias de seguridad fallidas",
+        "go_to_subscription": "Go to Subscription",
+        "subscription_status": "Subscription"
     },
     "password": {
         "long_enough": "Suficientemente larga",
@@ -1249,5 +1261,34 @@
         "websocket_connected_description": "Conexión al websocket establecida",
         "reload": "Recargar",
         "websocket_connected": "Websocket conectado"
+    },
+    "settings_subscription": {
+        "authentication_token_helper": "Obtain a registration token from the subscription web portal",
+        "authentication_token": "Authentication token",
+        "request_subscription": "Register",
+        "cluster_subscription_description": "Log in to {enterprise} or {subscription} to manage the subscription",
+        "cluster_subscription": "Cluster subscription",
+        "subscription_status": "Subscription status",
+        "remove_subscription": "Remove subscription",
+        "remote_support_description": "Allow {productName} support team to remotely access your cluster",
+        "paste_session_id_to_support_team": "Paste the session ID to the support team",
+        "remote_support_in_progress": "Remote support session in progress",
+        "remove_cluster_subscription_description": "You are going to remove the subscription plan. This will disable the subscription features.",
+        "stop_session_support": "End session",
+        "must_be_32_chars_but_less_than_128": "Must be between 32 and 128 characters",
+        "remove_cluster_subscription_title": "Remove the cluster subscription",
+        "no_expiration": "No expiration",
+        "unknown_token": "Unknown token",
+        "subscription_cannot_be_enabled": "Subscription is not available",
+        "os_not_supported": "Operating system is not supported",
+        "expire_date": "Expiration",
+        "status": "Status",
+        "title": "Subscription",
+        "remote_support": "Remote support",
+        "plan_name": "Plan",
+        "system_id": "System ID",
+        "authentication_token_placeholder": "Paste the token here",
+        "session_id": "Session ID",
+        "start_session_support": "Start session"
     }
 }

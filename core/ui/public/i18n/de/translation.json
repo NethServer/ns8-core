@@ -216,7 +216,14 @@
         "get-info": "Knoten-Informationen abrufen",
         "get-acme-server": "ACME-Server abrufen",
         "get-fqdn": "FQDN abrufen",
-        "get-cluster-status": "Cluster-Status abrufen"
+        "get-cluster-status": "Cluster-Status abrufen",
+        "remove-subscription": "Remove cluster subscription",
+        "set-subscription": "Set subscription",
+        "get-support-session": "Get support session",
+        "stop-support-session": "Stop support session",
+        "start-support-session": "Start support session",
+        "get-subscription": "Get subscription",
+        "register-cluster-subscription": "Register cluster subscription"
     },
     "common": {
         "hide": "verstecken",
@@ -300,7 +307,9 @@
         "choose_an_option_or_input_any_value": "Wähle eine Option aus oder gebe einen beliebigen Wert ein",
         "details": "Details",
         "close": "Schließen",
-        "enabled": "Aktiviert"
+        "enabled": "Aktiviert",
+        "not_active": "Inactive",
+        "active": "Active"
     },
     "error": {
         "403": "Operation nicht zugelassen",
@@ -328,7 +337,8 @@
         "cannot_retrieve_users_admin_configuration": "Benutzerportal-Administration nicht abrufbar",
         "404": "Ressource nicht gefunden",
         "network_error": "Netzwerkfehler",
-        "validation_error": "Fehlerhafte Prüfung"
+        "validation_error": "Fehlerhafte Prüfung",
+        "cannot_retrieve_subscription_status": "Cannot retrieve subscription status"
     },
     "websocket": {
         "websocket_disconnected_description": "Websocket-Verbindung instabil. Bitte warten bis die Verbindung wiederhergestellt ist oder die Seite neu laden",
@@ -1183,7 +1193,9 @@
         "apps_installed_c": "Installierte Anwendung | Installierte Anwendungen",
         "go_to_backup": "Zur Datensicherung wechseln",
         "go_to_nodes": "Zum Knoten wechseln",
-        "go_to_software_center": "Zum Software-Center wechseln"
+        "go_to_software_center": "Zum Software-Center wechseln",
+        "go_to_subscription": "Go to Subscription",
+        "subscription_status": "Subscription"
     },
     "calendar": {
         "days": "Tage",
@@ -1245,5 +1257,34 @@
     },
     "network": {
         "title": "Network"
+    },
+    "settings_subscription": {
+        "title": "Subscription",
+        "authentication_token_helper": "Obtain a registration token from the subscription web portal",
+        "remove_subscription": "Remove subscription",
+        "authentication_token": "Authentication token",
+        "request_subscription": "Register",
+        "stop_session_support": "End session",
+        "subscription_cannot_be_enabled": "Subscription is not available",
+        "remove_cluster_subscription_description": "You are going to remove the subscription plan. This will disable the subscription features.",
+        "must_be_32_chars_but_less_than_128": "Must be between 32 and 128 characters",
+        "remote_support_description": "Allow {productName} support team to remotely access your cluster",
+        "expire_date": "Expiration",
+        "status": "Status",
+        "remove_cluster_subscription_title": "Remove the cluster subscription",
+        "no_expiration": "No expiration",
+        "paste_session_id_to_support_team": "Paste the session ID to the support team",
+        "remote_support_in_progress": "Remote support session in progress",
+        "remote_support": "Remote support",
+        "plan_name": "Plan",
+        "unknown_token": "Unknown token",
+        "system_id": "System ID",
+        "cluster_subscription_description": "Log in to {enterprise} or {subscription} to manage the subscription",
+        "os_not_supported": "Operating system is not supported",
+        "cluster_subscription": "Cluster subscription",
+        "authentication_token_placeholder": "Paste the token here",
+        "subscription_status": "Subscription status",
+        "session_id": "Session ID",
+        "start_session_support": "Start session"
     }
 }

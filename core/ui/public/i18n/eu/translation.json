@@ -25,7 +25,8 @@
         "path_pattern": "Invalid path pattern",
         "cannot_retrieve_task_status": "Cannot retrieve task status",
         "cannot_retrieve_cluster_nodes": "Cannot retrieve cluster nodes",
-        "cannot_retrieve_users_admin_configuration": "Cannot retrieve users portal administration"
+        "cannot_retrieve_users_admin_configuration": "Cannot retrieve users portal administration",
+        "cannot_retrieve_subscription_status": "Cannot retrieve subscription status"
     },
     "about": {
         "animated_icons_by": "Ikono animatuen egilea",
@@ -116,7 +117,9 @@
         "remove": "Remove",
         "no_search_results": "No results",
         "choose_options_or_input_any_value": "Choose options or input any value",
-        "choose_an_option_or_input_any_value": "Choose an option or input any value"
+        "choose_an_option_or_input_any_value": "Choose an option or input any value",
+        "not_active": "Inactive",
+        "active": "Active"
     },
     "backup": {
         "aws": "Amazon S3",
@@ -473,7 +476,14 @@
         "set-route": "Set route",
         "update-modules": "Update modules",
         "get-cluster-status": "Get cluster status",
-        "remove-module": "Remove app"
+        "remove-module": "Remove app",
+        "remove-subscription": "Remove cluster subscription",
+        "set-subscription": "Set subscription",
+        "get-support-session": "Get support session",
+        "stop-support-session": "Stop support session",
+        "start-support-session": "Start support session",
+        "get-subscription": "Get subscription",
+        "register-cluster-subscription": "Register cluster subscription"
     },
     "shell": {
         "app_launcher": "Aplikazioen abiarazlea",
@@ -1182,7 +1192,9 @@
         "title": "Cluster status",
         "updated_available_c": "Available update | Available updates",
         "go_to_software_center": "Go to Software center",
-        "core_update_available": "Core update available"
+        "core_update_available": "Core update available",
+        "go_to_subscription": "Go to Subscription",
+        "subscription_status": "Subscription"
     },
     "samba": {
         "provider_ipaddress": "Provider IP address",
@@ -1245,5 +1257,34 @@
     },
     "network": {
         "title": "Network"
+    },
+    "settings_subscription": {
+        "title": "Subscription",
+        "authentication_token_helper": "Obtain a registration token from the subscription web portal",
+        "remove_subscription": "Remove subscription",
+        "subscription_cannot_be_enabled": "Subscription is not available",
+        "remote_support_description": "Allow {productName} support team to remotely access your cluster",
+        "remove_cluster_subscription_description": "You are going to remove the subscription plan. This will disable the subscription features.",
+        "stop_session_support": "End session",
+        "must_be_32_chars_but_less_than_128": "Must be between 32 and 128 characters",
+        "remove_cluster_subscription_title": "Remove the cluster subscription",
+        "no_expiration": "No expiration",
+        "remote_support_in_progress": "Remote support session in progress",
+        "expire_date": "Expiration",
+        "authentication_token": "Authentication token",
+        "status": "Status",
+        "paste_session_id_to_support_team": "Paste the session ID to the support team",
+        "remote_support": "Remote support",
+        "plan_name": "Plan",
+        "request_subscription": "Register",
+        "unknown_token": "Unknown token",
+        "system_id": "System ID",
+        "cluster_subscription_description": "Log in to {enterprise} or {subscription} to manage the subscription",
+        "os_not_supported": "Operating system is not supported",
+        "cluster_subscription": "Cluster subscription",
+        "authentication_token_placeholder": "Paste the token here",
+        "subscription_status": "Subscription status",
+        "session_id": "Session ID",
+        "start_session_support": "Start session"
     }
 }
