@@ -39,6 +39,17 @@
       </cv-row>
       <cv-row>
         <cv-column>
+          <NsInlineNotification
+            v-if="subscription.error === 'os_not_supported'"
+            kind="info"
+            :title="$t('settings_subscription.subscription_cannot_be_enabled')"
+            :description="$t('settings_subscription.os_not_supported')"
+            :showCloseButton="false"
+          />
+        </cv-column>
+      </cv-row>
+      <cv-row>
+        <cv-column>
           <cv-tile light>
             <h4 class="mg-bottom-md">
               {{ $t("settings_subscription.cluster_subscription") }}
@@ -59,6 +70,7 @@
                 "
               >
                 <NsTextInput
+                  :disabled="subscription.error === 'os_not_supported'"
                   :label="$t('settings_subscription.authentication_token')"
                   v-model="subscription.auth_token"
                   :invalid-message="$t(error.auth_token)"
@@ -135,7 +147,7 @@
                   !loading.getSubscription && subscription.status == 'inactive'
                 "
                 :loading="loading.getSubscription || loading.setSubscription"
-                :disabled="loading.getSubscription || loading.setSubscription"
+                :disabled="loading.getSubscription || loading.setSubscription || subscription.error === 'os_not_supported'"
                 :icon="Badge20"
                 >{{ $t("settings_subscription.request_subscription") }}
               </NsButton>
@@ -306,6 +318,7 @@ export default {
         expire_date: "",
         status: "inactive",
         with_remote_support: false,
+        error: ""
       },
       active: false,
       session_id: "",
@@ -383,6 +396,7 @@ export default {
       const output = taskResult.output;
       if (output.subscription == null) {
         this.subscription.status = "inactive";
+        this.subscription.error = output.error;
         this.loading.getSubscription = false;
         return;
       }

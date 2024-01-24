@@ -610,7 +610,9 @@
         "remove_cluster_subscription_description": "You are going to remove the subscription plan. This will disable the subscription features.",
         "no_expiration": "No expiration",
         "unknown_token": "Unknown token",
-        "must_be_32_chars_but_less_than_128": "Must be between 32 and 128 characters"
+        "must_be_32_chars_but_less_than_128": "Must be between 32 and 128 characters",
+        "os_not_supported": "Operating system is not supported",
+        "subscription_cannot_be_enabled": "Subscription is not available"
     },
     "settings_sw_repositories": {
         "title": "Software repositories",
