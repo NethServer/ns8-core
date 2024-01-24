@@ -55,14 +55,29 @@
               {{ $t("settings_subscription.cluster_subscription") }}
             </h4>
             <div class="title-description mg-bottom-md">
-              <span
-                v-html="
-                  $t('settings_subscription.cluster_subscription_description', {
-                    enterprise: enterprise_link,
-                    subscription: subscription_link,
-                  })
-                "
-              ></span>
+              <i18n
+                path="settings_subscription.cluster_subscription_description"
+                tag="p"
+              >
+                <template v-slot:enterprise>
+                  <cv-link
+                    href="https://my.nethesis.it"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    my.nethesis.it
+                  </cv-link>
+                </template>
+                <template v-slot:subscription>
+                  <cv-link
+                    href="https://my.nethserver.com"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    my.nethserver.com
+                  </cv-link>
+                </template>
+              </i18n>
             </div>
             <cv-form @submit.prevent="setSubscription">
               <cv-skeleton-text
