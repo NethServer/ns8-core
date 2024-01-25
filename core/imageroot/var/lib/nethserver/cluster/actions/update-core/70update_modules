@@ -42,7 +42,8 @@ for mid in instances.keys():
         "action": "update-module",
         "data": {
             "module_url": instances[mid]['url'],
-            "instances":  instances[mid]['instances']
+            "instances":  instances[mid]['instances'],
+            "force": force_update,
         }
     })
 

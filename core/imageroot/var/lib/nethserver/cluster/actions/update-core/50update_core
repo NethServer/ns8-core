@@ -14,6 +14,7 @@ import cluster.modules
 request = json.load(sys.stdin)
 core_url = request.get('core_url', '')
 nodes_list = request['nodes']
+force_update = request.get("force", False)
 
 rdb = agent.redis_connect(privileged=True)
 # if the image url is not given, search for the latest core image inside the repo
@@ -27,7 +28,8 @@ for node_id in nodes_list:
         "agent_id": f'node/{node_id}',
         "action": "update-core",
         "data": {
-            "core_url": core_url
+            "core_url": core_url,
+            "force": force_update,
         }
     })
 

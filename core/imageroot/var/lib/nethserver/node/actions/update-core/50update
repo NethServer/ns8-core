@@ -14,6 +14,7 @@ import semver
 
 request = json.load(sys.stdin)
 core_url = request['core_url']
+force_update = request.get("force", False)
 
 agent.set_weight(os.path.basename(__file__), 2)
 
@@ -26,11 +27,16 @@ except ValueError:
     aver = semver.parse_version_info('0.0.0')
     bver = semver.parse_version_info('0.1.0')
 
-if aver >= bver:
+if force_update == False and aver >= bver:
     print('The new core image does not update the current one. Nothing to do.', file=sys.stderr)
     sys.exit(0)
 
-agent.run_helper('podman-pull-missing', core_url,
+if force_update:
+    podman_pull_command = ['podman', 'pull']
+else:
+    podman_pull_command = ['podman-pull-missing']
+
+agent.run_helper(*podman_pull_command, core_url,
     progress_callback=agent.get_progress_callback(0,40)
 ).check_returncode()
 
@@ -57,7 +63,7 @@ print('Core image Digest     : ', inspect_image_digest, file=sys.stderr)
 print('Core image RepoDigest : ', inspect_image_repodigest, file=sys.stderr)
 print('Core image extras     : ', extra_images, file=sys.stderr)
 
-agent.run_helper('podman-pull-missing', *extra_images,
+agent.run_helper(*podman_pull_command, *extra_images,
     progress_callback=agent.get_progress_callback(41,70)
 ).check_returncode()
 
