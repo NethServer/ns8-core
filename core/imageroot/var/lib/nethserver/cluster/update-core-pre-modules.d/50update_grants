@@ -1,0 +1,24 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2024 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+import os
+import sys
+import agent
+import cluster.grants
+
+rdb = agent.redis_connect(privileged=True)
+
+#
+# Update existing grants for features #6814, #6825
+#
+cluster.grants.grant(rdb, action_clause="bind-user-domains",  to_clause="accountconsumer", on_clause='cluster')
+cluster.grants.grant(rdb, action_clause="list-modules",  to_clause="accountprovider", on_clause='cluster')
+
+#
+# END of grant updates
+#
+cluster.grants.refresh_permissions(rdb)

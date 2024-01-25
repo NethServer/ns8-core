@@ -11,6 +11,12 @@ import agent.tasks
 import sys, os
 import cluster.modules
 
+request = json.load(sys.stdin)
+force_update = request.get("force", False)
+agent_install_dir = os.environ["AGENT_INSTALL_DIR"]
+
+agent.run_helper("run-scriptdir", f"{agent_install_dir}/update-core-pre-modules.d/")
+
 rdb = agent.redis_connect(privileged=True)
 
 # Update all core modules
@@ -44,5 +50,7 @@ update_module_errors = agent.tasks.runp_brief(update_module_tasks,
     endpoint = "redis://cluster-leader",
     progress_callback=agent.get_progress_callback(75, 95),
 )
+
+agent.run_helper("run-scriptdir", f"{agent_install_dir}/update-core-post-modules.d/")
 
 agent.assert_exp(update_module_errors == 0, 'update-core failed in some core modules')

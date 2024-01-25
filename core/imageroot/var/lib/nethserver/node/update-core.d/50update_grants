@@ -31,6 +31,6 @@ cluster.grants.grant(rdb, action_clause="list-modules",  to_clause="accountprovi
 #
 # END of grant updates -- Do not add more grants: this script will be
 # removed in future releases An equivalent script will be implemented
-# under cluster/pre-update-modules.d/
+# under cluster/update-core-pre-modules.d/
 #
 cluster.grants.refresh_permissions(rdb)
