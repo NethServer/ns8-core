@@ -1,13 +1,13 @@
 {
     "error": {
-        "403": "Operation not authorized",
-        "401": "Invalid authentication",
-        "generic_error": "Something went wrong",
+        "403": "Operación no autorizada",
+        "401": "Autenticación no válida",
+        "generic_error": "Algo salió mal",
         "error": "Error",
-        "network_timeout": "Network timeout",
-        "404": "Resource not found",
-        "network_error": "Network error",
-        "validation_error": "Validation error",
+        "network_timeout": "Tiempo de espera de red agotado",
+        "404": "Recurso no encontrado",
+        "network_error": "Fallo de red",
+        "validation_error": "Error de validación",
         "fqdn_format": "Formato FQDN no válido",
         "cannot_retrieve_cluster_tasks": "No se pueden recuperar las tareas del clúster",
         "invalid_username_or_password": "Usuario o contraseña no válido",
@@ -26,11 +26,11 @@
         "cannot_retrieve_cluster_nodes": "No se pueden recuperar los nodos del clúster",
         "cannot_retrieve_users_admin_configuration": "No se puede recuperar la administración del portal de usuarios",
         "must_be_between": "Debe estar entre {min} y {max}",
-        "cannot_retrieve_subscription_status": "Cannot retrieve subscription status"
+        "cannot_retrieve_subscription_status": "No se puede recuperar el estado de la suscripción"
     },
     "about": {
         "animated_icons_by": "Iconos animados por",
-        "title": "About",
+        "title": "Acerca de",
         "documentation": "Documentación",
         "by_company": "por",
         "helpdesk": "Centro de ayuda"
@@ -131,7 +131,7 @@
         "users_admin_page_description": "Portal de autoservicio de administración de usuarios"
     },
     "common": {
-        "required": "Required",
+        "required": "Obligatorio",
         "all": "Todos",
         "all_good": "Todo está bien",
         "hide": "Ocultar",
@@ -139,7 +139,7 @@
         "join_code": "Código de unión",
         "copied_to_clipboard": "¡Copiado!",
         "edit": "Editar",
-        "save": "Save",
+        "save": "Guardar",
         "collapse": "Contraer",
         "understood_delete": "Entiendo, borrar",
         "go_back": "Volver",
@@ -155,7 +155,7 @@
         "enable": "Habilitar",
         "choose": "Elige",
         "delete": "Borrar",
-        "cancel": "Cancel",
+        "cancel": "Cancelar",
         "finish": "Finalizar",
         "core_module_c": "Aplicación principal | Aplicaciones principales",
         "node": "Nodo",
@@ -213,8 +213,8 @@
         "search": "Buscar",
         "type_to_confirm": "Escribe <strong>{name}</strong> para confirmar la eliminación",
         "remove": "Eliminar",
-        "not_active": "Inactive",
-        "active": "Active"
+        "not_active": "Inactivo",
+        "active": "Activo"
     },
     "backup": {
         "aws": "Amazon S3",
@@ -397,13 +397,13 @@
         "genericS3_url_tooltip": "Escribe una dirección con el formato server_fqdn/nombre_del_depósito. Nota: el servidor debe tener un certificado TLS válido"
     },
     "settings_http_routes": {
-        "host_tooltip": "Un ejemplo de host válido es: <code>miapp.ejemplo.org</code>",
-        "url_tooltip": "Un ejemplo de URL válida es: <code>http://127.0.0.0:2000</code>",
+        "host_tooltip": "Un ejemplo de host válido es: <code>myapp.example.org</code>",
+        "url_tooltip": "Un ejemplo de URL válida es: <code>http://127.0.0.1:2000</code>",
         "node": "Nodo",
         "host_helper": "FQDN como host virtual",
         "delete_route_description": "¿Eliminar ruta <strong>{name}</strong>? Ya no se podrá acceder a ninguna aplicación asociada con esta ruta",
         "route_already_exists": "La ruta ya existe",
-        "strip_prefix_tooltip": "Por ejemplo: <code>http://{host}/{path}/{requestpath}?{querystring}</code> está asignado a <code>http://{host}/{requestpath}?{querystring}< /code>",
+        "strip_prefix_tooltip": "<a href='https://doc.traefik.io/traefik/middlewares/http/stripprefix/'>Opción de prefijos Traefik</a> define los prefijos a eliminar de la URL de la petición. Ej: Permite despojar un prefijo especificado de la ruta URL. Si, por ejemplo, elimina /api de /api/v1/resource, la ruta resultante después de aplicarlo sería /v1/resource.",
         "create_route_route": "Crear ruta {route}",
         "host_format": "Formato de host no válido",
         "http2https": "HTTP a HTTPS",
@@ -434,13 +434,13 @@
         "routes_filtered_description": "Mostrando solo rutas de <strong>{node}</strong>",
         "no_http_route_description": "No hay ninguna ruta configurada",
         "traefik_instance": "Instancia Traefik",
-        "node_helper": "Select the node where the route will be created",
-        "url_placeholder": "E.g. http://127.0.0.1:2000",
-        "path_placeholder": "E.g. /foo",
-        "name_placeholder": "E.g myroute",
-        "host_placeholder": "E.g. myapp.example.org",
-        "skipCertVerify_tooltip": "Skip certificate validation for the backend target URL",
-        "skip_cert_verify": "Skip certificate validation"
+        "node_helper": "Seleccionar el nodo donde se creará la ruta",
+        "url_placeholder": "Por ejemplo: http://127.0.0.1:2000",
+        "path_placeholder": "Por ejemplo, /foo",
+        "name_placeholder": "Por ejemplo: myroute",
+        "host_placeholder": "Por ejemplo: myapp.example.org",
+        "skipCertVerify_tooltip": "Omitir la validación de certificados para la URL de destino del backend",
+        "skip_cert_verify": "Omitir la validación del certificado"
     },
     "shell": {
         "app_launcher": "Lanzador de aplicaciones",
@@ -453,8 +453,8 @@
         "search": "Buscar"
     },
     "action": {
-        "list-backup-repositories": "List backup repositories",
-        "list-backups": "List backups",
+        "list-backup-repositories": "Lista de repositorios de copia de seguridad",
+        "list-backups": "Listado de copias de seguridad",
         "configure-module": "Configurar aplicación",
         "alter-backup-repository": "Modificar el repositorio de respaldo",
         "alter-repository": "Modificar el respaldo",
@@ -535,13 +535,13 @@
         "set-route": "Establecer ruta",
         "update-modules": "Actualizar módulos",
         "remove-module": "Eliminar aplicación",
-        "remove-subscription": "Remove cluster subscription",
-        "set-subscription": "Set subscription",
-        "get-support-session": "Get support session",
-        "stop-support-session": "Stop support session",
-        "start-support-session": "Start support session",
-        "get-subscription": "Get subscription",
-        "register-cluster-subscription": "Register cluster subscription"
+        "remove-subscription": "Eliminar suscripción al clúster",
+        "set-subscription": "Establecer suscripción",
+        "get-support-session": "Obtener sesión de soporte",
+        "stop-support-session": "Interrumpir la sesión de soporte",
+        "start-support-session": "Iniciar sesión de soporte",
+        "get-subscription": "Obtener suscripción",
+        "register-cluster-subscription": "Registrar suscripción al clúster"
     },
     "settings_cluster_admins": {
         "user_already_exists": "El administrador ya existe",
@@ -710,7 +710,7 @@
         "vertical_layout": "Diseño vertical"
     },
     "task": {
-        "cannot_create_task": "Cannot create task {action}",
+        "cannot_create_task": "No se puede crear la tarea {action}",
         "completed": "Completado",
         "copy_task_data_to_clipboard": "Copiar seguimiento de tarea",
         "configure": "Configurar",
@@ -742,7 +742,7 @@
         "no_sw_repositories_description": "No hay ningún repositorio de software configurado"
     },
     "settings": {
-        "title": "Settings"
+        "title": "Ajustes"
     },
     "init": {
         "restoring_cluster": "Restaurando clúster",
@@ -940,8 +940,8 @@
         "core_update_available": "Actualización principal disponible",
         "instances_not_backed_up_c": "{num} aplicación no respaldada | {num} aplicaciones no respaldadas",
         "backups_failed_c": "{num} copia de seguridad fallida | {num} copias de seguridad fallidas",
-        "go_to_subscription": "Go to Subscription",
-        "subscription_status": "Subscription"
+        "go_to_subscription": "Suscripción",
+        "subscription_status": "Suscripción"
     },
     "password": {
         "long_enough": "Suficientemente larga",
@@ -1263,32 +1263,32 @@
         "websocket_connected": "Websocket conectado"
     },
     "settings_subscription": {
-        "authentication_token_helper": "Obtain a registration token from the subscription web portal",
-        "authentication_token": "Authentication token",
-        "request_subscription": "Register",
-        "cluster_subscription_description": "Log in to {enterprise} or {subscription} to manage the subscription",
-        "cluster_subscription": "Cluster subscription",
-        "subscription_status": "Subscription status",
-        "remove_subscription": "Remove subscription",
-        "remote_support_description": "Allow {productName} support team to remotely access your cluster",
-        "paste_session_id_to_support_team": "Paste the session ID to the support team",
-        "remote_support_in_progress": "Remote support session in progress",
-        "remove_cluster_subscription_description": "You are going to remove the subscription plan. This will disable the subscription features.",
-        "stop_session_support": "End session",
-        "must_be_32_chars_but_less_than_128": "Must be between 32 and 128 characters",
-        "remove_cluster_subscription_title": "Remove the cluster subscription",
-        "no_expiration": "No expiration",
-        "unknown_token": "Unknown token",
-        "subscription_cannot_be_enabled": "Subscription is not available",
-        "os_not_supported": "Operating system is not supported",
-        "expire_date": "Expiration",
-        "status": "Status",
-        "title": "Subscription",
-        "remote_support": "Remote support",
+        "authentication_token_helper": "Obtener un token de registro del portal web de suscripción",
+        "authentication_token": "Token de autenticación",
+        "request_subscription": "Registrarse",
+        "cluster_subscription_description": "Inicie sesión en {enterprise} o {subscription} para gestionar la suscripción",
+        "cluster_subscription": "Suscripción al clúster",
+        "subscription_status": "Estado de la suscripción",
+        "remove_subscription": "Eliminar suscripción",
+        "remote_support_description": "Permitir que el equipo de soporte de {productName} acceda remotamente a su clúster",
+        "paste_session_id_to_support_team": "Pegue el ID de sesión en el equipo de soporte",
+        "remote_support_in_progress": "Sesión de soporte remoto en curso",
+        "remove_cluster_subscription_description": "Va a eliminar el plan de suscripción. Esto desactivará las funciones de suscripción.",
+        "stop_session_support": "Fin de la sesión",
+        "must_be_32_chars_but_less_than_128": "Debe tener entre 32 y 128 caracteres",
+        "remove_cluster_subscription_title": "Eliminar la suscripción al clúster",
+        "no_expiration": "Sin vencimiento",
+        "unknown_token": "Token desconocido",
+        "subscription_cannot_be_enabled": "Suscripción no disponible",
+        "os_not_supported": "Sistema operativo no compatible",
+        "expire_date": "Vencimiento",
+        "status": "Estado",
+        "title": "Suscripción",
+        "remote_support": "Soporte remoto",
         "plan_name": "Plan",
-        "system_id": "System ID",
-        "authentication_token_placeholder": "Paste the token here",
-        "session_id": "Session ID",
-        "start_session_support": "Start session"
+        "system_id": "ID del sistema",
+        "authentication_token_placeholder": "Pegue aquí el token",
+        "session_id": "ID de sesión",
+        "start_session_support": "Iniciar sesión"
     }
 }
