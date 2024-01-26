@@ -7,30 +7,35 @@ parent: Modules
 
 ## Module updates
 
-Each module instance is responsible for updating itself.
-The core provides an extendable implementation of the `update-module` action for the module agent.
-The basic implementation 
+The core action `update-module` is the entry point of a module instance
+update. It can run the update on multiple instances of the same module at
+the same time.
+
+The core then invokes the module `update-module` action. Each module
+instance is responsible for updating itself. The core already provides an
+extendable implementation of the `update-module` action for the module
+agent. The base implementation
 
 - pulls the module image and additional service images
+- extracts and installs the module _imageroot_ under the `${AGENT_INSTALL_DIR}`
+- runs `systemctl --user daemon-reload`, to refresh Systemd with new unit definitions
 - updates the environment variables, keeping track of `PREV_*` values
-- extracts and installs the module _imageroot_ under the `AGENT_INSTALL_DIR`
-- performs `systemctl daemon-reload`
-- removes no longer required files
+- runs update scripts installed with the new image, under
+  `${AGENT_INSTALL_DIR}/update-module.d/`
+- removes stale container images
 
-After these steps, the module is running with the old version. To load the new version,
-the service should be restarted using a custom script.
-
-Modules can execute custom scripts upon update to handle upgrade paths like database schema migrations.
-Executable scripts should be placed inside `imageroot/update-module.d` which will be then extracted to `${AGENT_INSTALL_DIR}/update-module.d`.
-
-Scripts execution occurs in alphabetical order. Execution breaks when a script exits non-zero and the whole action is aborted.
-
-Example of a script to load the updated version `imageroot/update-module.d/20restart`:
+Modules can provide update scripts to handle upgrade paths like restarting
+services and database schema migrations. Executable scripts can be placed
+inside `imageroot/update-module.d` which will be then extracted to
+`${AGENT_INSTALL_DIR}/update-module.d`. Scripts execution occurs in
+alphabetical order. If a script aborts with an exit code, a warning is
+printed. Example of a script that restarts a Systemd service,
+`imageroot/update-module.d/20restart`:
 
     #!/bin/bash
-    systemctl --user restart mymodule
+    systemctl --user try-restart mymodule.service
 
-Make sure the `imageroot/update-module.d/20restart` is executable.
+Make sure the `20restart` is executable, otherwise it is ignored.
 
 To update an instance from command line, use:
 
