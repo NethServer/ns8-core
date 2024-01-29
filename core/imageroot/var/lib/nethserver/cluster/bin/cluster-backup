@@ -76,7 +76,7 @@ for k in ['network', 'ui_name', 'uuid']:
     dump['cluster'][k] = rdb.get(f'cluster/{k}') or ''
 
 # cluster: favorite apps
-dump['cluster']['favorites'] = list(rdb.smembers(f'cluster/favorites'))
+dump['cluster']['favorites'] = sorted(rdb.smembers(f'cluster/favorites'))
 
 # cluster: module URL override
 dump['cluster']['override']['modules'] = rdb.hgetall('cluster/override/modules')
@@ -86,7 +86,7 @@ for m in rdb.scan_iter('module/*/backups'):
     k = m.removeprefix('module/').removesuffix('/backups')
     uuid = rdb.hget(f'module/{k}/environment', 'MODULE_UUID')
     dump['modules'][uuid] = {'backups': []}
-    dump['modules'][uuid]['backups'] = list(rdb.smembers(m))
+    dump['modules'][uuid]['backups'] = sorted(rdb.smembers(m))
 
 # nodes: vpn, label
 for v in rdb.scan_iter('node/*/vpn'):
