@@ -1,0 +1,45 @@
+#!/bin/bash
+
+#
+# Copyright (C) 2024 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+#
+# Simple helper that runs any executable command under the given
+# script_dir, in alphabetical order. If a script has non-zero exit code
+# print a warning and continue with the next one. Exit with non-zero exit
+# code if one or more scripts has failed.
+#
+
+script_dir=${1:?}
+
+if [[ ! -d "${script_dir}" ]]; then
+    exit 0
+fi
+
+# systemd-journal log severity codes:
+SD_DEBUG='<7>'
+SD_WARNING='<4>'
+
+shopt -s nullglob
+errors=0
+for script in "${script_dir}"/* ; do
+
+    if [[ ! -x "${script}" ]]; then
+        echo "${SD_DEBUG}Skipping non-executable file ${script}..."
+        continue
+    fi
+
+    echo "Running ${script}..."
+
+    if ! command ${script} ; then
+        echo "${SD_WARNING}${script} has failed"
+        ((errors++))
+    fi
+
+done
+
+if ((errors > 0)); then
+    exit 1
+fi

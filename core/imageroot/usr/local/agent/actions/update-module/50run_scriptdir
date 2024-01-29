@@ -48,7 +48,7 @@ for script in "${AGENT_INSTALL_DIR}"/update-module.d/* ; do
     echo "Running ${script}..."
 
     if ! command ${script} ; then
-        echo "${SD_WARNING}${script} has exit code $?"
+        echo "${SD_WARNING}${script} has failed"
     fi
 
 done

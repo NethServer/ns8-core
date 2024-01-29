@@ -33,6 +33,11 @@
                 "type": "integer"
             },
             "minItems": 1
+        },
+        "force": {
+            "description": "Force the core update even if the given `core_url` is already present in the local Podman storage",
+            "type": "boolean",
+            "default": false
         }
     }
 }
