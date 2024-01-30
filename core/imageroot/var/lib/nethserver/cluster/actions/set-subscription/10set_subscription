@@ -36,6 +36,25 @@ def _get_http_session():
     osession.mount('https://', requests.adapters.HTTPAdapter(max_retries=oretries))
     return osession
 
+def _enable_subscription_repo(rdb):
+    rdb.delete("cluster/repository/subscription")
+    for krepo in list(rdb.scan_iter('cluster/repository/*')):
+        rdb.hset(krepo, "status", "0") # Disable all existing repositories
+    rdb.hset("cluster/repository/subscription", mapping={
+        "url": "https://subscription.nethserver.com/distfeed/",
+        "status": "1",
+        "testing": "0",
+    })
+
+def _restore_default_repository(rdb):
+    rdb.delete("cluster/repository/subscription")
+    for krepo in list(rdb.scan_iter('cluster/repository/*')):
+        rdb.hset(krepo, "status", "0") # Disable all existing repositories
+    rdb.hset("cluster/repository/default", mapping={
+        "status": "1",
+        "testing": "0",
+    })
+
 def terminate_subscription(rdb):
     hsubscription = rdb.hgetall("cluster/subscription")
     if not hsubscription:
@@ -49,7 +68,7 @@ def terminate_subscription(rdb):
             output = terminate_nscom(rdb, hsubscription)
     except Exception as ex:
         print(agent.SD_WARNING + "Terminate error", ex, file=sys.stderr)
-
+    _restore_default_repository(rdb)
     trx = rdb.pipeline()
     trx.delete("cluster/subscription")
     trx.publish('cluster/event/subscription-changed', json.dumps({"action": "terminated"}))
@@ -94,7 +113,7 @@ def subscribe_nsent(rdb, osubscription):
     })
     trx.publish('cluster/event/subscription-changed', json.dumps({"action": "subscribed"}))
     trx.execute()
-
+    _enable_subscription_repo(rdb)
     return {
         "system_id": system_id,
         "provider": "nsent",
@@ -123,8 +142,7 @@ def subscribe_nscom(rdb, osubscription):
     })
     trx.publish('cluster/event/subscription-changed', json.dumps({"action": "subscribed"}))
     trx.execute()
-
-
+    _enable_subscription_repo(rdb)
     return {
         "system_id": system_id,
         "provider": "nscom",
