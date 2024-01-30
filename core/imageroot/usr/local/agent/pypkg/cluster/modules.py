@@ -24,7 +24,9 @@ import agent
 import semver
 import urllib
 import os.path
-import urllib.request
+import urllib
+import requests, urllib3.util
+import hashlib
 from glob import glob
 import sys
 
@@ -89,6 +91,19 @@ def _parse_repository_metadata(repository_name, repository_url, repository_updat
 
     return modules
 
+def _get_http_session():
+    osession = requests.Session()
+    osession.headers= {
+        'User-Agent': 'ns8-downloader', # DO Spaces blocks Python UA
+    }
+    osession.timeout = 15 # Timeout for HTTP connections
+    oretries = urllib3.util.Retry(
+        total=3,
+        backoff_factor=0.1,
+        allowed_methods={'POST', 'GET'},
+    )
+    osession.mount('https://', requests.adapters.HTTPAdapter(max_retries=oretries))
+    return osession
 
 def _list_repository_modules(rdb, repository_name, repository_url, skip_core_modules = False, skip_testing_versions=False):
     key = f'cluster/repository_cache/{repository_name}'
@@ -98,15 +113,19 @@ def _list_repository_modules(rdb, repository_name, repository_url, skip_core_mod
 
     url = _urljoin(repository_url, "repodata.json")
     try:
-        req = urllib.request.Request(url=url, headers={'User-Agent': 'ns8-downloader'})
-        with urllib.request.urlopen(req) as resp:
-            repodata = resp.read().decode()
+        hsubscription = rdb.hgetall("cluster/subscription")
+        with _get_http_session() as osession:
+            if hsubscription and url.startswith("https://subscription.nethserver.com/"):
+                # Send system_id for HTTP Basic authentication
+                osession.auth = (hsubscription["system_id"], hashlib.sha256(hsubscription["auth_token"].encode()).hexdigest())
+            resp = osession.get(url)
+            repodata = resp.text
+            updated = resp.headers.get('Last-Modified', "")
     except Exception as ex:
         print(f"Fetching {url}:", ex, file=sys.stderr)
         # If repository is not accessible or invalid, just return an empty array
         return []
 
-    updated = req.headers.get('Last-Modified', "")
     modules = _parse_repository_metadata(repository_name, repository_url, updated, repodata, skip_core_modules, skip_testing_versions)
     # Save inside the cache if data is valid
     if modules:
