@@ -57,7 +57,7 @@
           />
         </cv-column>
       </cv-row>
-      <cv-row v-if="error.listModules">
+      <cv-row v-if="error.listCoreModules">
         <cv-column>
           <NsInlineNotification
             kind="error"
@@ -483,6 +483,7 @@ export default {
       if (err) {
         console.error(`error creating task ${taskAction}`, err);
         this.error.listModules = this.getErrorMessage(err);
+        this.loading.listModules = false;
         return;
       }
     },
