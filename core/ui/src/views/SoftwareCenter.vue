@@ -837,8 +837,11 @@ export default {
       this.setUpdateInProgressInStore(false);
     },
     updateCoreCompleted() {
-      this.setUpdateInProgressInStore(false);
-      this.listModules();
+      // add a brief delay: API server may not be ready to accept requests immediately
+      setTimeout(() => {
+        this.setUpdateInProgressInStore(false);
+        this.listModules();
+      }, 5000);
     },
   },
 };
