@@ -1,0 +1,38 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2024 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+import os
+import sys
+import agent
+import hashlib
+
+rdb = agent.redis_connect(use_replica=True)
+
+dnfargs = [
+    "--disablerepo=*",
+    "--enablerepo=ns-baseos,ns-appstream",
+    "--refresh",
+]
+
+hsubscription = rdb.hgetall("cluster/subscription")
+if hsubscription:
+    # Configure DNF options for HTTP Basic authentication, to retrieve managed
+    # updates
+    username = hsubscription["system_id"]
+    password = hashlib.sha256(hsubscription["auth_token"].encode()).hexdigest()
+    dnfargs += [
+        "--setopt=ns-baseos.username=" + username,
+        "--setopt=ns-baseos.password=" + password,
+        "--setopt=ns-appstream.username=" + username,
+        "--setopt=ns-appstream.password=" + password,
+    ]
+
+# Apply DNF updates before restarting core services
+try:
+    agent.run_helper("/usr/bin/dnf", "update", "-y", *dnfargs).check_returncode()
+except (FileNotFoundError, PermissionError):
+    print(agent.SD_INFO + "Cannot update the node OS: dnf was not found on this system", file=sys.stderr)
