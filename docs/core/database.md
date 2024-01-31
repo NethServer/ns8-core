@@ -177,6 +177,7 @@ subsections for more information.
 |cluster/uuid                           |STRING     |Generated UUID that identifies the cluster|
 |cluster/override/modules               |HASH       |Maps (image name) => (image URL), overriding the standard image name/URL resolution function |
 |cluster/subscription                   |HASH       |[Subscription]({{site.baseurl}}/core/subscription) attributes in key/value pairs|
+|cluster/apply_updates                  |HASH       |[Scheduled updates]({{site.baseurl}}/core/updates) attributes in key/value pairs|
 
 #### cluster/smarthost
 

@@ -1,5 +1,6 @@
 [Unit]
 Description=Send the system inventory remotely
+After=apply-updates.service
 
 [Service]
 Type=oneshot

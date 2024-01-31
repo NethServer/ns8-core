@@ -14,6 +14,7 @@ export REDIS_ADDRESS="127.0.0.1:6379"
 
 provider=""
 leader_id=$(redis-exec hget cluster/environment NODE_ID)
+apply_updates_is_active=$(redis-exec hget cluster/apply_updates is_active)
 
 # Parse subscription configuration from Redis
 while IFS='=' read -r key value; do
@@ -73,4 +74,12 @@ else
         send-heartbeat.service \
         send-inventory.timer \
         send-backup.timer
+fi
+
+# Enable in the leader node the timer unit that checks the updates,
+# disable in worker nodes.
+if [[ "${apply_updates_is_active}" == "1" ]] && is_leader ; then
+    systemctl enable --now apply-updates.timer
+else
+    systemctl disable --now apply-updates.timer
 fi

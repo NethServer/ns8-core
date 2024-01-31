@@ -95,3 +95,7 @@ if 'leader' in dump['traefik']:
 # Restore subscription info, if present
 if 'subscription' in dump['cluster'] and dump['cluster']['subscription']:
     rdb.hset('cluster/subscription', mapping=dump['cluster']['subscription'])
+
+# Restore update policy, if present
+if 'apply_updates' in dump['cluster'] and dump['cluster']['apply_updates']:
+    rdb.hset('cluster/apply_updates', mapping=dump['cluster']['apply_updates'])

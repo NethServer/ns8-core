@@ -71,6 +71,7 @@ def terminate_subscription(rdb):
     _restore_default_repository(rdb)
     trx = rdb.pipeline()
     trx.delete("cluster/subscription")
+    trx.delete("cluster/apply_updates")
     trx.publish('cluster/event/subscription-changed', json.dumps({"action": "terminated"}))
     trx.execute()
 
@@ -111,6 +112,9 @@ def subscribe_nsent(rdb, osubscription):
         'vpn_cert_cn': "C=IT, ST=PU, L=Pesaro, O=Nethesis, OU=Support, CN=Nethesis CA, name=sos, emailAddress=support@nethesis.it",
         'support_user': 'nethsupport',
     })
+    trx.hset("cluster/apply_updates", mapping={
+        "is_active": "1",
+    })
     trx.publish('cluster/event/subscription-changed', json.dumps({"action": "subscribed"}))
     trx.execute()
     _enable_subscription_repo(rdb)
@@ -139,6 +143,9 @@ def subscribe_nscom(rdb, osubscription):
         'vpn_cert_cn': "C=IT, ST=PU, L=Pesaro, O=Nethesis, OU=Support, CN=Nethesis CA, name=sos, emailAddress=support@nethesis.it",
         'support_user': 'nethsupport',
         'dartagnan_url': dartagnan_url,
+    })
+    trx.hset("cluster/apply_updates", mapping={
+        "is_active": "1",
     })
     trx.publish('cluster/event/subscription-changed', json.dumps({"action": "subscribed"}))
     trx.execute()

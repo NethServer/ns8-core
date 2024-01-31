@@ -1,0 +1,14 @@
+[Unit]
+Description=Apply updates overnight
+
+[Timer]
+# This timer settings assign a fixed time between 00:00 and 06:00 AM to
+# start the apply-updates.service unit. If the node was powered off at that
+# time the timer should trigger as soon as it gets powered on again.
+OnCalendar=Tue..Fri 00:00:00
+RandomizedDelaySec=6h
+FixedRandomDelay=true
+Persistent=true
+
+[Install]
+WantedBy=timers.target

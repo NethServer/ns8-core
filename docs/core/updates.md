@@ -5,13 +5,24 @@ nav_order: 12
 parent: Core
 ---
 
-# Core updates
+# Updates
+
+A system running NS8 has many components to keep up-to-date:
+
+- the underlying operating system (OS)
+- the NS8 core and its container images
+- core modules
+- application modules
+
+Updates can be applied on schedule or by request.
+
+## Core updates
 
 The core update changes both the core images and the core modules. In the
 first stage cluster nodes update the core components. In the second stage
 the leader node launches the update of individual core modules.
 
-## First stage
+### First stage
 
 The first stage applies enhancements and bug fixes for the `core` image.
 The core image contains: agents, UI, additional core images and common
@@ -51,7 +62,7 @@ execution continues with the next script.
 If the update fails on some node, the whole process is aborted by the
 leader node at this point.
 
-## Second stage
+### Second stage
 
 If every node completes the first stage successfully, the leader node
 starts the second stage.
@@ -79,3 +90,34 @@ image.
 
 The exit code of the `update-core` action is non-zero if any core module
 has failed its update.
+
+## Operating system updates
+
+If the OS has the `dnf` command (e.g. Rocky Linux), the node `update-os`
+action can download and install the distribution updates. If the `dnf`
+command is missing OS update is skipped.
+
+If a subscription is active, DNF repositories are accessed with HTTP Basic
+authentication.
+
+## Module updates
+
+Application/module updates are controlled by the `cluster/update-modules` action
+and described in [module updates]({{site.baseurl}}/modules/updates).
+
+## Updates schedule
+
+The Systemd `apply-updates.timer` and the corresponding cluster helper
+`apply-updates` control the updates schedule. This timer can be enabled
+only in the leader node.
+
+If the system has a subscription, scheduled updates are enabled by
+default.
+
+The timer status is controlled by the
+[subscription]({{site.baseurl}}/modules/subscription) logic, and reflects
+the Redis HASH key `cluster/apply_updates`. This is the list of the HASH
+key/values:
+
+- `is_active` controls the status of the Systemd `apply-updates.timer`
+  unit. `1` for enabled, otherwise disabled

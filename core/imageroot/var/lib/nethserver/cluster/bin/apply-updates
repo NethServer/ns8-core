@@ -1,0 +1,46 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2024 Nethesis S.r.l.
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
+
+import agent
+import agent.tasks
+import os
+import sys
+
+rdb = agent.redis_connect()
+# Find cluster nodes from the index key
+nodes = list(int(node_id) for node_id in set(rdb.hvals("cluster/module_node")))
+terrors = agent.tasks.runp_brief(list({
+        "agent_id": f'node/{node_id}',
+        "action": 'update-os',
+    } for node_id in nodes),
+    endpoint="redis://cluster-leader",
+)
+if terrors:
+    print(agent.SD_ERR, terrors, file=sys.stderr)
+    sys.exit(1)
+
+update_core_response = agent.tasks.run(
+    agent_id='cluster',
+    action='update-core',
+    data={'nodes': nodes},
+    endpoint="redis://cluster-leader",
+)
+if update_core_response['exit_code'] != 0:
+    print(agent.SD_ERR + "update-core failed", file=sys.stderr)
+    sys.exit(1)
+
+update_modules_response = agent.tasks.run(
+    agent_id='cluster',
+    action='update-modules',
+    endpoint="redis://cluster-leader",
+    # disable idle check after core update to avoid a task submission
+    # failure during agent startup:
+    check_idle_time = 0,
+)
+if update_modules_response['exit_code'] != 0:
+    print(agent.SD_ERR + "update-modules failed", file=sys.stderr)
+    sys.exit(1)
