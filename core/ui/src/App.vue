@@ -410,13 +410,13 @@ export default {
         this.createNotification(notification);
       }
 
-      // retry web socket connection if still logged-in
+      // Retry web socket connection if still logged-in. Don't retry before 10 seconds: in some cases (e.g. while updating core) the API server may not be ready to accept requests immediately after websocket reconnection
       setTimeout(() => {
         if (this.loggedUser) {
           console.warn("Retrying websocket connection...");
           this.initWebSocket();
         }
-      }, 5000);
+      }, 10000);
     },
     createErrorNotification(err, message) {
       const notification = {

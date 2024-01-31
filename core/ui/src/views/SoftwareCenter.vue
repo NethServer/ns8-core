@@ -57,7 +57,7 @@
           />
         </cv-column>
       </cv-row>
-      <cv-row v-if="error.listModules">
+      <cv-row v-if="error.listCoreModules">
         <cv-column>
           <NsInlineNotification
             kind="error"
@@ -483,6 +483,7 @@ export default {
       if (err) {
         console.error(`error creating task ${taskAction}`, err);
         this.error.listModules = this.getErrorMessage(err);
+        this.loading.listModules = false;
         return;
       }
     },
@@ -836,8 +837,11 @@ export default {
       this.setUpdateInProgressInStore(false);
     },
     updateCoreCompleted() {
-      this.setUpdateInProgressInStore(false);
-      this.listModules();
+      // add a brief delay: API server may not be ready to accept requests immediately
+      setTimeout(() => {
+        this.setUpdateInProgressInStore(false);
+        this.listModules();
+      }, 5000);
     },
   },
 };
