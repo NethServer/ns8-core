@@ -24,7 +24,7 @@ SD_WARNING='<4>'
 
 shopt -s nullglob
 errors=0
-for script in "${script_dir}"/* ; do
+for script in "${script_dir%/}"/* ; do
 
     if [[ ! -x "${script}" ]]; then
         echo "${SD_DEBUG}Skipping non-executable file ${script}..."
