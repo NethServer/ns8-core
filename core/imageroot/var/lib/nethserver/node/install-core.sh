@@ -64,9 +64,15 @@ echo "Add firewalld core rules:"
 echo "Write initial cluster environment state"
 (exec > /var/lib/nethserver/cluster/state/environment
     printf "NODE_ID=1\n"
-    printf "IMAGE_ID=%s\n" $(podman image inspect -f '{{.Id}}' "${CORE_IMAGE}")
 )
-printf "NODE_ID=1\n" > /var/lib/nethserver/node/state/environment
+echo "Write initial node environment state"
+(exec > /var/lib/nethserver/node/state/environment
+    printf "NODE_ID=1\n"
+    printf "IMAGE_ID=%s\n" $(podman image inspect -f '{{.Id}}' "${CORE_IMAGE}")
+    printf "IMAGE_DIGEST=%s\n" $(podman image inspect -f '{{.Digest}}' "${CORE_IMAGE}")
+    printf "PREV_IMAGE_ID=%s\n" $(podman image inspect -f '{{.Id}}' "${CORE_IMAGE}")
+    printf "PREV_IMAGE_DIGEST=%s\n" $(podman image inspect -f '{{.Digest}}' "${CORE_IMAGE}")
+)
 
 if [[ -z "${NS8_TWO_STEPS_INSTALL}" ]]; then
        /var/lib/nethserver/node/install-finalize.sh "$@"

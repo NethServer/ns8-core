@@ -54,10 +54,16 @@ image label `org.nethserver.images` are downloaded as well.
 After all downloads are successful, the `core` image is installed,
 replacing the previous one.
 
+- Files and empty directories that are no longer used by the new image are
+  removed
+
+- Image ID and digest are stored in the node environment
+
 Then the node agent runs executable scripts under
 `/var/lib/nethserver/node/update-core.d/`. Execution order is
 alphabetical. If a script has non-zero exit code, a warning is printed and
-execution continues with the next script.
+execution continues with the next script. Scripts added to this directory
+can be called multiple times, so they must be designed consequently.
 
 If the update fails on some node, the whole process is aborted by the
 leader node at this point.
