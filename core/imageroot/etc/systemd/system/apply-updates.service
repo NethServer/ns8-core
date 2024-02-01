@@ -1,0 +1,7 @@
+[Unit]
+Description=Download and install core, modules and OS updates
+
+[Service]
+Type=oneshot
+ExecStart=runagent apply-updates
+SyslogIdentifier=%N

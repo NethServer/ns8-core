@@ -18,14 +18,23 @@ force_update = request.get("force", False)
 
 agent.set_weight(os.path.basename(__file__), 2)
 
+core_env = agent.read_envfile('/etc/nethserver/core.env')
+
+# Fetch the old image information
+with subprocess.Popen(['podman', 'image', 'inspect', core_env['CORE_IMAGE']], stdout=subprocess.PIPE, stderr=sys.stderr) as proc:
+    prev_inspect = json.load(proc.stdout)
+
 try:
-    core_env = agent.read_envfile('/etc/nethserver/core.env')
     aver = semver.parse_version_info(core_env['CORE_IMAGE'].split(':')[-1])
+except ValueError:
+    print(agent.SD_WARNING + f"Current image has no semver tag: {core_env['CORE_IMAGE']}", file=sys.stderr)
+    aver = semver.parse_version_info('9999.9999.9999') # Only a manually forced update can override this big value
+
+try:
     bver = semver.parse_version_info(core_url.split(':')[-1])
 except ValueError:
-    print(agent.SD_WARNING + 'Cannot parse semantic version information from core image tags. Assuming a "minor" update type is occurring', file=sys.stderr)
-    aver = semver.parse_version_info('0.0.0')
-    bver = semver.parse_version_info('0.1.0')
+    print(agent.SD_WARNING + f'New image has no semver tag: {core_url}', file=sys.stderr)
+    bver = semver.parse_version_info('0.0.0') # Only a manually forced update can override this small value
 
 if force_update == False and aver >= bver:
     print('The new core image does not update the current one. Nothing to do.', file=sys.stderr)
@@ -40,19 +49,15 @@ agent.run_helper(*podman_pull_command, core_url,
     progress_callback=agent.get_progress_callback(0,40)
 ).check_returncode()
 
-# Get the old Podman image Id
-with subprocess.Popen(['podman', 'image', 'inspect', '-f', '{{.Id}}', core_env['CORE_IMAGE']], stdout=subprocess.PIPE, stderr=sys.stderr) as proc:
-    agent.set_env('PREV_IMAGE_ID', proc.stdout.read().rstrip())
-
-# Parse the image labels
+# Fetch the new image information
 with subprocess.Popen(['podman', 'image', 'inspect', core_url], stdout=subprocess.PIPE, stderr=sys.stderr) as proc:
     inspect = json.load(proc.stdout)
     inspect_labels = inspect[0]['Labels']
     inspect_image_id = inspect[0]['Id']
     inspect_image_digest = inspect[0]['Digest']
     inspect_image_repodigest = inspect[0]['RepoDigests'][0]
-    agent.set_env('IMAGE_ID', inspect_image_id)
 
+# Parse the image labels
 if 'org.nethserver.images' in inspect_labels:
     extra_images = inspect_labels['org.nethserver.images'].split()
 else:
@@ -61,8 +66,9 @@ else:
 print('Core image Id         : ', inspect_image_id, file=sys.stderr)
 print('Core image Digest     : ', inspect_image_digest, file=sys.stderr)
 print('Core image RepoDigest : ', inspect_image_repodigest, file=sys.stderr)
-print('Core image extras     : ', extra_images, file=sys.stderr)
+print('Core extra images     : ', extra_images, file=sys.stderr)
 
+# Complete the download phase with extra images
 agent.run_helper(*podman_pull_command, *extra_images,
     progress_callback=agent.get_progress_callback(41,70)
 ).check_returncode()
@@ -75,3 +81,13 @@ agent.run_helper('install-coreimage', core_url,
 ).check_returncode()
 
 agent.run_helper('systemctl', 'daemon-reload')
+
+# Update node environment with image attributes
+agent.set_env('IMAGE_ID',inspect_image_id)
+agent.set_env('IMAGE_URL', inspect[0]['RepoTags'][0])
+agent.set_env('IMAGE_DIGEST', inspect_image_digest)
+agent.set_env('IMAGE_REPODIGEST', inspect_image_repodigest)
+agent.set_env('PREV_IMAGE_ID', prev_inspect[0]['Id'])
+agent.set_env('PREV_IMAGE_URL', prev_inspect[0]['RepoTags'][0])
+agent.set_env('PREV_IMAGE_DIGEST', prev_inspect[0]['Digest'])
+agent.set_env('PREV_IMAGE_REPODIGEST', prev_inspect[0]['RepoDigests'][0])

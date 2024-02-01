@@ -1,6 +1,7 @@
 [Unit]
 Description=Store the encrypted cluster backup remotely
 ConditionPathExists=/var/lib/nethserver/cluster/state/backup/passphrase
+After=apply-updates.service
 
 [Service]
 Type=oneshot
