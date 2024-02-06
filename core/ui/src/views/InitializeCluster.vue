@@ -674,7 +674,7 @@
                       <span class="value">{{ restore.summary.vpn }}</span>
                     </div>
                     <div class="key-value-setting">
-                      <span class="label">{{ $t("init.domains") }}</span>
+                      <span class="label">{{ $t("init.external_domains") }}</span>
                       <span class="value">{{ restore.summary.domains }}</span>
                     </div>
                     <div class="key-value-setting">
