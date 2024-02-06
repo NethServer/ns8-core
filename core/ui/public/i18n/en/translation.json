@@ -215,7 +215,7 @@
         "backup_date": "Backup date",
         "cluster_label": "Cluster label",
         "vpn_endpoint": "VPN endpoint",
-        "external_domains": "External domains",
+        "external_domains": "External user domains",
         "backup_repositories": "Backup repositories",
         "restoring_cluster": "Restoring cluster",
         "restore_apps": "Restore apps",
