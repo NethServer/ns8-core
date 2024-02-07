@@ -279,7 +279,7 @@ export default {
       let badChars = prop.match(/[^a-zA-Z0-9\-_]/g);
       if (badChars && !allowedCharsRegex.test(prop)) {
         // replace space with _(space) for better readability
-        badChars = badChars.map(char => char === ' ' ? '_(space)' : char);
+        badChars = badChars.map(char => char === ' ' ? '(space)' : char);
           return {
               isValid: false,
               badChars: badChars ? [...new Set(badChars)] : null
