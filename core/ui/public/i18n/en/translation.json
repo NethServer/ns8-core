@@ -673,7 +673,9 @@
         "url_placeholder": "E.g. http://127.0.0.1:2000",
         "node_helper": "Select the node where the route will be created",
         "skip_cert_verify": "Skip certificate validation",
-        "skipCertVerify_tooltip": "Skip certificate validation for the backend target URL"
+        "skipCertVerify_tooltip": "Skip certificate validation for the backend target URL",
+        "instance_pattern": "Allowed characters: A-Z, a-z, 0-9, _ and -",
+        "bad_characters": "Invalid characters {badChars}"
     },
     "settings_tls_certificates": {
         "title": "TLS certificates",
