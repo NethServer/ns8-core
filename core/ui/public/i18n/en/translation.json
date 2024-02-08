@@ -208,6 +208,7 @@
         "backup_password": "Backup password",
         "backup_password_tooltip": "Encryption password used to cyper the backup.",
         "upload_cluster_backup_file": "Upload cluster backup file",
+        "empty_passphrase": "Empty passphrase",
         "invalid_passphrase": "Invalid password. Enter the password used to encrypt cluster backup.",
         "not_valid_gpg_file": "Invalid GPG file",
         "url_format": "Invalid URL",
