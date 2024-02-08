@@ -61,7 +61,8 @@
         "hostname": "Hostname",
         "restore_from_cluster_backup_file": "Wiederherstellung aus einer Cluster-Datensicherung",
         "not_valid_gpg_file": "ungültige GPG Datei",
-        "skip_apps_restore": "Wiederherstellung von Anwendungen überspringen"
+        "skip_apps_restore": "Wiederherstellung von Anwendungen überspringen",
+        "external_domains": "External user domains"
     },
     "password": {
         "uppercase_letter": "Großbuchstaben",
