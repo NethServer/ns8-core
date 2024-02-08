@@ -1173,7 +1173,8 @@
         "name_placeholder": "Es. myroute",
         "host_placeholder": "Es. myapp.example.org",
         "skipCertVerify_tooltip": "Salta la verifica del certificato per l'URL del backend di destinazione",
-        "skip_cert_verify": "Salta la verifica del certificato"
+        "skip_cert_verify": "Salta la verifica del certificato",
+        "instance_pattern": "Sono ammessi i caratteri: A-Z, a-z, 0-9, _ e -"
     },
     "samba": {
         "choose_samba_admin_username": "Scegli il nome utente dell'amministratore di Samba",
