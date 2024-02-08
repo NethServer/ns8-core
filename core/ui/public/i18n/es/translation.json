@@ -440,7 +440,8 @@
         "name_placeholder": "Por ejemplo: myroute",
         "host_placeholder": "Por ejemplo: myapp.example.org",
         "skipCertVerify_tooltip": "Omitir la validación de certificados para la URL de destino del backend",
-        "skip_cert_verify": "Omitir la validación del certificado"
+        "skip_cert_verify": "Omitir la validación del certificado",
+        "instance_pattern": "Allowed characters: A-Z, a-z, 0-9, _ and -"
     },
     "shell": {
         "app_launcher": "Lanzador de aplicaciones",
