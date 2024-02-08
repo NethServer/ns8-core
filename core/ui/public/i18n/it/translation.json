@@ -521,13 +521,13 @@
         "get-fqdn": "Ottieni FQDN",
         "get-password-policy": "Ottieni regole password",
         "set-password-policy": "Imposta regole password",
-        "set-subscription": "Set subscription",
-        "remove-subscription": "Remove cluster subscription",
-        "get-support-session": "Get support session",
-        "stop-support-session": "Stop support session",
-        "start-support-session": "Start support session",
-        "get-subscription": "Get subscription",
-        "register-cluster-subscription": "Register cluster subscription"
+        "set-subscription": "Modifica subscription",
+        "remove-subscription": "Rimuovi la subscription del cluster",
+        "get-support-session": "Avvio sessione di supporto",
+        "stop-support-session": "Termina sessione di supporto",
+        "start-support-session": "Avvia sessione di supporto",
+        "get-subscription": "Ottieni subscription",
+        "register-cluster-subscription": "Registra la subscription del cluster"
     },
     "backup": {
         "configure": "Configura",
@@ -634,7 +634,7 @@
         "select_restore_node": "Selezionare il nodo in cui verrà ripristinata l'istanza",
         "disabled_backups_description": "C'è {num} backup disabilitato | Ci sono {num} backup disabilitati",
         "instance_restored_to_node": "{module_id} ripristinato su {node}",
-        "invalid_url": "URL non valido",
+        "invalid_url": "Formato o valore non valido",
         "backup_page_tooltip_1": "Qui è possibile configurare i backup e ripristinare qualsiasi applicazione.",
         "password": "Password",
         "repositories": "Repository",
@@ -698,15 +698,15 @@
         "smb_domain": "Nome dominio (NT/Workgroup)",
         "node": "Nodo",
         "cluster_placeholder": "Selezionare un nodo del cluster",
-        "aws_url_label": "AWS bucket name",
-        "smb_url_label": "Share name",
-        "genericS3_url_label": "Bucket address",
-        "genericS3_placeholder": "e.g. myminio.example.com/mybucket",
-        "smb_url_placeholder": "e.g. myshare or myshare/subfolder",
+        "aws_url_label": "Nome bucket di AWS",
+        "smb_url_label": "Nome condivisione",
+        "genericS3_url_label": "Indirizzo bucket",
+        "genericS3_placeholder": "es. myminio.example.com/mybucket",
+        "smb_url_placeholder": "es. myshare oppure myshare/subfolder",
         "backup_page_tooltip_manual": "For more information <a href=\"https://docs.nethserver.org/projects/ns8/en/latest/backup.html\">go to the Backup and restore manual page</a>.",
-        "azure_url_label": "Azure container name",
-        "backblaze_url_label": "B2 bucket name",
-        "smb_url_tooltip": "It is possible to specify a share subfolder path using the \"/\" slash separator",
+        "azure_url_label": "Nome container di Azure",
+        "backblaze_url_label": "Nome bucket di B2",
+        "smb_url_tooltip": "È possibile specificare una sotto-directory della share con il separatore \"/\" (slash)",
         "genericS3_url_tooltip": "Enter an address with format server_fqdn/bucket_name. Note: the server must have a valid TLS certificate"
     },
     "login": {
@@ -835,8 +835,8 @@
         "finish": "Completa",
         "got_it": "Ho capito",
         "click_here_to_upload": "Clicca qui per l'upload",
-        "not_active": "Inactive",
-        "active": "Active"
+        "not_active": "Inattivo",
+        "active": "Attivo"
     },
     "error": {
         "error": "Errore",
@@ -865,7 +865,7 @@
         "invalid_username_or_password": "Nome utente o password non validi",
         "invalid_value": "Valore non valido",
         "cannot_retrieve_users_admin_configuration": "Portale gestione utenti non disponibile",
-        "cannot_retrieve_subscription_status": "Cannot retrieve subscription status"
+        "cannot_retrieve_subscription_status": "Impossibile ottenere lo stato della subscription"
     },
     "task": {
         "configure": "Configura",
@@ -949,7 +949,8 @@
         "forbidden_hostname_value": "Nome host non consentito",
         "vpn_endpoint_address_tooltip": "I nodi worker utilizzano questo indirizzo per collegarsi al leader. Assicurarsi che sia correttamente risolto e raggiungibile dai nodi worker.",
         "vpn_endpoint_port_tooltip": "I nodi worker utilizzano questo numero di porta per collegarsi al leader. Può differire dalla porta di ascolto di Wireguard 55820. Cambiare questo numero di porta solo se tra il worker e il leader è presente un dispositivo che fa port-forwarding",
-        "vpn_cidr_tooltip": "Indirizzo della rete VPN utilizzata dai nodi del cluster per comunicare. Assicurare che questa rete non sia in conflitto con reti esistenti. Notare che la rete VPN non potrà essere cambiata in un secondo momento."
+        "vpn_cidr_tooltip": "Indirizzo della rete VPN utilizzata dai nodi del cluster per comunicare. Assicurare che questa rete non sia in conflitto con reti esistenti. Notare che la rete VPN non potrà essere cambiata in un secondo momento.",
+        "external_domains": "Domini utente esterni"
     },
     "account_provider": {
         "title": "Account provider"
@@ -1041,7 +1042,7 @@
         "title": "Stato del cluster",
         "go_to_nodes": "Vai a Nodi",
         "apps_installed_c": "App installata | App installate",
-        "go_to_subscription": "Go to Subscription",
+        "go_to_subscription": "Vai a Subscription",
         "subscription_status": "Subscription"
     },
     "domain_users": {
@@ -1129,8 +1130,8 @@
         "title": "Cluster"
     },
     "settings_http_routes": {
-        "host_tooltip": "Un esempio di host valido è: <code>myapp.example.org</code>",
-        "url_tooltip": "Un esempio di URL valido è: <code>http://127.0.0.0:2000</code>",
+        "host_tooltip": "Un esempio di host valido è <code>myapp.example.org</code>",
+        "url_tooltip": "Un esempio di URL valido è <code>http://127.0.0.1:2000</code>",
         "url_helper": "URL di destinazione del backend",
         "create_route": "Crea rotta",
         "create_route_route": "Crea rotta {route}",
@@ -1166,13 +1167,13 @@
         "route_already_exists": "La rotta esiste già",
         "host_is_not_valid_not_localhost": "'localhost' o '127.0.0.1' possono essere utilizzati solo se si specifica un percorso",
         "http2https": "Da HTTP a HTTPS",
-        "node_helper": "Select the node where the route will be created",
-        "url_placeholder": "E.g. http://127.0.0.1:2000",
-        "path_placeholder": "E.g. /foo",
-        "name_placeholder": "E.g myroute",
-        "host_placeholder": "E.g. myapp.example.org",
-        "skipCertVerify_tooltip": "Skip certificate validation for the backend target URL",
-        "skip_cert_verify": "Skip certificate validation"
+        "node_helper": "Seleziona il nodo dove sarà creata la rotta",
+        "url_placeholder": "Es. http://127.0.0.1:2000",
+        "path_placeholder": "Es. /foo",
+        "name_placeholder": "Es. myroute",
+        "host_placeholder": "Es. myapp.example.org",
+        "skipCertVerify_tooltip": "Salta la verifica del certificato per l'URL del backend di destinazione",
+        "skip_cert_verify": "Salta la verifica del certificato"
     },
     "samba": {
         "choose_samba_admin_username": "Scegli il nome utente dell'amministratore di Samba",
@@ -1232,7 +1233,7 @@
     },
     "firewall": {
         "node_firewall": "firewall {node}",
-        "public_zone_services": "Servizi nellza zona pubblica",
+        "public_zone_services": "Servizi nella zona pubblica",
         "network_interfaces": "Interfacce di rete",
         "tcp_ports": "Porte TCP",
         "udp_ports": "Porte UDP",
@@ -1262,32 +1263,32 @@
         "title": "Rete"
     },
     "settings_subscription": {
-        "authentication_token_helper": "Obtain a registration token from the subscription web portal",
-        "authentication_token": "Authentication token",
+        "authentication_token_helper": "Ottieni un token di registrazione dal portale web della subscription",
+        "authentication_token": "Token di autenticazione",
         "title": "Subscription",
-        "cluster_subscription": "Cluster subscription",
-        "remote_support_description": "Allow {productName} support team to remotely access your cluster",
-        "remove_cluster_subscription_description": "You are going to remove the subscription plan. This will disable the subscription features.",
-        "stop_session_support": "End session",
-        "unknown_token": "Unknown token",
-        "subscription_cannot_be_enabled": "Subscription is not available",
-        "remove_subscription": "Remove subscription",
-        "must_be_32_chars_but_less_than_128": "Must be between 32 and 128 characters",
-        "expire_date": "Expiration",
-        "status": "Status",
-        "remove_cluster_subscription_title": "Remove the cluster subscription",
-        "no_expiration": "No expiration",
-        "paste_session_id_to_support_team": "Paste the session ID to the support team",
-        "remote_support_in_progress": "Remote support session in progress",
-        "remote_support": "Remote support",
-        "plan_name": "Plan",
-        "request_subscription": "Register",
-        "system_id": "System ID",
-        "cluster_subscription_description": "Log in to {enterprise} or {subscription} to manage the subscription",
-        "os_not_supported": "Operating system is not supported",
-        "authentication_token_placeholder": "Paste the token here",
-        "subscription_status": "Subscription status",
-        "session_id": "Session ID",
-        "start_session_support": "Start session"
+        "cluster_subscription": "Subscription del cluster",
+        "remote_support_description": "Consente al team di supporto di {productName} di accedere da remoto al cluster",
+        "remove_cluster_subscription_description": "Stai per disiscrivere il piano di subscription. Questo disabiliterà le funzioni della subscription.",
+        "stop_session_support": "Termina sessione",
+        "unknown_token": "Token sconosciuto",
+        "subscription_cannot_be_enabled": "La Subscription non è disponibile",
+        "remove_subscription": "Rimuovi subscription",
+        "must_be_32_chars_but_less_than_128": "Deve essere tra 32 e 128 caratteri",
+        "expire_date": "Scadenza",
+        "status": "Stato",
+        "remove_cluster_subscription_title": "Rimuovi la subscription del cluster",
+        "no_expiration": "Senza scadenza",
+        "paste_session_id_to_support_team": "Incolla l'ID di sessione al team di supporto",
+        "remote_support_in_progress": "Sessione di supporto remoto in corso",
+        "remote_support": "Supporto remoto",
+        "plan_name": "Piano",
+        "request_subscription": "Registra",
+        "system_id": "ID sistema",
+        "cluster_subscription_description": "Accedi a {enterprise} o {subscription} per gestire la subscription",
+        "os_not_supported": "Sistema operativo non supportato",
+        "authentication_token_placeholder": "Incolla qui il token",
+        "subscription_status": "Stato subscription",
+        "session_id": "ID sessione",
+        "start_session_support": "Avvia sessione"
     }
 }
