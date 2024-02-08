@@ -287,7 +287,8 @@
         "hostname": "Hostname",
         "restore_from_cluster_backup_file": "Restore from cluster backup file",
         "not_valid_gpg_file": "Invalid GPG file",
-        "skip_apps_restore": "Skip apps restore"
+        "skip_apps_restore": "Skip apps restore",
+        "external_domains": "External user domains"
     },
     "password": {
         "uppercase_letter": "Uppercase letter",
