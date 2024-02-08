@@ -274,23 +274,6 @@ export default {
       this.clearErrors();
       this.$emit("hide");
     },
-    validateInput(prop) {
-      const allowedCharsRegex = /^[a-zA-Z0-9\-_]+$/;
-      let badChars = prop.match(/[^a-zA-Z0-9\-_]/g);
-      if (badChars && !allowedCharsRegex.test(prop)) {
-        // replace space with _(space) for better readability
-        badChars = badChars.map(char => char === ' ' ? '(space)' : char);
-          return {
-              isValid: false,
-              badChars: badChars ? [...new Set(badChars)] : null
-          };
-      }
-
-      return {
-          isValid: true,
-          badChars: null
-      };
-    },
     validateSetRoute(isEditingRoute) {
       this.clearErrors();
 
@@ -324,18 +307,6 @@ export default {
           }
         }
       }
-      // Instance name validation
-        const validationResult = this.validateInput(this.instance);
-        if (!validationResult.isValid) {
-          this.error.instance = this.$t("settings_http_routes.bad_characters", {
-            badChars: validationResult.badChars.join(", ")
-          });
-
-          if (isValidationOk) {
-            this.focusElement("instance");
-            isValidationOk = false;
-          }
-        }
 
       // node
 
