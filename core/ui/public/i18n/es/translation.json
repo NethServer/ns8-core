@@ -806,7 +806,8 @@
         "skip_apps_restore_2": "Puedes restaurar aplicaciones más tarde en la página <strong>Copia de seguridad</strong>",
         "vpn_cidr": "Red VPN (CIDR)",
         "select_apps_to_restore": "Seleccionar aplicaciones para restaurar",
-        "skip_apps_restore": "Saltar restauración de aplicaciones"
+        "skip_apps_restore": "Saltar restauración de aplicaciones",
+        "external_domains": "Dominios de usuario externos"
     },
     "settings_account": {
         "i_have_stored_setup_key": "He guardado la <strong>clave de configuración 2FA</strong> en un lugar seguro",
