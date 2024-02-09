@@ -674,7 +674,9 @@
                       <span class="value">{{ restore.summary.vpn }}</span>
                     </div>
                     <div class="key-value-setting">
-                      <span class="label">{{ $t("init.external_domains") }}</span>
+                      <span class="label">{{
+                        $t("init.external_domains")
+                      }}</span>
                       <span class="value">{{ restore.summary.domains }}</span>
                     </div>
                     <div class="key-value-setting">
@@ -990,6 +992,8 @@ export default {
   created() {
     this.getClusterStatus();
     this.getDefaults();
+
+    console.log("InitializeCluster created"); ////
   },
   methods: {
     ...mapActions(["setClusterInitializedInStore"]),
@@ -1565,8 +1569,12 @@ export default {
       this.focusElement("joinCode");
     },
     async onFileUpload(files) {
+      console.log("onFileUpload, files", files); ////
+
       this.error.restore.backup_file = "";
       this.restore.base64FileUploaded = "";
+
+      console.log("   this.restore.filesUploaded", this.restore.filesUploaded); ////
 
       if (files.length > 1) {
         // keep only last uploaded file
@@ -1577,12 +1585,16 @@ export default {
 
       const fileUploaded = this.restore.filesUploaded[0];
 
+      console.log("   fileUploaded", fileUploaded); ////
+
       if (!fileUploaded || fileUploaded.invalidMessageTitle) {
         // invalid file
         return;
       }
       const file = fileUploaded.file;
       const result = await this.fileToBase64(file).catch((e) => Error(e));
+
+      console.log("   fileToBase64 result", result); ////
 
       if (result instanceof Error) {
         console.log("error converting file to base64:", result.message);
@@ -1596,6 +1608,16 @@ export default {
     validateRetrieveClusterBackupFromFile() {
       let isValidationOk = true;
       this.clearErrors();
+
+      console.log("validateRetrieveClusterBackupFromFile"); ////
+      console.log(
+        "   this.restore.filesUploaded.length",
+        this.restore.filesUploaded.length
+      ); ////
+      console.log(
+        "   this.restore.base64FileUploaded",
+        this.restore.base64FileUploaded
+      ); ////
 
       if (
         !this.restore.filesUploaded.length ||
