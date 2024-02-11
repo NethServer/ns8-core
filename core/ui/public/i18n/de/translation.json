@@ -62,7 +62,8 @@
         "restore_from_cluster_backup_file": "Wiederherstellung aus einer Cluster-Datensicherung",
         "not_valid_gpg_file": "ungültige GPG Datei",
         "skip_apps_restore": "Wiederherstellung von Anwendungen überspringen",
-        "external_domains": "External user domains"
+        "external_domains": "External user domains",
+        "empty_passphrase": "The password is mandatory"
     },
     "password": {
         "uppercase_letter": "Großbuchstaben",
