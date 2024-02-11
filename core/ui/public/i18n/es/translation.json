@@ -441,7 +441,7 @@
         "host_placeholder": "Por ejemplo: myapp.example.org",
         "skipCertVerify_tooltip": "Omitir la validación de certificados para la URL de destino del backend",
         "skip_cert_verify": "Omitir la validación del certificado",
-        "instance_pattern": "Allowed characters: A-Z, a-z, 0-9, _ and -"
+        "instance_pattern": "Caracteres permitidos: A-Z, a-z, 0-9, _ y -"
     },
     "shell": {
         "app_launcher": "Lanzador de aplicaciones",
@@ -808,7 +808,8 @@
         "vpn_cidr": "Red VPN (CIDR)",
         "select_apps_to_restore": "Seleccionar aplicaciones para restaurar",
         "skip_apps_restore": "Saltar restauración de aplicaciones",
-        "external_domains": "Dominios de usuario externos"
+        "external_domains": "Dominios de usuario externos",
+        "empty_passphrase": "Contraseña obligatoria"
     },
     "settings_account": {
         "i_have_stored_setup_key": "He guardado la <strong>clave de configuración 2FA</strong> en un lugar seguro",
