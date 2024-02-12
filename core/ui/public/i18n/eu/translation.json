@@ -824,7 +824,8 @@
         "restore_from_cluster_backup_file": "Restore from cluster backup file",
         "not_valid_gpg_file": "Invalid GPG file",
         "skip_apps_restore": "Skip apps restore",
-        "external_domains": "External user domains"
+        "external_domains": "External user domains",
+        "empty_passphrase": "The password is mandatory"
     },
     "login": {
         "2fa_code_required": "6 digituko kodea beharrezkoa da",

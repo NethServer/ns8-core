@@ -950,7 +950,8 @@
         "vpn_endpoint_address_tooltip": "I nodi worker utilizzano questo indirizzo per collegarsi al leader. Assicurarsi che sia correttamente risolto e raggiungibile dai nodi worker.",
         "vpn_endpoint_port_tooltip": "I nodi worker utilizzano questo numero di porta per collegarsi al leader. Può differire dalla porta di ascolto di Wireguard 55820. Cambiare questo numero di porta solo se tra il worker e il leader è presente un dispositivo che fa port-forwarding",
         "vpn_cidr_tooltip": "Indirizzo della rete VPN utilizzata dai nodi del cluster per comunicare. Assicurare che questa rete non sia in conflitto con reti esistenti. Notare che la rete VPN non potrà essere cambiata in un secondo momento.",
-        "external_domains": "Domini utente esterni"
+        "external_domains": "Domini utente esterni",
+        "empty_passphrase": "La password è obbligatoria"
     },
     "account_provider": {
         "title": "Account provider"
