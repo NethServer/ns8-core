@@ -1588,9 +1588,7 @@ export default {
         console.log("error converting file to base64:", result.message);
         return;
       } else {
-        this.restore.base64FileUploaded = result.split(
-          "data:application/pgp-encrypted;base64,"
-        )[1];
+        this.restore.base64FileUploaded = result.split(";base64,")[1];
       }
     },
     validateRetrieveClusterBackupFromFile() {
