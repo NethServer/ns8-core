@@ -24,35 +24,35 @@ import agent
 import sys
 import os
 import agent.tasks
-import cluster.modules as lmods
+import cluster.modules
 
-rdb = agent.redis_connect()
+rdb = agent.redis_connect(privileged=True)
+updates = cluster.modules.list_updates(rdb, skip_core_modules = True)
 
-modules = []
-for mf in rdb.scan_iter('module/*/flags'):
-    flags = rdb.smembers(mf)
-    if 'core_module' in flags:
-        continue
+if len(updates) == 0:
+    print(agent.SD_INFO, "No updates available for the installed modules", file=sys.stderr)
+    sys.exit(0)
 
-    module_id = mf.removeprefix('module/').removesuffix('/flags')
-    modules.append(module_id)
-
-step = len(modules)
-start = 5
 errors = 0
-for module in modules:
-    image_name = agent.get_image_name_from_url(rdb.hget(f'module/{module}/environment', 'IMAGE_URL'))
-    try:
-        image_url = lmods.get_latest_module(image_name, rdb)
-    except lmods.LatestModuleLookupError:
-        continue
+# The increment of each update to calculate the task progress could be a
+# decimal number: when calculating the progress range, round values to
+# integer numbers!
+ustep = 100 / len(updates)
+uidx = 0
+for oupdate in updates:
+    module = oupdate['id']
+    image_url = f"{oupdate['source']}:{oupdate['update']}"
 
+    start = int(uidx * ustep)
+    # ustep can be less than 1, with more than 100 updates: ensure "end"
+    # is always greater than "start" and is an integer value
+    end = start + max(int(ustep), 1)
     upd_module_result = agent.tasks.run("cluster", "update-module",
         data={"instances": [module], "image_url": image_url},
         endpoint="redis://cluster-leader",
-        progress_callback=agent.get_progress_callback(start, start + step)
+        progress_callback=agent.get_progress_callback(start, end)
     )
-    start = start + step + 1
+    uidx += 1
     if upd_module_result['exit_code'] != 0:
         print(agent.SD_ERR + f"Failed update-module for instance {module} from image {image_url}", file=sys.stderr)
         errors += 1
