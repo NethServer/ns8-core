@@ -213,7 +213,6 @@
         "not_valid_gpg_file": "Invalid GPG file",
         "url_format": "Invalid URL",
         "restore_summary": "Summary",
-        "backup_date": "Backup date",
         "cluster_label": "Cluster label",
         "vpn_endpoint": "VPN endpoint",
         "external_domains": "External user domains",

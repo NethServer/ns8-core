@@ -276,7 +276,6 @@
         "welcome": "Welcome to {product}",
         "restore_from_remote_url": "Restore from remote URL",
         "create_cluster_instead": "Create a new cluster instead",
-        "backup_date": "Backup date",
         "create_cluster_description": "Create a new cluster and promote this node as leader",
         "vpn_endpoint_address_tooltip": "Worker nodes use this address to connect to the leader. Ensure it is correctly resolved and reachable by worker nodes",
         "skip_apps_restore_2": "You can restore apps later in <strong>Backup</strong> page",

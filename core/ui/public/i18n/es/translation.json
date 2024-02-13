@@ -775,7 +775,6 @@
         "current_password": "Contraseña de administrador actual",
         "restore_from_remote_url": "Restaurar desde URL remota",
         "create_cluster_instead": "En su lugar, crea un nuevo clúster",
-        "backup_date": "Fecha de copia de seguridad",
         "create_cluster_description": "Crear un nuevo clúster y promover este nodo como líder",
         "join_cluster_instead": "Unirse a un clúster existente en su lugar",
         "skip_apps_restore_1": "¿Quieres omitir la restauración de aplicaciones?",
