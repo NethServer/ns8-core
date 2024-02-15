@@ -763,7 +763,6 @@
     },
     "init": {
         "join_cluster_description": "Lehendik dagoen kluster batera nodo hau gehitu",
-        "backup_date": "Babeskopia data",
         "change_password": "Pasahitza aldatu",
         "restoring_cluster": "Restoring cluster",
         "custom_certificates": "Uploaded certificates",

@@ -49,7 +49,6 @@
         "welcome": "Willkommen bei [product}",
         "restore_from_remote_url": "Wiederherstellung von ferner URL",
         "create_cluster_instead": "Stattdessen ein neues Cluster erstellen",
-        "backup_date": "Sicherungsdatum",
         "create_cluster_description": "Ein neues Clusters erstellen und diesen Knoten zum Hauptknoten heraufstufen",
         "vpn_endpoint_address_tooltip": "Arbeitsknoten nutzen diese Adresse um eine Verbindung zum Hauptknoten herzustellen. Korrekte Auflösung und Erreichbarkeit ausgehend von den Arbeitsknoten sicherstellen.",
         "skip_apps_restore_2": "Sie können Anwendungen später über die Seite <strong>Sicherungen</strong> wiederherstellen",

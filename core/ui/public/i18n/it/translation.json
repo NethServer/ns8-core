@@ -890,7 +890,6 @@
     "init": {
         "backup_password": "Password del backup",
         "backup_repositories": "Repository del backup",
-        "backup_date": "Data del backup",
         "join_code_helper_text": "Puoi ottenere il codice di join accedendo",
         "join_cluster": "Join a cluster",
         "create_cluster": "Crea cluster",

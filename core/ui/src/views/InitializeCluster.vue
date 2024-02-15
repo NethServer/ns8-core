@@ -655,13 +655,6 @@
                     {{ $t("init.restore_summary") }}
                   </h5>
                   <cv-form @submit.prevent="restoreCluster">
-                    <div class="key-value-setting">
-                      <span class="label">{{ $t("init.backup_date") }}</span>
-                      <span class="value">{{
-                        (restore.summary.timestamp * 1000)
-                          | date("yyyy-MM-dd HH:mm:ss")
-                      }}</span>
-                    </div>
                     <div
                       v-if="restore.summary.cluster"
                       class="key-value-setting"
