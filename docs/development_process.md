@@ -152,8 +152,6 @@ The *Developer*.
 
 - Writes and updates the [documentation](#documentation) associated with the code.
 
-- Finally, clears the *Assignee*.
-
 If the issue is not valid, it must be closed using the **invalid** label.
 A comment must convey the reason why it is invalid, like *"duplicate of (URL of issue), wontfix because ..."*.
 
@@ -162,17 +160,17 @@ A comment must convey the reason why it is invalid, like *"duplicate of (URL of 
 
 The *QA team member*.
 
-* Takes an unassigned issue with label **testing** and sets the *Assignee* field
-  to themselves.
+* Takes an issue with label **testing** and adds themselves to the *Assignee*
+  field
 
 * Tests the package, following the test case documentation written by the
   *Developer*.
 
-* When test finishes they remove the **testing** label and clears the *Assignee*
-  field.  If the test is *successful*, they set the **verified** label,
-  otherwise they alert the *Developer* and the *Packager* to plan a new
-  process iteration.
+* Tests the documentation changes, if present
 
+* When test finishes they remove the **testing** label.  If the test is
+  *successful*, they set the **verified** label, otherwise they alert the
+  *Developer* and the *Packager* to plan a new process iteration.
 
 
 #### Packager
@@ -187,16 +185,21 @@ The *Packager* coordinates the *Developer* and *QA member* work.  After the
 
 After the *QA member* has completed the testing phase:
 
-* Takes an unassigned issue with label **verified**
+* Takes an issue with label **verified**
 
 * Commits a *release tag* (see [Module version numbering rules](#module-version-numbering-rules)).
 
 * Pushes the *release tag* and commits to GitHub
 
+* Merges the documentation changes in the `nethserver/ns8-docs` repo. Also
+  publishes the documentation by pushing the `latest` branch, if needed
+
 * Closes the issue, specifying the list of released modules
 
 When the package is CLOSED, all related [documentation](#documentation) must be in place.
 
+At any time of the issue lifecycle they ensure that there are no release
+conflict with other issues.
 
 ## Pull requests
 
