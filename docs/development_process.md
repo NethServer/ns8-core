@@ -100,7 +100,7 @@ The priority of a bug depends on:
 * number of affected users: more affected users means more priority
 
 
-## Issue tracker
+### Issue tracker
 
 The NethServer project is hosted on GitHub and is constituted by many Git
 repositories.  We set one of them to be the issue tracker:
@@ -118,7 +118,7 @@ are published here:
 
 [https://github.com/orgs/NethServer/projects/8](https://github.com/orgs/NethServer/projects/8)
 
-## Issue labels
+### Issue labels
 
 Issues can be tagged using a set of well-known labels:
 
@@ -133,8 +133,11 @@ An issue without `bug` label is considered a new feature or an enhancement.
 Before introducing new labels, please discuss them with the development team
 and make sure to describe carefully the new label inside the [label page](https://github.com/NethServer/dev/labels).
 
+### Process the issue
 
-### Developer
+After an issue is filed in the tracker, it goes through the hands of teammates who assume various roles. While the same person may take on multiple roles simultaneously, we prefer to distribute responsibilities as much as possible.
+
+#### Developer
 
 The *Developer*.
 
@@ -149,29 +152,28 @@ The *Developer*.
 
 - Writes and updates the [documentation](#documentation) associated with the code.
 
-- Finally, clears the *Assignee*.
-
 If the issue is not valid, it must be closed using the **invalid** label.
 A comment must convey the reason why it is invalid, like *"duplicate of (URL of issue), wontfix because ..."*.
 
 
-### QA team member (testing)
+#### QA team member (testing)
 
 The *QA team member*.
 
-* Takes an unassigned issue with label **testing** and sets the *Assignee* field
-  to themselves.
+* Takes an issue with label **testing** and adds themselves to the *Assignee*
+  field
 
 * Tests the package, following the test case documentation written by the
   *Developer*.
 
-* When test finishes they remove the **testing** label and clears the *Assignee*
-  field.  If the test is *successful*, they set the **verified** label,
-  otherwise they alert the *Developer* and the *Packager* to plan a new
-  process iteration.
+* Tests the documentation changes, if present
+
+* When test finishes they remove the **testing** label.  If the test is
+  *successful*, they set the **verified** label, otherwise they alert the
+  *Developer* and the *Packager* to plan a new process iteration.
 
 
-### Packager
+#### Packager
 
 The *Packager* coordinates the *Developer* and *QA member* work.  After the
 *Developer* opens one or more pull requests:
@@ -183,16 +185,21 @@ The *Packager* coordinates the *Developer* and *QA member* work.  After the
 
 After the *QA member* has completed the testing phase:
 
-* Takes an unassigned issue with label **verified**
+* Takes an issue with label **verified**
 
 * Commits a *release tag* (see [Module version numbering rules](#module-version-numbering-rules)).
 
 * Pushes the *release tag* and commits to GitHub
 
+* Merges the documentation changes in the `nethserver/ns8-docs` repo. Also
+  publishes the documentation by pushing the `latest` branch, if needed
+
 * Closes the issue, specifying the list of released modules
 
 When the package is CLOSED, all related [documentation](#documentation) must be in place.
 
+At any time of the issue lifecycle they ensure that there are no release
+conflict with other issues.
 
 ## Pull requests
 
