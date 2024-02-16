@@ -8,5 +8,34 @@
 exec 1>&2
 set -e
 
-# Reload agents gracefully
-killall -q -s USR1 -r '^agent$'
+function reload_leader_agents ()
+{
+    # Send reload signal to all agents, except the cluster agent to avoid
+    # a deadlock in the update-core action!
+    agent_cluster_pid=$(pgrep -f -- 'agent --agentid=cluster')
+    for agent_pid in $(pgrep -x agent) ; do
+        if [[ "${agent_pid}" != "${agent_cluster_pid}" ]]; then
+            kill -USR1 "${agent_pid}"
+        fi
+    done
+}
+
+function reload_worker_agents ()
+{
+    # Send reload signal to all agents. The cluster agent in worker nodes
+    # can be reloaded safely.
+    pkill -USR1 -x agent
+}
+
+# connect to local redis replica with full read-only access
+export REDIS_USER="default"
+export REDIS_PASSWORD="default"
+export REDIS_ADDRESS="127.0.0.1:6379"
+leader_id=$(redis-exec hget cluster/environment NODE_ID)
+
+if [[ "${NODE_ID}" != "${leader_id}" ]] ; then
+    reload_worker_agents
+else
+    # Leader node from here.
+    reload_leader_agents
+fi
