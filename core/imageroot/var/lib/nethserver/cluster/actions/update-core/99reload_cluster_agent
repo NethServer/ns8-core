@@ -1,0 +1,14 @@
+#!/bin/bash
+
+#
+# Copyright (C) 2024 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+exec 1>&2
+set -e
+
+# Ask the cluster agent to restart. To avoid update deadlocks, this must
+# be the last step of the cluster/update-core action. The node agent
+# already sent the USR1 signal to other agents, now it's our turn:
+pkill -USR1 -f -- 'agent --agentid=cluster'
