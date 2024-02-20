@@ -33,8 +33,12 @@
           :equalLabel="$t('password.equal')"
           :focus="focusPasswordField"
           :clearConfirmPasswordCommand="clearConfirmPasswordCommand"
-          :minLength="policy.strength.enforced ? policy.strength.password_min_length : 0"
-          :checkComplexity="policy.strength.enforced ? policy.strength.complexity_check : false"
+          :minLength="
+            policy.strength.enforced ? policy.strength.password_min_length : 0
+          "
+          :checkComplexity="
+            policy.strength.enforced ? policy.strength.complexity_check : false
+          "
         />
         <div v-if="error.alterUser">
           <NsInlineNotification
@@ -115,7 +119,7 @@ export default {
     },
   },
   methods: {
-      async listPasswordPolicy() {
+    async listPasswordPolicy() {
       this.loading.ListPasswordPolicy = true;
       this.error.ListPasswordPolicy = "";
       const taskAction = "get-password-policy";
