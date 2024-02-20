@@ -42,8 +42,8 @@
   "packageRules": [
     {
       "matchDatasources": ["go"],
-      "matchPackageNames": ["github.com/go-redis/redis/v8"],
-      "allowedVersions": "< 9"
+      "matchPackageNames": ["github.com/go-redis/redis/v9"],
+      "allowedVersions": "< 10"
     }
   ]
 }

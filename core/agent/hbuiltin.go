@@ -26,7 +26,7 @@ import (
 	"log"
 
 	"github.com/NethServer/ns8-core/core/agent/models"
-	"github.com/go-redis/redis/v8"
+	"github.com/go-redis/redis/v9"
 )
 
 func runListActions(rdb *redis.Client, task *models.Task) {

@@ -29,7 +29,7 @@ import (
 	"sync"
 
 	"github.com/NethServer/ns8-core/core/agent/models"
-	"github.com/go-redis/redis/v8"
+	"github.com/go-redis/redis/v9"
 )
 
 func listenEventsAsync(ctx context.Context, complete chan int) {

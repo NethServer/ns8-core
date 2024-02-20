@@ -4,6 +4,7 @@ go 1.18
 
 require (
 	github.com/go-redis/redis/v8 v8.11.5
+	github.com/go-redis/redis/v9 v9.0.0-beta.1
 	github.com/nqd/flat v0.2.0
 	github.com/xeipuuv/gojsonschema v1.2.0
 )
