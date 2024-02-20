@@ -99,6 +99,13 @@
           :description="error.alterUser"
           :showCloseButton="false"
         />
+        <NsInlineNotification
+          v-if="error.ListPasswordPolicy"
+          kind="error"
+          :title="$t('action.get-password-policy')"
+          :description="error.ListPasswordPolicy"
+          :showCloseButton="false"
+        />
       </cv-form>
     </template>
     <template slot="secondary-button">{{ $t("common.cancel") }}</template>
@@ -156,6 +163,7 @@ export default {
         newPassword: "",
         confirmPassword: "",
         groups: "",
+        ListPasswordPolicy:""
       },
     };
   },
