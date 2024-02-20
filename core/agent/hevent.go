@@ -27,6 +27,7 @@ import (
 	"os/exec"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/NethServer/ns8-core/core/agent/models"
 	"github.com/go-redis/redis/v8"
@@ -50,6 +51,9 @@ func listenEventsAsync(ctx context.Context, complete chan int) {
 		Password:  agentPrefix,
 		DB:        0,
 		OnConnect: setClientNameCallback,
+		MaxRetries:       10,
+		MinRetryBackoff:   100 * time.Millisecond,
+		MaxRetryBackoff:   5000 * time.Millisecond,
 	})
 
 	pubsub := rdb.PSubscribe(ctx, "*/event/*")
