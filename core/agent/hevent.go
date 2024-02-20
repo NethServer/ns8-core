@@ -50,6 +50,9 @@ func listenEventsAsync(ctx context.Context, complete chan int) {
 		Password:  agentPrefix,
 		DB:        0,
 		OnConnect: setClientNameCallback,
+		MaxRetries:       10,
+		MinRetryBackoff:   8,
+		MaxRetryBackoff:   5000,
 	})
 
 	pubsub := rdb.PSubscribe(ctx, "*/event/*")

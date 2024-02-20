@@ -309,6 +309,9 @@ func listenActionsAsync(brpopCtx context.Context, complete chan int) {
 		Password:  redisPassword,
 		DB:        0,
 		OnConnect: setClientNameCallback,
+		MaxRetries:       10,
+		MinRetryBackoff:   8,
+		MaxRetryBackoff:   5000,
 	})
 
 	// Ignore the credential error on agent startup
