@@ -83,6 +83,7 @@
           :equalLabel="$t('password.equal')"
           :focus="focusPasswordField"
           :clearConfirmPasswordCommand="clearConfirmPasswordCommand"
+          :minLength="policy.strength.password_min_length"
         />
         <NsInlineNotification
           v-if="error.addUser"
@@ -133,10 +134,18 @@ export default {
       passwordValidation: null,
       focusPasswordField: { element: "" },
       clearConfirmPasswordCommand: 0,
+      policy: {
+        strength: {
+          complexity_check: false,
+          enforced: false,
+          password_min_length: 8,
+        },
+      },
       loading: {
         addUser: false,
         alterUser: false,
         getDomainUser: false,
+        ListPasswordPolicy: false,
       },
       error: {
         addUser: "",
@@ -165,6 +174,7 @@ export default {
         this.loading.addUser ||
         this.loading.alterUser ||
         this.loading.getDomainUser ||
+        this.loading.ListPasswordPolicy ||
         !!this.error.getDomainUser
       );
     },
@@ -185,7 +195,7 @@ export default {
     isShown: function () {
       if (this.isShown) {
         this.clearErrors();
-
+        this.listPasswordPolicy();
         if (!this.isEditing) {
           // create user
 
@@ -209,6 +219,43 @@ export default {
     },
   },
   methods: {
+      async listPasswordPolicy() {
+      this.loading.ListPasswordPolicy = true;
+      this.error.ListPasswordPolicy = "";
+      const taskAction = "get-password-policy";
+      const eventId = this.getUuid();
+      // register to task completion
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.ListPasswordPolicyCompleted
+      );
+      const res = await to(
+        this.createModuleTaskForApp(this.mainProvider, {
+          action: taskAction,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+            eventId,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.ListPasswordPolicy = this.getErrorMessage(err);
+        return;
+      }
+    },
+    ListPasswordPolicyCompleted(taskContext, taskResult) {
+      const Config = taskResult.output;
+      this.policy.strength.enforced = Config.strength.enforced;
+      this.policy.strength.complexity_check = Config.strength.complexity_check;
+      this.policy.strength.password_min_length =
+        Config.strength.password_min_length.toString();
+
+      this.loading.ListPasswordPolicy = false;
+    },
     createOrEditUser() {
       if (this.isEditing) {
         this.alterUser();
