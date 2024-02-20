@@ -20,8 +20,9 @@ rdb = agent.redis_connect(privileged=True)
 rdb.execute_command('ACL', 'DELUSER', 'node/' + tnode_id)
 
 node_keys = set(knode for knode in rdb.scan_iter(f'node/{tnode_id}/*'))
-
-remove_module_keys = set()
+remove_module_keys = set() # Redis keys to remove
+notify_domain_set = set() # Set of user domains to notify
+remove_module_set = set() # Set of modules to remove
 
 # Iterate over all known modules, skipping those installed on remaining nodes
 for xmodule_id, xnode_id in rdb.hgetall('cluster/module_node').items():
@@ -35,12 +36,27 @@ for xmodule_id, xnode_id in rdb.hgetall('cluster/module_node').items():
     remove_module_keys.update(rdb.scan_iter(f'module/{xmodule_id}/*'))
     remove_module_keys.add(f'roles/module/{xmodule_id}')
     remove_module_keys.add(f'cluster/authorizations/module/{xmodule_id}')
+    # Add the module to the list of affected modules:
+    remove_module_set.add(xmodule_id)
+    # Add to notify_domain_set the user domains that are bound to the removed module:
+    notify_domain_set |= set((rdb.hget('cluster/module_domains', xmodule_id) or "").split())
 
 # Save ACLs on the disk and propagate to worker nodes
 cluster.grants.save_acls(rdb)
 
+trx = rdb.pipeline()
+for xmodule_id in remove_module_set:
+    trx.hdel("cluster/module_domains", xmodule_id)
+    trx.publish('cluster/event/module-removed', json.dumps({
+        'module': xmodule_id,
+        'node': tnode_id,
+    }))
+trx.publish('cluster/event/module-domain-changed', json.dumps({
+    "modules": list(remove_module_set),
+    "domains": list(notify_domain_set),
+}))
 # Delete the target node keyspace and the keys of any module installed on it:
-rdb.delete(*(node_keys | remove_module_keys))
-
+trx.delete(*(node_keys | remove_module_keys))
 # Reconfigure VPN routes of remaining nodes
-rdb.publish('cluster/event/vpn-changed', json.dumps({"node_id": tnode_id}))
+trx.publish('cluster/event/vpn-changed', json.dumps({"node_id": tnode_id}))
+trx.execute()
