@@ -33,7 +33,8 @@
           :equalLabel="$t('password.equal')"
           :focus="focusPasswordField"
           :clearConfirmPasswordCommand="clearConfirmPasswordCommand"
-          :minLength="policy.strength.password_min_length"
+          :minLength="policy.strength.enforced ? policy.strength.password_min_length : 0"
+          :checkStrength="policy.strength.enforced ? policy.strength.complexity_check : false"
         />
         <div v-if="error.alterUser">
           <NsInlineNotification
