@@ -84,7 +84,7 @@
           :focus="focusPasswordField"
           :clearConfirmPasswordCommand="clearConfirmPasswordCommand"
           :minLength="policy.strength.enforced ? policy.strength.password_min_length : 0"
-          :checkStrength="policy.strength.enforced ? policy.strength.complexity_check : false"
+          :checkComplexity="policy.strength.enforced ? policy.strength.complexity_check : false"
         />
         <NsInlineNotification
           v-if="error.addUser"
