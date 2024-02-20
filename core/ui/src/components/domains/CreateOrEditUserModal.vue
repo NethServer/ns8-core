@@ -105,10 +105,10 @@
           :showCloseButton="false"
         />
         <NsInlineNotification
-          v-if="error.ListPasswordPolicy"
+          v-if="error.listPasswordPolicy"
           kind="error"
           :title="$t('action.get-password-policy')"
-          :description="error.ListPasswordPolicy"
+          :description="error.listPasswordPolicy"
           :showCloseButton="false"
         />
       </cv-form>
@@ -157,7 +157,7 @@ export default {
         addUser: false,
         alterUser: false,
         getDomainUser: false,
-        ListPasswordPolicy: false,
+        listPasswordPolicy: false,
       },
       error: {
         addUser: "",
@@ -168,7 +168,7 @@ export default {
         newPassword: "",
         confirmPassword: "",
         groups: "",
-        ListPasswordPolicy: "",
+        listPasswordPolicy: "",
       },
     };
   },
@@ -187,7 +187,7 @@ export default {
         this.loading.addUser ||
         this.loading.alterUser ||
         this.loading.getDomainUser ||
-        this.loading.ListPasswordPolicy ||
+        this.loading.listPasswordPolicy ||
         !!this.error.getDomainUser
       );
     },
@@ -233,14 +233,14 @@ export default {
   },
   methods: {
     async listPasswordPolicy() {
-      this.loading.ListPasswordPolicy = true;
-      this.error.ListPasswordPolicy = "";
+      this.loading.listPasswordPolicy = true;
+      this.error.listPasswordPolicy = "";
       const taskAction = "get-password-policy";
       const eventId = this.getUuid();
       // register to task completion
       this.$root.$once(
         `${taskAction}-completed-${eventId}`,
-        this.ListPasswordPolicyCompleted
+        this.listPasswordPolicyCompleted
       );
       const res = await to(
         this.createModuleTaskForApp(this.mainProvider, {
@@ -256,18 +256,18 @@ export default {
 
       if (err) {
         console.error(`error creating task ${taskAction}`, err);
-        this.error.ListPasswordPolicy = this.getErrorMessage(err);
+        this.error.listPasswordPolicy = this.getErrorMessage(err);
         return;
       }
     },
-    ListPasswordPolicyCompleted(taskContext, taskResult) {
-      const Config = taskResult.output;
-      this.policy.strength.enforced = Config.strength.enforced;
-      this.policy.strength.complexity_check = Config.strength.complexity_check;
+    listPasswordPolicyCompleted(taskContext, taskResult) {
+      const config = taskResult.output;
+      this.policy.strength.enforced = config.strength.enforced;
+      this.policy.strength.complexity_check = config.strength.complexity_check;
       this.policy.strength.password_min_length =
-        Config.strength.password_min_length.toString();
+        config.strength.password_min_length.toString();
 
-      this.loading.ListPasswordPolicy = false;
+      this.loading.listPasswordPolicy = false;
     },
     createOrEditUser() {
       if (this.isEditing) {
