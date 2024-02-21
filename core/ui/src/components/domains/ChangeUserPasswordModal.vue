@@ -8,7 +8,7 @@
     :visible="isShown"
     @modal-hidden="onModalHidden"
     @primary-click="changeUserPassword"
-    :primary-button-disabled="loading.alterUser"
+    :primary-button-disabled="loading.alterUser || loading.listPasswordPolicy"
     class="no-pad-modal"
   >
     <template v-if="user" slot="title">{{
@@ -33,6 +33,12 @@
           :equalLabel="$t('password.equal')"
           :focus="focusPasswordField"
           :clearConfirmPasswordCommand="clearConfirmPasswordCommand"
+          :minLength="
+            policy.strength.enforced ? policy.strength.password_min_length : 0
+          "
+          :checkComplexity="
+            policy.strength.enforced ? policy.strength.complexity_check : false
+          "
         />
         <div v-if="error.alterUser">
           <NsInlineNotification
@@ -42,6 +48,13 @@
             :showCloseButton="false"
           />
         </div>
+        <NsInlineNotification
+          v-if="error.listPasswordPolicy"
+          kind="error"
+          :title="$t('action.get-password-policy')"
+          :description="error.listPasswordPolicy"
+          :showCloseButton="false"
+        />
       </cv-form>
     </template>
     <template slot="secondary-button">{{ $t("common.cancel") }}</template>
@@ -69,13 +82,22 @@ export default {
       passwordValidation: null,
       focusPasswordField: { element: "" },
       clearConfirmPasswordCommand: 0,
+      policy: {
+        strength: {
+          complexity_check: false,
+          enforced: false,
+          password_min_length: 8,
+        },
+      },
       loading: {
         alterUser: false,
+        listPasswordPolicy: false,
       },
       error: {
         alterUser: "",
         newPassword: "",
         confirmPassword: "",
+        listPasswordPolicy: "",
       },
     };
   },
@@ -90,7 +112,7 @@ export default {
         // clear password fields
         this.newPassword = "";
         this.clearConfirmPasswordCommand++;
-
+        this.listPasswordPolicy();
         setTimeout(() => {
           this.focusPasswordField = { element: "newPassword" };
         }, 400);
@@ -98,6 +120,43 @@ export default {
     },
   },
   methods: {
+    async listPasswordPolicy() {
+      this.loading.listPasswordPolicy = true;
+      this.error.listPasswordPolicy = "";
+      const taskAction = "get-password-policy";
+      const eventId = this.getUuid();
+      // register to task completion
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.listPasswordPolicyCompleted
+      );
+      const res = await to(
+        this.createModuleTaskForApp(this.mainProvider, {
+          action: taskAction,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+            eventId,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.listPasswordPolicy = this.getErrorMessage(err);
+        return;
+      }
+    },
+    listPasswordPolicyCompleted(taskContext, taskResult) {
+      const config = taskResult.output;
+      this.policy.strength.enforced = config.strength.enforced;
+      this.policy.strength.complexity_check = config.strength.complexity_check;
+      this.policy.strength.password_min_length =
+        config.strength.password_min_length.toString();
+
+      this.loading.listPasswordPolicy = false;
+    },
     validateChangeUserPassword() {
       this.clearErrors();
       let isValidationOk = true;
