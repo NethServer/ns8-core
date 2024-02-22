@@ -45,8 +45,9 @@ for xmodule_id, xnode_id in rdb.hgetall('cluster/module_node').items():
 cluster.grants.save_acls(rdb)
 
 trx = rdb.pipeline()
+trx.hdel("cluster/module_node", *remove_module_set)
+trx.hdel("cluster/module_domains", *remove_module_set)
 for xmodule_id in remove_module_set:
-    trx.hdel("cluster/module_domains", xmodule_id)
     trx.publish('cluster/event/module-removed', json.dumps({
         'module': xmodule_id,
         'node': tnode_id,
