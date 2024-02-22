@@ -50,7 +50,8 @@ del(dump['cluster']['favorites'])
 for d in dump['cluster']['user_domain']['ldap'].keys():
     domain = dump['cluster']['user_domain']['ldap'][d]
     rdb.hset(f'cluster/user_domain/ldap/{d}/conf', mapping=domain['conf'])
-    rdb.hset(f'cluster/user_domain/ldap/{d}/ui_names', mapping=domain['ui_names'])
+    if 'ui_names' in domain:
+        rdb.hset(f'cluster/user_domain/ldap/{d}/ui_names', mapping=domain['ui_names'])
     for p in domain['providers']:
         r = rdb.lpush(f'cluster/user_domain/ldap/{d}/providers', p)
 
