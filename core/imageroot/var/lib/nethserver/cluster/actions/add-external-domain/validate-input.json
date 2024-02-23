@@ -74,7 +74,6 @@
                     "oneOf": [
                         {
                             "format": "hostname",
-                            "pattern": "\\."
                         },
                         {
                             "format": "ipv6"
