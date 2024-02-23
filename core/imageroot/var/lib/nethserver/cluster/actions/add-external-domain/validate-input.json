@@ -70,7 +70,16 @@
             "description": "Initial TCP backend endpoint configuration",
             "properties": {
                 "host": {
-                    "type": "string"
+                    "type": "string",
+                    "oneOf": [
+                        {
+                            "format": "hostname",
+                            "pattern": "\\."
+                        },
+                        {
+                            "format": "ipv6"
+                        }
+                    ]
                 },
                 "port": {
                     "type": "integer",
