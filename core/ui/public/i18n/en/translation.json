@@ -1046,7 +1046,9 @@
         "users_admin_page_title": "User portal",
         "open_users_admin_portal": "Open user portal",
         "users_admin_page_tooltips": "User portal permits domain users to change their own password. The portal is accessible to users also on any node running the domain provider replica. The generic URL is https://{node_fqdn_or_ip}/users-admin/{domain}/",
-        "users_admin_page_description": "User administration self service portal"
+        "users_admin_page_description": "User administration self service portal",
+        "host_format": "Must be a valid domain name or IP address",
+        "host_pattern": "Must be a valid domain name or IP address"
     },
     "samba": {
         "adminuser": "Samba admin username",
