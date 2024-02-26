@@ -9,8 +9,12 @@ import sys
 import json
 import agent
 import os
+from agent.ldapproxy import Ldapproxy
 
 request = json.load(sys.stdin)
+
+lp = Ldapproxy()
+domains = lp.get_domains_list()
 
 domain_list = request["domains"]
 module_id = os.environ["AGENT_TASK_USER"].removeprefix('module/')
@@ -25,6 +29,13 @@ except Exception as ex:
 previous_domains = rdb.hget(f'cluster/module_domains', module_id) or ""
 
 rdb = agent.redis_connect(privileged=True)
+# we test if the domain_list is included in the list of domains
+is_included = set(domain_list).issubset(set(domains))
+
+if not is_included:
+    print(f"Error: the domain_list {domain_list} is not included in the list of domains {domains}", file=sys.stderr)
+    sys.exit(1)
+
 rdb.hset(f'cluster/module_domains', module_id, " ".join(domain_list))
 
 union_domains = set(domain_list) | set(previous_domains.split())
