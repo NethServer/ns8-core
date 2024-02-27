@@ -73,7 +73,7 @@
                     "type": "string",
                     "oneOf": [
                         {
-                            "format": "hostname",
+                            "format": "hostname"
                         },
                         {
                             "format": "ipv6"
