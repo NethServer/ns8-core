@@ -205,6 +205,15 @@ def _get_cluster_views():
         "cluster_user_domains_table": list(oud_map.values()),
     }
 
+def _get_public_ip():
+    """Ensure the output of the remote call is a valid IP string"""
+    public_ip_response = _run('curl https://ifconfig.co')
+    try:
+        ipm.ip_address(public_ip_response)
+    except ValueError:
+        public_ip_response = ""
+
+    return public_ip_response
 
 podman_info = _run_json('podman system info -f json')
 cpu_info = _run_json('lscpu -J')['lscpu']
@@ -213,7 +222,7 @@ dmi_product = _run("cat /sys/devices/virtual/dmi/id/product_name") or "product.u
 os_release = _get_os_release()
 
 data = {
-    "public_ip": _run('curl https://ifconfig.co'),
+    "public_ip": _get_public_ip(),
     "arp_macs": _run('grep -v IP /proc/net/arp | wc -l'),
     "dmi": { "product": { "name": dmi_product, "uuid": _run("cat /sys/class/dmi/id/product_uuid") }, "bios": { "version": _run("cat /sys/devices/virtual/dmi/id/bios_version"), "vendor": _run("cat /sys/devices/virtual/dmi/id/bios_vendor")}, "board": { "product": board, "manufacturer": _run("cat /sys/devices/virtual/dmi/id/sys_vendor") }},
     "virtual": _get_cpu_field("Hypervisor vendor", cpu_info) if _get_cpu_field("Hypervisor vendor", cpu_info) else 'physical',
