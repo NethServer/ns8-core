@@ -577,7 +577,7 @@ def get_hostname():
         hostname = "myserver.example.org"
     return hostname
 
-def bind_user_domains(domain_list, check=True):
+def bind_user_domains(domain_list, check=False):
     """Associate the caller module with a new list of user domains. The
     previous list is discarded."""
     response = agent.tasks.run(
