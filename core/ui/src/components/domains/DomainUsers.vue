@@ -135,6 +135,7 @@
                       <NsMenuDivider />
                       <cv-overflow-menu-item
                         danger
+                        :disabled="row.user === 'administrator'"
                         @click="showDeleteUserModal(row)"
                         :data-test-id="row.user + '-delete'"
                       >
