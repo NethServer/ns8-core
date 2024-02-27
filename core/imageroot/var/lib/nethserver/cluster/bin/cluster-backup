@@ -91,16 +91,6 @@ for m in rdb.scan_iter('module/*/backups'):
     dump['modules'][uuid] = {'backups': []}
     dump['modules'][uuid]['backups'] = sorted(rdb.smembers(m))
 
-# nodes: vpn, label
-for v in rdb.scan_iter('node/*/vpn'):
-    k = v.removeprefix('node/')
-    k = k.removesuffix('/vpn')
-    if rdb.hexists(v, 'endpoint'):
-        for f in ['endpoint', 'destinations']:
-            dump['vpn'][f] = rdb.hget(v, f)
-
-rdb.close()
-
 # traefik: custom route and uploaded certificates
 leader_id = rdb.hget("cluster/environment", "NODE_ID")
 for tk in rdb.scan_iter('module/traefik*/flags'):
@@ -117,6 +107,9 @@ for tk in rdb.scan_iter('module/traefik*/flags'):
         else:
             tk_name = tk_instance.removeprefix('module/')
         dump['traefik'][tk_name] = dump_task_result['output']
+
+# leader vpn endpoint, required to invoke the create-cluster
+dump['vpn']['endpoint'] = rdb.hget(f'node/{leader_id}/vpn', 'endpoint')
 
 # dump to JSON
 os.makedirs(output_dir, exist_ok=True)
