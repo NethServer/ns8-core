@@ -115,6 +115,18 @@
           />
         </cv-column>
       </cv-row>
+      <cv-row v-if="repositories.find((repository) => repository.testing)">
+        <cv-column>
+          <NsInlineNotification
+            kind="warning"
+            :title="$t('software_center.testing_warning_title')"
+            :description="$t('software_center.testing_warning_description')"
+            :showCloseButton="false"
+            @action="goToSettingsSoftwareRepositories"
+            :actionLabel="$t('software_center.testing_warning_action_label')"
+          />
+        </cv-column>
+      </cv-row>
       <div>
         <cv-search
           :label="$t('software_center.search_placeholder')"
@@ -383,6 +395,7 @@ export default {
       modules: [],
       appUpdates: [],
       coreModules: [],
+      repositories: [],
       updateAllAppsTimeout: 0,
       updateCoreTimeout: 0,
       isShownInstallModal: false,
@@ -451,6 +464,7 @@ export default {
   },
   created() {
     this.listModules();
+    this.listRepositories();
 
     // register to events
     this.$root.$on("willUpdateCore", this.onWillUpdateCore);
@@ -486,6 +500,27 @@ export default {
         this.loading.listModules = false;
         return;
       }
+    },
+    // List repositories to show the warning inline message in case some of them have testing switch turned on
+    async listRepositories() {
+      const taskAction = "list-repositories";
+
+      this.$root.$once(
+        taskAction + "-completed",
+        this.listRepositoriesCompleted
+      );
+
+      await to(
+        this.createClusterTask({
+          action: taskAction,
+          extra: {
+            isNotificationHidden: true,
+          },
+        })
+      );
+    },
+    listRepositoriesCompleted(taskContext, taskResult) {
+      this.repositories = taskResult.output;
     },
     listModulesCompleted(taskContext, taskResult) {
       this.loading.listModules = false;
