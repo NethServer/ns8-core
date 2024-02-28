@@ -33,8 +33,11 @@ rdb = agent.redis_connect(privileged=True)
 is_included = set(domain_list).issubset(set(domains))
 
 if not is_included:
-    print(f"Error: the domain_list {domain_list} is not included in the list of domains {domains}", file=sys.stderr)
-    sys.exit(1)
+    agent.set_status('validation-failed')
+    json.dump([{'field':'domains', 'parameter':'domains','value': domain_list, 'error':'not_included_in_the_domains_list'}], fp=sys.stdout)
+    # we print the error message in logs
+    print(agent.SD_WARNING + f"Error: the domain_list {domain_list} is not included in the list of domains {domains}", file=sys.stderr)
+    sys.exit(3)
 
 rdb.hset(f'cluster/module_domains', module_id, " ".join(domain_list))
 
