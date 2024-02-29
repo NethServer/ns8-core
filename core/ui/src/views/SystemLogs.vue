@@ -309,9 +309,14 @@ export default {
         for (let instance of instanceList) {
           apps.push({
             name: instance.id,
-            label: instance.ui_name
-              ? instance.ui_name + " (" + instance.id + ")"
-              : instance.id,
+            label:
+              (instance.ui_name
+                ? instance.ui_name + " (" + instance.id + ")"
+                : instance.id) +
+              " - " +
+              (instance.node_ui_name
+                ? instance.node_ui_name
+                : this.$t("common.node") + " " + instance.node),
             value: instance.id,
           });
         }
