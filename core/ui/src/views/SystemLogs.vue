@@ -316,7 +316,7 @@ export default {
               " - " +
               (instance.node_ui_name
                 ? instance.node_ui_name
-                : `Node ${instance.node}`),
+                : this.$t("common.node") + " " + instance.node),
             value: instance.id,
           });
         }
