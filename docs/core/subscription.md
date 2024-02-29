@@ -132,21 +132,26 @@ for the LDAP domain `ad.example.org`:
       "domain_id": "ad.example.org",
       "instance_of": "mail",
       "module_id": "mail8",
-      "node_id": "5"
+      "node_id": 5,
+      "total_groups": 31,
+      "total_users": 86
     },
     {
       "active_users": 65,
       "domain_id": "ad.example.org",
       "instance_of": "ejabberd",
       "module_id": "ejabberd1",
-      "node_id": "5"
+      "node_id": 5,
+      "total_groups": 31,
+      "total_users": 86
     },
     {
       "active_users": 41,
       "domain_id": "ad.example.org",
       "instance_of": "nextcloud",
       "module_id": "nextcloud1",
-      "node_id": "1",
+      "node_id": 1,
+      "total_groups": 31,
       "total_users": 92
     },
     {
@@ -154,17 +159,18 @@ for the LDAP domain `ad.example.org`:
       "domain_id": "ad.example.org",
       "instance_of": "webtop",
       "module_id": "webtop7",
-      "node_id": "5"
-    }
-  ],
-  "cluster_unbound_modules_table": [
+      "node_id": 5,
+      "total_groups": 31,
+      "total_users": 86
+    },
     {
-      "active_users": 12,
+      "active_users": 0,
       "domain_id": null,
       "instance_of": "mattermost",
       "module_id": "mattermost1",
-      "node_id": "1",
-      "total_users": 24
+      "node_id": 1,
+      "total_groups": null,
+      "total_users": 116
     }
   ],
   "cluster_user_domains_table": [

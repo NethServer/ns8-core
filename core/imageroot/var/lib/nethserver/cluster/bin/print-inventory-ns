@@ -135,7 +135,9 @@ def _get_cluster_views():
 
     # Fill tables with bound modules counters:
     oud_map = {}
-    omodule_domain_table = {}
+    # 0-M relation: a module can be associated to any number of user
+    # domains!
+    omodule_domain_table = []
     for module_id, dom_list in hmodule_domains.items():
         module_name = module_id.rstrip('0123456789')
         for kdom in dom_list.split():
@@ -147,16 +149,18 @@ def _get_cluster_views():
             oud_map[kdom].setdefault(module_name + "_count", 0)
             oud_map[kdom][module_name + "_count"] += 1
 
-            omodule_domain_table[module_id] = {
+            omodule_domain_table.append({
                 "module_id": module_id,
                 "instance_of": module_name,
                 "domain_id": kdom,
-                "node_id": hmodule_node.get(module_id, "0"),
+                "node_id": int(hmodule_node.get(module_id)),
                 "active_users": oud_map[kdom]["active_users"],
-            }
+                "total_users": oud_map[kdom]["total_users"],
+                "total_groups": oud_map[kdom]["total_groups"],
+            })
 
-    # Unbound modules (those without an LDAP domain) table:
-    ounbound_modules_table = {}
+    # Unbound modules (those without an LDAP domain) temporary table:
+    tmp_unbound_modules_table = {}
 
     # Collect facts from modules:
     for module_id, node_id in hmodule_node.items():
@@ -191,26 +195,30 @@ def _get_cluster_views():
 
         ofacts = get_facts_result['output']
 
-        if module_id in omodule_domain_table:
-            # Merge facts with bound module record
-            omodule_domain_table[module_id].update(ofacts)
-        else:
+        module_is_unbound = True
+        for omodule_record in omodule_domain_table:
+            if module_id == omodule_record["module_id"]:
+                # Merge facts with bound module record
+                omodule_record.update(ofacts)
+                module_is_unbound = False
+        if module_is_unbound:
             # Create an unbound module record
             module_name = module_id.rstrip('0123456789')
             orecord = {
                 "domain_id": None,
                 "active_users": None,
+                "total_users": None,
+                "total_groups": None,
                 "module_id": module_id,
                 "instance_of": module_name,
-                "node_id": node_id,
+                "node_id": int(node_id),
             }
             # Merge facts with unbound module record
             orecord.update(get_facts_result['output'])
-            ounbound_modules_table[module_id] = orecord
+            tmp_unbound_modules_table[module_id] = orecord
 
     return {
-        "cluster_unbound_modules_table": list(ounbound_modules_table.values()),
-        "cluster_module_domain_table": list(omodule_domain_table.values()),
+        "cluster_module_domain_table": omodule_domain_table + list(tmp_unbound_modules_table.values()),
         "cluster_user_domains_table": list(oud_map.values()),
     }
 
