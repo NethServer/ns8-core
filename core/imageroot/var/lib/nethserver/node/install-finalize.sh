@@ -134,6 +134,7 @@ cluster.grants.grant(rdb, action_clause="remove-custom-zone",  to_clause="tunadm
 
 cluster.grants.grant(rdb, action_clause="update-routes", to_clause="accountprovider", on_clause='cluster')
 cluster.grants.grant(rdb, action_clause="bind-user-domains",  to_clause="accountconsumer", on_clause='cluster')
+cluster.grants.grant(rdb, action_clause="bind-user-domains",  to_clause="accountprovider", on_clause='cluster')
 cluster.grants.grant(rdb, action_clause="list-modules",  to_clause="accountprovider", on_clause='cluster')
 EOF
 
