@@ -135,6 +135,8 @@ def _get_cluster_views():
 
     # Fill tables with bound modules counters:
     oud_map = {}
+    # 0-M relation: a module can be associated to any number of user
+    # domains!
     omodule_domain_table = []
     for module_id, dom_list in hmodule_domains.items():
         module_name = module_id.rstrip('0123456789')
@@ -151,15 +153,17 @@ def _get_cluster_views():
                 "module_id": module_id,
                 "instance_of": module_name,
                 "domain_id": kdom,
-                "node_id": hmodule_node.get(module_id, "0"),
+                "node_id": int(hmodule_node.get(module_id)),
                 "active_users": oud_map[kdom]["active_users"],
+                "total_users": oud_map[kdom]["total_users"],
+                "total_groups": oud_map[kdom]["total_groups"],
             })
 
-    # Count users of unbound modules:
-    ounbound_modules_table = []
+    # Unbound modules (those without an LDAP domain) temporary table:
+    tmp_unbound_modules_table = {}
+
+    # Collect facts from modules:
     for module_id, node_id in hmodule_node.items():
-        if module_id in hmodule_domains:
-            continue # skip module if it's bound to a user domain
 
         list_actions_result = agent.tasks.run(
             agent_id='module/' + module_id,
@@ -170,7 +174,10 @@ def _get_cluster_views():
             endpoint="redis://cluster-leader",
         )
 
-        if not 'get-facts' in list_actions_result.get('output', []):
+        if not list_actions_result or list_actions_result['exit_code'] != 0:
+            print(agent.SD_WARNING + f"module/{module_id}/list-actions failed", file=sys.stderr)
+            continue # skip module if the list-actions task fails
+        elif not 'get-facts' in list_actions_result.get('output', []):
             continue # skip module if it does not implement get-facts
 
         get_facts_result = agent.tasks.run(
@@ -183,28 +190,47 @@ def _get_cluster_views():
         )
 
         if get_facts_result['exit_code'] != 0:
-            print(agent.SD_WARNING, f"get-facts failed or not defined for {module_id}", file=sys.stderr)
+            print(agent.SD_WARNING, f"get-facts failed for {module_id}", file=sys.stderr)
             continue
 
-        if 'active_users' in get_facts_result['output']:
-            active_users = get_facts_result['output']['active_users']
-            total_users = get_facts_result['output'].get('total_users', active_users)
+        ofacts = get_facts_result['output']
 
+        module_is_unbound = True
+        for omodule_record in omodule_domain_table:
+            if module_id == omodule_record["module_id"]:
+                # Merge facts with bound module record
+                omodule_record.update(ofacts)
+                module_is_unbound = False
+        if module_is_unbound:
+            # Create an unbound module record
             module_name = module_id.rstrip('0123456789')
-            ounbound_modules_table.append({
+            orecord = {
+                "domain_id": None,
+                "active_users": None,
+                "total_users": None,
+                "total_groups": None,
                 "module_id": module_id,
                 "instance_of": module_name,
-                "node_id": node_id,
-                "active_users": active_users,
-                "total_users": total_users,
-            })
+                "node_id": int(node_id),
+            }
+            # Merge facts with unbound module record
+            orecord.update(get_facts_result['output'])
+            tmp_unbound_modules_table[module_id] = orecord
 
     return {
-        "cluster_unbound_modules_table": ounbound_modules_table,
-        "cluster_module_domain_table": omodule_domain_table,
+        "cluster_module_domain_table": omodule_domain_table + list(tmp_unbound_modules_table.values()),
         "cluster_user_domains_table": list(oud_map.values()),
     }
 
+def _get_public_ip():
+    """Ensure the output of the remote call is a valid IP string"""
+    public_ip_response = _run('curl https://ifconfig.co')
+    try:
+        ipm.ip_address(public_ip_response)
+    except ValueError:
+        public_ip_response = ""
+
+    return public_ip_response
 
 podman_info = _run_json('podman system info -f json')
 cpu_info = _run_json('lscpu -J')['lscpu']
@@ -213,7 +239,7 @@ dmi_product = _run("cat /sys/devices/virtual/dmi/id/product_name") or "product.u
 os_release = _get_os_release()
 
 data = {
-    "public_ip": _run('curl https://ifconfig.co'),
+    "public_ip": _get_public_ip(),
     "arp_macs": _run('grep -v IP /proc/net/arp | wc -l'),
     "dmi": { "product": { "name": dmi_product, "uuid": _run("cat /sys/class/dmi/id/product_uuid") }, "bios": { "version": _run("cat /sys/devices/virtual/dmi/id/bios_version"), "vendor": _run("cat /sys/devices/virtual/dmi/id/bios_vendor")}, "board": { "product": board, "manufacturer": _run("cat /sys/devices/virtual/dmi/id/sys_vendor") }},
     "virtual": _get_cpu_field("Hypervisor vendor", cpu_info) if _get_cpu_field("Hypervisor vendor", cpu_info) else 'physical',
@@ -255,4 +281,4 @@ data = {
 
 data.update(_get_cluster_views())
 
-print(json.dumps(data))
+json.dump(data, sort_keys=True, fp=sys.stdout)

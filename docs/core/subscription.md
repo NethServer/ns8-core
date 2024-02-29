@@ -111,3 +111,91 @@ TCP ports from the VPN tunnel to services of the node. For example
 - Forward VPN ports 22, 9090, 80 and 443 to the respective port on 127.0.0.1
 
 See `nft.conf` for the port forwarding rules.
+
+## Inventory format
+
+The inventory format is compatible with NS7 inventory and merges data
+collected on the leader node with data collected by calls to the
+`get-facts` action of each module instance.
+
+If a module implements the `get-facts` action, its output is merged in the
+inventory data, no matter the node hosting it.
+
+This is an excerpt of `get-facts` data merged with user and group counters
+for the LDAP domain `ad.example.org`:
+
+```json
+{
+  "cluster_module_domain_table": [
+    {
+      "active_users": 65,
+      "domain_id": "ad.example.org",
+      "instance_of": "mail",
+      "module_id": "mail8",
+      "node_id": 5,
+      "total_groups": 31,
+      "total_users": 86
+    },
+    {
+      "active_users": 65,
+      "domain_id": "ad.example.org",
+      "instance_of": "ejabberd",
+      "module_id": "ejabberd1",
+      "node_id": 5,
+      "total_groups": 31,
+      "total_users": 86
+    },
+    {
+      "active_users": 41,
+      "domain_id": "ad.example.org",
+      "instance_of": "nextcloud",
+      "module_id": "nextcloud1",
+      "node_id": 1,
+      "total_groups": 31,
+      "total_users": 92
+    },
+    {
+      "active_users": 65,
+      "domain_id": "ad.example.org",
+      "instance_of": "webtop",
+      "module_id": "webtop7",
+      "node_id": 5,
+      "total_groups": 31,
+      "total_users": 86
+    },
+    {
+      "active_users": 0,
+      "domain_id": null,
+      "instance_of": "mattermost",
+      "module_id": "mattermost1",
+      "node_id": 1,
+      "total_groups": null,
+      "total_users": 116
+    }
+  ],
+  "cluster_user_domains_table": [
+    {
+      "active_users": 65,
+      "domain_id": "ad.example.org",
+      "ejabberd_count": 1,
+      "mail_count": 1,
+      "nextcloud_count": 1,
+      "total_groups": 31,
+      "total_users": 86,
+      "webtop_count": 1
+    }
+  ]
+}
+```
+
+Notes:
+
+- The Mattermost instance `mattermost1` is not bound to the LDAP domain,
+  users are stored into the module database. Its `get-facts` action
+  returns `active_users` and `total_users` counters with data stored
+  inside its database.
+- The Nextcloud instance `nextcloud1` implements `get-facts`. Its output
+  overrides the `active_users` and `total_users` counters inherited from
+  the `ad.example.org` user domain.
+- Instances `mail8`, `ejabberd1` and `webtop7` inherit counters from
+  domain `ad.example.org`
