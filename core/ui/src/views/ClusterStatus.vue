@@ -72,7 +72,7 @@
           <template slot="content">
             <div class="card-rows">
               <div class="card-row">
-                <div v-if="!loading.getSubscription" class="card-row ">
+                <div v-if="!loading.getSubscription" class="card-row">
                   <cv-tag
                     v-if="subscription_status === 'active'"
                     kind="green"
@@ -85,7 +85,10 @@
                   ></cv-tag>
                 </div>
               </div>
-              <div v-if="support_active && !loading.getSubscription" class="card-row">
+              <div
+                v-if="support_active && !loading.getSubscription"
+                class="card-row"
+              >
                 <div class="mg-top-sm icon-and-text">
                   <NsSvg :svg="InformationFilled16" class="icon ns-info" />
                   <span>{{
@@ -93,15 +96,15 @@
                   }}</span>
                 </div>
               </div>
-            <div v-if="!loading.getSubscription" class="card-row">
-              <NsButton
-                kind="ghost"
-                :icon="ArrowRight20"
-                @click="$router.push('/settings/subscription')"
-              >
-                {{ $t("cluster_status.go_to_subscription") }}
-              </NsButton>
-            </div>
+              <div v-if="!loading.getSubscription" class="card-row">
+                <NsButton
+                  kind="ghost"
+                  :icon="ArrowRight20"
+                  @click="$router.push('/settings/subscription')"
+                >
+                  {{ $t("cluster_status.go_to_subscription") }}
+                </NsButton>
+              </div>
             </div>
           </template>
         </NsInfoCard>
@@ -144,13 +147,41 @@
           class="min-height-card"
         >
           <template slot="content">
-            <NsButton
-              kind="ghost"
-              :icon="ArrowRight20"
-              @click="$router.push('/nodes')"
-            >
-              {{ $t("cluster_status.go_to_nodes") }}
-            </NsButton>
+            <div class="card-rows">
+              <div
+                class="card-row"
+                v-if="!loading.getClusterStatus && nodes.length > 1"
+              >
+                <div class="mg-top-sm">
+                  <div
+                    v-if="nodesOffline.length"
+                    class="card-row icon-and-text"
+                  >
+                    <NsSvg :svg="ErrorFilled16" class="icon ns-error" />
+                    <span>
+                      {{
+                        $tc("nodes.nodes_offline_c", nodesOffline.length, {
+                          num: nodesOffline.length,
+                        })
+                      }}
+                    </span>
+                  </div>
+                  <div v-else class="card-row icon-and-text">
+                    <NsSvg :svg="CheckmarkFilled16" class="icon ns-success" />
+                    <span>
+                      {{ $t("nodes.nodes_online_cluster_status") }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <NsButton
+                kind="ghost"
+                :icon="ArrowRight20"
+                @click="$router.push('/nodes')"
+              >
+                {{ $t("cluster_status.go_to_nodes") }}
+              </NsButton>
+            </div>
           </template>
         </NsInfoCard>
       </cv-column>
@@ -309,6 +340,9 @@ export default {
     erroredBackups() {
       return this.backups.filter((b) => b.errorInstances.length);
     },
+    nodesOffline() {
+      return this.nodes.filter((n) => n.online == false);
+    },
     installedModules() {
       let installedModules = [];
 
@@ -462,7 +496,6 @@ export default {
       this.getSupportSession();
       this.subscription_status = output.subscription.status;
       this.loading.getSubscription = false;
-
     },
     async getClusterStatus() {
       this.error.getClusterStatus = "";
