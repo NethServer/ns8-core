@@ -39,7 +39,10 @@ if not is_included:
     print(agent.SD_WARNING + f"Error: the domain_list {domain_list} is not included in the list of domains {domains}", file=sys.stderr)
     sys.exit(3)
 
-rdb.hset(f'cluster/module_domains', module_id, " ".join(domain_list))
+if domain_list:
+    rdb.hset(f'cluster/module_domains', module_id, " ".join(domain_list))
+else:
+    rdb.hdel(f'cluster/module_domains', module_id)
 
 union_domains = set(domain_list) | set(previous_domains.split())
 
