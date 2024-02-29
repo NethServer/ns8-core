@@ -148,8 +148,11 @@
         >
           <template slot="content">
             <div class="card-rows">
-              <div class="card-row">
-                <div v-if="!loading.getClusterStatus">
+              <div
+                class="card-row"
+                v-if="!loading.getClusterStatus && nodes.length > 1"
+              >
+                <div class="mg-top-sm">
                   <div
                     v-if="nodesOffline.length"
                     class="card-row icon-and-text"
