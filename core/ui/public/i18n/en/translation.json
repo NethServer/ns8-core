@@ -1179,6 +1179,7 @@
         "node_is_offline": "Node is offline",
         "nodes_offline_c": "{num} node is offline | {num} nodes are offline",
         "nodes_offline_description_c": "Check node status and connectivity | Check nodes status and connectivity",
+        "nodes_online_cluster_status": "All nodes are online",
         "node_is_offline_description": "Check node status and connectivity",
         "remove_from_cluster": "Remove from cluster",
         "remove_node_from_cluster": "Remove node from cluster",
