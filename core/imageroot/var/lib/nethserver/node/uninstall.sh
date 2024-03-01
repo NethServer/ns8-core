@@ -46,8 +46,22 @@ for moduleid in $(awk -F: '$1 ~ /^.+[0-9]+$/ && $2 ~ /.+/ { print $1 }' </etc/pa
 done
 
 echo "Clean up firewalld core rules"
-firewall-cmd --permanent --remove-service=http --remove-service=https --remove-service=ns-wireguard >/dev/null
-firewall-cmd --permanent --delete-service=ns-wireguard
+# remove BUILTIN_SERVICE
+firewall-cmd --permanent --remove-service=http --remove-service=https >/dev/null
+# Array of services to be excluded
+excluded_services="cockpit dhcpv6-client ssh"
+# Iterate through all services
+for service in $(firewall-cmd --permanent --list-services); do
+    # Check if the service is in the excluded list
+    if grep -q "$service" <<< "$excluded_services"; then
+        echo "$service is excluded from removal."
+        continue
+    else
+      # else delete and remove the service
+      firewall-cmd --permanent --remove-service="${service}" > /dev/null
+      firewall-cmd --permanent --delete-service="${service}"
+    fi
+done
 
 wg0_cluster_network=$(runagent redis-get cluster/network)
 if [[ -n "${wg0_cluster_network}" ]]; then
