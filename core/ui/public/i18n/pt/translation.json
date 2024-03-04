@@ -1,13 +1,13 @@
 {
     "error": {
-        "403": "Operação não autorizada",
-        "401": "Autenticação inválida",
-        "generic_error": "Algo deu errado",
-        "error": "Erro",
-        "network_timeout": "Tempo limite da rede",
-        "404": "Recurso não encontrado",
-        "network_error": "Erro de rede",
-        "validation_error": "Erros de validação",
+        "403": "Operation not authorized",
+        "401": "Invalid authentication",
+        "generic_error": "Something went wrong",
+        "error": "Error",
+        "network_timeout": "Network timeout",
+        "404": "Resource not found",
+        "network_error": "Network error",
+        "validation_error": "Validation error",
         "fqdn_format": "Invalid FQDN format",
         "cannot_retrieve_cluster_tasks": "Cannot retrieve cluster tasks",
         "must_be_between": "Must be between {min} and {max}",
@@ -29,7 +29,7 @@
         "cannot_retrieve_subscription_status": "Cannot retrieve subscription status"
     },
     "common": {
-        "required": "Obrigatório",
+        "required": "Required",
         "hide": "Hide",
         "save_settings": "Save settings",
         "join_code": "Join code",
@@ -147,18 +147,18 @@
         "hide_setup_key": "Hide 2FA setup key"
     },
     "about": {
-        "title": "Sobre",
+        "title": "About",
         "animated_icons_by": "Animated icons by",
         "documentation": "Documentation",
         "by_company": "by",
         "helpdesk": "Helpdesk"
     },
     "action": {
-        "list-backup-repositories": "Listar repositórios de backup",
+        "list-backup-repositories": "List backup repositories",
         "add-group": "Adicionar grupo",
         "add-external-provider": "Adicionar provedor externo",
         "add-external-domain": "Adicionar domínio externo",
-        "list-backups": "Listar backups",
+        "list-backups": "List backups",
         "add-backup-repository": "Adicionar repositório de backup",
         "add-backup": "Adicionar backup",
         "add-favorite": "Adicionar aos favoritos",
@@ -336,10 +336,11 @@
         "hostname_pattern": "Invalid pattern",
         "ipaddress_private_check_failed": "Invalid IP address",
         "users_admin_page_description": "User administration self service portal",
-        "samba": "Samba"
+        "samba": "Samba",
+        "host_format": "Must be a valid domain name or IP address"
     },
     "task": {
-        "cannot_create_task": "Não é possível criar a tarefa {action}",
+        "cannot_create_task": "Cannot create task {action}",
         "subtask_failed_validation": "Subtask <strong>{task}</strong> failed validation",
         "completed": "Completed",
         "task_running": "Task <strong>{task}</strong> is running",
@@ -609,7 +610,7 @@
         "url": "URL"
     },
     "settings": {
-        "title": "Configurações"
+        "title": "Settings"
     },
     "notification": {
         "abort": "Abortar",
@@ -889,7 +890,10 @@
         "search_placeholder": "Search apps",
         "instances_update_will_start_in_a_moment": "Instances update will start in a moment...",
         "core_app_name": "{productName} core",
-        "move_app": "Move app"
+        "move_app": "Move app",
+        "testing_warning_description": "Some software repositories include non-stable versions of applications",
+        "testing_warning_title": "Testing repositories enabled",
+        "testing_warning_action_label": "Go to Software repositories"
     },
     "system_logs": {
         "stop_following": "Stop following",
@@ -1017,7 +1021,8 @@
         "shutdown_node_after_removal": "Shut down {node} after node removal to stop the apps running on it",
         "node_is_offline_description": "Check node status and connectivity",
         "remove_node_from_cluster": "Remove node from cluster",
-        "validation_endpoint_address_format": "Invalid format"
+        "validation_endpoint_address_format": "Invalid format",
+        "nodes_online_cluster_status": "All nodes are online"
     },
     "websocket": {
         "websocket_disconnected_description": "Websocket connection is unstable. Please wait until reconnection or reload the page",
