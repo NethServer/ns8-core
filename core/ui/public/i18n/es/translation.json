@@ -128,7 +128,8 @@
         "specify_duration": "especifica la duración",
         "users_admin_page_title": "Portal de usuario",
         "type": "Tipo",
-        "users_admin_page_description": "Portal de autoservicio de administración de usuarios"
+        "users_admin_page_description": "Portal de autoservicio de administración de usuarios",
+        "host_format": "Debe de ser un nombre de dominio o dirección IP válidos"
     },
     "common": {
         "required": "Obligatorio",
@@ -670,7 +671,10 @@
         "app_uninstallation": "Desinstalar {app}",
         "update_app_instances": "Actualizar instancias de {app}",
         "search_results": "Buscar resultados",
-        "search_placeholder": "Buscar aplicaciones"
+        "search_placeholder": "Buscar aplicaciones",
+        "testing_warning_description": "Algunos repositorios de software incluyen versiones no estables de aplicaciones",
+        "testing_warning_title": "Repositorios de pruebas habilitados",
+        "testing_warning_action_label": "Ir a repositorios de Software"
     },
     "system_logs": {
         "context_module": "Aplicación",
@@ -930,7 +934,8 @@
         "type_to_confirm_promotion": "Escriba <strong>{name}</strong> para confirmar la promoción del nodo",
         "add_node_to_cluster_step_4": "Selecciona <strong>Unirse al clúster</strong>",
         "shutdown_node_after_removal": "Apaga {node} después de eliminar el nodo para detener la ejecución de aplicaciones en él",
-        "remove_node_from_cluster": "Eliminar nodo de clúster"
+        "remove_node_from_cluster": "Eliminar nodo de clúster",
+        "nodes_online_cluster_status": "Todos los nodos están en línea"
     },
     "cluster_status": {
         "apps_installed_c": "Aplicación instalada | Aplicaciones instaladas",
