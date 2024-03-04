@@ -1200,7 +1200,7 @@
         "samba_admin_username_tooltip_3": "L'utente <strong>administrator</strong> sarà disabilitato e gli verrà assegnata una password casuale",
         "enable_file_server_label": "Fornire condivisioni di file e autenticazione per i client Windows",
         "enable_file_server_tooltip": "Abilitare questa opzione e selezionare l'indirizzo IP desiderato per fornire i servizi Active Directory ai client nella rete privata locale",
-        "enable_file_server_disabled_info": "La condivisioei file e l'autenticazione per i client Windows non possono essere abilitate perché sono già configurate su un altro provider di questo dominio",
+        "enable_file_server_disabled_info": "La condivisione file e l'autenticazione per i client Windows non possono essere abilitate perché sono già configurate su un altro provider di questo dominio",
         "provider_on_vpn_address_message": "Il nuovo provider sarà configurato sull'indirizzo IP VPN <strong>{vpnIpAddress}</strong>",
         "choose_ip_address_warning": "Assicurati di selezionare un indirizzo IP raggiungibile dai client Windows. Questa scelta <strong>NON</strong> è reversibile",
         "file_server": "File server",
