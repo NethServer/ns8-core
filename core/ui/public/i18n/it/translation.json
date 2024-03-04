@@ -117,7 +117,10 @@
         "update_available": "Aggiornamento disponibile",
         "updates": "Aggiornamenti",
         "source": "Sorgente",
-        "images_label": "Immagini"
+        "images_label": "Immagini",
+        "testing_warning_description": "Alcuni repository software includono versioni non stabili delle applicazioni.",
+        "testing_warning_title": "Abilitazione dei repository di test",
+        "testing_warning_action_label": "Vai a Repository software"
     },
     "nodes": {
         "title": "Nodi",
@@ -176,7 +179,8 @@
         "add_node_to_cluster_step_6": "Incollare il codice di join",
         "set_fqdn": "Imposta FQDN",
         "node_vpn_endpoint_port_tooltip": "I nodi worker utilizzano questo numero di porta per collegarsi al leader. Può differire dalla porta di ascolto di Wireguard 55820. Cambiare questo numero di porta solo se tra il worker e il leader è presente un dispositivo che fa port-forwarding",
-        "show_all_disks": "Mostra tutti i dischi"
+        "show_all_disks": "Mostra tutti i dischi",
+        "nodes_online_cluster_status": "Tutti i nodi sono online"
     },
     "system_logs": {
         "context_node": "Nodo",
@@ -377,7 +381,7 @@
         "domain_is_going_to_be_deleted": "{object} del dominio sta per essere eliminato...",
         "domain_exists": "Il dominio esiste già",
         "domain_already_exists": "Il dominio esiste già",
-        "domain_not_found": "Dominio inesistente",
+        "domain_not_found": "Dominio non trovato",
         "domain": "Dominio",
         "enter_external_domain_name": "Inserisci nome dominio esterno",
         "no_domain_configured": "Nessun dominio configurato",
@@ -436,7 +440,8 @@
         "expiration_min_age": "Durata minima della password",
         "strength_password_min_length": "Lunghezza minima della password",
         "users_admin_page_title": "Portale utente",
-        "users_admin_page_description": "Portale self-service di amministrazione utente"
+        "users_admin_page_description": "Portale self-service di amministrazione utente",
+        "host_format": "Deve essere un nome di dominio o un indirizzo IP valido"
     },
     "action": {
         "configure-module": "Configura app",

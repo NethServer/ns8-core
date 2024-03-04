@@ -1,6 +1,6 @@
 {
     "common": {
-        "required": "Obrigatório",
+        "required": "Required",
         "hide": "Hide",
         "save_settings": "Save settings",
         "join_code": "Join code",
@@ -224,7 +224,8 @@
         "hostname_pattern": "Invalid pattern",
         "ipaddress_private_check_failed": "Invalid IP address",
         "users_admin_page_description": "User administration self service portal",
-        "samba": "Samba"
+        "samba": "Samba",
+        "host_format": "Must be a valid domain name or IP address"
     },
     "init": {
         "restoring_cluster": "Restoring cluster",
@@ -419,7 +420,10 @@
         "search_placeholder": "Search apps",
         "instances_update_will_start_in_a_moment": "Instances update will start in a moment...",
         "core_app_name": "{productName} core",
-        "move_app": "Move app"
+        "move_app": "Move app",
+        "testing_warning_title": "Testing repositories enabled",
+        "testing_warning_description": "Some software repositories include non-stable versions of applications",
+        "testing_warning_action_label": "Go to Software repositories"
     },
     "settings_acme_servers": {
         "no_acme_server_description": "There is no ACME server configured",
@@ -616,7 +620,8 @@
         "shutdown_node_after_removal": "Shut down {node} after node removal to stop the apps running on it",
         "node_is_offline_description": "Check node status and connectivity",
         "remove_node_from_cluster": "Remove node from cluster",
-        "validation_endpoint_address_format": "Invalid format"
+        "validation_endpoint_address_format": "Invalid format",
+        "nodes_online_cluster_status": "All nodes are online"
     },
     "shell": {
         "skip_to_content": "Skip to content",

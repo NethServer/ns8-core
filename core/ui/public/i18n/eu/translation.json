@@ -1,13 +1,13 @@
 {
     "error": {
-        "403": "Eragiketa baimendu gabea",
-        "401": "Autentifikazio baliogabea",
-        "generic_error": "Zerbait okertu da",
-        "error": "Errorea",
-        "network_timeout": "Sarearen denbora-muga",
-        "404": "Baliabidea ez da aurkitu",
-        "network_error": "Sare-errorea",
-        "validation_error": "Balioztatze-errorea",
+        "403": "Operation not authorized",
+        "401": "Invalid authentication",
+        "generic_error": "Something went wrong",
+        "error": "Error",
+        "network_timeout": "Network timeout",
+        "404": "Resource not found",
+        "network_error": "Network error",
+        "validation_error": "Validation error",
         "fqdn_format": "Invalid FQDN format",
         "cannot_retrieve_cluster_tasks": "Cannot retrieve cluster tasks",
         "must_be_between": "Must be between {min} and {max}",
@@ -30,13 +30,13 @@
     },
     "about": {
         "animated_icons_by": "Ikono animatuen egilea",
-        "title": "Honi buruz",
+        "title": "About",
         "documentation": "Documentation",
         "by_company": "by",
         "helpdesk": "Helpdesk"
     },
     "common": {
-        "required": "Beharrezkoa",
+        "required": "Required",
         "show_more": "Gehiago erakutsi",
         "all": "Guztiak",
         "all_good": "Dena ondo",
@@ -54,15 +54,15 @@
         "more_info": "Informazio gehiago",
         "enable": "Gaitu",
         "choose": "Aukeratu",
-        "cancel": "Utzi",
+        "cancel": "Cancel",
         "version": "Bertsioa",
         "settings": "Ezarpenak",
-        "disabled": "Desgaituta",
+        "disabled": "Disabled",
         "disable": "Desgaitu",
         "menu": "Menua",
         "expand": "Zabaldu",
         "close": "Itxi",
-        "enabled": "Gaituta",
+        "enabled": "Enabled",
         "delete": "Ezabatu",
         "hide": "Hide",
         "save_settings": "Save settings",
@@ -397,11 +397,11 @@
     },
     "action": {
         "add-user": "Erabiltzaile bat gehitu",
-        "list-backup-repositories": "Babeskopien biltegiak ikusi",
+        "list-backup-repositories": "List backup repositories",
         "add-group": "Talde bat gehitu",
         "add-external-provider": "Kanpoko hornitzailea gehitu",
         "add-external-domain": "Kanpoko domeinua gehitu",
-        "list-backups": "Babeskopiak ikusi",
+        "list-backups": "List backups",
         "list-modules": "Aplikazioak ikusi",
         "add-backup-repository": "Babeskopia biltegia gehitu",
         "add-backup": "Babeskopia gehitu",
@@ -622,7 +622,8 @@
         "hostname_pattern": "Invalid pattern",
         "ipaddress_private_check_failed": "Invalid IP address",
         "users_admin_page_description": "User administration self service portal",
-        "samba": "Samba"
+        "samba": "Samba",
+        "host_format": "Must be a valid domain name or IP address"
     },
     "system_logs": {
         "context_module": "Aplikazioa",
@@ -663,7 +664,7 @@
         "vertical_layout": "Vertical layout"
     },
     "task": {
-        "cannot_create_task": "Ezin da zeregina {action} sortu",
+        "cannot_create_task": "Cannot create task {action}",
         "completed": "Bukatuta",
         "configure": "Konfiguratu",
         "subtask_failed_validation": "Subtask <strong>{task}</strong> failed validation",
@@ -759,7 +760,8 @@
         "shutdown_node_after_removal": "Shut down {node} after node removal to stop the apps running on it",
         "node_is_offline_description": "Check node status and connectivity",
         "remove_node_from_cluster": "Remove node from cluster",
-        "validation_endpoint_address_format": "Invalid format"
+        "validation_endpoint_address_format": "Invalid format",
+        "nodes_online_cluster_status": "All nodes are online"
     },
     "init": {
         "join_cluster_description": "Lehendik dagoen kluster batera nodo hau gehitu",
@@ -957,7 +959,10 @@
         "search_placeholder": "Search apps",
         "instances_update_will_start_in_a_moment": "Instances update will start in a moment...",
         "core_app_name": "{productName} core",
-        "move_app": "Move app"
+        "move_app": "Move app",
+        "testing_warning_description": "Some software repositories include non-stable versions of applications",
+        "testing_warning_title": "Testing repositories enabled",
+        "testing_warning_action_label": "Go to Software repositories"
     },
     "account_provider": {
         "title": "Kontu hornitzailea"
@@ -975,7 +980,7 @@
         "url": "URL"
     },
     "settings": {
-        "title": "Ezarpenak"
+        "title": "Settings"
     },
     "notification": {
         "abort": "Abortatu",
