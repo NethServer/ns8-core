@@ -101,7 +101,7 @@
                       <NsMenuDivider />
                       <cv-overflow-menu-item
                         danger
-                        :disabled="row.group === 'domain admins'"
+                        :disabled="row.group.toLowerCase() === 'domain admins'"
                         @click="showDeleteGroupModal(row)"
                         :data-test-id="row.group + '-delete'"
                       >
