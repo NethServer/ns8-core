@@ -935,3 +935,17 @@ ul.unordered-list {
   opacity: 0;
 }
 // fade transition end
+
+// keep modal floating on the backdrop background
+@media (min-width: $breakpoint-medium) {
+  .bx--modal {
+    align-items: start;
+    overflow-y: auto;
+  }
+
+  .bx--modal-container {
+    max-height: none;
+    margin-top: 120px;
+    margin-bottom: 120px;
+  }
+}
