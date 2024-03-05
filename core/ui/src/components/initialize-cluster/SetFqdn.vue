@@ -54,7 +54,11 @@
             ></cv-skeleton-text>
             <template v-else>
               <cv-text-input
-                :label="$t('init.hostname')"
+                :label="
+                  action === 'create'
+                    ? $t('init.hostname_create')
+                    : $t('init.hostname_join')
+                "
                 v-model.trim="hostname"
                 :invalid-message="error.hostname"
                 :disabled="loading.getFqdn || loading.setFqdn"
@@ -62,7 +66,11 @@
               >
               </cv-text-input>
               <cv-text-input
-                :label="$t('init.domain')"
+                :label="
+                  action === 'create'
+                    ? $t('init.domain_create')
+                    : $t('init.domain_join')
+                "
                 v-model.trim="domain"
                 placeholder="example.org"
                 :invalid-message="error.domain"
