@@ -234,7 +234,7 @@
         "set_fqdn": "Set FQDN",
         "review_node_fqdn_title": "Review node FQDN",
         "review_node_fqdn_description": "Set the fully qualified domain name (FQDN) of this cluster node",
-        "not_a_valid_private_network": "Not a valid private ipv4 network address (10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16)",
+        "not_a_private_network": "Not a valid private ipv4 network address (10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16)",
         "forbidden_hostname_value": "Forbidden hostname"
     },
     "shell": {
