@@ -1352,6 +1352,12 @@ export default {
       const eventId = this.getUuid();
       this.createClusterProgress = 0;
 
+      // register to task validation
+      this.$root.$once(
+        `${taskAction}-validation-failed-${eventId}`,
+        this.createClusterValidationFailed
+      );
+
       // register to task error
       this.$root.$once(
         `${taskAction}-aborted-${eventId}`,
@@ -1392,18 +1398,33 @@ export default {
         if (err.response && err.response.status == 403) {
           this.isMaster = false;
         } else {
-          // persistent error notification
-          const notification = {
-            title: this.$t("task.cannot_create_task", { action: taskAction }),
-            description: this.getErrorMessage(err),
-            type: "error",
-            toastTimeout: 0,
-          };
-          this.createNotification(notification);
+          console.error(`error creating task ${taskAction}`, err);
+          this.error.createCluster = this.getErrorMessage(err);
+          this.loading.getDefaults = false;
+          return;
         }
-        return;
       }
       this.isCreatingCluster = true;
+    },
+    createClusterValidationFailed(validationErrors) {
+      this.loading.getDefaults = false;
+      this.isCreatingCluster = false;
+      let focusAlreadySet = false;
+
+      for (const validationError of validationErrors) {
+        const param = validationError.parameter;
+
+        // set i18n error message
+        this.error[param] = this.getI18nStringWithFallback(
+          "init." + validationError.error,
+          "error." + validationError.error
+        );
+
+        if (!focusAlreadySet) {
+          this.focusElement(param);
+          focusAlreadySet = true;
+        }
+      }
     },
     createClusterCompleted(taskContext) {
       this.setClusterInitializedInStore(true);
