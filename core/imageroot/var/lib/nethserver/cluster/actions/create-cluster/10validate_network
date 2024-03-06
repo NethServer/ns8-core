@@ -25,5 +25,5 @@ def is_valid_and_private(ip):
 
 if not is_valid_and_private(network):
     agent.set_status('validation-failed')
-    json.dump([{'field':'vpnCidr', 'parameter':'vpnCidr','value': request['network'], 'error':'not_a_private_network'}], fp=sys.stdout)
+    json.dump([{'field':'network', 'parameter':'network','value': request['network'], 'error':'not_a_private_network'}], fp=sys.stdout)
     sys.exit(2)

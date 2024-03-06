@@ -197,13 +197,13 @@
                     <template v-else>
                       <NsTextInput
                         :label="$t('init.vpn_cidr')"
-                        v-model.trim="vpnCidr"
-                        :invalid-message="$t(error.vpnCidr)"
+                        v-model.trim="network"
+                        :invalid-message="$t(error.network)"
                         :disabled="loading.getDefaults || isCreatingCluster"
                         tooltipAlignment="end"
                         tooltipDirection="right"
                         class="narrow"
-                        ref="vpnCidr"
+                        ref="network"
                       >
                         <template #tooltip>
                           <span v-html="$t('init.vpn_cidr_tooltip')"></span>
@@ -907,7 +907,7 @@ export default {
       focusPasswordField: { element: "" },
       vpnEndpointAddress: "",
       vpnEndpointPort: "",
-      vpnCidr: "",
+      network: "",
       joinCode: "",
       tlsVerify: true,
       joinEndpoint: this.$route.query.endpoint
@@ -947,7 +947,7 @@ export default {
         confirmPassword: "",
         vpnEndpointAddress: "",
         vpnEndpointPort: "",
-        vpnCidr: "",
+        network: "",
         joinCode: "",
         retrieveClusterBackup: "",
         restoreCluster: "",
@@ -1034,7 +1034,7 @@ export default {
       const defaults = taskResult.output;
       this.vpnEndpointAddress = defaults.vpn.host;
       this.vpnEndpointPort = defaults.vpn.port.toString();
-      this.vpnCidr = defaults.vpn.network;
+      this.network = defaults.vpn.network;
       this.loading.getDefaults = false;
 
       if (this.q.page === "create") {
@@ -1334,11 +1334,11 @@ export default {
         }
       }
 
-      if (!this.vpnCidr) {
-        this.error.vpnCidr = "common.required";
+      if (!this.network) {
+        this.error.network = "common.required";
 
         if (isValidationOk) {
-          this.focusElement("vpnCidr");
+          this.focusElement("network");
           isValidationOk = false;
         }
       }
@@ -1380,7 +1380,7 @@ export default {
         this.createClusterTask({
           action: taskAction,
           data: {
-            network: this.vpnCidr,
+            network: this.network,
             endpoint: this.vpnEndpointAddress + ":" + this.vpnEndpointPort,
           },
           extra: {
