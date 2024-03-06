@@ -1,0 +1,29 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2024 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+import json
+import sys
+import agent
+import ipaddress
+
+request = json.load(sys.stdin)
+
+network = request['network']
+
+# check if it is a valid network local private network address
+# maximal are 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16
+def is_valid_and_private(ip):
+    try:
+        network = ipaddress.ip_network(ip, strict=False)
+        return network.is_private and ip.startswith(('10.', '172.', '192.'))
+    except ValueError:
+        return False
+
+if not is_valid_and_private(network):
+    agent.set_status('validation-failed')
+    json.dump([{'field':'network', 'parameter':'network','value': request['network'], 'error':'not_a_private_network'}], fp=sys.stdout)
+    sys.exit(2)
