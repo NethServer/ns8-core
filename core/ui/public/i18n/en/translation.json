@@ -187,6 +187,7 @@
         "change_password": "Change password",
         "vpn_endpoint_address": "Leader VPN public address",
         "vpn_endpoint_address_tooltip": "Worker nodes use this address to connect to the leader. Ensure it is correctly resolved and reachable by worker nodes",
+        "not_a_valid_fqdn_endpoint": "Invalid fully qualified domain name",
         "vpn_endpoint_port": "Leader VPN public UDP port",
         "vpn_endpoint_port_tooltip": "Worker nodes use this port number to connect to the leader. It can differ from the WireGuard listening port 55820. Change this port number only if there is a port-forwarding appliance between the workers and the leader",
         "vpn_cidr": "VPN network (CIDR)",
