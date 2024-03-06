@@ -244,6 +244,8 @@
                                 loading.getDefaults || isCreatingCluster
                               "
                               type="number"
+                              max="65535"
+                              min="1"
                               tooltipAlignment="end"
                               tooltipDirection="right"
                               class="narrow"
@@ -1332,21 +1334,6 @@ export default {
         if (isValidationOk) {
           this.focusElement("vpnEndpointPort");
           isValidationOk = false;
-        }
-      } else {
-        const vpnEndpointPortNumber = Number(this.vpnEndpointPort);
-
-        if (
-          !(
-            Number.isInteger(vpnEndpointPortNumber) && vpnEndpointPortNumber > 0
-          )
-        ) {
-          this.error.vpnEndpointPort = "error.invalid_port_number";
-
-          if (isValidationOk) {
-            this.focusElement("vpnEndpointPort");
-            isValidationOk = false;
-          }
         }
       }
 
