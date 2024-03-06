@@ -109,6 +109,22 @@ const routes = [
       ),
   },
   {
+    path: "/settings/firewall",
+    name: "SettingsFirewall",
+    component: () =>
+      import(
+        /* webpackChunkName: "settings-firewall" */ "../views/settings/SettingsFirewall.vue"
+      ),
+  },
+  {
+    path: "/settings/firewall/:nodeId",
+    name: "SettingsNodeFirewall",
+    component: () =>
+      import(
+        /* webpackChunkName: "node-firewall" */ "../views/NodeFirewall.vue"
+      ),
+  },
+  {
     path: "/apps/:appId",
     name: "Applications",
     component: Applications,
