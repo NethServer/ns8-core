@@ -11,9 +11,28 @@
             aria-label="breadcrumb"
             :no-trailing-slash="true"
             class="breadcrumb"
+            v-if="route.includes('/nodes/')"
           >
             <cv-breadcrumb-item>
               <cv-link to="/nodes">{{ $t("nodes.title") }}</cv-link>
+            </cv-breadcrumb-item>
+            <cv-breadcrumb-item>
+              <span>{{ title }}</span>
+            </cv-breadcrumb-item>
+          </cv-breadcrumb>
+          <cv-breadcrumb
+            aria-label="breadcrumb"
+            :no-trailing-slash="true"
+            class="breadcrumb"
+            v-else
+          >
+            <cv-breadcrumb-item>
+              <cv-link to="/settings">{{ $t("common.settings") }}</cv-link>
+            </cv-breadcrumb-item>
+            <cv-breadcrumb-item>
+              <cv-link to="/settings/firewall">{{
+                $t("firewall.title")
+              }}</cv-link>
             </cv-breadcrumb-item>
             <cv-breadcrumb-item>
               <span>{{ title }}</span>
@@ -227,6 +246,9 @@ export default {
           ? this.nodeLabel
           : this.$t("common.node") + " " + this.nodeId,
       });
+    },
+    route() {
+      return this.$route.path;
     },
     i18nTableColumns() {
       return this.tableColumns.map((column) => {
