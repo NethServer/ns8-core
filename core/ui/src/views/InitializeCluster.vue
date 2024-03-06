@@ -1295,12 +1295,28 @@ export default {
         this.focusElement("currentPassword");
       }
     },
+    isFqdn(fqdn) {
+      // Regular expression for a valid FQDN
+      const fqdnRegex = /^([a-zA-Z0-9-]+\.)*[a-zA-Z0-9-]+\.[a-zA-Z]{2,}$/;
+
+      // Check if the provided FQDN matches the regular expression
+      return fqdnRegex.test(fqdn);
+    },
     validateCreateCluster() {
       this.clearErrors(this);
       let isValidationOk = true;
 
       if (!this.vpnEndpointAddress) {
         this.error.vpnEndpointAddress = "common.required";
+        this.isOpenCreateClusterAccordion = true;
+
+        if (isValidationOk) {
+          this.focusElement("vpnEndpointAddress");
+          isValidationOk = false;
+        }
+      } else if (this.vpnEndpointAddress && !this.isFqdn(this.vpnEndpointAddress)) {
+        // we want to validate enpoint is a hostname
+        this.error.vpnEndpointAddress = "init.not_a_valid_fqdn_endpoint";
         this.isOpenCreateClusterAccordion = true;
 
         if (isValidationOk) {
