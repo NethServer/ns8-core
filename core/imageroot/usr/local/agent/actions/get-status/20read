@@ -45,18 +45,24 @@ rootfull = os.getuid() == 0
 image_filter = []
 
 if rootfull:
-    systemd_path = f'/etc/systemd/system/{status["instance"]}*.service'
+    systemd_path = glob.glob(f'/etc/systemd/system/{status["instance"]}*.service')
     # prepare image filter
     env = agent.read_envfile(os.environ["AGENT_STATE_DIR"] + "/environment")
     for key in env.keys():
         if key.endswith("_IMAGE"):
             image_filter.append(env[key])
 else:
-    systemd_path = f'{os.environ["AGENT_INSTALL_DIR"]}/systemd/user/*.service'
+    default = f'{os.environ["AGENT_INSTALL_DIR"]}/systemd/user/*.service'
+    # we want to look for foo@.service in default.target.wants but in other target zones too
+    template = f'{os.environ["AGENT_INSTALL_DIR"]}/systemd/user/**/*@*.service'
+    systemd_path = glob.glob(default) + glob.glob(template, recursive=True)
 
 status["services"] = []
-for f in glob.glob(systemd_path):
+for f in systemd_path:
     unit = os.path.basename(f)
+    # Exclude services with names like "phpfpm@.service"
+    if "@.service" in unit:
+        continue
     service = {"name": unit.removesuffix(".service")}
     for a in ["active", "enabled", "failed"]:
         if rootfull:
