@@ -31,6 +31,7 @@ import json
 import agent
 import os.path
 import subprocess
+import re
 
 # Prepare return variable
 status = {}
@@ -45,20 +46,32 @@ rootfull = os.getuid() == 0
 image_filter = []
 
 if rootfull:
-    systemd_path = glob.glob(f'/etc/systemd/system/{status["instance"]}*.service')
+    systemd_path = f'/etc/systemd/system/{status["instance"]}*.service'
     # prepare image filter
     env = agent.read_envfile(os.environ["AGENT_STATE_DIR"] + "/environment")
     for key in env.keys():
         if key.endswith("_IMAGE"):
             image_filter.append(env[key])
 else:
-    default = f'{os.environ["AGENT_INSTALL_DIR"]}/systemd/user/*.service'
-    # we want to look for foo@.service in default.target.wants but in other target zones too
-    template = f'{os.environ["AGENT_INSTALL_DIR"]}/systemd/user/**/*@*.service'
-    systemd_path = glob.glob(default) + glob.glob(template, recursive=True)
+    systemd_path = f'{os.environ["AGENT_INSTALL_DIR"]}/systemd/user/*.service'
 
 status["services"] = []
-for f in systemd_path:
+file_paths = []
+
+# Extract the service name foo@.service template from the path
+pattern = r'([^/]+)@\.service'
+
+for path in glob.glob(systemd_path):
+    match = re.search(pattern, path)
+    if match:
+        # search for all instances of the template
+        extracted_value = match.group(1)
+        file_paths.extend(glob.glob(f'{os.environ["AGENT_INSTALL_DIR"]}/systemd/user/**/{extracted_value}@*.service', recursive=True))
+    else:
+        file_paths.append(path)
+
+# Read the status of each service
+for f in file_paths:
     unit = os.path.basename(f)
     # Exclude services with names like "phpfpm@.service"
     if "@.service" in unit:
