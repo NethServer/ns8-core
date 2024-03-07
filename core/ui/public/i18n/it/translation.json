@@ -955,7 +955,16 @@
         "vpn_endpoint_port_tooltip": "I nodi worker utilizzano questo numero di porta per collegarsi al leader. Può differire dalla porta di ascolto di Wireguard 55820. Cambiare questo numero di porta solo se tra il worker e il leader è presente un dispositivo che fa port-forwarding",
         "vpn_cidr_tooltip": "Indirizzo della rete VPN utilizzata dai nodi del cluster per comunicare. Assicurare che questa rete non sia in conflitto con reti esistenti. Notare che la rete VPN non potrà essere cambiata in un secondo momento.",
         "external_domains": "Domini utente esterni",
-        "empty_passphrase": "La password è obbligatoria"
+        "empty_passphrase": "La password è obbligatoria",
+        "hostname_create": "Hostname",
+        "domain_join": "Worker node domain",
+        "hostname_join": "Worker node hostname",
+        "domain_create": "Domain",
+        "network_pattern": "Invalid network format",
+        "hostname_format": "Invalid hostname format",
+        "not_a_private_network": "Must be included in the private IPv4 network addresses: 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16",
+        "domain_format": "Invalid domain format",
+        "not_a_valid_fqdn_endpoint": "Invalid fully qualified domain name"
     },
     "account_provider": {
         "title": "Account provider"
