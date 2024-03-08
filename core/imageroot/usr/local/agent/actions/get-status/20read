@@ -31,7 +31,6 @@ import json
 import agent
 import os.path
 import subprocess
-import re
 
 # Prepare return variable
 status = {}
@@ -56,26 +55,19 @@ else:
     systemd_path = f'{os.environ["AGENT_INSTALL_DIR"]}/systemd/user/*.service'
 
 status["services"] = []
-file_paths = []
+units = []
 
-# Extract the service name foo@.service template from the path
-pattern = r'([^/]+)@\.service'
-
-for path in glob.glob(systemd_path):
-    match = re.search(pattern, path)
-    if match:
-        # search for all instances of the template
-        extracted_value = match.group(1)
-        file_paths.extend(glob.glob(f'{os.environ["AGENT_INSTALL_DIR"]}/systemd/user/**/{extracted_value}@*.service', recursive=True))
+# find all services paths and retrieve unit names
+for file in glob.glob(systemd_path):
+    # look for templates
+    if file.endswith('@.service'):
+        for template in glob.glob(f'{os.environ["AGENT_INSTALL_DIR"]}/systemd/user/default.target.wants/*@*.service', recursive=False):
+            units.append(os.path.basename(template))
     else:
-        file_paths.append(path)
+        units.append(os.path.basename(file))
 
-# Read the status of each service
-for f in file_paths:
-    unit = os.path.basename(f)
-    # Exclude services with names like "phpfpm@.service"
-    if "@.service" in unit:
-        continue
+# iterate over units and retrieve status
+for unit in units:
     service = {"name": unit.removesuffix(".service")}
     for a in ["active", "enabled", "failed"]:
         if rootfull:
