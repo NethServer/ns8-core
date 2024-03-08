@@ -48,13 +48,11 @@ done
 echo "Clean up firewalld core rules"
 # remove BUILTIN_SERVICE
 firewall-cmd --permanent --remove-service=http --remove-service=https >/dev/null
-# Array of services to be excluded
-excluded_services="cockpit dhcpv6-client ssh"
 # Iterate through all services
 for service in $(firewall-cmd --permanent --list-services); do
-    # Check if the service is in the excluded list
-    if grep -q "$service" <<< "$excluded_services"; then
-        echo "$service is excluded from removal."
+    # do not remove if the service is a BUILTIN_SERVICE like ssh, dhcpv6-client, etc
+    if [[ -f "/usr/lib/firewalld/services/${service}.xml" ]]; then
+        echo "$service no need to be removed"
         continue
     else
       # else delete and remove the service
