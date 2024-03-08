@@ -821,7 +821,8 @@
         "network_pattern": "Invalid network format",
         "not_a_private_network": "Must be included in the private IPv4 network addresses: 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16",
         "domain_format": "Invalid domain format",
-        "not_a_valid_fqdn_endpoint": "Invalid fully qualified domain name"
+        "not_a_valid_fqdn_endpoint": "Invalid fully qualified domain name",
+        "not_a_valid_ipv4_network": "Invalid IPv4 network address"
     },
     "settings_account": {
         "i_have_stored_setup_key": "He guardado la <strong>clave de configuración 2FA</strong> en un lugar seguro",

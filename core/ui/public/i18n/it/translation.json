@@ -956,15 +956,16 @@
         "vpn_cidr_tooltip": "Indirizzo della rete VPN utilizzata dai nodi del cluster per comunicare. Assicurare che questa rete non sia in conflitto con reti esistenti. Notare che la rete VPN non potrà essere cambiata in un secondo momento.",
         "external_domains": "Domini utente esterni",
         "empty_passphrase": "La password è obbligatoria",
-        "hostname_create": "Hostname",
-        "domain_join": "Worker node domain",
-        "hostname_join": "Worker node hostname",
-        "domain_create": "Domain",
-        "network_pattern": "Invalid network format",
-        "hostname_format": "Invalid hostname format",
-        "not_a_private_network": "Must be included in the private IPv4 network addresses: 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16",
-        "domain_format": "Invalid domain format",
-        "not_a_valid_fqdn_endpoint": "Invalid fully qualified domain name"
+        "hostname_create": "Nome host",
+        "domain_join": "Dominio del nodo worker",
+        "hostname_join": "Nome host del nodo worker",
+        "domain_create": "Dominio",
+        "network_pattern": "Formato di rete non valido",
+        "hostname_format": "Formato nome host non valido",
+        "not_a_private_network": "Deve essere incluso nelle reti IPv4 private: 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16",
+        "domain_format": "Formato di dominio non valido",
+        "not_a_valid_fqdn_endpoint": "Nome host assoluto (FQDN) non valido",
+        "not_a_valid_ipv4_network": "Indirizzo di rete IPv4 non valido"
     },
     "account_provider": {
         "title": "Account provider"
