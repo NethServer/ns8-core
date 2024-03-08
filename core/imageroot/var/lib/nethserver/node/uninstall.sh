@@ -46,8 +46,21 @@ for moduleid in $(awk -F: '$1 ~ /^.+[0-9]+$/ && $2 ~ /.+/ { print $1 }' </etc/pa
 done
 
 echo "Clean up firewalld core rules"
-firewall-cmd --permanent --remove-service=http --remove-service=https --remove-service=ns-wireguard >/dev/null
-firewall-cmd --permanent --delete-service=ns-wireguard
+# remove BUILTIN_SERVICE
+firewall-cmd --permanent --remove-service=http --remove-service=https >/dev/null
+# Iterate through all services
+#:warning: Adding `--zone=public` prevents `firewall-cmd` to write an informative message to stdout that breaks the FOR loop
+for service in $(firewall-cmd --permanent --list-services --zone=public); do
+    # do not remove if the service is a BUILTIN_SERVICE like ssh, dhcpv6-client, etc
+    if [[ -f "/usr/lib/firewalld/services/${service}.xml" ]]; then
+        echo "$service no need to be removed"
+        continue
+    else
+      # else delete and remove the service
+      firewall-cmd --permanent --remove-service="${service}" > /dev/null
+      firewall-cmd --permanent --delete-service="${service}"
+    fi
+done
 
 wg0_cluster_network=$(runagent redis-get cluster/network)
 if [[ -n "${wg0_cluster_network}" ]]; then
