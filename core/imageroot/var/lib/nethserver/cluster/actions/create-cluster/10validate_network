@@ -14,6 +14,19 @@ request = json.load(sys.stdin)
 
 network = request['network']
 
+# check if it is a valid network ipv4 address
+def is_valid_ipv4_network(network):
+    try:
+        network = ipaddress.IPv4Network(network)
+        return True
+    except ValueError:
+        return False
+
+if not is_valid_ipv4_network(network):
+    agent.set_status('validation-failed')
+    json.dump([{'field':'network', 'parameter':'network','value': request['network'], 'error':'not_a_valid_ipv4_network'}], fp=sys.stdout)
+    sys.exit(3)
+
 # check if it is a valid network local private network address
 # maximal are 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16
 def is_valid_and_private(ip):
