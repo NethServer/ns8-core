@@ -59,10 +59,12 @@ units = []
 
 # find all services paths and retrieve unit names
 for file in glob.glob(systemd_path):
-    # look for templates
+    # look for templates foo@.service
     if file.endswith('@.service'):
         for template in glob.glob(f'{os.environ["AGENT_INSTALL_DIR"]}/systemd/user/default.target.wants/*@*.service', recursive=False):
-            units.append(os.path.basename(template))
+            # we want to push only if we match 'foo@'
+            if template.startswith(template.replace('.service','')):
+                units.append(os.path.basename(template))
     else:
         units.append(os.path.basename(file))
 
