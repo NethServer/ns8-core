@@ -5,40 +5,44 @@
   "description": "Output schema of the get-cluster-status action",
   "examples": [
     {
-      "ui_name": "mycluster",
       "initialized": true,
       "leader": true,
       "nodes": [
         {
           "id": 2,
-          "ui_name": "node2@ams3",
+          "ui_name": "",
           "local": false,
           "online": true,
-          "hostname": "dn2.worker.cluster0.gs.nethserver.net",
-          "machine_id": "96b91e27d15ae6d7ef0cc79c621f7904",
+          "hostname": "node2.invalid",
           "vpn": {
             "ip_address": "10.5.4.2",
-            "public_key": "0yLfAut1CwatFb0k0sim6oPudIOWMzJsO9ggYVmvXBg=",
-            "endpoint": "1.2.3.4",
-            "last_seen": 1631198401,
-            "rcvd": 5989132,
-            "sent": 6097216,
+            "listen_port": 55820,
+            "public_key": "fyp4Bx4glpHZ2rkUhSpBfF+ro6wiykZBzI3TIHpIAU4=",
+            "endpoint": "165.22.72.164",
+            "last_seen": 1710172253,
+            "rcvd": 27660,
+            "sent": 7388,
             "keepalive": 25
           }
         },
         {
           "id": 1,
-          "ui_name": "node1@sfo3",
+          "ui_name": "",
           "local": true,
-          "online": false,
+          "online": true,
+          "hostname": "node1.invalid",
           "vpn": {
             "ip_address": "10.5.4.1",
-            "public_key": "c4BSbQV3zG1qIK1eSUfVvwLtTBxRuI1y5IWmddZgals="
+            "listen_port": 55820,
+            "public_key": "6rT/LnB+OIZ25FALQO9YGPA+u+5HIirWCsCFPn609VI=",
+            "endpoint": ""
           }
         }
       ],
-      "leader_url": "https://server1.nethserver.org/cluster-admin/",
-      "default_password": true
+      "leader_url": "https://rl1.dp.nethserver.net/cluster-admin/",
+      "default_password": true,
+      "ui_name": "NethServer 8",
+      "release_name": "8.1"
     }
   ],
   "type": "object",
@@ -149,5 +153,5 @@
     "leader",
     "leader_url",
     "default_password"
- ]
+  ]
 }
