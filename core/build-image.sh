@@ -72,6 +72,7 @@ buildah add "${container}" api-moduled/api-moduled /usr/local/bin/api-moduled
 buildah add "${container}" install.sh /var/lib/nethserver/node/install.sh
 core_env_file=$(mktemp)
 cleanup_list+=("${core_env_file}")
+printf "RELEASE_NAME=8.0\n" >> "${core_env_file}"
 printf "CORE_IMAGE=${repobase}/core:%s\n" "${IMAGETAG:-latest}" >> "${core_env_file}"
 printf "REDIS_IMAGE=${repobase}/redis:%s\n" "${IMAGETAG:-latest}" >> "${core_env_file}"
 printf "RSYNC_IMAGE=${repobase}/rsync:%s\n" "${IMAGETAG:-latest}" >> "${core_env_file}"

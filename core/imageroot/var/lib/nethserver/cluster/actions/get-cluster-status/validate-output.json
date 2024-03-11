@@ -43,6 +43,11 @@
   ],
   "type": "object",
   "properties": {
+    "release_name": {
+      "title": "Name of the NethServer release",
+      "description": "Human-readable value provided by the core component. It is different from the core version tag.",
+      "type": "string"
+    },
     "initialized": {
       "description": "Set to true if the node has been configured, false otherwise",
       "type": "boolean"

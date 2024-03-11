@@ -63,8 +63,11 @@ cluster_ui_name = rdb.get(f"cluster/ui_name") or ""
 leader_id = int(rdb.hget("cluster/environment", "NODE_ID"))
 local_id = int(os.environ['NODE_ID'])
 local_public_key = rdb.hget(f"node/{local_id}/vpn", "public_key")
+core_env = agent.read_envfile('/etc/nethserver/core.env')
 
-ret = { 'initialized': False, 'leader': False, 'nodes': [], 'leader_url': '', 'default_password': False, 'ui_name': cluster_ui_name, }
+ret = { 'initialized': False, 'leader': False, 'nodes': [], 'leader_url': '', 'default_password': False, 'ui_name': cluster_ui_name,
+    'release_name': core_env.get("RELEASE_NAME", "8.0"),
+}
 vpn = {}
 
 default_password = hashlib.sha256(b'Nethesis,1234').hexdigest()
