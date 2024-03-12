@@ -45,18 +45,34 @@ rootfull = os.getuid() == 0
 image_filter = []
 
 if rootfull:
-    systemd_path = f'/etc/systemd/system/{status["instance"]}*.service'
+    systemd_path = f'{status["instance"]}*.service'
+    base_dir= '/etc/systemd/system/'
     # prepare image filter
     env = agent.read_envfile(os.environ["AGENT_STATE_DIR"] + "/environment")
     for key in env.keys():
         if key.endswith("_IMAGE"):
             image_filter.append(env[key])
 else:
-    systemd_path = f'{os.environ["AGENT_INSTALL_DIR"]}/systemd/user/*.service'
+    systemd_path = '*.service'
+    base_dir = f'{os.environ["AGENT_INSTALL_DIR"]}/systemd/user/'
 
 status["services"] = []
-for f in glob.glob(systemd_path):
-    unit = os.path.basename(f)
+units = []
+
+# find all services paths and retrieve unit names
+for file in glob.glob(base_dir+systemd_path):
+    # look for templates
+    if file.endswith('@.service'):
+        # replace the name of the unit foo@.service to foo@*.service
+        unit = os.path.basename(file.replace('@.service', '@*.service'))
+        for template in glob.glob(base_dir + 'default.target.wants/' + unit, recursive=False):
+            # add only the unit name
+            units.append(os.path.basename(template))
+    else:
+        units.append(os.path.basename(file))
+
+# iterate over units and retrieve status
+for unit in units:
     service = {"name": unit.removesuffix(".service")}
     for a in ["active", "enabled", "failed"]:
         if rootfull:
