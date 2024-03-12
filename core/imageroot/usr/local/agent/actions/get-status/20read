@@ -65,7 +65,7 @@ for file in glob.glob(base_dir+systemd_path):
     if file.endswith('@.service'):
         # replace the name of the unit foo@.service to foo@*.service
         unit = os.path.basename(file.replace('@.service', '@*.service'))
-        for template in glob.glob(base_dir + f'/default.target.wants/{unit}', recursive=False):
+        for template in glob.glob(base_dir + 'default.target.wants/' + unit, recursive=False):
             # add only the unit name
             units.append(os.path.basename(template))
     else:
