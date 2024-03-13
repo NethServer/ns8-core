@@ -7,8 +7,8 @@ parent: User Interface
 
 # Core User Interface
 
-- TOC
-  {:toc}
+* TOC
+{:toc}
 
 ## Components
 

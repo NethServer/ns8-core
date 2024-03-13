@@ -63,3 +63,19 @@ path ='/path' # path fragment of the URL to check
 if agent.http_route_in_use(domain=none, path=path):
     sys.exit(2)
 ```
+
+## Extra python libraries
+
+If the module requires extra Python libraries, you can install them inside the `create-module` action.
+
+Here's an example of a `create-module` action step named `20initialize`:
+
+```yaml
+
+```bash
+#!/bin/bash
+
+pip install bcrypt==4.1.2
+```
+
+You can then use the imported `bcrypt` library in all your action steps. A similar script can be added under `update-module.d/`.

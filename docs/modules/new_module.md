@@ -94,7 +94,7 @@ The main parts to look for are:
 No matter on which node the module will run, the web user interface will be automatically imported inside the leader node
 and it will be available from the admin URL `https://your.server.fqdn/cluster-admin`.
 
-See how to [setup and develop the UI]({{site.baseurl}}/ui/modules.).
+See how to [setup and develop the UI]({{site.baseurl}}/ui/modules#modules-user-interface).
 
 Also make sure to edit [`imageroot/ui/public/metadata.json`]({{site.baseurl}}/modules/metadata) and replace the logo at `imageroot/ui/src/assets/module_default_logo.png`.
 
