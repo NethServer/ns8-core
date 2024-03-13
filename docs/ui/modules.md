@@ -7,8 +7,8 @@ parent: User Interface
 
 # Modules User Interface
 
-- TOC
-  {:toc}
+* TOC
+{:toc}
 
 ## Guidelines
 
