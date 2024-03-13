@@ -78,4 +78,4 @@ Here's an example of a `create-module` action step named `20initialize`:
 pip install bcrypt==4.1.2
 ```
 
-You can then use the imported `bcrypt` library in all your action steps.
+You can then use the imported `bcrypt` library in all your action steps. A similar script can be added under `update-module.d/`.
