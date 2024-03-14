@@ -1470,7 +1470,7 @@ export default {
         try {
           decoded = atob(this.joinCode);
         } catch (DOMException) {
-          this.error.joinCode = "init.invalid_join_code";
+          this.error.joinCode = "init.the_join_code_can_not_be_decoded";
 
           if (isValidationOk) {
             this.focusElement("joinCode");
@@ -1479,7 +1479,7 @@ export default {
         }
 
         if (!decoded) {
-          this.error.joinCode = "init.invalid_join_code";
+          this.error.joinCode = "init.the_join_code_is_not_correctly_encoded";
 
           if (isValidationOk) {
             this.focusElement("joinCode");
@@ -1489,7 +1489,7 @@ export default {
           let [endpoint, token] = decoded.split("|");
 
           if (!(endpoint && token)) {
-            this.error.joinCode = "init.invalid_join_code";
+            this.error.joinCode = "init.the_join_code_cannot_be_parsed";
 
             if (isValidationOk) {
               this.focusElement("joinCode");
@@ -1578,7 +1578,7 @@ export default {
     joinClusterValidationFailed(validationErrors) {
       console.error("validation failed", validationErrors);
       this.isJoiningCluster = false;
-      this.error.joinCode = "init.invalid_join_code";
+      this.error.joinCode = this.$t("init."+validationErrors[0].error);
       this.focusElement("joinCode");
     },
     async onFileUpload(files) {
