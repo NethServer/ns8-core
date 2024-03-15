@@ -763,7 +763,7 @@
         "save_settings": "Salva impostazioni",
         "enabled": "Abilitato",
         "disabled": "Disabilitato",
-        "delete": "Elimina",
+        "delete": "Delete",
         "advanced": "Avanzate",
         "join_code": "Codice di join",
         "cluster_label": "Etichetta cluster",
@@ -771,12 +771,12 @@
         "cluster_label_tooltip": "Puoi assegnare al cluster un nome facile da ricordare",
         "all_good": "Tutto bene",
         "all_nodes": "Tutti i nodi",
-        "cancel": "Annulla",
+        "cancel": "Cancel",
         "case_sensitive": "Sensibile a maiuscole e minuscole",
-        "close": "Chiudi",
+        "close": "Close",
         "copied_to_clipboard": "Copiato!",
         "copy_to_clipboard": "Copia negli appunti",
-        "clear_search": "Pulisci ricerca",
+        "clear_search": "Clear search",
         "collapse": "Collassa",
         "clear_selection": "Pulisci selezione",
         "clear_filter": "Pulisci filtro",
@@ -785,7 +785,7 @@
         "details": "Dettagli",
         "disable": "Disabilita",
         "done": "Completato",
-        "edit": "Modifica",
+        "edit": "Edit",
         "enable": "Abilita",
         "use_landscape_mode_description": "Questa pagina è ottimizzata per la modalità orizzontale",
         "global_shortcut": "Scorciatoia globale",
@@ -817,8 +817,8 @@
         "none": "Nessuno",
         "x_of_y_selected": "selezionati {selected} di {total}",
         "search": "Ricerca",
-        "no_search_results": "Nessun risultato",
-        "no_search_results_description": "Prova a modificare la query di ricerca",
+        "no_search_results": "No results",
+        "no_search_results_description": "Try changing your search query",
         "success": "Successo",
         "save": "Salva",
         "this_action_is_not_reversible": "Questa azione <strong>NON</strong> è reversibile",
@@ -965,7 +965,12 @@
         "not_a_private_network": "Deve essere incluso nelle reti IPv4 private: 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16",
         "domain_format": "Formato di dominio non valido",
         "not_a_valid_fqdn_endpoint": "Nome host assoluto (FQDN) non valido",
-        "not_a_valid_ipv4_network": "Indirizzo di rete IPv4 non valido"
+        "not_a_valid_ipv4_network": "Indirizzo di rete IPv4 non valido",
+        "the_join_code_is_not_correctly_encoded": "Join code is not correctly encoded",
+        "cluster_auth_error": "Invalid response",
+        "the_join_code_cannot_be_parsed": "Join code cannot be parsed",
+        "cluster_tls_verify_error": "TLS certificate of leader node is not valid",
+        "the_join_code_can_not_be_decoded": "Join code cannot be decoded"
     },
     "account_provider": {
         "title": "Account provider"
@@ -1261,12 +1266,12 @@
         "title": "Firewall"
     },
     "pagination": {
-        "page_number": "Numero pagina",
-        "items_per_page": "Elementi per pagina:",
-        "range_of_total_items": "{range} di {total} elementi",
-        "of_total_pages": "di {total} pagine",
-        "previous_page": "Pagina precedente",
-        "next_page": "Pagina successiva"
+        "page_number": "Page number",
+        "items_per_page": "Items per page:",
+        "range_of_total_items": "{range} of {total} items",
+        "of_total_pages": "of {total} pages",
+        "previous_page": "Previous page",
+        "next_page": "Next page"
     },
     "websocket": {
         "websocket_disconnected": "Websocket disconnessa",
