@@ -10,4 +10,4 @@ import os
 import agent
 
 agent.set_weight(os.path.basename(__file__), 0)
-agent.set_weight('10sendpayload', 5)
+agent.set_weight('10sendpayload', 8)

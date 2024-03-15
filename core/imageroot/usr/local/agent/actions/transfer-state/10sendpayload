@@ -87,4 +87,7 @@ with subprocess.Popen(transfer_cmd, stdin=subprocess.DEVNULL, stdout=subprocess.
         else:
             buf += ch
 
-sys.exit(pclient.returncode)
+# Ignore exit code 24, "Partial transfer due to vanished source files"
+if pclient.returncode not in [0, 24]:
+    print(agent.SD_ERR + "transfer-state got an error from rsync:", pclient.returncode, file=sys.stderr)
+    sys.exit(1)
