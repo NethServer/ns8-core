@@ -39,6 +39,11 @@ Events fired by the `cluster` agent (i.e. channel is `cluster/event/<event name>
 - `leader-changed`: a node was promoted to leader. The `node_id` attribute
   indicates the new leader, and `endpoint` its public Wireguard VPN endpoint address
 
+## Node events
+
+Events fired by the `node` agent (i.e. channel is `node/<node id>/event/<event name>`):
+- `fqdn-changed`: the node FQDN has changed. The `hostname` and `domain` attribute describe the new FQDN, while the `node` attribute contains the node ID that originated the event
+
 ## Signaling events
 
 To signal an event, just [PUBLISH](https://redis.io/commands/PUBLISH) a message to the channel.
