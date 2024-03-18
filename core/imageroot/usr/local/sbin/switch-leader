@@ -125,6 +125,10 @@ if install_loki and node_id == self_id:
     result = agent.tasks.run("cluster", "add-module", data={
         "image": "loki",
         "node": node_id,
+        "check_idle_time": 0,
+    },
+    extra={
+        "isNotificationHidden": True,
     },
     endpoint="redis://cluster-leader")
     if result['exit_code'] != 0:
