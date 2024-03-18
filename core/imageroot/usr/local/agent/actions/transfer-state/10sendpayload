@@ -39,6 +39,7 @@ podman_cmd = [
     'podman', 'run', '-i', '--workdir=/srv', '--rm', '--network=host', '--privileged',
     '--name=transfer-state-payload',
     '--env=RSYNC_PASSWORD',
+    '--log-driver=none',
 ]
 
 rsync_cmd = [
