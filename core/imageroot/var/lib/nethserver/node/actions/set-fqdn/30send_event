@@ -1,0 +1,21 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2024 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+import json
+import os
+import sys
+
+import agent
+
+request = json.load(sys.stdin)
+
+redis_client = agent.redis_connect(privileged=True)
+redis_client.publish(f'{os.getenv("AGENT_ID")}/event/fqdn-changed', json.dumps({
+    "hostname": request["hostname"],
+    "domain": request["domain"],
+    "node": int(os.getenv("NODE_ID")),
+}))
