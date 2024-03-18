@@ -123,13 +123,13 @@ agent.run_helper("systemctl", "start", "check-subscription")
 # Install loki on the leader node, new instance is inside 'module_id' field of the returned JSON
 if install_loki and node_id == self_id:
     result = agent.tasks.run("cluster", "add-module", data={
-        "image": "ghcr.io/nethserver/loki:latest",
+        "image": "loki",
         "node": node_id,
     },
     endpoint="redis://cluster-leader")
     if result['exit_code'] != 0:
         print(f"[ERROR] Failed to install loki on the new leader node: {result['error']}", file=sys.stderr)
-        sys.exit(1)
+        errors += 1
     else:
         redis_client = agent.redis_connect(privileged=True)
         # switch loki default instance for the cluster

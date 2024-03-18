@@ -12,7 +12,7 @@ import sys
 import agent
 
 # Check if event comes from the cluster
-if os.getenv("AGENT_EVENT_SOURCE").startswith('cluster'):
+if os.getenv("AGENT_EVENT_SOURCE") == 'cluster':
     # parse data
     data = json.load(sys.stdin)
     if 'instance' in data and data['instance'] == 'loki':
