@@ -22,9 +22,11 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument('--endpoint', required=False, help="Override VPN endpoint setting in Redis DB")
 parser.add_argument('--node', required=True, type=int, help="Node ID of the new leader")
+parser.add_argument('--without-loki', required=False, help="Do not install loki on the new leader node", action='store_false')
 args = parser.parse_args()
 node_id = args.node
 node_endpoint = args.endpoint
+install_loki = args.without_loki
 
 # This command runs under the cluster environment. It always point to the local
 # Redis instance and has admin privileges over it.
@@ -117,6 +119,36 @@ if node_id == self_id:
 
 # Enable/Disable the subscription services
 agent.run_helper("systemctl", "start", "check-subscription")
+
+# Install loki on the leader node, new instance is inside 'module_id' field of the returned JSON
+if install_loki and node_id == self_id:
+    result = agent.tasks.run("cluster", "add-module", data={
+        "image": "loki",
+        "node": node_id,
+        "check_idle_time": 0,
+    },
+    extra={
+        "isNotificationHidden": True,
+    },
+    endpoint="redis://cluster-leader")
+    if result['exit_code'] != 0:
+        print(f"[ERROR] Failed to install loki on the new leader node: {result['error']}", file=sys.stderr)
+        errors += 1
+    else:
+        redis_client = agent.redis_connect(privileged=True)
+        # switch loki default instance for the cluster
+        old_instance = redis_client.get('cluster/default_instance/loki')
+        # update the default instance for the cluster and the node
+        redis_pipeline = redis_client.pipeline()
+        redis_pipeline.set('cluster/default_instance/loki', result['output']['module_id'])
+        redis_pipeline.set(f'node/{node_id}/default_instance/loki', result['output']['module_id'])
+        # publish the event
+        redis_pipeline.publish(f'cluster/event/default-instance-changed', json.dumps({
+            'instance': 'loki',
+            'previous': old_instance,
+            'current': result['output']['module_id'],
+        }))
+        redis_pipeline.execute()
 
 if errors > 0:
     sys.exit(1)
