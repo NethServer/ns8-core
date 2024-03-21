@@ -125,6 +125,14 @@ const routes = [
       ),
   },
   {
+    path: "/settings/system-logs",
+    name: "SettingsSystemLogs",
+    component: () =>
+      import(
+        /* webpackChunkName: "node-firewall" */ "../views/settings/SettingsSystemLogs.vue"
+      ),
+  },
+  {
     path: "/apps/:appId",
     name: "Applications",
     component: Applications,

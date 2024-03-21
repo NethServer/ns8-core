@@ -100,6 +100,16 @@
           <h6>{{ $t("firewall.title") }}</h6>
         </NsTile>
       </cv-column>
+      <cv-column :md="4" :xlg="4">
+        <NsTile
+          :light="true"
+          kind="clickable"
+          @click="goTo('/settings/system-logs')"
+          :icon="Catalog32"
+        >
+          <h6>{{ $t("system_logs.title") }}</h6>
+        </NsTile>
+      </cv-column>
     </cv-row>
   </cv-grid>
 </template>
