@@ -25,18 +25,21 @@ for instance in instances:
         "active": instance["id"] == default_instance
     }
 
-    task_response = agent.tasks.run(
-        agent_id=f'module/{instance["id"]}',
-        action='get-configuration',
-        endpoint="redis://cluster-leader"
-    )
-    if task_response["exit_code"] == 0:
-        item["offline"] = False
-        item["retention_days"] = task_response["output"]["retention_days"]
-        item["active_from"] = task_response["output"]["active_from"]
-        if "active_to" in task_response["output"]:
-            item["active_to"] = task_response["output"]["active_to"]
-    else:
+    try:
+        task_response = agent.tasks.run(
+            agent_id=f'module/{instance["id"]}',
+            action='get-configuration',
+            endpoint="redis://cluster-leader"
+        )
+        if task_response["exit_code"] == 0:
+            item["offline"] = False
+            item["retention_days"] = task_response["output"]["retention_days"]
+            item["active_from"] = task_response["output"]["active_from"]
+            if "active_to" in task_response["output"]:
+                item["active_to"] = task_response["output"]["active_to"]
+        else:
+            item["offline"] = True
+    except Exception as e:
         item["offline"] = True
 
     response.append(item)
