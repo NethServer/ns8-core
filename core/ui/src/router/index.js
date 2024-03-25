@@ -129,7 +129,7 @@ const routes = [
     name: "SettingsSystemLogs",
     component: () =>
       import(
-        /* webpackChunkName: "node-firewall" */ "../views/settings/SettingsSystemLogs.vue"
+        /* webpackChunkName: "system-logs" */ "../views/settings/SettingsSystemLogs.vue"
       ),
   },
   {

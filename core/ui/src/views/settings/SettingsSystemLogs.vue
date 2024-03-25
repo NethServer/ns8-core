@@ -40,7 +40,7 @@
       </cv-column>
     </cv-row>
     <cv-row v-if="loading.loki">
-      <cv-column>
+      <cv-column :md="4" :xlg="4">
         <NsTile :light="true" :icon="Catalog32">
           <cv-skeleton-text
             :paragraph="false"
@@ -49,12 +49,12 @@
           ></cv-skeleton-text>
           <cv-skeleton-text
             :paragraph="true"
-            :line-count="6"
+            :line-count="9"
           ></cv-skeleton-text>
         </NsTile>
       </cv-column>
     </cv-row>
-    <cv-row>
+    <cv-row v-else-if="loki.length">
       <cv-column
         :md="4"
         :xlg="4"
@@ -71,7 +71,7 @@
           :retention_days="instance.retention_days"
           :active_from="instance.active_from"
           :active_to="instance.active_to"
-          :isMoreThanOne="instance.isMoreThanOne"
+          :isMoreThanOne="loki.length > 1"
         >
           <template #menu>
             <cv-overflow-menu
@@ -92,11 +92,11 @@
                 />
               </cv-overflow-menu-item>
               <cv-overflow-menu-item
-                v-if="!active"
+                v-if="!instance.active"
                 danger
                 @click="
                   isUninstallDialogOpen = true;
-                  lokiToEdit = instance;
+                  lokiToUninstall = instance;
                 "
               >
                 <NsMenuItem
@@ -125,6 +125,7 @@
       :visible="isEditRetentionDialogOpen"
       @modal-hidden="isEditRetentionDialogOpen = false"
       @primary-click="setLokiInstanceRetention"
+      :primaryButtonDisabled="loading.setLokiInstanceRetention"
     >
       <template slot="title">{{
         $t("system_logs.loki.edit_retention")
@@ -136,8 +137,8 @@
               :label="$t('system_logs.loki.retention')"
               v-model="newRetention"
               :helper-text="$t('system_logs.loki.days')"
-              maxlength="24"
               ref="newRetention"
+              :invalid-message="error.newRetention"
             >
             </cv-text-input>
             <div v-if="error.setLokiInstanceRetention">
@@ -159,6 +160,7 @@
       :visible="isEditLabelDialogOpen"
       @modal-hidden="isEditLabelDialogOpen = false"
       @primary-click="setLokiInstanceLabel"
+      :primaryButtonDisabled="loading.setLokiInstanceLabel"
     >
       <template slot="title">{{ $t("system_logs.loki.edit_label") }}</template>
       <template slot="content">
@@ -174,6 +176,7 @@
               v-model.trim="newLabel"
               maxlength="24"
               ref="newLabel"
+              :invalid-message="error.newLabel"
             >
             </cv-text-input>
             <div v-if="error.setLokiInstanceLabel">
@@ -198,14 +201,17 @@
       @modal-hidden="isUninstallDialogOpen = false"
       @primary-click="uninstallLokiInstance"
       :primary-button-disabled="
-        userInputUninstall !== 'loki' + lokiToUninstall.instance_id
+        userInputUninstall !==
+        (lokiToUninstall ? lokiToUninstall.instance_id : 0)
       "
     >
       <template slot="title">{{
-        $tc("system_logs.loki.uninstall_instance", {
-          name: lokiToUninstall.instance_label
+        $tc("system_logs.loki.uninstall_instance", lokiToUninstall, {
+          name: lokiToUninstall
             ? lokiToUninstall.instance_label
-            : t("system_logs.loki.title") + " " + lokiToUninstall.instance_id,
+              ? lokiToUninstall.instance_label
+              : lokiToUninstall.instance_id
+            : undefined,
         })
       }}</template>
       <template slot="content">
@@ -215,12 +221,12 @@
             :title="$t('common.please_read_carefully')"
             :showCloseButton="false"
           />
-          <div v-html="t('system_logs.loki.uninstall_description')"></div>
+          <div v-html="$t('system_logs.loki.uninstall_description')"></div>
           <div
             class="mg-top-xlg"
             v-html="
-              $t('system_logs.loki.type_to_confirm', {
-                name: 'loki' + lokiToUninstall.instance_id,
+              $tc('system_logs.loki.type_to_confirm', lokiToUninstall, {
+                name: lokiToUninstall ? lokiToUninstall.instance_id : undefined,
               })
             "
           ></div>
@@ -253,11 +259,13 @@ import {
 } from "@nethserver/ns8-ui-lib";
 import to from "await-to-js";
 import LokiCard from "@/components/system-logs/LokiCard";
+import Information16 from "@carbon/icons-vue/es/information/16";
 
 export default {
   name: "SettingsSystemLogs",
   components: {
     LokiCard,
+    Information16,
   },
   mixins: [
     TaskService,
@@ -292,6 +300,8 @@ export default {
         setLokiInstanceRetention: "",
         setLokiInstanceLabel: "",
         uninstallLokiInstance: "",
+        newRetention: "",
+        newLabel: "",
       },
     };
   },
@@ -306,7 +316,7 @@ export default {
     next();
   },
   created() {
-    //this.getClusterLokiInstances();
+    this.getClusterLokiInstances();
   },
   methods: {
     async getClusterLokiInstances() {
@@ -348,12 +358,174 @@ export default {
       this.loading.loki = false;
     },
     getClusterLokiInstancesCompleted(taskContext, taskResult) {
-      this.loki = taskResult.output;
+      this.loki = taskResult.output.instances;
       this.loading.loki = false;
     },
-    setLokiInstanceRetention() {},
-    setLokiInstanceLabel() {},
-    uninstallLokiInstance() {},
+    validateLokiInstanceRetention() {
+      this.clearErrors(this);
+      let isValidationOk = true;
+
+      if (!this.newRetention) {
+        this.error.newRetention = this.$t("common.required");
+        isValidationOk = false;
+      }
+      if (this.newRetention && isNaN(this.newRetention)) {
+        this.error.newRetention = this.$t("system_logs.loki.valid_number");
+        isValidationOk = false;
+      }
+      if (this.newRetention && this.newRetention <= 0) {
+        this.error.newRetention = this.$t("system_logs.loki.greater_than_0");
+        isValidationOk = false;
+      }
+
+      return isValidationOk;
+    },
+    async setLokiInstanceRetention() {
+      const isValidationOk = this.validateLokiInstanceRetention();
+      if (!isValidationOk) {
+        return;
+      }
+
+      this.error.setLokiInstanceRetention = "";
+      this.loading.setLokiInstanceRetention = true;
+      const taskAction = "configure-module";
+
+      // register to task completion
+      this.$root.$once(
+        taskAction + "-completed",
+        this.setLokiInstanceRetentionCompleted
+      );
+
+      const res = await to(
+        this.createModuleTaskForApp(this.lokiToEdit.instance_id, {
+          action: taskAction,
+          data: {
+            retention_days: parseInt(this.newRetention),
+          },
+          extra: {
+            isNotificationHidden: true,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.setLokiInstanceRetention = this.getErrorMessage(err);
+        return;
+      }
+    },
+    setLokiInstanceRetentionCompleted() {
+      this.loading.setLokiInstanceRetention = false;
+      this.isEditRetentionDialogOpen = false;
+      this.newRetention = null;
+      this.getClusterLokiInstances();
+    },
+    validateLokiInstanceLabel() {
+      this.clearErrors(this);
+      let isValidationOk = true;
+
+      if (!this.newLabel) {
+        this.error.newLabel = this.$t("common.required");
+        isValidationOk = false;
+      }
+
+      return isValidationOk;
+    },
+    async setLokiInstanceLabel() {
+      const isValidationOk = this.validateLokiInstanceLabel();
+      if (!isValidationOk) {
+        return;
+      }
+
+      this.error.setLokiInstanceLabel = "";
+      this.loading.setLokiInstanceLabel = true;
+      const taskAction = "set-name";
+
+      // register to task completion
+      this.$root.$once(
+        taskAction + "-completed",
+        this.setLokiInstanceLabelCompleted
+      );
+
+      const res = await to(
+        this.createModuleTaskForApp(this.lokiToEdit.instance_id, {
+          action: taskAction,
+          data: {
+            name: this.newLabel,
+          },
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.setLokiInstanceLabel = this.getErrorMessage(err);
+        this.loading.setLokiInstanceLabel = false;
+        return;
+      }
+    },
+    setLokiInstanceLabelCompleted() {
+      this.loading.setLokiInstanceLabel = false;
+      this.isEditLabelDialogOpen = false;
+      this.newLabel = "";
+      this.getClusterLokiInstances();
+    },
+    async uninstallLokiInstance() {
+      this.error.uninstallLokiInstance = "";
+      const taskAction = "remove-module";
+      const eventId = this.getUuid();
+
+      // register to task error
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.uninstallLokiInstanceAborted
+      );
+
+      // register to task completion
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.uninstallLokiInstanceCompleted
+      );
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          data: {
+            module_id: this.lokiToUninstall.instance_id,
+            preserve_data: false,
+          },
+          extra: {
+            title: this.$t("software_center.instance_uninstallation", {
+              instance: this.lokiToUninstall.instance_label
+                ? this.lokiToUninstall.instance_label
+                : this.lokiToUninstall.instance_id,
+            }),
+            description: this.$t("software_center.uninstalling"),
+            eventId,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.uninstallLokiInstance = this.getErrorMessage(err);
+        return;
+      }
+      this.isUninstallDialogOpen = false;
+    },
+    uninstallLokiInstanceAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.uninstallLokiInstance = this.$t("error.generic_error");
+    },
+    uninstallLokiInstanceCompleted() {
+      this.getClusterLokiInstances();
+    },
   },
 };
 </script>

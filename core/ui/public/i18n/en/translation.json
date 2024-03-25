@@ -943,7 +943,7 @@
       "offline": "Offline",
       "retention": "Retention",
       "days": "Days",
-      "retention_days": "retention {num} day | Retention {num} days",
+      "retention_days": "retention {count} day | Retention {count} days",
       "edit_retention": "Edit retention",
       "active_from": "Active from",
       "active_to": "to",
@@ -954,7 +954,9 @@
       "uninstall": "Uninstall",
       "uninstall_description": "Lorem ipsum dolor sit lorem a amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam.",
       "uninstall_instance": "Uninstall {name}",
-      "understood_uninstall": "I understand, uninstall"
+      "understood_uninstall": "I understand, uninstall",
+      "valid_number": "Insert a valid number",
+      "greater_than_0": "Enter a number greater than 0"
     }
   },
   "audit_trail": {
