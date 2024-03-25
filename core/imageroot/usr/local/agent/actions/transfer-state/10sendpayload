@@ -21,17 +21,17 @@ username, password = request['credentials']
 # Prepare a copy of the source module environment that can be transfered
 agent.run_helper('cp', '-v', 'environment', 'environment.clone-module').check_returncode()
 
-# Dump the Systemd enabled services list
-with open('default-target.clone-module', 'w') as fpout:
-    agent.run_helper(*'systemctl --user show default.target -p Wants --value'.split(), stdout=fpout).check_returncode()
+if os.geteuid() != 0:
+    # Dump the Systemd enabled services list
+    with open('default-target.clone-module', 'w') as fpout:
+        agent.run_helper(*'systemctl --user show default.target -p Wants --value'.split(), stdout=fpout).check_returncode()
 
-with open('timers-target.clone-module', 'w') as fpout:
-    proc = subprocess.run('systemctl --user show timers.target -p Wants --value'.split(), text=True, capture_output=True)
-    if proc.returncode != 0:
-        sysm.exit(3)
-    tlist = re.sub(r"\bbackup[0-9]+\.timer\b", '', proc.stdout) # remove backup timers
-    fpout.write(tlist)
-
+    with open('timers-target.clone-module', 'w') as fpout:
+        proc = subprocess.run('systemctl --user show timers.target -p Wants --value'.split(), text=True, capture_output=True)
+        if proc.returncode != 0:
+            sysm.exit(3)
+        tlist = re.sub(r"\bbackup[0-9]+\.timer\b", '', proc.stdout) # remove backup timers
+        fpout.write(tlist)
 
 errors = 0
 os.environ['RSYNC_PASSWORD'] = password
