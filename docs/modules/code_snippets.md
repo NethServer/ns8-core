@@ -70,8 +70,6 @@ If the module requires extra Python libraries, you can install them inside the `
 
 Here's an example of a `create-module` action step named `20initialize`:
 
-```yaml
-
 ```bash
 #!/bin/bash
 
