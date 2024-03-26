@@ -377,12 +377,12 @@ export default {
     },
     getClusterLokiInstancesCompleted(taskContext, taskResult) {
       const lokiOutput = taskResult.output.instances.filter(
-        (instance) => instance.offline === false
+        (instance) => !instance.offline
       );
       let loki = [];
       for (let instance of lokiOutput) {
         let currentInstance = "";
-        if (instance.active === true) {
+        if (instance.active) {
           currentInstance =
             " (" + this.$t("system_logs.current_instance") + ")";
         }

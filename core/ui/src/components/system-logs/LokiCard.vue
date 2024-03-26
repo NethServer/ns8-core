@@ -12,26 +12,25 @@
     </div>
     <div class="row">
       <h3 class="title ellipsis">
-        {{ instance_label ? instance_label : instance_id }}
+        {{ instanceLabel ? instanceLabel : instanceId }}
       </h3>
     </div>
     <div class="row loki-card">
-      <span class="row" v-if="instance_label">{{ instance_id }}</span>
+      <span class="row" v-if="instanceLabel">{{ instanceId }}</span>
       <span class="row margin-top" v-if="!offline">{{
-        $t("system_logs.loki.active_from") +
-        " " +
-        activeFromFormatted +
-        (activeToFormatted
-          ? " " + $t("system_logs.loki.active_to") + " " + activeToFormatted
-          : "")
+        `${$t("system_logs.loki.active_from")} ${activeFromFormatted} ${
+          activeToFormatted
+            ? `${$t("system_logs.loki.active_to")} ${activeToFormatted}`
+            : ""
+        }`
       }}</span>
       <div class="row">
         <NsSvg :svg="Chip20" />
         <span class="margin-left">
-          {{ node_label ? node_label : $t("common.node") + " " + node_id }}
+          {{ nodeLabel ? nodeLabel : $t("common.node") + " " + nodeId }}
         </span>
       </div>
-      <div class="row" v-if="isMoreThanOne">
+      <div class="row" v-if="showStatusBadge">
         <cv-tag v-if="active" kind="green" :label="activeText"></cv-tag>
         <cv-tag v-else-if="offline" kind="red" :label="offlineText"></cv-tag>
         <cv-tag v-else kind="gray" :label="inactiveText"></cv-tag>
@@ -39,7 +38,7 @@
       <div class="row margin-top" v-if="!offline">
         <NsSvg :svg="InformationFilled16" class="icon ns-info" />
         <span class="margin-left">{{
-          $tc("system_logs.loki.retention_days", retention_days)
+          $tc("system_logs.loki.retention_days", retentionDays)
         }}</span>
       </div>
       <div class="row margin-top" v-if="noLogs">
@@ -73,19 +72,19 @@ export default {
     PageTitleService,
   ],
   props: {
-    instance_id: {
+    instanceId: {
       type: String,
       required: true,
     },
-    instance_label: {
+    instanceLabel: {
       type: String,
       default: "",
     },
-    node_id: {
+    nodeId: {
       type: String,
       required: true,
     },
-    node_label: {
+    nodeLabel: {
       type: String,
       default: "",
     },
@@ -97,32 +96,32 @@ export default {
       type: Boolean,
       required: true,
     },
-    retention_days: {
+    retentionDays: {
       type: Number,
       default: 0,
     },
-    active_from: {
+    activeFrom: {
       type: String,
       default: "",
     },
-    active_to: {
+    activeTo: {
       type: String,
       default: "",
     },
-    isMoreThanOne: {
+    showStatusBadge: {
       type: Boolean,
       required: true,
     },
   },
   computed: {
     activeFromFormatted() {
-      return this.active_from
-        ? this.formatDate(new Date(this.active_from), "dd/MM/yyyy")
+      return this.activeFrom
+        ? this.formatDate(new Date(this.activeFrom), "dd/MM/yyyy")
         : "";
     },
     activeToFormatted() {
-      return this.active_to
-        ? this.formatDate(new Date(this.active_to), "dd/MM/yyyy")
+      return this.activeTo
+        ? this.formatDate(new Date(this.activeTo), "dd/MM/yyyy")
         : "";
     },
     activeText() {
@@ -136,8 +135,8 @@ export default {
     },
     noLogs() {
       if (!this.offline) {
-        const retentionDate = new Date(this.active_to);
-        retentionDate.setDate(retentionDate.getDate() + this.retention_days);
+        const retentionDate = new Date(this.activeTo);
+        retentionDate.setDate(retentionDate.getDate() + this.retentionDays);
         return retentionDate < new Date();
       }
       return false;

@@ -62,16 +62,16 @@
         :key="instance.instance_id"
       >
         <LokiCard
-          :instance_id="instance.instance_id"
-          :instance_label="instance.instance_label"
-          :node_id="instance.node_id"
-          :node_label="instance.node_label"
+          :instanceId="instance.instance_id"
+          :instanceLabel="instance.instance_label"
+          :nodeId="instance.node_id"
+          :nodeLabel="instance.node_label"
           :active="instance.active"
           :offline="instance.offline"
-          :retention_days="instance.retention_days"
-          :active_from="instance.active_from"
-          :active_to="instance.active_to"
-          :isMoreThanOne="loki.length > 1"
+          :retentionDays="instance.retention_days"
+          :activeFrom="instance.active_from"
+          :activeTo="instance.active_to"
+          :showStatusBadge="loki.length > 1"
         >
           <template #menu>
             <cv-overflow-menu
