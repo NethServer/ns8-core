@@ -16,7 +16,8 @@
       </h3>
     </div>
     <div class="row loki-card">
-      <span class="row">{{
+      <span class="row" v-if="instance_label">{{ instance_id }}</span>
+      <span class="row margin-top" v-if="!offline">{{
         $t("system_logs.loki.active_from") +
         " " +
         activeFromFormatted +
@@ -35,7 +36,7 @@
         <cv-tag v-else-if="offline" kind="red" :label="offlineText"></cv-tag>
         <cv-tag v-else kind="gray" :label="inactiveText"></cv-tag>
       </div>
-      <div class="row margin-top">
+      <div class="row margin-top" v-if="!offline">
         <NsSvg :svg="InformationFilled16" class="icon ns-info" />
         <span class="margin-left">{{
           $tc("system_logs.loki.retention_days", retention_days)
@@ -98,11 +99,11 @@ export default {
     },
     retention_days: {
       type: Number,
-      required: true,
+      default: 0,
     },
     active_from: {
       type: String,
-      required: true,
+      default: "",
     },
     active_to: {
       type: String,
@@ -115,7 +116,9 @@ export default {
   },
   computed: {
     activeFromFormatted() {
-      return this.formatDate(new Date(this.active_from), "dd/MM/yyyy");
+      return this.active_from
+        ? this.formatDate(new Date(this.active_from), "dd/MM/yyyy")
+        : "";
     },
     activeToFormatted() {
       return this.active_to
@@ -132,10 +135,12 @@ export default {
       return this.$t("system_logs.loki.offline");
     },
     noLogs() {
-      const retentionDate = new Date(this.active_from);
-      retentionDate.setDate(retentionDate.getDate() + this.retention_days);
-      console.log(retentionDate);
-      return retentionDate < new Date();
+      if (!this.offline) {
+        const retentionDate = new Date(this.active_to);
+        retentionDate.setDate(retentionDate.getDate() + this.retention_days);
+        return retentionDate < new Date();
+      }
+      return false;
     },
   },
 };

@@ -126,6 +126,7 @@
       @modal-hidden="isEditRetentionDialogOpen = false"
       @primary-click="setLokiInstanceRetention"
       :primaryButtonDisabled="loading.setLokiInstanceRetention"
+      :isLoading="loading.setLokiInstanceRetention"
     >
       <template slot="title">{{
         $t("system_logs.loki.edit_retention")
@@ -161,6 +162,7 @@
       @modal-hidden="isEditLabelDialogOpen = false"
       @primary-click="setLokiInstanceLabel"
       :primaryButtonDisabled="loading.setLokiInstanceLabel"
+      :isLoading="loading.setLokiInstanceLabel"
     >
       <template slot="title">{{ $t("system_logs.loki.edit_label") }}</template>
       <template slot="content">
@@ -323,10 +325,9 @@ export default {
       this.loading.loki = true;
       this.error.getClusterLokiInstances = "";
       const taskAction = "list-loki-instances";
-      const eventId = this.getUuid();
 
       this.$root.$once(
-        `${taskAction}-aborted-${eventId}`,
+        taskAction + "-aborted",
         this.getClusterLokiInstancesAborted
       );
 

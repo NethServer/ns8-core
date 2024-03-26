@@ -932,6 +932,7 @@
     "select_timezone": "Select timezone",
     "local": "Local",
     "utc": "UTC",
+    "current_instance": "Current instance",
     "loki_instance": "Loki instance",
     "loki_instance_title": "Multiple Loki instance",
     "loki_instance_description": "Logs are stored in more than one Loki instance. Choose one in the field below.",

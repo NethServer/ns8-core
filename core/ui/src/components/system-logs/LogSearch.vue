@@ -188,6 +188,47 @@
             </cv-select>
           </cv-column>
         </cv-row>
+        <cv-row v-if="loki.length > 1">
+          <cv-column :md="verticalLayout ? 8 : 4">
+            <NsInlineNotification
+              kind="info"
+              :title="$t('system_logs.loki_instance_title')"
+              :description="$t('system_logs.loki_instance_description')"
+              :showCloseButton="false"
+              :lowContrast="true"
+            />
+          </cv-column>
+        </cv-row>
+        <cv-row v-if="loki.length > 1">
+          <cv-column :md="verticalLayout ? 8 : 4">
+            <span class="label loki-label bx--label">
+              {{ $t("system_logs.loki_instance") }}
+              <cv-interactive-tooltip
+                alignment="center"
+                direction="top"
+                class="info"
+              >
+                <template slot="trigger">
+                  <Information16 />
+                </template>
+                <template slot="content">
+                  <div>{{ $t("system_logs.loki.tooltip") }}</div>
+                </template>
+              </cv-interactive-tooltip>
+            </span>
+            <cv-combo-box
+              v-model="internalSelectedLokiId"
+              :label="$t('common.choose')"
+              :invalid-message="error.selectedLoki"
+              :auto-filter="true"
+              :auto-highlight="true"
+              :options="loki"
+              :disabled="loadingLoki"
+              class="mg-bottom-md"
+            >
+            </cv-combo-box>
+          </cv-column>
+        </cv-row>
       </template>
     </cv-grid>
     <cv-grid fullWidth class="no-padding">
@@ -279,7 +320,12 @@
             class="search-button mg-bottom-sm"
             :icon="Search20"
             :loading="loading.logs"
-            :disabled="!isWebsocketConnected || loading.logs || loadingApps"
+            :disabled="
+              !isWebsocketConnected ||
+              loading.logs ||
+              loadingApps ||
+              loadingLoki
+            "
             @click="logsStart"
             key="search"
             >{{
@@ -345,6 +391,7 @@ import {
   DateTimeService,
 } from "@nethserver/ns8-ui-lib";
 import Close16 from "@carbon/icons-vue/es/close/16";
+import Information16 from "@carbon/icons-vue/es/information/16";
 
 export default {
   name: "LogSearch",
@@ -358,6 +405,10 @@ export default {
       required: true,
     },
     apps: {
+      type: Array,
+      required: true,
+    },
+    loki: {
       type: Array,
       required: true,
     },
@@ -379,6 +430,10 @@ export default {
       default: "",
     },
     selectedAppId: {
+      type: String,
+      default: "",
+    },
+    selectedLokiId: {
       type: String,
       default: "",
     },
@@ -414,10 +469,11 @@ export default {
     followLogs: Boolean,
     verticalLayout: Boolean,
     loadingApps: Boolean,
+    loadingLoki: Boolean,
     closeAriaLabel: { type: String, default: "Close modal" },
     light: Boolean,
   },
-  components: { LogOutput, Close16 },
+  components: { LogOutput, Close16, Information16 },
   mixins: [UtilService, IconService, DateTimeService],
   data() {
     return {
@@ -440,6 +496,7 @@ export default {
       isFollowing: false,
       internalSelectedNodeId: "",
       internalSelectedAppId: "",
+      internalSelectedLokiId: "",
       scrollToBottom: true,
       searchStarted: false,
       noLogsFound: false,
@@ -456,6 +513,7 @@ export default {
         maxLines: "",
         selectedNode: "",
         selectedApp: "",
+        selectedLoki: "",
       },
     };
   },
@@ -472,6 +530,11 @@ export default {
     },
     selectedApp() {
       return this.apps.find((app) => app.value == this.internalSelectedAppId);
+    },
+    selectedLoki() {
+      return this.loki.find(
+        (instance) => instance.value == this.internalSelectedLokiId
+      );
     },
     selectedNode() {
       return this.nodes.find(
@@ -555,6 +618,25 @@ export default {
         this.$nextTick(() => {
           this.internalSelectedAppId = this.selectedAppId;
         });
+      }
+    },
+    loki: function () {
+      if (this.mainSearch && this.loki.length) {
+        this.$nextTick(() => {
+          this.internalSelectedLokiId = this.selectedLokiId;
+        });
+      }
+    },
+    selectedLokiId: function () {
+      if (this.mainSearch && this.loki.length) {
+        this.$nextTick(() => {
+          this.internalSelectedLokiId = this.selectedLokiId;
+        });
+      }
+    },
+    internalSelectedLokiId: function () {
+      if (this.mainSearch && this.loki.length) {
+        this.$emit("updateSelectedLokiId", this.internalSelectedLokiId);
       }
     },
     followLogs: function () {
@@ -666,6 +748,7 @@ export default {
       this.internalEndTime = "23:59";
       this.internalContext = "cluster";
       this.internalSelectedAppId = "";
+      this.internalSelectedLokiId = this.selectedLokiId;
       this.internalSelectedNodeId = "";
       this.internalSearchQuery = "";
       this.internalTimezone = "local";
@@ -683,6 +766,10 @@ export default {
 
       if (this.internalContext == "module" && !this.internalSelectedAppId) {
         this.error.selectedApp = this.$t("common.required");
+        isValidationOk = false;
+      }
+      if (!this.internalSelectedLokiId) {
+        this.error.selectedLoki = this.$t("common.required");
         isValidationOk = false;
       }
 
@@ -784,6 +871,7 @@ export default {
           entity_name: String(entityName),
           id: this.searchId,
           timezone: timezone,
+          instance: this.internalSelectedLokiId,
         },
       };
 
@@ -861,6 +949,7 @@ export default {
           this.$emit("updateContext", this.internalContext);
           this.$emit("updateSelectedNodeId", this.internalSelectedNodeId);
           this.$emit("updateSelectedAppId", this.internalSelectedAppId);
+          this.$emit("updateSelectedLokiId", this.internalSelectedLokiId);
           this.$emit("updateFollowLogs", this.internalFollowLogs);
           this.$emit("updateMaxLines", this.internalMaxLines);
           this.$emit("updateStartDate", this.internalStartDate);
@@ -884,6 +973,14 @@ export default {
 
 <style scoped lang="scss">
 @import "../../styles/carbon-utils";
+
+.loki-label {
+  display: flex;
+  align-items: center;
+  gap: 0.33rem;
+  font-size: 12px;
+  margin-bottom: 7px;
+}
 
 .log-search {
   // needed for close button positon
