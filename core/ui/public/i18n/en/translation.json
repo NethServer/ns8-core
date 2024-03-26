@@ -944,7 +944,7 @@
             "offline": "Offline",
             "retention": "Retention",
             "days": "Days",
-            "retention_days": "retention {count} day | Retention {count} days",
+            "retention_days": "Retention {count} day | Retention {count} days",
             "edit_retention": "Edit retention",
             "active_from": "Active from",
             "active_to": "to",
