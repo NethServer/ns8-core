@@ -167,10 +167,6 @@ export default {
   margin-bottom: 0.25rem;
 }
 
-.loki-card-skeleton {
-  margin: 1rem 3rem;
-}
-
 .label {
   padding-right: 0.75rem;
   font-weight: bold;

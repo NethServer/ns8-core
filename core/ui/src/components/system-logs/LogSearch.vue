@@ -188,45 +188,34 @@
             </cv-select>
           </cv-column>
         </cv-row>
-        <cv-row v-if="loki.length > 1">
+        <cv-row v-if="lokiInstances.length > 1">
           <cv-column :md="verticalLayout ? 8 : 4">
             <NsInlineNotification
               kind="info"
               :title="$t('system_logs.loki_instance_title')"
               :description="$t('system_logs.loki_instance_description')"
               :showCloseButton="false"
-              :lowContrast="true"
             />
           </cv-column>
         </cv-row>
-        <cv-row v-if="loki.length > 1">
+        <cv-row v-if="lokiInstances.length > 1">
           <cv-column :md="verticalLayout ? 8 : 4">
-            <span class="label loki-label bx--label">
-              {{ $t("system_logs.loki_instance") }}
-              <cv-interactive-tooltip
-                alignment="center"
-                direction="top"
-                class="info"
-              >
-                <template slot="trigger">
-                  <Information16 />
-                </template>
-                <template slot="content">
-                  <div>{{ $t("system_logs.loki.tooltip") }}</div>
-                </template>
-              </cv-interactive-tooltip>
-            </span>
-            <cv-combo-box
+            <NsComboBox
               v-model="internalSelectedLokiId"
               :label="$t('common.choose')"
+              :title="$t('system_logs.loki_instance')"
               :invalid-message="error.selectedLoki"
               :auto-filter="true"
               :auto-highlight="true"
-              :options="loki"
+              :options="lokiInstances"
               :disabled="loadingLoki"
               class="mg-bottom-md"
-            >
-            </cv-combo-box>
+              tooltipAlignment="center"
+              tooltipDirection="top"
+              ><template slot="tooltip">
+                {{ $t("system_logs.loki.tooltip") }}
+              </template>
+            </NsComboBox>
           </cv-column>
         </cv-row>
       </template>
@@ -391,7 +380,6 @@ import {
   DateTimeService,
 } from "@nethserver/ns8-ui-lib";
 import Close16 from "@carbon/icons-vue/es/close/16";
-import Information16 from "@carbon/icons-vue/es/information/16";
 
 export default {
   name: "LogSearch",
@@ -408,7 +396,7 @@ export default {
       type: Array,
       required: true,
     },
-    loki: {
+    lokiInstances: {
       type: Array,
       required: true,
     },
@@ -473,7 +461,7 @@ export default {
     closeAriaLabel: { type: String, default: "Close modal" },
     light: Boolean,
   },
-  components: { LogOutput, Close16, Information16 },
+  components: { LogOutput, Close16 },
   mixins: [UtilService, IconService, DateTimeService],
   data() {
     return {
@@ -532,7 +520,7 @@ export default {
       return this.apps.find((app) => app.value == this.internalSelectedAppId);
     },
     selectedLoki() {
-      return this.loki.find(
+      return this.lokiInstances.find(
         (instance) => instance.value == this.internalSelectedLokiId
       );
     },
@@ -620,22 +608,22 @@ export default {
         });
       }
     },
-    loki: function () {
-      if (this.mainSearch && this.loki.length) {
+    lokiInstances: function () {
+      if (this.mainSearch && this.lokiInstances.length) {
         this.$nextTick(() => {
           this.internalSelectedLokiId = this.selectedLokiId;
         });
       }
     },
     selectedLokiId: function () {
-      if (this.mainSearch && this.loki.length) {
+      if (this.mainSearch && this.lokiInstances.length) {
         this.$nextTick(() => {
           this.internalSelectedLokiId = this.selectedLokiId;
         });
       }
     },
     internalSelectedLokiId: function () {
-      if (this.mainSearch && this.loki.length) {
+      if (this.mainSearch && this.lokiInstances.length) {
         this.$emit("updateSelectedLokiId", this.internalSelectedLokiId);
       }
     },
@@ -973,14 +961,6 @@ export default {
 
 <style scoped lang="scss">
 @import "../../styles/carbon-utils";
-
-.loki-label {
-  display: flex;
-  align-items: center;
-  gap: 0.33rem;
-  font-size: 12px;
-  margin-bottom: 7px;
-}
 
 .log-search {
   // needed for close button positon

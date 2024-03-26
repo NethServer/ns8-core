@@ -105,9 +105,9 @@
           :searchId="searchId"
           :nodes="internalNodes"
           :apps="apps"
-          :loki="loki"
+          :lokiInstances="lokiInstances"
           :loadingApps="loading.listInstalledModules"
-          :loadingLoki="loading.loki"
+          :loadingLoki="loading.lokiInstances"
           :verticalLayout="verticalLayout"
           :numSearches="searches.length"
           :mainSearch="index == 0"
@@ -192,15 +192,17 @@ export default {
       },
       internalNodes: [],
       apps: [],
-      loki: [],
+      lokiInstances: [],
       searches: [],
       verticalLayout: false,
       startSearchCommand: 0,
       loading: {
         listInstalledModules: false,
+        lokiInstances: false,
       },
       error: {
         listInstalledModules: "",
+        lokiInstances: "",
       },
     };
   },
@@ -220,8 +222,8 @@ export default {
         });
       }
     },
-    loki: function () {
-      if (this.loki.length && this.q.autoStartSearch) {
+    lokiInstances: function () {
+      if (this.lokiInstances.length && this.q.autoStartSearch) {
         this.$nextTick(() => {
           this.startSearchCommand++;
         });
@@ -339,7 +341,7 @@ export default {
       this.loading.listInstalledModules = false;
     },
     async getClusterLokiInstances() {
-      this.loading.loki = true;
+      this.loading.lokiInstances = true;
       this.error.getClusterLokiInstances = "";
       const taskAction = "list-loki-instances";
 
@@ -372,21 +374,21 @@ export default {
     },
     getClusterLokiInstancesAborted(taskResult, taskContext) {
       console.error(`${taskContext.action} aborted`, taskResult);
-      this.error.loki = this.$t("error.generic_error");
-      this.loading.loki = false;
+      this.error.lokiInstances = this.$t("error.generic_error");
+      this.loading.lokiInstances = false;
     },
     getClusterLokiInstancesCompleted(taskContext, taskResult) {
       const lokiOutput = taskResult.output.instances.filter(
         (instance) => !instance.offline
       );
-      let loki = [];
+      let lokiInstances = [];
       for (let instance of lokiOutput) {
         let currentInstance = "";
         if (instance.active) {
           currentInstance =
             " (" + this.$t("system_logs.current_instance") + ")";
         }
-        loki.push({
+        lokiInstances.push({
           name: instance.instance_id,
           label: instance.instance_label
             ? instance.instance_label +
@@ -397,11 +399,11 @@ export default {
           value: instance.instance_id,
         });
       }
-      this.loki = loki;
+      this.lokiInstances = lokiInstances;
       this.q.selectedLokiId = lokiOutput.find(
         (instance) => instance.active === true
       ).instance_id;
-      this.loading.loki = false;
+      this.loading.lokiInstances = false;
     },
     setHorizontalLayout() {
       this.verticalLayout = false;

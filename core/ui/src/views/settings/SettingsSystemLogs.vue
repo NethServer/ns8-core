@@ -39,7 +39,7 @@
         </h2>
       </cv-column>
     </cv-row>
-    <cv-row v-if="loading.loki">
+    <cv-row v-if="loading.lokiInstances">
       <cv-column :md="4" :xlg="4">
         <NsTile :light="true" :icon="Catalog32">
           <cv-skeleton-text
@@ -54,11 +54,11 @@
         </NsTile>
       </cv-column>
     </cv-row>
-    <cv-row v-else-if="loki.length">
+    <cv-row v-else-if="lokiInstances.length">
       <cv-column
         :md="4"
         :xlg="4"
-        v-for="instance in loki"
+        v-for="instance in lokiInstances"
         :key="instance.instance_id"
       >
         <LokiCard
@@ -71,7 +71,7 @@
           :retentionDays="instance.retention_days"
           :activeFrom="instance.active_from"
           :activeTo="instance.active_to"
-          :showStatusBadge="loki.length > 1"
+          :showStatusBadge="lokiInstances.length > 1"
         >
           <template #menu>
             <cv-overflow-menu
@@ -260,7 +260,7 @@ import {
   TaskService,
 } from "@nethserver/ns8-ui-lib";
 import to from "await-to-js";
-import LokiCard from "@/components/system-logs/LokiCard";
+import LokiCard from "@/components/settings/LokiCard";
 import Information16 from "@carbon/icons-vue/es/information/16";
 
 export default {
@@ -282,7 +282,7 @@ export default {
   data() {
     return {
       q: {},
-      loki: [],
+      lokiInstances: [],
       isEditLabelDialogOpen: false,
       isEditRetentionDialogOpen: false,
       isUninstallDialogOpen: false,
@@ -292,7 +292,7 @@ export default {
       newRetention: null,
       newLabel: "",
       loading: {
-        loki: false,
+        lokiInstances: false,
         setLokiInstanceRetention: false,
         setLokiInstanceLabel: false,
         uninstallLokiInstance: false,
@@ -322,10 +322,11 @@ export default {
   },
   methods: {
     async getClusterLokiInstances() {
-      this.loading.loki = true;
+      this.loading.lokiInstances = true;
       this.error.getClusterLokiInstances = "";
       const taskAction = "list-loki-instances";
 
+      // register to task abortion
       this.$root.$once(
         taskAction + "-aborted",
         this.getClusterLokiInstancesAborted
@@ -355,12 +356,12 @@ export default {
     },
     getClusterLokiInstancesAborted(taskResult, taskContext) {
       console.error(`${taskContext.action} aborted`, taskResult);
-      this.error.loki = this.$t("error.generic_error");
-      this.loading.loki = false;
+      this.error.lokiInstances = this.$t("error.generic_error");
+      this.loading.lokiInstances = false;
     },
     getClusterLokiInstancesCompleted(taskContext, taskResult) {
-      this.loki = taskResult.output.instances;
-      this.loading.loki = false;
+      this.lokiInstances = taskResult.output.instances;
+      this.loading.lokiInstances = false;
     },
     validateLokiInstanceRetention() {
       this.clearErrors(this);
@@ -391,6 +392,12 @@ export default {
       this.loading.setLokiInstanceRetention = true;
       const taskAction = "configure-module";
 
+      // register to task abortion
+      this.$root.$once(
+        taskAction + "-aborted",
+        this.setLokiInstanceRetentionAborted
+      );
+
       // register to task completion
       this.$root.$once(
         taskAction + "-completed",
@@ -415,6 +422,11 @@ export default {
         this.error.setLokiInstanceRetention = this.getErrorMessage(err);
         return;
       }
+    },
+    setLokiInstanceRetentionAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.setLokiInstanceRetention = this.$t("error.generic_error");
+      this.loading.setLokiInstanceRetention = false;
     },
     setLokiInstanceRetentionCompleted() {
       this.loading.setLokiInstanceRetention = false;
@@ -443,6 +455,12 @@ export default {
       this.loading.setLokiInstanceLabel = true;
       const taskAction = "set-name";
 
+      // register to task abortion
+      this.$root.$once(
+        taskAction + "-aborted",
+        this.setLokiInstanceLabelAborted
+      );
+
       // register to task completion
       this.$root.$once(
         taskAction + "-completed",
@@ -469,6 +487,11 @@ export default {
         this.loading.setLokiInstanceLabel = false;
         return;
       }
+    },
+    setLokiInstanceLabelAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.setLokiInstanceLabel = this.$t("error.generic_error");
+      this.loading.setLokiInstanceLabel = false;
     },
     setLokiInstanceLabelCompleted() {
       this.loading.setLokiInstanceLabel = false;
