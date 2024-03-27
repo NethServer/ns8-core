@@ -213,7 +213,7 @@
               tooltipAlignment="center"
               tooltipDirection="top"
               ><template slot="tooltip">
-                {{ $t("system_logs.loki.tooltip") }}
+                {{ $t("system_logs.loki_tooltip") }}
               </template>
             </NsComboBox>
           </cv-column>
