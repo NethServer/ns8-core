@@ -47,7 +47,7 @@ var (
 	entityNameFlag = ""
 	searchFlag     = ""
 	timezone       = ""
-	instance	   = ""
+	instance       = ""
 )
 
 var RootCmd = &cobra.Command{
@@ -113,7 +113,7 @@ func Logs() {
       "entity": "` + entityFlag + `",
       "entity_name": "` + entityNameFlag + `",
       "timezone": "` + timezone + `",
-	  "instance": "` + instance + `"
+      "instance": "` + instance + `"
    }
   }
   `
