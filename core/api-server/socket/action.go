@@ -33,8 +33,8 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/gin-gonic/gin"
 	jwt "github.com/appleboy/gin-jwt/v2"
+	"github.com/gin-gonic/gin"
 	"github.com/olahol/melody"
 	"github.com/pkg/errors"
 
@@ -118,6 +118,10 @@ func Action(socketAction models.SocketAction, s *melody.Session, wg *sync.WaitGr
 			envs = append(envs, "TZ="+timezone)
 		}
 
+		if len(logsAction.Instance) > 0 {
+			envs = append(envs, "LOKI_INSTANCE="+logsAction.Instance)
+		}
+
 		// check date
 		if len(logsAction.From) > 0 {
 			from = "--from=" + logsAction.From
@@ -152,16 +156,16 @@ func Action(socketAction models.SocketAction, s *melody.Session, wg *sync.WaitGr
 			streamSelector = `{node_id=~".+"}`
 
 		case "node":
-			streamSelector = `{node_id="`+ logsAction.EntityName +`"}`
+			streamSelector = `{node_id="` + logsAction.EntityName + `"}`
 
 		case "module":
-			streamSelector = `{module_id="`+ logsAction.EntityName +`"}`
+			streamSelector = `{module_id="` + logsAction.EntityName + `"}`
 		}
 
 		logqlPipeline = ` | json syslog_id="SYSLOG_IDENTIFIER", message="MESSAGE" | line_format "[{{.node_id}}:{{.module_id}}:{{.syslog_id}}] {{.message}}"`
 
 		// Compose and append the query strings to logcli arguments
-		args = append(args, streamSelector + logqlPipeline + filter)
+		args = append(args, streamSelector+logqlPipeline+filter)
 
 		// define command
 		cmd := exec.Command("/usr/local/bin/logcli", args...)
@@ -248,13 +252,13 @@ func Action(socketAction models.SocketAction, s *melody.Session, wg *sync.WaitGr
 
 	case "authorize":
 		authPayload, ok := socketAction.Payload.(map[string]interface{})
-		if ! ok {
+		if !ok {
 			utils.LogError(errors.New("Authorize payload is corrupt"))
 		}
 
 		// Check "jwt" attribute is a string
 		token, ok := authPayload["jwt"].(string)
-		if ! ok {
+		if !ok {
 			utils.LogError(errors.New("Unknown authorize payload"))
 		}
 
@@ -263,7 +267,7 @@ func Action(socketAction models.SocketAction, s *melody.Session, wg *sync.WaitGr
 		if err != nil {
 			utils.LogError(errors.Wrap(err, "Websocket auth error"))
 			oErrorMsg := map[string]string{
-				"type": "authorize-error",
+				"type":    "authorize-error",
 				"payload": err.Error(),
 			}
 			jErrorMsg, _ := json.Marshal(oErrorMsg)
