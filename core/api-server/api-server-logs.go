@@ -47,7 +47,7 @@ var (
 	entityNameFlag = ""
 	searchFlag     = ""
 	timezone       = ""
-	instance	   = ""
+	instance       = ""
 )
 
 var RootCmd = &cobra.Command{
