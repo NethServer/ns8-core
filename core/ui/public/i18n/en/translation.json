@@ -939,7 +939,7 @@
         "loki_tooltip": "Search logs from the active Loki instance, from a former leader node or from a Loki backup.",
         "loki": {
             "title": "Loki",
-            "tooltip": "Cluster nodes transmit their log streams to the active Loki instance, which operates on the leader node. When a leader node is replaced, the previous leader node retains its inactive Loki instance, allowing the Logs page to search through it until it is uninstalled.",
+            "tooltip": "Cluster nodes transmit their log streams to the active Loki instance, which operates on the leader node. When a leader node is replaced, the previous leader node retains its inactive Loki instance, allowing the System logs page to search through it until it is uninstalled.",
             "active": "Active instance",
             "inactive": "Inactive",
             "offline": "Offline",

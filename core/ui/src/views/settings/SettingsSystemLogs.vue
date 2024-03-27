@@ -85,6 +85,7 @@
                   isEditLabelDialogOpen = true;
                   lokiToEdit = instance;
                 "
+                :disabled="instance.offline"
               >
                 <NsMenuItem
                   :icon="Edit20"
@@ -224,13 +225,17 @@
             :title="$t('common.please_read_carefully')"
             :showCloseButton="false"
           />
-          <div v-html="$tc("system_logs.loki.uninstall_description", lokiToUninstall, {
-          instance: lokiToUninstall
-            ? lokiToUninstall.instance_label
-              ? lokiToUninstall.instance_label
-              : lokiToUninstall.instance_id
-            : undefined,
-        })"></div>
+          <div
+            v-html="
+              $tc('system_logs.loki.uninstall_description', lokiToUninstall, {
+                name: lokiToUninstall
+                  ? lokiToUninstall.instance_label
+                    ? lokiToUninstall.instance_label
+                    : lokiToUninstall.instance_id
+                  : undefined,
+              })
+            "
+          ></div>
           <div
             class="mg-top-xlg"
             v-html="
