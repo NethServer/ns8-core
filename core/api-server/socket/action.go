@@ -119,7 +119,7 @@ func Action(socketAction models.SocketAction, s *melody.Session, wg *sync.WaitGr
 		}
 
 		if len(logsAction.Instance) > 0 {
-			envs = append(envs, "LOKI_INSTANCE")
+			envs = append(envs, "LOKI_INSTANCE="+logsAction.Instance)
 		}
 
 		// check date
