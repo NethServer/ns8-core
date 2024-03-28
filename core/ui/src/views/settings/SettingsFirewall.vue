@@ -5,6 +5,22 @@
 <template>
   <cv-grid fullWidth>
     <cv-row>
+      <cv-column>
+        <cv-breadcrumb
+          aria-label="breadcrumb"
+          :no-trailing-slash="true"
+          class="breadcrumb"
+        >
+          <cv-breadcrumb-item>
+            <cv-link to="/settings">{{ $t("settings.title") }}</cv-link>
+          </cv-breadcrumb-item>
+          <cv-breadcrumb-item>
+            <span>{{ $t("firewall.title") }}</span>
+          </cv-breadcrumb-item>
+        </cv-breadcrumb>
+      </cv-column>
+    </cv-row>
+    <cv-row>
       <cv-column class="page-title">
         <h2>{{ $t("firewall.title") }}</h2>
       </cv-column>

@@ -49,10 +49,12 @@
       </cv-side-nav-link>
       <!-- divider -->
       <cv-side-nav-divider />
+
       <cv-side-nav-link
         @click="goTo('/system-logs')"
-        :active="isLinkActive('/system-logs')"
+        :active="isLinkActive('/#/system-logs')"
       >
+        <!-- isLinkActive('/#/system-logs')  /#/system-logs instead of /system-logs because with the second one it activates also on /settings/system-logs -->
         <template v-slot:nav-icon><Catalog20 /></template>
         {{ $t("system_logs.title") }}
       </cv-side-nav-link>

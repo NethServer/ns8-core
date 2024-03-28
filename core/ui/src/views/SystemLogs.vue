@@ -105,7 +105,9 @@
           :searchId="searchId"
           :nodes="internalNodes"
           :apps="apps"
+          :lokiInstances="lokiInstances"
           :loadingApps="loading.listInstalledModules"
+          :loadingLoki="loading.lokiInstances"
           :verticalLayout="verticalLayout"
           :numSearches="searches.length"
           :mainSearch="index == 0"
@@ -113,6 +115,7 @@
           :context="q.context"
           :selectedNodeId="q.selectedNodeId"
           :selectedAppId="q.selectedAppId"
+          :selectedLokiId="q.selectedLokiId"
           :followLogs="q.followLogs"
           :maxLines="q.maxLines"
           :startDate="q.startDate"
@@ -177,6 +180,7 @@ export default {
         context: "cluster",
         selectedNodeId: "",
         selectedAppId: "",
+        selectedLokiId: "",
         followLogs: false,
         maxLines: "500",
         startDate: "",
@@ -188,14 +192,17 @@ export default {
       },
       internalNodes: [],
       apps: [],
+      lokiInstances: [],
       searches: [],
       verticalLayout: false,
       startSearchCommand: 0,
       loading: {
         listInstalledModules: false,
+        lokiInstances: false,
       },
       error: {
         listInstalledModules: "",
+        lokiInstances: "",
       },
     };
   },
@@ -215,11 +222,19 @@ export default {
         });
       }
     },
+    lokiInstances: function () {
+      if (this.lokiInstances.length && this.q.autoStartSearch) {
+        this.$nextTick(() => {
+          this.startSearchCommand++;
+        });
+      }
+    },
   },
   created() {
     this.initTimeFilters();
     this.initNodes();
     this.listInstalledModules();
+    this.getClusterLokiInstances();
     this.addSearch();
   },
   beforeRouteEnter(to, from, next) {
@@ -324,6 +339,71 @@ export default {
       apps.sort(this.sortByProperty("label"));
       this.apps = apps;
       this.loading.listInstalledModules = false;
+    },
+    async getClusterLokiInstances() {
+      this.loading.lokiInstances = true;
+      this.error.getClusterLokiInstances = "";
+      const taskAction = "list-loki-instances";
+
+      this.$root.$once(
+        taskAction + "-aborted",
+        this.getClusterLokiInstancesAborted
+      );
+
+      // register to task completion
+      this.$root.$once(
+        taskAction + "-completed",
+        this.getClusterLokiInstancesCompleted
+      );
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          extra: {
+            isNotificationHidden: true,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.getClusterLokiInstances = this.getErrorMessage(err);
+        return;
+      }
+    },
+    getClusterLokiInstancesAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.lokiInstances = this.$t("error.generic_error");
+      this.loading.lokiInstances = false;
+    },
+    getClusterLokiInstancesCompleted(taskContext, taskResult) {
+      const lokiOutput = taskResult.output.instances.filter(
+        (instance) => !instance.offline
+      );
+      let lokiInstances = [];
+      for (let instance of lokiOutput) {
+        let currentInstance = "";
+        if (instance.active) {
+          currentInstance =
+            " (" + this.$t("system_logs.current_instance") + ")";
+        }
+        lokiInstances.push({
+          name: instance.instance_id,
+          label: instance.instance_label
+            ? instance.instance_label +
+              " - " +
+              instance.instance_id +
+              currentInstance
+            : instance.instance_id + currentInstance,
+          value: instance.instance_id,
+        });
+      }
+      this.lokiInstances = lokiInstances;
+      this.q.selectedLokiId = lokiOutput.find(
+        (instance) => instance.active === true
+      ).instance_id;
+      this.loading.lokiInstances = false;
     },
     setHorizontalLayout() {
       this.verticalLayout = false;
