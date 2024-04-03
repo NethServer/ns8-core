@@ -47,6 +47,7 @@ var (
 	entityNameFlag = ""
 	searchFlag     = ""
 	timezone       = ""
+	instance       = ""
 )
 
 var RootCmd = &cobra.Command{
@@ -84,6 +85,7 @@ func Execute() {
 	LogsCmd.Flags().StringVarP(&entityNameFlag, "name", "n", "", "get logs for a specific entity name. used in node or module")
 	LogsCmd.Flags().StringVarP(&searchFlag, "search", "s", "", "get logs for a specific search string")
 	LogsCmd.Flags().StringVarP(&timezone, "timezone", "z", "", "get logs in a specific timezone")
+	LogsCmd.Flags().StringVarP(&instance, "instance", "i", "", "search for logs in a specific instance. (Example: loki1, loki2, ...)")
 
 	// check errors on cmd execution
 	if err := RootCmd.Execute(); err != nil {
@@ -110,7 +112,8 @@ func Logs() {
       "to": "` + toFlag + `",
       "entity": "` + entityFlag + `",
       "entity_name": "` + entityNameFlag + `",
-      "timezone": "` + timezone + `"
+      "timezone": "` + timezone + `",
+      "instance": "` + instance + `"
    }
   }
   `

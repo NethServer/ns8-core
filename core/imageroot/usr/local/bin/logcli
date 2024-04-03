@@ -14,7 +14,10 @@ if 'LOKI_ADDR' in os.environ:
     logcli_env = os.environ
 else:
     rdb = agent.redis_connect(use_replica=True)
-    loki_agent_id = agent.resolve_agent_id("loki@cluster")
+    if 'LOKI_INSTANCE' in os.environ:
+        loki_agent_id = 'module/' + os.getenv('LOKI_INSTANCE')
+    else:
+        loki_agent_id = agent.resolve_agent_id("loki@cluster")
     loki_env = rdb.hgetall(loki_agent_id + '/environment') or {}
 
     logcli_env = os.environ.copy()

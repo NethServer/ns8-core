@@ -1,0 +1,49 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2024 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+import json
+import sys
+
+import agent
+from cluster import modules
+
+redis_client = agent.redis_connect()
+default_instance = redis_client.get("cluster/default_instance/loki")
+instances = modules.list_installed(redis_client).get("ghcr.io/nethserver/loki", [])
+
+response = []
+for instance in instances:
+    item = {
+        "instance_id": instance["id"],
+        "instance_label": instance["ui_name"],
+        "node_id": instance["node"],
+        "node_label": instance["node_ui_name"],
+        "active": instance["id"] == default_instance
+    }
+
+    try:
+        task_response = agent.tasks.run(
+            agent_id=f'module/{instance["id"]}',
+            action='get-configuration',
+            endpoint="redis://cluster-leader"
+        )
+        if task_response["exit_code"] == 0:
+            item["offline"] = False
+            item["retention_days"] = task_response["output"]["retention_days"]
+            item["active_from"] = task_response["output"]["active_from"]
+            if "active_to" in task_response["output"]:
+                item["active_to"] = task_response["output"]["active_to"]
+        else:
+            item["offline"] = True
+    except Exception as e:
+        item["offline"] = True
+
+    response.append(item)
+
+json.dump({
+    'instances': response
+}, sys.stdout)
