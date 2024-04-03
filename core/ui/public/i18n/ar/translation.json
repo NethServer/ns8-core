@@ -164,7 +164,8 @@
         "update-module": "Update module",
         "set-route": "Set route",
         "update-modules": "Update modules",
-        "add-repository": "Add repository"
+        "add-repository": "Add repository",
+        "set-retention": "Set retention"
     },
     "backup": {
         "smb_url_label": "Share name",
@@ -515,7 +516,35 @@
         "clear_logs": "Clear",
         "try_changing_search_filters": "Try changing search filters",
         "add_search": "Add search",
-        "vertical_layout": "Vertical layout"
+        "vertical_layout": "Vertical layout",
+        "current_instance": "Active instance",
+        "loki": {
+            "uninstall": "Uninstall",
+            "inactive": "Inactive",
+            "retention_days": "Retention {count} day | Retention {count} days",
+            "active_from": "Active from",
+            "greater_than_0": "Enter a number greater than 0",
+            "valid_number": "Insert a valid number",
+            "tooltip": "Cluster nodes transmit their log streams to the active Loki instance, which operates on the leader node. When a leader node is replaced, the previous leader node retains its inactive Loki instance, allowing the System logs page to search through it until it is uninstalled.",
+            "uninstall_description": "Uninstall <strong>{instance}</strong>? Logs stored inside this instance will be deleted too. This action is <strong>NOT</strong> reversible.",
+            "active": "Active instance",
+            "loki_label": "Loki label",
+            "understood_uninstall": "I understand, uninstall",
+            "offline": "Offline",
+            "uninstall_instance": "Uninstall {name}",
+            "retention": "Retention",
+            "edit_retention": "Edit retention",
+            "edit_label": "Edit label",
+            "type_to_confirm": "Type <strong>{name}</strong> to confirm",
+            "days": "Days",
+            "no_logs": "This instance does not contains any log",
+            "title": "Loki",
+            "active_to": "to"
+        },
+        "loki_instance_title": "Multiple Loki instance",
+        "loki_tooltip": "Search logs from the active Loki instance, from a former leader node or from a Loki backup.",
+        "loki_instance_description": "Logs are stored in more than one Loki instance. Choose one in the field below.",
+        "loki_instance": "Loki instance"
     },
     "domains": {
         "domain_summary": "Summary",

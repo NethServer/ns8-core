@@ -218,7 +218,35 @@
         "stop_following": "Smetti di seguire",
         "expand_filters": "Espandi filtri",
         "follow": "Segui",
-        "follow_logs": "Segui log"
+        "follow_logs": "Segui log",
+        "loki_instance_title": "Multiple Loki instance",
+        "current_instance": "Active instance",
+        "loki": {
+            "uninstall": "Uninstall",
+            "active_to": "to",
+            "inactive": "Inactive",
+            "retention_days": "Retention {count} day | Retention {count} days",
+            "title": "Loki",
+            "active_from": "Active from",
+            "greater_than_0": "Enter a number greater than 0",
+            "valid_number": "Insert a valid number",
+            "tooltip": "Cluster nodes transmit their log streams to the active Loki instance, which operates on the leader node. When a leader node is replaced, the previous leader node retains its inactive Loki instance, allowing the System logs page to search through it until it is uninstalled.",
+            "uninstall_description": "Uninstall <strong>{instance}</strong>? Logs stored inside this instance will be deleted too. This action is <strong>NOT</strong> reversible.",
+            "active": "Active instance",
+            "loki_label": "Loki label",
+            "understood_uninstall": "I understand, uninstall",
+            "offline": "Offline",
+            "uninstall_instance": "Uninstall {name}",
+            "retention": "Retention",
+            "edit_retention": "Edit retention",
+            "edit_label": "Edit label",
+            "type_to_confirm": "Type <strong>{name}</strong> to confirm",
+            "days": "Days",
+            "no_logs": "This instance does not contains any log"
+        },
+        "loki_tooltip": "Search logs from the active Loki instance, from a former leader node or from a Loki backup.",
+        "loki_instance_description": "Logs are stored in more than one Loki instance. Choose one in the field below.",
+        "loki_instance": "Loki instance"
     },
     "node_detail": {
         "title": "Dettagli nodo",
@@ -532,7 +560,8 @@
         "stop-support-session": "Termina sessione di supporto",
         "start-support-session": "Avvia sessione di supporto",
         "get-subscription": "Ottieni subscription",
-        "register-cluster-subscription": "Registra la subscription del cluster"
+        "register-cluster-subscription": "Registra la subscription del cluster",
+        "set-retention": "Set retention"
     },
     "backup": {
         "configure": "Configura",
