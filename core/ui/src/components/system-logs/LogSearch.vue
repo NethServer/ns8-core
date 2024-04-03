@@ -188,6 +188,36 @@
             </cv-select>
           </cv-column>
         </cv-row>
+        <cv-row v-if="lokiInstances.length > 1">
+          <cv-column :md="verticalLayout ? 8 : 4">
+            <NsInlineNotification
+              kind="info"
+              :title="$t('system_logs.loki_instance_title')"
+              :description="$t('system_logs.loki_instance_description')"
+              :showCloseButton="false"
+            />
+          </cv-column>
+        </cv-row>
+        <cv-row v-if="lokiInstances.length > 1">
+          <cv-column :md="verticalLayout ? 8 : 4">
+            <NsComboBox
+              v-model="internalSelectedLokiId"
+              :label="$t('common.choose')"
+              :title="$t('system_logs.loki_instance')"
+              :invalid-message="error.selectedLoki"
+              :auto-filter="true"
+              :auto-highlight="true"
+              :options="lokiInstances"
+              :disabled="loadingLoki"
+              class="mg-bottom-md"
+              tooltipAlignment="center"
+              tooltipDirection="top"
+              ><template slot="tooltip">
+                {{ $t("system_logs.loki_tooltip") }}
+              </template>
+            </NsComboBox>
+          </cv-column>
+        </cv-row>
       </template>
     </cv-grid>
     <cv-grid fullWidth class="no-padding">
@@ -279,7 +309,12 @@
             class="search-button mg-bottom-sm"
             :icon="Search20"
             :loading="loading.logs"
-            :disabled="!isWebsocketConnected || loading.logs || loadingApps"
+            :disabled="
+              !isWebsocketConnected ||
+              loading.logs ||
+              loadingApps ||
+              loadingLoki
+            "
             @click="logsStart"
             key="search"
             >{{
@@ -361,6 +396,10 @@ export default {
       type: Array,
       required: true,
     },
+    lokiInstances: {
+      type: Array,
+      required: true,
+    },
     numSearches: {
       type: Number,
       default: 1,
@@ -379,6 +418,10 @@ export default {
       default: "",
     },
     selectedAppId: {
+      type: String,
+      default: "",
+    },
+    selectedLokiId: {
       type: String,
       default: "",
     },
@@ -414,6 +457,7 @@ export default {
     followLogs: Boolean,
     verticalLayout: Boolean,
     loadingApps: Boolean,
+    loadingLoki: Boolean,
     closeAriaLabel: { type: String, default: "Close modal" },
     light: Boolean,
   },
@@ -440,6 +484,7 @@ export default {
       isFollowing: false,
       internalSelectedNodeId: "",
       internalSelectedAppId: "",
+      internalSelectedLokiId: "",
       scrollToBottom: true,
       searchStarted: false,
       noLogsFound: false,
@@ -456,6 +501,7 @@ export default {
         maxLines: "",
         selectedNode: "",
         selectedApp: "",
+        selectedLoki: "",
       },
     };
   },
@@ -472,6 +518,11 @@ export default {
     },
     selectedApp() {
       return this.apps.find((app) => app.value == this.internalSelectedAppId);
+    },
+    selectedLoki() {
+      return this.lokiInstances.find(
+        (instance) => instance.value == this.internalSelectedLokiId
+      );
     },
     selectedNode() {
       return this.nodes.find(
@@ -555,6 +606,25 @@ export default {
         this.$nextTick(() => {
           this.internalSelectedAppId = this.selectedAppId;
         });
+      }
+    },
+    lokiInstances: function () {
+      if (this.mainSearch && this.lokiInstances.length) {
+        this.$nextTick(() => {
+          this.internalSelectedLokiId = this.selectedLokiId;
+        });
+      }
+    },
+    selectedLokiId: function () {
+      if (this.mainSearch && this.lokiInstances.length) {
+        this.$nextTick(() => {
+          this.internalSelectedLokiId = this.selectedLokiId;
+        });
+      }
+    },
+    internalSelectedLokiId: function () {
+      if (this.mainSearch && this.lokiInstances.length) {
+        this.$emit("updateSelectedLokiId", this.internalSelectedLokiId);
       }
     },
     followLogs: function () {
@@ -666,6 +736,7 @@ export default {
       this.internalEndTime = "23:59";
       this.internalContext = "cluster";
       this.internalSelectedAppId = "";
+      this.internalSelectedLokiId = this.selectedLokiId;
       this.internalSelectedNodeId = "";
       this.internalSearchQuery = "";
       this.internalTimezone = "local";
@@ -683,6 +754,10 @@ export default {
 
       if (this.internalContext == "module" && !this.internalSelectedAppId) {
         this.error.selectedApp = this.$t("common.required");
+        isValidationOk = false;
+      }
+      if (!this.internalSelectedLokiId) {
+        this.error.selectedLoki = this.$t("common.required");
         isValidationOk = false;
       }
 
@@ -784,6 +859,7 @@ export default {
           entity_name: String(entityName),
           id: this.searchId,
           timezone: timezone,
+          instance: this.internalSelectedLokiId,
         },
       };
 
@@ -861,6 +937,7 @@ export default {
           this.$emit("updateContext", this.internalContext);
           this.$emit("updateSelectedNodeId", this.internalSelectedNodeId);
           this.$emit("updateSelectedAppId", this.internalSelectedAppId);
+          this.$emit("updateSelectedLokiId", this.internalSelectedLokiId);
           this.$emit("updateFollowLogs", this.internalFollowLogs);
           this.$emit("updateMaxLines", this.internalMaxLines);
           this.$emit("updateStartDate", this.internalStartDate);
