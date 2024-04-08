@@ -9,12 +9,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"github.com/NethServer/ns8-core/core/api-moduled/validation"
-	jwt "github.com/appleboy/gin-jwt/v2"
-	"github.com/gin-contrib/cors"
-	"github.com/gin-contrib/gzip"
-	"github.com/gin-gonic/gin"
-	"github.com/spf13/viper"
 	"io"
 	"log"
 	"net/http"
@@ -23,6 +17,14 @@ import (
 	"path"
 	"strings"
 	"time"
+
+	"github.com/NethServer/ns8-core/core/api-moduled/validation"
+	jwt "github.com/appleboy/gin-jwt/v2"
+	"github.com/gin-contrib/cors"
+	"github.com/gin-contrib/gzip"
+	"github.com/gin-contrib/static"
+	"github.com/gin-gonic/gin"
+	"github.com/spf13/viper"
 )
 
 var logger *log.Logger
@@ -77,6 +79,7 @@ func main() {
 	ijwt := createJwtInstance(viper.GetString("handler_dir"))
 
 	api := router.Group("/api")
+	api.GET("/auth", basicAuth)
 	api.POST("/login", ijwt.LoginHandler)
 	api.Use(ijwt.MiddlewareFunc()) // next API route definitions require the Authorization header
 	api.POST("/logout", ijwt.LogoutHandler)
@@ -89,7 +92,7 @@ func main() {
 		})
 	})
 
-	router.Static("/", viper.GetString("public_dir"))
+	router.Use(static.Serve("/", static.LocalFile(viper.GetString("public_dir"), false)))
 
 	router.Run(viper.GetString("bind_address"))
 }
@@ -197,7 +200,6 @@ func apiPostHandler(ginCtx *gin.Context) {
 		return
 	}
 	ginCtx.JSON(http.StatusOK, responsePayload)
-	return
 }
 
 func createJwtInstance(baseHandlerDir string) *jwt.GinJWTMiddleware {
@@ -231,20 +233,20 @@ func createJwtInstance(baseHandlerDir string) *jwt.GinJWTMiddleware {
 			///
 			/// Run login
 			///
-			cmd := exec.Command(baseHandlerDir + "/login/post")
-			cmd.Stdin = bytes.NewReader(requestBytes)
-			cmd.Stderr = os.Stderr
-			cmd.Env = prepareEnvironment(ginCtx)
-			responseBytes, cerr := cmd.Output()
+			responseBytes, cerr, exitCode, cmdString := runLogin(baseHandlerDir, requestBytes, ginCtx)
+
+			///
+			/// Check error
+			///
 			if cerr != nil {
 				// Consider exit code 2-7 as a bad login attempt that must
 				// be logged properly. The first logged IP should be
 				// ignored if the service runs behind a proxy
-				if cmd.ProcessState.ExitCode() > 1 && cmd.ProcessState.ExitCode() < 8 {
-					logger.Printf(SD_NOTICE+"Bad login attempt! Exit code %d; remote address: %s\n", cmd.ProcessState.ExitCode(), ginCtx.ClientIP())
+				if exitCode > 1 && exitCode < 8 {
+					logger.Printf(SD_NOTICE+"Bad login attempt! Exit code %d; remote address: %s\n", exitCode, ginCtx.ClientIP())
 					return nil, jwt.ErrFailedAuthentication
 				} else {
-					logger.Printf(SD_ERR+"Error from %s: exit code %d\n", cmd.String(), cmd.ProcessState.ExitCode())
+					logger.Printf(SD_ERR+"Error from %s: exit code %d\n", cmdString, exitCode)
 					return nil, errors.New("internal error")
 				}
 			}
@@ -283,7 +285,7 @@ func createJwtInstance(baseHandlerDir string) *jwt.GinJWTMiddleware {
 			}
 
 			scopeValue, scopeClaimExists := claims["scope"]
-			if ! scopeClaimExists {
+			if !scopeClaimExists {
 				// The token scope is unlimited: auth ok.
 				return true
 			}
@@ -319,4 +321,49 @@ func createJwtInstance(baseHandlerDir string) *jwt.GinJWTMiddleware {
 	}
 
 	return jwtInstance
+}
+
+func runLogin(baseHandlerDir string, requestBytes []byte, ginCtx *gin.Context) ([]byte, error, int, string) {
+	cmd := exec.Command(baseHandlerDir + "/login/post")
+	cmd.Stdin = bytes.NewReader(requestBytes)
+	cmd.Stderr = os.Stderr
+	cmd.Env = prepareEnvironment(ginCtx)
+	responseBytes, cerr := cmd.Output()
+
+	return responseBytes, cerr, cmd.ProcessState.ExitCode(), cmd.String()
+}
+
+func basicAuth(ginCtx *gin.Context) {
+	// get basic auth credentials
+	user, password, hasAuth := ginCtx.Request.BasicAuth()
+
+	if !hasAuth {
+		logger.Println(SD_ERR + "Missing or invalid auth header")
+		ginCtx.JSON(http.StatusUnauthorized, gin.H{
+			"code":    401,
+			"message": "incorrect Username or Password",
+		})
+		return
+	}
+
+	// create request
+	requestBytes := []byte(`{"username":"` + user + `","password":"` + password + `"}`)
+
+	// execute login
+	_, cerr, _, _ := runLogin(viper.GetString("handler_dir"), requestBytes, ginCtx)
+
+	// check error
+	if cerr != nil {
+		ginCtx.JSON(http.StatusUnauthorized, gin.H{
+			"code":    401,
+			"message": "incorrect Username or Password",
+		})
+		return
+	}
+
+	ginCtx.JSON(http.StatusOK, gin.H{
+		"code":    200,
+		"message": "login succeeded",
+	})
+
 }
