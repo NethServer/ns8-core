@@ -72,6 +72,7 @@ client: it has a special meaning decribed in the *Authentication* section.
 
 ## Authentication
 
+### JWT token
 The `login` handler, bound to `/api/login` URL path is the only one that
 can be accessed without a valid JWT token. It must provide a `post`
 command, implementing the following protocol:
@@ -95,6 +96,12 @@ command, implementing the following protocol:
 
 Note that for the `login` handler, the `validate-output.json` file is
 ignored. This is an example of `/api/login` response payload:
+
+### Basic auth
+You can check whether a user's credentials are valid via the `GET /api/auth` API which
+does not return an authentication token but responds:
+- `200 OK` if credentials are valid
+- `401 Unauthorized` if credentials are invalid
 
 ```json
 {
