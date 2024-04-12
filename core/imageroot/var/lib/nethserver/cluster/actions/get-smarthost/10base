@@ -26,7 +26,9 @@ for key in agent.list_service_providers(rdb,'imap','tcp'):
         "node_name": node_name,
         "host": key['host']
     }
-    manual_configuration = False if key['host'] == smtp['host'] else True
+    if manual_configuration == True:
+        # no need to check the rest of the list if manual_configuration == False
+        manual_configuration = False if key['host'] == smtp['host'] else True
     modules.append(obj)
 smtp.update({"mail_server":modules, "manual_configuration": manual_configuration})
 
