@@ -11,40 +11,52 @@
             "password": "secret",
             "enabled": true,
             "encrypt_smtp": "starttls",
-            "tls_verify": false
+            "tls_verify": false,
+            "mail_server": [
+                {
+                    "mail_id": "mail6",
+                    "mail_name": "toto.com",
+                    "node": "1",
+                    "host": "10.5.4.1",
+                    "node_name": "node1"
+                }
+            ],
+            "manual_configuration": false
         }
     ],
     "type": "object",
     "required": [
-            "host",
-            "port",
-            "username",
-            "password",
-            "enabled",
-            "encrypt_smtp",
-            "tls_verify"
+        "host",
+        "port",
+        "username",
+        "password",
+        "enabled",
+        "encrypt_smtp",
+        "tls_verify",
+        "mail_server",
+        "manual_configuration"
     ],
     "properties": {
         "username": {
             "type": "string",
-            "title":"username",
+            "title": "username",
             "description": "Username to use the smarthost smtp"
         },
         "port": {
             "type": "integer",
-            "title":"port",
+            "title": "port",
             "minimum": 1,
             "maximum": 65535,
             "description": "Port number of the smtp smarthost"
         },
         "password": {
             "type": "string",
-            "title":"password",
+            "title": "password",
             "description": "Password to use the smarthost"
         },
         "host": {
             "type": "string",
-            "title":"host",
+            "title": "host",
             "description": "Host name for the smarthost, like 'wiki.nethserver.org'",
             "format": "idn-hostname"
         },
@@ -55,7 +67,11 @@
         },
         "encrypt_smtp": {
             "type": "string",
-            "enum": ["none", "starttls", "tls"],
+            "enum": [
+                "none",
+                "starttls",
+                "tls"
+            ],
             "title": "encrypt_smtp",
             "description": "Enable or disable the tls encryption with the smtp server"
         },
@@ -63,6 +79,39 @@
             "type": "boolean",
             "title": "tls_verify",
             "description": "Enable or disable the usage of a valid certificate"
+        },
+        "mail_server": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "mail_id": {
+                        "type": "string"
+                    },
+                    "mail_name": {
+                        "type": "string"
+                    },
+                    "node": {
+                        "type": "string"
+                    },
+                    "host": {
+                        "type": "string"
+                    },
+                    "node_name": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "mail_id",
+                    "mail_name",
+                    "node",
+                    "host",
+                    "node_name"
+                ]
+            }
+        },
+        "manual_configuration": {
+            "type": "boolean"
         }
     }
 }
