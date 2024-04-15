@@ -257,6 +257,46 @@
           </template>
         </NsInfoCard>
       </cv-column>
+      <cv-column :md="4" :max="4">
+        <NsInfoCard
+          light
+          :title="$t('cluster_status.email_notification')"
+          :icon="Email32"
+          :loading="loading.getEmailNotification"
+          :isErrorShown="error.getEmailNotification"
+          :errorTitle="$t('error.cannot_retrieve_email_notification_status')"
+          :errorDescription="error.getEmailNotification"
+          class="min-height-card"
+        >
+          <template slot="content">
+            <div class="card-rows">
+              <div class="card-row">
+                <div v-if="!loading.getEmailNotification" class="card-row">
+                  <cv-tag
+                    v-if="email_notification_enabled"
+                    kind="green"
+                    :label="$t('common.enabled')"
+                  ></cv-tag>
+                  <cv-tag
+                    v-else
+                    kind="high-contrast"
+                    :label="$t('common.disabled')"
+                  ></cv-tag>
+                </div>
+              </div>
+              <div v-if="!loading.getSubscription" class="card-row">
+                <NsButton
+                  kind="ghost"
+                  :icon="ArrowRight20"
+                  @click="$router.push('/settings/smarthost')"
+                >
+                  {{ $t("cluster_status.go_to_settings") }}
+                </NsButton>
+              </div>
+            </div>
+          </template>
+        </NsInfoCard>
+      </cv-column>
     </cv-row>
   </cv-grid>
 </template>
@@ -309,6 +349,7 @@ export default {
       instancesNotBackedUp: [],
       isCoreUpdateAvailable: false,
       subscription_status: "inactive",
+      email_notification_enabled: false,
       support_active: false,
       loading: {
         getClusterStatus: true,
@@ -316,6 +357,7 @@ export default {
         listBackups: true,
         listCoreModules: true,
         getSubscription: true,
+        getEmailNotification: true,
         getSupportSession: true,
       },
       error: {
@@ -326,6 +368,7 @@ export default {
         listBackups: "",
         listCoreModules: "",
         getSubscription: "",
+        getEmailNotification: "",
       },
     };
   },
@@ -419,6 +462,7 @@ export default {
       this.listCoreModules();
       this.listBackups();
       this.getSubscription();
+      this.getEmailNotification();
     },
     async getSupportSession() {
       this.error.getSupportSession = "";
@@ -496,6 +540,41 @@ export default {
       this.getSupportSession();
       this.subscription_status = output.subscription.status;
       this.loading.getSubscription = false;
+    },
+    async getEmailNotification() {
+      this.clearErrors();
+      this.loading.getEmailNotification = true;
+      const taskAction = "get-smarthost";
+
+      // register to task completion
+      this.$root.$once(
+        taskAction + "-completed",
+        this.getEmailNotificationCompleted
+      );
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+          },
+        })
+      );
+
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.getEmailNotification = this.getErrorMessage(err);
+        this.loading.getEmailNotification = false;
+        return;
+      }
+    },
+    getEmailNotificationCompleted(taskContext, taskResult) {
+      this.email_notification_enabled = taskResult.output.enabled;
+      this.getSupportSession();
+      this.loading.getEmailNotification = false;
     },
     async getClusterStatus() {
       this.error.getClusterStatus = "";
