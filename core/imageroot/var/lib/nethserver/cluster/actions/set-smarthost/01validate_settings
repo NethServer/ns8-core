@@ -78,6 +78,12 @@ except ssl.SSLCertVerificationError as err:
     json.dump([{'field':'test_smarthost','parameter':'test_smarthost','value':err,'error':'valid_certificate_verification_error'}],fp=sys.stdout, default=str)
     sys.exit(5)
 
+except smtplib.socket.gaierror as err:
+    print(agent.SD_NOTICE + "smtplib validation:", err, file=sys.stderr)
+    agent.set_status('validation-failed')
+    json.dump([{'field':'host','parameter':'host','value': host,'error':'address_error'}],fp=sys.stdout, default=str)
+    sys.exit(7)
+
 except smtplib.socket.error as err:
     agent.set_status('validation-failed')
     # We have issued a timeout, the server is not responding or the URL is wrong
