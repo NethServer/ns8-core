@@ -273,7 +273,7 @@
               <div class="card-row">
                 <div v-if="!loading.getEmailNotification" class="card-row">
                   <cv-tag
-                    v-if="email_notification_enabled"
+                    v-if="emailNotificationEnabled"
                     kind="green"
                     :label="$t('common.enabled')"
                   ></cv-tag>
@@ -284,7 +284,7 @@
                   ></cv-tag>
                 </div>
               </div>
-              <div v-if="!loading.getSubscription" class="card-row">
+              <div class="card-row">
                 <NsButton
                   kind="ghost"
                   :icon="ArrowRight20"
@@ -349,7 +349,7 @@ export default {
       instancesNotBackedUp: [],
       isCoreUpdateAvailable: false,
       subscription_status: "inactive",
-      email_notification_enabled: false,
+      emailNotificationEnabled: false,
       support_active: false,
       loading: {
         getClusterStatus: true,
@@ -552,6 +552,12 @@ export default {
         this.getEmailNotificationCompleted
       );
 
+      // register to task error
+      this.$root.$once(
+        taskAction + "-aborted",
+        this.getEmailNotificationAborted
+      );
+
       const res = await to(
         this.createClusterTask({
           action: taskAction,
@@ -572,8 +578,13 @@ export default {
       }
     },
     getEmailNotificationCompleted(taskContext, taskResult) {
-      this.email_notification_enabled = taskResult.output.enabled;
+      this.emailNotificationEnabled = taskResult.output.enabled;
       this.getSupportSession();
+      this.loading.getEmailNotification = false;
+    },
+    getEmailNotificationAborted(taskContext, taskResult) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.getEmailNotification = this.$t("error.generic_error");
       this.loading.getEmailNotification = false;
     },
     async getClusterStatus() {

@@ -54,9 +54,9 @@
               </template>
             </cv-toggle>
             <template v-if="enabled">
-              <p class="radio-menu-label">
+              <label class="bx--label">
                 {{ $t("smarthost.configuration") }}
-              </p>
+              </label>
               <cv-radio-group vertical>
                 <cv-radio-button
                   v-model="manual_configuration"
@@ -77,9 +77,11 @@
               <NsInlineNotification
                 v-if="!mail_server.length > 0"
                 kind="info"
-                :title="$t('smarthost.no_mail_app_instannce')"
-                :description="$t('smarthost.no_mail_app_instannce_description')"
+                :title="$t('smarthost.no_mail_app_instance')"
+                :description="$t('smarthost.no_mail_app_instance_description')"
                 :showCloseButton="false"
+                :actionLabel="$t('smarthost.go_to_software_center')"
+                @action="goToSoftwareCenter"
               />
               <NsComboBox
                 key="app"
@@ -302,6 +304,9 @@ export default {
   },
   methods: {
     ...mapActions(["setSmarthostInStore"]),
+    goToSoftwareCenter() {
+      this.$router.push("/software-center");
+    },
     async getSmarthost() {
       for (const key of Object.keys(this.error)) {
         this.error[key] = "";
@@ -511,11 +516,4 @@ export default {
 
 <style scoped lang="scss">
 @import "../../styles/carbon-utils";
-
-.radio-menu-label {
-  font-size: 12px;
-  color: #525252;
-  margin-top: 2px;
-  margin-bottom: 8px;
-}
 </style>
