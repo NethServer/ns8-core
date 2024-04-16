@@ -112,7 +112,8 @@
         "path_pattern": "Invalid path pattern",
         "fqdn_format": "Invalid FQDN format",
         "cannot_retrieve_users_admin_configuration": "Cannot retrieve users portal administration",
-        "cannot_retrieve_subscription_status": "Cannot retrieve subscription status"
+        "cannot_retrieve_subscription_status": "Cannot retrieve subscription status",
+        "cannot_retrieve_email_notification_status": "Cannot retrieve email notifications status"
     },
     "websocket": {
         "websocket_disconnected": "Websocket disconnected",
@@ -995,7 +996,9 @@
         "updated_available_c": "Available update | Available updates",
         "core_update_available": "Core update available",
         "subscription_status": "Subscription",
-        "go_to_subscription": "Go to Subscription"
+        "go_to_subscription": "Go to Subscription",
+        "email_notification": "Email notifications",
+        "go_to_settings": "Go to settings"
     },
     "domains": {
         "title": "Domains and users",
@@ -1302,6 +1305,14 @@
         "animated_icons_by": "Animated icons by"
     },
     "smarthost": {
+        "node": "Node {nodeId}",
+        "manual_configuration": "Manual configuration",
+        "mail_app_instance": "Use Mail app instance",
+        "configuration": "Configuration",
+        "choose_instance": "Choose instance",
+        "no_mail_app_instance": "No Mail app instance found",
+        "no_mail_app_instance_description": "You can install Mail app from Software center",
+        "go_to_software_center": "Go to Software center",
         "title": "Email notifications",
         "enabled": "Send notifications with an SMTP server",
         "hostname_label": "SMTP server",
