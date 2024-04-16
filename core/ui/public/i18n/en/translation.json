@@ -438,7 +438,7 @@
         "aws_url_label": "AWS bucket name",
         "backblaze_url_label": "B2 bucket name",
         "genericS3_url_label": "Bucket address",
-        "genericS3_url_tooltip": "Enter an address with format server_fqdn/bucket_name. Note: the server must have a valid TLS certificate",
+        "genericS3_url_tooltip": "Enter an address with format \"serverfqdn/bucketname\". Note: the server must have a valid TLS certificate",
         "genericS3_placeholder": "e.g. myminio.example.com/mybucket",
         "smb_url_label": "Share name",
         "backup_repository_exists": "A repository with this URL already exists",
