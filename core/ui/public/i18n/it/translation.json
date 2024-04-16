@@ -374,7 +374,16 @@
         "encrypt_smtp": "Crittografia SMTP",
         "choose": "Scegli",
         "username_placeholder": "es. john@example.com",
-        "username_helper": "Lasciare vuoto se privo di autenticazione"
+        "username_helper": "Lasciare vuoto se privo di autenticazione",
+        "go_to_software_center": "Vai a Software center",
+        "address_error": "Errore di risoluzione del nome",
+        "node": "Nodo {nodeId}",
+        "no_mail_app_instance_description": "È possibile installare l'app Mail dal Software center",
+        "manual_configuration": "Configurazione manuale",
+        "mail_app_instance": "Utilizza istanza dell'app Mail",
+        "configuration": "Configurazione",
+        "no_mail_app_instance": "Nessuna istanza di app Mail trovata",
+        "choose_instance": "Scegli l'istanza"
     },
     "domains": {
         "ldap": "LDAP",
@@ -469,7 +478,8 @@
         "strength_password_min_length": "Lunghezza minima della password",
         "users_admin_page_title": "Portale utente",
         "users_admin_page_description": "Portale self-service di amministrazione utente",
-        "host_format": "Deve essere un nome di dominio o un indirizzo IP valido"
+        "host_format": "Deve essere un nome di dominio o un indirizzo IP valido",
+        "users_admin_page_tooltips": "Il portale utente consente agli utenti di dominio di modificare la propria password. Il portale è accessibile agli utenti anche su qualsiasi nodo con una replica dell'domain provider. L'URL generico è https://{node_fqdn_or_ip}/users-admin/{domain}/"
     },
     "action": {
         "configure-module": "Configura app",
@@ -741,7 +751,7 @@
         "azure_url_label": "Nome container di Azure",
         "backblaze_url_label": "Nome bucket di B2",
         "smb_url_tooltip": "È possibile specificare una sotto-directory della share con il separatore \"/\" (slash)",
-        "genericS3_url_tooltip": "Enter an address with format server_fqdn/bucket_name. Note: the server must have a valid TLS certificate"
+        "genericS3_url_tooltip": "Inserisci un indirizzo con il formato \"serverfqdn/bucketname\". Nota: il server deve avere un certificato TLS valido"
     },
     "login": {
         "password": "Password",
@@ -788,7 +798,7 @@
     },
     "common": {
         "required": "Obbligatorio",
-        "processing": "Elaborazione in corso...",
+        "processing": "In elaborazione…",
         "save_settings": "Salva impostazioni",
         "enabled": "Abilitato",
         "disabled": "Disabilitato",
@@ -899,7 +909,8 @@
         "invalid_username_or_password": "Nome utente o password non validi",
         "invalid_value": "Valore non valido",
         "cannot_retrieve_users_admin_configuration": "Portale gestione utenti non disponibile",
-        "cannot_retrieve_subscription_status": "Impossibile ottenere lo stato della subscription"
+        "cannot_retrieve_subscription_status": "Impossibile ottenere lo stato della subscription",
+        "cannot_retrieve_email_notification_status": "Non è possibile recuperare lo stato delle notifiche e-mail"
     },
     "task": {
         "configure": "Configura",
@@ -1092,7 +1103,9 @@
         "go_to_nodes": "Vai a Nodi",
         "apps_installed_c": "App installata | App installate",
         "go_to_subscription": "Vai a Subscription",
-        "subscription_status": "Subscription"
+        "subscription_status": "Subscription",
+        "email_notification": "Notifiche email",
+        "go_to_settings": "Vai alle impostazioni"
     },
     "domain_users": {
         "attributes": "Attributi",
