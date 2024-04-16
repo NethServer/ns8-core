@@ -358,22 +358,28 @@ export default {
       this.username = smarthost.username;
       this.password = smarthost.password;
       this.port = smarthost.port.toString();
-      this.encrypt_smtp = smarthost.encrypt_smtp;
       this.tls_verify = smarthost.tls_verify;
       this.enabled = smarthost.enabled;
+
+      this.$nextTick(() => {
+        this.encrypt_smtp = smarthost.encrypt_smtp;
+      });
+
       this.mail_server = smarthost.mail_server;
 
       this.combobox_mail_server = smarthost.mail_server.map(
         this.convertToComboboxObject
       );
-      if (smarthost.mail_server) {
-        const selected_mail_server = smarthost.mail_server.filter(
-          (mail) => mail.host === smarthost.host
-        )[0];
-        this.selected_mail_id = selected_mail_server
-          ? selected_mail_server.mail_id
-          : "";
-      }
+      this.$nextTick(() => {
+        if (smarthost.mail_server) {
+          const selected_mail_server = smarthost.mail_server.filter(
+            (mail) => mail.host === smarthost.host
+          )[0];
+          this.selected_mail_id = selected_mail_server
+            ? selected_mail_server.mail_id
+            : "";
+        }
+      });
 
       this.loading.getSmarthost = false;
     },
