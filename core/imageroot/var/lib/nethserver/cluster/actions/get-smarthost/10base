@@ -10,6 +10,26 @@ import sys
 import json
 import agent
 
+rdb = agent.redis_connect() # full read-only access on every key
 
-smtp = agent.get_smarthost_settings(agent.redis_connect())
+manual_configuration = True
+smtp = agent.get_smarthost_settings(rdb)
+modules=[]
+rdb = agent.redis_connect()
+# we query all the list of service provider
+for key in agent.list_service_providers(rdb,'submission','tcp'):
+    node_name = rdb.get('node/'+ key['node'] + '/ui_name') or ""
+    obj = {
+        "mail_id": key['module_id'],
+        "mail_name": key['ui_name'] or "",
+        "node": key['node'],
+        "node_name": node_name,
+        "host": key['host']
+    }
+    if manual_configuration == True:
+        # no need to check the rest of the list if manual_configuration == False
+        manual_configuration = False if key['host'] == smtp['host'] and str(smtp['port']) == "25" else True
+    modules.append(obj)
+smtp.update({"mail_server":modules, "manual_configuration": manual_configuration})
+
 json.dump(smtp, fp=sys.stdout)

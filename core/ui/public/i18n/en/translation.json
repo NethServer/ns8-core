@@ -1318,6 +1318,7 @@
         "tls": "TLS",
         "choose": "Choose",
         "tls_verify": "Verify the TLS certificate",
+        "address_error": "Name resolution error",
         "connection_timeout_error": "The connection issued a timeout error, verify the SMTP port number and the SMTP server name",
         "cannot_authenticate_to_server": "The server refuses the connection, it is probably due to a bad login or bad password",
         "cannot_connect_to_server": "The server refuses the connection, please try again.",
