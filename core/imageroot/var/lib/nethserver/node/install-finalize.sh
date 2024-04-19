@@ -13,15 +13,6 @@ set -e
 
 source /etc/nethserver/core.env
 
-if [[ ! -f ~/.ssh/id_rsa.pub ]] ; then
-    echo "Generating a new RSA key pair for SSH:"
-    ssh-keygen -t rsa -N '' -f ~/.ssh/id_rsa
-fi
-
-echo "Adding id_rsa.pub to module skeleton dir:"
-install -d -m 700 /etc/nethserver/skel/.ssh
-install -m 600 -T ~/.ssh/id_rsa.pub /etc/nethserver/skel/.ssh/authorized_keys
-
 if ! grep -q ' cluster-leader$' /etc/hosts; then
     echo "Add /etc/hosts entries:"
     echo "127.0.0.1 cluster-leader" >> /etc/hosts
