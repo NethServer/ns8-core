@@ -1,5 +1,3 @@
-#!/bin/bash
-
 #
 # Copyright (C) 2021 Nethesis S.r.l.
 # http://www.nethesis.it - nethserver@nethesis.it
@@ -20,7 +18,7 @@
 # along with NethServer.  If not, see COPYING.
 #
 
-if [ $SHELL != '/bin/bash' ]; then
+if [ -z "$BASH" ]; then
     return
 fi
 
