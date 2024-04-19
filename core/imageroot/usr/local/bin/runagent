@@ -81,7 +81,7 @@ if not args.current_dir:
 os.environ['AGENT_ID'] = os.environ['REDIS_USER']
 
 if args.COMMAND is None:
-    if sys.stdout.isatty():
+    if sys.stdout.isatty() and sys.stdin.isatty():
         print("runagent: [INFO] starting bash -l", file=sys.stderr)
         print("runagent: [INFO] working directory:", os.getcwd(), file=sys.stderr)
         os.execvp('/usr/bin/bash', ['bash', '-l'])
