@@ -62,10 +62,12 @@ echo "Add firewalld core rules:"
 )
 
 echo "Write initial cluster environment state"
+mkdir -v -m 0700 /var/lib/nethserver/cluster/state
 (exec > /var/lib/nethserver/cluster/state/environment
     printf "NODE_ID=1\n"
 )
 echo "Write initial node environment state"
+mkdir -v -m 0700 /var/lib/nethserver/node/state
 (exec > /var/lib/nethserver/node/state/environment
     printf "NODE_ID=1\n"
     printf "IMAGE_ID=%s\n" $(podman image inspect -f '{{.Id}}' "${CORE_IMAGE}")
