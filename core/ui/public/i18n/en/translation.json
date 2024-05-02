@@ -1174,7 +1174,11 @@
         "group_already_exists": "Group already exists",
         "create_group_group": "Create group {group}",
         "edit_group_group": "Edit group {group}",
-        "delete_group_group": "Delete group {group}"
+        "delete_group_group": "Delete group {group}",
+        "openldap_user_pattern": "Allowed characters: a-z, 0-9, _ and -",
+        "openldap_user_string_lte": "Must be less than or equal to 255 characters",
+        "samba_user_pattern": "Allowed characters: A-Z, a-z, 0-9, _ and -",
+        "samba_user_string_lte": "Must be less than or equal to 255 characters"
     },
     "domain_configuration": {
         "title": "Domain configuration",

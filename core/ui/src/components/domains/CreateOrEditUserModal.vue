@@ -420,10 +420,15 @@ export default {
     addUserValidationFailed(validationErrors) {
       this.loading.addUser = false;
       let focusAlreadySet = false;
-
       for (const validationError of validationErrors) {
         const param = validationError.parameter;
-
+        if (param === "user" && this.mainProvider.includes('openldap')) {
+          this.error.user = this.$t("domain_users.openldap_" + validationError.error);
+          continue;
+        } else if (param === "user" && this.mainProvider.includes('samba') ) {
+          this.error.user = this.$t("domain_users.samba_" + validationError.error);
+          continue;
+        }
         // set i18n error message
         this.error[param] = this.$t("domain_users." + validationError.error);
 
