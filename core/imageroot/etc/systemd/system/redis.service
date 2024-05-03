@@ -1,8 +1,8 @@
 [Unit]
 Description=Core Redis DB
 Documentation=https://github.com/NethServer/ns8-core
-Wants=wg-quick@wg0.service
-After=wg-quick@wg0.service
+Wants=wg-quick@wg0.service overlay-cleanup.service
+After=wg-quick@wg0.service overlay-cleanup.service
 
 [Service]
 Environment=PODMAN_SYSTEMD_UNIT=%n
