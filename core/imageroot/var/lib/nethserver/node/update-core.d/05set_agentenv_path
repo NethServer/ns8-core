@@ -8,6 +8,8 @@
 exec 1>&2
 set -e
 
+chmod -c 0700 /var/lib/nethserver/{node,cluster}/state
+
 if ! grep -q '^PATH=' /var/lib/nethserver/node/state/agent.env ; then
     echo "Fixing PATH in node agent.env"
     printf "PATH=/var/lib/nethserver/node/bin:/usr/local/agent/pyenv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/usr/local/agent/bin\n" >> /var/lib/nethserver/node/state/agent.env
@@ -27,4 +29,3 @@ if ! grep -q '^PYTHONPATH=' /var/lib/nethserver/cluster/state/agent.env ; then
     echo "Fixing PYTHONPATH in cluster agent.env"
     printf "PYTHONPATH=/var/lib/nethserver/cluster/pypkg\n" >> /var/lib/nethserver/cluster/state/agent.env
 fi
-
