@@ -1,0 +1,7 @@
+#!/bin/bash
+#
+# Copyright (C) 2024 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# Clean merged volumes before to start redis
+( echo 'rmdir /var/lib/containers/storage/overlay/*/merged' ; getent passwd | awk -F : '$3 >= 1000 { print "rmdir " $6 "/.local/share/containers/storage/overlay/*/merged" }' ) | sh -s >/dev/null 2>&1 || :
