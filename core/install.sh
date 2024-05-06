@@ -88,6 +88,8 @@ done
 echo "Extracting core sources from ${core_url}:"
 cid=$(podman create "${core_url}")
 podman export ${cid} | tar --totals -C / --no-overwrite-dir --no-same-owner --exclude=.gitignore --exclude-caches-under -x -v -f - | LC_ALL=C sort | tee coreimage.lst
+mkdir -vp /var/lib/nethserver/node/state /var/lib/nethserver/cluster/state
+chown -c 0700 /var/lib/nethserver/node/state /var/lib/nethserver/cluster/state
 mv -v coreimage.lst /var/lib/nethserver/node/state/coreimage.lst
 podman rm -f ${cid}
 
