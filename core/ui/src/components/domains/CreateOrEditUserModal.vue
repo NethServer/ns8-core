@@ -35,9 +35,9 @@
         <NsTextInput
           v-model.trim="displayName"
           :label="$t('domain_users.display_name')"
-          :invalid-message="error.displayName"
+          :invalid-message="error.display_name"
           :disabled="loading.addUser || loading.alterUser"
-          ref="displayName"
+          ref="display_name"
         />
         <NsMultiSelect
           v-model="selectedGroups"
