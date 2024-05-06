@@ -35,9 +35,9 @@
         <NsTextInput
           v-model.trim="displayName"
           :label="$t('domain_users.display_name')"
-          :invalid-message="error.displayName"
+          :invalid-message="error.display_name"
           :disabled="loading.addUser || loading.alterUser"
-          ref="displayName"
+          ref="display_name"
         />
         <NsMultiSelect
           v-model="selectedGroups"
@@ -420,12 +420,10 @@ export default {
     addUserValidationFailed(validationErrors) {
       this.loading.addUser = false;
       let focusAlreadySet = false;
-
       for (const validationError of validationErrors) {
         const param = validationError.parameter;
-
         // set i18n error message
-        this.error[param] = this.$t("domain_users." + validationError.error);
+        this.error[param] = this.$t("domain_users." + validationError.error, {tok: validationError.value});
 
         if (!focusAlreadySet) {
           this.focusElement(param);
