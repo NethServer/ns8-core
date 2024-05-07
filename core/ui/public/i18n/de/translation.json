@@ -8,8 +8,6 @@
         "review_node_fqdn_title": "FQDN des Knoten prüfen",
         "upload_cluster_backup_file": "Hochladen der Cluster-Sicherungsdatei",
         "custom_routes": "eigene HTTP Routen",
-        "invalid_join_code": "ungültiger Beitrittscode",
-        "domains": "Domänen",
         "creating_cluster": "Cluster wird erstellt...",
         "restore_summary": "Zusammenfassung",
         "node_added_to_cluster": "Knoten {nodeId} zum Cluster hinzugefügt",
@@ -29,7 +27,6 @@
         "remote_url": "ferne URL",
         "url_format": "ungültige URL",
         "redirect_cluster_description": "Dieser Knoten ist jetzt ein Arbeitsknoten des Clusters. Klicken Sie auf die Schaltfläche unten, um die Cluster-Verwaltungsseite auf dem Hauptknoten aufzurufen.",
-        "domain": "Domäne",
         "new_password": "neues Admin-Kennwort",
         "join_cluster_description": "Diesen Knoten zu einem bestehenden Cluster hinzufügen",
         "restore_cluster_description": "Wiederherstellen des Clusters samt Anwendungen aus einer Datensicherun",
@@ -57,7 +54,6 @@
         "backup_password_tooltip": "Kennwort zur Verschlüsselung der Datensicherung",
         "vpn_cidr": "VPN Netzwerk (CIDR)",
         "select_apps_to_restore": "Anwendungen zur Wiederherstellung wählen",
-        "hostname": "Hostname",
         "restore_from_cluster_backup_file": "Wiederherstellung aus einer Cluster-Datensicherung",
         "not_valid_gpg_file": "ungültige GPG Datei",
         "skip_apps_restore": "Wiederherstellung von Anwendungen überspringen",
@@ -240,7 +236,7 @@
         "start-support-session": "Support -Sitzung starten",
         "get-subscription": "Abonnement abfragen",
         "register-cluster-subscription": "Cluster Abonnement registrieren",
-        "set-retention": "Set retention"
+        "set-retention": "Aufbewahrung festlegen"
     },
     "common": {
         "hide": "verstecken",
@@ -276,7 +272,7 @@
         "enable": "aktivieren",
         "choose": "Auswählen",
         "delete": "Löschen",
-        "cancel": "Abbrechen",
+        "cancel": "abbrechen",
         "finish": "Fertig",
         "user_input_l": "Benutzereingabe",
         "version": "Version",
@@ -310,7 +306,7 @@
         "nodes_c": "Knoten|Knoten",
         "clear_filter": "Filter löschen",
         "expand": "erweitern",
-        "search": "Suchen",
+        "search": "Suche",
         "type_to_confirm": "Zur Bestätigung des Löschvorgang folgendes eingeben: <strong>{name}</strong>",
         "cluster_label": "Cluster-Bezeichnung",
         "loading": "lade",
@@ -355,7 +351,8 @@
         "404": "Ressource nicht gefunden",
         "network_error": "Netzwerk-Fehler",
         "validation_error": "Überprüfungsfehler",
-        "cannot_retrieve_subscription_status": "Status der Subskription kann nicht abgerufen werden."
+        "cannot_retrieve_subscription_status": "Status der Subskription kann nicht abgerufen werden.",
+        "cannot_retrieve_email_notification_status": "Status für E-Mail Benachrichtigung nicht abgerufen"
     },
     "websocket": {
         "websocket_disconnected_description": "Websocket-Verbindung instabil. Bitte warten bis die Verbindung wiederhergestellt ist oder die Seite neu laden",
@@ -609,7 +606,10 @@
         "edit_group_group": "Gruppe {group} ändern",
         "enable_user_user": "Benutzer {user} aktivieren",
         "group": "Gruppe",
-        "groups": "Gruppen"
+        "groups": "Gruppen",
+        "user_string_lte": "Must be less than or equal to 255 characters",
+        "display_name_string_lte": "Must be less than or equal to 256 characters",
+        "user_pattern": "Invalid character \"{tok}\". Only letters, digits, - and _ are allowed."
     },
     "audit_trail": {
         "title": "Audit-Protokoll",
@@ -727,7 +727,8 @@
         "internal_description": "Einen Konto-Anbieter auf einem Cluster-Knoten installieren",
         "hostname_pattern": "Muster ungültig",
         "ipaddress_private_check_failed": "IP-Adresse ungültig",
-        "host_format": "voll-qualifizierter Domänen-Name oder IP-Adresse erforderlich"
+        "host_format": "voll-qualifizierter Domänen-Name oder IP-Adresse erforderlich",
+        "users_admin_page_tooltips": "Das Benutzerportal ermöglicht es Domänenbenutzern, ihr eigenes Kennwort zu ändern. Das Portal ist für Benutzer auch auf jedem Knoten zugänglich, auf dem die Replik des Identitätanbieters läuft. Die generische URL lautet https://{knoten_fqdn_oder_ip}/users-admin/{domain}/"
     },
     "about": {
         "animated_icons_by": "Animierte Icons von",
@@ -786,7 +787,6 @@
         "default_backup_name": "Sicherung nach {repository}",
         "calendar_event_expression": "Ausdruck für Kalenderereignis",
         "backup_page_tooltip_2": "Cluster-Daten besteht aus <strong>Cluster Konfigurationsdaten</strong> und <strong>Anwendungsdaten</strong>",
-        "backblaze_placeholder": "Name des Bucket",
         "disable_backup": "Datensicherung deaktivieren",
         "disabled_backups": "Deaktivierte Datensicherungen",
         "at": "Um",
@@ -794,9 +794,6 @@
         "disabling_backup": "{backupName} deaktivieren",
         "smb_domain": "Domänename (NT/Arbeitsgruppe)",
         "download": "Herunterladen",
-        "url_placeholder": "Bucket, Name des Container oder s3host/Name_des_Containers",
-        "azure_placeholder": "Name des Container",
-        "aws_placeholder": "Name des Bucket",
         "delete_scheduled_backup_confirm": "Geplante Datensicherung<strong>{name}</strong> löschen?",
         "cluster": "Lokaler Speicher",
         "custom_schedule_tooltip_description": "Syntax: Systemd Kalendereintrag",
@@ -813,7 +810,6 @@
         "i_have_stored_encryption_password": "Das <strong>Kennwort</strong> ist sicher verwahrt",
         "num_backup_snapshots": "{num} Datensicherungs-Punkt| {num} Datensicherungs-Punkte",
         "cluster_short": "lokaler Speicher",
-        "url": "URL",
         "total_file_count": "Anzahl an Dateien",
         "retention_tooltip": "Anzahl der aufzubewahrenden Datensicherungs-Punkte vor automatischem löschen",
         "cluster_backup_password_warning_description_1": "Die Datensicherung der Cluster-Konfiguration enthält vertrauliche Daten für den Fall einer Disaster-Recovery",
@@ -849,7 +845,6 @@
         "cluster_backup_password_warning_description_2": "Ein starkes Kennwort festlegen, die Datensicherung herunterladen und an einem sicheren Ort aufbewahren.",
         "select_backup_provider": "Datensicherungs-Anbieter auswählen",
         "restore": "Wiederherstellen",
-        "samba_placeholder": "Share name",
         "monthly": "monatlich",
         "no_backup": "keine Datensicherung",
         "repository_name": "Name des Repository",
@@ -867,7 +862,6 @@
         "repository": "Repository",
         "schedule_action": "Zeitplan",
         "genericS3_secret_access_key": "geheimes Zugriffstoken",
-        "s3_placeholder": "minio.myserver.org/bucket-name",
         "provider": "Anbieter",
         "show_calendar_event_expression": "Ausdruck des Kalender-Ereignis anzeigen",
         "search_instances": "App-Instanz suchen",
@@ -914,7 +908,7 @@
         "azure_url_label": "Name des Azure container",
         "backblaze_url_label": "Name des B2 bucket",
         "smb_url_tooltip": "Ein Pfad zu einem freigegebenen Unterordner kann mit \"/\" angegeben werden",
-        "genericS3_url_tooltip": "Enter an address with format server_fqdn/bucket_name. Note: the server must have a valid TLS certificate"
+        "genericS3_url_tooltip": "Adresse des Format\nserver_fqdn/bucket_name. Hinweis: Der Server muss ein gültiges TLS Zertifikate haben"
     },
     "settings_http_routes": {
         "delete_route_description": "Route <strong>{name}</strong> löschen? Jede Anwendung die an diese Route gebunden ist wird nicht mehr zugreifbar sein.",
@@ -1024,32 +1018,32 @@
         "end_date": "Enddatum",
         "loki": {
             "title": "Loki",
-            "inactive": "Inactive",
-            "uninstall": "Uninstall",
-            "active_to": "to",
-            "retention_days": "Retention {count} day | Retention {count} days",
-            "active_from": "Active from",
-            "greater_than_0": "Enter a number greater than 0",
-            "valid_number": "Insert a valid number",
-            "tooltip": "Cluster nodes transmit their log streams to the active Loki instance, which operates on the leader node. When a leader node is replaced, the previous leader node retains its inactive Loki instance, allowing the System logs page to search through it until it is uninstalled.",
-            "uninstall_description": "Uninstall <strong>{instance}</strong>? Logs stored inside this instance will be deleted too. This action is <strong>NOT</strong> reversible.",
-            "active": "Active instance",
-            "loki_label": "Loki label",
-            "understood_uninstall": "I understand, uninstall",
-            "offline": "Offline",
-            "uninstall_instance": "Uninstall {name}",
-            "retention": "Retention",
-            "edit_retention": "Edit retention",
-            "edit_label": "Edit label",
-            "type_to_confirm": "Type <strong>{name}</strong> to confirm",
-            "days": "Days",
-            "no_logs": "This instance does not contains any log"
+            "inactive": "Inaktiv",
+            "uninstall": "Deinstallieren",
+            "active_to": "Empfänger",
+            "retention_days": "Aufbewahrung {count} Tag | Aufbewahrung {count} Tage",
+            "active_from": "Aktive Quelle",
+            "greater_than_0": "Zahl größer 0 eingeben",
+            "valid_number": "Gültige Zahl eingeben",
+            "tooltip": "Die Cluster-Knoten übertragen ihre Protokollströme an die aktive Loki-Instanz, die auf dem Hauptknoten arbeitet. Wird ein Hauptknoten ersetzt, behält der vorherige Hauptknoten seine inaktive Loki-Instanz bei, sodass die Seite Systemprotokolle diese durchsuchen kann, bis die Instanz deinstalliert wird.",
+            "uninstall_description": "<strong>{instance}</strong> deinstallieren? Im der Instanz gespeichert Protokolle werden ebenfalls gelöscht. Diese Aktion ist <strong>NICHT</strong> umkehrbar.",
+            "active": "Aktive Instanz",
+            "loki_label": "Loki Bezeichnung",
+            "understood_uninstall": "Verstanden, deinstallieren",
+            "offline": "offline",
+            "uninstall_instance": "{name} deinstallieren",
+            "retention": "Aufbewahrung",
+            "edit_retention": "Aufbewahrung bearbeiten",
+            "edit_label": "Bezeichnung bearbeiten",
+            "type_to_confirm": "Zur Bestätigung <strong>{name}</strong> eingeben",
+            "days": "Tage",
+            "no_logs": "Diese Instanz beinhaltet keine Protokolle"
         },
-        "loki_tooltip": "Search logs from the active Loki instance, from a former leader node or from a Loki backup.",
-        "current_instance": "Active instance",
-        "loki_instance_title": "Multiple Loki instance",
-        "loki_instance_description": "Logs are stored in more than one Loki instance. Choose one in the field below.",
-        "loki_instance": "Loki instance"
+        "loki_tooltip": "Durchsuchen von Logs aus der aktiven Loki-Instanz, aus einem ehemaligen Hauptknoten oder aus Loki-Backups.",
+        "current_instance": "Aktive Instanz",
+        "loki_instance_title": "Mehrfache Loki Instanzen",
+        "loki_instance_description": "Protokolle sind in mehr als einer Loki Instanz gespeichert. Im folgenden Feld eine auswählen",
+        "loki_instance": "Loki Instanz"
     },
     "settings_cluster": {
         "title": "Cluster"
@@ -1176,7 +1170,16 @@
         "valid_certificate_verification_error": "Das Zertifikat ist ungültig für den Server. Deaktivieren der Zertifikate-Validierung kann dies wohlmöglich umgehen",
         "title": "E-Mail Benachrichtigungen",
         "username_placeholder": "Beispiel: john@example.com",
-        "hostname_placeholder": "Beispiel: smtp.example.com"
+        "hostname_placeholder": "Beispiel: smtp.example.com",
+        "configuration": "Konfiguration",
+        "choose_instance": "Schnittstelle wählen",
+        "manual_configuration": "manuelle Konfiguration",
+        "address_error": "Fehler bei Namensauflösung",
+        "mail_app_instance": "Eine Instanz der Mail-App nutzen",
+        "no_mail_app_instance": "Keine Instanz der Mail-App gefunden",
+        "no_mail_app_instance_description": "Die Mail-App kann über das Software-Center installiert werden",
+        "go_to_software_center": "Zum Software-Center wechseln",
+        "node": "Knoten {nodeId}"
     },
     "settings_tls_certificates": {
         "cert_upload_label": "Zertifikat",
@@ -1246,7 +1249,9 @@
         "go_to_nodes": "Zu Knoten wechseln",
         "go_to_software_center": "Zum Software-Center wechseln",
         "go_to_subscription": "zu Abonnements wechseln",
-        "subscription_status": "Abonnement"
+        "subscription_status": "Abonnement",
+        "email_notification": "E-Mail Benachrichtigungen",
+        "go_to_settings": "Zu Einstellungen wechseln"
     },
     "calendar": {
         "days": "Tage",

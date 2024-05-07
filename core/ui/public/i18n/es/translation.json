@@ -26,7 +26,8 @@
         "cannot_retrieve_cluster_nodes": "No se pueden recuperar los nodos del clúster",
         "cannot_retrieve_users_admin_configuration": "No se puede recuperar la administración del portal de usuarios",
         "must_be_between": "Debe estar entre {min} y {max}",
-        "cannot_retrieve_subscription_status": "No se puede recuperar el estado de la suscripción"
+        "cannot_retrieve_subscription_status": "No se puede recuperar el estado de la suscripción",
+        "cannot_retrieve_email_notification_status": "No se puede recuperar el estado de las notificaciones por correo electrónico"
     },
     "about": {
         "animated_icons_by": "Iconos animados por",
@@ -44,7 +45,7 @@
         "enter_external_domain_name": "Escribe el nombre de dominio externo",
         "adminuser_string_gte": "Obligatorio",
         "configure_provider": "Configurar proveedor",
-        "domain_pattern": "Patrón de dominio no válido. Escribe algo como 'mi.dominio.es'",
+        "domain_pattern": "Patrón de dominio no válido. Introduzca algo como 'mi.dominio.org'.",
         "ipaddress_format": "Dirección IP no válida",
         "install_provider": "Instalar proveedor",
         "base_dn": "DN base",
@@ -248,7 +249,6 @@
         "azure_account_key": "Clave de cuenta de almacenamiento de Azure",
         "cluster_short": "Almacenamiento local",
         "b2_account_id": "ID de clave de aplicación B2",
-        "url": "URL",
         "repository_name_helper": "Un nombre fácil de recordar para el repositorio",
         "backup_completed_successfully": "{backupName} se completó correctamente",
         "backup_repository_auth_error_description": "Verificar la configuración del repositorio",
@@ -256,7 +256,6 @@
         "choose_destination_repository": "Elige el repositorio de destino",
         "backup_page_tooltip_2": "Los datos del clúster se componen de <strong>datos de configuración del clúster</strong> y <strong>datos de aplicaciones</strong>.",
         "smb_host": "Nombre de host o dirección IP",
-        "backblaze_placeholder": "nombre-depósito",
         "parameters_format": "Valor incorrecto",
         "backup_disabled": "Copia de seguridad deshabilitada",
         "aws_access_key_id": "ID de clave de acceso de AWS",
@@ -314,13 +313,10 @@
         "add_repository": "Añadir repositorio",
         "restoring_app_to_node": "Restaurando {app} a {node}",
         "edit_backup_repository": "Editar repositorio de respaldo",
-        "url_placeholder": "depósito, nombre del contenedor o s3host/nombre_contenedor",
         "repository": "Repositorio",
         "schedule_action": "Calendario",
-        "s3_placeholder": "minio.miservidor.ess/nombre-bucket",
         "backup_name": "Nombre de la copia de seguridad",
         "provider": "Proveedor",
-        "azure_placeholder": "nombre-contenedor",
         "not_backed_up_instances_selected": "Las instancias de las que no se realizó una copia de seguridad están seleccionadas actualmente",
         "backup_snapshots": "Caturas de respaldo",
         "configure": "Configurar",
@@ -333,7 +329,6 @@
         "cluster_placeholder": "Elige un nodo en el clúster",
         "backup_enabled": "Copia de seguridad habilitada",
         "no_backup_configured": "No hay copias de seguridad configuradas",
-        "aws_placeholder": "nombre-depósito",
         "retention": "Retención",
         "delete_repo_explanation_2": "Asegúrese de haber almacenado la contraseña del repositorio en un lugar seguro, o no podrá restaurar los datos de su copia de seguridad desde el repositorio original.",
         "every_month_at_time": "Cada mes, el día {dayNum} a las {time}",
@@ -375,7 +370,6 @@
         "replace_existing_app": "Reemplazar la aplicación existente {app}",
         "cluster_backup_password_warning_description_2": "Establece una contraseña de cifrado segura. Luego, descarga la copia de seguridad y guárdala en un lugar seguro.",
         "select_backup_provider": "Seleccionar proveedor de respaldo",
-        "samba_placeholder": "Nombre de carpeta compartida",
         "cluster_backup_password_warning": "Debes establecer la contraseña de cifrado",
         "run_backup": "Crear copia de seguridad",
         "genericS3_secret_access_key": "Clave de acceso secreta",
@@ -395,7 +389,7 @@
         "azure_url_label": "Nombre del contenedor de Azure",
         "backblaze_url_label": "Nombre del depósito de B2",
         "smb_url_tooltip": "Es posible especificar una ruta de subcarpeta compartida utilizando la barra diagonal \"/\"",
-        "genericS3_url_tooltip": "Escribe una dirección con el formato server_fqdn/nombre_del_depósito. Nota: el servidor debe tener un certificado TLS válido"
+        "genericS3_url_tooltip": "Introduzca una dirección con el formato \"serverfqdn/bucketname\". Nota: el servidor debe tener un certificado TLS válido."
     },
     "settings_http_routes": {
         "host_tooltip": "Un ejemplo de host válido es: <code>myapp.example.org</code>",
@@ -455,7 +449,7 @@
         "search": "Buscar"
     },
     "action": {
-        "list-backup-repositories": "Lista de repositorios de copia de seguridad",
+        "list-backup-repositories": "Lista de repositorios de la copia de seguridad",
         "list-backups": "Listado de copias de seguridad",
         "configure-module": "Configurar aplicación",
         "alter-backup-repository": "Modificar el repositorio de respaldo",
@@ -783,8 +777,6 @@
         "restore_apps": "Restaurar aplicaciones",
         "review_node_fqdn_title": "Revisión del FQDN del nodo",
         "custom_routes": "Rutas HTTP personalizadas",
-        "invalid_join_code": "Código de unión no válido",
-        "domains": "Dominios",
         "creating_cluster": "Creando clúster...",
         "restore_cluster": "Restaurar clúster",
         "configure_node": "Configurar este nodo",
@@ -796,7 +788,6 @@
         "create_cluster": "Crear clúster",
         "forbidden_hostname_value": "Nombre de host prohibido",
         "url_format": "URL no válida",
-        "domain": "Dominio",
         "join_cluster_description": "Agregar este nodo a un clúster existente",
         "restore_cluster_description": "Restaurar clúster y aplicaciones desde copia de seguridad",
         "vpn_endpoint_address": "Dirección pública de VPN líder",
@@ -812,7 +803,6 @@
         "join_cluster_instead": "Unirse a un clúster existente en su lugar",
         "skip_apps_restore_1": "¿Quieres omitir la restauración de aplicaciones?",
         "backup_password_tooltip": "Contraseña de cifrado utilizada para cifrar la copia de seguridad.",
-        "hostname": "Nombre de host",
         "restore_from_cluster_backup_file": "Restaurar desde el archivo de copia de seguridad del clúster",
         "not_valid_gpg_file": "Archivo GPG no válido",
         "node_added_to_cluster": "Nodo {nodeId} añadido al clúster",
@@ -992,7 +982,9 @@
         "instances_not_backed_up_c": "{num} aplicación no respaldada | {num} aplicaciones no respaldadas",
         "backups_failed_c": "{num} copia de seguridad fallida | {num} copias de seguridad fallidas",
         "go_to_subscription": "Suscripción",
-        "subscription_status": "Suscripción"
+        "subscription_status": "Suscripción",
+        "email_notification": "Notificaciones por correo electrónico",
+        "go_to_settings": "Ir a los ajustes"
     },
     "password": {
         "long_enough": "Suficientemente larga",
@@ -1055,7 +1047,10 @@
         "search_user": "Buscar usuario",
         "no_group_description": "No hay ningún grupo en este dominio",
         "search_group": "Buscar grupo",
-        "username": "Nombre de usuario"
+        "username": "Nombre de usuario",
+        "user_string_lte": "Must be less than or equal to 255 characters",
+        "display_name_string_lte": "Must be less than or equal to 256 characters",
+        "user_pattern": "Invalid character \"{tok}\". Only letters, digits, - and _ are allowed."
     },
     "settings_acme_servers": {
         "node": "Nodo",
@@ -1235,10 +1230,7 @@
     "smarthost": {
         "choose": "Elige",
         "hostname_label": "Servidor SMTP",
-        "username_label_tooltip": "Escribe la cuenta de usuario o déjala en blanco si el servidor no requiere autenticación",
-        "hostname_label_tooltip": "Escribe el nombre de dominio completo del servidor SMTP",
         "username_placeholder": "por ejemplo pepe@dominio.es",
-        "port_label_tooltip": "Escribe el puerto TCP del servidor SMTP",
         "port_placeholder": "por ejemplo 25, 465 o 587",
         "encrypt_smtp_enum": "Debe ser uno de los siguientes: ninguno, starttls, tls",
         "port_invalid_type": "Debe ser un número de puerto válido (1-65535)",
@@ -1260,7 +1252,16 @@
         "hostname_placeholder": "por ejemplo smtp.dominio.es",
         "cannot_connect_to_server": "El servidor rechaza la conexión, inténtalo de nuevo, por favor",
         "valid_certificate_verification_error": "El certificado no es válido para el servidor, deberías intentar desactivar la verificación del certificado",
-        "username_helper": "Deja en blanco para no autenticar"
+        "username_helper": "Deja en blanco para no autenticar",
+        "manual_configuration": "Configuración manual",
+        "node": "Nodo {nodeId}",
+        "configuration": "Configuración",
+        "mail_app_instance": "Utilizar la aplicación de correo",
+        "no_mail_app_instance": "No se ha encontrado ninguna instancia de la aplicación de correo",
+        "choose_instance": "Elegir instancia",
+        "no_mail_app_instance_description": "Puedes instalar la aplicación de correo desde el Centro de Software",
+        "address_error": "Error en la resolución del nombre",
+        "go_to_software_center": "Ir al centro de software"
     },
     "notification": {
         "confirm_abort": "Confirmar cancelación",

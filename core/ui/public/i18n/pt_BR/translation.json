@@ -225,7 +225,8 @@
         "ipaddress_private_check_failed": "Invalid IP address",
         "users_admin_page_description": "User administration self service portal",
         "samba": "Samba",
-        "host_format": "Must be a valid domain name or IP address"
+        "host_format": "Must be a valid domain name or IP address",
+        "users_admin_page_tooltips": "User portal permits domain users to change their own password. The portal is accessible to users also on any node running the domain provider replica. The generic URL is https://{node_fqdn_or_ip}/users-admin/{domain}/"
     },
     "init": {
         "restoring_cluster": "Restoring cluster",
@@ -236,8 +237,6 @@
         "review_node_fqdn_title": "Review node FQDN",
         "upload_cluster_backup_file": "Upload cluster backup file",
         "custom_routes": "Custom HTTP routes",
-        "invalid_join_code": "Invalid join code",
-        "domains": "Domains",
         "creating_cluster": "Creating cluster...",
         "restore_summary": "Summary",
         "node_added_to_cluster": "Node {nodeId} added to cluster",
@@ -257,7 +256,6 @@
         "remote_url": "Remote URL",
         "url_format": "Invalid URL",
         "redirect_cluster_description": "This node is a worker of the cluster now. Click the button below to access cluster administration page on the leader node.",
-        "domain": "Domain",
         "new_password": "New admin password",
         "join_cluster_description": "Add this node to an existing cluster",
         "restore_cluster_description": "Restore cluster and apps from backup",
@@ -285,7 +283,6 @@
         "backup_password_tooltip": "Encryption password used to cyper the backup.",
         "vpn_cidr": "VPN network (CIDR)",
         "select_apps_to_restore": "Select apps to restore",
-        "hostname": "Hostname",
         "restore_from_cluster_backup_file": "Restore from cluster backup file",
         "not_valid_gpg_file": "Invalid GPG file",
         "skip_apps_restore": "Skip apps restore",
@@ -802,7 +799,6 @@
         "cluster_short": "Local storage",
         "backup_name_helper": "An easy to remember name for the backup",
         "b2_account_id": "B2 application key ID",
-        "url": "URL",
         "total_file_count": "Total file count",
         "retention_tooltip": "Number of backup snapshots stored before automatic deletion",
         "repository_name_helper": "An easy to remember name for the repository",
@@ -817,7 +813,6 @@
         "backup_page_tooltip_2": "Cluster data is composed of <strong>cluster configuration data</strong> and <strong>apps data</strong>.",
         "smb_host": "Host name or IP address",
         "errored_backups_c": "{num} backup failed | {num} backups failed",
-        "backblaze_placeholder": "bucket-name",
         "not_backed_up": "Not backed up",
         "repositories_tooltip": "These are the repositories where your apps are backed up to",
         "smb_user": "User name",
@@ -868,7 +863,6 @@
         "at": "At",
         "every_day_at": "Every day at {time}",
         "restore": "Restore",
-        "samba_placeholder": "Share name",
         "azure_account_name": "Azure account name",
         "monthly": "Monthly",
         "no_backup": "No backup",
@@ -897,14 +891,11 @@
         "run_backup": "Run backup",
         "restoring_app_to_node": "Restoring {app} to {node}",
         "edit_backup_repository": "Edit backup repository",
-        "url_placeholder": "bucket, container name, or s3host/container_name",
         "repository": "Repository",
         "schedule_action": "Schedule",
         "genericS3_secret_access_key": "Secret access key",
-        "s3_placeholder": "minio.myserver.org/bucket-name",
         "backup_name": "Backup name",
         "provider": "Provider",
-        "azure_placeholder": "container-name",
         "show_calendar_event_expression": "Show calendar event expression",
         "search_instances": "Search app instances",
         "not_backed_up_instances_selected": "Instances not backed up are currently selected",
@@ -922,7 +913,6 @@
         "cluster_placeholder": "Choose a node in the cluster",
         "backup_enabled": "Backup enabled",
         "no_backup_configured": "No backup configured",
-        "aws_placeholder": "bucket-name",
         "retention": "Retention",
         "disabled_backups_description": "There is {num} backup disabled | There are {num} backups disabled",
         "total_size": "Total size",
@@ -973,7 +963,16 @@
         "encrypt_smtp_enum": "It must be one of the following: none, starttls, tls",
         "cannot_connect_to_server": "The server refuses the connection, please try again.",
         "port_invalid_type": "It must be a valid number port (1-65535)",
-        "valid_certificate_verification_error": "The certificate is not valid for the server, you should try to disable the certificate verification"
+        "valid_certificate_verification_error": "The certificate is not valid for the server, you should try to disable the certificate verification",
+        "address_error": "Name resolution error",
+        "manual_configuration": "Manual configuration",
+        "configuration": "Configuration",
+        "choose_instance": "Choose instance",
+        "go_to_software_center": "Go to Software center",
+        "node": "Node {nodeId}",
+        "mail_app_instance": "Use Mail app instance",
+        "no_mail_app_instance_description": "You can install Mail app from Software center",
+        "no_mail_app_instance": "No Mail app instance found"
     },
     "error": {
         "403": "Operation not authorized",
@@ -1002,7 +1001,8 @@
         "404": "Resource not found",
         "network_error": "Network error",
         "validation_error": "Validation error",
-        "cannot_retrieve_subscription_status": "Cannot retrieve subscription status"
+        "cannot_retrieve_subscription_status": "Cannot retrieve subscription status",
+        "cannot_retrieve_email_notification_status": "Cannot retrieve email notifications status"
     },
     "websocket": {
         "websocket_disconnected_description": "Websocket connection is unstable. Please wait until reconnection or reload the page",
@@ -1022,7 +1022,9 @@
         "go_to_software_center": "Go to Software center",
         "core_update_available": "Core update available",
         "go_to_subscription": "Go to Subscription",
-        "subscription_status": "Subscription"
+        "subscription_status": "Subscription",
+        "email_notification": "Email notifications",
+        "go_to_settings": "Go to settings"
     },
     "settings_tls_certificates": {
         "custom": "Uploaded",
@@ -1154,7 +1156,10 @@
         "group": "Group",
         "groups": "Groups",
         "create_user": "Create user",
-        "domain_name_users_and_groups": "{domain} users and groups"
+        "domain_name_users_and_groups": "{domain} users and groups",
+        "user_string_lte": "Must be less than or equal to 255 characters",
+        "display_name_string_lte": "Must be less than or equal to 256 characters",
+        "user_pattern": "Invalid character \"{tok}\". Only letters, digits, - and _ are allowed."
     },
     "node_detail": {
         "total": "Total",
