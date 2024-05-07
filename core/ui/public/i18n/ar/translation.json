@@ -113,7 +113,7 @@
         "restore-module": "Restore app",
         "retrieve-cluster-backup": "Retrieve cluster backup",
         "add-user": "Add user",
-        "list-backup-repositories": "قائمة بمستودعات النُّسَخ الاحتياطية",
+        "list-backup-repositories": "قائمة مستودعات النسخ الاحتياطي",
         "read-backup-repository": "Read backup repository",
         "list-routes": "List routes",
         "list-domain-groups": "List domain groups",
@@ -126,7 +126,7 @@
         "list-domain-users": "List domain users",
         "get-domain-group": "Get domain group",
         "add-external-domain": "Add external domain",
-        "list-backups": "قائمة النُّسَخ الاحتياطية",
+        "list-backups": "قائمة النسخ الاحتياطية",
         "get-password-policy": "Get password policy",
         "stop-support-session": "Stop support session",
         "set-certificate": "Set certificate",
@@ -336,7 +336,9 @@
         "select_instance_to_restore": "Select app instance to restore",
         "no_instance_to_restore": "No app instance to restore",
         "default_backup_name": "Backup to {repository}",
-        "every_hour": "Every hour"
+        "every_hour": "Every hour",
+        "genericS3_url_tooltip": "Enter an address with format \"serverfqdn/bucketname\". Note: the server must have a valid TLS certificate",
+        "backup_page_tooltip_manual": "For more information <a href=\"https://docs.nethserver.org/projects/ns8/en/latest/backup.html\">go to the Backup and restore manual page</a>."
     },
     "settings_tls_certificates": {
         "no_tls_certificate": "No TLS certificate",
@@ -639,7 +641,8 @@
         "hostname_pattern": "Invalid pattern",
         "ipaddress_private_check_failed": "Invalid IP address",
         "users_admin_page_description": "User administration self service portal",
-        "samba": "Samba"
+        "samba": "Samba",
+        "users_admin_page_tooltips": "User portal permits domain users to change their own password. The portal is accessible to users also on any node running the domain provider replica. The generic URL is https://{node_fqdn_or_ip}/users-admin/{domain}/"
     },
     "domain_users": {
         "edit_group": "Edit group",
@@ -684,7 +687,10 @@
         "group": "Group",
         "groups": "Groups",
         "create_user": "Create user",
-        "domain_name_users_and_groups": "{domain} users and groups"
+        "domain_name_users_and_groups": "{domain} users and groups",
+        "user_string_lte": "Must be less than or equal to 255 characters",
+        "display_name_string_lte": "Must be less than or equal to 256 characters",
+        "user_pattern": "Invalid character \"{tok}\". Only letters, digits, - and _ are allowed."
     },
     "nodes": {
         "node_vpn_endpoint_address": "{node} VPN public address",
@@ -790,7 +796,8 @@
         "path": "Path",
         "skip_cert_verify": "Skip certificate validation",
         "host_placeholder": "E.g. myapp.example.org",
-        "edit_route_route": "Edit route {route}"
+        "edit_route_route": "Edit route {route}",
+        "strip_prefix_tooltip": "<a href='https://doc.traefik.io/traefik/middlewares/http/stripprefix/'>Traefik prefixes option</a> defines the prefixes to strip from the request URL. E.g.: It allows you to strip a specified prefix from the URL path. If, for example, you remove /api from /api/v1/resource, the resulting path after it is applied would be /v1/resource."
     },
     "password": {
         "uppercase_letter": "Uppercase letter",
@@ -949,18 +956,27 @@
         "encrypt_smtp_enum": "It must be one of the following: none, starttls, tls",
         "cannot_connect_to_server": "The server refuses the connection, please try again.",
         "port_invalid_type": "It must be a valid number port (1-65535)",
-        "valid_certificate_verification_error": "The certificate is not valid for the server, you should try to disable the certificate verification"
+        "valid_certificate_verification_error": "The certificate is not valid for the server, you should try to disable the certificate verification",
+        "configuration": "Configuration",
+        "choose_instance": "Choose instance",
+        "address_error": "Name resolution error",
+        "go_to_software_center": "Go to Software center",
+        "manual_configuration": "Manual configuration",
+        "mail_app_instance": "Use Mail app instance",
+        "no_mail_app_instance": "No Mail app instance found",
+        "no_mail_app_instance_description": "You can install Mail app from Software center",
+        "node": "Node {nodeId}"
     },
     "common": {
         "hide": "Hide",
         "save_settings": "Save settings",
         "join_code": "Join code",
-        "copied_to_clipboard": "Copied!",
+        "copied_to_clipboard": "تم النسخ!",
         "view_instance_logs": "View {instance} logs",
         "edit": "Edit",
         "required": "مطلوب",
-        "show_more": "Show more",
-        "selected": "Selected",
+        "show_more": "عرض المزيد",
+        "selected": "محدد",
         "save": "Save",
         "collapse": "Collapse",
         "all": "All",
@@ -971,17 +987,17 @@
         "status": "Status",
         "not_active": "Inactive",
         "tab_navigation": "Tab navigation",
-        "reset_filters": "Reset filters",
+        "reset_filters": "ازالة التصفية",
         "all_good": "All good",
         "clear_selection": "Clear selection",
         "use_landscape_mode": "Rotate your device",
         "case_sensitive": "Case sensitive",
-        "optional": "optional",
+        "optional": "اختياري",
         "click_here_to_upload": "Click here to upload",
-        "copy_to_clipboard": "Copy to clipboard",
+        "copy_to_clipboard": "نسخ إلى الحافظة",
         "clear_search": "Clear search",
         "no_label": "No label",
-        "more_info": "More info",
+        "more_info": "مزيد من المعلومات",
         "x_of_y_selected": "{selected} of {total} selected",
         "enable": "Enable",
         "choose": "Choose",
@@ -995,7 +1011,7 @@
         "node": "Node",
         "show": "Show",
         "all_nodes": "All nodes",
-        "see_details": "See details",
+        "see_details": "عرض التفاصيل",
         "done": "Done",
         "skip": "Skip",
         "use_landscape_mode_description": "This page is optimized for landscape mode",
@@ -1013,14 +1029,14 @@
         "no_search_results_description": "Try changing your search query",
         "disable": "Disable",
         "active": "Active",
-        "show_less": "Show less",
+        "show_less": "عرض اقل",
         "success": "Success",
         "none": "None",
         "menu": "Menu",
         "please_read_carefully": "Please read carefully",
         "nodes_c": "Node | Nodes",
         "clear_filter": "Clear filter",
-        "expand": "Expand",
+        "expand": "توسيع",
         "search": "Search",
         "type_to_confirm": "Type <strong>{name}</strong> to confirm deletion",
         "cluster_label": "Cluster label",
@@ -1033,20 +1049,20 @@
         "choose_options_or_input_any_value": "Choose options or input any value",
         "advanced": "Advanced",
         "choose_an_option_or_input_any_value": "Choose an option or input any value",
-        "details": "Details",
-        "close": "Close",
+        "details": "التفاصيل",
+        "close": "اغلاق",
         "enabled": "Enabled"
     },
     "error": {
-        "403": "العملية غير مأذون لها",
+        "403": "العملية غير مصرح بها",
         "fqdn_format": "Invalid FQDN format",
         "cannot_retrieve_cluster_tasks": "Cannot retrieve cluster tasks",
-        "401": "التحقُّق من الهُويّة غير صحيح",
+        "401": "مصادقة غير صالحة",
         "must_be_between": "Must be between {min} and {max}",
         "cannot_retrieve_subscription_status": "Cannot retrieve subscription status",
         "invalid_username_or_password": "Invalid username or password",
         "cannot_retrieve_available_apps": "Cannot retrieve available apps",
-        "generic_error": "حدث خطأٌ ما",
+        "generic_error": "حدث خطأ",
         "cannot_retrieve_installed_apps": "Cannot retrieve installed apps",
         "host_format": "Invalid host format",
         "ipaddress_format": "Invalid IP address format",
@@ -1059,12 +1075,13 @@
         "url_format": "Invalid URL format",
         "path_pattern": "Invalid path pattern",
         "cannot_retrieve_task_status": "Cannot retrieve task status",
-        "network_timeout": "مُهلة الشبكة",
+        "network_timeout": "انتهت مهلة الخادم",
         "cannot_retrieve_cluster_nodes": "Cannot retrieve cluster nodes",
         "cannot_retrieve_users_admin_configuration": "Cannot retrieve users portal administration",
-        "404": "المورد غير موجود",
-        "network_error": "خطأ في الشبكة",
-        "validation_error": "خطأ أثناء التحقُّق"
+        "404": "لم يتم العثور على المصدر",
+        "network_error": "خطا في الاتصال",
+        "validation_error": "خطئ في التحقق",
+        "cannot_retrieve_email_notification_status": "Cannot retrieve email notifications status"
     },
     "websocket": {
         "websocket_disconnected_description": "Websocket connection is unstable. Please wait until reconnection or reload the page",
@@ -1084,7 +1101,9 @@
         "title": "Cluster status",
         "updated_available_c": "Available update | Available updates",
         "go_to_software_center": "Go to Software center",
-        "core_update_available": "Core update available"
+        "core_update_available": "Core update available",
+        "email_notification": "Email notifications",
+        "go_to_settings": "Go to settings"
     },
     "settings_cluster_admins": {
         "delete_admin_admin": "Delete admin {admin}",
@@ -1194,7 +1213,7 @@
     "about": {
         "animated_icons_by": "Animated icons by",
         "documentation": "Documentation",
-        "title": "حَوْل",
+        "title": "معلومات",
         "by_company": "by",
         "helpdesk": "Helpdesk"
     },
@@ -1293,7 +1312,7 @@
         "completed": "Completed",
         "task_running": "Task <strong>{task}</strong> is running",
         "subtask_failed": "Subtask <strong>{task}</strong> failed",
-        "cannot_create_task": "تعذّر إنشاء المهمة {action}",
+        "cannot_create_task": "لا يمكن إنشاء المهمة {action}",
         "subtask_pending": "Subtask <strong>{task}</strong> is pending",
         "task_id": "Task ID",
         "task_completed": "Task <strong>{task}</strong> completed",
@@ -1322,6 +1341,6 @@
         "title": "Network"
     },
     "settings": {
-        "title": "الإعدادات"
+        "title": "إعدادات"
     }
 }
