@@ -1048,9 +1048,9 @@
         "no_group_description": "No hay ningún grupo en este dominio",
         "search_group": "Buscar grupo",
         "username": "Nombre de usuario",
-        "user_string_lte": "Must be less than or equal to 255 characters",
-        "display_name_string_lte": "Must be less than or equal to 256 characters",
-        "user_pattern": "Invalid character \"{tok}\". Only letters, digits, - and _ are allowed."
+        "user_string_lte": "Debe ser menor o igual a 255 caracteres",
+        "display_name_string_lte": "Debe ser menor o igual a 256 caracteres",
+        "user_pattern": "Comience con una letra, seguida solo de letras, dígitos y los símbolos -._"
     },
     "settings_acme_servers": {
         "node": "Nodo",

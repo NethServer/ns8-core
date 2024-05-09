@@ -607,9 +607,9 @@
         "enable_user_user": "Benutzer {user} aktivieren",
         "group": "Gruppe",
         "groups": "Gruppen",
-        "user_string_lte": "Must be less than or equal to 255 characters",
-        "display_name_string_lte": "Must be less than or equal to 256 characters",
-        "user_pattern": "Invalid character \"{tok}\". Only letters, digits, - and _ are allowed."
+        "user_string_lte": "maximal 255 Zeichen",
+        "display_name_string_lte": "maximal 256 Zeichen",
+        "user_pattern": "ungültiges Zeichen \"{tok}\". Nur Buchstaben, Ziffern, - und _ sind zugelassen."
     },
     "audit_trail": {
         "title": "Audit-Protokoll",
