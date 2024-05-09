@@ -1175,7 +1175,7 @@
         "create_group_group": "Create group {group}",
         "edit_group_group": "Edit group {group}",
         "delete_group_group": "Delete group {group}",
-        "user_pattern": "Invalid character \"{tok}\". Only letters, digits, - and _ are allowed.",
+        "user_pattern": "Start with a letter, followed by only letters, digits, and the symbols -._",
         "user_string_lte": "Must be less than or equal to 255 characters",
         "display_name_string_lte": "Must be less than or equal to 256 characters"
     },
