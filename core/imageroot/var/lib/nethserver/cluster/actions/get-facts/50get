@@ -46,8 +46,10 @@ results = agent.tasks.runp(
     endpoint="redis://cluster-leader"
 )
 
+facts['facts']['nodes'] = {}
 for item in results:
-    facts['facts']['nodes'] = item['output']
+    for key in item['output']:
+        facts['facts']['nodes'][key] = item['output'][key]
 
 json.dump(
     facts,
