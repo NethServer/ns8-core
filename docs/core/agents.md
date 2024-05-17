@@ -167,7 +167,7 @@ In normal conditions module actions must be assigned to `roles`, and roles
 must be granted to agents and users. Symptoms of misconfigured roles and
 authorizations are `api-server` log lines like
 
-  [AUTH] error retrieving user authorizations: redis: nil
+    [AUTH] error retrieving user authorizations: redis: nil
 
 The task execution typically fails with a 403 error. Sometimes the UI
 displays an "Authorization error" or "Permission error" notification.
