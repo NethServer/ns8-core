@@ -158,12 +158,19 @@ print(agent.tasks.run(agent_id=os.environ['AGENT_ID'], action='list-actions'))
 ```
 
 The next section explains how to authorize agents to run actions through
-roles assignment.
+roles assignment, and typical error messages if they are not properly set
+up.
 
 ## Roles and authorizations
 
 In normal conditions module actions must be assigned to `roles`, and roles
-must be granted to agents and users.
+must be granted to agents and users. Symptoms of misconfigured roles and
+authorizations are `api-server` log lines like
+
+  [AUTH] error retrieving user authorizations: redis: nil
+
+The task execution typically fails with a 403 error. Sometimes the UI
+displays an "Authorization error" or "Permission error" notification.
 
 In Redis, a SET defines the actions assigned to a role. If default
 assignments are not enough the set can be modified by the module during
@@ -189,6 +196,18 @@ Now it is possible to grant the role `actionsreader` on `module/mymod1` to
 another agent (e.g. `module/authmod2`). This is the corresponding Redis command:
 
     HSET roles/module/authmod2 module/mymod1 actionsreader
+
+Granted permissions are stored in Redis HASH keys with `roles/`
+prefix. For example the `roles/admin` key stores the granted permissions
+for the `admin` user, you can inspect it with this Redis
+command:
+
+    HGETALL roles/admin
+
+It works the same for a module. A module key is for example
+`roles/module/traefik1`:
+
+    HGETALL roles/module/traefik1
 
 If the module instance needs to run its own actions, extend the builtin
 role `selfadm`. A basic role definition is set up by the builtin step
