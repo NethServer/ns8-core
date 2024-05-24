@@ -164,7 +164,7 @@ export default {
         alterUser: "",
         getDomainUser: "",
         user: "",
-        displayName: "",
+        display_name: "",
         newPassword: "",
         confirmPassword: "",
         groups: "",
@@ -285,6 +285,15 @@ export default {
 
         if (isValidationOk) {
           this.focusElement("user");
+          isValidationOk = false;
+        }
+      }
+      // displayName is required
+      if (!this.displayName) {
+        this.error.display_name = this.$t("common.required");
+
+        if (isValidationOk) {
+          this.focusElement("display_name");
           isValidationOk = false;
         }
       }
