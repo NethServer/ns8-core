@@ -446,23 +446,7 @@ export default {
       this.newRetention = null;
       this.getClusterLokiInstances();
     },
-    validateLokiInstanceLabel() {
-      this.clearErrors(this);
-      let isValidationOk = true;
-
-      if (!this.newLabel) {
-        this.error.newLabel = this.$t("common.required");
-        isValidationOk = false;
-      }
-
-      return isValidationOk;
-    },
     async setLokiInstanceLabel() {
-      const isValidationOk = this.validateLokiInstanceLabel();
-      if (!isValidationOk) {
-        return;
-      }
-
       this.error.setLokiInstanceLabel = "";
       this.loading.setLokiInstanceLabel = true;
       const taskAction = "set-name";
