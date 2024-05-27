@@ -39,6 +39,12 @@ if [[ $EUID != 0 ]]; then
     exit 1
 fi
 
+# search if /usr/local/bin is in the PATH environment variable
+if [[ ! "$PATH" =~ (^|:)/usr/local/bin(:|$) ]]; then
+    echo "The /usr/local/bin is not in the PATH environment variable: use `su -`."
+    exit 1
+fi
+
 echo "Checking port 80 and 443 are not already in use"
 for port in 80 443
 do
