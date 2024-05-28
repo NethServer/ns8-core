@@ -39,6 +39,16 @@ if [[ $EUID != 0 ]]; then
     exit 1
 fi
 
+# ensure /usr/local/bin is in the PATH environment variable
+if [[ ! "$PATH" =~ (^|:)/usr/local/bin(:|$) ]]; then
+    export PATH=$PATH:/usr/local/bin
+fi
+
+# ensure /usr/local/sbin is in the PATH environment variable
+if [[ ! "$PATH" =~ (^|:)/usr/local/sbin(:|$) ]]; then
+    export PATH=$PATH:/usr/local/sbin
+fi
+
 echo "Checking port 80 and 443 are not already in use"
 for port in 80 443
 do
