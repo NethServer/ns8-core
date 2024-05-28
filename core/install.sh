@@ -39,12 +39,12 @@ if [[ $EUID != 0 ]]; then
     exit 1
 fi
 
-# search if /usr/local/bin is in the PATH environment variable
+# ensure /usr/local/bin is in the PATH environment variable
 if [[ ! "$PATH" =~ (^|:)/usr/local/bin(:|$) ]]; then
     export PATH=$PATH:/usr/local/bin
 fi
 
-# search if /usr/local/sbin is in the PATH environment variable
+# ensure /usr/local/sbin is in the PATH environment variable
 if [[ ! "$PATH" =~ (^|:)/usr/local/sbin(:|$) ]]; then
     export PATH=$PATH:/usr/local/sbin
 fi
