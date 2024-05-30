@@ -42,9 +42,7 @@
           ref="node"
         >
           <template slot="tooltip">
-            {{
-              $t('settings_http_routes.node_helper')
-            }}
+            {{ $t("settings_http_routes.node_helper") }}
           </template>
         </NsComboBox>
         <NsTextInput
@@ -221,10 +219,10 @@ export default {
       this.updateSelectedNodeId();
     },
     url(newUrl) {
-      if (! newUrl.startsWith('https://')) {
+      if (!newUrl.startsWith("https://")) {
         this.skip_cert_verify = false;
-    }
-  },
+      }
+    },
     isShown: function () {
       if (this.isShown) {
         this.clearErrors();

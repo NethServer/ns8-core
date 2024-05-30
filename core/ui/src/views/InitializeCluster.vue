@@ -669,7 +669,9 @@
                       <span class="value">{{ restore.summary.vpn }}</span>
                     </div>
                     <div class="key-value-setting">
-                      <span class="label">{{ $t("init.external_domains") }}</span>
+                      <span class="label">{{
+                        $t("init.external_domains")
+                      }}</span>
                       <span class="value">{{ restore.summary.domains }}</span>
                     </div>
                     <div class="key-value-setting">
@@ -1316,7 +1318,10 @@ export default {
           this.focusElement("vpnEndpointAddress");
           isValidationOk = false;
         }
-      } else if (this.vpnEndpointAddress && !this.isFqdn(this.vpnEndpointAddress)) {
+      } else if (
+        this.vpnEndpointAddress &&
+        !this.isFqdn(this.vpnEndpointAddress)
+      ) {
         // we want to validate enpoint is a hostname
         this.error.vpnEndpointAddress = "init.not_a_valid_fqdn_endpoint";
         this.isOpenCreateClusterAccordion = true;
@@ -1578,7 +1583,7 @@ export default {
     joinClusterValidationFailed(validationErrors) {
       console.error("validation failed", validationErrors);
       this.isJoiningCluster = false;
-      this.error.joinCode = this.$t("init."+validationErrors[0].error);
+      this.error.joinCode = this.$t("init." + validationErrors[0].error);
       this.focusElement("joinCode");
     },
     async onFileUpload(files) {

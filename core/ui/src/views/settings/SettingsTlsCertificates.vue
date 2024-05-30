@@ -205,7 +205,13 @@
                           <div class="justify-flex-end">
                             <cv-icon-button
                               :disabled="row.type === 'route'"
-                              :label="row.type === 'route' ? $t('settings_tls_certificates.certificate_tls_tooltips') :  $t('common.delete')"
+                              :label="
+                                row.type === 'route'
+                                  ? $t(
+                                      'settings_tls_certificates.certificate_tls_tooltips'
+                                    )
+                                  : $t('common.delete')
+                              "
                               kind="danger"
                               :icon="TrashCan20"
                               size="small"
