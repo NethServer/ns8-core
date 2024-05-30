@@ -1139,7 +1139,7 @@
         "group_already_exists": "Il gruppo esiste già",
         "user_string_lte": "Deve essere inferiore o uguale a 255 caratteri",
         "display_name_string_lte": "Deve essere inferiore o uguale a 256 caratteri",
-        "user_pattern": "Carattere non valido \"{tok}\". Sono consentiti solo lettere, cifre, - e _."
+        "user_pattern": "Inizia con una lettera, seguita da lettere, cifre o i simboli -._"
     },
     "domain_configuration": {
         "add_provider": "Aggiungi provider",
