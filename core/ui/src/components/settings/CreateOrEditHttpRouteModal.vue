@@ -110,7 +110,17 @@
           ref="tls"
         >
           <template slot="tooltip">
-            <span>{{ $t("settings_http_routes.strip_prefix_tooltip") }}</span>
+            <i18n path="settings_http_routes.strip_prefix_tooltip" tag="span">
+              <template v-slot:traefikPrefixesOption>
+                <cv-link
+                  href="https://doc.traefik.io/traefik/middlewares/http/stripprefix/"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  {{ $t("settings_http_routes.traefik_prefixes_option") }}
+                </cv-link>
+              </template>
+            </i18n>
           </template>
           <template slot="text-left">{{ $t("common.disabled") }}</template>
           <template slot="text-right">{{ $t("common.enabled") }}</template>

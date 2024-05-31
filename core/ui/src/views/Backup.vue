@@ -31,9 +31,18 @@
                     })
                   }}
                 </div>
-                <div class="mg-bottom-sm">
-                  {{ $t("backup.backup_page_tooltip_manual") }}
-                </div>
+                <i18n path="backup.backup_page_tooltip_manual" tag="p">
+                  <template v-slot:manualLink>
+                    <cv-link
+                      href="https://docs.nethserver.org/projects/ns8/en/latest/backup.html"
+                      target="_blank"
+                      rel="noreferrer"
+                      class="inline"
+                    >
+                      {{ $t("backup.go_to_backup_manual_page") }}
+                    </cv-link>
+                  </template>
+                </i18n>
               </template>
             </cv-interactive-tooltip>
           </h2>
@@ -1264,5 +1273,9 @@ export default {
   justify-content: flex-start;
   flex-grow: 6;
   flex-basis: 0;
+}
+
+.inline {
+  display: inline;
 }
 </style>
