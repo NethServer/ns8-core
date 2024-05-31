@@ -123,10 +123,9 @@
                         $t("login.need_to_reconfigure_2fa")
                       }}</template>
                       <template slot="content">
-                        <p
-                          class="mg-top-sm"
-                          v-html="$t('login.setup_key_instructions')"
-                        ></p>
+                        <p class="mg-top-sm">
+                          {{ $t("login.setup_key_instructions") }}
+                        </p>
                       </template>
                     </cv-accordion-item>
                   </cv-accordion>

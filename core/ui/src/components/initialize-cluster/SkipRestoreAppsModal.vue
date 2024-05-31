@@ -12,7 +12,7 @@
     <template slot="title">{{ $t("init.skip_apps_restore") }}</template>
     <template slot="content">
       <div class="mg-bottom-md">{{ $t("init.skip_apps_restore_1") }}</div>
-      <div v-html="$t('init.skip_apps_restore_2')"></div>
+      <div>{{ $t("init.skip_apps_restore_2") }}</div>
     </template>
     <template slot="secondary-button">{{ $t("common.cancel") }}</template>
     <template slot="primary-button">{{

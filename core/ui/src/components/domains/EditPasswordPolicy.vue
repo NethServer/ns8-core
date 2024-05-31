@@ -21,7 +21,7 @@
           ref="expiration_enforced"
         >
           <template slot="tooltip">
-            <span v-html="$t('domains.enable_the_password_expiration')"></span>
+            <span>{{ $t("domains.enable_the_password_expiration") }}</span>
           </template>
           <template slot="text-left">{{ $t("common.disabled") }}</template>
           <template slot="text-right">{{ $t("common.enabled") }}</template>
@@ -65,7 +65,7 @@
           ref="strength_enforced"
         >
           <template slot="tooltip">
-            <span v-html="$t('domains.enable_the_policy_strength_tips')"></span>
+            <span>{{ $t("domains.enable_the_policy_strength_tips") }}</span>
           </template>
           <template slot="text-left">{{ $t("common.disabled") }}</template>
           <template slot="text-right">{{ $t("common.enabled") }}</template>
@@ -110,7 +110,7 @@
           ref="complexity_check"
         >
           <template slot="tooltip">
-            <span v-html="$t('domains.enable_complexity_check_tips')"></span>
+            <span>{{ $t("domains.enable_complexity_check_tips") }}</span>
           </template>
           <template slot="text-left">{{ $t("common.disabled") }}</template>
           <template slot="text-right">{{ $t("common.enabled") }}</template>

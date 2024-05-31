@@ -18,16 +18,15 @@
       isClone ? $t("software_center.clone_app") : $t("software_center.move_app")
     }}</template>
     <template slot="content">
-      <div
-        class="mg-bottom-md"
-        v-html="
+      <div class="mg-bottom-md">
+        {{
           isClone
-            ? $t('software_center.clone_app_description', {
+            ? $t("software_center.clone_app_description", {
                 instanceLabel,
               })
-            : $t('software_center.move_app_description', { instanceLabel })
-        "
-      ></div>
+            : $t("software_center.move_app_description", { instanceLabel })
+        }}
+      </div>
       <div>{{ $t("software_center.select_destination_node") }}</div>
       <NodeSelector
         class="mg-top-xlg"

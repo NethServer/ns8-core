@@ -25,7 +25,8 @@ const Template = (args, { argTypes }) => ({
   template:
     '<NsTextInput v-bind="$props">\
         <template slot="tooltip">\
-          <div v-html="slotTooltip"></div>\
+          <h6>Tooltip title</h6>\
+          <p>Tooltip description</p>\
         </template>\
     </NsTextInput>',
 });
@@ -44,5 +45,4 @@ Default.args = {
   tooltipDirection: "bottom",
   prefix: "",
   light: true,
-  slotTooltip: "<h6>Tooltip title</h6><p>Tooltip description</p>",
 };

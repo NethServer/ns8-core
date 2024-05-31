@@ -55,7 +55,7 @@
           ref="url"
         >
           <template slot="tooltip">
-            <span v-html="$t('settings_http_routes.url_tooltip')"></span>
+            <span>{{ $t("settings_http_routes.url_tooltip") }}</span>
           </template>
         </NsTextInput>
         <NsToggle
@@ -67,9 +67,7 @@
           ref="skip_cert_verify"
         >
           <template slot="tooltip">
-            <span
-              v-html="$t('settings_http_routes.skipCertVerify_tooltip')"
-            ></span>
+            <span>{{ $t("settings_http_routes.skipCertVerify_tooltip") }}</span>
           </template>
           <template slot="text-left">{{ $t("common.disabled") }}</template>
           <template slot="text-right">{{ $t("common.enabled") }}</template>
@@ -86,7 +84,7 @@
           ref="host"
         >
           <template slot="tooltip">
-            <span v-html="$t('settings_http_routes.host_tooltip')"></span>
+            <span>{{ $t("settings_http_routes.host_tooltip") }}</span>
           </template>
         </NsTextInput>
         <NsTextInput
@@ -100,7 +98,7 @@
           ref="path"
         >
           <template slot="tooltip">
-            <span v-html="$t('settings_http_routes.path_tooltip')"></span>
+            <span>{{ $t("settings_http_routes.path_tooltip") }}</span>
           </template>
         </NsTextInput>
         <NsToggle
@@ -112,9 +110,7 @@
           ref="tls"
         >
           <template slot="tooltip">
-            <span
-              v-html="$t('settings_http_routes.strip_prefix_tooltip')"
-            ></span>
+            <span>{{ $t("settings_http_routes.strip_prefix_tooltip") }}</span>
           </template>
           <template slot="text-left">{{ $t("common.disabled") }}</template>
           <template slot="text-right">{{ $t("common.enabled") }}</template>

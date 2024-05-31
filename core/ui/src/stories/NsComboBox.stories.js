@@ -21,7 +21,8 @@ const Template = (args, { argTypes }) => ({
   template:
     '<NsComboBox v-bind="$props">\
       <template slot="tooltip">\
-        <div v-html="slotTooltip"></div>\
+        <h6>Tooltip title</h6>\
+        <p>Tooltip description</p>\
       </template>\
     </NsComboBox>',
 });
@@ -92,7 +93,6 @@ Default.args = {
   marginBottomOnOpen: false,
   tooltipAlignment: "start",
   tooltipDirection: "bottom",
-  slotTooltip: "<h6>Tooltip title</h6><p>Tooltip description</p>",
   options: fruitOptions,
 };
 
@@ -117,7 +117,6 @@ ShowItemTypeAndDescription.args = {
   marginBottomOnOpen: false,
   tooltipAlignment: "start",
   tooltipDirection: "bottom",
-  slotTooltip: "<h6>Tooltip title</h6><p>Tooltip description</p>",
   options: vegetablesOptions.concat(fruitOptions),
 };
 
@@ -142,7 +141,6 @@ AcceptUserInput.args = {
   marginBottomOnOpen: false,
   tooltipAlignment: "start",
   tooltipDirection: "bottom",
-  slotTooltip: "<h6>Tooltip title</h6><p>Tooltip description</p>",
   options: fruitOptions,
 };
 

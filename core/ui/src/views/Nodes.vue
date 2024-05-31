@@ -194,18 +194,18 @@
       <template slot="title">{{ $t("nodes.add_node_to_cluster") }}</template>
       <template slot="content">
         <ol class="mg-bottom-md">
-          <li
-            v-html="
-              $t('nodes.add_node_to_cluster_step_1', {
+          <li>
+            {{
+              $t("nodes.add_node_to_cluster_step_1", {
                 product: this.$root.config.PRODUCT_NAME,
               })
-            "
-          ></li>
-          <li v-html="$t('nodes.add_node_to_cluster_step_2')"></li>
-          <li v-html="$t('nodes.add_node_to_cluster_step_3')"></li>
-          <li v-html="$t('nodes.add_node_to_cluster_step_4')"></li>
-          <li v-html="$t('nodes.add_node_to_cluster_step_5')"></li>
-          <li v-html="$t('nodes.add_node_to_cluster_step_6')"></li>
+            }}
+          </li>
+          <li>{{ $t("nodes.add_node_to_cluster_step_2") }}</li>
+          <li>{{ $t("nodes.add_node_to_cluster_step_3") }}</li>
+          <li>{{ $t("nodes.add_node_to_cluster_step_4") }}</li>
+          <li>{{ $t("nodes.add_node_to_cluster_step_5") }}</li>
+          <li>{{ $t("nodes.add_node_to_cluster_step_6") }}</li>
         </ol>
         <cv-skeleton-text
           v-if="loading.getFqdn || !leaderNode"

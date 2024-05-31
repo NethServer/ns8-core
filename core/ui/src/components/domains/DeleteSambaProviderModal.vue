@@ -20,13 +20,13 @@
         :title="$t('common.please_read_carefully')"
         :showCloseButton="false"
       />
-      <div
-        v-html="
-          $t('domain_configuration.delete_provider_confirm', {
+      <div>
+        {{
+          $t("domain_configuration.delete_provider_confirm", {
             name: provider.id,
           })
-        "
-      ></div>
+        }}
+      </div>
       <cv-form @submit.prevent="removeInternalProvider" class="mg-top-2">
         <!-- samba username -->
         <NsTextInput

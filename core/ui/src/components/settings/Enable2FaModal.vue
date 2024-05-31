@@ -30,10 +30,9 @@
           :showCloseButton="false"
         />
         <template v-if="step == 'setupKey'">
-          <p
-            v-html="$t('settings_account.store_setup_key_description')"
-            class="mg-bottom-lg"
-          ></p>
+          <p class="mg-bottom-lg">
+            {{ $t("settings_account.store_setup_key_description") }}
+          </p>
           <cv-link @click="toggleSetupKey">
             {{
               isShownSetupKey

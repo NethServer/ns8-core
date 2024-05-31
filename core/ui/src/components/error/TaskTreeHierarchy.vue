@@ -11,7 +11,7 @@
           :class="`bx--inline-notification__icon ${subTask.status}`"
         />
         <span>
-          <span v-html="getTaskStatusDescription(subTask, false)"></span>
+          <span>{{ getTaskStatusDescription(subTask, false) }}</span>
         </span>
       </div>
       <TaskTreeHierarchy

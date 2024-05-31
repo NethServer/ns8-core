@@ -248,17 +248,15 @@
                 <div class="row">
                   {{ $t("common.version") }} {{ instance.version }}
                 </div>
-                <div
-                  v-if="isInstanceUpgradable(app, instance)"
-                  class="row"
-                  v-html="
-                    $t('software_center.version_version_available', {
+                <div v-if="isInstanceUpgradable(app, instance)" class="row">
+                  {{
+                    $t("software_center.version_version_available", {
                       version: app.versions.length
                         ? app.versions[0].tag
-                        : 'latest',
+                        : "latest",
                     })
-                  "
-                ></div>
+                  }}
+                </div>
                 <div class="row actions">
                   <!-- app is installed and can be updated -->
                   <template v-if="isInstanceUpgradable(app, instance)">

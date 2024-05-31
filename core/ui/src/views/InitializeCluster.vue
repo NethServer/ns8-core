@@ -206,7 +206,7 @@
                         ref="network"
                       >
                         <template #tooltip>
-                          <span v-html="$t('init.vpn_cidr_tooltip')"></span>
+                          <span>{{ $t("init.vpn_cidr_tooltip") }}</span>
                         </template>
                       </NsTextInput>
                       <!-- advanced options -->
@@ -229,11 +229,9 @@
                               ref="vpnEndpointAddress"
                             >
                               <template #tooltip>
-                                <span
-                                  v-html="
-                                    $t('init.vpn_endpoint_address_tooltip')
-                                  "
-                                ></span>
+                                <span>{{
+                                  $t("init.vpn_endpoint_address_tooltip")
+                                }}</span>
                               </template>
                             </NsTextInput>
                             <NsTextInput
@@ -252,9 +250,9 @@
                               ref="vpnEndpointPort"
                             >
                               <template #tooltip>
-                                <span
-                                  v-html="$t('init.vpn_endpoint_port_tooltip')"
-                                ></span>
+                                <span>{{
+                                  $t("init.vpn_endpoint_port_tooltip")
+                                }}</span>
                               </template>
                             </NsTextInput>
                           </template>
@@ -537,9 +535,7 @@
                       class="mg-top-md"
                     >
                       <template #tooltip>
-                        <span
-                          v-html="$t('init.backup_password_tooltip')"
-                        ></span>
+                        <span>{{ $t("init.backup_password_tooltip") }}</span>
                       </template>
                     </NsTextInput>
                     <cv-button-set class="footer-buttons">
@@ -597,8 +593,9 @@
                     <div
                       v-if="error.restore.backup_file"
                       class="validation-failed-invalid-message"
-                      v-html="error.restore.backup_file"
-                    ></div>
+                    >
+                      {{ error.restore.backup_file }}
+                    </div>
                     <NsTextInput
                       type="password"
                       :password-hide-label="$t('password.hide_password')"
@@ -613,9 +610,7 @@
                       class="mg-top-md"
                     >
                       <template #tooltip>
-                        <span
-                          v-html="$t('init.backup_password_tooltip')"
-                        ></span>
+                        <span>{{ $t("init.backup_password_tooltip") }}</span>
                       </template>
                     </NsTextInput>
                     <NsInlineNotification

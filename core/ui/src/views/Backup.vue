@@ -18,26 +18,22 @@
                 <Information16 />
               </template>
               <template slot="content">
-                <div
-                  v-html="$t('backup.backup_page_tooltip_1')"
-                  class="mg-bottom-sm"
-                ></div>
-                <div
-                  v-html="$t('backup.backup_page_tooltip_2')"
-                  class="mg-bottom-sm"
-                ></div>
-                <div
-                  v-html="
-                    $t('backup.backup_page_tooltip_8', {
+                <div class="mg-bottom-sm">
+                  {{ $t("backup.backup_page_tooltip_1") }}
+                </div>
+                <div class="mg-bottom-sm">
+                  {{ $t("backup.backup_page_tooltip_2") }}
+                </div>
+                <div class="mg-bottom-sm">
+                  {{
+                    $t("backup.backup_page_tooltip_8", {
                       productName: $root.config.PRODUCT_NAME,
                     })
-                  "
-                  class="mg-bottom-sm"
-                ></div>
-                <div
-                  v-html="$t('backup.backup_page_tooltip_manual')"
-                  class="mg-bottom-sm"
-                ></div>
+                  }}
+                </div>
+                <div class="mg-bottom-sm">
+                  {{ $t("backup.backup_page_tooltip_manual") }}
+                </div>
               </template>
             </cv-interactive-tooltip>
           </h2>
@@ -605,10 +601,7 @@
       @confirmDelete="deleteRepo(currentRepo)"
     >
       <template slot="explanation">
-        <p
-          class="mg-top-sm"
-          v-html="$t('backup.delete_repo_explanation_1')"
-        ></p>
+        <p class="mg-top-sm">{{ $t("backup.delete_repo_explanation_1") }}</p>
         <p class="mg-top-sm">
           <strong>
             {{ $t("backup.delete_repo_explanation_2") }}
@@ -668,12 +661,10 @@
       @confirmDelete="deleteBackup(currentBackup)"
     >
       <template slot="explanation">
-        <p
-          v-if="currentBackup.instances.length"
-          class="mg-top-sm"
-          v-html="
+        <p v-if="currentBackup.instances.length" class="mg-top-sm">
+          {{
             $tc(
-              'backup.delete_backup_explanation_1',
+              "backup.delete_backup_explanation_1",
               currentBackup.instances.length,
               {
                 numInstances: currentBackup.instances.length,
@@ -682,12 +673,9 @@
                   : currentBackup.instances[0].module_id,
               }
             )
-          "
-        ></p>
-        <p
-          class="mg-top-sm"
-          v-html="$t('backup.delete_backup_explanation_2')"
-        ></p>
+          }}
+        </p>
+        <p class="mg-top-sm">{{ $t("backup.delete_backup_explanation_2") }}</p>
       </template>
     </NsDangerDeleteModal>
     <!-- repo details modal -->

@@ -307,7 +307,7 @@
               ref="url"
             >
               <template slot="tooltip">
-                <span v-html="$t('backup.genericS3_url_tooltip')"></span>
+                <span>{{ $t("backup.genericS3_url_tooltip") }}</span>
               </template>
             </NsTextInput>
             <cv-text-input
@@ -348,7 +348,7 @@
               ref="url"
             >
               <template slot="tooltip">
-                <span v-html="$t('backup.smb_url_tooltip')"></span>
+                <span>{{ $t("backup.smb_url_tooltip") }}</span>
               </template>
             </NsTextInput>
             <cv-text-input
