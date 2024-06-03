@@ -59,6 +59,36 @@ TitleTooltip.args = {
   icon: Application32,
 };
 
+const TitleTooltipSlotTemplate = (args, { argTypes }) => ({
+  props: Object.keys(argTypes),
+  components: { NsInfoCard },
+  template:
+    '<NsInfoCard v-bind="$props">\
+        <template slot="titleTooltip">\
+          <h6>Tooltip title</h6>\
+          <p>Tooltip description</p>\
+        </template>\
+        <template slot="content">\
+          Slot content\
+        </template>\
+    </NsInfoCard>',
+});
+
+export const TitleTooltipSlot = TitleTooltipSlotTemplate.bind({});
+TitleTooltipSlot.args = {
+  title: "Card title with tooltip",
+  description: "Card description",
+  titleTooltip: "",
+  titleTooltipAlignment: "center",
+  titleTooltipDirection: "bottom",
+  loading: false,
+  isErrorShown: false,
+  errorTitle: "",
+  errorDescription: "",
+  light: true,
+  icon: Application32,
+};
+
 export const Loading = Template.bind({});
 Loading.args = {
   title: "Card title",

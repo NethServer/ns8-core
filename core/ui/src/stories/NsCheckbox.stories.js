@@ -54,3 +54,25 @@ Tooltip.args = {
   tooltipDirection: "bottom",
   value: "",
 };
+
+const LabelSlotTemplate = (args, { argTypes }) => ({
+  props: Object.keys(argTypes),
+  components: { NsCheckbox },
+  template:
+    '<NsCheckbox v-bind="$props">\
+      <template slot="label">\
+        Label slot\
+      </template>\
+    </NsCheckbox>',
+});
+
+export const LabelSlot = LabelSlotTemplate.bind({});
+LabelSlot.args = {
+  label: "",
+  hideLabel: false,
+  mixed: false,
+  formItem: true,
+  tooltipAlignment: "start",
+  tooltipDirection: "bottom",
+  value: "",
+};
