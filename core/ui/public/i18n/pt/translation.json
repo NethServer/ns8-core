@@ -553,7 +553,8 @@
         "azure_url_label": "Azure container name",
         "backblaze_url_label": "B2 bucket name",
         "smb_url_tooltip": "It is possible to specify a share subfolder path using the \"/\" slash separator",
-        "genericS3_url_tooltip": "Enter an address with format server_fqdn/bucket_name. Note: the server must have a valid TLS certificate"
+        "genericS3_url_tooltip": "Enter an address with format server_fqdn/bucket_name. Note: the server must have a valid TLS certificate",
+        "go_to_backup_manual_page": "go to the Backup and restore manual page"
     },
     "login": {
         "2fa_code_required": "É necessário um código de 6 dígitos",
@@ -700,7 +701,8 @@
         "host_placeholder": "E.g. myapp.example.org",
         "skipCertVerify_tooltip": "Skip certificate validation for the backend target URL",
         "skip_cert_verify": "Skip certificate validation",
-        "instance_pattern": "Allowed characters: A-Z, a-z, 0-9, _ and -"
+        "instance_pattern": "Allowed characters: A-Z, a-z, 0-9, _ and -",
+        "traefik_prefixes_option": "Traefik prefixes option"
     },
     "init": {
         "restoring_cluster": "Restoring cluster",

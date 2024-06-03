@@ -130,7 +130,8 @@
         "host_placeholder": "E.g. myapp.example.org",
         "skipCertVerify_tooltip": "Skip certificate validation for the backend target URL",
         "skip_cert_verify": "Skip certificate validation",
-        "instance_pattern": "Allowed characters: A-Z, a-z, 0-9, _ and -"
+        "instance_pattern": "Allowed characters: A-Z, a-z, 0-9, _ and -",
+        "traefik_prefixes_option": "Traefik prefixes option"
     },
     "domains": {
         "cannot_connect_to_domain_controller_description": "Try to route IP traffic of domain controllers through cluster VPN",
@@ -936,7 +937,8 @@
         "azure_url_label": "Azure container name",
         "backblaze_url_label": "B2 bucket name",
         "smb_url_tooltip": "It is possible to specify a share subfolder path using the \"/\" slash separator",
-        "genericS3_url_tooltip": "Enter an address with format server_fqdn/bucket_name. Note: the server must have a valid TLS certificate"
+        "genericS3_url_tooltip": "Enter an address with format server_fqdn/bucket_name. Note: the server must have a valid TLS certificate",
+        "go_to_backup_manual_page": "go to the Backup and restore manual page"
     },
     "smarthost": {
         "connection_timeout_error": "The connection issued a timeout error, verify the SMTP port number and the SMTP server name",
