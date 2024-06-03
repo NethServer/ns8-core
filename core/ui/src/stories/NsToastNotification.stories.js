@@ -52,3 +52,31 @@ Progress.args = {
   isRead: false,
   closeAriaLabel: "Dismiss notification",
 };
+
+const DescriptionSlotTemplate = (args, { argTypes }) => ({
+  props: Object.keys(argTypes),
+  components: { NsToastNotification },
+  template: `<NsToastNotification v-bind="$props">
+                <template slot="description">
+                  Description slot
+                </template>
+              </NsToastNotification>`,
+});
+
+export const DescriptionSlot = DescriptionSlotTemplate.bind({});
+DescriptionSlot.args = {
+  title: "Something happened",
+  description: "",
+  kind: "info",
+  showCloseButton: true,
+  actionLabel: "Action",
+  lowContrast: false,
+  timestamp: new Date(),
+  isRead: false,
+  progress: 0,
+  isProgressShown: false,
+  cancelLabel: "Abort",
+  isCancelShown: false,
+  confirmCancelLabel: "Confirm abort",
+  closeAriaLabel: "Dismiss notification",
+};

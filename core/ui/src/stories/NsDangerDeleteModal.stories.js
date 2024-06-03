@@ -29,3 +29,26 @@ Default.args = {
   errorTitle: "",
   errorDescription: "",
 };
+
+const DescriptionSlotTemplate = (args, { argTypes }) => ({
+  props: Object.keys(argTypes),
+  components: { NsDangerDeleteModal },
+  template: `<NsDangerDeleteModal v-bind="$props" @confirmDelete="testConfirmDelete(\'test\')" @hide="testHide(\'test\')">
+      <template slot="description">
+        Description slot
+      </template>
+      </NsDangerDeleteModal>`,
+});
+
+export const DescriptionSlot = DescriptionSlotTemplate.bind({});
+DescriptionSlot.args = {
+  isShown: true,
+  name: "importantObject",
+  title: "Confirm deletion",
+  warning: "Please read carefully",
+  description: "",
+  typeToConfirm: "",
+  isErrorShown: false,
+  errorTitle: "",
+  errorDescription: "",
+};

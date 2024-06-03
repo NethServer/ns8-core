@@ -30,13 +30,13 @@
           class="mg-top-lg"
         />
       </div>
-      <div
-        v-html="
-          $t('nodes.promote_node_confirm', {
-            name: node ? this.getNodeLabel(node) : '',
+      <div>
+        {{
+          $t("nodes.promote_node_confirm", {
+            name: node ? this.getNodeLabel(node) : "",
           })
-        "
-      ></div>
+        }}
+      </div>
       <cv-skeleton-text
         v-if="loading.getNodeInfo"
         :paragraph="true"
@@ -87,14 +87,13 @@
           :disabled="loading.promoteNode"
           value="checkNodeConnectivity"
         />
-        <div
-          class="mg-top-xlg"
-          v-html="
-            $t('nodes.type_to_confirm_promotion', {
-              name: 'node' + (node ? node.id : ''),
+        <div class="mg-top-xlg">
+          {{
+            $t("nodes.type_to_confirm_promotion", {
+              name: "node" + (node ? node.id : ""),
             })
-          "
-        ></div>
+          }}
+        </div>
         <NsTextInput
           v-model="userInput"
           :disabled="loading.promoteNode"

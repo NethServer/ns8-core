@@ -21,7 +21,8 @@ const Template = (args, { argTypes }) => ({
   template:
     '<NsToggle v-bind="$props">\
         <template slot="tooltip">\
-          <div v-html="slotTooltip"></div>\
+          <h6>Tooltip title</h6>\
+          <p>Tooltip description</p>\
         </template>\
         <template slot="text-left">Disabled</template>\
         <template slot="text-right">Enabled</template>\
@@ -36,7 +37,6 @@ Default.args = {
   hideLabel: false,
   tooltipAlignment: "start",
   tooltipDirection: "bottom",
-  slotTooltip: "<h6>Tooltip title</h6><p>Tooltip description</p>",
   value: "toggleValue",
 };
 
@@ -48,6 +48,5 @@ NoLabel.args = {
   hideLabel: true,
   tooltipAlignment: "start",
   tooltipDirection: "bottom",
-  slotTooltip: "<h6>Tooltip title</h6><p>Tooltip description</p>",
   value: "toggleValue",
 };

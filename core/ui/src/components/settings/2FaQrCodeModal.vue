@@ -48,8 +48,7 @@
           </cv-interactive-tooltip>
         </p>
         <p class="mg-top-md">
-          <span v-html="$t('settings_account.store_setup_key_suggestion')">
-          </span
+          <span>{{ $t("settings_account.store_setup_key_suggestion") }}</span
           >&nbsp;
           <cv-link @click="toggleSetupKey">
             {{

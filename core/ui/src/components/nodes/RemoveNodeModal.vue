@@ -45,21 +45,20 @@
           "
           :showCloseButton="false"
         />
-        <div
-          v-html="
-            $t('nodes.remove_node_confirm', {
-              name: node ? this.getNodeLabel(node) : '',
+        <div>
+          {{
+            $t("nodes.remove_node_confirm", {
+              name: node ? this.getNodeLabel(node) : "",
             })
-          "
-        ></div>
-        <div
-          class="mg-top-xlg"
-          v-html="
-            $t('common.type_to_confirm', {
-              name: 'node' + (node ? node.id : ''),
+          }}
+        </div>
+        <div class="mg-top-xlg">
+          {{
+            $t("common.type_to_confirm", {
+              name: "node" + (node ? node.id : ""),
             })
-          "
-        ></div>
+          }}
+        </div>
         <cv-form @submit.prevent="removeNode">
           <NsTextInput
             v-model="userInput"

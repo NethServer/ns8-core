@@ -323,16 +323,14 @@
               ref="adminuser"
             >
               <template slot="tooltip">
-                <div
-                  v-html="$t('samba.samba_admin_username_tooltip_1')"
-                  class="mg-bottom-sm"
-                ></div>
+                <div class="mg-bottom-sm">
+                  {{ $t("samba.samba_admin_username_tooltip_1") }}
+                </div>
                 <ul class="unordered-list">
-                  <li
-                    v-html="$t('samba.samba_admin_username_tooltip_2')"
-                    class="mg-bottom-sm"
-                  ></li>
-                  <li v-html="$t('samba.samba_admin_username_tooltip_3')"></li>
+                  <li class="mg-bottom-sm">
+                    {{ $t("samba.samba_admin_username_tooltip_2") }}
+                  </li>
+                  <li>{{ $t("samba.samba_admin_username_tooltip_3") }}</li>
                 </ul>
               </template>
             </NsTextInput>

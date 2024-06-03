@@ -206,7 +206,7 @@
                         ref="network"
                       >
                         <template #tooltip>
-                          <span v-html="$t('init.vpn_cidr_tooltip')"></span>
+                          <span>{{ $t("init.vpn_cidr_tooltip") }}</span>
                         </template>
                       </NsTextInput>
                       <!-- advanced options -->
@@ -229,11 +229,9 @@
                               ref="vpnEndpointAddress"
                             >
                               <template #tooltip>
-                                <span
-                                  v-html="
-                                    $t('init.vpn_endpoint_address_tooltip')
-                                  "
-                                ></span>
+                                <span>{{
+                                  $t("init.vpn_endpoint_address_tooltip")
+                                }}</span>
                               </template>
                             </NsTextInput>
                             <NsTextInput
@@ -252,9 +250,9 @@
                               ref="vpnEndpointPort"
                             >
                               <template #tooltip>
-                                <span
-                                  v-html="$t('init.vpn_endpoint_port_tooltip')"
-                                ></span>
+                                <span>{{
+                                  $t("init.vpn_endpoint_port_tooltip")
+                                }}</span>
                               </template>
                             </NsTextInput>
                           </template>
@@ -537,9 +535,7 @@
                       class="mg-top-md"
                     >
                       <template #tooltip>
-                        <span
-                          v-html="$t('init.backup_password_tooltip')"
-                        ></span>
+                        <span>{{ $t("init.backup_password_tooltip") }}</span>
                       </template>
                     </NsTextInput>
                     <cv-button-set class="footer-buttons">
@@ -597,8 +593,9 @@
                     <div
                       v-if="error.restore.backup_file"
                       class="validation-failed-invalid-message"
-                      v-html="error.restore.backup_file"
-                    ></div>
+                    >
+                      {{ error.restore.backup_file }}
+                    </div>
                     <NsTextInput
                       type="password"
                       :password-hide-label="$t('password.hide_password')"
@@ -613,9 +610,7 @@
                       class="mg-top-md"
                     >
                       <template #tooltip>
-                        <span
-                          v-html="$t('init.backup_password_tooltip')"
-                        ></span>
+                        <span>{{ $t("init.backup_password_tooltip") }}</span>
                       </template>
                     </NsTextInput>
                     <NsInlineNotification
@@ -669,7 +664,9 @@
                       <span class="value">{{ restore.summary.vpn }}</span>
                     </div>
                     <div class="key-value-setting">
-                      <span class="label">{{ $t("init.external_domains") }}</span>
+                      <span class="label">{{
+                        $t("init.external_domains")
+                      }}</span>
                       <span class="value">{{ restore.summary.domains }}</span>
                     </div>
                     <div class="key-value-setting">
@@ -1316,7 +1313,10 @@ export default {
           this.focusElement("vpnEndpointAddress");
           isValidationOk = false;
         }
-      } else if (this.vpnEndpointAddress && !this.isFqdn(this.vpnEndpointAddress)) {
+      } else if (
+        this.vpnEndpointAddress &&
+        !this.isFqdn(this.vpnEndpointAddress)
+      ) {
         // we want to validate enpoint is a hostname
         this.error.vpnEndpointAddress = "init.not_a_valid_fqdn_endpoint";
         this.isOpenCreateClusterAccordion = true;
@@ -1578,7 +1578,7 @@ export default {
     joinClusterValidationFailed(validationErrors) {
       console.error("validation failed", validationErrors);
       this.isJoiningCluster = false;
-      this.error.joinCode = this.$t("init."+validationErrors[0].error);
+      this.error.joinCode = this.$t("init." + validationErrors[0].error);
       this.focusElement("joinCode");
     },
     async onFileUpload(files) {

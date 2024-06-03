@@ -42,9 +42,7 @@
           ref="node"
         >
           <template slot="tooltip">
-            {{
-              $t('settings_http_routes.node_helper')
-            }}
+            {{ $t("settings_http_routes.node_helper") }}
           </template>
         </NsComboBox>
         <NsTextInput
@@ -57,7 +55,7 @@
           ref="url"
         >
           <template slot="tooltip">
-            <span v-html="$t('settings_http_routes.url_tooltip')"></span>
+            <span>{{ $t("settings_http_routes.url_tooltip") }}</span>
           </template>
         </NsTextInput>
         <NsToggle
@@ -69,9 +67,7 @@
           ref="skip_cert_verify"
         >
           <template slot="tooltip">
-            <span
-              v-html="$t('settings_http_routes.skipCertVerify_tooltip')"
-            ></span>
+            <span>{{ $t("settings_http_routes.skipCertVerify_tooltip") }}</span>
           </template>
           <template slot="text-left">{{ $t("common.disabled") }}</template>
           <template slot="text-right">{{ $t("common.enabled") }}</template>
@@ -88,7 +84,7 @@
           ref="host"
         >
           <template slot="tooltip">
-            <span v-html="$t('settings_http_routes.host_tooltip')"></span>
+            <span>{{ $t("settings_http_routes.host_tooltip") }}</span>
           </template>
         </NsTextInput>
         <NsTextInput
@@ -102,7 +98,7 @@
           ref="path"
         >
           <template slot="tooltip">
-            <span v-html="$t('settings_http_routes.path_tooltip')"></span>
+            <span>{{ $t("settings_http_routes.path_tooltip") }}</span>
           </template>
         </NsTextInput>
         <NsToggle
@@ -114,9 +110,17 @@
           ref="tls"
         >
           <template slot="tooltip">
-            <span
-              v-html="$t('settings_http_routes.strip_prefix_tooltip')"
-            ></span>
+            <i18n path="settings_http_routes.strip_prefix_tooltip" tag="span">
+              <template v-slot:traefikPrefixesOption>
+                <cv-link
+                  href="https://doc.traefik.io/traefik/middlewares/http/stripprefix/"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  {{ $t("settings_http_routes.traefik_prefixes_option") }}
+                </cv-link>
+              </template>
+            </i18n>
           </template>
           <template slot="text-left">{{ $t("common.disabled") }}</template>
           <template slot="text-right">{{ $t("common.enabled") }}</template>
@@ -221,10 +225,10 @@ export default {
       this.updateSelectedNodeId();
     },
     url(newUrl) {
-      if (! newUrl.startsWith('https://')) {
+      if (!newUrl.startsWith("https://")) {
         this.skip_cert_verify = false;
-    }
-  },
+      }
+    },
     isShown: function () {
       if (this.isShown) {
         this.clearErrors();

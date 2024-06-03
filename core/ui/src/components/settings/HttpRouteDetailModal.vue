@@ -25,7 +25,9 @@
             :kind="route.skip_cert_verify ? 'green' : 'high-contrast'"
             size="sm"
             :label="
-              route.skip_cert_verify ? $t('common.enabled') : $t('common.disabled')
+              route.skip_cert_verify
+                ? $t('common.enabled')
+                : $t('common.disabled')
             "
             class="no-margin"
           ></cv-tag>

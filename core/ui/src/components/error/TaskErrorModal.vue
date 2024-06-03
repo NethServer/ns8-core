@@ -18,7 +18,7 @@
           :class="`bx--inline-notification__icon ${taskErrorToShow.status} task-icon`"
         />
         <div>
-          <span v-html="getTaskStatusDescription(taskErrorToShow, true)"></span>
+          <span>{{ getTaskStatusDescription(taskErrorToShow, true) }}</span>
         </div>
       </div>
       <div v-if="subTasks.length">

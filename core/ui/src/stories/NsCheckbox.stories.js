@@ -38,7 +38,8 @@ const TemplateWithTooltip = (args, { argTypes }) => ({
   template:
     '<NsCheckbox v-bind="$props">\
       <template slot="tooltip">\
-        <div v-html="slotTooltip"></div>\
+        <h6>Tooltip title</h6>\
+        <p>Tooltip description</p>\
       </template>\
     </NsCheckbox>',
 });
@@ -52,5 +53,26 @@ Tooltip.args = {
   tooltipAlignment: "start",
   tooltipDirection: "bottom",
   value: "",
-  slotTooltip: "<h6>Tooltip title</h6><p>Tooltip description</p>",
+};
+
+const LabelSlotTemplate = (args, { argTypes }) => ({
+  props: Object.keys(argTypes),
+  components: { NsCheckbox },
+  template:
+    '<NsCheckbox v-bind="$props">\
+      <template slot="label">\
+        Label slot\
+      </template>\
+    </NsCheckbox>',
+});
+
+export const LabelSlot = LabelSlotTemplate.bind({});
+LabelSlot.args = {
+  label: "",
+  hideLabel: false,
+  mixed: false,
+  formItem: true,
+  tooltipAlignment: "start",
+  tooltipDirection: "bottom",
+  value: "",
 };

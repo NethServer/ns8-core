@@ -17,26 +17,25 @@
     <template v-if="app" slot="content">
       <cv-form @submit.prevent="installInstance">
         <template v-if="clusterNodes.length > 1">
-          <div
-            v-html="
-              $t('software_center.choose_node_for_installation', {
+          <div>
+            {{
+              $t("software_center.choose_node_for_installation", {
                 app: app.name,
                 version: appVersion,
               })
-            "
-          ></div>
+            }}
+          </div>
           <NodeSelector @selectNode="onSelectNode" class="mg-top-xlg" />
         </template>
-        <div
-          v-else
-          v-html="
-            $t('software_center.about_to_install_app', {
+        <div v-else>
+          {{
+            $t("software_center.about_to_install_app", {
               app: app.name,
               version: appVersion,
               node: firstNodeLabel,
             })
-          "
-        ></div>
+          }}
+        </div>
         <div v-if="error.addModule">
           <NsInlineNotification
             kind="error"

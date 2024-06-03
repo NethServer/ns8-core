@@ -432,7 +432,9 @@ export default {
       for (const validationError of validationErrors) {
         const param = validationError.parameter;
         // set i18n error message
-        this.error[param] = this.$t("domain_users." + validationError.error, {tok: validationError.value});
+        this.error[param] = this.$t("domain_users." + validationError.error, {
+          tok: validationError.value,
+        });
 
         if (!focusAlreadySet) {
           this.focusElement(param);

@@ -15,15 +15,15 @@
     }}</template>
     <template v-if="app && instance" slot="content">
       <cv-form @submit.prevent="updateModule">
-        <div
-          v-html="
-            $t('software_center.about_to_update_app', {
+        <div>
+          {{
+            $t("software_center.about_to_update_app", {
               app: instanceLabel,
               version: instance.version,
               newVersion: appVersion,
             })
-          "
-        ></div>
+          }}
+        </div>
         <div v-if="error.updateModule">
           <NsInlineNotification
             kind="error"

@@ -21,7 +21,8 @@ const Template = (args, { argTypes }) => ({
   template:
     '<NsComboBox v-bind="$props">\
       <template slot="tooltip">\
-        <div v-html="slotTooltip"></div>\
+        <h6>Tooltip title</h6>\
+        <p>Tooltip description</p>\
       </template>\
     </NsComboBox>',
 });
@@ -76,8 +77,9 @@ Default.args = {
   autoFilter: false,
   autoHighlight: false,
   disabled: false,
-  invalidMessage: undefined,
-  helperText: undefined,
+  invalidMessage: "",
+  warnText: "",
+  helperText: "",
   title: "Title",
   label: "Choose",
   highlight: "",
@@ -92,7 +94,6 @@ Default.args = {
   marginBottomOnOpen: false,
   tooltipAlignment: "start",
   tooltipDirection: "bottom",
-  slotTooltip: "<h6>Tooltip title</h6><p>Tooltip description</p>",
   options: fruitOptions,
 };
 
@@ -101,8 +102,9 @@ ShowItemTypeAndDescription.args = {
   autoFilter: false,
   autoHighlight: false,
   disabled: false,
-  invalidMessage: undefined,
-  helperText: undefined,
+  invalidMessage: "",
+  warnText: "",
+  helperText: "",
   title: "Title",
   label: "Choose",
   highlight: "",
@@ -117,7 +119,6 @@ ShowItemTypeAndDescription.args = {
   marginBottomOnOpen: false,
   tooltipAlignment: "start",
   tooltipDirection: "bottom",
-  slotTooltip: "<h6>Tooltip title</h6><p>Tooltip description</p>",
   options: vegetablesOptions.concat(fruitOptions),
 };
 
@@ -126,8 +127,9 @@ AcceptUserInput.args = {
   autoFilter: true,
   autoHighlight: false,
   disabled: false,
-  invalidMessage: undefined,
-  helperText: undefined,
+  invalidMessage: "",
+  warnText: "",
+  helperText: "",
   title: "Title",
   label: "Choose an option or input any value",
   highlight: "",
@@ -142,7 +144,6 @@ AcceptUserInput.args = {
   marginBottomOnOpen: false,
   tooltipAlignment: "start",
   tooltipDirection: "bottom",
-  slotTooltip: "<h6>Tooltip title</h6><p>Tooltip description</p>",
   options: fruitOptions,
 };
 
@@ -157,27 +158,3 @@ const TemplateWithTextParagraph = (args, { argTypes }) => ({
       </p>\
     </div>',
 });
-
-export const MarginBottomOnOpen = TemplateWithTextParagraph.bind({});
-MarginBottomOnOpen.args = {
-  autoFilter: false,
-  autoHighlight: false,
-  disabled: false,
-  invalidMessage: undefined,
-  helperText: undefined,
-  title: "Title",
-  label: "Choose",
-  highlight: "",
-  value: "",
-  light: true,
-  clearFilterLabel: "Clear filter",
-  userInputLabel: "user input",
-  maxDisplayOptions: 100,
-  acceptUserInput: false,
-  showItemType: false,
-  showItemDescription: false,
-  marginBottomOnOpen: true,
-  tooltipAlignment: "start",
-  tooltipDirection: "bottom",
-  options: fruitOptions,
-};
