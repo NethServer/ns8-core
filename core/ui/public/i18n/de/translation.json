@@ -908,7 +908,8 @@
         "azure_url_label": "Name des Azure container",
         "backblaze_url_label": "Name des B2 bucket",
         "smb_url_tooltip": "Ein Pfad zu einem freigegebenen Unterordner kann mit \"/\" angegeben werden",
-        "genericS3_url_tooltip": "Adresse des Format\nserver_fqdn/bucket_name. Hinweis: Der Server muss ein gültiges TLS Zertifikate haben"
+        "genericS3_url_tooltip": "Adresse des Format\nserver_fqdn/bucket_name. Hinweis: Der Server muss ein gültiges TLS Zertifikate haben",
+        "go_to_backup_manual_page": "go to the Backup and restore manual page"
     },
     "settings_http_routes": {
         "delete_route_description": "Route <strong>{name}</strong> löschen? Jede Anwendung die an diese Route gebunden ist wird nicht mehr zugreifbar sein.",
@@ -955,7 +956,8 @@
         "host_placeholder": "z.B. myapp.example.org",
         "skipCertVerify_tooltip": "Zertifikate-Validierung für Backend-URL überspringen",
         "skip_cert_verify": "Zertifikate-Validierung überspringen",
-        "instance_pattern": "erlaubte Zeichen: A-Z, a-z, 0-9, _ und -"
+        "instance_pattern": "erlaubte Zeichen: A-Z, a-z, 0-9, _ und -",
+        "traefik_prefixes_option": "Traefik prefixes option"
     },
     "domain_configuration": {
         "cannot_delete_provider": "Anbieter kann nicht gelöscht werden",

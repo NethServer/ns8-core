@@ -197,7 +197,7 @@
         "x_of_y_selected": "{selected} seleccionados de {total}",
         "user_input_l": "entrada del usuario",
         "version": "Versión",
-        "this_action_is_not_reversible": "Esta acción <strong>NO</strong> es reversible",
+        "this_action_is_not_reversible": "Esta acción NO es reversible",
         "show": "Ver",
         "see_details": "Ver detalles",
         "skip": "Saltar",
@@ -213,7 +213,7 @@
         "show_less": "Ver menos",
         "success": "Completado",
         "search": "Buscar",
-        "type_to_confirm": "Escribe <strong>{name}</strong> para confirmar la eliminación",
+        "type_to_confirm": "Escribe '{name}' para confirmar la eliminación",
         "remove": "Eliminar",
         "not_active": "Inactivo",
         "active": "Activo"
@@ -389,7 +389,8 @@
         "azure_url_label": "Nombre del contenedor de Azure",
         "backblaze_url_label": "Nombre del depósito de B2",
         "smb_url_tooltip": "Es posible especificar una ruta de subcarpeta compartida utilizando la barra diagonal \"/\"",
-        "genericS3_url_tooltip": "Introduzca una dirección con el formato \"serverfqdn/bucketname\". Nota: el servidor debe tener un certificado TLS válido."
+        "genericS3_url_tooltip": "Introduzca una dirección con el formato \"serverfqdn/bucketname\". Nota: el servidor debe tener un certificado TLS válido.",
+        "go_to_backup_manual_page": "go to the Backup and restore manual page"
     },
     "settings_http_routes": {
         "host_tooltip": "Un ejemplo de host válido es: <code>myapp.example.org</code>",
@@ -436,7 +437,8 @@
         "host_placeholder": "Por ejemplo: myapp.example.org",
         "skipCertVerify_tooltip": "Omitir la validación de certificados para la URL de destino del backend",
         "skip_cert_verify": "Omitir la validación del certificado",
-        "instance_pattern": "Caracteres permitidos: A-Z, a-z, 0-9, _ y -"
+        "instance_pattern": "Caracteres permitidos: A-Z, a-z, 0-9, _ y -",
+        "traefik_prefixes_option": "Traefik prefixes option"
     },
     "shell": {
         "app_launcher": "Lanzador de aplicaciones",

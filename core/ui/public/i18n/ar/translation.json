@@ -338,7 +338,8 @@
         "default_backup_name": "Backup to {repository}",
         "every_hour": "Every hour",
         "genericS3_url_tooltip": "Enter an address with format \"serverfqdn/bucketname\". Note: the server must have a valid TLS certificate",
-        "backup_page_tooltip_manual": "For more information <a href=\"https://docs.nethserver.org/projects/ns8/en/latest/backup.html\">go to the Backup and restore manual page</a>."
+        "backup_page_tooltip_manual": "For more information <a href=\"https://docs.nethserver.org/projects/ns8/en/latest/backup.html\">go to the Backup and restore manual page</a>.",
+        "go_to_backup_manual_page": "go to the Backup and restore manual page"
     },
     "settings_tls_certificates": {
         "no_tls_certificate": "No TLS certificate",
@@ -797,7 +798,8 @@
         "skip_cert_verify": "Skip certificate validation",
         "host_placeholder": "E.g. myapp.example.org",
         "edit_route_route": "Edit route {route}",
-        "strip_prefix_tooltip": "<a href='https://doc.traefik.io/traefik/middlewares/http/stripprefix/'>Traefik prefixes option</a> defines the prefixes to strip from the request URL. E.g.: It allows you to strip a specified prefix from the URL path. If, for example, you remove /api from /api/v1/resource, the resulting path after it is applied would be /v1/resource."
+        "strip_prefix_tooltip": "<a href='https://doc.traefik.io/traefik/middlewares/http/stripprefix/'>Traefik prefixes option</a> defines the prefixes to strip from the request URL. E.g.: It allows you to strip a specified prefix from the URL path. If, for example, you remove /api from /api/v1/resource, the resulting path after it is applied would be /v1/resource.",
+        "traefik_prefixes_option": "Traefik prefixes option"
     },
     "password": {
         "uppercase_letter": "Uppercase letter",
