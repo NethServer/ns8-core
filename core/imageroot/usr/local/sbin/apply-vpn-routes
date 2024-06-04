@@ -151,7 +151,10 @@ if iproute_proc.returncode == 0:
                 # NOTE: allowed_ips might be empty, set it anyway: Wireguard
                 #       accepts a peer key even with no allowed ips.
                 allowed_ips -= purge_destinations
-                agent.run_helper('wg', 'set', 'wg0', 'peer', kpeer, 'allowed-ips', ",".join(allowed_ips))
+                if allowed_ips:
+                    agent.run_helper('wg', 'set', 'wg0', 'peer', kpeer, 'allowed-ips', ",".join(allowed_ips))
+                else:
+                    agent.run_helper('wg', 'set', 'wg0', 'peer', kpeer, 'remove')
 
 else:
     print(agent.SD_ERR + f"Error while reading wg0 routes", file=sys.stderr)
