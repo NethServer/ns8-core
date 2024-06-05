@@ -46,6 +46,18 @@ flags = request.get('flags', [])
 rdb = agent.redis_connect(privileged=True)
 
 #
+# Check if the public key is already used by another cluster node
+#
+for pkey in rdb.scan_iter('node/*/vpn'):
+    xnode_id = pkey.removeprefix('node/').removesuffix('/vpn')
+    if rdb.hget(f"node/{xnode_id}/vpn", "public_key") != public_key:
+        continue
+    print(agent.SD_WARNING + f"The public key {public_key} is already used by node {xnode_id}", file=sys.stderr)
+    agent.set_status('validation-failed')
+    json.dump([{'field':'public_key', 'parameter':'public_key', 'error':'public_key_matches_existing_node', 'value': xnode_id}], fp=sys.stdout)
+    sys.exit(2)
+
+#
 # Retrieve the leader VPN attributes, required by the caller to complete
 # the join-cluster action
 #
