@@ -1172,7 +1172,7 @@
         "title": "Iniciar sesión",
         "6_digit_code": "Código de 6 dígitos",
         "2fa_description": "Abre tu aplicación de autenticación y escribe el código",
-        "setup_key_instructions": "Abre tu aplicación de autenticación y escribe la <strong>clave de configuración 2FA</strong> que guardaste previamente",
+        "setup_key_instructions": "Abre tu aplicación de autenticación y escribe la clave de configuración 2FA que guardaste previamente",
         "password_required": "Se requiere contraseña",
         "need_to_reconfigure_2fa": "¿Necesitas reconfigurar la aplicación de autenticación?",
         "password": "Contraseña",
