@@ -119,7 +119,7 @@ export default {
       );
 
       const res = await to(
-        this.createNodeTask(1, {
+        this.createNodeTask(this.node.id, {
           action: taskAction,
           extra: {
             title: this.$t("action." + taskAction),
@@ -209,7 +209,7 @@ export default {
       );
 
       const res = await to(
-        this.createNodeTask(1, {
+        this.createNodeTask(this.node.id, {
           action: taskAction,
           data: {
             hostname: this.hostname,
