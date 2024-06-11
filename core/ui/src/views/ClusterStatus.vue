@@ -297,6 +297,73 @@
           </template>
         </NsInfoCard>
       </cv-column>
+      <cv-column :md="4" :max="4">
+        <NsInfoCard
+          light
+          :title="$t('cluster_status.system_logs')"
+          :description="
+            $tc('cluster_status.active_instance', activeLokiInstance, {
+              instance: activeLokiInstance,
+            })
+          "
+          :icon="Catalog32"
+          :loading="loading.lokiInstance"
+          :isErrorShown="error.lokiInstance"
+          :errorTitle="$t('error.cannot_retrieve_system_logs_status')"
+          :errorDescription="error.lokiInstance"
+          class="min-height-card"
+        >
+          <template slot="content">
+            <div class="card-rows">
+              <div
+                v-if="cloudLogManagerForwarderStatus == 'active'"
+                class="card-row mg-top-sm icon-and-text"
+              >
+                <NsSvg :svg="CheckmarkFilled16" class="icon ns-success" />
+                <span>{{
+                  $t(
+                    "cloud_log_manager_forwarder.cloud_log_manager_export_enabled"
+                  )
+                }}</span>
+              </div>
+              <div
+                v-if="cloudLogManagerForwarderStatus == 'failed'"
+                class="card-row mg-top-sm icon-and-text"
+              >
+                <NsSvg :svg="ErrorFilled16" class="icon ns-error" />
+                <span>{{
+                  $t(
+                    "cloud_log_manager_forwarder.cloud_log_manager_export_failed"
+                  )
+                }}</span>
+              </div>
+              <div
+                v-if="syslogForwarderStatus == 'active'"
+                class="card-row mg-top-sm icon-and-text"
+              >
+                <NsSvg :svg="CheckmarkFilled16" class="icon ns-success" />
+                <span>{{ $t("syslog_forwarder.syslog_export_enabled") }}</span>
+              </div>
+              <div
+                v-if="syslogForwarderStatus == 'failed'"
+                class="card-row mg-top-sm icon-and-text"
+              >
+                <NsSvg :svg="ErrorFilled16" class="icon ns-error" />
+                <span>{{ $t("syslog_forwarder.syslog_export_failed") }}</span>
+              </div>
+              <div class="card-row">
+                <NsButton
+                  kind="ghost"
+                  :icon="ArrowRight20"
+                  @click="$router.push('/settings/system-logs')"
+                >
+                  {{ $t("cluster_status.go_to_system_logs") }}
+                </NsButton>
+              </div>
+            </div>
+          </template>
+        </NsInfoCard>
+      </cv-column>
     </cv-row>
   </cv-grid>
 </template>
@@ -351,6 +418,9 @@ export default {
       subscription_status: "inactive",
       emailNotificationEnabled: false,
       support_active: false,
+      activeLokiInstance: "",
+      cloudLogManagerForwarderStatus: "inactive",
+      syslogForwarderStatus: "inactive",
       loading: {
         getClusterStatus: true,
         listModules: true,
@@ -359,6 +429,7 @@ export default {
         getSubscription: true,
         getEmailNotification: true,
         getSupportSession: true,
+        lokiInstance: true,
       },
       error: {
         name: "",
@@ -369,6 +440,7 @@ export default {
         listCoreModules: "",
         getSubscription: "",
         getEmailNotification: "",
+        lokiInstance: "",
       },
     };
   },
@@ -457,6 +529,7 @@ export default {
   methods: {
     ...mapActions(["setClusterNodesInStore"]),
     retrieveData() {
+      this.getActiveLokiInstance();
       this.getClusterStatus();
       this.listModules();
       this.listCoreModules();
@@ -496,7 +569,6 @@ export default {
     },
     getSupportSessionCompleted(taskContext, taskResult) {
       const output = taskResult.output;
-      console.log(output);
       this.support_active = output.active;
       this.loading.getSupportSession = false;
     },
@@ -808,6 +880,55 @@ export default {
       this.backups = backups;
       this.loading.listBackups = false;
     },
+    async getActiveLokiInstance() {
+      this.loading.lokiInstance = true;
+      this.error.lokiInstance = "";
+      const taskAction = "list-loki-instances";
+
+      // register to task abortion
+      this.$root.$once(
+        taskAction + "-aborted",
+        this.getClusterLokiInstancesAborted
+      );
+
+      // register to task completion
+      this.$root.$once(
+        taskAction + "-completed",
+        this.getClusterLokiInstancesCompleted
+      );
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          extra: {
+            isNotificationHidden: true,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.lokiInstance = this.getErrorMessage(err);
+        return;
+      }
+    },
+    getClusterLokiInstancesAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.lokiInstance = this.$t("error.generic_error");
+      this.loading.lokiInstance = false;
+    },
+    getClusterLokiInstancesCompleted(taskContext, taskResult) {
+      for (const instance of taskResult.output.instances) {
+        if (instance.active) {
+          this.activeLokiInstance = instance.instance_id;
+          this.cloudLogManagerForwarderStatus =
+            instance.cloud_log_manager.status;
+          this.syslogForwarderStatus = instance.syslog.status;
+        }
+      }
+      this.loading.lokiInstance = false;
+    },
   },
 };
 </script>
@@ -828,5 +949,10 @@ export default {
 
 .card-row:last-child {
   margin-bottom: 0;
+}
+
+.ns-error {
+  color: #da1e28;
+  fill: #da1e28;
 }
 </style>
