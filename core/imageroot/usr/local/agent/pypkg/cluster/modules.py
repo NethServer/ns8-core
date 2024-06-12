@@ -170,18 +170,25 @@ def get_latest_module(module, rdb):
 
 
 def list_available(rdb, skip_core_modules = False):
-    modules = []
+    """Iterate over enabled repositories and return available modules respecting the repository priority."""
+    modules = {}
+    repositories = []
     # List all modules from enabled repositories
-    for m in rdb.scan_iter('cluster/repository/*'):
-        repo = rdb.hgetall(m)
-        # Skip disabled repositories
-        if int(repo["status"]) == 0:
+    for krepo in rdb.scan_iter('cluster/repository/*'):
+        repositories.append(krepo.removeprefix("cluster/repository/"))
+    # Alphabetical order, where last item has higher priority:
+    repositories.sort(reverse=True)
+    for nrepo in repositories:
+        repo = rdb.hgetall('cluster/repository/' + nrepo)
+        # Skip non-enabled repositories
+        if repo.get("status", "0") != "1":
             continue
-
-        skip_testing_versions = repo["testing"] != "1"
-        modules.extend(_list_repository_modules(rdb, os.path.basename(m), repo["url"], skip_core_modules, skip_testing_versions))
-
-    return modules
+        skip_testing_versions = repo.get("testing", "0") != "1"
+        for rmod in _list_repository_modules(rdb, nrepo, repo["url"], skip_core_modules, skip_testing_versions):
+            if rmod["source"] in modules:
+                continue # skip duplicated images from lower priority modules
+            modules[rmod["source"]] = rmod
+    return list(modules.values())
 
 def list_installed(rdb, skip_core_modules = False):
     installed = {}
