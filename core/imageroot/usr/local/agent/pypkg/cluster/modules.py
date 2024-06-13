@@ -357,47 +357,35 @@ def list_updates(rdb, skip_core_modules = False):
 
     return updates
 
-def list_core_modules():
-    rdb = agent.redis_connect(privileged=True)
-    modules = []
-    installed = list_installed_core(rdb)
+def list_core_modules(rdb):
+    """List core modules and if they can be updated."""
+    core_modules = {}
     available = list_available(rdb, skip_core_modules = False)
 
-    for module in available:
-        if not 'core' in module['categories']:
-           continue
+    def _calc_update(image_name, cur):
+        # Lookup module information from repositories
+        for module in available:
+            if module["id"] == image_name:
+                break
+        else:
+            return ""
+        try:
+            vupdate = module["versions"][0]['tag']
+            vinfo = semver.VersionInfo.parse(vupdate)
+            if vupdate > cur:
+                return vupdate
+        except:
+            pass
+        return ""
 
-        if module["source"] not in installed.keys():
-            continue
+    for module_source, instances in list_installed_core(rdb).items():
+        _, image_name = module_source.rsplit("/", 1)
+        core_modules.setdefault(image_name, {"name": image_name, "instances": []})
+        for instance in instances:
+            core_modules[image_name]['instances'].append({
+                "id": instance["id"],
+                "version": instance["version"],
+                "update": _calc_update(image_name, instance["version"]),
+            })
 
-        newest_version = None
-        for version in module["versions"]:
-            v = semver.VersionInfo.parse(version["tag"])
-            # Skip testing versions if testing is disabled
-            testing = rdb.hget(f'cluster/repository/{module["repository"]}', 'testing')
-            if int(testing) == 0 and not v.prerelease is None:
-                continue
-
-            newest_version = version["tag"]
-            break
-
-        # Handle multiple instances of the same module
-        instances = []
-        for instance in installed[module["source"]]:
-            del(instance['module'])
-            instance["update"] = ""
-            instances.append(instance)
-            try:
-                cur = semver.VersionInfo.parse(instance["version"])
-            except:
-                # skip installed instanced with dev version
-                continue
-
-            # Version are already sorted
-            # First match is the newest release
-            if v > cur:
-                instance["update"] = version["tag"]
-
-        modules.append({"name": module['name'], "instances": instances})
-
-    return modules
+    return list(core_modules.values())

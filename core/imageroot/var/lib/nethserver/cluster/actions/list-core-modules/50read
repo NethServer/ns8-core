@@ -23,5 +23,8 @@
 import sys
 import json
 import cluster.modules
+import agent
 
-json.dump(cluster.modules.list_core_modules(), fp=sys.stdout)
+rdb = agent.redis_connect(privileged=True)
+
+json.dump(cluster.modules.list_core_modules(rdb), fp=sys.stdout)
