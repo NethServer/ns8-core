@@ -168,6 +168,12 @@ def get_latest_module(module, rdb):
 
     return f'{source}:{version}'
 
+def get_version_tuple(v):
+    try:
+        vinfo = semver.VersionInfo.parse(v).to_tuple()
+    except:
+        vinfo = (0,)
+    return vinfo
 
 def list_available(rdb, skip_core_modules = False):
     """Iterate over enabled repositories and return available modules respecting the repository priority."""
@@ -188,6 +194,7 @@ def list_available(rdb, skip_core_modules = False):
             if rmod["source"] in modules:
                 continue # skip duplicated images from lower priority modules
             modules[rmod["source"]] = rmod
+            rmod['versions'].sort(key=lambda v: get_version_tuple(v["tag"]), reverse=True)
     return list(modules.values())
 
 def list_installed(rdb, skip_core_modules = False):
@@ -209,6 +216,9 @@ def list_installed(rdb, skip_core_modules = False):
         node_id = vars['NODE_ID']
         node_ui_name = rdb.get(f"node/{node_id}/ui_name") or ""
         installed[url].append({ 'id': vars["MODULE_ID"], 'ui_name': module_ui_name, 'node': node_id, 'node_ui_name': node_ui_name, 'digest': vars["IMAGE_DIGEST"], 'source': url, 'version': tag, 'logo': logo, 'module': image, 'flags': flags})
+
+    for instances in installed.values():
+        instances.sort(key=lambda v: get_version_tuple(v["version"]), reverse=True)
 
     return installed
 
@@ -259,7 +269,7 @@ def list_updates(rdb, skip_core_modules = False):
                 # skip installed instanced with dev version
                 continue
 
-            # Version from remote repositories are already sorted
+            # Version are already sorted
             # First match is the newest release
             if v > cur:
                 # Create a copy to not change original object
@@ -305,7 +315,7 @@ def list_core_modules():
                 # skip installed instanced with dev version
                 continue
 
-            # Version from remote repositories are already sorted
+            # Version are already sorted
             # First match is the newest release
             if v > cur:
                 instance["update"] = version["tag"]
