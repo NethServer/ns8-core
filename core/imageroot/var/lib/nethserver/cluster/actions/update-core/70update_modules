@@ -21,7 +21,7 @@ rdb = agent.redis_connect(privileged=True)
 
 # Update all core modules
 instances = dict()
-for oimage in cluster.modules.list_core_modules():
+for oimage in cluster.modules.list_core_modules(rdb):
     image_id = oimage['name']
     if image_id == 'core':
         continue # skip core: it is handled by another action step

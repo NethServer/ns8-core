@@ -29,6 +29,8 @@ import requests, urllib3.util
 import hashlib
 from glob import glob
 import sys
+import subprocess
+import datetime
 
 def _urljoin(base_path, *args):
     '''replace urllib.parse.joinurl because it doesn't handle multiple parameters
@@ -148,7 +150,7 @@ def get_latest_module(module, rdb):
     for m in available:
         if m["id"] == module:
             source = m["source"]
-            repo_testing = int(rdb.hget(f'cluster/repository/{m["repository"]}', 'testing')) == 1
+            repo_testing = rdb.hget(f'cluster/repository/{m["repository"]}', 'testing') == "1"
             for v in m["versions"]:
                 if repo_testing:
                     version = v["tag"]
@@ -168,6 +170,73 @@ def get_latest_module(module, rdb):
 
     return f'{source}:{version}'
 
+def get_version_tuple(v):
+    try:
+        vinfo = semver.VersionInfo.parse(v).to_tuple()
+    except:
+        vinfo = (0,)
+    return vinfo
+
+def _synthesize_module_version(minstance):
+    """From an installed module instance, synthesize module version for
+    repository metadata, or fall back to a safe default."""
+    inspect_labels = {}
+    image_url = minstance["source"] + ':' + minstance["version"]
+    # Extract image labels
+    try:
+        with subprocess.Popen(['podman', 'image', 'inspect', image_url], stdout=subprocess.PIPE, stderr=sys.stderr) as proc:
+            inspect = json.load(proc.stdout)
+            inspect_labels = inspect[0]['Labels']
+    except Exception as ex:
+        print(agent.SD_WARNING + "_synthesize_module_version:", ex, file=sys.stderr)
+    # Extract the prerelease flag:
+    try:
+        vinfo = semver.VersionInfo(minstance["version"])
+        testing = vinfo.prerelease
+    except:
+        testing = False
+    inspect_labels.setdefault("org.nethserver.images", image_url)
+    return {
+        "tag": minstance["version"],
+        "testing": testing,
+        "labels": inspect_labels,
+    }
+
+def _fetch_metadata_json(module_id, image_name):
+    """Synthesize repository metadata from the local metadata.json
+    file, or fall back to safe defaults."""
+    path_prefix = '/var/lib/nethserver/cluster/ui/'
+    repository_updated_timestamp = 'Thu Jun 13 01:00:00 AM UTC 2024'
+    try:
+        with open(f"{path_prefix}apps/{module_id}/metadata.json") as mfd:
+            # Read modification timestamp of the .json file:
+            repository_updated_timestamp = datetime.datetime.utcfromtimestamp(os.fstat(mfd.fileno()).st_mtime).ctime()
+            ometadata = json.load(mfd)
+    except Exception as ex:
+        print(agent.SD_INFO + "_fetch_metadata_json/open:", ex, file=sys.stderr)
+        ometadata = {
+            "id": image_name,
+            "name": image_name.capitalize(),
+            "description": {"en": ""},
+            "categories": [],
+            "logo": "",
+            "authors": [],
+            "docs": {
+                "documentation_url": "",
+                "code_url": "",
+                "bug_url": "",
+            },
+        }
+    ometadata.setdefault("screenshots", [])
+    ometadata.setdefault("repository", "__local__")
+    ometadata.setdefault("testing", "0")
+    ometadata.setdefault("repository_updated", repository_updated_timestamp)
+    try:
+        ometadata['logo'] = glob(f'{path_prefix}apps/{module_id}/img/*logo*png')[0].removeprefix(path_prefix)
+    except Exception as ex:
+        ometadata['logo'] = ""
+        print(agent.SD_INFO + "_fetch_metadata_json/glob:", ex, file=sys.stderr)
+    return ometadata
 
 def list_available(rdb, skip_core_modules = False):
     """Iterate over enabled repositories and return available modules respecting the repository priority."""
@@ -188,6 +257,20 @@ def list_available(rdb, skip_core_modules = False):
             if rmod["source"] in modules:
                 continue # skip duplicated images from lower priority modules
             modules[rmod["source"]] = rmod
+            rmod['versions'].sort(key=lambda v: get_version_tuple(v["tag"]), reverse=True)
+    # Integrate the available set with instances that do not belong to any
+    # repository. They can be found in the "installed" dict:
+    for module_source, module_instances in list_installed(rdb, skip_core_modules).items():
+        if module_source in modules:
+            continue
+        _, image_name = module_source.rsplit("/", 1)
+        vmetadata = _fetch_metadata_json(module_instances[0]['id'], image_name)
+        vmetadata["versions"] = list(_synthesize_module_version(oinst) for oinst in module_instances)
+        vmetadata["installed"] = module_instances
+        vmetadata["source"] = module_source
+        vmetadata["updates"] = []
+        vmetadata["id"] = image_name
+        modules[module_source] = vmetadata
     return list(modules.values())
 
 def list_installed(rdb, skip_core_modules = False):
@@ -209,6 +292,9 @@ def list_installed(rdb, skip_core_modules = False):
         node_id = vars['NODE_ID']
         node_ui_name = rdb.get(f"node/{node_id}/ui_name") or ""
         installed[url].append({ 'id': vars["MODULE_ID"], 'ui_name': module_ui_name, 'node': node_id, 'node_ui_name': node_ui_name, 'digest': vars["IMAGE_DIGEST"], 'source': url, 'version': tag, 'logo': logo, 'module': image, 'flags': flags})
+
+    for instances in installed.values():
+        instances.sort(key=lambda v: get_version_tuple(v["version"]), reverse=True)
 
     return installed
 
@@ -239,15 +325,17 @@ def list_updates(rdb, skip_core_modules = False):
     for module in available:
         if module["source"] not in installed.keys():
             continue
-
         newest_version = None
         for version in module["versions"]:
-            v = semver.VersionInfo.parse(version["tag"])
+            try:
+                # skip bogus version tag
+                v = semver.VersionInfo.parse(version["tag"])
+            except:
+                continue
             # Skip testing versions if testing is disabled
             testing = rdb.hget(f'cluster/repository/{module["repository"]}', 'testing')
-            if int(testing) == 0 and not v.prerelease is None:
+            if testing != "1" and not v.prerelease is None:
                 continue
-
             newest_version = version["tag"]
             break
 
@@ -259,7 +347,7 @@ def list_updates(rdb, skip_core_modules = False):
                 # skip installed instanced with dev version
                 continue
 
-            # Version from remote repositories are already sorted
+            # Version are already sorted
             # First match is the newest release
             if v > cur:
                 # Create a copy to not change original object
@@ -269,47 +357,35 @@ def list_updates(rdb, skip_core_modules = False):
 
     return updates
 
-def list_core_modules():
-    rdb = agent.redis_connect(privileged=True)
-    modules = []
-    installed = list_installed_core(rdb)
+def list_core_modules(rdb):
+    """List core modules and if they can be updated."""
+    core_modules = {}
     available = list_available(rdb, skip_core_modules = False)
 
-    for module in available:
-        if not 'core' in module['categories']:
-           continue
+    def _calc_update(image_name, cur):
+        # Lookup module information from repositories
+        for module in available:
+            if module["id"] == image_name:
+                break
+        else:
+            return ""
+        try:
+            vupdate = module["versions"][0]['tag']
+            vinfo = semver.VersionInfo.parse(vupdate)
+            if vupdate > cur:
+                return vupdate
+        except:
+            pass
+        return ""
 
-        if module["source"] not in installed.keys():
-            continue
+    for module_source, instances in list_installed_core(rdb).items():
+        _, image_name = module_source.rsplit("/", 1)
+        core_modules.setdefault(image_name, {"name": image_name, "instances": []})
+        for instance in instances:
+            core_modules[image_name]['instances'].append({
+                "id": instance["id"],
+                "version": instance["version"],
+                "update": _calc_update(image_name, instance["version"]),
+            })
 
-        newest_version = None
-        for version in module["versions"]:
-            v = semver.VersionInfo.parse(version["tag"])
-            # Skip testing versions if testing is disabled
-            testing = rdb.hget(f'cluster/repository/{module["repository"]}', 'testing')
-            if int(testing) == 0 and not v.prerelease is None:
-                continue
-
-            newest_version = version["tag"]
-            break
-
-        # Handle multiple instances of the same module
-        instances = []
-        for instance in installed[module["source"]]:
-            del(instance['module'])
-            instance["update"] = ""
-            instances.append(instance)
-            try:
-                cur = semver.VersionInfo.parse(instance["version"])
-            except:
-                # skip installed instanced with dev version
-                continue
-
-            # Version from remote repositories are already sorted
-            # First match is the newest release
-            if v > cur:
-                instance["update"] = version["tag"]
-
-        modules.append({"name": module['name'], "instances": instances})
-
-    return modules
+    return list(core_modules.values())
