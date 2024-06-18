@@ -35,4 +35,7 @@ for m in rdb.scan_iter('cluster/repository/*'):
     repo = rdb.hgetall(m)
     repositories.append({"name" : os.path.basename(m), "url": repo["url"], "testing": (repo["testing"] == "1"), "status": (repo["status"] == "1")})
 
+# Sort repositories by name. Latest item has highest priority:
+repositories.sort(key=lambda repo: repo["name"])
+
 json.dump(repositories, fp=sys.stdout)
