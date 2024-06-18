@@ -170,11 +170,11 @@ def get_latest_module(module, rdb):
 
     return f'{source}:{version}'
 
-def get_version_tuple(v):
+def _parse_version_object(v):
     try:
-        vinfo = semver.VersionInfo.parse(v).to_tuple()
+        vinfo = semver.Version.parse(v)
     except:
-        vinfo = (0,)
+        vinfo = semver.Version(0)
     return vinfo
 
 def _synthesize_module_version(minstance):
@@ -257,7 +257,7 @@ def list_available(rdb, skip_core_modules = False):
             if rmod["source"] in modules:
                 continue # skip duplicated images from lower priority modules
             modules[rmod["source"]] = rmod
-            rmod['versions'].sort(key=lambda v: get_version_tuple(v["tag"]), reverse=True)
+            rmod['versions'].sort(key=lambda v: _parse_version_object(v["tag"]), reverse=True)
     # Integrate the available set with instances that do not belong to any
     # repository. They can be found in the "installed" dict:
     for module_source, module_instances in list_installed(rdb, skip_core_modules).items():
@@ -294,7 +294,7 @@ def list_installed(rdb, skip_core_modules = False):
         installed[url].append({ 'id': vars["MODULE_ID"], 'ui_name': module_ui_name, 'node': node_id, 'node_ui_name': node_ui_name, 'digest': vars["IMAGE_DIGEST"], 'source': url, 'version': tag, 'logo': logo, 'module': image, 'flags': flags})
 
     for instances in installed.values():
-        instances.sort(key=lambda v: get_version_tuple(v["version"]), reverse=True)
+        instances.sort(key=lambda v: _parse_version_object(v["version"]), reverse=True)
 
     return installed
 
