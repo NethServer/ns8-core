@@ -228,7 +228,6 @@ def _fetch_metadata_json(module_id, image_name):
         }
     ometadata.setdefault("screenshots", [])
     ometadata.setdefault("repository", "__local__")
-    ometadata.setdefault("testing", "0")
     ometadata.setdefault("repository_updated", repository_updated_timestamp)
     try:
         ometadata['logo'] = glob(f'{path_prefix}apps/{module_id}/img/*logo*png')[0].removeprefix(path_prefix)
