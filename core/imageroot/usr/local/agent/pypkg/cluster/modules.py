@@ -191,10 +191,9 @@ def _synthesize_module_version(minstance):
         print(agent.SD_WARNING + "_synthesize_module_version:", ex, file=sys.stderr)
     # Extract the prerelease flag:
     try:
-        vinfo = semver.VersionInfo(minstance["version"])
-        testing = vinfo.prerelease
+        testing = bool(semver.Version.parse(minstance["version"]).prerelease)
     except:
-        testing = False
+        testing = True
     inspect_labels.setdefault("org.nethserver.images", image_url)
     return {
         "tag": minstance["version"],
@@ -329,7 +328,7 @@ def list_updates(rdb, skip_core_modules = False):
         for version in module["versions"]:
             try:
                 # skip bogus version tag
-                v = semver.VersionInfo.parse(version["tag"])
+                v = semver.Version.parse(version["tag"])
             except:
                 continue
             # Skip testing versions if testing is disabled
@@ -342,7 +341,7 @@ def list_updates(rdb, skip_core_modules = False):
         # Handle multiple instances of the same module
         for instance in installed[module["source"]]:
             try:
-                cur = semver.VersionInfo.parse(instance["version"])
+                cur = semver.Version.parse(instance["version"])
             except:
                 # skip installed instanced with dev version
                 continue
