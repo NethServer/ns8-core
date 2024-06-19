@@ -99,9 +99,9 @@ if os.path.isfile(install_dir + "/etc/state-exclude.conf"):
 
 # Ensure the restic repository has been initialized
 if agent.run_restic(rdb, repository, repopath, [], ["snapshots"], stdout=subprocess.DEVNULL).returncode == 0:
-    print(f"Repository {repository} is present", file=sys.stderr)
+    print(f"Repository {repository} is present at path {repopath}", file=sys.stderr)
 else:
-    print(f"Initializing repository {repository}", file=sys.stderr)
+    print(f"Initializing repository {repository} at path {repopath}", file=sys.stderr)
     agent.run_restic(rdb, repository, repopath, [], ["init"]).check_returncode()
 
 time_start = int(time.time())
