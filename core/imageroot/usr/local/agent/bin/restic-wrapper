@@ -1,0 +1,54 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2024 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+
+import agent
+import json
+import sys
+import os, os.path
+import argparse
+
+parser = argparse.ArgumentParser(
+    prog="restic-wrapper",
+    description="Invoke Restic inside a container",
+)
+parser.add_argument('-p', '--podman', action="extend", nargs="+", type=str, help="Arguments for Podman")
+parser.add_argument('restic', nargs="+", type=str, help="Arguments for Restic", metavar="restic_arg")
+parser.add_argument('--repository', help="Repository UUID")
+parser.add_argument('-b', '--backup', help="Backup ID, required if multiple backups are configured for the module")
+args = parser.parse_args()
+
+rdb = agent.redis_connect(use_replica=True) # Connect to local replica
+module_id = os.environ.get("MODULE_ID")
+podman_args = ["--workdir=/srv"]
+
+if args.repository:
+    repository = args.repository
+    repopath = '/'
+elif args.backup:
+    repository = rdb.hget(f"cluster/backup/{args.backup}", "repository")
+elif module_id:
+    podman_args.extend(agent.get_state_volume_args()) # get volumes from state-include.conf
+    repopath = agent.get_image_name_from_url(os.environ["IMAGE_URL"]) + "/" + os.environ["MODULE_UUID"]
+    backup_list = list(rdb.smembers(f"module/{module_id}/backups"))
+    if len(backup_list) == 1:
+        repository = rdb.hget(f"cluster/backup/{backup_list[0]}", "repository")
+    elif len(backup_list) == 0:
+        print(f"Backup is not configured for {module_id}. You must specify the --repository option", file=sys.stderr)
+        sys.exit(2)
+    else:
+        print("You must specify the --backup option, with one of the following values:", ", ".join(backup_list), file=sys.stderr)
+        sys.exit(2)
+else:
+    print(f"You must specify the --repository option", file=sys.stderr)
+    sys.exit(2)
+
+if args.podman:
+    podman_args.extend(['--' + arg for arg in args.podman])
+
+proc = agent.run_restic(rdb, repository, repopath, podman_args, list(args.restic))
+sys.exit(proc.returncode)
