@@ -1,0 +1,116 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2024 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+
+import agent
+import json
+import sys
+import os, os.path
+import argparse
+
+DESCRIPTION="""
+Run Restic within a Podman container, using the repository configuration
+from NethServer 8 modules.
+
+Options specific to the wrapper are supported, with any additional options
+passed directly to Restic.
+
+When executed in the agent environment of a specific module, the minimum
+backup ID is assumed by default. To use a different backup schedule,
+specify it with "--backup". Default module volumes are automatically
+mounted.
+
+In the cluster agent environment, specify the Restic repository manually
+using "--destination" and "--repopath". Volumes must be manually mounted
+by passing additional options to Podman via "--podman".
+
+Example invocations:
+
+    restic-wrapper --show
+    restic-wrapper stats
+    restic-wrapper --backup 2 stats
+    restic-wrapper --destination fd4e75b5-9836-42be-b5db-b4983a851e40 --repopath webtop/2f3c56e2-aa1a-4eda-9e32-0ec9348cd31b stats
+    restic-wrapper --podman volume=./restoredir:/srv/restoredir restore latest:state/ -t /srv/restoredir
+
+"""
+
+parser = argparse.ArgumentParser(
+    prog="restic-wrapper",
+    formatter_class=argparse.RawDescriptionHelpFormatter,
+    description=DESCRIPTION,
+    add_help=False, # Help flag is also forwarded to Restic
+)
+parser.add_argument('--podman', action="append", type=str, help="Arguments for Podman, e.g. --podman volume=./mydir:/srv/path")
+parser.add_argument('--backup', help="Backup ID")
+parser.add_argument('--destination', help="Destination UUID")
+parser.add_argument('--repopath', help="Repository path under the backup destination")
+parser.add_argument('--show', action="store_true", help="Show destinations and backups")
+wargs, rargs = parser.parse_known_args()
+if '--help' in rargs:
+    # Print the wrapper helper, then continue, to forward the help flag to Restic
+    parser.print_help()
+
+rdb = agent.redis_connect(use_replica=True) # Connect to local replica
+
+if wargs.show:
+    header="No backup destination found.\n"
+    listing=""
+    for krepo in rdb.scan_iter('cluster/backup_repository/*'):
+        header="Destinations:\n"
+        adest = rdb.hgetall(krepo)
+        listing += f"- {krepo.removeprefix('cluster/backup_repository/')} {adest['name']} ({adest['url']})\n"
+    print(header + listing, end="")
+    header="No backup schedule found.\n"
+    listing=""
+    for kbackup in rdb.scan_iter('cluster/backup/*'):
+        header="Scheduled backups:\n"
+        bid = kbackup.removeprefix('cluster/backup/')
+        abackup = rdb.hgetall(kbackup)
+        listing += f"- {bid} {abackup['name']}, destination UUID {abackup['repository']}\n"
+    print(header + listing, end="")
+    sys.exit(0)
+
+module_id = os.environ.get("MODULE_ID")
+repopath = None
+backup_id = None
+dest_uuid = None
+podman_args = ["--workdir=/srv"]
+if wargs.podman:
+    podman_args.extend(['--' + arg for arg in wargs.podman])
+if wargs.backup:
+    backup_id = wargs.backup
+if module_id:
+    podman_args.extend(agent.get_state_volume_args()) # get volumes from state-include.conf
+    repopath = agent.get_image_name_from_url(os.environ["IMAGE_URL"]) + "/" + os.environ["MODULE_UUID"]
+    if not backup_id:
+        try:
+            backup_id = min(rdb.smembers(f"module/{module_id}/backups"))
+        except:
+            pass
+
+if backup_id:
+    dest_uuid = rdb.hget(f"cluster/backup/{backup_id}", "repository")
+else:
+    dest_uuid = wargs.destination
+
+if not dest_uuid:
+    parser.print_help()
+    print()
+    print(f"Destination not found. Consider using --backup or --destination arguments.", file=sys.stderr)
+    sys.exit(2)
+
+if wargs.repopath:
+    repopath = wargs.repopath
+
+if not repopath:
+    parser.print_help()
+    print()
+    print(f"Path for Restic repository not found. Consider using --repopath argument.", file=sys.stderr)
+    sys.exit(2)
+
+proc = agent.run_restic(rdb, dest_uuid, repopath, podman_args, rargs)
+sys.exit(proc.returncode)
