@@ -19,6 +19,7 @@ network = rdb.get('cluster/network')
 
 if network:
     agent.set_status('validation-failed')
+    print(agent.SD_ERR + "Cannot join another cluster: Run the uninstall procedure then install NS8 again.", file=sys.stderr)
     json.dump([{'field':'url', 'parameter':'url','value': request['url'], 'error':'cluster_network_already_set'}], fp=sys.stdout)
     sys.exit(2)
 
