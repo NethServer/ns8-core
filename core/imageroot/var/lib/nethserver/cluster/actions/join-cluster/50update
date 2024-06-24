@@ -74,7 +74,9 @@ response = agent.tasks.run(
     progress_callback=agent.get_progress_callback(20,98),
     auth_token=jwt,
 )
-agent.assert_exp(response['exit_code'] == 0)
+if response['exit_code'] != 0:
+    print(agent.SD_ERR + "add_node error:", response["error"], file=sys.stderr)
+    sys.exit(2)
 
 node_id = response['output']['node_id']
 agent.assert_exp(node_id > 0)
@@ -89,6 +91,7 @@ try:
     socket.getaddrinfo(peer_hostname, peer_port, proto=socket.IPPROTO_UDP)[0][4][0]
 except Exception as ex:
     print(agent.SD_ERR + "leader_endpoint error:", ex, "DATA", join_node_data, file=sys.stderr)
+    print(agent.SD_NOTICE + f"After the issue is solved, remove node {node_id} before running a new join attempt.", file=sys.stderr)
     raise
 
 # Start the action that switches Redis to replica of the new leader.
