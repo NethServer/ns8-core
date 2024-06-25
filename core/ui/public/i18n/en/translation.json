@@ -202,6 +202,7 @@
         "the_join_code_cannot_be_parsed": "Join code cannot be parsed",
         "cluster_tls_verify_error": "TLS certificate of leader node is not valid",
         "cluster_auth_error": "Invalid response",
+        "cluster_connection_error": "Failed to connect to the leader node at address {value}",
         "redirect_cluster": "Worker Node",
         "redirect_cluster_description": "This node is a worker of the cluster now. Click the button below to access cluster administration page on the leader node.",
         "redirect_cluster_link": "Go to cluster administration",
