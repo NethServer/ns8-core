@@ -33,7 +33,7 @@ read -r network < <(jq -r '.network')
 # 0. Allow connections to the wireguard UDP port from
 #    the default firewall zone.
 # 1. Trust connections from the wireguard VPN
-firewall-cmd --permanent --new-service=ns-wireguard
+firewall-cmd --permanent --new-service=ns-wireguard || :
 firewall-cmd --permanent --add-service=ns-wireguard
 firewall-cmd --permanent --service=ns-wireguard --add-port=55820/udp
 firewall-cmd --permanent --zone=trusted --add-source="${network}"
