@@ -11,6 +11,9 @@ import sys
 import agent
 from cluster import modules
 
+def get_active(element):
+    return element['active']
+
 redis_client = agent.redis_connect()
 default_instance = redis_client.get("cluster/default_instance/loki")
 instances = modules.list_installed(redis_client).get("ghcr.io/nethserver/loki", [])
@@ -43,6 +46,8 @@ for instance in instances:
         item["offline"] = True
 
     response.append(item)
+
+response.sort(key=get_active, reverse=True)
 
 json.dump({
     'instances': response
