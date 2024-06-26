@@ -1578,7 +1578,7 @@ export default {
     joinClusterValidationFailed(validationErrors) {
       console.error("validation failed", validationErrors);
       this.isJoiningCluster = false;
-      this.error.joinCode = this.$t("init." + validationErrors[0].error);
+      this.error.joinCode = this.$t("init." + validationErrors[0].error, { value: validationErrors[0].value });
       this.focusElement("joinCode");
     },
     async onFileUpload(files) {

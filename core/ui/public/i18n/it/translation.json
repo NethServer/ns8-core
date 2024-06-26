@@ -995,6 +995,7 @@
         "not_a_valid_ipv4_network": "Indirizzo di rete IPv4 non valido",
         "the_join_code_is_not_correctly_encoded": "Il codice di join non ha il formato corretto",
         "cluster_auth_error": "Risposta non valida",
+        "cluster_connection_error": "Connessione al nodo leader all'indirizzo {value} fallita",
         "the_join_code_cannot_be_parsed": "Il codice di join non può essere interpretato",
         "cluster_tls_verify_error": "Il certificato TLS del nodo leader non è valido",
         "the_join_code_can_not_be_decoded": "Il codice di join non può essere decodificato"

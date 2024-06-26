@@ -25,6 +25,7 @@ import agent.tasks
 import hashlib
 import json
 import sys
+import socket
 
 # Action summary:
 # 1. Send the join request to the remote cluster leader
@@ -73,7 +74,9 @@ response = agent.tasks.run(
     progress_callback=agent.get_progress_callback(20,98),
     auth_token=jwt,
 )
-agent.assert_exp(response['exit_code'] == 0)
+if response['exit_code'] != 0:
+    print(agent.SD_ERR + "add_node error:", response["error"], file=sys.stderr)
+    sys.exit(2)
 
 node_id = response['output']['node_id']
 agent.assert_exp(node_id > 0)
@@ -81,6 +84,15 @@ agent.assert_exp(node_id > 0)
 print(f"Leader response is successful: the new node ID is node/{node_id}!", file=sys.stderr)
 
 join_node_data = response['output'] # add-node response is forwarded to join-node
+
+try:
+    # Resolve the leader endpoint address to an IP string:
+    peer_hostname, peer_port = join_node_data['leader_endpoint'].rsplit(':', 1)
+    socket.getaddrinfo(peer_hostname, peer_port, proto=socket.IPPROTO_UDP)[0][4][0]
+except Exception as ex:
+    print(agent.SD_ERR + "leader_endpoint error:", ex, "DATA", join_node_data, file=sys.stderr)
+    print(agent.SD_NOTICE + f"After the issue is solved, remove node {node_id} before running a new join attempt.", file=sys.stderr)
+    raise
 
 # Start the action that switches Redis to replica of the new leader.
 # join-node has to give us enough time to write our response back to the
