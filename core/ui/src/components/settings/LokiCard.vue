@@ -150,13 +150,11 @@ export default {
   computed: {
     activeFromFormatted() {
       return this.activeFrom
-        ? this.formatDate(new Date(this.activeFrom), "dd/MM/yyyy")
+        ? this.formatDate(new Date(this.activeFrom), "P")
         : "";
     },
     activeToFormatted() {
-      return this.activeTo
-        ? this.formatDate(new Date(this.activeTo), "dd/MM/yyyy")
-        : "";
+      return this.activeTo ? this.formatDate(new Date(this.activeTo), "P") : "";
     },
     activeText() {
       return this.$t("system_logs.loki.active");
@@ -210,10 +208,5 @@ export default {
 
 .margin-top {
   margin-top: 0.5rem;
-}
-
-.ns-error {
-  color: #da1e28;
-  fill: #da1e28;
 }
 </style>

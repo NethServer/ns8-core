@@ -1,5 +1,5 @@
 <!--
-  Copyright (C) 2023 Nethesis S.r.l.
+  Copyright (C) 2024 Nethesis S.r.l.
   SPDX-License-Identifier: GPL-3.0-or-later
 -->
 <template>
@@ -29,11 +29,13 @@
           v-if="toggleEnabled"
           :label="$t('cloud_log_manager_forwarder.address')"
           v-model="address"
+          :invalid-message="error.address"
         />
         <NsTextInput
           v-if="toggleEnabled"
           :label="$t('cloud_log_manager_forwarder.tenant')"
           v-model="tenant"
+          :invalid-message="error.tenant"
         >
           <template slot="tooltip">
             <span
@@ -58,15 +60,12 @@
             <cv-radio-button
               ref="radioVal"
               :label="
-                $tc(
-                  'cloud_log_manager_forwarder.use_last_timestamp',
-                  this.last_timestamp_formatted,
-                  { timestamp: this.last_timestamp_formatted }
-                )
+                $t('cloud_log_manager_forwarder.use_last_timestamp', {
+                  timestamp: this.lastTimestampFormatted,
+                })
               "
               value="last_timestamp"
               v-model="radioVal"
-              checked
             />
             <cv-radio-button
               ref="radioVal"
@@ -97,7 +96,7 @@
         </cv-row>
       </cv-form>
       <NsInlineNotification
-        v-if="!subscription"
+        v-else
         kind="info"
         :title="
           $t('cloud_log_manager_forwarder.available_with_subscription_title')
@@ -108,6 +107,13 @@
         :showCloseButton="false"
         :actionLabel="$t('cloud_log_manager_forwarder.more_details')"
         @action="goToMoreDetails"
+      />
+      <NsInlineNotification
+        v-if="error.setCloudLogManager"
+        kind="error"
+        :title="$t('system_logs.loki.cannot_configure_forwarder')"
+        :description="error.setCloudLogManager"
+        :showCloseButton="false"
       />
     </template>
     <template slot="secondary-button">{{ $t("common.cancel") }}</template>
@@ -152,9 +158,14 @@ export default {
       tenant: "",
       date: "",
       time: "",
-      last_timestamp_formatted: "",
+      lastTimestampFormatted: "",
       loading: {
         setCloudLogManager: false,
+      },
+      error: {
+        address: "",
+        tenant: "",
+        setCloudLogManager: "",
       },
       calOptions: {
         dateFormat: "Y-m-d",
@@ -172,7 +183,7 @@ export default {
       this.tenant = "";
       this.date = "";
       this.time = "";
-      this.last_timestamp_formatted = "";
+      this.lastTimestampFormatted = "";
     },
     goToMoreDetails() {
       window.open(
@@ -194,17 +205,11 @@ export default {
         this.address = this.configuration.address;
       }
 
-      if (this.configuration.tenant == "") {
-        this.tenant = "clienteit";
-      } else {
-        this.tenant = this.configuration.tenant;
-      }
-
       if (this.configuration.last_timestamp == "") {
         this.radioVal = "choose_date_time";
       } else {
         const last_timestamp_date = new Date(this.configuration.last_timestamp);
-        this.last_timestamp_formatted = this.formatDate(
+        this.lastTimestampFormatted = this.formatDate(
           last_timestamp_date,
           "Pp"
         );
@@ -213,8 +218,28 @@ export default {
       this.date = this.formatDate(new Date(), "yyyy-MM-dd");
       this.time = "00:00";
     },
+    validateCloudLogManagerInput() {
+      this.clearErrors(this);
+      let isValidationOk = true;
+
+      if (!this.address) {
+        this.error.address = this.$t("common.required");
+        isValidationOk = false;
+      }
+      if (!this.tenant) {
+        this.error.tenant = this.$t("common.required");
+        isValidationOk = false;
+      }
+
+      return isValidationOk;
+    },
     async setCloudLogManager() {
+      if (!this.validateCloudLogManagerInput()) {
+        return;
+      }
+
       this.loading.setCloudLogManager = true;
+      this.error.setCloudLogManager = "";
       const taskAction = "set-clm-forwarder";
 
       // register to task abortion
@@ -248,7 +273,8 @@ export default {
             start_time: this.start_time,
           },
           extra: {
-            isNotificationHidden: true,
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: false,
           },
         })
       );
@@ -256,11 +282,13 @@ export default {
 
       if (err) {
         console.error(`error creating task ${taskAction}`, err);
+        this.error.setCloudLogManager = this.getErrorMessage(err);
         return;
       }
     },
     setCloudLogManagerAborted(taskResult, taskContext) {
       console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.setCloudLogManager = this.$t("error.generic_error");
       this.loading.setCloudLogManager = false;
     },
     setCloudLogManagerCompleted() {

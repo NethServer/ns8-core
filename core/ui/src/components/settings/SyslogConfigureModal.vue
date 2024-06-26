@@ -1,5 +1,5 @@
 <!--
-  Copyright (C) 2023 Nethesis S.r.l.
+  Copyright (C) 2024 Nethesis S.r.l.
   SPDX-License-Identifier: GPL-3.0-or-later
 -->
 <template>
@@ -24,78 +24,70 @@
           <template slot="text-left">{{ $t("common.disabled") }}</template>
           <template slot="text-right">{{ $t("common.enabled") }}</template>
         </NsToggle>
-        <NsTextInput
-          v-if="toggleEnabled"
-          :label="$t('syslog_forwarder.hostname_ip_address')"
-          v-model="address"
-        />
-        <NsTextInput
-          v-if="toggleEnabled"
-          :label="$t('syslog_forwarder.port')"
-          v-model="port"
-        />
-        <div v-if="toggleEnabled">
-          <label for="protocol" :class="`${carbonPrefix}--label`">{{
-            $t("syslog_forwarder.protocol")
-          }}</label>
-          <cv-interactive-tooltip class="info mg-left-xs">
-            <template slot="content">
-              <p>
-                {{ $t("syslog_forwarder.export_starting_date_tooltip") }}
-              </p>
-            </template>
-          </cv-interactive-tooltip>
-          <cv-radio-group :vertical="true">
-            <cv-radio-button
-              ref="protocolVal"
-              :label="
-                $tc('syslog_forwarder.udp', this.last_timestamp_formatted, {
-                  timestamp: this.last_timestamp_formatted,
-                })
-              "
-              value="udp"
-              v-model="protocolVal"
-              checked
-            />
-            <cv-radio-button
-              ref="protocolVal"
-              :label="$t('syslog_forwarder.tcp')"
-              value="tcp"
-              v-model="protocolVal"
-            />
-          </cv-radio-group>
-        </div>
-        <div v-if="toggleEnabled">
-          <label for="format" :class="`${carbonPrefix}--label`">{{
-            $t("syslog_forwarder.format")
-          }}</label>
-          <cv-interactive-tooltip class="info mg-left-xs">
-            <template slot="content">
-              <p>
-                {{ $t("syslog_forwarder.format_tooltip") }}
-              </p>
-            </template>
-          </cv-interactive-tooltip>
-          <cv-radio-group :vertical="true">
-            <cv-radio-button
-              ref="formatVal"
-              :label="
-                $tc('syslog_forwarder.rfc3164', this.last_timestamp_formatted, {
-                  timestamp: this.last_timestamp_formatted,
-                })
-              "
-              value="rfc3164"
-              v-model="formatVal"
-              checked
-            />
-            <cv-radio-button
-              ref="formatVal"
-              :label="$t('syslog_forwarder.rfc5424')"
-              value="rfc5424"
-              v-model="formatVal"
-            />
-          </cv-radio-group>
-        </div>
+        <template v-if="toggleEnabled">
+          <NsTextInput
+            :label="$t('syslog_forwarder.hostname_ip_address')"
+            v-model="address"
+            :invalid-message="error.address"
+          />
+          <NsTextInput
+            :label="$t('syslog_forwarder.port')"
+            v-model="port"
+            :invalid-message="error.port"
+          />
+          <div>
+            <label for="protocol" :class="`${carbonPrefix}--label`">{{
+              $t("syslog_forwarder.protocol")
+            }}</label>
+            <cv-interactive-tooltip class="info mg-left-xs">
+              <template slot="content">
+                <p>
+                  {{ $t("syslog_forwarder.export_starting_date_tooltip") }}
+                </p>
+              </template>
+            </cv-interactive-tooltip>
+            <cv-radio-group :vertical="true">
+              <cv-radio-button
+                ref="protocolVal"
+                :label="$t('UDP')"
+                value="udp"
+                v-model="protocolVal"
+              />
+              <cv-radio-button
+                ref="protocolVal"
+                :label="$t('TCP')"
+                value="tcp"
+                v-model="protocolVal"
+              />
+            </cv-radio-group>
+          </div>
+          <div>
+            <label for="format" :class="`${carbonPrefix}--label`">{{
+              $t("syslog_forwarder.format")
+            }}</label>
+            <cv-interactive-tooltip class="info mg-left-xs">
+              <template slot="content">
+                <p>
+                  {{ $t("syslog_forwarder.format_tooltip") }}
+                </p>
+              </template>
+            </cv-interactive-tooltip>
+            <cv-radio-group :vertical="true">
+              <cv-radio-button
+                ref="formatVal"
+                :label="$tc('rfc3164')"
+                value="rfc3164"
+                v-model="formatVal"
+              />
+              <cv-radio-button
+                ref="formatVal"
+                :label="$t('rfc5424')"
+                value="rfc5424"
+                v-model="formatVal"
+              />
+            </cv-radio-group>
+          </div>
+        </template>
         <div v-if="toggleEnabled && this.configuration.last_timestamp != ''">
           <label for="startTime" :class="`${carbonPrefix}--label`">{{
             $t("cloud_log_manager_forwarder.export_starting_date")
@@ -113,15 +105,12 @@
             <cv-radio-button
               ref="dateVal"
               :label="
-                $tc(
-                  'cloud_log_manager_forwarder.use_last_timestamp',
-                  this.last_timestamp_formatted,
-                  { timestamp: this.last_timestamp_formatted }
-                )
+                $t('cloud_log_manager_forwarder.use_last_timestamp', {
+                  timestamp: this.lastTimestampFormatted,
+                })
               "
               value="last_timestamp"
               v-model="dateVal"
-              checked
             />
             <cv-radio-button
               ref="dateVal"
@@ -151,6 +140,13 @@
           </cv-column>
         </cv-row>
       </cv-form>
+      <NsInlineNotification
+        v-if="error.setSyslog"
+        kind="error"
+        :title="$t('system_logs.loki.cannot_configure_forwarder')"
+        :description="error.setSyslog"
+        :showCloseButton="false"
+      />
     </template>
     <template slot="secondary-button">{{ $t("common.cancel") }}</template>
     <template slot="primary-button">{{ $t("common.configure") }}</template>
@@ -192,9 +188,14 @@ export default {
       port: "",
       date: "",
       time: "",
-      last_timestamp_formatted: "",
+      lastTimestampFormatted: "",
       loading: {
         setSyslog: false,
+      },
+      error: {
+        address: "",
+        port: "",
+        setSyslog: "",
       },
       calOptions: {
         dateFormat: "Y-m-d",
@@ -215,7 +216,7 @@ export default {
       this.port = "";
       this.date = "";
       this.time = "";
-      this.last_timestamp_formatted = "";
+      this.lastTimestampFormatted = "";
     },
     onModalShown() {
       if (
@@ -240,7 +241,7 @@ export default {
         this.dateVal = "choose_date_time";
       } else {
         const last_timestamp_date = new Date(this.configuration.last_timestamp);
-        this.last_timestamp_formatted = this.formatDate(
+        this.lastTimestampFormatted = this.formatDate(
           last_timestamp_date,
           "Pp"
         );
@@ -248,8 +249,37 @@ export default {
       this.date = this.formatDate(new Date(), "yyyy-MM-dd");
       this.time = "00:00";
     },
+    validateSyslogInput() {
+      this.clearErrors(this);
+      let isValidationOk = true;
+
+      if (!this.address) {
+        this.error.address = this.$t("common.required");
+        isValidationOk = false;
+      }
+
+      if (!this.port) {
+        this.error.port = this.$t("common.required");
+        isValidationOk = false;
+      }
+      if (this.port && isNaN(this.port)) {
+        this.error.port = this.$t("system_logs.loki.valid_number");
+        isValidationOk = false;
+      }
+      if (this.port && this.port <= 0) {
+        this.error.port = this.$t("system_logs.loki.greater_than_0");
+        isValidationOk = false;
+      }
+
+      return isValidationOk;
+    },
     async setSyslog() {
+      if (!this.validateSyslogInput()) {
+        return;
+      }
+
       this.loading.setSyslog = true;
+      this.error.setSyslog = "";
       const taskAction = "set-syslog-forwarder";
 
       // register to task abortion
@@ -282,7 +312,8 @@ export default {
             start_time: this.start_time,
           },
           extra: {
-            isNotificationHidden: true,
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: false,
           },
         })
       );
@@ -290,11 +321,13 @@ export default {
 
       if (err) {
         console.error(`error creating task ${taskAction}`, err);
+        this.error.setSyslog = this.getErrorMessage(err);
         return;
       }
     },
     setSyslogAborted(taskResult, taskContext) {
       console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.setSyslog = this.$t("error.generic_error");
       this.loading.setSyslog = false;
     },
     setSyslogCompleted() {

@@ -309,7 +309,9 @@
           :icon="Catalog32"
           :loading="loading.lokiInstance"
           :isErrorShown="error.lokiInstance"
-          :errorTitle="$t('error.cannot_retrieve_system_logs_status')"
+          :errorTitle="
+            $t('system_logs.loki.cannot_retrieve_system_logs_status')
+          "
           :errorDescription="error.lokiInstance"
           class="min-height-card"
         >
@@ -921,7 +923,11 @@ export default {
     getClusterLokiInstancesCompleted(taskContext, taskResult) {
       for (const instance of taskResult.output.instances) {
         if (instance.active) {
-          this.activeLokiInstance = instance.instance_id;
+          if (instance.instance_label != "") {
+            this.activeLokiInstance = instance.instance_label;
+          } else {
+            this.activeLokiInstance = instance.instance_id;
+          }
           this.cloudLogManagerForwarderStatus =
             instance.cloud_log_manager.status;
           this.syslogForwarderStatus = instance.syslog.status;
@@ -949,10 +955,5 @@ export default {
 
 .card-row:last-child {
   margin-bottom: 0;
-}
-
-.ns-error {
-  color: #da1e28;
-  fill: #da1e28;
 }
 </style>

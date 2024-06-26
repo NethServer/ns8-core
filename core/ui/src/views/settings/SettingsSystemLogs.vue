@@ -39,7 +39,21 @@
         </h2>
       </cv-column>
     </cv-row>
-    <cv-row v-if="loading.lokiInstances">
+    <NsInlineNotification
+      v-if="error.lokiInstances"
+      kind="error"
+      :title="$t('system_logs.loki.cannot_retrieve_loki_instances')"
+      :description="error.lokiInstances"
+      :showCloseButton="false"
+    />
+    <NsInlineNotification
+      v-if="error.subscription"
+      kind="error"
+      :title="$t('error.cannot_retrieve_subscription_status')"
+      :description="error.subscription"
+      :showCloseButton="false"
+    />
+    <cv-row v-if="loading.lokiInstances && loading.subscription">
       <cv-column :md="4" :xlg="4">
         <NsTile :light="true" :icon="Catalog32">
           <cv-skeleton-text
@@ -117,7 +131,7 @@
                 <NsMenuItem
                   :icon="DocumentExport16"
                   :label="
-                    $t('system_logs.loki.configure_cloudLogManagerForwarder')
+                    $t('system_logs.loki.configure_cloud_log_manager_forwarder')
                   "
                 />
               </cv-overflow-menu-item>
@@ -130,7 +144,7 @@
               >
                 <NsMenuItem
                   :icon="DocumentExport16"
-                  :label="$t('system_logs.loki.configure_syslogForwarder')"
+                  :label="$t('system_logs.loki.configure_syslog_forwarder')"
                 />
               </cv-overflow-menu-item>
               <cv-overflow-menu-item
@@ -172,6 +186,7 @@
               :helper-text="$t('system_logs.loki.days')"
               ref="newRetention"
               :invalid-message="error.newRetention"
+              data-modal-primary-focus
             >
             </cv-text-input>
             <div v-if="error.setLokiInstanceRetention">
@@ -186,7 +201,7 @@
         </template>
       </template>
       <template slot="secondary-button">{{ $t("common.cancel") }}</template>
-      <template slot="primary-button">{{ $t("common.edit") }}</template>
+      <template slot="primary-button">{{ $t("common.save") }}</template>
     </NsModal>
     <NsModal
       size="default"
@@ -211,6 +226,7 @@
               maxlength="24"
               ref="newLabel"
               :invalid-message="error.newLabel"
+              data-modal-primary-focus
             >
             </cv-text-input>
             <div v-if="error.setLokiInstanceLabel">
@@ -225,7 +241,7 @@
         </template>
       </template>
       <template slot="secondary-button">{{ $t("common.cancel") }}</template>
-      <template slot="primary-button">{{ $t("common.edit") }}</template>
+      <template slot="primary-button">{{ $t("common.save") }}</template>
     </NsModal>
     <NsModal
       kind="danger"
@@ -361,12 +377,14 @@ export default {
       newLabel: "",
       loading: {
         lokiInstances: false,
+        subscription: false,
         setLokiInstanceRetention: false,
         setLokiInstanceLabel: false,
         uninstallLokiInstance: false,
       },
       error: {
-        getClusterLokiInstances: "",
+        lokiInstances: "",
+        subscription: "",
         setLokiInstanceRetention: "",
         setLokiInstanceLabel: "",
         uninstallLokiInstance: "",
@@ -392,7 +410,7 @@ export default {
   methods: {
     async getClusterLokiInstances() {
       this.loading.lokiInstances = true;
-      this.error.getClusterLokiInstances = "";
+      this.error.lokiInstances = "";
       const taskAction = "list-loki-instances";
 
       // register to task abortion
@@ -419,13 +437,13 @@ export default {
 
       if (err) {
         console.error(`error creating task ${taskAction}`, err);
-        this.error.getClusterLokiInstances = this.getErrorMessage(err);
+        this.error.lokiInstances = this.getErrorMessage(err);
         return;
       }
     },
     getClusterLokiInstancesAborted(taskResult, taskContext) {
       console.error(`${taskContext.action} aborted`, taskResult);
-      this.error.getClusterLokiInstances = this.$t("error.generic_error");
+      this.error.lokiInstances = this.$t("error.generic_error");
       this.loading.lokiInstances = false;
     },
     getClusterLokiInstancesCompleted(taskContext, taskResult) {
@@ -610,7 +628,12 @@ export default {
       this.getClusterLokiInstances();
     },
     async getSubscription() {
+      this.loading.subscription = true;
+      this.error.subscription = "";
       const taskAction = "get-subscription";
+
+      // register to task abortion
+      this.$root.$once(taskAction + "-aborted", this.getSubscriptionAborted);
 
       // register to task completion
       this.$root.$once(
@@ -632,15 +655,21 @@ export default {
 
       if (err) {
         console.error(`error creating task ${taskAction}`, err);
-        this.error.getSubscription = this.getErrorMessage(err);
+        this.error.subscription = this.getErrorMessage(err);
         return;
       }
+    },
+    getSubscriptionAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.subscription = this.$t("error.generic_error");
+      this.loading.subscription = false;
     },
     getSubscriptionCompleted(taskContext, taskResult) {
       const output = taskResult.output;
       if (output.subscription != null) {
         this.subscription = true;
       }
+      this.loading.subscription = false;
     },
   },
 };
