@@ -996,6 +996,7 @@
         "the_join_code_is_not_correctly_encoded": "Il codice di join non ha il formato corretto",
         "cluster_auth_error": "Risposta non valida",
         "cluster_connection_error": "Connessione al nodo leader all'indirizzo {value} fallita",
+        "cluster_hostname_error": "Il FQDN {value} è utilizzato dal nodo leader. Usa 'Indietro' e modifica il nome host o il dominio del worker.",
         "the_join_code_cannot_be_parsed": "Il codice di join non può essere interpretato",
         "cluster_tls_verify_error": "Il certificato TLS del nodo leader non è valido",
         "the_join_code_can_not_be_decoded": "Il codice di join non può essere decodificato"
