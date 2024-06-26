@@ -203,6 +203,7 @@
         "cluster_tls_verify_error": "TLS certificate of leader node is not valid",
         "cluster_auth_error": "Invalid response",
         "cluster_connection_error": "Failed to connect to the leader node at address {value}",
+        "cluster_hostname_error": "FQDN {value} is used by the leader node. Use 'Go Back' and change worker's hostname or domain.",
         "redirect_cluster": "Worker Node",
         "redirect_cluster_description": "This node is a worker of the cluster now. Click the button below to access cluster administration page on the leader node.",
         "redirect_cluster_link": "Go to cluster administration",
