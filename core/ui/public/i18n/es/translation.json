@@ -1,13 +1,13 @@
 {
     "error": {
         "403": "Operación no autorizada",
-        "401": "Autentificación no válida",
-        "generic_error": "Algo salió mal",
+        "401": "Autentificación inválida",
+        "generic_error": "Algo ha salido mal",
         "error": "Error",
-        "network_timeout": "Tiempo de espera de red agotado",
+        "network_timeout": "Tiempo de espera de la red agotado",
         "404": "Recurso no encontrado",
-        "network_error": "Fallo de red",
-        "validation_error": "Error de validación",
+        "network_error": "Error en la red",
+        "validation_error": "Error en la validación",
         "fqdn_format": "Formato FQDN no válido",
         "cannot_retrieve_cluster_tasks": "No se pueden recuperar las tareas del clúster",
         "invalid_username_or_password": "Usuario o contraseña no válido",
@@ -451,8 +451,8 @@
         "search": "Buscar"
     },
     "action": {
-        "list-backup-repositories": "Lista de repositorios de la copia de seguridad",
-        "list-backups": "Listado de copias de seguridad",
+        "list-backup-repositories": "Mostrar repositorios de respaldo",
+        "list-backups": "Mostrar copias de seguridad",
         "configure-module": "Configurar aplicación",
         "alter-backup-repository": "Modificar el repositorio de respaldo",
         "alter-repository": "Modificar el respaldo",
@@ -848,7 +848,9 @@
         "cluster_auth_error": "Respuesta inválida",
         "the_join_code_cannot_be_parsed": "El código de unión no se puede analizar",
         "cluster_tls_verify_error": "El certificado del nodo líder no es válido",
-        "the_join_code_can_not_be_decoded": "El código de unión no se puede decodificar"
+        "the_join_code_can_not_be_decoded": "El código de unión no se puede decodificar",
+        "cluster_connection_error": "Failed to connect to the leader node at address {value}",
+        "cluster_hostname_error": "FQDN {value} is used by the leader node. Use 'Go Back' and change worker's hostname or domain."
     },
     "settings_account": {
         "i_have_stored_setup_key": "He guardado la <strong>clave de configuración 2FA</strong> en un lugar seguro",

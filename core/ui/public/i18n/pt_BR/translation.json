@@ -303,7 +303,9 @@
         "the_join_code_is_not_correctly_encoded": "Join code is not correctly encoded",
         "the_join_code_cannot_be_parsed": "Join code cannot be parsed",
         "cluster_tls_verify_error": "TLS certificate of leader node is not valid",
-        "the_join_code_can_not_be_decoded": "Join code cannot be decoded"
+        "the_join_code_can_not_be_decoded": "Join code cannot be decoded",
+        "cluster_connection_error": "Failed to connect to the leader node at address {value}",
+        "cluster_hostname_error": "FQDN {value} is used by the leader node. Use 'Go Back' and change worker's hostname or domain."
     },
     "password": {
         "uppercase_letter": "Uppercase letter",
