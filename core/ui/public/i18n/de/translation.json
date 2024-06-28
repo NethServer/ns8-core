@@ -73,7 +73,9 @@
         "cluster_auth_error": "fehlerhaft Antwort",
         "the_join_code_cannot_be_parsed": "Join-Code kann nicht geparst werden",
         "cluster_tls_verify_error": "TLS-Zertifikat des Hauptknoten ist ungültig",
-        "the_join_code_can_not_be_decoded": "Join -Code kann nicht dekodiert werden"
+        "the_join_code_can_not_be_decoded": "Join-Code kann nicht dekodiert werden",
+        "cluster_connection_error": "Verbindung zum Hauptknoten an Adresse {value} fehlgeschlagen",
+        "cluster_hostname_error": "FQDN {value} wird vom Hauptknoten verwendet. 'Zurück' nutzen und Host- oder Domänennamen ändern."
     },
     "password": {
         "uppercase_letter": "Großbuchstaben",
@@ -151,12 +153,12 @@
         "add-module": "Anwendung installieren",
         "create-cluster": "Cluster erstellen",
         "add-user": "Benutzer hinzufügen",
-        "list-backup-repositories": "Datensicherungs-Ziele auflisten",
+        "list-backup-repositories": "Backup-Speicherorte auflisten",
         "add-group": "Gruppe hinzufügen",
         "add-external-provider": "externen Anbieter hinzufügen",
         "delete-route": "Route löschen",
         "add-external-domain": "externe Domäne hinzufügen",
-        "list-backups": "Datensicherungen auflisten",
+        "list-backups": "Backups auflisten",
         "update-core": "Core aktualisieren",
         "add-backup-repository": "Sicherungs-Repository hinzufügen",
         "add-backup": "Sicherung hinzufügen",
@@ -325,10 +327,10 @@
         "active": "aktiv"
     },
     "error": {
-        "403": "Operation nicht genehmigt",
+        "403": "Vorgang nicht autorisiert",
         "fqdn_format": "ungültiges FQDN-Format",
         "cannot_retrieve_cluster_tasks": "Cluster-Aufgaben nicht abrufbar",
-        "401": "Ungültige Authentifizierung",
+        "401": "Authentifizierung fehlerhaft",
         "must_be_between": "muss zwischen {min} und {max} liegen",
         "invalid_username_or_password": "Falscher Benutzername oder falsches Kennwort",
         "cannot_retrieve_available_apps": "Verfügbare Anwendungen nicht abrufbar",
@@ -350,7 +352,7 @@
         "cannot_retrieve_users_admin_configuration": "Benutzerportal-Administration nicht abrufbar",
         "404": "Ressource nicht gefunden",
         "network_error": "Netzwerk-Fehler",
-        "validation_error": "Überprüfungsfehler",
+        "validation_error": "Fehler bei der Validierung",
         "cannot_retrieve_subscription_status": "Status der Subskription kann nicht abgerufen werden.",
         "cannot_retrieve_email_notification_status": "Status für E-Mail Benachrichtigung nicht abgerufen"
     },

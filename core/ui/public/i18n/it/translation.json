@@ -1304,7 +1304,7 @@
         "page_number": "Numero di pagina",
         "items_per_page": "Elementi per pagina:",
         "range_of_total_items": "{range} di {total} elementi",
-        "of_total_pages": "di {totale} pagine",
+        "of_total_pages": "di {total} pagine",
         "previous_page": "Pagina precedente",
         "next_page": "Pagina successiva"
     },

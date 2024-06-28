@@ -73,7 +73,9 @@
         "external_domains": "External user domains",
         "restore_from_cluster_backup_file": "Restore from cluster backup file",
         "not_valid_gpg_file": "Invalid GPG file",
-        "skip_apps_restore": "Skip apps restore"
+        "skip_apps_restore": "Skip apps restore",
+        "cluster_connection_error": "Failed to connect to the leader node at address {value}",
+        "cluster_hostname_error": "FQDN {value} is used by the leader node. Use 'Go Back' and change worker's hostname or domain."
     },
     "action": {
         "remove-favorite": "Remove favorite",
