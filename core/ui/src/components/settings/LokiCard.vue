@@ -35,20 +35,46 @@
         <cv-tag v-else-if="offline" kind="red" :label="offlineText"></cv-tag>
         <cv-tag v-else kind="gray" :label="inactiveText"></cv-tag>
       </div>
-      <div class="row margin-top" v-if="!offline">
-        <NsSvg :svg="InformationFilled16" class="icon ns-info" />
+      <div
+        class="card-row mg-top-sm icon-and-text"
+        v-if="cloudLogManagerForwarderStatus == 'active'"
+      >
+        <NsSvg :svg="CheckmarkFilled16" class="icon ns-success" />
         <span class="margin-left">{{
-          $tc("system_logs.loki.retention_days", retentionDays)
+          $t("cloud_log_manager_forwarder.cloud_log_manager_export_enabled")
         }}</span>
       </div>
-      <div class="row margin-top" v-if="noLogs">
-        <NsSvg :svg="InformationFilled16" class="icon ns-info" />
-        <span class="margin-left">{{ $t("system_logs.loki.no_logs") }}</span>
+      <div
+        class="card-row mg-top-sm icon-and-text"
+        v-if="cloudLogManagerForwarderStatus == 'failed'"
+      >
+        <NsSvg :svg="ErrorFilled16" class="icon ns-error" />
+        <span class="margin-left">{{
+          $t("cloud_log_manager_forwarder.cloud_log_manager_export_failed")
+        }}</span>
       </div>
-    </div>
-    <div class="row margin-top" v-if="active">
-      <!-- Extra content -->
-      <slot name="content"></slot>
+      <div
+        class="card-row mg-top-sm icon-and-text"
+        v-if="syslogForwarderStatus == 'active'"
+      >
+        <NsSvg :svg="CheckmarkFilled16" class="icon ns-success" />
+        <span>{{ $t("syslog_forwarder.syslog_export_enabled") }}</span>
+      </div>
+      <div
+        class="card-row mg-top-sm icon-and-text"
+        v-if="syslogForwarderStatus == 'failed'"
+      >
+        <NsSvg :svg="ErrorFilled16" class="icon ns-error" />
+        <span>{{ $t("syslog_forwarder.syslog_export_failed") }}</span>
+      </div>
+      <div class="card-row mg-top-sm icon-and-text" v-if="!offline">
+        <NsSvg :svg="InformationFilled16" class="icon ns-info" />
+        <span>{{ $tc("system_logs.loki.retention_days", retentionDays) }}</span>
+      </div>
+      <div class="row" v-if="noLogs">
+        <NsSvg :svg="InformationFilled16" class="icon ns-info" />
+        <span>{{ $t("system_logs.loki.no_logs") }}</span>
+      </div>
     </div>
   </cv-tile>
 </template>
@@ -112,17 +138,23 @@ export default {
       type: Boolean,
       required: true,
     },
+    cloudLogManagerForwarderStatus: {
+      type: String,
+      default: "inactive",
+    },
+    syslogForwarderStatus: {
+      type: String,
+      default: "inactive",
+    },
   },
   computed: {
     activeFromFormatted() {
       return this.activeFrom
-        ? this.formatDate(new Date(this.activeFrom), "dd/MM/yyyy")
+        ? this.formatDate(new Date(this.activeFrom), "P")
         : "";
     },
     activeToFormatted() {
-      return this.activeTo
-        ? this.formatDate(new Date(this.activeTo), "dd/MM/yyyy")
-        : "";
+      return this.activeTo ? this.formatDate(new Date(this.activeTo), "P") : "";
     },
     activeText() {
       return this.$t("system_logs.loki.active");

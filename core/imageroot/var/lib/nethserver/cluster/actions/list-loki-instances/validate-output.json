@@ -57,6 +57,65 @@
                         "type": "string",
                         "format": "date-time",
                         "description": "The ISO 8601 date-time when the Loki instance was deactivated."
+                    },
+                    "cloud_log_manager": {
+                        "type": "object",
+                        "description": "Cloud Log Manager forwarder configuration.",
+                        "required": [
+                            "status"
+                        ],
+                        "properties": {
+                            "status": {
+                                "type": "string",
+                                "description": "Forwarder state."
+                            },
+                            "address": {
+                                "type": "string",
+                                "description": "Forwarder address where datas are sent."
+                            },
+                            "tenant": {
+                                "type": "string",
+                                "description": "Cloud Log Manager internal data."
+                            },
+                            "last_timestamp": {
+                                "type": "string",
+                                "description": "Timestamp of the last log sent."
+                            }
+                        }
+
+                    },
+                    "syslog": {
+                        "type": "object",
+                        "description": "Syslog forwarder configuration.",
+                        "required": [
+                            "status"
+                        ],
+                        "properties": {
+                            "status": {
+                                "type": "string",
+                                "description": "Forwarder state."
+                            },
+                            "address": {
+                                "type": "string",
+                                "description": "Forwarder address where data are sent."
+                            },
+                            "port": {
+                                "type": "string",
+                                "description": "External server port."
+                            },
+                            "protocol": {
+                                "type": "string",
+                                "description": "Protocol used to send datas."
+                            },
+                            "format": {
+                                "type": "string",
+                                "description": "Log format."
+                            },
+                            "last_timestamp": {
+                                "type": "string",
+                                "description": "Timestamp of the last log sent."
+                            }
+                        }
                     }
                 }
             }

@@ -39,7 +39,21 @@
         </h2>
       </cv-column>
     </cv-row>
-    <cv-row v-if="loading.lokiInstances">
+    <NsInlineNotification
+      v-if="error.lokiInstances"
+      kind="error"
+      :title="$t('system_logs.loki.cannot_retrieve_loki_instances')"
+      :description="error.lokiInstances"
+      :showCloseButton="false"
+    />
+    <NsInlineNotification
+      v-if="error.subscription"
+      kind="error"
+      :title="$t('error.cannot_retrieve_subscription_status')"
+      :description="error.subscription"
+      :showCloseButton="false"
+    />
+    <cv-row v-if="loading.lokiInstances && loading.subscription">
       <cv-column :md="4" :xlg="4">
         <NsTile :light="true" :icon="Catalog32">
           <cv-skeleton-text
@@ -72,6 +86,8 @@
           :activeFrom="instance.active_from"
           :activeTo="instance.active_to"
           :showStatusBadge="lokiInstances.length > 1"
+          :cloudLogManagerForwarderStatus="instance.cloud_log_manager.status"
+          :syslogForwarderStatus="instance.syslog.status"
         >
           <template #menu>
             <cv-overflow-menu
@@ -80,6 +96,19 @@
               tip-alignment="end"
               class="top-right-overflow-menu"
             >
+              <cv-overflow-menu-item
+                v-if="instance.active"
+                @click="
+                  isEditRetentionDialogOpen = true;
+                  lokiToEdit = instance;
+                "
+                :disabled="instance.offline"
+              >
+                <NsMenuItem
+                  :icon="Edit20"
+                  :label="$t('system_logs.loki.edit_retention')"
+                />
+              </cv-overflow-menu-item>
               <cv-overflow-menu-item
                 @click="
                   isEditLabelDialogOpen = true;
@@ -90,6 +119,32 @@
                 <NsMenuItem
                   :icon="Edit20"
                   :label="$t('system_logs.loki.edit_label')"
+                />
+              </cv-overflow-menu-item>
+              <cv-overflow-menu-item
+                v-if="instance.active"
+                @click="
+                  isCloudLogManagerConfigureDialogOpen = true;
+                  lokiToEdit = instance;
+                "
+              >
+                <NsMenuItem
+                  :icon="DocumentExport16"
+                  :label="
+                    $t('system_logs.loki.configure_cloud_log_manager_forwarder')
+                  "
+                />
+              </cv-overflow-menu-item>
+              <cv-overflow-menu-item
+                v-if="instance.active"
+                @click="
+                  isSyslogConfigureDialogOpen = true;
+                  lokiToEdit = instance;
+                "
+              >
+                <NsMenuItem
+                  :icon="DocumentExport16"
+                  :label="$t('system_logs.loki.configure_syslog_forwarder')"
                 />
               </cv-overflow-menu-item>
               <cv-overflow-menu-item
@@ -107,17 +162,6 @@
                 />
               </cv-overflow-menu-item>
             </cv-overflow-menu>
-          </template>
-          <template #content>
-            <NsButton
-              kind="ghost"
-              :icon="Edit20"
-              @click="
-                isEditRetentionDialogOpen = true;
-                lokiToEdit = instance;
-              "
-              >{{ $t("system_logs.loki.edit_retention") }}</NsButton
-            >
           </template>
         </LokiCard>
       </cv-column>
@@ -142,6 +186,7 @@
               :helper-text="$t('system_logs.loki.days')"
               ref="newRetention"
               :invalid-message="error.newRetention"
+              data-modal-primary-focus
             >
             </cv-text-input>
             <div v-if="error.setLokiInstanceRetention">
@@ -156,7 +201,7 @@
         </template>
       </template>
       <template slot="secondary-button">{{ $t("common.cancel") }}</template>
-      <template slot="primary-button">{{ $t("common.edit") }}</template>
+      <template slot="primary-button">{{ $t("common.save") }}</template>
     </NsModal>
     <NsModal
       size="default"
@@ -181,6 +226,7 @@
               maxlength="24"
               ref="newLabel"
               :invalid-message="error.newLabel"
+              data-modal-primary-focus
             >
             </cv-text-input>
             <div v-if="error.setLokiInstanceLabel">
@@ -195,7 +241,7 @@
         </template>
       </template>
       <template slot="secondary-button">{{ $t("common.cancel") }}</template>
-      <template slot="primary-button">{{ $t("common.edit") }}</template>
+      <template slot="primary-button">{{ $t("common.save") }}</template>
     </NsModal>
     <NsModal
       kind="danger"
@@ -259,6 +305,21 @@
         $t("system_logs.loki.understood_uninstall")
       }}</template>
     </NsModal>
+    <CloudLogManagerConfigureModal
+      :isShown="isCloudLogManagerConfigureDialogOpen"
+      :lokiToEdit="lokiToEdit"
+      :configuration="cloudLogManagerConfiguration"
+      :subscription="subscription"
+      @hide="isCloudLogManagerConfigureDialogOpen = false"
+      @configure="getClusterLokiInstances"
+    />
+    <SyslogConfigureModal
+      :isShown="isSyslogConfigureDialogOpen"
+      :lokiToEdit="lokiToEdit"
+      :configuration="syslogConfiguration"
+      @hide="isSyslogConfigureDialogOpen = false"
+      @configure="getClusterLokiInstances"
+    />
   </cv-grid>
 </template>
 
@@ -270,15 +331,21 @@ import {
   PageTitleService,
   TaskService,
 } from "@nethserver/ns8-ui-lib";
+
 import to from "await-to-js";
 import LokiCard from "@/components/settings/LokiCard";
 import Information16 from "@carbon/icons-vue/es/information/16";
+import DocumentExport16 from "@carbon/icons-vue/es/document--export/16";
+import SyslogConfigureModal from "@/components/settings/SyslogConfigureModal.vue";
+import CloudLogManagerConfigureModal from "@/components/settings/CloudLogManagerConfigureModal.vue";
 
 export default {
   name: "SettingsSystemLogs",
   components: {
     LokiCard,
     Information16,
+    SyslogConfigureModal,
+    CloudLogManagerConfigureModal,
   },
   mixins: [
     TaskService,
@@ -292,24 +359,32 @@ export default {
   },
   data() {
     return {
+      DocumentExport16,
       q: {},
       lokiInstances: [],
+      cloudLogManagerConfiguration: {},
+      syslogConfiguration: {},
+      lokiToEdit: {},
+      subscription: false,
       isEditLabelDialogOpen: false,
       isEditRetentionDialogOpen: false,
+      isSyslogConfigureDialogOpen: false,
+      isCloudLogManagerConfigureDialogOpen: false,
       isUninstallDialogOpen: false,
-      lokiToEdit: null,
       lokiToUninstall: null,
       userInputUninstall: "",
       newRetention: null,
       newLabel: "",
       loading: {
         lokiInstances: false,
+        subscription: false,
         setLokiInstanceRetention: false,
         setLokiInstanceLabel: false,
         uninstallLokiInstance: false,
       },
       error: {
-        getClusterLokiInstances: "",
+        lokiInstances: "",
+        subscription: "",
         setLokiInstanceRetention: "",
         setLokiInstanceLabel: "",
         uninstallLokiInstance: "",
@@ -330,11 +405,12 @@ export default {
   },
   created() {
     this.getClusterLokiInstances();
+    this.getSubscription();
   },
   methods: {
     async getClusterLokiInstances() {
       this.loading.lokiInstances = true;
-      this.error.getClusterLokiInstances = "";
+      this.error.lokiInstances = "";
       const taskAction = "list-loki-instances";
 
       // register to task abortion
@@ -361,7 +437,7 @@ export default {
 
       if (err) {
         console.error(`error creating task ${taskAction}`, err);
-        this.error.getClusterLokiInstances = this.getErrorMessage(err);
+        this.error.lokiInstances = this.getErrorMessage(err);
         return;
       }
     },
@@ -372,6 +448,12 @@ export default {
     },
     getClusterLokiInstancesCompleted(taskContext, taskResult) {
       this.lokiInstances = taskResult.output.instances;
+      for (const instance of this.lokiInstances) {
+        if (instance.active) {
+          this.cloudLogManagerConfiguration = instance.cloud_log_manager;
+          this.syslogConfiguration = instance.syslog;
+        }
+      }
       this.loading.lokiInstances = false;
     },
     validateLokiInstanceRetention() {
@@ -544,6 +626,50 @@ export default {
     },
     uninstallLokiInstanceCompleted() {
       this.getClusterLokiInstances();
+    },
+    async getSubscription() {
+      this.loading.subscription = true;
+      this.error.subscription = "";
+      const taskAction = "get-subscription";
+
+      // register to task abortion
+      this.$root.$once(taskAction + "-aborted", this.getSubscriptionAborted);
+
+      // register to task completion
+      this.$root.$once(
+        taskAction + "-completed",
+        this.getSubscriptionCompleted
+      );
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+          },
+        })
+      );
+
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.subscription = this.getErrorMessage(err);
+        return;
+      }
+    },
+    getSubscriptionAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.subscription = this.$t("error.generic_error");
+      this.loading.subscription = false;
+    },
+    getSubscriptionCompleted(taskContext, taskResult) {
+      const output = taskResult.output;
+      if (output.subscription != null) {
+        this.subscription = true;
+      }
+      this.loading.subscription = false;
     },
   },
 };

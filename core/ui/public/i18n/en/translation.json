@@ -83,7 +83,8 @@
         "remember": "Remember",
         "click_here_to_upload": "Click here to upload",
         "not_active": "Inactive",
-        "active": "Active"
+        "active": "Active",
+        "configure": "Configure"
     },
     "error": {
         "error": "Error",
@@ -397,7 +398,9 @@
         "set-subscription": "Set subscription",
         "get-subscription": "Get subscription",
         "start-support-session": "Start support session",
-        "stop-support-session": "Stop support session"
+        "stop-support-session": "Stop support session",
+        "set-syslog-forwarder": "Set Syslog forwarder",
+        "set-clm-forwarder": "Set Cloud Log Manager forwarder"
     },
     "network": {
         "title": "Network"
@@ -963,7 +966,12 @@
             "uninstall_instance": "Uninstall {name}",
             "understood_uninstall": "I understand, uninstall",
             "valid_number": "Insert a valid number",
-            "greater_than_0": "Enter a number greater than 0"
+            "greater_than_0": "Enter a number greater than 0",
+            "configure_cloud_log_manager_forwarder": "Configure Cloud Log Manager",
+            "configure_syslog_forwarder": "Configure export to Syslog",
+            "cannot_retrieve_system_logs_status": "Cannot retrieve system logs status",
+            "cannot_retrieve_loki_instances": "Cannot retrieve loki instances",
+            "cannot_configure_forwarder": "Cannot configure forwarder"
         }
     },
     "audit_trail": {
@@ -1002,7 +1010,10 @@
         "subscription_status": "Subscription",
         "go_to_subscription": "Go to Subscription",
         "email_notification": "Email notifications",
-        "go_to_settings": "Go to settings"
+        "go_to_settings": "Go to settings",
+        "system_logs": "System logs",
+        "go_to_system_logs": "Go to System logs",
+        "active_instance": "Active instance: {instance}"
     },
     "domains": {
         "title": "Domains and users",
@@ -1346,5 +1357,37 @@
         "port_invalid_type": "It must be a valid number port (1-65535)",
         "port_number_gte": "The port must be greater than 0 (1-65535)",
         "encrypt_smtp_enum": "It must be one of the following: none, starttls, tls"
+    },
+    "syslog_forwarder": {
+        "configure_export_to_syslog": "Configure export to Syslog",
+        "export_to_syslog": "Export to Syslog",
+        "hostname_ip_address": "Hostname or IP address",
+        "port": "Port",
+        "protocol": "Protocol",
+        "format": "Format",
+        "syslog_export_enabled": "Export to Syslog enabled",
+        "syslog_export_failed": "Export to Syslog failed",
+        "export_starting_date_tooltip": "Lorem Ipsum",
+        "format_tooltip": "Lorem Ipsum",
+        "start_date": "Start date",
+        "start_time": "Start time (24-hour)"
+    },
+    "cloud_log_manager_forwarder": {
+        "configure_export_to_cloud_log_manager": "Configure Cloud Log Manager",
+        "export_to_cloud_log_manager": "Export to Cloud Log Manager",
+        "address": "Cloud Log Manager URL",
+        "tenant": "Tenant",
+        "export_starting_date": "Export start date",
+        "use_last_timestamp": "Use last timestamp ({timestamp})",
+        "choose_a_datetime": "Choose date and time",
+        "tenant_tooltip": "Lorem Ipsum",
+        "export_starting_date_tooltip": "Lorem Ipsum",
+        "cloud_log_manager_export_enabled": "Export to Cloud Log Manager enabled",
+        "cloud_log_manager_export_failed": "Export to Cloud Log Manager failed",
+        "start_date": "Start date",
+        "start_time": "Start time (24-hour)",
+        "more_details": "More details",
+        "available_with_subscription_title": "Available with subscription",
+        "available_with_subscription": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
     }
 }
