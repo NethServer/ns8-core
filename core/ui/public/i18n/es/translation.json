@@ -216,7 +216,8 @@
         "type_to_confirm": "Escribe '{name}' para confirmar la eliminación",
         "remove": "Eliminar",
         "not_active": "Inactivo",
-        "active": "Activo"
+        "active": "Activo",
+        "configure": "Configure"
     },
     "backup": {
         "aws": "Amazon S3",
@@ -540,7 +541,9 @@
         "start-support-session": "Iniciar sesión de soporte",
         "get-subscription": "Obtener suscripción",
         "register-cluster-subscription": "Registrar suscripción al clúster",
-        "set-retention": "Fijar la retención"
+        "set-retention": "Fijar la retención",
+        "set-syslog-forwarder": "Set Syslog forwarder",
+        "set-clm-forwarder": "Set Cloud Log Manager forwarder"
     },
     "settings_cluster_admins": {
         "user_already_exists": "El administrador ya existe",
@@ -732,7 +735,12 @@
             "edit_label": "Editar la etiqueta",
             "type_to_confirm": "Escribe <strong>{name}</strong> para confirmar",
             "days": "Días",
-            "no_logs": "Esta instancia no contiene ningún registro"
+            "no_logs": "Esta instancia no contiene ningún registro",
+            "cannot_configure_forwarder": "Cannot configure forwarder",
+            "configure_syslog_forwarder": "Configure export to Syslog",
+            "cannot_retrieve_system_logs_status": "Cannot retrieve system logs status",
+            "cannot_retrieve_loki_instances": "Cannot retrieve loki instances",
+            "configure_cloud_log_manager_forwarder": "Configure Cloud Log Manager"
         },
         "loki_instance_title": "Instancia múltiple de Loki",
         "loki_tooltip": "Busca registros de la instancia activa de Loki, de un nodo líder anterior o de una copia de seguridad de Loki.",
@@ -745,14 +753,14 @@
         "copy_task_data_to_clipboard": "Copiar seguimiento de tarea",
         "configure": "Configurar",
         "subtask_failed_validation": "Subtarea <strong>{task}</strong> validación fallida",
-        "task_running": "Tarea <strong>{task}</strong> se está ejecutando",
+        "task_running": "La tarea {task} se está ejecutando",
         "subtask_failed": "Subtarea <strong>{task}</strong> fallida",
         "subtask_pending": "Subtarea <strong>{task}</strong> se encuentra pendiente",
         "task_id": "ID de tarea",
-        "task_completed": "Tarea <strong>{task}</strong> completada",
-        "task_failed": "Tarea <strong>{task}</strong> fallida",
+        "task_completed": "La tarea {task} está completada",
+        "task_failed": "Error en la tarea {task}",
         "task_failed_validation": "Tarea <strong>{task}</strong> validación fallida",
-        "task_pending": "Tarea <strong>{task}</strong> se encuentra pendiente",
+        "task_pending": "Tarea {task} se encuentra pendiente",
         "subtask_running": "Subtarea <strong>{task}</strong> se está ejecutando",
         "subtask_completed": "Subtarea <strong>{task}</strong> completada"
     },
@@ -828,7 +836,7 @@
         "change_admin_password_description": "Esto es necesario por razones de seguridad",
         "welcome": "Bienvenid@ a {product}",
         "vpn_endpoint_address_tooltip": "Los nodos trabajadores utilizan esta dirección para conectarse con el líder. Asegúrate que resuelve correctamente y es accesible para los nodos trabajadores",
-        "skip_apps_restore_2": "Puedes restaurar aplicaciones más tarde en la página <strong>Copia de seguridad</strong>",
+        "skip_apps_restore_2": "Puede restaurar aplicaciones más tarde desde la página copias de seguridad",
         "vpn_cidr": "Red VPN (CIDR)",
         "select_apps_to_restore": "Seleccionar aplicaciones para restaurar",
         "skip_apps_restore": "Saltar restauración de aplicaciones",
@@ -849,8 +857,8 @@
         "the_join_code_cannot_be_parsed": "El código de unión no se puede analizar",
         "cluster_tls_verify_error": "El certificado del nodo líder no es válido",
         "the_join_code_can_not_be_decoded": "El código de unión no se puede decodificar",
-        "cluster_connection_error": "Failed to connect to the leader node at address {value}",
-        "cluster_hostname_error": "FQDN {value} is used by the leader node. Use 'Go Back' and change worker's hostname or domain."
+        "cluster_connection_error": "No se pudo conectar con el nodo principal en la dirección {value}",
+        "cluster_hostname_error": "El nodo principal utiliza el FQDN {valor}. Utilice 'Atrás' y cambie el host o el nombre de dominio."
     },
     "settings_account": {
         "i_have_stored_setup_key": "He guardado la <strong>clave de configuración 2FA</strong> en un lugar seguro",
@@ -988,7 +996,10 @@
         "go_to_subscription": "Suscripción",
         "subscription_status": "Suscripción",
         "email_notification": "Notificaciones por correo electrónico",
-        "go_to_settings": "Ir a los ajustes"
+        "go_to_settings": "Ir a los ajustes",
+        "go_to_system_logs": "Go to System logs",
+        "active_instance": "Active instance: {instance}",
+        "system_logs": "System logs"
     },
     "password": {
         "long_enough": "Suficientemente larga",
@@ -1346,5 +1357,37 @@
         "authentication_token_placeholder": "Pegue aquí el token",
         "session_id": "ID de sesión",
         "start_session_support": "Iniciar sesión"
+    },
+    "syslog_forwarder": {
+        "start_time": "Start time (24-hour)",
+        "port": "Port",
+        "configure_export_to_syslog": "Configure export to Syslog",
+        "protocol": "Protocol",
+        "format": "Format",
+        "format_tooltip": "Lorem Ipsum",
+        "export_starting_date_tooltip": "Lorem Ipsum",
+        "syslog_export_failed": "Export to Syslog failed",
+        "export_to_syslog": "Export to Syslog",
+        "hostname_ip_address": "Hostname or IP address",
+        "start_date": "Start date",
+        "syslog_export_enabled": "Export to Syslog enabled"
+    },
+    "cloud_log_manager_forwarder": {
+        "more_details": "More details",
+        "tenant_tooltip": "Lorem Ipsum",
+        "tenant": "Tenant",
+        "export_starting_date": "Export start date",
+        "export_starting_date_tooltip": "Lorem Ipsum",
+        "cloud_log_manager_export_failed": "Export to Cloud Log Manager failed",
+        "address": "Cloud Log Manager URL",
+        "cloud_log_manager_export_enabled": "Export to Cloud Log Manager enabled",
+        "use_last_timestamp": "Use last timestamp ({timestamp})",
+        "choose_a_datetime": "Choose date and time",
+        "available_with_subscription_title": "Available with subscription",
+        "start_date": "Start date",
+        "start_time": "Start time (24-hour)",
+        "available_with_subscription": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+        "configure_export_to_cloud_log_manager": "Configure Cloud Log Manager",
+        "export_to_cloud_log_manager": "Export to Cloud Log Manager"
     }
 }
