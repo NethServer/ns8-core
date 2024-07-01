@@ -242,7 +242,12 @@
             "edit_label": "Modifica etichetta",
             "type_to_confirm": "Digita '{name}' per confermare",
             "days": "Giorni",
-            "no_logs": "Questa istanza non contiene alcun log"
+            "no_logs": "Questa istanza non contiene alcun log",
+            "cannot_configure_forwarder": "Cannot configure forwarder",
+            "configure_syslog_forwarder": "Configure export to Syslog",
+            "cannot_retrieve_system_logs_status": "Cannot retrieve system logs status",
+            "cannot_retrieve_loki_instances": "Cannot retrieve loki instances",
+            "configure_cloud_log_manager_forwarder": "Configure Cloud Log Manager"
         },
         "loki_tooltip": "Ricerca log dall'istanza Loki attiva, da un precedente nodo leader o da un backup di Loki.",
         "loki_instance_description": "I log sono memorizzati in più istanze Loki. Scegline una dal campo sottostante.",
@@ -568,7 +573,9 @@
         "start-support-session": "Avvia sessione di supporto",
         "get-subscription": "Ottieni subscription",
         "register-cluster-subscription": "Registra la subscription del cluster",
-        "set-retention": "Imposta conservazione"
+        "set-retention": "Imposta conservazione",
+        "set-syslog-forwarder": "Set Syslog forwarder",
+        "set-clm-forwarder": "Set Cloud Log Manager forwarder"
     },
     "backup": {
         "configure": "Configura",
@@ -794,7 +801,7 @@
         "enabled": "Abilitato",
         "disabled": "Disabilitato",
         "delete": "Elimina",
-        "advanced": "Avanzate",
+        "advanced": "Advanced",
         "join_code": "Codice di join",
         "cluster_label": "Etichetta cluster",
         "all": "Tutto",
@@ -871,7 +878,8 @@
         "got_it": "Ho capito",
         "click_here_to_upload": "Clicca qui per l'upload",
         "not_active": "Inattivo",
-        "active": "Attivo"
+        "active": "Attivo",
+        "configure": "Configure"
     },
     "error": {
         "error": "Errore",
@@ -1094,7 +1102,10 @@
         "go_to_subscription": "Vai a Subscription",
         "subscription_status": "Subscription",
         "email_notification": "Notifiche email",
-        "go_to_settings": "Vai alle impostazioni"
+        "go_to_settings": "Vai alle impostazioni",
+        "go_to_system_logs": "Go to System logs",
+        "active_instance": "Active instance: {instance}",
+        "system_logs": "System logs"
     },
     "domain_users": {
         "attributes": "Attributi",
@@ -1346,5 +1357,37 @@
         "subscription_status": "Stato subscription",
         "session_id": "ID sessione",
         "start_session_support": "Avvia sessione"
+    },
+    "cloud_log_manager_forwarder": {
+        "tenant_tooltip": "Lorem Ipsum",
+        "tenant": "Tenant",
+        "export_starting_date": "Export start date",
+        "export_starting_date_tooltip": "Lorem Ipsum",
+        "cloud_log_manager_export_failed": "Export to Cloud Log Manager failed",
+        "address": "Cloud Log Manager URL",
+        "cloud_log_manager_export_enabled": "Export to Cloud Log Manager enabled",
+        "more_details": "More details",
+        "use_last_timestamp": "Use last timestamp ({timestamp})",
+        "choose_a_datetime": "Choose date and time",
+        "available_with_subscription_title": "Available with subscription",
+        "start_date": "Start date",
+        "start_time": "Start time (24-hour)",
+        "available_with_subscription": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+        "configure_export_to_cloud_log_manager": "Configure Cloud Log Manager",
+        "export_to_cloud_log_manager": "Export to Cloud Log Manager"
+    },
+    "syslog_forwarder": {
+        "start_time": "Start time (24-hour)",
+        "port": "Port",
+        "configure_export_to_syslog": "Configure export to Syslog",
+        "protocol": "Protocol",
+        "format": "Format",
+        "format_tooltip": "Lorem Ipsum",
+        "export_starting_date_tooltip": "Lorem Ipsum",
+        "syslog_export_failed": "Export to Syslog failed",
+        "export_to_syslog": "Export to Syslog",
+        "hostname_ip_address": "Hostname or IP address",
+        "start_date": "Start date",
+        "syslog_export_enabled": "Export to Syslog enabled"
     }
 }

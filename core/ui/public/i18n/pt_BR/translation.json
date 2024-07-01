@@ -83,7 +83,8 @@
         "close": "Close",
         "enabled": "Enabled",
         "not_active": "Inactive",
-        "active": "Active"
+        "active": "Active",
+        "configure": "Configure"
     },
     "settings_http_routes": {
         "request_lets_encrypt_certificate": "Request Let's Encrypt certificate",
@@ -568,7 +569,12 @@
             "edit_label": "Edit label",
             "type_to_confirm": "Type <strong>{name}</strong> to confirm",
             "days": "Days",
-            "no_logs": "This instance does not contains any log"
+            "no_logs": "This instance does not contains any log",
+            "cannot_configure_forwarder": "Cannot configure forwarder",
+            "configure_syslog_forwarder": "Configure export to Syslog",
+            "cannot_retrieve_system_logs_status": "Cannot retrieve system logs status",
+            "cannot_retrieve_loki_instances": "Cannot retrieve loki instances",
+            "configure_cloud_log_manager_forwarder": "Configure Cloud Log Manager"
         },
         "loki_instance_title": "Multiple Loki instance",
         "loki_tooltip": "Search logs from the active Loki instance, from a former leader node or from a Loki backup.",
@@ -766,7 +772,9 @@
         "start-support-session": "Start support session",
         "get-subscription": "Get subscription",
         "register-cluster-subscription": "Register cluster subscription",
-        "set-retention": "Set retention"
+        "set-retention": "Set retention",
+        "set-syslog-forwarder": "Set Syslog forwarder",
+        "set-clm-forwarder": "Set Cloud Log Manager forwarder"
     },
     "backup": {
         "cluster": "Local storage",
@@ -1028,7 +1036,10 @@
         "go_to_subscription": "Go to Subscription",
         "subscription_status": "Subscription",
         "email_notification": "Email notifications",
-        "go_to_settings": "Go to settings"
+        "go_to_settings": "Go to settings",
+        "go_to_system_logs": "Go to System logs",
+        "active_instance": "Active instance: {instance}",
+        "system_logs": "System logs"
     },
     "settings_tls_certificates": {
         "custom": "Uploaded",
@@ -1346,5 +1357,37 @@
         "subscription_status": "Subscription status",
         "session_id": "Session ID",
         "start_session_support": "Start session"
+    },
+    "syslog_forwarder": {
+        "protocol": "Protocol",
+        "start_time": "Start time (24-hour)",
+        "port": "Port",
+        "configure_export_to_syslog": "Configure export to Syslog",
+        "format": "Format",
+        "format_tooltip": "Lorem Ipsum",
+        "export_starting_date_tooltip": "Lorem Ipsum",
+        "syslog_export_failed": "Export to Syslog failed",
+        "export_to_syslog": "Export to Syslog",
+        "hostname_ip_address": "Hostname or IP address",
+        "start_date": "Start date",
+        "syslog_export_enabled": "Export to Syslog enabled"
+    },
+    "cloud_log_manager_forwarder": {
+        "more_details": "More details",
+        "available_with_subscription_title": "Available with subscription",
+        "tenant_tooltip": "Lorem Ipsum",
+        "tenant": "Tenant",
+        "export_starting_date": "Export start date",
+        "export_starting_date_tooltip": "Lorem Ipsum",
+        "cloud_log_manager_export_failed": "Export to Cloud Log Manager failed",
+        "address": "Cloud Log Manager URL",
+        "cloud_log_manager_export_enabled": "Export to Cloud Log Manager enabled",
+        "use_last_timestamp": "Use last timestamp ({timestamp})",
+        "choose_a_datetime": "Choose date and time",
+        "start_date": "Start date",
+        "start_time": "Start time (24-hour)",
+        "available_with_subscription": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+        "configure_export_to_cloud_log_manager": "Configure Cloud Log Manager",
+        "export_to_cloud_log_manager": "Export to Cloud Log Manager"
     }
 }
