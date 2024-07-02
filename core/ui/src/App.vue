@@ -330,8 +330,10 @@ export default {
           this.onClusterInitialized();
           this.isLoaded = true;
         } else {
-          // redirect to cluster initialization page
-          this.$router.replace("/init?page=welcome");
+          if (this.$route.name !== "InitializeCluster") {
+            // redirect to cluster initialization page
+            this.$router.replace("/init?page=welcome");
+          }
           this.isLoaded = true;
         }
         this.configureClusterInitializationRedirect();

@@ -540,8 +540,10 @@ export default {
       this.getEmailNotification();
     },
     async getSupportSession() {
+      if (!this.leaderNode) {
+        return;
+      }
       this.error.getSupportSession = "";
-      // this.support_active = false;
       this.loading.getSupportSession = true;
       const taskAction = "get-support-session";
 
