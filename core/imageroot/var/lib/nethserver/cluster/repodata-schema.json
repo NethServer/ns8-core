@@ -115,6 +115,10 @@
       "docs": {
         "type": "object",
         "parameters": {
+          "terms_url": {
+            "type": "uri",
+            "description": "Optional link to the application Terms & Conditions document"
+          },
           "documentation_url": {
             "type": "uri",
             "description": "Link to the package documentation"
