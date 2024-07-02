@@ -28,6 +28,7 @@
         <NsTextInput
           v-if="toggleEnabled"
           :label="$t('cloud_log_manager_forwarder.address')"
+          :placeholder="$t('cloud_log_manager_forwarder.address_placeholder')"
           v-model="address"
           :invalid-message="error.address"
         />
@@ -47,15 +48,6 @@
           <label for="startTime" :class="`${carbonPrefix}--label`">{{
             $t("cloud_log_manager_forwarder.export_starting_date")
           }}</label>
-          <cv-interactive-tooltip class="info mg-left-xs">
-            <template slot="content">
-              <p>
-                {{
-                  $t("cloud_log_manager_forwarder.export_starting_date_tooltip")
-                }}
-              </p>
-            </template>
-          </cv-interactive-tooltip>
           <cv-radio-group :vertical="true">
             <cv-radio-button
               ref="radioVal"
@@ -105,7 +97,7 @@
           $t('cloud_log_manager_forwarder.available_with_subscription')
         "
         :showCloseButton="false"
-        :actionLabel="$t('cloud_log_manager_forwarder.more_details')"
+        :actionLabel="$t('cloud_log_manager_forwarder.learn_more')"
         @action="goToMoreDetails"
       />
       <NsInlineNotification
@@ -187,7 +179,7 @@ export default {
     },
     goToMoreDetails() {
       window.open(
-        "https://www.nethesis.it/servizi/cloud-log-manager",
+        "https://docs.nethserver.org/projects/ns8/en/latest/log_server.html#cloud-log-manager",
         "_blank"
       );
     },
@@ -234,7 +226,7 @@ export default {
       return isValidationOk;
     },
     async setCloudLogManager() {
-      if (!this.validateCloudLogManagerInput()) {
+      if (this.toggleEnabled && !this.validateCloudLogManagerInput()) {
         return;
       }
 
