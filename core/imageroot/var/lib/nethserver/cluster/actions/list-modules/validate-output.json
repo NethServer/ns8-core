@@ -99,6 +99,11 @@
         "type": "string",
         "description": "Unique name of a package"
       },
+      "upstream_name": {
+        "type": "string",
+        "description": "The alternative software name and version number, if they differ from the package name and version",
+        "example": "Nextcloud Hub 7"
+      },
       "description": {
         "type": "object",
         "description": "A map of language codes (eg. en, it) with the translated description"
