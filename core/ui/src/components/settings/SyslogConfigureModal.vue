@@ -31,7 +31,8 @@
             :invalid-message="error.address"
           />
           <NsTextInput
-            :label="$t('syslog_forwarder.port')"
+            :label="$t('syslog_forwarder.port_number')"
+            :placeholder="$t('syslog_forwarder.port_placeholder')"
             v-model="port"
             :invalid-message="error.port"
           />
@@ -39,23 +40,16 @@
             <label for="protocol" :class="`${carbonPrefix}--label`">{{
               $t("syslog_forwarder.protocol")
             }}</label>
-            <cv-interactive-tooltip class="info mg-left-xs">
-              <template slot="content">
-                <p>
-                  {{ $t("syslog_forwarder.export_starting_date_tooltip") }}
-                </p>
-              </template>
-            </cv-interactive-tooltip>
             <cv-radio-group :vertical="true">
               <cv-radio-button
                 ref="protocolVal"
-                :label="$t('UDP')"
+                :label="$t('syslog_forwarder.udp')"
                 value="udp"
                 v-model="protocolVal"
               />
               <cv-radio-button
                 ref="protocolVal"
-                :label="$t('TCP')"
+                :label="$t('syslog_forwarder.tcp')"
                 value="tcp"
                 v-model="protocolVal"
               />
@@ -67,21 +61,29 @@
             }}</label>
             <cv-interactive-tooltip class="info mg-left-xs">
               <template slot="content">
-                <p>
-                  {{ $t("syslog_forwarder.format_tooltip") }}
-                </p>
+                <a
+                  href="https://www.rfc-editor.org/rfc/rfc3164"
+                  target="_blank"
+                  >{{ $t("syslog_forwarder.rfc3164") }}</a
+                >
+                <br />
+                <a
+                  href="https://www.rfc-editor.org/rfc/rfc5424"
+                  target="_blank"
+                  >{{ $t("syslog_forwarder.rfc5424") }}</a
+                >
               </template>
             </cv-interactive-tooltip>
             <cv-radio-group :vertical="true">
               <cv-radio-button
                 ref="formatVal"
-                :label="$tc('rfc3164')"
+                :label="$t('syslog_forwarder.rfc3164')"
                 value="rfc3164"
                 v-model="formatVal"
               />
               <cv-radio-button
                 ref="formatVal"
-                :label="$t('rfc5424')"
+                :label="$t('syslog_forwarder.rfc5424')"
                 value="rfc5424"
                 v-model="formatVal"
               />
@@ -90,22 +92,13 @@
         </template>
         <div v-if="toggleEnabled && this.configuration.last_timestamp != ''">
           <label for="startTime" :class="`${carbonPrefix}--label`">{{
-            $t("cloud_log_manager_forwarder.export_starting_date")
+            $t("syslog_forwarder.export_starting_date")
           }}</label>
-          <cv-interactive-tooltip class="info mg-left-xs">
-            <template slot="content">
-              <p>
-                {{
-                  $t("cloud_log_manager_forwarder.export_starting_date_tooltip")
-                }}
-              </p>
-            </template>
-          </cv-interactive-tooltip>
           <cv-radio-group :vertical="true">
             <cv-radio-button
               ref="dateVal"
               :label="
-                $t('cloud_log_manager_forwarder.use_last_timestamp', {
+                $t('syslog_forwarder.use_last_timestamp', {
                   timestamp: this.lastTimestampFormatted,
                 })
               "
@@ -114,7 +107,7 @@
             />
             <cv-radio-button
               ref="dateVal"
-              :label="$t('cloud_log_manager_forwarder.choose_a_datetime')"
+              :label="$t('syslog_forwarder.choose_a_datetime')"
               value="choose_date_time"
               v-model="dateVal"
             />
@@ -124,7 +117,7 @@
           <cv-column>
             <cv-date-picker
               kind="single"
-              :date-label="$t('cloud_log_manager_forwarder.start_date')"
+              :date-label="$t('syslog_forwarder.start_date')"
               class="interval-date mg-bottom-md"
               :cal-options="calOptions"
               v-model="date"
@@ -132,7 +125,7 @@
             </cv-date-picker>
             <NsTimePicker
               hideClearButton
-              :label="$t('cloud_log_manager_forwarder.start_time')"
+              :label="$t('syslog_forwarder.start_time')"
               class="interval-time mg-bottom-140"
               v-model="time"
             >
@@ -274,7 +267,7 @@ export default {
       return isValidationOk;
     },
     async setSyslog() {
-      if (!this.validateSyslogInput()) {
+      if (this.toggleEnabled && !this.validateSyslogInput()) {
         return;
       }
 
