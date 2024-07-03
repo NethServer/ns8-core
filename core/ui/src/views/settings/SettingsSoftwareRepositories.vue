@@ -445,7 +445,8 @@ export default {
       }
     },
     listRepositoriesCompleted(taskContext, taskResult) {
-      this.repositories = taskResult.output;
+      const repositories = taskResult.output;
+      this.repositories = repositories.sort(this.sortByProperty("name"));
       this.loading.repositories = false;
     },
     validateNewRepository() {
