@@ -238,6 +238,10 @@ def _fetch_metadata_json(module_id, image_name):
 
 def list_available(rdb, skip_core_modules = False):
     """Iterate over enabled repositories and return available modules respecting the repository priority."""
+    modules = _get_available_modules(rdb, skip_core_modules)
+    return list(modules.values())
+
+def _get_available_modules(rdb, skip_core_modules = False):
     modules = {}
     repositories = []
     # List all modules from enabled repositories
@@ -269,7 +273,7 @@ def list_available(rdb, skip_core_modules = False):
         vmetadata["updates"] = []
         vmetadata["id"] = image_name
         modules[module_source] = vmetadata
-    return list(modules.values())
+    return modules
 
 def list_installed(rdb, skip_core_modules = False):
     installed = {}
@@ -315,43 +319,54 @@ def list_installed_core(rdb):
     return installed
 
 
-def list_updates(rdb, skip_core_modules = False):
+def list_updates(rdb, skip_core_modules=False, with_testing_update=False):
     updates = []
-    installed = list_installed(rdb, skip_core_modules)
-    available = list_available(rdb, skip_core_modules)
+    installed_modules = list_installed(rdb, skip_core_modules)
+    available_modules = _get_available_modules(rdb, skip_core_modules)
 
-    for module in available:
-        if module["source"] not in installed.keys():
-            continue
-        newest_version = None
-        for version in module["versions"]:
+    repo_testing_cache = {}
+    def repo_has_testing_flag(repo_name):
+        if repo_name not in repo_testing_cache:
+            repo_testing_cache[repo_name] = rdb.hget(f'cluster/repository/{repo_name}', 'testing') == "1"
+        return repo_testing_cache[repo_name]
+
+    flat_instance_list = list(mi for module_instances in installed_modules.values() for mi in module_instances)
+    for instance in flat_instance_list:
+        if not instance['source'] in available_modules:
+            continue # skip instance if is not available from any repository
+        try:
+            current_version = semver.parse_version_info(instance['version'])
+        except:
+            continue # skip development version: instance must be updated manually
+        # Assuming the versions array is sorted in decreasing oreder, look
+        # up update candidates for both stable and testing updates:
+        update_candidate = None
+        testing_update_candidate = None
+        available_module = available_modules[instance['source']]
+        repository_name = available_module['repository']
+        for atag in list(aver['tag'] for aver in available_module['versions']):
             try:
-                # skip bogus version tag
-                v = semver.Version.parse(version["tag"])
+                available_version = semver.parse_version_info(atag)
             except:
-                continue
-            # Skip testing versions if testing is disabled
-            testing = rdb.hget(f'cluster/repository/{module["repository"]}', 'testing')
-            if testing != "1" and not v.prerelease is None:
-                continue
-            newest_version = version["tag"]
-            break
+                continue # skip non-semver available tag
+            if available_version <= current_version:
+                continue # ignore tags that do not update the current one
+            if update_candidate is None and (
+                repo_has_testing_flag(repository_name)
+                or not available_version.prerelease
+            ):
+                update_candidate = available_version
+            if testing_update_candidate is None and with_testing_update and available_version.prerelease:
+                testing_update_candidate = available_version
 
-        # Handle multiple instances of the same module
-        for instance in installed[module["source"]]:
-            try:
-                cur = semver.Version.parse(instance["version"])
-            except:
-                # skip installed instanced with dev version
-                continue
-
-            # Version are already sorted
-            # First match is the newest release
-            if v > cur:
-                # Create a copy to not change original object
-                update = instance.copy()
-                update["update"] = version["tag"]
-                updates.append(update)
+        # If a stable or testing candidate has been found, add this
+        # instance to the updates list.
+        if update_candidate:
+            instance['update'] = str(update_candidate)
+        if testing_update_candidate:
+            instance['testing_update'] = str(testing_update_candidate)
+        if 'update' in instance or 'testing_update' in instance:
+            updates.append(instance)
 
     return updates
 

@@ -226,9 +226,13 @@
             "type": "string",
             "description": "A valid semantic version extracted from image tag"
           },
+          "testing_update": {
+            "type": "string",
+            "description": "A semver prerelease tag, greater than 'version' field"
+          },
           "update": {
             "type": "string",
-            "description": "A valid semantic version extracted from image tag wich should be greater than 'version' field"
+            "description": "A semver tag greater than 'version' field"
           }
         },
         "required": [
