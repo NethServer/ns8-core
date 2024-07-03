@@ -55,6 +55,15 @@
             </span>
             <span class="value">
               {{ app.versions.length ? app.versions[0].tag : "-" }}
+              <span v-if="app.upstream_name"> ({{ app.upstream_name }}) </span>
+            </span>
+          </div>
+        </div>
+        <div class="key-value-setting">
+          <div>
+            <span class="label">{{ $t("software_center.repository") }}</span>
+            <span class="value">
+              {{ app.repository || "-" }}
             </span>
           </div>
         </div>
