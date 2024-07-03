@@ -64,7 +64,7 @@
                 >
                   {{ category }}
                   <span v-if="index < getApplicationCategories(app).length - 1"
-                    >&#8226;</span
+                    >&bull;</span
                   >
                 </span>
               </div>

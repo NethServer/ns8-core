@@ -901,7 +901,10 @@
             "communication": "Communication",
             "security": "Security"
         },
-        "images_label": "Images"
+        "images_label": "Images",
+        "terms_of_use": "Terms of Use",
+        "rootfull_app_warning_title": "Administrative privileges",
+        "rootfull_app_warning_description": "{appName} requires administrative privileges. It can access and modify all data on the cluster."
     },
     "system_logs": {
         "title": "System logs",

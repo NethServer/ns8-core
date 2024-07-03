@@ -38,6 +38,21 @@
         <div class="description">
           {{ getApplicationDescription(app) }}
         </div>
+        <!-- warning for rootfull app -->
+        <NsInlineNotification
+          v-if="
+            app.versions.length &&
+            app.versions[0]['labels']['org.nethserver.rootfull'] === '1'
+          "
+          kind="warning"
+          :title="$t('software_center.rootfull_app_warning_title')"
+          :description="
+            $t('software_center.rootfull_app_warning_description', {
+              appName: app.name,
+            })
+          "
+          :showCloseButton="false"
+        />
         <div class="key-value-setting">
           <div>
             <span class="label">{{
@@ -138,6 +153,14 @@
                 {{ $t("software_center.source_code") }}
               </cv-link>
             </span>
+            <template v-if="app.docs.terms_url">
+              &bull;
+              <span>
+                <cv-link :href="app.docs.terms_url" target="_blank">
+                  {{ $t("software_center.terms_of_use") }}
+                </cv-link>
+              </span>
+            </template>
           </div>
         </div>
       </template>
