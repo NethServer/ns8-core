@@ -183,6 +183,57 @@
         $t("settings_sw_repositories.create_repository")
       }}</template>
       <template slot="content">
+        <NsInlineNotification
+          kind="warning"
+          :title="
+            $t('settings_sw_repositories.create_repository_warning_title')
+          "
+          :showCloseButton="false"
+        >
+          <template slot="description">
+            <p class="mg-top-sm mg-bottom-sm">
+              {{
+                $t(
+                  "settings_sw_repositories.create_repository_warning_description_1"
+                )
+              }}
+            </p>
+            <ul class="unordered-list">
+              <li>
+                {{
+                  $t("settings_sw_repositories.create_repository_warning_li_1")
+                }}
+              </li>
+              <li>
+                {{
+                  $t("settings_sw_repositories.create_repository_warning_li_2")
+                }}
+              </li>
+              <li>
+                {{
+                  $t("settings_sw_repositories.create_repository_warning_li_3")
+                }}
+              </li>
+              <li>
+                {{
+                  $t("settings_sw_repositories.create_repository_warning_li_4")
+                }}
+              </li>
+              <li>
+                {{
+                  $t("settings_sw_repositories.create_repository_warning_li_5")
+                }}
+              </li>
+              <p class="mg-top-sm">
+                {{
+                  $t(
+                    "settings_sw_repositories.create_repository_warning_description_2"
+                  )
+                }}
+              </p>
+            </ul>
+          </template>
+        </NsInlineNotification>
         <cv-form @submit.prevent="createRepository">
           <cv-text-input
             :label="$t('settings_sw_repositories.name')"

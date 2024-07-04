@@ -649,7 +649,15 @@
         "repository_not_accessible": "Repository not accessible",
         "repository_is_going_to_be_deleted": "Repository {object} is going to be deleted...",
         "enable_repository": "Enable repository {name}",
-        "disable_repository": "Disable repository {name}"
+        "disable_repository": "Disable repository {name}",
+        "create_repository_warning_title": "Security hazard",
+        "create_repository_warning_description_1": "Adding a third-party software repository can pose significant risks:",
+        "create_repository_warning_li_1": "Potential security threats",
+        "create_repository_warning_li_2": "Possible system instability",
+        "create_repository_warning_li_3": "Privacy concerns",
+        "create_repository_warning_li_4": "Uncertain update and support status",
+        "create_repository_warning_li_5": "Granting system access to unknown sources",
+        "create_repository_warning_description_2": "Only proceed if you trust the repository source and understand these risks. Research the repository's reputation before adding it to the cluster."
     },
     "settings_http_routes": {
         "title": "HTTP routes",
@@ -905,8 +913,8 @@
         },
         "images_label": "Images",
         "terms_of_use": "Terms of Use",
-        "rootfull_app_warning_title": "Administrative privileges",
-        "rootfull_app_warning_description": "{appName} requires administrative privileges. It can access and modify all data on the cluster."
+        "rootfull_app_warning_title": "Security hazard",
+        "rootfull_app_warning_description": "{appName} requires administrative privileges. After installation it will have full access to the cluster: this can pose significant security risks."
     },
     "system_logs": {
         "title": "System logs",
