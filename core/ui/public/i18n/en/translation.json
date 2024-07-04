@@ -647,7 +647,9 @@
         "repository_same_name_already_exists": "A repository with this name already exists",
         "repository_same_url_already_exists": "A repository with this URL already exists",
         "repository_not_accessible": "Repository not accessible",
-        "repository_is_going_to_be_deleted": "Repository {object} is going to be deleted..."
+        "repository_is_going_to_be_deleted": "Repository {object} is going to be deleted...",
+        "enable_repository": "Enable repository {name}",
+        "disable_repository": "Disable repository {name}"
     },
     "settings_http_routes": {
         "title": "HTTP routes",
