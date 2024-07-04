@@ -51,13 +51,33 @@ def _get_downloaded_logos():
             logos[os.path.basename(app)] = logo
     return logos
 
-def _parse_repository_metadata(repository_name, repository_url, repository_updated, repodata, skip_core_modules = False, skip_testing_versions = False):
+def _calc_certification_level(repository_authority, package, hsubscription=None):
+    if repository_authority in ["distfeed.nethserver.org", "subscription.nethserver.com"]:
+        certification_level = 3
+    elif repository_authority == "forge.nethserver.org":
+        certification_level = 2
+    else:
+        certification_level = 1
+    # If we trust the repo metadata, elevate up to level 5
+    if certification_level == 3:
+        if package["source"].startswith("ghcr.io/nethserver/") or package["source"].startswith("ghcr.io/nethesis/"):
+            certification_level = 4 if hsubscription is None else 5
+
+    return certification_level
+
+def _parse_repository_metadata(repository_name, repository_url, repository_updated, repodata, skip_core_modules=False, skip_testing_versions=False, hsubscription=None):
     modules = []
 
     try:
         repodata = json.loads(repodata)
     except:
         return modules
+
+    try:
+        repository_authority = urllib.parse.urlparse(repository_url).hostname
+    except Exception as ex:
+        repository_authority = None
+        print(agent.SD_WARNING + f"Unable to parse repository {repository_name} URL: {repository_url}", ex, file=sys.stderr)
 
     def ignore_testing(version):
         if skip_testing_versions and version["testing"] is True:
@@ -74,6 +94,7 @@ def _parse_repository_metadata(repository_name, repository_url, repository_updat
 
         package["repository"] = repository_name
         package["repository_updated"] = repository_updated
+        package["certification_level"] = _calc_certification_level(repository_authority, package, hsubscription)
 
         # Set absolute path for logo
         if package["logo"]:
@@ -110,12 +131,12 @@ def _get_http_session():
 def _list_repository_modules(rdb, repository_name, repository_url, skip_core_modules = False, skip_testing_versions=False):
     key = f'cluster/repository_cache/{repository_name}'
     cache = rdb.hgetall(key)
+    hsubscription = rdb.hgetall("cluster/subscription") or None
     if cache:
-        return _parse_repository_metadata(repository_name, repository_url, cache["updated"], cache["data"], skip_core_modules, skip_testing_versions)
+        return _parse_repository_metadata(repository_name, repository_url, cache["updated"], cache["data"], skip_core_modules, skip_testing_versions, hsubscription=hsubscription)
 
     url = _urljoin(repository_url, "repodata.json")
     try:
-        hsubscription = rdb.hgetall("cluster/subscription")
         with _get_http_session() as osession:
             if hsubscription and url.startswith("https://subscription.nethserver.com/"):
                 # Send system_id for HTTP Basic authentication
@@ -128,7 +149,7 @@ def _list_repository_modules(rdb, repository_name, repository_url, skip_core_mod
         # If repository is not accessible or invalid, just return an empty array
         return []
 
-    modules = _parse_repository_metadata(repository_name, repository_url, updated, repodata, skip_core_modules, skip_testing_versions)
+    modules = _parse_repository_metadata(repository_name, repository_url, updated, repodata, skip_core_modules, skip_testing_versions, hsubscription=hsubscription)
     # Save inside the cache if data is valid
     if modules:
         # Save also repodata file date
@@ -229,6 +250,7 @@ def _fetch_metadata_json(module_id, image_name):
     ometadata.setdefault("screenshots", [])
     ometadata.setdefault("repository", "__local__")
     ometadata.setdefault("repository_updated", repository_updated_timestamp)
+    ometadata["certification_level"] = 0
     try:
         ometadata['logo'] = glob(f'{path_prefix}apps/{module_id}/img/*logo*png')[0].removeprefix(path_prefix)
     except Exception as ex:
