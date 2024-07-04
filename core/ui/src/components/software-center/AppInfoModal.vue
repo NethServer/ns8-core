@@ -157,7 +157,7 @@
               &bull;
               <span>
                 <cv-link :href="app.docs.terms_url" target="_blank">
-                  {{ $t("software_center.terms_and_conditions") }}
+                  {{ $t("common.terms_and_conditions") }}
                 </cv-link>
               </span>
             </template>

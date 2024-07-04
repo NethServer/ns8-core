@@ -84,7 +84,9 @@
         "click_here_to_upload": "Click here to upload",
         "not_active": "Inactive",
         "active": "Active",
-        "configure": "Configure"
+        "configure": "Configure",
+        "terms_and_conditions": "Terms and Conditions",
+        "terms_required": "Please read and agree to @:common.terms_and_conditions"
     },
     "error": {
         "error": "Error",
@@ -632,7 +634,8 @@
         "unknown_token": "Unknown token",
         "must_be_32_chars_but_less_than_128": "Must be between 32 and 128 characters",
         "os_not_supported": "Operating system is not supported",
-        "subscription_cannot_be_enabled": "Subscription is not available"
+        "subscription_cannot_be_enabled": "Subscription is not available",
+        "agree_terms_before_register": "I have read and agree to subscription {terms}."
     },
     "settings_sw_repositories": {
         "title": "Software repositories",
@@ -914,8 +917,7 @@
         "images_label": "Images",
         "rootfull_app_warning_title": "Security risks",
         "rootfull_app_warning_description": "{appName} requires administrative privileges. After installation it will have full access to the cluster: this can pose significant security risks.",
-        "agree_terms_before_install": "I have read and agree to {appName} {terms}.",
-        "terms_and_conditions": "Terms and Conditions"
+        "agree_terms_before_install": "I have read and agree to {appName} {terms}."
     },
     "system_logs": {
         "title": "System logs",
