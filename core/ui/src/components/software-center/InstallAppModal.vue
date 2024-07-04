@@ -39,7 +39,7 @@
             {{
               $t("software_center.choose_node_for_installation", {
                 app: app.name,
-                version: appVersion,
+                version: fullAppVersion,
               })
             }}
           </div>
@@ -49,7 +49,7 @@
           {{
             $t("software_center.about_to_install_app", {
               app: app.name,
-              version: appVersion,
+              version: fullAppVersion,
               node: firstNodeLabel,
             })
           }}
@@ -140,6 +140,13 @@ export default {
         return this.app.versions[0].tag;
       } else {
         return "latest";
+      }
+    },
+    fullAppVersion() {
+      if (this.app.upstream_name) {
+        return `${this.appVersion} (${this.app.upstream_name})`;
+      } else {
+        return this.appVersion;
       }
     },
   },

@@ -912,7 +912,6 @@
             "security": "Security"
         },
         "images_label": "Images",
-        "terms_of_use": "Terms of Use",
         "rootfull_app_warning_title": "Security risks",
         "rootfull_app_warning_description": "{appName} requires administrative privileges. After installation it will have full access to the cluster: this can pose significant security risks.",
         "agree_terms_before_install": "I have read and agree to {appName} {terms}.",

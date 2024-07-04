@@ -69,7 +69,7 @@
               {{ $t("software_center.latest_version") }}
             </span>
             <span class="value">
-              {{ app.versions.length ? app.versions[0].tag : "-" }}
+              {{ app.versions.length ? app.versions[0].tag : "latest" }}
               <span v-if="app.upstream_name"> ({{ app.upstream_name }}) </span>
             </span>
           </div>
@@ -157,7 +157,7 @@
               &bull;
               <span>
                 <cv-link :href="app.docs.terms_url" target="_blank">
-                  {{ $t("software_center.terms_of_use") }}
+                  {{ $t("software_center.terms_and_conditions") }}
                 </cv-link>
               </span>
             </template>
