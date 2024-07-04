@@ -12,6 +12,8 @@ import sys
 import json
 import requests, urllib3.util
 
+terms_url = "https://docs.nethserver.org/projects/ns8/en/latest/subscription.html#terms-and-conditions"
+
 def _get_http_session():
     osession = requests.Session()
     osession.timeout = 15 # Timout for HTTP connections
@@ -95,4 +97,4 @@ elif hsubscription["provider"] == "nsent":
 elif hsubscription["provider"] == "nscom":
     hsubscription.update(fetch_subscription_info_nscom(rdb, hsubscription))
 
-json.dump({"subscription": hsubscription}, fp=sys.stdout)
+json.dump({"subscription": hsubscription, "terms_url": terms_url}, fp=sys.stdout)
