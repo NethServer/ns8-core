@@ -650,7 +650,7 @@
         "repository_is_going_to_be_deleted": "Repository {object} is going to be deleted...",
         "enable_repository": "Enable repository {name}",
         "disable_repository": "Disable repository {name}",
-        "create_repository_warning_title": "Security hazard",
+        "create_repository_warning_title": "Security risks",
         "create_repository_warning_description_1": "Adding a third-party software repository can pose significant risks:",
         "create_repository_warning_li_1": "Potential security threats",
         "create_repository_warning_li_2": "Possible system instability",
@@ -843,8 +843,8 @@
         "source_package": "Source package",
         "authors": "Author | Authors",
         "app_installation": "Install {app}",
-        "choose_node_for_installation": "Select installation node for {app} {version}",
-        "about_to_install_app": "{app} {version} will be installed on {node}",
+        "choose_node_for_installation": "Select installation node for {app} {version}:",
+        "about_to_install_app": "{app} {version} will be installed on {node}.",
         "installing_on_node": "Installing on {node}",
         "instance_installed_on_node": "{module_id} installed on {node}",
         "app_instances": "{app} instances",
@@ -913,8 +913,10 @@
         },
         "images_label": "Images",
         "terms_of_use": "Terms of Use",
-        "rootfull_app_warning_title": "Security hazard",
-        "rootfull_app_warning_description": "{appName} requires administrative privileges. After installation it will have full access to the cluster: this can pose significant security risks."
+        "rootfull_app_warning_title": "Security risks",
+        "rootfull_app_warning_description": "{appName} requires administrative privileges. After installation it will have full access to the cluster: this can pose significant security risks.",
+        "agree_terms_before_install": "I have read and agree to {appName} {terms}.",
+        "terms_and_conditions": "Terms and Conditions"
     },
     "system_logs": {
         "title": "System logs",

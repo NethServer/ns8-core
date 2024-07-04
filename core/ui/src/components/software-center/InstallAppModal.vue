@@ -9,14 +9,32 @@
     @modal-hidden="onModalHidden"
     @primary-click="installInstance"
     class="no-pad-modal"
-    :primary-button-disabled="!selectedNode"
+    :primary-button-disabled="
+      !selectedNode || (app && app.docs.terms_url && !agreeTerms)
+    "
   >
     <template v-if="app" slot="title">{{
       $t("software_center.app_installation", { app: app.name })
     }}</template>
     <template v-if="app" slot="content">
       <cv-form @submit.prevent="installInstance">
+        <!-- warning for rootfull app -->
+        <NsInlineNotification
+          v-if="
+            app.versions.length &&
+            app.versions[0]['labels']['org.nethserver.rootfull'] === '1'
+          "
+          kind="warning"
+          :title="$t('software_center.rootfull_app_warning_title')"
+          :description="
+            $t('software_center.rootfull_app_warning_description', {
+              appName: app.name,
+            })
+          "
+          :showCloseButton="false"
+        />
         <template v-if="clusterNodes.length > 1">
+          <!-- node selection -->
           <div>
             {{
               $t("software_center.choose_node_for_installation", {
@@ -25,9 +43,9 @@
               })
             }}
           </div>
-          <NodeSelector @selectNode="onSelectNode" class="mg-top-xlg" />
+          <NodeSelector @selectNode="onSelectNode" class="mg-top-lg" />
         </template>
-        <div v-else>
+        <div v-else class="mg-bottom-lg">
           {{
             $t("software_center.about_to_install_app", {
               app: app.name,
@@ -36,6 +54,31 @@
             })
           }}
         </div>
+        <!-- terms and conditions -->
+        <NsCheckbox
+          v-if="app.docs.terms_url"
+          v-model="agreeTerms"
+          value="checkTerms"
+        >
+          <template slot="label">
+            <i18n path="software_center.agree_terms_before_install" tag="span">
+              <template v-slot:appName>
+                {{ app.name }}
+              </template>
+              <template v-slot:terms>
+                <cv-link
+                  :href="app.docs.terms_url"
+                  target="_blank"
+                  rel="noreferrer"
+                  class="inline"
+                >
+                  {{ $t("software_center.terms_and_conditions") }}
+                </cv-link>
+              </template>
+            </i18n>
+          </template>
+        </NsCheckbox>
+        <!-- add-module error -->
         <div v-if="error.addModule">
           <NsInlineNotification
             kind="error"
@@ -71,6 +114,7 @@ export default {
   data() {
     return {
       selectedNode: null,
+      agreeTerms: false,
       error: {
         addModule: "",
       },
