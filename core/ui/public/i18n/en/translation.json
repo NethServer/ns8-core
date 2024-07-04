@@ -800,7 +800,7 @@
         "software_updates": "Updates",
         "you_have_updates": "You have {numUpdates} app to update | You have {numUpdates} apps to update",
         "testing_warning_title": "Testing repositories enabled",
-        "testing_warning_description": "Some software repositories include non-stable versions of applications",
+        "testing_warning_description": "{repos} software repository includes non-stable versions of applications | The following software repositories include non-stable versions of applications: {repos}",
         "testing_warning_action_label": "Go to Software repositories",
         "all": "All",
         "installed": "Installed",

@@ -115,15 +115,19 @@
           />
         </cv-column>
       </cv-row>
-      <cv-row v-if="repositories.find((repository) => repository.testing)">
+      <cv-row v-if="testingRepositories.length">
         <cv-column>
           <NsInlineNotification
             kind="warning"
             :title="$t('software_center.testing_warning_title')"
-            :description="$t('software_center.testing_warning_description')"
+            :description="
+              $tc(
+                'software_center.testing_warning_description',
+                testingRepositories.length,
+                { repos: testingRepositories.join(', ') }
+              )
+            "
             :showCloseButton="false"
-            @action="goToSettingsSoftwareRepositories"
-            :actionLabel="$t('software_center.testing_warning_action_label')"
           />
         </cv-column>
       </cv-row>
@@ -443,6 +447,11 @@ export default {
         numInstancesToUpdate += appToUpdate.updates.length;
       }
       return numInstancesToUpdate;
+    },
+    testingRepositories() {
+      return this.repositories
+        .filter((repository) => repository.testing)
+        .map((repository) => repository.name);
     },
   },
   watch: {
