@@ -186,7 +186,7 @@
               kind="tertiary"
               :loading="loading.getSubscription || loading.setSubscription"
               :disabled="loading.getSubscription || loading.setSubscription"
-              @click="removesubscription"
+              @click="showRemoveSubcriptionModal"
               :icon="TrashCan20"
               >{{ $t("settings_subscription.remove_subscription") }}
             </NsButton>
@@ -285,7 +285,7 @@
       size="default"
       kind="danger"
       :visible="isShownRemoveSubcription"
-      @modal-hidden="hideDeleteCertificateModal"
+      @modal-hidden="hideRemoveSubcriptionModal"
       @primary-click="removeSubscription"
     >
       <template slot="title">{{
@@ -389,10 +389,10 @@ export default {
     next();
   },
   methods: {
-    removesubscription() {
+    showRemoveSubcriptionModal() {
       this.isShownRemoveSubcription = true;
     },
-    hideDeleteCertificateModal() {
+    hideRemoveSubcriptionModal() {
       this.isShownRemoveSubcription = false;
     },
     async getSubscription() {
@@ -592,7 +592,7 @@ export default {
       this.stopSessionSupport();
       this.subscription.auth_token = "";
       this.loading.setSubscription = false;
-      this.hideDeleteCertificateModal();
+      this.hideRemoveSubcriptionModal();
       this.getSubscription();
     },
 
