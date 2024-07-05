@@ -110,6 +110,15 @@ def _parse_repository_metadata(repository_name, repository_url, repository_updat
         package["versions"] = list(filter(ignore_testing, package["versions"]))
 
         if len(package["versions"]) > 0:
+            try:
+                package_is_rootfull = package["versions"][0]["labels"]["org.nethserver.rootfull"] == "1"
+            except:
+                package_is_rootfull = False
+            # Ignore untrusted rootfull application, if a subscription is active
+            if hsubscription and package_is_rootfull and package["certification_level"] < 3:
+                print(agent.SD_WARNING + f"Ignoring image of rootfull application {package['source']}: certification_level {package['certification_level']} is too low", file=sys.stderr)
+                continue # skip package
+            package['rootfull'] = package_is_rootfull
             modules.append(package)
 
     return modules
@@ -251,6 +260,7 @@ def _fetch_metadata_json(module_id, image_name):
     ometadata.setdefault("repository", "__local__")
     ometadata.setdefault("repository_updated", repository_updated_timestamp)
     ometadata["certification_level"] = 0
+    ometadata["rootfull"] = False
     try:
         ometadata['logo'] = glob(f'{path_prefix}apps/{module_id}/img/*logo*png')[0].removeprefix(path_prefix)
     except Exception as ex:

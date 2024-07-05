@@ -61,6 +61,7 @@
         "repository": "t3",
         "repository_updated": "Mon, 28 Jun 2021 14:42:44 GMT",
         "certification_level": 2,
+        "rootfull": false,
         "updates": [
           {
             "id": "dokuwiki2",
@@ -108,6 +109,10 @@
       "certification_level": {
         "type": "integer",
         "description": "The higher, the better: 0=unknown certification, 5=max"
+      },
+      "rootfull": {
+        "type": "boolean",
+        "description": "True if the application gains full OS privileges when installed"
       },
       "description": {
         "type": "object",
@@ -245,8 +250,7 @@
           "node",
           "digest",
           "source",
-          "version",
-          "update"
+          "version"
         ]
       }
     },
@@ -294,6 +298,7 @@
       "docs",
       "source",
       "certification_level",
+      "rootfull",
       "versions",
       "installed",
       "updates"
