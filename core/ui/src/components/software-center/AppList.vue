@@ -54,6 +54,9 @@
                 }}</a>
                 <span v-else>{{ app.name }}</span>
               </div>
+              <div class="app-row">
+                <CertificationLevelBadge :level="app.certification_level" />
+              </div>
               <div
                 v-if="app.categories && getApplicationCategories(app).length"
                 class="app-categories app-row"
@@ -142,10 +145,11 @@
 import { IconService, UtilService } from "@nethserver/ns8-ui-lib";
 import AppInfoModal from "./AppInfoModal";
 import CoreAppModal from "./CoreAppModal";
+import CertificationLevelBadge from "./CertificationLevelBadge.vue";
 
 export default {
   name: "AppList",
-  components: { AppInfoModal, CoreAppModal },
+  components: { AppInfoModal, CoreAppModal, CertificationLevelBadge },
   mixins: [IconService, UtilService],
   props: {
     apps: {
