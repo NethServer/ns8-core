@@ -7,6 +7,7 @@
     size="default"
     :visible="isShown"
     @modal-hidden="onModalHidden"
+    @modal-shown="onModalShown"
     @primary-click="installInstance"
     class="no-pad-modal"
     :primary-button-disabled="
@@ -156,6 +157,9 @@ export default {
     }
   },
   methods: {
+    onModalShown() {
+      this.agreeTerms = false;
+    },
     async installInstance() {
       this.error.addModule = "";
       const taskAction = "add-module";
