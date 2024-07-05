@@ -60,6 +60,15 @@
         ],
         "repository": "t3",
         "repository_updated": "Mon, 28 Jun 2021 14:42:44 GMT",
+        "install_destinations": [
+          {
+            "node_id": 1,
+            "node_ui_name": "Node One",
+            "instances": 2,
+            "eligible": true,
+            "reject_reason": null
+          }
+        ],
         "updates": [
           {
             "id": "dokuwiki2",
@@ -230,6 +239,57 @@
           "version",
           "update"
         ]
+      }
+    },
+    "install_destinations": {
+      "description": "Describe for each node of the cluster if the node is eligible or not to install a new module instance. If not, a reject reason is returned.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "node_id",
+          "node_ui_name",
+          "instances",
+          "eligible",
+          "reject_reason"
+        ],
+        "properties": {
+          "node_id": {
+            "type": "integer",
+            "description": "Node identifier"
+          },
+          "node_ui_name": {
+            "type": "string",
+            "description": "Label of the node assigned by the admin"
+          },
+          "instances": {
+            "type": "integer",
+            "description": "Number of module instances currently installed on the node"
+          },
+          "eligible": {
+            "type": "boolean",
+            "description": "True if another instance of the module can be installed on the node"
+          },
+          "reject_reason": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "descripton": "If it is an object, it tells why the node is not eligible to host a module instance",
+            "properties": {
+              "message": {
+                "type": "string"
+              },
+              "paramter": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "message",
+              "parameter"
+            ]
+          }
+        }
       }
     },
     "installed": {
