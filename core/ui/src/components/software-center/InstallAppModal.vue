@@ -21,10 +21,7 @@
       <cv-form @submit.prevent="installInstance">
         <!-- warning for rootfull app -->
         <NsInlineNotification
-          v-if="
-            app.versions.length &&
-            app.versions[0]['labels']['org.nethserver.rootfull'] === '1'
-          "
+          v-if="app.rootfull && app.certification_level < 3"
           kind="warning"
           :title="$t('software_center.rootfull_app_warning_title')"
           :description="
