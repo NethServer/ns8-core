@@ -32,6 +32,14 @@ import sys
 import subprocess
 import datetime
 
+_repo_testing_cache = {}
+def _repo_has_testing_flag(rdb, repo_name):
+    """Retrieve from Redis the testing flag of repo_name one time, then read it from a cache."""
+    global _repo_testing_cache
+    if repo_name not in _repo_testing_cache:
+        _repo_testing_cache[repo_name] = rdb.hget(f'cluster/repository/{repo_name}', 'testing') == "1"
+    return _repo_testing_cache[repo_name]
+
 def _urljoin(base_path, *args):
     '''replace urllib.parse.joinurl because it doesn't handle multiple parameters
     '''
@@ -51,76 +59,43 @@ def _get_downloaded_logos():
             logos[os.path.basename(app)] = logo
     return logos
 
-def _calc_certification_level(repository_authority, package, hsubscription=None):
-    if repository_authority in ["distfeed.nethserver.org", "subscription.nethserver.com"]:
+def _calc_certification_level(package, has_subscription=False):
+    if package['repository_authority'] in ["distfeed.nethserver.org", "subscription.nethserver.com"]:
         certification_level = 3
-    elif repository_authority == "forge.nethserver.org":
+    elif package['repository_authority'] == "forge.nethserver.org":
         certification_level = 2
     else:
         certification_level = 1
     # If we trust the repo metadata, elevate up to level 5
     if certification_level == 3:
         if package["source"].startswith("ghcr.io/nethserver/") or package["source"].startswith("ghcr.io/nethesis/"):
-            certification_level = 4 if hsubscription is None else 5
-
+            certification_level = 5 if has_subscription else 4
     return certification_level
 
-def _parse_repository_metadata(repository_name, repository_url, repository_updated, repodata, skip_core_modules=False, skip_testing_versions=False, hsubscription=None):
-    modules = []
-
+def _parse_repository_metadata(repository_name, repository_url, repository_updated, metadata):
     try:
-        repodata = json.loads(repodata)
-    except:
-        return modules
-
-    try:
-        repository_authority = urllib.parse.urlparse(repository_url).hostname
+        repodata = json.loads(metadata)
     except Exception as ex:
-        repository_authority = None
-        print(agent.SD_WARNING + f"Unable to parse repository {repository_name} URL: {repository_url}", ex, file=sys.stderr)
-
-    def ignore_testing(version):
-        if skip_testing_versions and version["testing"] is True:
-            return False
-        else:
-            return True
-
+        print(agent.SD_WARNING + f"Unable to parse metadata of repository {repository_name} at {repository_url}:", ex, file=sys.stderr)
+        return []
+    modules = []
     for package in repodata:
-        # Skip core modules if flag is enabled
-        if skip_core_modules and package['versions']:
-            version = package['versions'][0]
-            if 'org.nethserver.flags' in version['labels'] and 'core_module' in version['labels']['org.nethserver.flags']:
-                continue
-
         package["repository"] = repository_name
         package["repository_updated"] = repository_updated
-        package["certification_level"] = _calc_certification_level(repository_authority, package, hsubscription)
-
+        try:
+            package['repository_authority'] = urllib.parse.urlparse(repository_url).hostname
+        except Exception as ex:
+            package['repository_authority'] = ""
+            print(agent.SD_WARNING + f"Unable to parse repository {repository_name} URL: {repository_url}", ex, file=sys.stderr)
         # Set absolute path for logo
         if package["logo"]:
            package["logo"] = _urljoin(repository_url, package["id"], package["logo"])
-
         # Set absolute path for screenshots
         screenshots = []
         for s in package["screenshots"]:
            screenshots.append(_urljoin(repository_url, package["id"], s))
         package["screenshots"] = screenshots
-
-        # Filter
-        package["versions"] = list(filter(ignore_testing, package["versions"]))
-
-        if len(package["versions"]) > 0:
-            try:
-                package_is_rootfull = package["versions"][0]["labels"]["org.nethserver.rootfull"] == "1"
-            except:
-                package_is_rootfull = False
-            # Ignore untrusted rootfull application, if a subscription is active
-            if hsubscription and package_is_rootfull and package["certification_level"] < 3:
-                print(agent.SD_WARNING + f"Ignoring image of rootfull application {package['source']}: certification_level {package['certification_level']} is too low", file=sys.stderr)
-                continue # skip package
-            package['rootfull'] = package_is_rootfull
-            modules.append(package)
-
+        modules.append(package)
     return modules
 
 def _get_http_session():
@@ -137,35 +112,32 @@ def _get_http_session():
     osession.mount('https://', requests.adapters.HTTPAdapter(max_retries=oretries))
     return osession
 
-def _list_repository_modules(rdb, repository_name, repository_url, skip_core_modules = False, skip_testing_versions=False):
-    key = f'cluster/repository_cache/{repository_name}'
-    cache = rdb.hgetall(key)
-    hsubscription = rdb.hgetall("cluster/subscription") or None
-    if cache:
-        return _parse_repository_metadata(repository_name, repository_url, cache["updated"], cache["data"], skip_core_modules, skip_testing_versions, hsubscription=hsubscription)
-
-    url = _urljoin(repository_url, "repodata.json")
-    try:
-        with _get_http_session() as osession:
-            if hsubscription and url.startswith("https://subscription.nethserver.com/"):
-                # Send system_id for HTTP Basic authentication
-                osession.auth = (hsubscription["system_id"], hashlib.sha256(hsubscription["auth_token"].encode()).hexdigest())
-            resp = osession.get(url)
-            repodata = resp.text
-            updated = resp.headers.get('Last-Modified', "")
-    except Exception as ex:
-        print(f"Fetching {url}:", ex, file=sys.stderr)
-        # If repository is not accessible or invalid, just return an empty array
-        return []
-
-    modules = _parse_repository_metadata(repository_name, repository_url, updated, repodata, skip_core_modules, skip_testing_versions, hsubscription=hsubscription)
+def _list_repository_modules(rdb, repository_name, repository_url):
+    cache_key = f'cluster/repository_cache/{repository_name}'
+    hcache = rdb.hgetall(cache_key)
+    if not hcache:
+        url = _urljoin(repository_url, "repodata.json")
+        hsubscription = rdb.hgetall("cluster/subscription") or None
+        try:
+            with _get_http_session() as osession:
+                if hsubscription and url.startswith("https://subscription.nethserver.com/"):
+                    # Send system_id for HTTP Basic authentication
+                    osession.auth = (hsubscription["system_id"], hashlib.sha256(hsubscription["auth_token"].encode()).hexdigest())
+                resp = osession.get(url)
+                repodata_raw = resp.text
+                updated = resp.headers.get('Last-Modified', "")
+        except Exception as ex:
+            print(f"Fetching {url}:", ex, file=sys.stderr)
+            # If repository is not accessible or invalid, just return an empty array
+            return []
+        hcache = {"data": repodata_raw, "updated": updated}
+    modules = _parse_repository_metadata(repository_name, repository_url, hcache['updated'], hcache['data'])
     # Save inside the cache if data is valid
     if modules:
         # Save also repodata file date
-        rdb.hset(key, mapping={"data": repodata, "updated": updated})
+        rdb.hset(cache_key, mapping=hcache)
         # Set cache expiration to 3600 seconds
-        rdb.expire(key, 3600)
-
+        rdb.expire(cache_key, 3600)
     return modules
 
 class LatestModuleLookupError(Exception):
@@ -259,6 +231,7 @@ def _fetch_metadata_json(module_id, image_name):
     ometadata.setdefault("screenshots", [])
     ometadata.setdefault("repository", "__local__")
     ometadata.setdefault("repository_updated", repository_updated_timestamp)
+    ometadata.setdefault("repository_authority", "__local__")
     ometadata["certification_level"] = 0
     ometadata["rootfull"] = False
     try:
@@ -268,12 +241,36 @@ def _fetch_metadata_json(module_id, image_name):
         print(agent.SD_INFO + "_fetch_metadata_json/glob:", ex, file=sys.stderr)
     return ometadata
 
-def list_available(rdb, skip_core_modules = False):
+def list_available(rdb, skip_core_modules=False):
     """Iterate over enabled repositories and return available modules respecting the repository priority."""
-    modules = _get_available_modules(rdb, skip_core_modules)
-    return list(modules.values())
+    hsubscription = rdb.hgetall("cluster/subscription") or None
+    modules = []
+    for omod in _get_available_modules(rdb).values():
+        if not _repo_has_testing_flag(rdb, omod["repository"]):
+            # Ignore testing releases for new installations:
+            omod["versions"] = list(filter(lambda v: v["testing"] is False, omod["versions"]))
+        if not omod["versions"]:
+            continue # Ignore modules with no versions
+        omod["certification_level"] = _calc_certification_level(omod, bool(hsubscription))
+        try:
+            if skip_core_modules and 'core_module' in omod["versions"][0]['labels']['org.nethserver.flags']:
+                continue # core modules are ignored
+        except:
+            pass
+        try:
+            package_is_rootfull = omod["versions"][0]["labels"]["org.nethserver.rootfull"] == "1"
+        except:
+            package_is_rootfull = False
+        # Ignore untrusted rootfull application, if a subscription is active
+        if hsubscription and package_is_rootfull and omod["certification_level"] < 3:
+            print(agent.SD_WARNING + f"Ignoring image of rootfull application {omod['source']}: certification_level {omod['certification_level']} is too low", file=sys.stderr)
+            continue # skip package
+        else:
+            omod['rootfull'] = package_is_rootfull
+        modules.append(omod)
+    return modules
 
-def _get_available_modules(rdb, skip_core_modules = False):
+def _get_available_modules(rdb):
     modules = {}
     repositories = []
     # List all modules from enabled repositories
@@ -286,23 +283,21 @@ def _get_available_modules(rdb, skip_core_modules = False):
         # Skip non-enabled repositories
         if repo.get("status", "0") != "1":
             continue
-        skip_testing_versions = repo.get("testing", "0") != "1"
-        for rmod in _list_repository_modules(rdb, nrepo, repo["url"], skip_core_modules, skip_testing_versions):
+        for rmod in _list_repository_modules(rdb, nrepo, repo["url"]):
             if rmod["source"] in modules:
                 continue # skip duplicated images from lower priority modules
             modules[rmod["source"]] = rmod
             rmod['versions'].sort(key=lambda v: _parse_version_object(v["tag"]), reverse=True)
     # Integrate the available set with instances that do not belong to any
     # repository. They can be found in the "installed" dict:
-    for module_source, module_instances in list_installed(rdb, skip_core_modules).items():
+    for module_source, module_instances in list_installed(rdb).items():
         if module_source in modules:
             continue
         _, image_name = module_source.rsplit("/", 1)
         vmetadata = _fetch_metadata_json(module_instances[0]['id'], image_name)
         vmetadata["versions"] = list(_synthesize_module_version(oinst) for oinst in module_instances)
-        vmetadata["installed"] = module_instances
+        vmetadata["versions"].sort(key=lambda v: _parse_version_object(v["tag"]), reverse=True)
         vmetadata["source"] = module_source
-        vmetadata["updates"] = []
         vmetadata["id"] = image_name
         modules[module_source] = vmetadata
     return modules
@@ -350,17 +345,10 @@ def list_installed_core(rdb):
 
     return installed
 
-
 def list_updates(rdb, skip_core_modules=False, with_testing_update=False):
     updates = []
     installed_modules = list_installed(rdb, skip_core_modules)
-    available_modules = _get_available_modules(rdb, skip_core_modules)
-
-    repo_testing_cache = {}
-    def repo_has_testing_flag(repo_name):
-        if repo_name not in repo_testing_cache:
-            repo_testing_cache[repo_name] = rdb.hget(f'cluster/repository/{repo_name}', 'testing') == "1"
-        return repo_testing_cache[repo_name]
+    available_modules = _get_available_modules(rdb)
 
     flat_instance_list = list(mi for module_instances in installed_modules.values() for mi in module_instances)
     for instance in flat_instance_list:
@@ -384,7 +372,7 @@ def list_updates(rdb, skip_core_modules=False, with_testing_update=False):
             if available_version <= current_version:
                 continue # ignore tags that do not update the current one
             if update_candidate is None and (
-                repo_has_testing_flag(repository_name)
+                _repo_has_testing_flag(rdb, repository_name)
                 or not available_version.prerelease
             ):
                 update_candidate = available_version
