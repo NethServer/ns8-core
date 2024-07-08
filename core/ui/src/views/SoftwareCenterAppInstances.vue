@@ -166,12 +166,32 @@
               >
                 <cv-overflow-menu-item
                   primary-focus
-                  v-if="isInstanceUpgradable(app, instance)"
+                  v-if="isStableUpdateAvailable(app, instance)"
                   @click="openInstance(instance)"
                 >
                   <NsMenuItem
                     :icon="Application20"
                     :label="$t('software_center.open_app')"
+                  />
+                </cv-overflow-menu-item>
+                <!-- update to stable version -->
+                <cv-overflow-menu-item
+                  v-if="isStableUpdateAvailable(app, instance)"
+                  @click="updateInstance(instance, false)"
+                >
+                  <NsMenuItem
+                    :icon="Upgrade20"
+                    :label="$t('software_center.update_to_stable_version')"
+                  />
+                </cv-overflow-menu-item>
+                <!-- update to testing version -->
+                <cv-overflow-menu-item
+                  v-if="isTestingUpdateAvailable(app, instance)"
+                  @click="updateInstance(instance, true)"
+                >
+                  <NsMenuItem
+                    :icon="Upgrade20"
+                    :label="$t('software_center.update_to_testing_version')"
                   />
                 </cv-overflow-menu-item>
                 <cv-overflow-menu-item
@@ -248,22 +268,20 @@
                 <div class="row">
                   {{ $t("common.version") }} {{ instance.version }}
                 </div>
-                <div v-if="isInstanceUpgradable(app, instance)" class="row">
+                <div v-if="isStableUpdateAvailable(app, instance)" class="row">
                   {{
                     $t("software_center.version_version_available", {
-                      version: app.versions.length
-                        ? app.versions[0].tag
-                        : "latest",
+                      version: stableUpdateVersion(app, instance),
                     })
                   }}
                 </div>
                 <div class="row actions">
                   <!-- app is installed and can be updated -->
-                  <template v-if="isInstanceUpgradable(app, instance)">
+                  <template v-if="isStableUpdateAvailable(app, instance)">
                     <NsButton
                       kind="secondary"
                       :icon="Upgrade20"
-                      @click="updateInstance(instance)"
+                      @click="updateInstance(instance, false)"
                       :disabled="isUpdateInProgress"
                       >{{ $t("software_center.update") }}</NsButton
                     >
@@ -294,6 +312,7 @@
       :isShown="isShownUpdateModal"
       :app="app"
       :instance="instanceToUpdate"
+      :isUpdatingToTestingVersion="isUpdatingToTestingVersion"
       @hide="isShownUpdateModal = false"
       @updateCompleted="onUpdateCompleted"
     />
@@ -423,6 +442,7 @@ export default {
       isShownUpdateModal: false,
       instanceToUpdate: null,
       updateInstancesTimeout: 0,
+      isUpdatingToTestingVersion: false,
       cloneOrMove: {
         isModalShown: false,
         isClone: true,
@@ -525,19 +545,41 @@ export default {
         }, 5000);
       }
     },
-    isInstanceUpgradable(app, instance) {
+    isStableUpdateAvailable(app, instance) {
       return (
         app.updates &&
         app.updates.find((update) => {
-          return update.id === instance.id;
+          return update.id === instance.id && update.update;
+        })
+      );
+    },
+    stableUpdateVersion(app, instance) {
+      if (app.updates.length) {
+        const updateFound = app.updates.find((update) => {
+          return update.id === instance.id && update.update;
+        });
+
+        if (updateFound) {
+          return updateFound.update;
+        } else {
+          return "latest";
+        }
+      }
+    },
+    isTestingUpdateAvailable(app, instance) {
+      return (
+        app.updates &&
+        app.updates.find((update) => {
+          return update.id === instance.id && update.testing_update;
         })
       );
     },
     openInstance(instance) {
       this.$router.push(`/apps/${instance.id}`);
     },
-    updateInstance(instance) {
+    updateInstance(instance, isUpdatingToTestingVersion) {
       this.instanceToUpdate = instance;
+      this.isUpdatingToTestingVersion = isUpdatingToTestingVersion;
       this.isShownUpdateModal = true;
     },
     addAppToFavorites(instance) {

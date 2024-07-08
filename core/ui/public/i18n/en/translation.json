@@ -882,6 +882,8 @@
         "uninstall_app": "Uninstall {name}? App data will be deleted too. This action is NOT reversible",
         "update_app": "Update {app}",
         "about_to_update_app": "{app} {version} will be updated to {newVersion}",
+        "about_to_update_app_to_testing_version": "{app} {version} will be updated to testing version {newVersion}",
+        "update_to_testing_version_warning": "Testing versions may contain bugs and are not recommended for production use. Update only if you are aware of the risks.",
         "updating_to_version": "Updating to version {version}",
         "core_app_name": "{productName} core",
         "core_app_description": "Collection of {productName} core apps",
@@ -925,7 +927,9 @@
         "level_2_description": "App developed by third-parties, certified by NethServer 8 community",
         "level_3_description": "App developed by third-parties, certified by Nethesis",
         "level_4_description": "App developed and certified by Nethesis",
-        "level_5_description": "App developed, certified and supported by Nethesis"
+        "level_5_description": "App developed, certified and supported by Nethesis",
+        "update_to_stable_version": "Update to stable version",
+        "update_to_testing_version": "Update to testing version"
     },
     "system_logs": {
         "title": "System logs",
