@@ -919,6 +919,7 @@
         "rootfull_app_warning_description": "{appName} requires administrative privileges. After installation it will have full access to the cluster: this can pose significant security risks.",
         "agree_terms_before_install": "I have read and agree to {appName} {terms}.",
         "level_level": "Level {level}",
+        "certification": "Certification",
         "level_0_description": "Unknown level",
         "level_1_description": "App developed by third-parties, not certified",
         "level_2_description": "App developed by third-parties, certified by NethServer 8 community",

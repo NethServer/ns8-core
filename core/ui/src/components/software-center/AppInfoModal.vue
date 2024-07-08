@@ -51,6 +51,14 @@
           :showCloseButton="false"
         />
         <div class="key-value-setting">
+          <span class="label">
+            {{ $t("software_center.certification") }}
+          </span>
+          <span class="value">
+            <CertificationLevelBadge :level="app.certification_level" />
+          </span>
+        </div>
+        <div class="key-value-setting">
           <div>
             <span class="label">{{
               $tc("software_center.categories", app.categories.length)
@@ -169,10 +177,11 @@
 <script>
 import { UtilService } from "@nethserver/ns8-ui-lib";
 import ImageGallery from "./ImageGallery";
+import CertificationLevelBadge from "./CertificationLevelBadge.vue";
 
 export default {
   name: "AppInfoModal",
-  components: { ImageGallery },
+  components: { ImageGallery, CertificationLevelBadge },
   mixins: [UtilService],
   props: {
     isShown: Boolean,
