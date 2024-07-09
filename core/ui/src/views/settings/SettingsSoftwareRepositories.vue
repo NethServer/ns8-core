@@ -468,7 +468,6 @@ export default {
             name: this.q.newRepoName,
             url: this.q.newRepoUrl,
             status: this.q.isNewRepoEnabled,
-            testing: false, //// remove
           },
           extra: {
             title: this.$t("action." + taskAction),
@@ -538,7 +537,6 @@ export default {
           data: {
             name: repo.name,
             status: !repo.status,
-            testing: false, //// false, remove
           },
           extra: {
             title: notificationTitle,
