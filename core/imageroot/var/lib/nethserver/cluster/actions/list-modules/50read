@@ -42,7 +42,6 @@ install_destinations = []
 for node_id in set(rdb.hvals("cluster/module_node")):
     install_destinations.append({
         "node_id": int(node_id),
-        "node_ui_name": rdb.get(f"node/{node_id}/ui_name") or "",
         "instances": 0,
         "eligible": True,
         "reject_reason": None,

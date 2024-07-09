@@ -63,7 +63,6 @@
         "install_destinations": [
           {
             "node_id": 1,
-            "node_ui_name": "Node One",
             "instances": 2,
             "eligible": true,
             "reject_reason": null
@@ -248,7 +247,6 @@
         "type": "object",
         "required": [
           "node_id",
-          "node_ui_name",
           "instances",
           "eligible",
           "reject_reason"
@@ -257,10 +255,6 @@
           "node_id": {
             "type": "integer",
             "description": "Node identifier"
-          },
-          "node_ui_name": {
-            "type": "string",
-            "description": "Label of the node assigned by the admin"
           },
           "instances": {
             "type": "integer",
