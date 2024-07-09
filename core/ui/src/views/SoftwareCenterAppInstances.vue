@@ -87,7 +87,7 @@
       <cv-row v-if="app" class="toolbar">
         <cv-column>
           <NsButton
-            v-if="app.updates.length"
+            v-if="isStableUpdateAvailableForAnyInstance()"
             kind="primary"
             :icon="Upgrade20"
             :disabled="isUpdateInProgress"
@@ -165,6 +165,7 @@
                 <!-- update to stable version -->
                 <cv-overflow-menu-item
                   v-if="isStableUpdateAvailable(app, instance)"
+                  :disabled="isUpdateInProgress"
                   @click="updateInstance(instance, false)"
                 >
                   <NsMenuItem
@@ -181,6 +182,7 @@
                 <!-- update to testing version -->
                 <cv-overflow-menu-item
                   v-if="isTestingUpdateAvailable(app, instance)"
+                  :disabled="isUpdateInProgress"
                   @click="updateInstance(instance, true)"
                 >
                   <NsMenuItem
@@ -546,6 +548,12 @@ export default {
           return update.id === instance.id && update.update;
         })
       );
+    },
+    isStableUpdateAvailableForAnyInstance() {
+      if (this.app && this.app.updates) {
+        return this.app.updates.some((update) => update.update);
+      }
+      return false;
     },
     stableUpdateVersion(app, instance) {
       if (app.updates.length) {

@@ -93,19 +93,29 @@ export default {
       if (this.isUpdatingToTestingVersion) {
         // update to testing version
 
-        if (this.app.updates.length && this.app.updates[0].testing_update) {
-          return this.app.updates[0].testing_update;
-        } else {
-          return "latest";
+        if (this.app.updates.length) {
+          const testingUpdateFound = this.app.updates.find(
+            (update) => update.testing_update
+          );
+
+          if (testingUpdateFound) {
+            return testingUpdateFound.testing_update;
+          }
         }
+        return "latest";
       } else {
         // update to stable version
 
-        if (this.app.updates.length && this.app.updates[0].update) {
-          return this.app.updates[0].update;
-        } else {
-          return "latest";
+        if (this.app.updates.length) {
+          const stableUpdateFound = this.app.updates.find(
+            (update) => update.update
+          );
+
+          if (stableUpdateFound) {
+            return stableUpdateFound.update;
+          }
         }
+        return "latest";
       }
     },
   },
