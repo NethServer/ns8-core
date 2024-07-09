@@ -17,6 +17,9 @@
       />
     </template>
     <template slot="content">
+      <h6 class="mg-bottom-sm">
+        {{ $t("software_center.level_level", { level }) }}
+      </h6>
       <p class="mg-bottom-sm">
         {{ $t(`software_center.level_${level}_description`) }}
       </p>
