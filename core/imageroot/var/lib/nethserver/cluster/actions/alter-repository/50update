@@ -31,11 +31,9 @@ rdb = agent.redis_connect(privileged=True)
 name = request['name']
 # convert boolean to integers
 status = 1 if request['status'] else 0
-testing = 1 if request['testing'] else 0
+testing = 1 if request.get('testing') else 0
 
 # Add the repository and enable it.
 # Access to testing packages is disabled by default
 
 rdb.hset(f'cluster/repository/{name}', mapping={'status': status, 'testing': testing})
-
-json.dump(True, fp=sys.stdout)
