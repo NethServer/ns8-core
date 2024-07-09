@@ -150,16 +150,19 @@
           <cv-content-switcher-button
             owner-id="all"
             :selected="csbAllSelected"
+            :disabled="loading.listModules || loading.listCoreModules"
             >{{ $t("software_center.all") }}</cv-content-switcher-button
           >
           <cv-content-switcher-button
             owner-id="installed"
             :selected="csbInstalledSelected"
+            :disabled="loading.listModules || loading.listCoreModules"
             >{{ $t("software_center.installed") }}</cv-content-switcher-button
           >
           <cv-content-switcher-button
             owner-id="updates"
             :selected="csbUpdatesSelected"
+            :disabled="loading.listModules || loading.listCoreModules"
             >{{ $t("software_center.updates") }}</cv-content-switcher-button
           >
         </cv-content-switcher>
