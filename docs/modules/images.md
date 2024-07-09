@@ -55,6 +55,7 @@ Module images can use a list of well-known labels to configure the system:
   - `no_data_backup`: if present, the modules will need no data backup
   - `rootless`: if present, the module is rootless (calculated from `org.nethserver.rootfull` label)
   - `rootfull`: if present, the module is rootfull (calculated from `org.nethserver.rootfull` label)
+- `org.nethserver.max-per-node`: maximum number of module instances installed on the same node
 
 Labels are set by `build-images.sh`, when the images are built.
 
