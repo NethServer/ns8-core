@@ -33,7 +33,7 @@ Default.args = {
 const DescriptionSlotTemplate = (args, { argTypes }) => ({
   props: Object.keys(argTypes),
   components: { NsDangerDeleteModal },
-  template: `<NsDangerDeleteModal v-bind="$props" @confirmDelete="testConfirmDelete(\'test\')" @hide="testHide(\'test\')">
+  template: `<NsDangerDeleteModal v-bind="$props" @confirmDelete="testConfirmDelete('test')" @hide="testHide('test')">
       <template slot="description">
         Description slot
       </template>
