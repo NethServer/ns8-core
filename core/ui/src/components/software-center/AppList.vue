@@ -54,7 +54,7 @@
                 }}</a>
                 <span v-else>{{ app.name }}</span>
               </div>
-              <div class="app-row">
+              <div v-if="app.id !== 'core'" class="app-row">
                 <CertificationLevelBadge :level="app.certification_level" />
               </div>
               <div
