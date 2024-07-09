@@ -193,6 +193,130 @@
         "type": "string",
         "description": "Date and time of last modification to remote repodata"
       },
+      "updates": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "description": "Unique name of a module instance"
+            },
+            "node": {
+              "type": "string",
+              "description": "Id of the node where the instance is running"
+            },
+            "digest": {
+              "type": "string",
+              "description": "Image digest"
+            },
+            "source": {
+              "type": "string",
+              "description": "The URL of the container image registry"
+            },
+            "version": {
+              "type": "string",
+              "description": "A valid semantic version extracted from image tag"
+            },
+            "testing_update": {
+              "type": "string",
+              "description": "A semver prerelease tag, greater than 'version' field"
+            },
+            "update": {
+              "type": "string",
+              "description": "A semver tag greater than 'version' field"
+            }
+          },
+          "required": [
+            "id",
+            "node",
+            "digest",
+            "source",
+            "version"
+          ]
+        }
+      },
+      "install_destinations": {
+        "description": "Describe for each node of the cluster if the node is eligible or not to install a new module instance. If not, a reject reason is returned.",
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": [
+            "node_id",
+            "instances",
+            "eligible",
+            "reject_reason"
+          ],
+          "properties": {
+            "node_id": {
+              "type": "integer",
+              "description": "Node identifier"
+            },
+            "instances": {
+              "type": "integer",
+              "description": "Number of module instances currently installed on the node"
+            },
+            "eligible": {
+              "type": "boolean",
+              "description": "True if another instance of the module can be installed on the node"
+            },
+            "reject_reason": {
+              "type": [
+                "object",
+                "null"
+              ],
+              "descripton": "If it is an object, it tells why the node is not eligible to host a module instance",
+              "properties": {
+                "message": {
+                  "type": "string"
+                },
+                "paramter": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "message",
+                "parameter"
+              ]
+            }
+          }
+        }
+      },
+      "installed": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "description": "Unique name of a module instance"
+            },
+            "node": {
+              "type": "string",
+              "description": "Id of the node where the instance is running"
+            },
+            "digest": {
+              "type": "string",
+              "description": "Image digest"
+            },
+            "source": {
+              "type": "string",
+              "description": "The URL of the container image registry"
+            },
+            "version": {
+              "type": "string",
+              "description": "A valid semantic version extracted from image tag"
+            }
+          },
+          "required": [
+            "id",
+            "node",
+            "digest",
+            "source",
+            "version"
+          ]
+        }
+      },
       "versions": {
         "type": "array",
         "items": {
@@ -219,130 +343,6 @@
         }
       }
     },
-    "updates": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "description": "Unique name of a module instance"
-          },
-          "node": {
-            "type": "string",
-            "description": "Id of the node where the instance is running"
-          },
-          "digest": {
-            "type": "string",
-            "description": "Image digest"
-          },
-          "source": {
-            "type": "string",
-            "description": "The URL of the container image registry"
-          },
-          "version": {
-            "type": "string",
-            "description": "A valid semantic version extracted from image tag"
-          },
-          "testing_update": {
-            "type": "string",
-            "description": "A semver prerelease tag, greater than 'version' field"
-          },
-          "update": {
-            "type": "string",
-            "description": "A semver tag greater than 'version' field"
-          }
-        },
-        "required": [
-          "id",
-          "node",
-          "digest",
-          "source",
-          "version"
-        ]
-      }
-    },
-    "install_destinations": {
-      "description": "Describe for each node of the cluster if the node is eligible or not to install a new module instance. If not, a reject reason is returned.",
-      "type": "array",
-      "items": {
-        "type": "object",
-        "required": [
-          "node_id",
-          "instances",
-          "eligible",
-          "reject_reason"
-        ],
-        "properties": {
-          "node_id": {
-            "type": "integer",
-            "description": "Node identifier"
-          },
-          "instances": {
-            "type": "integer",
-            "description": "Number of module instances currently installed on the node"
-          },
-          "eligible": {
-            "type": "boolean",
-            "description": "True if another instance of the module can be installed on the node"
-          },
-          "reject_reason": {
-            "type": [
-              "object",
-              "null"
-            ],
-            "descripton": "If it is an object, it tells why the node is not eligible to host a module instance",
-            "properties": {
-              "message": {
-                "type": "string"
-              },
-              "paramter": {
-                "type": "string"
-              }
-            },
-            "required": [
-              "message",
-              "parameter"
-            ]
-          }
-        }
-      }
-    },
-    "installed": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "description": "Unique name of a module instance"
-          },
-          "node": {
-            "type": "string",
-            "description": "Id of the node where the instance is running"
-          },
-          "digest": {
-            "type": "string",
-            "description": "Image digest"
-          },
-          "source": {
-            "type": "string",
-            "description": "The URL of the container image registry"
-          },
-          "version": {
-            "type": "string",
-            "description": "A valid semantic version extracted from image tag"
-          }
-        },
-        "required": [
-          "id",
-          "node",
-          "digest",
-          "source",
-          "version"
-        ]
-      }
-    },
     "required": [
       "name",
       "description",
@@ -354,6 +354,7 @@
       "certification_level",
       "rootfull",
       "versions",
+      "install_destinations",
       "installed",
       "updates"
     ]
