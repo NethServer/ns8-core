@@ -32,5 +32,3 @@ name = request['name']
 
 if not rdb.delete(f'cluster/repository/{name}'):
     sys.exit(1)
-
-json.dump(True, fp=sys.stdout)
