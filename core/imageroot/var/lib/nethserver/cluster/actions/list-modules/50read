@@ -36,7 +36,7 @@ def get_module(source, modules):
 rdb = agent.redis_connect(privileged=True)
 installed = cluster.modules.list_installed(rdb, skip_core_modules = True)
 available = cluster.modules.list_available(rdb, skip_core_modules = True)
-updates = cluster.modules.list_updates(rdb, skip_core_modules = True)
+updates = cluster.modules.list_updates(rdb, skip_core_modules=True, with_testing_update=True)
 
 install_destinations = []
 for node_id in set(rdb.hvals("cluster/module_node")):

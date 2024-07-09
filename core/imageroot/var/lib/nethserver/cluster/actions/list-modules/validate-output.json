@@ -68,6 +68,8 @@
             "reject_reason": null
           }
         ],
+        "certification_level": 2,
+        "rootfull": false,
         "updates": [
           {
             "id": "dokuwiki2",
@@ -107,6 +109,19 @@
         "type": "string",
         "description": "Unique name of a package"
       },
+      "upstream_name": {
+        "type": "string",
+        "description": "The alternative software name and version number, if they differ from the package name and version",
+        "example": "Nextcloud Hub 7"
+      },
+      "certification_level": {
+        "type": "integer",
+        "description": "The higher, the better: 0=unknown certification, 5=max"
+      },
+      "rootfull": {
+        "type": "boolean",
+        "description": "True if the application gains full OS privileges when installed"
+      },
       "description": {
         "type": "object",
         "description": "A map of language codes (eg. en, it) with the translated description"
@@ -143,6 +158,10 @@
       "docs": {
         "type": "object",
         "parameters": {
+          "terms_url": {
+            "type": "uri",
+            "description": "Optional link to the application Terms & Conditions document"
+          },
           "documentation_url": {
             "type": "uri",
             "description": "Link to the package documentation"
@@ -225,9 +244,13 @@
             "type": "string",
             "description": "A valid semantic version extracted from image tag"
           },
+          "testing_update": {
+            "type": "string",
+            "description": "A semver prerelease tag, greater than 'version' field"
+          },
           "update": {
             "type": "string",
-            "description": "A valid semantic version extracted from image tag wich should be greater than 'version' field"
+            "description": "A semver tag greater than 'version' field"
           }
         },
         "required": [
@@ -235,8 +258,7 @@
           "node",
           "digest",
           "source",
-          "version",
-          "update"
+          "version"
         ]
       }
     },
@@ -329,6 +351,8 @@
       "authors",
       "docs",
       "source",
+      "certification_level",
+      "rootfull",
       "versions",
       "installed",
       "updates"
