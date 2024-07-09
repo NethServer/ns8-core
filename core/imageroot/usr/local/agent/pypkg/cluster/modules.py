@@ -327,11 +327,13 @@ def list_installed(rdb, skip_core_modules = False):
 
     return installed
 
-def list_installed_core(rdb):
-    installed = {'ghcr.io/nethserver/core': []}
+def _get_core_tag():
     core_env = agent.read_envfile('/etc/nethserver/core.env')
-    (url, tag) = core_env['CORE_IMAGE'].split(":")
-    installed['ghcr.io/nethserver/core'].append({ 'id': 'core', 'version': tag, 'module': 'core'})
+    _, tag = core_env['CORE_IMAGE'].rsplit(":", 1)
+    return tag
+
+def _list_installed_core(rdb):
+    installed = {'ghcr.io/nethserver/core': [{'id': 'core', 'version': _get_core_tag(), 'module': 'core'}]}
     # Search for installed modules
     for m in rdb.scan_iter('module/*/environment'):
         vars = rdb.hgetall(m)
@@ -349,6 +351,12 @@ def list_updates(rdb, skip_core_modules=False, with_testing_update=False):
     updates = []
     installed_modules = list_installed(rdb, skip_core_modules)
     available_modules = _get_available_modules(rdb)
+    try:
+        current_core = semver.parse_version_info(_get_core_tag())
+    except:
+        # Set an arbitrary high number for comparision with a development
+        # image of core:
+        current_core = semver.Version(999, 999, 999)
 
     flat_instance_list = list(mi for module_instances in installed_modules.values() for mi in module_instances)
     for instance in flat_instance_list:
@@ -364,13 +372,28 @@ def list_updates(rdb, skip_core_modules=False, with_testing_update=False):
         testing_update_candidate = None
         available_module = available_modules[instance['source']]
         repository_name = available_module['repository']
-        for atag in list(aver['tag'] for aver in available_module['versions']):
+        for aver in available_module['versions']:
             try:
-                available_version = semver.parse_version_info(atag)
+                available_version = semver.parse_version_info(aver['tag'])
             except:
                 continue # skip non-semver available tag
             if available_version <= current_version:
                 continue # ignore tags that do not update the current one
+            try:
+                minimum_version = semver.parse_version_info(aver['labels']['org.nethserver.min-from'])
+            except:
+                # Arbitrary low version to satisfy any tag:
+                minimum_version = (0,0,0)
+            if current_version < minimum_version:
+                print(agent.SD_NOTICE + f"Ignoring update of {instance['id']} with {instance['source']}:{aver['tag']}: org.nethserver.min-from", minimum_version, file=sys.stderr)
+                continue # Skip versions incompatible with instance version.
+            try:
+                minimum_core = semver.parse_version_info(aver['labels']['org.nethserver.min-core'])
+            except:
+                minimum_core = (0,0,0)
+            if current_core < minimum_core:
+                print(agent.SD_NOTICE + f"Ignoring update of {instance['id']} with {instance['source']}:{aver['tag']}: org.nethserver.min-core:", minimum_core, file=sys.stderr)
+                continue # Skip versions incompatible with core.
             if update_candidate is None and (
                 _repo_has_testing_flag(rdb, repository_name)
                 or not available_version.prerelease
@@ -411,7 +434,7 @@ def list_core_modules(rdb):
             pass
         return ""
 
-    for module_source, instances in list_installed_core(rdb).items():
+    for module_source, instances in _list_installed_core(rdb).items():
         _, image_name = module_source.rsplit("/", 1)
         core_modules.setdefault(image_name, {"name": image_name, "instances": []})
         for instance in instances:

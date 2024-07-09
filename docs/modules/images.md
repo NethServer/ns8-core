@@ -56,6 +56,16 @@ Module images can use a list of well-known labels to configure the system:
   - `rootless`: if present, the module is rootless (calculated from `org.nethserver.rootfull` label)
   - `rootfull`: if present, the module is rootfull (calculated from `org.nethserver.rootfull` label)
 - `org.nethserver.max-per-node`: maximum number of module instances installed on the same node
+- `org.nethserver.min-from`: the image can be used to install a new
+  application instance, or to update an existing instance provided it has
+  a version greater than or equal to the label value. E.g. if the image
+  label `org.nethserver.min-from` has value `2.0.0`, an existing instance
+  with version `1.3.0` cannot be updated with it.
+- `org.nethserver.min-core`: the image can be used to install a new
+  application instance, or update an existing one, if the core version is
+  greater than or equal to the label value. E.g. if the image label
+  `org.nethserver.min-core` has value `2.7.0` it cannot be installed if
+  the leader node running core has version `2.6.2`.
 
 Labels are set by `build-images.sh`, when the images are built.
 
