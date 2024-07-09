@@ -917,8 +917,8 @@
             "security": "Security"
         },
         "images_label": "Images",
-        "rootfull_app_warning_title": "Security risks",
-        "rootfull_app_warning_description": "{appName} requires administrative privileges. After installation it will have full access to the cluster: this can pose significant security risks.",
+        "rootfull_app_warning_title": "Administrative privileges",
+        "rootfull_app_warning_description": "After installation {appName} will have full access to the cluster: this can pose significant security risks.",
         "agree_terms_before_install": "I have read and agree to {appName} {terms}.",
         "level_level": "Level {level}",
         "certification": "Certification",
@@ -929,7 +929,9 @@
         "level_4_description": "App developed and certified by Nethesis",
         "level_5_description": "App developed, certified and supported by Nethesis",
         "update_to_stable_version": "Update to stable version",
-        "update_to_testing_version": "Update to testing version"
+        "update_to_testing_version": "Update to testing version",
+        "num_instances_installed": "{num} instance installed | {num} instances installed",
+        "reason_max_per_node_limit": "Limit of {param} instance reached | Limit of {param} instances reached"
     },
     "system_logs": {
         "title": "System logs",

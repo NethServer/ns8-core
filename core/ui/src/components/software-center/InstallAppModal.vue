@@ -37,17 +37,27 @@
             {{
               $t("software_center.choose_node_for_installation", {
                 app: app.name,
-                version: fullAppVersion,
+                version: appVersion,
               })
             }}
           </div>
-          <NodeSelector @selectNode="onSelectNode" class="mg-top-lg" />
+          <NodeSelector
+            @selectNode="onSelectNode"
+            :disabledNodes="disabledNodes"
+            class="mg-top-lg"
+          >
+            <template v-for="(nodeInfoMessage, nodeId) in nodesInfo">
+              <template :slot="`node-${nodeId}`">
+                {{ nodeInfoMessage }}
+              </template>
+            </template>
+          </NodeSelector>
         </template>
         <div v-else class="mg-bottom-lg">
           {{
             $t("software_center.about_to_install_app", {
               app: app.name,
-              version: fullAppVersion,
+              version: appVersion,
               node: firstNodeLabel,
             })
           }}
@@ -140,12 +150,42 @@ export default {
         return "latest";
       }
     },
-    fullAppVersion() {
-      if (this.app.upstream_name) {
-        return `${this.appVersion} (${this.app.upstream_name})`;
-      } else {
-        return this.appVersion;
+    nodesInfo() {
+      const nodesInfo = {};
+
+      for (const nodeInfo of this.app.install_destinations) {
+        if (!nodeInfo.eligible) {
+          // show reason why node is not eligible
+          const rejectReason = nodeInfo.reject_reason;
+
+          if (rejectReason.message === "max_per_node_limit") {
+            const numMaxInstances = rejectReason.parameter;
+            nodesInfo[nodeInfo.node_id] = this.$tc(
+              `software_center.reason_${rejectReason.message}`,
+              numMaxInstances,
+              { param: numMaxInstances }
+            );
+          } else {
+            nodesInfo[nodeInfo.node_id] = this.$t(
+              `software_center.reason_${rejectReason.message}`,
+              { param: rejectReason.parameter }
+            );
+          }
+        } else if (nodeInfo.instances) {
+          // show number of instances installed
+          nodesInfo[nodeInfo.node_id] = this.$tc(
+            "software_center.num_instances_installed",
+            nodeInfo.instances,
+            { num: nodeInfo.instances }
+          );
+        }
       }
+      return nodesInfo;
+    },
+    disabledNodes() {
+      return this.app.install_destinations
+        .filter((nodeInfo) => !nodeInfo.eligible)
+        .map((nodeInfo) => nodeInfo.node_id);
     },
   },
   created() {
