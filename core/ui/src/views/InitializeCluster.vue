@@ -176,6 +176,16 @@
               <WelcomeLogo />
             </cv-column>
           </cv-row>
+          <cv-row v-if="!isCreatingCluster">
+            <cv-column>
+              <NsInlineNotification
+                kind="info"
+                :title="$t('init.vpn_network')"
+                :description="$t('init.vpn_cidr_tooltip')"
+                :showCloseButton="false"
+              />
+            </cv-column>
+          </cv-row>
           <cv-row>
             <cv-column>
               <cv-tile light>
@@ -191,7 +201,7 @@
                     <cv-skeleton-text
                       v-if="loading.getDefaults"
                       :paragraph="true"
-                      :line-count="7"
+                      :line-count="3"
                       heading
                     ></cv-skeleton-text>
                     <template v-else>
@@ -204,60 +214,7 @@
                         tooltipDirection="right"
                         class="narrow"
                         ref="network"
-                      >
-                        <template #tooltip>
-                          <span>{{ $t("init.vpn_cidr_tooltip") }}</span>
-                        </template>
-                      </NsTextInput>
-                      <!-- advanced options -->
-                      <cv-accordion ref="accordion">
-                        <cv-accordion-item :open="isOpenCreateClusterAccordion">
-                          <template slot="title">{{
-                            $t("common.advanced")
-                          }}</template>
-                          <template slot="content">
-                            <NsTextInput
-                              :label="$t('init.vpn_endpoint_address')"
-                              v-model.trim="vpnEndpointAddress"
-                              :invalid-message="$t(error.vpnEndpointAddress)"
-                              :disabled="
-                                loading.getDefaults || isCreatingCluster
-                              "
-                              tooltipAlignment="end"
-                              tooltipDirection="right"
-                              class="mg-top-sm"
-                              ref="vpnEndpointAddress"
-                            >
-                              <template #tooltip>
-                                <span>{{
-                                  $t("init.vpn_endpoint_address_tooltip")
-                                }}</span>
-                              </template>
-                            </NsTextInput>
-                            <NsTextInput
-                              :label="$t('init.vpn_endpoint_port')"
-                              v-model.trim="vpnEndpointPort"
-                              :invalid-message="$t(error.vpnEndpointPort)"
-                              :disabled="
-                                loading.getDefaults || isCreatingCluster
-                              "
-                              type="number"
-                              max="65535"
-                              min="1"
-                              tooltipAlignment="end"
-                              tooltipDirection="right"
-                              class="narrow"
-                              ref="vpnEndpointPort"
-                            >
-                              <template #tooltip>
-                                <span>{{
-                                  $t("init.vpn_endpoint_port_tooltip")
-                                }}</span>
-                              </template>
-                            </NsTextInput>
-                          </template>
-                        </cv-accordion-item>
-                      </cv-accordion>
+                      />
                     </template>
                     <cv-button-set class="footer-buttons">
                       <NsButton
@@ -1037,7 +994,7 @@ export default {
       this.loading.getDefaults = false;
 
       if (this.q.page === "create") {
-        this.focusElement("vpnEndpointAddress");
+        this.focusElement("network");
       }
     },
     selectCreateCluster() {

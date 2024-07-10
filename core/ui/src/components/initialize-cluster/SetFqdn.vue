@@ -29,8 +29,20 @@
       <cv-column>
         <NsInlineNotification
           kind="info"
-          :title="$t('init.review_node_fqdn_title')"
-          :description="$t('init.review_node_fqdn_description')"
+          :title="
+            $t(
+              action === 'create'
+                ? 'init.review_leader_fqdn_title'
+                : 'init.review_worker_fqdn_title'
+            )
+          "
+          :description="
+            $t(
+              action === 'create'
+                ? 'init.review_leader_fqdn_description'
+                : 'init.review_worker_fqdn_description'
+            )
+          "
           :showCloseButton="false"
         />
       </cv-column>
