@@ -14,6 +14,13 @@
     <template slot="title">{{ $t("nodes.set_fqdn") }}</template>
     <template slot="content">
       <NsInlineNotification
+        v-if="isLeaderNode"
+        kind="info"
+        :title="$t('nodes.vpn_endpoint_title')"
+        :description="$t('nodes.vpn_endpoint_description')"
+        :showCloseButton="false"
+      />
+      <NsInlineNotification
         v-if="error.getFqdn"
         kind="error"
         :title="$t('action.get-fqdn')"
@@ -29,7 +36,11 @@
       <cv-form v-else @submit.prevent="setFqdn">
         <template>
           <cv-text-input
-            :label="$t('init.hostname_create')"
+            :label="
+              $t('nodes.node_name_hostname', {
+                node: this.nodeLabel,
+              })
+            "
             v-model.trim="hostname"
             :invalid-message="error.hostname"
             :disabled="loading.getFqdn || loading.setFqdn"
@@ -37,7 +48,11 @@
           >
           </cv-text-input>
           <cv-text-input
-            :label="$t('init.domain_create')"
+            :label="
+              $t('nodes.node_name_domain', {
+                node: this.nodeLabel,
+              })
+            "
             v-model.trim="domain"
             placeholder="example.org"
             :invalid-message="error.domain"
@@ -90,6 +105,18 @@ export default {
         domain: "",
       },
     };
+  },
+  computed: {
+    isLeaderNode() {
+      return this.node && this.node.local;
+    },
+    nodeLabel() {
+      if (this.node) {
+        return this.getShortNodeLabel(this.node);
+      } else {
+        return "";
+      }
+    },
   },
   watch: {
     isShown: function () {

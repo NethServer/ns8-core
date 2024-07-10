@@ -68,8 +68,8 @@
               <cv-text-input
                 :label="
                   action === 'create'
-                    ? $t('init.hostname_create')
-                    : $t('init.hostname_join')
+                    ? $t('init.leader_node_hostname')
+                    : $t('init.worker_node_hostname')
                 "
                 v-model.trim="hostname"
                 :invalid-message="error.hostname"
@@ -80,8 +80,8 @@
               <cv-text-input
                 :label="
                   action === 'create'
-                    ? $t('init.domain_create')
-                    : $t('init.domain_join')
+                    ? $t('init.leader_node_domain')
+                    : $t('init.worker_node_domain')
                 "
                 v-model.trim="domain"
                 placeholder="example.org"

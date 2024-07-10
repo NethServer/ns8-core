@@ -236,10 +236,10 @@
         "creating_cluster": "Creating cluster...",
         "custom_routes": "Custom HTTP routes",
         "custom_certificates": "Uploaded certificates",
-        "hostname_create": "Leader node hostname",
-        "hostname_join": "Worker node hostname",
-        "domain_create": "Leader node domain",
-        "domain_join": "Worker node domain",
+        "leader_node_hostname": "Leader node hostname",
+        "worker_node_hostname": "Worker node hostname",
+        "leader_node_domain": "Leader node domain",
+        "worker_node_domain": "Worker node domain",
         "set_fqdn": "Set FQDN",
         "review_leader_fqdn_title": "Review leader FQDN",
         "review_worker_fqdn_title": "Review worker FQDN",
@@ -1274,7 +1274,11 @@
         "shutdown_node_after_removal": "Shut down {node} after node removal to stop the apps running on it",
         "cannot_retrieve_node_info": "Cannot retrieve node info",
         "set_fqdn": "Set FQDN",
-        "show_all_disks": "Show all disks"
+        "show_all_disks": "Show all disks",
+        "vpn_endpoint_title": "VPN endpoint",
+        "vpn_endpoint_description": "Changing the fully qualified domain name of the leader node will also update the VPN endpoint address.",
+        "node_name_hostname": "{node} hostname",
+        "node_name_domain": "{node} domain"
     },
     "node_detail": {
         "title": "Node detail",
