@@ -1262,38 +1262,6 @@ export default {
       this.clearErrors(this);
       let isValidationOk = true;
 
-      if (!this.vpnEndpointAddress) {
-        this.error.vpnEndpointAddress = "common.required";
-        this.isOpenCreateClusterAccordion = true;
-
-        if (isValidationOk) {
-          this.focusElement("vpnEndpointAddress");
-          isValidationOk = false;
-        }
-      } else if (
-        this.vpnEndpointAddress &&
-        !this.isFqdn(this.vpnEndpointAddress)
-      ) {
-        // we want to validate enpoint is a hostname
-        this.error.vpnEndpointAddress = "init.not_a_valid_fqdn_endpoint";
-        this.isOpenCreateClusterAccordion = true;
-
-        if (isValidationOk) {
-          this.focusElement("vpnEndpointAddress");
-          isValidationOk = false;
-        }
-      }
-
-      if (!this.vpnEndpointPort) {
-        this.error.vpnEndpointPort = "common.required";
-        this.isOpenCreateClusterAccordion = true;
-
-        if (isValidationOk) {
-          this.focusElement("vpnEndpointPort");
-          isValidationOk = false;
-        }
-      }
-
       if (!this.network) {
         this.error.network = "common.required";
 
