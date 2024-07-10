@@ -25,12 +25,22 @@ import sys
 import os
 import agent.tasks
 import cluster.modules
+import json
 
+request = json.load(sys.stdin)
 rdb = agent.redis_connect(privileged=True)
 updates = cluster.modules.list_updates(rdb, skip_core_modules = True)
 
+if 'modules' in request:
+    # Filter out non-matching modules:
+    updates = list(filter(lambda uo: uo['module'] in request['modules'], updates))
+
+if 'instances' in request:
+    # Filter out non-matching instances:
+    updates = list(filter(lambda uo: uo['id'] in request['instances'], updates))
+
 if len(updates) == 0:
-    print(agent.SD_INFO, "No updates available for the installed modules", file=sys.stderr)
+    print(agent.SD_INFO, "update-modules: no update found. Filters:", request, file=sys.stderr)
     sys.exit(0)
 
 errors = 0

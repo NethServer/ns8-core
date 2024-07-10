@@ -795,7 +795,7 @@ export default {
     async updateAllInstances() {
       this.error.updateModule = "";
       this.setUpdateInProgressInStore(true);
-      const taskAction = "update-module";
+      const taskAction = "update-modules";
       const eventId = this.getUuid();
 
       // register to task error
