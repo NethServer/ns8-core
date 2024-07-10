@@ -115,15 +115,19 @@
           />
         </cv-column>
       </cv-row>
-      <cv-row v-if="repositories.find((repository) => repository.testing)">
+      <cv-row v-if="testingRepositories.length">
         <cv-column>
           <NsInlineNotification
             kind="warning"
             :title="$t('software_center.testing_warning_title')"
-            :description="$t('software_center.testing_warning_description')"
+            :description="
+              $tc(
+                'software_center.testing_warning_description',
+                testingRepositories.length,
+                { repos: testingRepositories.join(', ') }
+              )
+            "
             :showCloseButton="false"
-            @action="goToSettingsSoftwareRepositories"
-            :actionLabel="$t('software_center.testing_warning_action_label')"
           />
         </cv-column>
       </cv-row>
@@ -146,16 +150,19 @@
           <cv-content-switcher-button
             owner-id="all"
             :selected="csbAllSelected"
+            :disabled="loading.listModules || loading.listCoreModules"
             >{{ $t("software_center.all") }}</cv-content-switcher-button
           >
           <cv-content-switcher-button
             owner-id="installed"
             :selected="csbInstalledSelected"
+            :disabled="loading.listModules || loading.listCoreModules"
             >{{ $t("software_center.installed") }}</cv-content-switcher-button
           >
           <cv-content-switcher-button
             owner-id="updates"
             :selected="csbUpdatesSelected"
+            :disabled="loading.listModules || loading.listCoreModules"
             >{{ $t("software_center.updates") }}</cv-content-switcher-button
           >
         </cv-content-switcher>
@@ -443,6 +450,11 @@ export default {
         numInstancesToUpdate += appToUpdate.updates.length;
       }
       return numInstancesToUpdate;
+    },
+    testingRepositories() {
+      return this.repositories
+        .filter((repository) => repository.testing)
+        .map((repository) => repository.name);
     },
   },
   watch: {

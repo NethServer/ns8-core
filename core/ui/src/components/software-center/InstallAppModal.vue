@@ -7,16 +7,32 @@
     size="default"
     :visible="isShown"
     @modal-hidden="onModalHidden"
+    @modal-shown="onModalShown"
     @primary-click="installInstance"
     class="no-pad-modal"
-    :primary-button-disabled="!selectedNode"
+    :primary-button-disabled="
+      !selectedNode || (app && app.docs.terms_url && !agreeTerms)
+    "
   >
     <template v-if="app" slot="title">{{
       $t("software_center.app_installation", { app: app.name })
     }}</template>
     <template v-if="app" slot="content">
       <cv-form @submit.prevent="installInstance">
+        <!-- warning for rootfull app -->
+        <NsInlineNotification
+          v-if="app.rootfull && app.certification_level < 3"
+          kind="warning"
+          :title="$t('software_center.rootfull_app_warning_title')"
+          :description="
+            $t('software_center.rootfull_app_warning_description', {
+              appName: app.name,
+            })
+          "
+          :showCloseButton="false"
+        />
         <template v-if="clusterNodes.length > 1">
+          <!-- node selection -->
           <div>
             {{
               $t("software_center.choose_node_for_installation", {
@@ -25,9 +41,19 @@
               })
             }}
           </div>
-          <NodeSelector @selectNode="onSelectNode" class="mg-top-xlg" />
+          <NodeSelector
+            @selectNode="onSelectNode"
+            :disabledNodes="disabledNodes"
+            class="mg-top-lg"
+          >
+            <template v-for="(nodeInfoMessage, nodeId) in nodesInfo">
+              <template :slot="`node-${nodeId}`">
+                {{ nodeInfoMessage }}
+              </template>
+            </template>
+          </NodeSelector>
         </template>
-        <div v-else>
+        <div v-else class="mg-bottom-lg">
           {{
             $t("software_center.about_to_install_app", {
               app: app.name,
@@ -36,6 +62,31 @@
             })
           }}
         </div>
+        <!-- terms and conditions -->
+        <NsCheckbox
+          v-if="app.docs.terms_url"
+          v-model="agreeTerms"
+          value="checkTerms"
+        >
+          <template slot="label">
+            <i18n path="software_center.agree_terms_before_install" tag="span">
+              <template v-slot:appName>
+                {{ app.name }}
+              </template>
+              <template v-slot:terms>
+                <cv-link
+                  :href="app.docs.terms_url"
+                  target="_blank"
+                  rel="noreferrer"
+                  class="inline"
+                >
+                  {{ $t("common.terms_and_conditions") }}
+                </cv-link>
+              </template>
+            </i18n>
+          </template>
+        </NsCheckbox>
+        <!-- add-module error -->
         <div v-if="error.addModule">
           <NsInlineNotification
             kind="error"
@@ -71,6 +122,7 @@ export default {
   data() {
     return {
       selectedNode: null,
+      agreeTerms: false,
       error: {
         addModule: "",
       },
@@ -98,6 +150,43 @@ export default {
         return "latest";
       }
     },
+    nodesInfo() {
+      const nodesInfo = {};
+
+      for (const nodeInfo of this.app.install_destinations) {
+        if (!nodeInfo.eligible) {
+          // show reason why node is not eligible
+          const rejectReason = nodeInfo.reject_reason;
+
+          if (rejectReason.message === "max_per_node_limit") {
+            const numMaxInstances = rejectReason.parameter;
+            nodesInfo[nodeInfo.node_id] = this.$tc(
+              `software_center.reason_${rejectReason.message}`,
+              numMaxInstances,
+              { param: numMaxInstances }
+            );
+          } else {
+            nodesInfo[nodeInfo.node_id] = this.$t(
+              `software_center.reason_${rejectReason.message}`,
+              { param: rejectReason.parameter }
+            );
+          }
+        } else if (nodeInfo.instances) {
+          // show number of instances installed
+          nodesInfo[nodeInfo.node_id] = this.$tc(
+            "software_center.num_instances_installed",
+            nodeInfo.instances,
+            { num: nodeInfo.instances }
+          );
+        }
+      }
+      return nodesInfo;
+    },
+    disabledNodes() {
+      return this.app.install_destinations
+        .filter((nodeInfo) => !nodeInfo.eligible)
+        .map((nodeInfo) => nodeInfo.node_id);
+    },
   },
   created() {
     if (this.clusterNodes.length == 1) {
@@ -105,6 +194,9 @@ export default {
     }
   },
   methods: {
+    onModalShown() {
+      this.agreeTerms = false;
+    },
     async installInstance() {
       this.error.addModule = "";
       const taskAction = "add-module";

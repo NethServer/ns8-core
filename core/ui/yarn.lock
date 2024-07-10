@@ -2002,9 +2002,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nethserver/ns8-ui-lib@npm:^1.0.1":
-  version: 1.0.1
-  resolution: "@nethserver/ns8-ui-lib@npm:1.0.1"
+"@nethserver/ns8-ui-lib@npm:^1.0.2":
+  version: 1.0.2
+  resolution: "@nethserver/ns8-ui-lib@npm:1.0.2"
   dependencies:
     "@rollup/plugin-json": ^4.1.0
     core-js: ^3.15.2
@@ -2013,7 +2013,7 @@ __metadata:
     vue-date-fns: ^2.0.1
   peerDependencies:
     vue: ^2.6.12
-  checksum: a553ad265a4da9b5af7c0fbdd4ba792207682b95f2dc2b3c4238016fa913a1bdccf77c99c056cfc0783728d9d359f0b8e5846311456e3397276d87f9379df6fc
+  checksum: d450ea7a2c2fad0eee21dd5e53c5563389656ad83a13fc0ae361377c411e925ade0dee0d7c3272d6b4aac17bb808b6a9abd47a5ba35dc50a920bb227711770af
   languageName: node
   linkType: hard
 
@@ -5868,9 +5868,9 @@ __metadata:
   linkType: hard
 
 "caniuse-lite@npm:^1.0.0, caniuse-lite@npm:^1.0.30001109, caniuse-lite@npm:^1.0.30001125, caniuse-lite@npm:^1.0.30001280":
-  version: 1.0.30001527
-  resolution: "caniuse-lite@npm:1.0.30001527"
-  checksum: 7ad99d78d1a30d494471c8a9ead3fc40a816ee61b16fef330bba5bdae5d7ebaa965becc8cd09c7aa6240125ce790a5213a40cd240ceaa211508744ed86b79783
+  version: 1.0.30001640
+  resolution: "caniuse-lite@npm:1.0.30001640"
+  checksum: ec492d8d1e11d1c55e0f5c0f218229369dc0a4bd1b5d0a579a6435865fe8f4c84bde7e816a844cce1b9cdd97f5a85b6dac5599639fabcdb0c4c5bd039e46cbfd
   languageName: node
   linkType: hard
 
@@ -13076,7 +13076,7 @@ __metadata:
     "@carbon/icons-vue": ^10.37.0
     "@carbon/themes": ^10.34.0
     "@carbon/vue": ^2.40.0
-    "@nethserver/ns8-ui-lib": ^1.0.1
+    "@nethserver/ns8-ui-lib": ^1.0.2
     "@storybook/addon-actions": ^6.2.9
     "@storybook/addon-essentials": ^6.2.9
     "@storybook/addon-links": ^6.2.9

@@ -137,24 +137,20 @@
                       class="no-margin"
                     ></cv-tag>
                   </cv-data-table-cell>
-                  <cv-data-table-cell>
-                    <cv-tag
-                      v-if="row.testing"
-                      kind="green"
-                      :label="$t('common.enabled')"
-                      class="no-margin"
-                    ></cv-tag>
-                    <cv-tag
-                      v-else
-                      kind="high-contrast"
-                      :label="$t('common.disabled')"
-                      class="no-margin"
-                    ></cv-tag>
-                  </cv-data-table-cell>
                   <cv-data-table-cell class="table-overflow-menu-cell">
                     <cv-overflow-menu flip-menu class="table-overflow-menu">
-                      <cv-overflow-menu-item @click="showEditRepoModal(row)">
-                        <NsMenuItem :icon="Edit20" :label="$t('common.edit')" />
+                      <cv-overflow-menu-item
+                        @click="toggleRepoStatus(row)"
+                        :disabled="loading.editRepository"
+                      >
+                        <NsMenuItem
+                          :icon="Power20"
+                          :label="
+                            row.status
+                              ? $t('common.disable')
+                              : $t('common.enable')
+                          "
+                        />
                       </cv-overflow-menu-item>
                       <NsMenuDivider />
                       <cv-overflow-menu-item
@@ -187,6 +183,57 @@
         $t("settings_sw_repositories.create_repository")
       }}</template>
       <template slot="content">
+        <NsInlineNotification
+          kind="warning"
+          :title="
+            $t('settings_sw_repositories.create_repository_warning_title')
+          "
+          :showCloseButton="false"
+        >
+          <template slot="description">
+            <p class="mg-top-sm mg-bottom-sm">
+              {{
+                $t(
+                  "settings_sw_repositories.create_repository_warning_description_1"
+                )
+              }}
+            </p>
+            <ul class="unordered-list">
+              <li>
+                {{
+                  $t("settings_sw_repositories.create_repository_warning_li_1")
+                }}
+              </li>
+              <li>
+                {{
+                  $t("settings_sw_repositories.create_repository_warning_li_2")
+                }}
+              </li>
+              <li>
+                {{
+                  $t("settings_sw_repositories.create_repository_warning_li_3")
+                }}
+              </li>
+              <li>
+                {{
+                  $t("settings_sw_repositories.create_repository_warning_li_4")
+                }}
+              </li>
+              <li>
+                {{
+                  $t("settings_sw_repositories.create_repository_warning_li_5")
+                }}
+              </li>
+              <p class="mg-top-sm">
+                {{
+                  $t(
+                    "settings_sw_repositories.create_repository_warning_description_2"
+                  )
+                }}
+              </p>
+            </ul>
+          </template>
+        </NsInlineNotification>
         <cv-form @submit.prevent="createRepository">
           <cv-text-input
             :label="$t('settings_sw_repositories.name')"
@@ -211,15 +258,6 @@
             <template slot="text-left">{{ $t("common.disabled") }}</template>
             <template slot="text-right">{{ $t("common.enabled") }}</template>
           </cv-toggle>
-          <cv-toggle
-            :label="$t('settings_sw_repositories.testing')"
-            value="testingValue"
-            :form-item="true"
-            v-model="q.isNewRepoTesting"
-          >
-            <template slot="text-left">{{ $t("common.disabled") }}</template>
-            <template slot="text-right">{{ $t("common.enabled") }}</template>
-          </cv-toggle>
         </cv-form>
         <NsInlineNotification
           v-if="error.addRepository"
@@ -232,68 +270,6 @@
       <template slot="secondary-button">{{ $t("common.close") }}</template>
       <template slot="primary-button">{{
         $t("settings_sw_repositories.create_repository")
-      }}</template>
-    </NsModal>
-    <!-- edit repository modal -->
-    <NsModal
-      size="default"
-      :visible="q.isShownEditRepoModal"
-      @modal-hidden="q.isShownEditRepoModal = false"
-      @primary-click="editRepository"
-      :primary-button-disabled="loading.editRepository"
-    >
-      <template slot="title">{{
-        $t("settings_sw_repositories.edit_repository")
-      }}</template>
-      <template slot="content">
-        <cv-form @submit.prevent="editRepository">
-          <cv-text-input
-            :label="$t('settings_sw_repositories.name')"
-            v-model.trim="q.editRepoName"
-            :invalid-message="$t(error.name)"
-            disabled
-          >
-          </cv-text-input>
-          <cv-text-input
-            :label="$t('settings_sw_repositories.url')"
-            v-model.trim="q.editRepoUrl"
-            :invalid-message="$t(error.url)"
-            disabled
-          >
-          </cv-text-input>
-          <cv-toggle
-            :label="$t('settings_sw_repositories.status')"
-            value="statusValue"
-            :form-item="true"
-            v-model="q.isEditRepoEnabled"
-          >
-            <template slot="text-left">{{ $t("common.disabled") }}</template>
-            <template slot="text-right">{{ $t("common.enabled") }}</template>
-          </cv-toggle>
-          <cv-toggle
-            :label="$t('settings_sw_repositories.testing')"
-            value="testingValue"
-            :form-item="true"
-            v-model="q.isEditRepoTesting"
-          >
-            <template slot="text-left">{{ $t("common.disabled") }}</template>
-            <template slot="text-right">{{ $t("common.enabled") }}</template>
-          </cv-toggle>
-        </cv-form>
-        <div v-if="error.alterRepository" class="bx--row">
-          <div class="bx--col">
-            <NsInlineNotification
-              kind="error"
-              :title="$t('action.alter-repository')"
-              :description="error.alterRepository"
-              :showCloseButton="false"
-            />
-          </div>
-        </div>
-      </template>
-      <template slot="secondary-button">{{ $t("common.close") }}</template>
-      <template slot="primary-button">{{
-        $t("settings_sw_repositories.edit_repository")
       }}</template>
     </NsModal>
   </div>
@@ -325,19 +301,13 @@ export default {
     return {
       q: {
         isShownCreateRepoModal: false,
-        isShownEditRepoModal: false,
         newRepoName: "",
         newRepoUrl: "",
-        isNewRepoTesting: false,
         isNewRepoEnabled: true,
-        editRepoName: "",
-        editRepoUrl: "",
-        isEditRepoTesting: false,
-        isEditRepoEnabled: true,
       },
       repositories: [],
       tablePage: [],
-      tableColumns: ["name", "url", "status", "testing"],
+      tableColumns: ["name", "url", "status"],
       repoToDelete: null,
       loading: {
         repositories: true,
@@ -407,14 +377,6 @@ export default {
       this.clearErrors(this);
       this.q.isShownCreateRepoModal = true;
     },
-    showEditRepoModal(repo) {
-      this.clearErrors(this);
-      this.q.editRepoName = repo.name;
-      this.q.editRepoUrl = repo.url;
-      this.q.isEditRepoTesting = repo.testing;
-      this.q.isEditRepoEnabled = repo.status;
-      this.q.isShownEditRepoModal = true;
-    },
     async listRepositories() {
       this.loading.repositories = true;
       this.error.listRepositories = "";
@@ -445,7 +407,8 @@ export default {
       }
     },
     listRepositoriesCompleted(taskContext, taskResult) {
-      this.repositories = taskResult.output;
+      const repositories = taskResult.output;
+      this.repositories = repositories.sort(this.sortByProperty("name"));
       this.loading.repositories = false;
     },
     validateNewRepository() {
@@ -505,7 +468,6 @@ export default {
             name: this.q.newRepoName,
             url: this.q.newRepoUrl,
             status: this.q.isNewRepoEnabled,
-            testing: this.q.isNewRepoTesting,
           },
           extra: {
             title: this.$t("action." + taskAction),
@@ -539,13 +501,10 @@ export default {
       this.loading.createRepository = false;
     },
     alterRepositoryValidationOk() {
-      // hide modal after validation
-      this.q.isShownEditRepoModal = false;
-
       // enable "Edit repository" button
       this.loading.editRepository = false;
     },
-    async editRepository() {
+    async toggleRepoStatus(repo) {
       this.loading.editRepository = true;
       this.error.alterRepository = "";
       const taskAction = "alter-repository";
@@ -564,17 +523,24 @@ export default {
         this.alterRepositoryCompleted
       );
 
+      const notificationTitle = repo.status
+        ? this.$t("settings_sw_repositories.disable_repository", {
+            name: repo.name,
+          })
+        : this.$t("settings_sw_repositories.enable_repository", {
+            name: repo.name,
+          });
+
       const res = await to(
         this.createClusterTask({
           action: taskAction,
           data: {
-            name: this.q.editRepoName,
-            status: this.q.isEditRepoEnabled,
-            testing: this.q.isEditRepoTesting,
+            name: repo.name,
+            status: !repo.status,
           },
           extra: {
-            title: this.$t("action." + taskAction),
-            isNotificationHidden: true,
+            title: notificationTitle,
+            description: this.$t("common.processing"),
           },
         })
       );
@@ -590,7 +556,6 @@ export default {
     addRepositoryCompleted() {
       this.q.newRepoName = "";
       this.q.newRepoUrl = "";
-      this.q.isNewRepoTesting = false;
       this.q.isNewRepoEnabled = true;
       this.listRepositories();
     },
@@ -598,9 +563,6 @@ export default {
       console.error(`${taskContext.action} aborted`, taskResult);
       this.error.alterRepository = this.$t("error.generic_error");
       this.loading.editRepository = false;
-
-      // hide modal so that user can see error notification
-      this.q.isShownEditRepoModal = false;
     },
     alterRepositoryCompleted() {
       this.listRepositories();

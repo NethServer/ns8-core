@@ -26,7 +26,7 @@
               />
             </div>
             <div class="app-name">
-              <h3>{{ app.name }}</h3>
+              <h3 data-modal-primary-focus>{{ app.name }}</h3>
             </div>
           </div>
         </div>
@@ -37,6 +37,26 @@
         </div>
         <div class="description">
           {{ getApplicationDescription(app) }}
+        </div>
+        <!-- warning for rootfull app -->
+        <NsInlineNotification
+          v-if="app.rootfull && app.certification_level < 3"
+          kind="warning"
+          :title="$t('software_center.rootfull_app_warning_title')"
+          :description="
+            $t('software_center.rootfull_app_warning_description', {
+              appName: app.name,
+            })
+          "
+          :showCloseButton="false"
+        />
+        <div class="key-value-setting">
+          <span class="label">
+            {{ $t("software_center.certification") }}
+          </span>
+          <span class="value">
+            <CertificationLevelBadge :level="app.certification_level" />
+          </span>
         </div>
         <div class="key-value-setting">
           <div>
@@ -54,7 +74,16 @@
               {{ $t("software_center.latest_version") }}
             </span>
             <span class="value">
-              {{ app.versions.length ? app.versions[0].tag : "-" }}
+              {{ app.versions.length ? app.versions[0].tag : "latest" }}
+              <span v-if="app.upstream_name"> ({{ app.upstream_name }}) </span>
+            </span>
+          </div>
+        </div>
+        <div class="key-value-setting">
+          <div>
+            <span class="label">{{ $t("software_center.repository") }}</span>
+            <span class="value">
+              {{ app.repository || "-" }}
             </span>
           </div>
         </div>
@@ -129,6 +158,14 @@
                 {{ $t("software_center.source_code") }}
               </cv-link>
             </span>
+            <template v-if="app.docs.terms_url">
+              &bull;
+              <span>
+                <cv-link :href="app.docs.terms_url" target="_blank">
+                  {{ $t("common.terms_and_conditions") }}
+                </cv-link>
+              </span>
+            </template>
           </div>
         </div>
       </template>
@@ -140,10 +177,11 @@
 <script>
 import { UtilService } from "@nethserver/ns8-ui-lib";
 import ImageGallery from "./ImageGallery";
+import CertificationLevelBadge from "./CertificationLevelBadge.vue";
 
 export default {
   name: "AppInfoModal",
-  components: { ImageGallery },
+  components: { ImageGallery, CertificationLevelBadge },
   mixins: [UtilService],
   props: {
     isShown: Boolean,

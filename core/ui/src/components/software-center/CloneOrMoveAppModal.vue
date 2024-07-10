@@ -31,10 +31,12 @@
       <NodeSelector
         class="mg-top-xlg"
         @selectNode="onSelectNode"
-        :extraInfoNode="installationNode"
-        :extraInfoLabel="$t('software_center.current_node')"
         :disabledNodes="isClone ? [] : [installationNode]"
-      />
+      >
+        <template :slot="`node-${installationNode}`">
+          <div>{{ $t("software_center.current_node") }}</div>
+        </template>
+      </NodeSelector>
       <NsInlineNotification
         v-if="error.cloneModule"
         kind="error"
