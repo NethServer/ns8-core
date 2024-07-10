@@ -45,44 +45,12 @@
         class="mg-top-lg"
       ></cv-skeleton-text>
       <cv-form v-else @submit.prevent="promoteNode" class="mg-top-lg">
-        <NsTextInput
-          :label="
-            $t('nodes.node_vpn_endpoint_address', {
-              node: node ? this.getNodeLabel(node) : '',
-            })
-          "
-          v-model.trim="vpnEndpointAddress"
-          :invalid-message="$t(error.endpoint_address)"
-          :disabled="loading.promoteNode"
-          tooltipAlignment="end"
-          tooltipDirection="right"
-          ref="endpoint_address"
-        >
-          <template #tooltip>{{
-            $t("nodes.node_vpn_endpoint_address_tooltip")
-          }}</template>
-        </NsTextInput>
-        <NsTextInput
-          :label="
-            $t('nodes.node_vpn_endpoint_port', {
-              node: node ? this.getNodeLabel(node) : '',
-            })
-          "
-          v-model.trim="vpnEndpointPort"
-          :invalid-message="$t(error.endpoint_port)"
-          :disabled="loading.promoteNode"
-          type="number"
-          tooltipAlignment="end"
-          tooltipDirection="right"
-          class="narrow"
-          ref="endpoint_port"
-        >
-          <template #tooltip>{{
-            $t("nodes.node_vpn_endpoint_port_tooltip")
-          }}</template>
-        </NsTextInput>
         <NsCheckbox
-          :label="$t('nodes.check_node_connectivity')"
+          :label="
+            $t('nodes.check_node_connectivity_promote', {
+              fqdn: this.vpnEndpointAddress,
+            })
+          "
           v-model="checkNodeConnectivity"
           :disabled="loading.promoteNode"
           value="checkNodeConnectivity"
@@ -232,47 +200,12 @@ export default {
     getNodeInfoCompleted(taskContext, taskResult) {
       this.vpnEndpointAddress = taskResult.output.hostname;
       this.loading.getNodeInfo = false;
-
-      setTimeout(() => {
-        this.focusElement("endpoint_address");
-      }, 300);
-    },
-    validatePromoteNode() {
-      this.clearErrors();
-      let isValidationOk = true;
-
-      // VPN endpoint address
-
-      if (!this.vpnEndpointAddress) {
-        this.error.endpoint_address = this.$t("common.required");
-
-        if (isValidationOk) {
-          this.focusElement("endpoint_address");
-          isValidationOk = false;
-        }
-      }
-
-      // VPN endpoint port
-
-      if (!this.vpnEndpointPort) {
-        this.error.endpoint_port = this.$t("common.required");
-
-        if (isValidationOk) {
-          this.focusElement("endpoint_port");
-          isValidationOk = false;
-        }
-      }
-      return isValidationOk;
     },
     async promoteNode() {
       if (this.userInput !== "node" + this.node.id) {
         return;
       }
-
-      const isValidationOk = this.validatePromoteNode();
-      if (!isValidationOk) {
-        return;
-      }
+      this.clearErrors();
       this.loading.promoteNode = true;
       this.error.promoteNode = "";
       const taskAction = "promote-node";
