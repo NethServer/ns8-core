@@ -146,31 +146,12 @@ class LatestModuleLookupError(Exception):
 def get_latest_module(module, rdb):
     """Find most recent version of the given module
     """
-    version = ""
-    source = ""
-    available = list_available(rdb)
-    for m in available:
+    for m in list_available(rdb, skip_core_modules=False):
         if m["id"] == module:
-            source = m["source"]
-            repo_testing = rdb.hget(f'cluster/repository/{m["repository"]}', 'testing') == "1"
-            for v in m["versions"]:
-                if repo_testing:
-                    version = v["tag"]
-                elif not v["testing"]:
-                    version = v["tag"]
+            # We assume at index 0 we find the latest tag:
+            return m["source"] + ':' + m['versions'][0]['tag']
 
-                if version:
-                    break
-
-        if version:
-            break
-
-
-    # Fail if package has not been found inside the repository metadata
-    if not source or not version:
-        raise LatestModuleLookupError(module)
-
-    return f'{source}:{version}'
+    raise LatestModuleLookupError(module)
 
 def _parse_version_object(v):
     try:
