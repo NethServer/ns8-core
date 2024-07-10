@@ -60,6 +60,14 @@
             ref="domain"
           >
           </cv-text-input>
+          <!-- check node connectivity -->
+          <NsCheckbox
+            v-if="isLeaderNode"
+            :label="$t('nodes.check_node_connectivity')"
+            v-model="checkNodeConnectivity"
+            :disabled="loading.getFqdn || loading.setFqdn"
+            value="checkNodeConnectivity"
+          />
         </template>
       </cv-form>
       <NsInlineNotification
@@ -94,6 +102,7 @@ export default {
     return {
       hostname: "",
       domain: "",
+      checkNodeConnectivity: true,
       loading: {
         getFqdn: false,
         setFqdn: false,
@@ -123,6 +132,7 @@ export default {
       if (this.isShown) {
         this.clearErrors();
         this.getFqdn();
+        this.checkNodeConnectivity = true;
       }
     },
   },
@@ -241,6 +251,7 @@ export default {
           data: {
             hostname: this.hostname,
             domain: this.domain,
+            // endpoint_validation: this.checkNodeConnectivity, //// uncomment
           },
           extra: {
             title: this.$t("action." + taskAction),
