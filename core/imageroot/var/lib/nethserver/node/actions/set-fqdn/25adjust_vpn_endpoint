@@ -1,0 +1,23 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2024 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+import json
+import agent
+import sys
+import os
+
+# Fix the node VPN endpoint with the new FQDN, preserving the port number,
+# if already set.
+
+request = json.load(sys.stdin)
+new_fqdn = request['hostname'] + '.' + request['domain']
+node_id = os.environ['NODE_ID']
+
+rdb = agent.redis_connect(privileged=True)
+cur_endpoint = rdb.hget(f'node/{node_id}/vpn', 'endpoint') or f"{new_fqdn}:55820"
+_, cur_port = cur_endpoint.rsplit(":", 1)
+rdb.hset(f'node/{node_id}/vpn', 'endpoint', f'{new_fqdn}:{cur_port}')
