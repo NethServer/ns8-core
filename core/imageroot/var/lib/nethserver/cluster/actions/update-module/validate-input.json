@@ -10,25 +10,20 @@
                 "mymodule2",
                 "mymodule3"
             ]
-        },
-        {
-            "instances": [
-                "mymodule2",
-                "mymodule3"
-            ]
         }
     ],
     "type": "object",
     "required": [
+        "module_url",
         "instances"
     ],
     "properties": {
         "module_url": {
-            "description": "Module image URL to download and install. If empty, search for the latest available image from repositories.",
+            "description": "Module image URL to download and use as update.",
             "type": "string"
         },
         "instances": {
-            "description": "Instance identifiers where the selected image is installed",
+            "description": "Instance identifiers where the selected image is installed as update.",
             "type": "array",
             "items": {
                 "type": "string",
