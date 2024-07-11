@@ -329,14 +329,17 @@ def list_updates(rdb, skip_core_modules=False, with_testing_update=False):
     installed_modules = list_installed(rdb, skip_core_modules)
     available_modules = _get_available_modules(rdb)
     try:
-        current_core = semver.parse_version_info(_get_core_tag())
+        leader_core_version = semver.parse_version_info(_get_core_tag())
     except:
-        # Set an arbitrary high number for comparision with a development
-        # image of core:
-        current_core = semver.Version(999, 999, 999)
+        leader_core_version = semver.Version(999)
 
+    node_core_versions = _get_node_core_versions(rdb)
     flat_instance_list = list(mi for module_instances in installed_modules.values() for mi in module_instances)
     for instance in flat_instance_list:
+        try:
+            current_core = semver.parse_version_info(node_core_versions.get(instance["node"]))
+        except:
+            current_core = leader_core_version
         if not instance['source'] in available_modules:
             continue # skip instance if is not available from any repository
         try:
@@ -390,6 +393,13 @@ def list_updates(rdb, skip_core_modules=False, with_testing_update=False):
 
     return updates
 
+def _get_node_core_versions(rdb):
+    hversions = {}
+    for node_id in set(rdb.hvals("cluster/module_node")):
+        _, vtag = rdb.hget(f'node/{node_id}/environment', 'IMAGE_URL').rsplit(":", 1)
+        hversions[node_id] = vtag
+    return hversions
+
 def list_core_modules(rdb):
     """List core modules and if they can be updated."""
     updates = list_updates(rdb, skip_core_modules=False)
@@ -415,8 +425,6 @@ def list_core_modules(rdb):
             return ""
     for node_id, ntag in _get_node_core_versions(rdb).items():
         try:
-            nenv = rdb.hgetall(f'node/{node_id}/environment') or {}
-            _, ntag = nenv['IMAGE_URL'].rsplit(":", 1)
             core_instance = {
                 'id': 'core' + node_id,
                 'version': ntag,
