@@ -540,7 +540,7 @@
         "restoring_app_to_node": "Restoring {app} to {node}",
         "instance_restored_to_node": "{module_id} restored to {node}",
         "open_app": "Open app",
-        "backup_repository_not_accessible": "Cannot access reposiory",
+        "backup_repository_not_accessible": "Cannot access repository",
         "backup_repository_auth_error": "Cannot authenticate",
         "backup_repository_auth_error_description": "Check repository settings",
         "no_instance_to_restore": "No app instance to restore",
@@ -1275,7 +1275,9 @@
         "vpn_endpoint_title": "VPN endpoint",
         "vpn_endpoint_description": "Changing the fully qualified domain name of the leader node will also update its VPN endpoint address.",
         "node_name_hostname": "{node} hostname",
-        "node_name_domain": "{node} domain"
+        "node_name_domain": "{node} domain",
+        "connectivity_check_failed": "Connectivity check failed",
+        "connectivity_check_failed_description": "The FQDN {fqdn} is not reachable from {node}. Please change hostname and/or domain, or unselect '@:nodes.check_node_connectivity'"
     },
     "node_detail": {
         "title": "Node detail",
