@@ -1,23 +1,23 @@
-#!/bin/bash
+#!/usr/bin/env python3
 
 #
-# Copyright (C) 2023 Nethesis S.r.l.
-# http://www.nethesis.it - nethserver@nethesis.it
-#
-# This script is part of NethServer.
-#
-# NethServer is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License,
-# or any later version.
-#
-# NethServer is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with NethServer.  If not, see COPYING.
+# Copyright (C) 2024 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
 #
 
-echo -n "{\"hostname\": \"$(hostname -f)\", \"machine_id\": \"$(cat /etc/machine-id)\"}"
+import json
+import agent
+import sys
+import os
+import subprocess
+
+try:
+    vpn_port = int(subprocess.check_output(['/usr/bin/wg', 'show', 'wg0', 'listen-port'], text=True).rstrip())
+except Exception as ex:
+    print(agent.SD_ERR, ex, file=sys.stderr)
+    vpn_port = 55820
+
+json.dump({
+    "hostname": agent.get_hostname(),
+    "vpn_port": vpn_port,
+}, fp=sys.stdout)
