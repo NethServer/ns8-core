@@ -68,10 +68,14 @@ echo "Write initial cluster environment state"
 echo "Write initial node environment state"
 (exec > /var/lib/nethserver/node/state/environment
     printf "NODE_ID=1\n"
+    printf "IMAGE_URL=%s\n" "${CORE_IMAGE}"
     printf "IMAGE_ID=%s\n" $(podman image inspect -f '{{.Id}}' "${CORE_IMAGE}")
     printf "IMAGE_DIGEST=%s\n" $(podman image inspect -f '{{.Digest}}' "${CORE_IMAGE}")
+    printf "IMAGE_REPODIGEST=%s\n" $(podman image inspect -f '{{index .RepoDigests 0}}' "${CORE_IMAGE}")
+    printf "PREV_IMAGE_URL=%s\n" "${CORE_IMAGE}"
     printf "PREV_IMAGE_ID=%s\n" $(podman image inspect -f '{{.Id}}' "${CORE_IMAGE}")
     printf "PREV_IMAGE_DIGEST=%s\n" $(podman image inspect -f '{{.Digest}}' "${CORE_IMAGE}")
+    printf "PREV_IMAGE_REPODIGEST=%s\n" $(podman image inspect -f '{{index .RepoDigests 0}}' "${CORE_IMAGE}")
 )
 
 if [[ -z "${NS8_TWO_STEPS_INSTALL}" ]]; then

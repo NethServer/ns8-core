@@ -146,31 +146,12 @@ class LatestModuleLookupError(Exception):
 def get_latest_module(module, rdb):
     """Find most recent version of the given module
     """
-    version = ""
-    source = ""
-    available = list_available(rdb)
-    for m in available:
+    for m in list_available(rdb, skip_core_modules=False):
         if m["id"] == module:
-            source = m["source"]
-            repo_testing = rdb.hget(f'cluster/repository/{m["repository"]}', 'testing') == "1"
-            for v in m["versions"]:
-                if repo_testing:
-                    version = v["tag"]
-                elif not v["testing"]:
-                    version = v["tag"]
+            # We assume at index 0 we find the latest tag:
+            return m["source"] + ':' + m['versions'][0]['tag']
 
-                if version:
-                    break
-
-        if version:
-            break
-
-
-    # Fail if package has not been found inside the repository metadata
-    if not source or not version:
-        raise LatestModuleLookupError(module)
-
-    return f'{source}:{version}'
+    raise LatestModuleLookupError(module)
 
 def _parse_version_object(v):
     try:
@@ -305,53 +286,60 @@ def _get_available_modules(rdb):
 def list_installed(rdb, skip_core_modules = False):
     installed = {}
     logos = _get_downloaded_logos()
-    # Search for installed modules
-    for m in rdb.scan_iter('module/*/environment'):
-        vars = rdb.hgetall(m)
-        module_ui_name = rdb.get(m.removesuffix('/environment') + '/ui_name') or ""
-        url, sep, tag = vars['IMAGE_URL'].partition(":")
-        image = url[url.rindex('/')+1:]
-        logo = logos.get(vars["MODULE_ID"]) or ''
-        flags = list(rdb.smembers(f'module/{vars["MODULE_ID"]}/flags')) or []
-        if skip_core_modules and 'core_module' in flags:
+    hmodules = rdb.hgetall("cluster/module_node") or {}
+    hnode_names = {}
+    for node_id in set(hmodules.values()):
+        hnode_names[node_id] = rdb.get(f'node/{node_id}/ui_name') or ""
+    for module_id in hmodules.keys():
+        try:
+            mflags = list(rdb.smembers(f'module/{module_id}/flags'))
+            if skip_core_modules and 'core_module' in mflags:
+                continue # ignore core modules as requested
+            menv = rdb.hgetall(f'module/{module_id}/environment') or {}
+            msource, mtag = menv['IMAGE_URL'].rsplit(":", 1)
+            mnode_id = hmodules[module_id]
+            hinstance = {
+                'id': module_id,
+                'source': msource,
+                'version': mtag,
+                'module': msource.rsplit("/", 1)[1],
+                'ui_name': rdb.get(f'module/{module_id}/ui_name') or "",
+                'node': mnode_id,
+                'node_ui_name': hnode_names[mnode_id],
+                'logo': logos.get(module_id, ""),
+                'digest': menv['IMAGE_DIGEST'],
+                'flags': mflags,
+            }
+            installed.setdefault(msource, [])
+            installed[msource].append(hinstance)
+        except Exception as ex:
+            print(agent.SD_ERR+f"Cannot fetch {module_id} attributes:", ex, file=sys.stderr)
             continue
-        if url not in installed.keys():
-            installed[url] = []
-        # Retrieve node ui_name
-        node_id = vars['NODE_ID']
-        node_ui_name = rdb.get(f"node/{node_id}/ui_name") or ""
-        installed[url].append({ 'id': vars["MODULE_ID"], 'ui_name': module_ui_name, 'node': node_id, 'node_ui_name': node_ui_name, 'digest': vars["IMAGE_DIGEST"], 'source': url, 'version': tag, 'logo': logo, 'module': image, 'flags': flags})
-
     for instances in installed.values():
         instances.sort(key=lambda v: _parse_version_object(v["version"]), reverse=True)
-
     return installed
 
-def list_installed_core(rdb):
-    installed = {'ghcr.io/nethserver/core': []}
+def _get_core_tag():
     core_env = agent.read_envfile('/etc/nethserver/core.env')
-    (url, tag) = core_env['CORE_IMAGE'].split(":")
-    installed['ghcr.io/nethserver/core'].append({ 'id': 'core', 'version': tag, 'module': 'core'})
-    # Search for installed modules
-    for m in rdb.scan_iter('module/*/environment'):
-        vars = rdb.hgetall(m)
-        if 'core_module' in rdb.smembers(f'module/{vars["MODULE_ID"]}/flags'):
-            url, sep, tag = vars['IMAGE_URL'].partition(":")
-            image = url[url.rindex('/')+1:]
-        
-            if url not in installed.keys():
-                installed[url] = []
-            installed[url].append({'id': vars["MODULE_ID"], 'version': tag, 'module': image})
-
-    return installed
+    _, tag = core_env['CORE_IMAGE'].rsplit(":", 1)
+    return tag
 
 def list_updates(rdb, skip_core_modules=False, with_testing_update=False):
     updates = []
     installed_modules = list_installed(rdb, skip_core_modules)
     available_modules = _get_available_modules(rdb)
+    try:
+        leader_core_version = semver.parse_version_info(_get_core_tag())
+    except:
+        leader_core_version = semver.Version(999)
 
+    node_core_versions = _get_node_core_versions(rdb)
     flat_instance_list = list(mi for module_instances in installed_modules.values() for mi in module_instances)
     for instance in flat_instance_list:
+        try:
+            current_core = semver.parse_version_info(node_core_versions.get(instance["node"]))
+        except:
+            current_core = leader_core_version
         if not instance['source'] in available_modules:
             continue # skip instance if is not available from any repository
         try:
@@ -364,13 +352,28 @@ def list_updates(rdb, skip_core_modules=False, with_testing_update=False):
         testing_update_candidate = None
         available_module = available_modules[instance['source']]
         repository_name = available_module['repository']
-        for atag in list(aver['tag'] for aver in available_module['versions']):
+        for aver in available_module['versions']:
             try:
-                available_version = semver.parse_version_info(atag)
+                available_version = semver.parse_version_info(aver['tag'])
             except:
                 continue # skip non-semver available tag
             if available_version <= current_version:
                 continue # ignore tags that do not update the current one
+            try:
+                minimum_version = semver.parse_version_info(aver['labels']['org.nethserver.min-from'])
+            except:
+                # Arbitrary low version to satisfy any tag:
+                minimum_version = (0,0,0)
+            if current_version < minimum_version:
+                print(agent.SD_NOTICE + f"Ignoring update of {instance['id']} with {instance['source']}:{aver['tag']}: org.nethserver.min-from", minimum_version, file=sys.stderr)
+                continue # Skip versions incompatible with instance version.
+            try:
+                minimum_core = semver.parse_version_info(aver['labels']['org.nethserver.min-core'])
+            except:
+                minimum_core = (0,0,0)
+            if current_core < minimum_core:
+                print(agent.SD_NOTICE + f"Ignoring update of {instance['id']} with {instance['source']}:{aver['tag']}: org.nethserver.min-core:", minimum_core, file=sys.stderr)
+                continue # Skip versions incompatible with core.
             if update_candidate is None and (
                 _repo_has_testing_flag(rdb, repository_name)
                 or not available_version.prerelease
@@ -390,35 +393,61 @@ def list_updates(rdb, skip_core_modules=False, with_testing_update=False):
 
     return updates
 
+def _get_node_core_versions(rdb):
+    hversions = {}
+    for node_id in set(rdb.hvals("cluster/module_node")):
+        _, vtag = rdb.hget(f'node/{node_id}/environment', 'IMAGE_URL').rsplit(":", 1)
+        hversions[node_id] = vtag
+    return hversions
+
 def list_core_modules(rdb):
     """List core modules and if they can be updated."""
+    updates = list_updates(rdb, skip_core_modules=False)
+    def _get_module_update(module_id):
+        for oupdate in updates:
+            if oupdate['id'] == module_id:
+                return oupdate['update']
+        return ""
     core_modules = {}
-    available = list_available(rdb, skip_core_modules = False)
-
-    def _calc_update(image_name, cur):
-        # Lookup module information from repositories
-        for module in available:
-            if module["id"] == image_name:
-                break
+    _, latest_core = get_latest_module('core', rdb).rsplit(":", 1)
+    def _calc_core_update(current, latest):
+        try:
+            vcur = semver.parse_version_info(current)
+        except:
+            vcur = semver.Version(999)
+        try:
+            vlatest = semver.parse_version_info(latest)
+        except:
+            vlatest = semver.Version(0)
+        if vlatest > vcur:
+            return latest
         else:
             return ""
+    for node_id, ntag in _get_node_core_versions(rdb).items():
         try:
-            vupdate = module["versions"][0]['tag']
-            vinfo = semver.VersionInfo.parse(vupdate)
-            if vupdate > cur:
-                return vupdate
-        except:
-            pass
-        return ""
-
-    for module_source, instances in list_installed_core(rdb).items():
+            core_instance = {
+                'id': 'core' + node_id,
+                'version': ntag,
+                'update': _calc_core_update(ntag, latest_core),
+            }
+        except Exception as ex:
+            print(agent.SD_ERR+f"Cannot fetch node {node_id} attributes:", ex, file=sys.stderr)
+            continue
+        core_modules.setdefault('core', {"name": 'core', "instances": []})
+        core_modules['core']['instances'].append(core_instance)
+    for module_source, instances in list_installed(rdb, skip_core_modules=False).items():
         _, image_name = module_source.rsplit("/", 1)
+        try:
+            has_core_module = 'core_module' in instances[0]['flags']
+        except:
+            has_core_module = False
+        if not has_core_module:
+            continue
         core_modules.setdefault(image_name, {"name": image_name, "instances": []})
         for instance in instances:
             core_modules[image_name]['instances'].append({
                 "id": instance["id"],
                 "version": instance["version"],
-                "update": _calc_update(image_name, instance["version"]),
+                "update": _get_module_update(instance['id']),
             })
-
     return list(core_modules.values())
