@@ -167,6 +167,7 @@ export default {
   methods: {
     onModalHidden() {
       this.$emit("hide");
+      this.resetModal();
     },
     resetModal() {
       this.radioVal = "last_timestamp";
@@ -195,6 +196,10 @@ export default {
         this.address = "https://nar.nethesis.it";
       } else {
         this.address = this.configuration.address;
+      }
+
+      if (!this.configuration.tenant == "") {
+        this.tenant = this.configuration.tenant;
       }
 
       if (this.configuration.last_timestamp == "") {
