@@ -1,0 +1,34 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2024 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+import json
+import agent
+import sys
+import os
+import requests
+
+agent.set_weight(os.path.basename(__file__), 0) # Validation step, no task progress at all
+
+request = json.load(sys.stdin)
+fqdn = request['fqdn']
+
+leader_url = f"https://{fqdn}/cluster-admin/api/cluster/tasks"
+failure_reason = None
+try:
+    oresp = requests.get(leader_url, headers={"Authorization": "probe"}, verify=False, timeout=5.0)
+    if oresp.status_code != 401:
+        failure_reason = f"Unexpected status code from {leader_url}: {oresp.status_code}"
+    if not 'nethserver' in oresp.headers.get('WWW-Authenticate'):
+        failure_reason = f"Unexpected header from {leader_url}: " + oresp.headers.get('WWW-Authenticate')
+except requests.ConnectionError as ex:
+    failure_reason = str(ex)
+
+if failure_reason:
+    agent.set_status('validation-failed')
+    json.dump([{'field':'fqdn', 'parameter':'fqdn','value': request["fqdn"], 'error':'fqdn_connection_error'}], fp=sys.stdout)
+    print(agent.SD_WARNING + failure_reason, file=sys.stderr)
+    sys.exit(2)
