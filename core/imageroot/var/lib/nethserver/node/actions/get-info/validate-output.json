@@ -1,12 +1,27 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "get-info output",
-  "$id": "http://schema.nethserver.org/node/get-infp-output.json",
+  "$id": "http://schema.nethserver.org/node/get-info-output.json",
   "description": "Output schema of the get-info action",
   "examples": [
     {
-      "hostname": "dn2.worker.cluster0.gs.nethserver.net",
-      "machine_id": "96b91e27d15ae6d7ef0cc79c621f7904"
+      "hostname": "node1.example.org",
+      "vpn_port": 55820
     }
-  ]
+  ],
+  "type": "object",
+  "required": [
+    "hostname",
+    "vpn_port"
+  ],
+  "properties": {
+    "hostname": {
+      "type": "string",
+      "description": "The node fully qualified hostname"
+    },
+    "vpn_port": {
+      "type": "integer",
+      "description": "The listening port number of wg0 Wireguard interface, detected at runtime"
+    }
+  }
 }
