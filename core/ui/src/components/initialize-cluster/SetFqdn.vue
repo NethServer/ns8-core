@@ -29,8 +29,20 @@
       <cv-column>
         <NsInlineNotification
           kind="info"
-          :title="$t('init.review_node_fqdn_title')"
-          :description="$t('init.review_node_fqdn_description')"
+          :title="
+            $t(
+              action === 'create'
+                ? 'init.review_leader_fqdn_title'
+                : 'init.review_worker_fqdn_title'
+            )
+          "
+          :description="
+            $t(
+              action === 'create'
+                ? 'init.review_leader_fqdn_description'
+                : 'init.review_worker_fqdn_description'
+            )
+          "
           :showCloseButton="false"
         />
       </cv-column>
@@ -56,8 +68,8 @@
               <cv-text-input
                 :label="
                   action === 'create'
-                    ? $t('init.hostname_create')
-                    : $t('init.hostname_join')
+                    ? $t('init.leader_node_hostname')
+                    : $t('init.worker_node_hostname')
                 "
                 v-model.trim="hostname"
                 :invalid-message="error.hostname"
@@ -68,8 +80,8 @@
               <cv-text-input
                 :label="
                   action === 'create'
-                    ? $t('init.domain_create')
-                    : $t('init.domain_join')
+                    ? $t('init.leader_node_domain')
+                    : $t('init.worker_node_domain')
                 "
                 v-model.trim="domain"
                 placeholder="example.org"
