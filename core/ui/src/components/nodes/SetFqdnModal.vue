@@ -15,9 +15,9 @@
     <template slot="content">
       <NsInlineNotification
         v-if="isLeaderNode"
-        kind="info"
-        :title="$t('nodes.vpn_endpoint_title')"
-        :description="$t('nodes.vpn_endpoint_description')"
+        kind="warning"
+        :title="$t('nodes.vpn_endpoint_warning_title')"
+        :description="$t('nodes.vpn_endpoint_warning_description')"
         :showCloseButton="false"
       />
       <NsInlineNotification
