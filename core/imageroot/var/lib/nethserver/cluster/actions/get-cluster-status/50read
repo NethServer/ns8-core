@@ -123,7 +123,7 @@ for line in proc.stdout.readlines():
         if not kvpn in vpn:
             continue # ignore unknown VPN peers
         if vpn[kvpn]['vpn']['endpoint'] == "":
-            # enpoint not defined in Redis, use wg runtime params
+            # endpoint not defined in Redis, use wg runtime params
             if parts[2] == '(none)':
                 endpoint = ''
                 endpoint_port = '55820'
