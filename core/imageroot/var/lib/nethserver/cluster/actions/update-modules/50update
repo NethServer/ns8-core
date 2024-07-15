@@ -51,20 +51,20 @@ ustep = 100 / len(updates)
 uidx = 0
 for oupdate in updates:
     module = oupdate['id']
-    image_url = f"{oupdate['source']}:{oupdate['update']}"
+    module_url = f"{oupdate['source']}:{oupdate['update']}"
 
     start = int(uidx * ustep)
     # ustep can be less than 1, with more than 100 updates: ensure "end"
     # is always greater than "start" and is an integer value
     end = start + max(int(ustep), 1)
     upd_module_result = agent.tasks.run("cluster", "update-module",
-        data={"instances": [module], "image_url": image_url},
+        data={"instances": [module], "module_url": module_url},
         endpoint="redis://cluster-leader",
         progress_callback=agent.get_progress_callback(start, end)
     )
     uidx += 1
     if upd_module_result['exit_code'] != 0:
-        print(agent.SD_ERR + f"Failed update-module for instance {module} from image {image_url}", file=sys.stderr)
+        print(agent.SD_ERR + f"Failed update-module for instance {module} with {module_url}", file=sys.stderr)
         errors += 1
 
 if errors > 0:
