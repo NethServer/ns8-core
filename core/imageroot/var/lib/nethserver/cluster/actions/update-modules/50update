@@ -27,6 +27,10 @@ import agent.tasks
 import cluster.modules
 import json
 
+if not os.getenv("AGENT_TASK_USER"):
+    # If invoked from apply-updates command, switch to managed repo view:
+    cluster.modules.select_repo_view('managed')
+
 request = json.load(sys.stdin)
 rdb = agent.redis_connect(privileged=True)
 updates = cluster.modules.list_updates(rdb, skip_core_modules = True)

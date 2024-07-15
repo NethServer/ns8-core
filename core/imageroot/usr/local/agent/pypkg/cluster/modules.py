@@ -40,6 +40,28 @@ def _repo_has_testing_flag(rdb, repo_name):
         _repo_testing_cache[repo_name] = rdb.hget(f'cluster/repository/{repo_name}', 'testing') == "1"
     return _repo_testing_cache[repo_name]
 
+_repo_view = None
+def select_repo_view(view_name):
+    """Change the module global configuration to send HTTP requests for a
+    specific view to the metadata HTTPS service. Returned contents depend
+    on the server side policy. By default, the sent value is "latest": use
+    this function to change it, but do not call it more than one time in
+    the same Python script and call it before any other function of this
+    Python package."""
+    global _repo_view
+    if _repo_view is None:
+        _repo_view = view_name
+    else:
+        raise Exception(f"View {_repo_view} is already selected. The view cannot be selected more than one time in the same script.")
+
+def get_repo_view():
+    """Return the selected the repository view. See
+    selected_repo_view()."""
+    global _repo_view
+    if _repo_view is None:
+        return 'latest'
+    return _repo_view
+
 def _urljoin(base_path, *args):
     '''replace urllib.parse.joinurl because it doesn't handle multiple parameters
     '''
@@ -115,7 +137,8 @@ def _get_http_session():
 def _list_repository_modules(rdb, repository_name, repository_url):
     cache_key = f'cluster/repository_cache/{repository_name}'
     hcache = rdb.hgetall(cache_key)
-    if not hcache:
+    repo_view = get_repo_view()
+    if not hcache or hcache.get('repo_view') != repo_view:
         url = _urljoin(repository_url, "repodata.json")
         hsubscription = rdb.hgetall("cluster/subscription") or None
         try:
@@ -123,14 +146,16 @@ def _list_repository_modules(rdb, repository_name, repository_url):
                 if hsubscription and url.startswith("https://subscription.nethserver.com/"):
                     # Send system_id for HTTP Basic authentication
                     osession.auth = (hsubscription["system_id"], hashlib.sha256(hsubscription["auth_token"].encode()).hexdigest())
-                resp = osession.get(url)
+                resp = osession.get(url, headers={
+                    "X-Repo-View": repo_view,
+                })
                 repodata_raw = resp.text
                 updated = resp.headers.get('Last-Modified', "")
         except Exception as ex:
             print(f"Fetching {url}:", ex, file=sys.stderr)
             # If repository is not accessible or invalid, just return an empty array
             return []
-        hcache = {"data": repodata_raw, "updated": updated}
+        hcache = {"data": repodata_raw, "updated": updated, "repo_view": repo_view}
     modules = _parse_repository_metadata(repository_name, repository_url, hcache['updated'], hcache['data'])
     # Save inside the cache if data is valid
     if modules:
