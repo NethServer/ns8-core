@@ -44,31 +44,6 @@
           v-if="ongoingNotificationsCount > 0"
         ></span>
       </cv-header-global-action>
-      <!-- //// show hint on first task/notification? -->
-      <!-- notification drawer hint //// -->
-      <span class="hint hint-notifications">
-        <cv-interactive-tooltip
-          alignment="end"
-          direction="bottom"
-          :visible="isHintShown"
-        >
-          <template slot="trigger">
-            <span></span>
-          </template>
-          <template slot="content">
-            <p>
-              {{ $t("hint.notifications") }}
-            </p>
-            <NsButton
-              kind="primary"
-              size="small"
-              @click="isHintShown = false"
-              class="hint-button"
-              >{{ $t("common.got_it") }}</NsButton
-            >
-          </template>
-        </cv-interactive-tooltip>
-      </span>
       <cv-header-global-action
         :label="$t('shell.app_launcher') + ' (CTRL+SHIFT+A)'"
         :aria-label="$t('shell.app_launcher')"
@@ -140,9 +115,7 @@ export default {
   },
   mixins: [StorageService, LoginService, WebSocketService],
   data() {
-    return {
-      isHintShown: false, //// remove
-    };
+    return {};
   },
   computed: {
     ...mapState([
@@ -218,11 +191,6 @@ export default {
   100% {
     transform: rotate(360deg);
   }
-}
-
-.hint-notifications {
-  top: 1.8rem;
-  right: 0.8rem;
 }
 
 @media (max-width: $breakpoint-medium) {

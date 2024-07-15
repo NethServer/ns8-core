@@ -278,10 +278,6 @@
         "list": "List",
         "done_edit_favorites": "Done"
     },
-    "hint": {
-        "notifications": "You can find notifications and progress of tasks here",
-        "copy_to_clipboard": "Click here to copy to clipboard"
-    },
     "notification": {
         "notifications": "Notifications",
         "unread": "unread | unread",

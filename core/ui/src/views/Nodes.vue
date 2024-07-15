@@ -215,30 +215,6 @@
         ></cv-skeleton-text>
         <template v-else>
           <span class="join-code">{{ $t("common.join_code") }}</span>
-          <!-- copy to clipboard hint -->
-          <span class="hint hint-copy-to-clipboard">
-            <cv-interactive-tooltip
-              alignment="end"
-              direction="bottom"
-              :visible="isCopyClipboardHintShown"
-            >
-              <template slot="trigger">
-                <span></span>
-              </template>
-              <template slot="content">
-                <p>
-                  {{ $t("hint.copy_to_clipboard") }}
-                </p>
-                <NsButton
-                  kind="primary"
-                  size="small"
-                  @click="isCopyClipboardHintShown = false"
-                  class="hint-button"
-                  >{{ $t("common.got_it") }}</NsButton
-                >
-              </template>
-            </cv-interactive-tooltip>
-          </span>
           <NsCodeSnippet
             :copyTooltip="$t('common.copy_to_clipboard')"
             :copy-feedback="$t('common.copied_to_clipboard')"
@@ -363,7 +339,6 @@ export default {
         isShownAddNodeModal: false,
       },
       joinCode: "",
-      isCopyClipboardHintShown: false,
       nodes: [],
       nodesStatus: {},
       refreshDataInterval: null,
@@ -714,11 +689,5 @@ ol {
 
 .join-code {
   font-weight: bold;
-}
-
-.hint-copy-to-clipboard {
-  top: 2.5rem;
-  right: 2.5rem;
-  float: right;
 }
 </style>
