@@ -59,30 +59,6 @@
       </cv-toggle>
 
       <template v-if="isMoreInfoShown">
-        <!-- copy to clipboard hint -->
-        <span class="hint hint-copy-to-clipboard">
-          <cv-interactive-tooltip
-            alignment="end"
-            direction="bottom"
-            :visible="isCopyClipboardHintShown"
-          >
-            <template slot="trigger">
-              <span></span>
-            </template>
-            <template slot="content">
-              <p>
-                {{ $t("hint.copy_to_clipboard") }}
-              </p>
-              <NsButton
-                kind="primary"
-                size="small"
-                @click="isCopyClipboardHintShown = false"
-                class="hint-button"
-                >{{ $t("common.got_it") }}</NsButton
-              >
-            </template>
-          </cv-interactive-tooltip>
-        </span>
         <TaskErrorInfo :task="taskErrorToShow" />
       </template>
     </template>
@@ -118,7 +94,6 @@ export default {
   props: {},
   data() {
     return {
-      isCopyClipboardHintShown: false,
       isMoreInfoShown: false,
       justCopied: false,
     };
@@ -142,11 +117,6 @@ export default {
     },
   },
   watch: {
-    isMoreInfoShown: function () {
-      if (this.isMoreInfoShown) {
-        this.showCopyClipboardHint();
-      }
-    },
     taskErrorToShow: function () {
       if (this.taskErrorToShow) {
         // more info is initially hidden
@@ -164,19 +134,6 @@ export default {
       } else {
         return "";
       }
-    },
-    showCopyClipboardHint() {
-      setTimeout(() => {
-        //// TODO FIX
-        // const isCopyClipboardHintShown = this.getFromStorage(
-        //   "isCopyClipboardHintShown"
-        // );
-        //
-        // if (!isCopyClipboardHintShown) {
-        //   this.isCopyClipboardHintShown = true;
-        //   this.saveToStorage("isCopyClipboardHintShown", true);
-        // }
-      }, 400);
     },
     onCopy() {
       this.justCopied = true;
@@ -210,12 +167,6 @@ export default {
 
 .task-hierarchy {
   margin-left: -0.8rem;
-}
-
-.hint-copy-to-clipboard {
-  top: 1.7rem;
-  right: 2.3rem;
-  float: right;
 }
 </style>
 
