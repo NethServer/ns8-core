@@ -105,7 +105,6 @@ export default {
   },
   data() {
     return {
-      DEFAULT_ENDPOINT_PORT: "55820",
       vpnEndpointAddress: "",
       vpnEndpointPort: "",
       userInput: "",
@@ -125,7 +124,6 @@ export default {
   watch: {
     isShown: function () {
       if (this.isShown) {
-        this.vpnEndpointPort = this.DEFAULT_ENDPOINT_PORT;
         this.userInput = "";
         this.clearErrors();
         this.getNodeInfo();
@@ -199,6 +197,7 @@ export default {
     },
     getNodeInfoCompleted(taskContext, taskResult) {
       this.vpnEndpointAddress = taskResult.output.hostname;
+      this.vpnEndpointPort = taskResult.output.vpn_port;
       this.loading.getNodeInfo = false;
     },
     async promoteNode() {
@@ -239,7 +238,7 @@ export default {
           data: {
             node_id: this.node.id,
             endpoint_address: this.vpnEndpointAddress,
-            endpoint_port: Number(this.vpnEndpointPort),
+            endpoint_port: this.vpnEndpointPort,
             endpoint_validation: this.checkNodeConnectivity,
           },
           extra: {
