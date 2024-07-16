@@ -5,119 +5,127 @@
 <template>
   <div>
     <div class="app-list">
-      <cv-grid v-if="skeleton" fullWidth class="no-padding">
-        <cv-row>
-          <cv-column v-for="index in 8" :key="index" :md="4" :max="4">
-            <cv-tile kind="standard" class="app" :light="light">
-              <cv-skeleton-text
-                :paragraph="true"
-                :line-count="7"
-                heading
-              ></cv-skeleton-text>
-            </cv-tile>
-          </cv-column>
-        </cv-row>
-      </cv-grid>
-      <cv-grid v-else fullWidth class="no-padding">
-        <cv-row>
-          <cv-column
-            v-for="(app, index) in appsLoaded"
-            :key="index"
-            :md="4"
-            :max="4"
+      <!-- skeleton card grid -->
+      <div
+        v-if="skeleton"
+        class="card-grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-3 3xl:grid-cols-4"
+      >
+        <cv-tile
+          v-for="index in 8"
+          :key="index"
+          kind="standard"
+          class="app"
+          :light="light"
+        >
+          <cv-skeleton-text
+            :paragraph="true"
+            :line-count="7"
+            heading
+          ></cv-skeleton-text>
+        </cv-tile>
+      </div>
+      <!-- app card grid -->
+      <div
+        v-else
+        class="card-grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-3 3xl:grid-cols-4"
+      >
+        <cv-tile
+          v-for="(app, index) in appsLoaded"
+          :key="index"
+          kind="standard"
+          class="app"
+          :light="light"
+          :id="app.id"
+        >
+          <div class="app-logo app-row">
+            <a v-if="app.id !== 'core'" @click="showAppInfo(app)">
+              <img
+                :src="
+                  app.logo
+                    ? app.logo
+                    : require('@/assets/module_default_logo.png')
+                "
+                :alt="app.name + ' logo'"
+              />
+            </a>
+            <img
+              v-else
+              :src="
+                app.logo
+                  ? app.logo
+                  : require('@/assets/module_default_logo.png')
+              "
+              :alt="app.name + ' logo'"
+            />
+          </div>
+          <div class="app-name app-row">
+            <a v-if="app.id !== 'core'" @click="showAppInfo(app)">{{
+              app.name
+            }}</a>
+            <span v-else>{{ app.name }}</span>
+          </div>
+          <div class="app-description app-row">
+            {{ getApplicationDescription(app) }}
+          </div>
+          <div
+            v-if="app.categories && getApplicationCategories(app)"
+            class="app-categories app-row"
           >
-            <cv-tile kind="standard" class="app" :light="light" :id="app.id">
-              <div class="app-logo app-row">
-                <a v-if="app.id !== 'core'" @click="showAppInfo(app)">
-                  <img
-                    :src="
-                      app.logo
-                        ? app.logo
-                        : require('@/assets/module_default_logo.png')
-                    "
-                    :alt="app.name + ' logo'"
-                  />
-                </a>
-                <img
-                  v-else
-                  :src="
-                    app.logo
-                      ? app.logo
-                      : require('@/assets/module_default_logo.png')
-                  "
-                  :alt="app.name + ' logo'"
-                />
-              </div>
-              <div class="app-name app-row">
-                <a v-if="app.id !== 'core'" @click="showAppInfo(app)">{{
-                  app.name
-                }}</a>
-                <span v-else>{{ app.name }}</span>
-              </div>
-              <div class="app-description app-row">
-                {{ getApplicationDescription(app) }}
-              </div>
-              <div
-                v-if="app.categories && getApplicationCategories(app)"
-                class="app-categories app-row"
-              >
-                {{ getApplicationCategories(app) }}
-              </div>
-              <div v-if="app.id == 'core'" class="app-row">
-                <NsButton
-                  kind="ghost"
-                  :icon="ArrowRight20"
-                  size="field"
-                  @click="showCoreAppModal()"
-                  >{{ $t("software_center.review_and_update") }}</NsButton
-                >
-              </div>
-              <div
-                v-else-if="isAccountProviderApp(app)"
-                class="app-row icon-and-text"
-              >
-                <NsSvg :svg="InformationFilled16" class="icon ns-info" />
-                <span
-                  >{{ $t("software_center.app_managed_in") }}
-                  <cv-link to="/domains">{{ $t("domains.title") }}</cv-link>
-                </span>
-              </div>
-              <div v-else-if="tab == 'updates'" class="app-row">
-                <!-- app has an update -->
-                <NsButton
-                  kind="ghost"
-                  :icon="ArrowRight20"
-                  size="field"
-                  @click="goToSoftwareCenterAppInstances(app)"
-                  >{{ $t("software_center.review_and_update") }}</NsButton
-                >
-              </div>
-              <div
-                v-else-if="app.installed && app.installed.length"
-                class="app-row"
-              >
-                <NsButton
-                  kind="ghost"
-                  :icon="Application20"
-                  size="field"
-                  @click="goToSoftwareCenterAppInstances(app)"
-                  >{{ $t("software_center.instances") }}</NsButton
-                >
-              </div>
-              <div v-else class="app-row">
-                <!-- app is not installed -->
-                <NsButton
-                  kind="secondary"
-                  size="field"
-                  :icon="Download20"
-                  @click="installInstance(app)"
-                  >{{ $t("software_center.install") }}</NsButton
-                >
-              </div>
-            </cv-tile>
-          </cv-column>
-        </cv-row>
-      </cv-grid>
+            {{ getApplicationCategories(app) }}
+          </div>
+          <div v-if="app.id == 'core'" class="app-row">
+            <NsButton
+              kind="ghost"
+              :icon="ArrowRight20"
+              size="field"
+              @click="showCoreAppModal()"
+              >{{ $t("software_center.review_and_update") }}</NsButton
+            >
+          </div>
+          <div
+            v-else-if="isAccountProviderApp(app)"
+            class="app-row icon-and-text"
+          >
+            <NsSvg :svg="InformationFilled16" class="icon ns-info" />
+            <span
+              >{{ $t("software_center.app_managed_in") }}
+              <cv-link to="/domains">{{ $t("domains.title") }}</cv-link>
+            </span>
+          </div>
+          <div v-else-if="tab == 'updates'" class="app-row">
+            <!-- app has an update -->
+            <NsButton
+              kind="ghost"
+              :icon="ArrowRight20"
+              size="field"
+              @click="goToSoftwareCenterAppInstances(app)"
+              >{{ $t("software_center.review_and_update") }}</NsButton
+            >
+          </div>
+          <div
+            v-else-if="app.installed && app.installed.length"
+            class="app-row"
+          >
+            <NsButton
+              kind="ghost"
+              :icon="Application20"
+              size="field"
+              @click="goToSoftwareCenterAppInstances(app)"
+              >{{ $t("software_center.instances") }}</NsButton
+            >
+          </div>
+          <div v-else class="app-row">
+            <!-- app is not installed -->
+            <NsButton
+              kind="secondary"
+              size="field"
+              :icon="Download20"
+              @click="installInstance(app)"
+              >{{ $t("software_center.install") }}</NsButton
+            >
+          </div>
+        </cv-tile>
+      </div>
       <infinite-loading @infinite="infiniteScrollHandler"></infinite-loading>
     </div>
     <AppInfoModal

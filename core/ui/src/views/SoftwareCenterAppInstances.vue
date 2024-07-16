@@ -118,14 +118,19 @@
       </cv-row>
       <cv-row>
         <template v-if="loading.modules">
-          <cv-column v-for="index in 2" :key="index" :md="4" :max="4">
-            <cv-tile light>
-              <cv-skeleton-text
-                :paragraph="true"
-                :line-count="7"
-                heading
-              ></cv-skeleton-text>
-            </cv-tile>
+          <cv-column>
+            <!-- skeleton card grid -->
+            <div
+              class="card-grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 3xl:grid-cols-4"
+            >
+              <cv-tile v-for="index in 2" :key="index" light>
+                <cv-skeleton-text
+                  :paragraph="true"
+                  :line-count="7"
+                  heading
+                ></cv-skeleton-text>
+              </cv-tile>
+            </div>
           </cv-column>
         </template>
         <cv-column v-else-if="!app.installed.length">
@@ -140,147 +145,148 @@
             </template>
           </NsEmptyState>
         </cv-column>
-        <cv-column
-          v-else
-          v-for="(instance, index) in app.installed"
-          :key="index"
-          :md="4"
-          :max="4"
-        >
-          <NsInfoCard
-            light
-            :title="instance.ui_name ? instance.ui_name : instance.id"
-            :icon="Application32"
-            :class="{
-              'highlight-me':
-                isElementHighlighted && elementToHighlight == instance.id,
-            }"
+        <cv-column v-else>
+          <!-- card grid -->
+          <div
+            class="card-grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 3xl:grid-cols-4"
           >
-            <template #menu>
-              <cv-overflow-menu
-                :flip-menu="true"
-                tip-position="top"
-                tip-alignment="end"
-                class="top-right-overflow-menu"
-                :data-test-id="index == 0 ? 'first' : ''"
-              >
-                <cv-overflow-menu-item
-                  primary-focus
-                  v-if="isInstanceUpgradable(app, instance)"
-                  @click="openInstance(instance)"
+            <NsInfoCard
+              v-for="(instance, index) in app.installed"
+              :key="index"
+              light
+              :title="instance.ui_name ? instance.ui_name : instance.id"
+              :icon="Application32"
+              :class="{
+                'highlight-me':
+                  isElementHighlighted && elementToHighlight == instance.id,
+              }"
+            >
+              <template #menu>
+                <cv-overflow-menu
+                  :flip-menu="true"
+                  tip-position="top"
+                  tip-alignment="end"
+                  class="top-right-overflow-menu"
+                  :data-test-id="index == 0 ? 'first' : ''"
                 >
-                  <NsMenuItem
-                    :icon="Application20"
-                    :label="$t('software_center.open_app')"
-                  />
-                </cv-overflow-menu-item>
-                <cv-overflow-menu-item
-                  v-if="!favoriteApps.includes(instance.id)"
-                  @click="addAppToFavorites(instance)"
-                >
-                  <NsMenuItem
-                    :icon="Star20"
-                    :label="$t('software_center.add_to_favorites')"
-                  />
-                </cv-overflow-menu-item>
-                <cv-overflow-menu-item
-                  v-if="favoriteApps.includes(instance.id)"
-                  @click="removeAppFromFavorites(instance)"
-                >
-                  <NsMenuItem
-                    :icon="Star20"
-                    :label="$t('software_center.remove_from_favorites')"
-                  />
-                </cv-overflow-menu-item>
-                <cv-overflow-menu-item
-                  @click="showSetInstanceLabelModal(instance)"
-                >
-                  <NsMenuItem
-                    :icon="Edit20"
-                    :label="$t('software_center.edit_instance_label')"
-                  />
-                </cv-overflow-menu-item>
-                <cv-overflow-menu-item
-                  @click="showCloneAppModal(instance)"
-                  :data-test-id="index == 0 ? 'first-clone' : ''"
-                >
-                  <NsMenuItem
-                    :icon="Copy20"
-                    :label="$t('software_center.clone')"
-                  />
-                </cv-overflow-menu-item>
-                <cv-overflow-menu-item
-                  @click="showMoveAppModal(instance)"
-                  :disabled="clusterNodes.length < 2"
-                >
-                  <NsMenuItem
-                    :icon="ArrowRight20"
-                    :label="$t('software_center.move')"
-                  />
-                </cv-overflow-menu-item>
-                <NsMenuDivider />
-                <cv-overflow-menu-item
-                  danger
-                  @click="showUninstallModal(app, instance)"
-                  :data-test-id="index == 0 ? 'first-uninstall' : ''"
-                >
-                  <NsMenuItem
-                    :icon="TrashCan20"
-                    :label="$t('software_center.uninstall')"
-                  />
-                </cv-overflow-menu-item>
-              </cv-overflow-menu>
-            </template>
-            <template #content>
-              <div class="instance-card-content">
-                <div v-if="instance.ui_name" class="row">
-                  {{ instance.id }}
-                </div>
-                <div class="row icon-and-text">
-                  <NsSvg :svg="Chip20" class="icon" />
-                  <span v-if="instance.node_ui_name">{{
-                    instance.node_ui_name
-                  }}</span>
-                  <span v-else
-                    >{{ $t("common.node") }} {{ instance.node }}</span
+                  <cv-overflow-menu-item
+                    primary-focus
+                    v-if="isInstanceUpgradable(app, instance)"
+                    @click="openInstance(instance)"
                   >
-                </div>
-                <div class="row">
-                  {{ $t("common.version") }} {{ instance.version }}
-                </div>
-                <div v-if="isInstanceUpgradable(app, instance)" class="row">
-                  {{
-                    $t("software_center.version_version_available", {
-                      version: app.versions.length
-                        ? app.versions[0].tag
-                        : "latest",
-                    })
-                  }}
-                </div>
-                <div class="row actions">
-                  <!-- app is installed and can be updated -->
-                  <template v-if="isInstanceUpgradable(app, instance)">
-                    <NsButton
-                      kind="secondary"
-                      :icon="Upgrade20"
-                      @click="updateInstance(instance)"
-                      :disabled="isUpdateInProgress"
-                      >{{ $t("software_center.update") }}</NsButton
-                    >
-                  </template>
-                  <!-- app is installed, no update available -->
-                  <template v-else>
-                    <NsButton
-                      kind="ghost"
+                    <NsMenuItem
                       :icon="Application20"
-                      @click="openInstance(instance)"
-                      >{{ $t("software_center.open_app") }}</NsButton
+                      :label="$t('software_center.open_app')"
+                    />
+                  </cv-overflow-menu-item>
+                  <cv-overflow-menu-item
+                    v-if="!favoriteApps.includes(instance.id)"
+                    @click="addAppToFavorites(instance)"
+                  >
+                    <NsMenuItem
+                      :icon="Star20"
+                      :label="$t('software_center.add_to_favorites')"
+                    />
+                  </cv-overflow-menu-item>
+                  <cv-overflow-menu-item
+                    v-if="favoriteApps.includes(instance.id)"
+                    @click="removeAppFromFavorites(instance)"
+                  >
+                    <NsMenuItem
+                      :icon="Star20"
+                      :label="$t('software_center.remove_from_favorites')"
+                    />
+                  </cv-overflow-menu-item>
+                  <cv-overflow-menu-item
+                    @click="showSetInstanceLabelModal(instance)"
+                  >
+                    <NsMenuItem
+                      :icon="Edit20"
+                      :label="$t('software_center.edit_instance_label')"
+                    />
+                  </cv-overflow-menu-item>
+                  <cv-overflow-menu-item
+                    @click="showCloneAppModal(instance)"
+                    :data-test-id="index == 0 ? 'first-clone' : ''"
+                  >
+                    <NsMenuItem
+                      :icon="Copy20"
+                      :label="$t('software_center.clone')"
+                    />
+                  </cv-overflow-menu-item>
+                  <cv-overflow-menu-item
+                    @click="showMoveAppModal(instance)"
+                    :disabled="clusterNodes.length < 2"
+                  >
+                    <NsMenuItem
+                      :icon="ArrowRight20"
+                      :label="$t('software_center.move')"
+                    />
+                  </cv-overflow-menu-item>
+                  <NsMenuDivider />
+                  <cv-overflow-menu-item
+                    danger
+                    @click="showUninstallModal(app, instance)"
+                    :data-test-id="index == 0 ? 'first-uninstall' : ''"
+                  >
+                    <NsMenuItem
+                      :icon="TrashCan20"
+                      :label="$t('software_center.uninstall')"
+                    />
+                  </cv-overflow-menu-item>
+                </cv-overflow-menu>
+              </template>
+              <template #content>
+                <div class="instance-card-content">
+                  <div v-if="instance.ui_name" class="row">
+                    {{ instance.id }}
+                  </div>
+                  <div class="row icon-and-text">
+                    <NsSvg :svg="Chip20" class="icon" />
+                    <span v-if="instance.node_ui_name">{{
+                      instance.node_ui_name
+                    }}</span>
+                    <span v-else
+                      >{{ $t("common.node") }} {{ instance.node }}</span
                     >
-                  </template>
+                  </div>
+                  <div class="row">
+                    {{ $t("common.version") }} {{ instance.version }}
+                  </div>
+                  <div v-if="isInstanceUpgradable(app, instance)" class="row">
+                    {{
+                      $t("software_center.version_version_available", {
+                        version: app.versions.length
+                          ? app.versions[0].tag
+                          : "latest",
+                      })
+                    }}
+                  </div>
+                  <div class="row actions">
+                    <!-- app is installed and can be updated -->
+                    <template v-if="isInstanceUpgradable(app, instance)">
+                      <NsButton
+                        kind="secondary"
+                        :icon="Upgrade20"
+                        @click="updateInstance(instance)"
+                        :disabled="isUpdateInProgress"
+                        >{{ $t("software_center.update") }}</NsButton
+                      >
+                    </template>
+                    <!-- app is installed, no update available -->
+                    <template v-else>
+                      <NsButton
+                        kind="ghost"
+                        :icon="Application20"
+                        @click="openInstance(instance)"
+                        >{{ $t("software_center.open_app") }}</NsButton
+                      >
+                    </template>
+                  </div>
                 </div>
-              </div>
-            </template>
-          </NsInfoCard>
+              </template>
+            </NsInfoCard>
+          </div>
         </cv-column>
       </cv-row>
     </cv-grid>

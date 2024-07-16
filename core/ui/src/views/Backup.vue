@@ -577,13 +577,14 @@
             </h6>
           </cv-column>
         </cv-row>
-        <cv-row class="mg-bottom-xlg">
+        <cv-row>
           <cv-column>
             <NsButton
               kind="secondary"
               :icon="Reset20"
               @click="showRestoreModal()"
               :disabled="!repositories.length"
+              class="mg-bottom-xlg"
               >{{ $t("backup.restore_app") }}
             </NsButton>
           </cv-column>
