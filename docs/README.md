@@ -27,10 +27,3 @@ Build and serve the site locally:
 ```
 bundle exec jekyll serve
 ```
-
-Add `-B` to run in detached mode.
-
-To kill the process:
-```
-kill -9 [processID]
-```
