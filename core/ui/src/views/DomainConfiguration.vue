@@ -50,189 +50,187 @@
       </cv-row>
       <cv-row>
         <!-- domain settings -->
-        <cv-column v-if="!domain" :md="4" :max="4">
-          <cv-tile light>
-            <cv-skeleton-text
-              :paragraph="true"
-              :line-count="7"
-            ></cv-skeleton-text>
-          </cv-tile>
-        </cv-column>
-        <cv-column v-else :md="4" :max="4">
-          <cv-tile light>
-            <div class="key-value-setting">
-              <span class="label">{{ $t("domains.schema") }}</span>
-              <span class="value">{{ domain.schema }}</span>
-            </div>
-            <div class="key-value-setting">
-              <span class="label">{{ $t("domains.base_dn") }}</span>
-              <span class="value">{{ domain.base_dn }}</span>
-            </div>
-            <div class="key-value-setting">
-              <span class="label">{{ $t("domains.bind_dn") }}</span>
-              <span class="value">{{ domain.bind_dn }}</span>
-            </div>
-            <div class="key-value-setting">
-              <span class="label">{{ $t("domains.bind_password") }}</span>
-              <cv-link @click="toggleBindPassword">
-                {{
-                  isShownBindPassword ? $t("common.hide") : $t("common.show")
-                }}
-              </cv-link>
-              <NsCodeSnippet
-                v-if="isShownBindPassword"
-                :copyTooltip="$t('common.copy_to_clipboard')"
-                :copy-feedback="$t('common.copied_to_clipboard')"
-                :feedback-aria-label="$t('common.copied_to_clipboard')"
-                :wrap-text="true"
-                :moreText="$t('common.show_more')"
-                :lessText="$t('common.show_less')"
-                hideExpandButton
-                class="password-snippet"
-                >{{ domain.bind_password }}</NsCodeSnippet
-              >
-            </div>
-            <div class="key-value-setting">
-              <span class="label">{{ $t("domains.tls") }}</span>
-              <span class="value">
-                <cv-tag
-                  v-if="domain.tls"
-                  kind="green"
-                  :label="$t('common.enabled')"
-                  size="sm"
-                  class="no-margin"
-                ></cv-tag>
-                <cv-tag
-                  v-else
-                  kind="high-contrast"
-                  :label="$t('common.disabled')"
-                  size="sm"
-                  class="no-margin"
-                ></cv-tag>
-              </span>
-            </div>
-            <div class="key-value-setting">
-              <span class="label">{{ $t("domains.tls_verify") }}</span>
-              <span class="value">
-                <cv-tag
-                  v-if="domain.tls_verify"
-                  kind="green"
-                  :label="$t('common.enabled')"
-                  size="sm"
-                  class="no-margin"
-                ></cv-tag>
-                <cv-tag
-                  v-else
-                  kind="high-contrast"
-                  :label="$t('common.disabled')"
-                  size="sm"
-                  class="no-margin"
-                ></cv-tag>
-              </span>
-            </div>
-          </cv-tile>
-        </cv-column>
-        <!-- password policy -->
-        <template v-if="domain.location === 'internal'">
-          <cv-column v-if="loading.ListPasswordPolicy" :md="4" :max="4">
-            <cv-tile light>
+        <cv-column>
+          <div class="card-grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
+            <cv-tile v-if="!domain" light>
               <cv-skeleton-text
                 :paragraph="true"
                 :line-count="7"
               ></cv-skeleton-text>
             </cv-tile>
-          </cv-column>
-          <cv-column :md="4" :max="4" v-else>
-            <NsInfoCard
-              light
-              :title="$t('domains.policy_password')"
-              :icon="Password32"
-            >
-              <template #menu>
-                <cv-overflow-menu
-                  :flip-menu="true"
-                  tip-position="top"
-                  tip-alignment="end"
-                  class="top-right-overflow-menu"
+            <cv-tile v-else light>
+              <div class="key-value-setting">
+                <span class="label">{{ $t("domains.schema") }}</span>
+                <span class="value">{{ domain.schema }}</span>
+              </div>
+              <div class="key-value-setting">
+                <span class="label">{{ $t("domains.base_dn") }}</span>
+                <span class="value break-all">{{ domain.base_dn }}</span>
+              </div>
+              <div class="key-value-setting">
+                <span class="label">{{ $t("domains.bind_dn") }}</span>
+                <span class="value break-all">{{ domain.bind_dn }}</span>
+              </div>
+              <div class="key-value-setting">
+                <span class="label">{{ $t("domains.bind_password") }}</span>
+                <cv-link @click="toggleBindPassword">
+                  {{
+                    isShownBindPassword ? $t("common.hide") : $t("common.show")
+                  }}
+                </cv-link>
+                <NsCodeSnippet
+                  v-if="isShownBindPassword"
+                  :copyTooltip="$t('common.copy_to_clipboard')"
+                  :copy-feedback="$t('common.copied_to_clipboard')"
+                  :feedback-aria-label="$t('common.copied_to_clipboard')"
+                  :wrap-text="true"
+                  :moreText="$t('common.show_more')"
+                  :lessText="$t('common.show_less')"
+                  hideExpandButton
+                  class="password-snippet"
+                  >{{ domain.bind_password }}</NsCodeSnippet
                 >
-                  <cv-overflow-menu-item @click="showPasswordPolicy()">
-                    <NsMenuItem
-                      :icon="Edit20"
-                      :label="$t('domains.edit_password_policy')"
-                    />
-                  </cv-overflow-menu-item>
-                </cv-overflow-menu>
-              </template>
-              <template #content>
-                <div class="provider-card-content">
-                  <div class="row">
-                    <span class="label right-margin">{{
-                      $t("domains.expiration")
-                    }}</span>
+              </div>
+              <div class="key-value-setting">
+                <span class="label">{{ $t("domains.tls") }}</span>
+                <span class="value">
+                  <cv-tag
+                    v-if="domain.tls"
+                    kind="green"
+                    :label="$t('common.enabled')"
+                    size="sm"
+                    class="no-margin"
+                  ></cv-tag>
+                  <cv-tag
+                    v-else
+                    kind="high-contrast"
+                    :label="$t('common.disabled')"
+                    size="sm"
+                    class="no-margin"
+                  ></cv-tag>
+                </span>
+              </div>
+              <div class="key-value-setting">
+                <span class="label">{{ $t("domains.tls_verify") }}</span>
+                <span class="value">
+                  <cv-tag
+                    v-if="domain.tls_verify"
+                    kind="green"
+                    :label="$t('common.enabled')"
+                    size="sm"
+                    class="no-margin"
+                  ></cv-tag>
+                  <cv-tag
+                    v-else
+                    kind="high-contrast"
+                    :label="$t('common.disabled')"
+                    size="sm"
+                    class="no-margin"
+                  ></cv-tag>
+                </span>
+              </div>
+            </cv-tile>
+            <!-- password policy -->
+            <template v-if="domain.location === 'internal'">
+              <cv-tile v-if="loading.ListPasswordPolicy" light>
+                <cv-skeleton-text
+                  :paragraph="true"
+                  :line-count="7"
+                ></cv-skeleton-text>
+              </cv-tile>
+              <NsInfoCard
+                v-else
+                light
+                :title="$t('domains.policy_password')"
+                :icon="Password32"
+              >
+                <template #menu>
+                  <cv-overflow-menu
+                    :flip-menu="true"
+                    tip-position="top"
+                    tip-alignment="end"
+                    class="top-right-overflow-menu"
+                  >
+                    <cv-overflow-menu-item @click="showPasswordPolicy()">
+                      <NsMenuItem
+                        :icon="Edit20"
+                        :label="$t('domains.edit_password_policy')"
+                      />
+                    </cv-overflow-menu-item>
+                  </cv-overflow-menu>
+                </template>
+                <template #content>
+                  <div class="provider-card-content">
+                    <div class="row">
+                      <span class="label right-margin">{{
+                        $t("domains.expiration")
+                      }}</span>
 
-                    <cv-tag
-                      v-if="policy.expiration.enforced"
-                      kind="green"
-                      :label="$t('common.enabled')"
-                      size="sm"
-                      class="no-margin"
-                    ></cv-tag>
-                    <cv-tag
-                      v-else
-                      kind="high-contrast"
-                      :label="$t('common.disabled')"
-                      size="sm"
-                      class="no-margin"
-                    ></cv-tag>
+                      <cv-tag
+                        v-if="policy.expiration.enforced"
+                        kind="green"
+                        :label="$t('common.enabled')"
+                        size="sm"
+                        class="no-margin"
+                      ></cv-tag>
+                      <cv-tag
+                        v-else
+                        kind="high-contrast"
+                        :label="$t('common.disabled')"
+                        size="sm"
+                        class="no-margin"
+                      ></cv-tag>
+                    </div>
+                    <div class="row">
+                      <span class="label right-margin">{{
+                        $t("domains.strength")
+                      }}</span>
+                      <cv-tag
+                        v-if="policy.strength.enforced"
+                        kind="green"
+                        :label="$t('common.enabled')"
+                        size="sm"
+                      ></cv-tag>
+                      <cv-tag
+                        v-else
+                        kind="high-contrast"
+                        :label="$t('common.disabled')"
+                        size="sm"
+                      ></cv-tag>
+                    </div>
                   </div>
-                  <div class="row">
-                    <span class="label right-margin">{{
-                      $t("domains.strength")
-                    }}</span>
-                    <cv-tag
-                      v-if="policy.strength.enforced"
-                      kind="green"
-                      :label="$t('common.enabled')"
-                      size="sm"
-                    ></cv-tag>
-                    <cv-tag
-                      v-else
-                      kind="high-contrast"
-                      :label="$t('common.disabled')"
-                      size="sm"
-                    ></cv-tag>
-                  </div>
-                </div>
+                </template>
+              </NsInfoCard>
+            </template>
+            <!-- user portal link -->
+            <NsInfoCard
+              v-if="domain.location === 'internal'"
+              light
+              :title="$t('domains.users_admin_page_title')"
+              :titleTooltip="$t('domains.users_admin_page_tooltips')"
+              titleTooltipAlignment="center"
+              titleTooltipDirection="bottom"
+              :description="$t('domains.users_admin_page_description')"
+              :icon="Wikis32"
+              :loading="loading.getFqdn"
+              :isErrorShown="!!error.getFqdn"
+              :errorTitle="
+                $t('error.cannot_retrieve_users_admin_configuration')
+              "
+              :errorDescription="error.getFqdn"
+            >
+              <template slot="content">
+                <NsButton
+                  v-show="!loading.getFqdn"
+                  kind="ghost"
+                  :icon="Password20"
+                  @click="goToUserAdminPage()"
+                >
+                  {{ $t("domains.open_users_admin_portal") }}
+                </NsButton>
               </template>
             </NsInfoCard>
-          </cv-column>
-        </template>
-        <!-- user portal link -->
-        <cv-column v-if="domain.location === 'internal'" :md="4" :max="4">
-          <NsInfoCard
-            light
-            :title="$t('domains.users_admin_page_title')"
-            :titleTooltip="$t('domains.users_admin_page_tooltips')"
-            titleTooltipAlignment="center"
-            titleTooltipDirection="bottom"
-            :description="$t('domains.users_admin_page_description')"
-            :icon="Wikis32"
-            :loading="loading.getFqdn"
-            :isErrorShown="!!error.getFqdn"
-            :errorTitle="$t('error.cannot_retrieve_users_admin_configuration')"
-            :errorDescription="error.getFqdn"
-          >
-            <template slot="content">
-              <NsButton
-                v-show="!loading.getFqdn"
-                kind="ghost"
-                :icon="Password20"
-                @click="goToUserAdminPage()"
-              >
-                {{ $t("domains.open_users_admin_portal") }}
-              </NsButton>
-            </template>
-          </NsInfoCard>
+          </div>
         </cv-column>
       </cv-row>
       <!-- domain provider -->
@@ -319,13 +317,18 @@
         </cv-column>
       </cv-row>
       <cv-row v-if="loading.listUserDomains">
-        <cv-column v-for="index in 2" :key="index" :md="4" :max="4">
-          <cv-tile light>
-            <cv-skeleton-text
-              :paragraph="true"
-              :line-count="7"
-            ></cv-skeleton-text>
-          </cv-tile>
+        <cv-column>
+          <!-- card grid -->
+          <div
+            class="card-grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 3xl:grid-cols-4"
+          >
+            <cv-tile v-for="index in 2" :key="index" light>
+              <cv-skeleton-text
+                :paragraph="true"
+                :line-count="7"
+              ></cv-skeleton-text>
+            </cv-tile>
+          </div>
         </cv-column>
       </cv-row>
       <template v-else-if="domain">
@@ -369,140 +372,139 @@
         </cv-row>
         <cv-row>
           <!-- unconfigured providers -->
-          <cv-column
-            v-for="provider in unconfiguredProviders"
-            :key="provider.id"
-            :md="4"
-            :max="4"
-          >
-            <NsInfoCard
-              v-if="!provider.host"
-              light
-              :title="$t('domain_configuration.unconfigured_provider')"
-              :icon="WarningAlt32"
+          <cv-column>
+            <div
+              class="card-grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 3xl:grid-cols-4"
             >
-              <template #menu>
-                <cv-overflow-menu
-                  :flip-menu="true"
-                  tip-position="top"
-                  tip-alignment="end"
-                  class="top-right-overflow-menu"
+              <template v-for="provider in unconfiguredProviders">
+                <NsInfoCard
+                  v-if="!provider.host"
+                  :key="provider.id"
+                  light
+                  :title="$t('domain_configuration.unconfigured_provider')"
+                  :icon="WarningAlt32"
                 >
-                  <cv-overflow-menu-item
-                    @click="showSetProviderLabelModal(provider)"
-                  >
-                    <NsMenuItem
-                      :icon="Edit20"
-                      :label="$t('domain_configuration.edit_provider_label')"
-                    />
-                  </cv-overflow-menu-item>
-                  <NsMenuDivider />
-                  <cv-overflow-menu-item
-                    danger
-                    @click="willDeleteUnconfiguredProvider(provider)"
-                  >
-                    <NsMenuItem
-                      :icon="TrashCan20"
-                      :label="$t('common.delete')"
-                    />
-                  </cv-overflow-menu-item>
-                </cv-overflow-menu>
-              </template>
-              <template #content>
-                <div class="provider-card-content">
-                  <div class="row icon-and-text">
-                    <NsSvg :svg="Application20" class="icon" />
-                    <span>{{
-                      provider.ui_name
-                        ? provider.ui_name + " (" + provider.id + ")"
-                        : provider.id
-                    }}</span>
-                  </div>
-                  <div v-if="provider.node" class="row icon-and-text">
-                    <NsSvg :svg="Chip20" class="icon" />
-                    <span>{{ getNodeLabel(provider.node) }}</span>
-                  </div>
-                  <div v-if="provider.host" class="row icon-and-text">
-                    <NsSvg :svg="Network_220" class="icon" />
-                    <span>{{ provider.host }}</span>
-                    <span v-if="provider.port">:{{ provider.port }}</span>
-                  </div>
-                  <div class="row actions">
-                    <NsButton
-                      kind="ghost"
-                      :icon="Tools20"
-                      @click="showUnconfiguredProviderModal(provider)"
-                      >{{ $t("domains.resume_configuration") }}
-                    </NsButton>
-                  </div>
-                </div>
-              </template>
-            </NsInfoCard>
-          </cv-column>
-          <!-- configured providers -->
-          <cv-column
-            v-for="provider in configuredProviders"
-            :key="provider.id"
-            :md="4"
-            :max="4"
-          >
-            <NsInfoCard
-              light
-              :title="provider.ui_name ? provider.ui_name : provider.id"
-              :icon="domain.location == 'internal' ? Application32 : Link32"
-            >
-              <template #menu>
-                <cv-overflow-menu
-                  :flip-menu="true"
-                  tip-position="top"
-                  tip-alignment="end"
-                  class="top-right-overflow-menu"
-                >
-                  <cv-overflow-menu-item
-                    @click="showSetProviderLabelModal(provider)"
-                  >
-                    <NsMenuItem
-                      :icon="Edit20"
-                      :label="$t('domain_configuration.edit_provider_label')"
-                    />
-                  </cv-overflow-menu-item>
-                  <NsMenuDivider />
-                  <cv-overflow-menu-item
-                    danger
-                    @click="showDeleteProviderModal(provider)"
-                  >
-                    <NsMenuItem
-                      :icon="TrashCan20"
-                      :label="$t('common.delete')"
-                    />
-                  </cv-overflow-menu-item>
-                </cv-overflow-menu>
-              </template>
-              <template #content>
-                <div class="provider-card-content">
-                  <div v-if="provider.ui_name" class="row">
-                    {{ provider.id }}
-                  </div>
-                  <div v-if="provider.node" class="row icon-and-text">
-                    <NsSvg :svg="Chip20" class="icon" />
-                    <span>{{ getNodeLabel(provider.node) }}</span>
-                  </div>
-                  <div v-if="provider.host" class="row icon-and-text">
-                    <NsSvg :svg="Network_220" class="icon" />
-                    <span>{{ provider.host }}</span>
-                    <span v-if="provider.port">:{{ provider.port }}</span>
-                  </div>
-                  <div v-if="provider.file_server" class="row actions">
-                    <NsButton
-                      kind="ghost"
-                      :icon="Application20"
-                      @click="goToFileServer(provider)"
-                      >{{ $t("samba.open_file_server") }}</NsButton
+                  <template #menu>
+                    <cv-overflow-menu
+                      :flip-menu="true"
+                      tip-position="top"
+                      tip-alignment="end"
+                      class="top-right-overflow-menu"
                     >
-                  </div>
-                </div>
+                      <cv-overflow-menu-item
+                        @click="showSetProviderLabelModal(provider)"
+                      >
+                        <NsMenuItem
+                          :icon="Edit20"
+                          :label="
+                            $t('domain_configuration.edit_provider_label')
+                          "
+                        />
+                      </cv-overflow-menu-item>
+                      <NsMenuDivider />
+                      <cv-overflow-menu-item
+                        danger
+                        @click="willDeleteUnconfiguredProvider(provider)"
+                      >
+                        <NsMenuItem
+                          :icon="TrashCan20"
+                          :label="$t('common.delete')"
+                        />
+                      </cv-overflow-menu-item>
+                    </cv-overflow-menu>
+                  </template>
+                  <template #content>
+                    <div class="provider-card-content">
+                      <div class="row icon-and-text">
+                        <NsSvg :svg="Application20" class="icon" />
+                        <span>{{
+                          provider.ui_name
+                            ? provider.ui_name + " (" + provider.id + ")"
+                            : provider.id
+                        }}</span>
+                      </div>
+                      <div v-if="provider.node" class="row icon-and-text">
+                        <NsSvg :svg="Chip20" class="icon" />
+                        <span>{{ getNodeLabel(provider.node) }}</span>
+                      </div>
+                      <div v-if="provider.host" class="row icon-and-text">
+                        <NsSvg :svg="Network_220" class="icon" />
+                        <span>{{ provider.host }}</span>
+                        <span v-if="provider.port">:{{ provider.port }}</span>
+                      </div>
+                      <div class="row actions">
+                        <NsButton
+                          kind="ghost"
+                          :icon="Tools20"
+                          @click="showUnconfiguredProviderModal(provider)"
+                          >{{ $t("domains.resume_configuration") }}
+                        </NsButton>
+                      </div>
+                    </div>
+                  </template>
+                </NsInfoCard>
               </template>
-            </NsInfoCard>
+              <!-- configured providers -->
+              <NsInfoCard
+                v-for="provider in configuredProviders"
+                :key="provider.id"
+                light
+                :title="provider.ui_name ? provider.ui_name : provider.id"
+                :icon="domain.location == 'internal' ? Application32 : Link32"
+              >
+                <template #menu>
+                  <cv-overflow-menu
+                    :flip-menu="true"
+                    tip-position="top"
+                    tip-alignment="end"
+                    class="top-right-overflow-menu"
+                  >
+                    <cv-overflow-menu-item
+                      @click="showSetProviderLabelModal(provider)"
+                    >
+                      <NsMenuItem
+                        :icon="Edit20"
+                        :label="$t('domain_configuration.edit_provider_label')"
+                      />
+                    </cv-overflow-menu-item>
+                    <NsMenuDivider />
+                    <cv-overflow-menu-item
+                      danger
+                      @click="showDeleteProviderModal(provider)"
+                    >
+                      <NsMenuItem
+                        :icon="TrashCan20"
+                        :label="$t('common.delete')"
+                      />
+                    </cv-overflow-menu-item>
+                  </cv-overflow-menu>
+                </template>
+                <template #content>
+                  <div class="provider-card-content">
+                    <div v-if="provider.ui_name" class="row">
+                      {{ provider.id }}
+                    </div>
+                    <div v-if="provider.node" class="row icon-and-text">
+                      <NsSvg :svg="Chip20" class="icon" />
+                      <span>{{ getNodeLabel(provider.node) }}</span>
+                    </div>
+                    <div v-if="provider.host" class="row icon-and-text">
+                      <NsSvg :svg="Network_220" class="icon" />
+                      <span>{{ provider.host }}</span>
+                      <span v-if="provider.port">:{{ provider.port }}</span>
+                    </div>
+                    <div v-if="provider.file_server" class="row actions">
+                      <NsButton
+                        kind="ghost"
+                        :icon="Application20"
+                        @click="goToFileServer(provider)"
+                        >{{ $t("samba.open_file_server") }}</NsButton
+                      >
+                    </div>
+                  </div>
+                </template>
+              </NsInfoCard>
+            </div>
           </cv-column>
         </cv-row>
       </template>

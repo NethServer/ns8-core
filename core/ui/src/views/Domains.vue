@@ -70,14 +70,17 @@
         </cv-column>
       </cv-row>
       <cv-row v-if="loading.listUserDomains">
-        <cv-column v-for="index in 2" :key="index" :md="4" :max="4">
-          <cv-tile light>
-            <cv-skeleton-text
-              :paragraph="true"
-              :line-count="6"
-              heading
-            ></cv-skeleton-text>
-          </cv-tile>
+        <cv-column>
+          <!-- skeleton card grid -->
+          <div class="card-grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3">
+            <cv-tile v-for="index in 2" :key="index" light>
+              <cv-skeleton-text
+                :paragraph="true"
+                :line-count="6"
+                heading
+              ></cv-skeleton-text>
+            </cv-tile>
+          </div>
         </cv-column>
       </cv-row>
       <template v-else>
@@ -91,80 +94,83 @@
           </cv-row>
           <!-- unconfigured domains -->
           <cv-row>
-            <cv-column
-              v-for="(unconfiguredDomain, index) in unconfiguredDomains"
-              :key="index"
-              :md="4"
-              :max="4"
-            >
-              <NsInfoCard
-                light
-                :title="$t('domains.unconfigured_domain')"
-                :icon="WarningAlt32"
-              >
-                <template #menu>
-                  <cv-overflow-menu
-                    :flip-menu="true"
-                    tip-position="top"
-                    tip-alignment="end"
-                    class="top-right-overflow-menu"
-                  >
-                    <cv-overflow-menu-item
-                      danger
-                      @click="willDeleteUnconfiguredDomain(unconfiguredDomain)"
+            <cv-column>
+              <div class="card-grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3">
+                <NsInfoCard
+                  v-for="(unconfiguredDomain, index) in unconfiguredDomains"
+                  :key="index"
+                  light
+                  :title="$t('domains.unconfigured_domain')"
+                  :icon="WarningAlt32"
+                >
+                  <template #menu>
+                    <cv-overflow-menu
+                      :flip-menu="true"
+                      tip-position="top"
+                      tip-alignment="end"
+                      class="top-right-overflow-menu"
                     >
-                      <NsMenuItem
-                        :icon="TrashCan20"
-                        :label="$t('common.delete')"
-                      />
-                    </cv-overflow-menu-item>
-                  </cv-overflow-menu>
-                </template>
-                <template #content>
-                  <div class="domain-card-content">
-                    <div class="row">
-                      <span>{{
-                        $t("domains." + unconfiguredDomain.location)
-                      }}</span>
-                      <template
-                        v-if="unconfiguredDomain.location == 'internal'"
+                      <cv-overflow-menu-item
+                        danger
+                        @click="
+                          willDeleteUnconfiguredDomain(unconfiguredDomain)
+                        "
                       >
-                        <span v-if="unconfiguredDomain.schema == 'rfc2307'">
-                          {{ $t("domains.openldap") }}
-                        </span>
-                        <span v-else-if="unconfiguredDomain.schema == 'ad'">
-                          {{ $t("domains.samba") }}
-                        </span>
-                      </template>
-                      <template v-else>
-                        {{ $t("domains.ldap") }}
-                      </template>
-                      <span>{{
-                        " (" +
-                        (unconfiguredDomain.ui_name
-                          ? unconfiguredDomain.ui_name
-                          : unconfiguredDomain.module_id) +
-                        ")"
-                      }}</span>
+                        <NsMenuItem
+                          :icon="TrashCan20"
+                          :label="$t('common.delete')"
+                        />
+                      </cv-overflow-menu-item>
+                    </cv-overflow-menu>
+                  </template>
+                  <template #content>
+                    <div class="domain-card-content">
+                      <div class="row">
+                        <span>{{
+                          $t("domains." + unconfiguredDomain.location)
+                        }}</span>
+                        <template
+                          v-if="unconfiguredDomain.location == 'internal'"
+                        >
+                          <span v-if="unconfiguredDomain.schema == 'rfc2307'">
+                            {{ $t("domains.openldap") }}
+                          </span>
+                          <span v-else-if="unconfiguredDomain.schema == 'ad'">
+                            {{ $t("domains.samba") }}
+                          </span>
+                        </template>
+                        <template v-else>
+                          {{ $t("domains.ldap") }}
+                        </template>
+                        <span>{{
+                          " (" +
+                          (unconfiguredDomain.ui_name
+                            ? unconfiguredDomain.ui_name
+                            : unconfiguredDomain.module_id) +
+                          ")"
+                        }}</span>
+                      </div>
+                      <div class="row icon-and-text">
+                        <NsSvg :svg="Chip20" class="icon" />
+                        <span
+                          >{{ $t("common.node") }}
+                          {{ unconfiguredDomain.node }}</span
+                        >
+                      </div>
+                      <div class="row actions">
+                        <NsButton
+                          kind="ghost"
+                          :icon="Tools20"
+                          @click="
+                            showUnconfiguredDomainModal(unconfiguredDomain)
+                          "
+                          >{{ $t("domains.resume_configuration") }}
+                        </NsButton>
+                      </div>
                     </div>
-                    <div class="row icon-and-text">
-                      <NsSvg :svg="Chip20" class="icon" />
-                      <span
-                        >{{ $t("common.node") }}
-                        {{ unconfiguredDomain.node }}</span
-                      >
-                    </div>
-                    <div class="row actions">
-                      <NsButton
-                        kind="ghost"
-                        :icon="Tools20"
-                        @click="showUnconfiguredDomainModal(unconfiguredDomain)"
-                        >{{ $t("domains.resume_configuration") }}
-                      </NsButton>
-                    </div>
-                  </div>
-                </template>
-              </NsInfoCard>
+                  </template>
+                </NsInfoCard>
+              </div>
             </cv-column>
           </cv-row>
           <cv-row>
@@ -211,131 +217,136 @@
           </cv-row>
           <cv-row>
             <!-- domains -->
-            <cv-column
-              v-for="domain in domains"
-              :key="domain.name"
-              :md="4"
-              :max="4"
-            >
-              <NsInfoCard light :title="domain.name" :icon="Events32">
-                <template #menu>
-                  <cv-overflow-menu
-                    :flip-menu="true"
-                    tip-position="top"
-                    tip-alignment="end"
-                    class="top-right-overflow-menu"
-                    :data-test-id="domain.name + '-menu'"
-                  >
-                    <cv-overflow-menu-item
-                      @click="goToDomainConfiguration(domain)"
+            <cv-column>
+              <div class="card-grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3">
+                <NsInfoCard
+                  v-for="domain in domains"
+                  :key="domain.name"
+                  light
+                  :title="domain.name"
+                  :icon="Events32"
+                >
+                  <template #menu>
+                    <cv-overflow-menu
+                      :flip-menu="true"
+                      tip-position="top"
+                      tip-alignment="end"
+                      class="top-right-overflow-menu"
+                      :data-test-id="domain.name + '-menu'"
                     >
-                      <NsMenuItem
-                        :icon="Settings20"
-                        :label="$t('domain_configuration.configuration')"
-                      />
-                    </cv-overflow-menu-item>
-                    <cv-overflow-menu-item
-                      danger
-                      @click="showDeleteDomainModal(domain)"
-                      :data-test-id="domain.name + '-delete'"
-                    >
-                      <NsMenuItem
-                        :icon="TrashCan20"
-                        :label="$t('common.delete')"
-                      />
-                    </cv-overflow-menu-item>
-                  </cv-overflow-menu>
-                </template>
-                <template #content>
-                  <div class="domain-card-content">
-                    <div class="row">
-                      <span>{{ $t("domains." + domain.location) }}</span>
-                      <template v-if="domain.location == 'internal'">
-                        <span v-if="domain.schema == 'rfc2307'">
-                          {{ $t("domains.openldap") }}
-                        </span>
-                        <span v-else-if="domain.schema == 'ad'">
-                          {{ $t("domains.samba") }}
-                        </span>
-                      </template>
-                      <template v-else>
-                        {{ $t("domains.ldap") }}
-                      </template>
-                    </div>
-                    <!-- number of users and groups -->
-                    <div v-if="domain.counters" class="row">
-                      <cv-link
-                        v-if="domain.counters.users != null"
-                        @click="goToDomainUsersAndGroups(domain)"
+                      <cv-overflow-menu-item
+                        @click="goToDomainConfiguration(domain)"
                       >
-                        <span>{{
-                          $tc(
-                            "domain_users.num_users_c",
-                            domain.counters.users,
-                            {
-                              num: domain.counters.users,
-                            }
-                          )
-                        }}</span>
-                      </cv-link>
-                      <template v-if="domain.counters.groups != null">
-                        <span class="bullet-separator">&bull;</span>
+                        <NsMenuItem
+                          :icon="Settings20"
+                          :label="$t('domain_configuration.configuration')"
+                        />
+                      </cv-overflow-menu-item>
+                      <cv-overflow-menu-item
+                        danger
+                        @click="showDeleteDomainModal(domain)"
+                        :data-test-id="domain.name + '-delete'"
+                      >
+                        <NsMenuItem
+                          :icon="TrashCan20"
+                          :label="$t('common.delete')"
+                        />
+                      </cv-overflow-menu-item>
+                    </cv-overflow-menu>
+                  </template>
+                  <template #content>
+                    <div class="domain-card-content">
+                      <div class="row">
+                        <span>{{ $t("domains." + domain.location) }}</span>
+                        <template v-if="domain.location == 'internal'">
+                          <span v-if="domain.schema == 'rfc2307'">
+                            {{ $t("domains.openldap") }}
+                          </span>
+                          <span v-else-if="domain.schema == 'ad'">
+                            {{ $t("domains.samba") }}
+                          </span>
+                        </template>
+                        <template v-else>
+                          {{ $t("domains.ldap") }}
+                        </template>
+                      </div>
+                      <!-- number of users and groups -->
+                      <div v-if="domain.counters" class="row">
                         <cv-link
-                          @click="goToDomainUsersAndGroups(domain, 'groups')"
+                          v-if="domain.counters.users != null"
+                          @click="goToDomainUsersAndGroups(domain)"
                         >
                           <span>{{
                             $tc(
-                              "domain_users.num_groups_c",
-                              domain.counters.groups,
+                              "domain_users.num_users_c",
+                              domain.counters.users,
                               {
-                                num: domain.counters.groups,
+                                num: domain.counters.users,
                               }
                             )
                           }}</span>
                         </cv-link>
-                      </template>
-                    </div>
-                    <!-- unconfigured providers -->
-                    <div
-                      v-if="domain.hasUnconfiguredProviders"
-                      class="row icon-and-text"
-                    >
-                      <NsSvg :svg="Warning16" class="icon ns-warning" />
-                      <cv-link
-                        @click="goToDomainConfiguration(domain, 'providers')"
+                        <template v-if="domain.counters.groups != null">
+                          <span class="bullet-separator">&bull;</span>
+                          <cv-link
+                            @click="goToDomainUsersAndGroups(domain, 'groups')"
+                          >
+                            <span>{{
+                              $tc(
+                                "domain_users.num_groups_c",
+                                domain.counters.groups,
+                                {
+                                  num: domain.counters.groups,
+                                }
+                              )
+                            }}</span>
+                          </cv-link>
+                        </template>
+                      </div>
+                      <!-- unconfigured providers -->
+                      <div
+                        v-if="domain.hasUnconfiguredProviders"
+                        class="row icon-and-text"
                       >
-                        <span>{{ $t("domains.unconfigured_provider") }}</span>
-                      </cv-link>
-                    </div>
-                    <!-- number of providers -->
-                    <div v-else class="row">
-                      <cv-link
-                        @click="goToDomainConfiguration(domain, 'providers')"
-                      >
-                        {{ domain.providers.length }}
-                        {{ $tc("domains.providers", domain.providers.length) }}
-                      </cv-link>
-                      <template v-if="domain.fileServerProvider">
-                        <span class="bullet-separator">&bull;</span>
+                        <NsSvg :svg="Warning16" class="icon ns-warning" />
                         <cv-link
-                          @click="goToFileServer(domain.fileServerProvider)"
+                          @click="goToDomainConfiguration(domain, 'providers')"
                         >
-                          <span>{{ $t("samba.file_server") }}</span>
+                          <span>{{ $t("domains.unconfigured_provider") }}</span>
                         </cv-link>
-                      </template>
+                      </div>
+                      <!-- number of providers -->
+                      <div v-else class="row">
+                        <cv-link
+                          @click="goToDomainConfiguration(domain, 'providers')"
+                        >
+                          {{ domain.providers.length }}
+                          {{
+                            $tc("domains.providers", domain.providers.length)
+                          }}
+                        </cv-link>
+                        <template v-if="domain.fileServerProvider">
+                          <span class="bullet-separator">&bull;</span>
+                          <cv-link
+                            @click="goToFileServer(domain.fileServerProvider)"
+                          >
+                            <span>{{ $t("samba.file_server") }}</span>
+                          </cv-link>
+                        </template>
+                      </div>
+                      <div class="row actions">
+                        <NsButton
+                          kind="ghost"
+                          :icon="Group20"
+                          @click="goToDomainUsersAndGroups(domain)"
+                          :data-test-id="domain.name + '-users-and-groups'"
+                          >{{ $t("domains.users_and_groups") }}</NsButton
+                        >
+                      </div>
                     </div>
-                    <div class="row actions">
-                      <NsButton
-                        kind="ghost"
-                        :icon="Group20"
-                        @click="goToDomainUsersAndGroups(domain)"
-                        :data-test-id="domain.name + '-users-and-groups'"
-                        >{{ $t("domains.users_and_groups") }}</NsButton
-                      >
-                    </div>
-                  </div>
-                </template>
-              </NsInfoCard>
+                  </template>
+                </NsInfoCard>
+              </div>
             </cv-column>
           </cv-row>
         </template>
