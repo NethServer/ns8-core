@@ -100,7 +100,7 @@ It can be also stopped through API:
 ```
 
 When the Cloud Log Manager forwarder is set up, it generates a unique cluster identifier that is used on the [Cloud Log Manager](https://naradmin.nethesis.it/).
-You can find this identifier using the following command:
+You can find this identifier on Cloud Log Manager settings panel or using the following command:
 ```
 # redis-cli hget module/$(redis-cli --raw get cluster/default_instance/loki)/environment CLOUD_LOG_MANAGER_HOSTNAME
 ```
