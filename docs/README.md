@@ -10,7 +10,7 @@ Install the dependencies make sure to install ruby >= 3.0.
 - Fedora:
     ```
     dnf module install ruby
-    dnf install ruby-devel
+    dnf install gcc g++
     ```
 
 - Ubuntu:
@@ -20,8 +20,7 @@ Install the dependencies make sure to install ruby >= 3.0.
 
 Install jekyll and all dependencies:
 ```
-bundle config set --local path 'vendor/bundle'
-bundle install --path vendor
+bundle config set --local path '.bundle/vendor'
 ```
 
 Build and serve the site locally:
