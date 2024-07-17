@@ -17,6 +17,16 @@
     }}</template>
     <template slot="content">
       <cv-form v-if="subscription">
+        <NsInlineNotification
+          v-if="clusterId"
+          kind="info"
+          :description="
+            $t('cloud_log_manager_forwarder.cluster_id_notification', {
+              clusterId: clusterId,
+            })
+          "
+          :showCloseButton="false"
+        />
         <NsToggle
           :label="$t('cloud_log_manager_forwarder.export_to_cloud_log_manager')"
           v-model="toggleEnabled"
@@ -148,6 +158,7 @@ export default {
       toggleEnabled: false,
       address: "",
       tenant: "",
+      clusterId: "",
       date: "",
       time: "",
       lastTimestampFormatted: "",
@@ -200,6 +211,10 @@ export default {
 
       if (!this.configuration.tenant == "") {
         this.tenant = this.configuration.tenant;
+      }
+
+      if (this.configuration.cluster_id) {
+        this.clusterId = this.configuration.cluster_id;
       }
 
       if (this.configuration.last_timestamp == "") {
