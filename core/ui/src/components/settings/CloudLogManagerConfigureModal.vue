@@ -213,7 +213,7 @@ export default {
         this.tenant = this.configuration.tenant;
       }
 
-      if (!this.configuration.cluster_id == "") {
+      if (this.configuration.cluster_id) {
         this.clusterId = this.configuration.cluster_id;
       }
 
