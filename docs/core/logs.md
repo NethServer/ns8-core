@@ -5,7 +5,6 @@ nav_order: 9
 parent: Core
 ---
 
-
 # Logs
 
 Almost everything is logged inside the system journal.
