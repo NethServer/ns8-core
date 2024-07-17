@@ -839,7 +839,6 @@
         "documentation": "Documentation",
         "bugs": "Bugs",
         "source_code": "Source code",
-        "source_package": "Source package",
         "authors": "Author | Authors",
         "app_installation": "Install {app}",
         "choose_node_for_installation": "Select installation node for {app} {version}:",
