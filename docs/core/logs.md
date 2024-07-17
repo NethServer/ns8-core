@@ -5,7 +5,6 @@ nav_order: 9
 parent: Core
 ---
 
-<!-- {% raw %} -->
 
 # Logs
 
@@ -47,7 +46,11 @@ Get the list of modules:
 
 Example log search for module `ldapproxy1`:
 
+<!-- {% raw %} -->
+
     # logcli query -q --no-labels '{module_id="ldapproxy1"} | json | line_format "{{.MESSAGE}}"'
+
+<!-- {% endraw %} -->
 
 The string wrapped by `''` is the log query. It is expressed in
 [LogQL](https://grafana.com/docs/loki/latest/logql/log_queries/).
@@ -117,5 +120,3 @@ See also:
 - [Grafana Loki](https://grafana.com/oss/loki/)
 - [Promtail](https://grafana.com/docs/loki/latest/clients/promtail/)
 - [ns8-loki](https://github.com/NethServer/ns8-loki) module repository
-
-<!-- {% endraw %} -->
