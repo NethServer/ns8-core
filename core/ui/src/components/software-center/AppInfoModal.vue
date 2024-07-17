@@ -112,20 +112,13 @@
               {{ $t("software_center.images_label") }}
             </span>
             <span class="value">
-              <span
-                v-if="
-                  app.versions[0]['labels']['org.nethserver.images'].split(' ')
-                    .length == 1
-                "
-                >{{ app.versions[0]["labels"]["org.nethserver.images"] }}
-              </span>
-              <ul class="image-list" v-else>
-                <li
-                  v-for="(image, index) in app.versions[0]['labels'][
-                    'org.nethserver.images'
-                  ].split(' ')"
-                  :key="index"
-                >
+              <ul class="image-list unordered-list">
+                <li>
+                  {{ app.source }}:{{
+                    app.versions.length ? app.versions[0].tag : "-"
+                  }}
+                </li>
+                <li v-for="(image, index) in appImages" :key="index">
                   {{ image }}
                 </li>
               </ul>
@@ -144,12 +137,6 @@
             <span>
               <cv-link :href="app.docs.bug_url" target="_blank">
                 {{ $t("software_center.bugs") }}
-              </cv-link>
-            </span>
-            &bull;
-            <span>
-              <cv-link :href="app.source" target="_blank">
-                {{ $t("software_center.source_package") }}
               </cv-link>
             </span>
             &bull;
@@ -186,6 +173,18 @@ export default {
   props: {
     isShown: Boolean,
     app: { type: [Object, null] },
+  },
+  computed: {
+    appImages() {
+      if (this.app && this.app.versions[0]["labels"]["org.nethserver.images"]) {
+        return this.app.versions[0]["labels"]["org.nethserver.images"]
+          .trim()
+          .replace(/\s+/g, " ")
+          .split(" ");
+      } else {
+        return [];
+      }
+    },
   },
   methods: {
     getApplicationDescription(app) {
@@ -231,6 +230,6 @@ export default {
 }
 
 .image-list {
-  margin-left: $spacing-04;
+  margin-left: $spacing-03;
 }
 </style>
