@@ -26,6 +26,7 @@
           :label="$t('backup.password')"
           :passwordHideLabel="$t('password.hide_password')"
           :passwordShowLabel="$t('password.show_password')"
+          data-modal-primary-focus
           class="confirm-password"
           ref="confirmPassword"
         />

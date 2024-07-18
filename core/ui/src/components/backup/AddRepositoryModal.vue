@@ -393,15 +393,23 @@
             <cv-accordion-item :open="toggleAccordion[0]">
               <template slot="title">{{ $t("common.advanced") }}</template>
               <template slot="content">
-                <cv-text-input
-                  :label="$t('backup.repository_password')"
+                <NsTextInput
+                  :label="
+                    $t('backup.data_encryption_key') +
+                    ' (' +
+                    $t('common.optional') +
+                    ')'
+                  "
                   v-model="password"
                   :helper-text="$t('backup.repository_password_helper')"
                   :invalid-message="error.password"
                   :disabled="loading.addBackupRepository"
                   ref="password"
                 >
-                </cv-text-input>
+                  <template slot="tooltip">
+                    {{ $t("backup.data_encryption_key_tooltip") }}
+                  </template>
+                </NsTextInput>
               </template>
             </cv-accordion-item>
           </cv-accordion>

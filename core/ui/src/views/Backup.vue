@@ -618,7 +618,7 @@
           </strong>
         </p>
         <p class="mg-top-md">
-          {{ $t("backup.repository_password") }}
+          {{ $t("backup.data_encryption_key") }}
           <NsCodeSnippet
             :copyTooltip="$t('common.copy_to_clipboard')"
             :copy-feedback="$t('common.copied_to_clipboard')"
