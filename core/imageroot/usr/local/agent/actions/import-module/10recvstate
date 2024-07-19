@@ -41,6 +41,7 @@ podman_cmd = ['podman', 'run', '--rm', '--privileged', '--network=host', '--work
         '--env=RSYNCD_PASSWORD=' + password,
         '--env=RSYNCD_SYSLOG_TAG=' + os.environ['MODULE_ID'],
         '--volume=/dev/log:/dev/log',
+        '--replace',
         '--name=rsync-' + os.environ['MODULE_ID'],
     ] + agent.get_existing_volume_args()
 
