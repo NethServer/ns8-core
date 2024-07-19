@@ -227,8 +227,9 @@
         "external_domains": "External user domains",
         "backup_repositories": "Backup repositories",
         "restoring_cluster": "Restoring cluster",
-        "restore_apps": "Restore apps",
+        "restore_num_apps": "Restore apps | Restore {num} app | Restore {num} apps",
         "select_apps_to_restore": "Select apps to restore",
+        "select_apps_to_restore_description": "Your apps will be restored using the latest backup. If you need to restore certain apps from an earlier backup, you can do so later by going to the '@:backup.title' page",
         "skip_apps_restore": "Skip apps restore",
         "skip_apps_restore_1": "Do you want to skip apps restore?",
         "skip_apps_restore_2": "You can restore apps later in Backup page",
@@ -396,7 +397,8 @@
         "start-support-session": "Start support session",
         "stop-support-session": "Stop support session",
         "set-syslog-forwarder": "Set Syslog forwarder",
-        "set-clm-forwarder": "Set Cloud Log Manager forwarder"
+        "set-clm-forwarder": "Set Cloud Log Manager forwarder",
+        "read-backup-snapshots": "Read backup snapshots"
     },
     "network": {
         "title": "Network"
@@ -540,6 +542,7 @@
         "backup_repository_auth_error": "Cannot authenticate",
         "backup_repository_auth_error_description": "Check destination settings",
         "no_instance_to_restore": "No app instance to restore",
+        "no_snapshot_to_restore": "No backup snapshot to restore",
         "no_instance_to_restore_description": "It looks like there is no app instance backed up on your destinations",
         "invalid_url": "Invalid value or format",
         "backup_page_tooltip_1": "Here you can configure your backups and restore any app.",
@@ -577,7 +580,14 @@
         "node": "Node",
         "cluster_placeholder": "Choose a node in the cluster",
         "parameters_format": "Incorrect value",
-        "url": "URL"
+        "url": "URL",
+        "from_node_name_of_this_cluster": "From node {name} of this cluster",
+        "from_node_name_of_different_cluster": "From node {name} of a different cluster",
+        "from_this_cluster": "From this cluster",
+        "from_different_cluster": "From a different cluster",
+        "from_node_name": "From node {name}",
+        "select_backup_snapshot": "Select backup snapshot",
+        "most_recent": "Most recent"
     },
     "calendar": {
         "days": "Days",

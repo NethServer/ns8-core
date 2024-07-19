@@ -36,7 +36,7 @@
       </div>
       <!-- no instance to restore -->
       <NsEmptyState
-        v-else-if="!instances.length"
+        v-else-if="!internalInstances.length"
         :title="$t('backup.no_instance_to_restore')"
       >
         <template #description>{{
@@ -67,24 +67,7 @@
         @click="deselectOtherInstances(instance)"
         class="instance-tile"
       >
-        <div>
-          <div>{{ instance.path }}</div>
-          <div class="instance-description">
-            {{ instance.repository_name }}
-            <cv-interactive-tooltip
-              alignment="center"
-              direction="right"
-              class="info"
-            >
-              <template slot="trigger">
-                <Information16 />
-              </template>
-              <template slot="content">
-                <div>{{ instance.repository_url }}</div>
-              </template>
-            </cv-interactive-tooltip>
-          </div>
-        </div>
+        <InstanceToRestoreInfo :instance="instance" />
       </NsTile>
     </div>
   </div>
@@ -92,11 +75,12 @@
 
 <script>
 import { UtilService, LottieService } from "@nethserver/ns8-ui-lib";
-import Information16 from "@carbon/icons-vue/es/information/16";
+import _cloneDeep from "lodash/cloneDeep";
+import InstanceToRestoreInfo from "./InstanceToRestoreInfo.vue";
 
 export default {
   name: "RestoreSingleInstanceSelector",
-  components: { Information16 },
+  components: { InstanceToRestoreInfo },
   mixins: [UtilService, LottieService],
   props: {
     instances: {
@@ -111,9 +95,18 @@ export default {
   },
   data() {
     return {
+      internalInstances: [],
       searchQuery: "",
       searchResults: [],
-      searchFields: ["instance", "name", "repository_name"],
+      searchFields: [
+        "module_id",
+        "module_ui_name",
+        "name",
+        "repository_name",
+        "repository_provider",
+        "node_fqdn",
+        "repository_url",
+      ],
       isSearchActive: false,
     };
   },
@@ -122,19 +115,39 @@ export default {
       if (this.isSearchActive) {
         return this.searchResults;
       } else {
-        return this.instances;
+        return this.internalInstances;
       }
     },
     selectedInstance() {
-      return this.instances.find((i) => i.selected);
+      return this.internalInstances.find((i) => i.selected);
     },
   },
   watch: {
     selectedInstance: function () {
       this.$emit("select", this.selectedInstance);
     },
+    instances: function () {
+      this.updateInternalInstances();
+    },
+    loading: function () {
+      this.searchQuery = "";
+      this.searchResults = [];
+      this.isSearchActive = false;
+    },
+  },
+  created() {
+    this.updateInternalInstances();
   },
   methods: {
+    updateInternalInstances() {
+      // deep copy (needed to avoid reactivity issues)
+      let internalInstances = _cloneDeep(this.instances);
+
+      for (const instance of internalInstances) {
+        instance.selected = false;
+      }
+      this.internalInstances = internalInstances;
+    },
     searchInstance() {
       // clean query
       const cleanRegex = /[^a-zA-Z0-9]/g;
@@ -150,7 +163,7 @@ export default {
       this.isSearchActive = true;
 
       // search
-      this.searchResults = this.instances.filter((instance) => {
+      this.searchResults = this.internalInstances.filter((instance) => {
         // compare query text with all search fields of option
         return this.searchFields.some((searchField) => {
           const searchValue = instance[searchField];
@@ -170,7 +183,7 @@ export default {
       }
     },
     deselectOtherInstances(instance) {
-      for (let i of this.instances) {
+      for (let i of this.internalInstances) {
         if (i.path !== instance.path) {
           i.selected = false;
         }
@@ -194,7 +207,7 @@ export default {
 
 .instance-list {
   overflow-y: auto;
-  max-height: 18rem;
+  max-height: 23rem;
 }
 
 .ns-tile.instance-tile,
@@ -202,19 +215,9 @@ export default {
   margin-bottom: $spacing-03;
 }
 
-.instance-label {
-  display: flex;
-  align-items: center;
-}
-
-.instance-description {
-  margin-top: $spacing-03;
+.secondary-row {
+  margin-top: $spacing-02;
   color: $ui-04;
-
-  .info {
-    position: relative;
-    top: 3px;
-  }
 }
 
 .no-mg-bottom {
