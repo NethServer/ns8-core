@@ -136,7 +136,7 @@ try:
     ometa["node_fqdn"] = agent.get_hostname()
     ometa["uuid"] = os.environ["MODULE_UUID"]
     ometa["timestamp"] = time_end
-    ometa["success"] = boolean(errors == 0)
+    ometa["success"] = bool(errors == 0)
     subprocess.run(["rclone-wrapper", str(backup_id), "rcat", f"REMOTE_PATH/{repopath}.json"],
         stdout=sys.stderr,
         input='\n' + json.dumps(ometa, separators=(',', ':')) + '\n',
