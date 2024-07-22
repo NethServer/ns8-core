@@ -1,0 +1,58 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2024 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+import json
+import agent
+import sys
+import os
+import agent.tasks
+
+request = json.load(sys.stdin)
+reachability_check = request.get("reachability_check", True)
+
+agent.set_weight(os.path.basename(__file__), 0) # Validation step, no task progress at all
+
+if request["hostname"] in ["localhost", "localhost4", "localhost6"]:
+    agent.set_status('validation-failed')
+    json.dump([{'field':'hostname', 'parameter':'hostname','value': request["hostname"], 'error':'forbidden_hostname_value'}], fp=sys.stdout)
+    sys.exit(2)
+
+leader_id = os.environ['NODE_ID']
+node_id = str(request['node'])
+
+ptasks = []
+if leader_id == node_id and reachability_check:
+    # If leader FQDN is changing, check if the new fqdn is reachable by other nodes
+    rdb = agent.redis_connect()
+    for nid in set(rdb.hvals("cluster/module_node")):
+        if nid == leader_id:
+            continue
+        ptasks.append({
+            "action": "validate-leader-fqdn",
+            "agent_id": f"node/{nid}",
+            "data": {
+                "fqdn": f"{request['hostname']}.{request['domain']}"
+            },
+        })
+if ptasks:
+    # Run the validation checks in parallel:
+    for idx, result in enumerate(agent.tasks.runp(ptasks, endpoint="redis://cluster-leader")):
+        if result['exit_code'] != 0:
+            agent.set_status('validation-failed')
+            json.dump([{'field':'validate-leader-fqdn', 'parameter':'validate-leader-fqdn', 'value': ptasks[idx]["agent_id"].removeprefix("node/"), 'error':'reachability_check_failed'}], fp=sys.stdout)
+            sys.exit(2)
+
+response = agent.tasks.run(
+    agent_id=f'node/{node_id}',
+    action='set-fqdn',
+    data={
+        "hostname": request["hostname"],
+        "domain": request["domain"],
+    },
+    endpoint="redis://cluster-leader",
+)
+sys.exit(response['exit_code'])

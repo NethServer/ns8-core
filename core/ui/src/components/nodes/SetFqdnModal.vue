@@ -14,6 +14,13 @@
     <template slot="title">{{ $t("nodes.set_fqdn") }}</template>
     <template slot="content">
       <NsInlineNotification
+        v-if="isLeaderNode"
+        kind="warning"
+        :title="$t('nodes.vpn_endpoint_warning_title')"
+        :description="$t('nodes.vpn_endpoint_warning_description')"
+        :showCloseButton="false"
+      />
+      <NsInlineNotification
         v-if="error.getFqdn"
         kind="error"
         :title="$t('action.get-fqdn')"
@@ -29,7 +36,11 @@
       <cv-form v-else @submit.prevent="setFqdn">
         <template>
           <cv-text-input
-            :label="$t('init.hostname_create')"
+            :label="
+              $t('nodes.node_name_hostname', {
+                node: this.nodeLabel,
+              })
+            "
             v-model.trim="hostname"
             :invalid-message="error.hostname"
             :disabled="loading.getFqdn || loading.setFqdn"
@@ -37,7 +48,11 @@
           >
           </cv-text-input>
           <cv-text-input
-            :label="$t('init.domain_create')"
+            :label="
+              $t('nodes.node_name_domain', {
+                node: this.nodeLabel,
+              })
+            "
             v-model.trim="domain"
             placeholder="example.org"
             :invalid-message="error.domain"
@@ -45,8 +60,23 @@
             ref="domain"
           >
           </cv-text-input>
+          <!-- check node connectivity -->
+          <NsCheckbox
+            v-if="isLeaderNode"
+            :label="$t('nodes.check_node_connectivity')"
+            v-model="checkNodeConnectivity"
+            :disabled="loading.getFqdn || loading.setFqdn"
+            value="checkNodeConnectivity"
+          />
         </template>
       </cv-form>
+      <NsInlineNotification
+        v-if="error.checkNodeConnectivity"
+        kind="error"
+        :title="$t('nodes.connectivity_check_failed')"
+        :description="error.checkNodeConnectivity"
+        :showCloseButton="false"
+      />
       <NsInlineNotification
         v-if="error.setFqdn"
         kind="error"
@@ -63,6 +93,7 @@
 <script>
 import { UtilService, IconService, TaskService } from "@nethserver/ns8-ui-lib";
 import to from "await-to-js";
+import { mapState } from "vuex";
 
 export default {
   name: "SetFqdnModal",
@@ -79,6 +110,7 @@ export default {
     return {
       hostname: "",
       domain: "",
+      checkNodeConnectivity: true,
       loading: {
         getFqdn: false,
         setFqdn: false,
@@ -88,14 +120,29 @@ export default {
         setFqdn: "",
         hostname: "",
         domain: "",
+        checkNodeConnectivity: "",
       },
     };
+  },
+  computed: {
+    ...mapState(["clusterNodes"]),
+    isLeaderNode() {
+      return this.node && this.node.local;
+    },
+    nodeLabel() {
+      if (this.node) {
+        return this.getShortNodeLabel(this.node);
+      } else {
+        return "";
+      }
+    },
   },
   watch: {
     isShown: function () {
       if (this.isShown) {
         this.clearErrors();
         this.getFqdn();
+        this.checkNodeConnectivity = true;
       }
     },
   },
@@ -209,11 +256,13 @@ export default {
       );
 
       const res = await to(
-        this.createNodeTask(this.node.id, {
+        this.createClusterTask({
           action: taskAction,
           data: {
+            node: this.node.id,
             hostname: this.hostname,
             domain: this.domain,
+            reachability_check: this.checkNodeConnectivity,
           },
           extra: {
             title: this.$t("action." + taskAction),
@@ -249,15 +298,31 @@ export default {
       for (const validationError of validationErrors) {
         const param = validationError.parameter;
 
-        // set i18n error message
-        this.error[param] = this.getI18nStringWithFallback(
-          "init." + validationError.error,
-          "error." + validationError.error
-        );
+        if (validationError.error == "reachability_check_failed") {
+          // show error notification for connectivity check
+          const failedNodeId = validationError.value;
+          const failedNode = this.clusterNodes.find(
+            (node) => node.id == failedNodeId
+          );
 
-        if (!focusAlreadySet) {
-          this.focusElement(param);
-          focusAlreadySet = true;
+          if (failedNode) {
+            const failedNodeLabel = this.getNodeLabel(failedNode);
+            this.error.checkNodeConnectivity = this.$t(
+              "nodes.connectivity_check_failed_description",
+              { fqdn: `${this.hostname}.${this.domain}`, node: failedNodeLabel }
+            );
+          }
+        } else {
+          // set i18n error message
+          this.error[param] = this.getI18nStringWithFallback(
+            "init." + validationError.error,
+            "error." + validationError.error
+          );
+
+          if (!focusAlreadySet) {
+            this.focusElement(param);
+            focusAlreadySet = true;
+          }
         }
       }
     },
