@@ -66,7 +66,7 @@ for krepo in rdb.scan_iter('cluster/backup_repository/*'):
             "repository_url": orepo["url"],
             "installed_instance": "",
             "installed_instance_ui_name": "",
-            "is_generated_locally": False,
+            "is_generated_locally": None,
         }
 
 # Fetch module UUIDs to search destination matches:
@@ -100,7 +100,7 @@ for cat_slice in proc_cat.stdout.readlines():
         backups[module_uuid]["module_ui_name"] = ometa.get("module_ui_name", "")
         backups[module_uuid]["node_fqdn"] = ometa.get("node_fqdn", "")
         backups[module_uuid]["timestamp"] = ometa.get("timestamp", unix_timestamp)
-    if "cluster_uuid" in ometa:
+    if "cluster_uuid" in ometa and not backups[module_uuid].get("is_generated_locally"):
         backups[module_uuid]["is_generated_locally"] = cluster_uuid == ometa["cluster_uuid"]
 
 json.dump(list(backups.values()), fp=sys.stdout)
