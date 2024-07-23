@@ -250,6 +250,7 @@
         "network_pattern": "Invalid network format",
         "domain_format": "Invalid domain format",
         "hostname_format": "Invalid hostname format",
+        "hostname_pattern": "Invalid hostname format",
         "forbidden_hostname_value": "Forbidden hostname"
     },
     "shell": {
