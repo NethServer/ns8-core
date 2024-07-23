@@ -43,7 +43,7 @@
       </cv-tile>
       <!-- no search results -->
       <NsEmptyState
-        v-else-if="!instancesToDisplay.length"
+        v-else-if="!instancesFiltered.length"
         :title="$t('common.no_search_results')"
         :animationData="GhostLottie"
         animationTitle="ghost"
@@ -57,7 +57,7 @@
       <cv-tile
         v-else
         :light="light"
-        v-for="(instance, index) of instancesToDisplay"
+        v-for="(instance, index) of instancesFilteredLoaded"
         :key="index"
         :class="['instance-tile', { 'instance-tile-light': light }]"
       >
@@ -72,6 +72,10 @@
           <InstanceToRestoreInfo :instance="instance" />
         </label>
       </cv-tile>
+      <infinite-loading
+        :identifier="infiniteId"
+        @infinite="infiniteScrollHandler"
+      ></infinite-loading>
     </div>
   </div>
 </template>
@@ -114,13 +118,18 @@ export default {
         "repository_url",
       ],
       isSearchActive: false,
+      // infinite scroll
+      instancesFilteredLoaded: [],
+      pageNum: 0,
+      pageSize: 20,
+      infiniteId: +new Date(), // needed because of text filter
     };
   },
   computed: {
     numSelected() {
       return this.selectedList.length;
     },
-    instancesToDisplay() {
+    instancesFiltered() {
       if (this.isSearchActive) {
         return this.searchResults;
       } else {
@@ -149,6 +158,12 @@ export default {
 
       this.$emit("select", selectedInstances);
     },
+    instancesFiltered: function () {
+      this.instancesFilteredLoaded = [];
+      this.pageNum = 0;
+      this.infiniteId += 1;
+      this.infiniteScrollHandler();
+    },
   },
   methods: {
     selectAll() {
@@ -170,6 +185,25 @@ export default {
         case "":
           this.selectNone();
           break;
+      }
+    },
+    infiniteScrollHandler($state) {
+      const pageInstances = this.instancesFiltered.slice(
+        this.pageNum * this.pageSize,
+        (this.pageNum + 1) * this.pageSize
+      );
+
+      if (pageInstances.length) {
+        this.pageNum++;
+        this.instancesFilteredLoaded.push(...pageInstances);
+
+        if ($state) {
+          $state.loaded();
+        }
+      } else {
+        if ($state) {
+          $state.complete();
+        }
       }
     },
     searchInstance() {

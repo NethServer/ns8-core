@@ -45,7 +45,7 @@
       </NsEmptyState>
       <!-- no search results -->
       <NsEmptyState
-        v-else-if="!instancesToDisplay.length"
+        v-else-if="!instancesFiltered.length"
         :title="$t('common.no_search_results')"
         :animationData="GhostLottie"
         animationTitle="ghost"
@@ -58,7 +58,7 @@
       <!-- instance list -->
       <NsTile
         v-else
-        v-for="(instance, index) of instancesToDisplay"
+        v-for="(instance, index) of instancesFilteredLoaded"
         :key="index"
         :light="light"
         kind="selectable"
@@ -69,6 +69,10 @@
       >
         <InstanceToRestoreInfo :instance="instance" />
       </NsTile>
+      <infinite-loading
+        :identifier="infiniteId"
+        @infinite="infiniteScrollHandler"
+      ></infinite-loading>
     </div>
   </div>
 </template>
@@ -108,10 +112,15 @@ export default {
         "repository_url",
       ],
       isSearchActive: false,
+      // infinite scroll
+      instancesFilteredLoaded: [],
+      pageNum: 0,
+      pageSize: 20,
+      infiniteId: +new Date(), // needed because of text filter
     };
   },
   computed: {
-    instancesToDisplay() {
+    instancesFiltered() {
       if (this.isSearchActive) {
         return this.searchResults;
       } else {
@@ -133,6 +142,12 @@ export default {
       this.searchQuery = "";
       this.searchResults = [];
       this.isSearchActive = false;
+    },
+    instancesFiltered: function () {
+      this.instancesFilteredLoaded = [];
+      this.pageNum = 0;
+      this.infiniteId += 1;
+      this.infiniteScrollHandler();
     },
   },
   created() {
@@ -186,6 +201,25 @@ export default {
       for (let i of this.internalInstances) {
         if (i.path !== instance.path) {
           i.selected = false;
+        }
+      }
+    },
+    infiniteScrollHandler($state) {
+      const pageItems = this.instancesFiltered.slice(
+        this.pageNum * this.pageSize,
+        (this.pageNum + 1) * this.pageSize
+      );
+
+      if (pageItems.length) {
+        this.pageNum++;
+        this.instancesFilteredLoaded.push(...pageItems);
+
+        if ($state) {
+          $state.loaded();
+        }
+      } else {
+        if ($state) {
+          $state.complete();
         }
       }
     },

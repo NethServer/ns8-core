@@ -27,7 +27,7 @@
       <!-- snapshot list -->
       <NsTile
         v-else
-        v-for="(snapshot, index) of internalSnapshots"
+        v-for="(snapshot, index) of internalSnapshotsLoaded"
         :key="index"
         :light="light"
         kind="selectable"
@@ -43,6 +43,10 @@
           {{ $t("backup.most_recent") }}
         </div>
       </NsTile>
+      <infinite-loading
+        :identifier="infiniteId"
+        @infinite="infiniteScrollHandler"
+      ></infinite-loading>
     </div>
   </div>
 </template>
@@ -69,6 +73,11 @@ export default {
   data() {
     return {
       internalSnapshots: [],
+      // infinite scroll
+      internalSnapshotsLoaded: [],
+      pageNum: 0,
+      pageSize: 20,
+      infiniteId: +new Date(),
     };
   },
   computed: {
@@ -82,6 +91,12 @@ export default {
     },
     snapshots: function () {
       this.updateInternalSnapshots();
+    },
+    internalSnapshots: function () {
+      this.internalSnapshotsLoaded = [];
+      this.pageNum = 0;
+      this.infiniteId += 1;
+      this.infiniteScrollHandler();
     },
   },
   created() {
@@ -101,6 +116,25 @@ export default {
       for (let s of this.internalSnapshots) {
         if (s.id !== snapshot.id) {
           s.selected = false;
+        }
+      }
+    },
+    infiniteScrollHandler($state) {
+      const pageItems = this.internalSnapshots.slice(
+        this.pageNum * this.pageSize,
+        (this.pageNum + 1) * this.pageSize
+      );
+
+      if (pageItems.length) {
+        this.pageNum++;
+        this.internalSnapshotsLoaded.push(...pageItems);
+
+        if ($state) {
+          $state.loaded();
+        }
+      } else {
+        if ($state) {
+          $state.complete();
         }
       }
     },
