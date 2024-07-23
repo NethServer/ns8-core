@@ -100,7 +100,6 @@ if network is not None:
         'hostname': f"node{node_id}.invalid", # XXX Deprecated field: do not use it any more
         'vpn': {
             'ip_address': ovpn['ip_address'],
-            'listen_port': 55820,
             'public_key': ovpn['public_key'],
             'endpoint': node_vpn_endpoint,
         }}
@@ -122,18 +121,8 @@ for line in proc.stdout.readlines():
         kvpn = parts[0]
         if not kvpn in vpn:
             continue # ignore unknown VPN peers
-        if vpn[kvpn]['vpn']['endpoint'] == "":
-            # endpoint not defined in Redis, use wg runtime params
-            if parts[2] == '(none)':
-                endpoint = ''
-                endpoint_port = '55820'
-            else:
-                endpoint = parts[2]
-                _, endpoint_port = endpoint.rsplit(':', 1)
-        else:
-            endpoint, endpoint_port = vpn[kvpn]['vpn']['endpoint'].rsplit(':', 1)
-        vpn[kvpn]['vpn']['endpoint'] = endpoint
-        vpn[kvpn]['vpn']['listen_port'] = _get_int_def(endpoint_port, 55820)
+        elif parts[2] != '(none)':
+            vpn[kvpn]['vpn']['endpoint'] = parts[2]
         vpn[kvpn]['vpn']['last_seen'] = _get_int_def(parts[4], 0)
         vpn[kvpn]['vpn']['rcvd'] = _get_int_def(parts[5], 0)
         vpn[kvpn]['vpn']['sent'] = _get_int_def(parts[6], 0)
