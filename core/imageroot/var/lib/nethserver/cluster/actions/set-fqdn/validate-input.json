@@ -30,6 +30,7 @@
             "type": "string",
             "minLength": 1,
             "format": "hostname",
+            "pattern": "^[^\\.]+$",
             "description": "The hostname part of the FQDN for the node."
         },
         "domain": {

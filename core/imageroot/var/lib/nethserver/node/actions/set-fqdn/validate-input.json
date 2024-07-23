@@ -18,6 +18,7 @@
     "hostname": {
       "type": "string",
       "minLength": 1,
+      "pattern": "^[^\\.]+$",
       "format": "hostname"
     },
     "domain": {
