@@ -12,7 +12,9 @@
       </div>
       <div class="key-value-setting">
         <span class="label">{{ $t("backup.provider") }}</span>
-        <span class="value">{{ $t("backup." + repository.provider) }}</span>
+        <span class="value">
+          {{ repository.provider ? $t("backup." + repository.provider) : "-" }}
+        </span>
       </div>
       <div class="key-value-setting">
         <span class="label">{{ $t("backup.url") }}</span>
