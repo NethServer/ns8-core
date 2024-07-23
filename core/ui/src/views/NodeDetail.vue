@@ -238,12 +238,14 @@
                   loading.clusterStatus ? "-" : vpnInfo.ip_address
                 }}</span>
               </div>
-              <div class="mg-bottom-sm">
-                <span class="label">{{ $t("node_detail.listen_port") }}</span>
-                <span>{{
-                  loading.clusterStatus ? "-" : vpnInfo.listen_port
-                }}</span>
-              </div>
+              <template v-if="!loading.clusterStatus && vpnInfo.listen_port">
+                <div class="mg-bottom-sm">
+                  <span class="label">{{
+                    $t("node_detail.listen_port")
+                  }}</span>
+                  <span>{{ vpnInfo.listen_port }}</span>
+                </div>
+              </template>
               <template v-if="!loading.clusterStatus && vpnInfo.rcvd">
                 <div class="mg-bottom-sm">
                   <span class="label">{{

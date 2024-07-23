@@ -100,6 +100,10 @@
                 "description": "WireGuard VPN publick key",
                 "type": "string"
               },
+              "listen_port": {
+                "type": "integer",
+                "description": "WireGuard Listen port number, where available on the leader node"
+              },
               "endpoint": {
                 "description": "WireGuard VPN endpoint",
                 "type": "string"
