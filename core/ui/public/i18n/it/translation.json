@@ -137,14 +137,13 @@
         "remove_node_confirm": "Rimuovere {name} dal cluster? Questa azione NON è reversibile",
         "add_node_to_cluster_step_1": "Installa {product} sul nuovo nodo",
         "add_node_to_cluster_step_5": "Verifica FQDN del nodo",
-        "node_vpn_endpoint_address_tooltip": "I nodi worker utilizzano questo indirizzo per collegarsi al leader. Assicurarsi che sia correttamente risolto e raggiungibile dai nodi worker.",
         "go_to_cluster_admin": "Vai a Amministrazione cluster",
         "new_cluster_admin_message": "Da ora in poi, l'amministrazione del cluster sarà disponibile all'indirizzo: https://{endpointAddress}/cluster-admin/",
         "reset_backup_encryption_password_info": "Dopo la promozione del nodo, vai alla pagina Backup e imposta la password di cifratura del backup",
         "validation_node_is_leader": "Impossibile rimuovere il nodo leader",
         "nodes_offline_description_c": "Controlla lo stato e la connettività del nodo | Controlla lo stato e la connettività dei nodi",
         "node_is_offline_description": "Controlla lo stato e la connettività del nodo",
-        "check_node_connectivity": "Controlla la connettività del nodo",
+        "check_node_connectivity": "Controlla la connettività dai nodi worker",
         "cannot_promote_node": "Impossibile promuovere il nodo",
         "edit_node_label": "Modifica etichetta nodo",
         "disk": "Disco",
@@ -159,8 +158,6 @@
         "promote_node_to_leader": "Promuovi nodo a leader",
         "promote_node_confirm": "{name} sarà promosso al ruolo di leader.",
         "type_to_confirm_promotion": "Digita '{name}' per confermare la promozione del nodo",
-        "node_vpn_endpoint_address": "Indirizzo VPN pubblico {node}",
-        "node_vpn_endpoint_port": "Porta UDP VPN pubblica {node}",
         "validation_endpoint_address_format": "Formato non valido",
         "node_is_offline": "Il nodo è offline",
         "nodes_offline_c": "{num} nodo è offline | {num} nodi sono offline",
@@ -168,7 +165,7 @@
         "swap_usage": "Utilizzo dello swap",
         "usage": "utilizzo",
         "understood_promote_node": "Sono consapevole, promuovi il nodo",
-        "validation_endpoint_address_not_reachable": "L'indirizzo dell'endpoint VPN non è raggiungibile, verificalo nuovamente. Se sai cosa stai facendo e desideri saltare questo controllo, deseleziona 'Controlla la connettività del nodo' e riprova",
+        "validation_endpoint_address_not_reachable": "Il nodo FQDN non è raggiungibile da uno o più nodi. Se si desidera saltare questo controllo e correggere il record DNS in seguito, deselezionare 'Controlla la connettività' e riprovare",
         "validation_node_is_already_leader": "Il nodo ha già il ruolo di leader",
         "validation_node_replica_not_found": "Replica del nodo non trovata",
         "validation_endpoint_port_invalid_type": "Formato non valido",
@@ -178,9 +175,15 @@
         "cannot_retrieve_node_info": "Informazioni sul nodo non disponibili",
         "add_node_to_cluster_step_6": "Incollare il codice di join",
         "set_fqdn": "Imposta FQDN",
-        "node_vpn_endpoint_port_tooltip": "I nodi worker utilizzano questo numero di porta per collegarsi al leader. Può differire dalla porta di ascolto di Wireguard 55820. Cambiare questo numero di porta solo se tra il worker e il leader è presente un dispositivo che fa port-forwarding",
         "show_all_disks": "Mostra tutti i dischi",
-        "nodes_online_cluster_status": "Tutti i nodi sono online"
+        "nodes_online_cluster_status": "Tutti i nodi sono online",
+        "check_node_connectivity_promote": "Controlla la connettività a '{fqdn} '",
+        "connectivity_check_failed": "Controllo connettività fallito",
+        "node_name_domain": "Dominio {node}",
+        "connectivity_check_failed_description": "L'FQDN {fqdn} non è raggiungibile da {nodo}. Si prega di cambiare nome host e/o dominio o, se si desidera saltare questo controllo e correggere il record DNS in seguito, deselezionare '@:nodes.check_node_connectivity' e riprovare.",
+        "vpn_endpoint_warning_description": "L'FQDN del leader viene utilizzato dai nodi worker per stabilire la connessione VPN. Assicurarsi che tutti i worker possono risolvere il nuovo FQDN del leader.",
+        "node_name_hostname": "Nome host {node}",
+        "vpn_endpoint_warning_title": "Stai modificando l'FQDN del leader"
     },
     "system_logs": {
         "context_node": "Nodo",
@@ -242,7 +245,12 @@
             "edit_label": "Modifica etichetta",
             "type_to_confirm": "Digita '{name}' per confermare",
             "days": "Giorni",
-            "no_logs": "Questa istanza non contiene alcun log"
+            "no_logs": "Questa istanza non contiene alcun log",
+            "cannot_configure_forwarder": "Non è possibile configurare il forwarder",
+            "configure_syslog_forwarder": "Configurare l'esportazione a Syslog",
+            "cannot_retrieve_system_logs_status": "Impossibile ottenere lo stato dei log di sistema",
+            "cannot_retrieve_loki_instances": "Impossibile recuperare le istanze loki",
+            "configure_cloud_log_manager_forwarder": "Configurare Cloud Log Manager"
         },
         "loki_tooltip": "Ricerca log dall'istanza Loki attiva, da un precedente nodo leader o da un backup di Loki.",
         "loki_instance_description": "I log sono memorizzati in più istanze Loki. Scegline una dal campo sottostante.",
@@ -568,7 +576,9 @@
         "start-support-session": "Avvia sessione di supporto",
         "get-subscription": "Ottieni subscription",
         "register-cluster-subscription": "Registra la subscription del cluster",
-        "set-retention": "Imposta conservazione"
+        "set-retention": "Imposta conservazione",
+        "set-syslog-forwarder": "Impostare Syslog forwarder",
+        "set-clm-forwarder": "Impostare Cloud Log Manager forwarder"
     },
     "backup": {
         "configure": "Configura",
@@ -794,7 +804,7 @@
         "enabled": "Abilitato",
         "disabled": "Disabilitato",
         "delete": "Elimina",
-        "advanced": "Avanzate",
+        "advanced": "Avanzato",
         "join_code": "Codice di join",
         "cluster_label": "Etichetta cluster",
         "all": "Tutto",
@@ -871,7 +881,8 @@
         "got_it": "Ho capito",
         "click_here_to_upload": "Clicca qui per l'upload",
         "not_active": "Inattivo",
-        "active": "Attivo"
+        "active": "Attivo",
+        "configure": "Configura"
     },
     "error": {
         "error": "Errore",
@@ -905,7 +916,7 @@
     },
     "task": {
         "configure": "Configura",
-        "cannot_create_task": "Impossibile eseguire task {action}",
+        "cannot_create_task": "Impossibile eseguire il task {action}",
         "completed": "Completato",
         "task_failed": "Il task {task} è fallito",
         "task_completed": "Il task {task} è stato completato",
@@ -954,7 +965,6 @@
         "new_password": "Nuova password di amministrazione",
         "vpn_endpoint_address": "Indirizzo pubblico VPN del leader",
         "welcome": "Benvenuti in {product}",
-        "vpn_endpoint_port": "Porta UDP pubblica VPN del leader",
         "vpn_cidr": "Rete VPN (CIDR)",
         "url_format": "URL non valido",
         "restore_summary": "Riepilogo",
@@ -975,18 +985,10 @@
         "custom_routes": "Rotte HTTP personalizzate",
         "custom_certificates": "Certificati caricati",
         "set_fqdn": "Imposta FQDN",
-        "review_node_fqdn_title": "Verifica FQDN del nodo",
-        "review_node_fqdn_description": "Imposta il nome dominio completo (FQDN) di questo nodo del cluster",
         "forbidden_hostname_value": "Nome host non consentito",
-        "vpn_endpoint_address_tooltip": "I nodi worker utilizzano questo indirizzo per collegarsi al leader. Assicurarsi che sia correttamente risolto e raggiungibile dai nodi worker.",
-        "vpn_endpoint_port_tooltip": "I nodi worker utilizzano questo numero di porta per collegarsi al leader. Può differire dalla porta di ascolto di Wireguard 55820. Cambiare questo numero di porta solo se tra il worker e il leader è presente un dispositivo che fa port-forwarding",
-        "vpn_cidr_tooltip": "Indirizzo della rete VPN utilizzata dai nodi del cluster per comunicare. Assicurare che questa rete non sia in conflitto con reti esistenti. Notare che la rete VPN non potrà essere cambiata in un secondo momento.",
+        "vpn_cidr_tooltip": "Questa è la rete VPN utilizzata dai nodi di cluster per comunicare. Assicurarsi che questa rete non sia in conflitto con quelle esistenti. Si noti che la rete VPN non può essere cambiata in seguito.",
         "external_domains": "Domini utente esterni",
         "empty_passphrase": "La password è obbligatoria",
-        "hostname_create": "Nome host",
-        "domain_join": "Dominio del nodo worker",
-        "hostname_join": "Nome host del nodo worker",
-        "domain_create": "Dominio",
         "network_pattern": "Formato di rete non valido",
         "hostname_format": "Formato nome host non valido",
         "not_a_private_network": "Deve essere incluso nelle reti IPv4 private: 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16",
@@ -999,7 +1001,17 @@
         "cluster_hostname_error": "Il FQDN {value} è utilizzato dal nodo leader. Usa 'Indietro' e modifica il nome host o il dominio del worker.",
         "the_join_code_cannot_be_parsed": "Il codice di join non può essere interpretato",
         "cluster_tls_verify_error": "Il certificato TLS del nodo leader non è valido",
-        "the_join_code_can_not_be_decoded": "Il codice di join non può essere decodificato"
+        "the_join_code_can_not_be_decoded": "Il codice di join non può essere decodificato",
+        "vpn_network": "Rete VPN",
+        "worker_node_domain": "Dominio nodo worker",
+        "review_worker_fqdn_description": "Impostare il fully qualified domain name (FQDN) di questo nodo worker",
+        "worker_node_hostname": "Nome host worker",
+        "review_leader_fqdn_description": "Impostare il fully qualified domain name (FQDN) del cluster leader",
+        "review_leader_fqdn_title": "Controllare FQDN del leader",
+        "review_worker_fqdn_title": "Controllare FQDN del worker",
+        "leader_node_domain": "Dominio nodo leader",
+        "leader_node_hostname": "Nome host leader",
+        "hostname_pattern": "Formato hostname non valido"
     },
     "account_provider": {
         "title": "Account provider"
@@ -1094,7 +1106,10 @@
         "go_to_subscription": "Vai a Subscription",
         "subscription_status": "Subscription",
         "email_notification": "Notifiche email",
-        "go_to_settings": "Vai alle impostazioni"
+        "go_to_settings": "Vai alle impostazioni",
+        "go_to_system_logs": "Vai a Log di sistema",
+        "active_instance": "Istanza attiva: {instance}",
+        "system_logs": "Log di sistema"
     },
     "domain_users": {
         "attributes": "Attributi",
@@ -1273,10 +1288,6 @@
         "weeks": "Settimane",
         "friday": "Venerdì"
     },
-    "hint": {
-        "copy_to_clipboard": "Clicca qui per copiare negli appunti",
-        "notifications": "Puoi trovare le notifiche e lo stato di avanzamento dei task qui"
-    },
     "openldap": {
         "choose_openldap_admin_password": "Scegli una password per l'utente amministratore di OpenLDAP",
         "enter_openldap_admin_password": "Immettere password dell'amministratore OpenLDAP",
@@ -1346,5 +1357,44 @@
         "subscription_status": "Stato subscription",
         "session_id": "ID sessione",
         "start_session_support": "Avvia sessione"
+    },
+    "cloud_log_manager_forwarder": {
+        "tenant_tooltip": "Questa chiave, nota anche come \"tenant\", identifica e associa i log del cluster all'interno di un'azienda in Cloud Log Manager. È possibile trovarla nel portale Cloud Log Manager, sotto Utenti e Aziende > Aziende.",
+        "tenant": "Chiave univoca",
+        "export_starting_date": "Data di inizio dell'esportazione",
+        "cloud_log_manager_export_failed": "Esporta a Cloud Log Manager fallito",
+        "address": "URL Cloud Log Manager",
+        "cloud_log_manager_export_enabled": "Esporta a Cloud Log Manager abilitato",
+        "use_last_timestamp": "Utilizza l'ultimo timestamp ({timestamp})",
+        "choose_a_datetime": "Scegli la data e l'ora",
+        "available_with_subscription_title": "Attivare subscription per abilitare questa funzione",
+        "start_date": "Data di inizio dell'esportazione",
+        "start_time": "Orario di inizio (24 ore)",
+        "available_with_subscription": "Invia un flusso di log da applicazioni e nodi di questo cluster a Cloud Log Manager, dove è possibile caricare, archiviare e cercare i log in un unico posto.",
+        "configure_export_to_cloud_log_manager": "Configura Cloud Log Manager",
+        "export_to_cloud_log_manager": "Esporta a Cloud Log Manager",
+        "learn_more": "Approfondisci",
+        "address_placeholder": "Es. https://nar.nethesis.it",
+        "cluster_id_notification": "Questo cluster è identificato come '{clusterId}' nel portale Cloud Log Manager"
+    },
+    "syslog_forwarder": {
+        "start_time": "Orario di inizio (24 ore)",
+        "configure_export_to_syslog": "Configura export per Syslog",
+        "protocol": "Protocollo",
+        "format": "Formato",
+        "syslog_export_failed": "Esporta a Syslog fallito",
+        "export_to_syslog": "Esporta a Syslog",
+        "hostname_ip_address": "Nome host o indirizzo IP",
+        "start_date": "Data di inizio dell'esportazione",
+        "syslog_export_enabled": "Esporta a Syslog abilitato",
+        "udp": "UDP",
+        "choose_a_datetime": "Scegli la data e l'ora",
+        "use_last_timestamp": "Utilizza l'ultimo timestamp ({timestamp})",
+        "export_starting_date": "Data di inizio dell'esportazione",
+        "tcp": "TCP",
+        "port_placeholder": "Es. 514",
+        "port_number": "Numero porta",
+        "rfc5424": "RFC 5424",
+        "rfc3164": "RFC 3164"
     }
 }
