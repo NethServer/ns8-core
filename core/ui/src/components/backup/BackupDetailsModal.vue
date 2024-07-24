@@ -33,14 +33,11 @@
           $tc("backup.Instances", instances.length)
         }}</span>
         <div class="instance-list">
-          <div
-            v-for="instance in instances"
-            :key="instance.module_id"
-            class="mg-bottom-sm"
-          >
+          <div v-if="instances.length === 0">-</div>
+          <div v-else v-for="instance in instances" :key="instance.module_id">
             <cv-interactive-tooltip
-              alignment="end"
-              direction="right"
+              alignment="center"
+              direction="top"
               class="tooltip-with-text-trigger"
             >
               <template slot="trigger">
@@ -197,11 +194,14 @@ export default {
 }
 
 .instance-list {
-  display: inline-block;
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: $spacing-06;
+  row-gap: $spacing-04;
 }
 
 .backup-status-icon {
-  margin-left: $spacing-03;
+  margin-left: $spacing-02;
 }
 
 .last-backup {
