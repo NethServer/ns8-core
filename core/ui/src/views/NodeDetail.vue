@@ -240,9 +240,7 @@
               </div>
               <template v-if="!loading.clusterStatus && vpnInfo.listen_port">
                 <div class="mg-bottom-sm">
-                  <span class="label">{{
-                    $t("node_detail.listen_port")
-                  }}</span>
+                  <span class="label">{{ $t("node_detail.listen_port") }}</span>
                   <span>{{ vpnInfo.listen_port }}</span>
                 </div>
               </template>

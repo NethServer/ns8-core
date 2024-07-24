@@ -112,9 +112,7 @@ export default {
     },
   },
   methods: {
-    ...mapActions([
-      "setNotificationDrawerShownInStore",
-    ]),
+    ...mapActions(["setNotificationDrawerShownInStore"]),
     notificationDetailsHidden() {
       this.isNotificationDetailsShown = false;
     },
