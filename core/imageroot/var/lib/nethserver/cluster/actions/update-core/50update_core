@@ -16,6 +16,10 @@ core_url = request.get('core_url', '')
 nodes_list = request['nodes']
 force_update = request.get("force", False)
 
+if not os.getenv("AGENT_TASK_USER"):
+    # If invoked from apply-updates command, switch to managed repo view:
+    cluster.modules.select_repo_view('managed')
+
 rdb = agent.redis_connect(privileged=True)
 # if the image url is not given, search for the latest core image inside the repo
 if not core_url:

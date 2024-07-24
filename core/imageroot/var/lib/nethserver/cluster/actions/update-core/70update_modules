@@ -11,6 +11,10 @@ import agent.tasks
 import sys, os
 import cluster.modules
 
+if not os.getenv("AGENT_TASK_USER"):
+    # If invoked from apply-updates command, switch to managed repo view:
+    cluster.modules.select_repo_view('managed')
+
 request = json.load(sys.stdin)
 force_update = request.get("force", False)
 agent_install_dir = os.environ["AGENT_INSTALL_DIR"]
