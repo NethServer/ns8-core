@@ -174,13 +174,15 @@
                     </div>
                   </div>
                 </div>
-                <NsButton
-                  kind="ghost"
-                  :icon="ArrowRight20"
-                  @click="$router.push('/nodes')"
-                >
-                  {{ $t("cluster_status.go_to_nodes") }}
-                </NsButton>
+                <div class="card-row">
+                  <NsButton
+                    kind="ghost"
+                    :icon="ArrowRight20"
+                    @click="$router.push('/nodes')"
+                  >
+                    {{ $t("cluster_status.go_to_nodes") }}
+                  </NsButton>
+                </div>
               </div>
             </template>
           </NsInfoCard>
