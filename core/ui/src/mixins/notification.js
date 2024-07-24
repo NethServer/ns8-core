@@ -20,7 +20,6 @@ export default {
       "updateNotificationInStore",
       "showTaskErrorInStore",
       "setNotificationDrawerShownInStore",
-      "setNotificationReadInStore",
       "deleteNotificationInStore",
       "setPollingTimerForTaskInStore",
     ]),
@@ -169,9 +168,6 @@ export default {
           break;
       }
 
-      // set notification as read
-      this.setNotificationReadInStore(notificationId);
-
       // dismiss toast notification
       this.$toast.dismiss(notificationId);
 
@@ -211,7 +207,7 @@ export default {
       const taskContext = contextResponse.data.data.context;
       let taskResult;
 
-      console.debug(taskPath, taskContext, payload); ////
+      console.debug(taskPath, taskContext, payload);
 
       if (["completed", "aborted", "validation-failed"].includes(taskStatus)) {
         // get output and error
@@ -229,7 +225,7 @@ export default {
 
         taskResult = statusResponse.data.data;
 
-        console.log("taskResult", taskContext.action, taskResult); ////
+        console.debug("taskResult", taskContext.action, taskResult);
 
         if (taskStatus === "validation-failed") {
           // show validation errors
