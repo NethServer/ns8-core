@@ -233,7 +233,6 @@
     "init": {
         "restoring_cluster": "Restoring cluster",
         "custom_certificates": "Uploaded certificates",
-        "restore_apps": "Restore apps",
         "tls_verify": "TLS certificate validation",
         "vpn_cidr_tooltip": "This is the VPN network used by cluster nodes to communicate. Ensure this network does not conflict with existing ones. Note that VPN network cannot be changed later",
         "upload_cluster_backup_file": "Upload cluster backup file",
@@ -307,7 +306,9 @@
         "review_worker_fqdn_title": "Review worker FQDN",
         "leader_node_domain": "Leader node domain",
         "leader_node_hostname": "Leader node hostname",
-        "hostname_pattern": "Invalid hostname format"
+        "hostname_pattern": "Invalid hostname format",
+        "restore_num_apps": "Restore apps | Restore {num} app | Restore {num} apps",
+        "select_apps_to_restore_description": "Your apps will be restored using the latest backup. If you need to restore certain apps from an earlier backup, you can do so later by going to the '@:backup.title' page"
     },
     "password": {
         "uppercase_letter": "Uppercase letter",
@@ -774,7 +775,8 @@
         "register-cluster-subscription": "Register cluster subscription",
         "set-retention": "Set retention",
         "set-syslog-forwarder": "Set Syslog forwarder",
-        "set-clm-forwarder": "Set Cloud Log Manager forwarder"
+        "set-clm-forwarder": "Set Cloud Log Manager forwarder",
+        "read-backup-snapshots": "Read backup snapshots"
     },
     "backup": {
         "cluster": "Local storage",
@@ -798,7 +800,6 @@
         "run_backup_now": "Run backup now",
         "schedule_backup_for_instance": "Create a backup schedule for {instance}",
         "completed": "Completed",
-        "repository_password": "Repository password",
         "cluster_configuration": "Cluster configuration",
         "aws_secret_access_key": "AWS secret access key",
         "duration": "Duration",
@@ -852,7 +853,6 @@
         "backup_repository_exists": "A repository with this URL already exists",
         "cluster_configuration_info": "Additionally, the cluster configuration is automatically backed up to a repository during each scheduled run.",
         "edit_backup": "Edit backup",
-        "repo_password_tooltip": "This password is used to encrypt data in the repository. Store this password in a safe place, otherwise you won't be able to restore your backed up data",
         "type_repo_password_to_confirm": "Type repository password to confirm deletion",
         "disabled_backups": "Disabled backups",
         "backblaze_short": "B2",
@@ -948,7 +948,18 @@
         "backblaze_url_label": "B2 bucket name",
         "smb_url_tooltip": "It is possible to specify a share subfolder path using the \"/\" slash separator",
         "genericS3_url_tooltip": "Enter an address with format server_fqdn/bucket_name. Note: the server must have a valid TLS certificate",
-        "go_to_backup_manual_page": "go to the Backup and restore manual page"
+        "go_to_backup_manual_page": "go to the Backup and restore manual page",
+        "data_encryption_key": "Data encryption key",
+        "no_snapshot_to_restore": "No backup snapshot to restore",
+        "select_backup_snapshot": "Select backup snapshot",
+        "url": "URL",
+        "from_different_cluster": "From a different cluster",
+        "from_node_name_of_this_cluster": "From node {name} of this cluster",
+        "from_node_name_of_different_cluster": "From node {name} of a different cluster",
+        "from_node_name": "From node {name}",
+        "data_encryption_key_tooltip": "This password is used to encrypt data in the backup destination and is saved inside your cluster backup. Store this password in a safe place, or remember to download cluster backup regularly.",
+        "most_recent": "Most recent",
+        "from_this_cluster": "From this cluster"
     },
     "smarthost": {
         "connection_timeout_error": "The connection issued a timeout error, verify the SMTP port number and the SMTP server name",
