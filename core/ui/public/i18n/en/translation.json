@@ -284,7 +284,6 @@
         "recent": "Recent",
         "no_notifications": "No notifications",
         "no_notifications_description": "You don't have any recent notifications yet",
-        "mark_all_read": "Mark all as read",
         "abort": "Abort",
         "confirm_abort": "Confirm abort"
     },

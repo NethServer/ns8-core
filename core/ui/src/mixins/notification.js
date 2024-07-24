@@ -20,7 +20,6 @@ export default {
       "updateNotificationInStore",
       "showTaskErrorInStore",
       "setNotificationDrawerShownInStore",
-      "setNotificationReadInStore",
       "deleteNotificationInStore",
       "setPollingTimerForTaskInStore",
     ]),
@@ -168,9 +167,6 @@ export default {
           notification.action.callback();
           break;
       }
-
-      // set notification as read
-      this.setNotificationReadInStore(notificationId);
 
       // dismiss toast notification
       this.$toast.dismiss(notificationId);
