@@ -12,7 +12,9 @@
       </div>
       <div class="key-value-setting">
         <span class="label">{{ $t("backup.provider") }}</span>
-        <span class="value">{{ $t("backup." + repository.provider) }}</span>
+        <span class="value">
+          {{ repository.provider ? $t("backup." + repository.provider) : "-" }}
+        </span>
       </div>
       <div class="key-value-setting">
         <span class="label">{{ $t("backup.url") }}</span>
@@ -94,7 +96,7 @@
       <!-- password -->
       <div class="key-value-setting">
         <span class="label">
-          {{ $t("backup.repository_password") }}
+          {{ $t("backup.data_encryption_key") }}
           <cv-interactive-tooltip
             alignment="center"
             direction="top"
@@ -104,7 +106,7 @@
               <Information16 />
             </template>
             <template slot="content">
-              <div>{{ $t("backup.repo_password_tooltip") }}</div>
+              <div>{{ $t("backup.data_encryption_key_tooltip") }}</div>
             </template>
           </cv-interactive-tooltip>
         </span>

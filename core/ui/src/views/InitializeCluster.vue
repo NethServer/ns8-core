@@ -722,11 +722,14 @@
             <!-- restore modules -->
             <cv-row>
               <cv-column>
+                <NsInlineNotification
+                  kind="info"
+                  :title="$t('init.select_apps_to_restore')"
+                  :description="$t('init.select_apps_to_restore_description')"
+                  :showCloseButton="false"
+                />
                 <cv-tile light>
-                  <h5 class="mg-bottom-md">
-                    {{ $t("init.select_apps_to_restore") }}
-                  </h5>
-                  <cv-form @submit.prevent="restoreModules">
+                  <cv-form @submit.prevent>
                     <RestoreMultipleInstancesSelector
                       :instances="restore.instances"
                       selection="all"
@@ -760,7 +763,16 @@
                         "
                         :icon="Reset20"
                         size="lg"
-                        >{{ $t("init.restore_apps") }}
+                        type="button"
+                        @click.prevent="restoreModules"
+                      >
+                        {{
+                          $tc(
+                            "init.restore_num_apps",
+                            restore.selectedInstances.length,
+                            { num: restore.selectedInstances.length }
+                          )
+                        }}
                       </NsButton>
                     </cv-button-set>
                   </cv-form>
@@ -1777,8 +1789,11 @@ export default {
       this.loading.readBackupRepositories = false;
     },
     readBackupRepositoriesCompleted(taskContext, taskResult) {
-      this.loading.readBackupRepositories = false;
-      this.restore.instances = taskResult.output;
+      let instances = taskResult.output;
+
+      // sort instances by timestamp
+      instances.sort(this.sortByProperty("timestamp")).reverse();
+      this.restore.instances = instances;
 
       if (this.restore.instances.length) {
         this.restore.step = "apps";
@@ -1786,6 +1801,7 @@ export default {
         // there is no app to restore, go to cluster status
         this.getClusterStatus();
       }
+      this.loading.readBackupRepositories = false;
     },
     onSelectInstances(selectedInstances) {
       this.restore.selectedInstances = selectedInstances;

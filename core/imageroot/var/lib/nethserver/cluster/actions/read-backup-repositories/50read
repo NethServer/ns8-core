@@ -26,45 +26,81 @@ import json
 import agent
 import subprocess
 import os
+import time
 from datetime import datetime, timezone
 
 request = json.load(sys.stdin)
-
-popen_args={"encoding": 'utf-8', "stdout": subprocess.PIPE, "stderr": sys.stderr}
-
+popen_args={"encoding": 'utf-8', "stdout": subprocess.PIPE, "stderr": sys.stderr, "text": True}
 rdb = agent.redis_connect(privileged=False)
-
-uuid_regex = re.compile('[0-9a-f]{32}\Z', re.I)
-backups = list()
+cluster_uuid = rdb.get("cluster/uuid") or ""
+backups = {}
 for krepo in rdb.scan_iter('cluster/backup_repository/*'):
     repo_uuid = krepo.removeprefix('cluster/backup_repository/')
-    rclone_cmd = ['rclone-wrapper', repo_uuid, 'lsjson']
-    repo = rdb.hgetall(krepo)
-
-    proot = subprocess.Popen(rclone_cmd + ["REMOTE_PATH"], **popen_args)
+    rclone_lsjson_cmd = ['rclone-wrapper', repo_uuid,
+        '--max-depth=3',
+        '--include=config',
+        'lsjson',
+        '--files-only',
+        'REMOTE_PATH',
+    ]
+    orepo = rdb.hgetall(krepo)
+    proot = subprocess.Popen(rclone_lsjson_cmd, **popen_args)
     for oroot in json.load(proot.stdout):
-        if oroot["IsDir"] is False:
-            continue # skip non-dir entries
-        pchild = subprocess.Popen(rclone_cmd + ["REMOTE_PATH/" + oroot['Path']], **popen_args)
-        for backup in json.load(pchild.stdout):
-            # parse almost-ISO-8601 dates
-            try:
-                sec_index = backup['ModTime'].rfind('.')
-                mod_time = datetime.strptime(backup['ModTime'][0:sec_index],'%Y-%m-%dT%H:%M:%S')
-                mod_time = int(mod_time.replace(tzinfo=timezone.utc).timestamp())
-            except:
-                mod_time = -1
+        restic_prefix, restic_uuid, _ = oroot["Path"].split("/", 2)
+        try:
+            # Obtain from lsjson the repository creation timestamp
+            unix_timestamp = int(time.mktime(datetime.fromisoformat(oroot["ModTime"]).timetuple()))
+        except:
+            unix_timestamp = int(time.time())
+        backups[restic_uuid] = {
+            "module_id": "",
+            "module_ui_name": "",
+            "node_fqdn": "",
+            "path": restic_prefix + '/' + restic_uuid,
+            "name": restic_prefix, # keep "name" attribute for historical reason
+            "uuid": restic_uuid,
+            "timestamp": unix_timestamp,
+            "repository_id" : repo_uuid,
+            "repository_name": orepo["name"],
+            "repository_provider": orepo["provider"],
+            "repository_url": orepo["url"],
+            "installed_instance": "",
+            "installed_instance_ui_name": "",
+            "is_generated_locally": None,
+        }
 
-            if re.match('[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}', backup['Path'], re.I) is None or backup["IsDir"] is False:
-                continue # skip non-repo entries
-            installed_instance = ""
-            ui_name = ""
-            for mod in rdb.scan_iter('module/*/environment'):
-                u = rdb.hget(mod, 'MODULE_UUID')
-                if rdb.hget(mod, 'MODULE_UUID') == backup['Path']:
-                    installed_instance = rdb.hget(mod, 'MODULE_ID')
-                    ui_name = rdb.get(f'module/{installed_instance}/ui_name') or ""
-                    break
-            backups.append({'name': oroot['Path'], 'path': f'{oroot["Path"]}/{backup["Path"]}', 'uuid': backup["Path"], 'timestamp': mod_time, 'repository_id' : repo_uuid, 'repository_name': repo['name'], 'repository_provider': repo['provider'], 'repository_url': repo['url'], 'installed_instance': installed_instance, 'installed_instance_ui_name': ui_name})
+# Fetch module UUIDs to search destination matches:
+for module_id in rdb.hkeys("cluster/module_node"):
+    omodule = rdb.hgetall(f"module/{module_id}/environment")
+    module_uuid = omodule.get("MODULE_UUID", "")
+    if module_uuid not in backups:
+        continue
+    backups[module_uuid]["is_generated_locally"] = True
+    backups[module_uuid]["installed_instance"] = module_id
+    backups[module_uuid]["installed_instance_ui_name"] = rdb.get(f"module/{module_id}/ui_name") or ""
+    backups[module_uuid]["module_id"] = module_id
+    backups[module_uuid]["module_ui_name"] = backups[module_uuid]["installed_instance_ui_name"]
 
-print(json.dumps(backups))
+rclone_cat_cmd = ['rclone-wrapper', repo_uuid,
+    '--include=*.json',
+    '--max-depth=2',
+    'cat',
+    'REMOTE_PATH',
+]
+proc_cat = subprocess.Popen(rclone_cat_cmd, **popen_args)
+for cat_slice in proc_cat.stdout.readlines():
+    try:
+        ometa = json.loads(cat_slice.strip())
+    except:
+        ometa = {}
+
+    if ometa.get('uuid') in backups:
+        module_uuid = ometa["uuid"]
+        backups[module_uuid]["module_id"] = ometa.get("module_id", "")
+        backups[module_uuid]["module_ui_name"] = ometa.get("module_ui_name", "")
+        backups[module_uuid]["node_fqdn"] = ometa.get("node_fqdn", "")
+        backups[module_uuid]["timestamp"] = ometa.get("timestamp", unix_timestamp)
+    if "cluster_uuid" in ometa and not backups[module_uuid].get("is_generated_locally"):
+        backups[module_uuid]["is_generated_locally"] = cluster_uuid == ometa["cluster_uuid"]
+
+json.dump(list(backups.values()), fp=sys.stdout)

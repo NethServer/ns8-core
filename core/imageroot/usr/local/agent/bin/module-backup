@@ -130,6 +130,24 @@ if stats_proc.returncode == 0:
 wrdb.close()
 
 try:
+    ometa = {}
+    ometa["module_id"] = module_id
+    ometa["module_ui_name"] = rdb.get(f'module/{module_id}/ui_name') or ""
+    ometa["node_fqdn"] = agent.get_hostname()
+    ometa["cluster_uuid"] = rdb.get("cluster/uuid") or ""
+    ometa["uuid"] = os.environ["MODULE_UUID"]
+    ometa["timestamp"] = time_end
+    ometa["success"] = bool(errors == 0)
+    subprocess.run(["rclone-wrapper", str(backup_id), "rcat", f"REMOTE_PATH/{repopath}.json"],
+        stdout=sys.stderr,
+        input='\n' + json.dumps(ometa, separators=(',', ':')) + '\n',
+        text=True,
+        check=True,
+    )
+except subprocess.CalledProcessError as ex:
+    errors += 1
+
+try:
     subprocess.run(["module-cleanup-state"] + sys.argv[1:], check=True)
 except FileNotFoundError:
     pass
