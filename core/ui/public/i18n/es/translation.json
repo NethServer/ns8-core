@@ -352,7 +352,6 @@
         "default_repository_name": "Repositorio {provider}",
         "samba": "Compartir archivos en Windows",
         "run_backup_now": "Crear copia de seguridad ahora",
-        "repository_password": "Contraseña del repositorio",
         "total_file_count": "Recuento total de archivos",
         "cluster_backup_password_warning_description_1": "La copia de seguridad de la configuración del clúster contiene datos confidenciales necesarios para una recuperación ante desastres.",
         "set_cluster_backup_password": "Establecer la contraseña de cifrado",
@@ -364,7 +363,6 @@
         "backup_page_tooltip_8": "<strong>Recuperación ante desastres</strong>: necesitarás una copia de seguridad de la configuración del clúster y una nueva instalación de {productName}. La recuperación ante desastres sólo se puede lograr desde el asistente de configuración del clúster.",
         "smb_short": "SMB",
         "custom_schedule_tooltip_more_info": "Ver:",
-        "repo_password_tooltip": "Esta contraseña se utiliza para cifrar datos en el repositorio. Guarda esta contraseña en un lugar seguro; de lo contrario, no podrás restaurar los datos respaldados",
         "type_repo_password_to_confirm": "Escribe la contraseña del repositorio para confirmar la eliminación",
         "smb": "Compartir archivos de Windows (SMB2/3)",
         "weekly": "Semanal",
@@ -391,7 +389,18 @@
         "backblaze_url_label": "Nombre del depósito de B2",
         "smb_url_tooltip": "Es posible especificar una ruta de subcarpeta compartida utilizando la barra diagonal \"/\"",
         "genericS3_url_tooltip": "Introduzca una dirección con el formato \"serverfqdn/bucketname\". Nota: el servidor debe tener un certificado TLS válido.",
-        "go_to_backup_manual_page": "go to the Backup and restore manual page"
+        "go_to_backup_manual_page": "go to the Backup and restore manual page",
+        "data_encryption_key": "Data encryption key",
+        "no_snapshot_to_restore": "No backup snapshot to restore",
+        "select_backup_snapshot": "Select backup snapshot",
+        "url": "URL",
+        "from_different_cluster": "From a different cluster",
+        "from_node_name_of_this_cluster": "From node {name} of this cluster",
+        "from_node_name_of_different_cluster": "From node {name} of a different cluster",
+        "data_encryption_key_tooltip": "This password is used to encrypt data in the backup destination and is saved inside your cluster backup. Store this password in a safe place, or remember to download cluster backup regularly.",
+        "from_node_name": "From node {name}",
+        "most_recent": "Most recent",
+        "from_this_cluster": "From this cluster"
     },
     "settings_http_routes": {
         "host_tooltip": "Un ejemplo de host válido es: <code>myapp.example.org</code>",
@@ -543,7 +552,8 @@
         "register-cluster-subscription": "Registrar suscripción al clúster",
         "set-retention": "Fijar la retención",
         "set-syslog-forwarder": "Set Syslog forwarder",
-        "set-clm-forwarder": "Set Cloud Log Manager forwarder"
+        "set-clm-forwarder": "Set Cloud Log Manager forwarder",
+        "read-backup-snapshots": "Read backup snapshots"
     },
     "settings_cluster_admins": {
         "user_already_exists": "El administrador ya existe",
@@ -784,7 +794,6 @@
     },
     "init": {
         "restoring_cluster": "Restaurando clúster",
-        "restore_apps": "Restaurar aplicaciones",
         "custom_routes": "Rutas HTTP personalizadas",
         "creating_cluster": "Creando clúster...",
         "restore_cluster": "Restaurar clúster",
@@ -859,7 +868,9 @@
         "review_worker_fqdn_title": "Review worker FQDN",
         "leader_node_domain": "Leader node domain",
         "leader_node_hostname": "Leader node hostname",
-        "hostname_pattern": "Invalid hostname format"
+        "hostname_pattern": "Invalid hostname format",
+        "restore_num_apps": "Restore apps | Restore {num} app | Restore {num} apps",
+        "select_apps_to_restore_description": "Your apps will be restored using the latest backup. If you need to restore certain apps from an earlier backup, you can do so later by going to the '@:backup.title' page"
     },
     "settings_account": {
         "i_have_stored_setup_key": "He guardado la <strong>clave de configuración 2FA</strong> en un lugar seguro",
