@@ -562,7 +562,6 @@
     "notification": {
         "no_notifications_description": "Es liegen aktuell keine Meldungen vor",
         "confirm_abort": "Abbrechen bestätigen",
-        "mark_all_read": "Alle als gelesen markieren",
         "ongoing": "in Arbeit",
         "no_notifications": "keine Meldungen",
         "notifications": "Meldungen",

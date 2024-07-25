@@ -290,8 +290,7 @@
         "no_notifications_description": "Non ci sono ancora notifiche recenti",
         "notifications": "Notifiche",
         "unread": "non letto | non letti",
-        "ongoing": "In corso",
-        "mark_all_read": "Segna tutti come letti"
+        "ongoing": "In corso"
     },
     "audit_trail": {
         "action": "Azione",
@@ -970,7 +969,7 @@
         "change_admin_password": "Cambia la password dell'amministratore",
         "configure_node": "Configura questo nodo",
         "current_password": "Password attuale dell'amministratore",
-        "backup_password_tooltip": "Password di crittografia utilizzata per cifrare il backup.",
+        "backup_password_tooltip": "Password utilizzata per crittografare il file di backup del cluster.",
         "skip_apps_restore_1": "Vuoi saltare il ripristino delle app?",
         "new_password": "Nuova password di amministrazione",
         "vpn_endpoint_address": "Indirizzo pubblico VPN del leader",

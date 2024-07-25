@@ -1295,7 +1295,6 @@
     },
     "notification": {
         "confirm_abort": "Confirmar cancelación",
-        "mark_all_read": "Marcar todo como leído",
         "ongoing": "En curso",
         "abort": "Abortar",
         "no_notifications": "No hay notificaciones",
