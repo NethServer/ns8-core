@@ -213,7 +213,7 @@
         "restore_from_remote_url": "Restore from remote URL",
         "remote_url": "Remote URL",
         "backup_password": "Backup password",
-        "backup_password_tooltip": "Encryption password used to cyper the backup.",
+        "backup_password_tooltip": "Password used to encrypt the cluster backup file.",
         "upload_cluster_backup_file": "Upload cluster backup file",
         "empty_passphrase": "The password is mandatory",
         "invalid_passphrase": "Invalid password. Enter the password used to encrypt cluster backup.",
