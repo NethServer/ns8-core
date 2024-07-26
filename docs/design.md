@@ -114,15 +114,15 @@ The system is composed by two main components:
 The core purpose is managing the applications, providing the basics for their entire life cycle (install, upgrade, reconfigure, uninstall...).
 It runs the following components:
 
-- Redis [database and message bus](/core/database)
-- Node, cluster and module [agents](/core/agents) written in Golang
-- Traefik as [edge proxy](/core/proxy_certificates), for TLS termination and centralized certificates management
-- [LDAP proxy](/core/user_domains), a rootless module listening on 127.0.0.1. It helps other
+- Redis [database and message bus](core/database.md)
+- Node, cluster and module [agents](core/agents.md) written in Golang
+- Traefik as [edge proxy](core/proxy_certificates.md), for TLS termination and centralized certificates management
+- [LDAP proxy](core/user_domains.md), a rootless module listening on 127.0.0.1. It helps other
   modules to connect to account provider LDAP servers, with a clear text connection for local containers
 - LDAP local account provider: [Samba DC](https://github.com/NethServer/ns8-core/blob/main/samba/README.md), OpenLDAP (not implemented yet)
-- [VPN](/core/vpn), each node is connected to the leader using WireGuard in a star network topology
-- [API server](/core/api_server), it handles authentication and authorization for UI and cli requests, it also audits executed tasks
-- [UI](/core/ui), it allows configuration of the cluster and applications
+- [VPN](core/vpn.md), each node is connected to the leader using WireGuard in a star network topology
+- [API server](core/api_server.md), it handles authentication and authorization for UI and cli requests, it also audits executed tasks
+- [UI](ui/index.md), it allows configuration of the cluster and applications
 
 
 ### Modules
@@ -134,5 +134,5 @@ Ldapproxy OpenLDAP and Samba are parts/components of User domains).
 In any case a module instance is made of one or more Podman rootless containers.
 In exceptional cases a module can run rootfull containers (i.e node_exporter, Crowdsec).
 
-See [Modules architecture](/modules) for more info.
+See [Modules architecture](modules/index.md) for more info.
 
