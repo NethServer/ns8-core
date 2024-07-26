@@ -122,7 +122,7 @@ It runs the following components:
 - LDAP local account provider: [Samba DC](https://github.com/NethServer/ns8-core/blob/main/samba/README.md), OpenLDAP (not implemented yet)
 - [VPN](core/vpn.md), each node is connected to the leader using WireGuard in a star network topology
 - [API server](core/api_server.md), it handles authentication and authorization for UI and cli requests, it also audits executed tasks
-- [UI](core/ui), it allows configuration of the cluster and applications
+- [UI](ui/index.md), it allows configuration of the cluster and applications
 
 
 ### Modules
@@ -134,5 +134,5 @@ Ldapproxy OpenLDAP and Samba are parts/components of User domains).
 In any case a module instance is made of one or more Podman rootless containers.
 In exceptional cases a module can run rootfull containers (i.e node_exporter, Crowdsec).
 
-See [Modules architecture](modules) for more info.
+See [Modules architecture](modules/index.md) for more info.
 
