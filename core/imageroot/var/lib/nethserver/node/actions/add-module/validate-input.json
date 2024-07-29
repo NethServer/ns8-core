@@ -16,7 +16,9 @@
     "required": [
         "module_id",
         "environment",
-        "is_rootfull"
+        "is_rootfull",
+        "tcp_ports_demand",
+        "udp_ports_demand"
     ],
     "properties": {
         "environment": {
@@ -54,6 +56,16 @@
                 "samba1"
             ],
             "minLength": 1
+        },
+        "tcp_ports_demand": {
+            "type": "number",
+            "title": "TCP ports",
+            "description": "Number of TCP ports that will be allocate"
+        },
+        "udp_ports_demand": {
+            "type": "number",
+            "title": "UDP ports",
+            "description": "Number of UDP ports that will be allocate"
         }
     }
 }

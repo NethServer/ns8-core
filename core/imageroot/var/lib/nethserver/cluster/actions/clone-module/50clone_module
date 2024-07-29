@@ -63,7 +63,19 @@ add_module_result = agent.tasks.run("cluster", "add-module",
 agent.assert_exp(add_module_result['exit_code'] == 0) # add-module is successful
 
 dmid = add_module_result['output']['module_id'] # Destination module ID
-rsyncd_port = int(rdb.incrby(f'node/{node_id}/tcp_ports_sequence', 1)) # Allocate a TCP port for rsyncd
+allocated_range = agent.tasks.run(
+    agent_id=f'node/{node_id}',
+    action="allocate-ports",
+    data={
+        'ports': 1,
+        'module_id': dmid + '_rsync',
+        'protocol': 'tcp'
+    },
+    endpoint="redis://cluster-leader",
+    progress_callback=agent.get_progress_callback(26,40),
+)
+agent.assert_exp(allocated_range['output'][0] == allocated_range['output'][1])
+rsyncd_port = allocated_range['output'][0] # Allocate a TCP port for rsyncd
 agent.assert_exp(rsyncd_port > 0) # valid destination port number
 
 # Rootfull modules require a volume name remapping:
@@ -103,7 +115,7 @@ client_task = {
 # Send and receive tasks run in parallel until both finish
 clone_errors = agent.tasks.runp_brief([server_task, client_task],
     endpoint="redis://cluster-leader",
-    progress_callback=agent.get_progress_callback(26, 94),
+    progress_callback=agent.get_progress_callback(41, 90),
 )
 
 if clone_errors > 0:
@@ -122,10 +134,23 @@ if replace:
             "preserve_data": False
         },
         endpoint="redis://cluster-leader",
-        progress_callback=agent.get_progress_callback(95, 98),
+        progress_callback=agent.get_progress_callback(91, 94),
     )
     if remove_retval['exit_code'] != 0:
         print(f"Removal of module/{smid} has failed!")
         sys.exit(1)
+
+# Deallocate rsync port
+deallocated_range = agent.tasks.run(
+    agent_id=f'node/{node_id}',
+    action="deallocate-ports",
+    data={
+        'module_id': dmid + '_rsync',
+        'protocol': 'tcp'
+    },
+    endpoint="redis://cluster-leader",
+    progress_callback=agent.get_progress_callback(96,99),
+)
+agent.assert_exp(allocated_range['output'] == deallocated_range['output'])
 
 json.dump(add_module_result['output'], fp=sys.stdout)

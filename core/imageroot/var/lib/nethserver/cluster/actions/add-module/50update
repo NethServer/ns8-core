@@ -31,34 +31,6 @@ import os
 import re
 import uuid
 
-def allocate_tcp_ports_range(node_id, module_environment, size):
-    """Allocate in "node_id" a TCP port range of the given "size" for "module_id"
-    """
-    global rdb
-    agent.assert_exp(size > 0)
-
-    seq = rdb.incrby(f'node/{int(node_id)}/tcp_ports_sequence', size)
-    agent.assert_exp(int(seq) > 0)
-    module_environment['TCP_PORT'] = f'{seq - size}' # Always set the first port
-    if size > 1: # Multiple ports: always set the ports range variable
-        module_environment['TCP_PORTS_RANGE'] = f'{seq - size}-{seq - 1}'
-    if size <= 8: # Few ports: set also a comma-separated list of ports variable
-        module_environment['TCP_PORTS'] = ','.join(str(port) for port in range(seq-size, seq))
-
-def allocate_udp_ports_range(node_id, module_environment, size):
-    """Allocate in "node_id" a UDP port range of the given "size" for "module_id"
-    """
-    global rdb
-    agent.assert_exp(size > 0)
-
-    seq = rdb.incrby(f'node/{int(node_id)}/udp_ports_sequence', size)
-    agent.assert_exp(int(seq) > 0)
-    module_environment['UDP_PORT'] = f'{seq - size}' # Always set the first port
-    if size > 1: # Multiple ports: always set the ports range variable
-        module_environment['UDP_PORTS_RANGE'] = f'{seq - size}-{seq - 1}'
-    if size <= 8: # Few ports: set also a comma-separated list of ports variable
-        module_environment['UDP_PORTS'] = ','.join(str(port) for port in range(seq-size, seq))
-
 request = json.load(sys.stdin)
 node_id = int(request['node'])
 agent.assert_exp(node_id > 0)
@@ -146,14 +118,6 @@ module_environment = {
     'MODULE_UUID': str(uuid.uuid4())
 }
 
-# Allocate TCP ports
-if tcp_ports_demand > 0:
-    allocate_tcp_ports_range(node_id, module_environment, tcp_ports_demand)
-
-# Allocate UDP ports
-if udp_ports_demand > 0:
-    allocate_udp_ports_range(node_id, module_environment, udp_ports_demand)
-
 # Set the "default_instance" keys for cluster and node, if module_id is the first instance of image
 for kdefault_instance in [f'cluster/default_instance/{image_id}', f'node/{node_id}/default_instance/{image_id}']:
     default_instance = rdb.get(kdefault_instance)
@@ -174,6 +138,8 @@ add_module_result = agent.tasks.run(
         "module_id": module_id,
         "is_rootfull": is_rootfull,
         "environment": module_environment,
+        "tcp_ports_demand": tcp_ports_demand,
+        "udp_ports_demand": udp_ports_demand,
     },
     endpoint="redis://cluster-leader",
     progress_callback=agent.get_progress_callback(34,66),

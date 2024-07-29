@@ -70,8 +70,6 @@ node_pwhash=$(echo -n "${node_password}" | sha256sum | awk '{print $1}')
     # Add the keys for the cluster bootstrap
     cat <<EOF
 SET cluster/node_sequence 1
-SET node/1/tcp_ports_sequence 20001
-SET node/1/udp_ports_sequence 20001
 EOF
 
     # Configure default module repositories
