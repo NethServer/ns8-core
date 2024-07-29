@@ -50,7 +50,19 @@ add_module_result = agent.tasks.run("cluster", "add-module",
 agent.assert_exp(add_module_result['exit_code'] == 0) # add-module is successful
 
 dmid = add_module_result['output']['module_id'] # Destination module ID
-rsyncd_port = int(rdb.incrby(f'node/{node_id}/tcp_ports_sequence', 1)) # Allocate a TCP port for rsyncd
+allocated_range = agent.tasks.run(
+    agent_id=f'node/{node_id}',
+    action="allocate-ports",
+    data={
+        'ports': 1,
+        'module_id': dmid + '_rsync',
+        'protocol': 'tcp'
+    },
+    endpoint="redis://cluster-leader",
+    progress_callback=agent.get_progress_callback(26,40),
+)
+agent.assert_exp(allocated_range['output'][0] == allocated_range['output'][1])
+rsyncd_port = allocated_range['output'][0] # Allocate a TCP port for rsyncd
 agent.assert_exp(rsyncd_port > 0) # valid destination port number
 
 # Execute the import-module (rsync server)

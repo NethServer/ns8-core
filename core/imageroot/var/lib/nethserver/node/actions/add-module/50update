@@ -26,6 +26,7 @@ import json
 import agent
 import uuid
 import hashlib
+import node.ports_manager
 
 def save_environment(env):
     with open('state/environment', 'w') as envf:
@@ -52,6 +53,26 @@ module_id = request['module_id']
 is_rootfull = request['is_rootfull']
 module_environment = request['environment']
 image_url = module_environment['IMAGE_URL']
+
+# Allocate TCP ports
+if request['tcp_ports_demand'] > 0:
+    tcp_ports_range=node.ports_manager.allocate_ports(request['tcp_ports_demand'], module_id, 'tcp')
+
+    module_environment['TCP_PORT'] = f'{tcp_ports_range[0]}' # Always set the first port
+    if request['tcp_ports_demand'] > 1: # Multiple ports: always set the ports range variable
+        module_environment['TCP_PORTS_RANGE'] = f'{tcp_ports_range[0]}-{tcp_ports_range[1]}'
+    if request['tcp_ports_demand'] <= 8: # Few ports: set also a comma-separated list of ports variable
+        module_environment['TCP_PORTS'] = ','.join(str(port) for port in range(tcp_ports_range[0], tcp_ports_range[1]+1))
+
+# Allocate UDP ports
+if request['udp_ports_demand'] > 0:
+    udp_ports_range=node.ports_manager.allocate_ports(request['udp_ports_demand'], module_id, 'udp')
+
+    module_environment['UDP_PORT'] = f'{udp_ports_range[0]}' # Always set the first port
+    if request['udp_ports_demand'] > 1: # Multiple ports: always set the ports range variable
+        module_environment['UDP_PORTS_RANGE'] = f'{udp_ports_range[0]}-{udp_ports_range[1]}'
+    if request['udp_ports_demand'] <= 8: # Few ports: set also a comma-separated list of ports variable
+        module_environment['UDP_PORTS'] = ','.join(str(port) for port in range(udp_ports_range[0], udp_ports_range[1]+1))
 
 # Launch the module agent (async)
 if is_rootfull:

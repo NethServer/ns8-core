@@ -90,10 +90,6 @@ agent.assert_exp(rdb.hset(f'node/{node_id}/vpn', mapping={
 for flag in flags:
     rdb.sadd(f'node/{node_id}/flags', flag)
 
-# Initialize the node ports sequence
-agent.assert_exp(rdb.set(f'node/{node_id}/tcp_ports_sequence', 20000) is True)
-agent.assert_exp(rdb.set(f'node/{node_id}/udp_ports_sequence', 20000) is True)
-
 #
 # Create redis acls for the node agent
 #
