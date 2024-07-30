@@ -1,33 +1,9 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:base"
-  ],
-  "ignorePaths": [
-    "**/ui/**"
+    "local>NethServer/.github:ns8"
   ],
   "customManagers": [
-    {
-      "customType": "regex",
-      "fileMatch": [
-        "test-module.sh"
-      ],
-      "matchStrings": [
-        "ghcr\\.io/marketsquare/robotframework-browser/rfbrowser-stable:(?<currentValue>[^\\s]+)"
-      ],
-      "depNameTemplate": "MarketSquare/robotframework-browser",
-      "datasourceTemplate": "github-releases"
-    },
-    {
-      "customType": "regex",
-      "fileMatch": [
-        "build-image.sh"
-      ],
-      "matchStrings": [
-        "\\bdocker\\.io/(?<depName>.+):(?<currentValue>[-0-9\\.a-z]+)"
-      ],
-      "datasourceTemplate": "docker"
-    },
     {
       "customType": "regex",
       "fileMatch": [
@@ -39,11 +15,8 @@
       "datasourceTemplate": "github-tags"
     }
   ],
-  "packageRules": [
-    {
-      "matchDatasources": ["go"],
-      "matchPackageNames": ["github.com/go-redis/redis/v8"],
-      "allowedVersions": "< 9"
-    }
+  "enabledManagers": [
+    "docker",
+    "regex"
   ]
 }
