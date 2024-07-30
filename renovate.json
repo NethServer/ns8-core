@@ -16,7 +16,7 @@
     }
   ],
   "enabledManagers": [
-    "docker",
+    "dockerfile",
     "regex"
   ]
 }
