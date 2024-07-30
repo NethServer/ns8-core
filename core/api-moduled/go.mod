@@ -4,8 +4,9 @@ go 1.21.3
 
 require (
 	github.com/appleboy/gin-jwt/v2 v2.9.1
-	github.com/gin-contrib/cors v1.4.0
+	github.com/gin-contrib/cors v1.6.0
 	github.com/gin-contrib/gzip v0.0.6
+	github.com/gin-contrib/static v1.1.1
 	github.com/gin-gonic/gin v1.9.1
 	github.com/spf13/viper v1.17.0
 	github.com/xeipuuv/gojsonschema v1.2.0
@@ -18,7 +19,6 @@ require (
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
-	github.com/gin-contrib/static v1.1.1 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-playground/validator/v10 v10.19.0 // indirect
