@@ -45,10 +45,75 @@ Get the list of modules:
 
 Example log search for module `ldapproxy1`:
 
-    # logcli  query -q --no-labels '{module_id="ldapproxy1"} | json | line_format "{{.MESSAGE}}"'
+<!-- {% raw %} -->
+
+    # logcli query -q --no-labels '{module_id="ldapproxy1"} | json | line_format "{{.MESSAGE}}"'
+
+<!-- {% endraw %} -->
 
 The string wrapped by `''` is the log query. It is expressed in
 [LogQL](https://grafana.com/docs/loki/latest/logql/log_queries/).
+
+## Forwarding
+
+On an active Loki instance, it is possible to enable two forwarding services. 
+When forwarders are active and the leader node changes, they are automatically migrated to the new leader node.
+
+By default, these forwarders are disabled.
+
+### Syslog server
+
+This service can be enabled either from the cluster admin interface or through the API using the following examples:
+```
+# api-cli run module/loki1/set-syslog-forwarder --data '{"active": true, "address": "127.0.0.1", "port": "514", "protocol": "udp", "format": "rfc3164", "start_time": "2024-01-01T00:00:00.00Z"}'
+```
+
+**Configuration parameters**
+- **active**: Boolean to enable or disable the forwarder (e.g., `true` or `false`).
+- **address**: The IP address of the Syslog server.
+- **port**: The port on which the Syslog server listens.
+- **protocol**: Protocol to use (e.g., `udp` or `tcp`).
+- **format**: Log format (e.g., `rfc3164` or `rfc5424`).
+- **start_time**: The time from which logs should be forwarded. (`ISO 8601`)
+
+It can be also stopped through API:
+```
+# api-cli run module/loki1/set-syslog-forwarder --data '{"active": false}'
+```
+
+### Cloud Log Manager
+
+Cloud Log Manager forwarder is available only with a subscription, and if the subscription expires or is removed, the forwarder is automatically stopped.
+
+Similarly, this service can be enabled from the cluster admin interface or through the API with examples like the following:
+```
+# api-cli run module/loki1/set-clm-forwarder --data '{"active": true, "address": "https://nar.nethesis.it", "teant": "example", "start_time": "2024-07-12T00:00:00.000000Z"}'
+```
+
+**Configuration parameters**
+- **active**: Boolean to enable or disable the forwarder (e.g., `true` or `false`).
+- **address**: The URL of the Cloud Log Manager.
+- **tenant**: The tenant identifier.
+- **start_time**: The time from which logs should be forwarded. (`ISO 8601`)
+
+It can be also stopped through API:
+```
+# api-cli run module/loki1/set-clm-forwarder --data '{"active": false}'
+```
+
+When Loki is installed, it generates a unique identifier that is used on the [Cloud Log Manager](https://naradmin.nethesis.it/).
+You can find this identifier on Cloud Log Manager settings panel or using the following command:
+```
+# redis-cli hget module/$(redis-cli --raw get cluster/default_instance/loki)/environment CLOUD_LOG_MANAGER_HOSTNAME
+```
+
+### Troubleshooting
+
+- Check the status of forwarders using loki agent:
+```
+runagent -m loki1
+systemctl --user status *forwarder.service
+```
 
 See also:
 - [Grafana Loki](https://grafana.com/oss/loki/)

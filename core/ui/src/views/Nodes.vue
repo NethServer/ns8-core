@@ -56,133 +56,153 @@
       </cv-column>
     </cv-row>
     <cv-row v-if="loading.nodes">
-      <cv-column v-for="index in 2" :key="index" :md="4" :max="4">
-        <cv-tile light>
-          <cv-skeleton-text
-            :paragraph="true"
-            :line-count="9"
-            heading
-          ></cv-skeleton-text>
-        </cv-tile>
+      <cv-column>
+        <!-- skeleton card grid -->
+        <div
+          class="card-grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 3xl:grid-cols-4"
+        >
+          <cv-tile v-for="index in 2" :key="index" light>
+            <cv-skeleton-text
+              :paragraph="true"
+              :line-count="9"
+              heading
+            ></cv-skeleton-text>
+          </cv-tile>
+        </div>
       </cv-column>
     </cv-row>
     <cv-row v-else>
-      <cv-column v-for="node in nodes" :key="node.id" :md="4" :max="4">
-        <NodeCard
-          v-if="!nodesStatus[node.id]"
-          :nodeId="node.id"
-          :nodeLabel="node.ui_name"
-          :isLeader="node.id == leaderNode.id"
-          light
-          loading
-          :online="node.online"
+      <cv-column>
+        <!-- card grid -->
+        <div
+          class="card-grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 3xl:grid-cols-4"
         >
-          <template #menu>
-            <cv-overflow-menu
-              v-if="node.id !== leaderNode.id"
-              :flip-menu="true"
-              tip-position="top"
-              tip-alignment="end"
-              class="top-right-overflow-menu"
+          <template v-for="node in nodes">
+            <NodeCard
+              v-if="!nodesStatus[node.id]"
+              :key="node.id"
+              :nodeId="node.id"
+              :nodeLabel="node.ui_name"
+              :isLeader="node.id == leaderNode.id"
+              light
+              loading
+              :online="node.online"
             >
-              <cv-overflow-menu-item danger @click="showRemoveNodeModal(node)">
-                <NsMenuItem
-                  :icon="TrashCan20"
-                  :label="$t('nodes.remove_from_cluster')"
-                />
-              </cv-overflow-menu-item>
-            </cv-overflow-menu>
-          </template>
-        </NodeCard>
-        <NodeCard
-          v-else
-          :nodeId="node.id"
-          :nodeLabel="node.ui_name"
-          :isLeader="node.id == leaderNode.id"
-          :leaderLabel="$t('nodes.leader')"
-          :workerLabel="$t('nodes.worker')"
-          :cpuUsageLabel="$t('nodes.cpu_usage')"
-          :cpuLoadLabel="$t('nodes.cpu_load')"
-          :cpuLoadTooltip="$t('nodes.cpu_load_tooltip')"
-          :memoryUsageLabel="$t('nodes.memory_usage')"
-          :swapUsageLabel="$t('nodes.swap_usage')"
-          :diskUsageLabel="$t('nodes.usage')"
-          :cpuUsage="nodesStatus[node.id].cpu.usage"
-          :cpuUsageWarningTh="90"
-          :load1Min="nodesStatus[node.id].load['1min']"
-          :load5Min="nodesStatus[node.id].load['5min']"
-          :load15Min="nodesStatus[node.id].load['15min']"
-          :cpuLoadWarningTh="90"
-          :memoryUsage="nodesStatus[node.id].memoryUsage"
-          :memoryWarningTh="90"
-          :swapUsage="nodesStatus[node.id].swapUsage"
-          :swapWarningTh="90"
-          :disksUsage="nodesStatus[node.id].disksUsage"
-          :diskWarningTh="90"
-          :online="node.online"
-          light
-        >
-          <template #menu>
-            <cv-overflow-menu
-              :flip-menu="true"
-              tip-position="top"
-              tip-alignment="end"
-              class="top-right-overflow-menu"
+              <template #menu>
+                <cv-overflow-menu
+                  v-if="node.id !== leaderNode.id"
+                  :flip-menu="true"
+                  tip-position="top"
+                  tip-alignment="end"
+                  class="top-right-overflow-menu"
+                >
+                  <cv-overflow-menu-item
+                    danger
+                    @click="showRemoveNodeModal(node)"
+                  >
+                    <NsMenuItem
+                      :icon="TrashCan20"
+                      :label="$t('nodes.remove_from_cluster')"
+                    />
+                  </cv-overflow-menu-item>
+                </cv-overflow-menu>
+              </template>
+            </NodeCard>
+            <NodeCard
+              v-else
+              :key="node.id + '_'"
+              :nodeId="node.id"
+              :nodeLabel="node.ui_name"
+              :isLeader="node.id == leaderNode.id"
+              :leaderLabel="$t('nodes.leader')"
+              :workerLabel="$t('nodes.worker')"
+              :cpuUsageLabel="$t('nodes.cpu_usage')"
+              :cpuLoadLabel="$t('nodes.cpu_load')"
+              :cpuLoadTooltip="$t('nodes.cpu_load_tooltip')"
+              :memoryUsageLabel="$t('nodes.memory_usage')"
+              :swapUsageLabel="$t('nodes.swap_usage')"
+              :diskUsageLabel="$t('nodes.usage')"
+              :cpuUsage="nodesStatus[node.id].cpu.usage"
+              :cpuUsageWarningTh="90"
+              :load1Min="nodesStatus[node.id].load['1min']"
+              :load5Min="nodesStatus[node.id].load['5min']"
+              :load15Min="nodesStatus[node.id].load['15min']"
+              :cpuLoadWarningTh="90"
+              :memoryUsage="nodesStatus[node.id].memoryUsage"
+              :memoryWarningTh="90"
+              :swapUsage="nodesStatus[node.id].swapUsage"
+              :swapWarningTh="90"
+              :disksUsage="nodesStatus[node.id].disksUsage"
+              :diskWarningTh="90"
+              :online="node.online"
+              light
             >
-              <cv-overflow-menu-item @click="showSetNodeLabelModal(node)">
-                <NsMenuItem
-                  :icon="Edit20"
-                  :label="$t('nodes.edit_node_label')"
-                />
-              </cv-overflow-menu-item>
-              <cv-overflow-menu-item @click="showSetNodeFqdnModal(node)">
-                <NsMenuItem :icon="Wikis20" :label="$t('nodes.set_fqdn')" />
-              </cv-overflow-menu-item>
-              <cv-overflow-menu-item @click="goToHttpRoutes(node)">
-                <NsMenuItem
-                  :icon="Router20"
-                  :label="$t('settings_http_routes.title')"
-                />
-              </cv-overflow-menu-item>
-              <cv-overflow-menu-item @click="goToTlsCertificates(node)">
-                <NsMenuItem
-                  :icon="Certificate20"
-                  :label="$t('settings_tls_certificates.title')"
-                />
-              </cv-overflow-menu-item>
-              <cv-overflow-menu-item @click="goToFirewall(node)">
-                <NsMenuItem :icon="Firewall20" :label="$t('firewall.title')" />
-              </cv-overflow-menu-item>
-              <cv-overflow-menu-item
-                v-if="node.id !== leaderNode.id"
-                @click="showPromoteNodeModal(node)"
-              >
-                <NsMenuItem
-                  :icon="Badge20"
-                  :label="$t('nodes.promote_to_leader')"
-                />
-              </cv-overflow-menu-item>
-              <cv-overflow-menu-item
-                v-if="node.id !== leaderNode.id"
-                danger
-                @click="showRemoveNodeModal(node)"
-              >
-                <NsMenuItem
-                  :icon="TrashCan20"
-                  :label="$t('nodes.remove_from_cluster')"
-                />
-              </cv-overflow-menu-item>
-            </cv-overflow-menu>
+              <template #menu>
+                <cv-overflow-menu
+                  :flip-menu="true"
+                  tip-position="top"
+                  tip-alignment="end"
+                  class="top-right-overflow-menu"
+                >
+                  <cv-overflow-menu-item @click="showSetNodeLabelModal(node)">
+                    <NsMenuItem
+                      :icon="Edit20"
+                      :label="$t('nodes.edit_node_label')"
+                    />
+                  </cv-overflow-menu-item>
+                  <cv-overflow-menu-item @click="showSetNodeFqdnModal(node)">
+                    <NsMenuItem :icon="Wikis20" :label="$t('nodes.set_fqdn')" />
+                  </cv-overflow-menu-item>
+                  <cv-overflow-menu-item @click="goToHttpRoutes(node)">
+                    <NsMenuItem
+                      :icon="Router20"
+                      :label="$t('settings_http_routes.title')"
+                    />
+                  </cv-overflow-menu-item>
+                  <cv-overflow-menu-item @click="goToTlsCertificates(node)">
+                    <NsMenuItem
+                      :icon="Certificate20"
+                      :label="$t('settings_tls_certificates.title')"
+                    />
+                  </cv-overflow-menu-item>
+                  <cv-overflow-menu-item @click="goToFirewall(node)">
+                    <NsMenuItem
+                      :icon="Firewall20"
+                      :label="$t('firewall.title')"
+                    />
+                  </cv-overflow-menu-item>
+                  <cv-overflow-menu-item
+                    v-if="node.id !== leaderNode.id"
+                    @click="showPromoteNodeModal(node)"
+                  >
+                    <NsMenuItem
+                      :icon="Badge20"
+                      :label="$t('nodes.promote_to_leader')"
+                    />
+                  </cv-overflow-menu-item>
+                  <cv-overflow-menu-item
+                    v-if="node.id !== leaderNode.id"
+                    danger
+                    @click="showRemoveNodeModal(node)"
+                  >
+                    <NsMenuItem
+                      :icon="TrashCan20"
+                      :label="$t('nodes.remove_from_cluster')"
+                    />
+                  </cv-overflow-menu-item>
+                </cv-overflow-menu>
+              </template>
+              <template #content>
+                <NsButton
+                  kind="ghost"
+                  :icon="ArrowRight20"
+                  @click="goToNodeDetail(node.id)"
+                  >{{ $t("common.see_details") }}</NsButton
+                >
+              </template>
+            </NodeCard>
           </template>
-          <template #content>
-            <NsButton
-              kind="ghost"
-              :icon="ArrowRight20"
-              @click="goToNodeDetail(node.id)"
-              >{{ $t("common.see_details") }}</NsButton
-            >
-          </template>
-        </NodeCard>
+        </div>
       </cv-column>
     </cv-row>
     <!-- add node modal -->
@@ -215,30 +235,6 @@
         ></cv-skeleton-text>
         <template v-else>
           <span class="join-code">{{ $t("common.join_code") }}</span>
-          <!-- copy to clipboard hint -->
-          <span class="hint hint-copy-to-clipboard">
-            <cv-interactive-tooltip
-              alignment="end"
-              direction="bottom"
-              :visible="isCopyClipboardHintShown"
-            >
-              <template slot="trigger">
-                <span></span>
-              </template>
-              <template slot="content">
-                <p>
-                  {{ $t("hint.copy_to_clipboard") }}
-                </p>
-                <NsButton
-                  kind="primary"
-                  size="small"
-                  @click="isCopyClipboardHintShown = false"
-                  class="hint-button"
-                  >{{ $t("common.got_it") }}</NsButton
-                >
-              </template>
-            </cv-interactive-tooltip>
-          </span>
           <NsCodeSnippet
             :copyTooltip="$t('common.copy_to_clipboard')"
             :copy-feedback="$t('common.copied_to_clipboard')"
@@ -363,7 +359,6 @@ export default {
         isShownAddNodeModal: false,
       },
       joinCode: "",
-      isCopyClipboardHintShown: false,
       nodes: [],
       nodesStatus: {},
       refreshDataInterval: null,
@@ -714,11 +709,5 @@ ol {
 
 .join-code {
   font-weight: bold;
-}
-
-.hint-copy-to-clipboard {
-  top: 2.5rem;
-  right: 2.5rem;
-  float: right;
 }
 </style>

@@ -43,7 +43,7 @@
       </cv-tile>
       <!-- no search results -->
       <NsEmptyState
-        v-else-if="!instancesToDisplay.length"
+        v-else-if="!instancesFiltered.length"
         :title="$t('common.no_search_results')"
         :animationData="GhostLottie"
         animationTitle="ghost"
@@ -57,7 +57,7 @@
       <cv-tile
         v-else
         :light="light"
-        v-for="(instance, index) of instancesToDisplay"
+        v-for="(instance, index) of instancesFilteredLoaded"
         :key="index"
         :class="['instance-tile', { 'instance-tile-light': light }]"
       >
@@ -69,37 +69,24 @@
             class="checkbox-instance"
             :id="instance.path"
           />
-          <div>
-            <div>{{ instance.path }}</div>
-            <div class="instance-description">
-              {{ instance.repository_name }}
-              <cv-interactive-tooltip
-                alignment="center"
-                direction="right"
-                class="info"
-              >
-                <template slot="trigger">
-                  <Information16 />
-                </template>
-                <template slot="content">
-                  <div>{{ instance.repository_url }}</div>
-                </template>
-              </cv-interactive-tooltip>
-            </div>
-          </div>
+          <InstanceToRestoreInfo :instance="instance" />
         </label>
       </cv-tile>
+      <infinite-loading
+        :identifier="infiniteId"
+        @infinite="infiniteScrollHandler"
+      ></infinite-loading>
     </div>
   </div>
 </template>
 
 <script>
 import { UtilService, LottieService } from "@nethserver/ns8-ui-lib";
-import Information16 from "@carbon/icons-vue/es/information/16";
+import InstanceToRestoreInfo from "./InstanceToRestoreInfo.vue";
 
 export default {
   name: "RestoreMultipleInstancesSelector",
-  components: { Information16 },
+  components: { InstanceToRestoreInfo },
   mixins: [UtilService, LottieService],
   props: {
     instances: {
@@ -121,15 +108,28 @@ export default {
       selectedList: [],
       searchQuery: "",
       searchResults: [],
-      searchFields: ["instance", "name", "repository_name"],
+      searchFields: [
+        "module_id",
+        "module_ui_name",
+        "name",
+        "repository_name",
+        "repository_provider",
+        "node_fqdn",
+        "repository_url",
+      ],
       isSearchActive: false,
+      // infinite scroll
+      instancesFilteredLoaded: [],
+      pageNum: 0,
+      pageSize: 20,
+      infiniteId: +new Date(), // needed because of text filter
     };
   },
   computed: {
     numSelected() {
       return this.selectedList.length;
     },
-    instancesToDisplay() {
+    instancesFiltered() {
       if (this.isSearchActive) {
         return this.searchResults;
       } else {
@@ -158,6 +158,12 @@ export default {
 
       this.$emit("select", selectedInstances);
     },
+    instancesFiltered: function () {
+      this.instancesFilteredLoaded = [];
+      this.pageNum = 0;
+      this.infiniteId += 1;
+      this.infiniteScrollHandler();
+    },
   },
   methods: {
     selectAll() {
@@ -179,6 +185,25 @@ export default {
         case "":
           this.selectNone();
           break;
+      }
+    },
+    infiniteScrollHandler($state) {
+      const pageInstances = this.instancesFiltered.slice(
+        this.pageNum * this.pageSize,
+        (this.pageNum + 1) * this.pageSize
+      );
+
+      if (pageInstances.length) {
+        this.pageNum++;
+        this.instancesFilteredLoaded.push(...pageInstances);
+
+        if ($state) {
+          $state.loaded();
+        }
+      } else {
+        if ($state) {
+          $state.complete();
+        }
       }
     },
     searchInstance() {
@@ -243,7 +268,7 @@ export default {
 
 .instance-list {
   overflow-y: auto;
-  height: 16rem;
+  max-height: 23rem;
 }
 
 .instance-tile {
@@ -266,16 +291,6 @@ export default {
   margin-bottom: 0;
   margin-right: $spacing-05;
   flex-grow: 0;
-}
-
-.instance-description {
-  margin-top: $spacing-03;
-  color: $ui-04;
-
-  .info {
-    position: relative;
-    top: 3px;
-  }
 }
 </style>
 

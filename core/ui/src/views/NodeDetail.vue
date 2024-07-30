@@ -78,204 +78,207 @@
         </div>
       </div>
       <div class="bx--row">
-        <div class="bx--col-md-4 bx--col-max-4">
-          <cv-tile :light="true">
-            <h4 class="mg-bottom-md">{{ $t("node_detail.cpu") }}</h4>
-            <NsMeterChart
-              :label="$t('node_detail.usage')"
-              :value="loading.nodeStatus ? 0 : nodeStatus.cpu.usage"
-              :loading="loading.nodeStatus"
-              :warningThreshold="70"
-              :dangerThreshold="90"
-              progressBarHeight="10px"
-              class="mg-bottom-lg"
-            />
-            <div class="mg-bottom-sm">
-              <span class="label"
-                >{{ $t("node_detail.load") }}
-                <cv-interactive-tooltip
-                  alignment="start"
-                  direction="bottom"
-                  class="info"
-                >
-                  <template slot="trigger">
-                    <Information16 />
-                  </template>
-                  <template slot="content">
-                    {{ $t("nodes.cpu_load_tooltip") }}
-                  </template>
-                </cv-interactive-tooltip>
-              </span>
-              <span v-if="loading.nodeStatus">- / - / -</span>
-              <template v-else>
-                <span
-                  :class="{
-                    warning:
-                      nodeStatus.load['1min'] >= this.CPU_LOAD_WARNING_TH,
-                  }"
-                  >{{ nodeStatus.load["1min"] }}%</span
-                >
-                /
-                <span
-                  :class="{
-                    warning:
-                      nodeStatus.load['5min'] >= this.CPU_LOAD_WARNING_TH,
-                  }"
-                  >{{ nodeStatus.load["5min"] }}%</span
-                >
-                /
-                <span
-                  :class="{
-                    warning:
-                      nodeStatus.load['15min'] >= this.CPU_LOAD_WARNING_TH,
-                  }"
-                  >{{ nodeStatus.load["15min"] }}%</span
-                >
-              </template>
-            </div>
-            <template v-if="!loading.nodeStatus">
-              <template v-if="nodeStatus.cpu.info.length">
-                <!-- single core -->
-                <span
-                  v-if="nodeStatus.cpu.info.length == 1"
-                  class="label mg-bottom-xs"
-                  >{{ $t("node_detail.core") }}</span
-                >
-                <!-- multi core -->
-                <span v-else class="label mg-bottom-xs">{{
-                  $t("node_detail.num_core", {
-                    num: nodeStatus.cpu.info.length,
-                  })
-                }}</span>
-                <span
-                  >{{ nodeStatus.cpu.info[0].vendor }} -
-                  {{ nodeStatus.cpu.info[0].model }}</span
-                >
-              </template>
-            </template>
-          </cv-tile>
-        </div>
-        <div class="bx--col-md-4 bx--col-max-4">
-          <cv-tile :light="true">
-            <h4 class="mg-bottom-md">{{ $t("node_detail.memory") }}</h4>
-            <NsMeterChart
-              :label="$t('node_detail.usage')"
-              :value="loading.nodeStatus ? 0 : nodeStatus.memory.usage"
-              :loading="loading.nodeStatus"
-              :warningThreshold="70"
-              :dangerThreshold="90"
-              progressBarHeight="10px"
-              class="mg-bottom-lg"
-            />
-            <div class="mg-bottom-sm">
-              <span class="label">{{ $t("node_detail.total") }}</span>
-              <span>{{
-                loading.nodeStatus ? "-" : nodeStatus.memory.total | byteFormat
-              }}</span>
-            </div>
-            <div class="mg-bottom-sm">
-              <span class="label">{{ $t("node_detail.used") }}</span>
-              <span>{{
-                loading.nodeStatus ? "-" : nodeStatus.memory.used | byteFormat
-              }}</span>
-            </div>
-            <div class="mg-bottom-sm">
-              <span class="label">{{ $t("node_detail.free") }}</span>
-              <span>{{
-                loading.nodeStatus ? "-" : nodeStatus.memory.free | byteFormat
-              }}</span>
-            </div>
-          </cv-tile>
-        </div>
-        <div class="bx--col-md-4 bx--col-max-4">
-          <cv-tile :light="true">
-            <h4 class="mg-bottom-md">{{ $t("node_detail.swap") }}</h4>
-            <NsMeterChart
-              :label="$t('node_detail.usage')"
-              :value="
-                loading.nodeStatus || Number.isNaN(nodeStatus.swap.usage)
-                  ? '-'
-                  : nodeStatus.swap.usage
-              "
-              :loading="loading.nodeStatus"
-              :warningThreshold="70"
-              :dangerThreshold="90"
-              progressBarHeight="10px"
-              class="mg-bottom-lg"
-            />
-            <div class="mg-bottom-sm">
-              <span class="label">{{ $t("node_detail.total") }}</span>
-              <span>{{
-                loading.nodeStatus ? "-" : nodeStatus.swap.total | byteFormat
-              }}</span>
-            </div>
-            <div class="mg-bottom-sm">
-              <span class="label">{{ $t("node_detail.used") }}</span>
-              <span>{{
-                loading.nodeStatus ? "-" : nodeStatus.swap.used | byteFormat
-              }}</span>
-            </div>
-            <div class="mg-bottom-sm">
-              <span class="label">{{ $t("node_detail.free") }}</span>
-              <span>{{
-                loading.nodeStatus ? "-" : nodeStatus.swap.free | byteFormat
-              }}</span>
-            </div>
-          </cv-tile>
-        </div>
-        <div class="bx--col-md-4 bx--col-max-4">
-          <cv-tile :light="true">
-            <h4 class="mg-bottom-md">{{ $t("node_detail.vpn") }}</h4>
-            <template v-if="!loading.clusterStatus && vpnInfo.endpoint">
+        <cv-column>
+          <!-- card grid -->
+          <div
+            class="card-grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 3xl:grid-cols-4"
+          >
+            <cv-tile :light="true">
+              <h4 class="mg-bottom-md">{{ $t("node_detail.cpu") }}</h4>
+              <NsMeterChart
+                :label="$t('node_detail.usage')"
+                :value="loading.nodeStatus ? 0 : nodeStatus.cpu.usage"
+                :loading="loading.nodeStatus"
+                :warningThreshold="70"
+                :dangerThreshold="90"
+                progressBarHeight="10px"
+                class="mg-bottom-lg"
+              />
               <div class="mg-bottom-sm">
-                <span class="label">{{ $t("node_detail.endpoint") }}</span>
-                <span>{{ vpnInfo.endpoint }}</span>
-              </div>
-            </template>
-            <div class="mg-bottom-sm">
-              <span class="label">{{ $t("node_detail.ip_address") }}</span>
-              <span>{{
-                loading.clusterStatus ? "-" : vpnInfo.ip_address
-              }}</span>
-            </div>
-            <div class="mg-bottom-sm">
-              <span class="label">{{ $t("node_detail.listen_port") }}</span>
-              <span>{{
-                loading.clusterStatus ? "-" : vpnInfo.listen_port
-              }}</span>
-            </div>
-            <template v-if="!loading.clusterStatus && vpnInfo.rcvd">
-              <div class="mg-bottom-sm">
-                <span class="label">{{ $t("node_detail.data_received") }}</span>
-                <span>{{ vpnInfo.rcvd | byteFormat }}</span>
-              </div>
-            </template>
-            <template v-if="!loading.clusterStatus && vpnInfo.sent">
-              <div class="mg-bottom-sm">
-                <span class="label">{{ $t("node_detail.data_sent") }}</span>
-                <span>{{ vpnInfo.sent | byteFormat }}</span>
-              </div>
-            </template>
-            <template v-if="!loading.clusterStatus && vpnInfo.last_seen">
-              <div class="mg-bottom-sm">
-                <span class="label">{{ $t("node_detail.last_seen") }}</span>
-                <span
-                  :class="{
-                    warning:
-                      new Date().getTime() - vpnInfo.last_seen * 1000 >=
-                      this.LAST_SEEN_WARNING_TH,
-                  }"
-                >
-                  {{
-                    formatDateDistance(vpnInfo.last_seen * 1000, new Date(), {
-                      addSuffix: true,
-                    })
-                  }}
+                <span class="label"
+                  >{{ $t("node_detail.load") }}
+                  <cv-interactive-tooltip
+                    alignment="start"
+                    direction="bottom"
+                    class="info"
+                  >
+                    <template slot="trigger">
+                      <Information16 />
+                    </template>
+                    <template slot="content">
+                      {{ $t("nodes.cpu_load_tooltip") }}
+                    </template>
+                  </cv-interactive-tooltip>
                 </span>
+                <span v-if="loading.nodeStatus">- / - / -</span>
+                <template v-else>
+                  <span
+                    :class="{
+                      warning:
+                        nodeStatus.load['1min'] >= this.CPU_LOAD_WARNING_TH,
+                    }"
+                    >{{ nodeStatus.load["1min"] }}%</span
+                  >
+                  /
+                  <span
+                    :class="{
+                      warning:
+                        nodeStatus.load['5min'] >= this.CPU_LOAD_WARNING_TH,
+                    }"
+                    >{{ nodeStatus.load["5min"] }}%</span
+                  >
+                  /
+                  <span
+                    :class="{
+                      warning:
+                        nodeStatus.load['15min'] >= this.CPU_LOAD_WARNING_TH,
+                    }"
+                    >{{ nodeStatus.load["15min"] }}%</span
+                  >
+                </template>
               </div>
-            </template>
-          </cv-tile>
-        </div>
+              <template v-if="!loading.nodeStatus">
+                <template v-if="nodeStatus.cpu.info.length">
+                  <!-- single core -->
+                  <span
+                    v-if="nodeStatus.cpu.info.length == 1"
+                    class="label mg-bottom-xs"
+                    >{{ $t("node_detail.core") }}</span
+                  >
+                  <!-- multi core -->
+                  <span v-else class="label mg-bottom-xs">{{
+                    $t("node_detail.num_core", {
+                      num: nodeStatus.cpu.info.length,
+                    })
+                  }}</span>
+                  <span
+                    >{{ nodeStatus.cpu.info[0].vendor }} -
+                    {{ nodeStatus.cpu.info[0].model }}</span
+                  >
+                </template>
+              </template>
+            </cv-tile>
+            <cv-tile :light="true">
+              <h4 class="mg-bottom-md">{{ $t("node_detail.memory") }}</h4>
+              <NsMeterChart
+                :label="$t('node_detail.usage')"
+                :value="loading.nodeStatus ? 0 : nodeStatus.memory.usage"
+                :loading="loading.nodeStatus"
+                :warningThreshold="70"
+                :dangerThreshold="90"
+                progressBarHeight="10px"
+                class="mg-bottom-lg"
+              />
+              <div class="mg-bottom-sm">
+                <span class="label">{{ $t("node_detail.total") }}</span>
+                <span>{{
+                  loading.nodeStatus
+                    ? "-"
+                    : nodeStatus.memory.total | byteFormat
+                }}</span>
+              </div>
+              <div class="mg-bottom-sm">
+                <span class="label">{{ $t("node_detail.used") }}</span>
+                <span>{{
+                  loading.nodeStatus ? "-" : nodeStatus.memory.used | byteFormat
+                }}</span>
+              </div>
+              <div class="mg-bottom-sm">
+                <span class="label">{{ $t("node_detail.free") }}</span>
+                <span>{{
+                  loading.nodeStatus ? "-" : nodeStatus.memory.free | byteFormat
+                }}</span>
+              </div>
+            </cv-tile>
+            <cv-tile :light="true">
+              <h4 class="mg-bottom-md">{{ $t("node_detail.swap") }}</h4>
+              <NsMeterChart
+                :label="$t('node_detail.usage')"
+                :value="
+                  loading.nodeStatus || Number.isNaN(nodeStatus.swap.usage)
+                    ? '-'
+                    : nodeStatus.swap.usage
+                "
+                :loading="loading.nodeStatus"
+                :warningThreshold="70"
+                :dangerThreshold="90"
+                progressBarHeight="10px"
+                class="mg-bottom-lg"
+              />
+              <div class="mg-bottom-sm">
+                <span class="label">{{ $t("node_detail.total") }}</span>
+                <span>{{
+                  loading.nodeStatus ? "-" : nodeStatus.swap.total | byteFormat
+                }}</span>
+              </div>
+              <div class="mg-bottom-sm">
+                <span class="label">{{ $t("node_detail.used") }}</span>
+                <span>{{
+                  loading.nodeStatus ? "-" : nodeStatus.swap.used | byteFormat
+                }}</span>
+              </div>
+              <div class="mg-bottom-sm">
+                <span class="label">{{ $t("node_detail.free") }}</span>
+                <span>{{
+                  loading.nodeStatus ? "-" : nodeStatus.swap.free | byteFormat
+                }}</span>
+              </div>
+            </cv-tile>
+            <cv-tile :light="true">
+              <h4 class="mg-bottom-md">{{ $t("node_detail.vpn") }}</h4>
+              <template v-if="!loading.clusterStatus && vpnInfo.endpoint">
+                <div class="mg-bottom-sm">
+                  <span class="label">{{ $t("node_detail.endpoint") }}</span>
+                  <span>{{ vpnInfo.endpoint }}</span>
+                </div>
+              </template>
+              <div class="mg-bottom-sm">
+                <span class="label">{{ $t("node_detail.ip_address") }}</span>
+                <span>{{
+                  loading.clusterStatus ? "-" : vpnInfo.ip_address
+                }}</span>
+              </div>
+              <template v-if="!loading.clusterStatus && vpnInfo.listen_port">
+                <div class="mg-bottom-sm">
+                  <span class="label">{{ $t("node_detail.listen_port") }}</span>
+                  <span>{{ vpnInfo.listen_port }}</span>
+                </div>
+              </template>
+              <template v-if="!loading.clusterStatus && vpnInfo.rcvd">
+                <div class="mg-bottom-sm">
+                  <span class="label">{{
+                    $t("node_detail.data_received")
+                  }}</span>
+                  <span>{{ vpnInfo.rcvd | byteFormat }}</span>
+                </div>
+              </template>
+              <template v-if="!loading.clusterStatus && vpnInfo.sent">
+                <div class="mg-bottom-sm">
+                  <span class="label">{{ $t("node_detail.data_sent") }}</span>
+                  <span>{{ vpnInfo.sent | byteFormat }}</span>
+                </div>
+              </template>
+              <template v-if="!loading.clusterStatus && vpnInfo.last_seen">
+                <div class="mg-bottom-sm">
+                  <span class="label">{{ $t("node_detail.last_seen") }}</span>
+                  <span
+                    :class="{
+                      warning:
+                        new Date().getTime() - vpnInfo.last_seen * 1000 >=
+                        this.LAST_SEEN_WARNING_TH,
+                    }"
+                  >
+                    {{
+                      formatDateDistance(vpnInfo.last_seen * 1000, new Date(), {
+                        addSuffix: true,
+                      })
+                    }}
+                  </span>
+                </div>
+              </template>
+            </cv-tile>
+          </div>
+        </cv-column>
       </div>
       <div class="bx--row">
         <div class="bx--col-lg-16">
@@ -293,50 +296,55 @@
           </cv-tile>
         </div>
         <template v-else>
-          <div
-            v-for="(disk, index) in nodeStatus.disks"
-            :key="index"
-            class="bx--col-md-4 bx--col-max-4"
-          >
-            <cv-tile :light="true">
-              <h4 class="mg-bottom-md">
-                {{ $t("node_detail.disk") }} {{ index + 1 }}
-              </h4>
-              <NsMeterChart
-                :label="$t('node_detail.usage')"
-                :value="disk.usage"
-                :loading="loading.nodeStatus"
-                :warningThreshold="70"
-                :dangerThreshold="90"
-                progressBarHeight="10px"
-                class="mg-bottom-lg"
-              />
-              <div class="mg-bottom-sm">
-                <span class="label">{{ $t("node_detail.device") }}</span>
-                <span>{{ disk.device }}</span>
-              </div>
-              <div class="mg-bottom-sm">
-                <span class="label">{{ $t("node_detail.mount_point") }}</span>
-                <span>{{ disk.mountpoint }}</span>
-              </div>
-              <div class="mg-bottom-sm">
-                <span class="label">{{ $t("node_detail.file_system") }}</span>
-                <span>{{ disk.fstype }}</span>
-              </div>
-              <div class="mg-bottom-sm">
-                <span class="label">{{ $t("node_detail.total") }}</span>
-                <span>{{ disk.total | byteFormat }}</span>
-              </div>
-              <div class="mg-bottom-sm">
-                <span class="label">{{ $t("node_detail.used") }}</span>
-                <span>{{ disk.used | byteFormat }}</span>
-              </div>
-              <div class="mg-bottom-sm">
-                <span class="label">{{ $t("node_detail.free") }}</span>
-                <span>{{ disk.free | byteFormat }}</span>
-              </div>
-            </cv-tile>
-          </div>
+          <cv-column>
+            <!-- card grid -->
+            <div
+              class="card-grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 3xl:grid-cols-4"
+            >
+              <cv-tile
+                v-for="(disk, index) in nodeStatus.disks"
+                :key="index"
+                :light="true"
+              >
+                <h4 class="mg-bottom-md">
+                  {{ $t("node_detail.disk") }} {{ index + 1 }}
+                </h4>
+                <NsMeterChart
+                  :label="$t('node_detail.usage')"
+                  :value="disk.usage"
+                  :loading="loading.nodeStatus"
+                  :warningThreshold="70"
+                  :dangerThreshold="90"
+                  progressBarHeight="10px"
+                  class="mg-bottom-lg"
+                />
+                <div class="mg-bottom-sm">
+                  <span class="label">{{ $t("node_detail.device") }}</span>
+                  <span>{{ disk.device }}</span>
+                </div>
+                <div class="mg-bottom-sm">
+                  <span class="label">{{ $t("node_detail.mount_point") }}</span>
+                  <span>{{ disk.mountpoint }}</span>
+                </div>
+                <div class="mg-bottom-sm">
+                  <span class="label">{{ $t("node_detail.file_system") }}</span>
+                  <span>{{ disk.fstype }}</span>
+                </div>
+                <div class="mg-bottom-sm">
+                  <span class="label">{{ $t("node_detail.total") }}</span>
+                  <span>{{ disk.total | byteFormat }}</span>
+                </div>
+                <div class="mg-bottom-sm">
+                  <span class="label">{{ $t("node_detail.used") }}</span>
+                  <span>{{ disk.used | byteFormat }}</span>
+                </div>
+                <div class="mg-bottom-sm">
+                  <span class="label">{{ $t("node_detail.free") }}</span>
+                  <span>{{ disk.free | byteFormat }}</span>
+                </div>
+              </cv-tile>
+            </div>
+          </cv-column>
         </template>
       </div>
     </div>

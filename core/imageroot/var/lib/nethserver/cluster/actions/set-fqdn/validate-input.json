@@ -1,0 +1,43 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "set-fqdn input",
+    "$id": "http://schema.nethserver.org/cluster/set-fqdn-input.json",
+    "description": "Input schema of the set-fqdn action",
+    "examples": [
+        {
+            "node": 3,
+            "hostname": "dn2",
+            "domain": "example.org",
+            "reachability_check": true
+        }
+    ],
+    "type": "object",
+    "required": [
+        "node",
+        "hostname",
+        "domain"
+    ],
+    "properties": {
+        "node": {
+            "type": "integer",
+            "description": "The identifier of the cluster node."
+        },
+        "reachability_check": {
+            "type": "boolean",
+            "description": "Check if the new FQDN can be correctly resolved and is reachable by HTTP from other cluster nodes."
+        },
+        "hostname": {
+            "type": "string",
+            "minLength": 1,
+            "format": "hostname",
+            "pattern": "^[^\\.]+$",
+            "description": "The hostname part of the FQDN for the node."
+        },
+        "domain": {
+            "type": "string",
+            "minLength": 1,
+            "format": "hostname",
+            "description": "The domain part of the FQDN for the node."
+        }
+    }
+}

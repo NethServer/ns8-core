@@ -2,17 +2,14 @@
     "init": {
         "restoring_cluster": "Wiederherstellung des Cluster",
         "custom_certificates": "hochgeladene Zertifikate",
-        "restore_apps": "Anwendungen wiederherstellen",
         "tls_verify": "TLS-Zertifikatsprüfung",
         "vpn_cidr_tooltip": "Dies ist das VPN-Netz, das von den Clusterknoten zur Kommunikation verwendet wird. Stellen Sie sicher, dass dieses Netzwerk nicht mit bestehenden Netzwerken kollidiert. Beachten Sie, dass das VPN-Netzwerk später nicht mehr geändert werden kann.",
-        "review_node_fqdn_title": "FQDN des Knoten prüfen",
         "upload_cluster_backup_file": "Hochladen der Cluster-Sicherungsdatei",
         "custom_routes": "eigene HTTP Routen",
         "creating_cluster": "Cluster wird erstellt...",
         "restore_summary": "Zusammenfassung",
         "node_added_to_cluster": "Knoten {nodeId} zum Cluster hinzugefügt",
         "restore_cluster": "Cluster wiederherstellen",
-        "review_node_fqdn_description": "Festlegen des voll-qualifizierten Domänen-Namen dieses Cluster-Knoten",
         "vpn_endpoint": "VPN-Endpunkt",
         "configure_node": "Diesen Knoten konfigurieren",
         "new_password_confirm": "neues Admin-Kennwort wiederholen",
@@ -35,9 +32,7 @@
         "join_code_helper_text": "Sie können den Beitrittscode erhalten indem Sie auf",
         "invalid_passphrase": "Falsches Kennwort. Geben Sie das Verschlüsselungs-Kennwort der Cluster-Sicherung ein.",
         "redirect_cluster": "Arbeitsknoten",
-        "vpn_endpoint_port_tooltip": "Arbeitsknoten nutzen diesen Port für die Verbindung zum Hauptknoten. Dieser kann vom WireGuard Standard-Port 55820 abweichen. Ändern Sie diese Portnummer nur, wenn es ein Port-Forwardingzwischen den Arbeits- und dem Hauptknoten gibt",
         "reading_backup_repositories": "Einlesen von Datensicherungs-Zielen...",
-        "vpn_endpoint_port": "öffentlicher VPN-UDP-Port des Hauptknoten",
         "restoring_apps_c": "Wiederherstellung von {num} Anwendung|Wiederherstellung von {num} Anwendungen",
         "traveling_back_in_time": "Zurück in die Zukunft...",
         "change_admin_password_description": "Dies ist aus Sicherheitsgründen erforderlich",
@@ -47,7 +42,6 @@
         "restore_from_remote_url": "Wiederherstellung von ferner URL",
         "create_cluster_instead": "Stattdessen ein neues Cluster erstellen",
         "create_cluster_description": "Ein neues Clusters erstellen und diesen Knoten zum Hauptknoten heraufstufen",
-        "vpn_endpoint_address_tooltip": "Arbeitsknoten nutzen diese Adresse um eine Verbindung zum Hauptknoten herzustellen. Korrekte Auflösung und Erreichbarkeit ausgehend von den Arbeitsknoten sicherstellen.",
         "skip_apps_restore_2": "Sie können Anwendungen später über die Seite Sicherungen wiederherstellen",
         "join_cluster_instead": "Stattdessen einem bestehenden Cluster beitreten",
         "skip_apps_restore_1": "Möchten Sie die Wiederherstellung von Anwendungen überspringen?",
@@ -59,10 +53,6 @@
         "skip_apps_restore": "Wiederherstellung von Anwendungen überspringen",
         "external_domains": "externe Nutzerdomänen",
         "empty_passphrase": "Ein Kennwort ist verpflichtend",
-        "hostname_create": "Hostname",
-        "domain_join": "Domäne des Arbeitsknoten",
-        "hostname_join": "Hostname des Arbeitsknoten",
-        "domain_create": "Domäne",
         "network_pattern": "Netzwerkdefinition fehlerhaft",
         "not_a_private_network": "Muss innerhalb eines privaten IPv4-Netzbereich liegen: 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16",
         "hostname_format": "Hostname fehlerhaft",
@@ -75,7 +65,19 @@
         "cluster_tls_verify_error": "TLS-Zertifikat des Hauptknoten ist ungültig",
         "the_join_code_can_not_be_decoded": "Join-Code kann nicht dekodiert werden",
         "cluster_connection_error": "Verbindung zum Hauptknoten an Adresse {value} fehlgeschlagen",
-        "cluster_hostname_error": "FQDN {value} wird vom Hauptknoten verwendet. 'Zurück' nutzen und Host- oder Domänennamen ändern."
+        "cluster_hostname_error": "FQDN {value} wird vom Hauptknoten verwendet. 'Zurück' nutzen und Host- oder Domänennamen ändern.",
+        "vpn_network": "VPN network",
+        "worker_node_domain": "Worker node domain",
+        "review_worker_fqdn_description": "Set the fully qualified domain name (FQDN) of this cluster worker",
+        "worker_node_hostname": "Worker node hostname",
+        "review_leader_fqdn_description": "Set the fully qualified domain name (FQDN) of the cluster leader",
+        "review_leader_fqdn_title": "Review leader FQDN",
+        "review_worker_fqdn_title": "Review worker FQDN",
+        "leader_node_domain": "Leader node domain",
+        "leader_node_hostname": "Leader node hostname",
+        "hostname_pattern": "Invalid hostname format",
+        "restore_num_apps": "Restore apps | Restore {num} app | Restore {num} apps",
+        "select_apps_to_restore_description": "Your apps will be restored using the latest backup. If you need to restore certain apps from an earlier backup, you can do so later by going to the '@:backup.title' page"
     },
     "password": {
         "uppercase_letter": "Großbuchstaben",
@@ -94,10 +96,6 @@
         "symbol": "Sonderzeichen",
         "number": "Zahlen",
         "hide_password": "Kennwort ausblenden"
-    },
-    "hint": {
-        "notifications": "Meldungen und den Fortschritt von Aufgaben finden Sie hier",
-        "copy_to_clipboard": "Zum Kopieren in die Zwischenablage hier klicken"
     },
     "login": {
         "2fa_description": "Authentikator-App öffnen und Code eingeben",
@@ -238,7 +236,10 @@
         "start-support-session": "Support -Sitzung starten",
         "get-subscription": "Abonnement abfragen",
         "register-cluster-subscription": "Cluster Abonnement registrieren",
-        "set-retention": "Aufbewahrung festlegen"
+        "set-retention": "Aufbewahrung festlegen",
+        "set-syslog-forwarder": "Syslog-Forwarder festlegen",
+        "set-clm-forwarder": "CloudLog Manager Forwarder festlegen",
+        "read-backup-snapshots": "Read backup snapshots"
     },
     "common": {
         "hide": "verstecken",
@@ -324,7 +325,8 @@
         "close": "Schließen",
         "enabled": "Aktiviert",
         "not_active": "deaktiviert",
-        "active": "aktiv"
+        "active": "aktiv",
+        "configure": "konfigurieren"
     },
     "error": {
         "403": "Vorgang nicht autorisiert",
@@ -377,7 +379,6 @@
         "add_node_to_cluster": "Knoten zum Cluster hinzufügen",
         "node_is_offline_description": "Status und Verbindung zu Knoten prüfen",
         "disk": "Festplatte",
-        "node_vpn_endpoint_address": "öffentliche Adresse des VPN für {node}",
         "validation_node_not_found": "Knoten nicht gefunden",
         "add_node_to_cluster_step_3": "Weiter zu https://NEW_NODE_IP/cluster-admin/",
         "understood_promote_node": "Verstanden, Knoten heraufstufen",
@@ -394,15 +395,12 @@
         "memory_usage": "Speicherauslastung",
         "leader": "Hauptknoten",
         "promotion_completed": "Heraufstufen fertiggestellt",
-        "node_vpn_endpoint_port": "öffentlicher UDP port des VPN für {node}",
         "title": "Knoten",
         "show_all_disks": "Alle Festplatten anzeigen",
         "promote_node_confirm": "{name} wird zum Hauptknoten heraufgestuft",
-        "node_vpn_endpoint_port_tooltip": "Die Arbeitsknoten verwenden diesen Port, um sich mit dem Hauptknoten zu verbinden. Kann vom Standard WireGuard Port 55820 abweichen. Nur ändern wenn eine NAT-Gerät zwischen Arbeits- und Hauptknoten existiert",
         "validation_node_replica_not_found": "Knoten-Repliken nicht gefunden",
         "understood_remove_node": "Verstanden, Knoten entfernen",
         "promote_to_leader": "Zum Hauptknoten heraufstufen",
-        "node_vpn_endpoint_address_tooltip": "Arbeitsknoten verwenden diese Adresse, um sich mit dem Hauptknoten zu verbinden. Sichrrstellen, dass sie korrekt aufgelöst und für die Arbeitsknoten erreichbar ist.",
         "remove_from_cluster": "Aus dem Cluster entfernen",
         "offline": "Offline",
         "set_fqdn": "FQDN festlegen",
@@ -421,7 +419,14 @@
         "validation_endpoint_port_invalid_type": "Format fehlerhaft",
         "add_node_to_cluster_step_1": "{product} auf dem neuen Knoten installieren",
         "validation_endpoint_address_format": "Format fehlerhaft",
-        "nodes_online_cluster_status": "Alle Knoten sind online"
+        "nodes_online_cluster_status": "Alle Knoten sind online",
+        "check_node_connectivity_promote": "Check connectivity to '{fqdn}'",
+        "connectivity_check_failed": "Connectivity check failed",
+        "node_name_domain": "{node} domain",
+        "connectivity_check_failed_description": "The FQDN {fqdn} is not reachable from {node}. Please change hostname and/or domain or, if you want to skip this check and fix the DNS record later, unselect '@:nodes.check_node_connectivity' and try again.",
+        "vpn_endpoint_warning_description": "Leader FQDN is used by worker nodes to establish the VPN connection with the leader. Ensure that all workers can resolve the new leader FQDN.",
+        "node_name_hostname": "{node} hostname",
+        "vpn_endpoint_warning_title": "You are editing leader FQDN"
     },
     "software_center": {
         "clone_app_description": "Instanz {instanceLabel} und Daten auf einen Knoten klonen. Die aktuelle Instanz bleibt unberührt.",
@@ -557,7 +562,6 @@
     "notification": {
         "no_notifications_description": "Es liegen aktuell keine Meldungen vor",
         "confirm_abort": "Abbrechen bestätigen",
-        "mark_all_read": "Alle als gelesen markieren",
         "ongoing": "in Arbeit",
         "no_notifications": "keine Meldungen",
         "notifications": "Meldungen",
@@ -808,7 +812,6 @@
         "no_backup_scheduled": "Keine geplante Datensicherung",
         "repositories": "Repositories",
         "run_backup_now": "Datensicherungen jetzt starten",
-        "repository_password": "Kennwort des Repository",
         "i_have_stored_encryption_password": "Das Kennwort ist sicher verwahrt",
         "num_backup_snapshots": "{num} Datensicherungs-Punkt| {num} Datensicherungs-Punkte",
         "cluster_short": "lokaler Speicher",
@@ -838,7 +841,6 @@
         "instance_restored_to_node": "{module_id} wiederhergestellt auf {node}",
         "open_app": "App öffnen",
         "custom_schedule_tooltip_more_info": "weitere Informationen",
-        "repo_password_tooltip": "Mit diesem Kennwort werden die Daten im Repository verschlüsselt. Es ist sicher aufzubewahren, ohne dieses ist eine Wiederherstellung der gesicherten Daten unmöglich",
         "type_repo_password_to_confirm": "Repository-Kennwort eingeben um Löschung zu bestätigen",
         "default_repository_name": "{provider} Repository",
         "smb": "Windows Dateifreigabe (SMB2/3)",
@@ -911,7 +913,18 @@
         "backblaze_url_label": "Name des B2 bucket",
         "smb_url_tooltip": "Ein Pfad zu einem freigegebenen Unterordner kann mit \"/\" angegeben werden",
         "genericS3_url_tooltip": "Adresse des Format\n'server_fqdn/bucket_name'. Hinweis: Der Server muss ein gültiges TLS Zertifikate haben",
-        "go_to_backup_manual_page": "Dokumentation sichern & Wiederherstellung öffnen"
+        "go_to_backup_manual_page": "Dokumentation sichern & Wiederherstellung öffnen",
+        "data_encryption_key": "Data encryption key",
+        "no_snapshot_to_restore": "No backup snapshot to restore",
+        "url": "URL",
+        "from_node_name_of_this_cluster": "From node {name} of this cluster",
+        "select_backup_snapshot": "Select backup snapshot",
+        "from_different_cluster": "From a different cluster",
+        "from_node_name_of_different_cluster": "From node {name} of a different cluster",
+        "from_node_name": "From node {name}",
+        "data_encryption_key_tooltip": "This password is used to encrypt data in the backup destination and is saved inside your cluster backup. Store this password in a safe place, or remember to download cluster backup regularly.",
+        "most_recent": "Most recent",
+        "from_this_cluster": "From this cluster"
     },
     "settings_http_routes": {
         "delete_route_description": "Route {name} löschen? Jede Anwendung, die an diese Route gebunden ist, wird nicht mehr zugreifbar sein.",
@@ -1041,7 +1054,12 @@
             "edit_label": "Bezeichnung bearbeiten",
             "type_to_confirm": "Zur Bestätigung '{name}' eingeben",
             "days": "Tage",
-            "no_logs": "Diese Instanz beinhaltet keine Protokolle"
+            "no_logs": "Diese Instanz beinhaltet keine Protokolle",
+            "cannot_configure_forwarder": "Forwarder kann nicht konfiguriert werden",
+            "configure_syslog_forwarder": "Export zu Syslog konfigurieren",
+            "cannot_retrieve_system_logs_status": "Status der System-Protokolle kann nicht abgerufen werden",
+            "cannot_retrieve_loki_instances": "Loki-Instanzen nicht abrufbar",
+            "configure_cloud_log_manager_forwarder": "Cloud Log Manager konfigurieren"
         },
         "loki_tooltip": "Durchsuchen von Logs aus der aktiven Loki-Instanz, aus einem ehemaligen Hauptknoten oder aus Loki-Backups.",
         "current_instance": "Aktive Instanz",
@@ -1255,7 +1273,10 @@
         "go_to_subscription": "zu Abonnements wechseln",
         "subscription_status": "Abonnement",
         "email_notification": "E-Mail Benachrichtigungen",
-        "go_to_settings": "Zu Einstellungen wechseln"
+        "go_to_settings": "Zu Einstellungen wechseln",
+        "go_to_system_logs": "zu System-Protokollen wechsel",
+        "active_instance": "Aktive Instanz: {instance}",
+        "system_logs": "System-Protokolle"
     },
     "calendar": {
         "days": "Tage",
@@ -1346,5 +1367,44 @@
         "subscription_status": "Abonnement -Status",
         "session_id": "SitzungsID",
         "start_session_support": "Sitzung starten"
+    },
+    "cloud_log_manager_forwarder": {
+        "tenant_tooltip": "Dieser Schlüssel, auch bekannt als \"Tenant\", identifiziert und assoziiert die Clusterprotokolle innerhalb eines Unternehmens in Cloud Log Manager. Sie finden ihn in der Webapp Cloud Log Manager unter Benutzer und Unternehmen > Unternehmen.",
+        "tenant": "eindeutiger Unternehmens-Schlüssel",
+        "export_starting_date": "Startdatum des Export",
+        "cloud_log_manager_export_failed": "Export zu Cloud Log Manager fehlgeschlagen",
+        "address": "URL des CloudLog Manager",
+        "cloud_log_manager_export_enabled": "Export zu CloudLog Manager aktiviert",
+        "use_last_timestamp": "Letzten Zeitstempel nutzen ({timestamp})",
+        "choose_a_datetime": "Datum und Uhrzeit wählen",
+        "available_with_subscription_title": "Abonnement aktivieren, um diese Funktion zu nutzen",
+        "start_date": "Startdatum für Export",
+        "start_time": "Startzeite (24 Stunden)",
+        "available_with_subscription": "Senden Sie einen Protokoll-Stream von Anwendungen und Knoten dieses Clusters an CloudLog Manager, um sie an einem zentralen Ort speichern, archivieren und durchsuchen können.",
+        "configure_export_to_cloud_log_manager": "Cloud Log Manager konfigurieren",
+        "export_to_cloud_log_manager": "Export zu CloudLog Manager",
+        "learn_more": "mehr erfahren",
+        "address_placeholder": "z.B. https://nar.nethesis.it",
+        "cluster_id_notification": "Dieser Cluster ist '{clusterId}' in der Cloud Log Manager UI."
+    },
+    "syslog_forwarder": {
+        "start_time": "Startzeit (24 Stunden)",
+        "configure_export_to_syslog": "Export zu Syslog konfigurieren",
+        "protocol": "Protokoll",
+        "format": "Format",
+        "syslog_export_failed": "Syslog-Export fehlgeschlagen",
+        "export_to_syslog": "Syslog-Export",
+        "hostname_ip_address": "Hostname oder IP-Adresse",
+        "start_date": "Startdatum für Export",
+        "syslog_export_enabled": "Syslog-Export aktiviert",
+        "choose_a_datetime": "Zeit und Datum wählen",
+        "use_last_timestamp": "letzten Zeitstempel nutzen ({timestamp})",
+        "export_starting_date": "Startdatum für Export",
+        "udp": "UDP",
+        "tcp": "TCP",
+        "port_placeholder": "z.B. 514",
+        "port_number": "Portnummer",
+        "rfc5424": "RFC 5424",
+        "rfc3164": "RFC 3164"
     }
 }

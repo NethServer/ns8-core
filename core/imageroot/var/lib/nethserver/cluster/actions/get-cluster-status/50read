@@ -36,6 +36,12 @@ client_list_cache = rdb.client_list("normal") # cache init
 
 MAX_IDLE_TIME = 8 # Two times the agent poll period (4 secs)
 
+def _get_int_def(value, default):
+    try:
+        return int(value)
+    except:
+        return default
+
 def node_is_online(node_id, attempt=1):
     global client_list_cache
     if attempt > 1:
@@ -61,6 +67,7 @@ def node_is_online(node_id, attempt=1):
 
 cluster_ui_name = rdb.get(f"cluster/ui_name") or ""
 leader_id = int(rdb.hget("cluster/environment", "NODE_ID"))
+leader_endpoint = rdb.hget(f"node/{leader_id}/vpn", "endpoint") or "leader.invalid:55820"
 local_id = int(os.environ['NODE_ID'])
 local_public_key = rdb.hget(f"node/{local_id}/vpn", "public_key")
 
@@ -77,7 +84,7 @@ network = rdb.get('cluster/network')
 if network is not None:
     ret["initialized"] = True
     # The leader must have a public endpoint:
-    leader_hostname, _ = rdb.hget(f"node/{leader_id}/vpn", "endpoint").split(":", 1)
+    leader_hostname, _ = leader_endpoint.rsplit(":", 1)
     ret['leader_url'] = f'https://{leader_hostname}/cluster-admin/'
     ret['leader'] = local_id == leader_id
     for node in rdb.scan_iter('node/*/vpn'):
@@ -87,14 +94,14 @@ if network is not None:
         if rdb.sismember(f'node/{node_id}/flags', 'nomodules'):
             continue
         node_ui_name = rdb.get(f"node/{node_id}/ui_name") or ""
+        node_vpn_endpoint = rdb.hget(f"node/{node_id}/vpn", "endpoint") or ""
         vpn[kvpn] = {'id': int(node_id), 'ui_name': node_ui_name,'local': False,
         'online': node_is_online(node_id),
         'hostname': f"node{node_id}.invalid", # XXX Deprecated field: do not use it any more
         'vpn': {
             'ip_address': ovpn['ip_address'],
-            'listen_port': 55820,
             'public_key': ovpn['public_key'],
-            'endpoint': '',
+            'endpoint': node_vpn_endpoint,
         }}
 
 else:
@@ -102,24 +109,24 @@ else:
     sys.exit(0)
 
 i = 0
-proc = subprocess.Popen(['/usr/bin/wg', 'show', 'wg0', 'dump'],stdout=subprocess.PIPE)
+proc = subprocess.Popen(['/usr/bin/wg', 'show', 'wg0', 'dump'],stdout=subprocess.PIPE,text=True)
 for line in proc.stdout.readlines():
-    parts = line.decode().rstrip().split("\t")
+    parts = line.rstrip().split("\t")
     if i == 0:
         vpn[local_public_key]['vpn']['public_key'] = parts[1]
+        vpn[local_public_key]['vpn']['endpoint'] = leader_endpoint
+        vpn[local_public_key]['vpn']['listen_port'] = _get_int_def(parts[2], 55820)
         vpn[local_public_key]['local'] = True
     else:
         kvpn = parts[0]
         if not kvpn in vpn:
             continue # ignore unknown VPN peers
-        endpoint = parts[2].partition(':')[0]
-        if endpoint == '(none)':
-            endpoint = ''
-        vpn[kvpn]['vpn']['endpoint'] = endpoint
-        vpn[kvpn]['vpn']['last_seen'] = int(parts[4])
-        vpn[kvpn]['vpn']['rcvd'] = int(parts[5])
-        vpn[kvpn]['vpn']['sent'] = int(parts[6])
-        vpn[kvpn]['vpn']['keepalive'] = int(parts[7])
+        elif parts[2] != '(none)':
+            vpn[kvpn]['vpn']['endpoint'] = parts[2]
+        vpn[kvpn]['vpn']['last_seen'] = _get_int_def(parts[4], 0)
+        vpn[kvpn]['vpn']['rcvd'] = _get_int_def(parts[5], 0)
+        vpn[kvpn]['vpn']['sent'] = _get_int_def(parts[6], 0)
+        vpn[kvpn]['vpn']['keepalive'] = _get_int_def(parts[7], 0)
 
     i = i+1
 

@@ -34,41 +34,9 @@
         class="notifications-button"
         @click="toggleNotificationDrawerShownInStore"
       >
-        <Notification20 />
-        <span
-          class="notifications-badge"
-          v-if="unreadNotificationsCount > 0 && ongoingNotificationsCount == 0"
-        ></span>
-        <span
-          class="notifications-badge-ongoing"
-          v-if="ongoingNotificationsCount > 0"
-        ></span>
+        <Notification20 v-if="ongoingNotificationsCount == 0" />
+        <span v-else class="notifications-badge-ongoing"></span>
       </cv-header-global-action>
-      <!-- //// show hint on first task/notification? -->
-      <!-- notification drawer hint //// -->
-      <span class="hint hint-notifications">
-        <cv-interactive-tooltip
-          alignment="end"
-          direction="bottom"
-          :visible="isHintShown"
-        >
-          <template slot="trigger">
-            <span></span>
-          </template>
-          <template slot="content">
-            <p>
-              {{ $t("hint.notifications") }}
-            </p>
-            <NsButton
-              kind="primary"
-              size="small"
-              @click="isHintShown = false"
-              class="hint-button"
-              >{{ $t("common.got_it") }}</NsButton
-            >
-          </template>
-        </cv-interactive-tooltip>
-      </span>
       <cv-header-global-action
         :label="$t('shell.app_launcher') + ' (CTRL+SHIFT+A)'"
         :aria-label="$t('shell.app_launcher')"
@@ -140,9 +108,7 @@ export default {
   },
   mixins: [StorageService, LoginService, WebSocketService],
   data() {
-    return {
-      isHintShown: false, //// remove
-    };
+    return {};
   },
   computed: {
     ...mapState([
@@ -186,28 +152,14 @@ export default {
   position: relative;
 }
 
-.notifications-badge {
-  position: absolute;
-  top: 15%;
-  left: 62%;
-  height: 7px;
-  width: 7px;
-  background-color: $interactive-01;
-  border-radius: 50%;
-  display: inline-block;
-}
-
 .notifications-badge-ongoing {
   position: absolute;
-  top: 15%;
-  left: 62%;
+  inset: 13px;
   border: 2px solid transparent;
   border-radius: 50%;
-  border-top: 2px solid $interactive-01;
-  border-right: 2px solid $interactive-01;
-  border-bottom: 2px solid $interactive-01;
-  width: 8px;
-  height: 8px;
+  border-top: 2px solid $ui-02;
+  border-right: 2px solid $ui-02;
+  border-bottom: 2px solid $ui-02;
   animation: ongoing-task-spin 0.5s linear infinite;
 }
 
@@ -218,11 +170,6 @@ export default {
   100% {
     transform: rotate(360deg);
   }
-}
-
-.hint-notifications {
-  top: 1.8rem;
-  right: 0.8rem;
 }
 
 @media (max-width: $breakpoint-medium) {

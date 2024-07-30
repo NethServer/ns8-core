@@ -4,11 +4,8 @@
         "custom_certificates": "Uploaded certificates",
         "empty_passphrase": "The password is mandatory",
         "the_join_code_is_not_correctly_encoded": "Join code is not correctly encoded",
-        "hostname_create": "Hostname",
-        "restore_apps": "Restore apps",
         "tls_verify": "TLS certificate validation",
         "vpn_cidr_tooltip": "This is the VPN network used by cluster nodes to communicate. Ensure this network does not conflict with existing ones. Note that VPN network cannot be changed later",
-        "review_node_fqdn_title": "Review node FQDN",
         "upload_cluster_backup_file": "Upload cluster backup file",
         "custom_routes": "Custom HTTP routes",
         "network_pattern": "Invalid network format",
@@ -16,10 +13,8 @@
         "cluster_auth_error": "Invalid response",
         "creating_cluster": "Creating cluster...",
         "restore_summary": "Summary",
-        "domain_join": "Worker node domain",
         "node_added_to_cluster": "Node {nodeId} added to cluster",
         "restore_cluster": "Restore cluster",
-        "review_node_fqdn_description": "Set the fully qualified domain name (FQDN) of this cluster node",
         "vpn_endpoint": "VPN endpoint",
         "configure_node": "Configure this node",
         "new_password_confirm": "Re-enter new admin password",
@@ -34,7 +29,6 @@
         "forbidden_hostname_value": "Forbidden hostname",
         "remote_url": "Remote URL",
         "url_format": "Invalid URL",
-        "hostname_join": "Worker node hostname",
         "redirect_cluster_description": "This node is a worker of the cluster now. Click the button below to access cluster administration page on the leader node.",
         "hostname_format": "Invalid hostname format",
         "new_password": "New admin password",
@@ -48,9 +42,7 @@
         "invalid_passphrase": "Invalid password. Enter the password used to encrypt cluster backup.",
         "redirect_cluster": "Worker Node",
         "not_a_valid_ipv4_network": "Invalid IPv4 network address",
-        "vpn_endpoint_port_tooltip": "Worker nodes use this port number to connect to the leader. It can differ from the WireGuard listening port 55820. Change this port number only if there is a port-forwarding appliance between the workers and the leader",
         "reading_backup_repositories": "Reading backup repositories...",
-        "vpn_endpoint_port": "Leader VPN public UDP port",
         "restoring_apps_c": "Restoring {num} app | Restoring {num} apps",
         "traveling_back_in_time": "Traveling back in time...",
         "change_admin_password_description": "This is needed for security reasons",
@@ -62,8 +54,6 @@
         "create_cluster_instead": "Create a new cluster instead",
         "not_a_valid_fqdn_endpoint": "Invalid fully qualified domain name",
         "create_cluster_description": "Create a new cluster and promote this node as leader",
-        "vpn_endpoint_address_tooltip": "Worker nodes use this address to connect to the leader. Ensure it is correctly resolved and reachable by worker nodes",
-        "domain_create": "Domain",
         "skip_apps_restore_2": "You can restore apps later in <strong>Backup</strong> page",
         "join_cluster_instead": "Join an existing cluster instead",
         "skip_apps_restore_1": "Do you want to skip apps restore?",
@@ -75,7 +65,19 @@
         "not_valid_gpg_file": "Invalid GPG file",
         "skip_apps_restore": "Skip apps restore",
         "cluster_connection_error": "Failed to connect to the leader node at address {value}",
-        "cluster_hostname_error": "FQDN {value} is used by the leader node. Use 'Go Back' and change worker's hostname or domain."
+        "cluster_hostname_error": "FQDN {value} is used by the leader node. Use 'Go Back' and change worker's hostname or domain.",
+        "vpn_network": "VPN network",
+        "worker_node_domain": "Worker node domain",
+        "review_worker_fqdn_description": "Set the fully qualified domain name (FQDN) of this cluster worker",
+        "worker_node_hostname": "Worker node hostname",
+        "review_leader_fqdn_description": "Set the fully qualified domain name (FQDN) of the cluster leader",
+        "review_leader_fqdn_title": "Review leader FQDN",
+        "review_worker_fqdn_title": "Review worker FQDN",
+        "leader_node_domain": "Leader node domain",
+        "leader_node_hostname": "Leader node hostname",
+        "hostname_pattern": "Invalid hostname format",
+        "restore_num_apps": "Restore apps | Restore {num} app | Restore {num} apps",
+        "select_apps_to_restore_description": "Your apps will be restored using the latest backup. If you need to restore certain apps from an earlier backup, you can do so later by going to the '@:backup.title' page"
     },
     "action": {
         "remove-favorite": "Remove favorite",
@@ -167,7 +169,10 @@
         "set-route": "Set route",
         "update-modules": "Update modules",
         "add-repository": "Add repository",
-        "set-retention": "Set retention"
+        "set-retention": "Set retention",
+        "set-syslog-forwarder": "Set Syslog forwarder",
+        "set-clm-forwarder": "Set Cloud Log Manager forwarder",
+        "read-backup-snapshots": "Read backup snapshots"
     },
     "backup": {
         "smb_url_label": "Share name",
@@ -199,7 +204,6 @@
         "run_backup_now": "Run backup now",
         "schedule_backup_for_instance": "Create a backup schedule for {instance}",
         "completed": "Completed",
-        "repository_password": "Repository password",
         "cluster_configuration": "Cluster configuration",
         "aws_secret_access_key": "AWS secret access key",
         "duration": "Duration",
@@ -250,7 +254,6 @@
         "custom_schedule_tooltip_more_info": "See:",
         "disable_backup": "Disable backup",
         "edit_backup": "Edit backup",
-        "repo_password_tooltip": "This password is used to encrypt data in the repository. Store this password in a safe place, otherwise you won't be able to restore your backed up data",
         "type_repo_password_to_confirm": "Type repository password to confirm deletion",
         "disabled_backups": "Disabled backups",
         "backblaze_short": "B2",
@@ -341,7 +344,18 @@
         "every_hour": "Every hour",
         "genericS3_url_tooltip": "Enter an address with format \"serverfqdn/bucketname\". Note: the server must have a valid TLS certificate",
         "backup_page_tooltip_manual": "For more information <a href=\"https://docs.nethserver.org/projects/ns8/en/latest/backup.html\">go to the Backup and restore manual page</a>.",
-        "go_to_backup_manual_page": "go to the Backup and restore manual page"
+        "go_to_backup_manual_page": "go to the Backup and restore manual page",
+        "data_encryption_key": "Data encryption key",
+        "select_backup_snapshot": "Select backup snapshot",
+        "no_snapshot_to_restore": "No backup snapshot to restore",
+        "url": "URL",
+        "from_different_cluster": "From a different cluster",
+        "from_node_name_of_this_cluster": "From node {name} of this cluster",
+        "from_node_name_of_different_cluster": "From node {name} of a different cluster",
+        "from_node_name": "From node {name}",
+        "most_recent": "Most recent",
+        "from_this_cluster": "From this cluster",
+        "data_encryption_key_tooltip": "This password is used to encrypt data in the backup destination and is saved inside your cluster backup. Store this password in a safe place, or remember to download cluster backup regularly."
     },
     "settings_tls_certificates": {
         "no_tls_certificate": "No TLS certificate",
@@ -544,7 +558,12 @@
             "days": "Days",
             "no_logs": "This instance does not contains any log",
             "title": "Loki",
-            "active_to": "to"
+            "active_to": "to",
+            "cannot_configure_forwarder": "Cannot configure forwarder",
+            "configure_syslog_forwarder": "Configure export to Syslog",
+            "cannot_retrieve_system_logs_status": "Cannot retrieve system logs status",
+            "cannot_retrieve_loki_instances": "Cannot retrieve loki instances",
+            "configure_cloud_log_manager_forwarder": "Configure Cloud Log Manager"
         },
         "loki_instance_title": "Multiple Loki instance",
         "loki_tooltip": "Search logs from the active Loki instance, from a former leader node or from a Loki backup.",
@@ -696,7 +715,6 @@
         "user_pattern": "Invalid character \"{tok}\". Only letters, digits, - and _ are allowed."
     },
     "nodes": {
-        "node_vpn_endpoint_address": "{node} VPN public address",
         "check_node_connectivity": "Check node connectivity",
         "validation_node_not_found": "Node not found",
         "add_node_to_cluster_step_3": "Go to <strong><code>https://NEW_NODE_IP/cluster-admin/</code></strong>",
@@ -720,19 +738,16 @@
         "memory_usage": "Memory usage",
         "leader": "leader",
         "promotion_completed": "Promotion completed",
-        "node_vpn_endpoint_port": "{node} VPN public UDP port",
         "cpu_load_tooltip": "CPU average load of last 1 / 5 / 15 minutes",
         "title": "Nodes",
         "show_all_disks": "Show all disks",
         "add_node_to_cluster_step_2": "Copy the join code in the box below",
         "promote_node_confirm": "<strong>{name}</strong> will be promoted to leader role.",
         "reset_backup_encryption_password_info": "After node promotion, go to <strong>Backup</strong> section and setup the backup encryption password",
-        "node_vpn_endpoint_port_tooltip": "Worker nodes use this port number to connect to the leader. It can differ from the WireGuard listening port 55820. Change this port number only if there is a port-forwarding appliance between the workers and the leader",
         "validation_node_replica_not_found": "Node replica not found",
         "cpu_load": "CPU load",
         "understood_remove_node": "I understand, remove node",
         "promote_to_leader": "Promote to leader",
-        "node_vpn_endpoint_address_tooltip": "Worker nodes use this address to connect to the leader. Ensure it is correctly resolved and reachable by worker nodes",
         "remove_from_cluster": "Remove from cluster",
         "offline": "Offline",
         "disk": "Disk",
@@ -753,7 +768,14 @@
         "shutdown_node_after_removal": "Shut down {node} after node removal to stop the apps running on it",
         "node_is_offline_description": "Check node status and connectivity",
         "remove_node_from_cluster": "Remove node from cluster",
-        "validation_endpoint_address_format": "Invalid format"
+        "validation_endpoint_address_format": "Invalid format",
+        "connectivity_check_failed": "Connectivity check failed",
+        "check_node_connectivity_promote": "Check connectivity to '{fqdn}'",
+        "node_name_domain": "{node} domain",
+        "connectivity_check_failed_description": "The FQDN {fqdn} is not reachable from {node}. Please change hostname and/or domain or, if you want to skip this check and fix the DNS record later, unselect '@:nodes.check_node_connectivity' and try again.",
+        "vpn_endpoint_warning_description": "Leader FQDN is used by worker nodes to establish the VPN connection with the leader. Ensure that all workers can resolve the new leader FQDN.",
+        "node_name_hostname": "{node} hostname",
+        "vpn_endpoint_warning_title": "You are editing leader FQDN"
     },
     "settings_http_routes": {
         "request_lets_encrypt_certificate": "Request Let's Encrypt certificate",
@@ -820,10 +842,6 @@
         "symbol": "Symbol",
         "number": "Number",
         "hide_password": "Hide password"
-    },
-    "hint": {
-        "notifications": "You can find notifications and progress of tasks here",
-        "copy_to_clipboard": "Click here to copy to clipboard"
     },
     "settings_acme_servers": {
         "no_acme_server_description": "There is no ACME server configured",
@@ -1055,7 +1073,8 @@
         "choose_an_option_or_input_any_value": "Choose an option or input any value",
         "details": "التفاصيل",
         "close": "اغلاق",
-        "enabled": "Enabled"
+        "enabled": "Enabled",
+        "configure": "Configure"
     },
     "error": {
         "403": "العملية غير مصرح بها",
@@ -1107,7 +1126,10 @@
         "go_to_software_center": "Go to Software center",
         "core_update_available": "Core update available",
         "email_notification": "Email notifications",
-        "go_to_settings": "Go to settings"
+        "go_to_settings": "Go to settings",
+        "system_logs": "System logs",
+        "go_to_system_logs": "Go to System logs",
+        "active_instance": "Active instance: {instance}"
     },
     "settings_cluster_admins": {
         "delete_admin_admin": "Delete admin {admin}",
@@ -1132,7 +1154,6 @@
     "notification": {
         "no_notifications_description": "You don't have any recent notifications yet",
         "confirm_abort": "Confirm abort",
-        "mark_all_read": "Mark all as read",
         "ongoing": "Ongoing",
         "no_notifications": "No notifications",
         "notifications": "Notifications",
@@ -1346,5 +1367,44 @@
     },
     "settings": {
         "title": "إعدادات"
+    },
+    "cloud_log_manager_forwarder": {
+        "tenant_tooltip": "Lorem Ipsum",
+        "tenant": "Tenant",
+        "export_starting_date": "Export start date",
+        "cloud_log_manager_export_failed": "Export to Cloud Log Manager failed",
+        "address": "Cloud Log Manager URL",
+        "cloud_log_manager_export_enabled": "Export to Cloud Log Manager enabled",
+        "use_last_timestamp": "Use last timestamp ({timestamp})",
+        "choose_a_datetime": "Choose date and time",
+        "available_with_subscription_title": "Available with subscription",
+        "start_date": "Start date",
+        "start_time": "Start time (24-hour)",
+        "available_with_subscription": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+        "configure_export_to_cloud_log_manager": "Configure Cloud Log Manager",
+        "export_to_cloud_log_manager": "Export to Cloud Log Manager",
+        "learn_more": "Learn more",
+        "address_placeholder": "E.g. https://nar.nethesis.it",
+        "cluster_id_notification": "This cluster is identified as '{clusterId}' in the Cloud Log Manager UI"
+    },
+    "syslog_forwarder": {
+        "start_time": "Start time (24-hour)",
+        "configure_export_to_syslog": "Configure export to Syslog",
+        "protocol": "Protocol",
+        "format": "Format",
+        "syslog_export_failed": "Export to Syslog failed",
+        "export_to_syslog": "Export to Syslog",
+        "hostname_ip_address": "Hostname or IP address",
+        "start_date": "Start date",
+        "syslog_export_enabled": "Export to Syslog enabled",
+        "choose_a_datetime": "Choose date and time",
+        "use_last_timestamp": "Use last timestamp ({timestamp})",
+        "export_starting_date": "Export start date",
+        "udp": "UDP",
+        "tcp": "TCP",
+        "port_placeholder": "E.g. 514",
+        "port_number": "Port number",
+        "rfc5424": "RFC 5424",
+        "rfc3164": "RFC 3164"
     }
 }

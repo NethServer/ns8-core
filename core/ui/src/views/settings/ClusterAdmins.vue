@@ -70,64 +70,85 @@
         </cv-column>
       </cv-row>
       <cv-row v-if="loading.listUsers">
-        <cv-column v-for="index in 4" :key="index" :md="4" :max="4">
-          <cv-tile light>
-            <cv-skeleton-text paragraph :line-count="7"></cv-skeleton-text>
-          </cv-tile>
+        <cv-column>
+          <!-- skeleton card grid -->
+          <div
+            class="card-grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 3xl:grid-cols-4"
+          >
+            <cv-tile v-for="index in 4" :key="index" light>
+              <cv-skeleton-text paragraph :line-count="7"></cv-skeleton-text>
+            </cv-tile>
+          </div>
         </cv-column>
       </cv-row>
       <cv-row v-else>
-        <cv-column v-for="admin in admins" :key="admin.user" :md="4" :max="4">
-          <NsInfoCard light :title="admin.user" :icon="UserMilitary32">
-            <template #menu>
-              <cv-overflow-menu
-                :flip-menu="true"
-                tip-position="top"
-                tip-alignment="end"
-                class="top-right-overflow-menu"
-              >
-                <cv-overflow-menu-item @click="showChangePasswordModal(admin)">
-                  <NsMenuItem
-                    :icon="Password20"
-                    :label="$t('settings_cluster_admins.change_password')"
-                  />
-                </cv-overflow-menu-item>
-                <NsMenuDivider />
-                <cv-overflow-menu-item
-                  danger
-                  :disabled="
-                    admin.user === 'admin' || admin.user === loggedUser
-                  "
-                  @click="showDeleteAdminModal(admin)"
+        <cv-column>
+          <!-- card grid -->
+          <div
+            class="card-grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 3xl:grid-cols-4"
+          >
+            <NsInfoCard
+              v-for="admin in admins"
+              :key="admin.user"
+              light
+              :title="admin.user"
+              :icon="UserMilitary32"
+            >
+              <template #menu>
+                <cv-overflow-menu
+                  :flip-menu="true"
+                  tip-position="top"
+                  tip-alignment="end"
+                  class="top-right-overflow-menu"
                 >
-                  <NsMenuItem :icon="TrashCan20" :label="$t('common.delete')" />
-                </cv-overflow-menu-item>
-              </cv-overflow-menu>
-            </template>
-            <template #content>
-              <div class="admin-card-content">
-                <div class="row">
-                  <span>{{ admin.display_name }}</span>
+                  <cv-overflow-menu-item
+                    @click="showChangePasswordModal(admin)"
+                  >
+                    <NsMenuItem
+                      :icon="Password20"
+                      :label="$t('settings_cluster_admins.change_password')"
+                    />
+                  </cv-overflow-menu-item>
+                  <NsMenuDivider />
+                  <cv-overflow-menu-item
+                    danger
+                    :disabled="
+                      admin.user === 'admin' || admin.user === loggedUser
+                    "
+                    @click="showDeleteAdminModal(admin)"
+                  >
+                    <NsMenuItem
+                      :icon="TrashCan20"
+                      :label="$t('common.delete')"
+                    />
+                  </cv-overflow-menu-item>
+                </cv-overflow-menu>
+              </template>
+              <template #content>
+                <div class="admin-card-content">
+                  <div class="row">
+                    <span>{{ admin.display_name }}</span>
+                  </div>
+                  <div v-if="loggedUser == admin.user" class="row">
+                    <NsTag
+                      kind="high-contrast"
+                      size="sm"
+                      :label="$t('settings_cluster_admins.you')"
+                      class="no-margin"
+                    />
+                  </div>
+                  <div class="row actions">
+                    <NsButton
+                      kind="ghost"
+                      :icon="Edit20"
+                      @click="showEditDisplayNameModal(admin)"
+                      >{{ $t("settings_cluster_admins.edit_display_name") }}
+                    </NsButton>
+                  </div>
                 </div>
-                <div v-if="loggedUser == admin.user" class="row">
-                  <NsTag
-                    kind="high-contrast"
-                    size="sm"
-                    :label="$t('settings_cluster_admins.you')"
-                    class="no-margin"
-                  />
-                </div>
-                <div class="row actions">
-                  <NsButton
-                    kind="ghost"
-                    :icon="Edit20"
-                    @click="showEditDisplayNameModal(admin)"
-                    >{{ $t("settings_cluster_admins.edit_display_name") }}
-                  </NsButton>
-                </div>
-              </div>
-            </template>
-          </NsInfoCard>
+              </template>
+            </NsInfoCard>
+          </div>
         </cv-column>
       </cv-row>
     </cv-grid>

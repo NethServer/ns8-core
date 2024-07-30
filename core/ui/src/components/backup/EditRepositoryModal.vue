@@ -518,7 +518,7 @@ export default {
         const param = validationError.parameter;
 
         if (validationError.error == "backup_repository_not_accessible") {
-          // show error nontification
+          // show error notification
           this.error.repoConnection = "error";
         } else {
           // set i18n error message

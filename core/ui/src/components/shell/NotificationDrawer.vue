@@ -9,22 +9,7 @@
       v-click-outside="clickOutside"
       class="notification-drawer"
     >
-      <div class="notification-drawer__header">
-        <h5>{{ $t("notification.notifications") }}</h5>
-        <span v-if="unreadNotificationsCount > 0"
-          >{{ unreadNotificationsCount }}
-          {{ $tc("notification.unread", unreadNotificationsCount) }}</span
-        >
-        <cv-overflow-menu flip-menu class="overflow-menu-dark-bg">
-          <cv-overflow-menu-item @click="markAllRead" id="overflow-item">
-            <NsMenuItem :label="$t('notification.mark_all_read')">
-              <template slot="icon">
-                <Checkmark20 />
-              </template>
-            </NsMenuItem>
-          </cv-overflow-menu-item>
-        </cv-overflow-menu>
-      </div>
+      <h5>{{ $t("notification.notifications") }}</h5>
       <div v-if="ongoingNotifications.length" class="notification-divider">
         {{ $t("notification.ongoing") }}
       </div>
@@ -77,7 +62,6 @@
           :confirmCancelLabel="$t('notification.confirm_abort')"
           :isRead="notification.isRead"
           :timestamp="notification.timestamp"
-          @click="setNotificationReadInStore(notification.id)"
           :id="notification.id"
         />
       </div>
@@ -89,11 +73,10 @@
 <script>
 import { mapState, mapActions, mapGetters } from "vuex";
 import NotificationService from "@/mixins/notification";
-import Checkmark20 from "@carbon/icons-vue/es/checkmark/20";
 
 export default {
   name: "NotificationDrawer",
-  components: { Checkmark20 },
+  components: {},
   mixins: [NotificationService],
   data() {
     return {
@@ -129,11 +112,7 @@ export default {
     },
   },
   methods: {
-    ...mapActions([
-      "setNotificationDrawerShownInStore",
-      "setNotificationReadInStore",
-      "markAllNotificationsReadInStore",
-    ]),
+    ...mapActions(["setNotificationDrawerShownInStore"]),
     notificationDetailsHidden() {
       this.isNotificationDetailsShown = false;
     },
@@ -148,9 +127,6 @@ export default {
         // close menu
         this.setNotificationDrawerShownInStore(false);
       }
-    },
-    markAllRead() {
-      this.markAllNotificationsReadInStore();
     },
     infiniteScrollHandler($state) {
       const pageNotifications = this.recentNotifications.slice(
@@ -227,7 +203,7 @@ export default {
 }
 
 .notification-divider:first-of-type {
-  margin-top: $spacing-05;
+  margin-top: $spacing-06;
 }
 
 .notification-divider {
