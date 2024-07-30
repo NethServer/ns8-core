@@ -54,7 +54,7 @@ logcli_tmp_dir=$(mktemp -d)
 cleanup_list+=("${logcli_tmp_dir}")
 (
     cd "${logcli_tmp_dir}"
-    curl -L -O https://github.com/grafana/loki/releases/download/v2.9.2/logcli-linux-amd64.zip
+    curl -L -O https://github.com/grafana/loki/releases/download/v2.9.9/logcli-linux-amd64.zip
     python -mzipfile -e logcli-linux-amd64.zip .
     chmod -c 755 logcli-linux-amd64
 )
