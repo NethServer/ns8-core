@@ -37,6 +37,9 @@ for image_url in images:
 
     # Transliterate the image name to an environment variable name
     var_name = image_name.translate(str.maketrans('-.+ ', '____')).upper() + '_IMAGE'
+    if var_name[0].isdigit():
+        # Shell var names cannot begin with a digit. Prepend "I", if necessary.
+        var_name = 'I' + var_name
 
     print(f'Add to {agent_id} environment {var_name}={image_url}', file=sys.stderr)
     agent.set_env(var_name, image_url)
