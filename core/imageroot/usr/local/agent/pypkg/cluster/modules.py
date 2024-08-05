@@ -419,7 +419,14 @@ def list_updates(rdb, skip_core_modules=False, with_testing_update=False):
 def _get_node_core_versions(rdb):
     hversions = {}
     for node_id in set(rdb.hvals("cluster/module_node")):
-        _, vtag = rdb.hget(f'node/{node_id}/environment', 'IMAGE_URL').rsplit(":", 1)
+        image_url = rdb.hget(f'node/{node_id}/environment', 'IMAGE_URL')
+        if not image_url:
+            print(agent.SD_WARNING+f"Cannot fetch IMAGE_URL of node {node_id}", file=sys.stderr)
+            if node_id == os.getenv("NODE_ID"):
+                image_url = "ghcr.io/nethserver/core:" + _get_core_tag()
+            else:
+                image_url = "ghcr.io/nethserver/core:0.0.0"
+        _, vtag = image_url.rsplit(":", 1)
         hversions[node_id] = vtag
     return hversions
 
