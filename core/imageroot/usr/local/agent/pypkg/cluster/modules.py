@@ -310,7 +310,7 @@ def list_installed_core(rdb):
         
             if url not in installed.keys():
                 installed[url] = []
-            installed[url].append({'id': vars["MODULE_ID"], 'version': tag, 'module': image})
+            installed[url].append({'id': vars["MODULE_ID"], 'version': tag, 'module': image, 'node': vars['NODE_ID']})
 
     return installed
 
@@ -384,6 +384,7 @@ def list_core_modules(rdb):
                 "id": instance["id"],
                 "version": instance["version"],
                 "update": _calc_update(image_name, instance["version"]),
+                "node_id": instance.get("node", '1'),
             })
 
     return list(core_modules.values())
