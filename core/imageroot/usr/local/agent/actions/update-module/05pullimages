@@ -107,6 +107,9 @@ for image_url in extra_images:
 
     # Transliterate the image name to an environment variable name
     var_name = image_name.translate(str.maketrans('-.+ ', '____')).upper() + '_IMAGE'
+    if var_name[0].isdigit():
+        # Shell var names cannot begin with a digit. Prepend "I", if necessary.
+        var_name = 'I' + var_name
 
     env_patch['PREV_' + var_name] = os.getenv(var_name)
     env_patch[var_name] = image_url
