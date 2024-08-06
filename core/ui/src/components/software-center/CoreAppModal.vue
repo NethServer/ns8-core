@@ -56,6 +56,16 @@
             :value="`${rowIndex}`"
           >
             <cv-data-table-cell>{{ row.id }}</cv-data-table-cell>
+            <cv-data-table-cell>{{
+              row.node_ui_name !== ""
+                ? row.node_ui_name +
+                  " (" +
+                  $t("common.node") +
+                  " " +
+                  row.node_id +
+                  ")"
+                : $t("common.node") + " " + row.node_id
+            }}</cv-data-table-cell>
             <cv-data-table-cell>{{ row.version }}</cv-data-table-cell>
             <cv-data-table-cell v-if="isCoreUpdatable">
               {{ row.update || "-" }}
@@ -134,8 +144,8 @@ export default {
   methods: {
     updateTableData() {
       this.tableColumns = this.isCoreUpdatable
-        ? ["instance", "version", "update_available"]
-        : ["instance", "version"];
+        ? ["instance", "node_id", "version", "update_available"]
+        : ["instance", "node_id", "version"];
     },
     willUpdateCore() {
       this.$root.$emit("willUpdateCore");
