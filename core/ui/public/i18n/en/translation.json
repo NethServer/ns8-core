@@ -898,7 +898,7 @@
         "core_app_update_available": "Core update available",
         "core_app_update_available_description": "Some core apps need to be updated",
         "version": "Version",
-        "node_id": "Node ID",
+        "node_id": "Node",
         "update_available": "Update available",
         "core_update": "Core update",
         "app_updates": "App updates",
