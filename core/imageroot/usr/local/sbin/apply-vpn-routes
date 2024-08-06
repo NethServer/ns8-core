@@ -35,19 +35,17 @@ agent.assert_exp(cluster_network)
 # Convert Redis VPN records to our VPN data model
 destmap = {}
 for node_id in peers:
-    if self_id == leader_id:
+    if self_id == node_id:
+        # Skip the destinations for the local node: they use default
+        # kernel routing rules.
+        pass
+    elif self_id == leader_id:
         # The local node is the Leader and the VPN hub. One node
         # corresponds to a VPN peer, and its destinations are the node
         # destinations with its IP address
         destmap.setdefault(node_id, set())
         destmap[node_id].update(peers[node_id]['destinations'].split())
         destmap[node_id].add(peers[node_id]['ip_address'])
-
-    elif self_id == node_id:
-        # Skip the destinations for the local node: they use default
-        # kernel routing rules.
-        pass
-
     else:
         # Default VPN routing rule: send all traffic to the Leader
         destmap.setdefault(leader_id, set())
