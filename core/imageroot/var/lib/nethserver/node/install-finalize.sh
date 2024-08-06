@@ -19,6 +19,11 @@ if ! grep -q ' cluster-leader$' /etc/hosts; then
     echo "127.0.0.1 cluster-localnode" >> /etc/hosts
 fi
 
+if [ -f /etc/cloud/cloud.cfg ]; then
+    echo "Remove update_etc_hosts cloud-init module:"
+    sed -i.orig -r '/-\s*update_etc_hosts/ d' /etc/cloud/cloud.cfg || :
+fi
+
 echo "Generate WireGuard VPN key pair:"
 (umask 0077; wg genkey | tee /etc/nethserver/wg0.key | wg pubkey) | tee /etc/nethserver/wg0.pub
 
