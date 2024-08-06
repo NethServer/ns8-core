@@ -57,14 +57,7 @@
           >
             <cv-data-table-cell>{{ row.id }}</cv-data-table-cell>
             <cv-data-table-cell>{{
-              row.node_ui_name !== ""
-                ? row.node_ui_name +
-                  " (" +
-                  $t("common.node") +
-                  " " +
-                  row.node_id +
-                  ")"
-                : $t("common.node") + " " + row.node_id
+              getNodeLabel({ id: row.node_id, ui_name: row.node_ui_name })
             }}</cv-data-table-cell>
             <cv-data-table-cell>{{ row.version }}</cv-data-table-cell>
             <cv-data-table-cell v-if="isCoreUpdatable">
