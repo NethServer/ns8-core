@@ -52,21 +52,20 @@ for node_id in peers:
         destmap[leader_id].update(peers[node_id]['destinations'].split())
         destmap[leader_id].add(peers[node_id]['ip_address'])
 
-def get_wgset_endpoint_clause(endpoint):
+def resolve_endpoint(endpoint):
     """Resolve the endpoint IP address and return the endpoint arguments
     for the `wg set` subcommand"""
     if not endpoint:
-        return []
-
+        return (None, None)
     address, port = endpoint.rsplit(':')
-
     try:
         addrinfo = socket.getaddrinfo(address, port)
-        # Get the IP address (the last 0) of the first entry (first 0) from
-        # sockaddr item (index 4)
-        return ['endpoint', ':'.join([addrinfo[0][4][0], port])]
-    except:
-        return []
+    except Exception as ex:
+        print(agent.SD_ERR+f"Endpoint {address} resolution failed", ex, file=sys.stderr)
+        return (None, port)
+    # Get the IP address (the last 0) of the first entry (first 0) from
+    # sockaddr item (index 4)
+    return (addrinfo[0][4][0] , str(port))
 
 # Find the networks of the local interfaces. Addresses of these networks
 # are not routed through the VPN.
@@ -83,11 +82,13 @@ for iface in ipaddr_reply:
 errors = 0
 valid_destinations = []
 for node_id in destmap:
+    peer_host, peer_port = resolve_endpoint(peers[node_id].get('endpoint', ''))
+    allowed_ips = destmap[node_id] - {peer_host}
     # Apply immediately the new configuration to the WireGuard wg0 interface...
     wset_proc = agent.run_helper('wg', 'set', 'wg0', 'peer', peers[node_id]["public_key"],
         'persistent-keepalive', '25',
-        'allowed-ips', ','.join(destmap[node_id]),
-        *get_wgset_endpoint_clause(peers[node_id].get('endpoint', '')),
+        'allowed-ips', ','.join(allowed_ips),
+        *(['endpoint', f"{peer_host}:{peer_port}"] if peer_host else []), # optional arguments
         log_command=True,
     )
     if wset_proc.returncode != 0:
@@ -95,7 +96,7 @@ for node_id in destmap:
         print(agent.SD_ERR + f'Runtime change of allowed-ips has failed for peer node/{node_id}', file=sys.stderr)
 
     # ...and to the system routing table:
-    for xdest in destmap[node_id]:
+    for xdest in allowed_ips:
         push_route = False
 
         odest = ipm.ip_address(xdest) # object form of xdest for network calculations
