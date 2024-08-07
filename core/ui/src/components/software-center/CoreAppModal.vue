@@ -56,6 +56,9 @@
             :value="`${rowIndex}`"
           >
             <cv-data-table-cell>{{ row.id }}</cv-data-table-cell>
+            <cv-data-table-cell>{{
+              getNodeLabel({ id: row.node_id, ui_name: row.node_ui_name })
+            }}</cv-data-table-cell>
             <cv-data-table-cell>{{ row.version }}</cv-data-table-cell>
             <cv-data-table-cell v-if="isCoreUpdatable">
               {{ row.update || "-" }}
@@ -134,8 +137,8 @@ export default {
   methods: {
     updateTableData() {
       this.tableColumns = this.isCoreUpdatable
-        ? ["instance", "version", "update_available"]
-        : ["instance", "version"];
+        ? ["instance", "node_id", "version", "update_available"]
+        : ["instance", "node_id", "version"];
     },
     willUpdateCore() {
       this.$root.$emit("willUpdateCore");

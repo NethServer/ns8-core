@@ -464,6 +464,8 @@ def list_core_modules(rdb):
                 'id': 'core' + node_id,
                 'version': ntag,
                 'update': _calc_core_update(ntag, latest_core),
+                'node_id': node_id,
+                'node_ui_name': rdb.get(f'node/{node_id}/ui_name') or "",
             }
         except Exception as ex:
             print(agent.SD_ERR+f"Cannot fetch node {node_id} attributes:", ex, file=sys.stderr)
@@ -484,5 +486,7 @@ def list_core_modules(rdb):
                 "id": instance["id"],
                 "version": instance["version"],
                 "update": _get_module_update(instance['id']),
+                "node_id": instance["node"],
+                "node_ui_name": instance["node_ui_name"],
             })
     return list(core_modules.values())
