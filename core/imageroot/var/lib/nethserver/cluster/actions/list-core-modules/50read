@@ -26,5 +26,26 @@ import cluster.modules
 import agent
 
 rdb = agent.redis_connect(privileged=True)
+list_core_modules = cluster.modules.list_core_modules(rdb)
+available = cluster.modules.list_available(rdb, skip_core_modules = False)
 
-json.dump(cluster.modules.list_core_modules(rdb), fp=sys.stdout)
+# Create a dictionary from available for quick lookup by name
+dict_available = {item['name']: item for item in available}
+
+# Update list_core_modules with data from dict_available
+for item in list_core_modules:
+    if item['name'] in dict_available:
+        matched_item = dict_available[item['name']]
+        # each installed modules must get its information
+        for instance in item['instances']:
+            instance.update({
+                "description": matched_item["description"],
+                "logo": matched_item["logo"] or "",
+                "screenshots": matched_item["screenshots"],
+                "categories": matched_item["categories"],
+                "authors": matched_item["authors"],
+                "docs": matched_item["docs"],
+                "source": matched_item["source"]
+            })
+
+json.dump(list_core_modules, fp=sys.stdout)
