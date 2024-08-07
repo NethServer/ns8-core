@@ -111,7 +111,9 @@ def _parse_repository_metadata(repository_name, repository_url, repository_updat
             print(agent.SD_WARNING + f"Unable to parse repository {repository_name} URL: {repository_url}", ex, file=sys.stderr)
         # Set absolute path for logo
         if package["logo"]:
-           package["logo"] = _urljoin(repository_url, package["id"], package["logo"])
+            package["logo"] = _urljoin(repository_url, package["id"], package["logo"])
+        else:
+            package["logo"] = "" # convert None to empty string
         # Set absolute path for screenshots
         screenshots = []
         for s in package["screenshots"]:
