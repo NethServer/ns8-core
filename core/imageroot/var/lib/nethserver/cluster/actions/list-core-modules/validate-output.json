@@ -11,7 +11,9 @@
                   {
                       "id": "core",
                       "version": "updates_from_repo",
-                      "update": ""
+                      "update": "",
+                      "node_id": "1",
+                      "node_ui_name": "node1"
                   }
               ]
           },
@@ -19,9 +21,11 @@
               "name": "promtail",
               "instances": [
                   {
-                      "id": "promtail1",
-                      "version": "latest",
-                      "update": ""
+                    "id": "promtail1",
+                    "version": "latest",
+                    "update": "",
+                    "node_id": "1",
+                    "node_ui_name": "node1"
                   }
               ]
           },
@@ -29,9 +33,11 @@
               "name": "traefik",
               "instances": [
                   {
-                      "id": "traefik1",
-                      "version": "0.0.1",
-                      "update": ""
+                    "id": "traefik1",
+                    "version": "0.0.1",
+                    "update": "",
+                    "node_id": "1",
+                    "node_ui_name": "node1"
                   }
               ]
           },
@@ -39,14 +45,18 @@
               "name": "loki",
               "instances": [
                   {
-                      "id": "loki1",
-                      "version": "latest",
-                      "update": ""
+                    "id": "loki1",
+                    "version": "latest",
+                    "update": "",
+                    "node_id": "1",
+                    "node_ui_name": "node1"
                   },
                   {
-                      "id": "loki2",
-                      "version": "0.0.1-alpha1",
-                      "update": "0.0.1"
+                    "id": "loki2",
+                    "version": "0.0.1-alpha1",
+                    "update": "0.0.1",
+                    "node_id": "2",
+                    "node_ui_name": "node2"
                   }
               ]
           },
@@ -54,9 +64,11 @@
               "name": "ldapproxy",
               "instances": [
                   {
-                      "id": "ldapproxy1",
-                      "version": "latest",
-                      "update": ""
+                    "id": "ldapproxy1",
+                    "version": "latest",
+                    "update": "",
+                    "node_id": "1",
+                    "node_ui_name": "node1"
                   }
               ]
           }
@@ -86,12 +98,22 @@
                       "update": {
                           "type": "string",
                           "description": "Available version update, can be empty"
-                      }
+                      },
+                      "node_id": {
+                          "type": "string",
+                          "description": "the node ID where the module is installed"
+                      },
+                    "node_ui_name": {
+                        "type": "string",
+                        "description": "the node UI name where the module is installed"
+                    }
                   },
                   "required": [
                       "id",
                       "version",
-                      "update"
+                      "update",
+                      "node_id",
+                      "node_ui_name"
                   ]
               }
           }

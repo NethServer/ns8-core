@@ -111,7 +111,9 @@ def _parse_repository_metadata(repository_name, repository_url, repository_updat
             print(agent.SD_WARNING + f"Unable to parse repository {repository_name} URL: {repository_url}", ex, file=sys.stderr)
         # Set absolute path for logo
         if package["logo"]:
-           package["logo"] = _urljoin(repository_url, package["id"], package["logo"])
+            package["logo"] = _urljoin(repository_url, package["id"], package["logo"])
+        else:
+            package["logo"] = "" # convert None to empty string
         # Set absolute path for screenshots
         screenshots = []
         for s in package["screenshots"]:
@@ -439,7 +441,10 @@ def list_core_modules(rdb):
                 return oupdate['update']
         return ""
     core_modules = {}
-    _, latest_core = get_latest_module('core', rdb).rsplit(":", 1)
+    try:
+        _, latest_core = get_latest_module('core', rdb).rsplit(":", 1)
+    except LatestModuleLookupError:
+        latest_core = '0.0.0'
     def _calc_core_update(current, latest):
         try:
             vcur = semver.parse_version_info(current)
@@ -459,6 +464,8 @@ def list_core_modules(rdb):
                 'id': 'core' + node_id,
                 'version': ntag,
                 'update': _calc_core_update(ntag, latest_core),
+                'node_id': node_id,
+                'node_ui_name': rdb.get(f'node/{node_id}/ui_name') or "",
             }
         except Exception as ex:
             print(agent.SD_ERR+f"Cannot fetch node {node_id} attributes:", ex, file=sys.stderr)
@@ -479,5 +486,7 @@ def list_core_modules(rdb):
                 "id": instance["id"],
                 "version": instance["version"],
                 "update": _get_module_update(instance['id']),
+                "node_id": instance["node"],
+                "node_ui_name": instance["node_ui_name"],
             })
     return list(core_modules.values())
