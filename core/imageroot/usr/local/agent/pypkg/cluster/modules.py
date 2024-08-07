@@ -439,7 +439,10 @@ def list_core_modules(rdb):
                 return oupdate['update']
         return ""
     core_modules = {}
-    _, latest_core = get_latest_module('core', rdb).rsplit(":", 1)
+    try:
+        _, latest_core = get_latest_module('core', rdb).rsplit(":", 1)
+    except LatestModuleLookupError:
+        latest_core = '0.0.0'
     def _calc_core_update(current, latest):
         try:
             vcur = semver.parse_version_info(current)
