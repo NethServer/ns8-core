@@ -12,43 +12,91 @@ import sys
 import os, os.path
 import argparse
 
+DESCRIPTION="""
+Run Restic with the repository configuration used by a NethServer 8
+module.
+
+This command can be executed under the agent environment of a specific
+module, or under the cluster agent environment.
+
+Example invocations:
+
+    runagent -m loki1 --help
+    runagent -m loki1 restic-wrapper stats
+    runagent restic-wrapper --backup 2 --repopath webtop/2f3c56e2-aa1a-4eda-9e32-0ec9348cd31b stats
+    runagent restic-wrapper --destination fd4e75b5-9836-42be-b5db-b4983a851e40 --repopath webtop/2f3c56e2-aa1a-4eda-9e32-0ec9348cd31b stats
+
+"""
+
 parser = argparse.ArgumentParser(
     prog="restic-wrapper",
-    description="Invoke Restic inside a container",
+    formatter_class=argparse.RawDescriptionHelpFormatter,
+    description=DESCRIPTION,
+    add_help=False, # Help flag is also forwarded to Restic
 )
-parser.add_argument('-p', '--podman', action="extend", nargs="+", type=str, help="Arguments for Podman")
-parser.add_argument('restic', nargs="+", type=str, help="Arguments for Restic", metavar="restic_arg")
-parser.add_argument('--repository', help="Repository UUID")
-parser.add_argument('-b', '--backup', help="Backup ID, required if multiple backups are configured for the module")
-args = parser.parse_args()
+parser.add_argument('--podman', action="append", type=str, help="Arguments for Podman, e.g. --podman volume=./mydir:/srv/path")
+parser.add_argument('--backup', help="Backup ID, required if multiple backups are configured for the module")
+parser.add_argument('--destination', help="Destination UUID")
+parser.add_argument('--repopath', help="Override the repository path for the backup destination")
+parser.add_argument('--list', action="store_true", help="List destinations and backups")
+wargs, rargs = parser.parse_known_args()
+if '--help' in rargs:
+    # Print the wrapper helper, then continue, to forward the help flag to Restic
+    parser.print_help()
 
 rdb = agent.redis_connect(use_replica=True) # Connect to local replica
-module_id = os.environ.get("MODULE_ID")
-podman_args = ["--workdir=/srv"]
 
-if args.repository:
-    repository = args.repository
-    repopath = '/'
-elif args.backup:
-    repository = rdb.hget(f"cluster/backup/{args.backup}", "repository")
-elif module_id:
+if wargs.list:
+    print("Destinations:")
+    for krepo in rdb.scan_iter('cluster/backup_repository/*'):
+        adest = rdb.hgetall(krepo)
+        print(f"- {krepo.removeprefix('cluster/backup_repository/')} {adest['name']}")
+    print()
+    print("Configured backups:")
+    for kbackup in rdb.scan_iter('cluster/backup/*'):
+        bid = kbackup.removeprefix('cluster/backup/')
+        abackup = rdb.hgetall(kbackup)
+        print(f"- {bid} {abackup['name']}")
+    print()
+    sys.exit(0)
+
+module_id = os.environ.get("MODULE_ID")
+repopath = None
+backup_id = None
+dest_uuid = None
+podman_args = ["--workdir=/srv"]
+if wargs.podman:
+    podman_args.extend(['--' + arg for arg in wargs.podman])
+if wargs.backup:
+    backup_id = wargs.backup
+if module_id:
     podman_args.extend(agent.get_state_volume_args()) # get volumes from state-include.conf
     repopath = agent.get_image_name_from_url(os.environ["IMAGE_URL"]) + "/" + os.environ["MODULE_UUID"]
-    backup_list = list(rdb.smembers(f"module/{module_id}/backups"))
-    if len(backup_list) == 1:
-        repository = rdb.hget(f"cluster/backup/{backup_list[0]}", "repository")
-    elif len(backup_list) == 0:
-        print(f"Backup is not configured for {module_id}. You must specify the --repository option", file=sys.stderr)
-        sys.exit(2)
-    else:
-        print("You must specify the --backup option, with one of the following values:", ", ".join(backup_list), file=sys.stderr)
-        sys.exit(2)
+    if not backup_id:
+        try:
+            backup_id = min(rdb.smembers(f"module/{module_id}/backups"))
+        except:
+            pass
+
+if backup_id:
+    dest_uuid = rdb.hget(f"cluster/backup/{backup_id}", "repository")
 else:
-    print(f"You must specify the --repository option", file=sys.stderr)
+    dest_uuid = wargs.destination
+
+if not dest_uuid:
+    parser.print_help()
+    print()
+    print(f"Destination not found. Consider using --backup or --destination arguments.", file=sys.stderr)
     sys.exit(2)
 
-if args.podman:
-    podman_args.extend(['--' + arg for arg in args.podman])
+if wargs.repopath:
+    repopath = wargs.repopath
 
-proc = agent.run_restic(rdb, repository, repopath, podman_args, list(args.restic))
+if not repopath:
+    parser.print_help()
+    print()
+    print(f"Path for Restic repository not found. Consider using --repopath argument.", file=sys.stderr)
+    sys.exit(2)
+
+proc = agent.run_restic(rdb, dest_uuid, repopath, podman_args, rargs)
 sys.exit(proc.returncode)
