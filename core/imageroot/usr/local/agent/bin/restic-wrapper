@@ -21,7 +21,7 @@ module, or under the cluster agent environment.
 
 Example invocations:
 
-    runagent -m loki1 --help
+    runagent -m loki1 restic-wrapper --help
     runagent -m loki1 restic-wrapper stats
     runagent restic-wrapper --backup 2 --repopath webtop/2f3c56e2-aa1a-4eda-9e32-0ec9348cd31b stats
     runagent restic-wrapper --destination fd4e75b5-9836-42be-b5db-b4983a851e40 --repopath webtop/2f3c56e2-aa1a-4eda-9e32-0ec9348cd31b stats
