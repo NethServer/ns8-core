@@ -41,6 +41,9 @@ for item in list_core_modules:
             instance.update({
                 "description": matched_item["description"],
                 "logo": matched_item["logo"] or "",
+                "certification_level": matched_item["certification_level"] ,
+                "repository": matched_item["repository"],
+                "versions": matched_item["versions"],
                 "screenshots": matched_item["screenshots"],
                 "categories": matched_item["categories"],
                 "authors": matched_item["authors"],
