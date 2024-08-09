@@ -29,7 +29,7 @@
               tipAlignment="end"
               class="page-toolbar-item"
             >
-              <cv-overflow-menu-item @click="showCoreAppModal()">
+              <cv-overflow-menu-item @click="showSoftwareCenterCoreApps()">
                 <NsMenuItem
                   :icon="Application20"
                   :label="$t('software_center.core_apps')"
@@ -214,17 +214,6 @@
                 !loading.listCoreModules
               "
             >
-              <NsInlineNotification
-                v-if="updateCoreTimeout"
-                kind="info"
-                :title="
-                  $t('software_center.core_update_will_start_in_a_moment')
-                "
-                :actionLabel="$t('common.cancel')"
-                @action="cancelUpdateCore"
-                :showCloseButton="false"
-                :timer="UPDATE_DELAY"
-              />
               <h4 class="mg-bottom-md">
                 {{ $t("software_center.core_update") }}
               </h4>
@@ -346,11 +335,6 @@
       @close="isShownInstallModal = false"
       @installationCompleted="listModules"
     />
-    <CoreAppModal
-      :isShown="isShownCoreAppModal"
-      :coreApp="coreApp"
-      @hide="hideCoreAppModal"
-    />
   </div>
 </template>
 
@@ -358,7 +342,6 @@
 import AppList from "@/components/software-center/AppList";
 import to from "await-to-js";
 import InstallAppModal from "@/components/software-center/InstallAppModal";
-import CoreAppModal from "@/components/software-center/CoreAppModal";
 import {
   QueryParamService,
   UtilService,
@@ -374,7 +357,6 @@ export default {
   components: {
     AppList,
     InstallAppModal,
-    CoreAppModal,
   },
   mixins: [
     IconService,
@@ -409,7 +391,6 @@ export default {
       appToInstall: null,
       isCoreUpdateAvailable: false,
       coreApp: null,
-      isShownCoreAppModal: false,
       loading: {
         listModules: true,
         cleanRepositoriesCache: false,
@@ -425,7 +406,7 @@ export default {
     };
   },
   computed: {
-    ...mapState(["isUpdateInProgress", "clusterNodes"]),
+    ...mapState(["isUpdateInProgress"]),
     csbAllSelected() {
       return this.q.view === "all";
     },
@@ -439,9 +420,6 @@ export default {
       return this.modules.filter((app) => {
         return app.installed.length;
       });
-    },
-    nodeIds() {
-      return this.clusterNodes.map((node) => node.id);
     },
     numInstancesToUpdate() {
       let numInstancesToUpdate = 0;
@@ -477,13 +455,6 @@ export default {
   created() {
     this.listModules();
     this.listRepositories();
-
-    // register to events
-    this.$root.$on("willUpdateCore", this.onWillUpdateCore);
-  },
-  beforeDestroy() {
-    // remove event listener
-    this.$root.$off("willUpdateCore");
   },
   methods: {
     ...mapActions(["setUpdateInProgressInStore"]),
@@ -704,27 +675,12 @@ export default {
     goToSettingsSoftwareRepositories() {
       this.$router.push("/settings/software-repository");
     },
-    onWillUpdateCore() {
-      setTimeout(() => {
-        this.startCoreUpdateCountdown();
-      }, 500);
-    },
-    startCoreUpdateCountdown() {
-      this.updateCoreTimeout = setTimeout(() => {
-        this.updateCore();
-        this.updateCoreTimeout = 0;
-      }, this.UPDATE_DELAY);
-    },
     willUpdateAllApps() {
       this.error.updateModules = "";
       this.updateAllAppsTimeout = setTimeout(() => {
         this.updateModules();
         this.updateAllAppsTimeout = 0;
       }, this.UPDATE_DELAY);
-    },
-    cancelUpdateCore() {
-      clearTimeout(this.updateCoreTimeout);
-      this.updateCoreTimeout = 0;
     },
     cancelUpdateAllApps() {
       clearTimeout(this.updateAllAppsTimeout);
@@ -735,7 +691,6 @@ export default {
       this.setUpdateInProgressInStore(true);
       const taskAction = "update-modules";
       const eventId = this.getUuid();
-
       // register to task error
       this.$root.$once(
         `${taskAction}-aborted-${eventId}`,
@@ -750,6 +705,7 @@ export default {
       const res = await to(
         this.createClusterTask({
           action: taskAction,
+          data: {},
           extra: {
             title: this.$t("software_center.update_all_apps"),
             description: this.$tc(
@@ -834,61 +790,8 @@ export default {
       this.loading.cleanRepositoriesCache = false;
       this.listModules();
     },
-    showCoreAppModal() {
-      this.isShownCoreAppModal = true;
-    },
-    hideCoreAppModal() {
-      this.isShownCoreAppModal = false;
-    },
-    async updateCore() {
-      this.error.updateCore = "";
-      this.setUpdateInProgressInStore(true);
-      const taskAction = "update-core";
-      const eventId = this.getUuid();
-
-      // register to task error
-      this.$root.$once(
-        `${taskAction}-aborted-${eventId}`,
-        this.updateCoreAborted
-      );
-
-      this.$root.$once(
-        `${taskAction}-completed-${eventId}`,
-        this.updateCoreCompleted
-      );
-
-      const res = await to(
-        this.createClusterTask({
-          action: taskAction,
-          data: {
-            nodes: this.nodeIds,
-          },
-          extra: {
-            title: this.$t("software_center.update_core"),
-            description: this.$t("common.processing"),
-            eventId,
-          },
-        })
-      );
-      const err = res[0];
-
-      if (err) {
-        console.error(`error creating task ${taskAction}`, err);
-        this.error.updateCore = this.getErrorMessage(err);
-        this.setUpdateInProgressInStore(false);
-        return;
-      }
-    },
-    updateCoreAborted(taskResult, taskContext) {
-      console.error(`${taskContext.action} aborted`, taskResult);
-      this.setUpdateInProgressInStore(false);
-    },
-    updateCoreCompleted() {
-      // add a brief delay: API server may not be ready to accept requests immediately
-      setTimeout(() => {
-        this.setUpdateInProgressInStore(false);
-        this.listModules();
-      }, 5000);
+    showSoftwareCenterCoreApps() {
+      this.$router.push("/software-center/SoftwareCenterCoreApps");
     },
   },
 };
