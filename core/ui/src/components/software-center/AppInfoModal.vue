@@ -26,7 +26,7 @@
               />
             </div>
             <div class="app-name">
-              <h3 data-modal-primary-focus>{{ app.name }}</h3>
+              <h3 data-modal-primary-focus>{{ app.name || app.id }}</h3>
             </div>
           </div>
         </div>
