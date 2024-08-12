@@ -86,7 +86,7 @@
               kind="ghost"
               :icon="ArrowRight20"
               size="field"
-              @click="showCoreAppModal()"
+              @click="showSoftwareCenterCoreApps()"
               >{{ $t("software_center.review_and_update") }}</NsButton
             >
           </div>
@@ -141,23 +141,17 @@
       :isShown="appInfo.isShown"
       @close="onClose"
     />
-    <CoreAppModal
-      :isShown="isShownCoreAppModal"
-      :coreApp="coreApp"
-      @hide="hideCoreAppModal"
-    />
   </div>
 </template>
 
 <script>
 import { IconService, UtilService } from "@nethserver/ns8-ui-lib";
 import AppInfoModal from "./AppInfoModal";
-import CoreAppModal from "./CoreAppModal";
 import CertificationLevelBadge from "./CertificationLevelBadge.vue";
 
 export default {
   name: "AppList",
-  components: { AppInfoModal, CoreAppModal, CertificationLevelBadge },
+  components: { AppInfoModal, CertificationLevelBadge },
   mixins: [IconService, UtilService],
   props: {
     apps: {
@@ -181,7 +175,6 @@ export default {
       appsLoaded: [],
       pageNum: 0,
       pageSize: 20,
-      isShownCoreAppModal: false,
     };
   },
   computed: {
@@ -206,6 +199,7 @@ export default {
     showAppInfo(app) {
       this.appInfo.isShown = true;
       this.appInfo.app = app;
+      console.log("appInfo", this.appInfo);
     },
     onClose() {
       const context = this;
@@ -262,12 +256,9 @@ export default {
       }
       return false;
     },
-    showCoreAppModal() {
-      this.isShownCoreAppModal = true;
-    },
-    hideCoreAppModal() {
-      this.isShownCoreAppModal = false;
-    },
+    showSoftwareCenterCoreApps() {
+      this.$router.push("/software-center/SoftwareCenterCoreApps");
+    }
   },
 };
 </script>
