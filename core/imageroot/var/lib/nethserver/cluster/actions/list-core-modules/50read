@@ -40,7 +40,7 @@ for item in list_core_modules:
         for instance in item['instances']:
             instance.update({
                 "description": matched_item["description"],
-                "logo": matched_item["logo"] or "",
+                "logo": matched_item["logo"],
                 "certification_level": matched_item["certification_level"] ,
                 "repository": matched_item["repository"],
                 "versions": matched_item["versions"],
