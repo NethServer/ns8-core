@@ -77,12 +77,12 @@
         "leader_node_hostname": "Hostname des Hauptknoten",
         "hostname_pattern": "Hostname fehlerhaft (Format)",
         "restore_num_apps": "Wiederherstellung von Apps | {num} App wiederherstellen | {num} Apps wiederherstellen",
-        "select_apps_to_restore_description": "Your apps will be restored using the latest backup. If you need to restore certain apps from an earlier backup, you can do so later by going to the '@:backup.title' page"
+        "select_apps_to_restore_description": "Alle Apps werden von der letzten Sicherung wiederhergestellt. Wenn bestimmte Apps aus einer früheren Sicherung wiederhergestellt werden müssen, kann dies später über die Seite '@:backup.title' tun"
     },
     "password": {
         "uppercase_letter": "Großbuchstaben",
         "long_enough": "Länge ausreichend",
-        "password": "Kenwort",
+        "password": "Kennwort",
         "show_password": "Kennwort anzeigen",
         "re_enter_new_password": "neues Kennwort wiederholen",
         "invalid_user_password": "Kennwort falsch",
@@ -423,8 +423,8 @@
         "check_node_connectivity_promote": "Verbindung zu '{fqdn}' prüfen",
         "connectivity_check_failed": "Verbindungstest fehlgeschlagen",
         "node_name_domain": "{node} Domäne",
-        "connectivity_check_failed_description": "The FQDN {fqdn} is not reachable from {node}. Please change hostname and/or domain or, if you want to skip this check and fix the DNS record later, unselect '@:nodes.check_node_connectivity' and try again.",
-        "vpn_endpoint_warning_description": "Leader FQDN is used by worker nodes to establish the VPN connection with the leader. Ensure that all workers can resolve the new leader FQDN.",
+        "connectivity_check_failed_description": "Der FQDN {fqdn} ist von Knoten {node} nicht erreichbar. Hostname oder Domäne anpassen, alternativ zum überspringen dieser Prüfung '@:nodes.check_node_connectivity' deaktivieren und erneut versuchen.",
+        "vpn_endpoint_warning_description": "Der FQDN des Hauptknoten wird von anderen Knoten genutzt, um die VPN-Verbindung zum Hauptknoten herzustellen. Sicherstellen, dass alle Knoten den neuen FQDN auflösen können.",
         "node_name_hostname": "{node} Hostname",
         "vpn_endpoint_warning_title": "Bearbeitung des FQDN des Haupt-Knoten"
     },
@@ -922,7 +922,7 @@
         "from_different_cluster": "Von einem anderen Cluster",
         "from_node_name_of_different_cluster": "Von Knoten {name} eines anderen Cluster",
         "from_node_name": "Von Knoten {name}",
-        "data_encryption_key_tooltip": "This password is used to encrypt data in the backup destination and is saved inside your cluster backup. Store this password in a safe place, or remember to download cluster backup regularly.",
+        "data_encryption_key_tooltip": "Dieses Kennwort wird zur Verschlüsselung der Daten im Sicherungsziel verwendet und in der Clustersicherung gespeichert. Dieses Kennwort muss an einem sicheren Ort aufbewahrt werden, alternativ regelmäßig die Clustersicherung herunterzuladen.",
         "most_recent": "aktuellste",
         "from_this_cluster": "Von diesem Cluster"
     },
