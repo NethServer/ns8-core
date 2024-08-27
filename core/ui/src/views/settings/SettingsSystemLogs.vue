@@ -54,116 +54,125 @@
       :showCloseButton="false"
     />
     <cv-row v-if="loading.lokiInstances && loading.subscription">
-      <cv-column :md="4" :xlg="4">
-        <NsTile :light="true" :icon="Catalog32">
-          <cv-skeleton-text
-            :paragraph="false"
-            :line-count="1"
-            heading
-          ></cv-skeleton-text>
-          <cv-skeleton-text
-            :paragraph="true"
-            :line-count="9"
-          ></cv-skeleton-text>
-        </NsTile>
+      <cv-column>
+        <!-- skeleton card grid -->
+        <div
+          class="card-grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 3xl:grid-cols-4"
+        >
+          <NsTile :light="true" :icon="Catalog32">
+            <cv-skeleton-text
+              :paragraph="false"
+              :line-count="1"
+              heading
+            ></cv-skeleton-text>
+            <cv-skeleton-text
+              :paragraph="true"
+              :line-count="9"
+            ></cv-skeleton-text>
+          </NsTile>
+        </div>
       </cv-column>
     </cv-row>
     <cv-row v-else-if="lokiInstances.length">
-      <cv-column
-        :md="4"
-        :xlg="4"
-        v-for="instance in lokiInstances"
-        :key="instance.instance_id"
-      >
-        <LokiCard
-          :instanceId="instance.instance_id"
-          :instanceLabel="instance.instance_label"
-          :nodeId="instance.node_id"
-          :nodeLabel="instance.node_label"
-          :active="instance.active"
-          :offline="instance.offline"
-          :retentionDays="instance.retention_days"
-          :activeFrom="instance.active_from"
-          :activeTo="instance.active_to"
-          :showStatusBadge="lokiInstances.length > 1"
-          :cloudLogManagerForwarderStatus="instance.cloud_log_manager.status"
-          :syslogForwarderStatus="instance.syslog.status"
+      <cv-column>
+        <!-- skeleton card grid -->
+        <div
+          class="card-grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 3xl:grid-cols-4"
         >
-          <template #menu>
-            <cv-overflow-menu
-              :flip-menu="true"
-              tip-position="top"
-              tip-alignment="end"
-              class="top-right-overflow-menu"
-            >
-              <cv-overflow-menu-item
-                v-if="instance.active"
-                @click="
-                  isEditRetentionDialogOpen = true;
-                  lokiToEdit = instance;
-                "
-                :disabled="instance.offline"
+          <LokiCard
+            v-for="instance in lokiInstances"
+            :key="instance.instance_id"
+            :instanceId="instance.instance_id"
+            :instanceLabel="instance.instance_label"
+            :nodeId="instance.node_id"
+            :nodeLabel="instance.node_label"
+            :active="instance.active"
+            :offline="instance.offline"
+            :retentionDays="instance.retention_days"
+            :activeFrom="instance.active_from"
+            :activeTo="instance.active_to"
+            :showStatusBadge="lokiInstances.length > 1"
+            :cloudLogManagerForwarderStatus="instance.cloud_log_manager.status"
+            :syslogForwarderStatus="instance.syslog.status"
+          >
+            <template #menu>
+              <cv-overflow-menu
+                :flip-menu="true"
+                tip-position="top"
+                tip-alignment="end"
+                class="top-right-overflow-menu"
               >
-                <NsMenuItem
-                  :icon="Edit20"
-                  :label="$t('system_logs.loki.edit_retention')"
-                />
-              </cv-overflow-menu-item>
-              <cv-overflow-menu-item
-                @click="
-                  isEditLabelDialogOpen = true;
-                  lokiToEdit = instance;
-                "
-                :disabled="instance.offline"
-              >
-                <NsMenuItem
-                  :icon="Edit20"
-                  :label="$t('system_logs.loki.edit_label')"
-                />
-              </cv-overflow-menu-item>
-              <cv-overflow-menu-item
-                v-if="instance.active"
-                @click="
-                  isCloudLogManagerConfigureDialogOpen = true;
-                  lokiToEdit = instance;
-                "
-              >
-                <NsMenuItem
-                  :icon="DocumentExport16"
-                  :label="
-                    $t('system_logs.loki.configure_cloud_log_manager_forwarder')
+                <cv-overflow-menu-item
+                  v-if="instance.active"
+                  @click="
+                    isEditRetentionDialogOpen = true;
+                    lokiToEdit = instance;
                   "
-                />
-              </cv-overflow-menu-item>
-              <cv-overflow-menu-item
-                v-if="instance.active"
-                @click="
-                  isSyslogConfigureDialogOpen = true;
-                  lokiToEdit = instance;
-                "
-              >
-                <NsMenuItem
-                  :icon="DocumentExport16"
-                  :label="$t('system_logs.loki.configure_syslog_forwarder')"
-                />
-              </cv-overflow-menu-item>
-              <cv-overflow-menu-item
-                v-if="!instance.active"
-                danger
-                @click="
-                  isUninstallDialogOpen = true;
-                  lokiToUninstall = instance;
-                "
-                :disabled="instance.offline"
-              >
-                <NsMenuItem
-                  :icon="TrashCan20"
-                  :label="$t('system_logs.loki.uninstall')"
-                />
-              </cv-overflow-menu-item>
-            </cv-overflow-menu>
-          </template>
-        </LokiCard>
+                  :disabled="instance.offline"
+                >
+                  <NsMenuItem
+                    :icon="Edit20"
+                    :label="$t('system_logs.loki.edit_retention')"
+                  />
+                </cv-overflow-menu-item>
+                <cv-overflow-menu-item
+                  @click="
+                    isEditLabelDialogOpen = true;
+                    lokiToEdit = instance;
+                  "
+                  :disabled="instance.offline"
+                >
+                  <NsMenuItem
+                    :icon="Edit20"
+                    :label="$t('system_logs.loki.edit_label')"
+                  />
+                </cv-overflow-menu-item>
+                <cv-overflow-menu-item
+                  v-if="instance.active"
+                  @click="
+                    isCloudLogManagerConfigureDialogOpen = true;
+                    lokiToEdit = instance;
+                  "
+                >
+                  <NsMenuItem
+                    :icon="DocumentExport16"
+                    :label="
+                      $t(
+                        'system_logs.loki.configure_cloud_log_manager_forwarder'
+                      )
+                    "
+                  />
+                </cv-overflow-menu-item>
+                <cv-overflow-menu-item
+                  v-if="instance.active"
+                  @click="
+                    isSyslogConfigureDialogOpen = true;
+                    lokiToEdit = instance;
+                  "
+                >
+                  <NsMenuItem
+                    :icon="DocumentExport16"
+                    :label="$t('system_logs.loki.configure_syslog_forwarder')"
+                  />
+                </cv-overflow-menu-item>
+                <cv-overflow-menu-item
+                  v-if="!instance.active"
+                  danger
+                  @click="
+                    isUninstallDialogOpen = true;
+                    lokiToUninstall = instance;
+                  "
+                  :disabled="instance.offline"
+                >
+                  <NsMenuItem
+                    :icon="TrashCan20"
+                    :label="$t('system_logs.loki.uninstall')"
+                  />
+                </cv-overflow-menu-item>
+              </cv-overflow-menu>
+            </template>
+          </LokiCard>
+        </div>
       </cv-column>
     </cv-row>
     <NsModal
