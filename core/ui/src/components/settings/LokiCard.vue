@@ -181,8 +181,6 @@ export default {
 .loki-card {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  min-height: 7rem;
   // needed for absolute positioning of overflow menu
   position: relative;
   row-gap: 0.75rem;
