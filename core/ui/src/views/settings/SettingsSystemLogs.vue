@@ -57,7 +57,7 @@
       <cv-column>
         <!-- skeleton card grid -->
         <div
-          class="card-grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 3xl:grid-cols-4"
+          class="card-grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 3xl:grid-cols-4"
         >
           <NsTile :light="true" :icon="Catalog32">
             <cv-skeleton-text
@@ -75,7 +75,7 @@
     </cv-row>
     <cv-row v-else-if="lokiInstances.length">
       <cv-column>
-        <!-- skeleton card grid -->
+        <!-- card grid -->
         <div
           class="card-grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 3xl:grid-cols-4"
         >
