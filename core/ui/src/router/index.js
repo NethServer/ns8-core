@@ -146,6 +146,14 @@ const routes = [
       ),
   },
   {
+    path: "/software-center/SoftwareCenterCoreApps",
+    name: "SoftwareCenterCoreApps",
+    component: () =>
+      import(
+        /* webpackChunkName: "software-center-core-apps" */ "../views/SoftwareCenterCoreApps.vue"
+      ),
+  },
+  {
     path: "/software-center/app-instances/:appName",
     name: "SoftwareCenterAppInstances",
     component: SoftwareCenterAppInstances,
