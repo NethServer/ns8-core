@@ -18,14 +18,14 @@
               }}</cv-link>
             </cv-breadcrumb-item>
             <cv-breadcrumb-item>
-              <span>{{ $t("software_center.core_app") }}</span>
+              <span>{{ $t("software_center.core_apps") }}</span>
             </cv-breadcrumb-item>
           </cv-breadcrumb>
         </cv-column>
       </cv-row>
       <cv-row>
         <cv-column class="subpage-title">
-          <h2>{{ $t("software_center.core_app") }}</h2>
+          <h2>{{ $t("software_center.core_apps") }}</h2>
         </cv-column>
       </cv-row>
       <cv-row>
@@ -69,7 +69,7 @@
               :isLoading="loading.listCoreModules"
               :skeletonRows="5"
               isSearchable
-              :searchPlaceholder="$t('software_center.search_core_module')"
+              :searchPlaceholder="$t('software_center.search_core_apps')"
               :searchClearLabel="$t('common.clear_search')"
               :noSearchResultsLabel="$t('common.no_search_results')"
               :noSearchResultsDescription="
@@ -146,7 +146,6 @@ export default {
       tablePage: [],
       tableColumns: [],
       deleteAddressTimeout: [],
-      coreUpdate: "coreUpdate",
       coreApp: null,
       appInfo: {
         isShown: false,
@@ -234,8 +233,7 @@ export default {
     showAppInfo(app) {
       this.appInfo.isShown = true;
       this.appInfo.app = app;
-      console.log("app", app);
-      console.log("appInfo", this.appInfo);
+
     },
     updateTableData() {
       this.tableColumns = this.isCoreUpdatable
@@ -286,7 +284,7 @@ export default {
     },
     listCoreModulesCompleted(taskContext, taskResult) {
       let coreModules = taskResult.output;
-      // update node_id with this.getNodeLabel() to  implement the serch by node_id and node_ui_name
+      // update node_id with this.getNodeLabel() to  implement the search by node_id and node_ui_name
       coreModules = coreModules.map((coreApp) => {
         coreApp.instances = coreApp.instances.map((instance) => {
           instance.node_id = this.getNodeLabel({
@@ -319,6 +317,7 @@ export default {
         for (const coreInstance of coreApp.instances) {
           if (coreInstance.update) {
             isCoreUpdateAvailable = true;
+            break;
           }
         }
       }
@@ -335,9 +334,9 @@ export default {
     onWillUpdateCore(coreUpdate) {
       const notification = {
         id: this.getUuid(),
-        title: this.$t("software_center.core_app_are_going_to_be_updated"),
+        title: this.$t("software_center.core_update_will_start_in_a_moment"),
         type: "info",
-        toastTimeout: this.DELETE_DELAY - 1000,
+        toastTimeout: this.DELETE_DELAY,
         actionLabel: this.$t("common.cancel"),
         action: {
           type: "callback",
@@ -439,11 +438,4 @@ export default {
 
 <style scoped lang="scss">
 @import "../styles/carbon-utils";
-
-// global styles
-
-// reset background color of table pagination
-// .bx--modal .bx--pagination {
-//   background-color: $ui-01;
-// }
 </style>
