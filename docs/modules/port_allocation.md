@@ -24,4 +24,58 @@ The available environment variables will be:
 - `TCP_PORTS`, `UDP_PORTS`: only if value is greater than 1 and less or equal than 8, it contains a comma separated list of
   ports like, i.e. `20001,20002,20003`
 
-Currently last allocated port is saved inside Redis at `node/<node_id>/tcp_ports_sequence`, `node/<node_id>/udp_ports_sequence`.
+Currently allocated port is saved on a sqlite database file on each nodes.
+
+Module can require additional roles to manage ports allocation.
+This can be done setting label `org.nethserver.authorizations` on module image as the following example:
+```
+org.nethserver.authorizations = node:allocate-ports node:deallocate-ports
+```
+
+The `ports_manager` library provides functions for managing network ports used by different modules within an application. You can dynamically allocate and deallocate ports based on the module's requirements.
+
+## Importing the Library
+
+To use the `ports_manager` library, you need to import it into your Python script as follows:
+
+```python
+import node.ports_manager
+```
+
+## Available Functions
+
+### `allocate_ports`
+
+This function allows you to allocate a specific number of ports for a given module and protocol.
+
+- **Parameters**:
+  - `required_ports` (*int*): The number of ports required.
+  - `module_name` (*str*): The name of the module requesting the ports.
+  - `protocol` (*str*): The protocol for which the ports are required (e.g. "tcp" or "udp").
+
+- **Usage Example**:
+
+```python
+allocated_ports = node.ports_manager.allocate_ports(5, "my_module", "tcp")
+```
+
+### `deallocate_ports`
+
+This function allows you to deallocate all ports previously assigned to a specific module for a given protocol.
+
+- **Parameters**:
+  - `module_name` (*str*): The name of the module for which ports should be deallocated.
+  - `protocol` (*str*): The protocol for which the ports were allocated (e.g., "tcp" or "udp").
+
+- **Usage Example**:
+
+```python
+node.ports_manager.deallocate_ports("my_module", "udp")
+```
+
+## Additional Notes
+
+- Ensure to handle exceptions that may be raised during the allocation or deallocation of ports.
+- Ports allocated will remain reserved for the specified module until they are explicitly deallocated.
+- When using the `allocate_ports` function, if the module already has allocated ports, they will first be deallocated and then reallocated.
+
