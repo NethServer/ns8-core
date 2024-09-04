@@ -138,7 +138,7 @@ done
 echo "Install Traefik:"
 add-module traefik 1
 
-echo "Setting admin password${ADMIN_PASSWORD:- to default Nethesis,1234}:"
+echo "Setting admin password:"
 ADMIN_PASSWORD="${ADMIN_PASSWORD:-Nethesis,1234}"
 add-user --role owner --password "${ADMIN_PASSWORD}" admin
 

@@ -75,15 +75,18 @@ Most modules run software from additional Podman images. The
 `org.nethserver.images` takes a space-separated list of image URLs that
 will be automatically downloaded by the `create-module` base action.
 
-Information about the downloaded images are stored in the agent environment.
+Information about the downloaded images are stored in the agent
+environment, so they can be referenced in unit `.service` files and action
+scripts.
 
 Environment variables names are set as follow:
 - one variable for each image
 - variable name is the uppercase value of the image name
 - symbols are mapped to `_` (underscore)
+- if the image name begins with a digit, a `I` is prepended
 - `_IMAGE` suffix is appended
 
-Example:
+Examples:
 - `docker.io/library/mysql:10.3-alpine` becomes `MYSQL_IMAGE=docker.io/library/mysql:10.3-alpine`
-
-
+- `quay.io/prometheus/node-exporter:v1.5.0` becomes `NODE_EXPORTER_IMAGE=quay.io/prometheus/node-exporter:v1.5.0`
+- `docker.io/2fauth/2fauth:5.2.0` becomes `I2FAUTH_IMAGE=docker.io/2fauth/2fauth:5.2.0`
