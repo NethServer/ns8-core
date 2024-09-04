@@ -150,7 +150,7 @@ const routes = [
     name: "SoftwareCenterCoreApps",
     component: () =>
       import(
-        /* webpackChunkName: "software-center" */ "../views/SoftwareCenterCoreApps.vue"
+        /* webpackChunkName: "software-center-core-apps" */ "../views/SoftwareCenterCoreApps.vue"
       ),
   },
   {
