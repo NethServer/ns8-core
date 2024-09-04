@@ -898,7 +898,6 @@
         "core_app_update_available": "Core update available",
         "core_app_update_available_description": "Some core apps need to be updated",
         "version": "Version",
-        "id": "Instances",
         "node_id": "Node",
         "core_update": "Core update",
         "app_updates": "App updates",
@@ -940,9 +939,7 @@
         "update_to_testing_version": "Update to testing version",
         "num_instances_installed": "{num} instance installed | {num} instances installed",
         "reason_max_per_node_limit": "Limit of {param} instance reached | Limit of {param} instances reached",
-        "core_app": "Core apps",
-        "search_core_module": "Search core apps",
-        "core_app_are_going_to_be_updated": "Core will be updated in a moment"
+        "search_core_apps": "Search core apps"
     },
     "system_logs": {
         "title": "System logs",
