@@ -164,6 +164,9 @@ cluster.grants.grant(rdb, "remove-custom-zone", f'node/{node_id}', "tunadm")
 cluster.grants.grant(rdb, "add-tun",  f'node/{node_id}', "tunadm")
 cluster.grants.grant(rdb, "remove-tun", f'node/{node_id}', "tunadm")
 
+cluster.grants.grant(rdb, "allocate-ports", f'node/{node_id}', "portsadm")
+cluster.grants.grant(rdb, "deallocate-ports", f'node/{node_id}', "portsadm")
+
 # Grant on cascade the owner role on the new node, to users with the owner
 # role on cluster
 for userk in rdb.scan_iter('roles/*'):
