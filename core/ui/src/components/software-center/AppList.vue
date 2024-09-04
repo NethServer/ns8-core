@@ -199,7 +199,6 @@ export default {
     showAppInfo(app) {
       this.appInfo.isShown = true;
       this.appInfo.app = app;
-      console.log("appInfo", this.appInfo);
     },
     onClose() {
       const context = this;
