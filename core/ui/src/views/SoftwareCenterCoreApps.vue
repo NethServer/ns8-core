@@ -152,12 +152,10 @@ export default {
         app: null,
       },
       loading: {
-        listModules: true,
         cleanRepositoriesCache: false,
         listCoreModules: true,
       },
       error: {
-        listModules: "",
         cleanRepositoriesCache: "",
         listCoreModules: "",
         updateCore: "",
@@ -429,7 +427,7 @@ export default {
       // add a brief delay: API server may not be ready to accept requests immediately
       setTimeout(() => {
         this.setUpdateInProgressInStore(false);
-        this.listModules();
+        this.listCoreModules();
       }, 5000);
     },
   },
