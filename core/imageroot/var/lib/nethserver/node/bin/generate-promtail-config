@@ -125,6 +125,16 @@ config = {
             "max_age": "12h",
             "json": True,
         },
+        "pipeline_stages": [
+            {
+                # Work around log flooding from grafana/loki#7649
+                "match": {
+                    "selector": '{__journal_syslog_identifier="loki-server"} |= "context canceled"',
+                    "action": "drop",
+                    "drop_counter_reason": "loki_bug_7649",
+                }
+            },
+        ],
         "relabel_configs": relabel_configs,
     }],
     "positions": {
