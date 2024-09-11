@@ -31,11 +31,7 @@ if not client_list:
     print(agent.SD_ERR + "No client configuration found. Is Loki installed?", file=sys.stderr)
     sys.exit(1)
 
-relabel_configs = [{
-    "target_label": "node_id",
-    "replacement": os.environ["NODE_ID"]
-}]
-
+relabel_configs = []
 
 # Parse /etc/subuid for later usage
 module_uid_ranges = dict()
@@ -113,6 +109,14 @@ for rfpath in glob.glob('/var/lib/nethserver/*/state'):
     })
     print("Generating labeling configuration for " + module_id)
 
+# Work around log flooding from grafana/loki#7649
+# Drop "context canceled" messages from loki-server container
+relabel_configs.append({
+    "action": "drop",
+    "source_labels": ["__journal_syslog_identifier", "__journal_message"],
+    "regex": "loki-server;.*context canceled.*",
+})
+
 # Configuration data. Will be converted to a YAML file:
 config = {
     "server": {
@@ -124,17 +128,10 @@ config = {
         "journal": {
             "max_age": "12h",
             "json": True,
-        },
-        "pipeline_stages": [
-            {
-                # Work around log flooding from grafana/loki#7649
-                "match": {
-                    "selector": '{__journal_syslog_identifier="loki-server"} |= "context canceled"',
-                    "action": "drop",
-                    "drop_counter_reason": "loki_bug_7649",
-                }
+            "labels": {
+                "node_id": os.environ["NODE_ID"],
             },
-        ],
+        },
         "relabel_configs": relabel_configs,
     }],
     "positions": {
