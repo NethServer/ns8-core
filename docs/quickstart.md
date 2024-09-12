@@ -22,7 +22,10 @@ development branch or alternative registries.
 See also [module override](#module-override).
 
 The install script also accepts the following environment variables:
-- `TESTING`: override testing flag inside the `default` repository. It can be `0` (disabled) or `1` (enabled), default is `0`
+- `TESTING`: This flag allows you to override the testing setting within
+  the `default` repository. It can be set to `0` (disabled) or `1`
+  (enabled), with a default value of `0`. Note that this flag will
+  automatically reset to `0` after the next core update.
 - `REPMOD`: override `default` software repository URL, it could be something like `https://mycustomrrepo.server.test/repomd`
 - `ADMIN_PASSWORD`: override default admin password
 
