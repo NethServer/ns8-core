@@ -85,7 +85,7 @@ export default {
       // infinite scroll
       recentNotificationsLoaded: [],
       pageNum: 0,
-      pageSize: 20,
+      pageSize: 50,
     };
   },
   computed: {

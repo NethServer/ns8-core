@@ -33,6 +33,7 @@ request = json.load(sys.stdin)
 popen_args={"encoding": 'utf-8', "stdout": subprocess.PIPE, "stderr": sys.stderr, "text": True}
 rdb = agent.redis_connect(privileged=False)
 cluster_uuid = rdb.get("cluster/uuid") or ""
+repositories = {}
 backups = {}
 for krepo in rdb.scan_iter('cluster/backup_repository/*'):
     repo_uuid = krepo.removeprefix('cluster/backup_repository/')
@@ -44,6 +45,7 @@ for krepo in rdb.scan_iter('cluster/backup_repository/*'):
         'REMOTE_PATH',
     ]
     orepo = rdb.hgetall(krepo)
+    repositories[repo_uuid] = orepo
     proot = subprocess.Popen(rclone_lsjson_cmd, **popen_args)
     for oroot in json.load(proot.stdout):
         restic_prefix, restic_uuid, _ = oroot["Path"].split("/", 2)
@@ -81,26 +83,27 @@ for module_id in rdb.hkeys("cluster/module_node"):
     backups[module_uuid]["module_id"] = module_id
     backups[module_uuid]["module_ui_name"] = backups[module_uuid]["installed_instance_ui_name"]
 
-rclone_cat_cmd = ['rclone-wrapper', repo_uuid,
-    '--include=*.json',
-    '--max-depth=2',
-    'cat',
-    'REMOTE_PATH',
-]
-proc_cat = subprocess.Popen(rclone_cat_cmd, **popen_args)
-for cat_slice in proc_cat.stdout.readlines():
-    try:
-        ometa = json.loads(cat_slice.strip())
-    except:
-        ometa = {}
+for repo_uuid in repositories:
+    rclone_cat_cmd = ['rclone-wrapper', repo_uuid,
+        '--include=*.json',
+        '--max-depth=2',
+        'cat',
+        'REMOTE_PATH',
+    ]
+    proc_cat = subprocess.Popen(rclone_cat_cmd, **popen_args)
+    for cat_slice in proc_cat.stdout.readlines():
+        try:
+            ometa = json.loads(cat_slice.strip())
+        except:
+            ometa = {}
 
-    if ometa.get('uuid') in backups:
-        module_uuid = ometa["uuid"]
-        backups[module_uuid]["module_id"] = ometa.get("module_id", "")
-        backups[module_uuid]["module_ui_name"] = ometa.get("module_ui_name", "")
-        backups[module_uuid]["node_fqdn"] = ometa.get("node_fqdn", "")
-        backups[module_uuid]["timestamp"] = ometa.get("timestamp", unix_timestamp)
-    if "cluster_uuid" in ometa and not backups[module_uuid].get("is_generated_locally"):
-        backups[module_uuid]["is_generated_locally"] = cluster_uuid == ometa["cluster_uuid"]
+        if ometa.get('uuid') in backups:
+            module_uuid = ometa["uuid"]
+            backups[module_uuid]["module_id"] = ometa.get("module_id", "")
+            backups[module_uuid]["module_ui_name"] = ometa.get("module_ui_name", "")
+            backups[module_uuid]["node_fqdn"] = ometa.get("node_fqdn", "")
+            backups[module_uuid]["timestamp"] = ometa.get("timestamp", unix_timestamp)
+        if "cluster_uuid" in ometa and not backups[module_uuid].get("is_generated_locally"):
+            backups[module_uuid]["is_generated_locally"] = cluster_uuid == ometa["cluster_uuid"]
 
 json.dump(list(backups.values()), fp=sys.stdout)

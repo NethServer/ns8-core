@@ -9,6 +9,8 @@ exec 1>&2
 set -e
 
 if [[ -d ./promtail ]]; then
+    # Apply pending container updates and configuration changes:
+    systemctl try-restart promtail.service || :
     exit 0
 fi
 

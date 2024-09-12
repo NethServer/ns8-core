@@ -174,7 +174,8 @@ export default {
       // infinite scroll
       appsLoaded: [],
       pageNum: 0,
-      pageSize: 20,
+      pageSize: 50,
+      isShownCoreAppModal: false,
     };
   },
   computed: {
