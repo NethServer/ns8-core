@@ -24,13 +24,16 @@ The available environment variables will be:
 - `TCP_PORTS`, `UDP_PORTS`: only if value is greater than 1 and less or equal than 8, it contains a comma separated list of
   ports like, i.e. `20001,20002,20003`
 
-Currently allocated port is saved on a sqlite database file on each nodes.
+Currently allocated ports are saved in an SQLite database file on each node.
 
-Module can require additional roles to manage ports allocation.
-This can be done setting label `org.nethserver.authorizations` on module image as the following example:
+The module must require an additional role to manage its port allocation.
+This can be done by setting the `org.nethserver.authorizations` label on the module image, as shown in the following example:
 ```
-org.nethserver.authorizations = node:allocate-ports node:deallocate-ports
+org.nethserver.authorizations = node:portsadm
 ```
+
+The module will be granted execution permissions for the 
+`allocate-ports` and `deallocate-ports` actions on the local node.
 
 The `ports_manager` library provides functions for managing network ports used by different modules within an application. You can dynamically allocate and deallocate ports based on the module's requirements.
 

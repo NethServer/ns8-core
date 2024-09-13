@@ -4,7 +4,6 @@
 #
 
 import sqlite3
-import os
 
 class PortError(Exception):
     """Base class for all port-related exceptions."""
@@ -79,9 +78,9 @@ def allocate_ports(required_ports: int, module_name: str, protocol: str):
 
             # Fetch used ports based on protocol
             if protocol == 'tcp':
-                cursor.execute("SELECT * FROM TCP_PORTS ORDER BY start;")
+                cursor.execute("SELECT start,end,module FROM TCP_PORTS ORDER BY start;")
             elif protocol == 'udp':
-                cursor.execute("SELECT * FROM UDP_PORTS ORDER BY start;")
+                cursor.execute("SELECT start,end,module FROM UDP_PORTS ORDER BY start;")
             ports_used = cursor.fetchall()
 
             # If the module already has an assigned range, deallocate it first
@@ -89,9 +88,9 @@ def allocate_ports(required_ports: int, module_name: str, protocol: str):
                 deallocate_ports(module_name, protocol)
                 # Reload the used ports after deallocation
                 if protocol == 'tcp':
-                    cursor.execute("SELECT * FROM TCP_PORTS ORDER BY start;")
+                    cursor.execute("SELECT start,end,module FROM TCP_PORTS ORDER BY start;")
                 elif protocol == 'udp':
-                    cursor.execute("SELECT * FROM UDP_PORTS ORDER BY start;")
+                    cursor.execute("SELECT start,end,module FROM UDP_PORTS ORDER BY start;")
                 ports_used = cursor.fetchall()
 
             range_search = True
@@ -124,7 +123,7 @@ def allocate_ports(required_ports: int, module_name: str, protocol: str):
             return (range_start, range_start + required_ports - 1)
 
     except sqlite3.Error as e:
-        raise StorageError(f"Database error: {e}")  # Raise custom database error
+        raise StorageError(f"Database error: {e}") from e # Raise custom database error
 
 def deallocate_ports(module_name: str, protocol: str):
     """
@@ -141,9 +140,9 @@ def deallocate_ports(module_name: str, protocol: str):
 
             # Fetch the port range for the given module and protocol
             if protocol == 'tcp':
-                cursor.execute("SELECT * FROM TCP_PORTS WHERE module=?;", (module_name,))
+                cursor.execute("SELECT start,end,module FROM TCP_PORTS WHERE module=?;", (module_name,))
             elif protocol == 'udp':
-                cursor.execute("SELECT * FROM UDP_PORTS WHERE module=?;", (module_name,))
+                cursor.execute("SELECT start,end,module FROM UDP_PORTS WHERE module=?;", (module_name,))
             ports_deallocated = cursor.fetchall()
             
             if ports_deallocated:
@@ -158,7 +157,7 @@ def deallocate_ports(module_name: str, protocol: str):
                 raise ModuleNotFoundError(module_name)  # Raise error if the module is not found
 
     except sqlite3.Error as e:
-        raise StorageError(f"Database error: {e}")  # Raise custom database error
+        raise StorageError(f"Database error: {e}") from e # Raise custom database error
 
 def write_range(start: int, end: int, module: str, protocol: str):
     """
@@ -184,4 +183,4 @@ def write_range(start: int, end: int, module: str, protocol: str):
             database.commit()
 
     except sqlite3.Error as e:
-        raise StorageError(f"Database error: {e}")  # Raise custom database error
+        raise StorageError(f"Database error: {e}") from e # Raise custom database error
