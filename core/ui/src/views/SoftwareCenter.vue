@@ -425,7 +425,10 @@ export default {
       let numInstancesToUpdate = 0;
 
       for (const appToUpdate of this.appUpdates) {
-        numInstancesToUpdate += appToUpdate.updates.length;
+        const instancesToUpdate = appToUpdate.updates.filter(
+          (update) => update.update
+        );
+        numInstancesToUpdate += instancesToUpdate.length;
       }
       return numInstancesToUpdate;
     },
@@ -512,7 +515,9 @@ export default {
       let appUpdates = [];
 
       for (const module of modules) {
-        if (module.updates.length) {
+        const hasStableUpdate = module.updates.some((update) => update.update);
+
+        if (hasStableUpdate) {
           appUpdates.push(module);
         }
 
