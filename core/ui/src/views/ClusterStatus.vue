@@ -763,7 +763,9 @@ export default {
       let updates = [];
 
       for (const app of apps) {
-        if (app.updates.length) {
+        const hasStableUpdate = app.updates.some((update) => update.update);
+
+        if (hasStableUpdate) {
           updates.push(app);
         }
 
