@@ -100,21 +100,27 @@ func main() {
 
 	var signalChannel = make(chan os.Signal, 1)
 	signal.Notify(signalChannel, syscall.SIGUSR1)
-	var cancelCtx, cancelBrpop = context.WithCancel(ctx)
+	var actionsCtx, cancelActions = context.WithCancel(ctx)
+	var eventsCtx, cancelEvents = context.WithCancel(ctx)
 
 	go func() {
 		xsig := <-signalChannel
 		signal.Stop(signalChannel)
 		log.Printf(SD_WARNING+"Signal \"%v\" caught: shutdown started.", xsig)
-		cancelBrpop()
+		cancelActions()
 	}()
 
-	listeners := make(chan int, 1)
+	actionsChannel := make(chan int, 1)
+	eventsChannel := make(chan int, 1)
 
-	go listenActionsAsync(cancelCtx, listeners)
-	go listenEventsAsync(cancelCtx, listeners)
+	go listenActionsAsync(actionsCtx, actionsChannel)
+	go listenEventsAsync(eventsCtx, eventsChannel)
 
-	// wait for coroutines completion
-	<-listeners
-	<-listeners
+	// wait completion of action goroutines
+	<-actionsChannel
+
+	cancelEvents()
+
+	// wait completion of event goroutines
+	<-eventsChannel
 }
