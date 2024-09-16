@@ -12,7 +12,7 @@
         "module_id": {
             "type": "string",
             "title": "Module identifier",
-            "description": "Name of module that is asking to deallocate ports"
+            "description": "Ports are deallocated from the given module."
         },
         "protocol": {
             "type": "string",
