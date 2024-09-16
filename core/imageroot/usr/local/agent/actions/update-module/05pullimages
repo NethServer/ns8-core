@@ -39,10 +39,6 @@ if not force and image_url == os.getenv('IMAGE_URL'):
     print(agent.SD_WARNING + f"The module URL {image_url} is already installed", file=sys.stderr)
     sys.exit(0)
 
-# Ask the agent to stop listening for new tasks and exit gracefully as
-# soon as this action terminates.
-os.kill(os.getppid(), signal.SIGUSR1)
-
 agent.set_weight('05pullimages', '5')
 
 if not force:
