@@ -24,16 +24,16 @@ The available environment variables will be:
 - `TCP_PORTS`, `UDP_PORTS`: only if value is greater than 1 and less or equal than 8, it contains a comma separated list of
   ports like, i.e. `20001,20002,20003`
 
-Currently allocated ports are saved in an SQLite database file on each node.
+Currently, allocated ports are saved in an SQLite database file located in the node working directory.
 
-The module must require an additional role to manage its port allocation.
-This can be done by setting the `org.nethserver.authorizations` label on the module image, as shown in the following example:
+The module requires an additional role to manage its port allocation, which is assigned by setting the `org.nethserver.authorizations` label on the module image, as shown in the following example:
 ```
 org.nethserver.authorizations = node:portsadm
 ```
 
-The module will be granted execution permissions for the 
-`allocate-ports` and `deallocate-ports` actions on the local node.
+The module will be granted execution permissions for the following actions on the local node:
+- `allocate-ports`
+- `deallocate-ports`
 
 The `ports_manager` library provides functions for managing network ports used by different modules within an application. You can dynamically allocate and deallocate ports based on the module's requirements.
 
@@ -60,6 +60,7 @@ This function allows you to allocate a specific number of ports for a given modu
 
 ```python
 allocated_ports = node.ports_manager.allocate_ports(5, "my_module", "tcp")
+print(f"my_module ports allocated: {allocated_ports}")
 ```
 
 ### `deallocate_ports`
@@ -73,7 +74,8 @@ This function allows you to deallocate all ports previously assigned to a specif
 - **Usage Example**:
 
 ```python
-node.ports_manager.deallocate_ports("my_module", "udp")
+deallocated_ports = node.ports_manager.deallocate_ports("my_module", "udp")
+print(f"my_module ports deallocated: {deallocated_ports}")
 ```
 
 ## Additional Notes
