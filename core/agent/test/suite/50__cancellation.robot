@@ -18,13 +18,14 @@ Cancel a long running task
 
 Repeated task cancellation
     Given The task is submitted    run-termhandler
-    And The command is received    publish    task/id-run-termhandler    progress    33
+    And The command is received    publish    run-termhandler    progress    33
+    And Wait until the agent log contains    WARNING_MESSAGE
+    And Sleep  300ms  Wait for the 2nd step to be started
     When The task is submitted      cancel-task    {"task":"id-run-termhandler","timeout":2}
     And The task is submitted      cancel-task    {"task":"id-run-termhandler","timeout":2}
-    Then The command is received    publish    run-termhandler    status    aborted
-    And Wait until the agent log contains    WARNING_MESSAGE
+    Then The command is received    set  run-termhandler   exit_code  1
+    And The command is received    publish    run-termhandler    status    aborted
     And Wait until the agent log contains    SIGTERM_CAUGHT
-
 Cancel a non-existing task
     Given The task is submitted    cancel-task    {"task":"id-non-existing","timeout":2}
     When The command is received    set    id-cancel-task/exit_code    2
