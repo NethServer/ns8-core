@@ -24,63 +24,56 @@ The available environment variables will be:
 - `TCP_PORTS`, `UDP_PORTS`: only if value is greater than 1 and less or equal than 8, it contains a comma separated list of
   ports like, i.e. `20001,20002,20003`
 
-Currently, allocated ports are saved in an SQLite database file located in the node working directory.
+Currently, allocated ports are saved in an SQLite database file managed by the local node agent.
 
-The module requires an additional role to manage its port allocation, which is assigned by setting the `org.nethserver.authorizations` label on the module image, as shown in the following example:
+## Agent library
+
+The Python `agent` library provides a convenient interface for managing port allocation and deallocation, based on the node actions `allocate_ports` and `deallocate_ports`.
+
+It is recommended to use `os.environ['MODULE_ID']` to ensure the correct module name is used, as calling the function with a name that does not correspond to the invoking module will result in an exception.
+
+### Allocate ports
+
+Imagine an application module that initially requires only one TCP port. Later, a new feature is added, and it needs four TCP ports to handle more connections.
+
+If ports are already allocated for this module, the previous allocation will be deallocated, and the new requested range of ports will be allocated. Here’s how this can be done:
+
+```python
+import agent
+import os
+
+# Allocate 4 TCP ports for the "my_module" module
+allocated_ports = agent.allocate_ports(4, os.environ['MODULE_ID'], "tcp")
+print(f"Allocated TCP ports: {allocated_ports}")
+```
+
+### Deallocate ports
+
+If the module no longer needs the allocated ports, such as when a feature is removed or disabled, the ports can be easily deallocated:
+
+```python
+import agent
+import os
+
+# Deallocate UDP ports for the "my_module" module
+deallocated_ports = agent.deallocate_ports(os.environ['MODULE_ID'], "udp")
+print(f"Deallocated UDP ports: {deallocated_ports}")
+```
+By deallocating the ports, the module frees up the resources, allowing other modules to use those ports.
+
+For more information about functions, see [Port allocation](../../core/port_allocation)
+
+These functions dynamically allocate and deallocate ports based on the module's needs without requiring direct interaction with the node's APIs.
+
+## Authorizations
+
+The module requires an additional role to manage port allocation, which is assigned by setting the `org.nethserver.authorizations` label on the module image, as shown in the following example:
+
 ```
 org.nethserver.authorizations = node:portsadm
 ```
-
 The module will be granted execution permissions for the following actions on the local node:
 - `allocate-ports`
 - `deallocate-ports`
 
-The `ports_manager` library provides functions for managing network ports used by different modules within an application. You can dynamically allocate and deallocate ports based on the module's requirements.
-
-## Importing the Library
-
-To use the `ports_manager` library, you need to import it into your Python script as follows:
-
-```python
-import node.ports_manager
-```
-
-## Available Functions
-
-### `allocate_ports`
-
-This function allows you to allocate a specific number of ports for a given module and protocol.
-
-- **Parameters**:
-  - `required_ports` (*int*): The number of ports required.
-  - `module_name` (*str*): The name of the module requesting the ports.
-  - `protocol` (*str*): The protocol for which the ports are required (e.g. "tcp" or "udp").
-
-- **Usage Example**:
-
-```python
-allocated_ports = node.ports_manager.allocate_ports(5, "my_module", "tcp")
-print(f"my_module ports allocated: {allocated_ports}")
-```
-
-### `deallocate_ports`
-
-This function allows you to deallocate all ports previously assigned to a specific module for a given protocol.
-
-- **Parameters**:
-  - `module_name` (*str*): The name of the module for which ports should be deallocated.
-  - `protocol` (*str*): The protocol for which the ports were allocated (e.g., "tcp" or "udp").
-
-- **Usage Example**:
-
-```python
-deallocated_ports = node.ports_manager.deallocate_ports("my_module", "udp")
-print(f"my_module ports deallocated: {deallocated_ports}")
-```
-
-## Additional Notes
-
-- Ensure to handle exceptions that may be raised during the allocation or deallocation of ports.
-- Ports allocated will remain reserved for the specified module until they are explicitly deallocated.
-- When using the `allocate_ports` function, if the module already has allocated ports, they will first be deallocated and then reallocated.
-
+However, as mentioned above, these actions can be carried out using the agent library without making direct node API calls.

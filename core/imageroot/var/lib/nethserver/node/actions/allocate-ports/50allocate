@@ -16,7 +16,7 @@ request = json.load(sys.stdin)
 module_env = os.getenv("AGENT_TASK_USER")
 
 if module_env != "" and module_env != f"module/{request['module_id']}":
-    print(agent.SD_ERR + f"Agent {module_env} does not have permission to change the port allocation for {request['module_id']}.")
+    print(agent.SD_ERR + f" Agent {module_env} does not have permission to change the port allocation for {request['module_id']}.", file=sys.stderr)
     sys.exit(1)
 
 range = node.ports_manager.allocate_ports(int(request['ports']), request['module_id'], request['protocol'])
