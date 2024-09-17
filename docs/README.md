@@ -15,12 +15,13 @@ Install the dependencies make sure to install ruby >= 3.0.
 
 - Ubuntu:
     ```
-    apt-get install ruby-full
+    apt install build-essential ruby-full
     ```
 
 Install jekyll and all dependencies:
 ```
 bundle config set --local path '.bundle/vendor'
+bundle install
 ```
 
 Build and serve the site locally:
