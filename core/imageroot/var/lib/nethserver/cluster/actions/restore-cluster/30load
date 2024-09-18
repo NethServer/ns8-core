@@ -54,6 +54,14 @@ for d in dump['cluster']['user_domain']['ldap'].keys():
         rdb.hset(f'cluster/user_domain/ldap/{d}/ui_names', mapping=domain['ui_names'])
     for p in domain['providers']:
         r = rdb.lpush(f'cluster/user_domain/ldap/{d}/providers', p)
+    #
+    # Advertise new account provider setup
+    #
+    rdb.publish(os.getenv('AGENT_ID') + '/event/ldap-provider-changed', json.dumps({
+        'domain': d,
+        'key': f"cluster/user_domain/ldap/{d}/providers",
+    }))
+
 
 del(dump['cluster']['user_domain'])
 
