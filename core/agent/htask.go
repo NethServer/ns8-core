@@ -284,9 +284,10 @@ func runAction(rdb *redis.Client, actionCtx context.Context, task *models.Task) 
 	log.Printf("task/%s/%s: action \"%s\" status is \"%s\" (%d) at step %s", agentPrefix, task.ID, task.Action, actionDescriptor.Status, exitCode, lastStep)
 }
 
-func listenActionsAsync(brpopCtx context.Context, complete chan int) {
+func listenActionsAsync(actionsCtx context.Context, complete chan int) {
 	defer func() { complete <- 1 }()
 	var workersRegistry sync.WaitGroup
+	brpopCtx, cancelBrpop := context.WithCancel(ctx)
 	taskCancelFunctions := make(map[string]context.CancelFunc)
 
 	// If we have a REDIS_PASSWORD the default redis username is the agentPrefix string
@@ -314,6 +315,54 @@ func listenActionsAsync(brpopCtx context.Context, complete chan int) {
 		MaxRetryBackoff:   5000 * time.Millisecond,
 	})
 
+	var tcMu sync.Mutex
+	taskCh := make(chan models.Task)
+	go readTasks(rdb, brpopCtx, taskCh)
+	MAINLOOP:
+		for {
+			select {
+			case <-actionsCtx.Done():
+				go func() {
+					// SIGUSR1 received: wait until all workers complete
+					workersRegistry.Wait()
+					// Then stop reading events
+					cancelBrpop()
+				}()
+				// Prevents entering this branch further
+				actionsCtx = ctx
+			case task, stillListening := <-taskCh:
+				if stillListening == false {
+					workersRegistry.Wait()
+					break MAINLOOP
+				}
+				// Create a cancelable context for the task and
+				// store its cancel function in a safe map
+				taskCtx, taskCancelFunction := context.WithCancel(ctx)
+				tcMu.Lock()
+				taskCancelFunctions[task.ID] = taskCancelFunction
+				tcMu.Unlock()
+
+				// Start the task worker
+				go func(task models.Task) {
+					workersRegistry.Add(1)
+					defer workersRegistry.Done()
+					switch task.Action {
+					case "list-actions":
+						runListActions(rdb, &task)
+					case "cancel-task":
+						runCancelTask(rdb, &task, taskCancelFunctions, &tcMu)
+					default:
+						runAction(rdb, taskCtx, &task)
+					}
+					tcMu.Lock()
+					delete(taskCancelFunctions, task.ID)
+					tcMu.Unlock()
+				}(task)
+			}
+		}
+}
+
+func readTasks(rdb *redis.Client, brpopCtx context.Context, taskCh chan models.Task) {
 	// Ignore the credential error on agent startup
 	//
 	// Initialize to a well-known error condition, to avoid log pollution
@@ -357,27 +406,9 @@ func listenActionsAsync(brpopCtx context.Context, complete chan int) {
 			log.Print(SD_ERR+"Context set error: ", setErr)
 		}
 
-		taskCtx, taskCancelFunction := context.WithCancel(ctx)
-		taskCancelFunctions[task.ID] = taskCancelFunction
-
-		// run the Action required by the Task payload
-		go func(task models.Task) {
-			defer func() {
-				workersRegistry.Done()
-				delete(taskCancelFunctions, task.ID)
-			}()
-			workersRegistry.Add(1)
-			switch task.Action {
-			case "list-actions":
-				runListActions(rdb, &task)
-			case "cancel-task":
-				runCancelTask(rdb, &task, taskCancelFunctions)
-			default:
-				runAction(rdb, taskCtx, &task)
-			}
-		}(task)
+		taskCh <- task
 	}
-	workersRegistry.Wait() // block until Action coroutines finish
+	close(taskCh)
 }
 
 // Transform the string array representing an environment

@@ -24,6 +24,7 @@ import (
 	"context"
 	"encoding/json"
 	"log"
+	"sync"
 
 	"github.com/NethServer/ns8-core/core/agent/models"
 	"github.com/go-redis/redis/v8"
@@ -68,7 +69,7 @@ func runListActions(rdb *redis.Client, task *models.Task) {
 	}
 }
 
-func runCancelTask(rdb *redis.Client, task *models.Task, cancelFuncMap map[string]context.CancelFunc) {
+func runCancelTask(rdb *redis.Client, task *models.Task, cancelFuncMap map[string]context.CancelFunc, tcMu *sync.Mutex) {
 	// Redis key names where the action response is stored:
 	progressChannel := "progress/" + agentPrefix + "/task/" + task.ID
 	outputKey := "task/" + agentPrefix + "/" + task.ID + "/output"
@@ -100,7 +101,10 @@ func runCancelTask(rdb *redis.Client, task *models.Task, cancelFuncMap map[strin
 
 		// STEP 2. task-lookup
 		lastStep = "task-lookup"
-		if cancelFunc, hasTask := cancelFuncMap[request.Task]; hasTask == true {
+		tcMu.Lock()
+		cancelFunc, hasTask := cancelFuncMap[request.Task]
+		tcMu.Unlock()
+		if hasTask == true {
 			log.Printf("task/%s/%s: %s/%s is starting", agentPrefix, task.ID, task.Action, lastStep)
 			cancelFunc() // STEP 3. task cancellation
 			lastStep = "cancellation"
