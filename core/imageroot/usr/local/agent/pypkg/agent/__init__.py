@@ -608,16 +608,20 @@ def get_bound_domain_list(rdb, module_id=None):
     else:
         return []
 
-def allocate_ports(ports_number: int, module_id: str, protocol: str):
+def allocate_ports(ports_number: int, protocol: str, module_id: str=""):
     """
     Allocate a range of ports for a given module,
     if it is already allocated it is deallocated first.
 
     :param ports_number: Number of consecutive ports required.
-    :param module_id: Name of the module requesting the ports.
     :param protocol: Protocol type ('tcp' or 'udp').
+    :param module_id: Name of the module requesting the ports.
+                      Parameter is optional, if not provided, default value is environment variable MODULE_ID.
     :return: A tuple (start_port, end_port) if allocation is successful, None otherwise.
     """
+
+    if module_id == "":
+        module_id = os.environ['MODULE_ID']
 
     node_id = os.environ['NODE_ID']
     response = agent.tasks.run(
@@ -636,14 +640,18 @@ def allocate_ports(ports_number: int, module_id: str, protocol: str):
     return response['output']
 
 
-def deallocate_ports(module_id: str, protocol: str):
+def deallocate_ports(protocol: str, module_id: str=""):
     """
     Deallocate the ports for a given module.
 
-    :param module_id: Name of the module whose ports are to be deallocated.
     :param protocol: Protocol type ('tcp' or 'udp').
+    :param module_id: Name of the module whose ports are to be deallocated.
+                      Parameter is optional, if not provided, default value is environment variable MODULE_ID.
     :return: A tuple (start_port, end_port) if deallocation is successful, None otherwise.
     """
+
+    if module_id == "":
+        module_id = os.environ['MODULE_ID']
 
     node_id = os.environ['NODE_ID']
     response = agent.tasks.run(

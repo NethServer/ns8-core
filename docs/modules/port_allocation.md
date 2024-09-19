@@ -30,7 +30,7 @@ Currently, allocated ports are saved in an SQLite database file managed by the l
 
 The Python `agent` library provides a convenient interface for managing port allocation and deallocation, based on the node actions `allocate_ports` and `deallocate_ports`.
 
-It is recommended to use `os.environ['MODULE_ID']` to ensure the correct module name is used, as calling the function with a name that does not correspond to the invoking module will result in an exception.
+It is optional to specify the `module_id` when calling the port allocation or deallocation functions. By default, if the `module_id` is not provided, the function will automatically use the value of the `MODULE_ID` environment variable. This simplifies the function calls in common scenarios, ensuring the correct module name is used without manual input. However, if needed, you can still explicitly pass the `module_id`.
 
 ### Allocate ports
 
@@ -39,12 +39,13 @@ Imagine an application module that initially requires only one TCP port. Later, 
 If ports are already allocated for this module, the previous allocation will be deallocated, and the new requested range of ports will be allocated. Here’s how this can be done:
 
 ```python
-import agent
-import os
-
-# Allocate 4 TCP ports for the "my_module" module
-allocated_ports = agent.allocate_ports(4, os.environ['MODULE_ID'], "tcp")
-print(f"Allocated TCP ports: {allocated_ports}")
+# Allocate 4 TCP ports for the module that is calling the function
+allocated_ports = agent.allocate_ports(4, "tcp")
+```
+or
+```python
+# Allocate 4 UDP ports for "my_module" module
+allocated_ports = agent.allocate_ports(4, "udp", "my_module")
 ```
 
 ### Deallocate ports
@@ -52,12 +53,13 @@ print(f"Allocated TCP ports: {allocated_ports}")
 If the module no longer needs the allocated ports, such as when a feature is removed or disabled, the ports can be easily deallocated:
 
 ```python
-import agent
-import os
-
+# Deallocate TCP ports for the module that is calling the function
+deallocated_ports = agent.deallocate_ports("tcp")
+```
+or
+```python
 # Deallocate UDP ports for the "my_module" module
-deallocated_ports = agent.deallocate_ports(os.environ['MODULE_ID'], "udp")
-print(f"Deallocated UDP ports: {deallocated_ports}")
+deallocated_ports = agent.deallocate_ports("udp", "my_module")
 ```
 By deallocating the ports, the module frees up the resources, allowing other modules to use those ports.
 

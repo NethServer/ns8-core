@@ -24,6 +24,8 @@ This function allows you to allocate a specific number of ports for a given modu
   - `module_name` (*str*): The name of the module requesting the ports.
   - `protocol` (*str*): The protocol for which the ports are required (e.g. "tcp" or "udp").
 
+- **Return** a tuple (start_port, end_port) if allocation is successful, `None` otherwise.
+
 - **Usage Example**:
 
 ```python
@@ -38,6 +40,8 @@ This function allows you to deallocate all ports previously assigned to a specif
 - **Parameters**:
   - `module_name` (*str*): The name of the module for which ports should be deallocated.
   - `protocol` (*str*): The protocol for which the ports were allocated (e.g., "tcp" or "udp").
+
+- **Return** a tuple (start_port, end_port) if deallocation is successful, `None` otherwise.
 
 - **Usage Example**:
 
