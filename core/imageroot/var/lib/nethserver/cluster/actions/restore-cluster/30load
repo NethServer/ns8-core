@@ -59,7 +59,7 @@ for d in dump['cluster']['user_domain']['ldap'].keys():
     #
     rdb.publish(os.getenv('AGENT_ID') + '/event/ldap-provider-changed', json.dumps({
         'domain': d,
-        'key': f"cluster/user_domain/ldap/{d}/providers",
+        'key': f"cluster/user_domain/ldap/{d}/conf",
     }))
 
 
