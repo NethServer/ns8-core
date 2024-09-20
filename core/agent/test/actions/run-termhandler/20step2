@@ -10,4 +10,4 @@ function term_handler()
 
 trap term_handler TERM
 
-sleep +INF
+sleep 10

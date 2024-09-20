@@ -68,7 +68,7 @@ exec podman run -i -q --rm --replace --name test-agent-suite \
     --volume="rfenv:/usr/local/rfenv:z" \
     --volume="tstate:/srv:z" \
     --volume="${PWD}:/opt/src:z,ro" \
-    docker.io/python:3.8-bullseye \
+    docker.io/python:3.11 \
 bash -l -s - "${@}" <<'EOF'
 set -e
 cp -a /opt/src/. .
