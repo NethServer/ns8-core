@@ -21,7 +21,7 @@ fi
 
 if [ -f /etc/cloud/cloud.cfg ]; then
     echo "Remove update_etc_hosts cloud-init module:"
-    sed -i.orig -r '/-\s*update_etc_hosts/ d' /etc/cloud/cloud.cfg || :
+    sed -i.orig -r '/-\s*update_etc_hosts/ d ; /-\s*update_hostname/ d' /etc/cloud/cloud.cfg || :
 fi
 
 echo "Generate WireGuard VPN key pair:"
