@@ -906,7 +906,8 @@
             "monitoring": "Monitoring",
             "web": "Web",
             "communication": "Communication",
-            "security": "Security"
+            "security": "Security",
+            "audio": "Audio"
         },
         "images_label": "Images"
     },
