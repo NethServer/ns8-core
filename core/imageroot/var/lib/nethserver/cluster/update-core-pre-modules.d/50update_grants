@@ -20,6 +20,13 @@ cluster.grants.grant(rdb, action_clause="bind-user-domains",  to_clause="account
 cluster.grants.grant(rdb, action_clause="list-modules",  to_clause="accountprovider", on_clause='cluster')
 
 #
+# Reuse and reallocate TCP/UDP port range #6974
+#
+for node_id in set(rdb.hvals('cluster/module_node')):
+    cluster.grants.grant(rdb, "allocate-ports", f'node/{node_id}', "portsadm")
+    cluster.grants.grant(rdb, "deallocate-ports", f'node/{node_id}', "portsadm")
+
+#
 # END of grant updates
 #
 cluster.grants.refresh_permissions(rdb)
