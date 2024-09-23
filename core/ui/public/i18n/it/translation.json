@@ -42,7 +42,8 @@
             "monitoring": "Monitoraggio",
             "web": "Web",
             "office": "Ufficio",
-            "security": "Sicurezza"
+            "security": "Sicurezza",
+            "audio": "Audio"
         },
         "core_update_will_start_in_a_moment": "L'aggiornamento di base inizierà tra un momento...",
         "clone": "Clona",
