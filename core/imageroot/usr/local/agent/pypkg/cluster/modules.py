@@ -247,6 +247,14 @@ def _fetch_metadata_json(module_id, image_name):
         print(agent.SD_INFO + "_fetch_metadata_json/glob:", ex, file=sys.stderr)
     return ometadata
 
+def _tag_is_stable(tag):
+    """Return true if the tag string represents a Semver stable release"""
+    try:
+        return not bool(semver.Version.parse(tag).prerelease)
+    except:
+        pass
+    return False
+
 def list_available(rdb, skip_core_modules=False):
     """Iterate over enabled repositories and return available modules respecting the repository priority."""
     hsubscription = rdb.hgetall("cluster/subscription") or None
@@ -254,7 +262,7 @@ def list_available(rdb, skip_core_modules=False):
     for omod in _get_available_modules(rdb).values():
         if not _repo_has_testing_flag(rdb, omod["repository"]):
             # Ignore testing releases for new installations:
-            omod["versions"] = list(filter(lambda v: v["testing"] is False, omod["versions"]))
+            omod["versions"] = list(filter(lambda v: _tag_is_stable(v["tag"]), omod["versions"]))
         if not omod["versions"]:
             continue # Ignore modules with no versions
         omod["certification_level"] = _calc_certification_level(omod, bool(hsubscription))
