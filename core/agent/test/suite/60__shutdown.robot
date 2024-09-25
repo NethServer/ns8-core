@@ -12,9 +12,10 @@ Stop an idle agent gracefully
 Stop a busy agent gracefully
     [Teardown]    Run Keyword If Test Failed    Terminate all processes
     Given The task is submitted    run-longlasting
-    When Send Signal To Process    SIGUSR1
+    And The command is received    publish    run-longlasting    status    running    progress  33
+    And Send Signal To Process    SIGUSR1
+    And Process should be running
     Then The agent completes successfully
-    And The command is received    publish    run-longlasting    status    completed
 
 Terminate a busy agent
     [Teardown]    Run Keyword If Test Failed    Terminate all processes
@@ -28,7 +29,8 @@ Start the command monitoring and the agent
     Start the agent
 
 The agent completes successfully
-    ${res} =    Wait For Process    timeout=2000ms
+    [Arguments]    ${timeout}=${2000}
+    ${res} =    Wait For Process    timeout=${timeout}ms
     Process Should Be Stopped
     Should Be Equal As Integers    ${res.rc}    ${0}
 

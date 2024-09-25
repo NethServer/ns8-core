@@ -911,6 +911,7 @@
         "n_instances_will_be_updated_c": "Update of {num} instance will start in a moment... | Update of {num} instances will start in a moment...",
         "version_version_available": "Version {version} available",
         "app_categories": {
+            "core": "Core",
             "development": "Development",
             "collaboration": "Collaboration",
             "system_administration": "System administration",
@@ -922,7 +923,7 @@
             "web": "Web",
             "communication": "Communication",
             "security": "Security",
-            "core": "Core"
+            "audio": "Audio"
         },
         "images_label": "Images",
         "rootfull_app_warning_title": "Administrative privileges",
