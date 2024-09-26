@@ -255,14 +255,23 @@ def _tag_is_stable(tag):
         pass
     return False
 
+def _min_core_ok(modver, leader_core_version):
+    try:
+        min_core = semver.Version.parse(modver['labels']['org.nethserver.min-core'])
+    except:
+        min_core = semver.Version(0)
+    return leader_core_version >= min_core
+
 def list_available(rdb, skip_core_modules=False):
     """Iterate over enabled repositories and return available modules respecting the repository priority."""
     hsubscription = rdb.hgetall("cluster/subscription") or None
+    leader_core_version = _get_leader_core_version()
     modules = []
     for omod in _get_available_modules(rdb).values():
         if not _repo_has_testing_flag(rdb, omod["repository"]):
             # Ignore testing releases for new installations:
             omod["versions"] = list(filter(lambda v: _tag_is_stable(v["tag"]), omod["versions"]))
+        omod["versions"] = list(filter(lambda v: _min_core_ok(v, leader_core_version), omod["versions"]))
         if not omod["versions"]:
             continue # Ignore modules with no versions
         omod["certification_level"] = _calc_certification_level(omod, bool(hsubscription))
@@ -357,14 +366,18 @@ def _get_core_tag():
     _, tag = core_env['CORE_IMAGE'].rsplit(":", 1)
     return tag
 
-def list_updates(rdb, skip_core_modules=False, with_testing_update=False):
-    updates = []
-    installed_modules = list_installed(rdb, skip_core_modules)
-    available_modules = _get_available_modules(rdb)
+def _get_leader_core_version():
     try:
         leader_core_version = semver.parse_version_info(_get_core_tag())
     except:
         leader_core_version = semver.Version(999)
+    return leader_core_version
+
+def list_updates(rdb, skip_core_modules=False, with_testing_update=False):
+    updates = []
+    installed_modules = list_installed(rdb, skip_core_modules)
+    available_modules = _get_available_modules(rdb)
+    leader_core_version = _get_leader_core_version()
 
     node_core_versions = _get_node_core_versions(rdb)
     flat_instance_list = list(mi for module_instances in installed_modules.values() for mi in module_instances)
@@ -439,6 +452,9 @@ def _get_node_core_versions(rdb):
         _, vtag = image_url.rsplit(":", 1)
         hversions[node_id] = vtag
     return hversions
+
+def get_node_core_versions(rdb):
+    return _get_node_core_versions(rdb)
 
 def list_core_modules(rdb):
     """List core modules and if they can be updated."""

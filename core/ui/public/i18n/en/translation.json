@@ -941,6 +941,7 @@
         "update_to_testing_version": "Update to testing version",
         "num_instances_installed": "{num} instance installed | {num} instances installed",
         "reason_max_per_node_limit": "Limit of {param} instance reached | Limit of {param} instances reached",
+        "reason_min_core_requirement": "Core version is lower than {param}",
         "search_core_apps": "Search core apps"
     },
     "system_logs": {

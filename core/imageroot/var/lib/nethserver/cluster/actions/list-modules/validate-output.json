@@ -270,7 +270,7 @@
                 "message": {
                   "type": "string"
                 },
-                "paramter": {
+                "parameter": {
                   "type": "string"
                 }
               },
