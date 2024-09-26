@@ -64,21 +64,29 @@
             }}</a>
             <span v-else>{{ app.name }}</span>
           </div>
-          <div class="app-description app-row">
-            {{ getApplicationDescription(app) }}
+          <div v-if="app.id !== 'core'" class="app-row">
+            <CertificationLevelBadge :level="app.certification_level" />
           </div>
           <div
-            v-if="app.categories && getApplicationCategories(app)"
+            v-if="app.categories && getApplicationCategories(app).length"
             class="app-categories app-row"
           >
-            {{ getApplicationCategories(app) }}
+            <span
+              v-for="(category, index) in getApplicationCategories(app)"
+              :key="category"
+            >
+              {{ category }}
+              <span v-if="index < getApplicationCategories(app).length - 1"
+                >&bull;</span
+              >
+            </span>
           </div>
           <div v-if="app.id == 'core'" class="app-row">
             <NsButton
               kind="ghost"
               :icon="ArrowRight20"
               size="field"
-              @click="showCoreAppModal()"
+              @click="showSoftwareCenterCoreApps()"
               >{{ $t("software_center.review_and_update") }}</NsButton
             >
           </div>
@@ -133,22 +141,17 @@
       :isShown="appInfo.isShown"
       @close="onClose"
     />
-    <CoreAppModal
-      :isShown="isShownCoreAppModal"
-      :coreApp="coreApp"
-      @hide="hideCoreAppModal"
-    />
   </div>
 </template>
 
 <script>
 import { IconService, UtilService } from "@nethserver/ns8-ui-lib";
 import AppInfoModal from "./AppInfoModal";
-import CoreAppModal from "./CoreAppModal";
+import CertificationLevelBadge from "./CertificationLevelBadge.vue";
 
 export default {
   name: "AppList",
-  components: { AppInfoModal, CoreAppModal },
+  components: { AppInfoModal, CertificationLevelBadge },
   mixins: [IconService, UtilService],
   props: {
     apps: {
@@ -225,11 +228,16 @@ export default {
         }
       }
     },
-    getApplicationDescription(app) {
-      return this.getAppDescription(app, this);
-    },
     getApplicationCategories(app) {
-      return this.getAppCategories(app, this);
+      let categories = [];
+
+      for (const category of app.categories) {
+        if (category === "unknown") {
+          continue;
+        }
+        categories.push(this.$t("software_center.app_categories." + category));
+      }
+      return categories;
     },
     goToSoftwareCenterAppInstances(app) {
       this.$router.push({
@@ -248,12 +256,9 @@ export default {
       }
       return false;
     },
-    showCoreAppModal() {
-      this.isShownCoreAppModal = true;
-    },
-    hideCoreAppModal() {
-      this.isShownCoreAppModal = false;
-    },
+    showSoftwareCenterCoreApps() {
+      this.$router.push("/software-center/SoftwareCenterCoreApps");
+    }
   },
 };
 </script>
@@ -285,12 +290,6 @@ export default {
 
 .app-name {
   font-weight: bold;
-}
-
-.app-description {
-  color: $text-02;
-  text-align: center;
-  line-height: 1.5;
 }
 
 .app-categories {

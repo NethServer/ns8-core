@@ -22,11 +22,12 @@ without `id`, `logo` and `versions` fields.
 Example of `metadata.json`:
 ```json
 {
-  "name": "kickstart",
+  "name": "Kickstart",
+  "upstream_name": "Kickstart 12",
   "description": {
     "en": "My kickstart module"
   },
-  "categories": [],
+  "categories": ["somecategory"],
   "authors": [
     {
       "name": "Name Surname",
@@ -34,6 +35,7 @@ Example of `metadata.json`:
     }
   ],
   "docs": {
+    "terms_url": "https://docs.kickstart.com/terms/",
     "documentation_url": "https://docs.kickstart.com/",
     "bug_url": "https://github.com/NethServer/dev",
     "code_url": "https://github.com/author/ns8-kickstart"

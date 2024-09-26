@@ -74,6 +74,11 @@
         "type": "string",
         "description": "Common name of a package"
       },
+      "upstream_name": {
+        "type": "string",
+        "description": "The alternative software name and version number, if they differ from the package name and version",
+        "example": "Nextcloud Hub 7"
+      },
       "description": {
         "type": "object",
         "description": "A map of language code and description of the packaged translated in the indexed language"
@@ -110,6 +115,10 @@
       "docs": {
         "type": "object",
         "parameters": {
+          "terms_url": {
+            "type": "uri",
+            "description": "Optional link to the application Terms & Conditions document"
+          },
           "documentation_url": {
             "type": "uri",
             "description": "Link to the package documentation"

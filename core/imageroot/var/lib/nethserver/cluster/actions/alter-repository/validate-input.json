@@ -17,7 +17,7 @@
       "type": "string"
     },
     "testing": {
-      "description": "Enable or disable access to testing images",
+      "description": "Use testing releases to install new instances and update existing ones.",
       "type": "boolean"
     },
     "status": {
@@ -27,7 +27,6 @@
   },
   "required": [
     "name",
-    "testing",
     "status"
   ]
 }

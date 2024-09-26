@@ -24,6 +24,8 @@ import sys
 import json
 import agent
 import cluster.modules
+import copy
+import semver
 
 def get_module(source, modules):
     ret = []
@@ -35,16 +37,61 @@ def get_module(source, modules):
 rdb = agent.redis_connect(privileged=True)
 installed = cluster.modules.list_installed(rdb, skip_core_modules = True)
 available = cluster.modules.list_available(rdb, skip_core_modules = True)
-updates = cluster.modules.list_updates(rdb, skip_core_modules = True)
+updates = cluster.modules.list_updates(rdb, skip_core_modules=True, with_testing_update=True)
+node_core_versions = cluster.modules.get_node_core_versions(rdb)
+
+install_destinations = []
+for node_id in set(rdb.hvals("cluster/module_node")):
+    install_destinations.append({
+        "node_id": int(node_id),
+        "instances": 0,
+        "eligible": True,
+        "reject_reason": None,
+    })
+install_destinations.sort(key=lambda n: n["node_id"])
+
+def calculate_node_install_destinations(module):
+    global node_core_versions
+    module_destinations = copy.deepcopy(install_destinations)
+    # Parse labels of the array first element
+    try:
+        max_per_node = int(module["versions"][0]["labels"]["org.nethserver.max-per-node"])
+    except:
+        max_per_node = 9999
+    try:
+        min_core = semver.Version.parse(module["versions"][0]["labels"]["org.nethserver.min-core"])
+    except:
+        min_core = semver.Version(0,0,0)
+    # Find reject reasons in this loop:
+    for mdest in module_destinations:
+        # max-per-node label check:
+        count_instances = len(list(filter(lambda m: m["node"] == str(mdest["node_id"]), module["installed"])))
+        mdest["instances"] = count_instances
+        if count_instances >= max_per_node:
+            mdest["eligible"] = False
+            mdest["reject_reason"] = {
+                "message": "max_per_node_limit",
+                "parameter": str(max_per_node),
+            }
+            continue
+        # min-core label check:
+        snode_id = str(mdest["node_id"])
+        if snode_id in node_core_versions and node_core_versions[snode_id] < min_core:
+            mdest["eligible"] = False
+            mdest["reject_reason"] = {
+                "message": "min_core_requirement",
+                "parameter": str(min_core),
+            }
+            continue
+    return module_destinations
 
 # Prepare variables for later use
 for a in available:
     a["updates"] = []
     a["installed"] = []
-
     if a["source"] in installed.keys():
         a["installed"] = installed[a["source"]]
-
     a["updates"] = get_module(a["source"], updates)
+    a["install_destinations"] = calculate_node_install_destinations(a)
 
 json.dump(available, fp=sys.stdout)

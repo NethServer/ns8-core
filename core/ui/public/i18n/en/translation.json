@@ -84,7 +84,9 @@
         "click_here_to_upload": "Click here to upload",
         "not_active": "Inactive",
         "active": "Active",
-        "configure": "Configure"
+        "configure": "Configure",
+        "terms_and_conditions": "Terms and Conditions",
+        "terms_required": "Please read and agree to @:common.terms_and_conditions"
     },
     "error": {
         "error": "Error",
@@ -639,7 +641,8 @@
         "unknown_token": "Unknown token",
         "must_be_32_chars_but_less_than_128": "Must be between 32 and 128 characters",
         "os_not_supported": "Operating system is not supported",
-        "subscription_cannot_be_enabled": "Subscription is not available"
+        "subscription_cannot_be_enabled": "Subscription is not available",
+        "agree_terms_before_register": "I have read and agree to subscription {terms}."
     },
     "settings_sw_repositories": {
         "title": "Software repositories",
@@ -654,7 +657,17 @@
         "repository_same_name_already_exists": "A repository with this name already exists",
         "repository_same_url_already_exists": "A repository with this URL already exists",
         "repository_not_accessible": "Repository not accessible",
-        "repository_is_going_to_be_deleted": "Repository {object} is going to be deleted..."
+        "repository_is_going_to_be_deleted": "Repository {object} is going to be deleted...",
+        "enable_repository": "Enable repository {name}",
+        "disable_repository": "Disable repository {name}",
+        "create_repository_warning_title": "Security risks",
+        "create_repository_warning_description_1": "Adding a third-party software repository can pose significant risks:",
+        "create_repository_warning_li_1": "Potential security threats",
+        "create_repository_warning_li_2": "Possible system instability",
+        "create_repository_warning_li_3": "Privacy concerns",
+        "create_repository_warning_li_4": "Uncertain update and support status",
+        "create_repository_warning_li_5": "Granting system access to unknown sources",
+        "create_repository_warning_description_2": "Only proceed if you trust the repository source and understand these risks. Research the repository's reputation before adding it to the cluster."
     },
     "settings_http_routes": {
         "title": "HTTP routes",
@@ -805,7 +818,7 @@
         "software_updates": "Updates",
         "you_have_updates": "You have {numUpdates} app to update | You have {numUpdates} apps to update",
         "testing_warning_title": "Testing repositories enabled",
-        "testing_warning_description": "Some software repositories include non-stable versions of applications",
+        "testing_warning_description": "{repos} software repository includes non-stable versions of applications | The following software repositories include non-stable versions of applications: {repos}",
         "testing_warning_action_label": "Go to Software repositories",
         "all": "All",
         "installed": "Installed",
@@ -837,11 +850,10 @@
         "documentation": "Documentation",
         "bugs": "Bugs",
         "source_code": "Source code",
-        "source_package": "Source package",
         "authors": "Author | Authors",
         "app_installation": "Install {app}",
-        "choose_node_for_installation": "Select installation node for {app} {version}",
-        "about_to_install_app": "{app} {version} will be installed on {node}",
+        "choose_node_for_installation": "Select installation node for {app} {version}:",
+        "about_to_install_app": "{app} {version} will be installed on {node}.",
         "installing_on_node": "Installing on {node}",
         "instance_installed_on_node": "{module_id} installed on {node}",
         "app_instances": "{app} instances",
@@ -875,7 +887,9 @@
         "app_now_renamed": "{instance} (now {module_id})",
         "uninstall_app": "Uninstall {name}? App data will be deleted too. This action is NOT reversible",
         "update_app": "Update {app}",
-        "about_to_update_app": "{app} {version} will be updated to {newVersion}",
+        "about_to_update_app": "{app} {version} will be updated to {newVersion}.",
+        "about_to_update_app_to_testing_version": "{app} {version} will be updated to testing version {newVersion}.",
+        "update_to_testing_version_warning": "Testing versions may contain bugs and are not recommended for production use. Update only if you are aware of the risks.",
         "updating_to_version": "Updating to version {version}",
         "core_app_name": "{productName} core",
         "core_app_description": "Collection of {productName} core apps",
@@ -884,7 +898,8 @@
         "core_app_update_available": "Core update available",
         "core_app_update_available_description": "Some core apps need to be updated",
         "version": "Version",
-        "update_available": "Update available",
+        "id": "Instances",
+        "node_id": "Node",
         "core_update": "Core update",
         "app_updates": "App updates",
         "review_and_update": "Review and update",
@@ -896,6 +911,7 @@
         "n_instances_will_be_updated_c": "Update of {num} instance will start in a moment... | Update of {num} instances will start in a moment...",
         "version_version_available": "Version {version} available",
         "app_categories": {
+            "core": "Core",
             "development": "Development",
             "collaboration": "Collaboration",
             "system_administration": "System administration",
@@ -909,7 +925,24 @@
             "security": "Security",
             "audio": "Audio"
         },
-        "images_label": "Images"
+        "images_label": "Images",
+        "rootfull_app_warning_title": "Administrative privileges",
+        "rootfull_app_warning_description": "After installation {appName} will have full access to the cluster: this can pose significant security risks.",
+        "agree_terms_before_install": "I have read and agree to {appName} {terms}.",
+        "level_level": "Level {level}",
+        "certification": "Certification",
+        "level_0_description": "Unknown level",
+        "level_1_description": "App developed by third-parties, not certified",
+        "level_2_description": "App developed by third-parties, certified by NethServer 8 community",
+        "level_3_description": "App developed by third-parties, certified by Nethesis",
+        "level_4_description": "App developed and certified by Nethesis",
+        "level_5_description": "App developed, certified and supported by Nethesis",
+        "update_to_stable_version": "Update to stable version",
+        "update_to_testing_version": "Update to testing version",
+        "num_instances_installed": "{num} instance installed | {num} instances installed",
+        "reason_max_per_node_limit": "Limit of {param} instance reached | Limit of {param} instances reached",
+        "reason_min_core_requirement": "Core version is lower than {param}",
+        "search_core_apps": "Search core apps"
     },
     "system_logs": {
         "title": "System logs",

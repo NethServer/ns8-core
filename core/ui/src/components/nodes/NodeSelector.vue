@@ -23,18 +23,13 @@
             :disabled="disabledNodes.includes(node.id)"
           >
             <h6>
-              {{
-                node.ui_name ? node.ui_name : $t("common.node") + " " + node.id
-              }}
+              <span v-if="node.ui_name">
+                {{ node.ui_name }} ({{ $t("common.node") }} {{ node.id }})
+              </span>
+              <span v-else> {{ $t("common.node") }} {{ node.id }} </span>
             </h6>
-            <div v-if="node.ui_name" class="mg-top-md">
-              {{ $t("common.node") }} {{ node.id }}
-            </div>
-            <div
-              v-if="extraInfoLabel && extraInfoNode == node.id"
-              class="mg-top-md"
-            >
-              {{ extraInfoLabel }}
+            <div v-if="$slots[`node-${node.id}`]" class="mg-top-md">
+              <slot :name="`node-${node.id}`"></slot>
             </div>
           </NsTile>
         </cv-column>

@@ -11,6 +11,10 @@ import agent.tasks
 import sys, os
 import cluster.modules
 
+if not os.getenv("AGENT_TASK_USER"):
+    # If invoked from apply-updates command, switch to managed repo view:
+    cluster.modules.select_repo_view('managed')
+
 request = json.load(sys.stdin)
 force_update = request.get("force", False)
 agent_install_dir = os.environ["AGENT_INSTALL_DIR"]
@@ -20,29 +24,16 @@ agent.run_helper("run-scriptdir", f"{agent_install_dir}/update-core-pre-modules.
 rdb = agent.redis_connect(privileged=True)
 
 # Update all core modules
-instances = dict()
-for oimage in cluster.modules.list_core_modules(rdb):
-    image_id = oimage['name']
-    if image_id == 'core':
-        continue # skip core: it is handled by another action step
-
-    # Prepare a list of module instances that need the update
-    module_instances = [oinstance['id'] for oinstance in oimage['instances'] if oinstance['update']]
-
-    if len(module_instances) > 0: # must be not empty
-        instances[image_id] = {
-            'url': cluster.modules.get_latest_module(image_id, rdb),
-            'instances': module_instances,
-        }
-
 update_module_tasks = []
-for mid in instances.keys():
+for uinstance in cluster.modules.list_updates(rdb, skip_core_modules=False):
+    if not 'core_module' in uinstance.get('flags', []):
+        continue # skip module without core_module flag
     update_module_tasks.append({
         'agent_id': 'cluster',
         "action": "update-module",
         "data": {
-            "module_url": instances[mid]['url'],
-            "instances":  instances[mid]['instances'],
+            "module_url": uinstance['source'] + ':' + uinstance['update'],
+            "instances":  [uinstance['id']],
             "force": force_update,
         }
     })

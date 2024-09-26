@@ -25,12 +25,26 @@ import sys
 import os
 import agent.tasks
 import cluster.modules
+import json
 
+if not os.getenv("AGENT_TASK_USER"):
+    # If invoked from apply-updates command, switch to managed repo view:
+    cluster.modules.select_repo_view('managed')
+
+request = json.load(sys.stdin)
 rdb = agent.redis_connect(privileged=True)
 updates = cluster.modules.list_updates(rdb, skip_core_modules = True)
 
+if 'modules' in request:
+    # Filter out non-matching modules:
+    updates = list(filter(lambda uo: uo['module'] in request['modules'], updates))
+
+if 'instances' in request:
+    # Filter out non-matching instances:
+    updates = list(filter(lambda uo: uo['id'] in request['instances'], updates))
+
 if len(updates) == 0:
-    print(agent.SD_INFO, "No updates available for the installed modules", file=sys.stderr)
+    print(agent.SD_INFO, "update-modules: no update found. Filters:", request, file=sys.stderr)
     sys.exit(0)
 
 errors = 0
@@ -41,20 +55,20 @@ ustep = 100 / len(updates)
 uidx = 0
 for oupdate in updates:
     module = oupdate['id']
-    image_url = f"{oupdate['source']}:{oupdate['update']}"
+    module_url = f"{oupdate['source']}:{oupdate['update']}"
 
     start = int(uidx * ustep)
     # ustep can be less than 1, with more than 100 updates: ensure "end"
     # is always greater than "start" and is an integer value
     end = start + max(int(ustep), 1)
     upd_module_result = agent.tasks.run("cluster", "update-module",
-        data={"instances": [module], "image_url": image_url},
+        data={"instances": [module], "module_url": module_url},
         endpoint="redis://cluster-leader",
         progress_callback=agent.get_progress_callback(start, end)
     )
     uidx += 1
     if upd_module_result['exit_code'] != 0:
-        print(agent.SD_ERR + f"Failed update-module for instance {module} from image {image_url}", file=sys.stderr)
+        print(agent.SD_ERR + f"Failed update-module for instance {module} with {module_url}", file=sys.stderr)
         errors += 1
 
 if errors > 0:

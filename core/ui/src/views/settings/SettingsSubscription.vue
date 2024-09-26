@@ -95,7 +95,7 @@
                   :disabled="subscription.error === 'os_not_supported'"
                   :label="$t('settings_subscription.authentication_token')"
                   v-model="subscription.auth_token"
-                  :invalid-message="$t(error.auth_token)"
+                  :invalid-message="error.auth_token"
                   :placeholder="
                     $t('settings_subscription.authentication_token_placeholder')
                   "
@@ -103,9 +103,41 @@
                   :helper-text="
                     $t('settings_subscription.authentication_token_helper')
                   "
-                  required
                 >
                 </NsTextInput>
+                <!-- terms and conditions -->
+                <div class="mg-bottom-lg">
+                  <NsCheckbox
+                    v-model="agreeTerms"
+                    value="checkTerms"
+                    class="no-mg-bottom"
+                  >
+                    <template slot="label">
+                      <i18n
+                        path="settings_subscription.agree_terms_before_register"
+                        tag="span"
+                      >
+                        <template v-slot:terms>
+                          <cv-link
+                            :href="termsUrl"
+                            target="_blank"
+                            rel="noreferrer"
+                            class="inline"
+                          >
+                            {{ $t("common.terms_and_conditions") }}
+                          </cv-link>
+                        </template>
+                      </i18n>
+                    </template>
+                  </NsCheckbox>
+                  <!-- invalid message for terms and conditions -->
+                  <div
+                    v-if="error.agreeTerms"
+                    class="validation-failed-invalid-message"
+                  >
+                    {{ error.agreeTerms }}
+                  </div>
+                </div>
               </template>
               <template
                 v-if="
@@ -186,7 +218,7 @@
               kind="tertiary"
               :loading="loading.getSubscription || loading.setSubscription"
               :disabled="loading.getSubscription || loading.setSubscription"
-              @click="removesubscription"
+              @click="showRemoveSubcriptionModal"
               :icon="TrashCan20"
               >{{ $t("settings_subscription.remove_subscription") }}
             </NsButton>
@@ -285,7 +317,7 @@
       size="default"
       kind="danger"
       :visible="isShownRemoveSubcription"
-      @modal-hidden="hideDeleteCertificateModal"
+      @modal-hidden="hideRemoveSubcriptionModal"
       @primary-click="removeSubscription"
     >
       <template slot="title">{{
@@ -355,6 +387,8 @@ export default {
       },
       active: false,
       session_id: "",
+      termsUrl: "",
+      agreeTerms: false,
       loading: {
         getSubscription: false,
         setSubscription: false,
@@ -370,6 +404,7 @@ export default {
         startSessionSupport: "",
         removeSubscription: "",
         unknown_token: "",
+        agreeTerms: "",
       },
     };
   },
@@ -389,10 +424,10 @@ export default {
     next();
   },
   methods: {
-    removesubscription() {
+    showRemoveSubcriptionModal() {
       this.isShownRemoveSubcription = true;
     },
-    hideDeleteCertificateModal() {
+    hideRemoveSubcriptionModal() {
       this.isShownRemoveSubcription = false;
     },
     async getSubscription() {
@@ -427,6 +462,8 @@ export default {
     },
     getSubscriptionCompleted(taskContext, taskResult) {
       const output = taskResult.output;
+      this.termsUrl = output.terms_url;
+
       if (output.subscription == null) {
         this.subscription.status = "inactive";
         this.subscription.error = output.error;
@@ -436,24 +473,47 @@ export default {
       this.subscription = output.subscription;
       this.loading.getSubscription = false;
     },
-    validateConfigureModule() {
+    validateSetSubscription() {
       this.clearErrors(this);
       let isValidationOk = true;
-      // validate auth_token if length is <= 32 and > 128
-      if (
-        this.subscription.auth_token.length <= 32 ||
-        this.subscription.auth_token.length > 128
-      ) {
-        this.error.auth_token = this.$t(
-          "settings_subscription.must_be_32_chars_but_less_than_128"
-        );
-        this.focusElement("auth_token");
+
+      // auth token required
+
+      if (!this.subscription.auth_token) {
+        this.error.auth_token = this.$t("common.required");
+
+        if (isValidationOk) {
+          this.focusElement("auth_token");
+          isValidationOk = false;
+        }
+      } else {
+        // validate auth_token if length is <= 32 and > 128
+
+        if (
+          this.subscription.auth_token.length <= 32 ||
+          this.subscription.auth_token.length > 128
+        ) {
+          this.error.auth_token = this.$t(
+            "settings_subscription.must_be_32_chars_but_less_than_128"
+          );
+
+          if (isValidationOk) {
+            this.focusElement("auth_token");
+            isValidationOk = false;
+          }
+        }
+      }
+
+      // need to agree to terms and conditions
+
+      if (!this.agreeTerms) {
+        this.error.agreeTerms = this.$t("common.terms_required");
         isValidationOk = false;
       }
       return isValidationOk;
     },
     async setSubscription() {
-      const isValidationOk = this.validateConfigureModule();
+      const isValidationOk = this.validateSetSubscription();
       if (!isValidationOk) {
         return;
       }
@@ -526,6 +586,7 @@ export default {
     setSubscriptionCompleted() {
       this.subscription.auth_token = "";
       this.loading.setSubscription = false;
+      this.agreeTerms = false;
       this.getSubscription();
     },
     async removeSubscription() {
@@ -592,7 +653,7 @@ export default {
       this.stopSessionSupport();
       this.subscription.auth_token = "";
       this.loading.setSubscription = false;
-      this.hideDeleteCertificateModal();
+      this.hideRemoveSubcriptionModal();
       this.getSubscription();
     },
 

@@ -15,13 +15,29 @@
     }}</template>
     <template v-if="app && instance" slot="content">
       <cv-form @submit.prevent="updateModule">
+        <NsInlineNotification
+          v-if="isUpdatingToTestingVersion"
+          kind="warning"
+          :title="$t('software_center.update_to_testing_version')"
+          :description="
+            $t('software_center.update_to_testing_version_warning', {
+              appName: app.name,
+            })
+          "
+          :showCloseButton="false"
+        />
         <div>
           {{
-            $t("software_center.about_to_update_app", {
-              app: instanceLabel,
-              version: instance.version,
-              newVersion: appVersion,
-            })
+            $t(
+              isUpdatingToTestingVersion
+                ? "software_center.about_to_update_app_to_testing_version"
+                : "software_center.about_to_update_app",
+              {
+                app: instanceLabel,
+                version: instance.version,
+                newVersion: appVersion,
+              }
+            )
           }}
         </div>
         <div v-if="error.updateModule">
@@ -52,6 +68,7 @@ export default {
     isShown: Boolean,
     app: { type: [Object, null] },
     instance: { type: [Object, null] },
+    isUpdatingToTestingVersion: { type: Boolean, default: false },
   },
   data() {
     return {
@@ -73,9 +90,31 @@ export default {
       }
     },
     appVersion() {
-      if (this.app.versions.length) {
-        return this.app.versions[0].tag;
+      if (this.isUpdatingToTestingVersion) {
+        // update to testing version
+
+        if (this.app.updates.length) {
+          const testingUpdateFound = this.app.updates.find(
+            (update) => update.testing_update
+          );
+
+          if (testingUpdateFound) {
+            return testingUpdateFound.testing_update;
+          }
+        }
+        return "latest";
       } else {
+        // update to stable version
+
+        if (this.app.updates.length) {
+          const stableUpdateFound = this.app.updates.find(
+            (update) => update.update
+          );
+
+          if (stableUpdateFound) {
+            return stableUpdateFound.update;
+          }
+        }
         return "latest";
       }
     },

@@ -1,0 +1,14 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2024 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+import agent
+
+# After a core update, ensure that the "testing" flag is cleared on each
+# configured repository.
+rdb = agent.redis_connect(privileged=True)
+for krepo in list(rdb.scan_iter('cluster/repository/*')):
+    rdb.hset(krepo, "testing", "0")

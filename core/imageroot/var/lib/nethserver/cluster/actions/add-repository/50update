@@ -32,11 +32,9 @@ name = request['name']
 url = request['url']
 # convert boolean to integers
 status = 1 if request['status'] else 0
-testing = 1 if request['testing'] else 0
+testing = 1 if request.get('testing') else 0
 
 # Add the repository and enable it.
 # Access to testing packages is disabled by default.
 if not rdb.hset(f'cluster/repository/{name}', mapping={'url': url, 'status': status, 'testing': testing}):
     sys.exit(1)
-
-json.dump(True, fp=sys.stdout)
