@@ -618,7 +618,7 @@
     <!-- delete repository modal -->
     <NsDangerDeleteModal
       :isShown="isShownDeleteRepoModal"
-      :name="currentRepo.password"
+      :name="currentRepo.name"
       :title="$t('backup.delete_backup_repository')"
       :warning="$t('common.please_read_carefully')"
       :description="
@@ -626,35 +626,12 @@
           name: currentRepo.name,
         })
       "
-      :typeToConfirm="
-        $t('backup.type_repo_password_to_confirm', {
-          password: currentRepo.password,
-        })
-      "
+      :typeToConfirm="$t('common.type_to_confirm', { name: currentRepo.name })"
       @hide="hideDeleteRepoModal"
       @confirmDelete="deleteRepo(currentRepo)"
     >
       <template slot="explanation">
         <p class="mg-top-sm">{{ $t("backup.delete_repo_explanation_1") }}</p>
-        <p class="mg-top-sm">
-          <strong>
-            {{ $t("backup.delete_repo_explanation_2") }}
-          </strong>
-        </p>
-        <p class="mg-top-md">
-          {{ $t("backup.data_encryption_key") }}
-          <NsCodeSnippet
-            :copyTooltip="$t('common.copy_to_clipboard')"
-            :copy-feedback="$t('common.copied_to_clipboard')"
-            :feedback-aria-label="$t('common.copied_to_clipboard')"
-            :wrap-text="true"
-            :moreText="$t('common.show_more')"
-            :lessText="$t('common.show_less')"
-            light
-            hideExpandButton
-            >{{ currentRepo.password }}</NsCodeSnippet
-          >
-        </p>
       </template>
     </NsDangerDeleteModal>
     <!-- add repository modal -->
