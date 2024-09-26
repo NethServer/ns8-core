@@ -217,7 +217,9 @@
         "remove": "Eliminar",
         "not_active": "Inactivo",
         "active": "Activo",
-        "configure": "Configurar"
+        "configure": "Configurar",
+        "terms_required": "Please read and agree to @:common.terms_and_conditions",
+        "terms_and_conditions": "Terms and Conditions"
     },
     "backup": {
         "aws": "Amazon S3",
@@ -610,7 +612,8 @@
             "security": "Seguridad",
             "web": "Web",
             "development": "Desarrollo",
-            "audio": "Audio"
+            "audio": "Audio",
+            "core": "Core"
         },
         "documentation": "Documentación",
         "app_without_ui_name_cloned_to_node": "{instance} clonada a {node} como {module_id}",
@@ -644,7 +647,6 @@
         "other_actions": "Otras acciones",
         "core_app_name": "Núcleo {productName}",
         "move_app": "Mover aplicación",
-        "update_available": "Actualización disponible",
         "you_have_updates": "Tienes {numUpdates} aplicación para actualizar | Tienes {numUpdates} aplicaciones para actualizar",
         "reload_software_repositories": "Recargar repositorios",
         "core_app_update_available_description": "Algunas aplicaciones del núcleo necesitan actualizarse",
@@ -652,7 +654,6 @@
         "instance_uninstallation": "Desinstalar {instance}",
         "version": "Versión",
         "updates": "Actualizaciones",
-        "source_package": "Paquete de origen",
         "source": "Origen",
         "select_destination_node": "Seleccionar nodo de destino",
         "update": "Actualizar",
@@ -685,7 +686,28 @@
         "search_placeholder": "Buscar aplicaciones",
         "testing_warning_description": "Algunos repositorios de software incluyen versiones no estables de aplicaciones",
         "testing_warning_title": "Repositorios de pruebas habilitados",
-        "testing_warning_action_label": "Ir a repositorios de Software"
+        "testing_warning_action_label": "Ir a repositorios de Software",
+        "level_5_description": "App developed, certified and supported by Nethesis",
+        "level_0_description": "Unknown level",
+        "update_to_testing_version_warning": "Testing versions may contain bugs and are not recommended for production use. Update only if you are aware of the risks.",
+        "update_to_testing_version": "Update to testing version",
+        "agree_terms_before_install": "I have read and agree to {appName} {terms}.",
+        "about_to_update_app_to_testing_version": "{app} {version} will be updated to testing version {newVersion}.",
+        "level_1_description": "App developed by third-parties, not certified",
+        "search_core_apps": "Search core apps",
+        "node_id": "Node",
+        "level_level": "Level {level}",
+        "level_4_description": "App developed and certified by Nethesis",
+        "update_to_stable_version": "Update to stable version",
+        "reason_min_core_requirement": "Core version is lower than {param}",
+        "level_3_description": "App developed by third-parties, certified by Nethesis",
+        "certification": "Certification",
+        "rootfull_app_warning_title": "Administrative privileges",
+        "id": "Instances",
+        "level_2_description": "App developed by third-parties, certified by NethServer 8 community",
+        "reason_max_per_node_limit": "Limit of {param} instance reached | Limit of {param} instances reached",
+        "num_instances_installed": "{num} instance installed | {num} instances installed",
+        "rootfull_app_warning_description": "After installation {appName} will have full access to the cluster: this can pose significant security risks."
     },
     "system_logs": {
         "context_module": "Aplicación",
@@ -788,7 +810,17 @@
         "title": "Repositorios de software",
         "repository_not_accessible": "Repositorio no accesible",
         "repository_is_going_to_be_deleted": "El repositorio {object} se va a eliminar...",
-        "no_sw_repositories_description": "No hay ningún repositorio de software configurado"
+        "no_sw_repositories_description": "No hay ningún repositorio de software configurado",
+        "create_repository_warning_description_2": "Only proceed if you trust the repository source and understand these risks. Research the repository's reputation before adding it to the cluster.",
+        "create_repository_warning_li_5": "Granting system access to unknown sources",
+        "disable_repository": "Disable repository {name}",
+        "create_repository_warning_li_1": "Potential security threats",
+        "create_repository_warning_li_2": "Possible system instability",
+        "create_repository_warning_li_4": "Uncertain update and support status",
+        "enable_repository": "Enable repository {name}",
+        "create_repository_warning_description_1": "Adding a third-party software repository can pose significant risks:",
+        "create_repository_warning_title": "Security risks",
+        "create_repository_warning_li_3": "Privacy concerns"
     },
     "settings": {
         "title": "Ajustes"
@@ -1367,7 +1399,8 @@
         "system_id": "ID del sistema",
         "authentication_token_placeholder": "Pegue aquí el token",
         "session_id": "ID de sesión",
-        "start_session_support": "Iniciar sesión"
+        "start_session_support": "Iniciar sesión",
+        "agree_terms_before_register": "I have read and agree to subscription {terms}."
     },
     "syslog_forwarder": {
         "start_time": "Start time (24-hour)",

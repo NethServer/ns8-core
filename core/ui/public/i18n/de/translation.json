@@ -326,7 +326,9 @@
         "enabled": "Aktiviert",
         "not_active": "deaktiviert",
         "active": "aktiv",
-        "configure": "konfigurieren"
+        "configure": "konfigurieren",
+        "terms_and_conditions": "Terms and Conditions",
+        "terms_required": "Please read and agree to @:common.terms_and_conditions"
     },
     "error": {
         "403": "Vorgang nicht autorisiert",
@@ -450,7 +452,8 @@
             "security": "Sicherheit",
             "web": "Web",
             "development": "Entwicklung",
-            "audio": "Audio"
+            "audio": "Audio",
+            "core": "Core"
         },
         "app_info": "Info zur Anwendung",
         "core_app_table_description": "{productName} Core beinhaltet folgende App-Module",
@@ -470,14 +473,12 @@
         "core_app_name": "{productName} Core",
         "documentation": "Dokumentation",
         "details": "Details",
-        "update_available": "Aktualisierung verfügbar",
         "you_have_updates": "{numUpdates} App steht zur Aktualisierung an | {numUpdates} Apps stehen zur Aktualisierung an",
         "reload_software_repositories": "Repositories neu laden",
         "about_to_update_app": "{app} {version} wird aktualisiert auf {newVersion}",
         "instance_uninstallation": "{instance} deinstallieren",
         "version": "Version",
         "updates": "Aktualisierungen",
-        "source_package": "Quellpaket",
         "open_app": "App öffnen",
         "source": "Quelle",
         "select_destination_node": "Zielknoten auswählen",
@@ -538,7 +539,28 @@
         "instances_update_will_start_in_a_moment": "Aktualisierung der Instanzen startet gleich...",
         "testing_warning_description": "Manche Software-Repositories enthalten nicht-stabile Versionen von Anwendungen",
         "testing_warning_title": "Testing-Repositories aktiviert",
-        "testing_warning_action_label": "Wechseln zu Software-Repositories"
+        "testing_warning_action_label": "Wechseln zu Software-Repositories",
+        "level_5_description": "App developed, certified and supported by Nethesis",
+        "level_0_description": "Unknown level",
+        "update_to_testing_version_warning": "Testing versions may contain bugs and are not recommended for production use. Update only if you are aware of the risks.",
+        "update_to_testing_version": "Update to testing version",
+        "agree_terms_before_install": "I have read and agree to {appName} {terms}.",
+        "about_to_update_app_to_testing_version": "{app} {version} will be updated to testing version {newVersion}.",
+        "level_1_description": "App developed by third-parties, not certified",
+        "search_core_apps": "Search core apps",
+        "node_id": "Node",
+        "level_level": "Level {level}",
+        "level_4_description": "App developed and certified by Nethesis",
+        "update_to_stable_version": "Update to stable version",
+        "reason_min_core_requirement": "Core version is lower than {param}",
+        "level_3_description": "App developed by third-parties, certified by Nethesis",
+        "certification": "Certification",
+        "rootfull_app_warning_title": "Administrative privileges",
+        "id": "Instances",
+        "level_2_description": "App developed by third-parties, certified by NethServer 8 community",
+        "reason_max_per_node_limit": "Limit of {param} instance reached | Limit of {param} instances reached",
+        "num_instances_installed": "{num} instance installed | {num} instances installed",
+        "rootfull_app_warning_description": "After installation {appName} will have full access to the cluster: this can pose significant security risks."
     },
     "settings_cluster_admins": {
         "delete_admin_admin": "Admin {admin} löschen",
@@ -1149,7 +1171,17 @@
         "no_sw_repositories": "Kein Software-Repository",
         "repository_is_going_to_be_deleted": "Repository {object} wird gelöscht werden...",
         "no_sw_repositories_description": "Es ist kein Software-Repository konfiguriert",
-        "edit_repository": "Repository ändern"
+        "edit_repository": "Repository ändern",
+        "disable_repository": "Disable repository {name}",
+        "create_repository_warning_description_2": "Only proceed if you trust the repository source and understand these risks. Research the repository's reputation before adding it to the cluster.",
+        "create_repository_warning_li_1": "Potential security threats",
+        "create_repository_warning_li_2": "Possible system instability",
+        "create_repository_warning_li_4": "Uncertain update and support status",
+        "enable_repository": "Enable repository {name}",
+        "create_repository_warning_li_5": "Granting system access to unknown sources",
+        "create_repository_warning_description_1": "Adding a third-party software repository can pose significant risks:",
+        "create_repository_warning_title": "Security risks",
+        "create_repository_warning_li_3": "Privacy concerns"
     },
     "task": {
         "subtask_failed_validation": "Validierungsfehler bei Unteraufgabe {task}",
@@ -1367,7 +1399,8 @@
         "authentication_token_placeholder": "Token hier einfügen",
         "subscription_status": "Abonnement -Status",
         "session_id": "SitzungsID",
-        "start_session_support": "Sitzung starten"
+        "start_session_support": "Sitzung starten",
+        "agree_terms_before_register": "I have read and agree to subscription {terms}."
     },
     "cloud_log_manager_forwarder": {
         "tenant_tooltip": "Dieser Schlüssel, auch bekannt als \"Tenant\", identifiziert und assoziiert die Clusterprotokolle innerhalb eines Unternehmens in Cloud Log Manager. Sie finden ihn in der Webapp Cloud Log Manager unter Benutzer und Unternehmen > Unternehmen.",

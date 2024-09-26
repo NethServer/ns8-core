@@ -114,7 +114,9 @@
         "enabled": "Enabled",
         "not_active": "Inactive",
         "active": "Active",
-        "configure": "Configure"
+        "configure": "Configure",
+        "terms_required": "Please read and agree to @:common.terms_and_conditions",
+        "terms_and_conditions": "Terms and Conditions"
     },
     "settings_account": {
         "2fa_qr_code": "Código QR 2FA",
@@ -815,7 +817,6 @@
         "hide_password": "Hide password"
     },
     "software_center": {
-        "update_available": "Update available",
         "you_have_updates": "You have {numUpdates} app to update | You have {numUpdates} apps to update",
         "reload_software_repositories": "Reload repositories",
         "app_categories": {
@@ -830,7 +831,8 @@
             "web": "Web",
             "documentation": "Documentation",
             "database": "Database",
-            "audio": "Audio"
+            "audio": "Audio",
+            "core": "Core"
         },
         "clone_app_description": "Clone <strong>{instanceLabel}</strong> instance and data to any node. Current instance will be left untouched.",
         "core_app_update_available_description": "Some core apps need to be updated",
@@ -840,7 +842,6 @@
         "app_without_ui_name_moved_to_node": "{instance} moved to {node} as {module_id}",
         "version": "Version",
         "updates": "Updates",
-        "source_package": "Source package",
         "open_app": "Open app",
         "clone_app": "Clone app",
         "source": "Source",
@@ -924,7 +925,28 @@
         "move_app": "Move app",
         "testing_warning_description": "Some software repositories include non-stable versions of applications",
         "testing_warning_title": "Testing repositories enabled",
-        "testing_warning_action_label": "Go to Software repositories"
+        "testing_warning_action_label": "Go to Software repositories",
+        "node_id": "Node",
+        "level_5_description": "App developed, certified and supported by Nethesis",
+        "update_to_testing_version": "Update to testing version",
+        "level_0_description": "Unknown level",
+        "update_to_testing_version_warning": "Testing versions may contain bugs and are not recommended for production use. Update only if you are aware of the risks.",
+        "agree_terms_before_install": "I have read and agree to {appName} {terms}.",
+        "about_to_update_app_to_testing_version": "{app} {version} will be updated to testing version {newVersion}.",
+        "level_1_description": "App developed by third-parties, not certified",
+        "search_core_apps": "Search core apps",
+        "level_level": "Level {level}",
+        "level_4_description": "App developed and certified by Nethesis",
+        "update_to_stable_version": "Update to stable version",
+        "reason_min_core_requirement": "Core version is lower than {param}",
+        "level_3_description": "App developed by third-parties, certified by Nethesis",
+        "certification": "Certification",
+        "rootfull_app_warning_title": "Administrative privileges",
+        "id": "Instances",
+        "level_2_description": "App developed by third-parties, certified by NethServer 8 community",
+        "reason_max_per_node_limit": "Limit of {param} instance reached | Limit of {param} instances reached",
+        "num_instances_installed": "{num} instance installed | {num} instances installed",
+        "rootfull_app_warning_description": "After installation {appName} will have full access to the cluster: this can pose significant security risks."
     },
     "system_logs": {
         "stop_following": "Stop following",
@@ -1325,7 +1347,17 @@
         "no_sw_repositories": "No software repository",
         "edit_repository": "Edit repository",
         "repository_is_going_to_be_deleted": "Repository {object} is going to be deleted...",
-        "no_sw_repositories_description": "There is no software repository configured"
+        "no_sw_repositories_description": "There is no software repository configured",
+        "create_repository_warning_description_2": "Only proceed if you trust the repository source and understand these risks. Research the repository's reputation before adding it to the cluster.",
+        "disable_repository": "Disable repository {name}",
+        "create_repository_warning_li_1": "Potential security threats",
+        "create_repository_warning_li_2": "Possible system instability",
+        "create_repository_warning_li_4": "Uncertain update and support status",
+        "enable_repository": "Enable repository {name}",
+        "create_repository_warning_li_5": "Granting system access to unknown sources",
+        "create_repository_warning_description_1": "Adding a third-party software repository can pose significant risks:",
+        "create_repository_warning_title": "Security risks",
+        "create_repository_warning_li_3": "Privacy concerns"
     },
     "openldap": {
         "domain": "Domain",
@@ -1367,7 +1399,8 @@
         "authentication_token_placeholder": "Paste the token here",
         "subscription_status": "Subscription status",
         "session_id": "Session ID",
-        "start_session_support": "Start session"
+        "start_session_support": "Start session",
+        "agree_terms_before_register": "I have read and agree to subscription {terms}."
     },
     "cloud_log_manager_forwarder": {
         "tenant_tooltip": "Lorem Ipsum",
