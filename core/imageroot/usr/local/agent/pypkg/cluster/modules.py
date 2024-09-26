@@ -361,14 +361,17 @@ def list_installed(rdb, skip_core_modules = False):
         instances.sort(key=lambda v: _parse_version_object(v["version"]), reverse=True)
     return installed
 
-def _get_core_tag():
+def _get_leader_core_tag():
+    """Return the Podman core image tag string of the local leader node"""
     core_env = agent.read_envfile('/etc/nethserver/core.env')
     _, tag = core_env['CORE_IMAGE'].rsplit(":", 1)
     return tag
 
 def _get_leader_core_version():
+    """Return the local leader node semantic version. If this is not
+    parsable, return 999.0.0"""
     try:
-        leader_core_version = semver.parse_version_info(_get_core_tag())
+        leader_core_version = semver.parse_version_info(_get_leader_core_tag())
     except:
         leader_core_version = semver.Version(999)
     return leader_core_version
@@ -379,7 +382,7 @@ def list_updates(rdb, skip_core_modules=False, with_testing_update=False):
     available_modules = _get_available_modules(rdb)
     leader_core_version = _get_leader_core_version()
 
-    node_core_versions = _get_node_core_versions(rdb)
+    node_core_versions = _get_node_core_tags(rdb)
     flat_instance_list = list(mi for module_instances in installed_modules.values() for mi in module_instances)
     for instance in flat_instance_list:
         try:
@@ -439,22 +442,36 @@ def list_updates(rdb, skip_core_modules=False, with_testing_update=False):
 
     return updates
 
-def _get_node_core_versions(rdb):
+def _get_node_core_tags(rdb):
     hversions = {}
     for node_id in set(rdb.hvals("cluster/module_node")):
         image_url = rdb.hget(f'node/{node_id}/environment', 'IMAGE_URL')
         if not image_url:
+            # If IMAGE_URL is not available the node core update may have
+            # failed.
             print(agent.SD_WARNING+f"Cannot fetch IMAGE_URL of node {node_id}", file=sys.stderr)
             if node_id == os.getenv("NODE_ID"):
-                image_url = "ghcr.io/nethserver/core:" + _get_core_tag()
+                # Leader node: fall back to tag read from the environment
+                image_url = "ghcr.io/nethserver/core:" + _get_leader_core_tag()
             else:
+                # Worker node: fall back to version 0
                 image_url = "ghcr.io/nethserver/core:0.0.0"
         _, vtag = image_url.rsplit(":", 1)
         hversions[node_id] = vtag
     return hversions
 
 def get_node_core_versions(rdb):
-    return _get_node_core_versions(rdb)
+    htags = _get_node_core_tags(rdb)
+    hversions = {}
+    for node_id, tag in htags.items():
+        try:
+            ver = semver.Version.parse(tag)
+        except:
+            # If the tag is not a semver value, assume it is a branch tag,
+            # representing a future release:
+            ver = semver.Version(999)
+        hversions[node_id] = ver
+    return hversions
 
 def list_core_modules(rdb):
     """List core modules and if they can be updated."""
@@ -482,7 +499,7 @@ def list_core_modules(rdb):
             return latest
         else:
             return ""
-    for node_id, ntag in _get_node_core_versions(rdb).items():
+    for node_id, ntag in _get_node_core_tags(rdb).items():
         try:
             core_instance = {
                 'id': 'core' + node_id,
