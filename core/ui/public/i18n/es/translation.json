@@ -333,7 +333,6 @@
         "backup_enabled": "Copia de seguridad habilitada",
         "no_backup_configured": "No hay copias de seguridad configuradas",
         "retention": "Retención",
-        "delete_repo_explanation_2": "Asegúrate de haber guardado la contraseña de destino en un lugar seguro, o no podrás restaurar los datos de la copia de seguridad desde el destino original.",
         "every_month_at_time": "Cada mes, el día {dayNum} a las {time}",
         "no_backup_repository": "Sin destino para la copia de seguridad",
         "delete_scheduled_backup_confirm": "¿Eliminar la copia de seguridad programada <strong>{name}</strong>?",

@@ -901,7 +901,6 @@
         "retention": "Aufbewahrung",
         "disabled_backups_description": "Es ist {num} Datensicherung deaktiviert | Es sind {num} Datensicherungen deaktiviert",
         "total_size": "Gesamtgröße",
-        "delete_repo_explanation_2": "Sicherstellen, dass das Kennwort des Sicherungs-Ziel an einem sicheren Ort aufbewahrt wird. Ohne dieses Kennwort ist eine Wiederherstellung von Daten vom ursprünglichen Sicherungs-Ziel unmöglich!",
         "no_backup_repository": "Keine Backup-Ziel",
         "schedule_backup": "Datensicherung planen",
         "select_instance_to_restore": "App-Instance zur Wiederherstellung auswählen",

@@ -275,7 +275,6 @@
         "retention": "Retention",
         "disabled_backups_description": "There is {num} backup disabled | There are {num} backups disabled",
         "total_size": "Total size",
-        "delete_repo_explanation_2": "Ensure you have stored repository password in a safe place, or you won't be able to restore your backup data from the original repository.",
         "every_month_at_time": "Every month, on day {dayNum} at {time}",
         "no_backup_repository": "No backup repository",
         "delete_scheduled_backup_confirm": "Delete scheduled backup <strong>{name}</strong>?",
