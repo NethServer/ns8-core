@@ -69,8 +69,19 @@ fi
 
 firewall-cmd --reload
 
-echo "Stopping the core services"
-systemctl disable --now api-server.service redis.service wg-quick@wg0.service phonehome.timer rclone-webdav.service promtail.service
+echo "Stopping the core services and timers"
+systemctl disable --now \
+  api-server.service \
+  redis.service \
+  wg-quick@wg0.service \
+  phonehome.timer \
+  rclone-webdav.service \
+  promtail.service \
+  node-monitor.service \
+  send-heartbeat.service \
+  send-inventory.timer \
+  send-backup.timer \
+  # end of unit list
 rm -vf /etc/wireguard/wg0.conf
 userdel -r api-server
 ip link delete wg0 # force removal of wg0 interface
