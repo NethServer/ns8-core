@@ -370,7 +370,7 @@ def list_core_modules(rdb):
         try:
             vupdate = module["versions"][0]['tag']
             vinfo = semver.VersionInfo.parse(vupdate)
-            if vupdate > cur:
+            if vinfo > cur:
                 return vupdate
         except:
             pass
