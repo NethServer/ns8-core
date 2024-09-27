@@ -55,6 +55,12 @@ def create_tables(cursor: sqlite3.Cursor):
         );
     """)
 
+def is_port_used(ports_used, port_to_check):
+    for port in ports_used:
+        if port_to_check in range(port[0], port[1] + 1):
+            return True
+    return False
+
 def allocate_ports(required_ports: int, module_name: str, protocol: str):
     """
     Allocate a range of ports for a given module,
@@ -93,35 +99,22 @@ def allocate_ports(required_ports: int, module_name: str, protocol: str):
                     cursor.execute("SELECT start,end,module FROM UDP_PORTS ORDER BY start;")
                 ports_used = cursor.fetchall()
 
-            range_search = True
-
-            while range_search:
-                for index in range(required_ports):
-                    current_port = range_start + index
-
-                    # Raise an error if the range exceeds the maximum allowed
-                    if current_port >= range_end:
-                        raise PortRangeExceededError()
-
-                    # Check if the current port is within an already used range
-                    for port in ports_used:
-                        if current_port in range(port[0], port[1] + 1):
-                            range_start = port[1] + 1  # Move to the next available port range
+            if len(ports_used) == 0:
+                write_range(range_start, range_start + required_ports - 1, module_name, protocol)
+                return (range_start, range_start + required_ports - 1)
+            
+            while range_start <= range_end:
+                # Check if the current port is within an already used range
+                for port_range in ports_used:
+                    for index in range(required_ports):
+                        if is_port_used(ports_used, range_start+index):
+                            range_start = port_range[1] + 1  # Move to the next available port range
                             break
-                else:
-                    range_search = False  # Stop searching when a valid range is found
-
-            # Insert the allocated port range into the appropriate table based on protocol
-            if protocol == 'tcp':
-                cursor.execute("INSERT INTO TCP_PORTS (start, end, module) VALUES (?, ?, ?);", 
-                           (range_start, range_start + required_ports - 1, module_name))
-            elif protocol == 'udp':
-                cursor.execute("INSERT INTO UDP_PORTS (start, end, module) VALUES (?, ?, ?);", 
-                           (range_start, range_start + required_ports - 1, module_name))
-            database.commit()
-
-            return (range_start, range_start + required_ports - 1)
-
+                        if index == required_ports-1:
+                            write_range(range_start, range_start + required_ports - 1, module_name, protocol)
+                            return (range_start, range_start + required_ports - 1)
+            else:
+                raise PortRangeExceededError()
     except sqlite3.Error as e:
         raise StorageError(f"Database error: {e}") from e # Raise custom database error
 
