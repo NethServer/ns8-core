@@ -54,7 +54,8 @@ for krepo in rdb.scan_iter('cluster/backup_repository/*'):
             unix_timestamp = int(time.mktime(datetime.fromisoformat(oroot["ModTime"]).timetuple()))
         except:
             unix_timestamp = int(time.time())
-        backups[restic_uuid] = {
+        backups.setdefault(restic_uuid, {})
+        backups[restic_uuid][repo_uuid] = {
             "module_id": "",
             "module_ui_name": "",
             "node_fqdn": "",
@@ -77,11 +78,12 @@ for module_id in rdb.hkeys("cluster/module_node"):
     module_uuid = omodule.get("MODULE_UUID", "")
     if module_uuid not in backups:
         continue
-    backups[module_uuid]["is_generated_locally"] = True
-    backups[module_uuid]["installed_instance"] = module_id
-    backups[module_uuid]["installed_instance_ui_name"] = rdb.get(f"module/{module_id}/ui_name") or ""
-    backups[module_uuid]["module_id"] = module_id
-    backups[module_uuid]["module_ui_name"] = backups[module_uuid]["installed_instance_ui_name"]
+    for repo_uuid in backups[module_uuid]:
+        backups[module_uuid][repo_uuid]["is_generated_locally"] = True
+        backups[module_uuid][repo_uuid]["installed_instance"] = module_id
+        backups[module_uuid][repo_uuid]["installed_instance_ui_name"] = rdb.get(f"module/{module_id}/ui_name") or ""
+        backups[module_uuid][repo_uuid]["module_id"] = module_id
+        backups[module_uuid][repo_uuid]["module_ui_name"] = backups[module_uuid][repo_uuid]["installed_instance_ui_name"]
 
 for repo_uuid in repositories:
     rclone_cat_cmd = ['rclone-wrapper', repo_uuid,
@@ -99,11 +101,11 @@ for repo_uuid in repositories:
 
         if ometa.get('uuid') in backups:
             module_uuid = ometa["uuid"]
-            backups[module_uuid]["module_id"] = ometa.get("module_id", "")
-            backups[module_uuid]["module_ui_name"] = ometa.get("module_ui_name", "")
-            backups[module_uuid]["node_fqdn"] = ometa.get("node_fqdn", "")
-            backups[module_uuid]["timestamp"] = ometa.get("timestamp", unix_timestamp)
-        if "cluster_uuid" in ometa and not backups[module_uuid].get("is_generated_locally"):
-            backups[module_uuid]["is_generated_locally"] = cluster_uuid == ometa["cluster_uuid"]
+            backups[module_uuid][repo_uuid]["module_id"] = ometa.get("module_id", "")
+            backups[module_uuid][repo_uuid]["module_ui_name"] = ometa.get("module_ui_name", "")
+            backups[module_uuid][repo_uuid]["node_fqdn"] = ometa.get("node_fqdn", "")
+            backups[module_uuid][repo_uuid]["timestamp"] = ometa.get("timestamp", unix_timestamp)
+        if "cluster_uuid" in ometa and not backups[module_uuid][repo_uuid].get("is_generated_locally"):
+            backups[module_uuid][repo_uuid]["is_generated_locally"] = cluster_uuid == ometa["cluster_uuid"]
 
-json.dump(list(backups.values()), fp=sys.stdout)
+json.dump([restic_repo for xrepo in backups.values() for restic_repo in xrepo.values()], fp=sys.stdout)
