@@ -360,7 +360,7 @@ def list_core_modules(rdb):
     core_modules = {}
     available = list_available(rdb, skip_core_modules = False)
 
-    def _calc_update(image_name, cur):
+    def _calc_update(image_name, current_tag):
         # Lookup module information from repositories
         for module in available:
             if module["id"] == image_name:
@@ -368,13 +368,16 @@ def list_core_modules(rdb):
         else:
             return ""
         try:
-            vupdate = module["versions"][0]['tag']
-            vinfo = semver.VersionInfo.parse(vupdate)
-            if vinfo > cur:
-                return vupdate
-        except:
-            pass
-        return ""
+            update_tag = max(
+                [current_tag] + [version_dict['tag'] for version_dict in module["versions"]],
+                key=lambda version_tag: semver.VersionInfo.parse(version_tag),
+            )
+        except Exception as ex:
+            print(agent.SD_ERR, f"Cannot parse version for {image_name}", ex, file=sys.stderr)
+            return "" # update not found
+        if update_tag == current_tag:
+            return "" # update not found
+        return update_tag # update found
 
     for module_source, instances in list_installed_core(rdb).items():
         _, image_name = module_source.rsplit("/", 1)
