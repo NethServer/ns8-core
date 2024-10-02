@@ -6,11 +6,18 @@
 #
 
 import node.ports_manager
+import agent
 import json
 import sys
 
 request = json.load(sys.stdin)
 
-# Deallocate TCP and UDP ports
-node.ports_manager.deallocate_ports(request['module_id'], 'tcp')
-node.ports_manager.deallocate_ports(request['module_id'], 'udp')
+try:
+    # Deallocate TCP and UDP ports
+    node.ports_manager.deallocate_ports(request['module_id'], 'tcp')
+    node.ports_manager.deallocate_ports(request['module_id'], 'udp')
+
+    # In case of clone/move/import fail ensure rsync port deallocation
+    node.ports_manager.deallocate_ports(f"{request['module_id']}_rsync", 'tcp')
+except node.ports_manager.ModuleNotFoundError as exc:
+    print(agent.SD_WARNING, exc, file=sys.stderr)
