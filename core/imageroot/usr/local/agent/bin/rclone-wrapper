@@ -81,6 +81,8 @@ elif uscheme == "s3":
         rclone_env['RCLONE_S3_PROVIDER'] = 'Synology'
         rclone_env['RCLONE_S3_REGION'] = orepo.get("aws_default_region", extract_region_code(s3_endpoint, 0))
         rclone_env['RCLONE_S3_NO_CHECK_BUCKET'] = "1"
+    else:
+        rclone_env['RCLONE_S3_PROVIDER'] = 'Other'
 
 elif uscheme == "azure":
     rclone_path = ':azureblob:' + upath.rstrip(":")
