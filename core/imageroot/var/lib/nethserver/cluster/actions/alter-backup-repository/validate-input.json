@@ -72,7 +72,6 @@
                             "title": "S3 providers",
                             "enum": [
                                 "aws",
-                                "digitalocean",
                                 "generic-s3"
                             ]
                         },

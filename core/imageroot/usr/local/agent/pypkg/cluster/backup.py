@@ -29,8 +29,6 @@ def get_default_backup_repository_name(provider, url, rid=""):
             name = "AWS " + url.split('/', 1)[1]
         elif provider == "backblaze":
             name = "Backblaze " + url.split(':', 1)[1]
-        elif provider == "digitalocean":
-            name = "DigitalOcean " + url.split('/', 1)[1]
     except:
         pass
 
