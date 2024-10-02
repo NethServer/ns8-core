@@ -121,7 +121,7 @@ buildah rm "${container}"
 images+=("${repobase}/${reponame}")
 
 echo "Building the restic/rclone image..."
-container=$(buildah from docker.io/library/alpine:3.18.4)
+container=$(buildah from docker.io/library/alpine:3.20.3)
 reponame="restic"
 buildah add "${container}" restic/ /
 buildah run ${container} sh <<'EOF'

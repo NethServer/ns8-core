@@ -10,6 +10,14 @@ import agent
 import os
 from urllib.parse import urlparse
 
+def extract_region_code(hostname, position, default=""):
+    """Obtain the region code for S3 backends by looking at the domain
+    parts of the endpoint FQDN."""
+    try:
+        return hostname.split('.')[position]
+    except ValueError:
+        return default
+
 core_env = agent.read_envfile("/etc/nethserver/core.env")
 rclone_image = core_env["RESTIC_IMAGE"]
 
@@ -62,6 +70,18 @@ elif uscheme == "s3":
         rclone_env['RCLONE_S3_REGION'] = orepo.get("aws_default_region", "")
     elif orepo['provider'] == 'digitalocean':
         rclone_env['RCLONE_S3_PROVIDER'] = 'DigitalOcean'
+    elif orepo['provider'] == 'generic-s3' and 'ovh.net' in s3_endpoint:
+        rclone_env['RCLONE_S3_PROVIDER'] = 'Other'
+        rclone_env['RCLONE_S3_REGION'] = orepo.get("aws_default_region", extract_region_code(s3_endpoint, 1))
+        rclone_env['RCLONE_S3_LOCATION_CONSTRAINT'] = rclone_env['RCLONE_S3_REGION']
+    elif orepo['provider'] == 'generic-s3' and 'wasabi' in s3_endpoint:
+        rclone_env['RCLONE_S3_PROVIDER'] = 'Wasabi'
+        rclone_env['RCLONE_S3_REGION'] = orepo.get("aws_default_region", extract_region_code(s3_endpoint, 1))
+    elif orepo['provider'] == 'generic-s3' and 'synology' in s3_endpoint:
+        rclone_env['RCLONE_S3_PROVIDER'] = 'Synology'
+        rclone_env['RCLONE_S3_REGION'] = orepo.get("aws_default_region", extract_region_code(s3_endpoint, 0))
+        rclone_env['RCLONE_S3_NO_CHECK_BUCKET'] = "1"
+
 elif uscheme == "azure":
     rclone_path = ':azureblob:' + upath.rstrip(":")
     rclone_env = {
