@@ -582,6 +582,7 @@
         "cluster_placeholder": "Choose a node in the cluster",
         "parameters_format": "Incorrect value",
         "url": "URL",
+        "url_pattern": "The S3-compatible hostname and bucket name must be separated by a slash '/'",
         "from_node_name_of_this_cluster": "From node {name} of this cluster",
         "from_node_name_of_different_cluster": "From node {name} of a different cluster",
         "from_this_cluster": "From this cluster",

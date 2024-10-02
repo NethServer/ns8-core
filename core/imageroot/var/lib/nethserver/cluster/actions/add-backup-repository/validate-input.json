@@ -110,6 +110,9 @@
                 {
                     "title": "S3-based provider schema",
                     "properties": {
+                        "url": {
+                            "pattern": "/"
+                        },
                         "provider": {
                             "title": "S3 providers",
                             "enum": ["aws", "generic-s3"]
