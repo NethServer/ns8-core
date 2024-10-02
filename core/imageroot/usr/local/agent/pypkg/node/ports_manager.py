@@ -78,7 +78,7 @@ def allocate_ports(required_ports: int, module_name: str, protocol: str):
     range_end = 45000
 
     try:
-        with sqlite3.connect('./ports.sqlite') as database:
+        with sqlite3.connect('./ports.sqlite', isolation_level='EXCLUSIVE', timeout=30) as database:
             cursor = database.cursor()
             create_tables(cursor)  # Ensure the tables exist
 
@@ -127,7 +127,7 @@ def deallocate_ports(module_name: str, protocol: str):
     :return: A tuple (start_port, end_port) if deallocation is successful, None otherwise.
     """
     try:
-        with sqlite3.connect('./ports.sqlite') as database:
+        with sqlite3.connect('./ports.sqlite', isolation_level='EXCLUSIVE', timeout=30) as database:
             cursor = database.cursor()
             create_tables(cursor)  # Ensure the tables exist
 
@@ -152,7 +152,7 @@ def deallocate_ports(module_name: str, protocol: str):
     except sqlite3.Error as e:
         raise StorageError(f"Database error: {e}") from e # Raise custom database error
 
-def write_range(start: int, end: int, module: str, protocol: str, database: sqlite3.Connection=sqlite3.connect('./ports.sqlite')):
+def write_range(start: int, end: int, module: str, protocol: str, database: sqlite3.Connection=None):
     """
     Write a port range for a module directly to the database.
 
@@ -162,6 +162,9 @@ def write_range(start: int, end: int, module: str, protocol: str, database: sqli
     :param protocol: Protocol type ('tcp' or 'udp').
     """
     try:
+        if database is None:
+            database = sqlite3.connect('./ports.sqlite', isolation_level='EXCLUSIVE', timeout=30)
+
         with database:
             cursor = database.cursor()
             create_tables(cursor)  # Ensure the tables exist
