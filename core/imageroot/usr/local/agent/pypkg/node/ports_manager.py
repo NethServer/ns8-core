@@ -100,7 +100,7 @@ def allocate_ports(required_ports: int, module_name: str, protocol: str):
                 ports_used = cursor.fetchall()
 
             if len(ports_used) == 0:
-                write_range(range_start, range_start + required_ports - 1, module_name, protocol)
+                write_range(range_start, range_start + required_ports - 1, module_name, protocol, database)
                 return (range_start, range_start + required_ports - 1)
             
             while range_start <= range_end:
@@ -111,7 +111,7 @@ def allocate_ports(required_ports: int, module_name: str, protocol: str):
                             range_start = port_range[1] + 1  # Move to the next available port range
                             break
                         if index == required_ports-1:
-                            write_range(range_start, range_start + required_ports - 1, module_name, protocol)
+                            write_range(range_start, range_start + required_ports - 1, module_name, protocol, database)
                             return (range_start, range_start + required_ports - 1)
             else:
                 raise PortRangeExceededError()
@@ -152,7 +152,7 @@ def deallocate_ports(module_name: str, protocol: str):
     except sqlite3.Error as e:
         raise StorageError(f"Database error: {e}") from e # Raise custom database error
 
-def write_range(start: int, end: int, module: str, protocol: str):
+def write_range(start: int, end: int, module: str, protocol: str, database: sqlite3.Connection=sqlite3.connect('./ports.sqlite')):
     """
     Write a port range for a module directly to the database.
 
@@ -162,7 +162,7 @@ def write_range(start: int, end: int, module: str, protocol: str):
     :param protocol: Protocol type ('tcp' or 'udp').
     """
     try:
-        with sqlite3.connect('./ports.sqlite') as database:
+        with database:
             cursor = database.cursor()
             create_tables(cursor)  # Ensure the tables exist
 
