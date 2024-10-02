@@ -95,7 +95,7 @@
         "about_to_update_app": "{app} {version} verrà aggiornata alla versione {newVersion}.",
         "uninstall_app": "Disinstallare {name}? Anche i dati dell'app verranno eliminati. Questa azione NON è reversibile",
         "you_have_updates": "Hai {numUpdates} app da aggiornare | Hai {numUpdates} app da aggiornare",
-        "installed": "Installed",
+        "installed": "Installato",
         "install": "Installa",
         "install_new_instance": "Installa nuova istanza",
         "other_actions": "Altre azioni",
