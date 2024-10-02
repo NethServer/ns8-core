@@ -241,19 +241,19 @@
             >
             </cv-text-input>
             <cv-text-input
-              :label="$t('backup.aws_access_key_id')"
-              v-model.trim="aws.aws_access_key_id"
-              :invalid-message="error.aws.aws_access_key_id"
-              :disabled="loading.addBackupRepository"
-              ref="aws_access_key_id"
-            >
-            </cv-text-input>
-            <cv-text-input
               :label="$t('backup.aws_default_region')"
               v-model.trim="aws.aws_default_region"
               :invalid-message="error.aws.aws_default_region"
               :disabled="loading.addBackupRepository"
               ref="aws_default_region"
+            >
+            </cv-text-input>
+            <cv-text-input
+              :label="$t('backup.aws_access_key_id')"
+              v-model.trim="aws.aws_access_key_id"
+              :invalid-message="error.aws.aws_access_key_id"
+              :disabled="loading.addBackupRepository"
+              ref="aws_access_key_id"
             >
             </cv-text-input>
             <cv-text-input
