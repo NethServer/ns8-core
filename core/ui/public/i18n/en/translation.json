@@ -421,7 +421,7 @@
         "aws": "Amazon S3",
         "smb": "Windows File Share (SMB2/3)",
         "cluster": "Local storage",
-        "generic_s3": "S3 compatible provider",
+        "generic-s3": "S3 compatible provider",
         "azure": "Microsoft Azure blob storage",
         "backblaze_short": "B2",
         "aws_short": "S3",

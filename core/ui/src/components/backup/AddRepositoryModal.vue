@@ -113,7 +113,7 @@
                       />
                     </div>
                     <h6>
-                      {{ $t("backup.generic_s3") }}
+                      {{ $t("backup.generic-s3") }}
                     </h6>
                   </div>
                 </NsTile>

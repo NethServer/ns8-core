@@ -688,7 +688,7 @@
         "hourly": "Ogni ora",
         "weekly": "Settimanale",
         "monthly": "Mensilmente",
-        "generic_s3": "Provider compatibile con S3",
+        "generic-s3": "Provider compatibile con S3",
         "total_size": "Dimensioni totali",
         "minute": "Minuto",
         "schedule_action": "Pianifica",
