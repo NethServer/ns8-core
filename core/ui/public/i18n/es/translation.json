@@ -328,7 +328,7 @@
         "backblaze": "Backblaze B2",
         "no_instance_to_restore_description": "Parece que no hay una copia de seguridad de ninguna instancia de la aplicación en tus repositorios",
         "choose_app_instances_to_backup": "Elige instancias de aplicaciones para realizar una copia de seguridad.",
-        "generic_s3": "Proveedor compatible con S3",
+        "generic-s3": "Proveedor compatible con S3",
         "cluster_placeholder": "Elige un nodo en el clúster",
         "backup_enabled": "Copia de seguridad habilitada",
         "no_backup_configured": "No hay copias de seguridad configuradas",

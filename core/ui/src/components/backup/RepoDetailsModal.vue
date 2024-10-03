@@ -51,15 +51,15 @@
       <!-- amazon s3 -->
       <template v-if="repository.provider == 'aws'">
         <div class="key-value-setting">
-          <span class="label">{{ $t("backup.aws_access_key_id") }}</span>
-          <span class="value">{{
-            repository.parameters.aws_access_key_id
-          }}</span>
-        </div>
-        <div class="key-value-setting">
           <span class="label">{{ $t("backup.aws_default_region") }}</span>
           <span class="value">{{
             repository.parameters.aws_default_region
+          }}</span>
+        </div>
+        <div class="key-value-setting">
+          <span class="label">{{ $t("backup.aws_access_key_id") }}</span>
+          <span class="value">{{
+            repository.parameters.aws_access_key_id
           }}</span>
         </div>
         <div class="key-value-setting">

@@ -896,7 +896,7 @@
         "custom_schedule_tooltip_systemd_time_documentation": "Siehe Systemd Timer Dokumentation",
         "no_instance_to_restore_description": "Es ist keine App-Instanz im Ziel gesichert",
         "delete_backup_explanation_1": "{instanceName} wird nicht mehr gesichert. Soll erneut eine Datensicherung erfolgen so muss eine neue Sicherung geplant werden. | {numInstances} app Instanzen werden nicht mehr gesichert. Soll erneut eine Datensicherung erfolgen so muss eine neue Sicherung geplant werden.",
-        "generic_s3": "S3-kompatibler Anbieter",
+        "generic-s3": "S3-kompatibler Anbieter",
         "no_backup_configured": "Keine Datensicherung konfiguriert",
         "retention": "Aufbewahrung",
         "disabled_backups_description": "Es ist {num} Datensicherung deaktiviert | Es sind {num} Datensicherungen deaktiviert",

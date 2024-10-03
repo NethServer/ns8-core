@@ -26,16 +26,6 @@
             }
         },
         {
-            "name": "repository 3",
-            "provider": "digitalocean",
-            "password": "",
-            "url": "s3:ams3.digitaloceanspaces.com/mybucket/mybackup",
-            "parameters": {
-                "aws_access_key_id": "XJEMERNGRIWGN",
-                "aws_secret_access_key": "897wergjkegher987geriugheruiger789"
-            }
-        },
-        {
             "name": "repository 4",
             "provider": "azure",
             "password": "",
@@ -120,9 +110,12 @@
                 {
                     "title": "S3-based provider schema",
                     "properties": {
+                        "url": {
+                            "pattern": "/"
+                        },
                         "provider": {
                             "title": "S3 providers",
-                            "enum": ["aws", "digitalocean", "generic-s3"]
+                            "enum": ["aws", "generic-s3"]
                         },
                         "parameters": {
                             "$ref": "#/$defs/s3_parameters"
