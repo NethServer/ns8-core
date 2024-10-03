@@ -64,10 +64,10 @@
         <label class="instance-label">
           <cv-checkbox
             v-model="selectedList"
-            :value="instance.path"
+            :value="instance.repository_id + '@' + instance.path"
             hide-label
             class="checkbox-instance"
-            :id="instance.path"
+            :id="instance.repository_id + '/' + instance.path"
           />
           <InstanceToRestoreInfo :instance="instance" />
         </label>
@@ -148,8 +148,11 @@ export default {
     selectedList: function () {
       const selectedInstances = [];
 
-      for (const path of this.selectedList) {
-        const instanceFound = this.instances.find((i) => i.path == path);
+      for (const selectedValue of this.selectedList) {
+        const [repoId, path] = selectedValue.split(/@(.+)/, 2);
+        const instanceFound = this.instances.find(
+          (i) => i.path == path && i.repository_id == repoId
+        );
 
         if (instanceFound) {
           selectedInstances.push(instanceFound);
@@ -170,7 +173,7 @@ export default {
       this.selectedList = [];
 
       for (const instance of this.instances) {
-        this.selectedList.push(instance.path);
+        this.selectedList.push(instance.repository_id + "@" + instance.path);
       }
     },
     selectNone() {
