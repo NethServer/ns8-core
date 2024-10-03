@@ -568,7 +568,8 @@
         "from_node_name": "From node {name}",
         "data_encryption_key_tooltip": "This password is used to encrypt data in the backup destination and is saved inside your cluster backup. Store this password in a safe place, or remember to download cluster backup regularly.",
         "most_recent": "Most recent",
-        "from_this_cluster": "From this cluster"
+        "from_this_cluster": "From this cluster",
+        "url_pattern": "The S3-compatible hostname and bucket name must be separated by a slash '/'"
     },
     "login": {
         "2fa_code_required": "É necessário um código de 6 dígitos",
