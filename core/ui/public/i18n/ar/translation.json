@@ -354,7 +354,8 @@
         "from_node_name": "From node {name}",
         "most_recent": "Most recent",
         "from_this_cluster": "From this cluster",
-        "data_encryption_key_tooltip": "This password is used to encrypt data in the backup destination and is saved inside your cluster backup. Store this password in a safe place, or remember to download cluster backup regularly."
+        "data_encryption_key_tooltip": "This password is used to encrypt data in the backup destination and is saved inside your cluster backup. Store this password in a safe place, or remember to download cluster backup regularly.",
+        "url_pattern": "The S3-compatible hostname and bucket name must be separated by a slash '/'"
     },
     "settings_tls_certificates": {
         "no_tls_certificate": "No TLS certificate",
