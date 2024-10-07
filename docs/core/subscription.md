@@ -1,6 +1,7 @@
 ---
 layout: default
 title: Subscription
+nav_order: 16
 parent: Core
 ---
 

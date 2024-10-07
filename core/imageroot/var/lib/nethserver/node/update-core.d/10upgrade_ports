@@ -1,0 +1,50 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2024 Nethesis S.r.l.
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
+
+import node.ports_manager
+import agent
+import os
+import sys
+
+if os.path.exists("./ports.sqlite"):
+    sys.exit(0)
+
+rdb_rw = agent.redis_connect(privileged=True)
+node_id = os.environ["NODE_ID"]
+
+tcpseq = rdb_rw.get(f"node/{node_id}/tcp_ports_sequence")
+udpseq = rdb_rw.get(f"node/{node_id}/udp_ports_sequence")
+
+# New redis connection to allow module environment access
+rdb_ro = agent.redis_connect(privileged=False)
+
+# If ports sequences were still present, 
+# create new ports storage with values already in use.
+if tcpseq is not None or udpseq is not None:
+    # Build new ports storage, writing used ports for every existing module
+    for module_id, module_node_id in rdb_ro.hgetall('cluster/module_node').items():
+        if module_node_id == node_id:
+            environment = rdb_ro.hgetall(f"module/{module_id}/environment")
+            # Write on ports storage TCP ports if present
+            if "TCP_PORTS_RANGE" in environment:
+                tcp_ports_range = str(environment["TCP_PORTS_RANGE"])
+                node.ports_manager.write_range(tcp_ports_range[:tcp_ports_range.find('-')], tcp_ports_range[tcp_ports_range.find('-')+1:], environment["MODULE_ID"], 'tcp')
+            elif "TCP_PORT" in environment:
+                node.ports_manager.write_range(environment["TCP_PORT"], environment["TCP_PORT"], environment["MODULE_ID"], 'tcp')
+            
+            # Write on ports storage UDP ports if present
+            if "UDP_PORTS_RANGE" in environment:
+                node.ports_manager.write_range(environment["UDP_PORTS_RANGE"][0], environment["UDP_PORTS_RANGE"][1], environment["MODULE_ID"], 'udp')
+            elif "UDP_PORT" in environment:
+                node.ports_manager.write_range(environment["UDP_PORT"], environment["UDP_PORT"], environment["MODULE_ID"], 'udp')
+
+# If ports sequences are still present, they will be removed
+if tcpseq is not None:
+    rdb_rw.delete(f"node/{node_id}/tcp_ports_sequence")
+
+if udpseq is not None:
+    rdb_rw.delete(f"node/{node_id}/udp_ports_sequence")

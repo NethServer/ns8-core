@@ -70,8 +70,6 @@ node_pwhash=$(echo -n "${node_password}" | sha256sum | awk '{print $1}')
     # Add the keys for the cluster bootstrap
     cat <<EOF
 SET cluster/node_sequence 1
-SET node/1/tcp_ports_sequence 20001
-SET node/1/udp_ports_sequence 20001
 EOF
 
     # Configure default module repositories
@@ -127,6 +125,9 @@ cluster.grants.grant(rdb, action_clause="add-public-service",  to_clause="tunadm
 cluster.grants.grant(rdb, action_clause="remove-public-service",  to_clause="tunadm", on_clause='node/1')
 cluster.grants.grant(rdb, action_clause="add-custom-zone",  to_clause="tunadm", on_clause='node/1')
 cluster.grants.grant(rdb, action_clause="remove-custom-zone",  to_clause="tunadm", on_clause='node/1')
+
+cluster.grants.grant(rdb, action_clause="allocate-ports",  to_clause="portsadm", on_clause='node/1')
+cluster.grants.grant(rdb, action_clause="deallocate-ports",  to_clause="portsadm", on_clause='node/1')
 
 cluster.grants.grant(rdb, action_clause="update-routes", to_clause="accountprovider", on_clause='cluster')
 cluster.grants.grant(rdb, action_clause="bind-user-domains",  to_clause="accountconsumer", on_clause='cluster')
