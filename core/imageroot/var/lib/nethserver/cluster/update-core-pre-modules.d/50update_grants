@@ -27,8 +27,18 @@ for node_id in set(rdb.hvals('cluster/module_node')):
     cluster.grants.grant(rdb, "deallocate-ports", f'node/{node_id}', "portsadm")
     cluster.grants.grant(rdb, "allocate-ports", f'node/{node_id}', "fwadm,portsadm")
     cluster.grants.grant(rdb, "deallocate-ports", f'node/{node_id}', "fwadm,portsadm")
+    cluster.grants.grant(rdb, "add-public-service", f'node/{node_id}', "fwadm,portsadm")
+    cluster.grants.grant(rdb, "remove-public-service", f'node/{node_id}', "fwadm,portsadm")
+    cluster.grants.grant(rdb, "add-custom-zone", f'node/{node_id}', "fwadm,portsadm")
+    cluster.grants.grant(rdb, "remove-custom-zone", f'node/{node_id}', "fwadm,portsadm")
     cluster.grants.grant(rdb, "allocate-ports", f'node/{node_id}', "tunadm,portsadm")
     cluster.grants.grant(rdb, "deallocate-ports", f'node/{node_id}', "tunadm,portsadm")
+    cluster.grants.grant(rdb, "add-tun", f'node/{node_id}', "tunadm,portsadm")
+    cluster.grants.grant(rdb, "remove-tun", f'node/{node_id}', "tunadm,portsadm")
+    cluster.grants.grant(rdb, "add-public-service", f'node/{node_id}', "tunadm,portsadm")
+    cluster.grants.grant(rdb, "remove-public-service", f'node/{node_id}', "tunadm,portsadm")
+    cluster.grants.grant(rdb, "add-custom-zone", f'node/{node_id}', "tunadm,portsadm")
+    cluster.grants.grant(rdb, "remove-custom-zone", f'node/{node_id}', "tunadm,portsadm")
 #
 # END of grant updates
 #
