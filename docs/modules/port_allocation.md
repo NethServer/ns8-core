@@ -8,7 +8,7 @@ parent: Modules
 # Port allocation
 
 Many web application modules need a TCP or UDP port to run a backend exposed by Traefik.
-Such modules can set the `org.nethserver.tcp-ports-demand` and `org.nethserver.tcp-ports-demand` which takes an integer number as value.
+Such modules can set the `org.nethserver.tcp-ports-demand` and `org.nethserver.udp-ports-demand` which takes an integer number as value.
 Example:
 ```
 org.nethserver.tcp-ports-demand=1
@@ -26,11 +26,37 @@ The available environment variables will be:
 
 Currently, allocated ports are saved in an SQLite database file managed by the local node agent.
 
+## Authorizations
+
+The module requires an additional role to manage port allocation, which is
+assigned by setting the `org.nethserver.authorizations` label on the
+module image, as shown in the following example:
+
+   org.nethserver.authorizations = node:portsadm
+
+The following additional label values can be used to mix port allocations
+with other existing node-related roles:
+
+- `org.nethserver.authorizations = node:fwadm,portsadm`
+- `org.nethserver.authorizations = node:tunadm,portsadm`
+
+Note that the value must be exactly one of the above. Other combinations
+like `node:portsadm,fwadm` are not valid.
+
+The module will be granted execution permissions for the following actions
+on the local node:
+- `allocate-ports`
+- `deallocate-ports`
+
+These actions can be carried out using the agent library without making
+direct node API calls, as explained in the next section.
+
 ## Agent library
 
 The Python `agent` library provides a convenient interface for managing port allocation and deallocation, based on the node actions `allocate_ports` and `deallocate_ports`.
 
 It is optional to specify the `module_id` when calling the port allocation or deallocation functions. By default, if the `module_id` is not provided, the function will automatically use the value of the `MODULE_ID` environment variable. This simplifies the function calls in common scenarios, ensuring the correct module name is used without manual input. However, if needed, you can still explicitly pass the `module_id`.
+Note that only the cluster agent can modify the port allocations of other modules.
 
 ### Allocate ports
 
@@ -67,24 +93,3 @@ For more information about functions, see [Port allocation](../../core/port_allo
 
 These functions dynamically allocate and deallocate ports based on the module's needs without requiring direct interaction with the node's APIs.
 
-## Authorizations
-
-The module requires an additional role to manage port allocation, which is assigned by setting the `org.nethserver.authorizations` label on the module image, as shown in the following example:
-
-```
-org.nethserver.authorizations = node:portsadm
-```
-The module will be granted execution permissions for the following actions on the local node:
-- `allocate-ports`
-- `deallocate-ports`
-
-However, as mentioned above, these actions can be carried out using the agent library without making direct node API calls.
-
-The following additional label values can be used to mix port allocations
-with other existing node-related roles:
-
-- `org.nethserver.authorizations = node:fwadm,portsadm`
-- `org.nethserver.authorizations = node:tunadm,portsadm`
-
-Note that the value must be exactly one of the above. Other combinations
-like `node:portsadm,fwadm` are not valid.
