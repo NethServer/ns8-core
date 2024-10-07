@@ -128,6 +128,10 @@ cluster.grants.grant(rdb, action_clause="remove-custom-zone",  to_clause="tunadm
 
 cluster.grants.grant(rdb, action_clause="allocate-ports",  to_clause="portsadm", on_clause='node/1')
 cluster.grants.grant(rdb, action_clause="deallocate-ports",  to_clause="portsadm", on_clause='node/1')
+cluster.grants.grant(rdb, action_clause="allocate-ports",  to_clause="fwadm,portsadm", on_clause='node/1')
+cluster.grants.grant(rdb, action_clause="deallocate-ports",  to_clause="fwadm,portsadm", on_clause='node/1')
+cluster.grants.grant(rdb, action_clause="allocate-ports",  to_clause="tunadm,portsadm", on_clause='node/1')
+cluster.grants.grant(rdb, action_clause="deallocate-ports",  to_clause="tunadm,portsadm", on_clause='node/1')
 
 cluster.grants.grant(rdb, action_clause="update-routes", to_clause="accountprovider", on_clause='cluster')
 cluster.grants.grant(rdb, action_clause="bind-user-domains",  to_clause="accountconsumer", on_clause='cluster')

@@ -79,3 +79,12 @@ The module will be granted execution permissions for the following actions on th
 - `deallocate-ports`
 
 However, as mentioned above, these actions can be carried out using the agent library without making direct node API calls.
+
+The following additional label values can be used to mix port allocations
+with other existing node-related roles:
+
+- `org.nethserver.authorizations = node:fwadm,portsadm`
+- `org.nethserver.authorizations = node:tunadm,portsadm`
+
+Note that the value must be exactly one of the above. Other combinations
+like `node:portsadm,fwadm` are not valid.
