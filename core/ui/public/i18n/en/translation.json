@@ -923,7 +923,7 @@
             "web": "Web",
             "communication": "Communication",
             "security": "Security",
-            "audio": "Audio"
+            "multimedia": "Multimedia"
         },
         "images_label": "Images",
         "rootfull_app_warning_title": "Administrative privileges",
