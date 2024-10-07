@@ -268,7 +268,7 @@
         "no_instance_to_restore_description": "It looks like there is no app instance backed up on your repositories",
         "choose_app_instances_to_backup": "Choose app instances to backup.",
         "delete_backup_explanation_1": "<strong>{instanceName}</strong> won't be backed up anymore. If you change your mind, you'll have to schedule a new backup. | <strong>{numInstances} app instances</strong> won't be backed up anymore. If you change your mind, you'll have to schedule a new backup.",
-        "generic_s3": "S3 compatible provider",
+        "generic-s3": "S3 compatible provider",
         "cluster_placeholder": "Choose a node in the cluster",
         "backup_enabled": "Backup enabled",
         "no_backup_configured": "No backup configured",
@@ -305,7 +305,8 @@
         "from_node_name": "From node {name}",
         "data_encryption_key_tooltip": "This password is used to encrypt data in the backup destination and is saved inside your cluster backup. Store this password in a safe place, or remember to download cluster backup regularly.",
         "most_recent": "Most recent",
-        "from_this_cluster": "From this cluster"
+        "from_this_cluster": "From this cluster",
+        "url_pattern": "The S3-compatible hostname and bucket name must be separated by a slash '/'"
     },
     "settings_sw_repositories": {
         "create_repository": "Biltegi bat gehitu",

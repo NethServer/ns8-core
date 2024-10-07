@@ -328,7 +328,7 @@
         "backblaze": "Backblaze B2",
         "no_instance_to_restore_description": "Parece que no hay una copia de seguridad de ninguna instancia de la aplicación en tus repositorios",
         "choose_app_instances_to_backup": "Elige instancias de aplicaciones para realizar una copia de seguridad.",
-        "generic_s3": "Proveedor compatible con S3",
+        "generic-s3": "Proveedor compatible con S3",
         "cluster_placeholder": "Elige un nodo en el clúster",
         "backup_enabled": "Copia de seguridad habilitada",
         "no_backup_configured": "No hay copias de seguridad configuradas",
@@ -401,7 +401,8 @@
         "data_encryption_key_tooltip": "This password is used to encrypt data in the backup destination and is saved inside your cluster backup. Store this password in a safe place, or remember to download cluster backup regularly.",
         "from_node_name": "From node {name}",
         "most_recent": "Most recent",
-        "from_this_cluster": "From this cluster"
+        "from_this_cluster": "From this cluster",
+        "url_pattern": "The S3-compatible hostname and bucket name must be separated by a slash '/'"
     },
     "settings_http_routes": {
         "host_tooltip": "Un ejemplo de host válido es: <code>myapp.example.org</code>",

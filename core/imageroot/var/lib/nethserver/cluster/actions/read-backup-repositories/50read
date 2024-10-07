@@ -46,8 +46,13 @@ for krepo in rdb.scan_iter('cluster/backup_repository/*'):
     ]
     orepo = rdb.hgetall(krepo)
     repositories[repo_uuid] = orepo
-    proot = subprocess.Popen(rclone_lsjson_cmd, **popen_args)
-    for oroot in json.load(proot.stdout):
+    try:
+        proot = subprocess.Popen(rclone_lsjson_cmd, **popen_args)
+        lsjson_data = json.load(proot.stdout)
+    except Exception as ex:
+        lsjson_data = []
+        print(agent.SD_WARNING, 'Failed invocation of', *rclone_lsjson_cmd, ':', ex, file=sys.stderr)
+    for oroot in lsjson_data:
         restic_prefix, restic_uuid, _ = oroot["Path"].split("/", 2)
         try:
             # Obtain from lsjson the repository creation timestamp

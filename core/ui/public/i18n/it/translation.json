@@ -688,7 +688,7 @@
         "hourly": "Ogni ora",
         "weekly": "Settimanale",
         "monthly": "Mensilmente",
-        "generic_s3": "Provider compatibile con S3",
+        "generic-s3": "Provider compatibile con S3",
         "total_size": "Dimensioni totali",
         "minute": "Minuto",
         "schedule_action": "Pianifica",
@@ -781,7 +781,8 @@
         "data_encryption_key_tooltip": "Questa password viene utilizzata per crittografare i dati nella destinazione backup e viene salvata all'interno del backup del cluster. Conservare questa password in un luogo sicuro, o ricordarsi di scaricare il backup del cluster regolarmente.",
         "from_node_name": "Dal nodo {name}",
         "most_recent": "Più recente",
-        "from_this_cluster": "Da questo cluster"
+        "from_this_cluster": "Da questo cluster",
+        "url_pattern": "Il nome host e il nome del bucket S3-compatibile devono essere separati da uno slash '/ '"
     },
     "login": {
         "password": "Password",
@@ -912,7 +913,7 @@
         "not_active": "Inattivo",
         "active": "Attivo",
         "configure": "Configura",
-        "terms_required": "Si prega di leggere e accettare i @:common.terms_and_condizioni",
+        "terms_required": "Si prega di leggere e accettare i @:common.terms_and_conditions",
         "terms_and_conditions": "Termini e Condizioni"
     },
     "error": {
