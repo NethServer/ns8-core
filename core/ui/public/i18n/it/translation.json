@@ -43,8 +43,8 @@
             "web": "Web",
             "office": "Ufficio",
             "security": "Sicurezza",
-            "audio": "Audio",
-            "core": "Core"
+            "core": "Core",
+            "multimedia": "Multimedia"
         },
         "core_update_will_start_in_a_moment": "L'aggiornamento di base inizierà tra un momento...",
         "clone": "Clona",

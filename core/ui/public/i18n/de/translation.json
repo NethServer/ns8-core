@@ -452,8 +452,8 @@
             "security": "Sicherheit",
             "web": "Web",
             "development": "Entwicklung",
-            "audio": "Audio",
-            "core": "Core"
+            "core": "Core",
+            "multimedia": "Multimedia"
         },
         "app_info": "Info zur Anwendung",
         "core_app_table_description": "{productName} Core beinhaltet folgende App-Module",
