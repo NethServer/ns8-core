@@ -32,7 +32,7 @@ The module requires an additional role to manage port allocation, which is
 assigned by setting the `org.nethserver.authorizations` label on the
 module image, as shown in the following example:
 
-   org.nethserver.authorizations = node:portsadm
+    org.nethserver.authorizations = node:portsadm
 
 The following additional label values can be used to mix port allocations
 with other existing node-related roles:
