@@ -5,6 +5,21 @@ nav_order: 17
 parent: Core
 ---
 
+# Port allocation
+
+The `ports_manager` library handles the low-level port allocation storage.
+It registers and stores UDP and TCP port information in a SQLite database
+for the local node within the cluster.
+
+The SQLite database file, `ports.sqlite`, is stored in the node's `state/`
+directory. To inspect its contents, use the following command:
+
+    podman run -i --rm --volume /var/lib/nethserver/node/state/ports.sqlite:/srv/ports.sqlite:z alpine ash -c 'apk add sqlite ; sqlite3 /srv/ports.sqlite' <<<"SELECT *, 'tcp' FROM TCP_PORTS UNION SELECT *, 'udp' FROM UDP_PORTS;"
+
+For more information, refer to [Port
+allocation](../../modules/port_allocation) under the Modules section.
+
+
 ## Importing the Library
 
 To use the `ports_manager` library, you need to import it into your Python script as follows:
