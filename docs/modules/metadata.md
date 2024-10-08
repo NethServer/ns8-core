@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Metadata
-nav_order: 15
+nav_order: 32
 parent: Modules
 ---
 

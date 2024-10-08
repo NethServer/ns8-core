@@ -1,8 +1,8 @@
 ---
 layout: default
-title: Application Community Certification
-nav_order: 1
-has_children: false
+title: Community Certification
+nav_order: 134
+parent: Modules
 ---
 
 # Application Community Certification
@@ -91,8 +91,6 @@ process.
 
 0. The application and its parts must have no licensing conflicts.
    Licenses must permit unlimited distribution of the application.
-
-5. Application has 
 
 ### 2. Platform compliancy
 

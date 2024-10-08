@@ -1,7 +1,7 @@
 ---
 layout: default
 title: New module tutorial
-nav_order: 12
+nav_order: 120
 parent: Modules
 ---
 
