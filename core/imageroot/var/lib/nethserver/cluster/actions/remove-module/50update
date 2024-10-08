@@ -49,8 +49,6 @@ except Exception as ex:
     print(agent.SD_ERR + f"Cannot retrieve the NODE_ID of {module_id}", file=sys.stderr)
     sys.exit(1)
 
-podman_image_id = rdb.hget(f'module/{module_id}/environment', 'IMAGE_ID') or ""
-
 try:
     # Invoke the module destructor, if defined. Rootfull modules must
     # implement one, to stop running services.
@@ -120,9 +118,7 @@ agent.assert_exp(rdb.execute_command('ACL', 'DELUSER', f'module/{module_id}') ==
 # Save ACLs on the disk and propagate to worker nodes
 cluster.grants.save_acls(rdb)
 
-# Clean up the local Podman image copy, if still present
-if podman_image_id:
-    agent.run_helper("podman", "rmi", "--ignore", podman_image_id)
+# The Clean up of the local Podman image copy is done in the node remove-module action
 
 # trigger an event to advertize other modules that a module has been removed
 agent_id = os.environ['AGENT_ID']
