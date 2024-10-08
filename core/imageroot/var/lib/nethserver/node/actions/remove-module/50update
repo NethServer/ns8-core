@@ -57,3 +57,22 @@ else # Rootless module
         userdel -f -r "${mid}"
     fi
 fi
+
+# Remove the podman image
+podman_image_id=$(redis-cli hget module/$mid/environment IMAGE_ID)
+
+if [[ -n "$podman_image_id" ]]; then
+    # Check if the image actually exists
+    if podman inspect "$podman_image_id" &>/dev/null; then
+        # Try removing the image with ignoring errors
+        if podman rmi --ignore "$podman_image_id"; then
+            echo "Successfully removed image $podman_image_id for module $mid."
+        else
+            echo "Failed to remove image $podman_image_id for module $mid." >&2
+        fi
+    else
+        echo "Image $podman_image_id does not exist for module $mid." >&2
+    fi
+else
+    echo "No image ID found for module $mid." >&2
+fi
