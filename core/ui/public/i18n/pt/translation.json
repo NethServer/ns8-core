@@ -831,8 +831,8 @@
             "web": "Web",
             "documentation": "Documentation",
             "database": "Database",
-            "audio": "Audio",
-            "core": "Core"
+            "core": "Core",
+            "multimedia": "Multimedia"
         },
         "clone_app_description": "Clone <strong>{instanceLabel}</strong> instance and data to any node. Current instance will be left untouched.",
         "core_app_update_available_description": "Some core apps need to be updated",

@@ -947,8 +947,8 @@
             "security": "Security",
             "web": "Web",
             "documentation": "Documentation",
-            "audio": "Audio",
-            "core": "Core"
+            "core": "Core",
+            "multimedia": "Multimedia"
         },
         "clone": "Klonatu",
         "details": "Xehetasunak",
