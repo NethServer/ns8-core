@@ -65,13 +65,26 @@ Imagine an application module that initially requires only one TCP port. Later, 
 If ports are already allocated for this module, the previous allocation will be deallocated, and the new requested range of ports will be allocated. Here’s how this can be done:
 
 ```python
+import agent
+
 # Allocate 4 TCP ports for the module that is calling the function
 allocated_ports = agent.allocate_ports(4, "tcp")
 ```
 or
 ```python
+import agent
+
 # Allocate 4 UDP ports for "my_module" module
 allocated_ports = agent.allocate_ports(4, "udp", "my_module")
+```
+
+If you want to preserve the previously allocated ports and add a new range of ports, you can use the `keep_existing` parameter:
+
+```python
+import agent
+
+# Allocate 4 more TCP ports for the module that is calling the function
+allocated_ports = agent.allocate_ports(4, "tcp", keep_existing=True)
 ```
 
 ### Deallocate ports
@@ -79,11 +92,15 @@ allocated_ports = agent.allocate_ports(4, "udp", "my_module")
 If the module no longer needs the allocated ports, such as when a feature is removed or disabled, the ports can be easily deallocated:
 
 ```python
+import agent
+
 # Deallocate TCP ports for the module that is calling the function
 deallocated_ports = agent.deallocate_ports("tcp")
 ```
 or
 ```python
+import agent
+
 # Deallocate UDP ports for the "my_module" module
 deallocated_ports = agent.deallocate_ports("udp", "my_module")
 ```
