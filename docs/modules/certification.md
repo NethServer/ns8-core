@@ -41,8 +41,9 @@ application. When creating one, ensure the following requirements are met:
   application repository, look at the [Software
   repositories](../../core/software_repositories/) page.
 
-The review process leading to inclusion in NethForge is described in the
-next section.
+Before being included in NethForge, applications must pass a review
+process. The review process leading to inclusion in NethForge is described
+in the next section.
 
 ## Certification process
 
@@ -55,7 +56,9 @@ metadata](https://github.com/NethServer/ns8-nethforge/) starts the
 Community certification process for the application.
 
 After approval, at any time, the application can be removed from NethForge
-by the NethForge repository maintainers.
+by the NethForge repository maintainers. For example, this can happen if
+the current version is no longer maintained but has significant security
+issues, or if its behavior is deemed malicious.
 
 Here follow some tips that may help to quickly complete the certification
 process.
@@ -74,9 +77,11 @@ process.
    treatments and other relevant terms are explained with `terms_url`,
    where applicable.
 
-0. Admin's documentation. A public web page link must be provided in the
-   PR description. You can decide to write the documentation on your
-   preferred web site or to directly create a new [NS8 Admin's
+0. Administrator documentation. This is the documentation for the
+   administrator who must configure the applications for the final users.
+   A public web page link must be provided in the PR description. You can
+   decide to write the documentation on your preferred web site or to
+   directly create a new [NS8 Admin's
    Manual](https://github.com/NethServer/ns8-docs/) page with a PR. In
    both cases the metadata.json documentation URL will point to the latter
    with an application summary available from there.
