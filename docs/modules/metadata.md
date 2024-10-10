@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Metadata
-nav_order: 15
+nav_order: 32
 parent: Modules
 ---
 
@@ -46,6 +46,12 @@ Example of `metadata.json`:
 
 The `categories` field contains a list of string. Each string is a category that should describe the application usage scenario.
 It could be something like `database` or `collaboration`. Always use lower case strings without spaces.
+
+The list of available categories is available in this [translation.json
+source
+file](https://github.com/NethServer/ns8-core/blob/main/core/ui/public/i18n/en/translation.json),
+under the `app_categories` object. Change proposals to the category list can be
+discussed on the community forum, as explained in [development process](../../development_process/).
 
 ## Logo
 

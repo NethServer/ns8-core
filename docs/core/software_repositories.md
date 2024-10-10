@@ -56,27 +56,43 @@ redis-cli del cluster/repository_cache/<repository_name>
 
 ## Create a repository
 
-A NS8 repository must contain a file named `repodata.json` which describes
-the content of the repository. The
-[ns8-repomd](https://github.com/NethServer/ns8-repomd/) is the default
-repository and contains also
-the `createrepo.sh` command which creates the metadata.
+An NS8 repository must contain a file named `repodata.json`, which
+describes the content of the repository. Its format is detailed in
+[repodata-schema.json](https://github.com/NethServer/ns8-core/blob/main/core/imageroot/var/lib/nethserver/cluster/repodata-schema.json).
 
-The `createrepo.sh` command analyzes a directory passed as parameter, if no path is given, it walks the current working directory.
-For each directory found, it uses the directory name to query the remote image registry with
-[skopeo](https://github.com/containers/skopeo) and retrieve image tags.
-If tags are valid [semantic versions](https://semver.org/) they are added to the list of available module version.
+Examples of existing repositories include:
 
-Each module that needs to be published inside the repository should have a directory named after the module itself.
-The directory should contain:
+- [Default](https://github.com/NethServer/ns8-repomd/), which lists core
+  modules and applications with Nethesis Subscription support.
 
-- a file named `metadata.json`: it contains all module metadata like the name and the URL inside the image registry
-- a file named `logo.png`: a PNG file, 256x256 pixels
-- a directory named `screenshots`: it can contain one ore more image, each image must be in PNG format,
-  with a resolution of 1024x768 pixels
+- [NethForge](https://github.com/NethServer/ns8-nethforge/), which
+  contains applications with [Community
+  certification](../../modules/certification).
 
-See [dokuwiki directory](https://github.com/NethServer/ns8-repomd/tree/main/dokuwiki) for an example of a complete module
-metadata directory.
+To create a personal repository, you can copy the scripts from NethForge
+that generate `repodata.json`. The `createrepo.sh` command analyzes a
+directory passed as a parameter. If no path is given, it walks through the
+current working directory.
 
-Execute `createrepo.sh` to generate the `repodata.json`. The format is described [here](https://github.com/NethServer/ns8-core/blob/main/core/imageroot/var/lib/nethserver/cluster/repodata-schema.json).
+Each module that needs to be published inside the repository should have a
+directory named after the module itself. The directory should contain:
 
+- A file named `metadata.json`: this contains all module metadata such as
+  the name and the URL of the image in the registry. It uses the same
+  format as the [UI metadata.json](../../modules/metadata).
+- A file named `logo.png`: a PNG file with dimensions of 256x256 pixels.
+- A directory named `screenshots`: it can contain one or more images, each
+  in PNG format, with a resolution of 1024x768 pixels.
+
+For each directory found, `createrepo.sh` uses the directory name to query
+the remote image registry with
+[skopeo](https://github.com/containers/skopeo) and retrieve image tags. If
+the tags are valid [semantic versions](https://semver.org/), they are
+added to the list of available module versions.
+
+See the [dokuwiki
+directory](https://github.com/NethServer/ns8-nethforge/tree/main/dokuwiki)
+for an example of a complete module metadata directory.
+
+The resulting `repodata.json` and the application directories can then be
+uploaded to a public website.

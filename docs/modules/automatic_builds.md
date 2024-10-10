@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Automatic builds
-nav_order: 13
+nav_order: 132
 parent: Modules
 ---
 

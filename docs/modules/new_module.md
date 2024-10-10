@@ -1,7 +1,7 @@
 ---
 layout: default
 title: New module tutorial
-nav_order: 12
+nav_order: 120
 parent: Modules
 ---
 
@@ -18,11 +18,12 @@ See also [core]({{site.baseurl}}/core) and [modules]({{site.baseurl}}/modules).
 
 ## Step 0: requirements
 
-This tutorial will use some GitHub features to ease the module setup phase.
-While you do not really need a GitHub account to develop NS8, you will need it 
-if you want to follow this guide step-by-step.
+This tutorial will use some GitHub features to simplify the module setup
+process. While you do not strictly need a GitHub account to develop a
+module, you will need one if you want to follow this guide step-by-step.
 
-Before proceed, please [login to GitHub](https://github.com/login) or [create a new account](https://github.com/signup).
+Before proceeding, please [log in to GitHub](https://github.com/login) or
+[create a new account](https://github.com/signup).
 
 On your machine you will also need [GIT](https://git-scm.com/) and a text editor.
 
@@ -156,26 +157,15 @@ to the application at `https://your.server.fqdn/mymodule`.
 
 Repeat steps from 2 to 4 until you're module is ready for prime time!
 
-## Step 5: publish to a NS8 software repository
+## Step 5: publish to an NS8 software repository
 
-This step is optional. Follow below instructions only if you want to make your package
-publicly available from a software repository accessible inside the cluster admin UI.
+This step is optional. First, ensure the image is properly tagged in your
+container image registry. The tag must adhere to our [Semver syntax
+subset](../../development_process#module-version-numbering-rules).
 
-If you want to publish the package, ensure the image is properly tagged in your container image registry.
-The tag must be in valid [Semver v2 syntax](https://semver.org/spec/v2.0.0.html).
-Then create a new Pull Request (PR), to one of the following community repositories:
+- Refer to [Software repositories](../../core/software_repositories/) to
+  understand how an application is listed in the NS8 Software Center and
+  how to set up a personal application repository.
 
-- `default` repository of NS8 applications, [ns8-repomd](https://github.com/NethServer/ns8-repomd)
-- `nethforge` repository of community add-ons, [ns8-nethforge](https://github.com/NethServer/ns8-nethforge)
-
-The PR should contain:
-- a new [directory](https://github.com/NethServer/ns8-repomd/tree/main/dokuwiki) with the name of the module
-- the directory should also contain a `screenshots` subdirectory with one ore more screenshots (optional)
-
-If the package is hosted on GitHub Packages registry under the NethServer organization the following files con be omitted:
-- a [`metadata.json`]({{site.baseurl}}/modules/metadata#metadata.json) file
-- a logo file named [logo.png]({{site.baseurl}}/modules/metadata#logo)
-
-On the contrary, for the NethForge they are mandatory.
-
-When the PR has been merged, repository metadata will be automatically updated.
+- To publish the application in NethForge, refer to the [Certification
+  process](../certification).
