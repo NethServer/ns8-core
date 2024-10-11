@@ -55,6 +55,9 @@ direct node API calls, as explained in the next section.
 
 The Python `agent` library provides a convenient interface for managing port allocation and deallocation, based on the node actions `allocate_ports` and `deallocate_ports`.
 
+This interface dynamically allocate and deallocate ports based on the
+module's needs without requiring direct interaction with the node's APIs.
+
 It is optional to specify the `module_id` when calling the port allocation or deallocation functions. By default, if the `module_id` is not provided, the function will automatically use the value of the `MODULE_ID` environment variable. This simplifies the function calls in common scenarios, ensuring the correct module name is used without manual input. However, if needed, you can still explicitly pass the `module_id`.
 Note that only the cluster agent can modify the port allocations of other modules.
 
@@ -95,18 +98,15 @@ If the module no longer needs the allocated ports, such as when a feature is rem
 import agent
 
 # Deallocate TCP ports for the module that is calling the function
-deallocated_ports = agent.deallocate_ports("tcp")
+deallocated_port_ranges = agent.deallocate_ports("tcp")
 ```
 or
 ```python
 import agent
 
 # Deallocate UDP ports for the "my_module" module
-deallocated_ports = agent.deallocate_ports("udp", "my_module")
+deallocated_port_ranges = agent.deallocate_ports("udp", "my_module")
 ```
 By deallocating the ports, the module frees up the resources, allowing other modules to use those ports.
 
-For more information about functions, see [Port allocation](../../core/port_allocation)
-
-These functions dynamically allocate and deallocate ports based on the module's needs without requiring direct interaction with the node's APIs.
-
+For more information about the low-level implementation of port allocation, see [Port allocation](../../core/port_allocation) in the core documentation.
