@@ -407,8 +407,8 @@
             "web": "Web",
             "documentation": "Documentation",
             "database": "Database",
-            "audio": "Audio",
-            "core": "Core"
+            "core": "Core",
+            "multimedia": "Multimedia"
         },
         "you_have_updates": "You have {numUpdates} app to update | You have {numUpdates} apps to update",
         "core_app_update_available_description": "Some core apps need to be updated",
