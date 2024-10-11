@@ -61,7 +61,7 @@ def is_port_used(ports_used, port_to_check):
             return True
     return False
 
-def allocate_ports(required_ports: int, module_name: str, protocol: str):
+def allocate_ports(required_ports: int, module_name: str, protocol: str, keep_existing: bool=False):
     """
     Allocate a range of ports for a given module,
     if it is already allocated it is deallocated first.
@@ -69,6 +69,7 @@ def allocate_ports(required_ports: int, module_name: str, protocol: str):
     :param required_ports: Number of consecutive ports required.
     :param module_name: Name of the module requesting the ports.
     :param protocol: Protocol type ('tcp' or 'udp').
+    :param keep_existing: If True, keep the existing port range for the module.
     :return: A tuple (start_port, end_port) if allocation is successful, None otherwise.
     """
     if required_ports < 1:
@@ -91,7 +92,8 @@ def allocate_ports(required_ports: int, module_name: str, protocol: str):
 
             # If the module already has an assigned range, deallocate it first
             if any(module_name == range[2] for range in ports_used):
-                deallocate_ports(module_name, protocol)
+                if not keep_existing:
+                    deallocate_ports(module_name, protocol)
                 # Reload the used ports after deallocation
                 if protocol == 'tcp':
                     cursor.execute("SELECT start,end,module FROM TCP_PORTS ORDER BY start;")
@@ -124,7 +126,7 @@ def deallocate_ports(module_name: str, protocol: str):
 
     :param module_name: Name of the module whose ports are to be deallocated.
     :param protocol: Protocol type ('tcp' or 'udp').
-    :return: A tuple (start_port, end_port) if deallocation is successful, None otherwise.
+    :return: a list of tuples if deallocation is successful, None otherwise.
     """
     try:
         with sqlite3.connect('./ports.sqlite', isolation_level='EXCLUSIVE', timeout=30) as database:
@@ -145,7 +147,8 @@ def deallocate_ports(module_name: str, protocol: str):
                 elif protocol == 'udp':
                     cursor.execute("DELETE FROM UDP_PORTS WHERE module=?;", (module_name,))
                 database.commit()
-                return (ports_deallocated[0][0], ports_deallocated[0][1])
+                # remove the name of the module and return a list of tuples
+                return [(port[0], port[1]) for port in ports_deallocated]
             else:
                 raise ModuleNotFoundError(module_name)  # Raise error if the module is not found
 

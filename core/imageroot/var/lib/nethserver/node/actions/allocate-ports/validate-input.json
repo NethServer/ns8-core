@@ -7,7 +7,8 @@
     "required": [
         "ports",
         "module_id",
-        "protocol"
+        "protocol",
+        "keep_existing"
     ],
     "properties": {
         "ports": {
@@ -24,6 +25,11 @@
             "type": "string",
             "title": "Ports protocol",
             "enum": ["tcp", "udp"]
+        },
+        "keep_existing": {
+            "type": "boolean",
+            "title": "Keep existing ports",
+            "description": "If false, remove remove existing ports before allocating a new range"
         }
     }
 }

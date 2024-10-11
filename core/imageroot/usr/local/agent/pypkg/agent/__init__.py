@@ -608,7 +608,7 @@ def get_bound_domain_list(rdb, module_id=None):
     else:
         return []
 
-def allocate_ports(ports_number: int, protocol: str, module_id: str=""):
+def allocate_ports(ports_number: int, protocol: str, module_id: str="", keep_existing: bool=False):
     """
     Allocate a range of ports for a given module,
     if it is already allocated it is deallocated first.
@@ -617,6 +617,7 @@ def allocate_ports(ports_number: int, protocol: str, module_id: str=""):
     :param protocol: Protocol type ('tcp' or 'udp').
     :param module_id: Name of the module requesting the ports.
                       Parameter is optional, if not provided, default value is environment variable MODULE_ID.
+    :param keep_existing: If True, keep the existing port range for the module.
     :return: A tuple (start_port, end_port) if allocation is successful, None otherwise.
     """
 
@@ -630,7 +631,8 @@ def allocate_ports(ports_number: int, protocol: str, module_id: str=""):
         data={
             'ports': ports_number,
             'module_id': module_id,
-            'protocol': protocol
+            'protocol': protocol,
+            'keep_existing': keep_existing
         }
     )
     

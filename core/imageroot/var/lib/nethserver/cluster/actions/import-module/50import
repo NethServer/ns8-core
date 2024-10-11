@@ -56,7 +56,8 @@ allocated_range = agent.tasks.run(
     data={
         'ports': 1,
         'module_id': dmid + '_rsync',
-        'protocol': 'tcp'
+        'protocol': 'tcp',
+        'keep_existing': False
     },
     endpoint="redis://cluster-leader",
     progress_callback=agent.get_progress_callback(26,40),

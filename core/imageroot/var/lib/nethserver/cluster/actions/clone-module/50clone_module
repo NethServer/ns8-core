@@ -69,12 +69,12 @@ allocated_range = agent.tasks.run(
     data={
         'ports': 1,
         'module_id': dmid + '_rsync',
-        'protocol': 'tcp'
+        'protocol': 'tcp',
+        'keep_existing': False
     },
     endpoint="redis://cluster-leader",
     progress_callback=agent.get_progress_callback(26,40),
 )
-agent.assert_exp(allocated_range['output'][0] == allocated_range['output'][1])
 rsyncd_port = allocated_range['output'][0] # Allocate a TCP port for rsyncd
 agent.assert_exp(rsyncd_port > 0) # valid destination port number
 
@@ -151,6 +151,5 @@ deallocated_range = agent.tasks.run(
     endpoint="redis://cluster-leader",
     progress_callback=agent.get_progress_callback(96,99),
 )
-agent.assert_exp(allocated_range['output'] == deallocated_range['output'])
 
 json.dump(add_module_result['output'], fp=sys.stdout)
