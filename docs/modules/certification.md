@@ -18,6 +18,13 @@ Feature category](http://community.nethserver.org/c/feature).
 If the idea gains traction, then it's time to think about a new
 application. When creating one, ensure the following requirements are met:
 
+- The application and its components must respect user data privacy and
+  integrity. Although this may seem obvious, it's crucial for everyone to
+  be aware of any special data treatments performed by the application,
+  especially if it relies on third-party cloud services. This allows users
+  to evaluate whether those treatments comply with their country's laws
+  and personal privacy standards.
+
 - If your application relies on third-party work, make sure it complies
   with their license.
 
@@ -70,12 +77,17 @@ process.
    repository](../../core/software_repositories#create-a-repository).
 
 0. Similarly, fill the [metadata.json](../metadata/) file of the app UI
-   with required information. Provide information for reporting bugs, e.g.
-   a link to the app bug tracker (you can point to
-   `https://github.com/NethServer/dev/issues`), developer's email and any
-   other contact information. Personal identification information
-   treatments and other relevant terms are explained with `terms_url`,
-   where applicable.
+   with the required information. Provide details for reporting bugs, such
+   as a link to the app's bug tracker (you can link to
+   `https://github.com/NethServer/dev/issues`), the developer's email, and
+   any other relevant contact information.
+
+0. Additionally, in the `metadata.json`, consider linking a document via
+   `terms_url` that clarifies any data treatment or application behavior
+   the user should be aware of. This is particularly important if the
+   application handles sensitive data or must conform to data privacy
+   laws. During the certification process, we will pay close attention to
+   compliance with EU laws and regulations.
 
 0. Administrator documentation. This is the documentation for the
    administrator who must configure the applications for the final users.
