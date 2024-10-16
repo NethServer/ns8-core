@@ -64,7 +64,7 @@ Community certification process for the application.
 
 After approval, at any time, the application can be removed from NethForge
 by the NethForge repository maintainers. For example, this can happen if
-the current version is no longer maintained but has significant security
+the current version is no longer maintained and/or has significant security
 issues, or if its behavior is deemed malicious.
 
 Here follow some tips that may help to quickly complete the certification
@@ -124,7 +124,9 @@ process.
     - Node firewall management
     - Node ports allocation
 
-0. Avoid rootfull applications and require minimum authorizations.
+0. Applications must avoid requiring root privileges (rootfull) and should
+   operate with the minimum necessary authorizations. Exceptions may be
+   requested but must be justified and approved on a case-by-case basis.
 
 0. The UI code respects Internationalization (i18n) and [NS8 Weblate
    project](https://hosted.weblate.org/projects/ns8/) has a component for

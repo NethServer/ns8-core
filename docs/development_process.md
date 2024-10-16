@@ -338,8 +338,8 @@ The developer must take care to write all documentation on:
 * README.md inside the repository
 * Administrator Manual
 
-An application should not be released as "stable" until the documentation
-is completed.
+An application should not be released as "stable" until all documentation
+(developer, admin, user) is complete.
 
 ## Update rules
 
