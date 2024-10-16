@@ -53,14 +53,27 @@
             </template>
           </NodeSelector>
         </template>
+        <!-- single node -->
         <div v-else class="mg-bottom-lg">
-          {{
-            $t("software_center.about_to_install_app", {
-              app: app.name,
-              version: appVersion,
-              node: firstNodeLabel,
-            })
-          }}
+          <template v-if="canInstallOnSingleNode">
+            {{
+              $t("software_center.about_to_install_app", {
+                app: app.name,
+                version: appVersion,
+                node: firstNodeLabel,
+              })
+            }}
+          </template>
+          <template v-else>
+            {{
+              $t("software_center.cannot_install_app_on_node", {
+                app: app.name,
+                version: appVersion,
+                node: firstNodeLabel,
+              })
+            }}:
+            {{ nodesInfo[clusterNodes[0].id] }}
+          </template>
         </div>
         <!-- terms and conditions -->
         <NsCheckbox
@@ -150,34 +163,39 @@ export default {
         return "latest";
       }
     },
+    canInstallOnSingleNode() {
+      return this.nodesInfo[this.clusterNodes[0].id] === undefined;
+    },
     nodesInfo() {
       const nodesInfo = {};
 
-      for (const nodeInfo of this.app.install_destinations) {
-        if (!nodeInfo.eligible) {
-          // show reason why node is not eligible
-          const rejectReason = nodeInfo.reject_reason;
+      if (this.app) {
+        for (const nodeInfo of this.app.install_destinations) {
+          if (!nodeInfo.eligible) {
+            // show reason why node is not eligible
+            const rejectReason = nodeInfo.reject_reason;
 
-          if (rejectReason.message === "max_per_node_limit") {
-            const numMaxInstances = rejectReason.parameter;
+            if (rejectReason.message === "max_per_node_limit") {
+              const numMaxInstances = rejectReason.parameter;
+              nodesInfo[nodeInfo.node_id] = this.$tc(
+                `software_center.reason_${rejectReason.message}`,
+                numMaxInstances,
+                { param: numMaxInstances }
+              );
+            } else {
+              nodesInfo[nodeInfo.node_id] = this.$t(
+                `software_center.reason_${rejectReason.message}`,
+                { param: rejectReason.parameter }
+              );
+            }
+          } else if (nodeInfo.instances) {
+            // show number of instances installed
             nodesInfo[nodeInfo.node_id] = this.$tc(
-              `software_center.reason_${rejectReason.message}`,
-              numMaxInstances,
-              { param: numMaxInstances }
-            );
-          } else {
-            nodesInfo[nodeInfo.node_id] = this.$t(
-              `software_center.reason_${rejectReason.message}`,
-              { param: rejectReason.parameter }
+              "software_center.num_instances_installed",
+              nodeInfo.instances,
+              { num: nodeInfo.instances }
             );
           }
-        } else if (nodeInfo.instances) {
-          // show number of instances installed
-          nodesInfo[nodeInfo.node_id] = this.$tc(
-            "software_center.num_instances_installed",
-            nodeInfo.instances,
-            { num: nodeInfo.instances }
-          );
         }
       }
       return nodesInfo;
@@ -188,14 +206,15 @@ export default {
         .map((nodeInfo) => nodeInfo.node_id);
     },
   },
-  created() {
-    if (this.clusterNodes.length == 1) {
-      this.selectedNode = this.clusterNodes[0];
-    }
-  },
   methods: {
     onModalShown() {
       this.agreeTerms = false;
+
+      if (this.clusterNodes.length == 1 && this.canInstallOnSingleNode) {
+        this.selectedNode = this.clusterNodes[0];
+      } else {
+        this.selectedNode = null;
+      }
     },
     async installInstance() {
       this.error.addModule = "";
