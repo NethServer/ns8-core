@@ -141,7 +141,8 @@
         "level_2_description": "App sviluppata da terze parti, certificata dalla comunità di NethServer 8",
         "reason_max_per_node_limit": "Limite di una istanza raggiunto | Limite di {param} istanze raggiunto",
         "num_instances_installed": "Una istanza installata | {num} istanze installate",
-        "rootfull_app_warning_description": "Dopo l'installazione {appName} avrà pieno accesso al cluster: questo può comportare rischi di sicurezza significativi."
+        "rootfull_app_warning_description": "Dopo l'installazione {appName} avrà pieno accesso al cluster: questo può comportare rischi di sicurezza significativi.",
+        "cannot_install_app_on_node": "Non è possibile installare {app} {version} su {node}"
     },
     "nodes": {
         "title": "Nodi",
