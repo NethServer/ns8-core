@@ -216,6 +216,7 @@
               v-model.trim="backblaze.b2_account_id"
               :invalid-message="error.backblaze.b2_account_id"
               :disabled="loading.addBackupRepository"
+              autocomplete="off"
               ref="b2_account_id"
             >
             </cv-text-input>
@@ -227,6 +228,7 @@
               :invalid-message="error.backblaze.b2_account_key"
               :password-hide-label="$t('password.hide_password')"
               :password-show-label="$t('password.show_password')"
+              autocomplete="new-password"
               ref="b2_account_key"
             ></cv-text-input>
           </template>
@@ -253,6 +255,7 @@
               v-model.trim="aws.aws_access_key_id"
               :invalid-message="error.aws.aws_access_key_id"
               :disabled="loading.addBackupRepository"
+              autocomplete="off"
               ref="aws_access_key_id"
             >
             </cv-text-input>
@@ -264,6 +267,7 @@
               :invalid-message="error.aws.aws_secret_access_key"
               :password-hide-label="$t('password.hide_password')"
               :password-show-label="$t('password.show_password')"
+              autocomplete="new-password"
               ref="aws_secret_access_key"
             ></cv-text-input>
           </template>
@@ -282,6 +286,7 @@
               v-model.trim="azure.azure_account_name"
               :invalid-message="error.azure.azure_account_name"
               :disabled="loading.addBackupRepository"
+              autocomplete="off"
               ref="azure_account_name"
             >
             </cv-text-input>
@@ -293,6 +298,7 @@
               :invalid-message="error.aws.azure_account_key"
               :password-hide-label="$t('password.hide_password')"
               :password-show-label="$t('password.show_password')"
+              autocomplete="new-password"
               ref="azure_account_key"
             ></cv-text-input>
           </template>
@@ -315,6 +321,7 @@
               v-model.trim="genericS3.aws_access_key_id"
               :invalid-message="error.genericS3.aws_access_key_id"
               :disabled="loading.addBackupRepository"
+              autocomplete="off"
               ref="genericS3_access_key_id"
             >
             </cv-text-input>
@@ -326,6 +333,7 @@
               :invalid-message="error.genericS3.aws_secret_access_key"
               :password-hide-label="$t('password.hide_password')"
               :password-show-label="$t('password.show_password')"
+              autocomplete="new-password"
               ref="genericS3_secret_access_key"
             ></cv-text-input>
           </template>
@@ -364,6 +372,7 @@
               v-model.trim="smb.smb_user"
               :invalid-message="error.smb.smb_user"
               :disabled="loading.addBackupRepository"
+              autocomplete="off"
               ref="smb_user"
             >
             </cv-text-input>
@@ -375,6 +384,7 @@
               :invalid-message="error.smb.smb_pass"
               :password-hide-label="$t('password.hide_password')"
               :password-show-label="$t('password.show_password')"
+              autocomplete="new-password"
               ref="smb_pass"
             ></cv-text-input>
           </template>
@@ -404,6 +414,7 @@
                   :helper-text="$t('backup.repository_password_helper')"
                   :invalid-message="error.password"
                   :disabled="loading.addBackupRepository"
+                  autocomplete="new-password"
                   ref="password"
                 >
                   <template slot="tooltip">

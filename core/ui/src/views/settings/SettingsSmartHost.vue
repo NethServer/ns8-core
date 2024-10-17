@@ -158,6 +158,7 @@
                 :helper-text="$t('smarthost.username_helper')"
                 :invalid-message="error.username"
                 :disabled="loading.getSmarthost || loading.setSmarthost"
+                autocomplete="off"
                 ref="username"
               >
               </NsTextInput>
@@ -166,6 +167,7 @@
                 v-model="password"
                 :invalid-message="$t(error.password)"
                 type="password"
+                autocomplete="new-password"
                 ref="password"
               >
               </NsTextInput>

@@ -16,7 +16,7 @@
       isEditing ? $t("domain_users.edit_user") : $t("domain_users.create_user")
     }}</template>
     <template slot="content">
-      <cv-form @submit.prevent="createOrEditUser">
+      <cv-form @submit.prevent="createOrEditUser" autocomplete="off">
         <NsInlineNotification
           v-if="error.getDomainUser"
           kind="error"
@@ -30,6 +30,7 @@
           :invalid-message="error.user"
           :disabled="isEditing || loading.addUser || loading.alterUser"
           data-modal-primary-focus
+          autocomplete="off"
           ref="user"
         />
         <NsTextInput
@@ -37,6 +38,7 @@
           :label="$t('domain_users.display_name')"
           :invalid-message="error.display_name"
           :disabled="loading.addUser || loading.alterUser"
+          autocomplete="off"
           ref="display_name"
         />
         <NsMultiSelect
@@ -89,6 +91,7 @@
           :checkComplexity="
             policy.strength.enforced ? policy.strength.complexity_check : false
           "
+          autocomplete="new-password"
         />
         <NsInlineNotification
           v-if="error.addUser"
