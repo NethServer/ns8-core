@@ -9,10 +9,11 @@ nav_order: 1
 NethServer 8 (NS8), is the evolution of NethServer 7 (NS7).
 NethServer 8 is designed for small offices and medium enterprises. It's simple, secure and flexible.
 
-## Target audiance
+## Target audience
 
-This manual is intended for developers who are interested about NethServer internals.
-Reading this manual you should be able to learn how to extend, enpower and debug the NethServer platform.
+This manual is intended for developers interested in NethServer internals.
+By reading it, you will learn how to extend, enhance, and debug the
+NethServer platform.
 
 ## Get involved
 

@@ -293,15 +293,26 @@ If the draft pull request does not reference an issue it must have an assignee.
 
 ## Module version numbering rules
 
-NethServer releases use the [semantic version](https://semver.org/).
+NethServer 8 releases follow a subset of [Semantic
+Versioning](https://semver.org/) (semver). Specifically, "build metadata"
+syntax is not permitted because the `+` character conflicts with the
+container image tag specification, as stated in [OCI
+distribution-spec](https://github.com/opencontainers/distribution-spec/blob/main/spec.md#pulling-manifests).
 
-Please bear in mind that versioning of unstable releases is a bit
-different on what happens on RPM versions.
-When tagging a beta release, remember to use the following 
-syntax: `1.1.0-beta.1`.
-Increment the `1` number for any successive beta release until
-the stables. Example: `1.1.0-beta.1 < 1.1.0-beta.2`
+The distinction between stable and pre-release versions is important in
+the development process.
 
+- **Stable releases** consist of three numbers separated by dots, e.g.,
+  `1.2.7`. These represent the Major, Minor, and Patch numbers. For
+  detailed explanations of these terms, refer to the [semver
+  site](https://semver.org/). Stable releases are published and deployed
+  to production systems.
+
+- **Pre-releases or testing releases** include a prerelease suffix. This
+  consists of a `-` (minus sign), a word, a dot `.`, and a number, e.g.,
+  `1.3.0-testing.3`. Testing releases are meant for development. In rare
+  cases, they can be used in production, but only if they address specific
+  bugs requiring immediate resolution.
 
 ## Commit message style guide
 
@@ -327,38 +338,25 @@ The developer must take care to write all documentation on:
 * README.md inside the repository
 * Administrator Manual
 
-Modules should be marked with a [testing version](#module-version-numbering-rules) until 
-all documentation is completed.
+An application should not be released as "stable" until all documentation
+(developer, admin, user) is complete.
+
+## Update rules
+
+Updates to NS8 core and modules (applications) must follow these rules:
+
+0. New features, enhancements, and bug fixes must not change the behavior
+   of existing systems.
+
+0. New behaviors must be enabled through explicit and documented sysadmin
+   actions.
+
+0. Modules must support updates from any previous release within the same
+   major release.
 
 
 ## New modules
 
-Before creating a module package, make sure it's a good idea. Often a simple
-documentation page is enough, and it requires much less effort. When trying new
-things, just take care to write down on a public temporary document, like a
-community discussion, all steps and comments.
-If the feature collects many requests, it's
-time to think about a new module. Otherwise, the temporary document can be
-moved to a manual page.
-
-When creating a new module, make sure the following requirements are met:
-
-* Announce it on [community](http://community.nethserver.org)
-* Create an issue describing the package
-* Create a personal repository on GitHub
-* Add a GPL license and copyright notice in the `COPYING` or `LICENSE` file
-* Add a `README.md` file, with developer documentation
-* If needed, create a pull request for the [repository metadata](https://github.com/NethServer/ns8-repomd/)
-  to list the package in the Software center page.
-
-
-## Module updates
-
-Updates to modules must obey the following rules:
-
-* New features/enhancements and bug fixes must not alter the behavior of
-  existing systems
-
-* New behaviors must be enabled by an explicit and documented sysadmin operation
-
-* Modules must support updates from any previous release of the same major release
+The NethServer community encourages the development of new applications
+(modules). Learn more about [how ideas become NS8
+applications](../modules/certification/).

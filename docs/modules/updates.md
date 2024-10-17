@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Updates
-nav_order: 14
+nav_order: 82
 parent: Modules
 ---
 
