@@ -19,3 +19,12 @@ Default.args = {
   invalidMessage: "",
   light: true,
 };
+
+export const Drop_Up = Template.bind({});
+Drop_Up.args = {
+  value: "23:45",
+  label: "Label",
+  hideClearButton: false,
+  invalidMessage: "",
+  light: true,
+};
