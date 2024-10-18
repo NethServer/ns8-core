@@ -89,8 +89,9 @@
             </cv-date-picker>
             <NsTimePicker
               hideClearButton
+              dropDirection="up"
               :label="$t('cloud_log_manager_forwarder.start_time')"
-              class="interval-time mg-bottom-140"
+              class="interval-time"
               v-model="time"
             >
             </NsTimePicker>
@@ -322,9 +323,5 @@ export default {
 
 .interval-time {
   display: inline-flex;
-}
-
-.mg-bottom-140 {
-  margin-bottom: 140px;
 }
 </style>
