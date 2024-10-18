@@ -37,6 +37,25 @@
             :invalid-message="error.port"
           />
           <div>
+            <label for="filter" :class="`${carbonPrefix}--label`">{{
+              $t("syslog_forwarder.filter")
+            }}</label>
+            <cv-radio-group :vertical="true">
+              <cv-radio-button
+                ref="filterVal"
+                :label="$t('syslog_forwarder.full')"
+                value="full"
+                v-model="filterVal"
+              />
+              <cv-radio-button
+                ref="filterVal"
+                :label="$t('syslog_forwarder.root')"
+                value="root"
+                v-model="filterVal"
+              />
+            </cv-radio-group>
+          </div>
+          <div>
             <label for="protocol" :class="`${carbonPrefix}--label`">{{
               $t("syslog_forwarder.protocol")
             }}</label>
@@ -175,6 +194,7 @@ export default {
     return {
       dateVal: "last_timestamp",
       protocolVal: "udp",
+      filterVal: "full",
       formatVal: "rfc3164",
       toggleEnabled: false,
       address: "",
@@ -203,6 +223,7 @@ export default {
     resetModal() {
       this.dateVal = "last_timestamp";
       this.protocolVal = "udp";
+      this.filterVal = "full";
       this.formatVal = "rfc3164";
       this.toggleEnabled = false;
       this.address = "";
@@ -226,6 +247,9 @@ export default {
       }
       if (this.configuration.protocol != "") {
         this.protocolVal = this.configuration.protocol;
+      }
+      if (this.configuration.filter != "") {
+        this.filterVal = this.configuration.filter;
       }
       if (this.configuration.format != "") {
         this.formatVal = this.configuration.format;
@@ -301,6 +325,7 @@ export default {
             address: this.address,
             port: this.port,
             protocol: this.protocolVal,
+            filter: this.filterVal,
             format: this.formatVal,
             start_time: this.start_time,
           },
