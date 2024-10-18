@@ -164,7 +164,10 @@ export default {
       }
     },
     canInstallOnSingleNode() {
-      return this.nodesInfo[this.clusterNodes[0].id] === undefined;
+      const installDestination = this.app.install_destinations.find(
+        (nodeInfo) => nodeInfo.node_id == this.clusterNodes[0].id
+      );
+      return installDestination?.eligible;
     },
     nodesInfo() {
       const nodesInfo = {};
