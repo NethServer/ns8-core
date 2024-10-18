@@ -83,6 +83,14 @@ for pwrecord in pwd.getpwall():
     })
     print("Generating labeling configuration for " + module_id)
 
+relabel_configs.append({
+    # NOTE: default "action" is "replace"
+    "source_labels": ["__journal__uid"],
+    "regex": "(0)",
+    "replacement": "true",
+    "target_label": "root",
+})
+
 # Iterate over rootfull modules, matching the module_id in AGENT_STATE_DIR
 # glob patterns:
 for rfpath in glob.glob('/var/lib/nethserver/*/state'):
