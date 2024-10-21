@@ -84,9 +84,15 @@ for pwrecord in pwd.getpwall():
     print("Generating labeling configuration for " + module_id)
 
 relabel_configs.append({
-    # NOTE: default "action" is "replace"
-    "source_labels": ["__journal__uid"],
-    "regex": "(0)",
+    "source_labels": ["__journal__comm"],
+    "regex": "sshd",
+    "replacement": "true",
+    "target_label": "root",
+})
+
+relabel_configs.append({
+    "source_labels": ["__journal_syslog_identifier"],
+    "regex": "sshd",
     "replacement": "true",
     "target_label": "root",
 })
