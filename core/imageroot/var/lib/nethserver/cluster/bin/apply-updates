@@ -18,7 +18,7 @@ rdb = agent.redis_connect()
 for kflags in rdb.keys('node/*/flags'):
     if bool(rdb.sismember(kflags, 'nomodules')):
         node_id = kflags.removesuffix('/flags')
-        print(agent.SD_NOTICE + f"Skipping updates: NS7 {node_id} is part of the cluster.")
+        print(agent.SD_NOTICE + f"Skipping updates: NS7 {node_id} is part of the cluster.", file=sys.stderr)
         sys.exit(0)
 
 # Find cluster nodes from the index key. Any NS8 node has at least a
