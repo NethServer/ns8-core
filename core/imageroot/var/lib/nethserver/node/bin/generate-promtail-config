@@ -83,20 +83,6 @@ for pwrecord in pwd.getpwall():
     })
     print("Generating labeling configuration for " + module_id)
 
-relabel_configs.append({
-    "source_labels": ["__journal__comm"],
-    "regex": "sshd",
-    "replacement": "true",
-    "target_label": "root",
-})
-
-relabel_configs.append({
-    "source_labels": ["__journal_syslog_identifier"],
-    "regex": "sshd",
-    "replacement": "true",
-    "target_label": "root",
-})
-
 # Iterate over rootfull modules, matching the module_id in AGENT_STATE_DIR
 # glob patterns:
 for rfpath in glob.glob('/var/lib/nethserver/*/state'):
@@ -129,6 +115,15 @@ relabel_configs.append({
     "action": "drop",
     "source_labels": ["__journal_syslog_identifier", "__journal_message"],
     "regex": "loki-server;.*context canceled.*",
+})
+
+# Set label category=security for messages from sshd, PAM, Polkit, etc.
+# that are often written to /var/log/secure or equivalent.
+relabel_configs.append({
+    "source_labels": ["__journal_syslog_facility"],
+    "regex": "(4|10|13|14)", # RFC3164 Syslog facility codes for security events
+    "replacement": "security",
+    "target_label": "category",
 })
 
 # Configuration data. Will be converted to a YAML file:
