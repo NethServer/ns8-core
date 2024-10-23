@@ -7,6 +7,9 @@ parent: Modules
 
 # Application Community Certification
 
+* TOC
+{:toc}
+
 ## From ideas to applications
 
 Before creating an application for NethServer 8, consider if it's really
