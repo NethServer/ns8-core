@@ -15,12 +15,14 @@ module and restore it to a different node or cluster.
 
 ## Design
 
-The backup engine is [restic](https://restic.net/) which runs inside a container along with [rclone](https://rclone.org/)
-used to inspect the backup repository contents.
+The backup engine is [Restic](https://restic.net/) which runs inside a
+container along with [Rclone](https://rclone.org/) used to inspect the
+backup repository contents.
 
-Backups are saved inside *backup repositories*, remote network-accessible spaces where data are stored.
-No local storage backup is possible (eg. USB disks).
-A backup repository can contain multiple backup instances, each module instance has its own sub-directory to avoid conflicts.
+Backups are saved inside *backup destinations*, remote spaces where data
+are stored. A backup destination can contain multiple backup instances,
+each module instance has its own sub-directory to avoid conflicts. This
+sub-directory is the root of the module instance Restic repository.
 
 The system implements the common logic for backup inside the agent with `module-backup` command.
 Each module can implement `module-dump-state` and `module-cleanup-state` to prepare/cleanup the data that has to be included in the backup.
@@ -30,17 +32,18 @@ The basic `10restore` step actually runs the Restic restore procedure in a tempo
 
 All backups are scheduled by systemd timers. Given a backup with id `1`, it is possible to retrieve the time status with:
 - rootless containers, eg. `dokuwiki1`, executed by `dokuwiki1` user: `systemctl --user status backup1.timer`
-- rootfull containers, eg. `samba1`, executed by `root` user: `systemctl status backup1-samba1.timer`
+- rootfull containers, eg. `dnsmasq1`, executed by `root` user: `systemctl status backup1-dnsmasq1.timer`
 
 ## Include and exclude files
 
-Whenever possible, containers should always use volumes to avoid SELinux issues during backup an restore.
+Whenever possible, containers should use volumes to avoid UID/GID
+namespace mappings and SELinux issues during backup an restore.
 
 Includes can be added to the `state-include.conf` file saved inside `AGENT_INSTALL_DIR/etc/`.
 In the [source tree](modules/images/#source-tree), the file should be placed under `<module>/imageroot/etc/state-include.conf`.
 On installed modules, the file will appear on different paths:
 - rootless containers, eg. `dokuwiki1`, full path will be `/home/dokuwiki1/.config/etc/state-include.conf`
-- rootfull containers, eg. `samba1`,  full path will be  `/var/lib/nethserver/samba1/etc/state-include.conf`
+- rootfull containers, eg. `dnsmasq1`,  full path will be  `/var/lib/nethserver/dnsmasq1/etc/state-include.conf`
 
 Lines are interpreted as path patterns. Only patterns referring to
 volumes and the agent `state/` directory are considered.
@@ -62,7 +65,7 @@ Internally, volumes will be mapped as:
   `dokuwiki-data`
 
 - `<module_id>-<volume_name>` for rootfull containers; eg. for module
-  `samba1`, line prefix `volumes/ data` maps to volume name `samba1-data`
+  `dnsmasq1`, line prefix `volumes/ data` maps to volume name `dnsmasq1-data`
 
 Volumes listed in `state-include.conf` are automatically mounted (and
 created if necessary) by the basic `10restore` step of the
@@ -147,9 +150,9 @@ api-cli run add-backup-repository --data '{"name":"BackBlaze repo1","url":"b2:ba
 {"password": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", "id": "48ce000a-79b7-5fe6-8558-177fd70c27b4"}
 ```
 
-3. Create a new daily backup named `mybackup` with a retention of 3 snapshots (3 days) which includes `dokuwiki1` and `samba1` instances:
+3. Create a new daily backup named `mybackup` with a retention of 3 snapshots (3 days) which includes `dokuwiki1` and `dnsmasq1` instances:
 ```
-api-cli run add-backup --data '{"repository":"48ce000a-79b7-5fe6-8558-177fd70c27b4","schedule":"daily","retention":3,"instances":["dokuwiki1","samba1"],"enabled":true, "name":"mybackup"}'
+api-cli run add-backup --data '{"repository":"48ce000a-79b7-5fe6-8558-177fd70c27b4","schedule":"daily","retention":3,"instances":["dokuwiki1","dnsmasq1"],"enabled":true, "name":"mybackup"}'
 ```
 
 4. The output will the id of the backup:
@@ -164,7 +167,7 @@ api-cli run run-backup --data '{"id":1}'
 
 For debugging purposes, you can also launch systemd units:
 - rootless container, eg. `dokuwiki1`: `runagent -m dokuwiki1 systemctl --user start backup1.service`
-- rootfull container, eg. `samba1`: systemctl start backup1-samba1.service
+- rootfull container, eg. `dnsmasq1`: systemctl start backup1-dnsmasq1.service
 
 To remove the backup use:
 ```
@@ -203,3 +206,31 @@ To decrypt it run a command like this:
 
 The restore procedure can be started from the UI of a new NS8
 installation: upload the file and specify the password from the UI.
+
+## The `restic-wrapper` command
+
+The Restic binary is not installed in the host system. NS8 runs Restic
+within a core container, preparing environment variables with values read
+from the Redis DB and properly mounting the application Podman volumes.
+
+The `restic-wrapper` command is designed to manually run Restic from the
+command line. It can help to restore individual files and directories, or
+run maintenance commands on remote Restic repositories.
+
+The command can be invoked from any agent environment. Print its inline
+help with this command:
+
+    runagent restic-wrapper --help
+
+Some options require a module backup ID, or backup destination UUID. Use
+the `--show` option to list them. For example:
+
+    runagent -m mail1 restic-wrapper --show
+
+Example of output:
+
+    Destinations:
+    - dac5d576-ed63-5c4b-b028-c5e97022b27b OVH S3 destination (s3:s3.de.io.cloud.ovh.net/ns8-backups)
+    - 14030a59-a4e6-57cc-b8ea-cd5f97fe44c8 BackBlaze repo1 (b2:ns8-backups)
+    Scheduled backups:
+    - 1 Backup to BackBlaze repo1, destination UUID 14030a59-a4e6-57cc-b8ea-cd5f97fe44c8
