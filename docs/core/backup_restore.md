@@ -203,3 +203,31 @@ To decrypt it run a command like this:
 
 The restore procedure can be started from the UI of a new NS8
 installation: upload the file and specify the password from the UI.
+
+## The `restic-wrapper` command
+
+The Restic binary is not installed in the host system. NS8 runs Restic
+within a core container, preparing environment variables with values read
+from the Redis DB and properly mounting the application Podman volumes.
+
+The `restic-wrapper` command is designed to manually run Restic from the
+command line. It can help to restore individual files and directories, or
+run maintenance commands on remote Restic repositories.
+
+The command can be invoked from any agent environment. Print its inline
+help with this command:
+
+    runagent restic-wrapper --help
+
+Some options require a module backup ID, or backup destination UUID. Use
+the `--show` option to list them. For example:
+
+    runagent -m mail1 restic-wrapper --show
+
+Example of output:
+
+    Destinations:
+    - dac5d576-ed63-5c4b-b028-c5e97022b27b OVH S3 destination (s3:s3.de.io.cloud.ovh.net/ns8-backups)
+    - 14030a59-a4e6-57cc-b8ea-cd5f97fe44c8 BackBlaze repo1 (b2:ns8-backups)
+    Scheduled backups:
+    - 1 Backup to BackBlaze repo1, destination UUID 14030a59-a4e6-57cc-b8ea-cd5f97fe44c8
