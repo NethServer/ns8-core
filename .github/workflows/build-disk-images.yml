@@ -90,4 +90,4 @@ jobs:
           ${{ steps.qcow2.outputs.path }}
           ${{ steps.vmdk.outputs.path }}
           CHECKSUM
-          s3://ns8/ns8-images
+          s3://ns8/ns8-images/
