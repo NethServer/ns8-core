@@ -41,11 +41,13 @@ jobs:
       - core-version
     if: needs.core-version.outputs.is_stable == 'true'
     steps:
-      - name: Setup s3cmd
-        uses: s3-actions/s3cmd@v1.9.0
+      - uses: actions/setup-python@v5
         with:
-          access_key: ${{ secrets.DO_SPACE_ACCESS_KEY }}
-          secret_key: ${{ secrets.DO_SPACE_SECRET_KEY }}
+          python-version: '3.12'
+      - name: Setup s3cmd
+        run: |
+          pip install s3cmd
+          s3cmd --version
       - name: Setup `packer`
         uses: hashicorp/setup-packer@main
       - uses: actions/checkout@v4
@@ -73,15 +75,18 @@ jobs:
           cd $(dirname ${{ steps.qcow2.outputs.path }})
           sha256sum $(basename ${{ steps.qcow2.outputs.path }}) > ../CHECKSUM
           sha256sum $(basename ${{ steps.vmdk.outputs.path }}) >> ../CHECKSUM
-      - name: Upload images with s3cmd
+      - name: Upload images
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.DO_SPACE_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.DO_SPACE_SECRET_KEY }}
         run: >
           s3cmd put
-          --host ams3.digitaloceanspaces.com
+          --host=ams3.digitaloceanspaces.com
+          --host-bucket=ns8.ams3.digitaloceanspaces.com
           --verbose
           --progress
           --acl-public
           --guess-mime-type
-          --mime-type=application/octet-stream
           ${{ steps.qcow2.outputs.path }}
           ${{ steps.vmdk.outputs.path }}
           CHECKSUM
