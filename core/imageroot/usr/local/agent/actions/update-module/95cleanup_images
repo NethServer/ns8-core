@@ -1,29 +1,32 @@
-#!/bin/bash
+#!/usr/bin/env python3
 
 #
-# Copyright (C) 2023 Nethesis S.r.l.
+# Copyright (C) 2024 Nethesis S.r.l.
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 
-exec 1>&2
-set -e
+import os
+import agent
+import sys
 
-# Clean up local images that are no longer required by the new module
-# version
+# Iterate over environment variables
+for image_old in os.environ:
 
-export LC_ALL=C # required by sort for portability
+    if not image_old.startswith('PREV_'):
+        continue # not a PREV image key, skip it.
 
-# Find the images that are no longer required:
-# retrieve from env all variable with the prefix PREV_
-# remove not used images like PREV_*_IMAGE if !== *_IMAGE
-# ignore errors and exit with successful exit status
-for imageOld in ${!PREV_*}; do
-  if [[ $imageOld =~ _IMAGE$ ]]; then
-      # remove the prefix to compare PREV_*_IMAGE != *_IMAGE
-      imageNew=${imageOld##PREV_}
-      # if not the same we remove the image
-      if [[ "${!imageNew}" != "${!imageOld}" ]]; then
-          podman image rm "${!imageOld}" 2>/dev/null || :
-      fi
-  fi
-done
+    if not (image_old.endswith('_IMAGE') or image_old.endswith('_URL')):
+        continue # we want to skip *DIGEST and ID keys
+
+    # Check if the new image is different
+    image_new = image_old.removeprefix('PREV_')
+    if os.environ.get(image_new) != os.environ.get(image_old):
+        print(f"Removing {os.environ.get(image_old)} (differs from {os.environ.get(image_new)})", file=sys.stderr)
+        agent.run_helper('podman', 'image', 'rm', os.environ.get(image_old))
+
+    # Handle removal of the old image URL
+    elif image_old == 'PREV_IMAGE_URL':
+        image_new = image_old.removeprefix('PREV_')
+        if os.environ.get(image_new) != os.environ.get(image_old):
+            print(f"Removing {os.environ.get(image_old)} (differs from {os.environ.get(image_new)})", file=sys.stderr)
+            agent.run_helper('podman', 'image', 'rm', os.environ[image_old])
