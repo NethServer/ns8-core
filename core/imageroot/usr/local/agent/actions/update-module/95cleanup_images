@@ -15,7 +15,7 @@ for image_old in os.environ:
     if not image_old.startswith('PREV_'):
         continue # not a PREV image key, skip it.
 
-    if not (image_old.endswith('_IMAGE') or image_old.endswith('_URL')):
+    if not image_old.endswith('_IMAGE'):
         continue # we want to skip *DIGEST and ID keys
 
     # Check if the new image is different
@@ -24,9 +24,9 @@ for image_old in os.environ:
         print(f"Removing {os.environ.get(image_old)} (differs from {os.environ.get(image_new)})", file=sys.stderr)
         agent.run_helper('podman', 'image', 'rm', os.environ.get(image_old))
 
-    # Handle removal of the old image URL
-    elif image_old == 'PREV_IMAGE_URL':
-        image_new = image_old.removeprefix('PREV_')
-        if os.environ.get(image_new) != os.environ.get(image_old):
-            print(f"Removing {os.environ.get(image_old)} (differs from {os.environ.get(image_new)})", file=sys.stderr)
-            agent.run_helper('podman', 'image', 'rm', os.environ[image_old])
+# Handle removal of the old image URL
+image_old = 'PREV_IMAGE_URL'
+image_new = 'IMAGE_URL'
+if os.environ.get(image_new) != os.environ.get(image_old):
+    print(f"Removing {os.environ.get(image_old)} (differs from {os.environ.get(image_new)})", file=sys.stderr)
+    agent.run_helper('podman', 'image', 'rm', os.environ[image_old])
