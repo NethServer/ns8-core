@@ -57,3 +57,7 @@ else # Rootless module
         userdel -f -r "${mid}"
     fi
 fi
+
+# Remove the podman image
+podman_image_id=$(REDIS_USER="default" redis-exec hget module/$mid/environment IMAGE_ID)
+podman rmi --ignore "$podman_image_id" || :
