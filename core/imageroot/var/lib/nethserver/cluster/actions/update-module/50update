@@ -119,6 +119,10 @@ for idx, retval in enumerate(update_retvals):
         os.rename(appspath + mid, appspath + mid + dsfx + '~')
         os.rename(appspath + mid + dsfx, appspath + mid)
         agent.run_helper('rm', '-rf', appspath + mid + dsfx + '~')
+        # Remove the previous image
+        previous_image_id = rdb.hget(f'module/{mid}/environment', 'PREV_IMAGE_URL')
+        if previous_image_id:
+            agent.run_helper("podman", "rmi", "--ignore", previous_image_id)
     except Exception as ex:
         print(agent.SD_ERR + f"Module UI update failed for instance {mid}: {ex}", file=sys.stderr)
         errors += 1
