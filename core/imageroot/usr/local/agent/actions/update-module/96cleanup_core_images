@@ -1,0 +1,48 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2024 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+import subprocess
+import agent
+import sys
+
+def get_podman_images():
+    result = subprocess.run(['podman', 'images', '--format', '{{.Repository}}:{{.Tag}}'],
+                            stdout=subprocess.PIPE, text=True)
+    image_list = result.stdout.splitlines()
+    images = {}
+    for img in image_list:
+        image_name, tag = img.rsplit(':', 1)
+        images[image_name] = tag
+    return images
+
+def parse_core_images(core_images):
+    parsed_images = {}
+    for key, value in core_images.items():
+        if not key.endswith('_IMAGE'):  
+            continue # skip non-image variables  
+        image_name, tag = value.rsplit(':', 1)
+        parsed_images[image_name] = tag
+    return parsed_images
+
+def remove_versions(core_images, podman_images):
+    for image_name, core_version in core_images.items():
+        podman_version = podman_images.get(image_name)
+        if podman_version and podman_version != core_version:
+            print(f"Removing {image_name}:{podman_version} (differs from {core_version})", file=sys.stderr)
+            agent.run_helper('podman', 'rmi', '--ignore', f'{image_name}:{podman_version}')
+
+# Read the environment file using the agent module
+version_images = agent.read_envfile('/etc/nethserver/core.env')
+
+# Parse the core images to extract image names and versions
+core_images = parse_core_images(version_images)
+
+# retrieve the images from podman
+podman_images = get_podman_images()
+
+# Remove the images that are no longer required
+remove_versions(core_images, podman_images)
