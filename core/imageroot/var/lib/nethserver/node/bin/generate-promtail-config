@@ -117,6 +117,15 @@ relabel_configs.append({
     "regex": "loki-server;.*context canceled.*",
 })
 
+# Set label category=security for messages from sshd, PAM, Polkit, etc.
+# that are often written to /var/log/secure or equivalent.
+relabel_configs.append({
+    "source_labels": ["__journal_syslog_facility"],
+    "regex": "(4|10|13|14)", # RFC3164 Syslog facility codes for security events
+    "replacement": "security",
+    "target_label": "category",
+})
+
 # Configuration data. Will be converted to a YAML file:
 config = {
     "server": {

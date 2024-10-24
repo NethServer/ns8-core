@@ -54,6 +54,25 @@
             ></span>
           </template>
         </NsTextInput>
+        <div v-if="toggleEnabled">
+          <label for="filter" :class="`${carbonPrefix}--label`">{{
+            $t("cloud_log_manager_forwarder.filter")
+          }}</label>
+          <cv-radio-group :vertical="true">
+            <cv-radio-button
+              ref="filterVal"
+              :label="$t('cloud_log_manager_forwarder.full')"
+              value="full"
+              v-model="filterVal"
+            />
+            <cv-radio-button
+              ref="filterVal"
+              :label="$t('cloud_log_manager_forwarder.root')"
+              value="root"
+              v-model="filterVal"
+            />
+          </cv-radio-group>
+        </div>
         <div v-if="toggleEnabled && this.configuration.last_timestamp != ''">
           <label for="startTime" :class="`${carbonPrefix}--label`">{{
             $t("cloud_log_manager_forwarder.export_starting_date")
@@ -157,6 +176,7 @@ export default {
     return {
       radioVal: "last_timestamp",
       toggleEnabled: false,
+      filterVal: "full",
       address: "",
       tenant: "",
       clusterId: "",
@@ -184,6 +204,7 @@ export default {
     resetModal() {
       this.radioVal = "last_timestamp";
       this.toggleEnabled = false;
+      this.filterVal = "full";
       this.address = "";
       this.tenant = "";
       this.date = "";
@@ -212,6 +233,10 @@ export default {
 
       if (!this.configuration.tenant == "") {
         this.tenant = this.configuration.tenant;
+      }
+
+      if (this.configuration.filter != "") {
+        this.filterVal = this.configuration.filter;
       }
 
       if (this.configuration.cluster_id) {
@@ -283,6 +308,7 @@ export default {
             active: this.active,
             address: this.address,
             tenant: this.tenant,
+            filter: this.filterVal,
             start_time: this.start_time,
           },
           extra: {
