@@ -4,6 +4,7 @@
 #
 
 import sqlite3
+import agent
 
 class PortError(Exception):
     """Base class for all port-related exceptions."""
@@ -33,6 +34,12 @@ class ModuleNotFoundError(PortError):
 class InvalidPortRequestError(PortError):
     """Exception raised when the requested number of ports is invalid."""
     def __init__(self, message="The number of required ports must be at least 1."):
+        self.message = message
+        super().__init__(self.message)
+
+class ExceededPortsDemand(PortError):
+    """Exception raised when the requested number of ports is higher than the maxium assigned to the image."""
+    def __init__(self, message="The number of required ports is higher than the maxium assigned to the image."):
         self.message = message
         super().__init__(self.message)
 
@@ -81,7 +88,7 @@ def allocate_ports(required_ports: int, module_name: str, protocol: str, keep_ex
     try:
         with sqlite3.connect('./ports.sqlite', isolation_level='EXCLUSIVE', timeout=30) as database:
             cursor = database.cursor()
-            create_tables(cursor)  # Ensure the tables exist
+            create_tables(cursor) # Ensure the tables exist
 
             # Fetch used ports based on protocol
             if protocol == 'tcp':
@@ -101,10 +108,27 @@ def allocate_ports(required_ports: int, module_name: str, protocol: str, keep_ex
                     cursor.execute("SELECT start,end,module FROM UDP_PORTS ORDER BY start;")
                 ports_used = cursor.fetchall()
 
+            # Ensure number of ports required
+            rdb = agent.redis_connect(privileged=False)
+            if protocol == 'tcp':
+                ports_demand = rdb.hgetall('cluster/tcp_ports_demand')
+            elif protocol == 'udp':
+                ports_demand = rdb.hgetall('cluster/udp_ports_demand')
+
+            total_ports_required = required_ports
+
+            if ports_demand:
+                for port in ports_used:
+                    if port[2] == module_name:
+                        total_ports_required += (port[1] - port[0] + 1)
+
+                if total_ports_required > int(ports_demand.get(module_name)):
+                    raise ExceededPortsDemand()
+
             if len(ports_used) == 0:
                 write_range(range_start, range_start + required_ports - 1, module_name, protocol, database)
                 return (range_start, range_start + required_ports - 1)
-            
+
             while range_start <= range_end:
                 # Check if the current port is within an already used range
                 for port_range in ports_used:
@@ -139,7 +163,7 @@ def deallocate_ports(module_name: str, protocol: str):
             elif protocol == 'udp':
                 cursor.execute("SELECT start,end,module FROM UDP_PORTS WHERE module=?;", (module_name,))
             ports_deallocated = cursor.fetchall()
-            
+
             if ports_deallocated:
                 # Delete the allocated port range for the module
                 if protocol == 'tcp':

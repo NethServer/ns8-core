@@ -55,10 +55,22 @@ else:
 
 # Retrieve the image org.nethserver.authorizations label
 with subprocess.Popen(['podman', 'image', 'inspect', image_url], stdout=subprocess.PIPE, stderr=sys.stderr) as proc:
+    inspect = json.load(proc.stdout)
+    inspect_labels = inspect[0]['Labels']
     try:
-        authorizations = json.load(proc.stdout)[0]['Labels']['org.nethserver.authorizations'].split()
+        authorizations = inspect_labels['org.nethserver.authorizations'].split()
     except:
         authorizations = []
+        
+if 'org.nethserver.tcp-ports-demand' in inspect_labels:
+    tcp_ports_demand = int(inspect_labels['org.nethserver.tcp-ports-demand'])
+else:
+    tcp_ports_demand = 0
+
+if 'org.nethserver.udp-ports-demand' in inspect_labels:
+    udp_ports_demand = int(inspect_labels['org.nethserver.udp-ports-demand'])
+else:
+    udp_ports_demand = 0
 
 # Run sanity checks on the org.nethserver.authorizations label:
 if not cluster.grants.check_authorizations_sanity(authorizations):
@@ -68,6 +80,11 @@ if not cluster.grants.check_authorizations_sanity(authorizations):
 # Start the module update on each instance
 update_tasks = []
 for module_id in instances:
+    
+    # Write on redis image ports demands
+    rdb.hset('cluster/tcp_ports_demand', mapping={module_id: tcp_ports_demand})
+    rdb.hset('cluster/udp_ports_demand', mapping={module_id: udp_ports_demand})
+    
     if authorizations:
         # Replace existing authorizations with the new image:
         rdb.delete(f'cluster/authorizations/module/{module_id}')
