@@ -62,13 +62,13 @@
             <cv-radio-button
               ref="filterVal"
               :label="$t('cloud_log_manager_forwarder.full')"
-              value="full"
+              value=""
               v-model="filterVal"
             />
             <cv-radio-button
               ref="filterVal"
-              :label="$t('cloud_log_manager_forwarder.root')"
-              value="root"
+              :label="$t('cloud_log_manager_forwarder.security')"
+              value="security"
               v-model="filterVal"
             />
           </cv-radio-group>
@@ -176,7 +176,7 @@ export default {
     return {
       radioVal: "last_timestamp",
       toggleEnabled: false,
-      filterVal: "full",
+      filterVal: "",
       address: "",
       tenant: "",
       clusterId: "",
@@ -204,7 +204,7 @@ export default {
     resetModal() {
       this.radioVal = "last_timestamp";
       this.toggleEnabled = false;
-      this.filterVal = "full";
+      this.filterVal = "";
       this.address = "";
       this.tenant = "";
       this.date = "";

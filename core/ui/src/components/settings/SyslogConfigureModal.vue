@@ -44,13 +44,13 @@
               <cv-radio-button
                 ref="filterVal"
                 :label="$t('syslog_forwarder.full')"
-                value="full"
+                value=""
                 v-model="filterVal"
               />
               <cv-radio-button
                 ref="filterVal"
-                :label="$t('syslog_forwarder.root')"
-                value="root"
+                :label="$t('syslog_forwarder.security')"
+                value="security"
                 v-model="filterVal"
               />
             </cv-radio-group>
@@ -195,7 +195,7 @@ export default {
     return {
       dateVal: "last_timestamp",
       protocolVal: "udp",
-      filterVal: "full",
+      filterVal: "",
       formatVal: "rfc3164",
       toggleEnabled: false,
       address: "",
@@ -224,7 +224,7 @@ export default {
     resetModal() {
       this.dateVal = "last_timestamp";
       this.protocolVal = "udp";
-      this.filterVal = "full";
+      this.filterVal = "";
       this.formatVal = "rfc3164";
       this.toggleEnabled = false;
       this.address = "";
