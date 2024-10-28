@@ -6,7 +6,7 @@
   <div>
     <div class="bx--grid bx--grid--full-width login-bg">
       <div class="bx--row">
-        <div class="bx--offset-md-1 bx--col-md-6 bx--offset-lg-4 bx--col-lg-8">
+        <div class="bx--offset-md-1 bx--col-md-6 bx--offset-lg-4 bx--col-lg-8 bx--col-xlg-6 bx--offset-xlg-5">
           <div class="test">
             <cv-tile :light="true" class="login-tile">
               <h2 class="login-title">{{ $t("login.title") }}</h2>
