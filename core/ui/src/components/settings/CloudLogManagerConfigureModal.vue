@@ -49,9 +49,7 @@
           :invalid-message="error.tenant"
         >
           <template slot="tooltip">
-            <span
-              v-html="$t('cloud_log_manager_forwarder.tenant_tooltip')"
-            ></span>
+            <span>{{ $t("cloud_log_manager_forwarder.tenant_tooltip") }}</span>
           </template>
         </NsTextInput>
         <div v-if="toggleEnabled && this.configuration.last_timestamp != ''">
