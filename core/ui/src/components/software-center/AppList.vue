@@ -258,7 +258,7 @@ export default {
     },
     showSoftwareCenterCoreApps() {
       this.$router.push("/software-center/SoftwareCenterCoreApps");
-    }
+    },
   },
 };
 </script>

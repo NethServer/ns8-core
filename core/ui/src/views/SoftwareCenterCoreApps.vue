@@ -231,7 +231,6 @@ export default {
     showAppInfo(app) {
       this.appInfo.isShown = true;
       this.appInfo.app = app;
-
     },
     updateTableData() {
       this.tableColumns = this.isCoreUpdatable
