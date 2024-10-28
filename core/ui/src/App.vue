@@ -16,12 +16,14 @@
 </template>
 
 <script>
+import { ref, reactive, onMounted, onBeforeUnmount } from "vue";
+import { useStore } from "vuex";
+import { mapState, mapActions } from "vuex";
 import ShellHeader from "@/components/shell/ShellHeader";
 import SideMenu from "@/components/shell/SideMenu";
 import MobileSideMenu from "@/components/shell/MobileSideMenu";
 import axios from "axios";
 import WebSocketService from "@/mixins/websocket";
-import { mapState, mapActions } from "vuex";
 import to from "await-to-js";
 import LoginService from "@/mixins/login";
 import TaskErrorModal from "@/components/error/TaskErrorModal";
@@ -48,128 +50,71 @@ export default {
     NotificationService,
     UtilService,
   ],
-  data() {
-    return {
-      isMaster: true,
-      isLoaded: false,
-      welcomeMsg: [
-        " _   _        _    _       _____                                  ___ ",
-        "| \\ | |      | |  | |     / ____|                                / _ \\",
-        "|  \\| |  ___ | |_ | |__  | (___    ___  _ __ __   __ ___  _ __  | (_) ",
-        "| . ` | / _ \\| __|| '_ \\  \\___ \\  / _ \\| '__|\\ \\ / // _ \\| '__|  > _ <",
-        "| |\\  ||  __/| |_ | | | | ____) ||  __/| |    \\ V /|  __/| |    | (_) ",
-        "|_| \\_| \\___| \\__||_| |_||_____/  \\___||_|     \\_/  \\___||_|     \\___/",
-        "                                                                      ",
-        "                                                                      ",
-      ].join("\n"),
-    };
-  },
-  computed: {
-    ...mapState(["loggedUser", "isClusterInitialized"]),
-  },
-  created() {
-    // print message on console
-    console.log("%c" + this.welcomeMsg, "background: #0090de; color: white;");
+  setup() {
+    const store = useStore();
+    const isMaster = ref(true);
+    const isLoaded = ref(false);
+    const welcomeMsg = [
+      " _   _        _    _       _____                                  ___ ",
+      "| \\ | |      | |  | |     / ____|                                / _ \\",
+      "|  \\| |  ___ | |_ | |__  | (___    ___  _ __ __   __ ___  _ __  | (_) ",
+      "| . ` | / _ \\| __|| '_ \\  \\___ \\  / _ \\| '__|\\ \\ / // _ \\| '__|  > _ <",
+      "| |\\  ||  __/| |_ | | | | ____) ||  __/| |    \\ V /|  __/| |    | (_) ",
+      "|_| \\_| \\___| \\__||_| |_||_____/  \\___||_|     \\_/  \\___||_|     \\___/",
+      "                                                                      ",
+      "                                                                      ",
+    ].join("\n");
 
-    // register to events
-    this.$root.$on("login", this.initWebSocket);
-    this.$root.$on("logout", this.logout);
-    this.$root.$on("createErrorNotification", this.createErrorNotification);
-    this.$root.$on("createNotificationForApp", this.createNotificationForApp);
-    this.$root.$on("deleteNotificationForApp", this.deleteNotificationForApp);
-    this.$root.$on(
-      "configureKeyboardShortcuts",
-      this.configureKeyboardShortcuts
-    );
-    this.$root.$on("clusterInitialized", this.onClusterInitialized);
-    this.$root.$on("websocketConnected", this.onWebsocketConnected);
-    this.$root.$on("websocketDisconnected", this.onWebsocketDisconnected);
-    this.$root.$on("websocketError", this.onWebsocketError);
-    this.$root.$on("websocketAuthError", this.onWebsocketAuthError);
+    const loggedUser = computed(() => store.state.loggedUser);
+    const isClusterInitialized = computed(() => store.state.isClusterInitialized);
 
-    this.configureAxiosInterceptors();
-    this.configureEventListeners();
-
-    // check login
-    const loginInfo = this.getFromStorage("loginInfo");
-    if (loginInfo?.username) {
-      this.setLoggedUserInStore(loginInfo.username);
-      // verify token with WS authentication
-      this.initWebSocket();
-    } else {
-      this.isLoaded = true;
-    }
-  },
-  beforeDestroy() {
-    this.closeWebSocket();
-    window.removeEventListener("blur", this.clickOutsideDrawers);
-    window.removeEventListener(
-      "keydown",
-      this.configureKeyboardShortcutsListener
-    );
-
-    // remove all event listeners
-    this.$root.$off();
-  },
-  methods: {
-    ...mapActions([
-      "setLoggedUserInStore",
-      "setClusterInitializedInStore",
-      "setMobileSideMenuShownInStore",
-      "setNotificationDrawerShownInStore",
-      "setAppDrawerShownInStore",
-      "toggleSearchExpandedInStore",
-      "toggleAppDrawerShownInStore",
-      "setLeaderListenPortInStore",
-      "setWebsocketConnectedInStore",
-      "setClusterLabelInStore",
-      "setClusterNodesInStore",
-      "hideTaskErrorInStore",
-      "setLogoutInfoInStore",
-    ]),
-    configureKeyboardShortcuts(window) {
+    const configureKeyboardShortcuts = (window) => {
       window.addEventListener(
         "keydown",
-        this.configureKeyboardShortcutsListener,
+        configureKeyboardShortcutsListener,
         false
       );
-    },
-    configureKeyboardShortcutsListener(e) {
+    };
+
+    const configureKeyboardShortcutsListener = (e) => {
       if (e.ctrlKey && e.shiftKey && e.code === "KeyA") {
-        this.toggleAppDrawerShownInStore();
+        store.dispatch("toggleAppDrawerShownInStore");
         // disable default behavior of shortcut
         e.preventDefault();
       } else if (e.ctrlKey && e.shiftKey && e.code === "KeyF") {
-        this.toggleSearchExpandedInStore();
+        store.dispatch("toggleSearchExpandedInStore");
         // disable default behavior of shortcut
         e.preventDefault();
       } else if (e.ctrlKey && e.shiftKey && e.code === "KeyS") {
-        this.$router.push("/status");
-        this.setMobileSideMenuShownInStore(false);
+        router.push("/status");
+        store.dispatch("setMobileSideMenuShownInStore", false);
         // disable default behavior of shortcut
         e.preventDefault();
       }
-    },
-    configureEventListeners() {
+    };
+
+    const configureEventListeners = () => {
       // needed to detect click outside mobile side menu, app drawer and
       // notification drawer when the user is on an external app
-      window.addEventListener("blur", this.clickOutsideDrawers);
+      window.addEventListener("blur", clickOutsideDrawers);
 
       // global shortcuts
-      this.configureKeyboardShortcuts(window);
-    },
-    clickOutsideDrawers() {
+      configureKeyboardShortcuts(window);
+    };
+
+    const clickOutsideDrawers = () => {
       if (document.activeElement.id == "app-frame") {
         // close side menu and drawers
-        this.setMobileSideMenuShownInStore(false);
-        this.setNotificationDrawerShownInStore(false);
-        this.setAppDrawerShownInStore(false);
+        store.dispatch("setMobileSideMenuShownInStore", false);
+        store.dispatch("setNotificationDrawerShownInStore", false);
+        store.dispatch("setAppDrawerShownInStore", false);
       }
-    },
-    configureClusterInitializationRedirect() {
+    };
+
+    const configureClusterInitializationRedirect = () => {
       // if cluster has not been initialized, redirect to /init
-      this.$router.beforeEach(async (to, from, next) => {
-        if (this.isClusterInitialized) {
+      router.beforeEach(async (to, from, next) => {
+        if (isClusterInitialized.value) {
           if (to.path === "/init") {
             // cannot navigate to initialization page if cluster is already initialized
             return false;
@@ -186,10 +131,9 @@ export default {
           }
         }
       });
-    },
-    configureAxiosInterceptors() {
-      const context = this;
+    };
 
+    const configureAxiosInterceptors = () => {
       // response interceptor
       axios.interceptors.response.use(
         function (response) {
@@ -211,25 +155,25 @@ export default {
             let sessionExpiredDescription = "";
 
             if (error.response?.data?.message === "Token is expired") {
-              sessionExpiredTitle = context.$t("login.session_expired_title");
-              sessionExpiredDescription = context.$t(
+              sessionExpiredTitle = this.$t("login.session_expired_title");
+              sessionExpiredDescription = this.$t(
                 "login.session_expired_description"
               );
             }
 
-            context.$root.$emit(
-              "logout",
-              sessionExpiredTitle,
-              sessionExpiredDescription
-            );
+            store.dispatch("logout", {
+              title: sessionExpiredTitle,
+              description: sessionExpiredDescription,
+            });
           }
           return Promise.reject(error);
         }
       );
-    },
-    async logout(logoutInfoTitle, logoutInfoDescription) {
+    };
+
+    const logout = async (logoutInfoTitle, logoutInfoDescription) => {
       // invoke logout API
-      const res = await to(this.executeLogout());
+      const res = await to(executeLogout());
       const logoutError = res[0];
 
       if (logoutError) {
@@ -242,42 +186,43 @@ export default {
         title: logoutInfoTitle || "",
         description: logoutInfoDescription || "",
       };
-      this.setLogoutInfoInStore(logoutInfo);
-      this.deleteFromStorage("loginInfo");
-      this.setLoggedUserInStore("");
-      this.closeWebSocket();
-      this.isLoaded = true;
+      store.dispatch("setLogoutInfoInStore", logoutInfo);
+      deleteFromStorage("loginInfo");
+      store.dispatch("setLoggedUserInStore", "");
+      closeWebSocket();
+      isLoaded.value = true;
 
       // redirect to login page
-      if (this.$route.name !== "Login") {
-        this.$router.push("/login");
+      if (router.currentRoute.name !== "Login") {
+        router.push("/login");
       }
 
       // hide websocket reconnection notification
-      if (this.$options.sockets.notification) {
-        this.hideNotification(this.$options.sockets.notification.id);
-        this.$options.sockets.notification = null;
+      if (sockets.notification) {
+        hideNotification(sockets.notification.id);
+        sockets.notification = null;
       }
-    },
-    async retrieveClusterStatus(initial) {
+    };
+
+    const retrieveClusterStatus = async (initial) => {
       const taskAction = "get-cluster-status";
-      const eventId = this.getUuid();
+      const eventId = getUuid();
 
       const completedCallback = initial
-        ? this.getInitialClusterStatusCompleted
-        : this.getClusterStatusCompleted;
+        ? getInitialClusterStatusCompleted
+        : getClusterStatusCompleted;
 
       // register to task error
-      this.$root.$once(
+      store.$root.$once(
         `${taskAction}-aborted-${eventId}`,
-        this.getClusterStatusAborted
+        getClusterStatusAborted
       );
 
       // register to task completion
-      this.$root.$once(`${taskAction}-completed-${eventId}`, completedCallback);
+      store.$root.$once(`${taskAction}-completed-${eventId}`, completedCallback);
 
       const res = await to(
-        this.createClusterTask({
+        createClusterTask({
           action: taskAction,
           extra: {
             title: this.$t("action." + taskAction),
@@ -294,78 +239,84 @@ export default {
           err.response?.status == 403 &&
           err.response.data?.data != "" // should return the leader HTTP host address
         ) {
-          this.isMaster = false;
+          isMaster.value = false;
           // redirect to worker page
-          this.$router.replace(
+          router.replace(
             "/init?page=redirect&endpoint=" + err.response.data.data
           );
-          this.isLoaded = true;
+          isLoaded.value = true;
         } else {
-          this.createErrorNotification(
+          createErrorNotification(
             err,
             this.$t("task.cannot_create_task", { action: taskAction })
           );
-          this.isLoaded = true;
+          isLoaded.value = true;
           return;
         }
       }
-    },
-    getClusterStatusAborted(taskResult, taskContext) {
+    };
+
+    const getClusterStatusAborted = (taskResult, taskContext) => {
       console.error(`${taskContext.action} aborted`, taskResult);
-    },
-    onClusterInitialized() {
-      this.setClusterInitializedInStore(true);
+    };
+
+    const onClusterInitialized = () => {
+      store.dispatch("setClusterInitializedInStore", true);
 
       // needed to set leader listen port in store after cluster creation
-      this.retrieveClusterStatus(false);
-    },
-    getInitialClusterStatusCompleted(taskContext, taskResult) {
-      if (this.isMaster) {
+      retrieveClusterStatus(false);
+    };
+
+    const getInitialClusterStatusCompleted = (taskContext, taskResult) => {
+      if (isMaster.value) {
         const clusterStatus = taskResult.output;
         const isClusterInitialized = clusterStatus.initialized;
-        this.setClusterInitializedInStore(isClusterInitialized);
-        this.setLeaderListenPortAndNodesInStore(clusterStatus);
+        store.dispatch("setClusterInitializedInStore", isClusterInitialized);
+        setLeaderListenPortAndNodesInStore(clusterStatus);
 
-        if (this.isClusterInitialized) {
-          this.onClusterInitialized();
-          this.isLoaded = true;
+        if (isClusterInitialized) {
+          onClusterInitialized();
+          isLoaded.value = true;
         } else {
-          if (this.$route.name !== "InitializeCluster") {
+          if (router.currentRoute.name !== "InitializeCluster") {
             // redirect to cluster initialization page
-            this.$router.replace("/init?page=welcome");
+            router.replace("/init?page=welcome");
           }
-          this.isLoaded = true;
+          isLoaded.value = true;
         }
-        this.configureClusterInitializationRedirect();
+        configureClusterInitializationRedirect();
 
         // cluster label
-        this.setClusterLabelInStore(clusterStatus.ui_name);
+        store.dispatch("setClusterLabelInStore", clusterStatus.ui_name);
       }
-    },
-    getClusterStatusCompleted(taskContext, taskResult) {
-      if (this.isMaster) {
+    };
+
+    const getClusterStatusCompleted = (taskContext, taskResult) => {
+      if (isMaster.value) {
         const clusterStatus = taskResult.output;
-        this.setLeaderListenPortAndNodesInStore(clusterStatus);
+        setLeaderListenPortAndNodesInStore(clusterStatus);
       }
-    },
-    setLeaderListenPortAndNodesInStore(clusterStatus) {
+    };
+
+    const setLeaderListenPortAndNodesInStore = (clusterStatus) => {
       if (clusterStatus.nodes.length) {
         // set leader listen port in vuex store
         const leaderNode = clusterStatus.nodes.find((el) => el.local);
         const leaderListenPort = leaderNode.vpn.listen_port;
-        this.setLeaderListenPortInStore(leaderListenPort);
+        store.dispatch("setLeaderListenPortInStore", leaderListenPort);
 
         // set nodes in vuex store
-        const nodes = clusterStatus.nodes.sort(this.sortByProperty("id"));
-        this.setClusterNodesInStore(nodes);
+        const nodes = clusterStatus.nodes.sort(sortByProperty("id"));
+        store.dispatch("setClusterNodesInStore", nodes);
       }
-    },
-    onWebsocketConnected() {
-      this.setWebsocketConnectedInStore(true);
-      this.retrieveClusterStatus(true);
+    };
 
-      if (this.$options.sockets.notification) {
-        this.hideNotification(this.$options.sockets.notification.id);
+    const onWebsocketConnected = () => {
+      store.dispatch("setWebsocketConnectedInStore", true);
+      retrieveClusterStatus(true);
+
+      if (sockets.notification) {
+        hideNotification(sockets.notification.id);
         const notification = {
           title: this.$t("websocket.websocket_connected"),
           description: this.$t("websocket.websocket_connected_description"),
@@ -374,27 +325,30 @@ export default {
           actionLabel: null,
           action: null,
         };
-        this.$options.sockets.notification = null;
-        this.createNotification(notification);
+        sockets.notification = null;
+        createNotification(notification);
       }
-    },
-    onWebsocketError(error) {
+    };
+
+    const onWebsocketError = (error) => {
       console.error("WebsocketError", error);
-    },
-    onWebsocketAuthError(error) {
+    };
+
+    const onWebsocketAuthError = (error) => {
       console.error("WebsocketAuthError", error);
       const sessionExpiredTitle = this.$t("login.session_expired_title");
       const sessionExpiredDescription = this.$t(
         "login.session_expired_description"
       );
-      this.logout(sessionExpiredTitle, sessionExpiredDescription);
-    },
-    onWebsocketDisconnected(event) {
+      logout(sessionExpiredTitle, sessionExpiredDescription);
+    };
+
+    const onWebsocketDisconnected = (event) => {
       console.warn("Websocket disconnected", event);
-      this.setWebsocketConnectedInStore(false);
+      store.dispatch("setWebsocketConnectedInStore", false);
 
       // do not show "websocket disconnected" notification when logged out
-      if (this.loggedUser && !this.$options.sockets.notification) {
+      if (loggedUser.value && !sockets.notification) {
         const notification = {
           title: this.$t("websocket.websocket_disconnected"),
           description: this.$t("websocket.websocket_disconnected_description"),
@@ -408,35 +362,114 @@ export default {
             },
           },
         };
-        this.$options.sockets.notification = notification;
-        this.createNotification(notification);
+        sockets.notification = notification;
+        createNotification(notification);
       }
 
       // Retry web socket connection if still logged-in. Don't retry before 10 seconds: in some cases (e.g. while updating core) the API server may not be ready to accept requests immediately after websocket reconnection
       setTimeout(() => {
-        if (this.loggedUser) {
+        if (loggedUser.value) {
           console.warn("Retrying websocket connection...");
-          this.initWebSocket();
+          initWebSocket();
         }
       }, 10000);
-    },
-    createErrorNotification(err, message) {
+    };
+
+    const createErrorNotification = (err, message) => {
       const notification = {
         title: message,
-        description: this.getErrorMessage(err),
+        description: getErrorMessage(err),
         type: "error",
       };
-      this.createNotification(notification);
-    },
-    createNotificationForApp(notification) {
-      this.createNotification(notification);
-    },
-    deleteNotificationForApp(notification) {
-      this.deleteNotification(notification);
-    },
-    hideTaskErrorModal() {
-      this.hideTaskErrorInStore();
-    },
+      createNotification(notification);
+    };
+
+    const createNotificationForApp = (notification) => {
+      createNotification(notification);
+    };
+
+    const deleteNotificationForApp = (notification) => {
+      deleteNotification(notification);
+    };
+
+    const hideTaskErrorModal = () => {
+      store.dispatch("hideTaskErrorInStore");
+    };
+
+    onMounted(() => {
+      // print message on console
+      console.log("%c" + welcomeMsg, "background: #0090de; color: white;");
+
+      // register to events
+      store.$root.$on("login", initWebSocket);
+      store.$root.$on("logout", logout);
+      store.$root.$on("createErrorNotification", createErrorNotification);
+      store.$root.$on("createNotificationForApp", createNotificationForApp);
+      store.$root.$on("deleteNotificationForApp", deleteNotificationForApp);
+      store.$root.$on(
+        "configureKeyboardShortcuts",
+        configureKeyboardShortcuts
+      );
+      store.$root.$on("clusterInitialized", onClusterInitialized);
+      store.$root.$on("websocketConnected", onWebsocketConnected);
+      store.$root.$on("websocketDisconnected", onWebsocketDisconnected);
+      store.$root.$on("websocketError", onWebsocketError);
+      store.$root.$on("websocketAuthError", onWebsocketAuthError);
+
+      configureAxiosInterceptors();
+      configureEventListeners();
+
+      // check login
+      const loginInfo = getFromStorage("loginInfo");
+      if (loginInfo?.username) {
+        store.dispatch("setLoggedUserInStore", loginInfo.username);
+        // verify token with WS authentication
+        initWebSocket();
+      } else {
+        isLoaded.value = true;
+      }
+    });
+
+    onBeforeUnmount(() => {
+      closeWebSocket();
+      window.removeEventListener("blur", clickOutsideDrawers);
+      window.removeEventListener(
+        "keydown",
+        configureKeyboardShortcutsListener
+      );
+
+      // remove all event listeners
+      store.$root.$off();
+    });
+
+    return {
+      isMaster,
+      isLoaded,
+      welcomeMsg,
+      loggedUser,
+      isClusterInitialized,
+      configureKeyboardShortcuts,
+      configureKeyboardShortcutsListener,
+      configureEventListeners,
+      clickOutsideDrawers,
+      configureClusterInitializationRedirect,
+      configureAxiosInterceptors,
+      logout,
+      retrieveClusterStatus,
+      getClusterStatusAborted,
+      onClusterInitialized,
+      getInitialClusterStatusCompleted,
+      getClusterStatusCompleted,
+      setLeaderListenPortAndNodesInStore,
+      onWebsocketConnected,
+      onWebsocketError,
+      onWebsocketAuthError,
+      onWebsocketDisconnected,
+      createErrorNotification,
+      createNotificationForApp,
+      deleteNotificationForApp,
+      hideTaskErrorModal,
+    };
   },
 };
 </script>

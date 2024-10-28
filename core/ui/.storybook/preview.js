@@ -1,30 +1,32 @@
+import { createApp } from "vue";
+
 // global styles
 import "!style-loader!css-loader!sass-loader!../src/styles/_core.scss";
 
 // carbon components
-import Vue from "vue";
 import CarbonComponentsVue from "@carbon/vue";
-Vue.use(CarbonComponentsVue);
+const app = createApp({});
+app.use(CarbonComponentsVue);
 
 // ns8-ui-lib components
 import ns8Lib from "@nethserver/ns8-ui-lib";
-Vue.use(ns8Lib);
+app.use(ns8Lib);
 
 // ns8-ui-lib filters
 import { Filters } from "@nethserver/ns8-ui-lib";
 for (const f in Filters) {
-  Vue.filter(f, Filters[f]);
+  app.filter(f, Filters[f]);
 }
 
 import VueDateFns from "vue-date-fns";
-Vue.use(VueDateFns);
+app.use(VueDateFns);
 
 import VueTimepicker from "vue2-timepicker";
 import "vue2-timepicker/dist/VueTimepicker.css";
-Vue.component("vue-timepicker", VueTimepicker);
+app.component("vue-timepicker", VueTimepicker);
 
 import vueDebounce from "vue-debounce";
-Vue.use(vueDebounce);
+app.use(vueDebounce);
 
 export const parameters = {
   actions: { argTypesRegex: "^on[A-Z].*" },

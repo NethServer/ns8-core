@@ -1,34 +1,35 @@
-import Vue from "vue";
+import { createApp } from "vue";
 import App from "./App.vue";
 import router from "./router";
 import store from "./store";
 
 import CarbonComponentsVue from "@carbon/vue";
-Vue.use(CarbonComponentsVue);
+const app = createApp(App);
+app.use(CarbonComponentsVue);
 
 import Toast from "vue-toastification";
 import "vue-toastification/dist/index.css";
 
 import VueDateFns from "vue-date-fns";
-Vue.use(VueDateFns);
+app.use(VueDateFns);
 
 import axios from "axios";
 axios.defaults.timeout = 10000;
 import VueAxios from "vue-axios";
-Vue.use(VueAxios, axios);
+app.use(VueAxios, axios);
 
 import vueDebounce from "vue-debounce";
-Vue.use(vueDebounce);
+app.use(vueDebounce);
 
 import VueNativeSock from "vue-native-websocket";
-Vue.use(VueNativeSock, "ws://", {
+app.use(VueNativeSock, "ws://", {
   reconnection: true,
   reconnectionDelay: 3000,
   connectManually: true,
 });
 
 import InfiniteLoading from "vue-infinite-loading";
-Vue.use(InfiniteLoading, {
+app.use(InfiniteLoading, {
   slots: {
     noResults: "",
     noMore: "",
@@ -36,25 +37,25 @@ Vue.use(InfiniteLoading, {
 });
 
 import LottieAnimation from "lottie-web-vue";
-Vue.use(LottieAnimation);
+app.use(LottieAnimation);
 
 import VueClipboard from "vue-clipboard2";
-Vue.use(VueClipboard);
+app.use(VueClipboard);
 
 import TextHighlight from "vue-text-highlight";
-Vue.component("text-highlight", TextHighlight);
+app.component("text-highlight", TextHighlight);
 
 import VueTimepicker from "vue2-timepicker";
 import "vue2-timepicker/dist/VueTimepicker.css";
-Vue.component("vue-timepicker", VueTimepicker);
+app.component("vue-timepicker", VueTimepicker);
 
 import ns8Lib from "@nethserver/ns8-ui-lib";
-Vue.use(ns8Lib);
+app.use(ns8Lib);
 
 // filters
 import { Filters } from "@nethserver/ns8-ui-lib";
 for (const f in Filters) {
-  Vue.filter(f, Filters[f]);
+  app.filter(f, Filters[f]);
 }
 
 const toastOptions = {
@@ -64,10 +65,10 @@ const toastOptions = {
   icon: false,
   closeButton: false,
 };
-Vue.use(Toast, toastOptions);
+app.use(Toast, toastOptions);
 
 // enable v-click-outside directive
-Vue.directive("click-outside", {
+app.directive("click-outside", {
   bind: function (el, binding, vnode) {
     el.clickOutsideEvent = function (event) {
       // check if click was outside the el and his children
@@ -83,7 +84,7 @@ Vue.directive("click-outside", {
   },
 });
 
-Vue.config.productionTip = false;
+app.config.productionTip = false;
 
 // i18n
 import VueI18n from "vue-i18n";
@@ -94,19 +95,10 @@ loadI18n();
 async function loadI18n() {
   const navigatorLang = navigator.language.substring(0, 2);
   const messages = await loadLanguage(navigatorLang);
-  Vue.use(VueI18n);
+  app.use(VueI18n);
   const i18n = new VueI18n();
   i18n.setLocaleMessage(navigatorLang, messages.default);
   i18n.locale = navigatorLang;
 
-  window.core = new Vue({
-    router,
-    store,
-    i18n,
-    created: function () {
-      this.config = window.CONFIG;
-      this.$root.apiUrl = this.config.API_SCHEME + this.config.API_ENDPOINT;
-    },
-    render: (h) => h(App),
-  }).$mount("#core");
+  app.use(router).use(store).use(i18n).mount("#core");
 }

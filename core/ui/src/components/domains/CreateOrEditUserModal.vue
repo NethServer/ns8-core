@@ -1,7 +1,3 @@
-<!--
-  Copyright (C) 2023 Nethesis S.r.l.
-  SPDX-License-Identifier: GPL-3.0-or-later
--->
 <template>
   <NsModal
     size="default"
@@ -124,6 +120,8 @@
 </template>
 
 <script>
+import { ref, reactive, computed, watch, onMounted, onBeforeUnmount } from "vue";
+import { useStore } from "vuex";
 import { UtilService, TaskService, IconService } from "@nethserver/ns8-ui-lib";
 import to from "await-to-js";
 
@@ -140,113 +138,115 @@ export default {
     user: { type: [Object, null] },
     allGroups: { type: Array, required: true },
   },
-  data() {
-    return {
-      username: "",
-      displayName: "",
-      selectedGroups: [],
+  setup(props, { emit }) {
+    const store = useStore();
+    const username = ref("");
+    const displayName = ref("");
+    const selectedGroups = ref([]);
+    const newPassword = ref("");
+    const passwordValidation = ref(null);
+    const focusPasswordField = ref({ element: "" });
+    const clearConfirmPasswordCommand = ref(0);
+    const policy = reactive({
+      strength: {
+        complexity_check: false,
+        enforced: false,
+        password_min_length: 8,
+      },
+    });
+    const loading = reactive({
+      addUser: false,
+      alterUser: false,
+      getDomainUser: false,
+      listPasswordPolicy: false,
+    });
+    const error = reactive({
+      addUser: "",
+      alterUser: "",
+      getDomainUser: "",
+      user: "",
+      display_name: "",
       newPassword: "",
-      passwordValidation: null,
-      focusPasswordField: { element: "" },
-      clearConfirmPasswordCommand: 0,
-      policy: {
-        strength: {
-          complexity_check: false,
-          enforced: false,
-          password_min_length: 8,
-        },
-      },
-      loading: {
-        addUser: false,
-        alterUser: false,
-        getDomainUser: false,
-        listPasswordPolicy: false,
-      },
-      error: {
-        addUser: "",
-        alterUser: "",
-        getDomainUser: "",
-        user: "",
-        display_name: "",
-        newPassword: "",
-        confirmPassword: "",
-        groups: "",
-        listPasswordPolicy: "",
-      },
-    };
-  },
-  computed: {
-    allGroupsForSelect() {
-      return this.allGroups.map((group) => {
+      confirmPassword: "",
+      groups: "",
+      listPasswordPolicy: "",
+    });
+
+    const allGroupsForSelect = computed(() => {
+      return props.allGroups.map((group) => {
         return {
           value: group.group,
           label: group.group,
           name: group.group,
         };
       });
-    },
-    isPrimaryButtonDisabled() {
+    });
+
+    const isPrimaryButtonDisabled = computed(() => {
       return (
-        this.loading.addUser ||
-        this.loading.alterUser ||
-        this.loading.getDomainUser ||
-        this.loading.listPasswordPolicy ||
-        !!this.error.getDomainUser
+        loading.addUser ||
+        loading.alterUser ||
+        loading.getDomainUser ||
+        loading.listPasswordPolicy ||
+        !!error.getDomainUser
       );
-    },
-    mainProvider() {
-      return this.domain.providers[0].id;
-    },
-    selectGroupsLabel() {
-      if (this.loading.getDomainUser) {
+    });
+
+    const mainProvider = computed(() => {
+      return props.domain.providers[0].id;
+    });
+
+    const selectGroupsLabel = computed(() => {
+      if (loading.getDomainUser) {
         return this.$t("common.loading");
-      } else if (this.allGroups.length) {
+      } else if (props.allGroups.length) {
         return this.$t("domain_users.select_groups");
       } else {
         return this.$t("domain_users.no_group");
       }
-    },
-  },
-  watch: {
-    isShown: function () {
-      if (this.isShown) {
-        this.clearErrors();
-        this.listPasswordPolicy();
-        if (!this.isEditing) {
-          // create user
+    });
 
-          // clear password fields
-          this.newPassword = "";
-          this.clearConfirmPasswordCommand++;
+    watch(
+      () => props.isShown,
+      (newVal) => {
+        if (newVal) {
+          clearErrors();
+          listPasswordPolicy();
+          if (!props.isEditing) {
+            // create user
+
+            // clear password fields
+            newPassword.value = "";
+            clearConfirmPasswordCommand.value++;
+          } else {
+            // edit user
+            username.value = props.user.user;
+            displayName.value = props.user.display_name;
+            selectedGroups.value = [];
+            getDomainUser();
+          }
         } else {
-          // edit user
-          this.username = this.user.user;
-          this.displayName = this.user.display_name;
-          this.selectedGroups = [];
-          this.getDomainUser();
-        }
-      } else {
-        // hiding modal
+          // hiding modal
 
-        if (this.isEditing) {
-          this.clearFields();
+          if (props.isEditing) {
+            clearFields();
+          }
         }
       }
-    },
-  },
-  methods: {
-    async listPasswordPolicy() {
-      this.loading.listPasswordPolicy = true;
-      this.error.listPasswordPolicy = "";
+    );
+
+    const listPasswordPolicy = async () => {
+      loading.listPasswordPolicy = true;
+      error.listPasswordPolicy = "";
       const taskAction = "get-password-policy";
-      const eventId = this.getUuid();
+      const eventId = getUuid();
       // register to task completion
-      this.$root.$once(
+      store.$root.$once(
         `${taskAction}-completed-${eventId}`,
-        this.listPasswordPolicyCompleted
+        listPasswordPolicyCompleted
       );
       const res = await to(
-        this.createModuleTaskForApp(this.mainProvider, {
+        createModuleTaskForApp(mainProvider.value, {
           action: taskAction,
           extra: {
             title: this.$t("action." + taskAction),
@@ -259,148 +259,152 @@ export default {
 
       if (err) {
         console.error(`error creating task ${taskAction}`, err);
-        this.error.listPasswordPolicy = this.getErrorMessage(err);
+        error.listPasswordPolicy = getErrorMessage(err);
         return;
       }
-    },
-    listPasswordPolicyCompleted(taskContext, taskResult) {
+    };
+
+    const listPasswordPolicyCompleted = (taskContext, taskResult) => {
       const config = taskResult.output;
-      this.policy.strength.enforced = config.strength.enforced;
-      this.policy.strength.complexity_check = config.strength.complexity_check;
-      this.policy.strength.password_min_length =
+      policy.strength.enforced = config.strength.enforced;
+      policy.strength.complexity_check = config.strength.complexity_check;
+      policy.strength.password_min_length =
         config.strength.password_min_length.toString();
 
-      this.loading.listPasswordPolicy = false;
-    },
-    createOrEditUser() {
-      if (this.isEditing) {
-        this.alterUser();
+      loading.listPasswordPolicy = false;
+    };
+
+    const createOrEditUser = () => {
+      if (props.isEditing) {
+        alterUser();
       } else {
-        this.addUser();
+        addUser();
       }
-    },
-    validateAddUser() {
-      this.clearErrors();
+    };
+
+    const validateAddUser = () => {
+      clearErrors();
       let isValidationOk = true;
 
-      if (!this.username) {
-        this.error.user = this.$t("common.required");
+      if (!username.value) {
+        error.user = this.$t("common.required");
 
         if (isValidationOk) {
-          this.focusElement("user");
+          focusElement("user");
           isValidationOk = false;
         }
       }
       // displayName is required
-      if (!this.displayName) {
-        this.error.display_name = this.$t("common.required");
+      if (!displayName.value) {
+        error.display_name = this.$t("common.required");
 
         if (isValidationOk) {
-          this.focusElement("display_name");
+          focusElement("display_name");
           isValidationOk = false;
         }
       }
 
       // password validation
 
-      if (!this.newPassword) {
-        this.error.newPassword = this.$t("common.required");
+      if (!newPassword.value) {
+        error.newPassword = this.$t("common.required");
 
         if (isValidationOk) {
-          this.focusPasswordField = { element: "newPassword" };
+          focusPasswordField.value = { element: "newPassword" };
           isValidationOk = false;
         }
       } else {
-        if (this.currentPassword === this.newPassword) {
-          if (!this.error.newPassword) {
-            this.error.newPassword = this.$t(
+        if (currentPassword === newPassword.value) {
+          if (!error.newPassword) {
+            error.newPassword = this.$t(
               "password.old_new_passwords_must_be_different"
             );
           }
 
           if (isValidationOk) {
-            this.focusPasswordField = { element: "newPassword" };
+            focusPasswordField.value = { element: "newPassword" };
             isValidationOk = false;
           }
         }
 
         if (
-          !this.passwordValidation.isLengthOk ||
-          !this.passwordValidation.isLowercaseOk ||
-          !this.passwordValidation.isUppercaseOk ||
-          !this.passwordValidation.isNumberOk ||
-          !this.passwordValidation.isSymbolOk
+          !passwordValidation.value.isLengthOk ||
+          !passwordValidation.value.isLowercaseOk ||
+          !passwordValidation.value.isUppercaseOk ||
+          !passwordValidation.value.isNumberOk ||
+          !passwordValidation.value.isSymbolOk
         ) {
-          if (!this.error.newPassword) {
-            this.error.newPassword = this.$t("password.password_not_secure");
+          if (!error.newPassword) {
+            error.newPassword = this.$t("password.password_not_secure");
           }
 
           if (isValidationOk) {
-            this.focusPasswordField = { element: "newPassword" };
+            focusPasswordField.value = { element: "newPassword" };
             isValidationOk = false;
           }
         }
 
-        if (!this.passwordValidation.isEqualOk) {
-          if (!this.error.newPassword) {
-            this.error.newPassword = this.$t("password.passwords_do_not_match");
+        if (!passwordValidation.value.isEqualOk) {
+          if (!error.newPassword) {
+            error.newPassword = this.$t("password.passwords_do_not_match");
           }
 
-          if (!this.error.confirmPassword) {
-            this.error.confirmPassword = this.$t(
+          if (!error.confirmPassword) {
+            error.confirmPassword = this.$t(
               "password.passwords_do_not_match"
             );
           }
 
           if (isValidationOk) {
-            this.focusPasswordField = { element: "confirmPassword" };
+            focusPasswordField.value = { element: "confirmPassword" };
             isValidationOk = false;
           }
         }
       }
       return isValidationOk;
-    },
-    async addUser() {
-      if (!this.validateAddUser()) {
+    };
+
+    const addUser = async () => {
+      if (!validateAddUser()) {
         return;
       }
-      this.loading.addUser = true;
-      this.error.addUser = "";
+      loading.addUser = true;
+      error.addUser = "";
       const taskAction = "add-user";
-      const eventId = this.getUuid();
+      const eventId = getUuid();
 
       // register to task error
-      this.$root.$once(`${taskAction}-aborted-${eventId}`, this.addUserAborted);
+      store.$root.$once(`${taskAction}-aborted-${eventId}`, addUserAborted);
 
       // register to task validation
-      this.$root.$once(
+      store.$root.$once(
         `${taskAction}-validation-ok-${eventId}`,
-        this.addUserValidationOk
+        addUserValidationOk
       );
-      this.$root.$once(
+      store.$root.$once(
         `${taskAction}-validation-failed-${eventId}`,
-        this.addUserValidationFailed
+        addUserValidationFailed
       );
 
       // register to task completion
-      this.$root.$once(
+      store.$root.$once(
         `${taskAction}-completed-${eventId}`,
-        this.addUserCompleted
+        addUserCompleted
       );
 
       const res = await to(
-        this.createModuleTaskForApp(this.mainProvider, {
+        createModuleTaskForApp(mainProvider.value, {
           action: taskAction,
           data: {
-            user: this.username,
-            display_name: this.displayName,
-            password: this.newPassword,
+            user: username.value,
+            display_name: displayName.value,
+            password: newPassword.value,
             locked: false,
-            groups: this.selectedGroups,
+            groups: selectedGroups.value,
           },
           extra: {
             title: this.$t("domain_users.create_user_user", {
-              user: this.username,
+              user: username.value,
             }),
             description: this.$t("common.processing"),
             eventId,
@@ -411,76 +415,81 @@ export default {
 
       if (err) {
         console.error(`error creating task ${taskAction}`, err);
-        this.error.addUser = this.getErrorMessage(err);
-        this.loading.addUser = false;
+        error.addUser = getErrorMessage(err);
+        loading.addUser = false;
         return;
       }
-    },
-    addUserAborted(taskResult, taskContext) {
+    };
+
+    const addUserAborted = (taskResult, taskContext) => {
       console.error(`${taskContext.action} aborted`, taskResult);
-      this.loading.addUser = false;
+      loading.addUser = false;
 
       // hide modal so that user can see error notification
-      this.$emit("hide");
-    },
-    addUserValidationOk() {
-      this.loading.addUser = false;
+      emit("hide");
+    };
+
+    const addUserValidationOk = () => {
+      loading.addUser = false;
 
       // hide modal after validation
-      this.$emit("hide");
-    },
-    addUserValidationFailed(validationErrors) {
-      this.loading.addUser = false;
+      emit("hide");
+    };
+
+    const addUserValidationFailed = (validationErrors) => {
+      loading.addUser = false;
       let focusAlreadySet = false;
       for (const validationError of validationErrors) {
         const param = validationError.parameter;
         // set i18n error message
-        this.error[param] = this.$t("domain_users." + validationError.error, {
+        error[param] = this.$t("domain_users." + validationError.error, {
           tok: validationError.value,
         });
 
         if (!focusAlreadySet) {
-          this.focusElement(param);
+          focusElement(param);
           focusAlreadySet = true;
         }
       }
-    },
-    addUserCompleted() {
-      this.clearFields();
-      this.loading.addUser = false;
+    };
+
+    const addUserCompleted = () => {
+      clearFields();
+      loading.addUser = false;
 
       // reload users
-      this.$emit("reloadUsers");
-    },
-    async alterUser() {
-      this.loading.alterUser = true;
-      this.error.alterUser = "";
+      emit("reloadUsers");
+    };
+
+    const alterUser = async () => {
+      loading.alterUser = true;
+      error.alterUser = "";
       const taskAction = "alter-user";
-      const eventId = this.getUuid();
+      const eventId = getUuid();
 
       // register to task error
-      this.$root.$once(
+      store.$root.$once(
         `${taskAction}-aborted-${eventId}`,
-        this.alterUserAborted
+        alterUserAborted
       );
 
       // register to task completion
-      this.$root.$once(
+      store.$root.$once(
         `${taskAction}-completed-${eventId}`,
-        this.alterUserCompleted
+        alterUserCompleted
       );
 
       const res = await to(
-        this.createModuleTaskForApp(this.mainProvider, {
+        createModuleTaskForApp(mainProvider.value, {
           action: taskAction,
           data: {
-            user: this.user.user,
-            display_name: this.displayName,
-            groups: this.selectedGroups,
+            user: props.user.user,
+            display_name: displayName.value,
+            groups: selectedGroups.value,
           },
           extra: {
             title: this.$t("domain_users.edit_user_user", {
-              user: this.user.user,
+              user: props.user.user,
             }),
             description: this.$t("common.processing"),
             eventId,
@@ -491,55 +500,60 @@ export default {
 
       if (err) {
         console.error(`error creating task ${taskAction}`, err);
-        this.error.alterUser = this.getErrorMessage(err);
-        this.loading.alterUser = false;
+        error.alterUser = getErrorMessage(err);
+        loading.alterUser = false;
         return;
       }
 
       // hide modal
-      this.$emit("hide");
-    },
-    alterUserAborted(taskResult, taskContext) {
+      emit("hide");
+    };
+
+    const alterUserAborted = (taskResult, taskContext) => {
       console.error(`${taskContext.action} aborted`, taskResult);
-      this.loading.alterUser = false;
-    },
-    alterUserCompleted() {
-      this.loading.alterUser = false;
+      loading.alterUser = false;
+    };
+
+    const alterUserCompleted = () => {
+      loading.alterUser = false;
 
       // reload users
-      this.$emit("reloadUsers");
-    },
-    onModalHidden() {
-      this.clearErrors();
-      this.$emit("hide");
-    },
-    onPasswordValidation(passwordValidation) {
-      this.passwordValidation = passwordValidation;
-    },
-    async getDomainUser() {
-      this.loading.getDomainUser = true;
-      this.error.getDomainUser = "";
+      emit("reloadUsers");
+    };
+
+    const onModalHidden = () => {
+      clearErrors();
+      emit("hide");
+    };
+
+    const onPasswordValidation = (passwordValidation) => {
+      passwordValidation.value = passwordValidation;
+    };
+
+    const getDomainUser = async () => {
+      loading.getDomainUser = true;
+      error.getDomainUser = "";
       const taskAction = "get-domain-user";
-      const eventId = this.getUuid();
+      const eventId = getUuid();
 
       // register to task error
-      this.$root.$once(
+      store.$root.$once(
         `${taskAction}-aborted-${eventId}`,
-        this.getDomainUserAborted
+        getDomainUserAborted
       );
 
       // register to task completion
-      this.$root.$once(
+      store.$root.$once(
         `${taskAction}-completed-${eventId}`,
-        this.getDomainUserCompleted
+        getDomainUserCompleted
       );
 
       const res = await to(
-        this.createClusterTask({
+        createClusterTask({
           action: taskAction,
           data: {
-            domain: this.domain.name,
-            user: this.user.user,
+            domain: props.domain.name,
+            user: props.user.user,
           },
           extra: {
             title: this.$t("action." + taskAction),
@@ -552,29 +566,67 @@ export default {
 
       if (err) {
         console.error(`error creating task ${taskAction}`, err);
-        this.error.getDomainUser = this.getErrorMessage(err);
+        error.getDomainUser = getErrorMessage(err);
         return;
       }
-    },
-    getDomainUserAborted(taskResult, taskContext) {
+    };
+
+    const getDomainUserAborted = (taskResult, taskContext) => {
       console.error(`${taskContext.action} aborted`, taskResult);
-      this.error.getDomainUser = this.$t("error.generic_error");
-      this.loading.getDomainUser = false;
-    },
-    getDomainUserCompleted(taskContext, taskResult) {
+      error.getDomainUser = this.$t("error.generic_error");
+      loading.getDomainUser = false;
+    };
+
+    const getDomainUserCompleted = (taskContext, taskResult) => {
       const groups = taskResult.output.user.groups;
-      this.selectedGroups = groups.map((g) => g.group);
-      this.loading.getDomainUser = false;
-    },
-    clearFields() {
-      this.username = "";
-      this.displayName = "";
-      this.selectedGroups = [];
+      selectedGroups.value = groups.map((g) => g.group);
+      loading.getDomainUser = false;
+    };
+
+    const clearFields = () => {
+      username.value = "";
+      displayName.value = "";
+      selectedGroups.value = [];
 
       // clear password fields
-      this.newPassword = "";
-      this.clearConfirmPasswordCommand++;
-    },
+      newPassword.value = "";
+      clearConfirmPasswordCommand.value++;
+    };
+
+    return {
+      username,
+      displayName,
+      selectedGroups,
+      newPassword,
+      passwordValidation,
+      focusPasswordField,
+      clearConfirmPasswordCommand,
+      policy,
+      loading,
+      error,
+      allGroupsForSelect,
+      isPrimaryButtonDisabled,
+      mainProvider,
+      selectGroupsLabel,
+      listPasswordPolicy,
+      listPasswordPolicyCompleted,
+      createOrEditUser,
+      validateAddUser,
+      addUser,
+      addUserAborted,
+      addUserValidationOk,
+      addUserValidationFailed,
+      addUserCompleted,
+      alterUser,
+      alterUserAborted,
+      alterUserCompleted,
+      onModalHidden,
+      onPasswordValidation,
+      getDomainUser,
+      getDomainUserAborted,
+      getDomainUserCompleted,
+      clearFields,
+    };
   },
 };
 </script>

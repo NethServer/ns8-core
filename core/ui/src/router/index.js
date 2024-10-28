@@ -1,5 +1,4 @@
-import Vue from "vue";
-import VueRouter from "vue-router";
+import { createRouter, createWebHistory } from "vue-router";
 import ClusterStatus from "../views/ClusterStatus";
 import Login from "../views/Login";
 import Settings from "../views/settings/Settings";
@@ -11,8 +10,6 @@ import Domains from "../views/Domains";
 import Nodes from "../views/Nodes";
 import NodeDetail from "../views/NodeDetail";
 import DomainUsersAndGroups from "../views/DomainUsersAndGroups";
-
-Vue.use(VueRouter);
 
 const routes = [
   { path: "/", redirect: "/status" },
@@ -219,8 +216,8 @@ const routes = [
   },
 ];
 
-const router = new VueRouter({
-  base: process.env.BASE_URL,
+const router = createRouter({
+  history: createWebHistory(process.env.BASE_URL),
   routes,
 });
 

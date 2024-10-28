@@ -1,7 +1,3 @@
-<!--
-  Copyright (C) 2023 Nethesis S.r.l.
-  SPDX-License-Identifier: GPL-3.0-or-later
--->
 <template>
   <div class="create-backup-modal">
     <NsWizard
@@ -300,6 +296,9 @@
 </template>
 
 <script>
+import { ref, reactive, onMounted, onBeforeUnmount } from "vue";
+import { useStore } from "vuex";
+import { mapState, mapActions } from "vuex";
 import { UtilService, TaskService, IconService } from "@nethserver/ns8-ui-lib";
 import to from "await-to-js";
 import BackupInstanceSelector from "@/components/backup/BackupInstanceSelector";
@@ -349,61 +348,52 @@ export default {
       required: true,
     },
   },
-  data() {
-    return {
-      step: "",
-      instances: [],
+  setup(props, { emit }) {
+    const store = useStore();
+    const step = ref("");
+    const instances = ref([]);
+    const name = ref("");
+    const schedule = reactive({
+      interval: DEFAULT_SCHEDULE_INTERVAL,
+      minute: DEFAULT_SCHEDULE_MINUTE,
+      time: DEFAULT_SCHEDULE_TIME,
+      weekDay: DEFAULT_SCHEDULE_WEEK_DAY,
+      monthDay: DEFAULT_SCHEDULE_MONTH_DAY,
+      custom: DEFAULT_SCHEDULE_CUSTOM,
+    });
+    const retention = ref(DEFAULT_RETENTION);
+    const installedModules = ref([]);
+    const internalRepositories = ref([]);
+    const runBackupOnFinish = ref(false);
+    const loading = reactive({
+      addBackup: false,
+      alterBackup: false,
+      listInstalledModules: true,
+    });
+    const error = reactive({
       name: "",
-      schedule: {
-        interval: DEFAULT_SCHEDULE_INTERVAL,
-        minute: DEFAULT_SCHEDULE_MINUTE,
-        time: DEFAULT_SCHEDULE_TIME,
-        weekDay: DEFAULT_SCHEDULE_WEEK_DAY,
-        monthDay: DEFAULT_SCHEDULE_MONTH_DAY,
-        custom: DEFAULT_SCHEDULE_CUSTOM,
-      },
-      retention: DEFAULT_RETENTION,
-      installedModules: [],
-      internalRepositories: [],
-      runBackupOnFinish: false,
-      loading: {
-        addBackup: false,
-        alterBackup: false,
-        listInstalledModules: true,
-      },
-      error: {
-        name: "",
-        repository: "",
-        schedule: "",
-        retention: "",
-        addBackup: "",
-        alterBackup: "",
-        listInstalledModules: "",
-      },
-    };
-  },
-  computed: {
-    stepIndex() {
-      return this.steps.indexOf(this.step);
-    },
-    isFirstStep() {
-      return this.stepIndex == 0;
-    },
-    isLastStep() {
-      return this.stepIndex == this.steps.length - 1;
-    },
-    isNextButtonDisabled() {
-      return (
-        this.loading.addBackup ||
-        this.loading.alterBackup ||
-        !this.installedModules.length ||
-        (this.step == "instances" && !this.instances.length) ||
-        (this.step == "repository" && !this.selectedRepo)
-      );
-    },
-    nextButtonLabel() {
-      if (this.isLastStep) {
-        if (this.isEditing) {
+      repository: "",
+      schedule: "",
+      retention: "",
+      addBackup: "",
+      alterBackup: "",
+      listInstalledModules: "",
+    });
+
+    const stepIndex = computed(() => steps.indexOf(step.value));
+    const isFirstStep = computed(() => stepIndex.value == 0);
+    const isLastStep = computed(() => stepIndex.value == steps.length - 1);
+    const isNextButtonDisabled = computed(
+      () =>
+        loading.addBackup ||
+        loading.alterBackup ||
+        !installedModules.value.length ||
+        (step.value == "instances" && !instances.value.length) ||
+        (step.value == "repository" && !selectedRepo.value)
+    );
+    const nextButtonLabel = computed(() => {
+      if (isLastStep.value) {
+        if (props.isEditing) {
           return this.$t("common.save");
         } else {
           return this.$t("backup.schedule_backup");
@@ -411,173 +401,182 @@ export default {
       } else {
         return this.$t("common.next");
       }
-    },
-    steps() {
-      if (this.isEditing) {
+    });
+    const steps = computed(() => {
+      if (props.isEditing) {
         // cannot change repository
         return ["instances", "settings", "name"];
       } else {
         return ["instances", "repository", "settings", "name"];
       }
-    },
-    selectedRepo() {
-      return this.internalRepositories.find((r) => r.selected);
-    },
-    isScheduleValid() {
-      switch (this.schedule.interval) {
+    });
+    const selectedRepo = computed(() =>
+      internalRepositories.value.find((r) => r.selected)
+    );
+    const isScheduleValid = computed(() => {
+      switch (schedule.interval) {
         case "hourly":
-          return this.schedule.minute >= 0 && this.schedule.minute <= 59;
+          return schedule.minute >= 0 && schedule.minute <= 59;
         case "daily":
-          return this.time24HourPattern.test(this.schedule.time);
+          return this.time24HourPattern.test(schedule.time);
         case "weekly":
           return (
-            this.schedule.weekDay &&
-            this.time24HourPattern.test(this.schedule.time)
+            schedule.weekDay &&
+            this.time24HourPattern.test(schedule.time)
           );
         case "monthly":
           return (
-            this.schedule.monthDay >= 1 &&
-            this.schedule.monthDay <= 31 &&
-            this.time24HourPattern.test(this.schedule.time)
+            schedule.monthDay >= 1 &&
+            schedule.monthDay <= 31 &&
+            this.time24HourPattern.test(schedule.time)
           );
       }
       return false;
-    },
-    scheduleExpression() {
-      switch (this.schedule.interval) {
+    });
+    const scheduleExpression = computed(() => {
+      switch (schedule.interval) {
         case "hourly": {
-          const minutes = this.schedule.minute.padStart(2, "0");
+          const minutes = schedule.minute.padStart(2, "0");
           return `*-*-* *:${minutes}:00`;
         }
         case "daily":
-          return `*-*-* ${this.schedule.time}:00`;
+          return `*-*-* ${schedule.time}:00`;
         case "weekly": {
-          const shortDay = _capitalize(this.schedule.weekDay.substring(0, 3));
-          return `${shortDay} *-*-* ${this.schedule.time}:00`;
+          const shortDay = _capitalize(schedule.weekDay.substring(0, 3));
+          return `${shortDay} *-*-* ${schedule.time}:00`;
         }
         case "monthly": {
-          const monthDay = this.schedule.monthDay.padStart(2, "0");
-          return `*-*-${monthDay} ${this.schedule.time}:00`;
+          const monthDay = schedule.monthDay.padStart(2, "0");
+          return `*-*-${monthDay} ${schedule.time}:00`;
         }
         case "custom":
-          return this.schedule.custom;
+          return schedule.custom;
       }
       return null;
-    },
-  },
-  watch: {
-    isShown: function () {
-      if (this.isShown) {
-        // show first step
-        this.step = this.steps[0];
+    });
 
-        // ensure backup prop is updated as well
-        this.$nextTick(() => {
-          if (this.isEditing) {
-            this.name = this.backup.name;
-            this.schedule = _cloneDeep(this.backup.schedule);
-            this.retention = this.backup.retention.toString();
-            this.runBackupOnFinish = false;
-            this.updateInternalRepositories();
-          } else {
-            this.clearFields();
-          }
-        });
+    watch(
+      () => props.isShown,
+      (newVal) => {
+        if (newVal) {
+          // show first step
+          step.value = steps.value[0];
 
-        // load installed moudules
-        this.listInstalledModules();
+          // ensure backup prop is updated as well
+          nextTick(() => {
+            if (props.isEditing) {
+              name.value = props.backup.name;
+              Object.assign(schedule, _cloneDeep(props.backup.schedule));
+              retention.value = props.backup.retention.toString();
+              runBackupOnFinish.value = false;
+              updateInternalRepositories();
+            } else {
+              clearFields();
+            }
+          });
+
+          // load installed modules
+          listInstalledModules();
+        }
       }
-    },
-    repositories: function () {
-      this.updateInternalRepositories();
-    },
-    step: function () {
-      if (this.step == "settings" && !this.isEditing) {
-        // prefill backup name
+    );
 
-        let backupName = this.$t("backup.default_backup_name", {
-          repository: this.selectedRepo.name,
-        });
+    watch(
+      () => props.repositories,
+      () => {
+        updateInternalRepositories();
+      }
+    );
 
-        // ensure we don't generate an already existing backup name
-        let isBackupNameDuplicated = this.backups.find(
-          (b) => b.name == backupName
-        );
-        let backupNameSuffix = 2;
+    watch(
+      () => step.value,
+      (newVal) => {
+        if (newVal == "settings" && !props.isEditing) {
+          // prefill backup name
 
-        while (isBackupNameDuplicated) {
-          backupName =
-            this.$t("backup.default_backup_name", {
-              repository: `${this.selectedRepo.name}`,
-            }) + ` (${backupNameSuffix})`;
+          let backupName = this.$t("backup.default_backup_name", {
+            repository: selectedRepo.value.name,
+          });
 
-          isBackupNameDuplicated = this.backups.find(
+          // ensure we don't generate an already existing backup name
+          let isBackupNameDuplicated = props.backups.find(
             (b) => b.name == backupName
           );
-          backupNameSuffix++;
+          let backupNameSuffix = 2;
+
+          while (isBackupNameDuplicated) {
+            backupName =
+              this.$t("backup.default_backup_name", {
+                repository: `${selectedRepo.value.name}`,
+              }) + ` (${backupNameSuffix})`;
+
+            isBackupNameDuplicated = props.backups.find(
+              (b) => b.name == backupName
+            );
+            backupNameSuffix++;
+          }
+
+          name.value = backupName;
         }
-
-        this.name = backupName;
       }
-    },
-  },
-  created() {
-    this.updateInternalRepositories();
-  },
-  methods: {
-    clearFields() {
-      this.instances = [];
-      this.name = "";
-      this.schedule.interval = DEFAULT_SCHEDULE_INTERVAL;
-      this.schedule.minute = DEFAULT_SCHEDULE_MINUTE;
-      this.schedule.time = DEFAULT_SCHEDULE_TIME;
-      this.schedule.weekDay = DEFAULT_SCHEDULE_WEEK_DAY;
-      this.schedule.monthDay = DEFAULT_SCHEDULE_MONTH_DAY;
-      this.schedule.custom = DEFAULT_SCHEDULE_CUSTOM;
-      this.retention = DEFAULT_RETENTION;
-      this.runBackupOnFinish = false;
+    );
 
-      for (let repo of this.internalRepositories) {
+    const clearFields = () => {
+      instances.value = [];
+      name.value = "";
+      schedule.interval = DEFAULT_SCHEDULE_INTERVAL;
+      schedule.minute = DEFAULT_SCHEDULE_MINUTE;
+      schedule.time = DEFAULT_SCHEDULE_TIME;
+      schedule.weekDay = DEFAULT_SCHEDULE_WEEK_DAY;
+      schedule.monthDay = DEFAULT_SCHEDULE_MONTH_DAY;
+      schedule.custom = DEFAULT_SCHEDULE_CUSTOM;
+      retention.value = DEFAULT_RETENTION;
+      runBackupOnFinish.value = false;
+
+      for (let repo of internalRepositories.value) {
         repo.selected = false;
       }
 
       // preselect if there is only one repo
-      if (this.internalRepositories.length == 1) {
-        this.internalRepositories[0].selected = true;
+      if (internalRepositories.value.length == 1) {
+        internalRepositories.value[0].selected = true;
       }
-    },
-    nextStep() {
-      if (this.isNextButtonDisabled) {
+    };
+
+    const nextStep = () => {
+      if (isNextButtonDisabled.value) {
         return;
       }
 
-      if (!this.validateStep()) {
+      if (!validateStep()) {
         return;
       }
 
-      if (this.isLastStep) {
-        if (this.isEditing) {
-          this.alterBackup();
+      if (isLastStep.value) {
+        if (props.isEditing) {
+          alterBackup();
         } else {
-          this.addBackup();
+          addBackup();
         }
       } else {
-        this.step = this.steps[this.stepIndex + 1];
+        step.value = steps.value[stepIndex.value + 1];
       }
-    },
-    previousStep() {
-      if (!this.isFirstStep) {
-        this.step = this.steps[this.stepIndex - 1];
-      }
-    },
-    updateInternalRepositories() {
-      // deep copy (needed to avoid reactivity issues)
-      let internalRepositories = _cloneDeep(this.repositories);
+    };
 
-      if (this.isEditing) {
+    const previousStep = () => {
+      if (!isFirstStep.value) {
+        step.value = steps.value[stepIndex.value - 1];
+      }
+    };
+
+    const updateInternalRepositories = () => {
+      // deep copy (needed to avoid reactivity issues)
+      let internalRepos = _cloneDeep(props.repositories);
+
+      if (props.isEditing) {
         // edit backup
-        for (const repo of internalRepositories) {
-          if (this.backup.repository == repo.id) {
+        for (const repo of internalRepos) {
+          if (props.backup.repository == repo.id) {
             repo.selected = true;
           } else {
             repo.selected = false;
@@ -585,96 +584,100 @@ export default {
         }
       } else {
         // create backup
-        for (const repo of internalRepositories) {
+        for (const repo of internalRepos) {
           repo.selected = false;
         }
 
         // preselect if there is only one repo
-        if (internalRepositories.length == 1) {
-          internalRepositories[0].selected = true;
+        if (internalRepos.length == 1) {
+          internalRepos[0].selected = true;
         }
       }
 
-      this.internalRepositories = internalRepositories;
-    },
-    validateSettingsStep() {
-      let isValidationOk = true;
-      this.error.retention = "";
+      internalRepositories.value = internalRepos;
+    };
 
-      if (!this.retention || this.retention < 1) {
-        this.error.retention = "error.invalid_value";
+    const validateSettingsStep = () => {
+      let isValidationOk = true;
+      error.retention = "";
+
+      if (!retention.value || retention.value < 1) {
+        error.retention = "error.invalid_value";
 
         if (isValidationOk) {
-          this.focusElement("retention");
+          focusElement("retention");
           isValidationOk = false;
         }
       }
 
       return isValidationOk;
-    },
-    validateNameStep() {
-      let isValidationOk = true;
-      this.error.name = "";
+    };
 
-      if (!this.name) {
-        this.error.name = "common.required";
+    const validateNameStep = () => {
+      let isValidationOk = true;
+      error.name = "";
+
+      if (!name.value) {
+        error.name = "common.required";
 
         if (isValidationOk) {
-          this.focusElement("name");
+          focusElement("name");
           isValidationOk = false;
         }
       }
 
       return isValidationOk;
-    },
-    validateStep() {
-      switch (this.step) {
+    };
+
+    const validateStep = () => {
+      switch (step.value) {
         case "settings":
-          return this.validateSettingsStep();
+          return validateSettingsStep();
         case "name":
-          return this.validateNameStep();
+          return validateNameStep();
         default:
           return true;
       }
-    },
-    async addBackup() {
+    };
+
+    const addBackup = async () => {
       // validation has already been performed by validateStep
 
-      this.error.addBackup = "";
-      this.loading.addBackup = true;
+      error.addBackup = "";
+      loading.addBackup = true;
       const taskAction = "add-backup";
 
       // register to task error
-      this.$root.$off(taskAction + "-aborted");
-      this.$root.$once(taskAction + "-aborted", this.addBackupAborted);
+      store.$off(taskAction + "-aborted");
+      store.$once(taskAction + "-aborted", addBackupAborted);
 
       // register to task validation
-      this.$root.$off(taskAction + "-validation-failed");
-      this.$root.$once(
+      store.$off(taskAction + "-validation-failed");
+      store.$once(
         taskAction + "-validation-failed",
-        this.addBackupValidationFailed
+        addBackupValidationFailed
       );
 
       // register to task completion
-      this.$root.$off(taskAction + "-completed");
-      this.$root.$once(taskAction + "-completed", this.addBackupCompleted);
+      store.$off(taskAction + "-completed");
+      store.$once(taskAction + "-completed", addBackupCompleted);
 
       const res = await to(
-        this.createClusterTask({
+        createClusterTask({
           action: taskAction,
           data: {
-            name: this.name,
-            repository: this.selectedRepo.id,
-            schedule: this.scheduleExpression,
-            schedule_hint: this.schedule,
-            retention: parseInt(this.retention),
-            instances: this.instances,
+            name: name.value,
+            repository: selectedRepo.value.id,
+            schedule: scheduleExpression.value,
+            schedule_hint: schedule,
+            retention: parseInt(retention.value),
+            instances: instances.value,
             enabled: true,
           },
           extra: {
             title: this.$t("action." + taskAction),
             isNotificationHidden: true,
-            runBackupOnFinish: this.runBackupOnFinish,
+            runBackupOnFinish: runBackupOnFinish.value,
           },
         })
       );
@@ -682,38 +685,41 @@ export default {
 
       if (err) {
         console.error(`error creating task ${taskAction}`, err);
-        this.error.addBackup = this.getErrorMessage(err);
+        error.addBackup = this.getErrorMessage(err);
         return;
       }
-    },
-    addBackupAborted(taskResult, taskContext) {
+    };
+
+    const addBackupAborted = (taskResult, taskContext) => {
       console.error(`${taskContext.action} aborted`, taskResult);
-      this.loading.addBackup = false;
+      loading.addBackup = false;
 
       // hide modal
-      this.$emit("hide");
-    },
-    addBackupValidationFailed(validationErrors) {
-      this.loading.addBackup = false;
+      emit("hide");
+    };
+
+    const addBackupValidationFailed = (validationErrors) => {
+      loading.addBackup = false;
       let focusAlreadySet = false;
 
       for (const validationError of validationErrors) {
         const param = validationError.parameter;
 
         // set i18n error message
-        this.error[param] = "backup." + validationError.error;
+        error[param] = "backup." + validationError.error;
 
         if (!focusAlreadySet) {
-          this.focusElement(param);
+          focusElement(param);
           focusAlreadySet = true;
         }
       }
-    },
-    addBackupCompleted(taskContext, taskResult) {
-      this.loading.addBackup = false;
+    };
+
+    const addBackupCompleted = (taskContext, taskResult) => {
+      loading.addBackup = false;
 
       // hide modal
-      this.$emit("hide");
+      emit("hide");
 
       const runBackupOnFinish = taskContext.extra.runBackupOnFinish;
       const backupId = taskResult.output;
@@ -724,43 +730,44 @@ export default {
       };
 
       // reload backup configuration
-      this.$emit("backupCreated", runBackupOnFinish, createdBackup);
-    },
-    async alterBackup() {
+      emit("backupCreated", runBackupOnFinish, createdBackup);
+    };
+
+    const alterBackup = async () => {
       // validation has already been performed by validateStep
 
-      this.error.alterBackup = "";
-      this.loading.alterBackup = true;
+      error.alterBackup = "";
+      loading.alterBackup = true;
       const taskAction = "alter-backup";
 
       // register to task validation
-      this.$root.$off(taskAction + "-validation-failed");
-      this.$root.$once(
+      store.$off(taskAction + "-validation-failed");
+      store.$once(
         taskAction + "-validation-failed",
-        this.alterBackupValidationFailed
+        alterBackupValidationFailed
       );
 
       // register to task completion
-      this.$root.$off(taskAction + "-completed");
-      this.$root.$once(taskAction + "-completed", this.alterBackupCompleted);
+      store.$off(taskAction + "-completed");
+      store.$once(taskAction + "-completed", alterBackupCompleted);
 
       const res = await to(
-        this.createClusterTask({
+        createClusterTask({
           action: taskAction,
           data: {
-            id: this.backup.id,
-            name: this.name,
-            repository: this.backup.repository,
-            schedule: this.scheduleExpression,
-            schedule_hint: this.schedule,
-            retention: parseInt(this.retention),
-            instances: this.instances,
-            enabled: this.backup.enabled,
+            id: props.backup.id,
+            name: name.value,
+            repository: props.backup.repository,
+            schedule: scheduleExpression.value,
+            schedule_hint: schedule,
+            retention: parseInt(retention.value),
+            instances: instances.value,
+            enabled: props.backup.enabled,
           },
           extra: {
             title: this.$t("action." + taskAction),
             isNotificationHidden: true,
-            runBackupOnFinish: this.runBackupOnFinish,
+            runBackupOnFinish: runBackupOnFinish.value,
           },
         })
       );
@@ -768,31 +775,33 @@ export default {
 
       if (err) {
         console.error(`error creating task ${taskAction}`, err);
-        this.error.alterBackup = this.getErrorMessage(err);
+        error.alterBackup = this.getErrorMessage(err);
         return;
       }
-    },
-    alterBackupValidationFailed(validationErrors) {
-      this.loading.alterBackup = false;
+    };
+
+    const alterBackupValidationFailed = (validationErrors) => {
+      loading.alterBackup = false;
       let focusAlreadySet = false;
 
       for (const validationError of validationErrors) {
         const param = validationError.parameter;
 
         // set i18n error message
-        this.error[param] = "backup." + validationError.error;
+        error[param] = "backup." + validationError.error;
 
         if (!focusAlreadySet) {
-          this.focusElement(param);
+          focusElement(param);
           focusAlreadySet = true;
         }
       }
-    },
-    alterBackupCompleted(taskContext) {
-      this.loading.alterBackup = false;
+    };
+
+    const alterBackupCompleted = (taskContext) => {
+      loading.alterBackup = false;
 
       // hide modal
-      this.$emit("hide");
+      emit("hide");
 
       const runBackupOnFinish = taskContext.extra.runBackupOnFinish;
 
@@ -802,20 +811,21 @@ export default {
       };
 
       // reload backup configuration
-      this.$emit("backupAltered", runBackupOnFinish, alteredBackup);
-    },
-    async listInstalledModules() {
-      this.loading.listInstalledModules = true;
+      emit("backupAltered", runBackupOnFinish, alteredBackup);
+    };
+
+    const listInstalledModules = async () => {
+      loading.listInstalledModules = true;
       const taskAction = "list-installed-modules";
 
       // register to task completion
-      this.$root.$once(
+      store.$once(
         taskAction + "-completed",
-        this.listInstalledModulesCompleted
+        listInstalledModulesCompleted
       );
 
       const res = await to(
-        this.createClusterTask({
+        createClusterTask({
           action: taskAction,
           extra: {
             title: this.$t("action." + taskAction),
@@ -826,16 +836,17 @@ export default {
       const err = res[0];
 
       if (err) {
-        this.error.listInstalledModules = this.getErrorMessage(err);
-        this.createErrorNotification(
+        error.listInstalledModules = this.getErrorMessage(err);
+        createErrorNotification(
           err,
           this.$t("task.cannot_create_task", { action: taskAction })
         );
         return;
       }
-    },
-    listInstalledModulesCompleted(taskContext, taskResult) {
-      this.loading.listInstalledModules = false;
+    };
+
+    const listInstalledModulesCompleted = (taskContext, taskResult) => {
+      loading.listInstalledModules = false;
       let apps = [];
 
       for (let instanceList of Object.values(taskResult.output)) {
@@ -844,18 +855,60 @@ export default {
         }
       }
       apps.sort(this.sortModuleInstances());
-      this.installedModules = apps;
-    },
-    onSelectInstances(instances) {
-      this.instances = instances;
-    },
-    deselectOtherRepos(repo) {
-      for (let r of this.internalRepositories) {
+      installedModules.value = apps;
+    };
+
+    const onSelectInstances = (instances) => {
+      instances.value = instances;
+    };
+
+    const deselectOtherRepos = (repo) => {
+      for (let r of internalRepositories.value) {
         if (r.id !== repo.id) {
           r.selected = false;
         }
       }
-    },
+    };
+
+    return {
+      step,
+      instances,
+      name,
+      schedule,
+      retention,
+      installedModules,
+      internalRepositories,
+      runBackupOnFinish,
+      loading,
+      error,
+      stepIndex,
+      isFirstStep,
+      isLastStep,
+      isNextButtonDisabled,
+      nextButtonLabel,
+      steps,
+      selectedRepo,
+      isScheduleValid,
+      scheduleExpression,
+      clearFields,
+      nextStep,
+      previousStep,
+      updateInternalRepositories,
+      validateSettingsStep,
+      validateNameStep,
+      validateStep,
+      addBackup,
+      addBackupAborted,
+      addBackupValidationFailed,
+      addBackupCompleted,
+      alterBackup,
+      alterBackupValidationFailed,
+      alterBackupCompleted,
+      listInstalledModules,
+      listInstalledModulesCompleted,
+      onSelectInstances,
+      deselectOtherRepos,
+    };
   },
 };
 </script>
