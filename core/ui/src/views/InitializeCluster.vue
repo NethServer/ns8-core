@@ -1899,7 +1899,7 @@ export default {
 @import "../styles/carbon-utils";
 
 .welcome-grid {
-  max-width: 70rem;
+  max-width: 56rem;
 }
 
 .bx--form .bx--form-item {
