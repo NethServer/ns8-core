@@ -8,7 +8,7 @@ Environment=BACKUP_VOLUME=rclone-webdav
 EnvironmentFile=/etc/nethserver/core.env
 EnvironmentFile=-/var/lib/nethserver/node/state/rclone-webdav.env
 Restart=always
-TimeoutStopSec=70
+TimeoutStopSec=120
 ExecStartPre=/bin/rm -f %t/%N.pid %t/%N.cid
 ExecStart=/usr/bin/podman run \
     --conmon-pidfile=%t/%N.pid \
@@ -23,10 +23,11 @@ ExecStart=/usr/bin/podman run \
     --entrypoint=[] \
     ${RESTIC_IMAGE} rclone serve webdav /srv/repo --addr :4694 $OPTIONS
 
-ExecStop=/usr/bin/podman stop --ignore --cidfile %t/%N.cid -t 10
+ExecStop=/usr/bin/podman stop --ignore --cidfile %t/%N.cid -t 90
 ExecStopPost=/usr/bin/podman rm --ignore -f --cidfile %t/%N.cid
 PIDFile=%t/%N.pid
 Type=forking
+SuccessExitStatus=143
 
 [Install]
 WantedBy=default.target
