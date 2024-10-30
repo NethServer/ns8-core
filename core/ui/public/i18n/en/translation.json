@@ -1431,9 +1431,6 @@
         "export_to_cloud_log_manager": "Export to Cloud Log Manager",
         "address": "Cloud Log Manager URL",
         "tenant": "Company unique key",
-        "filter": "Filter",
-        "full": "All records",
-        "security": "Security records",
         "export_starting_date": "Export start date",
         "use_last_timestamp": "Use last timestamp ({timestamp})",
         "choose_a_datetime": "Choose date and time",
@@ -1446,6 +1443,6 @@
         "address_placeholder": "E.g. https://nar.nethesis.it",
         "available_with_subscription_title": "Activate subscription to enable this feature",
         "available_with_subscription": "Send a stream of logs from applications and nodes of this cluster to Cloud Log Manager, where you can store, archive, and search them in a central place.",
-        "cluster_id_notification": "This cluster is identified as '{clusterId}' in the Cloud Log Manager UI"
+        "cluster_id_notification": "This cluster is identified as '{clusterId}' in the Cloud Log Manager UI and will forward only security logs."
     }
 }
