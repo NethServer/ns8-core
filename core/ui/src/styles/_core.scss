@@ -558,6 +558,18 @@ a {
   max-width: 12rem;
 }
 
+// styles for large devices
+@media (min-width: $breakpoint-medium) {
+  // limit form fields width on large devices
+  .bx--text-input,
+  .bx--text-input__field-wrapper,
+  .cv-select,
+  .cv-multi-select,
+  .cv-combo-box {
+    max-width: 38rem;
+  }
+}
+
 // fix padding of number input
 .bx--number input[type="number"] {
   padding-right: 5rem;
