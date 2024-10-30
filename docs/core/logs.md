@@ -65,7 +65,7 @@ By default, these forwarders are disabled.
 
 This service can be enabled either from the cluster admin interface or through the API using the following examples:
 ```
-# api-cli run module/loki1/set-syslog-forwarder --data '{"active": true, "address": "127.0.0.1", "port": "514", "protocol": "udp", "format": "rfc3164", "start_time": "2024-01-01T00:00:00.00Z"}'
+# api-cli run module/loki1/set-syslog-forwarder --data '{"active": true, "address": "127.0.0.1", "port": "514", "protocol": "udp", "format": "rfc3164", "start_time": "2024-01-01T00:00:00.00Z", "filter": "security"}'
 ```
 
 **Configuration parameters**
@@ -75,6 +75,7 @@ This service can be enabled either from the cluster admin interface or through t
 - **protocol**: Protocol to use (e.g., `udp` or `tcp`).
 - **format**: Log format (e.g., `rfc3164` or `rfc5424`).
 - **start_time**: The time from which logs should be forwarded. (`ISO 8601`)
+- **filter**: The filter to apply to the logs. The only available filters are `"security"` and `""` (all logs).
 
 It can be also stopped through API:
 ```
@@ -87,7 +88,7 @@ Cloud Log Manager forwarder is available only with a subscription, and if the su
 
 Similarly, this service can be enabled from the cluster admin interface or through the API with examples like the following:
 ```
-# api-cli run module/loki1/set-clm-forwarder --data '{"active": true, "address": "https://nar.nethesis.it", "teant": "example", "start_time": "2024-07-12T00:00:00.000000Z"}'
+# api-cli run module/loki1/set-clm-forwarder --data '{"active": true, "address": "https://nar.nethesis.it", "tenant": "example", "start_time": "2024-07-12T00:00:00.000000Z"}'
 ```
 
 **Configuration parameters**
@@ -95,6 +96,7 @@ Similarly, this service can be enabled from the cluster admin interface or throu
 - **address**: The URL of the Cloud Log Manager.
 - **tenant**: The tenant identifier.
 - **start_time**: The time from which logs should be forwarded. (`ISO 8601`)
+- **filter**: The filter to apply to the logs. The only available filters are `"security"` and `""` (all logs). By default, the `security` filter is applied and the parameter is optional.
 
 It can be also stopped through API:
 ```
