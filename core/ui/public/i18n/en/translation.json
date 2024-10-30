@@ -1442,7 +1442,7 @@
         "learn_more": "Learn more",
         "address_placeholder": "E.g. https://nar.nethesis.it",
         "available_with_subscription_title": "Activate subscription to enable this feature",
-        "available_with_subscription": "Send a stream of logs from applications and nodes of this cluster to Cloud Log Manager, where you can store, archive, and search them in a central place.",
-        "cluster_id_notification": "This cluster is identified as '{clusterId}' in the Cloud Log Manager UI and will forward only security logs."
+        "available_with_subscription": "Send a stream of security logs from applications and nodes of this cluster to Cloud Log Manager, where you can store, archive, and search them in a central place.",
+        "cluster_id_notification": "Security logs from this cluster are available in the Cloud Log Manager UI under the host '{clusterId}'."
     }
 }
