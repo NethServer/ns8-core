@@ -184,28 +184,50 @@ def write_range(start: int, end: int, module: str, protocol: str, database: sqli
     except sqlite3.Error as e:
         raise StorageError(f"Database error: {e}") from e # Raise custom database error
 
-def get_ports_by_module(module_name: str):
+def get_tcp_ports_by_module(module_name: str) -> int:
     """
-    Get the ports allocated to a specific module, regardless of the protocol.
+    Get the number of TCP ports allocated to a specific module.
 
     :param module_name: Name of the module.
-    :return: A list of tuples (start_port, end_port, protocol) if the module has allocated ports, None otherwise.
+    :return: Number of TCP ports allocated to the module.
     """
     try:
         with sqlite3.connect('./ports.sqlite', isolation_level='EXCLUSIVE', timeout=30) as database:
             cursor = database.cursor()
-            create_tables(cursor)  # Ensure the tables exist
+            create_tables(cursor)
 
-            # Fetch the port ranges for the given module from both TCP and UDP tables
-            cursor.execute("SELECT start, end, 'tcp' as protocol FROM TCP_PORTS WHERE module=?;", (module_name,))
-            tcp_ports = cursor.fetchall()
+            cursor.execute("""
+                SELECT SUM(end - start + 1) 
+                FROM TCP_PORTS 
+                WHERE module=?;
+            """, (module_name,))
+            result = cursor.fetchone()
 
-            cursor.execute("SELECT start, end, 'udp' as protocol FROM UDP_PORTS WHERE module=?;", (module_name,))
-            udp_ports = cursor.fetchall()
-
-            ports = tcp_ports + udp_ports
-
-            return [(port[0], port[1], port[2]) for port in ports]
+            return result[0] if result[0] is not None else 0
 
     except sqlite3.Error as e:
-        raise StorageError(f"Database error: {e}") from e  # Raise custom database error
+        raise StorageError(f"Database error: {e}") from e
+
+def get_udp_ports_by_module(module_name: str) -> int:
+    """
+    Get the number of UDP ports allocated to a specific module.
+
+    :param module_name: Name of the module.
+    :return: Number of UDP ports allocated to the module.
+    """
+    try:
+        with sqlite3.connect('./ports.sqlite', isolation_level='EXCLUSIVE', timeout=30) as database:
+            cursor = database.cursor()
+            create_tables(cursor)
+
+            cursor.execute("""
+                SELECT SUM(end - start + 1) 
+                FROM UDP_PORTS 
+                WHERE module=?;
+            """, (module_name,))
+            result = cursor.fetchone()
+
+            return result[0] if result[0] is not None else 0
+
+    except sqlite3.Error as e:
+        raise StorageError(f"Database error: {e}") from e

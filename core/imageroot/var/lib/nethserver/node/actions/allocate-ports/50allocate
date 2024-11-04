@@ -19,7 +19,9 @@ module_env = os.getenv("AGENT_TASK_USER")
 
 # Check if the agent has permission to change the port allocation
 if module_env != "" and module_env != f"module/{request['module_id']}":
-    raise Exception(f"Agent {module_env} does not have permission to change the port allocation for {request['module_id']}.")
+    agent.set_status('validation-failed')
+    json.dump([{'field':'none', 'parameter':'none','value': '', 'error':'module_permission_denied'}], fp=sys.stdout)
+    sys.exit(32)
 
 # Connect to Redis without privileged access
 rdb = agent.redis_connect(privileged=False)
@@ -29,12 +31,10 @@ current_node_id = os.getenv("NODE_ID")
 module_node_id = rdb.hget('cluster/module_node', request['module_id'])
 
 # Verify that the module exists
-if not module_node_id:
-    raise Exception(f"Error: Module {request['module_id']} does not exist.")
+agent.assert_exp(module_node_id not in [None, ''], f"Error: Module {request['module_id']} does not exist.")
 
 # Verify that the module is present on the current node
-if module_node_id != current_node_id:
-    raise Exception(f"Error: Module {request['module_id']} is not located on the current node {current_node_id}.")
+agent.assert_exp(module_node_id == current_node_id, f"Error: Module {request['module_id']} is not located on the current node {current_node_id}.")
 
 # Get the ports demand based on the protocol
 if request['protocol'] == 'tcp':
@@ -44,7 +44,12 @@ elif request['protocol'] == 'udp':
 
 # Calculate the total number of ports required
 total_ports_required = request['ports']
-ports_used = node.ports_manager.get_ports_by_module(request['module_id'])
+
+# Get the ports used by the module if keep_existing is set to true
+if request['keep_existing']:
+    ports_used = node.ports_manager.get_ports_by_module(request['module_id'])
+else:
+    ports_used = []
 
 for port in ports_used:
     if port[2] == request['protocol']:
