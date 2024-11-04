@@ -207,3 +207,32 @@ def write_range(start: int, end: int, module: str, protocol: str, database: sqli
 
     except sqlite3.Error as e:
         raise StorageError(f"Database error: {e}") from e # Raise custom database error
+
+def get_ports_by_module(module_name: str):
+    """
+    Get the ports allocated to a specific module, regardless of the protocol.
+
+    :param module_name: Name of the module.
+    :return: A list of tuples (start_port, end_port, protocol) if the module has allocated ports, None otherwise.
+    """
+    try:
+        with sqlite3.connect('./ports.sqlite', isolation_level='EXCLUSIVE', timeout=30) as database:
+            cursor = database.cursor()
+            create_tables(cursor)  # Ensure the tables exist
+
+            # Fetch the port ranges for the given module from both TCP and UDP tables
+            cursor.execute("SELECT start, end, 'tcp' as protocol FROM TCP_PORTS WHERE module=?;", (module_name,))
+            tcp_ports = cursor.fetchall()
+
+            cursor.execute("SELECT start, end, 'udp' as protocol FROM UDP_PORTS WHERE module=?;", (module_name,))
+            udp_ports = cursor.fetchall()
+
+            ports = tcp_ports + udp_ports
+
+            if ports:
+                return [(port[0], port[1], port[2]) for port in ports]
+            else:
+                raise ModuleNotFoundError(module_name)  # Raise error if the module is not found
+
+    except sqlite3.Error as e:
+        raise StorageError(f"Database error: {e}") from e  # Raise custom database error

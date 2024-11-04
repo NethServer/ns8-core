@@ -130,8 +130,11 @@ os.chdir(f'/var/lib/nethserver/cluster/ui/apps/{module_id}')
 agent.run_helper('extract-ui', image_url).check_returncode()
 
 # Write on redis image ports demands
-rdb.hset('cluster/tcp_ports_demand', mapping={module_id: tcp_ports_demand})
-rdb.hset('cluster/udp_ports_demand', mapping={module_id: udp_ports_demand})
+if tcp_ports_demand > 0:
+    rdb.hset('cluster/tcp_ports_demand', mapping={module_id: tcp_ports_demand})
+    
+if udp_ports_demand > 0:
+    rdb.hset('cluster/udp_ports_demand', mapping={module_id: udp_ports_demand})
 
 # Wait for the module host to set up the module environment: it
 # has to return us the module password hash
