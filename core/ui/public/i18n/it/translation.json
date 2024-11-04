@@ -1415,7 +1415,7 @@
         "available_with_subscription_title": "Attivare subscription per abilitare questa funzione",
         "start_date": "Data di inizio esportazione",
         "start_time": "Orario di inizio (24 ore)",
-        "available_with_subscription": "Invia un flusso di log da applicazioni e nodi di questo cluster a Cloud Log Manager, dove è possibile caricare, archiviare e cercare i log in un unico posto.",
+        "available_with_subscription": "Invia un flusso di log di sicurezza da applicazioni e nodi di questo cluster a Cloud Log Manager, dove è possibile caricare, archiviare e cercare i log in un unico posto.",
         "configure_export_to_cloud_log_manager": "Configura Cloud Log Manager",
         "export_to_cloud_log_manager": "Esporta a Cloud Log Manager",
         "learn_more": "Approfondisci",
@@ -1440,6 +1440,9 @@
         "port_placeholder": "Es. 514",
         "port_number": "Numero porta",
         "rfc5424": "RFC 5424",
-        "rfc3164": "RFC 3164"
+        "rfc3164": "RFC 3164",
+        "security": "Record di sicurezza",
+        "filter": "Filtro",
+        "full": "Tutti i record"
     }
 }
