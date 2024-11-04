@@ -11,33 +11,50 @@ import json
 import sys
 import os
 
+# Load the request from stdin
 request = json.load(sys.stdin)
 
+# Get the module environment variable
 module_env = os.getenv("AGENT_TASK_USER")
 
+# Check if the agent has permission to change the port allocation
 if module_env != "" and module_env != f"module/{request['module_id']}":
-    print(agent.SD_ERR + f" Agent {module_env} does not have permission to change the port allocation for {request['module_id']}.", file=sys.stderr)
-    sys.exit(1)
-    
-# Ensure number of ports required
+    raise Exception(f"Agent {module_env} does not have permission to change the port allocation for {request['module_id']}.")
+
+# Connect to Redis without privileged access
 rdb = agent.redis_connect(privileged=False)
+
+# Get the current node ID and the module's node ID
+current_node_id = os.getenv("NODE_ID")
+module_node_id = rdb.hget('cluster/module_node', request['module_id'])
+
+# Verify that the module exists
+if not module_node_id:
+    raise Exception(f"Error: Module {request['module_id']} does not exist.")
+
+# Verify that the module is present on the current node
+if module_node_id != current_node_id:
+    raise Exception(f"Error: Module {request['module_id']} is not located on the current node {current_node_id}.")
+
+# Get the ports demand based on the protocol
 if request['protocol'] == 'tcp':
     ports_demand = rdb.hgetall('cluster/tcp_ports_demand')
 elif request['protocol'] == 'udp':
     ports_demand = rdb.hgetall('cluster/udp_ports_demand')
 
+# Calculate the total number of ports required
 total_ports_required = request['ports']
 ports_used = node.ports_manager.get_ports_by_module(request['module_id'])
 
-if ports_demand:
-    for port in ports_used:
-        if port[2] == request['module_id']:
-            total_ports_required += (port[1] - port[0] + 1)
+for port in ports_used:
+    if port[2] == request['protocol']:
+        total_ports_required += (port[1] - port[0] + 1)
 
-    if total_ports_required > int(ports_demand.get(request['module_id'])):
-        print(agent.SD_ERR + " Error: Exceeded the allowed number of ports.", file=sys.stderr)
-        sys.exit(1)
+# Check if the total required ports exceed the allowed number of ports
+if total_ports_required > int(ports_demand.get(request['module_id'], 0)):
+    raise Exception("Error: Exceeded the allowed number of ports.")
 
+# Allocate the ports
 range = node.ports_manager.allocate_ports(int(request['ports']), request['module_id'], request['protocol'], request['keep_existing'])
 
 json.dump(range, fp=sys.stdout)

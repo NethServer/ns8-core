@@ -4,7 +4,6 @@
 #
 
 import sqlite3
-import agent
 
 class PortError(Exception):
     """Base class for all port-related exceptions."""
@@ -34,12 +33,6 @@ class ModuleNotFoundError(PortError):
 class InvalidPortRequestError(PortError):
     """Exception raised when the requested number of ports is invalid."""
     def __init__(self, message="The number of required ports must be at least 1."):
-        self.message = message
-        super().__init__(self.message)
-
-class ExceededPortsDemand(PortError):
-    """Exception raised when the requested number of ports is higher than the maxium assigned to the image."""
-    def __init__(self, message="The number of required ports is higher than the maxium assigned to the image."):
         self.message = message
         super().__init__(self.message)
 
@@ -107,23 +100,6 @@ def allocate_ports(required_ports: int, module_name: str, protocol: str, keep_ex
                 elif protocol == 'udp':
                     cursor.execute("SELECT start,end,module FROM UDP_PORTS ORDER BY start;")
                 ports_used = cursor.fetchall()
-
-            # Ensure number of ports required
-            rdb = agent.redis_connect(privileged=False)
-            if protocol == 'tcp':
-                ports_demand = rdb.hgetall('cluster/tcp_ports_demand')
-            elif protocol == 'udp':
-                ports_demand = rdb.hgetall('cluster/udp_ports_demand')
-
-            total_ports_required = required_ports
-
-            if ports_demand:
-                for port in ports_used:
-                    if port[2] == module_name:
-                        total_ports_required += (port[1] - port[0] + 1)
-
-                if total_ports_required > int(ports_demand.get(module_name)):
-                    raise ExceededPortsDemand()
 
             if len(ports_used) == 0:
                 write_range(range_start, range_start + required_ports - 1, module_name, protocol, database)
@@ -229,10 +205,7 @@ def get_ports_by_module(module_name: str):
 
             ports = tcp_ports + udp_ports
 
-            if ports:
-                return [(port[0], port[1], port[2]) for port in ports]
-            else:
-                raise ModuleNotFoundError(module_name)  # Raise error if the module is not found
+            return [(port[0], port[1], port[2]) for port in ports]
 
     except sqlite3.Error as e:
         raise StorageError(f"Database error: {e}") from e  # Raise custom database error
