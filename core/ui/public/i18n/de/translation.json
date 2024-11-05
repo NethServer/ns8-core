@@ -1440,6 +1440,9 @@
         "port_placeholder": "z.B. 514",
         "port_number": "Portnummer",
         "rfc5424": "RFC 5424",
-        "rfc3164": "RFC 3164"
+        "rfc3164": "RFC 3164",
+        "security": "Security records",
+        "filter": "Filter",
+        "full": "All records"
     }
 }

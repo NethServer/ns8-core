@@ -1440,6 +1440,9 @@
         "port_placeholder": "E.g. 514",
         "port_number": "Port number",
         "rfc5424": "RFC 5424",
-        "rfc3164": "RFC 3164"
+        "rfc3164": "RFC 3164",
+        "full": "All records",
+        "security": "Security records",
+        "filter": "Filter"
     }
 }

@@ -1421,7 +1421,10 @@
         "port_placeholder": "E.g. 514",
         "port_number": "Port number",
         "rfc5424": "RFC 5424",
-        "rfc3164": "RFC 3164"
+        "rfc3164": "RFC 3164",
+        "security": "Security records",
+        "filter": "Filter",
+        "full": "All records"
     },
     "cloud_log_manager_forwarder": {
         "tenant_tooltip": "Lorem Ipsum",
