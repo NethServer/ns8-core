@@ -1,0 +1,21 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2024 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+import agent
+import os
+import json
+
+node_id = os.environ['NODE_ID']
+session_id = agent.read_envfile("support.env").get("VPN_PASSWORD")
+support_user = agent.redis_connect().hget("cluster/subscription", "support_user")
+
+agent.redis_connect(privileged=True).publish("node/" + node_id + "/event/support-session-started", json.dumps({
+    "reason": os.getenv("AGENT_TASK_ACTION", "unknown"),
+    "node_id": node_id,
+    "session_id": session_id,
+    "support_user": support_user,
+}))
