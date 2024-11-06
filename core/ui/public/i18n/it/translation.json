@@ -1420,7 +1420,7 @@
         "export_to_cloud_log_manager": "Esporta a Cloud Log Manager",
         "learn_more": "Approfondisci",
         "address_placeholder": "Es. https://nar.nethesis.it",
-        "cluster_id_notification": "Questo cluster è identificato come '{clusterId}' nel portale Cloud Log Manager"
+        "cluster_id_notification": "I log di sicurezza di questo cluster sono disponibili nell'interfaccia utente di Cloud Log Manager sotto l'host \"{clusterId}\"."
     },
     "syslog_forwarder": {
         "start_time": "Orario di inizio (24 ore)",
