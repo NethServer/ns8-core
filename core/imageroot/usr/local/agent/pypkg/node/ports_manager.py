@@ -21,15 +21,6 @@ class StorageError(PortError):
         self.message = message
         super().__init__(self.message)
 
-class ModuleNotFoundError(PortError):
-    """Exception raised when a module is not found for deallocation."""
-    def __init__(self, module_name, message=None):
-        self.module_name = module_name
-        if message is None:
-            message = f"Module '{module_name}' not found."
-        self.message = message
-        super().__init__(self.message)
-
 class InvalidPortRequestError(PortError):
     """Exception raised when the requested number of ports is invalid."""
     def __init__(self, message="The number of required ports must be at least 1."):
@@ -81,7 +72,7 @@ def allocate_ports(required_ports: int, module_name: str, protocol: str, keep_ex
     try:
         with sqlite3.connect('./ports.sqlite', isolation_level='EXCLUSIVE', timeout=30) as database:
             cursor = database.cursor()
-            create_tables(cursor)  # Ensure the tables exist
+            create_tables(cursor) # Ensure the tables exist
 
             # Fetch used ports based on protocol
             if protocol == 'tcp':
@@ -104,7 +95,7 @@ def allocate_ports(required_ports: int, module_name: str, protocol: str, keep_ex
             if len(ports_used) == 0:
                 write_range(range_start, range_start + required_ports - 1, module_name, protocol, database)
                 return (range_start, range_start + required_ports - 1)
-            
+
             while range_start <= range_end:
                 # Check if the current port is within an already used range
                 for port_range in ports_used:
@@ -139,7 +130,7 @@ def deallocate_ports(module_name: str, protocol: str):
             elif protocol == 'udp':
                 cursor.execute("SELECT start,end,module FROM UDP_PORTS WHERE module=?;", (module_name,))
             ports_deallocated = cursor.fetchall()
-            
+
             if ports_deallocated:
                 # Delete the allocated port range for the module
                 if protocol == 'tcp':
@@ -150,7 +141,7 @@ def deallocate_ports(module_name: str, protocol: str):
                 # remove the name of the module and return a list of tuples
                 return [(port[0], port[1]) for port in ports_deallocated]
             else:
-                raise ModuleNotFoundError(module_name)  # Raise error if the module is not found
+                return []
 
     except sqlite3.Error as e:
         raise StorageError(f"Database error: {e}") from e # Raise custom database error
@@ -183,3 +174,51 @@ def write_range(start: int, end: int, module: str, protocol: str, database: sqli
 
     except sqlite3.Error as e:
         raise StorageError(f"Database error: {e}") from e # Raise custom database error
+
+def get_tcp_ports_by_module(module_name: str) -> int:
+    """
+    Get the number of TCP ports allocated to a specific module.
+
+    :param module_name: Name of the module.
+    :return: Number of TCP ports allocated to the module.
+    """
+    try:
+        with sqlite3.connect('./ports.sqlite', isolation_level='EXCLUSIVE', timeout=30) as database:
+            cursor = database.cursor()
+            create_tables(cursor)
+
+            cursor.execute("""
+                SELECT SUM(end - start + 1) 
+                FROM TCP_PORTS 
+                WHERE module=?;
+            """, (module_name,))
+            result = cursor.fetchone()
+
+            return result[0] if result[0] is not None else 0
+
+    except sqlite3.Error as e:
+        raise StorageError(f"Database error: {e}") from e
+
+def get_udp_ports_by_module(module_name: str) -> int:
+    """
+    Get the number of UDP ports allocated to a specific module.
+
+    :param module_name: Name of the module.
+    :return: Number of UDP ports allocated to the module.
+    """
+    try:
+        with sqlite3.connect('./ports.sqlite', isolation_level='EXCLUSIVE', timeout=30) as database:
+            cursor = database.cursor()
+            create_tables(cursor)
+
+            cursor.execute("""
+                SELECT SUM(end - start + 1) 
+                FROM UDP_PORTS 
+                WHERE module=?;
+            """, (module_name,))
+            result = cursor.fetchone()
+
+            return result[0] if result[0] is not None else 0
+
+    except sqlite3.Error as e:
+        raise StorageError(f"Database error: {e}") from e

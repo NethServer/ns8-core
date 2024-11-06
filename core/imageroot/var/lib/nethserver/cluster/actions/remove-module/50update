@@ -103,6 +103,10 @@ if module_keys:
 # Delete module from favorites
 rdb.srem('cluster/favorites', module_id)
 
+# Delete TCP and UDP port demands
+rdb.hdel('cluster/tcp_ports_demand', module_id)
+rdb.hdel('cluster/udp_ports_demand', module_id)
+
 # Delete module authorizations and node relation
 rdb.delete(f'cluster/authorizations/module/{module_id}')
 rdb.hdel('cluster/module_node', module_id)

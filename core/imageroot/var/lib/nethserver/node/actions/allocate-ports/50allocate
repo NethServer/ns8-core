@@ -11,14 +11,55 @@ import json
 import sys
 import os
 
+# Load the request from stdin
 request = json.load(sys.stdin)
 
+# Get the module environment variable
 module_env = os.getenv("AGENT_TASK_USER")
 
+# Check if the agent has permission to change the port allocation
 if module_env != "" and module_env != f"module/{request['module_id']}":
     print(agent.SD_ERR + f" Agent {module_env} does not have permission to change the port allocation for {request['module_id']}.", file=sys.stderr)
-    sys.exit(1)
+    agent.set_status('validation-failed')
+    json.dump([{'field':'module_id', 'parameter':'module_id', 'value': request['module_id'], 'error':'module_permission_denied'}], fp=sys.stdout)
+    sys.exit(32)
 
-range = node.ports_manager.allocate_ports(int(request['ports']), request['module_id'], request['protocol'], request['keep_existing'])
+# Connect to Redis without privileged access
+rdb = agent.redis_connect(privileged=False)
 
-json.dump(range, fp=sys.stdout)
+# Get the current node ID and the module's node ID
+current_node_id = os.getenv("NODE_ID")
+module_node_id = rdb.hget('cluster/module_node', request['module_id'])
+
+# Verify that the module exists
+agent.assert_exp(module_node_id not in [None, ''], f"Error: Module {request['module_id']} does not exist.")
+
+# Verify that the module is present on the current node
+agent.assert_exp(module_node_id == current_node_id, f"Error: Module {request['module_id']} is not located on the current node {current_node_id}.")
+
+# Get the ports demand based on the protocol
+if request['protocol'] == 'tcp':
+    ports_demand = int(rdb.hget('cluster/tcp_ports_demand', request["module_id"]) or "0")
+elif request['protocol'] == 'udp':
+    ports_demand = int(rdb.hget('cluster/udp_ports_demand', request["module_id"]) or "0")
+
+# Get the ports used by the module if keep_existing is set to true
+if request['keep_existing']:
+    if request['protocol'] == 'tcp':
+        ports_used = node.ports_manager.get_tcp_ports_by_module(request['module_id']) + request['ports']
+    elif request['protocol'] == 'udp':
+        ports_used = node.ports_manager.get_udp_ports_by_module(request['module_id']) + request['ports']
+else:
+    ports_used = 0 + request['ports']
+
+# Check if the total required ports exceed the allowed number of ports
+if ports_used > ports_demand:
+    print(agent.SD_ERR + f"Cannot allocate {ports_used} {request['protocol']} ports to {request['module_id']}. Max allowed is {ports_demand}.", file=sys.stderr)
+    agent.set_status('validation-failed')
+    json.dump([{'field':'ports', 'parameter':'ports', 'value': request['ports'], 'error':'max_ports_exceeded'}], fp=sys.stdout)
+    sys.exit(33)
+
+# Allocate the ports
+result = node.ports_manager.allocate_ports(int(request['ports']), request['module_id'], request['protocol'], request['keep_existing'])
+
+json.dump(result, fp=sys.stdout)

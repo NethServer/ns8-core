@@ -12,8 +12,8 @@
     ],
     "properties": {
         "ports": {
-            "type": "number",
-            "title": "Ports number",
+            "type": "integer",
+            "title": "Number of TCP/UDP ports",
             "description": "How many ports will be allocated on a specific node"
         },
         "module_id": {
