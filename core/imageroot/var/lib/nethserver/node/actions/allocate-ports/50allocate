@@ -58,6 +58,6 @@ if ports_used > ports_demand:
     sys.exit(33)
 
 # Allocate the ports
-range = node.ports_manager.allocate_ports(int(request['ports']), request['module_id'], request['protocol'], request['keep_existing'])
+result = node.ports_manager.allocate_ports(int(request['ports']), request['module_id'], request['protocol'], request['keep_existing'])
 
-json.dump(range, fp=sys.stdout)
+json.dump(result, fp=sys.stdout)
