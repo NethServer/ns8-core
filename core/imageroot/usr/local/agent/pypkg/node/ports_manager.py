@@ -21,15 +21,6 @@ class StorageError(PortError):
         self.message = message
         super().__init__(self.message)
 
-class ModuleNotFoundError(PortError):
-    """Exception raised when a module is not found for deallocation."""
-    def __init__(self, module_name, message=None):
-        self.module_name = module_name
-        if message is None:
-            message = f"Module '{module_name}' not found."
-        self.message = message
-        super().__init__(self.message)
-
 class InvalidPortRequestError(PortError):
     """Exception raised when the requested number of ports is invalid."""
     def __init__(self, message="The number of required ports must be at least 1."):
@@ -150,7 +141,7 @@ def deallocate_ports(module_name: str, protocol: str):
                 # remove the name of the module and return a list of tuples
                 return [(port[0], port[1]) for port in ports_deallocated]
             else:
-                raise ModuleNotFoundError(module_name)  # Raise error if the module is not found
+                return []
 
     except sqlite3.Error as e:
         raise StorageError(f"Database error: {e}") from e # Raise custom database error

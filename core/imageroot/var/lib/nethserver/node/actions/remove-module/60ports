@@ -19,5 +19,5 @@ try:
 
     # In case of clone/move/import fail ensure rsync port deallocation
     node.ports_manager.deallocate_ports(f"{request['module_id']}_rsync", 'tcp')
-except node.ports_manager.ModuleNotFoundError as exc:
+except Exception as exc:
     print(agent.SD_WARNING, exc, file=sys.stderr)
