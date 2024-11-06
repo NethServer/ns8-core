@@ -19,6 +19,7 @@ module_env = os.getenv("AGENT_TASK_USER")
 
 # Check if the agent has permission to change the port allocation
 if module_env != "" and module_env != f"module/{request['module_id']}":
+    print(agent.SD_ERR + f" Agent {module_env} does not have permission to change the port allocation for {request['module_id']}.", file=sys.stderr)
     agent.set_status('validation-failed')
     json.dump([{'field':'module_id', 'parameter':'module_id', 'value': request['module_id'], 'error':'module_permission_denied'}], fp=sys.stdout)
     sys.exit(32)
@@ -53,6 +54,7 @@ else:
 
 # Check if the total required ports exceed the allowed number of ports
 if ports_used > ports_demand:
+    print(agent.SD_ERR + f"Cannot allocate {ports_used} {request['protocol']} ports to {request['module_id']}. Max allowed is {ports_demand}.", file=sys.stderr)
     agent.set_status('validation-failed')
     json.dump([{'field':'ports', 'parameter':'ports', 'value': request['ports'], 'error':'max_ports_exceeded'}], fp=sys.stdout)
     sys.exit(33)
