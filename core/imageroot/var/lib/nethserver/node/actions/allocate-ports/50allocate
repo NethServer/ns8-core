@@ -42,21 +42,17 @@ if request['protocol'] == 'tcp':
 elif request['protocol'] == 'udp':
     ports_demand = int(rdb.hget('cluster/udp_ports_demand', request["module_id"]) or "0")
 
-# Calculate the total number of ports required
-total_ports_required = request['ports']
-
 # Get the ports used by the module if keep_existing is set to true
 if request['keep_existing']:
-    ports_used = node.ports_manager.get_ports_by_module(request['module_id'])
+    if request['protocol'] == 'tcp':
+        ports_used = node.ports_manager.get_tcp_ports_by_module(request['module_id']) + request['ports']
+    elif request['protocol'] == 'udp':
+        ports_used = node.ports_manager.get_udp_ports_by_module(request['module_id']) + request['ports']
 else:
-    ports_used = []
-
-for port in ports_used:
-    if port[2] == request['protocol']:
-        total_ports_required += (port[1] - port[0] + 1)
+    ports_used = 0 + request['ports']
 
 # Check if the total required ports exceed the allowed number of ports
-if total_ports_required > ports_demand:
+if ports_used > ports_demand:
     agent.set_status('validation-failed')
     json.dump([{'field':'ports', 'parameter':'ports', 'value': request['ports'], 'error':'max_ports_exceeded'}], fp=sys.stdout)
     sys.exit(33)
