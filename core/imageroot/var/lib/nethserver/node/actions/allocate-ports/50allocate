@@ -27,16 +27,6 @@ if module_env != "" and module_env != f"module/{request['module_id']}":
 # Connect to Redis without privileged access
 rdb = agent.redis_connect(privileged=False)
 
-# Get the current node ID and the module's node ID
-current_node_id = os.getenv("NODE_ID")
-module_node_id = rdb.hget('cluster/module_node', request['module_id'])
-
-# Verify that the module exists
-agent.assert_exp(module_node_id not in [None, ''], f"Error: Module {request['module_id']} does not exist.")
-
-# Verify that the module is present on the current node
-agent.assert_exp(module_node_id == current_node_id, f"Error: Module {request['module_id']} is not located on the current node {current_node_id}.")
-
 # Get the ports demand based on the protocol
 if request['protocol'] == 'tcp':
     ports_demand = int(rdb.hget('cluster/tcp_ports_demand', request["module_id"]) or "0")
