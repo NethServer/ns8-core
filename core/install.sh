@@ -49,6 +49,12 @@ if [[ ! "$PATH" =~ (^|:)/usr/local/sbin(:|$) ]]; then
     export PATH=$PATH:/usr/local/sbin
 fi
 
+echo "Checking the interface wg0 is not already in use"
+if [ -e "/sys/class/net/wg0" ]; then
+    echo "Installation failed: interface wg0 is already in use."
+    exit 1
+fi
+
 echo "Checking port 80 and 443 are not already in use"
 for port in 80 443
 do
