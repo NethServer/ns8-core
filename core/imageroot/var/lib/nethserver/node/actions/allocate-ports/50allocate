@@ -43,7 +43,7 @@ else:
     ports_used = 0 + request['ports']
 
 # Check if the total required ports exceed the allowed number of ports
-if ports_used > ports_demand:
+if module_env != "" and ports_used > ports_demand:
     print(agent.SD_ERR + f"Cannot allocate {ports_used} {request['protocol']} ports to {request['module_id']}. Max allowed is {ports_demand}.", file=sys.stderr)
     agent.set_status('validation-failed')
     json.dump([{'field':'ports', 'parameter':'ports', 'value': request['ports'], 'error':'max_ports_exceeded'}], fp=sys.stdout)
