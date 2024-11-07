@@ -1,0 +1,107 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "list-backup-repositories output",
+    "$id": "http://schema.nethserver.org/module/list-backup-repositories-output.json",
+    "description": "Return a list of the module's Restic backup repositories. The format is the same of cluster/read-backup-repositories.",
+    "examples": [
+        [
+            {
+                "module_id": "loki1",
+                "module_ui_name": "My Loki",
+                "node_fqdn": "rl1.dp.nethserver.net",
+                "path": "loki/35f45b73-f81e-467b-b622-96ec3b7fec19",
+                "name": "loki",
+                "uuid": "35f45b73-f81e-467b-b622-96ec3b7fec19",
+                "timestamp": 1721405723,
+                "repository_id": "14030a59-a4e6-54cc-b8ea-cd5f97fe44c8",
+                "repository_name": "BackBlaze repo1",
+                "repository_provider": "backblaze",
+                "repository_url": "b2:ns8-davidep",
+                "installed_instance": "loki1",
+                "installed_instance_ui_name": "My Loki",
+                "is_generated_locally": true
+            }
+        ]
+    ],
+    "type": "array",
+    "items": {
+        "type": "object",
+        "properties": {
+            "module_id": {
+                "type": "string",
+                "description": "Original module ID value."
+            },
+            "module_ui_name": {
+                "type": "string",
+                "description": "Original module label, assigned by the user."
+            },
+            "node_fqdn": {
+                "type": "string",
+                "description": "The FQDN of the node where the module of the backup is hosted."
+            },
+            "path": {
+                "type": "string",
+                "description": "Path of the repository, relative to the backup destination."
+            },
+            "name": {
+                "type": "string",
+                "description": "Name of the module. It is equal to the module image name."
+            },
+            "uuid": {
+                "type": "string",
+                "description": "Universal, unique identifier of the module instance."
+            },
+            "timestamp": {
+                "type": "integer",
+                "description": "Unix timestamp of the last backup run."
+            },
+            "repository_id": {
+                "type": "string",
+                "description": "UUID of the backup destination."
+            },
+            "repository_name": {
+                "type": "string",
+                "description": "Human readable name of the backup destination."
+            },
+            "repository_provider": {
+                "type": "string",
+                "description": "Type of backup destination provider, e.g. SMB, S3..."
+            },
+            "repository_url": {
+                "type": "string",
+                "description": "Restic URL of the backup destination."
+            },
+            "installed_instance": {
+                "type": "string",
+                "description": "If the backup belongs to an installed module instance this is its module ID."
+            },
+            "installed_instance_ui_name": {
+                "type": "string",
+                "description": "If the backup belongs to an installed module instance this is its module friendly name."
+            },
+            "is_generated_locally": {
+                "type": [
+                    "boolean",
+                    "null"
+                ],
+                "description": "Tells if the backup originates from the local cluster or from another cluster. The null value is returned if this information is missing completely, as it happens in old backups."
+            }
+        },
+        "required": [
+            "module_id",
+            "module_ui_name",
+            "node_fqdn",
+            "path",
+            "name",
+            "uuid",
+            "timestamp",
+            "repository_id",
+            "repository_name",
+            "repository_provider",
+            "repository_url",
+            "installed_instance",
+            "installed_instance_ui_name",
+            "is_generated_locally"
+        ]
+    }
+}
