@@ -187,7 +187,7 @@ def run_helper(*args, log_command=True, **kwargs):
 
     return subprocess.CompletedProcess(args, proc.returncode)
 
-def run_restic(rdb, repository, repo_path, podman_args, restic_args, **kwargs):
+def prepare_restic_command(rdb, repository, repo_path, podman_args, restic_args):
     core_env = read_envfile('/etc/nethserver/core.env') # Import URLs of core images
     orepo = rdb.hgetall(f"cluster/backup_repository/{repository}")
     assert_exp(len(orepo) > 0) # Check the repository exists
@@ -240,6 +240,11 @@ def run_restic(rdb, repository, repo_path, podman_args, restic_args, **kwargs):
     podman_cmd.append(core_env["RESTIC_IMAGE"])
     podman_cmd.extend(restic_args)
 
+    return (podman_cmd, restic_env)
+
+def run_restic(rdb, repository, repo_path, podman_args, restic_args, **kwargs):
+    podman_cmd, restic_env = prepare_restic_command(rdb, repository, repo_path, podman_args, restic_args)
+
     penv = os.environ.copy()
     penv.update(restic_env)
     if os.getenv('DEBUG', False):
@@ -251,7 +256,6 @@ def run_restic(rdb, repository, repo_path, podman_args, restic_args, **kwargs):
     kwargs.setdefault('env', penv)
     kwargs.setdefault('stdout', sys.stdout)
     kwargs.setdefault('stderr', sys.stderr)
-
     return subprocess.run(podman_cmd, **kwargs)
 
 def get_existing_volume_args():
