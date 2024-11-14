@@ -39,7 +39,7 @@ heading_anchors: true
 aux_links:
   "NS8 on GitHub":
     - "//github.com/nethserver/ns8-core"
-  "NethServer developer handbook"
+  "NethServer developer handbook":
     - "https://handbook.nethserver.org"
 
 # Footer content appears at the bottom of every page's main content
