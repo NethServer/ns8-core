@@ -9,6 +9,6 @@ nav_order: 3
 * TOC
 {:toc}
 
-All projects under the NethServer umbrella uses the same development process.
+All NethServer projects follow a shared development process.
 
 See [NethServer development handbook](https://handbook.nethserver.org/) for a detailed guide on how to contribute to NethServer.
