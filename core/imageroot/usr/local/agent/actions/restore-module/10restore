@@ -23,7 +23,7 @@
 import agent
 import json
 import sys
-import os, os.path
+import os
 
 request = json.load(sys.stdin)
 
@@ -37,8 +37,25 @@ rdb = agent.redis_connect(host='127.0.0.1') # Connect to local replica
 podman_args = ["--workdir=/srv"]
 podman_args.extend(agent.get_state_volume_args()) # get volumes from state-include.conf
 
-restic_args = ["restore", snapshot,
+restic_args = ["restore", "--json", snapshot,
     "--target", ".", # workdir should be /srv
     "--exclude", "state/environment", # special core file exception
 ]
-agent.run_restic(rdb, repository, repopath, podman_args, restic_args, stdout=sys.stderr).check_returncode()
+
+# Prepare progress callback function that captures non-progress messages too:
+last_restic_message = {}
+def build_restore_progress_callback():
+    restore_progress = agent.get_progress_callback(1, 100)
+    def fprog(omessage):
+        global last_restic_message
+        last_restic_message = omessage
+        if omessage['message_type'] == 'status':
+            fpercent = float(omessage['percent_done'])
+            restore_progress(int(fpercent * 100))
+    return fprog
+
+prestore = agent.run_restic(rdb, repository, repopath, podman_args, restic_args, progress_callback=build_restore_progress_callback())
+json.dump(last_restic_message, fp=open("restic_restore.json", "w"))
+if prestore.returncode != 0:
+    print(agent.SD_ERR + "Restic restore failed", last_restic_message, file=sys.stderr)
+    sys.exit(1)
