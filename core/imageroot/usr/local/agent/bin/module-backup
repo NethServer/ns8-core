@@ -120,7 +120,7 @@ except subprocess.CalledProcessError as ex:
 time_end = int(time.time())
 wrdb = agent.redis_connect(privileged = True)
 backup_status = {}
-stats_proc = agent.run_restic(rdb, repository, repopath, [], ["stats", "--json"], text=True, stdout=subprocess.PIPE)
+stats_proc = agent.run_restic(rdb, repository, repopath, [], ["stats", "--json", "latest"], text=True, stdout=subprocess.PIPE)
 if stats_proc.returncode == 0:
     backup_status = json.loads(stats_proc.stdout)
     backup_status['start'] = time_start
