@@ -104,11 +104,24 @@ else:
     print(f"Initializing repository {repository} at path {repopath}", file=sys.stderr)
     agent.run_restic(rdb, repository, repopath, [], ["init"]).check_returncode()
 
+agent_progress_callback = agent.get_progress_callback(1, 95)
+def backup_progress_callback(omessage):
+    global agent_progress_callback
+    if omessage['message_type'] == 'status':
+        fpercent = float(omessage['percent_done'])
+        agent_progress_callback(int(fpercent * 100))
+
 time_start = int(time.time())
 errors = 0
 try:
     # Run the backup
-    agent.run_restic(rdb, repository, repopath, podman_args, ["backup", "--no-scan"] + backup_args).check_returncode()
+    if os.getenv('AGENT_TASK_ID'):
+        pbackup = agent.run_restic(rdb, repository, repopath, podman_args, ["backup", "--json"] + backup_args, progress_callback=backup_progress_callback)
+        if pbackup.returncode != 0:
+            print(agent.SD_ERR + f"Restic restore command failed with exit code {pbackup.returncode}.", file=sys.stderr)
+            sys.exit(1)
+    else:
+        agent.run_restic(rdb, repository, repopath, podman_args, ["backup", "--no-scan"] + backup_args).check_returncode()
 
     # Apply retention policy
     agent.run_restic(rdb, repository, repopath, [], ["forget", "--prune", "--keep-last=" + obackup['retention']]).check_returncode()
