@@ -108,7 +108,7 @@ time_start = int(time.time())
 errors = 0
 try:
     # Run the backup
-    agent.run_restic(rdb, repository, repopath, podman_args, ["backup"] + backup_args).check_returncode()
+    agent.run_restic(rdb, repository, repopath, podman_args, ["backup", "--no-scan"] + backup_args).check_returncode()
 
     # Apply retention policy
     agent.run_restic(rdb, repository, repopath, [], ["forget", "--prune", "--keep-last=" + obackup['retention']]).check_returncode()
