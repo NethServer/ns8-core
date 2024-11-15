@@ -242,7 +242,7 @@ def prepare_restic_command(rdb, repository, repo_path, podman_args, restic_args)
 
     return (podman_cmd, restic_env)
 
-def run_restic(rdb, repository, repo_path, podman_args, restic_args, **kwargs):
+def run_restic(rdb, repository, repo_path, podman_args, restic_args, progress_callback=None, **kwargs):
     podman_cmd, restic_env = prepare_restic_command(rdb, repository, repo_path, podman_args, restic_args)
 
     penv = os.environ.copy()
@@ -256,7 +256,22 @@ def run_restic(rdb, repository, repo_path, podman_args, restic_args, **kwargs):
     kwargs.setdefault('env', penv)
     kwargs.setdefault('stdout', sys.stdout)
     kwargs.setdefault('stderr', sys.stderr)
-    return subprocess.run(podman_cmd, **kwargs)
+    if progress_callback and '--json' in restic_args:
+        kwargs['stdout'] = subprocess.PIPE
+        kwargs.setdefault('errors', 'replace')
+        kwargs.setdefault('text', True)
+        with subprocess.Popen(podman_cmd, **kwargs) as prestic:
+            while True:
+                line = prestic.stdout.readline()
+                if not line:
+                    break
+                try:
+                    progress_callback(json.loads(line))
+                except Exception as ex:
+                    print(SD_DEBUG + "Error decoding Restic status message", ex, file=kwargs['stderr'])
+    else:
+        prestic = subprocess.run(podman_cmd, **kwargs)
+    return prestic
 
 def get_existing_volume_args():
     """Return a list of --volume arguments for Podman run and similar. The argument values
