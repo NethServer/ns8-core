@@ -27,6 +27,17 @@ import os
 import os.path
 import subprocess
 import time
+import atexit
+
+backup_status = {'total_size': 0, 'total_file_count': 0, 'snapshots_count': 0, 'errors': 0, 'start': int(time.time())}
+
+def exit_handler():
+    wrdb = agent.redis_connect(privileged = True)
+    backup_status['end'] = int(time.time())
+    wrdb.hset(f"module/{module_id}/backup_status/{backup_id}", mapping=backup_status)
+    wrdb.close()
+
+atexit.register(exit_handler)
 
 backup_id = int(sys.argv[1])
 rdb = agent.redis_connect(host='127.0.0.1') # Connect to local replica
@@ -64,6 +75,7 @@ except PermissionError:
 except Exception as ex:
     print("[ERROR] module-dump-state failed.", ex, file=sys.stderr)
     print("[ERROR] module-backup aborted.", file=sys.stderr)
+    backup_status['errors'] += 1
     sys.exit(1)
 
 podman_args = [
@@ -101,11 +113,14 @@ if os.path.isfile(install_dir + "/etc/state-exclude.conf"):
 if agent.run_restic(rdb, repository, repopath, [], ["snapshots"], stdout=subprocess.DEVNULL).returncode == 0:
     print(f"Repository {repository} is present at path {repopath}", file=sys.stderr)
 else:
-    print(f"Initializing repository {repository} at path {repopath}", file=sys.stderr)
-    agent.run_restic(rdb, repository, repopath, [], ["init"]).check_returncode()
+    try:
+        print(f"Initializing repository {repository} at path {repopath}", file=sys.stderr)
+        agent.run_restic(rdb, repository, repopath, [], ["init"]).check_returncode()
+    except subprocess.CalledProcessError as ex:
+        print("[ERROR] restic init failed.", ex, file=sys.stderr)
+        backup_status['errors'] += 1
+        sys.exit(1)
 
-time_start = int(time.time())
-errors = 0
 try:
     # Run the backup
     agent.run_restic(rdb, repository, repopath, podman_args, ["backup"] + backup_args).check_returncode()
@@ -114,20 +129,16 @@ try:
     agent.run_restic(rdb, repository, repopath, [], ["forget", "--prune", "--keep-last=" + obackup['retention']]).check_returncode()
 
 except subprocess.CalledProcessError as ex:
-    errors = 1
+    print("[ERROR] restic backup failed.", ex, file=sys.stderr)
+    backup_status['errors'] += 1
 
 # Advertise the backup status
-time_end = int(time.time())
-wrdb = agent.redis_connect(privileged = True)
-backup_status = {}
-stats_proc = agent.run_restic(rdb, repository, repopath, [], ["stats", "--json"], text=True, stdout=subprocess.PIPE)
+stats_proc = agent.run_restic(rdb, repository, repopath, [], ["stats", "--json", "latest"], text=True, stdout=subprocess.PIPE)
 if stats_proc.returncode == 0:
-    backup_status = json.loads(stats_proc.stdout)
-    backup_status['start'] = time_start
-    backup_status['end'] = time_end
-    backup_status['errors'] = errors
-    wrdb.hset(f"module/{module_id}/backup_status/{backup_id}", mapping=backup_status)
-wrdb.close()
+    backup_status.update(json.loads(stats_proc.stdout))
+else:
+    print("[ERROR] restic stats failed.", file=sys.stderr)
+    backup_status['errors'] += 1
 
 try:
     ometa = {}
@@ -136,8 +147,8 @@ try:
     ometa["node_fqdn"] = agent.get_hostname()
     ometa["cluster_uuid"] = rdb.get("cluster/uuid") or ""
     ometa["uuid"] = os.environ["MODULE_UUID"]
-    ometa["timestamp"] = time_end
-    ometa["success"] = bool(errors == 0)
+    ometa["timestamp"] = int(time.time())
+    ometa["success"] = bool(backup_status['errors']  == 0)
     subprocess.run(["rclone-wrapper", str(backup_id), "rcat", f"REMOTE_PATH/{repopath}.json"],
         stdout=sys.stderr,
         input='\n' + json.dumps(ometa, separators=(',', ':')) + '\n',
@@ -145,7 +156,7 @@ try:
         check=True,
     )
 except subprocess.CalledProcessError as ex:
-    errors += 1
+    backup_status['errors'] += 1
 
 try:
     subprocess.run(["module-cleanup-state"] + sys.argv[1:], check=True)
@@ -155,7 +166,7 @@ except PermissionError:
     print("[WARNING] module-cleanup-state is not executable: ignored.", file=sys.stderr)
 except Exception as ex:
     print("[ERROR] module-cleanup-state failed.", ex, file=sys.stderr)
-    errors += 1
+    backup_status['errors'] += 1
 
-if errors > 0:
+if backup_status['errors'] > 0:
     sys.exit(1)
