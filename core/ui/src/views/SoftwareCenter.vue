@@ -131,6 +131,18 @@
           />
         </cv-column>
       </cv-row>
+      <cv-row v-if="updatesAreDisabledForMigration">
+        <cv-column>
+          <NsInlineNotification
+            kind="info"
+            :title="$t('software_center.updates_disabled_ns7_migration_title')"
+            :description="
+              $tc('software_center.updates_disabled_ns7_migration_description')
+            "
+            :showCloseButton="false"
+          />
+        </cv-column>
+      </cv-row>
       <div>
         <cv-search
           :label="$t('software_center.search_placeholder')"
@@ -436,6 +448,11 @@ export default {
       return this.repositories
         .filter((repository) => repository.testing)
         .map((repository) => repository.name);
+    },
+    updatesAreDisabledForMigration() {
+      return this.modules.some(
+        (m) => m["disabled_updates_reason"] == "ns7_migration"
+      );
     },
   },
   watch: {

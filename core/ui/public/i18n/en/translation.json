@@ -910,6 +910,8 @@
         "num_instances_updated": "{numInstances} instances updated",
         "n_instances_will_be_updated_c": "Update of {num} instance will start in a moment... | Update of {num} instances will start in a moment...",
         "version_version_available": "Version {version} available",
+        "updates_disabled_ns7_migration_title": "Updates are suspended",
+        "updates_disabled_ns7_migration_description": "There is an ongoing NS7 migration. Updates will resume once the migration is complete.",
         "app_categories": {
             "core": "Core",
             "development": "Development",
