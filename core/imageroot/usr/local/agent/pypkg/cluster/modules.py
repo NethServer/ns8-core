@@ -376,7 +376,23 @@ def _get_leader_core_version():
         leader_core_version = semver.Version(999)
     return leader_core_version
 
+def get_disabled_updates_reason(rdb):
+    """
+    Returns a string describing why updates are disabled.
+    If updates are enabled, returns an empty string.
+
+    Possible return values:
+    - "ns7_migration": Updates are disabled due to NS7 migration.
+    - "": Updates are enabled.
+    """
+    for kflags in rdb.keys('node/*/flags'):
+        if rdb.sismember(kflags, 'nomodules'):
+            return "ns7_migration"
+    return ""
+
 def list_updates(rdb, skip_core_modules=False, with_testing_update=False):
+    if get_disabled_updates_reason(rdb) != "":
+        return [] # updates are disabled
     updates = []
     installed_modules = list_installed(rdb, skip_core_modules)
     available_modules = _get_available_modules(rdb)
@@ -475,7 +491,12 @@ def get_node_core_versions(rdb):
 
 def list_core_modules(rdb):
     """List core modules and if they can be updated."""
-    updates = list_updates(rdb, skip_core_modules=False)
+    if get_disabled_updates_reason(rdb) == "":
+        updates = list_updates(rdb, skip_core_modules=False)
+        updates_are_active = True
+    else:
+        updates = []
+        updates_are_active = False
     def _get_module_update(module_id):
         for oupdate in updates:
             if oupdate['id'] == module_id:
@@ -495,7 +516,7 @@ def list_core_modules(rdb):
             vlatest = semver.parse_version_info(latest)
         except:
             vlatest = semver.Version(0)
-        if vlatest > vcur:
+        if updates_are_active and vlatest > vcur:
             return latest
         else:
             return ""
