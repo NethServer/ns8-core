@@ -10,11 +10,17 @@ import json
 import sys
 import os
 
-rdb = agent.redis_connect()
 
 FAILED = b'F'
 SUCCESS = b'0'
 UNKNOWN = b'U'
+
+rdb = agent.redis_connect()
+leader_id = int(rdb.hget('cluster/environment', 'NODE_ID'))
+self_id = int(os.environ['NODE_ID'])
+
+if self_id != leader_id:
+    sys.exit(0) # LEADER ONLY! Do not run this procedure in worker nodes.
 
 modules = set(rdb.hkeys("cluster/module_node"))
 
