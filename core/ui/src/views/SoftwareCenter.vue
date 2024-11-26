@@ -137,7 +137,7 @@
             kind="info"
             :title="$t('software_center.updates_disabled_ns7_migration_title')"
             :description="
-              $tc('software_center.updates_disabled_ns7_migration_description')
+              $t('software_center.updates_disabled_ns7_migration_description')
             "
             :showCloseButton="false"
           />
