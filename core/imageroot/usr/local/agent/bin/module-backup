@@ -31,8 +31,20 @@ import atexit
 
 backup_status = {'total_size': 0, 'total_file_count': 0, 'snapshots_count': 0, 'errors': 0, 'start': int(time.time())}
 
+backup_id = int(sys.argv[1])
+rdb = agent.redis_connect(host='127.0.0.1') # Connect to local replica
+
+obackup = rdb.hgetall(f'cluster/backup/{backup_id}')
+agent.assert_exp(len(obackup) > 0) # The backup object must exist
+repository = obackup['repository']
+module_id = os.environ['MODULE_ID']
+install_dir = os.environ['AGENT_INSTALL_DIR']
+state_dir = os.environ['AGENT_STATE_DIR']
+module_is_rootfull = os.geteuid() == 0
+repopath = agent.get_image_name_from_url(os.environ['IMAGE_URL']) + "/" + os.environ['MODULE_UUID']
+
 def exit_handler():
-    global module_id, backup_status
+    global module_id, backup_status, backup_id
     wrdb = agent.redis_connect(privileged = True)
     trx = wrdb.pipeline()
     backup_status['end'] = int(time.time())
@@ -46,23 +58,11 @@ def exit_handler():
     trx.execute()
     wrdb.close()
 
-atexit.register(exit_handler)
-
-backup_id = int(sys.argv[1])
-rdb = agent.redis_connect(host='127.0.0.1') # Connect to local replica
-
-obackup = rdb.hgetall(f'cluster/backup/{backup_id}')
-agent.assert_exp(len(obackup) > 0) # The backup object must exist
-repository = obackup['repository']
-module_id = os.environ['MODULE_ID']
-install_dir = os.environ['AGENT_INSTALL_DIR']
-state_dir = os.environ['AGENT_STATE_DIR']
-module_is_rootfull = os.geteuid() == 0
-repopath = agent.get_image_name_from_url(os.environ['IMAGE_URL']) + "/" + os.environ['MODULE_UUID']
-
 if obackup['enabled'] != '1':
     print(f"Backup {backup_id} is not enabled, exit now.", file=sys.stderr)
     sys.exit(0)
+
+atexit.register(exit_handler)
 
 # This file is always required by the restore procedure
 # See the cluster/restore-module action for details
