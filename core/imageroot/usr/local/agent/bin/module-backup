@@ -32,9 +32,18 @@ import atexit
 backup_status = {'total_size': 0, 'total_file_count': 0, 'snapshots_count': 0, 'errors': 0, 'start': int(time.time())}
 
 def exit_handler():
+    global module_id, backup_status
     wrdb = agent.redis_connect(privileged = True)
+    trx = wrdb.pipeline()
     backup_status['end'] = int(time.time())
-    wrdb.hset(f"module/{module_id}/backup_status/{backup_id}", mapping=backup_status)
+    trx.delete(f"module/{module_id}/backup_status/{backup_id}")
+    trx.hset(f"module/{module_id}/backup_status/{backup_id}", mapping=backup_status)
+    trx.publish(f"module/{module_id}/event/backup-status-changed", json.dumps({
+        "node_id": int(os.environ["NODE_ID"]),
+        "module_id": module_id,
+        "backup_id": backup_id,
+    }))
+    trx.execute()
     wrdb.close()
 
 atexit.register(exit_handler)

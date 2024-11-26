@@ -30,6 +30,9 @@ Well known events:
   has been changed. The JSON parameter format is `{"domains":[DOMAIN1,
   DOMAIN2 ...], "modules":[MODULE_ID1, MODULE_ID2...]}` and reflects the
   domains and modules affected by the latest change.
+- `backup-status-changed`: the HASH key containing backup status was
+  updated. JSON parameter format is
+  `{"node_id":INT, "module_id":STRING, "backup_id":INT}`
 
 ## Cluster events
 
