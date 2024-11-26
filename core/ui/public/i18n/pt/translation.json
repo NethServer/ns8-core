@@ -947,7 +947,9 @@
         "reason_max_per_node_limit": "Limit of {param} instance reached | Limit of {param} instances reached",
         "num_instances_installed": "{num} instance installed | {num} instances installed",
         "rootfull_app_warning_description": "After installation {appName} will have full access to the cluster: this can pose significant security risks.",
-        "cannot_install_app_on_node": "Cannot install {app} {version} on {node}"
+        "cannot_install_app_on_node": "Cannot install {app} {version} on {node}",
+        "updates_disabled_ns7_migration_description": "There is an ongoing NS7 migration. Updates will resume once the migration is complete.",
+        "updates_disabled_ns7_migration_title": "Updates are suspended"
     },
     "system_logs": {
         "stop_following": "Stop following",
