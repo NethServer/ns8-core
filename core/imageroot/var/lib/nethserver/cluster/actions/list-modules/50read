@@ -85,9 +85,12 @@ def calculate_node_install_destinations(module):
             continue
     return module_destinations
 
+disabled_updates_reason = cluster.modules.get_disabled_updates_reason(rdb)
+
 # Prepare variables for later use
 for a in available:
     a["updates"] = []
+    a["disabled_updates_reason"] = disabled_updates_reason
     a["installed"] = []
     if a["source"] in installed.keys():
         a["installed"] = installed[a["source"]]

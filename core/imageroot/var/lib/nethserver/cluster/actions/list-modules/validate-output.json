@@ -80,6 +80,7 @@
             "update": "0.0.2"
           }
         ],
+        "disabled_updates_reason": "",
         "installed": [
           [
             {
@@ -192,6 +193,10 @@
       "repository_updated": {
         "type": "string",
         "description": "Date and time of last modification to remote repodata"
+      },
+      "disabled_updates_reason": {
+        "enum": ["", "ns7_migration"],
+        "description": "A non-empty strings indicates that updates are disabled for some reason. The string value identifies the reason."
       },
       "updates": {
         "type": "array",
