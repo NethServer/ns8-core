@@ -1,0 +1,50 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2024 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+import agent
+import json
+import sys
+import os
+
+
+FAILED = b'F'
+SUCCESS = b'0'
+UNKNOWN = b'U'
+
+rdb = agent.redis_connect()
+leader_id = int(rdb.hget('cluster/environment', 'NODE_ID'))
+self_id = int(os.environ['NODE_ID'])
+
+if self_id != leader_id:
+    sys.exit(0) # LEADER ONLY! Do not run this procedure in worker nodes.
+
+modules = set(rdb.hkeys("cluster/module_node"))
+
+def get_module_backup_status(module_id):
+    backup_status = UNKNOWN
+    for backup_id in rdb.smembers(f"module/{module_id}/backups"):
+        nerrors = rdb.hget(f"module/{module_id}/backup_status/{backup_id}", "errors") or ""
+        try:
+            if int(nerrors) > 0:
+                return FAILED
+        except ValueError:
+            pass
+        if nerrors == "0":
+            backup_status = SUCCESS
+    return backup_status
+
+cluster_backup_status_list = [get_module_backup_status(module_id) for module_id in modules]
+
+if FAILED in cluster_backup_status_list:
+    cluster_backup_status = FAILED
+elif SUCCESS in cluster_backup_status_list:
+    cluster_backup_status = SUCCESS
+else:
+    cluster_backup_status = UNKNOWN
+
+with open('/run/backup-monitor.dat', 'wb') as fdat:
+    fdat.write(cluster_backup_status)

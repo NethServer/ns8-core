@@ -304,7 +304,7 @@ access to its keys under `module/{id}/`, where `{id}` is the module
 |module/{id}/backups                |SET        |List of backup numeric IDs|
 |module/{id}/flags                  |SET        |Images flags copied from `org.nethserver.flags` image label|
 |module/{id}/srv/{transport}/{service} | HASH   |Service discovery information for other modules. See [Service providers]({{site.baseurl}}/modules/service_providers) |
-
+|module/{id}/backup_status/{backup_id} | HASH   |Backup status information with Restic output |
 
 ### task/
 

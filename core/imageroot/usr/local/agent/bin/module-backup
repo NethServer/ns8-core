@@ -31,14 +31,6 @@ import atexit
 
 backup_status = {'total_size': 0, 'total_file_count': 0, 'snapshots_count': 0, 'errors': 0, 'start': int(time.time())}
 
-def exit_handler():
-    wrdb = agent.redis_connect(privileged = True)
-    backup_status['end'] = int(time.time())
-    wrdb.hset(f"module/{module_id}/backup_status/{backup_id}", mapping=backup_status)
-    wrdb.close()
-
-atexit.register(exit_handler)
-
 backup_id = int(sys.argv[1])
 rdb = agent.redis_connect(host='127.0.0.1') # Connect to local replica
 
@@ -51,9 +43,26 @@ state_dir = os.environ['AGENT_STATE_DIR']
 module_is_rootfull = os.geteuid() == 0
 repopath = agent.get_image_name_from_url(os.environ['IMAGE_URL']) + "/" + os.environ['MODULE_UUID']
 
+def exit_handler():
+    global module_id, backup_status, backup_id
+    wrdb = agent.redis_connect(privileged = True)
+    trx = wrdb.pipeline()
+    backup_status['end'] = int(time.time())
+    trx.delete(f"module/{module_id}/backup_status/{backup_id}")
+    trx.hset(f"module/{module_id}/backup_status/{backup_id}", mapping=backup_status)
+    trx.publish(f"module/{module_id}/event/backup-status-changed", json.dumps({
+        "node_id": int(os.environ["NODE_ID"]),
+        "module_id": module_id,
+        "backup_id": backup_id,
+    }))
+    trx.execute()
+    wrdb.close()
+
 if obackup['enabled'] != '1':
     print(f"Backup {backup_id} is not enabled, exit now.", file=sys.stderr)
     sys.exit(0)
+
+atexit.register(exit_handler)
 
 # This file is always required by the restore procedure
 # See the cluster/restore-module action for details
