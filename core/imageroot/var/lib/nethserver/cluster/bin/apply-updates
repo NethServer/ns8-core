@@ -9,17 +9,14 @@ import agent
 import agent.tasks
 import os
 import sys
+import cluster.modules
 
 rdb = agent.redis_connect()
 
-# Inhibit automated updates if a NS7 node has joined the cluster. During
-# NS7 migration, an NS7 node has the "nomodules" flag, indicating no NS8
-# modules.
-for kflags in rdb.keys('node/*/flags'):
-    if bool(rdb.sismember(kflags, 'nomodules')):
-        node_id = kflags.removesuffix('/flags')
-        print(agent.SD_NOTICE + f"Skipping updates: NS7 {node_id} is part of the cluster.", file=sys.stderr)
-        sys.exit(0)
+updates_disabled_reason = cluster.modules.get_disabled_updates_reason(rdb)
+if updates_disabled_reason:
+    print(agent.SD_NOTICE + f"Skipping updates for {updates_disabled_reason}", file=sys.stderr)
+    sys.exit(0)
 
 # Find cluster nodes from the index key. Any NS8 node has at least a
 # Traefik module.
