@@ -31,6 +31,7 @@ from glob import glob
 import sys
 import subprocess
 import datetime
+import cluster.userdomains
 
 _repo_testing_cache = {}
 def _repo_has_testing_flag(rdb, repo_name):
@@ -385,9 +386,30 @@ def get_disabled_updates_reason(rdb):
     - "ns7_migration": Updates are disabled due to NS7 migration.
     - "": Updates are enabled.
     """
-    for kflags in rdb.keys('node/*/flags'):
+
+    # Auxiliary function to check if the providers of an external domain matches
+    # the given IP addresses
+    external_domains = None
+    def __ns7_matches_provider(ns7ip:str, ns7destinations:str):
+        nonlocal external_domains
+        if external_domains is None:
+            external_domains = cluster.userdomains.get_external_domains(rdb)
+        for provider in [p['host'] for hdom in external_domains.values() for p in hdom['providers']]:
+            if provider == ns7ip or provider in ns7destinations:
+                return True
+        return False
+
+    # Inhibit updates if a NS7 node has joined the cluster. During NS7
+    # migration, an NS7 node has the "nomodules" flag, indicating no NS8
+    # modules can be installed on that node. As second condition, the
+    # cluster must have an external user domain pointing to a NS7 IP
+    # address.
+    for kflags in rdb.scan_iter('node/*/flags'):
         if rdb.sismember(kflags, 'nomodules'):
-            return "ns7_migration"
+            knodevpn = kflags.removesuffix('/flags') + '/vpn'
+            ovpn = rdb.hgetall(knodevpn) or {"ip_address": "", "destinations": ""}
+            if __ns7_matches_provider(ovpn['ip_address'], ovpn['destinations']):
+                return "ns7_migration"
     return ""
 
 def list_updates(rdb, skip_core_modules=False, with_testing_update=False):
