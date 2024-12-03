@@ -63,8 +63,17 @@ class LdapclientAd(LdapclientBase):
             attributes=['cn','member','description', 'sAMAccountName'],
         )[2]
 
+        group_entry_generator = self.ldapconn.extend.standard.paged_search(
+            search_base = self.base_dn,
+            search_filter = f'(&(objectClass=group){self._get_groups_search_filter_clause()})',
+            search_scope = ldap3.SUBTREE,
+            attributes = ['cn','member','description', 'sAMAccountName'],
+            paged_size = 900,
+            generator=True,
+        )
+
         groups = []
-        for entry in response:
+        for entry in group_entry_generator:
             if entry['type'] != 'searchResEntry':
                 continue # ignore referrals
             groups.append({
@@ -113,12 +122,17 @@ class LdapclientAd(LdapclientBase):
         raise LdapclientEntryNotFound()
 
     def list_users(self):
-        response = self.ldapconn.search(self.base_dn, f'(&(objectClass=user)(objectCategory=person){self._get_users_search_filter_clause()})',
-            attributes=['displayName', 'sAMAccountName', 'userAccountControl'],
-        )[2]
+        user_entry_generator = self.ldapconn.extend.standard.paged_search(
+            search_base = self.base_dn,
+            search_filter = f'(&(objectClass=user)(objectCategory=person){self._get_users_search_filter_clause()})',
+            search_scope = ldap3.SUBTREE,
+            attributes = ['displayName', 'sAMAccountName', 'userAccountControl'],
+            paged_size = 900,
+            generator=True,
+        )
 
         users = []
-        for entry in response:
+        for entry in user_entry_generator:
             if entry['type'] != 'searchResEntry':
                 continue # ignore referrals
             users.append({
