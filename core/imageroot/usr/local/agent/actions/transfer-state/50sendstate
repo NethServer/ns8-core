@@ -37,6 +37,20 @@ if os.geteuid() != 0:
     # Stop services for state consistency:
     agent.run_helper('systemctl', '--user', 'isolate', 'transfer-state.target')
 
+# The transfer-state.target should stop all service units and their
+# containers. As the "isolate" command does not wait until units are
+# stopped, ask Podman to wait all running containers. Typically databases
+# need some seconds to stop and we must ensure they are stopped before
+# running the final rsync pass.
+try:
+    running_container_ids = subprocess.check_output(['podman', 'ps', '-q'], timeout=10, text=True).split()
+    if running_container_ids:
+        print(agent.SD_DEBUG + "Waiting 60 seconds for Podman containers to stop:", running_container_ids, file=sys.stderr)
+        subprocess.run(['podman', 'wait'] + running_container_ids, timeout=60, stdout=sys.stderr)
+except subprocess.TimeoutExpired as ex:
+    # Ignore the timeout error, just print a warning before running rsync for the last time.
+    print(agent.SD_WARNING + "Timeout reached waiting for stopped containers", ex, file=sys.stderr)
+
 errors = 0
 os.environ['RSYNC_PASSWORD'] = password
 podman_cmd = [
