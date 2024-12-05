@@ -36,14 +36,22 @@ async def read_destination_repo(dest_uuid, dest_path):
     if out == b'[\n]\n' or not out:
         data = {}
     else:
-        data = json.loads(out)[0]
+        try:
+            data = json.loads(out)[0]
+        except Exception as ex:
+            print(agent.SD_DEBUG + f"Ignored output from rclone-wrapper. Does the Restic repository configuration file, {dest_path}/config, exist in destination {dest_uuid}?", repr(ex), 'Data read:', out, file=sys.stderr)
+            data = {}
     return data
 
 async def read_destination_meta(dest_uuid, dest_path):
     proc = await asyncio.create_subprocess_exec('rclone-wrapper', dest_uuid, 'cat', f'REMOTE_PATH/{dest_path}.json', stdout=asyncio.subprocess.PIPE)
     out, _ = await proc.communicate()
     if out:
-        data = json.loads(out)
+        try:
+            data = json.loads(out)
+        except Exception as ex:
+            print(agent.SD_DEBUG + f"Ignored output from rclone-wrapper. Does {dest_path}.json file exist in destination {dest_uuid}?", repr(ex), 'Data read:', out, file=sys.stderr)
+            data = {}
     else:
         data = {}
     return data
