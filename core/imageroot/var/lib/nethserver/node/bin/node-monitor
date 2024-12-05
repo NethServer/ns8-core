@@ -109,6 +109,19 @@ async def check_systemload():
         state = CLEAR
     return (state, 'load:high:' + node_name)
 
+async def check_backup():
+    state = UNKNOWN
+    try:
+        with open("/run/backup-monitor.dat", "rb") as fbackup:
+            fstate = fbackup.read(1)
+        if fstate == b'0':
+            state = CLEAR
+        elif fstate == b'F':
+            state = CRITICAL
+    except FileNotFoundError:
+        pass
+    return (state, 'system:backup:failure')
+
 async def monitor_loop(check_function, fargs=[], fkwargs={}, period=2, hysteresis=4):
     # hysteresis counts how many past checks are considered to build the
     # alarm state
@@ -140,6 +153,7 @@ async def main():
         monitor_loop(check_systemload, period=5, hysteresis=24), # 2 minutes
         monitor_loop(check_mountpoints, fargs=['/', 'root'], period=15, hysteresis=4), # 1 minute
         monitor_loop(check_mountpoints, fargs=['/boot', 'boot'], period=15, hysteresis=4), # 1 minute
+        monitor_loop(check_backup, period=10, hysteresis=1),
     )
 
 asyncio.run(main())

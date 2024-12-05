@@ -31,6 +31,8 @@ from glob import glob
 import sys
 import subprocess
 import datetime
+import time
+import cluster.userdomains
 
 _repo_testing_cache = {}
 def _repo_has_testing_flag(rdb, repo_name):
@@ -376,7 +378,58 @@ def _get_leader_core_version():
         leader_core_version = semver.Version(999)
     return leader_core_version
 
+def get_disabled_updates_reason(rdb):
+    """
+    Returns a string describing why updates are disabled.
+    If updates are enabled, returns an empty string.
+
+    Possible return values:
+    - "ns7_migration": Updates are disabled due to NS7 migration.
+    - "": Updates are enabled.
+    """
+
+    min_seen = 43200 # (seconds), equivalent to 12 hours
+    ts_now = int(time.time())
+    system_uptime = min_seen
+
+    # Parse the system uptime
+    try:
+        with open('/proc/uptime', 'r') as fiup:
+            system_uptime = int(float(fiup.readline().split()[0]))
+    except Exception as ex:
+        print(agent.SD_ERR + "Failed to parse /proc/uptime", ex, file=sys.stderr)
+
+    # Parse node last seen information from Wireguard interface wg0
+    node_last_seen = {}
+    try:
+        with subprocess.Popen(['/usr/bin/wg', 'show', 'wg0', 'dump'], stdout=subprocess.PIPE, text=True) as proc:
+            for line in proc.stdout.readlines():
+                parts = line.rstrip().split("\t")
+                try:
+                    node_last_seen[parts[0]] = int(parts[4])
+                except:
+                    node_last_seen[parts[0]] = 0
+    except Exception as ex:
+        print(agent.SD_ERR + "Failed to parse wg0 status", ex, file=sys.stderr)
+
+    # Inhibit updates if a NS7 node has joined the cluster. During NS7
+    # migration, an NS7 node has the "nomodules" flag, indicating no NS8
+    # modules can be installed on that node. As second condition, the NS7
+    # node must be seen in the last 12 hours, or the system uptime is less
+    # than 12 hours.
+    for kflags in rdb.scan_iter('node/*/flags'):
+        if rdb.sismember(kflags, 'nomodules'):
+            knodevpn = kflags.removesuffix('/flags') + '/vpn'
+            ovpn = rdb.hgetall(knodevpn) or {"public_key": "XXX"}
+            node_seen_recently = ts_now - node_last_seen.get(ovpn['public_key'], 0) < min_seen
+            uptime_is_unstable = system_uptime < min_seen
+            if uptime_is_unstable or node_seen_recently:
+                return "ns7_migration"
+    return ""
+
 def list_updates(rdb, skip_core_modules=False, with_testing_update=False):
+    if get_disabled_updates_reason(rdb) != "":
+        return [] # updates are disabled
     updates = []
     installed_modules = list_installed(rdb, skip_core_modules)
     available_modules = _get_available_modules(rdb)
@@ -475,7 +528,12 @@ def get_node_core_versions(rdb):
 
 def list_core_modules(rdb):
     """List core modules and if they can be updated."""
-    updates = list_updates(rdb, skip_core_modules=False)
+    if get_disabled_updates_reason(rdb) == "":
+        updates = list_updates(rdb, skip_core_modules=False)
+        updates_are_active = True
+    else:
+        updates = []
+        updates_are_active = False
     def _get_module_update(module_id):
         for oupdate in updates:
             if oupdate['id'] == module_id:
@@ -495,7 +553,7 @@ def list_core_modules(rdb):
             vlatest = semver.parse_version_info(latest)
         except:
             vlatest = semver.Version(0)
-        if vlatest > vcur:
+        if updates_are_active and vlatest > vcur:
             return latest
         else:
             return ""
