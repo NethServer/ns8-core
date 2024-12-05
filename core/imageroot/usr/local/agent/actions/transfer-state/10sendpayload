@@ -87,4 +87,8 @@ with subprocess.Popen(transfer_cmd, stdin=subprocess.DEVNULL, stdout=subprocess.
         else:
             buf += ch
 
-sys.exit(pclient.returncode)
+if pclient.returncode == 24:
+    print(agent.SD_DEBUG + "Ignored rsync exit code 24: files vanished during the transfer will be fixed by the next step.", file=sys.stderr)
+    sys.exit(0)
+else:
+    sys.exit(pclient.returncode)
