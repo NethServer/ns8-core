@@ -41,7 +41,7 @@ errors = 0
 os.environ['RSYNC_PASSWORD'] = password
 podman_cmd = [
     'podman', 'run', '-i', '--workdir=/srv', '--rm', '--network=host', '--privileged',
-    '--name=transfer-state-send',
+    '--replace', '--name=transfer-state-send',
     '--env=RSYNC_PASSWORD',
 ]
 
