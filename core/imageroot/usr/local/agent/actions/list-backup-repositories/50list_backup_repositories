@@ -1,0 +1,111 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2024 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+import sys
+import json
+import agent
+import asyncio
+import os
+import time
+from datetime import datetime, timezone
+
+rdb = agent.redis_connect(privileged=False)
+module_id = os.environ['MODULE_ID']
+module_uuid = os.environ['MODULE_UUID']
+module_ui_name = rdb.get(f'module/{module_id}/ui_name') or ""
+image_name = agent.get_image_name_from_url(os.environ["IMAGE_URL"])
+cluster_uuid = rdb.get("cluster/uuid") or ""
+odests = {}
+for krepo in rdb.scan_iter('cluster/backup_repository/*'):
+    dest_uuid = krepo.removeprefix('cluster/backup_repository/')
+    odests[dest_uuid] = rdb.hgetall(krepo)
+rdb.close()
+
+#
+# Fetch data from all backup destinations
+#
+
+async def read_destination_repo(dest_uuid, dest_path):
+    proc = await asyncio.create_subprocess_exec('rclone-wrapper', dest_uuid, 'lsjson', f'REMOTE_PATH/{dest_path}/config', stdout=asyncio.subprocess.PIPE)
+    # Return the first and only element of the expected JSON array
+    out, _ = await proc.communicate()
+    if out == b'[\n]\n' or not out:
+        data = {}
+    else:
+        try:
+            data = json.loads(out)[0]
+        except Exception as ex:
+            print(agent.SD_DEBUG + f"Ignored output from rclone-wrapper. Does the Restic repository configuration file, {dest_path}/config, exist in destination {dest_uuid}?", repr(ex), 'Data read:', out, file=sys.stderr)
+            data = {}
+    return data
+
+async def read_destination_meta(dest_uuid, dest_path):
+    proc = await asyncio.create_subprocess_exec('rclone-wrapper', dest_uuid, 'cat', f'REMOTE_PATH/{dest_path}.json', stdout=asyncio.subprocess.PIPE)
+    out, _ = await proc.communicate()
+    if out:
+        try:
+            data = json.loads(out)
+        except Exception as ex:
+            print(agent.SD_DEBUG + f"Ignored output from rclone-wrapper. Does {dest_path}.json file exist in destination {dest_uuid}?", repr(ex), 'Data read:', out, file=sys.stderr)
+            data = {}
+    else:
+        data = {}
+    return data
+
+
+async def get_destination_info(dest_uuid, odest):
+    global cluster_uuid, module_id, module_uuid, module_ui_name, image_name
+
+    dest_path = f"{image_name}/{module_uuid}"
+
+    async with asyncio.TaskGroup() as tg:
+        task_repo = tg.create_task(read_destination_repo(dest_uuid, dest_path))
+        task_meta = tg.create_task(read_destination_meta(dest_uuid, dest_path))
+
+    info = {
+        "module_id": module_id,
+        "module_ui_name": module_ui_name,
+        "node_fqdn": "",
+        "path": dest_path,
+        "name": image_name,
+        "uuid": module_uuid,
+        "timestamp": 0,
+        "repository_id" : dest_uuid,
+        "repository_name": odest["name"],
+        "repository_provider": odest["provider"],
+        "repository_url": odest["url"],
+        "installed_instance": module_id,
+        "installed_instance_ui_name": module_ui_name,
+        "is_generated_locally": False,
+    }
+
+    result_repo = task_repo.result()
+    if not result_repo:
+        return None
+
+    try:
+        # Obtain from lsjson the repository creation timestamp
+        info['timestamp'] = int(time.mktime(datetime.fromisoformat(result_repo["ModTime"]).timetuple()))
+    except:
+        info['timestamp'] = int(time.time())
+
+    result_meta = task_meta.result()
+    if "cluster_uuid" in result_meta and result_meta["cluster_uuid"] == cluster_uuid:
+        info['is_generated_locally'] = True
+    info.update(result_meta) # merge two dictionaries
+
+    return info
+
+async def print_destinations(odests):
+    tasks = []
+    async with asyncio.TaskGroup() as tg:
+        for dest_uuid, odest in odests.items():
+            tasks.append(tg.create_task(get_destination_info(dest_uuid, odest)))
+    destinations = list(filter(lambda r: r, [task.result() for task in tasks]))
+    json.dump(destinations, fp=sys.stdout)
+
+asyncio.run(print_destinations(odests))

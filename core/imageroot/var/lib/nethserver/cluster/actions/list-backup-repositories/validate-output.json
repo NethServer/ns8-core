@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "list-backup-repositories output",
   "$id": "http://schema.nethserver.org/cluster/list-backup-repositories-output.json",
-  "description": "Get the list of available backup repositories and the status of cluster backup password",
+  "description": "Get the list of available backup destinations and the status of cluster backup password",
   "examples": [
     {
       "repositories": [

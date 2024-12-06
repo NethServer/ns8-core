@@ -1,0 +1,13 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2024 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+import agent
+
+agent.set_weight('00progress', '0')
+agent.set_weight('05replace', '0')
+agent.set_weight('10restore', '4')
+agent.set_weight('20label', '0')

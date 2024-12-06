@@ -55,7 +55,7 @@ add_module_result = agent.tasks.run("cluster", "add-module",
         "node": node_id,
     }, 
     endpoint="redis://cluster-leader",
-    progress_callback=agent.get_progress_callback(2, 50)
+    progress_callback=agent.get_progress_callback(2, 15)
 )
 agent.assert_exp(add_module_result['exit_code'] == 0)
 omodule = add_module_result['output']
@@ -87,7 +87,7 @@ restore_task_result = agent.tasks.run("module/" + module_id, "restore-module",
         "replace": replace_requested or len(remove_tasks) == 0
     },
     endpoint="redis://cluster-leader",
-    progress_callback=agent.get_progress_callback(51, 85),
+    progress_callback=agent.get_progress_callback(16, 99 if len(remove_tasks) == 0 else 94),
 )
 
 agent.assert_exp(restore_task_result['exit_code'] == 0)
@@ -97,7 +97,7 @@ if len(remove_tasks) > 0 and replace_requested:
     remove_modules_errors = agent.tasks.runp_brief(
         remove_tasks,
         endpoint="redis://cluster-leader",
-        progress_callback=agent.get_progress_callback(86, 98)
+        progress_callback=agent.get_progress_callback(95, 99)
     )
     agent.assert_exp(remove_modules_errors == 0)
 
