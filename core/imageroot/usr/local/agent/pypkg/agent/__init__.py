@@ -652,7 +652,8 @@ def allocate_ports(ports_number: int, protocol: str, module_id: str="", keep_exi
             'module_id': module_id,
             'protocol': protocol,
             'keep_existing': keep_existing
-        }
+        },
+        extra={'isNotificationHidden': True}
     )
     
     if response['exit_code'] != 0:
