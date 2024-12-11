@@ -341,33 +341,6 @@
               :disabled="loading.listUserDomains"
               >{{ $t("domain_configuration.add_provider") }}
             </NsButton>
-            <!-- <NsButton ////
-            v-if="
-              domain.location == 'external' ||
-              domain.providers.length < nodes.length
-            "
-            kind="secondary"
-            :icon="Add20"
-            @click="showAddProviderModal()"
-            :disabled="loading.listUserDomains"
-            >{{ $t("domain_configuration.add_provider") }}
-          </NsButton> -->
-            <!-- disabled button with tooltip (no nodes available) -->
-            <!-- <cv-interactive-tooltip
-            v-else
-            alignment="center"
-            direction="right"
-            class="info"
-          >
-            <template slot="trigger">
-              <NsButton kind="secondary" :icon="Add20" disabled
-                >{{ $t("domain_configuration.add_provider") }}
-              </NsButton>
-            </template>
-            <template slot="content">
-              {{ $t('domain_configuration.max_instances_reached') }}
-            </template>
-          </cv-interactive-tooltip> -->
           </cv-column>
         </cv-row>
         <cv-row>
@@ -536,6 +509,7 @@
         v-if="domain.location == 'internal'"
         :isShown="isShownAddInternalProviderModal"
         :domain="domain"
+        :domains="domains"
         :isResumeConfiguration="addProvider.isResumeConfiguration"
         :providerId="addProvider.providerId"
         @hide="hideAddInternalProviderModal"
@@ -638,7 +612,6 @@ import AddExternalProviderModal from "@/components/domains/AddExternalProviderMo
 import DeleteSambaProviderModal from "@/components/domains/DeleteSambaProviderModal";
 import EditPasswordPolicy from "@/components/domains/EditPasswordPolicy";
 import Password32 from "@carbon/icons-vue/es/password/32";
-import _cloneDeep from "lodash/cloneDeep";
 import { mapState } from "vuex";
 
 export default {
@@ -687,7 +660,6 @@ export default {
       domain: {
         location: "",
       },
-      internalNodes: [],
       isShownLastProviderModal: false,
       currentProvider: {
         id: "",
@@ -700,6 +672,7 @@ export default {
       },
       isShownBindPassword: false,
       providerToDelete: null,
+      domains: [],
       loading: {
         listUserDomains: true,
         ListPasswordPolicy: true,
@@ -785,6 +758,7 @@ export default {
       }
     },
     listUserDomainsCompleted(taskContext, taskResult) {
+      this.domains = taskResult.output.domains;
       this.domain = taskResult.output.domains.find(
         (d) => d.name == this.domainName
       );
@@ -793,8 +767,6 @@ export default {
         this.getFqdn();
       }
       this.loading.listUserDomains = false;
-      //// fix? maybe available nodes will be retrieved by a dedicated api
-      this.initNodes();
       // scroll to anchor if route URL contains a hash (#)
       setTimeout(() => {
         this.checkAndScrollToAnchor();
@@ -985,25 +957,6 @@ export default {
     },
     showAddExternalProviderModal() {
       this.isShownAddExternalProviderModal = true;
-    },
-    initNodes() {
-      let usedNodes = this.domain.providers.map((provider) => provider.node);
-      const nodes = _cloneDeep(this.clusterNodes);
-
-      for (const node of nodes) {
-        if (usedNodes.includes(node.id)) {
-          //// remove mock
-          // node.unavailable = true; ////
-          //// do not use unavailable attribute, use NodeSelector disabledNodes property
-          node.unavailable = false;
-          node.selected = false;
-        } else {
-          //// do not use unavailable attribute, use NodeSelector disabledNodes property
-          node.unavailable = false;
-          node.selected = false;
-        }
-      }
-      this.internalNodes = nodes;
     },
     deleteLdapProvider() {
       if (this.domain.location == "internal") {
@@ -1287,7 +1240,7 @@ export default {
       );
     },
     getNodeLabel(nodeId) {
-      const node = this.internalNodes.find((n) => n.id == nodeId);
+      const node = this.clusterNodes.find((n) => n.id == nodeId);
 
       if (node) {
         if (node.ui_name) {

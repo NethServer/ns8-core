@@ -192,7 +192,25 @@
         <div>
           {{ $t("domains.choose_node_for_account_provider_installation") }}
         </div>
-        <NodeSelector class="mg-top-xlg" @selectNode="onSelectNode" />
+        <NsInlineNotification
+          v-if="clusterNodes.length == disabledNodes.length"
+          kind="info"
+          :title="$t('domains.no_node_eligible_for_provider_installation')"
+          :showCloseButton="false"
+        />
+        <NodeSelector
+          :disabledNodes="disabledNodes"
+          @selectNode="onSelectNode"
+          class="mg-top-xlg"
+        >
+          <template v-for="node in clusterNodes">
+            <template :slot="`node-${node.id}`">
+              <span v-if="disabledNodes.includes(node.id)" :key="node.id">
+                {{ $t("domains.provider_already_installed") }}
+              </span>
+            </template>
+          </template>
+        </NodeSelector>
       </template>
       <template v-if="step == 'installingProvider'">
         <NsInlineNotification
@@ -489,6 +507,10 @@ export default {
       type: Boolean,
       default: false,
     },
+    domains: {
+      type: Array,
+      default: () => [],
+    },
   },
   data() {
     return {
@@ -581,10 +603,7 @@ export default {
   computed: {
     ...mapState(["clusterNodes"]),
     nextButtonLabel() {
-      if (
-        (this.clusterNodes.length == 1 && this.step == "instance") ||
-        this.step == "node"
-      ) {
+      if (this.step == "node") {
         return this.$t("domains.install_provider");
       } else if (
         this.step == "internalConfig" ||
@@ -645,6 +664,25 @@ export default {
         return this.samba.ipAddressOptions;
       }
     },
+    disabledNodes() {
+      if (this.isOpenLdapSelected) {
+        // openldap supports multiple instances on the same node
+        return [];
+      } else {
+        // samba allows only one instance per node
+        const disabledNodes = [];
+
+        for (const domain of this.domains) {
+          for (const provider of domain.providers) {
+            if (provider.id.startsWith("samba")) {
+              disabledNodes.push(provider.node);
+            }
+          }
+        }
+        // remove possible duplicates
+        return [...new Set(disabledNodes)];
+      }
+    },
   },
   watch: {
     isShown: function () {
@@ -694,12 +732,7 @@ export default {
           }
           break;
         case "instance":
-          if (this.clusterNodes.length > 1) {
-            this.step = "node";
-          } else {
-            this.step = "installingProvider";
-            this.installProvider();
-          }
+          this.step = "node";
           break;
         case "externalConfig":
           this.addExternalDomain();

@@ -22,11 +22,28 @@
     }}</template>
     <template slot="content">
       <template v-if="step == 'node'">
-        <!-- //// disable unavailable nodes -->
         <div>
           {{ $t("domains.choose_node_for_account_provider_installation") }}
         </div>
-        <NodeSelector @selectNode="onSelectNode" class="mg-top-xlg" />
+        <NsInlineNotification
+          v-if="clusterNodes.length == disabledNodes.length"
+          kind="info"
+          :title="$t('domains.no_node_eligible_for_provider_installation')"
+          :showCloseButton="false"
+        />
+        <NodeSelector
+          :disabledNodes="disabledNodes"
+          @selectNode="onSelectNode"
+          class="mg-top-xlg"
+        >
+          <template v-for="node in clusterNodes">
+            <template :slot="`node-${node.id}`">
+              <span v-if="disabledNodes.includes(node.id)" :key="node.id">
+                {{ $t("domains.provider_already_installed") }}
+              </span>
+            </template>
+          </template>
+        </NodeSelector>
       </template>
       <template v-if="step == 'installingProvider'">
         <NsInlineNotification
@@ -242,6 +259,7 @@ import {
 } from "@nethserver/ns8-ui-lib";
 import to from "await-to-js";
 import NodeSelector from "@/components/nodes/NodeSelector";
+import { mapState } from "vuex";
 
 export default {
   name: "AddInternalProviderModal",
@@ -263,6 +281,10 @@ export default {
     providerId: {
       type: String,
       default: "",
+    },
+    domains: {
+      type: Array,
+      default: () => [],
     },
   },
   data() {
@@ -315,6 +337,7 @@ export default {
     };
   },
   computed: {
+    ...mapState(["clusterNodes"]),
     isOpenLdap() {
       return this.domain.schema == "rfc2307";
     },
@@ -357,6 +380,25 @@ export default {
         });
       } else {
         return this.samba.ipAddressOptions;
+      }
+    },
+    disabledNodes() {
+      if (this.isOpenLdap) {
+        // openldap supports multiple instances on the same node
+        return [];
+      } else {
+        // samba allows only one instance per node
+        const disabledNodes = [];
+
+        for (const domain of this.domains) {
+          for (const provider of domain.providers) {
+            if (provider.id.startsWith("samba")) {
+              disabledNodes.push(provider.node);
+            }
+          }
+        }
+        // remove possible duplicates
+        return [...new Set(disabledNodes)];
       }
     },
   },

@@ -90,7 +90,7 @@ export default {
         node.selected = false;
       }
 
-      if (nodes.length == 1) {
+      if (nodes.length == 1 && !this.disabledNodes.includes(nodes[0].id)) {
         nodes[0].selected = true;
       }
       this.internalNodes = nodes;
