@@ -760,7 +760,9 @@
         "hostname_pattern": "Muster ungültig",
         "ipaddress_private_check_failed": "IP-Adresse ungültig",
         "host_format": "voll-qualifizierter Domänen-Name oder IP-Adresse erforderlich",
-        "users_admin_page_tooltips": "Das Benutzerportal ermöglicht es Domänenbenutzern, ihr eigenes Kennwort zu ändern. Das Portal ist für Benutzer auch auf jedem Knoten zugänglich, auf dem die Replik des Identitätanbieters läuft. Die generische URL lautet https://{knoten_fqdn_oder_ip}/users-admin/{domain}/"
+        "users_admin_page_tooltips": "Das Benutzerportal ermöglicht es Domänenbenutzern, ihr eigenes Kennwort zu ändern. Das Portal ist für Benutzer auch auf jedem Knoten zugänglich, auf dem die Replik des Identitätanbieters läuft. Die generische URL lautet https://{knoten_fqdn_oder_ip}/users-admin/{domain}/",
+        "provider_already_installed": "Provider already installed",
+        "no_node_eligible_for_provider_installation": "No node is eligible for provider installation"
     },
     "about": {
         "animated_icons_by": "Animierte Icons von",

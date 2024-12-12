@@ -688,7 +688,9 @@
         "ipaddress_private_check_failed": "Invalid IP address",
         "users_admin_page_description": "User administration self service portal",
         "samba": "Samba",
-        "users_admin_page_tooltips": "User portal permits domain users to change their own password. The portal is accessible to users also on any node running the domain provider replica. The generic URL is https://{node_fqdn_or_ip}/users-admin/{domain}/"
+        "users_admin_page_tooltips": "User portal permits domain users to change their own password. The portal is accessible to users also on any node running the domain provider replica. The generic URL is https://{node_fqdn_or_ip}/users-admin/{domain}/",
+        "no_node_eligible_for_provider_installation": "No node is eligible for provider installation",
+        "provider_already_installed": "Provider already installed"
     },
     "domain_users": {
         "edit_group": "Edit group",

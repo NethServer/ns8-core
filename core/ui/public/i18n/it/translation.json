@@ -507,7 +507,9 @@
         "users_admin_page_title": "Portale utente",
         "users_admin_page_description": "Portale self-service di amministrazione utente",
         "host_format": "Deve essere un nome di dominio o un indirizzo IP valido",
-        "users_admin_page_tooltips": "Il portale utente consente agli utenti di dominio di modificare la propria password. Il portale è accessibile agli utenti anche su qualsiasi nodo con una replica dell'domain provider. L'URL generico è https://{node_fqdn_or_ip}/users-admin/{domain}/"
+        "users_admin_page_tooltips": "Il portale utente consente agli utenti di dominio di modificare la propria password. Il portale è accessibile agli utenti anche su qualsiasi nodo con una replica dell'domain provider. L'URL generico è https://{node_fqdn_or_ip}/users-admin/{domain}/",
+        "provider_already_installed": "Provider già installato",
+        "no_node_eligible_for_provider_installation": "Nessun nodo è idoneo per l'installazione del provider"
     },
     "action": {
         "configure-module": "Configura app",
