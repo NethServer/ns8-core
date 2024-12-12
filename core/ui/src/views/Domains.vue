@@ -359,6 +359,7 @@
       :providerId="createDomain.providerId"
       :isOpenLdap="createDomain.isOpenLdap"
       :isSamba="createDomain.isSamba"
+      :domains="domains"
       @hide="hideCreateDomainModal"
       @reloadDomains="listUserDomains"
     />
