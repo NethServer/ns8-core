@@ -4,37 +4,33 @@
 -->
 <template>
   <div class="node-selector">
-    <cv-grid class="mg-bottom-md no-padding">
-      <cv-row>
-        <cv-column
-          v-for="(node, index) in internalNodes"
-          :key="index"
-          :md="4"
-          :max="4"
-        >
-          <NsTile
-            :light="true"
-            kind="selectable"
-            v-model="node.selected"
-            value="nodeValue"
-            :footerIcon="Chip20"
-            @click="deselectOtherNodes(node)"
-            class="min-height-card"
-            :disabled="disabledNodes.includes(node.id)"
-          >
-            <h6>
-              <span v-if="node.ui_name">
-                {{ node.ui_name }} ({{ $t("common.node") }} {{ node.id }})
-              </span>
-              <span v-else> {{ $t("common.node") }} {{ node.id }} </span>
-            </h6>
-            <div v-if="$slots[`node-${node.id}`]" class="mg-top-md">
-              <slot :name="`node-${node.id}`"></slot>
-            </div>
-          </NsTile>
-        </cv-column>
-      </cv-row>
-    </cv-grid>
+    <!-- card grid -->
+    <div
+      class="card-grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 3xl:grid-cols-4"
+    >
+      <NsTile
+        v-for="node in internalNodes"
+        :key="node.id"
+        :light="true"
+        kind="selectable"
+        v-model="node.selected"
+        value="nodeValue"
+        :footerIcon="Chip20"
+        @click="deselectOtherNodes(node)"
+        class="min-height-card"
+        :disabled="disabledNodes.includes(node.id)"
+      >
+        <h6>
+          <span v-if="node.ui_name">
+            {{ node.ui_name }} ({{ $t("common.node") }} {{ node.id }})
+          </span>
+          <span v-else> {{ $t("common.node") }} {{ node.id }} </span>
+        </h6>
+        <div v-if="$slots[`node-${node.id}`]" class="mg-top-md">
+          <slot :name="`node-${node.id}`"></slot>
+        </div>
+      </NsTile>
+    </div>
   </div>
 </template>
 
@@ -47,14 +43,6 @@ export default {
   name: "NodeSelector",
   mixins: [UtilService, IconService],
   props: {
-    extraInfoNode: {
-      type: Number,
-      default: 0,
-    },
-    extraInfoLabel: {
-      type: String,
-      default: "",
-    },
     disabledNodes: {
       type: Array,
       default: () => [],

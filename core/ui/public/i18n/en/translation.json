@@ -945,7 +945,11 @@
         "reason_max_per_node_limit": "Limit of {param} instance reached | Limit of {param} instances reached",
         "reason_min_core_requirement": "Core version is lower than {param}",
         "search_core_apps": "Search core apps",
-        "cannot_install_app_on_node": "Cannot install {app} {version} on {node}"
+        "cannot_install_app_on_node": "Cannot install {app} {version} on {node}",
+        "no_node_eligible_for_app_installation": "No node is eligible for app installation",
+        "no_node_eligible_for_instance_cloning": "No node is eligible for instance cloning",
+        "no_node_eligible_for_instance_migration": "No node is eligible for instance migration"
+
     },
     "system_logs": {
         "title": "System logs",

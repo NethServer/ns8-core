@@ -396,6 +396,7 @@
       :instanceId="cloneOrMove.instanceId"
       :instanceUiName="cloneOrMove.instanceUiName"
       :installationNode="cloneOrMove.installationNode"
+      :app="app"
       @hide="cloneOrMove.isModalShown = false"
       @cloneOrMoveCompleted="onCloneOrMoveCompleted"
     />
