@@ -18,8 +18,9 @@ jobs:
           mkdir -p tstate
           podman volume export tstate | tar -C tstate -v -x -f -
         if: always()
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
+          overwrite: true
           name: test-agent
           path: tstate/
         if: always()
