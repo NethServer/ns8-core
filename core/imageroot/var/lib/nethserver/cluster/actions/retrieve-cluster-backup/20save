@@ -73,7 +73,11 @@ fgz = gzip.open(f'{output_dir}/dump.json.gz', mode='r')
 dump = json.loads(fgz.read())
 fgz.close()
 
+# HACK! Count the nodes with the Traefik instances
+single_node_cluster = len(dump.get('traefik', {})) == 1
+
 result = {
+    'single_node_cluster': single_node_cluster,
     'cluster': dump['cluster']['ui_name'] or '',
     'vpn': dump['vpn']['endpoint'],
     'domains': len(dump['cluster']['user_domain']['ldap']),
