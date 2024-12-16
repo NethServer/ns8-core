@@ -210,7 +210,7 @@
         "redirect_cluster_link": "Go to cluster administration",
         "node_added_to_cluster": "Node {nodeId} added to cluster",
         "restore_cluster": "Restore cluster",
-        "restore_cluster_description": "Restore cluster and apps from backup",
+        "restore_cluster_description": "Restore cluster from a previous backup",
         "restore_from_cluster_backup_file": "Restore from cluster backup file",
         "restore_from_remote_url": "Restore from remote URL",
         "remote_url": "Remote URL",
@@ -229,7 +229,7 @@
         "restoring_cluster": "Restoring cluster",
         "restore_num_apps": "Restore apps | Restore {num} app | Restore {num} apps",
         "select_apps_to_restore": "Select apps to restore",
-        "select_apps_to_restore_description": "Your apps will be restored using the latest backup. If you need to restore certain apps from an earlier backup, you can do so later by going to the '@:backup.title' page",
+        "select_apps_to_restore_description": "Your apps will be restored using the latest backup. If you need to restore certain apps from an earlier backup, you can do so later by going to '@:backup.title > @:backup.restore_app'",
         "skip_apps_restore": "Skip apps restore",
         "skip_apps_restore_1": "Do you want to skip apps restore?",
         "skip_apps_restore_2": "You can restore apps later in Backup page",
@@ -254,7 +254,10 @@
         "domain_format": "Invalid domain format",
         "hostname_format": "Invalid hostname format",
         "hostname_pattern": "Invalid hostname format",
-        "forbidden_hostname_value": "Forbidden hostname"
+        "forbidden_hostname_value": "Forbidden hostname",
+        "apps_restoration": "Apps restoration",
+        "apps_restoration_single_node_description": "You can choose which apps to restore in the next step, after the cluster has been restored.",
+        "apps_restoration_multi_node_description": "Apps cannot be restored automatically because the original cluster consisted of multiple nodes. You can manually restore apps later by going to '@:backup.title > @:backup.restore_app'"
     },
     "shell": {
         "skip_to_content": "Skip to content",
