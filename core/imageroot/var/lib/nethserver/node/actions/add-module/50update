@@ -90,7 +90,13 @@ if is_rootfull:
     agent.run_helper('systemctl', 'enable', '--now', f'agent@{module_id}.service').check_returncode()
 else: # rootless
     # Create the module dirs structure
-    agent.run_helper('useradd', '-m', '-k', '/etc/nethserver/skel', '-s', '/bin/bash', module_id).check_returncode()
+    if 'HOME_BASEDIR' in os.environ and os.path.isdir(os.environ["HOME_BASEDIR"]):
+        # create the home directory with a custom base path
+        module_basedir_args = ["-b", os.environ["HOME_BASEDIR"]]
+    else:
+        # use default base path (see useradd -D)
+        module_basedir_args = []
+    agent.run_helper('useradd', *module_basedir_args, '-m', '-k', '/etc/nethserver/skel', '-s', '/bin/bash', module_id).check_returncode()
     agent.run_helper('chmod', '-c', '0700', os.path.expanduser("~" + module_id)).check_returncode()
     os.chdir(os.path.expanduser("~" + module_id) + '/.config')
     save_environment(module_environment)
