@@ -39,9 +39,12 @@ output_dir = f'{os.environ["AGENT_STATE_DIR"]}/backup'
 
 rdb = agent.redis_connect(host='127.0.0.1')
 
-VERSION = "2"
+VERSION = "3"
 
-dump = { 'version': VERSION, 'modules': {}, 'vpn': {}, 'cluster': { 'subscription': {}, 'apply_updates': {}, 'repository': {}, 'backup': {}, 'backup_repository': {}, 'user_domain': { 'ldap': {} },'override': {'modules': {} } }, 'traefik': {} }
+dump = { 'version': VERSION, 'modules': {}, 'vpn': {}, 'cluster': { 'node_count': 0, 'subscription': {}, 'apply_updates': {}, 'repository': {}, 'backup': {}, 'backup_repository': {}, 'user_domain': { 'ldap': {} },'override': {'modules': {} } }, 'traefik': {} }
+
+# cluster: number of nodes
+dump['cluster']['node_count'] = len(set(rdb.hvals('cluster/module_node'))
 
 # cluster: subscription
 dump['cluster']['subscription'] = rdb.hgetall('cluster/subscription') or {}
