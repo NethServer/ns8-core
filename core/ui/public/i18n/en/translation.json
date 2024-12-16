@@ -400,7 +400,8 @@
         "stop-support-session": "Stop support session",
         "set-syslog-forwarder": "Set Syslog forwarder",
         "set-clm-forwarder": "Set Cloud Log Manager forwarder",
-        "read-backup-snapshots": "Read backup snapshots"
+        "read-backup-snapshots": "Read backup snapshots",
+        "determine-restore-eligibility": "Determine restore eligibility"
     },
     "network": {
         "title": "Network"
@@ -589,7 +590,9 @@
         "from_different_cluster": "From a different cluster",
         "from_node_name": "From node {name}",
         "select_backup_snapshot": "Select backup snapshot",
-        "most_recent": "Most recent"
+        "most_recent": "Most recent",
+        "no_node_eligible_for_instance_restoration": "No node eligible for instance restoration",
+        "wrong_password_or_no_key_found": "Wrong data encryption key or no key found"
     },
     "calendar": {
         "days": "Days",

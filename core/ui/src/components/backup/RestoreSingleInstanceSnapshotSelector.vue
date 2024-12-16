@@ -11,7 +11,7 @@
           v-for="index in 3"
           :key="index"
           :light="light"
-          class="snapshot-tile no-mg-bottom"
+          class="snapshot-tile"
         >
           <cv-skeleton-text
             :paragraph="true"
@@ -163,9 +163,5 @@ export default {
 .secondary-row {
   margin-top: $spacing-02;
   color: $ui-04;
-}
-
-.no-mg-bottom {
-  margin-bottom: 0;
 }
 </style>

@@ -18,7 +18,7 @@
         :footerIcon="Chip20"
         @click="deselectOtherNodes(node)"
         class="min-height-card"
-        :disabled="disabledNodes.includes(node.id)"
+        :disabled="loading || disabledNodes.includes(node.id)"
       >
         <h6>
           <span v-if="node.ui_name">
@@ -26,7 +26,13 @@
           </span>
           <span v-else> {{ $t("common.node") }} {{ node.id }} </span>
         </h6>
-        <div v-if="$slots[`node-${node.id}`]" class="mg-top-md">
+        <cv-skeleton-text
+          v-if="loading"
+          :paragraph="true"
+          :line-count="2"
+          class="mg-top-lg"
+        ></cv-skeleton-text>
+        <div v-else-if="$slots[`node-${node.id}`]" class="mg-top-md">
           <slot :name="`node-${node.id}`"></slot>
         </div>
       </NsTile>
@@ -46,6 +52,10 @@ export default {
     disabledNodes: {
       type: Array,
       default: () => [],
+    },
+    loading: {
+      type: Boolean,
+      default: false,
     },
   },
   data() {
