@@ -41,6 +41,12 @@
               })
             }}
           </div>
+          <NsInlineNotification
+            v-if="clusterNodes.length == disabledNodes.length"
+            kind="info"
+            :title="$t('software_center.no_node_eligible_for_app_installation')"
+            :showCloseButton="false"
+          />
           <NodeSelector
             @selectNode="onSelectNode"
             :disabledNodes="disabledNodes"

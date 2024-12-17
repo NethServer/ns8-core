@@ -87,7 +87,31 @@
           <div>
             {{ $t("backup.select_restore_node") }}
           </div>
-          <NodeSelector @selectNode="onSelectNode" class="mg-top-xlg" />
+          <NsInlineNotification
+            v-if="error.determineRestoreEligibility"
+            kind="error"
+            :title="$t('action.determine-restore-eligibility')"
+            :description="error.determineRestoreEligibility"
+            :showCloseButton="false"
+          />
+          <NsInlineNotification
+            v-if="clusterNodes.length == disabledNodes.length"
+            kind="info"
+            :title="$t('backup.no_node_eligible_for_instance_restoration')"
+            :showCloseButton="false"
+          />
+          <NodeSelector
+            @selectNode="onSelectNode"
+            :disabledNodes="disabledNodes"
+            :loading="loading.determineRestoreEligibility"
+            class="mg-top-xlg"
+          >
+            <template v-for="(nodeInfoMessage, nodeId) in nodesInfo">
+              <template :slot="`node-${nodeId}`">
+                {{ nodeInfoMessage }}
+              </template>
+            </template>
+          </NodeSelector>
           <NsInlineNotification
             v-if="error.restoreModule"
             kind="error"
@@ -133,15 +157,18 @@ export default {
       selectedInstance: null,
       selectedSnapshot: null,
       replaceExistingApp: false,
+      installDestinations: [],
       loading: {
         readBackupRepositories: true,
         restoreModule: false,
         readBackupSnapshots: false,
+        determineRestoreEligibility: false,
       },
       error: {
         readBackupRepositories: "",
         restoreModule: "",
         readBackupSnapshots: "",
+        determineRestoreEligibility: "",
       },
     };
   },
@@ -161,7 +188,10 @@ export default {
         this.loading.restoreModule ||
         (this.step == "instance" && !this.selectedInstance) ||
         (this.step == "snapshot" && !this.selectedSnapshot) ||
-        (this.step == "node" && !this.selectedNode)
+        (this.step == "node" &&
+          (this.loading.determineRestoreEligibility ||
+            !this.selectedNode ||
+            this.clusterNodes.length == this.disabledNodes.length))
       );
     },
     instanceToReplace() {
@@ -182,6 +212,43 @@ export default {
         return this.selectedInstance.installed_instance;
       }
     },
+    nodesInfo() {
+      const nodesInfo = {};
+
+      for (const nodeInfo of this.installDestinations) {
+        if (!nodeInfo.eligible) {
+          // show reason why node is not eligible
+          const rejectReason = nodeInfo.reject_reason;
+
+          if (rejectReason.message === "max_per_node_limit") {
+            const numMaxInstances = rejectReason.parameter;
+            nodesInfo[nodeInfo.node_id] = this.$tc(
+              `software_center.reason_${rejectReason.message}`,
+              numMaxInstances,
+              { param: numMaxInstances }
+            );
+          } else {
+            nodesInfo[nodeInfo.node_id] = this.$t(
+              `software_center.reason_${rejectReason.message}`,
+              { param: rejectReason.parameter }
+            );
+          }
+        } else if (nodeInfo.instances) {
+          // show number of instances installed
+          nodesInfo[nodeInfo.node_id] = this.$tc(
+            "software_center.num_instances_installed",
+            nodeInfo.instances,
+            { num: nodeInfo.instances }
+          );
+        }
+      }
+      return nodesInfo;
+    },
+    disabledNodes() {
+      return this.installDestinations
+        .filter((nodeInfo) => !nodeInfo.eligible)
+        .map((nodeInfo) => nodeInfo.node_id);
+    },
   },
   watch: {
     isShown: function () {
@@ -200,6 +267,8 @@ export default {
       } else if (this.step == "snapshot") {
         this.selectedSnapshot = null;
         this.readBackupSnapshots();
+      } else if (this.step == "node") {
+        this.determineRestoreEligibility();
       }
     },
   },
@@ -258,6 +327,7 @@ export default {
     },
     readBackupRepositoriesAborted(taskResult, taskContext) {
       console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.readBackupRepositories = this.$t("error.generic_error");
       this.loading.readBackupRepositories = false;
     },
     readBackupRepositoriesCompleted(taskContext, taskResult) {
@@ -310,6 +380,14 @@ export default {
     },
     readBackupSnapshotsAborted(taskResult, taskContext) {
       console.error(`${taskContext.action} aborted`, taskResult);
+
+      if (taskResult.error.includes("wrong password or no key found")) {
+        this.error.readBackupSnapshots = this.$t(
+          "backup.wrong_password_or_no_key_found"
+        );
+      } else {
+        this.error.readBackupSnapshots = this.$t("error.generic_error");
+      }
       this.loading.readBackupSnapshots = false;
     },
     readBackupSnapshotsCompleted(taskContext, taskResult) {
@@ -375,6 +453,7 @@ export default {
     },
     restoreModuleAborted(taskResult, taskContext) {
       console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.restoreModule = this.$t("error.generic_error");
       this.loading.restoreModule = false;
       this.$emit("hide");
     },
@@ -393,6 +472,57 @@ export default {
     },
     onSelectSnapshot(selectedSnapshot) {
       this.selectedSnapshot = selectedSnapshot;
+    },
+    async determineRestoreEligibility() {
+      this.loading.determineRestoreEligibility = true;
+      this.error.determineRestoreEligibility = "";
+      this.selectedNode = null;
+      const taskAction = "determine-restore-eligibility";
+      const eventId = this.getUuid();
+
+      // register to task error
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.determineRestoreEligibilityAborted
+      );
+
+      // register to task completion
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.determineRestoreEligibilityCompleted
+      );
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          data: {
+            repository: this.selectedInstance.repository_id,
+            path: this.selectedInstance.path,
+            snapshot: this.selectedSnapshot.id,
+          },
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+            eventId,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.determineRestoreEligibility = this.getErrorMessage(err);
+        return;
+      }
+    },
+    determineRestoreEligibilityAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.determineRestoreEligibility = this.$t("error.generic_error");
+      this.loading.determineRestoreEligibility = false;
+    },
+    determineRestoreEligibilityCompleted(taskContext, taskResult) {
+      this.installDestinations = taskResult.output.install_destinations;
+      this.loading.determineRestoreEligibility = false;
     },
   },
 };

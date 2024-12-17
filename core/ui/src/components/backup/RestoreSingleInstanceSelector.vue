@@ -26,11 +26,11 @@
           v-for="index in 3"
           :key="index"
           :light="light"
-          class="instance-tile no-mg-bottom"
+          class="instance-tile"
         >
           <cv-skeleton-text
             :paragraph="true"
-            :line-count="2"
+            :line-count="3"
           ></cv-skeleton-text>
         </cv-tile>
       </div>
@@ -252,10 +252,6 @@ export default {
 .secondary-row {
   margin-top: $spacing-02;
   color: $ui-04;
-}
-
-.no-mg-bottom {
-  margin-bottom: 0;
 }
 </style>
 

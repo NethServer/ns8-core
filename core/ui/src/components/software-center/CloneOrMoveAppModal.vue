@@ -27,14 +27,32 @@
             : $t("software_center.move_app_description", { instanceLabel })
         }}
       </div>
-      <div>{{ $t("software_center.select_destination_node") }}</div>
+      <div>{{ $t("software_center.select_destination_node") }}:</div>
+      <NsInlineNotification
+        v-if="clusterNodes.length == disabledNodes.length"
+        kind="info"
+        :title="
+          isClone
+            ? $t('software_center.no_node_eligible_for_instance_cloning')
+            : $t('software_center.no_node_eligible_for_instance_migration')
+        "
+        :showCloseButton="false"
+      />
       <NodeSelector
         class="mg-top-xlg"
         @selectNode="onSelectNode"
-        :disabledNodes="isClone ? [] : [installationNode]"
+        :disabledNodes="disabledNodes"
       >
-        <template :slot="`node-${installationNode}`">
-          <div>{{ $t("software_center.current_node") }}</div>
+        <template v-for="(nodeMessages, nodeId) in nodesInfo">
+          <template :slot="`node-${nodeId}`">
+            <div
+              v-for="(nodeMessage, index) in nodeMessages"
+              :key="index"
+              class="node-message"
+            >
+              {{ nodeMessage }}
+            </div>
+          </template>
         </template>
       </NodeSelector>
       <NsInlineNotification
@@ -83,6 +101,10 @@ export default {
       type: Number,
       required: true,
     },
+    app: {
+      type: Object,
+      default: null,
+    },
   },
   data() {
     return {
@@ -102,6 +124,73 @@ export default {
         return `${this.instanceUiName} (${this.instanceId})`;
       } else {
         return this.instanceId;
+      }
+    },
+    nodesInfo() {
+      if (!this.app) {
+        return {};
+      }
+      const nodesInfo = {};
+
+      if (this.app) {
+        for (const nodeInfo of this.app.install_destinations) {
+          const nodeMessages = [];
+
+          if (nodeInfo.node_id === this.installationNode) {
+            // show "Current node"
+            nodeMessages.push(this.$t("software_center.current_node"));
+          }
+
+          if (!nodeInfo.eligible) {
+            // show reason why node is not eligible
+            const rejectReason = nodeInfo.reject_reason;
+
+            if (rejectReason.message === "max_per_node_limit") {
+              const numMaxInstances = rejectReason.parameter;
+              nodeMessages.push(
+                this.$tc(
+                  `software_center.reason_${rejectReason.message}`,
+                  numMaxInstances,
+                  { param: numMaxInstances }
+                )
+              );
+            } else {
+              nodeMessages.push(
+                this.$t(`software_center.reason_${rejectReason.message}`, {
+                  param: rejectReason.parameter,
+                })
+              );
+            }
+          } else if (nodeInfo.instances) {
+            // show number of instances installed
+            nodeMessages.push(
+              this.$tc(
+                "software_center.num_instances_installed",
+                nodeInfo.instances,
+                { num: nodeInfo.instances }
+              )
+            );
+          }
+          nodesInfo[nodeInfo.node_id] = nodeMessages;
+        }
+      }
+      return nodesInfo;
+    },
+    disabledNodes() {
+      if (!this.app) {
+        return [];
+      }
+
+      const ineligibleNodes = this.app.install_destinations
+        .filter((nodeInfo) => !nodeInfo.eligible)
+        .map((nodeInfo) => nodeInfo.node_id);
+
+      if (this.isClone) {
+        // cloning app
+        return ineligibleNodes;
+      } else {
+        // moving app: add current node to ineligible nodes and remove possible duplicates
+        return [...new Set(ineligibleNodes.concat(this.installationNode))];
       }
     },
   },
@@ -214,4 +303,12 @@ export default {
 
 <style scoped lang="scss">
 @import "../../styles/carbon-utils";
+
+.node-message {
+  margin-bottom: $spacing-05;
+}
+
+.node-message:last-child {
+  margin-bottom: 0;
+}
 </style>
