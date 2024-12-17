@@ -26,34 +26,46 @@
       </cv-column>
     </cv-row>
     <cv-row v-if="loading.nodes">
-      <cv-column v-for="index in 2" :key="index" :md="4" :max="4">
-        <NsTile :light="true" :icon="Chip32">
-          <cv-skeleton-text
-            :paragraph="false"
-            :line-count="1"
-            heading
-          ></cv-skeleton-text>
-        </NsTile>
+      <!-- skeleton card grid -->
+      <cv-column>
+        <div
+          class="card-grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 3xl:grid-cols-4"
+        >
+          <NsTile v-for="index in 4" :key="index" :light="true">
+            <cv-skeleton-text
+              :paragraph="true"
+              :line-count="2"
+              heading
+            ></cv-skeleton-text>
+          </NsTile>
+        </div>
       </cv-column>
     </cv-row>
     <cv-row v-else>
-      <cv-column :md="4" :xlg="4" v-for="node in nodes" :key="node.id">
-        <NsTile
-          :light="true"
-          kind="clickable"
-          @click="goToFirewall(node)"
-          :icon="Chip32"
+      <!-- card grid -->
+      <cv-column>
+        <div
+          class="card-grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 3xl:grid-cols-4"
         >
-          <h6>
-            {{
-              (node.ui_name
-                ? node.ui_name
-                : $t("common.node") + " " + node.id.toString()) +
-              " " +
-              $t("firewall.title")
-            }}
-          </h6>
-        </NsTile>
+          <NsTile
+            v-for="node in nodes"
+            :key="node.id"
+            :light="true"
+            kind="clickable"
+            @click="goToFirewall(node)"
+            :icon="Chip32"
+          >
+            <h6>
+              {{
+                (node.ui_name
+                  ? node.ui_name
+                  : $t("common.node") + " " + node.id.toString()) +
+                " " +
+                $t("firewall.title")
+              }}
+            </h6>
+          </NsTile>
+        </div>
       </cv-column>
     </cv-row>
   </cv-grid>

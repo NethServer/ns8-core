@@ -347,5 +347,46 @@
       "it": ["sottoscrizione", "supporto", "remoto", "registrazione"]
     },
     "path": "settings/subscription"
+  },
+  {
+    "name": {
+      "en": "Firewall",
+      "it": "Firewall"
+    },
+    "description": {
+      "en": "Go to Firewall",
+      "it": "Vai a Firewall"
+    },
+    "tags": {
+      "en": [
+        "firewall",
+        "port",
+        "ports",
+        "network",
+        "interface",
+        "interfaces",
+        "tcp",
+        "udp",
+        "service",
+        "services",
+        "zone",
+        "zones"
+      ],
+      "it": [
+        "firewall",
+        "porta",
+        "porte",
+        "rete",
+        "interfaccia",
+        "interfacce",
+        "tcp",
+        "udp",
+        "servizio",
+        "servizi",
+        "zona",
+        "zone"
+      ]
+    },
+    "path": "settings/firewall"
   }
 ]
