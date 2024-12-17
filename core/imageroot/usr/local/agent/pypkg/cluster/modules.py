@@ -303,12 +303,18 @@ def list_available(rdb, skip_core_modules=False):
             package_is_rootfull = omod["versions"][0]["labels"]["org.nethserver.rootfull"] == "1"
         except:
             package_is_rootfull = False
-        # Ignore untrusted rootfull application, if a subscription is active
+        omod['rootfull'] = package_is_rootfull
+        # Block untrusted rootfull application, if a subscription is active
         if hsubscription and package_is_rootfull and omod["certification_level"] < 3:
             print(agent.SD_WARNING + f"Ignoring image of rootfull application {omod['source']}: certification_level {omod['certification_level']} is too low", file=sys.stderr)
-            continue # skip package
-        else:
-            omod['rootfull'] = package_is_rootfull
+            omod["versions"] = []
+            omod["no_version_reason"] = {
+                "message": "rootfull_certification_level_too_low",
+                "params": {
+                    "certification_cur": str(omod['certification_level']),
+                    "certification_min": "3",
+                },
+            }
         modules.append(omod)
     return modules
 
