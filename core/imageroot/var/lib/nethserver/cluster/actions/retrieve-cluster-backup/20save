@@ -73,6 +73,22 @@ fgz = gzip.open(f'{output_dir}/dump.json.gz', mode='r')
 dump = json.loads(fgz.read())
 fgz.close()
 
-result = {'cluster': dump['cluster']['ui_name'] or '', "vpn": dump['vpn']['endpoint'], 'domains': len(dump['cluster']['user_domain']['ldap']), 'backup_repositories': len(dump['cluster']['backup_repository']), "routes": len(dump['traefik']['leader']['routes']), "certificates": len(dump['traefik']['leader']['uploaded_certificates'])}
+if 'node_count' in dump['cluster']:
+    # available since cluster backup version "3"
+    single_node_cluster = dump['cluster']['node_count'] == 1
+else:
+    # fall back to the number of Traefik instances for previous cluster
+    # backups:
+    single_node_cluster = len(dump.get('traefik', {})) == 1
+
+result = {
+    'single_node_cluster': single_node_cluster,
+    'cluster': dump['cluster']['ui_name'] or '',
+    'vpn': dump['vpn']['endpoint'],
+    'domains': len(dump['cluster']['user_domain']['ldap']),
+    'backup_repositories': len(dump['cluster']['backup_repository']),
+    'routes': len(dump['traefik']['leader']['routes']),
+    'certificates': len(dump['traefik']['leader']['uploaded_certificates']),
+}
 
 json.dump(result, fp=sys.stdout)
