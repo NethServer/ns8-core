@@ -284,7 +284,7 @@ def list_available(rdb, skip_core_modules=False):
                 core_min_required = str(min(list(map(lambda mv: semver.Version.parse(mv['labels']['org.nethserver.min-core']), omod['versions']))))
             except:
                 core_min_required = "0.0.0"
-            print(agent.SD_WARNING + f"Ignoring image of application {omod['source']}. Installed Core version {leader_core_version} is less than the required version {core_min_required}.", file=sys.stderr)
+            print(agent.SD_WARNING + f"Application {omod['source']} has no version suitable for the installed Core {leader_core_version}. Minimum Core requirement is {core_min_required}.", file=sys.stderr)
             omod["versions"] = []
             omod["no_version_reason"] = {
                 "message": "core_version_too_low",
@@ -306,7 +306,7 @@ def list_available(rdb, skip_core_modules=False):
         omod['rootfull'] = package_is_rootfull
         # Block untrusted rootfull application, if a subscription is active
         if hsubscription and package_is_rootfull and omod["certification_level"] < 3:
-            print(agent.SD_WARNING + f"Ignoring image of rootfull application {omod['source']}: certification_level {omod['certification_level']} is too low", file=sys.stderr)
+            print(agent.SD_WARNING + f"Rootfull application {omod['source']} has no valid version: certification_level {omod['certification_level']} is too low", file=sys.stderr)
             omod["versions"] = []
             omod["no_version_reason"] = {
                 "message": "rootfull_certification_level_too_low",
