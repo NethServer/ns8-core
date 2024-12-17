@@ -33,6 +33,7 @@ import subprocess
 import datetime
 import time
 import cluster.userdomains
+import copy
 
 _repo_testing_cache = {}
 def _repo_has_testing_flag(rdb, repo_name):
@@ -589,3 +590,67 @@ def list_core_modules(rdb):
                 "node_ui_name": instance["node_ui_name"],
             })
     return list(core_modules.values())
+
+def decorate_with_install_destinations(rdb, available_modules):
+    """Decorate each item of available_modules list with
+    install_destinations info. The available_modules list must be already
+    decorated with decorate_with_installed(). This procedure has no return
+    value, it modifies its argument directly."""
+    node_core_versions = get_node_core_versions(rdb)
+    install_destinations = []
+    for node_id in set(rdb.hvals("cluster/module_node")):
+        install_destinations.append({
+            "node_id": int(node_id),
+            "instances": 0,
+            "eligible": True,
+            "reject_reason": None,
+        })
+    install_destinations.sort(key=lambda n: n["node_id"])
+    for oamodule in available_modules:
+        oamodule["install_destinations"] = copy.deepcopy(install_destinations)
+        # Parse labels of the array first element
+        try:
+            max_per_node = int(oamodule["versions"][0]["labels"]["org.nethserver.max-per-node"])
+        except:
+            max_per_node = 9999
+        try:
+            min_core = semver.Version.parse(oamodule["versions"][0]["labels"]["org.nethserver.min-core"])
+        except:
+            min_core = semver.Version(0,0,0)
+        # Find reject reasons in this loop:
+        for mdest in oamodule["install_destinations"]:
+            # max-per-node label check:
+            count_instances = len(list(filter(lambda m: m["node"] == str(mdest["node_id"]), oamodule["installed"])))
+            mdest["instances"] = count_instances
+            if count_instances >= max_per_node:
+                mdest["eligible"] = False
+                mdest["reject_reason"] = {
+                    "message": "max_per_node_limit",
+                    "parameter": str(max_per_node),
+                }
+                continue
+            # min-core label check:
+            snode_id = str(mdest["node_id"])
+            if snode_id in node_core_versions and node_core_versions[snode_id] < min_core:
+                mdest["eligible"] = False
+                mdest["reject_reason"] = {
+                    "message": "min_core_requirement",
+                    "parameter": str(min_core),
+                }
+                continue
+
+def decorate_with_installed(rdb, available_modules):
+    """Decorate each item of available_modules list with an
+    "installed" attribute. This procedure has no return value, it modifies
+    its argument directly."""
+    installed = cluster.modules.list_installed(rdb, skip_core_modules = False)
+    for oamodule in available_modules:
+        oamodule["installed"] = installed.get(oamodule["source"], [])
+
+def decorate_with_updates(rdb, available_modules):
+    """Decorate each item of available_modules list with an
+    "updates" attribute. This procedure has no return value, it modifies
+    its argument directly."""
+    updates = cluster.modules.list_updates(rdb, skip_core_modules=True, with_testing_update=True)
+    for oamodule in available_modules:
+        oamodule["updates"] = list(filter(lambda mup: mup["source"] == oamodule["source"], updates))

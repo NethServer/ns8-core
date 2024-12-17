@@ -1,0 +1,37 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "determine-restore-eligibility input",
+    "$id": "http://schema.nethserver.org/cluster/determine-restore-eligibility-input.json",
+    "description": "Input schema of the determine-restore-eligibility action",
+    "examples": [
+        {
+            "repository": "48ce000a-79b7-5fe6-8558-177fd70c27b4",
+            "path": "dokuwiki/dokuwiki1@f5d24fcd-819c-4b1d-98ad-a1b2ebcee8cf",
+            "snapshot": "a6b8317eef"
+        }
+    ],
+    "type": "object",
+    "required": [
+        "repository",
+        "path",
+        "snapshot"
+    ],
+    "properties": {
+        "repository": {
+            "title": "Destination ID",
+            "description": "Backup destination identifier",
+            "type": "string",
+            "minLength": 1
+        },
+        "path": {
+            "title": "Backup repository path",
+            "description": "Path of the Restic backup repository in the destination",
+            "type": "string",
+            "minLength": 1
+        },
+        "snapshot": {
+            "title": "Restic snapshot ID",
+            "type": "string"
+        }
+    }
+}
