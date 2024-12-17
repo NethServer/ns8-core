@@ -74,7 +74,7 @@
               {{ $t("software_center.latest_version") }}
             </span>
             <span class="value">
-              {{ app.versions.length ? app.versions[0].tag : "latest" }}
+              {{ app.versions.length ? app.versions[0].tag : "-" }}
               <span v-if="app.upstream_name"> ({{ app.upstream_name }}) </span>
             </span>
           </div>
@@ -176,7 +176,11 @@ export default {
   },
   computed: {
     appImages() {
-      if (this.app && this.app.versions[0]["labels"]["org.nethserver.images"]) {
+      if (
+        this.app &&
+        this.app.versions.length &&
+        this.app.versions[0]["labels"]["org.nethserver.images"]
+      ) {
         return this.app.versions[0]["labels"]["org.nethserver.images"]
           .trim()
           .replace(/\s+/g, " ")

@@ -166,7 +166,7 @@ export default {
       if (this.app.versions.length) {
         return this.app.versions[0].tag;
       } else {
-        return "latest";
+        return "-";
       }
     },
     canInstallOnSingleNode() {
