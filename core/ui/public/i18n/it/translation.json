@@ -144,7 +144,14 @@
         "rootfull_app_warning_description": "Dopo l'installazione {appName} avrà pieno accesso al cluster: questo può comportare rischi di sicurezza significativi.",
         "cannot_install_app_on_node": "Non è possibile installare {app} {version} su {node}",
         "updates_disabled_ns7_migration_description": "È in corso una migrazione da NS7. Gli aggiornamenti riprenderanno una volta completata la migrazione.",
-        "updates_disabled_ns7_migration_title": "Gli aggiornamenti sono sospesi"
+        "updates_disabled_ns7_migration_title": "Gli aggiornamenti sono sospesi",
+        "no_node_eligible_for_instance_cloning": "Nessun nodo è idoneo alla clonazione dell'istanza",
+        "no_node_eligible_for_app_installation": "Nessun nodo è idoneo all'installazione dell'app",
+        "no_node_eligible_for_instance_migration": "Nessun nodo è idoneo allo spostamento dell'app",
+        "no_version_reason": {
+            "core_version_too_low": "Aggiorna il core alla versione {core_min} o successiva per installare un'istanza di questa app",
+            "rootfull_certification_level_too_low": "Le app con privilegi amministrativi devono avere un livello di certificazione minimo di {certification_min}/5 per poter essere installate"
+        }
     },
     "nodes": {
         "title": "Nodi",
@@ -604,7 +611,8 @@
         "set-retention": "Imposta conservazione",
         "set-syslog-forwarder": "Imposta forwarder Syslog",
         "set-clm-forwarder": "Imposta Cloud Log Manager forwarder",
-        "read-backup-snapshots": "Leggi snapshot di backup"
+        "read-backup-snapshots": "Leggi snapshot di backup",
+        "determine-restore-eligibility": "Determina idoneità ripristino"
     },
     "backup": {
         "configure": "Configura",
@@ -787,7 +795,9 @@
         "from_node_name": "Dal nodo {name}",
         "most_recent": "Più recente",
         "from_this_cluster": "Da questo cluster",
-        "url_pattern": "Il nome host e il nome del bucket S3-compatibile devono essere separati da uno slash '/ '"
+        "url_pattern": "Il nome host e il nome del bucket S3-compatibile devono essere separati da uno slash '/ '",
+        "wrong_password_or_no_key_found": "Password di cifratura errata o password non trovata",
+        "no_node_eligible_for_instance_restoration": "Nessun nodo è idoneo al ripristino dell'istanza"
     },
     "login": {
         "password": "Password",
@@ -919,7 +929,8 @@
         "active": "Attivo",
         "configure": "Configura",
         "terms_required": "Si prega di leggere e accettare i @:common.terms_and_conditions",
-        "terms_and_conditions": "Termini e Condizioni"
+        "terms_and_conditions": "Termini e Condizioni",
+        "not_available": "Non disponibile"
     },
     "error": {
         "error": "Errore",
@@ -985,7 +996,7 @@
         "redirect_cluster_link": "Vai a Amministrazione cluster",
         "node_added_to_cluster": "Nodo {nodeId} aggiunto al cluster",
         "restore_cluster": "Ripristina cluster",
-        "restore_cluster_description": "Ripristina cluster e app dal backup",
+        "restore_cluster_description": "Ripristina cluster da un backup precedente",
         "restore_from_cluster_backup_file": "Ripristina da file di backup del cluster",
         "redirect_cluster_description": "Questo nodo è ora un worker del cluster. Fare clic sul pulsante in basso per accedere alla pagina di amministrazione del cluster dal nodo principale.",
         "upload_cluster_backup_file": "Carica file di backup del cluster",
@@ -1049,7 +1060,10 @@
         "leader_node_hostname": "Nome host leader",
         "hostname_pattern": "Formato hostname non valido",
         "restore_num_apps": "Ripristina applicazioni | Ripristina {num} app | Ripristina {num} app",
-        "select_apps_to_restore_description": "Le tue app saranno ripristinate utilizzando il backup più recente. Se è necessario ripristinare alcune applicazioni da un backup precedente, è possibile farlo in seguito andando alla pagina '@:backup.title'"
+        "select_apps_to_restore_description": "Le tue app saranno ripristinate utilizzando il backup più recente. Se è necessario ripristinare alcune applicazioni da un backup precedente, è possibile farlo in seguito andando alla pagina '@:backup.title > @:backup.restore_app'",
+        "apps_restoration_multi_node_description": "Le app non possono essere ripristinate automaticamente perché il cluster originale era composto da più nodi. Sarà possibile ripristinare manualmente le app accedendo a '@:backup.title > @:backup.restore_app'",
+        "apps_restoration_single_node_description": "È possibile scegliere quali app ripristinare nel prossimo step, dopo che il cluster sarà stato ripristinato.",
+        "apps_restoration": "Ripristino applicazioni"
     },
     "account_provider": {
         "title": "Account provider"

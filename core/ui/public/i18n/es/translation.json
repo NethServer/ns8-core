@@ -221,7 +221,8 @@
         "active": "Activo",
         "configure": "Configurar",
         "terms_required": "Por favor, lea y acepte @:common.terms_and_conditions",
-        "terms_and_conditions": "Condiciones generales"
+        "terms_and_conditions": "Condiciones generales",
+        "not_available": "Not available"
     },
     "backup": {
         "aws": "Amazon S3",
@@ -404,7 +405,9 @@
         "from_node_name": "Desde el nodo {name}",
         "most_recent": "La más reciente",
         "from_this_cluster": "Desde este cluster",
-        "url_pattern": "El nombre de host compatible con S3 y el nombre del depósito deben estar separados por una barra \"/\""
+        "url_pattern": "El nombre de host compatible con S3 y el nombre del depósito deben estar separados por una barra \"/\"",
+        "wrong_password_or_no_key_found": "Wrong data encryption key or no key found",
+        "no_node_eligible_for_instance_restoration": "No node eligible for instance restoration"
     },
     "settings_http_routes": {
         "host_tooltip": "Un ejemplo de host válido es: <code>myapp.example.org</code>",
@@ -557,7 +560,8 @@
         "set-retention": "Fijar la retención",
         "set-syslog-forwarder": "Establecer el reenvío de Syslog",
         "set-clm-forwarder": "Configurar el reenvío de Cloud Log Manager",
-        "read-backup-snapshots": "Leer instantáneas de la copia de seguridad"
+        "read-backup-snapshots": "Leer instantáneas de la copia de seguridad",
+        "determine-restore-eligibility": "Determine restore eligibility"
     },
     "settings_cluster_admins": {
         "user_already_exists": "El administrador ya existe",
@@ -712,7 +716,14 @@
         "rootfull_app_warning_description": "After installation {appName} will have full access to the cluster: this can pose significant security risks.",
         "cannot_install_app_on_node": "Cannot install {app} {version} on {node}",
         "updates_disabled_ns7_migration_description": "There is an ongoing NS7 migration. Updates will resume once the migration is complete.",
-        "updates_disabled_ns7_migration_title": "Updates are suspended"
+        "updates_disabled_ns7_migration_title": "Updates are suspended",
+        "no_node_eligible_for_instance_cloning": "No node is eligible for instance cloning",
+        "no_node_eligible_for_app_installation": "No node is eligible for app installation",
+        "no_node_eligible_for_instance_migration": "No node is eligible for instance migration",
+        "no_version_reason": {
+            "core_version_too_low": "Update core to version {core_min} or higher to install an instance of this app",
+            "rootfull_certification_level_too_low": "Apps with administrative privileges must have a minimum certification level of {certification_min}/5 to be installed"
+        }
     },
     "system_logs": {
         "context_module": "Aplicación",
@@ -908,7 +919,10 @@
         "leader_node_hostname": "Nombre de host del nodo principal",
         "hostname_pattern": "Formato de nombre de host inválido",
         "restore_num_apps": "Restaurar aplicaciones | Restaurar {num} aplicación | Restaurar {num} aplicaciones",
-        "select_apps_to_restore_description": "Tus aplicaciones se restaurarán utilizando la última copia de seguridad. Si necesitas restaurar ciertas aplicaciones desde una copia de seguridad anterior, puedes hacerlo más tarde yendo a la página '@:backup.title'"
+        "select_apps_to_restore_description": "Tus aplicaciones se restaurarán utilizando la última copia de seguridad. Si necesitas restaurar ciertas aplicaciones desde una copia de seguridad anterior, puedes hacerlo más tarde yendo a la página '@:backup.title'",
+        "apps_restoration_multi_node_description": "Apps cannot be restored automatically because the original cluster consisted of multiple nodes. You can manually restore apps later by going to '@:backup.title > @:backup.restore_app'",
+        "apps_restoration_single_node_description": "You can choose which apps to restore in the next step, after the cluster has been restored.",
+        "apps_restoration": "Apps restoration"
     },
     "settings_account": {
         "i_have_stored_setup_key": "He guardado la <strong>clave de configuración 2FA</strong> en un lugar seguro",
