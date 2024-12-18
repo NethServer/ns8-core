@@ -175,7 +175,7 @@ def get_latest_module(module, rdb):
     """Find most recent version of the given module
     """
     for m in list_available(rdb, skip_core_modules=False):
-        if m["id"] == module:
+        if m["id"] == module and len(m['versions']) > 0:
             # We assume at index 0 we find the latest tag:
             return m["source"] + ':' + m['versions'][0]['tag']
 
@@ -274,9 +274,25 @@ def list_available(rdb, skip_core_modules=False):
         if not _repo_has_testing_flag(rdb, omod["repository"]):
             # Ignore testing releases for new installations:
             omod["versions"] = list(filter(lambda v: _tag_is_stable(v["tag"]), omod["versions"]))
-        omod["versions"] = list(filter(lambda v: _min_core_ok(v, leader_core_version), omod["versions"]))
-        if not omod["versions"]:
-            continue # Ignore modules with no versions
+        # Check the min-core label compatibility:
+        omod_core_compat_versions = list(filter(lambda v: _min_core_ok(v, leader_core_version), omod["versions"]))
+        if omod_core_compat_versions:
+            omod["versions"] = omod_core_compat_versions
+        else:
+            # There are no compatible versions because current core is too old
+            try:
+                core_min_required = str(min(list(map(lambda mv: semver.Version.parse(mv['labels']['org.nethserver.min-core']), omod['versions']))))
+            except:
+                core_min_required = "0.0.0"
+            print(agent.SD_WARNING + f"Application {omod['source']} has no version suitable for the installed Core {leader_core_version}. Minimum Core requirement is {core_min_required}.", file=sys.stderr)
+            omod["versions"] = []
+            omod["no_version_reason"] = {
+                "message": "core_version_too_low",
+                "params": {
+                    "core_cur": str(leader_core_version),
+                    "core_min": str(core_min_required),
+                },
+            }
         omod["certification_level"] = _calc_certification_level(omod, bool(hsubscription))
         try:
             if skip_core_modules and 'core_module' in omod["versions"][0]['labels']['org.nethserver.flags']:
@@ -287,12 +303,18 @@ def list_available(rdb, skip_core_modules=False):
             package_is_rootfull = omod["versions"][0]["labels"]["org.nethserver.rootfull"] == "1"
         except:
             package_is_rootfull = False
-        # Ignore untrusted rootfull application, if a subscription is active
+        omod['rootfull'] = package_is_rootfull
+        # Block untrusted rootfull application, if a subscription is active
         if hsubscription and package_is_rootfull and omod["certification_level"] < 3:
-            print(agent.SD_WARNING + f"Ignoring image of rootfull application {omod['source']}: certification_level {omod['certification_level']} is too low", file=sys.stderr)
-            continue # skip package
-        else:
-            omod['rootfull'] = package_is_rootfull
+            print(agent.SD_WARNING + f"Rootfull application {omod['source']} has no valid version: certification_level {omod['certification_level']} is too low", file=sys.stderr)
+            omod["versions"] = []
+            omod["no_version_reason"] = {
+                "message": "rootfull_certification_level_too_low",
+                "params": {
+                    "certification_cur": str(omod['certification_level']),
+                    "certification_min": "3",
+                },
+            }
         modules.append(omod)
     return modules
 
