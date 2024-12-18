@@ -207,8 +207,6 @@ export default {
       const taskContext = contextResponse.data.data.context;
       let taskResult;
 
-      console.debug(taskPath, taskContext, payload);
-
       if (["completed", "aborted", "validation-failed"].includes(taskStatus)) {
         // get output and error
         const [err, statusResponse] = await to(this.getTaskStatus(taskPath));
@@ -225,7 +223,13 @@ export default {
 
         taskResult = statusResponse.data.data;
 
-        console.debug("taskResult", taskContext.action, taskResult);
+        console.debug(
+          taskContext.action,
+          "context:",
+          taskContext,
+          "result:",
+          taskResult
+        );
 
         if (taskStatus === "validation-failed") {
           // show validation errors
