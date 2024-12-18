@@ -74,7 +74,11 @@
               {{ $t("software_center.latest_version") }}
             </span>
             <span class="value">
-              {{ app.versions.length ? app.versions[0].tag : "-" }}
+              {{
+                app.versions.length
+                  ? app.versions[0].tag
+                  : $t("common.not_available")
+              }}
               <span v-if="app.upstream_name"> ({{ app.upstream_name }}) </span>
             </span>
           </div>
