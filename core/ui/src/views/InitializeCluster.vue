@@ -647,6 +647,17 @@
                       }}</span>
                     </div>
                     <NsInlineNotification
+                      kind="info"
+                      :title="$t('init.apps_restoration')"
+                      :description="
+                        restore.summary.single_node_cluster
+                          ? $t('init.apps_restoration_single_node_description')
+                          : $t('init.apps_restoration_multi_node_description')
+                      "
+                      :showCloseButton="false"
+                      class="mg-top-lg"
+                    />
+                    <NsInlineNotification
                       v-if="error.restoreCluster"
                       kind="error"
                       :title="$t('action.restore-cluster')"
@@ -704,9 +715,10 @@
                       <span v-if="restore.progress < 100">
                         {{ $t("init.traveling_back_in_time") }}
                       </span>
-                      <span v-else>
+                      <span v-else-if="loading.readBackupRepositories">
                         {{ $t("init.reading_backup_repositories") }}
                       </span>
+                      <span v-else>&nbsp;</span>
                     </template>
                   </NsEmptyState>
                   <NsProgressBar
@@ -1677,6 +1689,7 @@ export default {
       this.restore.summary = taskResult.output;
       this.restore.step = "summary";
       this.loading.retrieveClusterBackup = false;
+      this.restore.backupPassword = "";
     },
     async restoreCluster() {
       this.error.restoreCluster = "";
@@ -1745,7 +1758,13 @@ export default {
         `${taskContext.action}-progress-${taskContext.extra.eventId}`
       );
 
-      this.readBackupRepositories();
+      if (this.restore.summary.single_node_cluster) {
+        // restore apps
+        this.readBackupRepositories();
+      } else {
+        // skip restore apps
+        this.getClusterStatus();
+      }
     },
     async readBackupRepositories() {
       this.error.readBackupRepositories = "";
