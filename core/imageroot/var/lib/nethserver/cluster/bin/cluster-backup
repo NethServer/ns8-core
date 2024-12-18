@@ -44,7 +44,7 @@ VERSION = "3"
 dump = { 'version': VERSION, 'modules': {}, 'vpn': {}, 'cluster': { 'node_count': 0, 'subscription': {}, 'apply_updates': {}, 'repository': {}, 'backup': {}, 'backup_repository': {}, 'user_domain': { 'ldap': {} },'override': {'modules': {} } }, 'traefik': {} }
 
 # cluster: number of nodes
-dump['cluster']['node_count'] = len(set(rdb.hvals('cluster/module_node'))
+dump['cluster']['node_count'] = len(set(rdb.hvals('cluster/module_node')))
 
 # cluster: subscription
 dump['cluster']['subscription'] = rdb.hgetall('cluster/subscription') or {}
