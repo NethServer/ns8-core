@@ -95,13 +95,36 @@
             class="mg-right-sm"
             >{{ $t("software_center.update_all_instances") }}
           </NsButton>
-          <NsButton
+          <div
             v-if="app.installed && app.installed.length"
-            kind="secondary"
-            :icon="Download20"
-            @click="installInstance()"
-            >{{ $t("software_center.install_new_instance") }}
-          </NsButton>
+            class="flex items-center"
+          >
+            <NsButton
+              kind="secondary"
+              :icon="Download20"
+              :disabled="!app.versions.length"
+              @click="installInstance()"
+              >{{ $t("software_center.install_new_instance") }}
+            </NsButton>
+            <cv-interactive-tooltip
+              v-if="app.no_version_reason && app.no_version_reason.message"
+              alignment="center"
+              direction="bottom"
+              class="info mg-left-sm"
+            >
+              <template slot="trigger">
+                <Information16 />
+              </template>
+              <template slot="content">
+                {{
+                  $t(
+                    `software_center.no_version_reason.${app.no_version_reason.message}`,
+                    app.no_version_reason.params
+                  )
+                }}
+              </template>
+            </cv-interactive-tooltip>
+          </div>
         </cv-column>
       </cv-row>
       <cv-row>
@@ -124,12 +147,33 @@
         <cv-column v-else-if="!app.installed.length">
           <NsEmptyState :title="$t('software_center.no_instance_installed')">
             <template #description>
-              <NsButton
-                kind="primary"
-                :icon="Download20"
-                @click="installInstance()"
-                >{{ $t("software_center.install_new_instance") }}
-              </NsButton>
+              <div class="inline-flex items-center">
+                <NsButton
+                  kind="primary"
+                  :icon="Download20"
+                  :disabled="!app.versions.length"
+                  @click="installInstance()"
+                  >{{ $t("software_center.install_new_instance") }}
+                </NsButton>
+                <cv-interactive-tooltip
+                  v-if="app.no_version_reason && app.no_version_reason.message"
+                  alignment="center"
+                  direction="bottom"
+                  class="info mg-left-sm"
+                >
+                  <template slot="trigger">
+                    <Information16 />
+                  </template>
+                  <template slot="content">
+                    {{
+                      $t(
+                        `software_center.no_version_reason.${app.no_version_reason.message}`,
+                        app.no_version_reason.params
+                      )
+                    }}
+                  </template>
+                </cv-interactive-tooltip>
+              </div>
             </template>
           </NsEmptyState>
         </cv-column>
@@ -416,10 +460,16 @@ import {
 import { mapState, mapActions } from "vuex";
 import CloneOrMoveAppModal from "@/components/software-center/CloneOrMoveAppModal";
 import UpdateAppModal from "../components/software-center/UpdateAppModal";
+import Information16 from "@carbon/icons-vue/es/information/16";
 
 export default {
   name: "SoftwareCenterAppInstances",
-  components: { InstallAppModal, CloneOrMoveAppModal, UpdateAppModal },
+  components: {
+    InstallAppModal,
+    CloneOrMoveAppModal,
+    UpdateAppModal,
+    Information16,
+  },
   mixins: [
     TaskService,
     UtilService,

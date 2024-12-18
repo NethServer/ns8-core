@@ -124,13 +124,34 @@
           </div>
           <div v-else class="app-row">
             <!-- app is not installed -->
-            <NsButton
-              kind="secondary"
-              size="field"
-              :icon="Download20"
-              @click="installInstance(app)"
-              >{{ $t("software_center.install") }}</NsButton
-            >
+            <div class="flex items-center">
+              <NsButton
+                kind="secondary"
+                size="field"
+                :icon="Download20"
+                :disabled="!app.versions.length"
+                @click="installInstance(app)"
+                >{{ $t("software_center.install") }}</NsButton
+              >
+              <cv-interactive-tooltip
+                v-if="app.no_version_reason && app.no_version_reason.message"
+                alignment="center"
+                direction="bottom"
+                class="info mg-left-sm"
+              >
+                <template slot="trigger">
+                  <Information16 />
+                </template>
+                <template slot="content">
+                  {{
+                    $t(
+                      `software_center.no_version_reason.${app.no_version_reason.message}`,
+                      app.no_version_reason.params
+                    )
+                  }}
+                </template>
+              </cv-interactive-tooltip>
+            </div>
           </div>
         </cv-tile>
       </div>
@@ -148,10 +169,11 @@
 import { IconService, UtilService } from "@nethserver/ns8-ui-lib";
 import AppInfoModal from "./AppInfoModal";
 import CertificationLevelBadge from "./CertificationLevelBadge.vue";
+import Information16 from "@carbon/icons-vue/es/information/16";
 
 export default {
   name: "AppList",
-  components: { AppInfoModal, CertificationLevelBadge },
+  components: { AppInfoModal, CertificationLevelBadge, Information16 },
   mixins: [IconService, UtilService],
   props: {
     apps: {
