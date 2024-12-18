@@ -166,7 +166,7 @@ export default {
       if (this.app.versions.length) {
         return this.app.versions[0].tag;
       } else {
-        return "-";
+        return "-"; // this value is never sent. It would fail the backend validation
       }
     },
     canInstallOnSingleNode() {
