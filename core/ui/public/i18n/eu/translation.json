@@ -123,7 +123,8 @@
         "active": "Aktiboa",
         "configure": "Configure",
         "terms_and_conditions": "Terms and Conditions",
-        "terms_required": "Please read and agree to @:common.terms_and_conditions"
+        "terms_required": "Please read and agree to @:common.terms_and_conditions",
+        "not_available": "Not available"
     },
     "backup": {
         "aws": "Amazon S3",
@@ -306,7 +307,9 @@
         "data_encryption_key_tooltip": "This password is used to encrypt data in the backup destination and is saved inside your cluster backup. Store this password in a safe place, or remember to download cluster backup regularly.",
         "most_recent": "Most recent",
         "from_this_cluster": "From this cluster",
-        "url_pattern": "The S3-compatible hostname and bucket name must be separated by a slash '/'"
+        "url_pattern": "The S3-compatible hostname and bucket name must be separated by a slash '/'",
+        "wrong_password_or_no_key_found": "Wrong data encryption key or no key found",
+        "no_node_eligible_for_instance_restoration": "No node eligible for instance restoration"
     },
     "settings_sw_repositories": {
         "create_repository": "Biltegi bat gehitu",
@@ -506,7 +509,8 @@
         "set-retention": "Set retention",
         "set-syslog-forwarder": "Set Syslog forwarder",
         "set-clm-forwarder": "Set Cloud Log Manager forwarder",
-        "read-backup-snapshots": "Read backup snapshots"
+        "read-backup-snapshots": "Read backup snapshots",
+        "determine-restore-eligibility": "Determine restore eligibility"
     },
     "shell": {
         "app_launcher": "Aplikazioen abiarazlea",
@@ -902,7 +906,10 @@
         "leader_node_hostname": "Leader node hostname",
         "hostname_pattern": "Invalid hostname format",
         "restore_num_apps": "Restore apps | Restore {num} app | Restore {num} apps",
-        "select_apps_to_restore_description": "Your apps will be restored using the latest backup. If you need to restore certain apps from an earlier backup, you can do so later by going to the '@:backup.title' page"
+        "select_apps_to_restore_description": "Your apps will be restored using the latest backup. If you need to restore certain apps from an earlier backup, you can do so later by going to the '@:backup.title' page",
+        "apps_restoration_single_node_description": "You can choose which apps to restore in the next step, after the cluster has been restored.",
+        "apps_restoration_multi_node_description": "Apps cannot be restored automatically because the original cluster consisted of multiple nodes. You can manually restore apps later by going to '@:backup.title > @:backup.restore_app'",
+        "apps_restoration": "Apps restoration"
     },
     "login": {
         "2fa_code_required": "6 digituko kodea beharrezkoa da",
@@ -1062,7 +1069,14 @@
         "num_instances_installed": "{num} instance installed | {num} instances installed",
         "cannot_install_app_on_node": "Cannot install {app} {version} on {node}",
         "updates_disabled_ns7_migration_description": "There is an ongoing NS7 migration. Updates will resume once the migration is complete.",
-        "updates_disabled_ns7_migration_title": "Updates are suspended"
+        "updates_disabled_ns7_migration_title": "Updates are suspended",
+        "no_node_eligible_for_instance_cloning": "No node is eligible for instance cloning",
+        "no_node_eligible_for_app_installation": "No node is eligible for app installation",
+        "no_node_eligible_for_instance_migration": "No node is eligible for instance migration",
+        "no_version_reason": {
+            "core_version_too_low": "Update core to version {core_min} or higher to install an instance of this app",
+            "rootfull_certification_level_too_low": "Apps with administrative privileges must have a minimum certification level of {certification_min}/5 to be installed"
+        }
     },
     "account_provider": {
         "title": "Kontu hornitzailea"
