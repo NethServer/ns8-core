@@ -813,7 +813,7 @@ export default {
       this.listModules();
     },
     showSoftwareCenterCoreApps() {
-      this.$router.push("/software-center/SoftwareCenterCoreApps");
+      this.$router.push("/software-center/core-apps");
     },
   },
 };
