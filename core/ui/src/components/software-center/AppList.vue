@@ -279,7 +279,7 @@ export default {
       return false;
     },
     showSoftwareCenterCoreApps() {
-      this.$router.push("/software-center/SoftwareCenterCoreApps");
+      this.$router.push("/software-center/core-apps");
     },
   },
 };

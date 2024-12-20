@@ -86,7 +86,7 @@
               $t('software_center.core_app_update_available_description')
             "
             :actionLabel="$t('common.see_details')"
-            @action="goToUpdates"
+            @action="showSoftwareCenterCoreApps"
             :showCloseButton="false"
           />
         </cv-column>
@@ -813,7 +813,7 @@ export default {
       this.listModules();
     },
     showSoftwareCenterCoreApps() {
-      this.$router.push("/software-center/SoftwareCenterCoreApps");
+      this.$router.push("/software-center/core-apps");
     },
   },
 };

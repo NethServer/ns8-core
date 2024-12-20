@@ -146,7 +146,7 @@ const routes = [
       ),
   },
   {
-    path: "/software-center/SoftwareCenterCoreApps",
+    path: "/software-center/core-apps",
     name: "SoftwareCenterCoreApps",
     component: () =>
       import(
