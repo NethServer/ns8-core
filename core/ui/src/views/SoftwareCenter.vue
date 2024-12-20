@@ -86,7 +86,7 @@
               $t('software_center.core_app_update_available_description')
             "
             :actionLabel="$t('common.see_details')"
-            @action="goToUpdates"
+            @action="showSoftwareCenterCoreApps"
             :showCloseButton="false"
           />
         </cv-column>
