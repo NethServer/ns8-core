@@ -49,7 +49,9 @@
               v-if="isCoreUpdatable"
               kind="primary"
               :icon="Upgrade20"
-              @click="onWillUpdateCore(coreUpdate)"
+              :disabled="updateCoreTimeout || isUpdateInProgress"
+              :loading="isUpdateInProgress"
+              @click="onWillUpdateCore"
               >{{ $t("software_center.update_core") }}
             </NsButton>
             <div class="mg-bottom-md">
@@ -145,7 +147,7 @@ export default {
     return {
       tablePage: [],
       tableColumns: [],
-      deleteAddressTimeout: [],
+      updateCoreTimeout: 0,
       coreApp: null,
       appInfo: {
         isShown: false,
@@ -328,55 +330,39 @@ export default {
       this.loading.listCoreModules = false;
     },
 
-    onWillUpdateCore(coreUpdate) {
+    onWillUpdateCore() {
       const notification = {
-        id: this.getUuid(),
+        id: "updateCore",
         title: this.$t("software_center.core_update_will_start_in_a_moment"),
         type: "info",
         toastTimeout: this.DELETE_DELAY,
         actionLabel: this.$t("common.cancel"),
         action: {
           type: "callback",
-          callback: this.cancelDeleteAddress.bind(null, coreUpdate),
+          callback: this.cancelDeleteAddress,
         },
       };
       this.createNotificationForApp(notification);
 
-      const timeout = setTimeout(() => {
+      this.updateCoreTimeout = setTimeout(() => {
         // remove notification from drawer
-        this.deleteNotificationForApp(notification.id);
+        this.deleteNotificationForApp("updateCore");
 
         // delete timeout
-        this.deleteAddressTimeout = this.deleteAddressTimeout.filter(
-          (el) => el.name !== coreUpdate
-        );
+        this.updateCoreTimeout = 0;
 
         // call api to update core
         this.updateCore();
       }, this.DELETE_DELAY);
-
-      this.deleteAddressTimeout.push({
-        name: coreUpdate,
-        timeout,
-        notification,
-      });
     },
-    cancelDeleteAddress(coreUpdate) {
-      const timeoutFound = this.deleteAddressTimeout.find(
-        (el) => el.name === coreUpdate
-      );
+    cancelDeleteAddress() {
+      clearTimeout(this.updateCoreTimeout);
 
-      if (timeoutFound) {
-        clearTimeout(timeoutFound.timeout);
+      // remove notification from drawer
+      this.deleteNotificationForApp("updateCore");
 
-        // remove notification from drawer
-        this.deleteNotificationForApp(timeoutFound.notification.id);
-
-        // delete timeout
-        this.deleteAddressTimeout = this.deleteAddressTimeout.filter(
-          (el) => el.name !== coreUpdate
-        );
-      }
+      // delete timeout
+      this.updateCoreTimeout = 0;
     },
 
     async updateCore() {
