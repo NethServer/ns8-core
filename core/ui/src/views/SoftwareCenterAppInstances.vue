@@ -97,7 +97,7 @@
           </NsButton>
           <div
             v-if="app.installed && app.installed.length"
-            class="flex items-center"
+            class="inline-flex items-center"
           >
             <NsButton
               kind="secondary"
