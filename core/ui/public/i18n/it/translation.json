@@ -746,7 +746,7 @@
         "default_repository_name": "Destinazione {provider}",
         "go_to_backup": "Vai a Backup",
         "backup_of_instances_failed_c": "{instance} fallita | {num} istanze fallite",
-        "errored_backups_c": "{num} backup non riuscito | {num} backup non riusciti",
+        "some_backups_failed": "Alcuni backup sono falliti",
         "errored_backups_description": "Dai un'occhiata a 'Pianificazione' qui sotto",
         "backups_scheduled_c": "Backup programmato | Backup programmati",
         "not_backed_up": "Non è stato eseguito il backup",
@@ -1158,7 +1158,8 @@
     "cluster_status": {
         "go_to_software_center": "Vai a Software center",
         "go_to_backup": "Vai a Backup",
-        "backups_failed_c": "{num} backup fallito | {num} backup falliti",
+        "backups_failed_c": "{num} backup di app fallito | {num} backup di app falliti",
+        "backup_disabled_c": "{num} backup disabilitato | {num} backup disabilitati",
         "instances_not_backed_up_c": "{num} app senza backup | {num} app senza backup",
         "updated_available_c": "Aggiornamento disponibile | Aggiornamenti disponibili",
         "core_update_available": "Aggiornamento di base disponibile",

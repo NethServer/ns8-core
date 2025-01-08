@@ -188,7 +188,7 @@
           </NsInfoCard>
           <NsInfoCard
             light
-            :title="backups.length.toString()"
+            :title="enabledBackupSchedules.length.toString()"
             :description="$tc('backup.backups_scheduled_c', backups.length)"
             :icon="Save32"
             :loading="loading.listBackups"
@@ -198,14 +198,19 @@
             class="min-height-card"
           >
             <template slot="content">
-              <div class="card-rows">
+              <div class="card-rows mg-top-sm">
                 <div
                   v-if="!loading.listBackups && !error.listBackups"
-                  class="card-row mg-top-sm"
+                  class="mg-bottom-sm"
                 >
                   <template
-                    v-if="erroredBackups.length || instancesNotBackedUp.length"
+                    v-if="
+                      erroredBackups.length ||
+                      disabledBackupSchedules.length ||
+                      instancesNotBackedUp.length
+                    "
                   >
+                    <!-- some backups failed -->
                     <div
                       v-if="erroredBackups.length"
                       class="card-row icon-and-text"
@@ -221,6 +226,23 @@
                         }}
                       </span>
                     </div>
+                    <!-- some backups are disabled -->
+                    <div
+                      v-if="disabledBackupSchedules.length"
+                      class="card-row icon-and-text"
+                    >
+                      <NsSvg :svg="Warning16" class="icon ns-warning" />
+                      <span>
+                        {{
+                          $tc(
+                            "cluster_status.backup_disabled_c",
+                            disabledBackupSchedules.length,
+                            { num: disabledBackupSchedules.length }
+                          )
+                        }}
+                      </span>
+                    </div>
+                    <!-- some instances are not backed up -->
                     <div
                       v-if="instancesNotBackedUp.length"
                       class="card-row icon-and-text"
@@ -454,7 +476,26 @@ export default {
     ]),
     ...mapGetters(["leaderNode"]),
     erroredBackups() {
-      return this.backups.filter((b) => b.errorInstances.length);
+      const erroredInstances = [];
+
+      for (const backup of this.backups) {
+        if (!backup.enabled) {
+          continue;
+        }
+
+        for (const instance of backup.instances) {
+          if (instance.status && instance.status.success == false) {
+            erroredInstances.push(instance.module_id);
+          }
+        }
+      }
+      return erroredInstances;
+    },
+    disabledBackupSchedules() {
+      return this.backups.filter((b) => !b.enabled);
+    },
+    enabledBackupSchedules() {
+      return this.backups.filter((b) => b.enabled);
     },
     nodesOffline() {
       return this.nodes.filter((n) => n.online == false);
@@ -875,14 +916,7 @@ export default {
     },
     listBackupsCompleted(taskContext, taskResult) {
       this.instancesNotBackedUp = taskResult.output.unconfigured_instances;
-      let backups = taskResult.output.backups;
-
-      for (const backup of backups) {
-        backup.errorInstances = backup.instances.filter(
-          (i) => i.status == false
-        );
-      }
-      this.backups = backups;
+      this.backups = taskResult.output.backups;
       this.loading.listBackups = false;
     },
     async getActiveLokiInstance() {

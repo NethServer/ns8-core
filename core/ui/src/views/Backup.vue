@@ -214,11 +214,7 @@
           <cv-column>
             <NsInlineNotification
               kind="error"
-              :title="
-                $tc('backup.errored_backups_c', erroredBackups.length, {
-                  num: erroredBackups.length,
-                })
-              "
+              :title="$t('backup.some_backups_failed')"
               :description="$t('backup.errored_backups_description')"
               :showCloseButton="false"
             />
@@ -913,7 +909,7 @@ export default {
 
         // error instances
         backup.errorInstances = backup.instances.filter(
-          (i) => i.status == false
+          (i) => i.status && i.status.success == false
         );
       }
       this.backups = backups;
