@@ -862,7 +862,6 @@
         "set_cluster_backup_password": "Verschlüsselungs-Kennwort festlegen",
         "smb_pass": "Kennwort",
         "restore_tooltip": "Jede vorab gesicherte Anwendung oder das gesamte Cluster wiederherstellen.",
-        "errored_backups_c": "{num} Datensicherung fehlgeschlagen | {num} Datensicherungen fehlgeschlagen",
         "not_backed_up": "Noch nie gesichert",
         "repositories_tooltip": "In folgende Ziele werden Ihre Apps gesichert",
         "smb_user": "Benutzername",
@@ -966,7 +965,8 @@
         "from_this_cluster": "Von diesem Cluster",
         "url_pattern": "The S3-compatible hostname and bucket name must be separated by a slash '/'",
         "wrong_password_or_no_key_found": "Wrong data encryption key or no key found",
-        "no_node_eligible_for_instance_restoration": "No node eligible for instance restoration"
+        "no_node_eligible_for_instance_restoration": "No node eligible for instance restoration",
+        "some_backups_failed": "Some backups failed"
     },
     "settings_http_routes": {
         "delete_route_description": "Route {name} löschen? Jede Anwendung, die an diese Route gebunden ist, wird nicht mehr zugreifbar sein.",
@@ -1328,7 +1328,8 @@
         "go_to_settings": "Zu Einstellungen wechseln",
         "go_to_system_logs": "zu System-Protokollen wechsel",
         "active_instance": "Aktive Instanz: {instance}",
-        "system_logs": "System-Protokolle"
+        "system_logs": "System-Protokolle",
+        "backup_disabled_c": "{num} backup disabled | {num} backups disabled"
     },
     "calendar": {
         "days": "Tage",

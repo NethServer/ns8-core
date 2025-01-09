@@ -232,7 +232,6 @@
         "restore_tooltip": "You can restore any previously backed up app or the whole cluster:",
         "backup_page_tooltip_2": "Cluster data is composed of <strong>cluster configuration data</strong> and <strong>apps data</strong>.",
         "smb_host": "Host name or IP address",
-        "errored_backups_c": "{num} backup failed | {num} backups failed",
         "not_backed_up": "Not backed up",
         "repositories_tooltip": "These are the repositories where your apps are backed up to",
         "smb_user": "User name",
@@ -361,7 +360,8 @@
         "data_encryption_key_tooltip": "This password is used to encrypt data in the backup destination and is saved inside your cluster backup. Store this password in a safe place, or remember to download cluster backup regularly.",
         "url_pattern": "The S3-compatible hostname and bucket name must be separated by a slash '/'",
         "wrong_password_or_no_key_found": "Wrong data encryption key or no key found",
-        "no_node_eligible_for_instance_restoration": "No node eligible for instance restoration"
+        "no_node_eligible_for_instance_restoration": "No node eligible for instance restoration",
+        "some_backups_failed": "Some backups failed"
     },
     "settings_tls_certificates": {
         "no_tls_certificate": "No TLS certificate",
@@ -1171,7 +1171,8 @@
         "go_to_settings": "Go to settings",
         "system_logs": "System logs",
         "go_to_system_logs": "Go to System logs",
-        "active_instance": "Active instance: {instance}"
+        "active_instance": "Active instance: {instance}",
+        "backup_disabled_c": "{num} backup disabled | {num} backups disabled"
     },
     "settings_cluster_admins": {
         "delete_admin_admin": "Delete admin {admin}",
