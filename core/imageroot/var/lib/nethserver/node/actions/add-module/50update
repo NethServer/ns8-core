@@ -54,6 +54,11 @@ is_rootfull = request['is_rootfull']
 module_environment = request['environment']
 image_url = module_environment['IMAGE_URL']
 
+# Valdate the base homedir path: it must exist.
+if 'HOME_BASEDIR' in os.environ and not os.path.isdir(os.environ['HOME_BASEDIR']):
+    print(agent.SD_ERR + f"[ERROR] The HOME_BASEDIR path, {os.environ['HOME_BASEDIR']} does not exist or is not a directory.", file=sys.stderr)
+    sys.exit(2)
+
 # Allocate TCP ports
 if request['tcp_ports_demand'] > 0:
     tcp_ports_range=node.ports_manager.allocate_ports(request['tcp_ports_demand'], module_id, 'tcp')
@@ -89,13 +94,13 @@ if is_rootfull:
     # Start the module agent
     agent.run_helper('systemctl', 'enable', '--now', f'agent@{module_id}.service').check_returncode()
 else: # rootless
-    # Create the module dirs structure
-    if 'HOME_BASEDIR' in os.environ and os.path.isdir(os.environ["HOME_BASEDIR"]):
-        # create the home directory with a custom base path
+    if 'HOME_BASEDIR' in os.environ:
+        # create the home directory with the custom base path
         module_basedir_args = ["-b", os.environ["HOME_BASEDIR"]]
     else:
         # use default base path (see useradd -D)
         module_basedir_args = []
+    # Create the module dirs structure
     agent.run_helper('useradd', *module_basedir_args, '-m', '-k', '/etc/nethserver/skel', '-s', '/bin/bash', module_id).check_returncode()
     agent.run_helper('chmod', '-c', '0700', os.path.expanduser("~" + module_id)).check_returncode()
     os.chdir(os.path.expanduser("~" + module_id) + '/.config')
