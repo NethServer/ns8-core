@@ -27,7 +27,7 @@ if not core_url:
 
 # Start the core update on each node
 update_core_tasks = []
-for node_id in nodes_list:
+for node_id in set(nodes_list):
     update_core_tasks.append({
         "agent_id": f'node/{node_id}',
         "action": "update-core",

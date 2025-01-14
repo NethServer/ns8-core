@@ -36,7 +36,7 @@ trap 'podman rm -f "${cid}" >/dev/null' EXIT
 # Extract the image contents, generating the new image index, and
 # unlinking existing files as it is necessary to properly replace
 # executables and libraries:
-podman export "${cid}" | tar --totals --no-overwrite-dir --no-same-owner --exclude=.gitignore --exclude-caches-under -x -v -f - | LC_ALL=C sort | tee ${lst_file}
+podman export "${cid}" | flock --verbose -n "${AGENT_STATE_DIR:?}"/.install-coreimage.lock tar --totals --no-overwrite-dir --no-same-owner --exclude=.gitignore --exclude-caches-under -x -v -f - | LC_ALL=C sort | tee ${lst_file}
 
 dirs_list=()
 
