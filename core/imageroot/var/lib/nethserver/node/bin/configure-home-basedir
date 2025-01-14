@@ -1,0 +1,122 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2025 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+import agent
+import sys
+import os
+import stat
+import argparse
+import subprocess
+import json
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Validate and configure the base path for home directories of NS8 modules.",
+        epilog="DIR is the base path for new home directories."
+    )
+    parser.add_argument(
+        "-c",
+        "--check-only",
+        dest="check_only",
+        action="store_true",
+        help="Check only, do not save the configuration.",
+    )
+    parser.add_argument(
+        "DIR",
+        metavar="DIR",
+        help="Base path for new home directories.",
+    )
+
+    args = parser.parse_args()
+    if args.DIR == "" and not args.check_only:
+        agent.unset_env('HOME_BASEDIR')
+        print("The base path for home directories has been reset to OS default.")
+    else:
+        home_basedir = validate_home_basedir(args.DIR)
+        if not args.check_only:
+            store_configuration(home_basedir)
+            print("The base path for home directories has been updated.")
+
+def store_configuration(path):
+    if os.path.isdir("/sys/fs/selinux"):
+        # On systems with SELinux, configure path as /home equivalent
+        update_selinux_customization(path)
+    agent.set_env('HOME_BASEDIR', path)
+    print("HOME_BASEDIR=" + path)
+
+def update_selinux_customization(path):
+    ocurrent = subprocess.check_output(['semanage', 'fcontext', '-l', '-C'], text=True)
+    if not f"\n{path} = /home\n" in ocurrent:
+        subprocess.check_call(['semanage', 'fcontext', '-a', '-e', '/home', path])
+    subprocess.check_call(['restorecon', '-v', path])
+    update_parentdir_selinux_type(path)
+
+def update_parentdir_selinux_type(path):
+    """If needed, set home_root_t on parent dir as required by semanage-fcontext manpage."""
+    parentdir = os.path.dirname(path)
+    if parentdir != "/":
+        ols = subprocess.check_output(['ls', '-Zd', parentdir], text=True)
+        if ":default_t:" in ols:
+            subprocess.check_call(['semanage', 'fcontext', '-a', '-t', 'home_root_t', parentdir])
+            subprocess.check_call(['restorecon', '-v', parentdir])
+
+def validate_home_basedir(path):
+    """Validate the given path and return it in canonicalized form."""
+    if os.path.islink(path) or not os.path.isdir(path):
+        print(f"Error: {path} is not a directory.", file=sys.stderr)
+        sys.exit(2)
+    # Canonicalize the path value:
+    home_basedir = os.path.abspath(path)
+    if os.path.realpath(home_basedir) != home_basedir:
+        print(f"Error: {path} contains one or more symlink components.", file=sys.stderr)
+        sys.exit(2)
+    check_permissions(home_basedir)
+    check_unique_mountpoint(home_basedir)
+    return home_basedir
+
+def get_mountpoint_device(path):
+    """Check if path is a mountpoint and return its source device."""
+    try:
+        joutput = subprocess.check_output(['findmnt', '--json', '--mountpoint', path])
+        ofindmnt = json.loads(joutput)
+        return ofindmnt["filesystems"][0]["source"] # source device path
+    except subprocess.CalledProcessError:
+        print(f"Error: {path} is not a filesystem mountpoint.", file=sys.stderr)
+        sys.exit(2)
+
+def check_unique_mountpoint(path):
+    """Check if path is a mountpoint, and its source device is not
+    mounted elsewhere."""
+    device = get_mountpoint_device(path)
+    joutput = subprocess.check_output(['findmnt', '-o', 'TARGET', '--json', '--source', device])
+    ofindmnt = json.loads(joutput)
+    for ofs in ofindmnt["filesystems"]:
+        if ofs['target'] != path:
+            print(f"Error: device {device} has multiple mountpoints. It is mounted also on {ofs['target']}. Unmount it, persist the change, and retry.", file=sys.stderr)
+            sys.exit(2)
+
+def check_permissions(dir_path):
+    """Checks if the given directory and its ancestors have octal 5
+    (world-readable and executable) or higher permissions."""
+    current_path = dir_path
+    while current_path != "/":
+        try:
+            st = os.stat(current_path)
+            # Extract other permissions (last 3 bits)
+            other_perms = stat.S_IMODE(st.st_mode) & 0o007
+            # Check if permissions are at least 5 (r-x)
+            if other_perms < 0o5:
+                print(f"Error: invalid permissions on {current_path}. Fix with chmod -c +rx {current_path}, or higher.", file=sys.stderr)
+                sys.exit(2)
+            # Move to the parent directory
+            current_path = os.path.dirname(current_path)
+        except Exception as ex:
+            print(f"Error: {current_path}:", ex, file=sys.stderr)
+            sys.exit(2)
+
+if __name__ == "__main__":
+    main()
