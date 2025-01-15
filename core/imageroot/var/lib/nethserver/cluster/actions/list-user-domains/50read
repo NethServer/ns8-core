@@ -24,6 +24,13 @@ import sys
 import json
 import agent
 import cluster.userdomains
+from agent.ldapproxy import Ldapproxy
+from agent.ldapclient import Ldapclient
+
+try:
+    request = json.load(sys.stdin) or {}
+except JSONDecodeError:
+    request = {}
 
 unconfigured_domains = []
 
@@ -46,6 +53,10 @@ for kdom in domains:
         "users": users_count,
         "groups": groups_count,
     }
+    if 'base_entryuuid' in request.get("extra_fields", []):
+        domparams = Ldapproxy().get_domain(kdom)
+        oldapcli = Ldapclient.factory(**domparams)
+        domains[kdom]['base_entryuuid'] = oldapcli.get_base_entryuuid(kdom)
 
 for kdom in rdb.scan_iter("module/*/user_domain"):
     module_id = kdom.split('/', 2)[1]

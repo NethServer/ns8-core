@@ -27,6 +27,7 @@
                         "users": null,
                         "groups": null
                     },
+                    "base_entryuuid": "beb1b6b6-cb0e-1039-9837-85974e4da6b6",
                     "providers": [
                         {
                             "id": "openldap1",
@@ -60,6 +61,7 @@
                         "users": 15,
                         "groups": 3
                     },
+                    "base_entryuuid": null,
                     "providers": [
                         {
                             "id": "ldap-primary.company.org",
@@ -327,6 +329,10 @@
                         "ad",
                         "rfc2307"
                     ]
+                },
+                "base_entryuuid": {
+                    "description": "Optional Universal Unique Identifier of the base_dn LDAP entry",
+                    "type": ["null", "string"]
                 },
                 "base_dn": {
                     "type": "string",

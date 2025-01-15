@@ -97,3 +97,28 @@ class LdapclientBase:
         """Reduce the given attr_list by filtering out attribute names not
            declared in the server schema."""
         return [aname for aname in attr_list if aname in self.ldapsrv.schema.attribute_types]
+
+    def get_base_entryuuid(self, kdom):
+        """Return the entryUUID (or equivalent) value found on the base_dn
+        entry, or None if not found."""
+        unique_identifier_attributes = [
+            "entryUUID",      # OpenLDAP, ApacheDS
+            "objectGUID",     # Active Directory
+            "nsUniqueId",     # 389 Directory Server
+            "ibm-entryUUID",  # IBM Security Directory Server
+            "GUID"            # Novell eDirectory
+        ]
+        response = self.ldapconn.search(
+            self.base_dn,
+            "(objectClass=*)",
+            search_scope=ldap3.BASE,
+            attributes=[ldap3.ALL_ATTRIBUTES, ldap3.ALL_OPERATIONAL_ATTRIBUTES],
+            dereference_aliases=ldap3.DEREF_NEVER,
+            get_operational_attributes=True,
+        )[2]
+        if response and response[0]['type'] == 'searchResEntry':
+            entry = response[0]
+            for eattr in unique_identifier_attributes:
+                if eattr in entry['attributes']:
+                    return str(entry['attributes'][eattr]).strip("{}")
+        return None
