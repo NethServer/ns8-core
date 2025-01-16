@@ -1,0 +1,31 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "list-user-domains input",
+    "description": "Quickly get the user domains list and their basic configuration",
+    "$id": "http://schema.nethserver.org/cluster/list-user-domains-input.json",
+    "examples": [
+        null,
+        {},
+        {
+            "extra_fields": [
+                "base_entryuuid"
+            ]
+        }
+    ],
+    "type": [
+        "object",
+        "null"
+    ],
+    "properties": {
+        "extra_fields": {
+            "description": "Retrieve and return in the response the additional fields listed in this array.",
+            "type": "array",
+            "items": {
+                "type": "string",
+                "enum": [
+                    "base_entryuuid"
+                ]
+            }
+        }
+    }
+}
