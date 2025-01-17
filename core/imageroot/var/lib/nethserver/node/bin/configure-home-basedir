@@ -18,35 +18,49 @@ def main():
         description="Validate and configure the base path for home directories of NS8 modules.",
         epilog="DIR is the base path for new home directories."
     )
-    parser.add_argument(
+    exgroup = parser.add_mutually_exclusive_group()
+    exgroup.add_argument(
+        "-s",
+        "--set",
+        type=str,
+        dest="set_dir",
+        metavar="DIR",
+        help="Set base path for new home directories.",
+    )
+    exgroup.add_argument(
         "-c",
-        "--check-only",
-        dest="check_only",
-        action="store_true",
+        "--check",
+        type=str,
+        dest="check_dir",
+        metavar="DIR",
         help="Check only, do not save the configuration.",
     )
-    parser.add_argument(
-        "DIR",
-        metavar="DIR",
-        help="Base path for new home directories.",
+    exgroup.add_argument(
+        "-r",
+        "--reset",
+        action="store_true",
+        help="Reset base path for home directories to OS default."
     )
 
     args = parser.parse_args()
-    if args.DIR == "" and not args.check_only:
+    if args.reset:
         agent.unset_env('HOME_BASEDIR')
         print("The base path for home directories has been reset to OS default.")
+    elif args.check_dir:
+        validate_home_basedir(args.check_dir)
+    elif args.set_dir:
+        home_basedir = validate_home_basedir(args.set_dir)
+        store_configuration(home_basedir)
+        print(f"The base path for home directories has been set to {args.set_dir}.")
     else:
-        home_basedir = validate_home_basedir(args.DIR)
-        if not args.check_only:
-            store_configuration(home_basedir)
-            print("The base path for home directories has been updated.")
+        args.print_usage()
+        sys.exit(1)
 
 def store_configuration(path):
     if os.path.isdir("/sys/fs/selinux"):
         # On systems with SELinux, configure path as /home equivalent
         update_selinux_customization(path)
     agent.set_env('HOME_BASEDIR', path)
-    print("HOME_BASEDIR=" + path)
 
 def update_selinux_customization(path):
     ocurrent = subprocess.check_output(['semanage', 'fcontext', '-l', '-C'], text=True)

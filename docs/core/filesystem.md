@@ -44,7 +44,7 @@ steps to configure a node's agent for this purpose:
 3. Configure the node agent to use `/home1` as base directory for new
    modules:
 
-       runagent -m node configure-home-basedir /home1
+       runagent -m node configure-home-basedir --set /home1
 
 From now on, new module instances will use `/home1` as their base
 directory. Existing modules are not affected and will retain their current
