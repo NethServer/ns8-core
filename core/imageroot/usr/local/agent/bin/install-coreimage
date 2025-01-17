@@ -20,12 +20,19 @@
 # along with NethServer.  If not, see COPYING.
 #
 
-set -e
+set -e -o pipefail
 
 cd /
 
 core_url=${1:?Usage $0 CORE_URL}
 lst_file="var/lib/nethserver/node/state/coreimage.lst"
+lock_file="${AGENT_STATE_DIR:?}"/.install-coreimage.lock
+
+# Prevent concurrent execution of this script with a lock file opened with
+# an arbitrary high FD number, like 201. The lock is released when the
+# script completes:
+exec 201>"${lock_file}"
+flock --verbose -n 201
 
 # Make a backup of the current index
 cp -af ${lst_file}{,~}
@@ -36,7 +43,7 @@ trap 'podman rm -f "${cid}" >/dev/null' EXIT
 # Extract the image contents, generating the new image index, and
 # unlinking existing files as it is necessary to properly replace
 # executables and libraries:
-podman export "${cid}" | flock --verbose -n "${AGENT_STATE_DIR:?}"/.install-coreimage.lock tar --totals --no-overwrite-dir --no-same-owner --exclude=.gitignore --exclude-caches-under -x -v -f - | LC_ALL=C sort | tee ${lst_file}
+podman export "${cid}" | tar --totals --no-overwrite-dir --no-same-owner --exclude=.gitignore --exclude-caches-under -x -v -f - | LC_ALL=C sort | tee ${lst_file}
 
 dirs_list=()
 
