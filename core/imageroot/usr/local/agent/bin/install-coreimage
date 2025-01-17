@@ -34,8 +34,15 @@ lock_file="${AGENT_STATE_DIR:?}"/.install-coreimage.lock
 exec 201>"${lock_file}"
 flock --verbose -n 201
 
+# Record in logs the install date of current image before replacing it.
+(
+    core_image=$(awk -F = '/^CORE_IMAGE=/ { print $2 }' /etc/nethserver/core.env)
+    install_date=$(stat -c "%y" "${lst_file}")
+    printf "Image %s will replace %s, installed on %s\n" "${core_url}" "${core_image}" "${install_date}"
+) || :
+
 # Make a backup of the current index
-cp -af ${lst_file}{,~}
+cp -a ${lst_file}{,~}
 
 cid=$(podman create "${core_url}")
 trap 'podman rm -f "${cid}" >/dev/null' EXIT
