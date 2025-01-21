@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 
+import os
 import sys
 import cluster.modules
 import agent
@@ -30,6 +31,15 @@ def fact_admins():
             users["2fa"] += 1
     return users
 
+def fact_repositories():
+    # List enabled repositories
+    ret = []
+    rdb = agent.redis_connect(privileged=False)
+    for m in rdb.scan_iter('cluster/repository/*'):
+        repo = rdb.hgetall(m)
+        if repo.get("status") == "1":
+            ret.append(os.path.basename(m))
+    return ret
 
 def cluster_facts():
     result = agent.tasks.run(
