@@ -1,27 +1,25 @@
 #!/usr/bin/env python3
 
 #
-# Copyright (C) 2023 Nethesis S.r.l.
+# Copyright (C) 2025 Nethesis S.r.l.
 # SPDX-License-Identifier: AGPL-3.0-or-later
 #
 
 '''
-Helper script that retrive cluster info and send them to
-the phonehome server
+Helper script that send cluster info to the phonehome server.
+To see what is sent, run the following command:
+    runagent print-phonehome
 '''
 
 import sys
 import json
 import agent
 import http.client
-import cluster.inventory
+import subprocess
 
-facts = cluster.inventory.cluster_facts()
-if facts:
-    facts['modules'] = cluster.inventory.modules_facts()
-    facts['cluster'] = cluster.inventory.subscription_fact()
-else:
-    print(agent.SD_ERR + f"phonehome failed", file=sys.stderr)
+facts = json.loads(subprocess.check_output(['runagent', 'print-phonehome']))
+if not facts:
+    print(agent.SD_ERR + f"send-phonehome failed: can't execute print-phonehome", file=sys.stderr)
     sys.exit(1)
 
 redis_client = agent.redis_connect(privileged=False)
@@ -35,5 +33,5 @@ client.request('POST', '/api/installation', json.dumps(facts), {
 resp = client.getresponse()
 
 if resp.status >= 400:
-    print(agent.SD_ERR + f"phonehome failed with status {resp.status}", file=sys.stderr)
+    print(agent.SD_ERR + f"send-phonehome failed with status {resp.status}", file=sys.stderr)
     sys.exit(1)
