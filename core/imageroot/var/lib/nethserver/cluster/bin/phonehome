@@ -6,33 +6,34 @@
 #
 
 '''
-Helper script that sends into the tasks of the cluster 'get-facts', without
-passing through the API.
-The suprocess is used instead of redis library due to missing pip.
+Helper script that retrive cluster info and send them to
+the phonehome server
 '''
 
-import http.client
+import sys
 import json
-
 import agent
-import agent.tasks
+import http.client
+import cluster.inventory
 
-result = agent.tasks.run(
-    agent_id='cluster',
-    action='get-facts',
-    extra={
-        'isNotificationHidden': True,
-    },
-    endpoint="redis://cluster-leader"
+facts = cluster.inventory.cluster_facts()
+if facts:
+    facts['modules'] = cluster.inventory.modules_facts()
+    facts['cluster'] = cluster.inventory.subscription_fact()
+else:
+    print(agent.SD_ERR + f"phonehome failed", file=sys.stderr)
+    sys.exit(1)
+
+redis_client = agent.redis_connect(privileged=False)
+client = http.client.HTTPSConnection(
+    redis_client.get('cluster/phonehome/endpoint')
 )
+client.request('POST', '/api/installation', json.dumps(facts), {
+    "Content-type": "application/json",
+    "Accept": "application/json"
+})
+resp = client.getresponse()
 
-if result['exit_code'] == 0:
-    redis_client = agent.redis_connect(privileged=False)
-    client = http.client.HTTPSConnection(
-        redis_client.get('cluster/phonehome/endpoint')
-    )
-    client.request('POST', '/api/installation', json.dumps(result['output']), {
-        "Content-type": "application/json",
-        "Accept": "application/json"
-    })
-    client.getresponse()
+if resp.status >= 400:
+    print(agent.SD_ERR + f"phonehome failed with status {resp.status}", file=sys.stderr)
+    sys.exit(1)
