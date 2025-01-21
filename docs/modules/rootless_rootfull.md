@@ -12,17 +12,20 @@ those are the so-called *rootless* containers.  In NethServer 8, we borrow
 the same word from Podman and use it in the context of modules, together
 with its opposite, *rootfull*.
 
-To inspect and modify a rootless module start Bash with the `runagent`
-command to  properly initialize the Systemd runtime environment. For
-instance, to check if Traefik is running:
+To inspect a rootless module start Bash with the `runagent` command to
+properly initialize the Systemd runtime environment. For instance, to
+check if Traefik is running:
 
     runagent -m traefik1
+    # A Bash prompt from traefik1's session appears
     systemctl --user status traefik
+    # Systemctl prints its output
 
-As alternative use SSH:
+If you type the above commands in the same line, `runagent` executes
+`systemctl` without forking an interactive Bash shell:
 
-    ssh traefik1@localhost
-    systemctl --user status traefik
+    runagent -m traefik1 systemctl --user status traefik
+    # Systemctl prints its output from traefik1's session
 
 Let's see the differences of rootless modules vs rootfull modules.
 
