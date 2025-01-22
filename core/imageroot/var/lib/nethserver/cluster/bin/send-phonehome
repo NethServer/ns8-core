@@ -6,7 +6,7 @@
 #
 
 '''
-Helper script that send cluster info to the phonehome server.
+Helper script that sends cluster info to the phonehome server.
 To see what is sent, run the following command:
     runagent print-phonehome
 '''
