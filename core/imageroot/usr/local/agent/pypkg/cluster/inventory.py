@@ -41,6 +41,22 @@ def fact_repositories():
             ret.append(os.path.basename(m))
     return ret
 
+def fact_smarthost():
+    ret = {}
+    result = agent.tasks.run(
+        agent_id='cluster',
+        action='get-smarthost',
+        extra={
+            'isNotificationHidden': True,
+        },
+        endpoint="redis://cluster-leader"
+    )
+
+    if result['exit_code'] == 0:
+        ret = {"enabled": result["output"]["enabled"], "manual_configuration": result["output"]["manual_configuration"]}
+    return ret
+
+
 def cluster_facts():
     result = agent.tasks.run(
         agent_id='cluster',
