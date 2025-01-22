@@ -53,7 +53,7 @@ def main():
         store_configuration(home_basedir)
         print(f"The base path for home directories has been set to {args.set_dir}.")
     else:
-        args.print_usage()
+        parser.print_usage()
         sys.exit(1)
 
 def store_configuration(path):
