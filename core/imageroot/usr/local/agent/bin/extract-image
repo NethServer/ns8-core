@@ -70,8 +70,8 @@ if [[ -f "${lst_file}~" ]]; then
         fi
     done < <(diff ${lst_file}~ ${lst_file} | sed -n '/^</ {s/^< // ; p}')
 
-    for dir_entry in "${dirs_list[@]}"; do
-        rmdir -v "${dir_entry}" || :
+    for (( idx=${#dirs_list[@]}-1 ; idx>=0 ; idx-- )) ; do
+        rmdir -v "${dirs_list[idx]}" || :
     done
 fi
 
