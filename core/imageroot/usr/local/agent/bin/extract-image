@@ -33,10 +33,10 @@ flock --verbose -n 201
 lst_file=".imageroot.lst"
 
 cid=$(podman create "${image}")
-trap 'rm -f "${lst_file}~" ; podman rm "${cid}"' EXIT
+trap 'podman rm "${cid}"' EXIT
 
 if [[ -f "${lst_file}" ]]; then
-    cp -avf "${lst_file}"{,~}
+    cp -avf "${lst_file}" "${lst_file}~"
 fi
 
 imageroot=$(podman inspect "${cid}" -f '{{index .Config.Labels "org.nethserver.imageroot"}}' | sed -r 's#(^/|/$)##g')
