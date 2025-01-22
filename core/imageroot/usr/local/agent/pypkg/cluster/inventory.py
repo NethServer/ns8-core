@@ -44,4 +44,19 @@ def fact_smarthost(rdb):
         if manual_configuration == True:
             # no need to check the rest of the list if manual_configuration == False
             manual_configuration = False if key['host'] == smtp['host'] and str(smtp['port']) == "25" else True
-    return{"enabled": smtp["enabled"], "manual_configuration": manual_configuration}
+    return {"enabled": smtp["enabled"], "manual_configuration": manual_configuration}
+
+def fact_backup(rdb):
+    # Count backup repositories and enabled backups
+    ret = {"backup_count": 0, "destination_count": 0, "destination_providers": set()}
+    for krepo in rdb.scan_iter('cluster/backup_repository/*'):
+        parameters = rdb.hgetall(krepo)
+        ret["destination_count"] += 1
+        ret['destination_providers'].add(parameters.get('provider'))
+    for kbackup in rdb.scan_iter('cluster/backup/*'):
+        battrs = rdb.hgetall(kbackup)
+        if bool(battrs.pop("enabled")):
+            ret["backup_count"] += 1
+    # transform set to list, set is not JSON serializable
+    ret['destination_providers'] = list(ret['destination_providers'])
+    return ret

@@ -21,5 +21,6 @@ facts = {
     'admins': inventory.fact_admins(rdb),
     'repositories': inventory.fact_repositories(rdb),
     'smarthost': inventory.fact_smarthost(rdb),
+    "backup": inventory.fact_backup(rdb),
 }
 json.dump(facts, fp=sys.stdout)
