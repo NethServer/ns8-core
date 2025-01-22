@@ -17,7 +17,7 @@ import agent
 import http.client
 import subprocess
 
-facts = json.loads(subprocess.check_output(['runagent', 'print-phonehome']))
+facts = json.loads(subprocess.check_output(['print-phonehome']))
 if not facts:
     print(agent.SD_ERR + f"send-phonehome failed: can't execute print-phonehome", file=sys.stderr)
     sys.exit(1)

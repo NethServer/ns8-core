@@ -108,22 +108,20 @@ def node_facts():
     return ret
 
 
-# Init dictionary that returns the data
-rdb = agent.redis_connect(privileged=True)
-facts = {
-    '$schema': 'https://schema.nethserver.org/facts/2022-12.json',
-    'uuid': rdb.get('cluster/uuid'),
-    'installation': 'nethserver',
-    'facts': {
-        'cluster': cluster_facts(),
-        'nodes': node_facts(),
-        'modules': modules_facts()
+def main():
+    # Init dictionary that returns the data
+    rdb = agent.redis_connect(privileged=True)
+    facts = {
+        '$schema': 'https://schema.nethserver.org/facts/2022-12.json',
+        'uuid': rdb.get('cluster/uuid'),
+        'installation': 'nethserver',
+        'facts': {
+            'cluster': cluster_facts(),
+            'nodes': node_facts(),
+            'modules': modules_facts()
+        }
     }
-}
+    print(json.dumps(facts))
 
-# Call all tasks
-facts['facts']['nodes'] = node_facts()
-facts["facts"]["modules"] = modules_facts()
-facts["facts"]["cluster"] = cluster_facts()
-
-print(json.dumps(facts))
+if __name__ == "__main__":
+    main()
