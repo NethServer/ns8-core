@@ -3,4 +3,4 @@ Description=PhoneHome
 
 [Service]
 Type=oneshot
-ExecStart=runagent phonehome
+ExecStart=runagent send-phonehome
