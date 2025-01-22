@@ -54,6 +54,7 @@ podman export "${cid}" | tar \
     --exclude=.gitignore \
     --strip-components="${stripcount}" \
     -x -v -f - "${imageroot}" \
+    | sed -r "s#^${imageroot}/#./#" \
     | LC_ALL=C sort \
     | tee ${lst_file}
 
