@@ -24,16 +24,22 @@ image=${1:?missing image URL argument}
 
 set -e
 
+# Prevent concurrent execution of this script with a lock file opened with
+# an arbitrary high FD number, like 201. The lock is released when the
+# script completes:
+exec 201>"${AGENT_STATE_DIR:?}"/.extract-image.lock
+flock --verbose -n 201
+
 lst_file=".imageroot.lst"
 
 cid=$(podman create "${image}")
-trap 'rm -f "${lst_file}~" ; podman rm "${cid}"' EXIT
+trap 'podman rm "${cid}"' EXIT
 
 if [[ -f "${lst_file}" ]]; then
-    cp -avf "${lst_file}"{,~}
+    cp -avf "${lst_file}" "${lst_file}~"
 fi
 
-imageroot=$(podman inspect "${cid}" -f '{{index .Config.Labels "org.nethserver.imageroot"}}' | sed -r 's#(^/|/$)##')
+imageroot=$(podman inspect "${cid}" -f '{{index .Config.Labels "org.nethserver.imageroot"}}' | sed -r 's#(^/|/$)##g')
 if [[ -z "${imageroot}" ]]; then
     imageroot="imageroot" # Set the default path for the module backend
 fi
@@ -48,6 +54,7 @@ podman export "${cid}" | tar \
     --exclude=.gitignore \
     --strip-components="${stripcount}" \
     -x -v -f - "${imageroot}" \
+    | sed -r "s#^${imageroot}/#./#" \
     | LC_ALL=C sort \
     | tee ${lst_file}
 
@@ -63,8 +70,8 @@ if [[ -f "${lst_file}~" ]]; then
         fi
     done < <(diff ${lst_file}~ ${lst_file} | sed -n '/^</ {s/^< // ; p}')
 
-    for dir_entry in "${dirs_list[@]}"; do
-        rmdir -v "${dir_entry}" || :
+    for (( idx=${#dirs_list[@]}-1 ; idx>=0 ; idx-- )) ; do
+        rmdir -v "${dirs_list[idx]}" || :
     done
 fi
 
