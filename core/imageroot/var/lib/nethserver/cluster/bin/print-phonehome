@@ -9,7 +9,9 @@
 Helper script that retrieves info for the phonehome server.
 '''
 
+import os
 import sys
+import pwd
 import json
 import agent
 from cluster import modules
@@ -42,7 +44,15 @@ def modules_facts():
 
     # Collect facts from modules:
     for module in instance_list:
-        minfo = {"id": module.get('id'), "version": module.get("version"), "name": module.get("module"), "node": module.get("node") } 
+        # Default info
+        minfo = {"id": module.get('id'), "version": module.get("version"), "name": module.get("module"), "node": module.get("node"), "installation_date": None }
+        try:
+            home_dir = pwd.getpwnam(module.get('id')).pw_dir
+            agent_dir = f"{home_dir}/.config/state"
+        except Exception as ex:
+            agent_dir = f"/var/lib/nethserver/{module.get('id')}/state"
+        if os.path.exists(agent_dir):
+            minfo["installation_date"] = int(os.path.getmtime(f"{agent_dir}/agent.env"))
 
         try:
             list_actions_result = agent.tasks.run(
