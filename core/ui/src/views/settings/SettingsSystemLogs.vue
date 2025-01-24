@@ -107,6 +107,7 @@
                   @click="
                     isEditRetentionDialogOpen = true;
                     lokiToEdit = instance;
+                    newRetention = instance.retention_days;
                   "
                   :disabled="instance.offline"
                 >
@@ -119,6 +120,7 @@
                   @click="
                     isEditLabelDialogOpen = true;
                     lokiToEdit = instance;
+                    newLabel = instance.instance_label;
                   "
                   :disabled="instance.offline"
                 >
