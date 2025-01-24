@@ -58,8 +58,6 @@ add_module_result = agent.tasks.run("cluster", "add-module",
     progress_callback=agent.get_progress_callback(2, 15)
 )
 agent.assert_exp(add_module_result['exit_code'] == 0)
-omodule = add_module_result['output']
-
 module_id = add_module_result['output']['module_id']
 
 remove_tasks = []
