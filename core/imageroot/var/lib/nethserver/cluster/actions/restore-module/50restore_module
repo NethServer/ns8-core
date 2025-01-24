@@ -65,15 +65,15 @@ else:
     )
     agent.assert_exp(add_module_result['exit_code'] == 0)
     module_id = add_module_result['output']['module_id']
-    # Search for existing node with the same MODULE_UUID:
-    for mod in rdb.scan_iter('module/*/environment'):
-        if rdb.hget(mod, 'MODULE_UUID') == original_environment['MODULE_UUID']:
+    # Search for existing instance with the same MODULE_UUID to remove:
+    for kmod in rdb.hkeys("cluster/module_node"):
+        if rdb.hget(f'module/{kmod}/environment', 'MODULE_UUID') == original_environment['MODULE_UUID']:
             # Prepare a task that removes the old module:
             remove_tasks.append({
                 "agent_id": "cluster",
                 "action": "remove-module",
                 "data": {
-                    "module_id": rdb.hget(mod, 'MODULE_ID'),
+                    "module_id": kmod,
                     "preserve_data": False
                 },
             })
