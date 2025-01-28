@@ -41,7 +41,7 @@ rdb = agent.redis_connect(host='127.0.0.1')
 
 VERSION = "3"
 
-dump = { 'version': VERSION, 'modules': {}, 'vpn': {}, 'cluster': { 'node_count': 0, 'subscription': {}, 'apply_updates': {}, 'repository': {}, 'backup': {}, 'backup_repository': {}, 'user_domain': { 'ldap': {} },'override': {'modules': {} } }, 'traefik': {} }
+dump = { 'version': VERSION, 'modules': {}, 'vpn': {}, 'cluster': { 'node_count': 0, 'subscription': {}, 'apply_updates': {}, 'repository': {}, 'backup': {}, 'backup_repository': {}, 'user_domain': { 'ldap': {} },'override': {'modules': {} } } }
 
 # cluster: number of nodes
 dump['cluster']['node_count'] = len(set(rdb.hvals('cluster/module_node')))
@@ -94,22 +94,7 @@ for m in rdb.scan_iter('module/*/backups'):
     dump['modules'][uuid] = {'backups': []}
     dump['modules'][uuid]['backups'] = sorted(rdb.smembers(m))
 
-# traefik: custom route and uploaded certificates
 leader_id = rdb.hget("cluster/environment", "NODE_ID")
-for tk in rdb.scan_iter('module/traefik*/flags'):
-    tk_instance = tk.removesuffix('/flags')
-    dump_task_result = agent.tasks.run(tk_instance, "dump-custom-config",
-        data={},
-         endpoint="redis://cluster-leader",
-    )
-
-    if dump_task_result['exit_code'] == 0:
-        # instance on leader has a special name used during restore
-        if rdb.hget(f'{tk_instance}/environment', 'NODE_ID') == leader_id:
-            tk_name = 'leader'
-        else:
-            tk_name = tk_instance.removeprefix('module/')
-        dump['traefik'][tk_name] = dump_task_result['output']
 
 # leader vpn endpoint, required to invoke the create-cluster
 dump['vpn']['endpoint'] = rdb.hget(f'node/{leader_id}/vpn', 'endpoint')
