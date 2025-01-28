@@ -134,7 +134,11 @@
                 >{{ $t("software_center.install") }}</NsButton
               >
               <cv-interactive-tooltip
-                v-if="app.no_version_reason && app.no_version_reason.message"
+                v-if="
+                  app.no_version_reason &&
+                  app.no_version_reason.message &&
+                  app.versions.length
+                "
                 alignment="center"
                 direction="bottom"
                 class="info mg-left-sm"
