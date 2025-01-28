@@ -13,7 +13,7 @@ import json
 node_id = os.environ['NODE_ID']
 try:
     session_id = agent.read_envfile("support.env").get("VPN_PASSWORD")
-except:
+except FileNotFoundError:
     # If file does not exists, no support sessions have ever been started
     sys.exit(0)
 support_user = agent.redis_connect().hget("cluster/subscription", "support_user")
