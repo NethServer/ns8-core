@@ -337,12 +337,10 @@ def _get_available_modules(rdb):
             modules[rmod["source"]] = rmod
             rmod['versions'].sort(key=lambda v: _parse_version_object(v["tag"]), reverse=True)
             # Set the general release note URL if the code URL is a GitHub repository
-            if rmod.get('docs') and rmod['docs'].get('code_url').startswith("https://github.com/") and not rmod['docs'].get('relnotes_url'):
+            if rmod['docs']['code_url'].startswith("https://github.com/") and not rmod['docs'].get('relnotes_url', ''):
                 rmod['docs']['relnotes_url']= f"{rmod['docs']['code_url']}/releases"
             else:
-                if not rmod.get('docs'):
-                    rmod['docs'] = {}
-                rmod['docs']['relnotes_url']= ""
+                rmod['docs']['relnotes_url'] = ""
 
     # Integrate the available set with instances that do not belong to any
     # repository. They can be found in the "installed" dict:
