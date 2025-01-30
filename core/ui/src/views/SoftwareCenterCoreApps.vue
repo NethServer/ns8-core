@@ -101,6 +101,15 @@
                   <cv-data-table-cell v-if="isCoreUpdatable">
                     {{ row.update || "-" }}
                   </cv-data-table-cell>
+                  <cv-data-table-cell>
+                    <a
+                      v-if="row.docs.relnotes_url"
+                      :href="row.docs.relnotes_url"
+                      target="_blank"
+                      >{{$t("common.release_notes")}}</a
+                    >
+                    <span v-else>-</span></cv-data-table-cell
+                  >
                 </cv-data-table-row>
               </template>
             </NsDataTable>
@@ -236,8 +245,8 @@ export default {
     },
     updateTableData() {
       this.tableColumns = this.isCoreUpdatable
-        ? ["id", "node_id", "version", "update"]
-        : ["id", "node_id", "version"];
+        ? ["id", "node_id", "version", "update", "release_notes"]
+        : ["id", "node_id", "version", "release_notes"];
     },
     async listCoreModules() {
       this.error.listCoreModules = "";
