@@ -323,17 +323,23 @@
                       })
                     }}
                   </div>
-                  <template v-if="app.docs.relnotes_url">
-                    <span>
-                      <cv-link
-                        class="row icon-and-text"
-                        :href="app.docs.relnotes_url"
-                        target="_blank"
-                      >
-                        {{ $t("common.release_notes") }} <Launch20 />
-                      </cv-link>
-                    </span>
-                  </template>
+                  <div
+                    v-if="
+                      app.docs.relnotes_url &&
+                      isStableUpdateAvailable(app, instance)
+                    "
+                    class="row"
+                  >
+                    <cv-link
+                      class="row icon-and-text"
+                      :href="app.docs.relnotes_url"
+                      target="_blank"
+                    >
+                      <NsButton kind="ghost" :icon="Launch20">
+                        {{ $t("common.release_notes") }}
+                      </NsButton>
+                    </cv-link>
+                  </div>
                   <div class="row actions">
                     <!-- app is installed and can be updated -->
                     <template v-if="isStableUpdateAvailable(app, instance)">
@@ -472,7 +478,6 @@ import { mapState, mapActions } from "vuex";
 import CloneOrMoveAppModal from "@/components/software-center/CloneOrMoveAppModal";
 import UpdateAppModal from "../components/software-center/UpdateAppModal";
 import Information16 from "@carbon/icons-vue/es/information/16";
-import { Launch20 } from "@carbon/icons-vue";
 
 export default {
   name: "SoftwareCenterAppInstances",
@@ -481,7 +486,6 @@ export default {
     CloneOrMoveAppModal,
     UpdateAppModal,
     Information16,
-    Launch20,
   },
   mixins: [
     TaskService,
