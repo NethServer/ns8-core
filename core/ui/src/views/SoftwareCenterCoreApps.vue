@@ -97,18 +97,17 @@
                     }}</a></cv-data-table-cell
                   >
                   <cv-data-table-cell>{{ row.node_id }}</cv-data-table-cell>
-                  <cv-data-table-cell
-                    >{{ row.version }}:
-                    <a
-                      v-if="row.docs.relnotes_url"
-                      :href="row.docs.relnotes_url"
-                      target="_blank"
-                      >{{ $t("common.release_notes") }}</a
-                    >
-                    <span v-else>-</span></cv-data-table-cell
-                  >
+                  <cv-data-table-cell>{{ row.version }}</cv-data-table-cell>
                   <cv-data-table-cell v-if="isCoreUpdatable">
                     {{ row.update || "-" }}
+                    <div>
+                      <cv-link
+                        v-if="row.docs.relnotes_url && row.update"
+                        :href="row.docs.relnotes_url"
+                        target="_blank"
+                        >{{ $t("common.release_notes") }} <Launch20
+                      /></cv-link>
+                    </div>
                   </cv-data-table-cell>
                 </cv-data-table-row>
               </template>
@@ -137,10 +136,11 @@ import {
 import { mapState, mapActions } from "vuex";
 import to from "await-to-js";
 import AppInfoModal from "@/components/software-center/AppInfoModal";
+import { Launch20 } from "@carbon/icons-vue";
 
 export default {
   name: "SoftwareCenterCoreApps",
-  components: { AppInfoModal },
+  components: { AppInfoModal, Launch20 },
   mixins: [
     IconService,
     QueryParamService,
