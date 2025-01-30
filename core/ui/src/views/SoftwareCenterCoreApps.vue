@@ -104,8 +104,11 @@
                       v-if="row.docs.relnotes_url && row.update"
                       :href="row.docs.relnotes_url"
                       target="_blank"
-                      >{{ $t("common.release_notes") }} <Launch20
-                    /></cv-link>
+                    >
+                      <NsButton kind="ghost" :icon="Launch20">
+                        {{ $t("common.release_notes") }}
+                      </NsButton></cv-link
+                    >
                   </cv-data-table-cell>
                 </cv-data-table-row>
               </template>
@@ -134,11 +137,10 @@ import {
 import { mapState, mapActions } from "vuex";
 import to from "await-to-js";
 import AppInfoModal from "@/components/software-center/AppInfoModal";
-import { Launch20 } from "@carbon/icons-vue";
 
 export default {
   name: "SoftwareCenterCoreApps",
-  components: { AppInfoModal, Launch20 },
+  components: { AppInfoModal },
   mixins: [
     IconService,
     QueryParamService,
