@@ -330,7 +330,7 @@
                         :href="app.docs.relnotes_url"
                         target="_blank"
                       >
-                        {{ $t("common.release_notes") }}
+                        {{ $t("common.release_notes") }} <Launch20 />
                       </cv-link>
                     </span>
                   </template>
@@ -472,6 +472,7 @@ import { mapState, mapActions } from "vuex";
 import CloneOrMoveAppModal from "@/components/software-center/CloneOrMoveAppModal";
 import UpdateAppModal from "../components/software-center/UpdateAppModal";
 import Information16 from "@carbon/icons-vue/es/information/16";
+import { Launch20 } from "@carbon/icons-vue";
 
 export default {
   name: "SoftwareCenterAppInstances",
@@ -480,6 +481,7 @@ export default {
     CloneOrMoveAppModal,
     UpdateAppModal,
     Information16,
+    Launch20,
   },
   mixins: [
     TaskService,
