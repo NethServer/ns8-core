@@ -39,6 +39,16 @@
               }
             )
           }}
+          <template v-if="app.docs.relnotes_url">
+            <span>
+              <cv-link
+                :href="app.docs.relnotes_url + '/tag/' + appVersion"
+                target="_blank"
+              >
+                {{ $t("common.release_notes_of_version", { app: appVersion }) }}
+              </cv-link>
+            </span>
+          </template>
         </div>
         <div v-if="error.updateModule">
           <NsInlineNotification

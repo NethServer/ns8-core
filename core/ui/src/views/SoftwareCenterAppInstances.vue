@@ -323,6 +323,17 @@
                       })
                     }}
                   </div>
+                  <template v-if="app.docs.relnotes_url">
+                    <span>
+                      <cv-link
+                        class="row icon-and-text"
+                        :href="app.docs.relnotes_url"
+                        target="_blank"
+                      >
+                        {{ $t("common.release_notes") }}
+                      </cv-link>
+                    </span>
+                  </template>
                   <div class="row actions">
                     <!-- app is installed and can be updated -->
                     <template v-if="isStableUpdateAvailable(app, instance)">
