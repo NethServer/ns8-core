@@ -88,8 +88,7 @@
         "terms_and_conditions": "Terms and Conditions",
         "terms_required": "Please read and agree to @:common.terms_and_conditions",
         "not_available": "Not available",
-        "release_notes": "Release notes",
-        "release_notes_of_version": "Release notes of version {app}"
+        "release_notes": "Release notes"
     },
     "error": {
         "error": "Error",
