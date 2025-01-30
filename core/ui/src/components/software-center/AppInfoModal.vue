@@ -157,6 +157,14 @@
                 </cv-link>
               </span>
             </template>
+            <template v-if="app.docs.relnotes_url">
+              &bull;
+              <span>
+                <cv-link :href="app.docs.relnotes_url" target="_blank">
+                  {{ $t("common.release_notes") }}
+                </cv-link>
+              </span>
+            </template>
           </div>
         </div>
       </template>
