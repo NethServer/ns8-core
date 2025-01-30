@@ -54,7 +54,9 @@ file](https://github.com/NethServer/ns8-core/blob/main/core/ui/public/i18n/en/tr
 under the `app_categories` object. Change proposals to the category list can be
 discussed on the community forum, as explained in [development process](../../development_process/).
 
-The `relnotes_url` is an optional key in the module metadata that specifies the URL to the release changelog page. This URL points to the location where users can find detailed information about the changes, improvements, and fixes included in each release of the module.
+The `docs` object has the following optional keys:
+- The `terms_url` is a link to a web page with important information (e.g. legal/privacy notices, license). It is displayed before installing the application.
+- The `relnotes_url` is a link to a web page with the application release notes (changes, improvements, and fixes included in each release).
 
 ## Logo
 
