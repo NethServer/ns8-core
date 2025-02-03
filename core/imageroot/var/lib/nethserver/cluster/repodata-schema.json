@@ -27,7 +27,8 @@
         "docs": {
           "documentation_url": "https://docs.nethserver.org",
           "bug_url": "https://github.com/NethServer/dev",
-          "code_url": "https://github.com/NethServer/"
+          "code_url": "https://github.com/NethServer/",
+          "relnotes_url": "https://github.com/NethServer/ns8-kickstart/releases"
         },
         "source": "ghcr.io/nethserver/dokuwiki",
         "versions": [
@@ -116,20 +117,29 @@
         "type": "object",
         "parameters": {
           "terms_url": {
-            "type": "uri",
+            "type": "string",
+            "format": "uri",
             "description": "Optional link to the application Terms & Conditions document"
           },
           "documentation_url": {
-            "type": "uri",
+            "type": "string",
+            "format": "uri",
             "description": "Link to the package documentation"
           },
           "bug_url": {
-            "type": "uri",
+            "type": "string",
+            "format": "uri",
             "description": "Link to the package issue tracker"
           },
           "code_url": {
-            "type": "uri",
+            "type": "string",
+            "format": "uri",
             "description": "Link to the source code repository"
+          }, 
+          "relnotes_url": {
+            "type": "string",
+            "format": "uri",
+            "description": "Optional link to the application release notes"
           }
         },
         "required": [

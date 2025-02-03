@@ -100,6 +100,15 @@
                   <cv-data-table-cell>{{ row.version }}</cv-data-table-cell>
                   <cv-data-table-cell v-if="isCoreUpdatable">
                     {{ row.update || "-" }}
+                    <cv-link
+                      v-if="row.docs.relnotes_url && row.update"
+                      :href="row.docs.relnotes_url"
+                      target="_blank"
+                    >
+                      <NsButton kind="ghost" :icon="Launch20">
+                        {{ $t("common.release_notes") }}
+                      </NsButton></cv-link
+                    >
                   </cv-data-table-cell>
                 </cv-data-table-row>
               </template>

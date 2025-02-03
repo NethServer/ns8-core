@@ -336,6 +336,10 @@ def _get_available_modules(rdb):
                 continue # skip duplicated images from lower priority modules
             modules[rmod["source"]] = rmod
             rmod['versions'].sort(key=lambda v: _parse_version_object(v["tag"]), reverse=True)
+            # Set the general release note URL if the code URL is a GitHub repository
+            if rmod['docs']['code_url'].startswith("https://github.com/") and 'relnotes_url' not in rmod['docs']:
+                rmod['docs']['relnotes_url'] = f"{rmod['docs']['code_url']}/releases"
+
     # Integrate the available set with instances that do not belong to any
     # repository. They can be found in the "installed" dict:
     for module_source, module_instances in list_installed(rdb).items():
