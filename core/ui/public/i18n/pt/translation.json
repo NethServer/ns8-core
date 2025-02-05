@@ -117,7 +117,8 @@
         "configure": "Configure",
         "terms_required": "Please read and agree to @:common.terms_and_conditions",
         "terms_and_conditions": "Terms and Conditions",
-        "not_available": "Not available"
+        "not_available": "Not available",
+        "release_notes": "Release notes"
     },
     "settings_account": {
         "2fa_qr_code": "Código QR 2FA",
