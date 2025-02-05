@@ -222,7 +222,8 @@
         "configure": "Configurar",
         "terms_required": "Por favor, lea y acepte @:common.terms_and_conditions",
         "terms_and_conditions": "Condiciones generales",
-        "not_available": "Not available"
+        "not_available": "Not available",
+        "release_notes": "Release notes"
     },
     "backup": {
         "aws": "Amazon S3",

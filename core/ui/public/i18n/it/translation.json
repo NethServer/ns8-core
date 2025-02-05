@@ -747,7 +747,7 @@
         "go_to_backup": "Vai a Backup",
         "backup_of_instances_failed_c": "{instance} fallita | {num} istanze fallite",
         "some_backups_failed": "Alcuni backup sono falliti",
-        "errored_backups_description": "Dai un'occhiata a 'Pianificazione' qui sotto",
+        "errored_backups_description": "Controlla 'Pianificazione' qui sotto",
         "backups_scheduled_c": "Backup programmato | Backup programmati",
         "not_backed_up": "Non è stato eseguito il backup",
         "search_instances": "Cerca istanze dell'app",
@@ -930,7 +930,8 @@
         "configure": "Configura",
         "terms_required": "Si prega di leggere e accettare i @:common.terms_and_conditions",
         "terms_and_conditions": "Termini e Condizioni",
-        "not_available": "Non disponibile"
+        "not_available": "Non disponibile",
+        "release_notes": "Note di rilascio"
     },
     "error": {
         "error": "Errore",
