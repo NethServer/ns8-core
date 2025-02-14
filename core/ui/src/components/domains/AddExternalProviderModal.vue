@@ -176,6 +176,7 @@ export default {
     addExternalProviderCompleted() {
       // hide modal after validation
       this.$emit("hide");
+      this.$emit("reloadDomains");
     },
   },
 };

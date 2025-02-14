@@ -520,6 +520,7 @@
         :isShown="isShownAddExternalProviderModal"
         :domain="domain"
         @hide="hideAddExternalProviderModal"
+        @reloadDomains="listUserDomains"
       />
     </template>
     <!-- delete ldap provider modal -->
