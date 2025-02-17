@@ -1171,7 +1171,9 @@
         "users_admin_page_description": "User administration self service portal",
         "host_format": "Must be a valid domain name or IP address",
         "provider_already_installed": "Provider already installed",
-        "no_node_eligible_for_provider_installation": "No node is eligible for provider installation"
+        "no_node_eligible_for_provider_installation": "No node is eligible for provider installation",
+        "domain_settings": "Domain settings",
+        "edit_external_domain": "Edit external domain {name}"
     },
     "samba": {
         "adminuser": "Samba admin username",
