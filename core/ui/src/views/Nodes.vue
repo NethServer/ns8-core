@@ -176,9 +176,10 @@
                     @click="showPromoteNodeModal(node)"
                   >
                     <NsMenuItem
-                      :icon="Badge20"
+                      :icon="Recommend20"
                       :label="$t('nodes.promote_to_leader')"
-                    />
+                      ><Recommend20 />
+                    </NsMenuItem>
                   </cv-overflow-menu-item>
                   <cv-overflow-menu-item
                     v-if="node.id !== leaderNode.id"
@@ -332,6 +333,7 @@ import RemoveNodeModal from "@/components/nodes/RemoveNodeModal";
 import PromoteNodeModal from "@/components/nodes/PromoteNodeModal";
 import NewLeaderModal from "@/components/nodes/NewLeaderModal";
 import SetFqdnModal from "@/components/nodes/SetFqdnModal";
+import Recommend20 from "@carbon/icons-vue/es/recommend/20";
 
 export default {
   name: "Nodes",
@@ -341,6 +343,7 @@ export default {
     PromoteNodeModal,
     NewLeaderModal,
     SetFqdnModal,
+    Recommend20,
   },
   mixins: [
     TaskService,
@@ -358,6 +361,7 @@ export default {
       q: {
         isShownAddNodeModal: false,
       },
+      Recommend20,
       joinCode: "",
       nodes: [],
       nodesStatus: {},
