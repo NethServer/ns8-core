@@ -70,7 +70,7 @@
                   <cv-overflow-menu-item @click="showEditExternalDomain()">
                     <NsMenuItem
                       :icon="Edit20"
-                      :label="$t('domains.edit_external_domain', { name: '' })"
+                      :label="$t('domains.edit_external_domain')"
                     />
                   </cv-overflow-menu-item>
                 </cv-overflow-menu>

@@ -9,7 +9,7 @@
     @modal-hidden="$emit('hide')"
     @primary-click="alterExternalDomain"
   >
-    <template slot="title">{{ $t("domains.edit_external_domain", {name: domain.name}) }}</template>
+    <template slot="title">{{ $t("domains.edit_external_domain") }}</template>
     <template slot="content">
       <cv-form @submit.prevent="alterExternalDomain">
         <NsTextInput
