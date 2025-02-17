@@ -573,7 +573,7 @@
       @confirm="setPasswordPolicy()"
     />
     <!-- Edit External domain  -->
-    <EditExternalDomain
+    <EditExternalDomainModal
       :isShown="isShownEditExternalDomainModal"
       :domain="domain"
       @hide="hideisShownEditExternalDomainModal"
@@ -637,7 +637,7 @@ import AddInternalProviderModal from "@/components/domains/AddInternalProviderMo
 import AddExternalProviderModal from "@/components/domains/AddExternalProviderModal";
 import DeleteSambaProviderModal from "@/components/domains/DeleteSambaProviderModal";
 import EditPasswordPolicy from "@/components/domains/EditPasswordPolicy";
-import EditExternalDomain from "@/components/domains/EditExternalDomain";
+import EditExternalDomainModal from "@/components/domains/EditExternalDomainModal";
 import Password32 from "@carbon/icons-vue/es/password/32";
 import { mapState } from "vuex";
 
@@ -648,7 +648,7 @@ export default {
     AddExternalProviderModal,
     DeleteSambaProviderModal,
     EditPasswordPolicy,
-    EditExternalDomain,
+    EditExternalDomainModal,
   },
   mixins: [
     TaskService,

@@ -81,7 +81,7 @@ import { UtilService, TaskService, IconService } from "@nethserver/ns8-ui-lib";
 import to from "await-to-js";
 
 export default {
-  name: "EditExternalDomain",
+  name: "EditExternalDomainModal",
   mixins: [UtilService, TaskService, IconService],
   props: {
     isShown: Boolean,
