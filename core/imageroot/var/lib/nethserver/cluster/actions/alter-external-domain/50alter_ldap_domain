@@ -25,9 +25,9 @@ domain = request['domain']
 protocol = request['protocol']
 
 rdb = agent.redis_connect(privileged=True)
-conf = rdb.hgetall(f"cluster/user_domain/ldap/{domain}/conf")
 
 if protocol == 'ldap':
+    conf = rdb.hgetall(f"cluster/user_domain/ldap/{domain}/conf")
     rdb.hset(f"cluster/user_domain/ldap/{domain}/conf", mapping={
         'bind_dn': request['bind_dn'],
         'bind_password': request['bind_password'],
