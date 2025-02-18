@@ -54,7 +54,7 @@
             value="tls_verifyValue"
             :form-item="true"
             v-model="tls_verify"
-            :disabled="loading.alterExternalDomain"
+            :disabled="loading.alterExternalDomain || domain.providers.length > 1"
             ref="tls_verify"
           >
             <template slot="text-left">{{ $t("common.disabled") }}</template>
