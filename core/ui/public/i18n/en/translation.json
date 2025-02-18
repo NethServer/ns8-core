@@ -1279,7 +1279,7 @@
         "unconfigured_provider": "Unconfigured provider",
         "unconfigured_providers_title": "There are unconfigured providers",
         "unconfigured_providers_description": "You can resume their configuration or delete them",
-        "external_providers_tooltip_description": "Providers are the services that manage users and groups in a domain. You can have more than one provider in an external domain, but only if tls verify is disabled"
+        "external_providers_tooltip_description": "Providers are the services that manage users and groups in a domain. You can have more than one provider in an external domain, but only if 'TLS verify' is disabled"
     },
     "nodes": {
         "title": "Nodes",
