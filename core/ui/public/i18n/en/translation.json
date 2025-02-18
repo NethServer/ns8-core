@@ -1254,7 +1254,9 @@
         "delete_group_group": "Delete group {group}",
         "user_pattern": "Start with a letter, followed by only letters, digits, and the symbols -._",
         "user_string_lte": "Must be less than or equal to 255 characters",
-        "display_name_string_lte": "Must be less than or equal to 256 characters"
+        "display_name_string_lte": "Must be less than or equal to 256 characters",
+        "group_with_same_name": "Group with the same name already exists",
+        "user_with_same_name": "User with the same name already exists"
     },
     "domain_configuration": {
         "title": "Domain configuration",
