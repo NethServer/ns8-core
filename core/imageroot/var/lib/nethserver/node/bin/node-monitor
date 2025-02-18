@@ -74,8 +74,17 @@ async def raise_alert(value, alert):
     elif alert_provider == 'nscom':
         await send_alert(f'{dartagnan_url}/machine/alerts/store', value, alert)
 
+async def check_swap_presence():
+    meminfo = parse_meminfo()
+    if int(meminfo['SwapTotal']) == 0:
+        return (CRITICAL, 'swap:notpresent:' + node_name)
+    else:
+        return (CLEAR, 'swap:notpresent:' + node_name)
+
 async def check_swap():
     meminfo = parse_meminfo()
+    if int(meminfo['SwapTotal']) == 0:
+        return (CLEAR, 'swap:full:' + node_name)
     try:
         swapfree_ratio = float(meminfo['SwapFree']) / int(meminfo['SwapTotal'])
     except:
@@ -150,6 +159,7 @@ async def main():
     # Run each check inside a monitor loop in parallel:
     await asyncio.gather(
         monitor_loop(check_swap, period=3, hysteresis=10), # 30 seconds
+        monitor_loop(check_swap_presence, period=60, hysteresis=30), # 30 minutes
         monitor_loop(check_systemload, period=5, hysteresis=24), # 2 minutes
         monitor_loop(check_mountpoints, fargs=['/', 'root'], period=15, hysteresis=4), # 1 minute
         monitor_loop(check_mountpoints, fargs=['/boot', 'boot'], period=15, hysteresis=4), # 1 minute
