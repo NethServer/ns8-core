@@ -63,10 +63,11 @@ try:
         },
         endpoint="redis://cluster-leader",
     )
-    agent.assert_exp(destroy_module_result['exit_code'] == 0)
+    if destroy_module_result['exit_code'] != 0:
+        raise Exception(f"non-zero exit-code from subtask")
 except Exception as ex:
     if forced_removal:
-        print(agent.SD_WARNING + "Destroy module failed:", ex, file=sys.stderr)
+        print(agent.SD_WARNING + f"module/{module_id}/destroy-module failed:", ex, file=sys.stderr)
     else:
         raise ex
 
@@ -80,10 +81,11 @@ try:
         },
         endpoint="redis://cluster-leader",
     )
-    agent.assert_exp(remove_module_result['exit_code'] == 0) # The node remove-module action must succeed
+    if remove_module_result['exit_code'] != 0: # The node remove-module action must succeed
+        raise Exception(f"non-zero exit-code from subtask")
 except Exception as ex:
     if forced_removal:
-        print(agent.SD_WARNING + "Remove module from node has failed:", ex, file=sys.stderr)
+        print(agent.SD_WARNING + f"node/{node_id}/remove-module failed:", ex, file=sys.stderr)
     else:
         raise ex
 
