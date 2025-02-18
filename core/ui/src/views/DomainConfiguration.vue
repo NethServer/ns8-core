@@ -263,20 +263,6 @@
             ]"
           >
             {{ $t("domain_configuration.providers") }}
-            <cv-interactive-tooltip
-              v-if="domain.location === 'external'"
-              alignment="center"
-              direction="bottom"
-              class="info mg-left-sm"
-            >
-              <template slot="content">
-                {{
-                  $t(
-                    `domain_configuration.external_providers_tooltip_description`
-                  )
-                }}
-              </template>
-            </cv-interactive-tooltip>
           </h4>
         </cv-column>
       </cv-row>
@@ -368,6 +354,10 @@
         <cv-row class="toolbar">
           <cv-column>
             <NsButton
+              v-if="
+                domain.location === 'internal' ||
+                (domain.location === 'external' && !domain.tls_verify)
+              "
               kind="secondary"
               :icon="Add20"
               @click="showAddProviderModal()"
@@ -377,6 +367,20 @@
               "
               >{{ $t("domain_configuration.add_provider") }}
             </NsButton>
+            <cv-tooltip
+              v-else
+              alignment="center"
+              direction="right"
+              :tip="
+                $t(
+                  `domain_configuration.external_providers_tooltip_description`
+                )
+              "
+            >
+              <NsButton kind="secondary" :icon="Add20" disabled
+                >{{ $t("domain_configuration.add_provider") }}
+              </NsButton>
+            </cv-tooltip>
           </cv-column>
         </cv-row>
         <cv-row>
