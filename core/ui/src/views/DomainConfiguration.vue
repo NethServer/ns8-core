@@ -270,7 +270,11 @@
               class="info mg-left-sm"
             >
               <template slot="content">
-                {{ $t(`domain_configuration.external_providers_tooltip_description`) }}
+                {{
+                  $t(
+                    `domain_configuration.external_providers_tooltip_description`
+                  )
+                }}
               </template>
             </cv-interactive-tooltip>
           </h4>
@@ -367,7 +371,10 @@
               kind="secondary"
               :icon="Add20"
               @click="showAddProviderModal()"
-              :disabled="loading.listUserDomains || (domain.location === 'external' && domain.tls_verify)"
+              :disabled="
+                loading.listUserDomains ||
+                (domain.location === 'external' && domain.tls_verify)
+              "
               >{{ $t("domain_configuration.add_provider") }}
             </NsButton>
           </cv-column>
