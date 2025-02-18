@@ -263,6 +263,16 @@
             ]"
           >
             {{ $t("domain_configuration.providers") }}
+            <cv-interactive-tooltip
+              v-if="domain.location === 'external'"
+              alignment="center"
+              direction="bottom"
+              class="info mg-left-sm"
+            >
+              <template slot="content">
+                {{ $t(`domain_configuration.external_providers_tooltip_description`) }}
+              </template>
+            </cv-interactive-tooltip>
           </h4>
         </cv-column>
       </cv-row>
@@ -357,7 +367,7 @@
               kind="secondary"
               :icon="Add20"
               @click="showAddProviderModal()"
-              :disabled="loading.listUserDomains"
+              :disabled="loading.listUserDomains || (domain.location === 'external' && domain.tls_verify)"
               >{{ $t("domain_configuration.add_provider") }}
             </NsButton>
           </cv-column>
