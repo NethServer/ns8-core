@@ -47,35 +47,45 @@ with tempfile.NamedTemporaryFile() as fenv:
     fenv.seek(0)
     original_environment = agent.read_envfile(fenv.name)
 
-image_url = original_environment['IMAGE_URL']
-
-add_module_result = agent.tasks.run("cluster", "add-module",
-    data={
-        "image": image_url,
-        "node": node_id,
-    }, 
-    endpoint="redis://cluster-leader",
-    progress_callback=agent.get_progress_callback(2, 15)
-)
-agent.assert_exp(add_module_result['exit_code'] == 0)
-omodule = add_module_result['output']
-
-module_id = add_module_result['output']['module_id']
-
 remove_tasks = []
-
-# Search for existing node with the same MODULE_UUID:
-for mod in rdb.scan_iter('module/*/environment'):
-    if rdb.hget(mod, 'MODULE_UUID') == original_environment['MODULE_UUID']:
-        # Prepare a task that removes the old module:
-        remove_tasks.append({
-            "agent_id": "cluster",
-            "action": "remove-module",
-            "data": {
-                "module_id": rdb.hget(mod, 'MODULE_ID'),
-                "preserve_data": False
-            },
-        })
+image_url = original_environment['IMAGE_URL']
+image_name = agent.get_image_name_from_url(image_url)
+if image_name == 'traefik':
+    # Use existing instance for restoration. Restore the backup with a
+    # merge-like strategy, implemented by the module as wanted.
+    module_id = agent.resolve_agent_id("traefik@node", node_id=str(node_id)).removeprefix("module/")
+    add_module_result = {
+        "output": {
+            "module_id": module_id,
+            "image_name": image_name,
+            "image_url": image_url,
+        },
+        "error": "",
+        "exit_code": 0,
+    }
+else:
+    add_module_result = agent.tasks.run("cluster", "add-module",
+        data={
+            "image": image_url,
+            "node": node_id,
+        },
+        endpoint="redis://cluster-leader",
+        progress_callback=agent.get_progress_callback(2, 15)
+    )
+    agent.assert_exp(add_module_result['exit_code'] == 0)
+    module_id = add_module_result['output']['module_id']
+    # Search for existing instance with the same MODULE_UUID to remove:
+    for kmod in rdb.hkeys("cluster/module_node"):
+        if rdb.hget(f'module/{kmod}/environment', 'MODULE_UUID') == original_environment['MODULE_UUID']:
+            # Prepare a task that removes the old module:
+            remove_tasks.append({
+                "agent_id": "cluster",
+                "action": "remove-module",
+                "data": {
+                    "module_id": kmod,
+                    "preserve_data": False
+                },
+            })
 
 restore_task_result = agent.tasks.run("module/" + module_id, "restore-module",
     data={
