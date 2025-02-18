@@ -220,7 +220,4 @@ export default {
 
 <style scoped lang="scss">
 @import "../../styles/carbon-utils";
-.left-margin {
-  margin-left: 1rem;
-}
 </style>
