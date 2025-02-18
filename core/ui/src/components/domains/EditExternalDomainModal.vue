@@ -73,7 +73,7 @@
     </template>
     <template slot="secondary-button">{{ $t("common.cancel") }}</template>
     <template slot="primary-button">{{
-      $t("domains.edit_password_policy")
+      $t("domains.edit_external_domain")
     }}</template>
   </NsModal>
 </template>
