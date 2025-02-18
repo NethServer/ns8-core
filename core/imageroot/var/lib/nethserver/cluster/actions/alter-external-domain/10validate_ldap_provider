@@ -16,24 +16,39 @@ import cluster.userdomains
 # {
 # "domain":"example.com",
 # "protocol": "ldap",
-# "host":"18.19.20.21",
-# "port": 636,
-# "schema": "rfc2307",
 # "bind_dn": "cn=ldapservice,dc=example,dc=com",
 # "bind_password": "s3cret",
-# "base_dn": "dc=example,dc=com",
 # "tls": true,
 # "tls_verify": true
 # }
 request = json.load(sys.stdin)
-
 domain = request['domain']
 protocol = request['protocol']
+rdb = agent.redis_connect(privileged=False)
 
 agent.set_weight(os.path.basename(__file__), 0) # Validation step, no task progress at all
 
 if protocol == 'ldap':
-    errors, logex = cluster.userdomains.validate_ldap(request)
+    conf = rdb.hgetall(f"cluster/user_domain/ldap/{domain}/conf")
+    # Get the first provider: ["x.x.x.x:636"]
+    providers = rdb.lrange(f"cluster/user_domain/ldap/{domain}/providers", 0, -1)
+    host = providers[0].split(':')[0]
+    port = providers[0].split(':')[1]
+
+    validate= {
+        'bind_dn': request['bind_dn'],
+        'bind_password': request['bind_password'],
+        'tls': request['tls'],
+        'tls_verify': request['tls_verify'],
+        'domain': domain,
+        'protocol': protocol,
+        'host': host,
+        'port': int(port),
+        'schema':conf['schema'],
+        'base_dn': conf['base_dn']
+    }
+
+    errors, logex = cluster.userdomains.validate_ldap(validate)
 
     if logex:
         print(agent.SD_ERR + f"{logex.__class__.__name__}: {logex}", file=sys.stderr)

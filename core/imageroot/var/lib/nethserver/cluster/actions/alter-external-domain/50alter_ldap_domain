@@ -8,7 +8,6 @@
 import sys
 import json
 import agent
-import cluster.userdomains
 import os
 
 #
@@ -16,12 +15,8 @@ import os
 # {
 # "domain":"example.com",
 # "protocol": "ldap",
-# "host":"18.19.20.21",
-# "port": 636,
-# "schema": "rfc2307",
 # "bind_dn": "cn=ldapservice,dc=example,dc=com",
 # "bind_password": "s3cret",
-# "base_dn": "dc=example,dc=com",
 # "tls": true,
 # "tls_verify": true
 # }
@@ -30,14 +25,12 @@ domain = request['domain']
 protocol = request['protocol']
 
 rdb = agent.redis_connect(privileged=True)
+conf = rdb.hgetall(f"cluster/user_domain/ldap/{domain}/conf")
 
 if protocol == 'ldap':
-    trx = rdb.pipeline()
-    trx.hset(f"cluster/user_domain/ldap/{domain}/conf", mapping={
-        'schema': request.get('schema') or cluster.userdomains.probe_ldap_schema(request),
+    rdb.hset(f"cluster/user_domain/ldap/{domain}/conf", mapping={
         'bind_dn': request['bind_dn'],
         'bind_password': request['bind_password'],
-        'base_dn': request['base_dn'] or cluster.userdomains.probe_ldap_basedn(request),
         'tls': 'on' if request['tls'] else 'off',
         'tls_verify': 'on' if request['tls_verify'] else 'off',
     })
@@ -45,8 +38,11 @@ if protocol == 'ldap':
     #
     # Advertise new account provider setup
     #
-    trx.publish(os.getenv('AGENT_ID') + '/event/ldap-provider-changed', json.dumps({
+    rdb.publish(os.getenv('AGENT_ID') + '/event/ldap-provider-changed', json.dumps({
         'domain': domain,
         'key': f"cluster/user_domain/ldap/{domain}/providers",
     }))
-    trx.execute()
+    # Advertise new user domain setup
+    rdb.publish(os.getenv('AGENT_ID') + '/event/user-domain-changed', json.dumps({
+        'domain': domain
+    }))
