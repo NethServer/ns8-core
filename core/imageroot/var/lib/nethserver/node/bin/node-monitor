@@ -11,6 +11,7 @@ import multiprocessing
 import sys
 import os
 import agent
+from aiohttp import web
 
 # Alarm states
 UNKNOWN = 'U'
@@ -155,9 +156,44 @@ async def monitor_loop(check_function, fargs=[], fkwargs={}, period=2, hysteresi
         await asyncio.sleep(period)
         head = (head + 1) % hysteresis
 
+async def handle_post_request(request):
+    # Convert alertsmanager alerts into my alert format
+    try:
+        data = await request.json()
+        alerts = data.get('alerts', [])
+        for alert in alerts:
+            status = alert.get('status')
+            labels = alert.get('labels', {})
+            node_id = labels.get('node', 'unknown')
+            # Remap to my alert id format
+            alert_name = labels.get('alertname', 'unknown').replace('_', ':')
+            alert_id = f"{alert_name}:{node_id}"
+            if status == 'firing':
+                value = CRITICAL
+            elif status == 'resolved':
+                value = CLEAR
+            else:
+                value = UNKNOWN
+            await raise_alert(value, alert_id)
+        return aiohttp.web.Response(text="Alerts processed", status=200)
+    except Exception as e:
+        return aiohttp.web.Response(text=str(e), status=500)
+
+async def start_proxy_server():
+    app = web.Application()
+    app.router.add_post('/', handle_post_request)
+    runner = aiohttp.web.AppRunner(app)
+    await runner.setup()
+    site = aiohttp.web.TCPSite(runner, '0.0.0.0', 9095)
+    await site.start()
+    print(agent.SD_INFO + "Alert proxy server started", file=sys.stderr)
+
 async def main():
+    # Run the alert proxy server
+    proxy_server_task = asyncio.create_task(start_proxy_server())
     # Run each check inside a monitor loop in parallel:
     await asyncio.gather(
+        proxy_server_task,
         monitor_loop(check_swap, period=3, hysteresis=10), # 30 seconds
         monitor_loop(check_swap_presence, period=60, hysteresis=30), # 30 minutes
         monitor_loop(check_systemload, period=5, hysteresis=24), # 2 minutes
