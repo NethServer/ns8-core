@@ -84,6 +84,9 @@ export default {
     isShown: function () {
       if (this.isShown) {
         this.clearErrors(this);
+        // reset form
+        this.host = "";
+        this.port = "";
 
         setTimeout(() => {
           this.focusElement("host");
@@ -174,6 +177,7 @@ export default {
       }
     },
     addExternalProviderCompleted() {
+      this.loading.addExternalProvider = false;
       // hide modal after validation
       this.$emit("hide");
       this.$emit("reloadDomains");
