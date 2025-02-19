@@ -138,9 +138,12 @@
           </cv-text-input>
           <cv-text-input
             :label="$t('domains.bind_password')"
+            type="password"
             v-model="external.bind_password"
             :invalid-message="$t(error.external.bind_password)"
             :disabled="loading.external.addExternalDomain"
+            :password-hide-label="$t('password.hide_password')"
+            :password-show-label="$t('password.show_password')"
             ref="bind_password"
           >
           </cv-text-input>

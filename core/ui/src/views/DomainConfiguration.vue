@@ -59,7 +59,25 @@
               ></cv-skeleton-text>
             </cv-tile>
             <cv-tile v-else light>
-              <div class="key-value-setting">
+              <div class="flex items-center justify-between relative">
+                <cv-overflow-menu
+                  v-if="domain.location === 'external'"
+                  :flip-menu="true"
+                  tip-position="top"
+                  tip-alignment="end"
+                  class="domain-menu top-right-overflow-menu"
+                >
+                  <cv-overflow-menu-item @click="showEditExternalDomain()">
+                    <NsMenuItem
+                      :icon="Edit20"
+                      :label="$t('domains.edit_external_domain')"
+                    />
+                  </cv-overflow-menu-item>
+                </cv-overflow-menu>
+                <!-- </div> -->
+                <h3 class="title">{{ $t("domains.domain_settings") }}</h3>
+              </div>
+              <div class="key-value-setting top-margin">
                 <span class="label">{{ $t("domains.schema") }}</span>
                 <span class="value">{{ domain.schema }}</span>
               </div>
@@ -130,6 +148,7 @@
                 </span>
               </div>
             </cv-tile>
+
             <!-- password policy -->
             <template v-if="domain.location === 'internal'">
               <cv-tile v-if="loading.ListPasswordPolicy" light>
@@ -335,12 +354,33 @@
         <cv-row class="toolbar">
           <cv-column>
             <NsButton
+              v-if="
+                domain.location === 'internal' ||
+                (domain.location === 'external' && !domain.tls_verify)
+              "
               kind="secondary"
               :icon="Add20"
               @click="showAddProviderModal()"
-              :disabled="loading.listUserDomains"
+              :disabled="
+                loading.listUserDomains ||
+                (domain.location === 'external' && domain.tls_verify)
+              "
               >{{ $t("domain_configuration.add_provider") }}
             </NsButton>
+            <cv-tooltip
+              v-else
+              alignment="center"
+              direction="right"
+              :tip="
+                $t(
+                  `domain_configuration.external_providers_tooltip_description`
+                )
+              "
+            >
+              <NsButton kind="secondary" :icon="Add20" disabled
+                >{{ $t("domain_configuration.add_provider") }}
+              </NsButton>
+            </cv-tooltip>
           </cv-column>
         </cv-row>
         <cv-row>
@@ -553,6 +593,13 @@
       @hide="hideisShownPasswordPolicyModal"
       @confirm="setPasswordPolicy()"
     />
+    <!-- Edit External domain  -->
+    <EditExternalDomainModal
+      :isShown="isShownEditExternalDomainModal"
+      :domain="domain"
+      @hide="hideisShownEditExternalDomainModal"
+      @reload="reloadExternalDomain"
+    />
     <!-- set provider label modal -->
     <NsModal
       size="default"
@@ -611,6 +658,7 @@ import AddInternalProviderModal from "@/components/domains/AddInternalProviderMo
 import AddExternalProviderModal from "@/components/domains/AddExternalProviderModal";
 import DeleteSambaProviderModal from "@/components/domains/DeleteSambaProviderModal";
 import EditPasswordPolicy from "@/components/domains/EditPasswordPolicy";
+import EditExternalDomainModal from "@/components/domains/EditExternalDomainModal";
 import Password32 from "@carbon/icons-vue/es/password/32";
 import { mapState } from "vuex";
 
@@ -621,6 +669,7 @@ export default {
     AddExternalProviderModal,
     DeleteSambaProviderModal,
     EditPasswordPolicy,
+    EditExternalDomainModal,
   },
   mixins: [
     TaskService,
@@ -641,6 +690,7 @@ export default {
       isShownDeleteLdapProviderModal: false,
       isShownDeleteSambaProviderModal: false,
       isShownPasswordPolicyModal: false,
+      isShownEditExternalDomainModal: false,
       domainName: "",
       hostnameNode: "",
       domainNode: "",
@@ -771,6 +821,10 @@ export default {
       setTimeout(() => {
         this.checkAndScrollToAnchor();
       }, 100);
+    },
+    reloadExternalDomain() {
+      this.isShownEditExternalDomainModal = false;
+      this.listUserDomains();
     },
     async listPasswordPolicy() {
       this.loading.ListPasswordPolicy = true;
@@ -1067,6 +1121,9 @@ export default {
     hideisShownPasswordPolicyModal() {
       this.isShownPasswordPolicyModal = false;
     },
+    hideisShownEditExternalDomainModal() {
+      this.isShownEditExternalDomainModal = false;
+    },
     showSetProviderLabelModal(provider) {
       this.currentProvider = provider;
       this.newProviderLabel = provider.ui_name;
@@ -1077,6 +1134,9 @@ export default {
     },
     showPasswordPolicy() {
       this.isShownPasswordPolicyModal = true;
+    },
+    showEditExternalDomain() {
+      this.isShownEditExternalDomainModal = true;
     },
     setProviderLabel() {
       if (this.domain.location == "internal") {
@@ -1277,5 +1337,26 @@ export default {
 }
 .right-margin {
   margin-right: 1rem;
+}
+.top-margin {
+  margin-top: 1rem;
+}
+
+.title {
+  margin-right: 0.25rem;
+  margin-bottom: 0.5rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.domain-menu {
+  position: absolute;
+  top: -1rem !important;
+  right: -1rem !important;
+  width: 3rem;
+  height: 3rem;
+}
+.relative {
+  position: relative;
 }
 </style>
