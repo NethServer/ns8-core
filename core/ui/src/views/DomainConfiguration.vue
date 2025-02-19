@@ -560,6 +560,7 @@
         :isShown="isShownAddExternalProviderModal"
         :domain="domain"
         @hide="hideAddExternalProviderModal"
+        @reloadDomains="listUserDomains"
       />
     </template>
     <!-- delete ldap provider modal -->
@@ -1103,7 +1104,7 @@ export default {
       }
       this.currentProvider = provider;
 
-      if (this.domain.schema === "ad") {
+      if (this.domain.schema === "ad" && this.domain.location == "internal") {
         this.isShownDeleteSambaProviderModal = true;
       } else {
         this.isShownDeleteLdapProviderModal = true;
