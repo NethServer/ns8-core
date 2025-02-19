@@ -654,7 +654,9 @@
         "groups": "Gruppen",
         "user_string_lte": "maximal 255 Zeichen",
         "display_name_string_lte": "maximal 256 Zeichen",
-        "user_pattern": "Mit einem Buchstaben beginnen, nur gefolgt von Buchstaben, Ziffern und den Zeichen -._"
+        "user_pattern": "Mit einem Buchstaben beginnen, nur gefolgt von Buchstaben, Ziffern und den Zeichen -._",
+        "group_with_same_name": "A group with this name already exists",
+        "user_with_same_name": "A user with this name already exists"
     },
     "audit_trail": {
         "title": "Audit-Protokoll",
@@ -775,7 +777,9 @@
         "host_format": "voll-qualifizierter Domänen-Name oder IP-Adresse erforderlich",
         "users_admin_page_tooltips": "Das Benutzerportal ermöglicht es Domänenbenutzern, ihr eigenes Kennwort zu ändern. Das Portal ist für Benutzer auch auf jedem Knoten zugänglich, auf dem die Replik des Identitätanbieters läuft. Die generische URL lautet https://{knoten_fqdn_oder_ip}/users-admin/{domain}/",
         "provider_already_installed": "Provider already installed",
-        "no_node_eligible_for_provider_installation": "No node is eligible for provider installation"
+        "no_node_eligible_for_provider_installation": "No node is eligible for provider installation",
+        "edit_external_domain": "Edit external domain",
+        "domain_settings": "Domain settings"
     },
     "about": {
         "animated_icons_by": "Animierte Icons von",
@@ -1037,7 +1041,8 @@
         "unconfigured_providers_title": "Es gibt unkonfigurierter Anbieter",
         "unconfigured_providers_description": "Deren Konfiguration fortsetzen oder löschen",
         "cannot_delete_provider_description": "Die gesamte Domäne kann gelöscht werden, samt des zugehörige Anbieter (wenn gewünscht)",
-        "edit_provider_label": "Anbieter-Label ändern"
+        "edit_provider_label": "Anbieter-Label ändern",
+        "external_providers_tooltip_description": "Providers are the services that manage users and groups in a domain. You can have more than one provider in an external domain, but only if 'TLS verify' is disabled"
     },
     "system_logs": {
         "collapse_filters": "Filter einklappen",
