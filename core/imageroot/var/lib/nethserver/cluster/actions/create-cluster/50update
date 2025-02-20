@@ -92,6 +92,10 @@ add1_module_failures = agent.tasks.runp_brief([
             'image': 'loki',
             'node': NODE_ID,
         }},
+        {"agent_id": "cluster", "action": "add-module", "data": {
+            'image': 'ghcr.io/nethserver/prometheus:alertmanager', #FIXME
+            'node': NODE_ID,
+        }},
     ],
     endpoint = "redis://cluster-leader",
     progress_callback = agent.get_progress_callback(25, 85),
