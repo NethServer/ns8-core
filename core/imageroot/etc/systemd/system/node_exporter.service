@@ -4,7 +4,6 @@ Description=Prometheus node_exporter
 [Service]
 Type=forking
 Environment=PODMAN_SYSTEMD_UNIT=%n
-EnvironmentFile=/etc/nethserver/agent.env
 EnvironmentFile=-/etc/nethserver/core.env
 WorkingDirectory=/var/lib/nethserver/node/state
 Restart=always
