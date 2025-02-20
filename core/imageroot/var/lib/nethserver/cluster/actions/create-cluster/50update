@@ -29,7 +29,6 @@ import agent.tasks
 import cluster.grants
 import cluster.vpn
 import uuid
-import pwd
 
 request = json.load(sys.stdin)
 
