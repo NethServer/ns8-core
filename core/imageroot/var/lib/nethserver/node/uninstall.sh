@@ -77,6 +77,7 @@ systemctl disable --now \
   phonehome.timer \
   rclone-webdav.service \
   promtail.service \
+  node_exporter.service \
   node-monitor.service \
   send-heartbeat.service \
   send-inventory.timer \
