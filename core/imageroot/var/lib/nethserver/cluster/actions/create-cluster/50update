@@ -64,16 +64,10 @@ rdb.hset(f'node/{NODE_ID}/vpn', mapping={
     "endpoint": endpoint
 })
 
-# Our first Traefik instance is missing the VPN network: fix it here.
-agent.run_helper('sed', '-i',
-                f'/- 127.0.0.1$/a\ \ \ \ \ \ \ \ - {network}',
-                f'{pwd.getpwnam("traefik1").pw_dir}/.config/state/configs/_api.yml').check_returncode()
-
 # Update the cluster-localnode record in /etc/hosts
 agent.run_helper('sed', '-i',
     '-e', f'/cluster-localnode$/c\{ip_address} cluster-localnode',
     '/etc/hosts').check_returncode()
-
 
 # VPN bootstrap
 agent.run_helper('systemctl', 'stop', 'wg-quick@wg0.service')
