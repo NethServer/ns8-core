@@ -21,6 +21,7 @@ ExecStart=/usr/bin/podman run \
     -d \
     -v /:/host:ro,rslave \
     ${NODE_EXPORTER_IMAGE} \
+    --collector.filesystem.ignored-mount-points=^/(sys|proc|dev|run)($|/) \
     --path.rootfs=/host
 ExecStop=/usr/bin/podman stop --ignore --cidfile %t/%N.cid -t 10
 ExecStopPost=/usr/bin/podman rm --ignore -f --cidfile %t/%N.cid
