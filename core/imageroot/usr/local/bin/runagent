@@ -25,9 +25,12 @@ import sys
 import argparse
 import agent
 import pwd
+import subprocess
 
 argp = argparse.ArgumentParser(description="Run COMMAND in the agent environment of MODULE_ID")
-argp.add_argument("-m", "--module-id", help="MODULE_ID, a module identifier (e.g. \"module1\", \"node\"). Default is \"cluster\". Only root can use this flag", default="cluster")
+argx = argp.add_mutually_exclusive_group()
+argx.add_argument("-l", "--list-modules", action="store_true", help="List running modules")
+argx.add_argument("-m", "--module-id", help="MODULE_ID, a module identifier (e.g. \"module1\", \"node\"). Default is \"cluster\". Only root can use this flag", default="cluster")
 argp.add_argument("-c", "--current-dir", action="store_true", help="Run COMMAND in current directory, instead of changing directory to AGENT_STATE_DIR")
 argp.add_argument('COMMAND', nargs='?', help="Command to run in the agent environment")
 argp.add_argument('ARGS', nargs=argparse.REMAINDER, help="Additional arguments for COMMAND")
@@ -39,6 +42,23 @@ def get_username():
 def read_env(file_path):
     env = agent.read_envfile(file_path)
     os.environ.update(env)
+
+if args.list_modules:
+    for line in subprocess.check_output(['pgrep', '-x', 'agent', '-a'], text=True).split("\n"):
+        if not line:
+            break
+        fields = line.split()
+        if len(fields) < 3:
+            break
+        if fields[1] != '/usr/local/bin/agent':
+            continue
+        if fields[2] == '--agentid=cluster':
+            print("cluster")
+        elif fields[2].startswith('--agentid=module/'):
+            print(fields[2].removeprefix('--agentid=module/'))
+        elif fields[2].startswith('--agentid=node/'):
+            print("node")
+    sys.exit(0)
 
 mid = args.module_id
 
