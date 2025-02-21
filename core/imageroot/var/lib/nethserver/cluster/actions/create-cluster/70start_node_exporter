@@ -1,0 +1,11 @@
+#!/bin/bash
+
+#
+# Copyright (C) 2025 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+set -e
+exec 1>&2
+
+systemctl enable --now node_exporter.service
