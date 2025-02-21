@@ -9,11 +9,12 @@ import agent
 import json
 import sys
 import os
+import tempfile
 
-
-FAILED = b'F'
-SUCCESS = b'0'
-UNKNOWN = b'U'
+FAILED = 0
+SUCCESS = 1
+UNKNOWN = -1
+OUTPUT_FILE = "/run/node_exporter/backup.prom"
 
 rdb = agent.redis_connect()
 leader_id = int(rdb.hget('cluster/environment', 'NODE_ID'))
@@ -22,29 +23,38 @@ self_id = int(os.environ['NODE_ID'])
 if self_id != leader_id:
     sys.exit(0) # LEADER ONLY! Do not run this procedure in worker nodes.
 
+# Ensure the output directory exists
+os.makedirs(os.path.dirname(OUTPUT_FILE), exist_ok=True)
+
 modules = set(rdb.hkeys("cluster/module_node"))
 
-def get_module_backup_status(module_id):
-    backup_status = UNKNOWN
+backups = {}
+for module_id in modules:
     for backup_id in rdb.smembers(f"module/{module_id}/backups"):
+        if not backup_id in backups:
+            name = rdb.hget(f"cluster/backup/{backup_id}", "name")
+            backups[backup_id] = {"name": name, "status": UNKNOWN}
         nerrors = rdb.hget(f"module/{module_id}/backup_status/{backup_id}", "errors") or ""
         try:
             if int(nerrors) > 0:
-                return FAILED
+                backups[backup_id]["status"] = FAILED
         except ValueError:
             pass
         if nerrors == "0":
-            backup_status = SUCCESS
-    return backup_status
+            backups[backup_id]["status"] = SUCCESS
 
-cluster_backup_status_list = [get_module_backup_status(module_id) for module_id in modules]
+# Create the content to be written in node_exporter format
+content = f"""# HELP node_backup_status Status of the backup (0 = failure, 1 = success, -1 = unknown)
+# TYPE node_backup_status gauge
+"""
+for backup_id in backups:
+    backup = backups[backup_id]
+    content += 'node_backup_status{id="%s",name="%s"} %i\n' % (backup_id, backup.get('name', '_'), backup.get('status'))
 
-if FAILED in cluster_backup_status_list:
-    cluster_backup_status = FAILED
-elif SUCCESS in cluster_backup_status_list:
-    cluster_backup_status = SUCCESS
-else:
-    cluster_backup_status = UNKNOWN
+# Write the content to the output file atomically
+with tempfile.NamedTemporaryFile('w', delete=False, dir=os.path.dirname(OUTPUT_FILE)) as temp_file:
+    temp_file.write(content)
+    temp_filename = temp_file.name
 
-with open('/run/backup-monitor.dat', 'wb') as fdat:
-    fdat.write(cluster_backup_status)
+os.replace(temp_filename, OUTPUT_FILE)
+
