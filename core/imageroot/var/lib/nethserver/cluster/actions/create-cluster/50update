@@ -86,7 +86,7 @@ add1_module_failures = agent.tasks.runp_brief([
             'node': NODE_ID,
         }},
         {"agent_id": "cluster", "action": "add-module", "data": {
-            'image': 'ghcr.io/nethserver/prometheus:alertmanager', #FIXME
+            'image': 'ghcr.io/nethserver/metrics:latest', #FIXME
             'node': NODE_ID,
         }},
     ],
