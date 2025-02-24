@@ -1,0 +1,16 @@
+#!/bin/bash
+
+#
+# Copyright (C) 2025 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+exec 1>&2
+set -e
+
+if systemctl -q is-active node-monitor.service; then
+    echo "Disabling node-monitor as service"
+    systemctl stop node-monitor
+    rm -f /etc/systemd/system/node-monitor.service
+    systemctl daemon-reload
+fi
