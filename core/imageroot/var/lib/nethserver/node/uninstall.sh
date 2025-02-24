@@ -78,7 +78,6 @@ systemctl disable --now \
   rclone-webdav.service \
   promtail.service \
   node_exporter.service \
-  node-monitor.service \
   send-heartbeat.service \
   send-inventory.timer \
   send-backup.timer \

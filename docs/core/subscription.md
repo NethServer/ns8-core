@@ -30,7 +30,6 @@ managed by `check-subscription`:
 - `send-inventory` (leader only) Run at night, send the cluster inventory to the provider
 - `send-heartbeat` (leader only) Run every 10 minutes to signal the cluster liveness
 - `send-backup` (leader only) Run at night, send the cluster encrypted backup to the provider
-- `node-monitor` Check the node loadavg, root/boot space, free swap and raises alarms
 - `apply-updates` (leader only) Run at night, apply core, modules and OS
   updates according to configuration in Redis key `cluster/apply_updates`.
   See also [core updates]({{site.baseurl}}/core/updates)
