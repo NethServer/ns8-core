@@ -36,6 +36,7 @@ import socket
 import errno
 import urllib.request
 import urllib.error
+import base64
 from urllib.parse import urlparse
 
 # Reference https://www.man7.org/linux/man-pages/man3/sd-daemon.3.html
@@ -689,3 +690,47 @@ def deallocate_ports(protocol: str, module_id: str=""):
         raise Exception(f"{response['error']}")
     
     return response['output']
+
+def certificate_event_matches(event, name):
+    """Check if the event is relevant for name. The check considers also
+    wildcard matches.
+
+    :param event: The payload of certificate-changed event.
+    :param name: The name to check for a match.
+    :return: a boolean, True if event is relevant for name, False otherwise.
+    """
+    node_id = os.environ['NODE_ID']
+    if node_id != str(event['node_id']):
+        return False # ignore events from other nodes
+    try:
+        # calculate a wildcard for name
+        wildcard = '*.' + name.split(".", 1)[1]
+    except IndexError:
+        wildcard = None
+    if name in event['names']:
+        return True
+    elif wildcard and wildcard in event['names']:
+        return True
+    else:
+        return False
+
+def get_certificate(name):
+    """Get the certificate (and private key) for the given name.
+    :param name: Get a certificate for the name.
+    :return: A tuple (scert, skey) with the file contents of certificate
+        and private key, respectively.
+    """
+    node_id = os.environ['NODE_ID']
+
+    response = agent.tasks.run(
+        agent_id=resolve_agent_id("traefik@node"),
+        action='get-certificate',
+        data={ 'fqdn': name },
+    )
+    if response['exit_code'] != 0:
+        raise Exception(f"{response['error']}")
+
+    scert = base64.b64decode(response['output']['certificates'][0]['cert']).decode('utf-8')
+    skey = base64.b64decode(response['output']['certificates'][0]['key']).decode('utf-8')
+
+    return (scert, skey)
