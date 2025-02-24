@@ -625,12 +625,14 @@ export default {
           action: taskAction,
           data: {
             fqdn: this.certificateToDelete.fqdn,
+            type: this.certificateToDelete.type,
           },
           extra: {
             title: this.$t(
               "settings_tls_certificates.delete_certificate_for_fqdn",
               {
                 fqdn: this.certificateToDelete.fqdn,
+                type: this.certificateToDelete.type,
               }
             ),
             description: this.$t("common.processing"),
