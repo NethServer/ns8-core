@@ -152,11 +152,21 @@ if install_loki and node_id == self_id:
         }))
         redis_pipeline.execute()
 
+# Install metrics on the leader node, remove existing metrics instances
 if install_metrics and node_id == self_id:
+    settings = None
+    custom_alerts = None
+    custom_templates = None
     # Remove existing metrics instances
     remove_tasks = []
     for mkey in rdb.scan_iter("module/metrics*/environment"):
         module_id = mkey.removeprefix("module/").removesuffix("/environment")
+        settings = rdb.hgetall(f'module/{module_id}/settings')
+        custom_alerts = rdb.hgetall(f'module/{module_id}/custom_alerts')
+        custom_templates = rdb.hgetall(f'module/{module_id}/custom_templates')
+        print(f"Migrating settings: {settings}")
+        print(f"Migrating custom_alerts: {custom_alerts}")
+        print(f"Migrating custom_templates: {custom_templates}")
         module_node = rdb.hget(mkey, 'NODE_ID')
         remove_tasks.append({
             'agent_id': f'node/{module_node}',
@@ -166,7 +176,6 @@ if install_metrics and node_id == self_id:
                 "preserve_data": False,
             }
         })
-
     if len(remove_tasks) > 0:
         subtasks = agent.tasks.runp_nowait(
             remove_tasks,
@@ -174,7 +183,7 @@ if install_metrics and node_id == self_id:
         )
 
     # Install prometheus and grafana on the leader node
-    module = "ghcr.io/nethserver/metrics:latest" # FIXME
+    module = "ghcr.io/nethserver/metrics:save_to_redis" # FIXME
     result = agent.tasks.run("cluster", "add-module", data={
         "image": module,
         "node": node_id,
@@ -187,6 +196,28 @@ if install_metrics and node_id == self_id:
     if result['exit_code'] != 0:
         print(f"[ERROR] Failed to install {module} on the new leader node: {result['error']}", file=sys.stderr)
         errors += 1
+    else:
+        mid = result['output']['module_id'] # New module ID
+        if settings:
+            rdb.hset(f'module/{mid}/settings', mapping=settings)
+        if custom_alerts:
+            rdb.hset(f'module/{mid}/custom_alerts', mapping=custom_alerts)
+        if custom_templates:
+            rdb.hset(f'module/{mid}/custom_templates', mapping=custom_templates)
+
+        result_config = agent.tasks.run("cluster", "restart-module", data={
+            "module_id": mid,
+            "node": node_id,
+            "check_idle_time": 0,
+        },
+        extra={
+            "isNotificationHidden": True,
+        },
+        endpoint="redis://cluster-leader")
+        if result_config['exit_code'] != 0:
+            print(f"[ERROR] Failed to restart {module} on the new leader node: {result_config['error']}", file=sys.stderr)
+            errors += 1
+
 
 if errors > 0:
     sys.exit(1)

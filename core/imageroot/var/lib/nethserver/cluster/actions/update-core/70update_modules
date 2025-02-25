@@ -57,7 +57,7 @@ for module in cluster.modules.list_installed(rdb, skip_core_modules=False):
 if not is_metrics_installed:
     add_module_failures = agent.tasks.runp_brief([
             {"agent_id": "cluster", "action": "add-module", "data": {
-                'image': 'ghcr.io/nethserver/metrics:latest', #FIXME
+                'image': 'ghcr.io/nethserver/metrics:save_to_redis', #FIXME
                 'node': int(os.getenv("NODE_ID")),
             }},
         ],
