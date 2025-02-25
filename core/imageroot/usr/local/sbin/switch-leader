@@ -152,11 +152,21 @@ if install_loki and node_id == self_id:
         }))
         redis_pipeline.execute()
 
+# Install metrics on the leader node, remove existing metrics instances
 if install_metrics and node_id == self_id:
+    settings = None
+    custom_alerts = None
+    custom_templates = None
     # Remove existing metrics instances
     remove_tasks = []
     for mkey in rdb.scan_iter("module/metrics*/environment"):
         module_id = mkey.removeprefix("module/").removesuffix("/environment")
+        settings = rdb.hgetall(f'module/{module_id}/settings')
+        custom_alerts = rdb.hgetall(f'module/{module_id}/custom_alerts')
+        custom_templates = rdb.hgetall(f'module/{module_id}/custom_templates')
+        print(f"Migrating settings: {settings}")
+        print(f"Migrating custom_alerts: {custom_alerts}")
+        print(f"Migrating custom_templates: {custom_templates}")
         module_node = rdb.hget(mkey, 'NODE_ID')
         remove_tasks.append({
             'agent_id': f'node/{module_node}',
@@ -166,7 +176,6 @@ if install_metrics and node_id == self_id:
                 "preserve_data": False,
             }
         })
-
     if len(remove_tasks) > 0:
         subtasks = agent.tasks.runp_nowait(
             remove_tasks,
@@ -187,6 +196,21 @@ if install_metrics and node_id == self_id:
     if result['exit_code'] != 0:
         print(f"[ERROR] Failed to install {module} on the new leader node: {result['error']}", file=sys.stderr)
         errors += 1
+    else:
+        mid = result['output']['module_id'] # New module ID
+        result_config = agent.tasks.run(f"module/{mid}", "restore-configuration", data={
+            "settings": settings,
+            "custom_alerts": custom_alerts,
+            "custom_templates": custom_templates,
+        },
+        extra={
+            "isNotificationHidden": True,
+        },
+        endpoint="redis://cluster-leader")
+        if result_config['exit_code'] != 0:
+            print(f"[ERROR] Failed to restart {module} on the new leader node: {result_config['error']}", file=sys.stderr)
+            errors += 1
+
 
 if errors > 0:
     sys.exit(1)
