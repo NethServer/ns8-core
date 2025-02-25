@@ -93,7 +93,7 @@ add1_module_failures = agent.tasks.runp_brief([
             'node': NODE_ID,
         }},
         {"agent_id": "cluster", "action": "add-module", "data": {
-            'image': 'ghcr.io/nethserver/metrics:latest', #FIXME
+            'image': 'ghcr.io/nethserver/metrics:save_to_redis', #FIXME
             'node': NODE_ID,
         }},
     ],
