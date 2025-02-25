@@ -43,7 +43,6 @@ function enable_nsent()
         # Some services must be disabled in worker nodes
         systemctl disable --now send-heartbeat.service send-inventory.timer send-backup.timer
     fi
-    systemctl enable --now node-monitor.service
     systemctl enable check-subscription.service
 }
 
@@ -60,7 +59,6 @@ function enable_nscom()
         # Some services must be disabled in worker nodes
         systemctl disable --now send-heartbeat.service send-inventory.timer
     fi
-    systemctl enable --now node-monitor.service
     systemctl enable check-subscription.service
 }
 
@@ -70,7 +68,6 @@ elif [[ "${provider}" == "nscom" ]]; then
     enable_nscom
 else
     systemctl disable --now \
-        node-monitor.service \
         send-heartbeat.service \
         send-inventory.timer \
         send-backup.timer

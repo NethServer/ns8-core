@@ -23,10 +23,12 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--endpoint', required=False, help="Override VPN endpoint setting in Redis DB")
 parser.add_argument('--node', required=True, type=int, help="Node ID of the new leader")
 parser.add_argument('--without-loki', required=False, help="Do not install loki on the new leader node", action='store_false')
+parser.add_argument('--without-metrics', required=False, help="Do not install prometheus and grafana on the new leader node", action='store_false')
 args = parser.parse_args()
 node_id = args.node
 node_endpoint = args.endpoint
 install_loki = args.without_loki
+install_metrics = args.without_metrics
 
 # This command runs under the cluster environment. It always point to the local
 # Redis instance and has admin privileges over it.
@@ -149,6 +151,42 @@ if install_loki and node_id == self_id:
             'current': result['output']['module_id'],
         }))
         redis_pipeline.execute()
+
+if install_metrics and node_id == self_id:
+    # Remove existing metrics instances
+    remove_tasks = []
+    for mkey in rdb.scan_iter("module/metrics*/environment"):
+        module_id = mkey.removeprefix("module/").removesuffix("/environment")
+        module_node = rdb.hget(mkey, 'NODE_ID')
+        remove_tasks.append({
+            'agent_id': f'node/{module_node}',
+            'action': 'remove-module',
+            'data': {
+                "module_id": module_id,
+                "preserve_data": False,
+            }
+        })
+
+    if len(remove_tasks) > 0:
+        subtasks = agent.tasks.runp_nowait(
+            remove_tasks,
+            endpoint="redis://cluster-leader",
+        )
+
+    # Install prometheus and grafana on the leader node
+    module = "ghcr.io/nethserver/metrics:latest" # FIXME
+    result = agent.tasks.run("cluster", "add-module", data={
+        "image": module,
+        "node": node_id,
+        "check_idle_time": 0,
+    },
+    extra={
+        "isNotificationHidden": True,
+    },
+    endpoint="redis://cluster-leader")
+    if result['exit_code'] != 0:
+        print(f"[ERROR] Failed to install {module} on the new leader node: {result['error']}", file=sys.stderr)
+        errors += 1
 
 if errors > 0:
     sys.exit(1)
