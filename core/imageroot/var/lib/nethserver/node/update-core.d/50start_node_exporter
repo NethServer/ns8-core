@@ -9,9 +9,7 @@ exec 1>&2
 set -e
 
 if systemctl is-active --quiet node_exporter ; then
-    systemctl try-restart node_exporter.service || :
+    systemctl restart node_exporter.service || :
 else
-    echo "Upgrade Promtail as core service:"
-    systemctl disable --now $(ls -1 /etc/systemd/system/node_exporter[1-9]*.service | xargs -- basename)
     systemctl enable --now node_exporter.service
 fi
