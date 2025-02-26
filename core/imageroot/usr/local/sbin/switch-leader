@@ -159,28 +159,29 @@ if install_metrics and node_id == self_id:
     custom_templates = None
     # Remove existing metrics instances
     remove_tasks = []
-    for mkey in rdb.scan_iter("module/metrics*/environment"):
-        module_id = mkey.removeprefix("module/").removesuffix("/environment")
-        settings = rdb.hgetall(f'module/{module_id}/settings')
-        custom_alerts = rdb.hgetall(f'module/{module_id}/custom_alerts')
-        custom_templates = rdb.hgetall(f'module/{module_id}/custom_templates')
-        print(f"Migrating settings: {settings}")
-        print(f"Migrating custom_alerts: {custom_alerts}")
-        print(f"Migrating custom_templates: {custom_templates}")
-        module_node = rdb.hget(mkey, 'NODE_ID')
-        remove_tasks.append({
-            'agent_id': f'node/{module_node}',
+    old_metrics_instance = rdb.get('cluster/default_instance/metrics')
+    old_node = rdb.hget('cluster/module_node', old_metrics_instance)
+    if old_metrics_instance:
+        settings = rdb.hgetall(f'module/{old_metrics_instance}/settings')
+        custom_alerts = rdb.hgetall(f'module/{old_metrics_instance}/custom_alerts')
+        custom_templates = rdb.hgetall(f'module/{old_metrics_instance}/custom_templates')
+        subtasks = agent.tasks.run({
+            'agent_id': 'cluster',
             'action': 'remove-module',
             'data': {
-                "module_id": module_id,
+                "module_id": old_metrics_instance,
                 "preserve_data": False,
-            }
-        })
-    if len(remove_tasks) > 0:
-        subtasks = agent.tasks.runp_nowait(
-            remove_tasks,
-            endpoint="redis://cluster-leader",
-        )
+                "force": True,
+        }}, endpoint="redis://cluster-leader")
+        # Make sure the node is clean
+        agent.tasks.run_nowait({
+            'agent_id': f'node/{old_node}',
+            'action': 'remove-module',
+            'data': {
+                "module_id": old_metrics_instance,
+                "preserve_data": False,
+                "check_idle_time": 0,
+        }}, endpoint="redis://cluster-leader")
 
     # Install prometheus and grafana on the leader node
     module = "ghcr.io/nethserver/metrics:latest" # FIXME
