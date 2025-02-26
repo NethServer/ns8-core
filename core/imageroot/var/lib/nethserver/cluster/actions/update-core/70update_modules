@@ -43,29 +43,6 @@ update_module_errors = agent.tasks.runp_brief(update_module_tasks,
     progress_callback=agent.get_progress_callback(75, 95),
 )
 
-# Check if metrics is installed on the leader (this action is invoked on the leader, so NODE_ID is the leader)
-is_metrics_installed = False
-installed = cluster.modules.list_installed(rdb, skip_core_modules=False)
-for module in cluster.modules.list_installed(rdb, skip_core_modules=False):
-    for instance in installed[module]:
-        if not 'core_module' in instance.get('flags', []):
-            continue # skip module without core_module flag
-        if instance.get('module') == 'metrics' and instance.get('node') == os.getenv("NODE_ID"):
-            is_metrics_installed = True
-
-# Install metrics if not installed
-if not is_metrics_installed:
-    add_module_failures = agent.tasks.runp_brief([
-            {"agent_id": "cluster", "action": "add-module", "data": {
-                'image': 'ghcr.io/nethserver/metrics:latest', #FIXME
-                'node': int(os.getenv("NODE_ID")),
-            }},
-        ],
-        endpoint = "redis://cluster-leader",
-        progress_callback = agent.get_progress_callback(25, 85),
-    )
-    agent.assert_exp(add_module_failures == 0)
-
 agent.run_helper("run-scriptdir", f"{agent_install_dir}/update-core-post-modules.d/")
 
 agent.assert_exp(update_module_errors == 0, 'update-core failed in some core modules')
