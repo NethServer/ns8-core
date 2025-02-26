@@ -10,7 +10,7 @@ set -e
 
 if systemctl -q is-active node-monitor.service; then
     echo "Disabling node-monitor as service"
-    systemctl stop node-monitor
+    systemctl disable --now node-monitor
     rm -f /etc/systemd/system/node-monitor.service
     systemctl daemon-reload
 fi

@@ -8,7 +8,7 @@
 exec 1>&2
 set -e
 
-if systemctl is-active --quiet node_exporter ; then
+if systemctl is-enabled --quiet node_exporter ; then
     systemctl restart node_exporter.service || :
 else
     systemctl enable --now node_exporter.service
