@@ -8,8 +8,8 @@ parent: Core
 # Metrics and alerting
 
 The core provides a module named `metrics` that collects metrics from the nodes
-and sends alerts to the Nethesis portal. The module is installed by the cluster
-initialization script.
+and sends alerts to the Nethesis portal. The module is installed by the
+`create-cluster` action.
 
 The module includes the following services:
 
@@ -36,4 +36,4 @@ Configuration:
 
 If a subscription is enabled, alerts are sent to Nethesis portals by default.
 
-For more information, please refer to the module [README](https://github.com/NethServer/ns8-metrics) for details on alert configuration and customization.
+Please refer to the module [README](https://github.com/NethServer/ns8-metrics) for details on alert configuration and customization.
