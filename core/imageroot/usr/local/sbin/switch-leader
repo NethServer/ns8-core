@@ -182,6 +182,22 @@ if install_metrics and node_id == self_id:
                 "preserve_data": False,
                 "check_idle_time": 0,
         }}, endpoint="redis://cluster-leader")
+        # Cleanup traefik routes
+        traefik_id = rdb.get(f'node/{old_node}/default_instance/traefik')   
+        agent.tasks.run_nowait(
+            agent_id=agent.resolve_agent_id(traefik_id),
+            action='delete-route',
+            data={
+                'instance': old_metrics_instance + '_prometheus'
+            },
+        )
+        agent.tasks.run_nowait(
+            agent_id=agent.resolve_agent_id(traefik_id),
+            action='delete-route',
+            data={
+                'instance': old_metrics_instance + '_grafana'
+            },
+        )
 
     # Install prometheus and grafana on the leader node
     module = "ghcr.io/nethserver/metrics:latest" # FIXME
