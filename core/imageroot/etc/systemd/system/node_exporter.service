@@ -14,7 +14,6 @@ ExecStart=/usr/bin/podman run \
     --cidfile %t/%N.cid \
     --cgroups=no-conmon \
     --replace \
-    --log-opt=tag=${MODULE_ID} \
     --name %N \
     --network=host \
     --pid=host \
