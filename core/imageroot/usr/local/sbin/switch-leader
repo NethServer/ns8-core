@@ -190,7 +190,7 @@ if install_metrics and node_id == self_id:
         )
 
     # Install prometheus and grafana on the leader node
-    module = "ghcr.io/nethserver/metrics:latest" # FIXME
+    module = "metrics"
     result = agent.tasks.run("cluster", "add-module", data={
             "image": module,
             "node": node_id,

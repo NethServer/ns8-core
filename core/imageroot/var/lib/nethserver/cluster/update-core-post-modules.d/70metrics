@@ -27,7 +27,7 @@ if not is_metrics_installed:
     # Install metrics module
     add_module_failures = agent.tasks.runp_brief([
         {"agent_id": "cluster", "action": "add-module", "data": {
-            'image': 'ghcr.io/nethserver/metrics:latest', #FIXME
+            'image': 'metrics',
             'node': int(os.getenv("NODE_ID")),
         }}],
         endpoint = "redis://cluster-leader",
