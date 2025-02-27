@@ -703,7 +703,9 @@
         "samba": "Samba",
         "users_admin_page_tooltips": "User portal permits domain users to change their own password. The portal is accessible to users also on any node running the domain provider replica. The generic URL is https://{node_fqdn_or_ip}/users-admin/{domain}/",
         "no_node_eligible_for_provider_installation": "No node is eligible for provider installation",
-        "provider_already_installed": "Provider already installed"
+        "provider_already_installed": "Provider already installed",
+        "edit_external_domain": "Edit external domain",
+        "domain_settings": "Domain settings"
     },
     "domain_users": {
         "edit_group": "Edit group",
@@ -751,7 +753,9 @@
         "domain_name_users_and_groups": "{domain} users and groups",
         "user_string_lte": "Must be less than or equal to 255 characters",
         "display_name_string_lte": "Must be less than or equal to 256 characters",
-        "user_pattern": "Invalid character \"{tok}\". Only letters, digits, - and _ are allowed."
+        "user_pattern": "Invalid character \"{tok}\". Only letters, digits, - and _ are allowed.",
+        "group_with_same_name": "A group with this name already exists",
+        "user_with_same_name": "A user with this name already exists"
     },
     "nodes": {
         "check_node_connectivity": "Check node connectivity",
@@ -1306,7 +1310,8 @@
         "unconfigured_providers_description": "You can resume their configuration or delete them",
         "delete_provider": "Delete provider",
         "cannot_delete_provider_description": "You can delete the whole domain and the provider will be deleted too (if that's your intention)",
-        "add_provider": "Add provider"
+        "add_provider": "Add provider",
+        "external_providers_tooltip_description": "Providers are the services that manage users and groups in a domain. You can have more than one provider in an external domain, but only if 'TLS verify' is disabled"
     },
     "settings_subscription": {
         "authentication_token_helper": "Obtain a registration token from the subscription web portal",

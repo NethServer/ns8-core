@@ -516,7 +516,9 @@
         "host_format": "Deve essere un nome di dominio o un indirizzo IP valido",
         "users_admin_page_tooltips": "Il portale utente consente agli utenti di dominio di modificare la propria password. Il portale è accessibile agli utenti anche su qualsiasi nodo con una replica dell'domain provider. L'URL generico è https://{node_fqdn_or_ip}/users-admin/{domain}/",
         "provider_already_installed": "Provider già installato",
-        "no_node_eligible_for_provider_installation": "Nessun nodo è idoneo per l'installazione del provider"
+        "no_node_eligible_for_provider_installation": "Nessun nodo è idoneo per l'installazione del provider",
+        "edit_external_domain": "Modifica dominio esterno",
+        "domain_settings": "Impostazioni del dominio"
     },
     "action": {
         "configure-module": "Configura app",
@@ -1221,7 +1223,9 @@
         "group_already_exists": "Il gruppo esiste già",
         "user_string_lte": "Deve essere inferiore o uguale a 255 caratteri",
         "display_name_string_lte": "Deve essere inferiore o uguale a 256 caratteri",
-        "user_pattern": "Inizia con una lettera, seguita da lettere, cifre o i simboli -._"
+        "user_pattern": "Inizia con una lettera, seguita da lettere, cifre o i simboli -._",
+        "group_with_same_name": "Un gruppo con questo nome esiste già",
+        "user_with_same_name": "Un utente con questo nome esiste già"
     },
     "domain_configuration": {
         "add_provider": "Aggiungi provider",
@@ -1243,7 +1247,8 @@
         "provider_label_tooltip": "È possibile assegnare al provider un nome facile da ricordare",
         "unconfigured_provider": "Provider non configurato",
         "unconfigured_providers_title": "Ci sono provider non configurati",
-        "unconfigured_providers_description": "È possibile riprendere la loro configurazione o eliminarli"
+        "unconfigured_providers_description": "È possibile riprendere la loro configurazione o eliminarli",
+        "external_providers_tooltip_description": "I provider sono i servizi che gestiscono gli utenti e gruppi di un dominio. È possibile avere più di un provider in un dominio esterno, ma solo se 'Verifica TLS' è disabilitato"
     },
     "app_drawer": {
         "all_apps": "Tutte le app",

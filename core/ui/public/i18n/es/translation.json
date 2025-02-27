@@ -132,7 +132,9 @@
         "users_admin_page_description": "Portal de autoservicio de administración de usuarios",
         "host_format": "Debe de ser un nombre de dominio o dirección IP válidos",
         "provider_already_installed": "Provider already installed",
-        "no_node_eligible_for_provider_installation": "No node is eligible for provider installation"
+        "no_node_eligible_for_provider_installation": "No node is eligible for provider installation",
+        "edit_external_domain": "Edit external domain",
+        "domain_settings": "Domain settings"
     },
     "common": {
         "required": "Obligatorio",
@@ -1134,7 +1136,9 @@
         "username": "Nombre de usuario",
         "user_string_lte": "Debe ser menor o igual a 255 caracteres",
         "display_name_string_lte": "Debe ser menor o igual a 256 caracteres",
-        "user_pattern": "Comience con una letra, seguida solo de letras, dígitos y los símbolos -._"
+        "user_pattern": "Comience con una letra, seguida solo de letras, dígitos y los símbolos -._",
+        "group_with_same_name": "A group with this name already exists",
+        "user_with_same_name": "A user with this name already exists"
     },
     "settings_acme_servers": {
         "node": "Nodo",
@@ -1242,7 +1246,8 @@
         "settings": "Ajustes",
         "unconfigured_providers_title": "Hay proveedores no configurados",
         "unconfigured_providers_description": "Puedes continuar su configuración o eliminarlos",
-        "cannot_delete_provider_description": "Puedes eliminar todo el dominio y el proveedor también se eliminará (si esa es tu intención)"
+        "cannot_delete_provider_description": "Puedes eliminar todo el dominio y el proveedor también se eliminará (si esa es tu intención)",
+        "external_providers_tooltip_description": "Providers are the services that manage users and groups in a domain. You can have more than one provider in an external domain, but only if 'TLS verify' is disabled"
     },
     "login": {
         "incorrect_code": "Código incorrecto",
