@@ -1,0 +1,31 @@
+[Unit]
+Description=Prometheus node_exporter
+
+[Service]
+Type=forking
+Environment=PODMAN_SYSTEMD_UNIT=%n
+EnvironmentFile=-/etc/nethserver/core.env
+WorkingDirectory=/var/lib/nethserver/node/state
+Restart=always
+ExecStartPre=/bin/rm -f %t/%N.pid %t/%N.cid
+ExecStartPre=/usr/bin/mkdir -p /run/node_exporter
+ExecStart=/usr/bin/podman run \
+    --conmon-pidfile %t/%N.pid \
+    --cidfile %t/%N.cid \
+    --cgroups=no-conmon \
+    --replace \
+    --name %N \
+    --network=host \
+    --pid=host \
+    -d \
+    -v /:/host:ro,rslave \
+    ${NODE_EXPORTER_IMAGE} \
+    --collector.filesystem.ignored-mount-points=^/(sys|proc|dev|run)($|/) \
+    --collector.textfile.directory=/host/run/node_exporter \
+    --path.rootfs=/host
+ExecStop=/usr/bin/podman stop --ignore --cidfile %t/%N.cid -t 10
+ExecStopPost=/usr/bin/podman rm --ignore -f --cidfile %t/%N.cid
+PIDFile=%t/%N.pid
+
+[Install]
+WantedBy=default.target

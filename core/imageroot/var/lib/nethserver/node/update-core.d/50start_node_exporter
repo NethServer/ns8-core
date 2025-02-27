@@ -1,0 +1,15 @@
+#!/bin/bash
+
+#
+# Copyright (C) 2025 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+exec 1>&2
+set -e
+
+if systemctl is-enabled --quiet node_exporter ; then
+    systemctl restart node_exporter.service || :
+else
+    systemctl enable --now node_exporter.service
+fi

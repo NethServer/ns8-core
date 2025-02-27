@@ -9,4 +9,4 @@ exec 1>&2
 set -e
 
 # Restart subscription long-running services, if enabled
-systemctl try-restart node-monitor.service send-heartbeat.service
+systemctl try-restart send-heartbeat.service

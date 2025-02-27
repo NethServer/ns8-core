@@ -23,10 +23,12 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--endpoint', required=False, help="Override VPN endpoint setting in Redis DB")
 parser.add_argument('--node', required=True, type=int, help="Node ID of the new leader")
 parser.add_argument('--without-loki', required=False, help="Do not install loki on the new leader node", action='store_false')
+parser.add_argument('--without-metrics', required=False, help="Do not install prometheus and grafana on the new leader node", action='store_false')
 args = parser.parse_args()
 node_id = args.node
 node_endpoint = args.endpoint
 install_loki = args.without_loki
+install_metrics = args.without_metrics
 
 # This command runs under the cluster environment. It always point to the local
 # Redis instance and has admin privileges over it.
@@ -149,6 +151,73 @@ if install_loki and node_id == self_id:
             'current': result['output']['module_id'],
         }))
         redis_pipeline.execute()
+
+# Install metrics on the leader node, remove existing metrics instances
+if install_metrics and node_id == self_id:
+    settings = None
+    custom_alerts = None
+    custom_templates = None
+    # Remove existing metrics instances
+    remove_tasks = []
+    old_metrics_instance = rdb.get('cluster/default_instance/metrics')
+    old_node = rdb.hget('cluster/module_node', old_metrics_instance)
+    if old_metrics_instance:
+        settings = rdb.hgetall(f'module/{old_metrics_instance}/settings')
+        custom_alerts = rdb.hgetall(f'module/{old_metrics_instance}/custom_alerts')
+        custom_templates = rdb.hgetall(f'module/{old_metrics_instance}/custom_templates')
+        subtasks = agent.tasks.run('cluster', 'remove-module', data={
+                "module_id": old_metrics_instance,
+                "preserve_data": False,
+                "force": True,
+        }, endpoint="redis://cluster-leader")
+        # Make sure the node is clean
+        agent.tasks.run_nowait(f'node/{old_node}', 'remove-module', data={
+                "module_id": old_metrics_instance,
+                "preserve_data": False,
+                "check_idle_time": 0,
+        }, endpoint="redis://cluster-leader")
+        # Cleanup traefik routes
+        traefik_id = rdb.get(f'node/{old_node}/default_instance/traefik')   
+        agent.tasks.run_nowait(f'module/{traefik_id}', 'delete-route', data={
+                'instance': old_metrics_instance + '_prometheus'
+            },
+            endpoint="redis://cluster-leader"
+        )
+        agent.tasks.run_nowait(f'module/{traefik_id}', 'delete-route', data={
+                'instance': old_metrics_instance + '_grafana'
+            },
+            endpoint="redis://cluster-leader"
+        )
+
+    # Install prometheus and grafana on the leader node
+    module = "metrics"
+    result = agent.tasks.run("cluster", "add-module", data={
+            "image": module,
+            "node": node_id,
+            "check_idle_time": 0,
+        },
+        extra={
+            "isNotificationHidden": True,
+        },
+        endpoint="redis://cluster-leader")
+    if result['exit_code'] != 0:
+        print(f"[ERROR] Failed to install {module} on the new leader node: {result['error']}", file=sys.stderr)
+        errors += 1
+    else:
+        mid = result['output']['module_id'] # New module ID
+        result_config = agent.tasks.run(f"module/{mid}", "restore-configuration", data={
+            "settings": settings,
+            "custom_alerts": custom_alerts,
+            "custom_templates": custom_templates,
+        },
+        extra={
+            "isNotificationHidden": True,
+        },
+        endpoint="redis://cluster-leader")
+        if result_config['exit_code'] != 0:
+            print(f"[ERROR] Failed to restart {module} on the new leader node: {result_config['error']}", file=sys.stderr)
+            errors += 1
+
 
 if errors > 0:
     sys.exit(1)
