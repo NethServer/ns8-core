@@ -165,36 +165,24 @@ if install_metrics and node_id == self_id:
         settings = rdb.hgetall(f'module/{old_metrics_instance}/settings')
         custom_alerts = rdb.hgetall(f'module/{old_metrics_instance}/custom_alerts')
         custom_templates = rdb.hgetall(f'module/{old_metrics_instance}/custom_templates')
-        subtasks = agent.tasks.run({
-            'agent_id': 'cluster',
-            'action': 'remove-module',
-            'data': {
+        subtasks = agent.tasks.run('cluster', 'remove-module', data={
                 "module_id": old_metrics_instance,
                 "preserve_data": False,
                 "force": True,
-        }}, endpoint="redis://cluster-leader")
+        }, endpoint="redis://cluster-leader")
         # Make sure the node is clean
-        agent.tasks.run_nowait({
-            'agent_id': f'node/{old_node}',
-            'action': 'remove-module',
-            'data': {
+        agent.tasks.run_nowait(f'node/{old_node}', 'remove-module', data={
                 "module_id": old_metrics_instance,
                 "preserve_data": False,
                 "check_idle_time": 0,
-        }}, endpoint="redis://cluster-leader")
+        }, endpoint="redis://cluster-leader")
         # Cleanup traefik routes
         traefik_id = rdb.get(f'node/{old_node}/default_instance/traefik')   
-        agent.tasks.run_nowait(
-            agent_id=f'module/{traefik_id}',
-            action='delete-route',
-            data={
+        agent.tasks.run_nowait(f'module/{traefik_id}', 'delete-route', data={
                 'instance': old_metrics_instance + '_prometheus'
             },
         )
-        agent.tasks.run_nowait(
-            agent_id=f'module/{traefik_id}',
-            action='delete-route',
-            data={
+        agent.tasks.run_nowait(f'module/{traefik_id}', 'delete-route', data={
                 'instance': old_metrics_instance + '_grafana'
             },
         )
