@@ -11,5 +11,7 @@ set -e
 if systemctl is-enabled --quiet node_exporter ; then
     systemctl restart node_exporter.service || :
 else
+    # Make sure to stop all node_exporterX instances
+    systemctl stop node_exporter*.service || :
     systemctl enable --now node_exporter.service
 fi
