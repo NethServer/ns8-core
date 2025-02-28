@@ -7,6 +7,10 @@ Environment=PODMAN_SYSTEMD_UNIT=%n
 EnvironmentFile=-/etc/nethserver/core.env
 WorkingDirectory=/var/lib/nethserver/node/state
 Restart=always
+RestartSec=3
+TimeoutStartSec=120
+# node_exporter exits with 143 on SIGTERM:
+SuccessExitStatus=143
 ExecStartPre=/bin/rm -f %t/%N.pid %t/%N.cid
 ExecStartPre=/usr/bin/mkdir -p /run/node_exporter
 ExecStart=/usr/bin/podman run \
