@@ -122,7 +122,7 @@ buildah rm "${container}"
 images+=("${repobase}/${reponame}")
 
 echo "Building the restic/rclone image..."
-container=$(buildah from docker.io/library/alpine:3.20.3)
+container=$(buildah from docker.io/library/alpine:3.21.3)
 reponame="restic"
 buildah add "${container}" restic/ /
 buildah run ${container} sh <<'EOF'
@@ -143,7 +143,7 @@ buildah rm "${container}"
 images+=("${repobase}/${reponame}")
 
 echo "Building the rsync image..."
-container=$(buildah from docker.io/library/alpine:3.18.4)
+container=$(buildah from docker.io/library/alpine:3.21.3)
 reponame="rsync"
 buildah run ${container} -- apk add --no-cache rsync
 buildah add "${container}" rsync/entrypoint.sh /entrypoint.sh
@@ -156,7 +156,7 @@ buildah rm "${container}"
 images+=("${repobase}/${reponame}")
 
 echo "Building the support image..."
-container=$(buildah from docker.io/library/alpine:3.18.4)
+container=$(buildah from docker.io/library/alpine:3.21.3)
 reponame="support"
 buildah run ${container} -- sh <<'EOF'
 apk add --no-cache openvpn gettext-envsubst
