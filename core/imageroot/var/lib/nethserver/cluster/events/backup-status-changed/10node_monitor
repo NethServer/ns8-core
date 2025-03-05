@@ -25,7 +25,7 @@ if self_id != leader_id:
     # avoid false alarms after a switch-leader
     try:
         os.remove(OUTPUT_FILE)
-    except OSError:
+    except:
         pass
     sys.exit(0) # LEADER ONLY! Do not run this procedure in worker nodes.
 
