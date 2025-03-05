@@ -21,6 +21,12 @@ leader_id = int(rdb.hget('cluster/environment', 'NODE_ID'))
 self_id = int(os.environ['NODE_ID'])
 
 if self_id != leader_id:
+    # Remove backup status from the worker node:
+    # avoid false alarms after a switch-leader
+    try:
+        os.remove(OUTPUT_FILE)
+    except OSError:
+        pass
     sys.exit(0) # LEADER ONLY! Do not run this procedure in worker nodes.
 
 # Ensure the output directory exists
