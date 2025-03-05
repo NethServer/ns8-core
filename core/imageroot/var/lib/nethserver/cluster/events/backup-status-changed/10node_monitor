@@ -57,4 +57,5 @@ with tempfile.NamedTemporaryFile('w', delete=False, dir=os.path.dirname(OUTPUT_F
     temp_filename = temp_file.name
 
 os.replace(temp_filename, OUTPUT_FILE)
-
+# make OUTPUT_FILE readable by node_exporter
+os.chmod(OUTPUT_FILE, 0o644)
