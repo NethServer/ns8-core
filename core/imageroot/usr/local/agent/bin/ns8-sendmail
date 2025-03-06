@@ -1,0 +1,78 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2025 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+# This script reads a mail from stdin and sends it using Python's smtplib
+# It takes as arguments the recipient
+
+import ssl
+import sys
+import agent
+import smtplib
+import argparse
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+
+# Accept the following arguments
+# argv[1] to argv[n] = recipient
+# -s = subject
+# -f = from
+
+# Parse the arguments
+parser = argparse.ArgumentParser(description='Send an email using cluster notification settings.')
+parser.add_argument('recipients', metavar='R', type=str, nargs='*', help='Email recipients')
+parser.add_argument('-s', '--subject', type=str, default='', help='Email subject')
+parser.add_argument('-f', '--from', dest='from_addr', type=str, default=f'no-reply@{agent.get_hostname()}', help='From address')
+
+args = parser.parse_args()
+
+# Check if recipients list is empty
+if not args.recipients:
+    print("Error: At least one recipient is required.", file=sys.stderr)
+    sys.exit(1)
+
+# Read mail body from stdin
+body = sys.stdin.read()
+
+# Read SMTP cluser configuration
+rdb = agent.redis_connect(use_replica=True)
+smtp_config = agent.get_smarthost_settings(rdb)
+if not smtp_config['enabled']:
+    print("Error: Smarthost is not enabled.", file=sys.stderr)
+    sys.exit(1)
+
+# Create a SSL context
+ctx = ssl.create_default_context()
+if not smtp_config['tls_verify']:
+    ctx.check_hostname = False
+    ctx.verify_mode = ssl.CERT_NONE
+
+# Setup connection based on encrypt_smtp value.
+# Possible values: none, starttls, tls
+if smtp_config['encrypt_smtp'] == 'tls':
+    smtp = smtplib.SMTP_SSL(smtp_config['host'], smtp_config['port'], context=ctx)
+elif smtp_config['encrypt_smtp'] == 'starttls':
+    smtp = smtplib.SMTP(smtp_config['host'], smtp_config['port'])
+    smtp.starttls(context=ctx)
+else:
+    smtp = smtplib.SMTP(smtp_config['host'], smtp_config['port'])
+
+# Authenticate if needed
+if smtp_config['username'] and smtp_config['password']:
+    smtp.login(smtp_config['username'], smtp_config['password'])
+
+# Create a multipart message and set headers
+message = MIMEMultipart()
+message["From"] = args.from_addr
+message["To"] = ','.join(args.recipients)
+message["Subject"] = args.subject
+
+# Attach the HTML part
+message.attach(MIMEText(body, "html"))
+
+# Send the message via the configured SMTP server
+smtp.sendmail(args.from_addr, ','.join(args.recipients), message.as_string())
+smtp.quit()
