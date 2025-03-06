@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Password Expiration Notice</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background-color: #007bff;
+            color: #ffffff;
+            padding: 10px 0;
+            text-align: center;
+        }
+        .content {
+            padding: 20px;
+            text-align: center;
+        }
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            margin-top: 20px;
+            background-color: #007bff;
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .footer {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #888888;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Password Expiration Notice</h1>
+        </div>
+        <div class="content">
+            <p>Dear $user,</p>
+            <p>Your password is expiring in <strong>$days days</strong>. To ensure the security of your account, please change your password before it expires.</p>
+            <a href="$portal" class="button">Change Password</a>
+        </div>
+        <div class="footer">
+            <p>If you have any questions, please contact the administrator.</p>
+        </div>
+    </div>
+</body>
+</html>
