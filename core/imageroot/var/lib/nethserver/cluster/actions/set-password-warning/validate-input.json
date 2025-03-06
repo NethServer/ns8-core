@@ -1,0 +1,53 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "set-password-warning",
+  "$id": "http://schema.nethserver.org/cluster/set-password-warning-input.json",
+  "description": "Input schema of the set-password-warning action",
+  "examples": [
+    {
+      "domain": "mydom.test",
+      "notification": true,
+      "mail_template": "default_en",
+      "days": 7,
+      "mail_from": "no-reply@nethserver.org",
+      "mail_subject": "Password expiration warning"
+    }
+  ],
+  "type": "object",
+  "required": [
+    "domain",
+    "notification",
+    "mail_subject"
+  ],
+  "properties": {
+    "domain": {
+      "description": "A user domain name",
+      "type": "string",
+      "minLength": 1
+    },
+    "notification": {
+      "description": "Enable or disable user domain notifications",
+      "type": "boolean"
+    },
+    "mail_template": {
+      "description": "The notification template to use",
+      "type": "string",
+      "minLength": 1
+    },
+    "days": {
+      "description": "The number of days before the expiration date to send the notification",
+      "type": "integer",
+      "minimum": 1
+    },
+    "mail_from": {
+      "description": "The sender email address",
+      "type": "string",
+      "format": "email"
+    },
+    "mail_subject": {
+      "description": "The email subject",
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

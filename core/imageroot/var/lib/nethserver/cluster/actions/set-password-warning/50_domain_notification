@@ -1,0 +1,52 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2025 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+import os
+import sys
+import json
+import agent
+from agent.ldapproxy import Ldapproxy
+
+TEMPLATE_DIR="/etc/nethserver/password_warning"
+
+request = json.load(sys.stdin)
+
+lp = Ldapproxy()
+domains = lp.get_domains_list()
+
+domain = request["domain"]
+notification = request["notification"]
+mail_subject = request.get("mail_subject")
+mail_template = request.get("mail_template", "default_en")
+days = request.get("days", 7)
+mail_from = request.get("mail_from", f'no-reply@{agent.get_hostname()}')
+
+if domain not in domains:
+    agent.set_status('validation-failed')
+    json.dump([{'field':'domain', 'parameter':'domain','value': domain, 'error':'not_included_in_the_domains_list'}], fp=sys.stdout)
+    # we print the error message in logs
+    print(agent.SD_WARNING + f"Error: the domain {domain} is not included in the list of domains {domains}", file=sys.stderr)
+    sys.exit(3)
+
+rdb = agent.redis_connect(privileged=True)
+
+# check if the template file exists
+if not os.path.exists(f"{TEMPLATE_DIR}/{mail_template}.tmpl") and not rdb.hget(f"cluster/password_warning/templates", mail_template):
+    agent.set_status('validation-failed')
+    json.dump([{'field':'mail_template', 'parameter':'mail_template','value': mail_template, 'error':'template_not_found'}], fp=sys.stdout)
+    # we print the error message in logs
+    print(agent.SD_WARNING + f"Error: the template file {mail_template}.tmpl does not exist", file=sys.stderr)
+    sys.exit(3)
+
+data = {
+    'notification': '1' if notification else '0',
+    'mail_template': mail_template,
+    'days': days,
+    'mail_subject': mail_subject,
+    'mail_from': mail_from
+}
+rdb.hset(f"cluster/password_warning/{domain}", mapping=data)
