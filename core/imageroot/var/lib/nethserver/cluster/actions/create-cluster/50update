@@ -95,8 +95,9 @@ add1_module_failures = agent.tasks.runp_brief([
 )
 agent.assert_exp(add1_module_failures == 0)
 
-# Update completed successfully, enable the phonehome.timer
+# Update completed successfully, enable the timers
 agent.run_helper(*'systemctl enable --now phonehome.timer'.split(' ')).check_returncode()
+agent.run_helper(*'systemctl enable --now password-warning.timer'.split(' ')).check_returncode()
 
 json.dump({
     "ip_address": ip_address,
