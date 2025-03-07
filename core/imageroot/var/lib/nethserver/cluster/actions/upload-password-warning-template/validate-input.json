@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "upload-password-warning-template",
+  "$id": "http://schema.nethserver.org/cluster/upload-password-warning-template-input.json",
+  "description": "upload-password-warning-template",
+  "examples": [
+    {
+      "name": "custom_en",
+      "content": "RGVhciAkbmFtZSAoJH..."
+    }
+  ],
+  "type": "object",
+  "required": [
+    "name",
+    "content"
+  ],
+  "properties": {
+    "name": {
+      "description": "A template name",
+      "type": "string",
+      "minLength": 1
+    },
+    "content": {
+      "description": "The template content in base64 format, it can be a text file or an HTML file",
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}
