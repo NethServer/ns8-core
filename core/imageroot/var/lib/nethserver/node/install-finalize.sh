@@ -99,6 +99,9 @@ EOF
 echo "Start API server and core agents:"
 systemctl enable --now api-server.service agent@cluster.service agent@node.service rclone-webdav.service
 
+echo "Start node timers"
+systemctl enable --now password-warning.timer
+
 echo "Grant initial permissions:"
 runagent python3 <<'EOF'
 import agent
