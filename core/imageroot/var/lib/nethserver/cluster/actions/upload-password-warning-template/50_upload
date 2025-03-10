@@ -13,6 +13,7 @@ request = json.load(sys.stdin)
 
 name = request["name"]
 content = request["content"]
+mail_subject = request["mail_subject"]
 
 if name == "default_en" or name == "default_it":
     agent.set_status('validation-failed')
@@ -30,3 +31,4 @@ if rdb.hget(f"cluster/password_warning/templates", name):
     sys.exit(3)
 
 rdb.hset(f"cluster/password_warning/templates", name, content)
+rdb.hset(f"cluster/password_warning/templates", f'{name}_mail_subject', mail_subject)

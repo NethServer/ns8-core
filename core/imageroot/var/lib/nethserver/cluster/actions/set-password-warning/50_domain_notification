@@ -20,7 +20,6 @@ domains = lp.get_domains_list()
 
 domain = request["domain"]
 notification = request["notification"]
-mail_subject = request.get("mail_subject")
 mail_template = request.get("mail_template", "default_en")
 days = request.get("days", 7)
 mail_from = request.get("mail_from", f'no-reply@{agent.get_hostname()}')
@@ -46,7 +45,6 @@ data = {
     'notification': '1' if notification else '0',
     'mail_template': mail_template,
     'days': days,
-    'mail_subject': mail_subject,
     'mail_from': mail_from
 }
 rdb.hset(f"cluster/password_warning/{domain}", mapping=data)
