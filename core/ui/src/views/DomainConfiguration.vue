@@ -151,7 +151,10 @@
 
             <!-- password policy -->
             <template v-if="domain.location === 'internal'">
-              <cv-tile v-if="loading.ListPasswordPolicy" light>
+              <cv-tile
+                v-if="loading.ListPasswordPolicy || loading.getPasswordWarning"
+                light
+              >
                 <cv-skeleton-text
                   :paragraph="true"
                   :line-count="7"
@@ -174,6 +177,13 @@
                       <NsMenuItem
                         :icon="Edit20"
                         :label="$t('domains.edit_password_policy')"
+                      />
+                    </cv-overflow-menu-item>
+                    <cv-overflow-menu-item @click="showPasswordWarning()">
+                      <NsMenuItem
+                        :icon="Edit20"
+                        :label="$t('domains.edit_password_warning')"
+                        :disabled="!policy.expiration.enforced"
                       />
                     </cv-overflow-menu-item>
                   </cv-overflow-menu>
@@ -206,6 +216,27 @@
                       }}</span>
                       <cv-tag
                         v-if="policy.strength.enforced"
+                        kind="green"
+                        :label="$t('common.enabled')"
+                        size="sm"
+                      ></cv-tag>
+                      <cv-tag
+                        v-else
+                        kind="high-contrast"
+                        :label="$t('common.disabled')"
+                        size="sm"
+                      ></cv-tag>
+                    </div>
+                    <div class="row">
+                      <span class="label right-margin">{{
+                        $t("domains.password_warning")
+                      }}</span>
+                      <cv-tag
+                        v-if="
+                          policy.warning.notification &&
+                          policy.expiration.enforced &&
+                          policy.warning.smtp_enabled
+                        "
                         kind="green"
                         :label="$t('common.enabled')"
                         size="sm"
@@ -594,6 +625,14 @@
       @hide="hideisShownPasswordPolicyModal"
       @confirm="setPasswordPolicy()"
     />
+    <!-- Password warning -->
+    <EditPasswordWarningModal
+      :isShown="isShownPasswordWarningModal"
+      :policy="policy"
+      :error="error"
+      @hide="hideisShownPasswordWarningModal"
+      @confirm="setPasswordWarning()"
+    />
     <!-- Edit External domain  -->
     <EditExternalDomainModal
       :isShown="isShownEditExternalDomainModal"
@@ -659,6 +698,7 @@ import AddInternalProviderModal from "@/components/domains/AddInternalProviderMo
 import AddExternalProviderModal from "@/components/domains/AddExternalProviderModal";
 import DeleteSambaProviderModal from "@/components/domains/DeleteSambaProviderModal";
 import EditPasswordPolicy from "@/components/domains/EditPasswordPolicy";
+import EditPasswordWarningModal from "@/components/domains/EditPasswordWarningModal";
 import EditExternalDomainModal from "@/components/domains/EditExternalDomainModal";
 import Password32 from "@carbon/icons-vue/es/password/32";
 import { mapState } from "vuex";
@@ -670,6 +710,7 @@ export default {
     AddExternalProviderModal,
     DeleteSambaProviderModal,
     EditPasswordPolicy,
+    EditPasswordWarningModal,
     EditExternalDomainModal,
   },
   mixins: [
@@ -691,6 +732,7 @@ export default {
       isShownDeleteLdapProviderModal: false,
       isShownDeleteSambaProviderModal: false,
       isShownPasswordPolicyModal: false,
+      isShownPasswordWarningModal: false,
       isShownEditExternalDomainModal: false,
       domainName: "",
       hostnameNode: "",
@@ -700,6 +742,16 @@ export default {
           enforced: false,
           min_age: 0,
           max_age: 0,
+        },
+        warning: {
+          notification: false,
+          days: "7",
+          mail_from: "",
+          mail_subject: "",
+          mail_template_name: "default_en",
+          mail_template_content: "",
+          domain: "",
+          smtp_enabled: false,
         },
         strength: {
           complexity_check: false,
@@ -730,6 +782,7 @@ export default {
         setProviderLabel: false,
         addExternalProvider: false,
         getFqdn: true,
+        getPasswordWarning: false,
       },
       error: {
         listUserDomains: "",
@@ -739,6 +792,10 @@ export default {
         ListPasswordPolicy: "",
         setPasswordPolicy: "",
         getFqdn: "",
+        getPasswordWarning: "",
+        warningMailSubject: "",
+        warningMailTemplateContent: "",
+        warningDays: "",
       },
     };
   },
@@ -869,6 +926,7 @@ export default {
         Config.strength.password_min_length.toString();
 
       this.loading.ListPasswordPolicy = false;
+      this.getPasswordWarning();
     },
     async getFqdn() {
       this.error.getFqdn = "";
@@ -911,6 +969,171 @@ export default {
     getFqdnAborted(taskResult, taskContext) {
       console.error(`${taskContext.action} aborted`, taskResult);
       this.loading.getFqdn = false;
+    },
+    async getPasswordWarning() {
+      this.loading.getPasswordWarning = true;
+      this.error.getPasswordWarning = "";
+      const taskAction = "get-password-warning";
+      const eventId = this.getUuid();
+
+      // register to task error
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.getPasswordWarningAborted
+      );
+
+      // register to task completion
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.getPasswordWarningCompleted
+      );
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          data: { domain: this.domainName },
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+            eventId,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.getPasswordWarning = this.getErrorMessage(err);
+        return;
+      }
+    },
+    getPasswordWarningCompleted(taskContext, taskResult) {
+      taskResult.output.days = taskResult.output.days.toString();
+      this.policy.warning = taskResult.output;
+      this.loading.getPasswordWarning = false;
+    },
+    getPasswordWarningAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.loading.getPasswordWarning = false;
+    },
+    validatePasswordWarning() {
+      this.error.warningMailSubject = "";
+      this.error.warningMailTemplateContent = "";
+      this.error.warningDays = "";
+      if (!this.policy.warning.days) {
+        this.error.warningDays = this.$t("error.warning_days_required");
+        return false;
+      }
+      if (
+        parseInt(this.policy.warning.days) < 1 ||
+        parseInt(this.policy.warning.days) > 1000
+      ) {
+        this.error.warningDays = this.$t("error.warning_days_range");
+        return false;
+      }
+      if (this.policy.warning.mail_template_name == "custom") {
+        if (!this.policy.warning.mail_subject) {
+          this.error.warningMailSubject = this.$t(
+            "error.warning_mail_subject_required"
+          );
+          return false;
+        }
+        if (!this.policy.warning.mail_template_content) {
+          this.error.warningMailTemplateContent = this.$t(
+            "error.warning_mail_template_content_required"
+          );
+          return false;
+        }
+      }
+      return true;
+    },
+    async setPasswordWarning() {
+      this.loading.getPasswordWarning = true;
+      this.error.getPasswordWarning = "";
+      const taskAction = "set-password-warning";
+      const eventId = this.getUuid();
+      var payload;
+
+      if (!this.validatePasswordWarning()) {
+        this.loading.getPasswordWarning = false;
+        return;
+      }
+
+      // register to task error
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.setPasswordWarningAborted
+      );
+
+      // register to task completion
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.setPasswordWarningCompleted
+      );
+
+      // register to task validation error
+      this.$root.$once(
+        `${taskAction}-validation-failed-${eventId}`,
+        this.setPasswordWarningValidationFailed
+      );
+
+      payload = {
+        domain: this.domainName,
+        notification: this.policy.warning.notification,
+        days: parseInt(this.policy.warning.days),
+        mail_from: this.policy.warning.mail_from,
+        mail_template_name: this.policy.warning.mail_template_name,
+      };
+
+      if (this.policy.warning.mail_template_name == "custom") {
+        payload.mail_template_content = Buffer.from(
+          this.policy.warning.mail_template_content
+        ).toString("base64");
+        payload.mail_subject = this.policy.warning.mail_subject;
+      }
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          data: payload,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+            eventId,
+          },
+        })
+      );
+
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.setPasswordWarning = this.getErrorMessage(err);
+        this.loading.getPasswordWarning = false;
+        this.isShownPasswordWarningModal = false;
+        this.hideisShownPasswordWarningModal();
+        return;
+      }
+    },
+    setPasswordWarningValidationFailed(validationErrors) {
+      this.loading.getPasswordWarning = false;
+      this.hideisShownPasswordWarningModal();
+
+      for (const validationError of validationErrors) {
+        const param = validationError.parameter;
+
+        // set i18n error message
+        this.error[param] = this.$t("domains." + validationError.error);
+      }
+    },
+    setPasswordWarningAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.loading.setPasswordWarning = false;
+      // hide modal so that user can see error notification
+      this.hideisShownPasswordWarningModal();
+    },
+    setPasswordWarningCompleted() {
+      this.hideisShownPasswordWarningModal();
+      this.listUserDomains();
     },
     async setPasswordPolicy() {
       this.loading.ListPasswordPolicy = true;
@@ -1122,6 +1345,9 @@ export default {
     hideisShownPasswordPolicyModal() {
       this.isShownPasswordPolicyModal = false;
     },
+    hideisShownPasswordWarningModal() {
+      this.isShownPasswordWarningModal = false;
+    },
     hideisShownEditExternalDomainModal() {
       this.isShownEditExternalDomainModal = false;
     },
@@ -1135,6 +1361,9 @@ export default {
     },
     showPasswordPolicy() {
       this.isShownPasswordPolicyModal = true;
+    },
+    showPasswordWarning() {
+      this.isShownPasswordWarningModal = true;
     },
     showEditExternalDomain() {
       this.isShownEditExternalDomainModal = true;
