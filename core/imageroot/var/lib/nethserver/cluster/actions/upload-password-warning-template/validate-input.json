@@ -6,13 +6,15 @@
   "examples": [
     {
       "name": "custom_en",
-      "content": "RGVhciAkbmFtZSAoJH..."
+      "content": "RGVhciAkbmFtZSAoJH...",
+      "mail_subject": "Password expiration warning"
     }
   ],
   "type": "object",
   "required": [
     "name",
-    "content"
+    "content",
+    "mail_subject"
   ],
   "properties": {
     "name": {
@@ -21,7 +23,12 @@
       "minLength": 1
     },
     "content": {
-      "description": "The template content in base64 format, it can be a text file or an HTML file",
+      "description": "The template content in base64 format, it can be a text file or an HTML file. It must respect python string.Template syntax",
+      "type": "string",
+      "minLength": 1
+    },
+    "mail_subject": {
+      "description": "The email subject. It must respect python string.Template syntax",
       "type": "string",
       "minLength": 1
     }
