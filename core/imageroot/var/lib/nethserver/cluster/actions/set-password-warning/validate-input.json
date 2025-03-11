@@ -7,15 +7,26 @@
     {
       "domain": "mydom.test",
       "notification": true,
-      "mail_template": "default_en",
       "days": 7,
-      "mail_from": "no-reply@nethserver.org"
+      "mail_from": "no-reply@nethserver.org",
+      "mail_template_name": "default_en"
+    },
+    {
+      "domain": "mydom.test",
+      "notification": true,
+      "days": 7,
+      "mail_from": "no-reply@nethserver.org",
+      "mail_template_name": "custom",
+      "mail_template_content": "RGVhciAkbmFtZSAoJH...",
+      "mail_subject": "Password expiration warning"
     }
+
   ],
   "type": "object",
   "required": [
     "domain",
-    "notification"
+    "notification",
+    "mail_template_name"
   ],
   "properties": {
     "domain": {
@@ -41,6 +52,16 @@
       "description": "The sender email address",
       "type": "string",
       "format": "email"
+    },
+    "mail_template_content": {
+      "description": "The template content in base64 format, it can be a text file or an HTML file. It must respect python string.Template syntax. Required if mail_template_name is 'custom'",
+      "type": "string",
+      "minLength": 1
+    },
+    "mail_subject": {
+      "description": "The email subject. It must respect python string.Template syntax. Required if mail_template_name is 'custom'",
+      "type": "string",
+      "minLength": 1
     }
   }
 }
