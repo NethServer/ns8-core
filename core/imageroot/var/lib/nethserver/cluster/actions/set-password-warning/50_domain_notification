@@ -10,6 +10,7 @@ import sys
 import json
 import agent
 from agent.ldapproxy import Ldapproxy
+import base64
 
 TEMPLATE_DIR="/etc/nethserver/password_warning"
 
@@ -20,8 +21,8 @@ domains = lp.get_domains_list()
 
 domain = request["domain"]
 notification = request["notification"]
-mail_template = request.get("mail_template", "default_en")
 days = request.get("days", 7)
+mail_template_name = request.get("mail_template_name", "default_en")
 mail_from = request.get("mail_from", f'no-reply@{agent.get_hostname()}')
 
 if domain not in domains:
@@ -32,19 +33,49 @@ if domain not in domains:
     sys.exit(3)
 
 rdb = agent.redis_connect(privileged=True)
+if mail_template_name == "custom":
+    # Save custom template: one custom template per domain
+    mail_template_content = request.get("mail_template_content", None)
+    if not mail_template_content:
+        agent.set_status('validation-failed')
+        json.dump([{'field':'mail_template_content', 'parameter':'mail_template_content','value': mail_template_content, 'error':'missing'}], fp=sys.stdout)
+        # we print the error message in logs
+        print(agent.SD_WARNING + f"Error: the custom template content is missing", file=sys.stderr)
+        sys.exit(3)
+    else:
+        # Validate mail_template_content: it must be encoded in base64
+        try:
+            base64.b64decode(mail_template_content)
+        except Exception as e:
+            agent.set_status('validation-failed')
+            json.dump([{'field':'mail_template_content', 'parameter':'mail_template_content','value': mail_template_content, 'error':'invalid_base64'}], fp=sys.stdout)
+            # we print the error message in logs
+            print(agent.SD_WARNING + f"Error: the custom template content is not valid base64", file=sys.stderr)
+            sys.exit(3)
+    mail_subject = request.get("mail_subject", None)
+    if not mail_subject:
+        agent.set_status('validation-failed')
+        json.dump([{'field':'mail_subject', 'parameter':'mail_subject','value': mail_subject, 'error':'missing'}], fp=sys.stdout)
+        # we print the error message in logs
+        print(agent.SD_WARNING + f"Error: the custom mail subject is missing", file=sys.stderr)
+        sys.exit(3)
 
-# check if the template file exists
-if not os.path.exists(f"{TEMPLATE_DIR}/{mail_template}.tmpl") and not rdb.hget(f"cluster/password_warning/templates", mail_template):
-    agent.set_status('validation-failed')
-    json.dump([{'field':'mail_template', 'parameter':'mail_template','value': mail_template, 'error':'template_not_found'}], fp=sys.stdout)
-    # we print the error message in logs
-    print(agent.SD_WARNING + f"Error: the template file {mail_template}.tmpl does not exist", file=sys.stderr)
-    sys.exit(3)
+    rdb.hset(f"cluster/password_warning/templates", f"{domain}_custom_template_content", mail_template_content)
+    rdb.hset(f"cluster/password_warning/templates", f'{domain}_custom_mail_subject', mail_subject)
+else:
+    # Check if the default template file exists
+    if not os.path.exists(f"{TEMPLATE_DIR}/{mail_template_name}.tmpl"):
+        agent.set_status('validation-failed')
+        json.dump([{'field':'mail_template', 'parameter':'mail_template','value': mail_template_name, 'error':'template_not_found'}], fp=sys.stdout)
+        # we print the error message in logs
+        print(agent.SD_WARNING + f"Error: the template file {mail_template_name}.tmpl does not exist", file=sys.stderr)
+        sys.exit(3)
 
+# Save the configuration
 data = {
     'notification': '1' if notification else '0',
-    'mail_template': mail_template,
     'days': days,
+    'mail_template': mail_template_name,
     'mail_from': mail_from
 }
 rdb.hset(f"cluster/password_warning/{domain}", mapping=data)
