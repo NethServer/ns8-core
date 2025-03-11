@@ -1,0 +1,127 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2025 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+import argparse
+import sys
+import os
+import agent
+from cryptography import x509
+from cryptography.x509.oid import NameOID
+from cryptography.hazmat.primitives import serialization, hashes
+from cryptography.hazmat.primitives.asymmetric import rsa
+from datetime import datetime, timedelta
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="""
+        Retrieves and saves a TLS certificate and private key. If the certificate retrieval fails
+        and no existing certificate is found, a self-signed certificate is generated.
+
+        Exit codes:
+            0 - Certificate successfully obtained or updated.
+            1 - Generic error (e.g., file I/O failure, retrieval failure with existing files).
+            3 - Certificate remains unchanged.
+        """
+    )
+    parser.add_argument("--cert-file", required=True, help="Path to save the certificate file.")
+    parser.add_argument("--key-file", required=True, help="Path to save the private key file.")
+    parser.add_argument("fqdn", help="Fully qualified domain name (FQDN) for the certificate.")
+
+    args = parser.parse_args()
+    get_certificate(args.cert_file, args.key_file, args.fqdn)
+
+def get_certificate(cert_file: str, key_file: str, fqdn: str) -> None:
+    """
+    Attempts to retrieve a TLS certificate and private key. If the retrieval fails
+    and no existing certificate is found, generates a self-signed certificate.
+
+    Exit codes:
+        0 - Certificate successfully obtained or updated.
+        1 - Generic error (e.g., file I/O failure, retrieval failure with existing files).
+        3 - Certificate remains unchanged.
+
+    Args:
+        cert_file (str): Path to save the certificate.
+        key_file (str): Path to save the private key.
+        fqdn (str): Fully qualified domain name of the certificate.
+    """
+    try:
+        certificate_content, key_content = agent.get_certificate(fqdn)
+    except Exception as e:
+        print(f"Error retrieving certificate: {e}", file=sys.stderr)
+        if not os.path.exists(cert_file) or not os.path.exists(key_file):
+            print(f"Generating certificate and key for {fqdn}...")
+            certificate_content, key_content = generate_self_signed_cert(cert_file, key_file, fqdn)
+        else:
+            sys.exit(1)
+
+    existing_cert_content = read_file_content(cert_file)
+    existing_key_content = read_file_content(key_file)
+
+    if existing_cert_content == certificate_content and existing_key_content == key_content:
+        print(f"Certificate for {fqdn} is unchanged.")
+        sys.exit(3)
+
+    atomic_write(cert_file, certificate_content)
+    tmpmask = os.umask(0o177) # Restrict new file permissions to 0600
+    atomic_write(key_file, key_content)
+    os.umask(tmpmask) # Restore previous mask
+
+    print(f"Certificate and key for {fqdn} saved successfully.")
+    sys.exit(0)
+
+def read_file_content(file_path: str) -> str:
+    """Reads and returns the content of a file, or an empty string if the file does not exist."""
+    if os.path.exists(file_path):
+        try:
+            with open(file_path, "r") as file:
+                return file.read()
+        except IOError as e:
+            print(f"Error reading {file_path}: {e}", file=sys.stderr)
+            sys.exit(1)
+    return ""
+
+def atomic_write(file_path: str, content: str) -> None:
+    """Writes content to a temporary file and renames it to avoid corruption."""
+    temp_path = f"{file_path}.tmp"
+    try:
+        with open(temp_path, "w") as temp_file:
+            temp_file.write(content)
+        os.replace(temp_path, file_path)
+    except IOError as e:
+        print(f"Error writing to {file_path}: {e}", file=sys.stderr)
+        sys.exit(1)
+
+def generate_self_signed_cert(cert_file: str, key_file: str, fqdn: str) -> tuple[str, str]:
+    """Generates a self-signed certificate and key."""
+    key = rsa.generate_private_key(
+        public_exponent=65537,
+        key_size=2048,
+    )
+    subject = x509.Name([
+        x509.NameAttribute(NameOID.COMMON_NAME, fqdn)
+    ])
+    cert = (
+        x509.CertificateBuilder()
+        .subject_name(subject)
+        .issuer_name(subject)
+        .public_key(key.public_key())
+        .serial_number(x509.random_serial_number())
+        .not_valid_before(datetime.utcnow())
+        .not_valid_after(datetime.utcnow() + timedelta(days=365))
+        .sign(key, hashes.SHA256())
+    )
+    cert_pem = cert.public_bytes(serialization.Encoding.PEM).decode()
+    key_pem = key.private_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PrivateFormat.TraditionalOpenSSL,
+        encryption_algorithm=serialization.NoEncryption()
+    ).decode()
+    return cert_pem, key_pem
+
+if __name__ == "__main__":
+    main()
