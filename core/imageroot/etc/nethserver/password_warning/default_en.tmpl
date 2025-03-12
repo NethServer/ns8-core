@@ -1,63 +1,62 @@
-<!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Password Expiration Notice</title>
+    <title>Password expiration notice</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             background-color: #f4f4f4;
             margin: 0;
             padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
         }
         .container {
             width: 100%;
             max-width: 600px;
-            margin: 0 auto;
-            background-color: #ffffff;
-            padding: 20px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 4rem 2.5rem;
+            border-radius: 0.75rem;
+            background: #FFF;
+            box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.06), 0px 4px 6px 0px rgba(0, 0, 0, 0.10);
+            text-align: center;
         }
         .header {
-            background-color: #007bff;
-            color: #ffffff;
-            padding: 10px 0;
-            text-align: center;
-        }
-        .content {
-            padding: 20px;
-            text-align: center;
+            padding: 1.5rem 1rem;
+            border-radius: 0.375rem;
+            background: #F3F4F6;
         }
         .button {
             display: inline-block;
-            padding: 10px 20px;
-            margin-top: 20px;
-            background-color: #007bff;
-            color: #ffffff;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.375rem;
+            background: #1D4ED8;
+            color: white;
             text-decoration: none;
-            border-radius: 5px;
+            box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.05);
+            transition: background-color 0.3s ease;
+            margin-top: 1rem;
+        }
+        .button:hover {
+            background: #1E40AF;
         }
         .footer {
-            margin-top: 20px;
             font-size: 12px;
-            color: #888888;
-            text-align: center;
+            color: #4B5563;
+            margin-top: 1.5rem;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>Password Expiration Notice</h1>
+            <h1>Password expiration notice</h1>
         </div>
-        <div class="content">
-            <p>Dear $name ($user),</p>
-            <p>Your password is expiring in <strong>$days days</strong>. To ensure the security of your account, please change your password before it expires.</p>
-            <a href="$portal_url" class="button">Change Password</a>
-        </div>
-        <div class="footer">
-            <p>If you have any questions, please contact the administrator.</p>
-        </div>
+        <p>Dear $name ($user),</p>
+        <p>your password is expiring in <strong>$days days</strong>. To ensure the security of your account, please change your password before it expires.</p>
+        <a href="$portal_url" class="button">Change password</a>
+        <p class="footer">For assistance or further inquiries, please reach out to your administrator.</p>
     </div>
 </body>
 </html>
