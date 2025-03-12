@@ -23,7 +23,7 @@ domain = request["domain"]
 notification = request["notification"]
 days = request.get("days", 7)
 mail_template_name = request.get("mail_template_name", "default_en")
-mail_from = request.get("mail_from", f'no-reply@{agent.get_hostname()}')
+mail_from = request.get("mail_from", f'no-reply@{domain}')
 
 if domain not in domains:
     agent.set_status('validation-failed')
