@@ -118,7 +118,11 @@
         "fqdn_format": "Invalid FQDN format",
         "cannot_retrieve_users_admin_configuration": "Cannot retrieve users portal administration",
         "cannot_retrieve_subscription_status": "Cannot retrieve subscription status",
-        "cannot_retrieve_email_notification_status": "Cannot retrieve email notifications status"
+        "cannot_retrieve_email_notification_status": "Cannot retrieve email notifications status",
+        "warning_mail_subject_required": "Mail subject is required",
+        "warning_mail_template_content_required": "Mail template content is required",
+        "warning_days_required": "Warning days are required",
+        "warning_days_range": "Warning days must be between 1 and 1000"
     },
     "websocket": {
         "websocket_disconnected": "Websocket disconnected",
@@ -406,7 +410,8 @@
         "set-syslog-forwarder": "Set Syslog forwarder",
         "set-clm-forwarder": "Set Cloud Log Manager forwarder",
         "read-backup-snapshots": "Read backup snapshots",
-        "determine-restore-eligibility": "Determine restore eligibility"
+        "determine-restore-eligibility": "Determine restore eligibility",
+        "set-password-warning": "Configure password warning"
     },
     "network": {
         "title": "Network"
@@ -1173,7 +1178,26 @@
         "provider_already_installed": "Provider already installed",
         "no_node_eligible_for_provider_installation": "No node is eligible for provider installation",
         "domain_settings": "Domain settings",
-        "edit_external_domain": "Edit external domain"
+        "edit_external_domain": "Edit external domain",
+        "password_warning": "Password warning",
+        "edit_password_warning": "Edit password warning",
+        "warning_enable": "Enable password expiration warning",
+        "warning_enable_tip": "If enabled, users will receive an email notification when their password is about to expire",
+        "warning_sender": "Sender mail address",
+        "warning_template": "Mail template",
+        "warning_days": "Days before expiration",
+        "warning_template_default_en": "Default English template",
+        "warning_template_default_it": "Default Italian template",
+        "warning_template_custom": "Custom template",
+        "warning_template_subject": "Mail subject",
+        "warning_template_content": "Mail template",
+        "warning_template_content_tip": "Enter valid HTML or plain text. Available placeholders: $user (username), $name (user display name), $days (days to expiration), $domain (user domain), $portal_url (user portal URL)",
+        "warning_disabled_description": "Enable the Age policy to configure password expiration warning",
+        "warning_disabled_title": "Warning is disabled",
+        "warning_template_subject_tip": "Enter plain text. Available placeholders: $user (username), $name (user display name), $days (days to expiration), $domain (user domain), $portal_url (user portal URL)",
+        "warning_smtp_disabled_title": "Cluster SMTP is disabled",
+        "warning_smtp_disabled_description": "Enable SMTP in the cluster settings to send password expiration warnings",
+        "go_to_smtp_settings": "Go to Mail notifications"
     },
     "samba": {
         "adminuser": "Samba admin username",

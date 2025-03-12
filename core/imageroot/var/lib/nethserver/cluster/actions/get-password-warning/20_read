@@ -1,0 +1,62 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2025 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+import sys
+import json
+import agent
+import base64
+
+request = json.load(sys.stdin)
+domain = request["domain"]
+
+# Read configuration for the given domain
+rdb = agent.redis_connect(use_replica=True)
+config = rdb.hgetall(f"cluster/password_warning/{domain}")
+
+# Read SMTP cluser configuration
+smtp_config = agent.get_smarthost_settings(rdb)
+
+if not config:
+    json.dump({
+        "domain": domain,
+        "notification": False,
+        "days": 7,
+        "mail_from": f'no-reply@{domain}',
+        "mail_template_name": "default_en",
+        "mail_template_content": None,
+        "mail_subject": None,
+        "smtp_enabled": smtp_config.get('enabled', False),
+    }, fp=sys.stdout)
+    sys.exit(0)
+
+if config.get('mail_template', 'default_en') == "custom":
+    mail_template_content = rdb.hget(f"cluster/password_warning/templates", f"{domain}_custom_template_content")
+    mail_subject = rdb.hget(f"cluster/password_warning/templates", f"{domain}_custom_mail_subject")
+    if not mail_template_content or not mail_subject:
+        agent.set_status('validation-failed')
+        json.dump([{'field':'domain', 'parameter':'domain','value': domain, 'error':'custom_template_not_found'}], fp=sys.stdout)
+        print(agent.SD_WARNING + f"Error: the custom template for domain {domain} is not found", file=sys.stderr)
+        sys.exit(3)
+    try:
+        mail_template_content = base64.b64decode(mail_template_content).decode('utf-8')
+    except:
+        mail_template_content = None
+else:
+    mail_template_content = None
+    mail_subject = None
+
+ret = {
+    "domain": domain,
+    "notification": config.get('notification', '0') == '1',
+    "days": int(config.get('days', 7)),
+    "mail_from": config.get('mail_from', f'no-reply@{agent.get_hostname()}'),
+    "mail_template_name": config.get('mail_template', 'default_en'),
+    "mail_template_content": mail_template_content,
+    "mail_subject": mail_subject,
+    "smtp_enabled": smtp_config.get('enabled', False),
+}
+json.dump(ret, fp=sys.stdout)

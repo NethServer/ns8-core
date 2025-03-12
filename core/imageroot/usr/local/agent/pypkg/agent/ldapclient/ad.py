@@ -18,6 +18,8 @@
 # along with NethServer.  If not, see COPYING.
 #
 
+from datetime import timedelta
+import datetime
 import ldap3
 from .exceptions import LdapclientEntryNotFound
 from .base import LdapclientBase
@@ -31,6 +33,16 @@ class LdapclientAd(LdapclientBase):
                 return entry['attributes']
 
         raise LdapclientEntryNotFound()
+    
+    def get_max_pwd_age(self):
+        response = self.ldapconn.search(self.base_dn, '(objectClass=domainDNS)', attributes=['maxPwdAge'])
+        if response[0]:
+            result = [entry for entry in response[2] if entry['type'] == 'searchResEntry']
+        else:
+            return None
+        if not result:
+            return None
+        return result[0]['attributes']['maxPwdAge']
 
     def get_group(self, group):
         # Escape group string to build the filter assertion:
@@ -121,12 +133,15 @@ class LdapclientAd(LdapclientBase):
 
         raise LdapclientEntryNotFound()
 
-    def list_users(self):
+    def list_users(self, extra_info=False):
+        attributes = ['displayName', 'sAMAccountName', 'userAccountControl']
+        if extra_info:
+            attributes += ['whenCreated', 'pwdLastSet', 'mail']
         user_entry_generator = self.ldapconn.extend.standard.paged_search(
             search_base = self.base_dn,
             search_filter = f'(&(objectClass=user)(objectCategory=person){self._get_users_search_filter_clause()})',
             search_scope = ldap3.SUBTREE,
-            attributes = ['displayName', 'sAMAccountName', 'userAccountControl'],
+            attributes = attributes,
             paged_size = 900,
             generator=True,
         )
@@ -135,9 +150,23 @@ class LdapclientAd(LdapclientBase):
         for entry in user_entry_generator:
             if entry['type'] != 'searchResEntry':
                 continue # ignore referrals
-            users.append({
+            user = {
                 "user": entry['attributes']['sAMAccountName'],
                 "display_name": entry['attributes'].get('displayName') or "",
                 "locked": bool(entry['attributes']['userAccountControl'] & 0x2), # ACCOUNTDISABLE
-            })
+            }
+            if extra_info:
+                pwd_changed_time = entry['attributes'].get('pwdLastSet', entry['attributes'].get('whenCreated', None))
+                if self.get_max_pwd_age().total_seconds() >= 86400000000000:
+                    # Password aging is disabled
+                    user['expired'] = False
+                    user['password_expiration'] = -1
+                else:
+                    expiry_date = pwd_changed_time + timedelta(seconds=self.get_max_pwd_age().total_seconds())
+                    user['expired'] = datetime.datetime.now(datetime.timezone.utc) > expiry_date
+                    user['password_expiration'] = int(expiry_date.timestamp())
+                user["mail"] = entry['attributes'].get('mail') if entry['attributes'].get('mail') else ""
+
+            users.append(user)
+
         return users

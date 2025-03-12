@@ -18,11 +18,23 @@
 # along with NethServer.  If not, see COPYING.
 #
 
+from datetime import timedelta
+import datetime
 import ldap3
 from .exceptions import LdapclientEntryNotFound
 from .base import LdapclientBase
 
 class LdapclientRfc2307(LdapclientBase):
+
+    def get_pwd_max_age(self):
+        response = self.ldapconn.search(f'cn=default,ou=PPolicy,{self.base_dn}', '(objectClass=pwdPolicy)', attributes=['pwdMaxAge'])[2]
+        result = [entry for entry in response if entry['type'] == 'searchResEntry']
+        if not result:
+            return None
+        pwd_max_age_str = result[0]['attributes']['pwdMaxAge']
+        if not pwd_max_age_str:
+            return None
+        return int(pwd_max_age_str)
 
     def get_group(self, group):
         # Escape group string to build the filter assertion:
@@ -111,18 +123,36 @@ class LdapclientRfc2307(LdapclientBase):
 
         raise LdapclientEntryNotFound()
 
-    def list_users(self):
+    def list_users(self, extra_info=False):
+        attributes = ['displayName', 'uid'] + self.filter_schema_attributes(['pwdAccountLockedTime'])
+        if extra_info:
+            attributes += ['mail', 'pwdChangedTime', 'createTimestamp']
         response = self.ldapconn.search(self.base_dn, f'(&(objectClass=posixAccount)(objectClass=inetOrgPerson){self._get_users_search_filter_clause()})',
-            attributes=['displayName', 'uid'] + self.filter_schema_attributes(['pwdAccountLockedTime']),
+            attributes=attributes,
         )[2]
 
         users = []
+        max_pwd_age = self.get_pwd_max_age()
         for entry in response:
             if entry['type'] != 'searchResEntry':
                 continue # ignore referrals
-            users.append({
+            user = {
                 "user": entry['attributes']['uid'][0],
                 "display_name": entry['attributes'].get('displayName') or "",
                 "locked": entry['attributes'].get('pwdAccountLockedTime', []) != [],
-            })
+            }
+
+            if extra_info:
+                pwd_changed_time = entry['attributes'].get('pwdChangedTime', entry['attributes'].get('createTimestamp', None))
+                if pwd_changed_time and max_pwd_age:
+                    expiry_date = pwd_changed_time + timedelta(seconds=max_pwd_age)
+                    user["expired"] = datetime.datetime.now(datetime.timezone.utc) > expiry_date
+                    user["password_expiration"] = int(expiry_date.timestamp())
+                else:
+                    expiry_date = ""
+                    user["expired"] = False
+                    user["password_expiration"] = -1
+                user["mail"] = entry['attributes'].get('mail')[0] if len(entry['attributes'].get('mail', [])) > 0 else ""
+            users.append(user)
+
         return users
