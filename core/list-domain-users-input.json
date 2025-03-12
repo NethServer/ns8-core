@@ -1,0 +1,1 @@
+{"$schema":"http://json-schema.org/draft-07/schema#","title":"list-domain-users input","description":"List users of a given accounts domain","$id":"http://schema.nethserver.org/cluster/list-domain-users-input.json","examples":[{"domain":"dom.test"}],"type":"object","required":["domain"],"properties":{"domain":{"type":"string","title":"Domain name","minLength":1}}}
