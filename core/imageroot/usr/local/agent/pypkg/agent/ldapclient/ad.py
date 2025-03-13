@@ -147,6 +147,8 @@ class LdapclientAd(LdapclientBase):
         )
 
         users = []
+        max_pwd_age = self.get_max_pwd_age()
+        today = datetime.datetime.now(datetime.timezone.utc)
         for entry in user_entry_generator:
             if entry['type'] != 'searchResEntry':
                 continue # ignore referrals
@@ -157,14 +159,16 @@ class LdapclientAd(LdapclientBase):
             }
             if extra_info:
                 pwd_changed_time = entry['attributes'].get('pwdLastSet', entry['attributes'].get('whenCreated', None))
-                if self.get_max_pwd_age().total_seconds() >= 86400000000000:
-                    # Password aging is disabled
-                    user['expired'] = False
-                    user['password_expiration'] = -1
-                else:
-                    expiry_date = pwd_changed_time + timedelta(seconds=self.get_max_pwd_age().total_seconds())
-                    user['expired'] = datetime.datetime.now(datetime.timezone.utc) > expiry_date
+                expire = (entry['attributes']['userAccountControl'] & 0x10000 == 0) # DONT_EXPIRE_PASSWORD
+                if expire and max_pwd_age.total_seconds() < 86400000000000:
+                    expiry_date = pwd_changed_time + timedelta(seconds=max_pwd_age.total_seconds())
                     user['password_expiration'] = int(expiry_date.timestamp())
+                    user['expired'] = False
+                else:
+                    user['password_expiration'] = -1
+                    expiry_date = pwd_changed_time + timedelta(seconds=max_pwd_age.total_seconds())
+                    user['expired'] = today > expiry_date
+                # mail can be a string or an empty array, just treat ans empty arrays as an empty string
                 user["mail"] = entry['attributes'].get('mail') if entry['attributes'].get('mail') else ""
 
             users.append(user)
