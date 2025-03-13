@@ -44,3 +44,16 @@ any command from it. For instance:
 ```shell
 mycommand && systemctl --user reload mymodule.service
 ```
+
+## Send mail from modules
+
+All agent have access to `ns8-sendmail`, a Python script that reads the SMTP smarthost configuration and sends an email. The script reads the email content from the standard input and sends it to the recipient addresses specified as the first argument.
+
+Example of invocation from a module environment:
+```shell
+echo "Hello, world!" | ns8-sendmail -s "My test mail" -f "no-reply@nethserver.org" user@test.org
+```
+
+If a SMTP smarthost is not configured, the script will return an error message and exit with a non-zero status code.
+
+The script will try to parse the message body as a MIME message. If the message body is not a valid MIME message, the script will send the message as a plain text email.

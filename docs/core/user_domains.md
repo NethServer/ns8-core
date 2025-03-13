@@ -157,7 +157,7 @@ event. For instance, this is the payload of such event:
 }
 ```
 
-The event paylod contains a list of module and domains that were affected
+The event payload contains a list of module and domains that were affected
 by the relation change. Modules and domains can be either added or
 removed: they are listed to ease the implementation of event handlers in
 both account provider and account client modules.
@@ -174,3 +174,81 @@ if not os.environ["LDAP_USER_DOMAIN"] in event["domains"]:
 # - rewrite some config file
 # - reload some service running in a container
 ```
+
+## Password expiration warning
+
+The node leader can send email notifications to users when their password
+is about to expire.
+The notification is available only for internal user domains.
+
+This features has 2 requirements:
+
+- password aging must be enabled on the user domain provider
+- the cluster must be configured to send mail notifications using an internal or external [SMTP server](smarthost.md)
+
+A timer named `password-warning.service` runs daily on all nodes to check for expiring passwords, but it actually
+sends the email only on the leader node.
+
+Configuration is saved inside Redis so it is available to all nodes:
+- `cluster/password_warning/<domain>`
+- `cluster/cluster/password_warning/templates`
+
+See [database schema](database.md) for details.
+
+## User destination mail
+
+The mail of the user can be obtained in 2 different ways:
+
+1. using an internal mail server instance: if there is an internal mail server, the address is automatically set to `<user>@<user_domain>`, the local Postfix
+   instance will deliver the mail to the user mailbox
+2. from an OpenLDAP or Samba field: the address is saved inside the `mail` field of the user object; this field has the highest priority
+
+Please note that if the cluster is configured to send mail notifications using an external SMTP server,
+the mail field must be set in the user object because the `user_domain` is not known to the external server.
+
+To force the notification, run the following command on the leader node:
+
+```bash
+systemctl start password-warning.service
+```
+
+## Default templates
+
+Default templates are stored inside `/etc/nethserver/password_warning` directory.
+Available templates:
+
+- `default_en.tmpl`: English mail template
+- `default_it.tmpl`: Italian mail template
+- `default_en.sbj`: English mail subject
+- `default_it.sbj`: Italian mail subject
+
+### Configure password warning
+
+The configuration can be done using the cluster web interface.
+If you want to configure it from command line, see the `cluster/set-password-warning` API.
+
+The API takes the following parameters:
+
+- `domain`: the domain name
+- `notification`: enable or disable the notification
+- `days`: the number of days before the password expiration
+- `mail_from`: the email address of the sender
+- `mail_template_name`: the name of the template to use, it could be `default_en`, `default_it` or `custom`. If set to custom, you must provide also `mail_template_content` and `mail_subject`.
+- `mail_template_content`: the content of the template, must be base64 encoded
+- `mail_subject`: the subject of the email in plain text. 
+
+#### Using a Custom Template
+
+Field `mail_template_content` and `mail_subject` use [Python string template](https://docs.python.org/3/library/string.html#template-strings).
+The string representation can contain the following placeholders: `$user`, `$name`, `$domain`, `$days`, `$portal_url`.
+
+1. Create a file named `custom.txt` with your custom content:
+    ```
+    Dear $user ($name) of domain $domain.
+    Your password is going to expire in $days days.
+    Change it here: $portal_url
+    ```
+2. Use the custom template:
+    ```bash
+    api-cli run cluster/set-password-warning --data '{"domain": "leader.cluster0.gs.nethserver.net", "notification": true, "days": 1000, "mail_from": "no-reply@nethserver.org", "mail_template_name": "custom", "mail_template_content": "'$(cat custom.txt | base64 -w0)'", "mail_subject": "my expiration"}'
+    ```
