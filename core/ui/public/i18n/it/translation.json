@@ -518,7 +518,26 @@
         "provider_already_installed": "Provider già installato",
         "no_node_eligible_for_provider_installation": "Nessun nodo è idoneo per l'installazione del provider",
         "edit_external_domain": "Modifica dominio esterno",
-        "domain_settings": "Impostazioni del dominio"
+        "domain_settings": "Impostazioni del dominio",
+        "warning_template": "Template messaggio",
+        "warning_template_default_en": "Modello predefinito inglese",
+        "warning_template_custom": "Template personalizzato",
+        "warning_disabled_title": "Il preavviso è disabilitato",
+        "edit_password_warning": "Modifica preavviso password",
+        "warning_enable_tip": "Se abilitato, gli utenti riceveranno una notifica e-mail quando la password sta per scadere",
+        "warning_template_content_tip": "Inserisci il template in HTML valido o testo semplice. Segnaposto disponibili: $user (nome utente), $name (nome completo), $days (giorni alla scadenza), $domain (domino utenti), $portal_url (URL portale utenti)",
+        "warning_template_content": "Template messaggio",
+        "go_to_smtp_settings": "Vai alle Notifiche email",
+        "warning_template_default_it": "Modello predefinito italiano",
+        "warning_smtp_disabled_title": "Notifiche email disabilitate",
+        "password_warning": "Preavviso password",
+        "warning_sender": "Indirizzo mittente",
+        "warning_enable": "Abilita preavviso di scadenza password",
+        "warning_days": "Giorni prima della scadenza",
+        "warning_template_subject_tip": "Inserisci testo semplice. Segnaposto disponibili: $user (nome utente), $name (nome completo), $days (giorni alla scadenza), $domain (domino utenti), $portal_url (URL portale utenti)",
+        "warning_template_subject": "Oggetto del messaggio",
+        "warning_smtp_disabled_description": "Attiva Notifiche email nelle impostazioni del cluster per inviare il preavviso di scadenza password",
+        "warning_disabled_description": "Abilitare la durata password prima di configurare il preavviso di scadenza"
     },
     "action": {
         "configure-module": "Configura app",
@@ -614,7 +633,8 @@
         "set-syslog-forwarder": "Imposta forwarder Syslog",
         "set-clm-forwarder": "Imposta Cloud Log Manager forwarder",
         "read-backup-snapshots": "Leggi snapshot di backup",
-        "determine-restore-eligibility": "Determina idoneità ripristino"
+        "determine-restore-eligibility": "Determina idoneità ripristino",
+        "set-password-warning": "Configurare il preavviso password"
     },
     "backup": {
         "configure": "Configura",
@@ -963,7 +983,11 @@
         "invalid_value": "Valore non valido",
         "cannot_retrieve_users_admin_configuration": "Portale gestione utenti non disponibile",
         "cannot_retrieve_subscription_status": "Impossibile ottenere lo stato della subscription",
-        "cannot_retrieve_email_notification_status": "Non è possibile recuperare lo stato delle notifiche e-mail"
+        "cannot_retrieve_email_notification_status": "Non è possibile recuperare lo stato delle notifiche e-mail",
+        "warning_mail_subject_required": "L'oggetto del messaggio è obbligatorio",
+        "warning_days_range": "Il numero di giorni di preavviso deve essere compreso tra 1 e 1000",
+        "warning_days_required": "Inserire il numero di giorni di preavviso",
+        "warning_mail_template_content_required": "È obbligatorio inserire il contenuto del template del messaggio"
     },
     "task": {
         "configure": "Configura",
