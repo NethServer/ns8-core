@@ -206,7 +206,7 @@ The mail of the user can be obtained in 2 different ways:
 Please note that if the cluster is configured to send mail notifications using an external SMTP server,
 the mail field must be set in the user object because the `user_domain` is not known to the external server.
 
-To force the notification, run the following command on the leader node:
+To check for expiring passwords and immediately send notifications, run the following command on the leader node:
 
 ```bash
 systemctl start password-warning.service
