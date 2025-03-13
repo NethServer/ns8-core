@@ -176,7 +176,8 @@
         "set-syslog-forwarder": "Set Syslog forwarder",
         "set-clm-forwarder": "Set Cloud Log Manager forwarder",
         "read-backup-snapshots": "Read backup snapshots",
-        "determine-restore-eligibility": "Determine restore eligibility"
+        "determine-restore-eligibility": "Determine restore eligibility",
+        "set-password-warning": "Configure password warning"
     },
     "backup": {
         "smb_url_label": "Share name",
@@ -705,7 +706,26 @@
         "no_node_eligible_for_provider_installation": "No node is eligible for provider installation",
         "provider_already_installed": "Provider already installed",
         "edit_external_domain": "Edit external domain",
-        "domain_settings": "Domain settings"
+        "domain_settings": "Domain settings",
+        "warning_template": "Mail template",
+        "warning_template_default_en": "Default English template",
+        "edit_password_warning": "Edit password warning",
+        "warning_disabled_title": "Warning is disabled",
+        "warning_enable_tip": "If enabled, users will receive an email notification when their password is about to expire",
+        "warning_template_content_tip": "Enter valid HTML or plain text. Available placeholders: $user (username), $name (user display name), $days (days to expiration), $domain (user domain), $portal_url (user portal URL)",
+        "warning_template_content": "Mail template",
+        "warning_template_custom": "Custom template",
+        "go_to_smtp_settings": "Go to Mail notifications",
+        "warning_template_default_it": "Default Italian template",
+        "warning_smtp_disabled_title": "Cluster SMTP is disabled",
+        "password_warning": "Password warning",
+        "warning_sender": "Sender mail address",
+        "warning_enable": "Enable password expiration warning",
+        "warning_days": "Days before expiration",
+        "warning_template_subject_tip": "Enter plain text. Available placeholders: $user (username), $name (user display name), $days (days to expiration), $domain (user domain), $portal_url (user portal URL)",
+        "warning_template_subject": "Mail subject",
+        "warning_smtp_disabled_description": "Enable SMTP in the cluster settings to send password expiration warnings",
+        "warning_disabled_description": "Enable the Age policy to configure password expiration warning"
     },
     "domain_users": {
         "edit_group": "Edit group",
@@ -1151,7 +1171,11 @@
         "404": "لم يتم العثور على المصدر",
         "network_error": "خطا في الاتصال",
         "validation_error": "خطئ في التحقق",
-        "cannot_retrieve_email_notification_status": "Cannot retrieve email notifications status"
+        "cannot_retrieve_email_notification_status": "Cannot retrieve email notifications status",
+        "warning_days_required": "Warning days are required",
+        "warning_mail_subject_required": "Mail subject is required",
+        "warning_days_range": "Warning days must be between 1 and 1000",
+        "warning_mail_template_content_required": "Mail template content is required"
     },
     "websocket": {
         "websocket_disconnected_description": "Websocket connection is unstable. Please wait until reconnection or reload the page",

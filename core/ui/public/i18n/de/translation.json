@@ -243,7 +243,8 @@
         "set-syslog-forwarder": "Syslog-Forwarder festlegen",
         "set-clm-forwarder": "CloudLog Manager Forwarder festlegen",
         "read-backup-snapshots": "Backup-Snapshots einlesen",
-        "determine-restore-eligibility": "Determine restore eligibility"
+        "determine-restore-eligibility": "Determine restore eligibility",
+        "set-password-warning": "Configure password warning"
     },
     "common": {
         "hide": "verstecken",
@@ -364,7 +365,11 @@
         "network_error": "Netzwerk-Fehler",
         "validation_error": "Fehler bei der Validierung",
         "cannot_retrieve_subscription_status": "Status der Subskription kann nicht abgerufen werden.",
-        "cannot_retrieve_email_notification_status": "Status für E-Mail Benachrichtigung nicht abgerufen"
+        "cannot_retrieve_email_notification_status": "Status für E-Mail Benachrichtigung nicht abgerufen",
+        "warning_days_required": "Warning days are required",
+        "warning_mail_subject_required": "Mail subject is required",
+        "warning_days_range": "Warning days must be between 1 and 1000",
+        "warning_mail_template_content_required": "Mail template content is required"
     },
     "websocket": {
         "websocket_disconnected_description": "Websocket-Verbindung instabil. Bitte warten bis die Verbindung wiederhergestellt ist oder die Seite neu laden",
@@ -779,7 +784,26 @@
         "provider_already_installed": "Provider already installed",
         "no_node_eligible_for_provider_installation": "No node is eligible for provider installation",
         "edit_external_domain": "Edit external domain",
-        "domain_settings": "Domain settings"
+        "domain_settings": "Domain settings",
+        "warning_disabled_title": "Warning is disabled",
+        "warning_template": "Mail template",
+        "warning_template_default_en": "Default English template",
+        "edit_password_warning": "Edit password warning",
+        "warning_enable_tip": "If enabled, users will receive an email notification when their password is about to expire",
+        "warning_template_content_tip": "Enter valid HTML or plain text. Available placeholders: $user (username), $name (user display name), $days (days to expiration), $domain (user domain), $portal_url (user portal URL)",
+        "warning_template_content": "Mail template",
+        "warning_template_custom": "Custom template",
+        "go_to_smtp_settings": "Go to Mail notifications",
+        "warning_template_default_it": "Default Italian template",
+        "warning_smtp_disabled_title": "Cluster SMTP is disabled",
+        "password_warning": "Password warning",
+        "warning_sender": "Sender mail address",
+        "warning_enable": "Enable password expiration warning",
+        "warning_days": "Days before expiration",
+        "warning_template_subject_tip": "Enter plain text. Available placeholders: $user (username), $name (user display name), $days (days to expiration), $domain (user domain), $portal_url (user portal URL)",
+        "warning_template_subject": "Mail subject",
+        "warning_smtp_disabled_description": "Enable SMTP in the cluster settings to send password expiration warnings",
+        "warning_disabled_description": "Enable the Age policy to configure password expiration warning"
     },
     "about": {
         "animated_icons_by": "Animierte Icons von",
