@@ -47,7 +47,7 @@ mycommand && systemctl --user reload mymodule.service
 
 ## Send mail from modules
 
-All agent have access to `ns8-sendmail`, a Python script that reads the SMTP smarthost configuration and sends an email. The script reads the email content from the standard input and sends it to the recipient addresses specified as the first argument.
+All agents have access to `ns8-sendmail`, a Python script that reads the SMTP smarthost configuration and sends an email. The script reads the email content from the standard input and sends it to the recipient addresses specified as one or more trailing arguments.
 
 Example of invocation from a module environment:
 ```shell
