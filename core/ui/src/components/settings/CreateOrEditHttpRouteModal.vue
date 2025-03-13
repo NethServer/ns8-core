@@ -28,6 +28,7 @@
           ref="instance"
         />
         <NsComboBox
+          v-if="user_created"
           v-model="selectedNodeId"
           :label="$t('common.choose')"
           :title="$t('common.node')"
@@ -46,12 +47,13 @@
           </template>
         </NsComboBox>
         <NsTextInput
+          v-if="user_created"
           v-model.trim="url"
           :placeholder="$t('settings_http_routes.url_placeholder')"
           :label="$t('settings_http_routes.url')"
           :helper-text="$t('settings_http_routes.url_helper')"
           :invalid-message="error.url"
-          :disabled="loading.setRoute"
+          :disabled="loading.setRoute || !user_created"
           ref="url"
         >
           <template slot="tooltip">
@@ -59,11 +61,14 @@
           </template>
         </NsTextInput>
         <NsToggle
+          v-if="user_created"
           :label="$t('settings_http_routes.skip_cert_verify')"
           value="stripPrefixValue"
           :form-item="true"
           v-model="skip_cert_verify"
-          :disabled="loading.setRoute || !url.startsWith('https://')"
+          :disabled="
+            loading.setRoute || !url.startsWith('https://') || !user_created
+          "
           ref="skip_cert_verify"
         >
           <template slot="tooltip">
@@ -73,6 +78,7 @@
           <template slot="text-right">{{ $t("common.enabled") }}</template>
         </NsToggle>
         <NsTextInput
+          v-if="user_created"
           v-model.trim="host"
           :placeholder="$t('settings_http_routes.host_placeholder')"
           :label="
@@ -80,7 +86,7 @@
           "
           :helper-text="$t('settings_http_routes.host_helper')"
           :invalid-message="error.host"
-          :disabled="loading.setRoute"
+          :disabled="loading.setRoute || !user_created"
           ref="host"
         >
           <template slot="tooltip">
@@ -88,13 +94,14 @@
           </template>
         </NsTextInput>
         <NsTextInput
+          v-if="user_created"
           v-model.trim="path"
           :placeholder="$t('settings_http_routes.path_placeholder')"
           :label="
             $t('settings_http_routes.path') + ' (' + $t('common.optional') + ')'
           "
           :invalid-message="error.path"
-          :disabled="loading.setRoute"
+          :disabled="loading.setRoute || !user_created"
           ref="path"
         >
           <template slot="tooltip">
@@ -102,11 +109,12 @@
           </template>
         </NsTextInput>
         <NsToggle
+          v-if="user_created"
           :label="$t('settings_http_routes.strip_prefix')"
           value="stripPrefixValue"
           :form-item="true"
           v-model="strip_prefix"
-          :disabled="loading.setRoute"
+          :disabled="loading.setRoute || !user_created"
           ref="tls"
         >
           <template slot="tooltip">
@@ -126,27 +134,38 @@
           <template slot="text-right">{{ $t("common.enabled") }}</template>
         </NsToggle>
         <NsToggle
+          v-if="user_created"
           :label="$t('settings_http_routes.request_lets_encrypt_certificate')"
           value="letsEncryptValue"
           :form-item="true"
           v-model="lets_encrypt"
-          :disabled="loading.setRoute"
+          :disabled="loading.setRoute || !user_created"
           ref="lets_encrypt"
         >
           <template slot="text-left">{{ $t("common.disabled") }}</template>
           <template slot="text-right">{{ $t("common.enabled") }}</template>
         </NsToggle>
         <NsToggle
+          v-if="user_created"
           :label="$t('settings_http_routes.http2https')"
           value="http2httpsValue"
           :form-item="true"
           v-model="http2https"
-          :disabled="loading.setRoute"
+          :disabled="loading.setRoute || !user_created"
           ref="http2https"
         >
           <template slot="text-left">{{ $t("common.disabled") }}</template>
           <template slot="text-right">{{ $t("common.enabled") }}</template>
         </NsToggle>
+        <cv-text-area
+          v-model.trim="ip_allowlist_str"
+          :placeholder="$t('settings_http_routes.ip_allowlist_placeholder')"
+          :label="$t('settings_http_routes.ip_allowlist')"
+          :invalid-message="error.ip_allowlist"
+          :disabled="loading.setRoute"
+          ref="ip_allowlist"
+          :helper-text="$t('settings_http_routes.ip_allowlist_helper')"
+        />
         <!-- need to wrap error notification inside a div: custom elements like NsInlineNotification don't have scrollIntoView() function -->
         <div ref="setRouteError">
           <NsInlineNotification
@@ -206,6 +225,9 @@ export default {
       lets_encrypt: false,
       http2https: false,
       strip_prefix: false,
+      ip_allowlist: "",
+      ip_allowlist_str: "",
+      user_created: false,
       loading: {
         setRoute: false,
       },
@@ -217,6 +239,7 @@ export default {
         url: "",
         host: "",
         path: "",
+        ip_allowlist: "",
       },
     };
   },
@@ -244,6 +267,8 @@ export default {
           this.lets_encrypt = this.route.lets_encrypt;
           this.http2https = this.route.http2https;
           this.skip_cert_verify = this.route.skip_cert_verify;
+          this.ip_allowlist_str = this.route.ip_allowlist_str;
+          this.user_created = this.route.user_created;
         }
       } else {
         // closing modal
@@ -357,6 +382,29 @@ export default {
           }
         }
       }
+
+      // IP allow list
+      if (this.ip_allowlist_str) {
+        const ipList = this.ip_allowlist_str.split("\n").map((ip) => ip.trim());
+        // IPv4 and IPv4 CIDR pattern
+        const ipv4Pattern =
+          /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\/([0-9]|[1-2][0-9]|3[0-2]))?$/;
+
+        for (const ip of ipList) {
+          if (!ipv4Pattern.test(ip)) {
+            this.error.ip_allowlist = this.$t(
+              "settings_http_routes.invalid_ipv4",
+              { ip: ip }
+            );
+            if (isValidationOk) {
+              this.focusElement("ip_allowlist");
+              isValidationOk = false;
+              break;
+            }
+          }
+        }
+      }
+
       return isValidationOk;
     },
     createOrEditRoute() {
@@ -410,8 +458,11 @@ export default {
         url: this.url,
         lets_encrypt: this.lets_encrypt,
         http2https: this.http2https,
-        user_created: true,
+        user_created: this.user_created,
         skip_cert_verify: this.skip_cert_verify,
+        ip_allowlist: this.ip_allowlist_str
+          ? this.ip_allowlist_str.split("\n").map((ip) => ip.trim())
+          : [],
       };
 
       if (this.host) {

@@ -153,6 +153,24 @@
                         <cv-data-table-cell>
                           <span>{{ row.node }}</span>
                         </cv-data-table-cell>
+                        <cv-data-table-cell>
+                          <NsTag
+                            v-if="!row.user_created"
+                            kind="grey"
+                            size="sm"
+                            :label="$t('settings_http_routes.automatic')"
+                          />
+                          <NsTag
+                            v-if="
+                              row.ip_allowlist !== undefined &&
+                              row.ip_allowlist.length > 0
+                            "
+                            kind="high-contrast"
+                            size="sm"
+                            :label="$t('settings_http_routes.restricted')"
+                            class="no-margin"
+                          />
+                        </cv-data-table-cell>
                         <cv-data-table-cell class="table-overflow-menu-cell">
                           <cv-overflow-menu
                             flip-menu
@@ -170,7 +188,6 @@
                             </cv-overflow-menu-item>
                             <cv-overflow-menu-item
                               @click="showEditRouteModal(row)"
-                              :disabled="!row.user_created"
                               :data-test-id="row.name + '-edit'"
                             >
                               <NsMenuItem
@@ -279,7 +296,7 @@ export default {
         selectedNodeId: "",
       },
       tablePage: [],
-      tableColumns: ["name", "type", "node"],
+      tableColumns: ["name", "type", "node", "attributes"],
       routes: [],
       internalNodes: [],
       isShownCreateOrEditRouteModal: false,
@@ -555,6 +572,10 @@ export default {
           type = "path";
         }
         route.type = type;
+        route.ip_allowlist = route.ip_allowlist ? route.ip_allowlist : [];
+        route.ip_allowlist_str = route.ip_allowlist
+          ? route.ip_allowlist.join("\n")
+          : "";
 
         const traefikId = taskContext.extra.traefikInstance.id;
         const nodeId = taskContext.extra.traefikInstance.node;
