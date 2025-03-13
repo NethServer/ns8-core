@@ -199,9 +199,9 @@ See [database schema](database.md) for details.
 
 The mail of the user can be obtained in 2 different ways:
 
-1. using an internal mail server instance: if there is an internal mail server, the address is automatically set to `<user>@<user_domain>`, the local Postfix
+1. from an OpenLDAP or Samba field: the address is saved inside the `mail` field of the user object; this field has the highest priority
+2. using an internal mail server instance: if there is an internal mail server, the address is automatically set to `<user>@<user_domain>`, the local Postfix
    instance will deliver the mail to the user mailbox
-2. from an OpenLDAP or Samba field: the address is saved inside the `mail` field of the user object; this field has the highest priority
 
 Please note that if the cluster is configured to send mail notifications using an external SMTP server,
 the mail field must be set in the user object because the `user_domain` is not known to the external server.
