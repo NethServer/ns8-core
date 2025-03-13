@@ -191,7 +191,7 @@ sends the email only on the leader node.
 
 Configuration is saved inside Redis so it is available to all nodes:
 - `cluster/password_warning/<domain>`
-- `cluster/cluster/password_warning/templates`
+- `cluster/password_warning/templates`
 
 See [database schema](database.md) for details.
 
