@@ -181,7 +181,7 @@ subsections for more information.
 |cluster/tcp_ports_demand               |HASH       |Max TCP ports a module can request. Hash key is MODULE_ID, hash value is the max TCP ports.|
 |cluster/udp_ports_demand               |HASH       |Max UDP ports a module can request. Hash key is MODULE_ID, hash value is the max UDP ports.|
 |cluster/password_warning/{domain}      |HASH       |Password warning settings for a user domain|
-|cluster/cluster/password_warning/templates|HASH     |Password warning templates, the hash contains 2 keys: "<domain>_custom_template_content" and "<domain>_custom_mail_subject|
+|cluster/password_warning/templates|HASH     |Password warning templates, the hash contains 2 keys: "<domain>_custom_template_content" and "<domain>_custom_mail_subject|
 
 #### cluster/smarthost
 
