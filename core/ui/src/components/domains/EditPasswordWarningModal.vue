@@ -8,6 +8,9 @@
     :visible="isShown"
     @modal-hidden="$emit('hide')"
     @primary-click="$emit('confirm')"
+    :primaryButtonDisabled="
+      !policy.expiration.enforced || !policy.warning.smtp_enabled
+    "
   >
     <template slot="title">{{ $t("domains.edit_password_warning") }}</template>
     <template slot="content">
@@ -112,12 +115,9 @@
       />
     </template>
     <template slot="secondary-button">{{ $t("common.cancel") }}</template>
-    <template
-      v-if="policy.expiration.enforced"
-      @submit.prevent="setPasswordWarning"
-      slot="primary-button"
-      >{{ $t("domains.edit_password_warning") }}</template
-    >
+    <template slot="primary-button">{{
+      $t("domains.edit_password_warning")
+    }}</template>
   </NsModal>
 </template>
 
