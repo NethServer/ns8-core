@@ -64,7 +64,6 @@
           :clearFilterLabel="$t('common.clear_filter')"
           :selectedLabel="$t('common.selected_l')"
           :userInputLabel="$t('common.user_input_l')"
-          :class="{ 'mg-bottom-14': isEditing }"
           ref="groups"
         />
         <NsPasswordInput
@@ -86,12 +85,23 @@
           :focus="focusPasswordField"
           :clearConfirmPasswordCommand="clearConfirmPasswordCommand"
           :minLength="
-            policy.strength.enforced ? policy.strength.password_min_length : 0
+            policy.strength.enforced
+              ? parseInt(policy.strength.password_min_length, 10)
+              : 0
           "
           :checkComplexity="
             policy.strength.enforced ? policy.strength.complexity_check : false
           "
           autocomplete="new-password"
+        />
+        <NsTextInput
+          v-model.trim="mail"
+          :label="$t('domain_users.mail_field')"
+          :invalid-message="error.mail"
+          :disabled="loading.addUser || loading.alterUser"
+          autocomplete="off"
+          ref="mail"
+          type="email"
         />
         <NsInlineNotification
           v-if="error.addUser"
@@ -149,6 +159,7 @@ export default {
       passwordValidation: null,
       focusPasswordField: { element: "" },
       clearConfirmPasswordCommand: 0,
+      mail: "",
       policy: {
         strength: {
           complexity_check: false,
@@ -172,6 +183,7 @@ export default {
         confirmPassword: "",
         groups: "",
         listPasswordPolicy: "",
+        mail: "",
       },
     };
   },
@@ -218,12 +230,14 @@ export default {
           // clear password fields
           this.newPassword = "";
           this.clearConfirmPasswordCommand++;
+          this.mail = "";
         } else {
           // edit user
           this.username = this.user.user;
           this.displayName = this.user.display_name;
           this.selectedGroups = [];
           this.getDomainUser();
+          this.mail = this.user.mail || "";
         }
       } else {
         // hiding modal
@@ -397,6 +411,7 @@ export default {
             password: this.newPassword,
             locked: false,
             groups: this.selectedGroups,
+            mail: this.mail ? this.mail : "",
           },
           extra: {
             title: this.$t("domain_users.create_user_user", {
@@ -470,6 +485,16 @@ export default {
         this.alterUserCompleted
       );
 
+      // register to task validation
+      this.$root.$once(
+        `${taskAction}-validation-ok-${eventId}`,
+        this.alterUserValidationOk
+      );
+      this.$root.$once(
+        `${taskAction}-validation-failed-${eventId}`,
+        this.alterUserValidationFailed
+      );
+
       const res = await to(
         this.createModuleTaskForApp(this.mainProvider, {
           action: taskAction,
@@ -477,6 +502,7 @@ export default {
             user: this.user.user,
             display_name: this.displayName,
             groups: this.selectedGroups,
+            mail: this.mail ? this.mail : "",
           },
           extra: {
             title: this.$t("domain_users.edit_user_user", {
@@ -495,9 +521,6 @@ export default {
         this.loading.alterUser = false;
         return;
       }
-
-      // hide modal
-      this.$emit("hide");
     },
     alterUserAborted(taskResult, taskContext) {
       console.error(`${taskContext.action} aborted`, taskResult);
@@ -508,6 +531,27 @@ export default {
 
       // reload users
       this.$emit("reloadUsers");
+    },
+    alterUserValidationOk() {
+      this.loading.alterUser = false;
+      // hide modal after validation
+      this.$emit("hide");
+    },
+    alterUserValidationFailed(validationErrors) {
+      this.loading.alterUser = false;
+      let focusAlreadySet = false;
+      for (const validationError of validationErrors) {
+        const param = validationError.parameter;
+        // set i18n error message
+        this.error[param] = this.$t("domain_users." + validationError.error, {
+          tok: validationError.value,
+        });
+
+        if (!focusAlreadySet) {
+          this.focusElement(param);
+          focusAlreadySet = true;
+        }
+      }
     },
     onModalHidden() {
       this.clearErrors();
