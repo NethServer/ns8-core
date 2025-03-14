@@ -1,13 +1,11 @@
 {
     "init": {
         "restoring_cluster": "Restoring cluster",
-        "custom_certificates": "Uploaded certificates",
         "empty_passphrase": "The password is mandatory",
         "the_join_code_is_not_correctly_encoded": "Join code is not correctly encoded",
         "tls_verify": "TLS certificate validation",
         "vpn_cidr_tooltip": "This is the VPN network used by cluster nodes to communicate. Ensure this network does not conflict with existing ones. Note that VPN network cannot be changed later",
         "upload_cluster_backup_file": "Upload cluster backup file",
-        "custom_routes": "Custom HTTP routes",
         "network_pattern": "Invalid network format",
         "not_a_private_network": "Must be included in the private IPv4 network addresses: 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16",
         "cluster_auth_error": "Invalid response",

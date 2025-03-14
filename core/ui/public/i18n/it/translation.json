@@ -1056,8 +1056,6 @@
         "restoring_apps_c": "Ripristino {num} app | Ripristino {num} app",
         "traveling_back_in_time": "Viaggiando indietro nel tempo...",
         "reading_backup_repositories": "Lettura dei repository di backup...",
-        "custom_routes": "Rotte HTTP personalizzate",
-        "custom_certificates": "Certificati caricati",
         "set_fqdn": "Imposta FQDN",
         "forbidden_hostname_value": "Nome host non consentito",
         "vpn_cidr_tooltip": "Questa è la rete VPN utilizzata dai nodi di cluster per comunicare. Assicurarsi che questa rete non sia in conflitto con quelle esistenti. Si noti che la rete VPN non può essere cambiata in seguito.",
