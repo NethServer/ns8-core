@@ -178,21 +178,21 @@
                             :data-test-id="row.name + '-menu'"
                           >
                             <cv-overflow-menu-item
-                              @click="showRouteDetailModal(row)"
-                              :data-test-id="row.name + '-details'"
-                            >
-                              <NsMenuItem
-                                :icon="ArrowRight20"
-                                :label="$t('common.see_details')"
-                              />
-                            </cv-overflow-menu-item>
-                            <cv-overflow-menu-item
                               @click="showEditRouteModal(row)"
                               :data-test-id="row.name + '-edit'"
                             >
                               <NsMenuItem
                                 :icon="Edit20"
                                 :label="$t('common.edit')"
+                              />
+                            </cv-overflow-menu-item>
+                            <cv-overflow-menu-item
+                              @click="showRouteDetailModal(row)"
+                              :data-test-id="row.name + '-details'"
+                            >
+                              <NsMenuItem
+                                :icon="ArrowRight20"
+                                :label="$t('common.see_details')"
                               />
                             </cv-overflow-menu-item>
                             <cv-overflow-menu-item
