@@ -88,6 +88,9 @@
                     {{ row.display_name }}
                   </cv-data-table-cell>
                   <cv-data-table-cell>
+                    {{ row.mail ? row.mail : "" }}
+                  </cv-data-table-cell>
+                  <cv-data-table-cell>
                     <cv-tag
                       v-if="row.locked"
                       kind="high-contrast"
@@ -100,14 +103,12 @@
                       kind="high-contrast"
                       :label="$t('domains.password_expired')"
                       size="sm"
-                      class="expired-tag"
                     ></cv-tag>
                     <cv-tag
                       v-if="row.password_expiration < 0"
                       kind="gray"
                       :label="$t('domains.password_does_not_expire')"
                       size="sm"
-                      class="expired-tag"
                     ></cv-tag>
                   </cv-data-table-cell>
                   <cv-data-table-cell
@@ -234,7 +235,7 @@ export default {
       isEditingUser: false,
       currentUser: null,
       userToDelete: null,
-      tableColumns: ["user", "display_name", "attributes"],
+      tableColumns: ["user", "display_name", "mail", "attributes"],
       tablePage: [],
       loading: {
         listDomainUsers: false,
