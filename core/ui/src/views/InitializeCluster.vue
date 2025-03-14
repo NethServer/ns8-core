@@ -627,18 +627,6 @@
                       <span class="value">{{ restore.summary.domains }}</span>
                     </div>
                     <div class="key-value-setting">
-                      <span class="label">{{ $t("init.custom_routes") }}</span>
-                      <span class="value">{{ restore.summary.routes }}</span>
-                    </div>
-                    <div class="key-value-setting">
-                      <span class="label">{{
-                        $t("init.custom_certificates")
-                      }}</span>
-                      <span class="value">{{
-                        restore.summary.certificates
-                      }}</span>
-                    </div>
-                    <div class="key-value-setting">
                       <span class="label">{{
                         $t("init.backup_repositories")
                       }}</span>

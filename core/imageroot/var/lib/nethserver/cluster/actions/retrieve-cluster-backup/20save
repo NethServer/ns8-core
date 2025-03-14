@@ -87,8 +87,6 @@ result = {
     'vpn': dump['vpn']['endpoint'],
     'domains': len(dump['cluster']['user_domain']['ldap']),
     'backup_repositories': len(dump['cluster']['backup_repository']),
-    'routes': len(dump['traefik']['leader']['routes']),
-    'certificates': len(dump['traefik']['leader']['uploaded_certificates']),
 }
 
 json.dump(result, fp=sys.stdout)

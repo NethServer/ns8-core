@@ -243,8 +243,6 @@
         "traveling_back_in_time": "Traveling back in time...",
         "reading_backup_repositories": "Reading backup repositories...",
         "creating_cluster": "Creating cluster...",
-        "custom_routes": "Custom HTTP routes",
-        "custom_certificates": "Uploaded certificates",
         "leader_node_hostname": "Leader node hostname",
         "worker_node_hostname": "Worker node hostname",
         "leader_node_domain": "Leader node domain",
