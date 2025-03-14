@@ -85,7 +85,9 @@
           :focus="focusPasswordField"
           :clearConfirmPasswordCommand="clearConfirmPasswordCommand"
           :minLength="
-            policy.strength.enforced ? policy.strength.password_min_length : 0
+            policy.strength.enforced
+              ? parseInt(policy.strength.password_min_length, 10)
+              : 0
           "
           :checkComplexity="
             policy.strength.enforced ? policy.strength.complexity_check : false
