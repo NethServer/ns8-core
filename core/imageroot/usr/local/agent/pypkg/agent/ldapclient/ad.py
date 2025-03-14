@@ -163,11 +163,10 @@ class LdapclientAd(LdapclientBase):
                 if expire and max_pwd_age.total_seconds() < 86400000000000:
                     expiry_date = pwd_changed_time + timedelta(seconds=max_pwd_age.total_seconds())
                     user['password_expiration'] = int(expiry_date.timestamp())
-                    user['expired'] = False
+                    user['expired'] = today > expiry_date
                 else:
                     user['password_expiration'] = -1
-                    expiry_date = pwd_changed_time + timedelta(seconds=max_pwd_age.total_seconds())
-                    user['expired'] = today > expiry_date
+                    user['expired'] = False
                 # mail can be a string or an empty array, just treat ans empty arrays as an empty string
                 user["mail"] = entry['attributes'].get('mail') if entry['attributes'].get('mail') else ""
 
