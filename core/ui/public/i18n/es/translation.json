@@ -870,7 +870,6 @@
     },
     "init": {
         "restoring_cluster": "Restaurando clúster",
-        "custom_routes": "Rutas HTTP personalizadas",
         "creating_cluster": "Creando clúster...",
         "restore_cluster": "Restaurar clúster",
         "configure_node": "Configurar este nodo",
@@ -900,7 +899,6 @@
         "not_valid_gpg_file": "Archivo GPG no válido",
         "node_added_to_cluster": "Nodo {nodeId} añadido al clúster",
         "new_password": "Nueva contraseña de administrador",
-        "custom_certificates": "Certificados cargados",
         "tls_verify": "Validación de certificados TLS",
         "vpn_cidr_tooltip": "Esta es la red VPN utilizada por los nodos del clúster para comunicarse. Asegúrate de que esta red no entre en conflicto con las existentes. Ten en cuenta que la red VPN no se puede cambiar más adelante.",
         "upload_cluster_backup_file": "Cargar archivo de copia de seguridad del clúster",

@@ -1,11 +1,9 @@
 {
     "init": {
         "restoring_cluster": "Wiederherstellung des Cluster",
-        "custom_certificates": "hochgeladene Zertifikate",
         "tls_verify": "TLS-Zertifikatsprüfung",
         "vpn_cidr_tooltip": "Dies ist das VPN-Netz, das von den Clusterknoten zur Kommunikation verwendet wird. Stellen Sie sicher, dass dieses Netzwerk nicht mit bestehenden Netzwerken kollidiert. Beachten Sie, dass das VPN-Netzwerk später nicht mehr geändert werden kann.",
         "upload_cluster_backup_file": "Hochladen der Cluster-Sicherungsdatei",
-        "custom_routes": "eigene HTTP Routen",
         "creating_cluster": "Cluster wird erstellt...",
         "restore_summary": "Zusammenfassung",
         "node_added_to_cluster": "Knoten {nodeId} zum Cluster hinzugefügt",

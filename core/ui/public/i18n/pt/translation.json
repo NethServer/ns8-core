@@ -753,11 +753,9 @@
     },
     "init": {
         "restoring_cluster": "Restoring cluster",
-        "custom_certificates": "Uploaded certificates",
         "tls_verify": "TLS certificate validation",
         "vpn_cidr_tooltip": "This is the VPN network used by cluster nodes to communicate. Ensure this network does not conflict with existing ones. Note that VPN network cannot be changed later",
         "upload_cluster_backup_file": "Upload cluster backup file",
-        "custom_routes": "Custom HTTP routes",
         "creating_cluster": "Creating cluster...",
         "restore_summary": "Summary",
         "node_added_to_cluster": "Node {nodeId} added to cluster",
