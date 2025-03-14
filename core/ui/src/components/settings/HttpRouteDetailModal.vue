@@ -83,6 +83,14 @@
         </span>
       </div>
       <div class="key-value-setting">
+        <span class="label">{{ $t("settings_http_routes.ip_allowlist") }}</span>
+        <span class="value">{{
+          route.ip_allowlist && route.ip_allowlist.length
+            ? route.ip_allowlist.join(", ")
+            : "-"
+        }}</span>
+      </div>
+      <div class="key-value-setting">
         <span class="label">{{ $t("settings_http_routes.node") }}</span>
         <span class="value">{{ route.longNodeLabel }}</span>
       </div>
