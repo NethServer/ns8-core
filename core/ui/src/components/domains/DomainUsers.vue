@@ -95,6 +95,20 @@
                       size="sm"
                       class="disabled-tag"
                     ></cv-tag>
+                    <cv-tag
+                      v-if="row.expired"
+                      kind="high-contrast"
+                      :label="$t('domains.password_expired')"
+                      size="sm"
+                      class="expired-tag"
+                    ></cv-tag>
+                    <cv-tag
+                      v-if="row.password_expiration < 0"
+                      kind="gray"
+                      :label="$t('domains.password_does_not_expire')"
+                      size="sm"
+                      class="expired-tag"
+                    ></cv-tag>
                   </cv-data-table-cell>
                   <cv-data-table-cell
                     v-if="domain && domain.location == 'internal'"

@@ -1197,7 +1197,9 @@
         "warning_template_subject_tip": "Enter plain text. Available placeholders: $user (username), $name (user display name), $days (days to expiration), $domain (user domain), $portal_url (user portal URL)",
         "warning_smtp_disabled_title": "Cluster SMTP is disabled",
         "warning_smtp_disabled_description": "Enable SMTP in the cluster settings to send password expiration warnings",
-        "go_to_smtp_settings": "Go to Mail notifications"
+        "go_to_smtp_settings": "Go to Mail notifications",
+        "password_expired": "Password expired",
+        "password_does_not_expire": "No expiration"
     },
     "samba": {
         "adminuser": "Samba admin username",
