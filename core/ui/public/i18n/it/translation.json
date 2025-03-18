@@ -537,7 +537,9 @@
         "warning_template_subject_tip": "Inserisci testo semplice. Segnaposto disponibili: $user (nome utente), $name (nome completo), $days (giorni alla scadenza), $domain (domino utenti), $portal_url (URL portale utenti)",
         "warning_template_subject": "Oggetto del messaggio",
         "warning_smtp_disabled_description": "Attiva Notifiche email nelle impostazioni del cluster per inviare il preavviso di scadenza password",
-        "warning_disabled_description": "Abilitare la durata password prima di configurare il preavviso di scadenza"
+        "warning_disabled_description": "Abilitare la durata password prima di configurare il preavviso di scadenza",
+        "password_does_not_expire": "Nessuna scadenza password",
+        "password_expired": "Password scaduta"
     },
     "action": {
         "configure-module": "Configura app",
@@ -1247,7 +1249,10 @@
         "display_name_string_lte": "Deve essere inferiore o uguale a 256 caratteri",
         "user_pattern": "Inizia con una lettera, seguita da lettere, cifre o i simboli -._",
         "group_with_same_name": "Un gruppo con questo nome esiste già",
-        "user_with_same_name": "Un utente con questo nome esiste già"
+        "user_with_same_name": "Un utente con questo nome esiste già",
+        "mail": "Indirizzo email",
+        "mail_field": "Indirizzo email (opzionale)",
+        "mail_format": "Formato e-mail non valido"
     },
     "domain_configuration": {
         "add_provider": "Aggiungi provider",
@@ -1335,7 +1340,14 @@
         "skipCertVerify_tooltip": "Salta la verifica del certificato per l'URL del backend di destinazione",
         "skip_cert_verify": "Salta la verifica del certificato",
         "instance_pattern": "Sono ammessi i caratteri: A-Z, a-z, 0-9, _ e -",
-        "traefik_prefixes_option": "Traefik prefixes option"
+        "traefik_prefixes_option": "Traefik prefixes option",
+        "attributes": "Attributi",
+        "ip_allowlist_placeholder": "Es. 192.168.7.0/24",
+        "ip_allowlist": "Limitare l'accesso da",
+        "automatic": "Automatico",
+        "invalid_ipv4": "Indirizzo IPv4 non valido: {ip}",
+        "restricted": "Accesso limitato",
+        "ip_allowlist_helper": "Inserisci un indirizzo IPv4 o CIDR per riga. Lasciare vuoto per consentire l'accesso da qualsiasi indirizzo IP"
     },
     "samba": {
         "choose_samba_admin_username": "Scegli il nome utente dell'amministratore di Samba",

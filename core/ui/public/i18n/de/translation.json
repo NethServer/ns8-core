@@ -659,7 +659,10 @@
         "display_name_string_lte": "maximal 256 Zeichen",
         "user_pattern": "Mit einem Buchstaben beginnen, nur gefolgt von Buchstaben, Ziffern und den Zeichen -._",
         "group_with_same_name": "A group with this name already exists",
-        "user_with_same_name": "A user with this name already exists"
+        "user_with_same_name": "A user with this name already exists",
+        "mail": "Mail address",
+        "mail_field": "Mail address (optional)",
+        "mail_format": "Invalid mail format"
     },
     "audit_trail": {
         "title": "Audit-Protokoll",
@@ -801,7 +804,9 @@
         "warning_template_subject_tip": "Enter plain text. Available placeholders: $user (username), $name (user display name), $days (days to expiration), $domain (user domain), $portal_url (user portal URL)",
         "warning_template_subject": "Mail subject",
         "warning_smtp_disabled_description": "Enable SMTP in the cluster settings to send password expiration warnings",
-        "warning_disabled_description": "Enable the Age policy to configure password expiration warning"
+        "warning_disabled_description": "Enable the Age policy to configure password expiration warning",
+        "password_expired": "Password expired",
+        "password_does_not_expire": "No password expiration"
     },
     "about": {
         "animated_icons_by": "Animierte Icons von",
@@ -1041,7 +1046,14 @@
         "skipCertVerify_tooltip": "Zertifikate-Validierung für Backend-URL überspringen",
         "skip_cert_verify": "Zertifikate-Validierung überspringen",
         "instance_pattern": "erlaubte Zeichen: A-Z, a-z, 0-9, _ und -",
-        "traefik_prefixes_option": "Traefik Präfix-Optionen"
+        "traefik_prefixes_option": "Traefik Präfix-Optionen",
+        "attributes": "Attributes",
+        "ip_allowlist_placeholder": "Eg. 192.168.7.0/24",
+        "ip_allowlist": "Restric access from",
+        "automatic": "Automatic",
+        "invalid_ipv4": "Invalid IPv4 address: {ip}",
+        "restricted": "Access restricted",
+        "ip_allowlist_helper": "Enter one IPv4 or CIDR address per line. Leave empty to allow access from any IP address"
     },
     "domain_configuration": {
         "cannot_delete_provider": "Anbieter kann nicht gelöscht werden",
