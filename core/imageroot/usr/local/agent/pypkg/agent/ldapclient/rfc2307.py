@@ -27,7 +27,10 @@ from .base import LdapclientBase
 class LdapclientRfc2307(LdapclientBase):
 
     def get_pwd_max_age(self):
-        response = self.ldapconn.search(f'cn=default,ou=PPolicy,{self.base_dn}', '(objectClass=pwdPolicy)', attributes=['pwdMaxAge'])[2]
+        try:
+            response = self.ldapconn.search(f'cn=default,ou=PPolicy,{self.base_dn}', '(objectClass=pwdPolicy)', attributes=['pwdMaxAge'])[2]
+        except:
+            return None
         result = [entry for entry in response if entry['type'] == 'searchResEntry']
         if not result:
             return None
