@@ -127,11 +127,11 @@ class LdapclientRfc2307(LdapclientBase):
         raise LdapclientEntryNotFound()
 
     def list_users(self, extra_info=False):
-        attributes = ['displayName', 'uid'] + self.filter_schema_attributes(['pwdAccountLockedTime'])
+        attributes = ['displayName', 'uid', 'pwdAccountLockedTime']
         if extra_info:
             attributes += ['mail', 'pwdChangedTime', 'createTimestamp']
         response = self.ldapconn.search(self.base_dn, f'(&(objectClass=posixAccount)(objectClass=inetOrgPerson){self._get_users_search_filter_clause()})',
-            attributes=attributes,
+            attributes=self.filter_schema_attributes(attributes),
         )[2]
 
         users = []
