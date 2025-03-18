@@ -723,7 +723,9 @@
         "warning_template_subject_tip": "Enter plain text. Available placeholders: $user (username), $name (user display name), $days (days to expiration), $domain (user domain), $portal_url (user portal URL)",
         "warning_template_subject": "Mail subject",
         "warning_smtp_disabled_description": "Enable SMTP in the cluster settings to send password expiration warnings",
-        "warning_disabled_description": "Enable the Age policy to configure password expiration warning"
+        "warning_disabled_description": "Enable the Age policy to configure password expiration warning",
+        "password_does_not_expire": "No password expiration",
+        "password_expired": "Password expired"
     },
     "domain_users": {
         "edit_group": "Edit group",
@@ -773,7 +775,10 @@
         "display_name_string_lte": "Must be less than or equal to 256 characters",
         "user_pattern": "Invalid character \"{tok}\". Only letters, digits, - and _ are allowed.",
         "group_with_same_name": "A group with this name already exists",
-        "user_with_same_name": "A user with this name already exists"
+        "user_with_same_name": "A user with this name already exists",
+        "mail": "Mail address",
+        "mail_field": "Mail address (optional)",
+        "mail_format": "Invalid mail format"
     },
     "nodes": {
         "check_node_connectivity": "Check node connectivity",
@@ -884,7 +889,14 @@
         "host_placeholder": "E.g. myapp.example.org",
         "edit_route_route": "Edit route {route}",
         "strip_prefix_tooltip": "<a href='https://doc.traefik.io/traefik/middlewares/http/stripprefix/'>Traefik prefixes option</a> defines the prefixes to strip from the request URL. E.g.: It allows you to strip a specified prefix from the URL path. If, for example, you remove /api from /api/v1/resource, the resulting path after it is applied would be /v1/resource.",
-        "traefik_prefixes_option": "Traefik prefixes option"
+        "traefik_prefixes_option": "Traefik prefixes option",
+        "attributes": "Attributes",
+        "ip_allowlist_placeholder": "Eg. 192.168.7.0/24",
+        "ip_allowlist": "Restric access from",
+        "automatic": "Automatic",
+        "invalid_ipv4": "Invalid IPv4 address: {ip}",
+        "restricted": "Access restricted",
+        "ip_allowlist_helper": "Enter one IPv4 or CIDR address per line. Leave empty to allow access from any IP address"
     },
     "password": {
         "uppercase_letter": "Uppercase letter",
