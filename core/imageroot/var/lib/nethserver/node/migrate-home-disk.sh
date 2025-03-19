@@ -1,10 +1,12 @@
 #!/bin/bash
 
 #
-# Copyright (C) 2023 Nethesis S.r.l.
+# Copyright (C) 2025 Nethesis S.r.l.
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
-
+#
+# This script migrates the home directory to a new mounted disk
+#
 set -e
 mount_dir=$1
 if [ -z "$mount_dir" ]; then
