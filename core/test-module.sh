@@ -13,7 +13,7 @@ podman run -i \
     --security-opt seccomp=/tmp/seccomp_profile.json \
     --ipc=host \
     --volume=site-packages:/home/pwuser/.local/lib/python3.8/site-packages:Z \
-    --name rf-core-runner ghcr.io/marketsquare/robotframework-browser/rfbrowser-stable:17.5.2 \
+    --name rf-core-runner ghcr.io/marketsquare/robotframework-browser/rfbrowser-stable:19.4.0 \
     bash -l -s <<EOF
     set -e
     echo "$ssh_key" > /home/pwuser/ns8-key
