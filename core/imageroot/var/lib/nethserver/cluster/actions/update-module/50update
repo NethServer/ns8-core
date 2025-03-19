@@ -139,7 +139,11 @@ for idx, retval in enumerate(update_retvals):
         agent.run_helper('extract-ui', image_url).check_returncode()
         # Replace the app UI directory. Cannot find a way to do this
         # atomically and faster.
-        os.rename(appspath + mid, appspath + mid + dsfx + '~')
+        try:
+            os.rename(appspath + mid, appspath + mid + dsfx + '~')
+        except Exception as ex:
+            print(agent.SD_WARNING + f"Cannot rename the old {mid} UI directory: {ex}", file=sys.stderr)
+            pass # ignore errors if the source dir is missing
         os.rename(appspath + mid + dsfx, appspath + mid)
         agent.run_helper('rm', '-rf', appspath + mid + dsfx + '~')
         # Remove the previous image, we do not need anymore
