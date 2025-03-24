@@ -421,7 +421,7 @@
         "instance_pattern": "Onartutako karaktereak: A-Z, a-z, 0-9, _ eta -",
         "traefik_prefixes_option": "Traefik prefixes option",
         "ip_allowlist_placeholder": "Eg. 192.168.7.0/24",
-        "ip_allowlist": "Restric access from",
+        "ip_allowlist": "Restrict access from",
         "attributes": "Attributes",
         "automatic": "Automatic",
         "invalid_ipv4": "Invalid IPv4 address: {ip}",

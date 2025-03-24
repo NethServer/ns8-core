@@ -892,7 +892,7 @@
         "traefik_prefixes_option": "Traefik prefixes option",
         "attributes": "Attributes",
         "ip_allowlist_placeholder": "Eg. 192.168.7.0/24",
-        "ip_allowlist": "Restric access from",
+        "ip_allowlist": "Restrict access from",
         "automatic": "Automatic",
         "invalid_ipv4": "Invalid IPv4 address: {ip}",
         "restricted": "Access restricted",
