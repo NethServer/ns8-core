@@ -33,7 +33,7 @@ class LdapclientAd(LdapclientBase):
                 return entry['attributes']
 
         raise LdapclientEntryNotFound()
-    
+
     def get_max_pwd_age(self):
         response = self.ldapconn.search(self.base_dn, '(objectClass=domainDNS)', attributes=['maxPwdAge'])
         if response[0]:
@@ -42,7 +42,13 @@ class LdapclientAd(LdapclientBase):
             return None
         if not result:
             return None
-        return result[0]['attributes']['maxPwdAge']
+        try:
+            max_pwd_age = result[0]['attributes']['maxPwdAge'].total_seconds()
+            if max_pwd_age < 86400000000000:
+                return max_pwd_age
+        except:
+            pass
+        return None
 
     def get_group(self, group):
         # Escape group string to build the filter assertion:
@@ -160,8 +166,8 @@ class LdapclientAd(LdapclientBase):
             if extra_info:
                 pwd_changed_time = entry['attributes'].get('pwdLastSet', entry['attributes'].get('whenCreated', None))
                 expire = (entry['attributes']['userAccountControl'] & 0x10000 == 0) # DONT_EXPIRE_PASSWORD
-                if expire and max_pwd_age.total_seconds() < 86400000000000:
-                    expiry_date = pwd_changed_time + timedelta(seconds=max_pwd_age.total_seconds())
+                if expire and max_pwd_age:
+                    expiry_date = pwd_changed_time + timedelta(seconds=max_pwd_age)
                     user['password_expiration'] = int(expiry_date.timestamp())
                     user['expired'] = today > expiry_date
                 else:
