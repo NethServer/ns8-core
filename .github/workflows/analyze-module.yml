@@ -1,0 +1,26 @@
+name: Analyze module
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: ["Publish images"]
+    types:
+      - completed
+
+permissions:
+  packages: write
+  actions: read
+  contents: write
+  security-events: write
+
+jobs:
+  module:
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event.workflow_run.conclusion == '' }}
+    uses: NethServer/ns8-github-actions/.github/workflows/module-info.yml@v1
+  trivy:
+    needs: module
+    if: ${{ needs.module.outputs.release == 'stable' || needs.module.outputs.release == 'latest' || github.event_name == 'workflow_dispatch' }}
+    uses: NethServer/ns8-github-actions/.github/workflows/scan-with-trivy.yml@v1
+    with:
+      images: ${{ needs.module.outputs.images }}
+      severities: "HIGH,CRITICAL"
