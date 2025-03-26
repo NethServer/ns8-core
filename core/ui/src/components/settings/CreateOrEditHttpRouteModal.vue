@@ -227,7 +227,7 @@ export default {
       strip_prefix: false,
       ip_allowlist: "",
       ip_allowlist_str: "",
-      user_created: false,
+      user_created: true,
       loading: {
         setRoute: false,
       },
