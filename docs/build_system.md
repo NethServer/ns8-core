@@ -200,7 +200,7 @@ jobs:
     uses: NethServer/ns8-github-actions/.github/workflows/scan-with-trivy.yml@v1
     with:
       images: ${{ needs.module.outputs.images }}
-      severities: "HIGH,CRITICAL"
+      severity: "HIGH,CRITICAL"
 ```
 {% endraw %}
 
