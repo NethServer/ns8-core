@@ -3,7 +3,7 @@ name: Analyze module
 on:
   workflow_dispatch:
   workflow_run:
-    workflows: ["Publish images"]
+    workflows: ["core"]
     types:
       - completed
 
