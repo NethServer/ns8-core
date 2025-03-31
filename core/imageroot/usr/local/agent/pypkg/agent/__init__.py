@@ -726,6 +726,7 @@ def get_certificate(name):
         agent_id=resolve_agent_id("traefik@node"),
         action='get-certificate',
         data={ 'fqdn': name },
+        extra={'isNotificationHidden': True},
     )
     if response['exit_code'] != 0:
         raise Exception(f"{response['error']}")
