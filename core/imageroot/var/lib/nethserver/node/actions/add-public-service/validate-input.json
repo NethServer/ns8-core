@@ -7,6 +7,15 @@
         {
             "service": "smtp",
             "ports": [
+                "587/tcp"
+            ]
+        },
+        {
+            "service": "smtp",
+            "replace_ports": true,
+            "ports": [
+                "465/tcp",
+                "587/tcp",
                 "25/tcp"
             ]
         }
@@ -21,6 +30,11 @@
             "type": "string",
             "title": "Service name",
             "minLength": 1
+        },
+        "replace_ports": {
+            "type":"boolean",
+            "description": "If true, the provided list of ports replaces any existing configuration for the service. If false or omitted, the ports are added to the existing set.",
+            "default": false
         },
         "ports": {
             "type": "array",

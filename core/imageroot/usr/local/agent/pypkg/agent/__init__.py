@@ -421,13 +421,14 @@ def get_image_name_from_url(image_url):
     image_name, _ = image_nametag.replace('@', ':', 1).split(':', 1)
     return image_name
 
-def add_public_service(name, ports):
+def add_public_service(name, ports, replace_ports=False):
     node_id = os.environ['NODE_ID']
     response = agent.tasks.run(
         agent_id=f'node/{node_id}',
         action='add-public-service',
         data={
             'service': name,
+            'replace_ports': replace_ports,
             'ports': ports
         }
     )
