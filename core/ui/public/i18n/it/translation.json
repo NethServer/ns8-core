@@ -1343,7 +1343,7 @@
         "traefik_prefixes_option": "Traefik prefixes option",
         "attributes": "Attributi",
         "ip_allowlist_placeholder": "Es. 192.168.7.0/24",
-        "ip_allowlist": "Limitare l'accesso da",
+        "ip_allowlist": "Consenti l'accesso da (opzionale)",
         "automatic": "Automatico",
         "invalid_ipv4": "Indirizzo IPv4 non valido: {ip}",
         "restricted": "Accesso limitato",
