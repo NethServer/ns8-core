@@ -43,7 +43,8 @@ In `create-module`:
 ```python
 import os
 import agent
-agent.assert_exp(agent.add_public_service(os.environ['MODULE_ID'], ["80/tcp", "443/tcp"]))
+# Raise an exception if add_public_service() returns False
+agent.assert_exp(agent.add_public_service(os.environ['MODULE_ID'], ["9010/tcp", "9011/tcp"]), "Firewall service configuration has failed")
 ```
 
 In `destroy-module`:
@@ -51,5 +52,28 @@ In `destroy-module`:
 ```python
 import os
 import agent
-agent.assert_exp(agent.remove_public_service(os.environ['MODULE_ID']))
+# Ignore errors on service cleanup
+agent.remove_public_service(os.environ['MODULE_ID'])
+```
+
+Function `agent.add_public_service()` can be later invoked with additional
+ports, for example during an application update that implements a new
+public service. The given port list is _added_ to the existing one. For example:
+
+
+```python
+import os
+import agent
+
+agent.add_public_service(os.environ['MODULE_ID'], ["9012/tcp"])
+```
+
+If you want to completely replace the port list, set `replace_ports=True`,
+for example:
+
+```python
+import os
+import agent
+
+agent.add_public_service(os.environ['MODULE_ID'], ["9010/tcp","9012/tcp"], replace_ports=True)
 ```

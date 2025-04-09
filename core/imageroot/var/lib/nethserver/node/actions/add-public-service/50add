@@ -23,25 +23,49 @@
 import sys
 import json
 import agent
+import subprocess
 
 request = json.load(sys.stdin)
 name = request['service']
-ports = request['ports']
+new_ports = set(request['ports'])
 
 fw_cmd = ['firewall-cmd', '--permanent']
 
-# Create the service
-agent.run_helper(*fw_cmd, f'--new-service={name}').check_returncode()
-
-# Add the service to default zone
-agent.run_helper(*fw_cmd, f'--add-service={name}').check_returncode()
+try:
+    # Retrieve the current service ports
+    current_ports = set(subprocess.check_output(
+        fw_cmd + [f'--service={name}', '--get-ports'],
+        stderr=subprocess.DEVNULL,
+        text=True,
+    ).split())
+except subprocess.CalledProcessError as ex:
+    if ex.returncode == 101: # INVALID_SERVICE
+        print(agent.SD_INFO + f'Firewall public service "{name}" does not exist and will be created.', file=sys.stderr)
+        current_ports = set()
+        # Create the service
+        agent.run_helper(*fw_cmd, f'--new-service={name}').check_returncode()
+        # Add the service to default zone
+        agent.run_helper(*fw_cmd, f'--add-service={name}').check_returncode()
+    else:
+        raise ex
 
 # Add service ports
-port_cmd = [f'--service={name}']
-for port in ports:
-    port_cmd.append(f'--add-port={port}')
+port_add_cmd = [f'--service={name}']
+for port in new_ports.difference(current_ports):
+    port_add_cmd.append(f'--add-port={port}')
+if len(port_add_cmd) > 1:
+    agent.run_helper(*fw_cmd, *port_add_cmd).check_returncode()
 
-agent.run_helper(*fw_cmd, *port_cmd).check_returncode()
+# If asked, remove any current port not in the request
+port_remove_cmd = [f'--service={name}']
+if request.get('replace_ports'):
+    for port in current_ports.difference(new_ports):
+        port_remove_cmd.append(f'--remove-port={port}')
+    if len(port_remove_cmd) > 1:
+        agent.run_helper(*fw_cmd, *port_remove_cmd).check_returncode()
 
-# Apply the configuration
-agent.run_helper('firewall-cmd', '--reload').check_returncode()
+if len(port_add_cmd) > 1 or len(port_remove_cmd) > 1:
+    # Apply the configuration
+    agent.run_helper('firewall-cmd', '--reload').check_returncode()
+else:
+    print(agent.SD_INFO + f'Firewall public service "{name}" unchanged.', file=sys.stderr)
