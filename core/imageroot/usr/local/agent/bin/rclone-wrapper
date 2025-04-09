@@ -81,6 +81,9 @@ elif uscheme == "s3":
         rclone_env['RCLONE_S3_PROVIDER'] = 'Synology'
         rclone_env['RCLONE_S3_REGION'] = orepo.get("aws_default_region", extract_region_code(s3_endpoint, 0))
         rclone_env['RCLONE_S3_NO_CHECK_BUCKET'] = "1"
+    elif orepo['provider'] == 'generic-s3' and 'your-objectstorage.com' in s3_endpoint:
+        rclone_env['RCLONE_S3_PROVIDER'] = 'Other' # Hetzner
+        rclone_env['RCLONE_S3_REGION'] = orepo.get("aws_default_region", extract_region_code(s3_endpoint, 0))
     elif orepo['provider'] == 'generic-s3' and 'idrivee2' in s3_endpoint:
         rclone_env['RCLONE_S3_PROVIDER'] = 'IDrive'
         rclone_env['RCLONE_S3_NO_CHECK_BUCKET'] = "1"
