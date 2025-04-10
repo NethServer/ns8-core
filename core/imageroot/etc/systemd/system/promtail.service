@@ -1,5 +1,5 @@
 [Unit]
-Description=Promtail logs collector for Loki
+Description=Alloy (previously Promtail) logs collector for Loki
 After=redis.service
 
 [Service]
@@ -24,8 +24,7 @@ ExecStart=/usr/bin/podman run \
     --volume=./journal:/var/log/journal \
     --volume=./promtail:/etc/promtail:z \
     --volume=promtail-position:/var/lib/promtail:z \
-    ${PROMTAIL_IMAGE} \
-    -config.file=/etc/promtail/config.yml
+    ${PROMTAIL_IMAGE} run /etc/promtail/config.alloy
 ExecStop=/usr/bin/podman stop --ignore --cidfile %t/%N.cid -t 10
 ExecStopPost=/usr/bin/podman rm --ignore -f --cidfile %t/%N.cid
 PIDFile=%t/%N.pid

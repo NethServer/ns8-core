@@ -6,7 +6,6 @@
 #
 
 import agent
-import yaml
 import sys
 import os
 import pwd
@@ -31,7 +30,7 @@ if not client_list:
     print(agent.SD_ERR + "No client configuration found. Is Loki installed?", file=sys.stderr)
     sys.exit(1)
 
-relabel_configs = []
+relabel_rules = []
 
 # Parse /etc/subuid for later usage
 module_uid_ranges = dict()
@@ -74,13 +73,14 @@ for pwrecord in pwd.getpwall():
     # module_id is a Unix user, if _UID journal field matches the user
     # Unix uid or any of its subuids the journal record belongs to the
     # module.
-    relabel_configs.append({
-        # NOTE: default "action" is "replace"
-        "source_labels": ["__journal__uid"],
-        "regex": rxpat,
-        "replacement": module_id,
-        "target_label": "module_id",
-    })
+    relabel_rules.append(f"""
+    rule {{
+        source_labels = ["__journal__uid"]
+        regex         = "{rxpat}"
+        target_label  = "module_id"
+        replacement   = "{module_id}"
+    }}
+    """)
     print("Generating labeling configuration for " + module_id)
 
 # Iterate over rootfull modules, matching the module_id in AGENT_STATE_DIR
@@ -96,62 +96,69 @@ for rfpath in glob.glob('/var/lib/nethserver/*/state'):
 
     # If module_id is contained in SYSLOG_IDENTIFIER, CONTAINER_NAME
     # or _SYSTEMD_UNIT fields the journal record belongs to it.
-    relabel_configs.append({
-        # NOTE: default "action" is "replace"
-        "source_labels": [
-            "__journal__systemd_unit",
-            "__journal_syslog_identifier",
-            "__journal_container_name",
-        ],
-        "regex": '.*\\b' + module_id + '\\b.*', # match word boundaries (unanchored)
-        "replacement": module_id,
-        "target_label": "module_id",
-    })
-    print("Generating labeling configuration for " + module_id)
+    relabel_rules.append(f"""
+    rule {{
+        source_labels = ["__journal__systemd_unit", "__journal_syslog_identifier", "__journal_container_name"]
+        regex         = ".*\\b{module_id}\\b.*"
+        target_label  = "module_id"
+        replacement   = "{module_id}"
+    }}
+    """)
 
 # Work around log flooding from grafana/loki#7649
 # Drop "context canceled" messages from loki-server container
-relabel_configs.append({
-    "action": "drop",
-    "source_labels": ["__journal_syslog_identifier", "__journal_message"],
-    "regex": "loki-server;.*context canceled.*",
-})
+relabel_rules.append("""
+    rule {
+        source_labels = ["__journal_syslog_identifier", "__journal_message"]
+        regex         = "loki-server;.*context canceled.*"
+        action        = "drop"
+    }
+""")
 
 # Set label category=security for messages from sshd, PAM, Polkit, etc.
 # that are often written to /var/log/secure or equivalent.
-relabel_configs.append({
-    "source_labels": ["__journal_syslog_facility"],
-    "regex": "(4|10|13|14)", # RFC3164 Syslog facility codes for security events
-    "replacement": "security",
-    "target_label": "category",
-})
-
-# Configuration data. Will be converted to a YAML file:
-config = {
-    "server": {
-        "disable": True
-    },
-    "clients": client_list,
-    "scrape_configs": [{
-        "job_name": "journal",
-        "journal": {
-            "max_age": "12h",
-            "json": True,
-            "labels": {
-                "node_id": os.environ["NODE_ID"],
-            },
-        },
-        "relabel_configs": relabel_configs,
-    }],
-    "positions": {
-        "filename": "/var/lib/promtail/positions.yml",
-        "sync_period": "10s",
-        "ignore_invalid_yaml": True,
+# Regex matches RFC3164 Syslog facility codes for security events
+relabel_rules.append("""
+    rule {
+        source_labels = ["__journal_syslog_facility"]
+        regex         = "(4|10|13|14)"
+        target_label  = "category"
+        replacement   = "security"
     }
-}
+""")
+
+# Generate Alloy configuration
+alloy_config = f"""
+discovery.relabel "journal" {{
+    targets = []
+
+    {"".join(relabel_rules)}
+}}
+
+loki.source.journal "journal" {{
+    format_as_json = true
+    max_age        = "12h0m0s"
+    relabel_rules  = discovery.relabel.journal.rules
+    forward_to     = [loki.write.default.receiver]
+    labels         = {{
+        node_id = "{os.environ['NODE_ID']}",
+    }}
+}}
+
+loki.write "default" {{
+    endpoint {{
+        url = "{client_list[0]['url']}"
+
+        authorization {{
+            type        = "Bearer"
+            credentials = "{client_list[0]['bearer_token']}"
+        }}
+    }}
+    external_labels = {{}}
+}}
+"""
 
 # Move into promtail directory and write the file, preserving SELinux contexts
 os.chdir("promtail")
-with open("config.yml.tmp", "w") as ofile:
-    yaml.dump(config, ofile)
-os.rename("config.yml.tmp", "config.yml")
+with open("config.alloy", "w") as ofile:
+    ofile.write(alloy_config)
