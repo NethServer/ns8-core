@@ -150,7 +150,8 @@
         "no_node_eligible_for_instance_migration": "Nessun nodo è idoneo allo spostamento dell'app",
         "no_version_reason": {
             "core_version_too_low": "Aggiorna il core alla versione {core_min} o successiva per installare un'istanza di questa app",
-            "rootfull_certification_level_too_low": "Le app con privilegi amministrativi devono avere un livello di certificazione minimo di {certification_min}/5 per poter essere installate"
+            "rootfull_certification_level_too_low": "Le app con privilegi amministrativi devono avere un livello di certificazione minimo di {certification_min}/5 per poter essere installate",
+            "no_app_version": "Nessun rilascio stabile di {app_name} è disponibile nel repository '{app_repository}'"
         }
     },
     "nodes": {
