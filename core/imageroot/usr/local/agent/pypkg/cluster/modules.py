@@ -276,15 +276,24 @@ def list_available(rdb, skip_core_modules=False):
             omod["versions"] = list(filter(lambda v: _tag_is_stable(v["tag"]), omod["versions"]))
         # Check the min-core label compatibility:
         omod_core_compat_versions = list(filter(lambda v: _min_core_ok(v, leader_core_version), omod["versions"]))
-        if omod_core_compat_versions:
-            omod["versions"] = omod_core_compat_versions
-        else:
+        if not omod["versions"]:
+            # No stable versions at all
+            print(f"Application {omod['source']} has no stable versions.", file=sys.stderr)
+            omod["versions"] = []
+            omod["no_version_reason"] = {
+                "message": "no_app_version",
+                "params": {
+                    "app_name": omod['name'],
+                    "app_repository": omod.get("repository", "unknown"),
+                },
+            }
+        elif not omod_core_compat_versions:
             # There are no compatible versions because current core is too old
             try:
                 core_min_required = str(min(list(map(lambda mv: semver.Version.parse(mv['labels']['org.nethserver.min-core']), omod['versions']))))
             except:
                 core_min_required = "0.0.0"
-            print(agent.SD_WARNING + f"Application {omod['source']} has no version suitable for the installed Core {leader_core_version}. Minimum Core requirement is {core_min_required}.", file=sys.stderr)
+            print(f"Application {omod['source']} has no version suitable for the installed Core {leader_core_version}. Minimum Core requirement is {core_min_required}.", file=sys.stderr)
             omod["versions"] = []
             omod["no_version_reason"] = {
                 "message": "core_version_too_low",
@@ -293,6 +302,9 @@ def list_available(rdb, skip_core_modules=False):
                     "core_min": str(core_min_required),
                 },
             }
+        else:
+            omod["versions"] = omod_core_compat_versions
+
         omod["certification_level"] = _calc_certification_level(omod, bool(hsubscription))
         try:
             if skip_core_modules and 'core_module' in omod["versions"][0]['labels']['org.nethserver.flags']:
