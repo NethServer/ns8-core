@@ -9,6 +9,7 @@
             "ip_address": "10.5.4.2",
             "leader_public_key": "aoBydmHg2WWv5OqYM1ZegcCdC6dev+IHnoNv3ftNY2U=",
             "network": "10.5.4.0/24",
+            "leader_core_version": "3.7.0",
             "leader_ip_address": "10.5.4.1",
             "leader_endpoint": "fc1.example.com:55820"
         }
@@ -18,6 +19,7 @@
         "node_id",
         "ip_address",
         "network",
+        "leader_core_version",
         "leader_public_key",
         "leader_ip_address",
         "leader_endpoint"
@@ -39,6 +41,10 @@
             "title": "Cluster network address",
             "description": "The VPN network in CIDR notation used by the cluster",
             "$ref": "http://schema.nethserver.org/cluster.json#/definitions/ipv4-cidr"
+        },
+        "leader_core_version": {
+            "description": "Leader's core version string",
+            "type": "string"
         },
         "leader_public_key": {
             "title": "Leader VPN key",

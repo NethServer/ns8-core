@@ -197,6 +197,12 @@ cluster.grants.save_acls(rdb)
 rdb.publish('cluster/event/vpn-changed', json.dumps({"node_id":node_id}))
 
 #
+# Extract the core version string
+#
+core_env = agent.read_envfile('/etc/nethserver/core.env')
+_, leader_core_version = core_env.get('CORE_IMAGE', ':0.0.0').rsplit(":", 1)
+
+#
 # Return the new information to the caller
 #
 json.dump({
@@ -206,4 +212,5 @@ json.dump({
     "network": str(network), # required to set up route table
     "leader_ip_address": leader_ip_address, # required to rewrite /etc/hosts cluster-leader
     "leader_endpoint": leader_endpoint, # required to reach the VPN public endpoint
+    "leader_core_version": leader_core_version, # for compatibility checks
 }, sys.stdout)

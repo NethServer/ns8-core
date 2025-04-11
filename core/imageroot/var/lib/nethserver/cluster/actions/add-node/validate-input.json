@@ -5,11 +5,13 @@
     "description": "Input schema of the add-node action",
     "examples": [
         {
+            "core_version": "3.7.0",
             "endpoint": "",
             "node_pwh": "b12f4f5137c4c6b4ef2efd936b88119c4af8356d4e9c3a31a18cd4a88effc41d",
             "public_key": "XCVh3GCRqMcmIgpHhsbCL7Usm7Lm7Hb7bsS5LTSz/Dc="
         },
         {
+            "core_version": "3.7.0",
             "endpoint": "",
             "node_pwh": "b12f4f5137c4c6b4ef2efd936b88119c4af8356d4e9c3a31a18cd4a88effc41d",
             "public_key": "XCVh3GCRqMcmIgpHhsbCL7Usm7Lm7Hb7bsS5LTSz/Dc=",
@@ -23,6 +25,10 @@
         "endpoint"
     ],
     "properties": {
+        "core_version": {
+            "description": "Declared worker core version, necessary for a sanity check. It should be in Semver string",
+            "type":"string"
+        },
         "node_pwh": {
             "$ref": "http://schema.nethserver.org/cluster.json#/definitions/redis-pwh"
         },
