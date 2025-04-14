@@ -207,6 +207,8 @@
         "the_join_code_can_not_be_decoded": "Join code cannot be decoded",
         "the_join_code_is_not_correctly_encoded": "Join code is not correctly encoded",
         "the_join_code_cannot_be_parsed": "Join code cannot be parsed",
+        "core_version_mismatch": "Core version mismatch: cluster requires version {value}. Update the leader or reinstall this node with version {value}",
+        "public_key_matches_existing_node": "This node was already added to the cluster",
         "cluster_tls_verify_error": "TLS certificate of leader node is not valid",
         "cluster_auth_error": "Invalid response",
         "cluster_connection_error": "Failed to connect to the leader node at address {value}",
