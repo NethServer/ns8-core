@@ -1191,7 +1191,7 @@
         "enabled": "Ingeschakeld"
     },
     "error": {
-        "403": "Opdracht niet goedgekeurd",
+        "403": "Opdracht niet toegestaan",
         "fqdn_format": "Ongeldig FQDN formaat",
         "cannot_retrieve_cluster_tasks": "Ik kan geen cluster taken ophalen",
         "401": "Ongeldige authenticatie",
