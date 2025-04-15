@@ -51,7 +51,7 @@
                     })
                   "
                   v-model="replaceExistingApp"
-                  :disabled="!instanceToReplace"
+                  :disabled="!instanceToReplace || replaceExistingDisabled"
                   value="checkReplaceExistingApp"
                   class="mg-top-xlg"
                 />
@@ -211,6 +211,11 @@ export default {
       } else {
         return this.selectedInstance.installed_instance;
       }
+    },
+    replaceExistingDisabled() {
+      //check if the selected instance is not in an array ['loki']
+      const notAllowed = ["loki"];
+      return notAllowed.includes(this.selectedInstance.name) ? true : false;
     },
     nodesInfo() {
       const nodesInfo = {};
