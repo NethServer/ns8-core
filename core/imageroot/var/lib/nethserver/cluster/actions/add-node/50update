@@ -28,6 +28,7 @@ import agent.tasks
 import ipaddress
 import uuid
 import cluster.grants
+import semver
 
 # Action summary:
 # 1. allocate a VPN IP address for the node
@@ -42,6 +43,33 @@ agent.assert_exp(public_key)
 endpoint = request['endpoint']
 agent.assert_exp(type(endpoint) is str)
 flags = request.get('flags', [])
+worker_version = request.get('core_version', '0.0.0')
+
+#
+# Check if worker's version is compatible with leader's version
+#
+core_env = agent.read_envfile('/etc/nethserver/core.env')
+_, leader_version = core_env.get('CORE_IMAGE', ':0.0.0').rsplit(":", 1)
+
+try:
+    semver_leader_version = semver.parse_version_info(leader_version)
+    semver_worker_version = semver.parse_version_info(worker_version)
+except ValueError as ex:
+    # Sending a non-semver value disables the sanity check.
+    print(agent.SD_WARNING + "Core version check is disabled:", ex, file=sys.stderr)
+    semver_leader_version = semver.Version(0)
+    semver_worker_version = semver.Version(0)
+
+if semver_worker_version.prerelease == 'ns7':
+    # NS7 migration tool is always admitted.
+    print(f"NS7 migration tool wants to join the cluster", file=sys.stderr)
+elif (semver_leader_version.major, semver_leader_version.minor) == (semver_worker_version.major, semver_worker_version.minor):
+    pass # major.minor numbers are the same, worker is admitted.
+else:
+    agent.set_status('validation-failed')
+    print(agent.SD_ERR + f"add-node failed. Worker version {worker_version} must be compatible with {leader_version}.", file=sys.stderr)
+    json.dump([{'field':'core_version', 'parameter':'core_version', 'value': worker_version, 'leader_version': leader_version, 'error':'core_version_mismatch'}], fp=sys.stdout)
+    sys.exit(3)
 
 rdb = agent.redis_connect(privileged=True)
 
@@ -55,7 +83,7 @@ for pkey in rdb.scan_iter('node/*/vpn'):
     print(agent.SD_WARNING + f"The public key {public_key} is already used by node {xnode_id}", file=sys.stderr)
     agent.set_status('validation-failed')
     json.dump([{'field':'public_key', 'parameter':'public_key', 'error':'public_key_matches_existing_node', 'value': xnode_id}], fp=sys.stdout)
-    sys.exit(2)
+    sys.exit(4)
 
 #
 # Retrieve the leader VPN attributes, required by the caller to complete
@@ -206,4 +234,5 @@ json.dump({
     "network": str(network), # required to set up route table
     "leader_ip_address": leader_ip_address, # required to rewrite /etc/hosts cluster-leader
     "leader_endpoint": leader_endpoint, # required to reach the VPN public endpoint
+    "leader_core_version": leader_version, # for compatibility checks
 }, sys.stdout)
