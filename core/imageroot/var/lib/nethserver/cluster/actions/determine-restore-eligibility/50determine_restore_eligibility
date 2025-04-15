@@ -35,5 +35,6 @@ cluster.modules.decorate_with_installed(rdb, available)
 cluster.modules.decorate_with_install_destinations(rdb, available)
 json.dump({
     "image_url": original_environment['IMAGE_URL'],
+    "installed": available[0]["installed"],
     "install_destinations": available[0]["install_destinations"],
 }, fp=sys.stdout)
