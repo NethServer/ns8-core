@@ -5,30 +5,57 @@
     "description": "Output schema of the determine-restore-eligibility action",
     "examples": [
         {
-            "image_url": "ghcr.io/nethserver/ejabberd:1.0.1",
-            "install_destinations": [
-                {
-                    "node_id": 1,
-                    "instances": 0,
-                    "eligible": true,
-                    "reject_reason": null
-                },
-                {
-                    "node_id": 2,
-                    "instances": 1,
-                    "eligible": false,
-                    "reject_reason": {
-                        "message": "max_per_node_limit",
-                        "parameter": "1"
-                    }
-                }
-            ]
+          "image_url": "ghcr.io/nethserver/ejabberd:1.0.1",
+          "install_destinations": [
+            {
+              "node_id": 1,
+              "instances": 0,
+              "eligible": true,
+              "reject_reason": null
+            },
+            {
+              "node_id": 2,
+              "instances": 1,
+              "eligible": false,
+              "reject_reason": {
+                "message": "max_per_node_limit",
+                "parameter": "1"
+              }
+            }
+          ],
+          "installed": [
+            {
+              "digest": "sha256:08d2264c72ad9ba44a17162531dc02922ecd37352ed96b31b05fd0e6da7e6107",
+              "flags": ["rootless"],
+              "id": "mail3",
+              "logo": "apps/mail3/img/module_default_logo.87425d86.png",
+              "module": "ejabberd",
+              "node": "1",
+              "node_ui_name": "",
+              "source": "ghcr.io/nethserver/ejabberd",
+              "ui_name": "",
+              "version": "1.6.2"
+            },
+            {
+              "digest": "sha256:1b34bb4b0e29a2dc069272f1d752659bb6bd87b4969b44931167ab126a576187",
+              "flags": ["rootless"],
+              "id": "mail2",
+              "logo": "apps/mail2/img/module_default_logo.87425d86.png",
+              "module": "ejabberd",
+              "node": "2",
+              "node_ui_name": "",
+              "source": "ghcr.io/nethserver/ejabberd",
+              "ui_name": "",
+              "version": "1.6.1"
+            }
+          ]
         }
     ],
     "type": "object",
     "required": [
         "image_url",
-        "install_destinations"
+        "install_destinations",
+        "installed"
     ],
     "properties": {
         "image_url": {
@@ -76,6 +103,70 @@
                             "message",
                             "parameter"
                         ]
+                    }
+                }
+            }
+        },
+        "installed": {
+            "description": "Describe for a module, the number of instances already installed on the cluster. This is useful to understand if a module can be replaced on a node that already has an instance of the module.",
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": [
+                    "digest",
+                    "flags",
+                    "id",
+                    "logo",
+                    "module",
+                    "node",
+                    "node_ui_name",
+                    "source",
+                    "ui_name",
+                    "version"
+                ],
+                "properties": {
+                    "digest": {
+                        "type": "string",
+                        "description": "Module digest"
+                    },
+                    "flags": {
+                        "type": "array",
+                        "description": "Module flags",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "id": {
+                        "type": "string",
+                        "description": "Module identifier"
+                    },
+                    "logo": {
+                        "type": "string",
+                        "description": "Module logo"
+                    },
+                    "module": {
+                        "type": "string",
+                        "description": "Module name"
+                    },
+                    "node": {
+                        "type": "string",
+                        "description": "Node identifier"
+                    },
+                    "node_ui_name": {
+                        "type": "string",
+                        "description": "Node user interface name"
+                    },
+                    "source": {
+                        "type": "string",
+                        "description": "Module source"
+                    },
+                    "ui_name": {
+                        "type": "string",
+                        "description": "Module user interface name"
+                    },
+                    "version": {
+                        "type": "string",
+                        "description": "Module version"
                     }
                 }
             }
