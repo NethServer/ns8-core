@@ -239,6 +239,8 @@ func runAction(rdb *redis.Client, actionCtx context.Context, task *models.Task) 
 				}
 				doneChan = make(chan struct{}) // stop doneChan from being select()'ed
 			case <-time.After(pollingDuration):
+				// Extend context TTL while the task is running
+				rdb.Expire(ctx, "task/" + agentPrefix + "/" + task.ID + "/context", 12 * pollingDuration)
 				publishStatus(rdb, progressChannel, actionDescriptor)
 			}
 		}
@@ -275,6 +277,7 @@ func runAction(rdb *redis.Client, actionCtx context.Context, task *models.Task) 
 		pipe.Set(ctx, outputKey, actionOutput, taskExpireDuration)
 		pipe.Set(ctx, errorKey, actionError, taskExpireDuration)
 		pipe.Set(ctx, exitCodeKey, exitCode, taskExpireDuration)
+		pipe.Expire(ctx, "task/" + agentPrefix + "/" + task.ID + "/context", taskExpireDuration)
 		publishStatus(pipe, progressChannel, actionDescriptor)
 		return nil
 	})
@@ -401,7 +404,7 @@ func readTasks(rdb *redis.Client, brpopCtx context.Context, taskCh chan models.T
 		}
 
 		// Store the task as context
-		setErr := rdb.Set(ctx, "task/" + agentPrefix + "/" + task.ID + "/context", obscureTaskInput(popResult[1]), taskExpireDuration).Err()
+		setErr := rdb.Set(ctx, "task/" + agentPrefix + "/" + task.ID + "/context", obscureTaskInput(popResult[1]), 12 * pollingDuration).Err()
 		if setErr != nil {
 			log.Print(SD_ERR+"Context set error: ", setErr)
 		}
