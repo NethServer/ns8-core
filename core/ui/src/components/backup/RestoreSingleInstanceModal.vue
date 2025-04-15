@@ -107,7 +107,10 @@
             class="mg-top-xlg"
           >
             <template v-for="(nodeInfoMessage, nodeId) in nodesInfo">
-              <template :slot="`node-${nodeId}`">
+              <template
+                v-if="disabledNodes.includes(parseInt(nodeId))"
+                :slot="`node-${nodeId}`"
+              >
                 {{ nodeInfoMessage }}
               </template>
             </template>
@@ -158,6 +161,7 @@ export default {
       selectedSnapshot: null,
       replaceExistingApp: false,
       installDestinations: [],
+      installed: [],
       loading: {
         readBackupRepositories: true,
         restoreModule: false,
@@ -245,9 +249,25 @@ export default {
       return nodesInfo;
     },
     disabledNodes() {
-      return this.installDestinations
-        .filter((nodeInfo) => !nodeInfo.eligible)
-        .map((nodeInfo) => nodeInfo.node_id);
+      // If replaceExistingApp is true, filter out the node where the instance is installed and remove it from the list (we replace the module by the backup)
+      if (this.replaceExistingApp) {
+        // find the node id of the instance to be replaced by instanceToReplace (eg mail2)
+        const restoreNodeId =
+          this.installed
+            .filter((app) => app.id === this.instanceToReplace)
+            .map((app) => parseInt(app.node))[0] || null;
+        return this.installDestinations
+          .filter(
+            (nodeInfo) =>
+              !nodeInfo.eligible && nodeInfo.node_id !== restoreNodeId
+          )
+          .map((nodeInfo) => nodeInfo.node_id);
+      } else {
+        // Otherwise, filter and map the ineligible nodes
+        return this.installDestinations
+          .filter((nodeInfo) => !nodeInfo.eligible)
+          .map((nodeInfo) => nodeInfo.node_id);
+      }
     },
   },
   watch: {
@@ -522,6 +542,7 @@ export default {
     },
     determineRestoreEligibilityCompleted(taskContext, taskResult) {
       this.installDestinations = taskResult.output.install_destinations;
+      this.installed = taskResult.output.installed;
       this.loading.determineRestoreEligibility = false;
     },
   },
