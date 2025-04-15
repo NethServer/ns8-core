@@ -78,7 +78,9 @@
         "not_valid_gpg_file": "Invalid GPG file",
         "skip_apps_restore": "Skip apps restore",
         "apps_restoration": "Apps restoration",
-        "select_apps_to_restore_description": "Your apps will be restored using the latest backup. If you need to restore certain apps from an earlier backup, you can do so later by going to '@:backup.title > @:backup.restore_app'"
+        "select_apps_to_restore_description": "Your apps will be restored using the latest backup. If you need to restore certain apps from an earlier backup, you can do so later by going to '@:backup.title > @:backup.restore_app'",
+        "core_version_mismatch": "Core version mismatch: cluster requires version {value}. Update the leader or reinstall this node with version {value}",
+        "public_key_matches_existing_node": "This node was already added to the cluster"
     },
     "backup": {
         "cluster": "Local storage",

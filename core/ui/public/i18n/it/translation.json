@@ -1091,7 +1091,9 @@
         "select_apps_to_restore_description": "Le tue app saranno ripristinate utilizzando il backup più recente. Se è necessario ripristinare alcune applicazioni da un backup precedente, è possibile farlo in seguito andando alla pagina '@:backup.title > @:backup.restore_app'",
         "apps_restoration_multi_node_description": "Le app non possono essere ripristinate automaticamente perché il cluster originale era composto da più nodi. Sarà possibile ripristinare manualmente le app accedendo a '@:backup.title > @:backup.restore_app'",
         "apps_restoration_single_node_description": "È possibile scegliere quali app ripristinare nel prossimo step, dopo che il cluster sarà stato ripristinato.",
-        "apps_restoration": "Ripristino applicazioni"
+        "apps_restoration": "Ripristino applicazioni",
+        "core_version_mismatch": "Versione core errata: il cluster richiede la versione {value}. Aggiorna il leader o reinstalla questo nodo con la versione {value}",
+        "public_key_matches_existing_node": "Questo nodo è stato già aggiunto al cluster"
     },
     "account_provider": {
         "title": "Account provider"
