@@ -78,7 +78,9 @@
         "not_valid_gpg_file": "Ongeldig GPG bestand",
         "skip_apps_restore": "Herstel apps overslaan",
         "apps_restoration": "Apps herstel",
-        "select_apps_to_restore_description": "Je apps worden hersteld met de nieuwste back-up. Als je bepaalde apps moet herstellen van een eerdere back-up. Dit kun je doen door te gaan naar '@:backup.title > @:backup.restore_app'"
+        "select_apps_to_restore_description": "Je apps worden hersteld met de nieuwste back-up. Als je bepaalde apps moet herstellen van een eerdere back-up. Dit kun je doen door te gaan naar '@:backup.title > @:backup.restore_app'",
+        "public_key_matches_existing_node": "This node was already added to the cluster",
+        "core_version_mismatch": "Core version mismatch: cluster requires version {value}. Update the leader or reinstall this node with version {value}"
     },
     "action": {
         "remove-favorite": "Favoriet verwijderen",

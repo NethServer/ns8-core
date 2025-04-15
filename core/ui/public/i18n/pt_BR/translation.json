@@ -345,7 +345,9 @@
         "select_apps_to_restore_description": "Your apps will be restored using the latest backup. If you need to restore certain apps from an earlier backup, you can do so later by going to the '@:backup.title' page",
         "apps_restoration_multi_node_description": "Apps cannot be restored automatically because the original cluster consisted of multiple nodes. You can manually restore apps later by going to '@:backup.title > @:backup.restore_app'",
         "apps_restoration_single_node_description": "You can choose which apps to restore in the next step, after the cluster has been restored.",
-        "apps_restoration": "Apps restoration"
+        "apps_restoration": "Apps restoration",
+        "public_key_matches_existing_node": "This node was already added to the cluster",
+        "core_version_mismatch": "Core version mismatch: cluster requires version {value}. Update the leader or reinstall this node with version {value}"
     },
     "password": {
         "uppercase_letter": "Uppercase letter",
