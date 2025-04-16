@@ -44,7 +44,7 @@
             </cv-row>
             <cv-row>
               <cv-column>
-                <cv-checkbox
+                <NsCheckbox
                   :label="
                     $t('backup.replace_existing_app', {
                       app: instanceToReplace,
@@ -54,7 +54,33 @@
                   :disabled="!instanceToReplace || replaceExistingDisabled"
                   value="checkReplaceExistingApp"
                   class="mg-top-xlg"
-                />
+                  tooltipAlignment="start"
+                  tooltipDirection="right"
+                >
+                  <template slot="tooltip">
+                    <div
+                      v-if="
+                        selectedInstance &&
+                        instanceToReplace &&
+                        replaceExistingDisabled
+                      "
+                    >
+                      {{
+                        $t(
+                          "backup.replace_existing_app_is_not_available_tooltip"
+                        )
+                      }}
+                    </div>
+                    <div v-else-if="!selectedInstance">
+                      {{
+                        $t("backup.replace_existing_app_select_an_app_tooltip")
+                      }}
+                    </div>
+                    <div v-else>
+                      {{ $t("backup.replace_existing_app_tooltip") }}
+                    </div>
+                  </template>
+                </NsCheckbox>
               </cv-column>
             </cv-row>
           </cv-grid>
@@ -214,7 +240,7 @@ export default {
     },
     replaceExistingDisabled() {
       //check if the selected instance is not in an array ['loki']
-      const notAllowed = ["loki", "mail", "ejabberd","nethvoice-proxy"];
+      const notAllowed = ["loki", "mail", "ejabberd", "nethvoice-proxy"];
       return notAllowed.includes(this.selectedInstance.name) ? true : false;
     },
     nodesInfo() {
