@@ -35,7 +35,7 @@ podman build -t ns8-ui-lib-dev .
 Project setup:
 
 ```
-podman run -ti -v $(pwd):/app:Z --name ns8-ui-lib --replace ns8-ui-lib-dev npm run install
+podman run -ti -v $(pwd):/app:Z --name ns8-ui-lib --replace ns8-ui-lib-dev npm install
 ```
 
 Compile and minify for production:
@@ -62,7 +62,7 @@ Tarball generation is useful for testing a development or testing version of NS8
   - `npm run build`: compile and minify for production
   - `npm run build-pack`: create a tarball
 
-Tarball generation is useful for testing test a development or pre-release version of ns8-ui-lib. To import the generated tarball into another Node project (e.g. `ns8-core` or another NS8 module), see [Import development or testing version](#import-development-or-testing-version).
+Tarball generation is useful for testing a development or pre-release version of ns8-ui-lib. To import the generated tarball into another Node project (e.g. `ns8-core` or a NS8 module), see [Import development or testing version](#import-development-or-testing-version).
 
 Dev container configuration is contained inside `.devcontainer/devcontainer.json`.
 
@@ -75,7 +75,7 @@ Developing NS8 UI library inside a container is the recommended way, but if you 
 - `npm run build`: compile and minify for production
 - `npm run build-pack`: create a tarball
 
-Tarball generation is useful for testing test a development or pre-release version of ns8-ui-lib. To import the generated tarball into another Node project (e.g. `ns8-core` or a NS8 module), see [Import development or testing version](#import-development-or-testing-version).
+Tarball generation is useful for testing a development or pre-release version of ns8-ui-lib. To import the generated tarball into another Node project (e.g. `ns8-core` or a NS8 module), see [Import development or testing version](#import-development-or-testing-version).
 
 ## Release a new version
 
