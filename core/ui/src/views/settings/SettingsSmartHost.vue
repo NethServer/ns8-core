@@ -458,7 +458,7 @@ export default {
           extra: {
             title: this.$t("action." + taskAction),
             eventId,
-            isNotificationHidden: true,
+            isNotificationHidden: false,
           },
         })
       );
