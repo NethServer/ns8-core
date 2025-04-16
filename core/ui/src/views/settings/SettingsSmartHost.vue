@@ -398,17 +398,22 @@ export default {
       this.loading.setSmarthost = true;
 
       const taskAction = "set-smarthost";
+      const eventId = this.getUuid();
 
       // register to task completion
-      this.$root.$once(taskAction + "-completed", this.setSmarthostCompleted);
-      // register to task error
-      this.$root.$once(taskAction + "-aborted", this.setSmarthostAborted);
       this.$root.$once(
-        taskAction + "-validation-failed",
+        `${taskAction}-completed-${eventId}`,
+        this.setSmarthostCompleted
+      );
+      // register to task error
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.setSmarthostAborted
+      );
+      this.$root.$once(
+        `${taskAction}-validation-failed-${eventId}`,
         this.setSmarthostValidationFailed
       );
-      // register to task completion
-      this.$root.$once(taskAction + "-completed", this.setSmarthostCompleted);
 
       let data = {};
       if (!this.enabled) {
@@ -452,6 +457,7 @@ export default {
           data: data,
           extra: {
             title: this.$t("action." + taskAction),
+            eventId,
             isNotificationHidden: true,
           },
         })
