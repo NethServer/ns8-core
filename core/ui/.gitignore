@@ -37,3 +37,6 @@ public/apps/*
 
 # Development configuration file
 public/config/config.development.js
+
+# Output of 'npm pack'
+*.tgz
