@@ -43,6 +43,9 @@
             :invalid-message="$t(error.backblaze.b2_account_key)"
             :disabled="loading.alterBackupRepository"
             ref="b2_account_key"
+            :type="'password'"
+            :password-hide-label="$t('password.hide_password')"
+            :password-show-label="$t('password.show_password')"
           >
           </cv-text-input>
         </template>
@@ -69,6 +72,9 @@
             v-model.trim="aws.aws_secret_access_key"
             :invalid-message="$t(error.aws.aws_secret_access_key)"
             :disabled="loading.alterBackupRepository"
+            :type="'password'"
+            :password-hide-label="$t('password.hide_password')"
+            :password-show-label="$t('password.show_password')"
             ref="aws_secret_access_key"
           >
           </cv-text-input>
@@ -111,9 +117,27 @@
           ></cv-text-input>
         </template>
         <!-- generic s3 -->
-        <!-- <template v-if="repository.provider == 'genericS3'">
-          generic s3 ////
-        </template> -->
+        <template v-if="repository.provider == 'generic-s3'">
+          <cv-text-input
+            :label="$t('backup.genericS3_access_key_id')"
+            v-model.trim="genericS3.aws_access_key_id"
+            :invalid-message="$t(error.genericS3.aws_access_key_id)"
+            :disabled="loading.alterBackupRepository"
+            ref="genericS3_access_key_id"
+          >
+          </cv-text-input>
+          <cv-text-input
+            :label="$t('backup.genericS3_secret_access_key')"
+            v-model.trim="genericS3.aws_secret_access_key"
+            :invalid-message="$t(error.genericS3.aws_secret_access_key)"
+            :disabled="loading.alterBackupRepository"
+            :type="'password'"
+            :password-hide-label="$t('password.hide_password')"
+            :password-show-label="$t('password.show_password')"
+            ref="genericS3_secret_access_key"
+          >
+          </cv-text-input>
+        </template>
         <!-- azure -->
         <!-- <template v-if="repository.provider == 'azure'"> azure //// </template> -->
         <!-- //// handle ALL providers -->
@@ -169,7 +193,10 @@ export default {
         aws_default_region: "",
         aws_secret_access_key: "",
       },
-      genericS3: {},
+      genericS3: {
+        aws_access_key_id: "",
+        aws_secret_access_key: "",
+      },
       azure: {},
       cluster: {},
       smb: {
@@ -194,7 +221,10 @@ export default {
           aws_default_region: "",
           aws_secret_access_key: "",
         },
-        genericS3: {},
+        genericS3: {
+          aws_access_key_id: "",
+          aws_secret_access_key: "",
+        },
         azure: {},
         cluster: {},
         smb: {
@@ -214,7 +244,6 @@ export default {
         this.$nextTick(() => {
           this.clearErrors();
           this.name = this.repository.name;
-
           switch (this.repository.provider) {
             case "backblaze":
               this.backblaze.b2_account_id =
@@ -228,6 +257,12 @@ export default {
               this.aws.aws_default_region =
                 this.repository.parameters.aws_default_region;
               this.aws.aws_secret_access_key =
+                this.repository.parameters.aws_secret_access_key;
+              break;
+            case "generic-s3":
+              this.genericS3.aws_access_key_id =
+                this.repository.parameters.aws_access_key_id;
+              this.genericS3.aws_secret_access_key =
                 this.repository.parameters.aws_secret_access_key;
               break;
             case "smb":
@@ -255,6 +290,11 @@ export default {
             aws_default_region: this.aws.aws_default_region,
             aws_access_key_id: this.aws.aws_access_key_id,
             aws_secret_access_key: this.aws.aws_secret_access_key,
+          };
+        case "generic-s3":
+          return {
+            aws_access_key_id: this.genericS3.aws_access_key_id,
+            aws_secret_access_key: this.genericS3.aws_secret_access_key,
           };
         case "azure":
           return {
@@ -422,8 +462,39 @@ export default {
       // clear errors
       this.error.name = "";
       this.error.repoConnection = "";
-      console.error("not implemented");
-      return false;
+
+      this.error.genericS3.aws_access_key_id = "";
+      this.error.genericS3.aws_secret_access_key = "";
+
+      let isValidationOk = true;
+
+      if (!this.genericS3.aws_access_key_id) {
+        this.error.genericS3.aws_access_key_id = "common.required";
+
+        if (isValidationOk) {
+          this.focusElement("genericS3_access_key_id");
+          isValidationOk = false;
+        }
+      }
+
+      if (!this.genericS3.aws_secret_access_key) {
+        this.error.genericS3.aws_secret_access_key = "common.required";
+
+        if (isValidationOk) {
+          this.focusElement("genericS3_secret_access_key");
+          isValidationOk = false;
+        }
+      }
+
+      if (!this.name) {
+        this.error.name = "common.required";
+
+        if (isValidationOk) {
+          this.focusElement("name");
+          isValidationOk = false;
+        }
+      }
+      return isValidationOk;
     },
     validateAlterAzureRepository() {
       // clear errors
@@ -458,7 +529,7 @@ export default {
           return this.validateAlterAzureRepository();
         case "aws":
           return this.validateAmazonS3Repository();
-        case "genericS3":
+        case "generic-s3":
           return this.validateAlterGenericS3Repository();
         case "smb":
           return this.validateAlterSambaRepository();
