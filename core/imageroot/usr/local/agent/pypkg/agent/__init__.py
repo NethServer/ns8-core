@@ -606,7 +606,8 @@ def bind_user_domains(domain_list, check=False):
         action='bind-user-domains',
         data={
             'domains': domain_list,
-        }
+        },
+        extra={'isNotificationHidden': True},
     )
     if check:
         assert_exp(response['exit_code'] == 0)
