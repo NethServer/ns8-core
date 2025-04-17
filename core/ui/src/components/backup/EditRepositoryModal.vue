@@ -139,8 +139,27 @@
           </cv-text-input>
         </template>
         <!-- azure -->
-        <!-- <template v-if="repository.provider == 'azure'"> azure //// </template> -->
-        <!-- //// handle ALL providers -->
+        <template v-if="repository.provider == 'azure'">
+          <cv-text-input
+            :label="$t('backup.azure_account_name')"
+            v-model.trim="azure.azure_account_name"
+            :invalid-message="$t(error.azure.azure_account_name)"
+            :disabled="loading.alterBackupRepository"
+            ref="azure_account_name"
+          >
+          </cv-text-input>
+          <cv-text-input
+            :label="$t('backup.azure_account_key')"
+            v-model.trim="azure.azure_account_key"
+            :invalid-message="$t(error.azure.azure_account_key)"
+            :disabled="loading.alterBackupRepository"
+            :type="'password'"
+            :password-hide-label="$t('password.hide_password')"
+            :password-show-label="$t('password.show_password')"
+            ref="azure_account_key"
+          >
+          </cv-text-input>
+        </template>
         <cv-text-input
           :label="$t('backup.repository_name')"
           v-model.trim="name"
@@ -197,7 +216,10 @@ export default {
         aws_access_key_id: "",
         aws_secret_access_key: "",
       },
-      azure: {},
+      azure: {
+        azure_account_name: "",
+        azure_account_key: "",
+      },
       cluster: {},
       smb: {
         smb_host: "",
@@ -225,7 +247,10 @@ export default {
           aws_access_key_id: "",
           aws_secret_access_key: "",
         },
-        azure: {},
+        azure: {
+          azure_account_name: "",
+          azure_account_key: "",
+        },
         cluster: {},
         smb: {
           smb_host: "",
@@ -271,7 +296,12 @@ export default {
               this.smb.smb_user = this.repository.parameters.smb_user;
               this.smb.smb_pass = this.repository.parameters.smb_pass;
               break;
-            //// handle ALL providers
+            case "azure":
+              this.azure.azure_account_name =
+                this.repository.parameters.azure_account_name;
+              this.azure.azure_account_key =
+                this.repository.parameters.azure_account_key;
+              break;
           }
         });
       }
@@ -298,8 +328,8 @@ export default {
           };
         case "azure":
           return {
-            azure_account_name: "",
-            azure_account_key: "",
+            azure_account_name: this.azure.azure_account_name,
+            azure_account_key: this.azure.azure_account_key,
           };
         case "cluster":
           return {};
@@ -500,8 +530,39 @@ export default {
       // clear errors
       this.error.name = "";
       this.error.repoConnection = "";
-      console.error("not implemented");
-      return false;
+
+      this.error.azure.azure_account_name = "";
+      this.error.azure.azure_account_key = "";
+
+      let isValidationOk = true;
+
+      if (!this.azure.azure_account_name) {
+        this.error.azure.azure_account_name = this.$t("common.required");
+
+        if (isValidationOk) {
+          this.focusElement("azure_account_name");
+          isValidationOk = false;
+        }
+      }
+
+      if (!this.azure.azure_account_key) {
+        this.error.azure.azure_account_key = this.$t("common.required");
+
+        if (isValidationOk) {
+          this.focusElement("azure_account_key");
+          isValidationOk = false;
+        }
+      }
+
+      if (!this.name) {
+        this.error.name = this.$t("common.required");
+
+        if (isValidationOk) {
+          this.focusElement("name");
+          isValidationOk = false;
+        }
+      }
+      return isValidationOk;
     },
     validateAlterClusterRepository() {
       // clear errors
