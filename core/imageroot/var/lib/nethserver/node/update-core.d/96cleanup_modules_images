@@ -1,0 +1,79 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2025 Nethesis S.r.l.
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
+
+# This script is used to clean up obsolete images in NethServer modules.
+# It compares the images present in each module with the expected versions
+# defined in the core.env file. If an image is not in the expected version,
+# it will be marked for deletion.
+
+import subprocess
+import re
+import sys
+
+def run_command(*args):
+    """
+    Executes a command safely by passing arguments as a list.
+    """
+    result = subprocess.run(args, capture_output=True, text=True)
+    return result.stdout.strip()
+
+def parse_modules():
+    """
+    Retrieves the list of modules using the `runagent -l` command.
+    """
+    output = run_command("runagent", "-l")
+    return output.splitlines()
+
+def parse_images(module):
+    """
+    Retrieves the list of images for a specific module using `runagent -m <module> podman images`.
+    """
+    output = run_command("runagent", "-m", module, "podman", "images")
+    lines = output.splitlines()[1:]  # skip header
+    images = []
+    for line in lines:
+        parts = re.split(r'\s{2,}', line.strip())
+        if len(parts) >= 2:
+            repo, tag = parts[0], parts[1]
+            images.append((repo, tag))
+    return images
+
+def parse_core_env(path="/etc/nethserver/core.env"):
+    """
+    Parses the core.env file to retrieve the expected versions of images.
+    """
+    expected_versions = {}
+    with open(path) as f:
+        for line in f:
+            match = re.search(r'=(.+)', line)
+            if match:
+                full = match.group(1)
+                if ':' in full:
+                    repo, tag = full.rsplit(':', 1)
+                    expected_versions[repo] = tag
+    return expected_versions
+
+def delete_obsolete_images(module, images, expected_versions):
+    """
+    Deletes images that are not in the expected versions.
+    """
+    for repo, tag in images:
+        if repo in expected_versions:
+            if tag != expected_versions[repo]:
+                full = f"{repo}:{tag}"
+                print(f"[{module}] Deleting obsolete image : {full}", file=sys.stderr)
+                run_command("runagent", "-m", module, "podman", "rmi", full)
+        else:
+            # do nothing if the repo is not in expected_versions
+            print(f"[{module}] Image {repo} skipping deletion.", file=sys.stderr)
+            continue
+
+expected_versions = parse_core_env()
+modules = parse_modules()
+for module in modules:
+    images = parse_images(module)
+    delete_obsolete_images(module, images, expected_versions)
