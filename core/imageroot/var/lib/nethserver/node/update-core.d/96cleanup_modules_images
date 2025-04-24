@@ -17,8 +17,14 @@ import sys
 def run_command(*args):
     """
     Executes a command safely by passing arguments as a list.
+    Raises an exception if the command fails.
     """
     result = subprocess.run(args, capture_output=True, text=True)
+    if result.returncode != 0:
+        # Log the error to stderr and raise an exception
+        error_message = f"Command {' '.join(args)} failed with return code {result.returncode}: {result.stderr.strip()}"
+        print(error_message, file=sys.stderr)
+        raise subprocess.CalledProcessError(result.returncode, args, output=result.stdout, stderr=result.stderr)
     return result.stdout.strip()
 
 def parse_modules():
@@ -42,10 +48,11 @@ def parse_images(module):
             images.append((repo, tag))
     return images
 
-def parse_core_env(path="/etc/nethserver/core.env"):
+def parse_core_env():
     """
     Parses the core.env file to retrieve the expected versions of images.
     """
+    path="/etc/nethserver/core.env"
     expected_versions = {}
     with open(path) as f:
         for line in f:
@@ -66,14 +73,21 @@ def delete_obsolete_images(module, images, expected_versions):
             if tag != expected_versions[repo]:
                 full = f"{repo}:{tag}"
                 print(f"[{module}] Deleting obsolete image : {full}", file=sys.stderr)
-                run_command("runagent", "-m", module, "podman", "rmi", full)
+                try:
+                    run_command("runagent", "-m", module, "podman", "rmi", full)
+                except subprocess.CalledProcessError as e:
+                    print(f"[{module}] Failed to delete image {full}: {e.stderr.strip()}", file=sys.stderr)
         else:
-            # do nothing if the repo is not in expected_versions
+            # Log that the image is being skipped
             print(f"[{module}] Image {repo} skipping deletion.", file=sys.stderr)
-            continue
 
-expected_versions = parse_core_env()
-modules = parse_modules()
-for module in modules:
-    images = parse_images(module)
-    delete_obsolete_images(module, images, expected_versions)
+# Main script logic
+try:
+    expected_versions = parse_core_env()
+    modules = parse_modules()
+    for module in modules:
+        images = parse_images(module)
+        delete_obsolete_images(module, images, expected_versions)
+except Exception as e:
+    print(f"An error occurred: {str(e)}", file=sys.stderr)
+    sys.exit(1)
