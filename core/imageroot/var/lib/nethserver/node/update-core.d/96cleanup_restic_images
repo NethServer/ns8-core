@@ -1,0 +1,21 @@
+#!/usr/bin/bash
+
+#
+# Copyright (C) 2025 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+# This script is used to clean up all restic images on the system.
+
+# The last restic image is still used by the node agent and cannot be removed, we discard the warning
+# when trying to remove it. This image is still not used by the backup and not downloaded by the agent.
+# Due to different podman versions, we cannot filter restic by tags, so we remove all restic images
+
+for module in $(runagent -l | grep -v cluster); do
+    runagent -m "${module}" bash -c '
+        podman images -n \
+            --filter=reference=ghcr.io/nethserver/restic \
+            --format="{{.Id}}" | \
+        xargs -r -- podman rmi -i 2>/dev/null || :
+    '
+done
