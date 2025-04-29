@@ -83,7 +83,7 @@ for unit in units:
 
 status["images"] = []
 try:
-    images = subprocess.run(["podman", "image", "list", "--format", "{{index .Names 0}},{{.Size}},{{.CreatedAt}}"], capture_output=True, text=True, check=True)
+    images = subprocess.run(["podman", "image", "list", "--filter", "dangling=false", "--format", "{{index .Names 0}},{{.Size}},{{.CreatedAt}}"], capture_output=True, text=True, check=True)
     for i in images.stdout.split("\n"):
         # skip empty lines
         if not i:
