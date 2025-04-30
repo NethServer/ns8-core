@@ -18,7 +18,7 @@
     "@carbon/vue": "^2.40.0",
     "@nethserver/ns8-ui-lib": "^1.2.1",
     "await-to-js": "^3.0.0",
-    "axios": "^0.21.2",
+    "axios": "^0.30.0",
     "carbon-components": "^10.41.0",
     "core-js": "^3.6.5",
     "d3": "^7.1.1",
