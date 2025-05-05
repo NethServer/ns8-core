@@ -99,7 +99,7 @@ for rfpath in glob.glob('/var/lib/nethserver/*/state'):
     relabel_rules.append(f"""
     rule {{
         source_labels = ["__journal__systemd_unit", "__journal_syslog_identifier", "__journal_container_name"]
-        regex         = ".*\\b{module_id}\\b.*"
+        regex         = ".*\\\\b{module_id}\\\\b.*"
         target_label  = "module_id"
         replacement   = "{module_id}"
     }}

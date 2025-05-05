@@ -22,9 +22,9 @@ ExecStart=/usr/bin/podman run \
     --detach \
     --volume=/etc/machine-id:/etc/machine-id \
     --volume=./journal:/var/log/journal \
-    --volume=./promtail:/etc/promtail:z \
-    --volume=promtail-position:/var/lib/promtail:z \
-    ${PROMTAIL_IMAGE} run /etc/promtail/config.alloy
+    --volume=./promtail:/etc/alloy:z \
+    --volume=alloy-data:/var/lib/alloy/data:z \
+    ${PROMTAIL_IMAGE}
 ExecStop=/usr/bin/podman stop --ignore --cidfile %t/%N.cid -t 10
 ExecStopPost=/usr/bin/podman rm --ignore -f --cidfile %t/%N.cid
 PIDFile=%t/%N.pid
