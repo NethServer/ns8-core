@@ -104,6 +104,20 @@
         <NsTile
           :light="true"
           kind="clickable"
+          @click="goTo('/settings/metrics')"
+        >
+          <div class="metrics-tile-content">
+            <Dashboard32 />
+            <h6 class="metrics-tile-title">
+              {{ $t("settings_metrics.title") }}
+            </h6>
+          </div>
+        </NsTile>
+      </cv-column>
+      <cv-column :md="4" :xlg="4">
+        <NsTile
+          :light="true"
+          kind="clickable"
           @click="goTo('/settings/system-logs')"
           :icon="Catalog32"
         >
@@ -121,9 +135,16 @@ import {
   IconService,
   PageTitleService,
 } from "@nethserver/ns8-ui-lib";
+import Dashboard32 from "@carbon/icons-vue/es/dashboard/32";
 
 export default {
   name: "Settings",
+  components: {
+    Dashboard32,
+  },
+  data() {
+    return {};
+  },
   mixins: [UtilService, IconService, QueryParamService, PageTitleService],
   pageTitle() {
     return this.$t("settings.title");
@@ -145,3 +166,12 @@ export default {
   },
 };
 </script>
+<style scoped lang="scss">
+@import "../../styles/carbon-utils";
+.metrics-tile-content {
+  text-align: center;
+}
+.metrics-tile-title {
+  margin-top: 10px;
+}
+</style>
