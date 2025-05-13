@@ -428,6 +428,7 @@ func BasicAuthModule(c *gin.Context) {
 	}
 
 	// response
+	c.Header("X-Auth-User", username)
 	c.JSON(http.StatusOK, structs.Map(response.StatusOK{
 		Code:    200,
 		Message: "basic auth ok",
