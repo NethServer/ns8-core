@@ -24,6 +24,24 @@
       <cv-column class="subpage-title">
         <h3>{{ $t("smarthost.title") }}</h3>
       </cv-column>
+      <cv-column :md="4" :xlg="6">
+        <div class="page-toolbar">
+          <cv-tooltip
+            alignment="center"
+            direction="left"
+            :tip="$t('smarthost.alert_notifications_tooltip')"
+          >
+            <NsButton
+              kind="tertiary"
+              size="field"
+              :icon="ArrowRight20"
+              class="subpage-toolbar-item"
+              @click="goToAlertNotifications()"
+              >{{ $t("smarthost.open_alert_notifications") }}
+            </NsButton>
+          </cv-tooltip>
+        </div>
+      </cv-column>
     </cv-row>
     <cv-row v-if="error.getSmarthost">
       <cv-column>
@@ -308,6 +326,9 @@ export default {
     ...mapActions(["setSmarthostInStore"]),
     goToSoftwareCenter() {
       this.$router.push("/software-center");
+    },
+    goToAlertNotifications() {
+      this.$router.push("/settings/metrics");
     },
     async getSmarthost() {
       for (const key of Object.keys(this.error)) {
