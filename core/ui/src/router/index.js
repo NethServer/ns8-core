@@ -101,6 +101,14 @@ const routes = [
       ),
   },
   {
+    path: "/settings/metrics",
+    name: "SettingsMetrics",
+    component: () =>
+      import(
+        /* webpackChunkName: "subscription" */ "../views/settings/SettingsMetrics.vue"
+      ),
+  },
+  {
     path: "/settings/cluster-admins",
     name: "ClusterAdmins",
     component: () =>
