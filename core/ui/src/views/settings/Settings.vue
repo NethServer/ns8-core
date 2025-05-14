@@ -105,13 +105,11 @@
           :light="true"
           kind="clickable"
           @click="goTo('/settings/metrics')"
+          :icon="Dashboard32"
         >
-          <div class="metrics-tile-content">
-            <Dashboard32 />
-            <h6 class="metrics-tile-title">
-              {{ $t("settings_metrics.title") }}
-            </h6>
-          </div>
+          <h6 class="metrics-tile-title">
+            {{ $t("settings_metrics.title") }}
+          </h6>
         </NsTile>
       </cv-column>
       <cv-column :md="4" :xlg="4">
@@ -139,8 +137,10 @@ import Dashboard32 from "@carbon/icons-vue/es/dashboard/32";
 
 export default {
   name: "Settings",
-  components: {
-    Dashboard32,
+  data() {
+    return {
+      Dashboard32,
+    };
   },
   mixins: [UtilService, IconService, QueryParamService, PageTitleService],
   pageTitle() {
@@ -163,12 +163,3 @@ export default {
   },
 };
 </script>
-<style scoped lang="scss">
-@import "../../styles/carbon-utils";
-.metrics-tile-content {
-  text-align: center;
-}
-.metrics-tile-title {
-  margin-top: 10px;
-}
-</style>
