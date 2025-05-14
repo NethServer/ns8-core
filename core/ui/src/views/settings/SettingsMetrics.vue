@@ -129,7 +129,7 @@
                   :moreText="$t('common.show_more')"
                   :lessText="$t('common.show_less')"
                   hideExpandButton
-                  class="mg-top-sm mg-bottom-lg maxwidth limited-height-snippet"
+                  class="mg-top-sm mg-bottom-lg maxwidth"
                   >admin</NsCodeSnippet
                 >
                 <span class="label mg-top-lg">
@@ -143,7 +143,7 @@
                   :moreText="$t('common.show_more')"
                   :lessText="$t('common.show_less')"
                   hideExpandButton
-                  class="mg-top-sm mg-bottom-lg maxwidth limited-height-snippet"
+                  class="mg-top-sm mg-bottom-lg maxwidth"
                   >admin</NsCodeSnippet
                 >
                 <div class="mg-top-sm icon-and-text mg-bottom-lg">
@@ -809,16 +809,5 @@ export default {
 }
 .maxwidth {
   max-width: 38rem;
-}
-.limited-height-snippet {
-  max-height: 50px;
-  overflow: hidden;
-}
-.limited-height-snippet.bx--snippet--multi ::v-deep .bx--copy-btn {
-  // this is a workaround to avoid the copy button to be cut off
-  // when the snippet is limited in height
-  position: absolute !important;
-  top: 0.1rem;
-  right: 0.5rem;
 }
 </style>
