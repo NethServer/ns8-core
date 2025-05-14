@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "get metrics id",
-  "description": "Get the metrics id of the default metrics instance",
+  "description": "Get the module id of the default Metrics instance",
   "$id": "http://schema.nethserver.org/cluster/get-smarthost.json",
   "examples": [
     {

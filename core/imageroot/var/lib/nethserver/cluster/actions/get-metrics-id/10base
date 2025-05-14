@@ -13,6 +13,6 @@ import agent
 # return the module ID of the metrics default instance: eg metrics1
 
 rdb = agent.redis_connect()
-module_id = rdb.get(f"node/"+os.environ["NODE_ID"]+"/default_instance/metrics")
+module_id = rdb.get("cluster/default_instance/metrics")
 
 json.dump({"metrics_id": module_id}, fp=sys.stdout)
