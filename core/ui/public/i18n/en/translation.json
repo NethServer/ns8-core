@@ -665,7 +665,7 @@
     "linked_to_an_active_subscription":"This system is linked to an active subscription, alert emails are already managed and delivered by the MyNethesis portal.",
     "disabled_email_notifications_description": "To configure alert notifications, email notifications must be enabled in the cluster settings.",
     "disabled_email_notification": "Email notifications disabled",
-    "go_to_email_notifcations": "Go to email notifications"
+    "go_to_email_notifications": "Go to email notifications"
   },
     "settings_subscription": {
         "title": "Subscription",

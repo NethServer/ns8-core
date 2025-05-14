@@ -191,7 +191,7 @@
                   "
                   :showCloseButton="false"
                   @click="goToSettingsSmarthost"
-                  :actionLabel="$t('settings_metrics.go_to_email_notifcations')"
+                  :actionLabel="$t('settings_metrics.go_to_email_notifications')"
                 />
               </cv-column>
             </div>
