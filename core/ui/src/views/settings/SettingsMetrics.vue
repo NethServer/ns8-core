@@ -761,7 +761,10 @@ export default {
           data: {
             grafana_path: this.grafana_path ? this.grafana_path : "",
             prometheus_path: "",
-            mail_to: this.status_notifications ? this.mail_to.split("\n") : [],
+            mail_to:
+              this.status_notifications || this.subscription.status === "active"
+                ? this.mail_to.split("\n")
+                : [],
             mail_from: this.mail_from,
             mail_template: this.mail_template,
           },
