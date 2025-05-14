@@ -161,8 +161,9 @@
                 :showCloseButton="false"
               />
               <NsButton
-                kind="primary"
+                kind="secondary"
                 :disabled="isGrafanaSectionLoading"
+                :loading="isGrafanaSectionLoading"
                 :icon="Save20"
                 >{{ $t("settings_metrics.save") }}
               </NsButton>
@@ -180,34 +181,30 @@
               {{ $t("settings_metrics.alert_notifications_description") }}
             </div>
             <div class="maxwidth" v-if="!smarthost_enabled">
-              <cv-column>
-                <NsInlineNotification
-                  kind="info"
-                  :title="$t('settings_metrics.disabled_email_notification')"
-                  :description="
-                    $t(
-                      'settings_metrics.disabled_email_notifications_description'
-                    )
-                  "
-                  :showCloseButton="false"
-                  @click="goToSettingsSmarthost"
-                  :actionLabel="$t('settings_metrics.go_to_email_notifications')"
-                />
-              </cv-column>
+              <NsInlineNotification
+                kind="info"
+                :title="$t('settings_metrics.disabled_email_notification')"
+                :description="
+                  $t(
+                    'settings_metrics.disabled_email_notifications_description'
+                  )
+                "
+                :showCloseButton="false"
+                @click="goToSettingsSmarthost"
+                :actionLabel="$t('settings_metrics.go_to_email_notifications')"
+              />
             </div>
             <div class="maxwidth" v-if="subscription.status === 'active'">
-              <cv-column>
-                <NsInlineNotification
-                  kind="info"
-                  :title="
-                    $t('settings_metrics.notification_enabled_on_my_nethesis')
-                  "
-                  :description="
-                    $t('settings_metrics.linked_to_an_active_subscription')
-                  "
-                  :showCloseButton="false"
-                />
-              </cv-column>
+              <NsInlineNotification
+                kind="info"
+                :title="
+                  $t('settings_metrics.notification_enabled_on_my_nethesis')
+                "
+                :description="
+                  $t('settings_metrics.linked_to_an_active_subscription')
+                "
+                :showCloseButton="false"
+              />
             </div>
             <cv-form @submit.prevent="setNotifications">
               <NsToggle
@@ -235,7 +232,6 @@
                 v-if="status_notifications || subscription.status === 'active'"
               >
                 <cv-dropdown
-                  :light="true"
                   :value="mail_template"
                   v-model="mail_template"
                   :up="false"
@@ -293,7 +289,7 @@
                 :showCloseButton="false"
               />
               <NsButton
-                kind="primary"
+                kind="secondary"
                 :loading="isNotificationsSectionLoading"
                 :disabled="isNotificationsSectionLoading || !smarthost_enabled"
                 :icon="Save20"
@@ -430,7 +426,11 @@ export default {
         taskAction + "-completed-" + eventId,
         this.getSmarthostCompleted
       );
-
+      // register to task error
+      this.$root.$once(
+        taskAction + "-aborted-" + eventId,
+        this.getSmarthostAborted
+      );
       const res = await to(
         this.createClusterTask({
           action: taskAction,
@@ -450,6 +450,11 @@ export default {
         return;
       }
     },
+    getSmarthostAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.getSmarthost = this.core.$t("error.generic_error");
+      this.loading.getSmarthost = false;
+    },
     getSmarthostCompleted(taskContext, taskResult) {
       const smarthost = taskResult.output;
       this.smarthost_enabled = smarthost.enabled;
@@ -465,7 +470,11 @@ export default {
         taskAction + "-completed-" + eventId,
         this.getSubscriptionCompleted
       );
-
+      // register to task error
+      this.$root.$once(
+        taskAction + "-aborted-" + eventId,
+        this.getSubscriptionAborted
+      );
       const res = await to(
         this.createClusterTask({
           action: taskAction,
@@ -485,6 +494,11 @@ export default {
         this.loading.getSubscription = false;
         return;
       }
+    },
+    getSubscriptionAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.getSubscription = this.core.$t("error.generic_error");
+      this.loading.getSubscription = false;
     },
     getSubscriptionCompleted(taskContext, taskResult) {
       const output = taskResult.output;
@@ -512,7 +526,11 @@ export default {
         taskAction + "-completed-" + eventId,
         this.getMetricsIdCompleted
       );
-
+      // register to task error
+      this.$root.$once(
+        taskAction + "-aborted-" + eventId,
+        this.getMetricsIdAborted
+      );
       const res = await to(
         this.createClusterTask({
           action: taskAction,
@@ -532,6 +550,11 @@ export default {
         this.loading.getGrafana = false;
         return;
       }
+    },
+    getMetricsIdAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.getMetricsId = this.core.$t("error.generic_error");
+      this.loading.getMetricsId = false;
     },
     getMetricsIdCompleted(taskContext, taskResult) {
       const output = taskResult.output;
@@ -583,7 +606,7 @@ export default {
       const config = taskResult.output;
       this.prometheus_path = config.prometheus_path;
       this.grafana_path = config.grafana_path;
-      // build texarea content from mail_to array
+      // build textarea content from mail_to array
       this.mail_to = config.mail_to ? config.mail_to.join("\n") : [];
       // if mail_from is empty, set it with default value from leader hostname
       const leaderHostname = this.leaderNode.vpn.endpoint.split(":")[0];
@@ -593,7 +616,7 @@ export default {
       this.mail_template = config.mail_template ? config.mail_template : "";
       // set enable_grafana toggle to true if grafana_path is not empty
       this.enable_grafana = this.grafana_path ? true : false;
-      // build grafana hostname , grafana_path is a random string generated by the server
+      // build grafana hostname, grafana_path is a random string generated by the server
       // grafana is accessible at https://<hostname>/<grafana_path>
       this.hostname = window.location.hostname + "/" + config.grafana_path;
       // status_notifications toggle is true if mail_to is not empty
@@ -618,10 +641,10 @@ export default {
         this.setGrafanaAborted
       );
 
-      // register to task error
+      // register to validation error
       this.$root.$once(
         `${taskAction}-validation-failed-${eventId}`,
-        this.setGrafanaFailed
+        this.setGrafanaValidationFailed
       );
 
       const res = await to(
@@ -659,7 +682,7 @@ export default {
       this.error.setGrafana = this.$t("error.generic_error");
       this.loading.setGrafana = false;
     },
-    setGrafanaFailed(validationErrors) {
+    setGrafanaValidationFailed(validationErrors) {
       this.loading.setGrafana = false;
       let focusAlreadySet = false;
 
@@ -726,10 +749,10 @@ export default {
         this.setNotificationsAborted
       );
 
-      // register to task error
+      // register to validation error
       this.$root.$once(
         `${taskAction}-validation-failed-${eventId}`,
-        this.setNotificationsFailed
+        this.setNotificationsValidationFailed
       );
 
       const res = await to(
@@ -764,7 +787,7 @@ export default {
       this.error.setNotifications = this.$t("error.generic_error");
       this.loading.setNotifications = false;
     },
-    setNotificationsFailed(validationErrors) {
+    setNotificationsValidationFailed(validationErrors) {
       this.loading.setNotifications = false;
 
       let focusAlreadySet = false;
@@ -796,16 +819,6 @@ export default {
 
 .icon-and-text {
   justify-content: flex-start;
-}
-.helper-text {
-  font-size: 0.75rem;
-  line-height: 1.33333;
-  letter-spacing: 0.32px;
-  z-index: 0;
-  width: 100%;
-  margin-top: 0.25rem;
-  color: #525252;
-  opacity: 1;
 }
 .maxwidth {
   max-width: 38rem;
