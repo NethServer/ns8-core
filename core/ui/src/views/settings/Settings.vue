@@ -142,9 +142,6 @@ export default {
   components: {
     Dashboard32,
   },
-  data() {
-    return {};
-  },
   mixins: [UtilService, IconService, QueryParamService, PageTitleService],
   pageTitle() {
     return this.$t("settings.title");
