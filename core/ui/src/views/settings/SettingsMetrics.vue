@@ -118,38 +118,10 @@
                 }}</template>
               </NsToggle>
               <template v-if="enable_grafana">
-                <span class="label mg-top-sm">
-                  {{ $t("settings_metrics.default_username") }}
-                </span>
-                <NsCodeSnippet
-                  :copyTooltip="$t('common.copy_to_clipboard')"
-                  :copy-feedback="$t('common.copied_to_clipboard')"
-                  :feedback-aria-label="$t('common.copied_to_clipboard')"
-                  :wrap-text="true"
-                  :moreText="$t('common.show_more')"
-                  :lessText="$t('common.show_less')"
-                  hideExpandButton
-                  class="mg-top-sm mg-bottom-lg maxwidth"
-                  >admin</NsCodeSnippet
-                >
-                <span class="label mg-top-lg">
-                  {{ $t("settings_metrics.default_password") }}
-                </span>
-                <NsCodeSnippet
-                  :copyTooltip="$t('common.copy_to_clipboard')"
-                  :copy-feedback="$t('common.copied_to_clipboard')"
-                  :feedback-aria-label="$t('common.copied_to_clipboard')"
-                  :wrap-text="true"
-                  :moreText="$t('common.show_more')"
-                  :lessText="$t('common.show_less')"
-                  hideExpandButton
-                  class="mg-top-sm mg-bottom-lg maxwidth"
-                  >admin</NsCodeSnippet
-                >
                 <div class="mg-top-sm icon-and-text mg-bottom-lg">
                   <NsSvg :svg="InformationFilled16" class="icon ns-info" />
                   <span>{{
-                    $t("settings_metrics.note_on_grafana_password_change")
+                    $t("settings_metrics.note_on_grafana_cluster_admin_credentials")
                   }}</span>
                 </div>
               </template>
