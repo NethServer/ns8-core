@@ -107,7 +107,7 @@
           @click="goTo('/settings/metrics')"
           :icon="Dashboard32"
         >
-          <h6 class="metrics-tile-title">
+          <h6>
             {{ $t("settings_metrics.title") }}
           </h6>
         </NsTile>
