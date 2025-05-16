@@ -645,7 +645,7 @@
         "grafana_tooltip": "Grafana is a web-based analytics and monitoring platform. It allows you to visualize and analyze metrics collected from your nodes.",
         "default_username": "Default username",
         "default_password": "Default password",
-        "note_on_grafana_cluster_admin_credentials": "Note: The Grafana credentials are the same as the cluster admin credentials.",
+        "note_on_grafana_cluster_admin_credentials": "Note: Use the cluster admin credentials to log in to Grafana.",
         "save": "Save",
         "alert_notifications": "Alert notifications",
         "alert_notifications_description": "Configure email-based alert notifications to ensure timely awareness of critical system events.",
