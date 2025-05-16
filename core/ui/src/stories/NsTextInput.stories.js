@@ -45,4 +45,7 @@ Default.args = {
   tooltipDirection: "bottom",
   prefix: "",
   light: true,
+  disabled: false,
+  readonly: false,
+  value: "Lorem ipsum",
 };
