@@ -411,7 +411,12 @@
         "set-clm-forwarder": "Set Cloud Log Manager forwarder",
         "read-backup-snapshots": "Read backup snapshots",
         "determine-restore-eligibility": "Determine restore eligibility",
-        "set-password-warning": "Configure password warning"
+        "set-password-warning": "Configure password warning",
+        "get-metrics-ids": "Get metrics IDs",
+        "get-metrics-configuration": "Get metrics configuration",
+        "set-metrics-configuration": "Set metrics configuration",
+        "set-metrics-notifications": "Set metrics notifications",
+        "get-metrics-id": "Get metrics ID"
     },
     "network": {
         "title": "Network"
@@ -630,6 +635,38 @@
     "settings_cluster": {
         "title": "Cluster"
     },
+    "settings_metrics": {
+        "title": "Metrics",
+        "metrics": "Metrics",
+        "grafana_description": "Metrics are automatically collected from all nodes and stored to Prometheus on the leader node. Grafana can be used to navigate and inspect such metrics.",
+        "grafana_link": "Go to Grafana dashboard",
+        "grafana": "Grafana",
+        "access_grafana": "Access Grafana",
+        "grafana_tooltip": "Grafana is a web-based analytics and monitoring platform. It allows you to visualize and analyze metrics collected from your nodes.",
+        "default_username": "Default username",
+        "default_password": "Default password",
+        "note_on_grafana_cluster_admin_credentials": "Note: Use the cluster admin credentials to log in to Grafana.",
+        "save": "Save",
+        "alert_notifications": "Alert notifications",
+        "alert_notifications_description": "Configure email-based alert notifications to ensure timely awareness of critical system events.",
+        "status_notifications": "Status",
+        "notifications_tooltip": "Configure email notifications for system status changes, such as node failures or service disruptions.",
+        "mail_template": "Language template",
+        "en_template": "English template",
+        "it_template": "Italian template",
+        "mail_template_helper_text": "Select the language template for email notifications. You can also create a custom template.",
+        "mail_from": "Sender email address",
+        "mail_to": "Recipient email addresses",
+        "mail_to_helper_text": "Enter the email addresses to receive notifications. Type one email address per line.",
+        "mail_to_format": "Invalid email address format",
+        "mail_from_placeholder": "E.g. user@domain.com",
+        "mail_from_format": "Invalid email address format",
+        "notification_enabled_on_my_nethesis": "Notifications enabled on my.nethesis.it",
+        "linked_to_an_active_subscription":"This system is linked to an active subscription, alert emails are already managed and delivered by my.nethesis.it portal.",
+        "disabled_email_notifications_description": "To configure alert notifications, email notifications must be enabled in the cluster settings.",
+        "disabled_email_notification": "Email notifications disabled",
+        "go_to_email_notifications": "Go to Email notifications"
+  },
     "settings_subscription": {
         "title": "Subscription",
         "cluster_subscription": "Cluster subscription",
@@ -1466,7 +1503,9 @@
         "required": "This field is required",
         "port_invalid_type": "It must be a valid number port (1-65535)",
         "port_number_gte": "The port must be greater than 0 (1-65535)",
-        "encrypt_smtp_enum": "It must be one of the following: none, starttls, tls"
+        "encrypt_smtp_enum": "It must be one of the following: none, starttls, tls",
+        "open_alert_notifications": "Alert notifications",
+        "alert_notifications_tooltip": "Configure email-based alert notifications to ensure timely awareness of critical system events."
     },
     "syslog_forwarder": {
         "configure_export_to_syslog": "Configure export to Syslog",
