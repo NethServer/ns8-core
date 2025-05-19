@@ -15,7 +15,7 @@
     </div>
     <!-- timestamp -->
     <div class="secondary-row">
-      {{ formatDate(new Date(instance.timestamp * 1000), "PPpp") }}
+      {{ formattedTimestamp }}
     </div>
     <!-- backup repository -->
     <div class="secondary-row">
@@ -76,6 +76,14 @@ export default {
     instance: {
       type: Object,
       required: true,
+    },
+  },
+  computed: {
+    formattedTimestamp() {
+      return new Intl.DateTimeFormat(navigator.language, {
+        dateStyle: "long",
+        timeStyle: "short",
+      }).format(new Date(this.instance.timestamp * 1000));
     },
   },
   data() {
