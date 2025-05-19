@@ -37,7 +37,7 @@
         class="snapshot-tile"
       >
         <div>
-          {{ formatDate(new Date(snapshot.timestamp * 1000), "PPpp") }}
+          {{ formatSnapshotTimestamp(snapshot.timestamp) }}
         </div>
         <div v-if="index == 0" class="secondary-row">
           {{ $t("backup.most_recent") }}
@@ -103,6 +103,12 @@ export default {
     this.updateInternalSnapshots();
   },
   methods: {
+    formatSnapshotTimestamp(timestamp) {
+      return new Intl.DateTimeFormat(navigator.language, {
+        dateStyle: "long",
+        timeStyle: "short",
+      }).format(new Date(timestamp * 1000));
+    },
     updateInternalSnapshots() {
       // deep copy (needed to avoid reactivity issues)
       let internalSnapshots = _cloneDeep(this.snapshots);
