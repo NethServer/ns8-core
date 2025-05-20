@@ -244,7 +244,12 @@
         "set-clm-forwarder": "CloudLog Manager Forwarder festlegen",
         "read-backup-snapshots": "Backup-Snapshots einlesen",
         "determine-restore-eligibility": "Determine restore eligibility",
-        "set-password-warning": "Configure password warning"
+        "set-password-warning": "Configure password warning",
+        "set-metrics-notifications": "Set metrics notifications",
+        "get-metrics-configuration": "Get metrics configuration",
+        "set-metrics-configuration": "Set metrics configuration",
+        "get-metrics-id": "Get metrics ID",
+        "get-metrics-ids": "Get metrics IDs"
     },
     "common": {
         "hide": "verstecken",
@@ -1299,7 +1304,9 @@
         "no_mail_app_instance": "Keine Instanz der Mail-App gefunden",
         "no_mail_app_instance_description": "Die Mail-App kann über das Software-Center installiert werden",
         "go_to_software_center": "Zum Software-Center wechseln",
-        "node": "Knoten {nodeId}"
+        "node": "Knoten {nodeId}",
+        "open_alert_notifications": "Alert notifications",
+        "alert_notifications_tooltip": "Configure email-based alert notifications to ensure timely awareness of critical system events."
     },
     "settings_tls_certificates": {
         "cert_upload_label": "Zertifikat",
@@ -1509,5 +1516,37 @@
         "security": "Security records",
         "filter": "Filter",
         "full": "All records"
+    },
+    "settings_metrics": {
+        "mail_to_format": "Invalid email address format",
+        "go_to_email_notifications": "Go to Email notifications",
+        "mail_from_format": "Invalid email address format",
+        "grafana": "Grafana",
+        "default_password": "Default password",
+        "note_on_grafana_cluster_admin_credentials": "Note: Use the cluster admin credentials to log in to Grafana.",
+        "metrics": "Metrics",
+        "mail_to": "Recipient email addresses",
+        "disabled_email_notifications_description": "To configure alert notifications, email notifications must be enabled in the cluster settings.",
+        "mail_template": "Language template",
+        "notification_enabled_on_my_nethesis": "Notifications enabled on my.nethesis.it",
+        "grafana_description": "Metrics are automatically collected from all nodes and stored to Prometheus on the leader node. Grafana can be used to navigate and inspect such metrics.",
+        "grafana_tooltip": "Grafana is a web-based analytics and monitoring platform. It allows you to visualize and analyze metrics collected from your nodes.",
+        "alert_notifications": "Alert notifications",
+        "notifications_tooltip": "Configure email notifications for system status changes, such as node failures or service disruptions.",
+        "disabled_email_notification": "Email notifications disabled",
+        "mail_from_placeholder": "E.g. user@domain.com",
+        "mail_template_helper_text": "Select the language template for email notifications. You can also create a custom template.",
+        "linked_to_an_active_subscription": "This system is linked to an active subscription, alert emails are already managed and delivered by my.nethesis.it portal.",
+        "access_grafana": "Access Grafana",
+        "alert_notifications_description": "Configure email-based alert notifications to ensure timely awareness of critical system events.",
+        "it_template": "Italian template",
+        "en_template": "English template",
+        "save": "Save",
+        "title": "Metrics",
+        "status_notifications": "Status",
+        "default_username": "Default username",
+        "mail_to_helper_text": "Enter the email addresses to receive notifications. Type one email address per line.",
+        "grafana_link": "Go to Grafana dashboard",
+        "mail_from": "Sender email address"
     }
 }

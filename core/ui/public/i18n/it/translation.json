@@ -419,7 +419,9 @@
         "mail_app_instance": "Utilizza istanza dell'app Mail",
         "configuration": "Configurazione",
         "no_mail_app_instance": "Nessuna istanza di app Mail trovata",
-        "choose_instance": "Scegli l'istanza"
+        "choose_instance": "Scegli l'istanza",
+        "open_alert_notifications": "Notifiche allarmi",
+        "alert_notifications_tooltip": "Configura le notifiche email degli allarmi per essere avvisati tempestivamente sugli eventi di sistema critici."
     },
     "domains": {
         "ldap": "LDAP",
@@ -525,7 +527,7 @@
         "warning_template_custom": "Template personalizzato",
         "warning_disabled_title": "Il preavviso è disabilitato",
         "edit_password_warning": "Modifica preavviso password",
-        "warning_enable_tip": "Se abilitato, gli utenti riceveranno una notifica e-mail quando la password sta per scadere",
+        "warning_enable_tip": "Se abilitato, gli utenti riceveranno una notifica email quando la password sta per scadere",
         "warning_template_content_tip": "Inserisci il template in HTML valido o testo semplice. Segnaposto disponibili: $user (nome utente), $name (nome completo), $days (giorni alla scadenza), $domain (domino utenti), $portal_url (URL portale utenti)",
         "warning_template_content": "Template messaggio",
         "go_to_smtp_settings": "Vai alle Notifiche email",
@@ -637,7 +639,12 @@
         "set-clm-forwarder": "Imposta Cloud Log Manager forwarder",
         "read-backup-snapshots": "Leggi snapshot di backup",
         "determine-restore-eligibility": "Determina idoneità ripristino",
-        "set-password-warning": "Configurare il preavviso password"
+        "set-password-warning": "Configurare il preavviso password",
+        "set-metrics-notifications": "Imposta notifiche Metrics",
+        "get-metrics-configuration": "Leggi configurazione Metrics",
+        "set-metrics-configuration": "Imposta configurazione Metrics",
+        "get-metrics-id": "Identifica Metrics",
+        "get-metrics-ids": "Identifica Metrics"
     },
     "backup": {
         "configure": "Configura",
@@ -989,7 +996,7 @@
         "invalid_value": "Valore non valido",
         "cannot_retrieve_users_admin_configuration": "Portale gestione utenti non disponibile",
         "cannot_retrieve_subscription_status": "Impossibile ottenere lo stato della subscription",
-        "cannot_retrieve_email_notification_status": "Non è possibile recuperare lo stato delle notifiche e-mail",
+        "cannot_retrieve_email_notification_status": "Non è possibile recuperare lo stato delle notifiche email",
         "warning_mail_subject_required": "L'oggetto del messaggio è obbligatorio",
         "warning_days_range": "Il numero di giorni di preavviso deve essere compreso tra 1 e 1000",
         "warning_days_required": "Inserire il numero di giorni di preavviso",
@@ -1258,7 +1265,7 @@
         "user_with_same_name": "Un utente con questo nome esiste già",
         "mail": "Indirizzo email",
         "mail_field": "Indirizzo email (opzionale)",
-        "mail_format": "Formato e-mail non valido"
+        "mail_format": "Formato email non valido"
     },
     "domain_configuration": {
         "add_provider": "Aggiungi provider",
@@ -1509,5 +1516,37 @@
         "security": "Record di sicurezza",
         "filter": "Filtro",
         "full": "Tutti i record"
+    },
+    "settings_metrics": {
+        "metrics": "Metrics",
+        "grafana": "Grafana",
+        "default_password": "Password predefinita",
+        "note_on_grafana_cluster_admin_credentials": "Nota: Utilizzare le credenziali di cluster-admin per accedere a Grafana.",
+        "mail_to_format": "Formato dell'indirizzo email non valido",
+        "go_to_email_notifications": "Vai a Notifiche email",
+        "mail_from_format": "Formato dell'indirizzo email non valido",
+        "mail_to": "Indirizzi email destinatari",
+        "disabled_email_notifications_description": "Per configurare la notifica degli allarmi, le notifiche email devono essere abilitate nelle impostazioni del cluster.",
+        "mail_template": "Lingua template",
+        "notification_enabled_on_my_nethesis": "Notifiche abilitate su my.nethesis.it",
+        "grafana_description": "Le metriche vengono raccolte automaticamente da tutti i nodi e memorizzate in Prometheus sul nodo leader. Grafana può essere utilizzato per navigare e ispezionare queste metriche.",
+        "grafana_tooltip": "Grafana è una piattaforma web di analisi e monitoraggio. Consente di visualizzare e analizzare le metriche raccolte dai nodi.",
+        "alert_notifications": "Notifiche allarmi",
+        "notifications_tooltip": "Configura le notifiche email sui cambiamenti di stato del sistema, come guasti del nodo o interruzioni dei servizi.",
+        "disabled_email_notification": "Notifiche email disabilitate",
+        "mail_from_placeholder": "Es. user@domain.com",
+        "mail_template_helper_text": "Seleziona la lingua del template delle notifiche email. È anche possibile creare un template personalizzato.",
+        "linked_to_an_active_subscription": "Questo sistema è collegato ad una subscription attiva, le email di avviso sono già gestite e consegnate dal portale my.nethesis.it.",
+        "alert_notifications_description": "Configura le notifiche email degli allarmi per essere avvisati tempestivamente sugli eventi di sistema critici.",
+        "save": "Salva",
+        "title": "Metrics",
+        "status_notifications": "Stato",
+        "default_username": "Nome utente predefinito",
+        "access_grafana": "Accesso Grafana",
+        "it_template": "Template italiano",
+        "en_template": "Template inglese",
+        "mail_to_helper_text": "Inserisci gli indirizzi email per ricevere le notifiche. Digitare un indirizzo email per riga.",
+        "grafana_link": "Vai alla dashboard di Grafana",
+        "mail_from": "Indirizzo email mittente"
     }
 }
