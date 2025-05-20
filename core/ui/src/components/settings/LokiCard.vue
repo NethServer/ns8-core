@@ -150,11 +150,17 @@ export default {
   computed: {
     activeFromFormatted() {
       return this.activeFrom
-        ? this.formatDate(new Date(this.activeFrom), "P")
+        ? new Intl.DateTimeFormat(navigator.language).format(
+            new Date(this.activeFrom)
+          )
         : "";
     },
     activeToFormatted() {
-      return this.activeTo ? this.formatDate(new Date(this.activeTo), "P") : "";
+      return this.activeTo
+        ? new Intl.DateTimeFormat(navigator.language).format(
+            new Date(this.activeTo)
+          )
+        : "";
     },
     activeText() {
       return this.$t("system_logs.loki.active");
