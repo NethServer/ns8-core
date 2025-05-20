@@ -249,41 +249,38 @@ export default {
         // subtask
 
         const parentTask = this.getTaskById(taskContext.parent);
-
         if (!parentTask) {
-          console.warn("parentTask not found, ignoring");
-          console.warn("  taskContext", taskContext);
-          console.warn("  payload", payload);
+          return;
+        }
+
+        // check if subTask has already been added to subTasks list
+        const subTask = parentTask.subTasks.find(
+          (subTask) => subTask.context.id === taskContext.id
+        );
+
+        if (!subTask) {
+          // add subtask to subTasks list
+
+          const subTask = {
+            context: taskContext,
+            status: taskStatus,
+            progress: payload.progress,
+            subTasks: [],
+          };
+
+          if (taskResult) {
+            subTask.result = taskResult;
+          }
+
+          parentTask.subTasks.push(subTask);
         } else {
-          // check if subTask has already been added to subTasks list
-          const subTask = parentTask.subTasks.find(
-            (subTask) => subTask.context.id === taskContext.id
-          );
+          // update subtask in subtasks list
 
-          if (!subTask) {
-            // add subtask to subTasks list
+          subTask.status = taskStatus;
+          subTask.progress = payload.progress;
 
-            const subTask = {
-              context: taskContext,
-              status: taskStatus,
-              progress: payload.progress,
-              subTasks: [],
-            };
-
-            if (taskResult) {
-              subTask.result = taskResult;
-            }
-
-            parentTask.subTasks.push(subTask);
-          } else {
-            // update subtask in subtasks list
-
-            subTask.status = taskStatus;
-            subTask.progress = payload.progress;
-
-            if (taskResult) {
-              subTask.result = taskResult;
-            }
+          if (taskResult) {
+            subTask.result = taskResult;
           }
         }
       } else {
