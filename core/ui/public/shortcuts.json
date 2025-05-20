@@ -350,6 +350,21 @@
   },
   {
     "name": {
+      "en": "Metrics",
+      "it": "Metrics"
+    },
+    "description": {
+      "en": "Go to Metrics",
+      "it": "Vai a Metrics"
+    },
+    "tags": {
+      "en": ["metrics", "monitoring", "performance", "statistics", "log", "analysis", "grafana", "alarm", "alert", "notification", "prometheus"],
+      "it": ["metrics", "metriche", "monitoraggio", "prestazioni", "statistiche", "log", "analisi", "grafana", "allarme", "alert", "allerta", "notifica", "prometheus"]
+    },
+    "path": "settings/metrics"
+  },
+  {
+    "name": {
       "en": "Firewall",
       "it": "Firewall"
     },
