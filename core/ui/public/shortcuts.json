@@ -350,16 +350,16 @@
   },
   {
     "name": {
-      "en": "Cluster metrics",
-      "it": "Metriche cluster"
+      "en": "Metrics",
+      "it": "Metrics"
     },
     "description": {
-      "en": "Go to Cluster metrics",
-      "it": "Vai a Metriche cluster"
+      "en": "Go to Metrics",
+      "it": "Vai a Metrics"
     },
     "tags": {
-      "en": ["metrics", "monitoring", "performance", "statistics"],
-      "it": ["metriche", "monitoraggio", "prestazioni", "statistiche"]
+      "en": ["metrics", "monitoring", "performance", "statistics", "log", "analysis", "grafana", "alarm", "alert", "notification", "prometheus"],
+      "it": ["metrics", "metriche", "monitoraggio", "prestazioni", "statistiche", "log", "analisi", "grafana", "allarme", "alert", "allerta", "notifica", "prometheus"]
     },
     "path": "settings/metrics"
   },
