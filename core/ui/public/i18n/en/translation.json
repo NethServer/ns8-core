@@ -638,7 +638,7 @@
     "settings_metrics": {
         "title": "Metrics",
         "metrics": "Metrics",
-        "grafana_description": "Metrics are automatically collected from all nodes and stored to Prometheus on the leader node. Grafana can be used to navigate and inspect such metrics.",
+        "grafana_description": "Metrics are automatically collected from all nodes and stored in Prometheus on the leader node. Grafana can be used to navigate and inspect such metrics.",
         "grafana_link": "Go to Grafana dashboard",
         "grafana": "Grafana",
         "access_grafana": "Access Grafana",
