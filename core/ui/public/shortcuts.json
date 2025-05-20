@@ -350,6 +350,21 @@
   },
   {
     "name": {
+      "en": "Cluster metrics",
+      "it": "Metriche cluster"
+    },
+    "description": {
+      "en": "Go to Cluster metrics",
+      "it": "Vai a Metriche cluster"
+    },
+    "tags": {
+      "en": ["metrics", "monitoring", "performance", "statistics"],
+      "it": ["metriche", "monitoraggio", "prestazioni", "statistiche"]
+    },
+    "path": "settings/metrics"
+  },
+  {
+    "name": {
       "en": "Firewall",
       "it": "Firewall"
     },
