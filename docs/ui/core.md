@@ -181,7 +181,7 @@ Remember to [prepare your development environment](#core-ui-development) before 
 Developing NS8 UI inside a container is the recommended way, but if you want to do it on your workstation:
 
 - Install development tools:
-  - Node.js and npm (LTS version, currently v18)
+  - Node.js and npm (LTS version, currently v22)
   - Yarn
 - Run a web server on your workstation (hot reloading enabled):
   - `cd core/ui`

@@ -70,7 +70,7 @@ Dev container configuration is contained inside `.devcontainer/devcontainer.json
 
 Developing NS8 UI library inside a container is the recommended way, but if you want to do it on your workstation:
 
-- Install Node.js 18 and npm
+- Install Node.js 22 and npm
 - `npm install`: project setup, needed only the first time
 - `npm run build`: compile and minify for production
 - `npm run build-pack`: create a tarball
