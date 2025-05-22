@@ -574,7 +574,8 @@
         "search_placeholder": "Apps zoeken",
         "instances_update_will_start_in_a_moment": "De Instances start zo meteen...",
         "core_app_name": "{productName} kern",
-        "move_app": "Verplaats app"
+        "move_app": "Verplaats app",
+        "source_package": "App image"
     },
     "domains": {
         "domain_summary": "Samenvatting",

@@ -466,7 +466,8 @@
         "search_placeholder": "Search apps",
         "instances_update_will_start_in_a_moment": "Instances update will start in a moment...",
         "core_app_name": "{productName} core",
-        "move_app": "Move app"
+        "move_app": "Move app",
+        "source_package": "App image"
     },
     "system_logs": {
         "dump": "Dump",

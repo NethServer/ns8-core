@@ -587,7 +587,8 @@
             "core_version_too_low": "Update core to version {core_min} or higher to install an instance of this app",
             "rootfull_certification_level_too_low": "Apps with administrative privileges must have a minimum certification level of {certification_min}/5 to be installed",
             "no_app_version": "No stable release of {app_name} is available in the '{app_repository}' repository"
-        }
+        },
+        "source_package": "App image"
     },
     "settings_cluster_admins": {
         "delete_admin_admin": "Admin {admin} löschen",
