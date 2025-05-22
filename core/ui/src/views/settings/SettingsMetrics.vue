@@ -627,13 +627,7 @@ export default {
         this.createModuleTaskForApp(this.metricsId, {
           action: taskAction,
           data: {
-            grafana_path: this.enable_grafana
-              ? [...Array(4)]
-                  .map(() =>
-                    (~~(Math.random() * 0x10000)).toString(16).padStart(4, "0")
-                  )
-                  .join("-")
-              : "",
+            grafana_path: this.enable_grafana ? "grafana" : "",
             prometheus_path: "",
           },
           extra: {
