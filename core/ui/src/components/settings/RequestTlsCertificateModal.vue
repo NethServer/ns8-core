@@ -42,9 +42,10 @@
         <NsInlineNotification
           v-if="error.setCertificate"
           kind="error"
-          :title="$t('action.set-certificate')"
+          :title="$t('settings_tls_certificates.cannot_obtain_certificate')"
           :description="error.setCertificate"
           :showCloseButton="false"
+          class="no-mg-bottom"
         />
       </cv-form>
     </template>
@@ -240,12 +241,12 @@ export default {
 
       // add pending certificate
       this.addPendingTlsCertificateInStore(this.fqdn);
-
-      // reload certificates
-      this.$root.$emit("reloadCertificates");
     },
     setCertificateAborted(taskResult, taskContext) {
       console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.setCertificate = this.getSetCertificateErrorMessage(
+        taskResult.error
+      );
       this.loading.setCertificate = false;
 
       // remove pending certificate
@@ -253,6 +254,33 @@ export default {
 
       // reload certificates
       this.$root.$emit("reloadCertificates");
+    },
+    getSetCertificateErrorMessage(errorMessage) {
+      if (errorMessage.includes("Invalid identifiers requested")) {
+        return this.$t(
+          "settings_tls_certificates.invalid_identifiers_requested_error"
+        );
+      } else if (
+        /no valid A records found|check that a DNS record exists/.test(
+          errorMessage
+        )
+      ) {
+        return this.$t("settings_tls_certificates.dns_record_error");
+      } else if (
+        errorMessage.includes("refuses to issue a certificate for this domain")
+      ) {
+        return this.$t(
+          "settings_tls_certificates.refuses_to_issue_certificate_error"
+        );
+      } else if (errorMessage.includes("tls: unrecognized name")) {
+        return this.$t(
+          "settings_tls_certificates.ensure_node_matches_fqdn_error"
+        );
+      } else {
+        return this.$t(
+          "settings_tls_certificates.set_certificate_unknown_error"
+        );
+      }
     },
     setCertificateValidationOk() {
       this.loading.setCertificate = false;

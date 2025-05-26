@@ -94,19 +94,19 @@
               <cv-row class="toolbar">
                 <cv-column>
                   <NsButton
-                    kind="secondary"
-                    :icon="Add20"
-                    @click="showRequestCertificateModal"
-                    >{{ $t("settings_tls_certificates.request_certificate") }}
-                  </NsButton>
-                  <NsButton
-                    class="mg-left-sm"
-                    kind="secondary"
+                    kind="primary"
                     :icon="Add20"
                     @click="uploadTlsCertificateState.setVisible(true)"
                     >{{
                       $t("settings_tls_certificates.add_custom_certificate")
                     }}
+                  </NsButton>
+                  <NsButton
+                    class="mg-left-sm"
+                    kind="secondary"
+                    :icon="Add20"
+                    @click="showRequestCertificateModal"
+                    >{{ $t("settings_tls_certificates.request_certificate") }}
                   </NsButton>
                 </cv-column>
               </cv-row>
@@ -203,23 +203,15 @@
                         </cv-data-table-cell>
                         <cv-data-table-cell>
                           <div class="justify-flex-end">
-                            <cv-icon-button
-                              :disabled="row.type === 'route'"
-                              :label="
-                                row.type === 'route'
-                                  ? $t(
-                                      'settings_tls_certificates.certificate_tls_tooltips'
-                                    )
-                                  : $t('common.delete')
-                              "
-                              kind="danger"
+                            <NsButton
+                              kind="secondary"
                               :icon="TrashCan20"
                               size="small"
-                              tipPosition="left"
-                              tipAlignment="center"
                               @click="showDeleteCertificateModal(row)"
                               :data-test-id="row.fqdn + '-delete'"
-                            />
+                            >
+                              {{ $t("common.delete") }}
+                            </NsButton>
                           </div>
                         </cv-data-table-cell>
                       </cv-data-table-row>
@@ -308,7 +300,7 @@ export default {
       },
       tablePage: [],
       tableColumns: ["fqdn", "status", "node"],
-      certificates: [],
+      certificatesByTraefikId: {},
       internalNodes: [],
       isShownRequestCertificateModal: false,
       isShownDeleteCertificateModal: false,
@@ -379,6 +371,11 @@ export default {
         value: "all",
       });
       return nodes;
+    },
+    certificates() {
+      return Object.values(this.certificatesByTraefikId)
+        .flat()
+        .sort(this.sortByProperty("fqdn"));
     },
   },
   beforeRouteEnter(to, from, next) {
@@ -510,8 +507,6 @@ export default {
       this.listCertificates();
     },
     async listCertificates() {
-      this.certificates = [];
-
       for (const traefikInstance of this.traefikInstances) {
         const taskAction = "list-certificates";
         const eventId = this.getUuid();
@@ -563,7 +558,12 @@ export default {
       this.loading.listCertificatesNum--;
     },
     listCertificatesCompleted(taskContext, taskResult) {
-      const certificates = [];
+      const traefikId = taskContext.extra.traefikInstance.id;
+      const nodeId = taskContext.extra.traefikInstance.node;
+      const nodeUiName = taskContext.extra.traefikInstance.node_ui_name;
+      const node = { id: nodeId, ui_name: nodeUiName };
+      const nodeLabel = this.getShortNodeLabel(node) + ` (${traefikId})`;
+      const certs = [];
 
       for (let certificate of taskResult.output) {
         if (
@@ -580,20 +580,17 @@ export default {
             certificate.status = "not_obtained";
           }
         }
-        const traefikId = taskContext.extra.traefikInstance.id;
-        const nodeId = taskContext.extra.traefikInstance.node;
-        const nodeUiName = taskContext.extra.traefikInstance.node_ui_name;
-        const node = { id: nodeId, ui_name: nodeUiName };
-        const nodeLabel = this.getShortNodeLabel(node) + ` (${traefikId})`;
         certificate.node = nodeLabel;
         certificate.nodeId = nodeId;
         certificate.longNodeLabel = this.getNodeLabel(node);
         certificate.traefikInstance = traefikId;
-        certificates.push(certificate);
+        certs.push(certificate);
       }
-      this.certificates = this.certificates
-        .concat(certificates)
-        .sort(this.sortByProperty("fqdn"));
+      certs.sort(this.sortByProperty("fqdn"));
+
+      // $set() is needed for reactivity (see https://v2.vuejs.org/v2/guide/reactivity.html#For-Objects)
+      this.$set(this.certificatesByTraefikId, traefikId, certs);
+
       this.loading.listCertificatesNum--;
     },
     showAllNodes() {

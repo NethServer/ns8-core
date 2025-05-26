@@ -806,7 +806,12 @@
         "cert_upload_helptext": "Chain of certificates must be in the same file.",
         "upload_certs": "Upload certificate",
         "instance_selection_label": "Select instance to upload the file to.",
-        "certificate_tls_tooltips": "The certificate is required by a HTTP route"
+        "cannot_obtain_certificate": "Cannot obtain certificate",
+        "invalid_identifiers_requested_error": "The provided FQDN is invalid",
+        "dns_record_error": "No DNS records found for the provided FQDN",
+        "refuses_to_issue_certificate_error": "ACME server refuses to issue a certificate for the provided FQDN",
+        "set_certificate_unknown_error": "Check 'Request certificate' error in the notification drawer for details",
+        "ensure_node_matches_fqdn_error": "Ensure the node matches the FQDN"
     },
     "settings_acme_servers": {
         "title": "ACME servers",
