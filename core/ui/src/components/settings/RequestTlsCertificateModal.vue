@@ -213,6 +213,7 @@ export default {
           data: {
             fqdn: this.fqdn,
             sync: true,
+            check_routes: true,
           },
           extra: {
             title: this.$t(
