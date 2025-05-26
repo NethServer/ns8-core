@@ -596,7 +596,7 @@ export default {
       }
       nodeStatus.disksUsage = disksUsage;
 
-      // needed for reactivity (see https://vuejs.org/v2/guide/reactivity.html#For-Objects)
+      // $set() is needed for reactivity (see https://v2.vuejs.org/v2/guide/reactivity.html#For-Objects)
       this.$set(this.nodesStatus, nodeId, nodeStatus);
     },
     goToNodeDetail(nodeId) {
