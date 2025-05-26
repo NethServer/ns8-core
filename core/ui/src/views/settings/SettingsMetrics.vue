@@ -205,30 +205,6 @@
               <template
                 v-if="status_notifications || subscription.status === 'active'"
               >
-                <cv-dropdown
-                  :value="mail_template"
-                  v-model="mail_template"
-                  :up="false"
-                  :inline="false"
-                  :helper-text="
-                    $t('settings_metrics.mail_template_helper_text')
-                  "
-                  :hide-selected="false"
-                  :invalid-message="$t(error.mail_template)"
-                  :label="$t('settings_metrics.mail_template')"
-                  :disabled="
-                    isNotificationsSectionLoading || !smarthost_enabled
-                  "
-                  class="maxwidth"
-                  ref="mail_template"
-                >
-                  <cv-dropdown-item selected value="default_en">{{
-                    $t("settings_metrics.en_template")
-                  }}</cv-dropdown-item>
-                  <cv-dropdown-item value="default_it">{{
-                    $t("settings_metrics.it_template")
-                  }}</cv-dropdown-item>
-                </cv-dropdown>
                 <NsTextInput
                   v-model="mail_from"
                   :label="$t('settings_metrics.mail_from')"
@@ -310,7 +286,6 @@ export default {
       grafana_path: "",
       mail_to: [],
       mail_from: "",
-      mail_template: "",
       enable_grafana: false,
       status_notifications: false,
       hostname: "",
@@ -340,7 +315,6 @@ export default {
         grafana_path: "",
         mail_to: "",
         mail_from: "",
-        mail_template: "",
         enable_grafana: false,
         status_notifications: false,
         hostname: "",
@@ -589,9 +563,6 @@ export default {
       this.mail_to = config.mail_to ? config.mail_to.join("\n") : [];
       // status_notifications toggle is true if mail_to is not empty
       this.status_notifications = this.mail_to.length > 0;
-      this.$nextTick(() => {
-        this.mail_template = config.mail_template;
-      });
       // if mail_from is empty, set it with default value from leader hostname
       const leaderHostname = this.leaderNode.vpn.endpoint.split(":")[0];
       this.mail_from = config.mail_from
@@ -736,7 +707,6 @@ export default {
                 ? this.mail_to.split("\n")
                 : [],
             mail_from: this.mail_from,
-            mail_template: this.mail_template,
           },
           extra: {
             title: this.$t("action.set-metrics-notifications"),
