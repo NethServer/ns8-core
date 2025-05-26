@@ -566,8 +566,8 @@ export default {
       // if mail_from is empty, set it with default value from leader hostname
       const leaderHostname = this.leaderNode.vpn.endpoint.split(":")[0];
       this.mail_from = config.mail_from
-      ? config.mail_from
-      : "alertmanager@" + leaderHostname;
+        ? config.mail_from
+        : "alertmanager@" + leaderHostname;
       this.loading.getGrafana = false;
     },
     async setGrafana() {
