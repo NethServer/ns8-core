@@ -799,6 +799,7 @@
         "node": "Node",
         "request_certificate_for_fqdn": "Request certificate for {fqdn}",
         "fqdn_already_exists": "FQDN already exists",
+        "fqdn_conflicts_with_route": "A certificate for this FQDN is already requested by an HTTP route",
         "add_custom_certificate": "Upload certificate",
         "key_upload_label": "Key",
         "key_upload_helptext": "Key that generates the certificate.",
