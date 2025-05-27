@@ -812,7 +812,7 @@
         "dns_record_error": "No DNS records found for the provided FQDN",
         "refuses_to_issue_certificate_error": "ACME server refuses to issue a certificate for the provided FQDN",
         "set_certificate_unknown_error": "Check 'Request certificate' error in the notification drawer for details",
-        "ensure_node_matches_fqdn_error": "Ensure the node matches the FQDN"
+        "ensure_node_matches_fqdn_error": "Ensure the node matches the FQDN, or check 'Request certificate' error in the notification drawer for details"
     },
     "settings_acme_servers": {
         "title": "ACME servers",
