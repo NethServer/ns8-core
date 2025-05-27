@@ -84,7 +84,7 @@ elif [[ "${ID}" == "debian" && "${VERSION_ID}" == "12" ]]; then
     apt-get update
     apt-get -y install gnupg2
     apt-get update
-    apt-get -y install python3-venv podman wireguard uuid-runtime curl jq openssl psmisc firewalld pciutils wget
+    apt-get -y install python3-venv podman wireguard uuid-runtime curl jq openssl psmisc firewalld pciutils wget gettext-base
 else
     echo "System not supported"
     exit 1
