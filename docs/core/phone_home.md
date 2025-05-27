@@ -19,5 +19,5 @@ systemctl disable phonehome.timer
 
 To find what data is sent, you can run:
 ```bash
-api-cli run get-facts
+runagent print-phonehome | jq
 ```
