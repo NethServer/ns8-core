@@ -29,8 +29,8 @@ rdb = agent.redis_connect(privileged=True)
 list_core_modules = cluster.modules.list_core_modules(rdb)
 available = cluster.modules.list_available(rdb, skip_core_modules = False)
 
-# Create a dictionary from available for quick lookup by name
-dict_available = {item['name']: item for item in available}
+# Create a dictionary from available for quick lookup by id
+dict_available = {item['id']: item for item in available}
 
 # Update list_core_modules with data from dict_available
 for item in list_core_modules:
