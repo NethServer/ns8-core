@@ -49,5 +49,7 @@ add_result = agent.tasks.run("cluster", "add-module", data={
 agent.assert_exp(add_result['exit_code'] == 0, "Internal provider installation failed!")
 module_id = add_result['output']['module_id']
 rdb.set(f'module/{module_id}/user_domain', domain)
+# Samba 3+ can be also installed from Software Center, ensure core flags are set:
+rdb.sadd(f'module/{module_id}/flags', 'core_module', 'account_provider')
 
 json.dump(add_result['output'], fp=sys.stdout)
