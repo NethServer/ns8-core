@@ -180,6 +180,12 @@
                             :label="$t('settings_http_routes.restricted')"
                             class="no-margin"
                           />
+                          <NsTag
+                            v-if="row.lets_encrypt"
+                            kind="blue"
+                            size="sm"
+                            :label="$t('settings_http_routes.lets_encrypt')"
+                          />
                         </cv-data-table-cell>
                         <cv-data-table-cell class="table-overflow-menu-cell">
                           <cv-overflow-menu
