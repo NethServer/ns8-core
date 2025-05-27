@@ -181,7 +181,7 @@
     <template slot="secondary-button">{{ $t("common.cancel") }}</template>
     <template slot="primary-button">{{
       isEditing
-        ? $t("settings_http_routes.edit_route")
+        ? $t("settings_http_routes.save_route")
         : $t("settings_http_routes.create_route")
     }}</template>
   </NsModal>
