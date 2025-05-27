@@ -36,4 +36,5 @@ for a in available:
 cluster.modules.decorate_with_installed(rdb, available)
 cluster.modules.decorate_with_updates(rdb, available)
 cluster.modules.decorate_with_install_destinations(rdb, available)
+cluster.modules.decorate_without_core_module_instances(rdb, available)
 json.dump(available, fp=sys.stdout)
