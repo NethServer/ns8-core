@@ -778,8 +778,7 @@
         "restricted": "Access restricted",
         "attributes": "Attributes",
         "route": "Route",
-        "host_pattern": "Invalid host format",
-        "lets_encrypt": "Let's Encrypt"
+        "host_pattern": "Invalid host format"
     },
     "settings_tls_certificates": {
         "title": "TLS certificates",
