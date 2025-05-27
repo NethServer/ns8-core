@@ -156,7 +156,7 @@
                         <cv-data-table-cell>
                           <NsTag
                             v-if="!row.user_created"
-                            kind="grey"
+                            kind="gray"
                             size="sm"
                             :label="$t('settings_http_routes.automatic')"
                           />

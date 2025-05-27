@@ -269,10 +269,8 @@ export default {
           this.skip_cert_verify = this.route.skip_cert_verify;
           this.ip_allowlist_str = this.route.ip_allowlist_str;
           this.user_created = this.route.user_created;
-        }
-      } else {
-        // closing modal
-        if (this.isEditing) {
+        } else {
+          // create route
           this.clearFields();
         }
       }
@@ -543,6 +541,7 @@ export default {
     },
     clearFields() {
       this.instance = "";
+      this.selectedNodeId = "";
       this.url = "";
       this.host = "";
       this.path = "";
@@ -550,6 +549,8 @@ export default {
       this.http2https = false;
       this.strip_prefix = false;
       this.skip_cert_verify = false;
+      this.ip_allowlist_str = "";
+      this.user_created = true;
     },
   },
 };
