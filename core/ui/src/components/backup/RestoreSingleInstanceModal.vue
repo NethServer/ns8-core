@@ -240,7 +240,7 @@ export default {
     },
     replaceExistingDisabled() {
       //check if the selected instance is not in an array ['loki']
-      const notAllowed = ["loki", "mail", "ejabberd", "nethvoice-proxy"];
+      const notAllowed = ["samba", "loki", "mail", "ejabberd", "nethvoice-proxy"];
       return notAllowed.includes(this.selectedInstance.name) ? true : false;
     },
     nodesInfo() {
