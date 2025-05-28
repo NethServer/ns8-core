@@ -480,6 +480,7 @@ export default {
             if (node) {
               node.label += ` (${instance.id})`;
               node.traefikInstance = instance.id;
+              instance.node_id = node.name;
             }
           }
         }
