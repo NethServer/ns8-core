@@ -493,7 +493,10 @@
         "ip_allowlist": "Restrict access from",
         "automatic": "Automatic",
         "invalid_ipv4": "Invalid IPv4 address: {ip}",
-        "ip_allowlist_helper": "Enter one IPv4 or CIDR address per line. Leave empty to allow access from any IP address"
+        "ip_allowlist_helper": "Enter one IPv4 or CIDR address per line. Leave empty to allow access from any IP address",
+        "save_route": "Save route",
+        "route": "Route",
+        "host_pattern": "Invalid host format"
     },
     "shell": {
         "app_launcher": "Lanzador de aplicaciones",
@@ -768,7 +771,8 @@
             "core_version_too_low": "Update core to version {core_min} or higher to install an instance of this app",
             "rootfull_certification_level_too_low": "Apps with administrative privileges must have a minimum certification level of {certification_min}/5 to be installed",
             "no_app_version": "No stable release of {app_name} is available in the '{app_repository}' repository"
-        }
+        },
+        "source_package": "App image"
     },
     "system_logs": {
         "context_module": "Aplicación",
@@ -1350,7 +1354,6 @@
         "search_certificate": "Buscar certificado",
         "title": "Certificados TLS",
         "fqdn_helper": "Solicitar certificado para este FQDN",
-        "certificate_tls_tooltips": "El certificado es requerido por una ruta HTTP",
         "show_all": "Mostrar todo",
         "request_certificate_for_fqdn": "Solicitar certificado para {fqdn}",
         "instance_selection_label": "Selecciona la instancia donde cargar el archivo",
@@ -1359,7 +1362,14 @@
         "add_custom_certificate": "Cargar certificado",
         "no_tls_certificate_description": "No se ha solicitado ningún certificado TLS",
         "request_certificate": "Solicitar certificado",
-        "upload_certs": "Cargar certificado"
+        "upload_certs": "Cargar certificado",
+        "set_certificate_unknown_error": "Check 'Request certificate' error in the notification drawer for details",
+        "refuses_to_issue_certificate_error": "ACME server refuses to issue a certificate for the provided FQDN",
+        "cannot_obtain_certificate": "Cannot obtain certificate",
+        "dns_record_error": "No DNS records found for the provided FQDN",
+        "ensure_node_matches_fqdn_error": "Ensure the node matches the FQDN, or check 'Request certificate' error in the notification drawer for details",
+        "invalid_identifiers_requested_error": "The provided FQDN is invalid",
+        "fqdn_conflicts_with_route": "FQDN already requested via 'HTTP routes' page"
     },
     "smarthost": {
         "choose": "Elige",
@@ -1528,7 +1538,6 @@
         "mail_from_format": "Invalid email address format",
         "mail_to": "Recipient email addresses",
         "disabled_email_notifications_description": "To configure alert notifications, email notifications must be enabled in the cluster settings.",
-        "mail_template": "Language template",
         "notification_enabled_on_my_nethesis": "Notifications enabled on my.nethesis.it",
         "grafana_description": "Metrics are automatically collected from all nodes and stored to Prometheus on the leader node. Grafana can be used to navigate and inspect such metrics.",
         "grafana_tooltip": "Grafana is a web-based analytics and monitoring platform. It allows you to visualize and analyze metrics collected from your nodes.",
@@ -1536,12 +1545,9 @@
         "notifications_tooltip": "Configure email notifications for system status changes, such as node failures or service disruptions.",
         "disabled_email_notification": "Email notifications disabled",
         "mail_from_placeholder": "E.g. user@domain.com",
-        "mail_template_helper_text": "Select the language template for email notifications. You can also create a custom template.",
         "alert_notifications_description": "Configure email-based alert notifications to ensure timely awareness of critical system events.",
         "linked_to_an_active_subscription": "This system is linked to an active subscription, alert emails are already managed and delivered by my.nethesis.it portal.",
         "access_grafana": "Access Grafana",
-        "it_template": "Italian template",
-        "en_template": "English template",
         "title": "Metrics",
         "status_notifications": "Status",
         "default_username": "Default username",

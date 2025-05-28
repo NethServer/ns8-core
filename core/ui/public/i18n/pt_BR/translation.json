@@ -143,7 +143,10 @@
         "automatic": "Automatic",
         "invalid_ipv4": "Invalid IPv4 address: {ip}",
         "restricted": "Access restricted",
-        "ip_allowlist_helper": "Enter one IPv4 or CIDR address per line. Leave empty to allow access from any IP address"
+        "ip_allowlist_helper": "Enter one IPv4 or CIDR address per line. Leave empty to allow access from any IP address",
+        "route": "Route",
+        "save_route": "Save route",
+        "host_pattern": "Invalid host format"
     },
     "domains": {
         "cannot_connect_to_domain_controller_description": "Try to route IP traffic of domain controllers through cluster VPN",
@@ -508,7 +511,8 @@
             "core_version_too_low": "Update core to version {core_min} or higher to install an instance of this app",
             "rootfull_certification_level_too_low": "Apps with administrative privileges must have a minimum certification level of {certification_min}/5 to be installed",
             "no_app_version": "No stable release of {app_name} is available in the '{app_repository}' repository"
-        }
+        },
+        "source_package": "App image"
     },
     "settings_acme_servers": {
         "no_acme_server_description": "There is no ACME server configured",
@@ -1154,7 +1158,6 @@
         "fqdn": "FQDN",
         "key_upload_label": "Key",
         "fqdn_helper": "Request certificate for this FQDN",
-        "certificate_tls_tooltips": "The certificate is required by a HTTP route",
         "pending": "Pending",
         "show_all": "Show all",
         "request_certificate_for_fqdn": "Request certificate for {fqdn}",
@@ -1171,7 +1174,14 @@
         "no_tls_certificate_description": "There is no TLS certificate requested",
         "request_certificate": "Request certificate",
         "upload_certs": "Upload certificate",
-        "status": "Status"
+        "status": "Status",
+        "refuses_to_issue_certificate_error": "ACME server refuses to issue a certificate for the provided FQDN",
+        "cannot_obtain_certificate": "Cannot obtain certificate",
+        "dns_record_error": "No DNS records found for the provided FQDN",
+        "ensure_node_matches_fqdn_error": "Ensure the node matches the FQDN, or check 'Request certificate' error in the notification drawer for details",
+        "invalid_identifiers_requested_error": "The provided FQDN is invalid",
+        "fqdn_conflicts_with_route": "FQDN already requested via 'HTTP routes' page",
+        "set_certificate_unknown_error": "Check 'Request certificate' error in the notification drawer for details"
     },
     "settings_cluster_admins": {
         "delete_admin_admin": "Delete admin {admin}",
@@ -1522,7 +1532,6 @@
         "metrics": "Metrics",
         "access_grafana": "Access Grafana",
         "alert_notifications": "Alert notifications",
-        "mail_template": "Language template",
         "default_password": "Default password",
         "note_on_grafana_cluster_admin_credentials": "Note: Use the cluster admin credentials to log in to Grafana.",
         "mail_to_format": "Invalid email address format",
@@ -1536,11 +1545,8 @@
         "notifications_tooltip": "Configure email notifications for system status changes, such as node failures or service disruptions.",
         "disabled_email_notification": "Email notifications disabled",
         "mail_from_placeholder": "E.g. user@domain.com",
-        "mail_template_helper_text": "Select the language template for email notifications. You can also create a custom template.",
         "linked_to_an_active_subscription": "This system is linked to an active subscription, alert emails are already managed and delivered by my.nethesis.it portal.",
         "alert_notifications_description": "Configure email-based alert notifications to ensure timely awareness of critical system events.",
-        "it_template": "Italian template",
-        "en_template": "English template",
         "save": "Save",
         "title": "Metrics",
         "status_notifications": "Status",
