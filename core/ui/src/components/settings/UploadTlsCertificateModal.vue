@@ -34,8 +34,17 @@
                 @click="deselectPreviousCard(item)"
               >
                 <h6>
-                  {{ item.ui_name }}
+                  <span v-if="item.node_ui_name">
+                    {{ item.node_ui_name }} ({{ $t("common.node") }}
+                    {{ item.node_id }})
+                  </span>
+                  <span v-else>
+                    {{ $t("common.node") }} {{ item.node_id }}
+                  </span>
                 </h6>
+                <div class="mg-top-md">
+                  {{ item.ui_name }}
+                </div>
               </NsTile>
             </cv-column>
           </cv-row>
@@ -144,6 +153,8 @@ export class StateManager {
       this.traefikInstances.push({
         selected: false,
         ui_name: instance.id,
+        node_id: instance.node_id,
+        node_ui_name: instance.node_ui_name,
       });
     });
   }
