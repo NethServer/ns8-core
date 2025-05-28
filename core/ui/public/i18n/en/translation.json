@@ -756,6 +756,7 @@
         "route_already_exists": "Route already exists",
         "edit_route": "Edit route",
         "edit_route_route": "Edit route {route}",
+        "save_route": "Save route",
         "host_is_not_valid_not_localhost": "'localhost' or '127.0.0.1' can be used only if you specify a path",
         "name_placeholder": "E.g. myroute",
         "host_placeholder": "E.g. myapp.example.org",
@@ -771,7 +772,9 @@
         "invalid_ipv4": "Invalid IPv4 address: {ip}",
         "automatic": "Automatic",
         "restricted": "Access restricted",
-        "attributes": "Attributes"
+        "attributes": "Attributes",
+        "route": "Route",
+        "host_pattern": "Invalid host format"
     },
     "settings_tls_certificates": {
         "title": "TLS certificates",
@@ -795,6 +798,7 @@
         "node": "Node",
         "request_certificate_for_fqdn": "Request certificate for {fqdn}",
         "fqdn_already_exists": "FQDN already exists",
+        "fqdn_conflicts_with_route": "FQDN already requested via 'HTTP routes' page",
         "add_custom_certificate": "Upload certificate",
         "key_upload_label": "Key",
         "key_upload_helptext": "Key that generates the certificate.",
@@ -802,7 +806,12 @@
         "cert_upload_helptext": "Chain of certificates must be in the same file.",
         "upload_certs": "Upload certificate",
         "instance_selection_label": "Select instance to upload the file to.",
-        "certificate_tls_tooltips": "The certificate is required by a HTTP route"
+        "cannot_obtain_certificate": "Cannot obtain certificate",
+        "invalid_identifiers_requested_error": "The provided FQDN is invalid",
+        "dns_record_error": "No DNS records found for the provided FQDN",
+        "refuses_to_issue_certificate_error": "ACME server refuses to issue a certificate for the provided FQDN",
+        "set_certificate_unknown_error": "Check 'Request certificate' error in the notification drawer for details",
+        "ensure_node_matches_fqdn_error": "Ensure the node matches the FQDN, or check 'Request certificate' error in the notification drawer for details"
     },
     "settings_acme_servers": {
         "title": "ACME servers",

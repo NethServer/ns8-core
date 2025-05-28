@@ -117,6 +117,8 @@
                     :backwardText="$t('pagination.previous_page')"
                     :forwardText="$t('pagination.next_page')"
                     :pageNumberLabel="$t('pagination.page_number')"
+                    :filterRowsCallback="filterHttpRoutes"
+                    :customSortTable="sortHttpRoutes"
                     @updatePage="tablePage = $event"
                   >
                     <template slot="empty-state">
@@ -141,6 +143,14 @@
                         :value="`${rowIndex}`"
                       >
                         <cv-data-table-cell>
+                          <span v-if="row.host && row.path">
+                            {{ row.host }}{{ row.path }}
+                          </span>
+                          <span v-else>
+                            {{ row.host || row.path }}
+                          </span>
+                        </cv-data-table-cell>
+                        <cv-data-table-cell>
                           <cv-link @click="showRouteDetailModal(row)">
                             {{ row.name }}
                           </cv-link>
@@ -156,7 +166,7 @@
                         <cv-data-table-cell>
                           <NsTag
                             v-if="!row.user_created"
-                            kind="grey"
+                            kind="gray"
                             size="sm"
                             :label="$t('settings_http_routes.automatic')"
                           />
@@ -178,21 +188,21 @@
                             :data-test-id="row.name + '-menu'"
                           >
                             <cv-overflow-menu-item
-                              @click="showEditRouteModal(row)"
-                              :data-test-id="row.name + '-edit'"
-                            >
-                              <NsMenuItem
-                                :icon="Edit20"
-                                :label="$t('common.edit')"
-                              />
-                            </cv-overflow-menu-item>
-                            <cv-overflow-menu-item
                               @click="showRouteDetailModal(row)"
                               :data-test-id="row.name + '-details'"
                             >
                               <NsMenuItem
                                 :icon="ArrowRight20"
                                 :label="$t('common.see_details')"
+                              />
+                            </cv-overflow-menu-item>
+                            <cv-overflow-menu-item
+                              @click="showEditRouteModal(row)"
+                              :data-test-id="row.name + '-edit'"
+                            >
+                              <NsMenuItem
+                                :icon="Edit20"
+                                :label="$t('common.edit')"
                               />
                             </cv-overflow-menu-item>
                             <cv-overflow-menu-item
@@ -296,7 +306,7 @@ export default {
         selectedNodeId: "",
       },
       tablePage: [],
-      tableColumns: ["name", "type", "node", "attributes"],
+      tableColumns: ["route", "name", "type", "node", "attributes"],
       routes: [],
       internalNodes: [],
       isShownCreateOrEditRouteModal: false,
@@ -651,6 +661,66 @@ export default {
 
       // reload routes
       this.listRoutes();
+    },
+    filterHttpRoutes(searchFilter) {
+      if (!searchFilter) {
+        return this.filteredRoutes;
+      } else {
+        // clean query
+        const cleanRegex = /[^a-zA-Z0-9]/g;
+        const queryText = searchFilter.replace(cleanRegex, "");
+        const searchFields = ["host", "path", "name", "type", "node"];
+
+        const searchResults = this.filteredRoutes.filter((option) => {
+          // compare query text with host + path (if present)
+          if (option.host && option.path) {
+            const hostAndPath = `${option.host}${option.path}`;
+
+            const hostAndPathMatches = new RegExp(queryText, "i").test(
+              hostAndPath.replace(cleanRegex, "")
+            );
+
+            if (hostAndPathMatches) {
+              return true;
+            }
+          }
+
+          // compare query text with attributes
+          return searchFields.some((searchField) => {
+            const searchValue = option[searchField];
+
+            if (searchValue) {
+              return new RegExp(queryText, "i").test(
+                searchValue.replace(cleanRegex, "")
+              );
+            } else {
+              return false;
+            }
+          });
+        }, this);
+        return searchResults;
+      }
+    },
+    sortHttpRoutes(sortProperty) {
+      if (sortProperty != "route") {
+        // default sort
+        return this.sortByProperty(sortProperty);
+      }
+
+      // sort by route (host or path)
+
+      return function (a, b) {
+        const valueA = a.host || a.path;
+        const valueB = b.host || b.path;
+
+        if (valueA < valueB) {
+          return -1;
+        }
+        if (valueA > valueB) {
+          return 1;
+        }
+        return 0;
+      };
     },
   },
 };
