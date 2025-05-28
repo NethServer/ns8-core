@@ -152,7 +152,8 @@
             "core_version_too_low": "Aggiorna il core alla versione {core_min} o successiva per installare un'istanza di questa app",
             "rootfull_certification_level_too_low": "Le app con privilegi amministrativi devono avere un livello di certificazione minimo di {certification_min}/5 per poter essere installate",
             "no_app_version": "Nessun rilascio stabile di {app_name} è disponibile nel repository '{app_repository}'"
-        }
+        },
+        "source_package": "Immagine app"
     },
     "nodes": {
         "title": "Nodi",
@@ -376,7 +377,13 @@
         "instance_selection_label": "Selezionare l'istanza su cui effettuare l'upload.",
         "custom": "Caricati",
         "upload": "Carica",
-        "certificate_tls_tooltips": "Il certificato è richiesto da una rotta HTTP"
+        "cannot_obtain_certificate": "Non è possibile ottenere il certificato",
+        "refuses_to_issue_certificate_error": "Il server ACME rifiuta di rilasciare un certificato per il FQDN fornito",
+        "dns_record_error": "Nessun record DNS trovato per il FQDN fornito",
+        "ensure_node_matches_fqdn_error": "Assicurarsi che il nodo corrisponda al FQDN, o controllare per i dettagli l'errore 'Richiesta certificato' nel pannello notifiche",
+        "invalid_identifiers_requested_error": "Il FQDN fornito non è valido",
+        "fqdn_conflicts_with_route": "FQDN già richiesto tramite la pagina 'Rotte HTTP'",
+        "set_certificate_unknown_error": "Controllare l'errore 'Richiesta certificato' nel pannello notifiche per i dettagli"
     },
     "about": {
         "documentation": "Documentazione",
@@ -1360,7 +1367,10 @@
         "automatic": "Automatico",
         "invalid_ipv4": "Indirizzo IPv4 non valido: {ip}",
         "restricted": "Accesso limitato",
-        "ip_allowlist_helper": "Inserisci un indirizzo IPv4 o CIDR per riga. Lasciare vuoto per consentire l'accesso da qualsiasi indirizzo IP"
+        "ip_allowlist_helper": "Inserisci un indirizzo IPv4 o CIDR per riga. Lasciare vuoto per consentire l'accesso da qualsiasi indirizzo IP",
+        "route": "Rotta",
+        "save_route": "Salva rotta",
+        "host_pattern": "Formato hostname non valido"
     },
     "samba": {
         "choose_samba_admin_username": "Scegli il nome utente dell'amministratore di Samba",
@@ -1527,7 +1537,6 @@
         "mail_from_format": "Formato dell'indirizzo email non valido",
         "mail_to": "Indirizzi email destinatari",
         "disabled_email_notifications_description": "Per configurare la notifica degli allarmi, le notifiche email devono essere abilitate nelle impostazioni del cluster.",
-        "mail_template": "Lingua template",
         "notification_enabled_on_my_nethesis": "Notifiche abilitate su my.nethesis.it",
         "grafana_description": "Le metriche vengono raccolte automaticamente da tutti i nodi e memorizzate in Prometheus sul nodo leader. Grafana può essere utilizzato per navigare e ispezionare queste metriche.",
         "grafana_tooltip": "Grafana è una piattaforma web di analisi e monitoraggio. Consente di visualizzare e analizzare le metriche raccolte dai nodi.",
@@ -1535,7 +1544,6 @@
         "notifications_tooltip": "Configura le notifiche email sui cambiamenti di stato del sistema, come guasti del nodo o interruzioni dei servizi.",
         "disabled_email_notification": "Notifiche email disabilitate",
         "mail_from_placeholder": "Es. user@domain.com",
-        "mail_template_helper_text": "Seleziona la lingua del template delle notifiche email. È anche possibile creare un template personalizzato.",
         "linked_to_an_active_subscription": "Questo sistema è collegato ad una subscription attiva, le email di avviso sono già gestite e consegnate dal portale my.nethesis.it.",
         "alert_notifications_description": "Configura le notifiche email degli allarmi per essere avvisati tempestivamente sugli eventi di sistema critici.",
         "save": "Salva",
@@ -1543,8 +1551,6 @@
         "status_notifications": "Stato",
         "default_username": "Nome utente predefinito",
         "access_grafana": "Accesso Grafana",
-        "it_template": "Template italiano",
-        "en_template": "Template inglese",
         "mail_to_helper_text": "Inserisci gli indirizzi email per ricevere le notifiche. Digitare un indirizzo email per riga.",
         "grafana_link": "Vai alla dashboard di Grafana",
         "mail_from": "Indirizzo email mittente"

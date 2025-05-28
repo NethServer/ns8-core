@@ -346,7 +346,7 @@
         "no_instance_to_restore_description": "Het lijkt erop dat er geen app instance backed up op je bestemming is",
         "choose_app_instances_to_backup": "Kies app instances voor back-up.",
         "delete_backup_explanation_1": "{instanceName} wordt niet meer geback-upt. Als u van gedachten verandert, moet u een nieuwe back-up plannen. | {numInstances} app instances wordt niet meer geback-upt. Als u van gedachten verandert, moet u een nieuwe back-up plannen.",
-        "app_instances_not_backed_up": "Apps zijn niet geback upt",
+        "app_instances_not_backed_up": "Apps zijn niet geback-upt",
         "most_recent": "Meest recent",
         "from_this_cluster": "Van dit cluster",
         "url_pattern": "De S3-compatibele hostnaam en bucketnaam moeten worden gescheiden door een slash '/'",
@@ -574,7 +574,8 @@
         "search_placeholder": "Apps zoeken",
         "instances_update_will_start_in_a_moment": "De Instances start zo meteen...",
         "core_app_name": "{productName} kern",
-        "move_app": "Verplaats app"
+        "move_app": "Verplaats app",
+        "source_package": "App image"
     },
     "domains": {
         "domain_summary": "Samenvatting",
@@ -914,7 +915,10 @@
         "path": "Locatie",
         "skip_cert_verify": "Skip certificaat validatie",
         "host_placeholder": "B.v. myapp.example.org",
-        "edit_route_route": "Wijzig route {route}"
+        "edit_route_route": "Wijzig route {route}",
+        "save_route": "Save route",
+        "route": "Route",
+        "host_pattern": "Invalid host format"
     },
     "password": {
         "uppercase_letter": "Hoofdletters",
@@ -1274,7 +1278,6 @@
         "fqdn": "FQDN",
         "key_upload_label": "Sleutel",
         "fqdn_helper": "Verzoek een certificaat voor deze FQDN",
-        "certificate_tls_tooltips": "Het certificaat is vereist voor een HTTP-route",
         "pending": "In Afwachting",
         "show_all": "Toon alles",
         "request_certificate_for_fqdn": "Verzoek een certificaat voor {fqdn}",
@@ -1291,7 +1294,14 @@
         "no_tls_certificate_description": "Er is geen TLS certificaat gevraagd",
         "request_certificate": "Verzoek certificaat",
         "upload_certs": "Upload een certificaat",
-        "status": "Status"
+        "status": "Status",
+        "refuses_to_issue_certificate_error": "ACME server refuses to issue a certificate for the provided FQDN",
+        "cannot_obtain_certificate": "Cannot obtain certificate",
+        "dns_record_error": "No DNS records found for the provided FQDN",
+        "ensure_node_matches_fqdn_error": "Ensure the node matches the FQDN, or check 'Request certificate' error in the notification drawer for details",
+        "invalid_identifiers_requested_error": "The provided FQDN is invalid",
+        "fqdn_conflicts_with_route": "FQDN already requested via 'HTTP routes' page",
+        "set_certificate_unknown_error": "Check 'Request certificate' error in the notification drawer for details"
     },
     "settings_cluster_admins": {
         "delete_admin_admin": "Verwijder beheerder {admin}",
@@ -1529,19 +1539,15 @@
         "grafana_tooltip": "Grafana is a web-based analytics and monitoring platform. It allows you to visualize and analyze metrics collected from your nodes.",
         "mail_to": "Recipient email addresses",
         "disabled_email_notifications_description": "To configure alert notifications, email notifications must be enabled in the cluster settings.",
-        "mail_template": "Language template",
         "notification_enabled_on_my_nethesis": "Notifications enabled on my.nethesis.it",
         "grafana_description": "Metrics are automatically collected from all nodes and stored to Prometheus on the leader node. Grafana can be used to navigate and inspect such metrics.",
         "alert_notifications": "Alert notifications",
         "notifications_tooltip": "Configure email notifications for system status changes, such as node failures or service disruptions.",
         "disabled_email_notification": "Email notifications disabled",
         "mail_from_placeholder": "E.g. user@domain.com",
-        "mail_template_helper_text": "Select the language template for email notifications. You can also create a custom template.",
         "linked_to_an_active_subscription": "This system is linked to an active subscription, alert emails are already managed and delivered by my.nethesis.it portal.",
         "alert_notifications_description": "Configure email-based alert notifications to ensure timely awareness of critical system events.",
         "access_grafana": "Access Grafana",
-        "it_template": "Italian template",
-        "en_template": "English template",
         "title": "Metrics",
         "status_notifications": "Status",
         "default_username": "Default username",
