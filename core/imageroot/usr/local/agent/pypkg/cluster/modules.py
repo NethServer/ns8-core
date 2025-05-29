@@ -612,12 +612,10 @@ def list_core_modules(rdb):
         core_modules['core']['instances'].append(core_instance)
     for module_source, instances in list_installed(rdb, skip_core_modules=False).items():
         _, image_name = module_source.rsplit("/", 1)
-        try:
-            has_core_module = 'core_module' in instances[0]['flags']
-        except:
-            has_core_module = False
-        if not has_core_module:
-            continue
+        # Filter out module instances without core_module flag:
+        instances = [xinst for xinst in instances if 'core_module' in xinst.get('flags', [])]
+        if not instances:
+            continue # Ignore standard apps
         core_modules.setdefault(image_name, {"name": image_name, "instances": []})
         for instance in instances:
             core_modules[image_name]['instances'].append({
@@ -676,6 +674,11 @@ def decorate_with_install_destinations(rdb, available_modules):
                     "parameter": str(min_core),
                 }
                 continue
+
+def decorate_without_core_module_instances(rdb, available_modules):
+    """Filter out installed instances with core_module flag"""
+    for oamodule in available_modules:
+        oamodule['installed'] = [xinst for xinst in oamodule['installed'] if 'core_module' not in xinst.get('flags', [])]
 
 def decorate_with_installed(rdb, available_modules):
     """Decorate each item of available_modules list with an
