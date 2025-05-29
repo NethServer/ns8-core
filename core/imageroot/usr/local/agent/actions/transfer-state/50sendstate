@@ -62,6 +62,7 @@ podman_cmd = [
 rsync_cmd = [
     'rsync',
     '-a',
+    '--xattrs',
     '--info=progress2',
     '--delete-after',
 

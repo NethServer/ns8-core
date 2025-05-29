@@ -44,6 +44,7 @@ podman_cmd = [
 rsync_cmd = [
     'rsync',
     '-a',
+    '--xattrs',
     '--info=progress2',
 
     # high-priority, harcoded filter rules: they cannot be overriden
