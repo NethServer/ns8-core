@@ -600,7 +600,7 @@
         "get-node-status": "Visualizza status nodo",
         "remove-module": "Rimuovi app",
         "set-name": "Imposta nome",
-        "list-user-domains": "Elenco dei domini utente",
+        "list-user-domains": "Elenca domini utente",
         "remove-external-provider": "Rimuovere provider esterno",
         "remove-internal-provider": "Rimuovi provider interno",
         "remove-external-domain": "Rimuovi dominio esterno",
