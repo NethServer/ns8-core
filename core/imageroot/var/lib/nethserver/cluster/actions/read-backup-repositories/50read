@@ -53,7 +53,11 @@ for krepo in rdb.scan_iter('cluster/backup_repository/*'):
         lsjson_data = []
         print(agent.SD_WARNING, 'Failed invocation of', *rclone_lsjson_cmd, ':', ex, file=sys.stderr)
     for oroot in lsjson_data:
-        restic_prefix, restic_uuid, _ = oroot["Path"].split("/", 2)
+        try:
+            restic_prefix, restic_uuid, _ = oroot["Path"].split("/")
+        except ValueError:
+            print('Ignored Restic repository with unexpected path:', oroot["Path"], file=sys.stderr)
+            continue
         try:
             # Obtain from lsjson the repository creation timestamp
             unix_timestamp = int(time.mktime(datetime.fromisoformat(oroot["ModTime"]).timetuple()))
