@@ -50,4 +50,4 @@ echo
 eval $(blkid $device -o export)
 echo "Add this line to fstab:"
 echo
-echo "UUID=$UUID /home $TYPE rw,errors=remount-ro 0 1"
+echo "UUID=$UUID /home $TYPE defaults 0 1"
