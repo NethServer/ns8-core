@@ -20,6 +20,7 @@ const sharedProps = {
   totalFileCountLabel: "Total file count",
   backupDisabledLabel: "Disabled",
   showMoreLabel: "Show more",
+  multipleUncertainStatusLabel: "Some backups failed or are pending",
   coreContext: {}, // coreContext is required
 };
 
