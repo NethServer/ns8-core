@@ -20,6 +20,7 @@ const sharedProps = {
   totalFileCountLabel: "Total file count",
   backupDisabledLabel: "Disabled",
   showMoreLabel: "Show more",
+  multipleUncertainStatusLabel: "Some backups failed or are pending",
   coreContext: {}, // coreContext is required
 };
 
@@ -200,7 +201,13 @@ MultipleBackup.args = {
         {
           module_id: "dokuwiki1",
           repository_path: "dokuwiki1@th745f96-65dc-4a2d-ba4f-712e8c049245",
-          status: null,
+          status: {
+            success: true,
+            end: 1641832747,
+            start: 1641832738,
+            total_file_count: 2376,
+            total_size: 3298951,
+          },
           ui_name: "",
         },
       ],

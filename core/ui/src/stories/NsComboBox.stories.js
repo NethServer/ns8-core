@@ -74,8 +74,8 @@ const fruitOptions = [
 
 export const Default = Template.bind({});
 Default.args = {
-  autoFilter: false,
-  autoHighlight: false,
+  autoFilter: true,
+  autoHighlight: true,
   disabled: false,
   readonly: false,
   invalidMessage: "",
@@ -100,8 +100,8 @@ Default.args = {
 
 export const ShowItemTypeAndDescription = Template.bind({});
 ShowItemTypeAndDescription.args = {
-  autoFilter: false,
-  autoHighlight: false,
+  autoFilter: true,
+  autoHighlight: true,
   disabled: false,
   readonly: false,
   invalidMessage: "",
@@ -127,7 +127,7 @@ ShowItemTypeAndDescription.args = {
 export const AcceptUserInput = Template.bind({});
 AcceptUserInput.args = {
   autoFilter: true,
-  autoHighlight: false,
+  autoHighlight: true,
   disabled: false,
   readonly: false,
   invalidMessage: "",

@@ -504,6 +504,7 @@
         "last_backup": "Last backup",
         "status": "Status",
         "backup_has_not_run_yet": "Backup has not run yet",
+        "some_backups_failed_or_are_pending": "Some backups failed or are pending",
         "total_size": "Total size",
         "total_file_count": "Total file count",
         "completed": "Completed",
