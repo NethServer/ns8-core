@@ -183,6 +183,8 @@
             :title="$t('backup.backup_repository_auth_error')"
             :description="$t('backup.backup_repository_auth_error_description')"
             :showCloseButton="false"
+            @click="goToNotificationDrawer"
+            :actionLabel="$t('backup.go_to_notification_drawer')"
           />
           <template v-if="isClusterSelected">
             <NsComboBox
@@ -441,6 +443,7 @@
 import { UtilService, TaskService, IconService } from "@nethserver/ns8-ui-lib";
 import to from "await-to-js";
 import last from "lodash/last";
+import { mapActions } from "vuex";
 
 export default {
   name: "AddRepositoryModal",
@@ -618,7 +621,13 @@ export default {
       }
     },
   },
-  methods: {
+  methods:{
+    ...mapActions(["setNotificationDrawerShownInStore"]
+    ),
+    goToNotificationDrawer() {
+      this.$emit("hide");
+      this.setNotificationDrawerShownInStore(true);
+    },
     clearFields() {
       this.isBackblazeSelected = false;
       this.isAmazonS3Selected = false;

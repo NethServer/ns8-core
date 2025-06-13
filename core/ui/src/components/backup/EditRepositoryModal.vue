@@ -18,6 +18,8 @@
           kind="error"
           :title="$t('backup.backup_repository_auth_error')"
           :description="$t('backup.backup_repository_auth_error_description')"
+          @click="goToNotificationDrawer"
+          :actionLabel="$t('backup.go_to_notification_drawer')"
           :showCloseButton="false"
         />
         <cv-text-input
@@ -186,6 +188,7 @@
 <script>
 import { UtilService, TaskService, IconService } from "@nethserver/ns8-ui-lib";
 import to from "await-to-js";
+import { mapActions } from "vuex";
 
 export default {
   name: "EditRepositoryModal",
@@ -308,6 +311,11 @@ export default {
     },
   },
   methods: {
+    ...mapActions(["setNotificationDrawerShownInStore"]),
+    goToNotificationDrawer() {
+      this.$emit("hide");
+      this.setNotificationDrawerShownInStore(true);
+    },
     buildRepositoryParameters() {
       switch (this.repository.provider) {
         case "backblaze":
