@@ -62,6 +62,7 @@
         </NsTextInput>
         <NsToggle
           v-if="user_created"
+          class="mg-left-md"
           :label="$t('settings_http_routes.skip_cert_verify')"
           value="stripPrefixValue"
           :form-item="true"
@@ -93,6 +94,19 @@
             <span>{{ $t("settings_http_routes.host_tooltip") }}</span>
           </template>
         </NsTextInput>
+        <NsToggle
+          v-if="user_created"
+          :label="$t('settings_http_routes.request_lets_encrypt_certificate')"
+          value="letsEncryptValue"
+          class="mg-left-md"
+          :form-item="true"
+          v-model="lets_encrypt"
+          :disabled="loading.setRoute || !user_created || !host"
+          ref="lets_encrypt"
+        >
+          <template slot="text-left">{{ $t("common.disabled") }}</template>
+          <template slot="text-right">{{ $t("common.enabled") }}</template>
+        </NsToggle>
         <NsTextInput
           v-if="user_created"
           v-model.trim="path"
@@ -112,10 +126,11 @@
           v-if="user_created"
           :label="$t('settings_http_routes.strip_prefix')"
           value="stripPrefixValue"
+          class="mg-left-md"
           :form-item="true"
           v-model="strip_prefix"
-          :disabled="loading.setRoute || !user_created"
-          ref="tls"
+          :disabled="loading.setRoute || !user_created || !path"
+          ref="strip_prefix"
         >
           <template slot="tooltip">
             <i18n path="settings_http_routes.strip_prefix_tooltip" tag="span">
@@ -135,37 +150,71 @@
         </NsToggle>
         <NsToggle
           v-if="user_created"
-          :label="$t('settings_http_routes.request_lets_encrypt_certificate')"
-          value="letsEncryptValue"
+          :label="$t('settings_http_routes.slash_redirect')"
+          value="slashRedirectValue"
+          class="mg-left-md"
           :form-item="true"
-          v-model="lets_encrypt"
-          :disabled="loading.setRoute || !user_created"
-          ref="lets_encrypt"
+          v-model="slash_redirect"
+          :disabled="loading.setRoute || !user_created || !path"
+          ref="slash_redirect"
         >
+          <template slot="tooltip">
+            {{ $t("settings_http_routes.slash_redirect_tooltip") }}
+          </template>
           <template slot="text-left">{{ $t("common.disabled") }}</template>
           <template slot="text-right">{{ $t("common.enabled") }}</template>
         </NsToggle>
-        <NsToggle
-          v-if="user_created"
-          :label="$t('settings_http_routes.http2https')"
-          value="http2httpsValue"
-          :form-item="true"
-          v-model="http2https"
-          :disabled="loading.setRoute || !user_created"
-          ref="http2https"
-        >
-          <template slot="text-left">{{ $t("common.disabled") }}</template>
-          <template slot="text-right">{{ $t("common.enabled") }}</template>
-        </NsToggle>
-        <cv-text-area
-          v-model.trim="ip_allowlist_str"
-          :placeholder="$t('settings_http_routes.ip_allowlist_placeholder')"
-          :label="$t('settings_http_routes.ip_allowlist')"
-          :invalid-message="error.ip_allowlist"
-          :disabled="loading.setRoute"
-          ref="ip_allowlist"
-          :helper-text="$t('settings_http_routes.ip_allowlist_helper')"
-        />
+        <!-- advanced options -->
+        <template v-if="user_created">
+          <cv-accordion ref="accordion" class="maxwidth mg-bottom">
+            <cv-accordion-item
+              :open="isAccordionOpen"
+              @click="toggleAccordionStatus"
+            >
+              <template slot="title">{{ $t("common.advanced") }}</template>
+              <template slot="content">
+                <NsToggle
+                  v-if="user_created"
+                  :label="$t('settings_http_routes.http2https')"
+                  value="http2httpsValue"
+                  class="mg-left-md"
+                  :form-item="true"
+                  v-model="http2https"
+                  :disabled="loading.setRoute || !user_created"
+                  ref="http2https"
+                >
+                  <template slot="text-left">{{
+                    $t("common.disabled")
+                  }}</template>
+                  <template slot="text-right">{{
+                    $t("common.enabled")
+                  }}</template>
+                </NsToggle>
+                <cv-text-area
+                  v-model.trim="ip_allowlist_str"
+                  :placeholder="
+                    $t('settings_http_routes.ip_allowlist_placeholder')
+                  "
+                  :label="$t('settings_http_routes.ip_allowlist')"
+                  :invalid-message="error.ip_allowlist"
+                  :disabled="loading.setRoute"
+                  ref="ip_allowlist"
+                  :helper-text="$t('settings_http_routes.ip_allowlist_helper')"
+              /></template>
+            </cv-accordion-item>
+          </cv-accordion>
+        </template>
+        <!-- if user_created is false, show ip_allowlist as text area -->
+        <template v-else>
+          <cv-text-area
+            v-model.trim="ip_allowlist_str"
+            :placeholder="$t('settings_http_routes.ip_allowlist_placeholder')"
+            :label="$t('settings_http_routes.ip_allowlist')"
+            :invalid-message="error.ip_allowlist"
+            :disabled="loading.setRoute"
+            ref="ip_allowlist"
+            :helper-text="$t('settings_http_routes.ip_allowlist_helper')"
+        /></template>
         <!-- need to wrap error notification inside a div: custom elements like NsInlineNotification don't have scrollIntoView() function -->
         <div ref="setRouteError">
           <NsInlineNotification
@@ -223,11 +272,13 @@ export default {
       path: "",
       skip_cert_verify: false,
       lets_encrypt: false,
-      http2https: false,
+      http2https: true,
       strip_prefix: false,
+      slash_redirect: false,
       ip_allowlist: "",
       ip_allowlist_str: "",
       user_created: true,
+      isAccordionOpen: false,
       loading: {
         setRoute: false,
       },
@@ -252,9 +303,21 @@ export default {
         this.skip_cert_verify = false;
       }
     },
+    host(newHost) {
+      if (!newHost) {
+        this.lets_encrypt = false; // disable lets_encrypt by default when host is not set
+      }
+    },
+    path(newPath) {
+      if (!newPath) {
+        this.strip_prefix = false; // disable strip_prefix by default when path is not set
+        this.slash_redirect = false; // disable slash_redirect by default when path is not set
+      }
+    },
     isShown: function () {
       if (this.isShown) {
         this.clearErrors();
+        this.isAccordionOpen = false;
 
         if (this.isEditing) {
           // edit route
@@ -264,14 +327,22 @@ export default {
           this.host = this.route.host;
           this.path = this.route.path;
           this.strip_prefix = this.route.strip_prefix;
+          this.slash_redirect = this.route.slash_redirect;
           this.lets_encrypt = this.route.lets_encrypt;
           this.http2https = this.route.http2https;
           this.skip_cert_verify = this.route.skip_cert_verify;
           this.ip_allowlist_str = this.route.ip_allowlist_str;
           this.user_created = this.route.user_created;
+          // open accordion if http2https or ip_allowlist_str is set
+          if (this.http2https || this.ip_allowlist_str) {
+            this.$nextTick(() => {
+              this.isAccordionOpen = true;
+            });
+          }
         } else {
           // create route
           this.clearFields();
+          this.isAccordionOpen = false;
         }
       }
     },
@@ -290,6 +361,9 @@ export default {
     this.updateSelectedNodeId();
   },
   methods: {
+    toggleAccordionStatus() {
+      this.isAccordionOpen = !this.isAccordionOpen;
+    },
     updateSelectedNodeId() {
       if (this.defaultNodeId != "all") {
         this.selectedNodeId = this.defaultNodeId;
@@ -470,6 +544,7 @@ export default {
       if (this.path) {
         setRouteData.path = this.path;
         setRouteData.strip_prefix = this.strip_prefix;
+        setRouteData.slash_redirect = this.slash_redirect;
       }
 
       const notificationTitle = isEditingRoute
@@ -546,8 +621,9 @@ export default {
       this.host = "";
       this.path = "";
       this.lets_encrypt = false;
-      this.http2https = false;
+      this.http2https = true;
       this.strip_prefix = false;
+      this.slash_redirect = false;
       this.skip_cert_verify = false;
       this.ip_allowlist_str = "";
       this.user_created = true;
@@ -558,4 +634,7 @@ export default {
 
 <style scoped lang="scss">
 @import "../../styles/carbon-utils";
+.maxwidth {
+  max-width: 38rem;
+}
 </style>
