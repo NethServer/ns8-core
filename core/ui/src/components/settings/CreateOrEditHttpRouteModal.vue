@@ -62,7 +62,7 @@
         </NsTextInput>
         <NsToggle
           v-if="user_created"
-          class="mg-left-md"
+          class="toggle-dependent"
           :label="$t('settings_http_routes.skip_cert_verify')"
           value="stripPrefixValue"
           :form-item="true"
@@ -98,7 +98,7 @@
           v-if="user_created"
           :label="$t('settings_http_routes.request_lets_encrypt_certificate')"
           value="letsEncryptValue"
-          class="mg-left-md"
+          class="toggle-dependent"
           :form-item="true"
           v-model="lets_encrypt"
           :disabled="loading.setRoute || !user_created || !host"
@@ -126,7 +126,7 @@
           v-if="user_created"
           :label="$t('settings_http_routes.strip_prefix')"
           value="stripPrefixValue"
-          class="mg-left-md"
+          class="toggle-dependent"
           :form-item="true"
           v-model="strip_prefix"
           :disabled="loading.setRoute || !user_created || !path"
@@ -152,7 +152,7 @@
           v-if="user_created"
           :label="$t('settings_http_routes.slash_redirect')"
           value="slashRedirectValue"
-          class="mg-left-md"
+          class="toggle-dependent"
           :form-item="true"
           v-model="slash_redirect"
           :disabled="loading.setRoute || !user_created || !path"
@@ -177,7 +177,6 @@
                   v-if="user_created"
                   :label="$t('settings_http_routes.http2https')"
                   value="http2httpsValue"
-                  class="mg-left-md"
                   :form-item="true"
                   v-model="http2https"
                   :disabled="loading.setRoute || !user_created"
@@ -636,5 +635,8 @@ export default {
 @import "../../styles/carbon-utils";
 .maxwidth {
   max-width: 38rem;
+}
+.toggle-dependent {
+  margin-bottom: $spacing-07;
 }
 </style>
