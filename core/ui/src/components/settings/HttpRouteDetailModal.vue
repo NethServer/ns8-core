@@ -54,6 +54,23 @@
           ></cv-tag>
         </span>
       </div>
+      <div v-if="route.path" class="key-value-setting">
+        <span class="label">{{
+          $t("settings_http_routes.slash_redirect")
+        }}</span>
+        <span class="value">
+          <cv-tag
+            :kind="route.slash_redirect ? 'green' : 'high-contrast'"
+            size="sm"
+            :label="
+              route.slash_redirect
+                ? $t('common.enabled')
+                : $t('common.disabled')
+            "
+            class="no-margin"
+          ></cv-tag>
+        </span>
+      </div>
       <div class="key-value-setting">
         <span class="label">{{
           $t("settings_http_routes.request_lets_encrypt_certificate")

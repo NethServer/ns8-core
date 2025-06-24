@@ -740,6 +740,8 @@
         "strip_prefix": "Strip URL path prefix",
         "strip_prefix_tooltip": "{traefikPrefixesOption} defines the prefixes to strip from the request URL. E.g.: It allows you to strip a specified prefix from the URL path. If, for example, you remove /api from /api/v1/resource, the resulting path after it is applied would be /v1/resource.",
         "traefik_prefixes_option": "Traefik prefixes option",
+        "slash_redirect": "Append trailing slash to path",
+        "slash_redirect_tooltip": "If the request URL does not end with a slash (/) force a redirect to the correct URL with a trailing slash.",
         "request_lets_encrypt_certificate": "Request Let's Encrypt certificate",
         "http2https": "HTTP to HTTPS",
         "traefik_instance": "Traefik instance",
