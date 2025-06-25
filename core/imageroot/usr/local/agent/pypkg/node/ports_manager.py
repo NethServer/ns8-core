@@ -28,21 +28,25 @@ class InvalidPortRequestError(PortError):
         super().__init__(self.message)
 
 def create_tables(cursor: sqlite3.Cursor):
-    # Create TCP table if it doesn't exist
+    # Create TCP table if it doesn't exist, with unique constraints
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS TCP_PORTS (
             start INT NOT NULL,
             end INT NOT NULL,
-            module CHAR(255) NOT NULL
+            module CHAR(255) NOT NULL,
+            UNIQUE(start),
+            UNIQUE(end)
         );
     """)
 
-    # Create UDP table if it doesn't exist
+    # Create UDP table if it doesn't exist, with unique constraints
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS UDP_PORTS (
             start INT NOT NULL,
             end INT NOT NULL,
-            module CHAR(255) NOT NULL
+            module CHAR(255) NOT NULL,
+            UNIQUE(start),
+            UNIQUE(end)
         );
     """)
 
