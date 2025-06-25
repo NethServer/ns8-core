@@ -50,9 +50,19 @@ def create_tables(cursor: sqlite3.Cursor):
         );
     """)
 
-def is_port_used(ports_used, port_to_check):
-    for port in ports_used:
-        if port_to_check in range(port[0], port[1] + 1):
+def is_port_range_used(candidate_start: int, candidate_end: int, ports_used) -> bool:
+    """
+    Check if the candidate port range overlaps any already used range.
+
+    :param candidate_start: Start of the candidate range.
+    :param candidate_end: End of the candidate range.
+    :param ports_used: List of tuples (start, end, module) for already allocated ranges.
+    :return: True if there is an overlap, False otherwise.
+    """
+    for port_range in ports_used:
+        used_start, used_end, _ = port_range
+        # If the ranges overlap, return True
+        if not (candidate_end < used_start or candidate_start > used_end):
             return True
     return False
 
@@ -96,22 +106,14 @@ def allocate_ports(required_ports: int, module_name: str, protocol: str, keep_ex
                     cursor.execute("SELECT start,end,module FROM UDP_PORTS ORDER BY start;")
                 ports_used = cursor.fetchall()
 
-            if len(ports_used) == 0:
-                write_range(range_start, range_start + required_ports - 1, module_name, protocol, database)
-                return (range_start, range_start + required_ports - 1)
+            # Main allocation logic: find the first free range without overlap
+            for candidate_start in range(range_start, range_end - required_ports + 2):
+                candidate_end = candidate_start + required_ports - 1
+                if not is_port_range_used(candidate_start, candidate_end, ports_used):
+                    write_range(candidate_start, candidate_end, module_name, protocol, database)
+                    return (candidate_start, candidate_end)
 
-            while range_start <= range_end:
-                # Check if the current port is within an already used range
-                for port_range in ports_used:
-                    for index in range(required_ports):
-                        if is_port_used(ports_used, range_start+index):
-                            range_start = port_range[1] + 1  # Move to the next available port range
-                            break
-                        if index == required_ports-1:
-                            write_range(range_start, range_start + required_ports - 1, module_name, protocol, database)
-                            return (range_start, range_start + required_ports - 1)
-            else:
-                raise PortRangeExceededError()
+            raise PortRangeExceededError()
     except sqlite3.Error as e:
         raise StorageError(f"Database error: {e}") from e # Raise custom database error
 
