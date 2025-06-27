@@ -146,7 +146,9 @@
         "ip_allowlist_helper": "Enter one IPv4 or CIDR address per line. Leave empty to allow access from any IP address",
         "route": "Route",
         "save_route": "Save route",
-        "host_pattern": "Invalid host format"
+        "host_pattern": "Invalid host format",
+        "slash_redirect": "Append trailing slash to path",
+        "slash_redirect_tooltip": "If the request URL does not end with a slash (/) force a redirect to the correct URL with a trailing slash."
     },
     "domains": {
         "cannot_connect_to_domain_controller_description": "Try to route IP traffic of domain controllers through cluster VPN",
@@ -1046,7 +1048,9 @@
         "some_backups_failed": "Some backups failed",
         "replace_existing_app_is_not_available_tooltip": "Cannot replace the existing app. The app must be removed before the restoration",
         "replace_existing_app_tooltip": "Replace the existing app. The old app instance will be removed and the new one will be restored",
-        "replace_existing_app_select_an_app_tooltip": "Select an application to replace"
+        "replace_existing_app_select_an_app_tooltip": "Select an application to replace",
+        "some_backups_failed_or_are_pending": "Some backups failed or are pending",
+        "go_to_notification_drawer": "Open Notifications drawer"
     },
     "smarthost": {
         "connection_timeout_error": "The connection issued a timeout error, verify the SMTP port number and the SMTP server name",
