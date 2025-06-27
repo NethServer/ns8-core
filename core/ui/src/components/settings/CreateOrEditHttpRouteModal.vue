@@ -538,12 +538,18 @@ export default {
 
       if (this.host) {
         setRouteData.host = this.host;
+      } else {
+        setRouteData.host = null;
       }
 
       if (this.path) {
         setRouteData.path = this.path;
         setRouteData.strip_prefix = this.strip_prefix;
         setRouteData.slash_redirect = this.slash_redirect;
+      } else {
+        setRouteData.path = null;
+        setRouteData.strip_prefix = false;
+        setRouteData.slash_redirect = false;
       }
 
       const notificationTitle = isEditingRoute
