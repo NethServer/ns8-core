@@ -201,7 +201,22 @@
           :title="$t('domains.no_node_eligible_for_provider_installation')"
           :showCloseButton="false"
         />
+        <NsInlineNotification
+          v-if="error.listModules"
+          kind="error"
+          :title="$t('action.list-modules')"
+          :description="error.listModules"
+          :showCloseButton="false"
+        />
+        <cv-skeleton-text
+          v-else-if="loading.listModules"
+          :paragraph="true"
+          :line-count="5"
+          heading
+          class="mg-top-xlg"
+        ></cv-skeleton-text>
         <NodeSelector
+          v-else
           :disabledNodes="disabledNodes"
           @selectNode="onSelectNode"
           class="mg-top-xlg"
@@ -526,6 +541,7 @@ export default {
       installProviderProgress: 0,
       configureProviderProgress: 0,
       selectedNode: null,
+      modules: [],
       samba: {
         adminuser: "",
         adminpass: "",
@@ -556,6 +572,7 @@ export default {
         tls_verify: true,
       },
       loading: {
+        listModules: false,
         samba: {
           getDefaults: false,
           configureModule: false,
@@ -570,6 +587,7 @@ export default {
       },
       error: {
         addInternalProvider: "",
+        listModules: "",
         samba: {
           adminuser: "",
           adminpass: "",
@@ -667,23 +685,24 @@ export default {
         return this.samba.ipAddressOptions;
       }
     },
+    sambaModule() {
+      return this.modules.find((module) => module.name === "Samba");
+    },
     disabledNodes() {
       if (this.isOpenLdapSelected) {
         // openldap supports multiple instances on the same node
         return [];
       } else {
-        // samba allows only one instance per node
-        const disabledNodes = [];
+        // samba
 
-        for (const domain of this.domains) {
-          for (const provider of domain.providers) {
-            if (provider.id.startsWith("samba")) {
-              disabledNodes.push(provider.node);
-            }
-          }
+        if (!this.sambaModule) {
+          // list-modules task not completed yet
+          return [];
         }
-        // remove possible duplicates
-        return [...new Set(disabledNodes)];
+
+        return this.sambaModule.install_destinations
+          .filter((nodeInfo) => !nodeInfo.eligible)
+          .map((nodeInfo) => nodeInfo.node_id);
       }
     },
   },
@@ -715,6 +734,12 @@ export default {
     },
     isSamba: function () {
       this.isSambaSelected = this.isSamba;
+    },
+    step: function () {
+      if (this.step == "node" && !this.isOpenLdapSelected) {
+        // load eligible nodes
+        this.listModules();
+      }
     },
   },
   created() {
@@ -1586,6 +1611,55 @@ export default {
     },
     onSelectNode(selectedNode) {
       this.selectedNode = selectedNode;
+    },
+    async listModules() {
+      this.loading.listModules = true;
+      this.error.listModules = "";
+      this.modules = [];
+      this.selectedNode = null;
+      const taskAction = "list-modules";
+      const eventId = this.getUuid();
+
+      // register to task error
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.listModulesAborted
+      );
+
+      // register to task completion
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.listModulesCompleted
+      );
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+            eventId,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.listModules = this.getErrorMessage(err);
+        this.loading.listModules = false;
+        return;
+      }
+    },
+    listModulesAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.listModules = this.$t("error.generic_error");
+      this.loading.listModules = false;
+    },
+    listModulesCompleted(taskContext, taskResult) {
+      this.loading.listModules = false;
+      let modules = taskResult.output;
+      this.modules = modules;
     },
   },
 };
