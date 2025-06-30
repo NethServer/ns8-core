@@ -418,7 +418,7 @@ export default {
       }
     },
     sambaModule() {
-      return this.modules.find((module) => module.name === "Samba");
+      return this.modules.find((module) => module.id === "samba");
     },
   },
   watch: {
