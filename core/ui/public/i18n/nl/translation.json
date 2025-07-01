@@ -178,11 +178,11 @@
         "get-cluster-status": "Haal cluster status op",
         "add-repository": "Repository toevoegen",
         "remove-module": "App verwijderen",
-        "set-metrics-notifications": "Set metrics notifications",
-        "get-metrics-configuration": "Get metrics configuration",
-        "set-metrics-configuration": "Set metrics configuration",
-        "get-metrics-id": "Get metrics ID",
-        "get-metrics-ids": "Get metrics IDs"
+        "set-metrics-notifications": "Statistieken meldingen instellen",
+        "get-metrics-configuration": "statistieken configureren",
+        "set-metrics-configuration": "Statistiek configuratie instellen",
+        "get-metrics-id": "Haal statistiek ID's op",
+        "get-metrics-ids": "Haal statistiek ID's op"
     },
     "backup": {
         "aws_url_label": "AWS bucket naam",
@@ -233,7 +233,7 @@
         "backup_completed_successfully": "{backupName} succesvol uitgevoerd",
         "from_different_cluster": "Van een ander cluster",
         "cluster_backup_password_warning_description_1": "De configurant cluster versterking bevat gevoelige gegevens die nodig zijn voor een ramp herstel.",
-        "backup_repository_auth_error_description": "Controleer de bestemmingsinstellingen",
+        "backup_repository_auth_error_description": "Controleer de fout in de briefing voor details",
         "cluster_configuration_tooltip": "Download een versleuteld GPG-bestand dat je kunt gebruiken om de cluster te herstellen in een rampscenario. Additioneel is de configuratie automatisch ondersteund tijdens elke geplande run.",
         "set_cluster_backup_password": "Zet de encryptie wachtwoord",
         "smb_pass": "Paswoord",
@@ -370,7 +370,9 @@
         "every_hour": "Elk uur",
         "replace_existing_app_is_not_available_tooltip": "De bestaande app kan niet worden vervangen. De app moet vóór het herstel worden verwijderd",
         "replace_existing_app_tooltip": "Vervang de bestaande app. De oude app-instantie wordt verwijderd en de nieuwe wordt hersteld",
-        "replace_existing_app_select_an_app_tooltip": "Selecteer een applicatie om te vervangen"
+        "replace_existing_app_select_an_app_tooltip": "Selecteer een applicatie om te vervangen",
+        "some_backups_failed_or_are_pending": "Sommige back-ups faalden of staan in afwachting",
+        "go_to_notification_drawer": "Meldingenlade openen"
     },
     "calendar": {
         "months": "maanden",
@@ -916,9 +918,11 @@
         "skip_cert_verify": "Skip certificaat validatie",
         "host_placeholder": "B.v. myapp.example.org",
         "edit_route_route": "Wijzig route {route}",
-        "save_route": "Save route",
+        "save_route": "Route opslaan",
         "route": "Route",
-        "host_pattern": "Invalid host format"
+        "host_pattern": "Ongeldige hostindeling",
+        "slash_redirect": "Append trailing slash to path",
+        "slash_redirect_tooltip": "If the request URL does not end with a slash (/) force a redirect to the correct URL with a trailing slash."
     },
     "password": {
         "uppercase_letter": "Hoofdletters",
@@ -1112,8 +1116,8 @@
         "port_invalid_type": "Het moet een geldig nummerpoort zijn (1-65535)",
         "node": "Node {nodeId}",
         "valid_certificate_verification_error": "Het certificaat is niet geldig voor de server. Probeer de certificaatverificatie uit te schakelen",
-        "open_alert_notifications": "Alert notifications",
-        "alert_notifications_tooltip": "Configure email-based alert notifications to ensure timely awareness of critical system events."
+        "open_alert_notifications": "Waarschuwingsmeldingen",
+        "alert_notifications_tooltip": "Configureer e-mailgebaseerde waarschuwingsmeldingen om ervoor te zorgen dat u tijdig op de hoogte bent van kritieke systeemgebeurtenissen."
     },
     "common": {
         "hide": "Verberg",
@@ -1295,13 +1299,13 @@
         "request_certificate": "Verzoek certificaat",
         "upload_certs": "Upload een certificaat",
         "status": "Status",
-        "refuses_to_issue_certificate_error": "ACME server refuses to issue a certificate for the provided FQDN",
-        "cannot_obtain_certificate": "Cannot obtain certificate",
-        "dns_record_error": "No DNS records found for the provided FQDN",
-        "ensure_node_matches_fqdn_error": "Ensure the node matches the FQDN, or check 'Request certificate' error in the notification drawer for details",
-        "invalid_identifiers_requested_error": "The provided FQDN is invalid",
-        "fqdn_conflicts_with_route": "FQDN already requested via 'HTTP routes' page",
-        "set_certificate_unknown_error": "Check 'Request certificate' error in the notification drawer for details"
+        "refuses_to_issue_certificate_error": "De ACME-server weigert een certificaat uit te geven voor de opgegeven FQDN",
+        "cannot_obtain_certificate": "Kan geen certificaat krijgen",
+        "dns_record_error": "Er zijn geen DNS-records gevonden voor de opgegeven FQDN",
+        "ensure_node_matches_fqdn_error": "Zorg ervoor dat het knooppunt overeenkomt met de FQDN, of controleer de fout 'Certificaat aanvragen' in de meldingslade voor meer informatie",
+        "invalid_identifiers_requested_error": "De opgegeven FQDN is ongeldig",
+        "fqdn_conflicts_with_route": "FQDN al aangevraagd via de pagina 'HTTP-routes'",
+        "set_certificate_unknown_error": "Controleer de foutmelding 'Certificaat aanvragen' in de meldingslade voor meer informatie"
     },
     "settings_cluster_admins": {
         "delete_admin_admin": "Verwijder beheerder {admin}",
@@ -1529,30 +1533,30 @@
     },
     "settings_metrics": {
         "grafana": "Grafana",
-        "save": "Save",
-        "default_password": "Default password",
-        "note_on_grafana_cluster_admin_credentials": "Note: Use the cluster admin credentials to log in to Grafana.",
-        "mail_to_format": "Invalid email address format",
-        "metrics": "Metrics",
-        "go_to_email_notifications": "Go to Email notifications",
-        "mail_from_format": "Invalid email address format",
-        "grafana_tooltip": "Grafana is a web-based analytics and monitoring platform. It allows you to visualize and analyze metrics collected from your nodes.",
-        "mail_to": "Recipient email addresses",
-        "disabled_email_notifications_description": "To configure alert notifications, email notifications must be enabled in the cluster settings.",
-        "notification_enabled_on_my_nethesis": "Notifications enabled on my.nethesis.it",
-        "grafana_description": "Metrics are automatically collected from all nodes and stored to Prometheus on the leader node. Grafana can be used to navigate and inspect such metrics.",
-        "alert_notifications": "Alert notifications",
-        "notifications_tooltip": "Configure email notifications for system status changes, such as node failures or service disruptions.",
-        "disabled_email_notification": "Email notifications disabled",
-        "mail_from_placeholder": "E.g. user@domain.com",
-        "linked_to_an_active_subscription": "This system is linked to an active subscription, alert emails are already managed and delivered by my.nethesis.it portal.",
-        "alert_notifications_description": "Configure email-based alert notifications to ensure timely awareness of critical system events.",
-        "access_grafana": "Access Grafana",
-        "title": "Metrics",
+        "save": "Bewaren",
+        "default_password": "Standaard paswoord",
+        "note_on_grafana_cluster_admin_credentials": "Opmerking: Meld u aan bij Grafana met de cluster beheerder referenties.",
+        "mail_to_format": "Ongeldig e-mailadresformaat",
+        "metrics": "Statistieken",
+        "go_to_email_notifications": "Ga naar E-mailmeldingen",
+        "mail_from_format": "Ongeldig e-mailadresformaat",
+        "grafana_tooltip": "Grafana is een webgebaseerd analyse- en monitoringplatform waarmee u de statistieken van uw nodes kunt visualiseren en analyseren.",
+        "mail_to": "E-mailadressen van ontvangers",
+        "disabled_email_notifications_description": "Om waarschuwingsmeldingen te kunnen configureren, moeten e-mailmeldingen ingeschakeld zijn in de clusterinstellingen.",
+        "notification_enabled_on_my_nethesis": "Meldingen ingeschakeld op my.nethesis.it",
+        "grafana_description": "Statistieken worden automatisch verzameld van alle knooppunten en opgeslagen in Prometheus op het leidende knooppunt. Grafana kan worden gebruikt om door deze statistieken te navigeren en ze te inspecteren.",
+        "alert_notifications": "Waarschuwingsmeldingen",
+        "notifications_tooltip": "Configureer e-mailmeldingen voor wijzigingen in de systeemstatus, zoals knooppuntstoringen of serviceonderbrekingen.",
+        "disabled_email_notification": "E-mailmeldingen uitgeschakeld",
+        "mail_from_placeholder": "B.v. gebruiker@domein.nl",
+        "linked_to_an_active_subscription": "Dit systeem is gekoppeld aan een actief abonnement, waarschuwingsmails worden al beheerd en verzonden via het portaal my.nethesis.it.",
+        "alert_notifications_description": "Configureer e-mailgebaseerde waarschuwingsmeldingen om ervoor te zorgen dat u tijdig op de hoogte bent van kritieke systeemgebeurtenissen.",
+        "access_grafana": "Toegang tot Grafana",
+        "title": "Statistieken",
         "status_notifications": "Status",
-        "default_username": "Default username",
-        "mail_to_helper_text": "Enter the email addresses to receive notifications. Type one email address per line.",
-        "grafana_link": "Go to Grafana dashboard",
-        "mail_from": "Sender email address"
+        "default_username": "Standaard gebruikersnaam",
+        "mail_to_helper_text": "Voer de e-mailadressen in die u wilt ontvangen. Typ één e-mailadres per regel.",
+        "grafana_link": "Ga naar het Grafana-dashboard",
+        "mail_from": "E-mailadres van de afzender"
     }
 }
