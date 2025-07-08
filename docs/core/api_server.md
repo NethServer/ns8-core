@@ -45,10 +45,10 @@ Response, note the JWT token saved inside the `token` field:
 
 Use the obtained JWT `token` to list configured nodes:
 ```bash
-curl -X 'GET' \ 
-  'http://localhost:9311/api/nodes'
-   -H 'accept: application/json' \
-   -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY3Rpb25zIjpbXSwiZXhwIjoxNjQzNzIzNjkwLCJpZCI6ImFkbWluIiwib3JpZ19pYXQiOjE2NDMxMTg4OTAsInJvbGUiOiIifQ.BzzmleO6ln40DQUZr4FUyFTFEle6PkK-ar-vqwXJ5uo"
+curl -X 'GET' \
+  'http://localhost:9311/api/nodes' \
+  -H 'accept: application/json' \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY3Rpb25zIjpbXSwiZXhwIjoxNjQzNzIzNjkwLCJpZCI6ImFkbWluIiwib3JpZ19pYXQiOjE2NDMxMTg4OTAsInJvbGUiOiIifQ.BzzmleO6ln40DQUZr4FUyFTFEle6PkK-ar-vqwXJ5uo"
 ```
 
 Response:
