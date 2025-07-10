@@ -1270,6 +1270,7 @@
         "user_string_lte": "Deve essere inferiore o uguale a 255 caratteri",
         "display_name_string_lte": "Deve essere inferiore o uguale a 256 caratteri",
         "user_pattern": "Inizia con una lettera, seguita da lettere, cifre o i simboli -._",
+        "group_pattern": "Inizia con una lettera, seguita da lettere, cifre o i simboli -._",
         "group_with_same_name": "Un gruppo con questo nome esiste già",
         "user_with_same_name": "Un utente con questo nome esiste già",
         "mail": "Indirizzo email",
