@@ -776,7 +776,8 @@
         "groups": "Groepen",
         "user_pattern": "Begin met een letter, gevolgd door alleen letters, cijfers en de symbolen -._",
         "create_user": "Gebruiker aanmaken",
-        "domain_name_users_and_groups": "{domein} gebruikers en groepen"
+        "domain_name_users_and_groups": "{domein} gebruikers en groepen",
+        "group_pattern": "Start with a letter, followed by letters, digits, and the symbols -._"
     },
     "nodes": {
         "usage": "belasting",

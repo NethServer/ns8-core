@@ -322,7 +322,7 @@
         "search": "Suche",
         "type_to_confirm": "Zur Bestätigung des Löschvorgang folgendes eingeben: '{name}'",
         "cluster_label": "Cluster-Bezeichnung",
-        "loading": "lade",
+        "loading": "Lade",
         "next": "Nächste",
         "global_shortcut": "globales Tastenkürzel",
         "previous": "Vorherige",
@@ -671,7 +671,8 @@
         "user_with_same_name": "A user with this name already exists",
         "mail": "Mail address",
         "mail_field": "Mail address (optional)",
-        "mail_format": "Invalid mail format"
+        "mail_format": "Invalid mail format",
+        "group_pattern": "Start with a letter, followed by letters, digits, and the symbols -._"
     },
     "audit_trail": {
         "title": "Audit-Protokoll",
