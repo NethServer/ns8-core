@@ -40,13 +40,12 @@ for module_id in modules:
         if not backup_id in backups:
             name = rdb.hget(f"cluster/backup/{backup_id}", "name")
             backups[backup_id] = {"name": name, "status": UNKNOWN}
-        nerrors = rdb.hget(f"module/{module_id}/backup_status/{backup_id}", "errors") or ""
-        try:
-            if int(nerrors) > 0:
-                backups[backup_id]["status"] = FAILED
-        except ValueError:
-            pass
-        if nerrors == "0":
+        nerrors = rdb.hget(f"module/{module_id}/backup_status/{backup_id}", "errors") or "0"
+        if not nerrors.isnumeric():
+            continue
+        if int(nerrors) > 0:
+            backups[backup_id]["status"] = FAILED
+        elif int(nerrors) == 0 and backups[backup_id]["status"] != FAILED:
             backups[backup_id]["status"] = SUCCESS
 
 # Create the content to be written in node_exporter format
