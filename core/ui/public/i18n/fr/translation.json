@@ -949,7 +949,8 @@
         "groups": "Groups",
         "user_pattern": "Start with a letter, followed by only letters, digits, and the symbols -._",
         "create_user": "Create user",
-        "domain_name_users_and_groups": "{domain} users and groups"
+        "domain_name_users_and_groups": "{domain} users and groups",
+        "group_pattern": "Start with a letter, followed by letters, digits, and the symbols -._"
     },
     "cloud_log_manager_forwarder": {
         "tenant_tooltip": "This key, also known as 'tenant', identifies and associates the cluster logs within a company in Cloud Log Manager. You can find it in Cloud Log Manager webapp, under Users and Companies > Companies.",
