@@ -236,6 +236,27 @@ export default {
       if (!this.address) {
         this.error.address = this.$t("common.required");
         isValidationOk = false;
+      } else if (
+        !this.address.startsWith("http://") &&
+        !this.address.startsWith("https://")
+      ) {
+        this.error.address = this.$t("common.invalid_url");
+        isValidationOk = false;
+      } else {
+        // Extract the hostname from the address
+        try {
+          const urlObj = new URL(this.address);
+          const hostname = urlObj.hostname;
+          // Regular expression for a valid FQDN
+          const fqdnRegex = /^([a-zA-Z0-9-]+\.)*[a-zA-Z0-9-]+\.[a-zA-Z]{2,}$/;
+          if (!fqdnRegex.test(hostname)) {
+            this.error.address = this.$t("common.invalid_fqdn");
+            isValidationOk = false;
+          }
+        } catch (e) {
+          this.error.address = this.$t("common.invalid_url");
+          isValidationOk = false;
+        }
       }
       if (!this.tenant) {
         this.error.tenant = this.$t("common.required");

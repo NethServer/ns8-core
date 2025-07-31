@@ -88,6 +88,7 @@
         "terms_and_conditions": "Terms and Conditions",
         "terms_required": "Please read and agree to @:common.terms_and_conditions",
         "not_available": "Not available",
+        "invalid_url": "Invalid value or format",
         "release_notes": "Release notes"
     },
     "error": {
