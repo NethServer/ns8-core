@@ -28,9 +28,15 @@ module_source, _ = original_environment['IMAGE_URL'].rsplit(':', 1)
 # Reduce the list to one element, matching the original source:
 available = list(filter(lambda omod: omod["source"] == module_source, cluster.modules.list_available(rdb, skip_core_modules = False)))
 if not available:
-    # Can't find correct eligibility module, just log it and return the first node
-    print(agent.SD_WARNING + f"Can't determine restore eligibility for {module_source}", file=sys.stderr)
-    available = [{"install_destinations": [{"node_id": 1, "instances": 0, "eligible": True, "reject_reason": None}]}]
+    # The module is not available from enabled repositories and no
+    # instance of it is installed in the cluster.
+    # FIXME: In this condition we assume that every cluster node is
+    # eligible for installation. This assumption will be valid for
+    # "max-per-node" limit only. If we implement new reject reasons we
+    # need to review this approach.
+    print(agent.SD_WARNING + f"Can't determine restore eligibility for {module_source}. All nodes are allowed.", file=sys.stderr)
+    destination_all_nodes = [{"node_id": int(xnode_id), "instances": 0, "eligible": True, "reject_reason": None} for xnode_id in set(rdb.hvals('cluster/module_node'))]
+    available = [{"install_destinations": destination_all_nodes}]
 else:
     cluster.modules.decorate_with_installed(rdb, available)
     cluster.modules.decorate_with_install_destinations(rdb, available)
