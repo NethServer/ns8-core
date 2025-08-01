@@ -1,0 +1,43 @@
+#!/usr/bin/fio
+#
+# disk-performance -- Measure disk performance
+#
+# !!! Ensure you have enough free disk space before running the benchmark !!!
+#
+# Version 20250724
+#
+# PRE-REQUISITES
+#
+# - Additional software:
+#
+#      dnf install -y fio bc
+#
+# - Free disk space: ncpus * 1 GB, e.g. if the node has 2 CPUs, then 2 GB
+#   of free disk space are required for the benchmark run.
+#
+# EXECUTION
+#
+# For example, the following command tests the disk mounted on the
+# currently working directory and saves the benchmark output in
+# `./perf.out`.
+#
+#     disk-performance --output perf.out
+#
+
+[global]
+ioengine=libaio
+direct=1
+
+[randrw]
+name=Random Mixed-Read/Write
+description=Disk performance measurement * Version 20250724
+group_reporting
+time_based
+numjobs=$ncpus
+runtime=60s
+ramp_time=10s
+iodepth=16
+unlink=1
+readwrite=randrw
+size=2G
+buffer_compress_percentage=75
