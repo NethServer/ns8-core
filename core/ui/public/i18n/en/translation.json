@@ -122,6 +122,8 @@
         "warning_mail_subject_required": "Mail subject is required",
         "warning_mail_template_content_required": "Mail template content is required",
         "warning_days_required": "Warning days are required",
+        "invalid_url": "Invalid value or format",
+        "invalid_fqdn": "Invalid fully qualified domain name",
         "warning_days_range": "Warning days must be between 1 and 1000"
     },
     "websocket": {
