@@ -240,7 +240,7 @@ export default {
         !this.address.startsWith("http://") &&
         !this.address.startsWith("https://")
       ) {
-        this.error.address = this.$t("common.invalid_url");
+        this.error.address = this.$t("error.invalid_url");
         isValidationOk = false;
       } else {
         // Extract the hostname from the address
@@ -250,11 +250,11 @@ export default {
           // Regular expression for a valid FQDN
           const fqdnRegex = /^([a-zA-Z0-9-]+\.)*[a-zA-Z0-9-]+\.[a-zA-Z]{2,}$/;
           if (!fqdnRegex.test(hostname)) {
-            this.error.address = this.$t("common.invalid_fqdn");
+            this.error.address = this.$t("error.invalid_fqdn");
             isValidationOk = false;
           }
         } catch (e) {
-          this.error.address = this.$t("common.invalid_url");
+          this.error.address = this.$t("error.invalid_url");
           isValidationOk = false;
         }
       }
