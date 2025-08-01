@@ -31,7 +31,9 @@
         "warning_mail_subject_required": "Mail subject is required",
         "warning_days_range": "Warning days must be between 1 and 1000",
         "warning_days_required": "Warning days are required",
-        "warning_mail_template_content_required": "Mail template content is required"
+        "warning_mail_template_content_required": "Mail template content is required",
+        "invalid_url": "Invalid value or format",
+        "invalid_fqdn": "Invalid fully qualified domain name"
     },
     "about": {
         "animated_icons_by": "Ikono animatuen egilea",
@@ -1271,7 +1273,8 @@
         "group_with_same_name": "A group with this name already exists",
         "mail": "Mail address",
         "mail_field": "Mail address (optional)",
-        "mail_format": "Invalid mail format"
+        "mail_format": "Invalid mail format",
+        "group_pattern": "Start with a letter, followed by letters, digits, and the symbols -._"
     },
     "settings_tls_certificates": {
         "cert_upload_label": "Ziurtagiria",
