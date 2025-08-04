@@ -475,8 +475,7 @@ export default {
           }
 
           // check if app is migrating
-          //// fix if condition
-          if (instance.id === "mail1") {
+          if (instance.flags.includes("import_started")) {
             migratingApps.push(instance.id);
           }
         }

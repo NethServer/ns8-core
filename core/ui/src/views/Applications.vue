@@ -4,7 +4,6 @@
 -->
 <template>
   <div class="apps">
-    <div>migratingApps {{ migratingApps }} ////</div>
     <div v-if="migratingApps.includes(appId)" class="migrating-app">
       <h2>{{ appId }}</h2>
       <NsInlineNotification

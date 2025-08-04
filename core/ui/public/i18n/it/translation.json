@@ -155,7 +155,7 @@
         },
         "source_package": "Immagine app",
         "migrating_app_title": "Questa app è in fase di migrazione",
-        "migrating_app_description": "Sarà possibile tornare a utilizzare l'app una volta completata la migrazione."
+        "migrating_app_description": "Sarà possibile tornare a utilizzare l'app una volta completata la migrazione da NethServer 7."
     },
     "nodes": {
         "title": "Nodi",
