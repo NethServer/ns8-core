@@ -48,7 +48,7 @@ elif [[ -f "${encrypted_file}" ]]; then
         --location-trusted \
         --user "${system_id}:${auth_token}" \
         "https://backupd.nethesis.it/${type}/api/v2/backup/" \
-        --upload-file ${encrypted_file}
+        --upload-file "${encrypted_file}"
     # Backup upload successful, update the reference file
     echo "${backup_hash}" > backup/dump.md5
     echo "Backup uploaded to provider ${provider} with hash ${backup_hash}" 1>&2
