@@ -386,6 +386,7 @@ export default {
       "setAppDrawerShownInStore",
       "setEditingFavoriteAppsInStore",
       "setFavoriteAppsInStore",
+      "setMigratingAppsInStore",
     ]),
     loadAppDrawerViewFromStorage() {
       const appDrawerView = this.getFromStorage("appDrawerView");
@@ -458,6 +459,7 @@ export default {
     listInstalledModulesCompleted(taskContext, taskResult) {
       this.loading.apps = false;
       let apps = [];
+      const migratingApps = [];
 
       for (let instanceList of Object.values(taskResult.output)) {
         for (let instance of instanceList) {
@@ -471,8 +473,17 @@ export default {
           ) {
             apps.push(instance);
           }
+
+          // check if app is migrating
+          //// fix if condition
+          if (instance.id === "mail1") {
+            migratingApps.push(instance.id);
+          }
         }
       }
+
+      // save migrating apps in store
+      this.setMigratingAppsInStore(migratingApps);
 
       for (let app of apps) {
         app.isFavorite = false;

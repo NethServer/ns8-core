@@ -153,7 +153,9 @@
             "rootfull_certification_level_too_low": "Le app con privilegi amministrativi devono avere un livello di certificazione minimo di {certification_min}/5 per poter essere installate",
             "no_app_version": "Nessun rilascio stabile di {app_name} è disponibile nel repository '{app_repository}'"
         },
-        "source_package": "Immagine app"
+        "source_package": "Immagine app",
+        "migrating_app_title": "Questa app è in fase di migrazione",
+        "migrating_app_description": "Sarà possibile tornare a utilizzare l'app una volta completata la migrazione."
     },
     "nodes": {
         "title": "Nodi",
