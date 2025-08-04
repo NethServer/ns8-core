@@ -18,23 +18,16 @@ function exit_error ()
     exit 1
 }
 
-function send_cluster_backup_nsent ()
-{
-    curl -X POST \
-        --silent \
-        --user-agent NethBackup \
-        --location-trusted \
-        --user "${system_id:?}:${auth_token:?}" \
-        --header 'NethBackup-Action: backup-send' \
-        --header "NethBackup-Parameters: LK=${system_id:?}&fname=dump.json.gz.gpg" \
-        --data-binary "@${encrypted_file}" \
-        https://backupd.nethesis.it/backup >/dev/null
-}
+if [[ -z "${system_id}" || -z "${auth_token}" ]]; then
+    exit_error "Missing system_id or auth_token for provider"
+fi
 
-sendfunc="send_cluster_backup_${provider:?missing subscription config}"
-if [[ $(type -t "${sendfunc}") != function ]]; then
-    echo "[WARNING] Invalid provider, ignored: ${provider}" 1>&2
-    exit 0
+if [[ $provider == "nsent" ]]; then
+    type="enterprise"
+elif [[ $provider == "nscom" ]]; then
+    type="community"
+else
+    exit_error "Unsupported provider: ${provider}"
 fi
 
 if [[ -f backup/dump.md5 ]]; then
@@ -50,7 +43,12 @@ backup_hash=$(md5sum "${backup_file}" | awk '{ print $1 }')
 if [[ "${prev_backup_hash}" == "${backup_hash}" ]]; then
     echo "Backup file already uploaded, nothing to do" 1>&2
 elif [[ -f "${encrypted_file}" ]]; then
-    ${sendfunc}
+    curl \
+        --silent \
+        --location-trusted \
+        --user "${system_id}:${auth_token}" \
+        "https://backupd.nethesis.it/${type}/api/v2/backup/" \
+        --upload-file ${encrypted_file}
     # Backup upload successful, update the reference file
     echo "${backup_hash}" > backup/dump.md5
     echo "Backup uploaded to provider ${provider} with hash ${backup_hash}" 1>&2
