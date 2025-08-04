@@ -8,6 +8,13 @@
 import sys
 import agent
 import os
+import datetime
 
 agent.set_env('IMPORT_IMAGE_URL', os.getenv('IMAGE_URL'))
 agent.set_env('IMPORT_TASK_ID', os.getenv('AGENT_TASK_ID'))
+
+# Import (migration) completed mark
+agent.set_env('IMPORT_TIMESTAMP', datetime.datetime.now(datetime.UTC).strftime(r"%Y-%m-%dT%H:%M:%S.%f%z"))
+wrdb = agent.redis_connect(privileged=True)
+wrdb.srem(f"module/{os.environ['MODULE_ID']}/flags", "import_started")
+wrdb.sadd(f"module/{os.environ['MODULE_ID']}/flags", "import_completed")

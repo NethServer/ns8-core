@@ -9,6 +9,7 @@ import sys
 import agent
 import os
 import json
+import datetime
 
 agent.set_weight(os.path.basename(__file__), 0) # Validation step, no task progress at all
 
@@ -16,3 +17,9 @@ if os.getenv('IMPORT_IMAGE_URL'):
     agent.set_status('validation-failed')
     json.dump([{'field':'none', 'parameter':'none','value': '', 'error':'module_already_imported'}], fp=sys.stdout)
     sys.exit(2)
+
+# Import (migration) started mark
+agent.set_env('IMPORT_TIMESTAMP', datetime.datetime.now(datetime.UTC).strftime(r"%Y-%m-%dT%H:%M:%S.%f%z"))
+wrdb = agent.redis_connect(privileged=True)
+wrdb.srem(f"module/{os.environ['MODULE_ID']}/flags", "import_completed")
+wrdb.sadd(f"module/{os.environ['MODULE_ID']}/flags", "import_started")
