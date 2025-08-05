@@ -474,7 +474,9 @@
         "instances_update_will_start_in_a_moment": "Instances update will start in a moment...",
         "core_app_name": "{productName} core",
         "move_app": "Move app",
-        "source_package": "App image"
+        "source_package": "App image",
+        "migrating_app_description": "You'll be able to use {name} again once the migration from NethServer 7 is complete.",
+        "migrating_app_title": "This app instance is undergoing migration"
     },
     "system_logs": {
         "dump": "Dump",
@@ -949,7 +951,8 @@
         "groups": "Groups",
         "user_pattern": "Start with a letter, followed by only letters, digits, and the symbols -._",
         "create_user": "Create user",
-        "domain_name_users_and_groups": "{domain} users and groups"
+        "domain_name_users_and_groups": "{domain} users and groups",
+        "group_pattern": "Start with a letter, followed by letters, digits, and the symbols -._"
     },
     "cloud_log_manager_forwarder": {
         "tenant_tooltip": "This key, also known as 'tenant', identifies and associates the cluster logs within a company in Cloud Log Manager. You can find it in Cloud Log Manager webapp, under Users and Companies > Companies.",
@@ -1131,7 +1134,9 @@
         "404": "Resource not found",
         "network_error": "Network error",
         "warning_mail_template_content_required": "Mail template content is required",
-        "validation_error": "Validation error"
+        "validation_error": "Validation error",
+        "invalid_url": "Invalid value or format",
+        "invalid_fqdn": "Invalid fully qualified domain name"
     },
     "websocket": {
         "websocket_disconnected_description": "Websocket connection is unstable. Please wait until reconnection or reload the page",

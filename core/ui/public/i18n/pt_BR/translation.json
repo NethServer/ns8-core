@@ -514,7 +514,9 @@
             "rootfull_certification_level_too_low": "Apps with administrative privileges must have a minimum certification level of {certification_min}/5 to be installed",
             "no_app_version": "No stable release of {app_name} is available in the '{app_repository}' repository"
         },
-        "source_package": "App image"
+        "source_package": "App image",
+        "migrating_app_description": "You'll be able to use {name} again once the migration from NethServer 7 is complete.",
+        "migrating_app_title": "This app instance is undergoing migration"
     },
     "settings_acme_servers": {
         "no_acme_server_description": "There is no ACME server configured",
@@ -1122,7 +1124,9 @@
         "warning_days_range": "Warning days must be between 1 and 1000",
         "warning_days_required": "Warning days are required",
         "warning_mail_template_content_required": "Mail template content is required",
-        "warning_mail_subject_required": "Mail subject is required"
+        "warning_mail_subject_required": "Mail subject is required",
+        "invalid_url": "Invalid value or format",
+        "invalid_fqdn": "Invalid fully qualified domain name"
     },
     "websocket": {
         "websocket_disconnected_description": "Websocket connection is unstable. Please wait until reconnection or reload the page",
@@ -1293,7 +1297,8 @@
         "user_with_same_name": "A user with this name already exists",
         "mail": "Mail address",
         "mail_field": "Mail address (optional)",
-        "mail_format": "Invalid mail format"
+        "mail_format": "Invalid mail format",
+        "group_pattern": "Start with a letter, followed by letters, digits, and the symbols -._"
     },
     "node_detail": {
         "total": "Total",
