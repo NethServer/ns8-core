@@ -577,7 +577,9 @@
         "instances_update_will_start_in_a_moment": "De Instances start zo meteen...",
         "core_app_name": "{productName} kern",
         "move_app": "Verplaats app",
-        "source_package": "App image"
+        "source_package": "App image",
+        "migrating_app_description": "You'll be able to use {name} again once the migration from NethServer 7 is complete.",
+        "migrating_app_title": "This app instance is undergoing migration"
     },
     "domains": {
         "domain_summary": "Samenvatting",
@@ -776,7 +778,8 @@
         "groups": "Groepen",
         "user_pattern": "Begin met een letter, gevolgd door alleen letters, cijfers en de symbolen -._",
         "create_user": "Gebruiker aanmaken",
-        "domain_name_users_and_groups": "{domein} gebruikers en groepen"
+        "domain_name_users_and_groups": "{domein} gebruikers en groepen",
+        "group_pattern": "Start with a letter, followed by letters, digits, and the symbols -._"
     },
     "nodes": {
         "usage": "belasting",
@@ -1242,7 +1245,9 @@
         "404": "Bron niet gevonden",
         "network_error": "Netwerkfout",
         "warning_mail_template_content_required": "Mail template inhoud is vereist",
-        "validation_error": "Validatiefout"
+        "validation_error": "Validatiefout",
+        "invalid_url": "Invalid value or format",
+        "invalid_fqdn": "Invalid fully qualified domain name"
     },
     "websocket": {
         "websocket_disconnected_description": "Websocket verbinding is instabiel. Wacht tot verbinding of herlaad de pagina",

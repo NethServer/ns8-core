@@ -1011,7 +1011,9 @@
         "warning_mail_subject_required": "L'oggetto del messaggio è obbligatorio",
         "warning_days_range": "Il numero di giorni di preavviso deve essere compreso tra 1 e 1000",
         "warning_days_required": "Inserire il numero di giorni di preavviso",
-        "warning_mail_template_content_required": "È obbligatorio inserire il contenuto del template del messaggio"
+        "warning_mail_template_content_required": "È obbligatorio inserire il contenuto del template del messaggio",
+        "invalid_url": "Valore o formato non valido",
+        "invalid_fqdn": "Inserire un FQDN valido"
     },
     "task": {
         "configure": "Configura",
