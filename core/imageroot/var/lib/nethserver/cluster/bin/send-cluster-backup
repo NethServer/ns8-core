@@ -18,16 +18,16 @@ function exit_error ()
     exit 1
 }
 
-if [[ -z "${system_id}" || -z "${auth_token}" ]]; then
-    exit_error "Missing system_id or auth_token for provider"
-fi
-
 if [[ $provider == "nsent" ]]; then
     type="enterprise"
 elif [[ $provider == "nscom" ]]; then
     type="community"
 else
     exit_error "Unsupported provider: ${provider}"
+fi
+
+if [[ -z "${system_id}" || -z "${auth_token}" ]]; then
+    exit_error "Missing system_id or auth_token for provider"
 fi
 
 if [[ -f backup/dump.md5 ]]; then
