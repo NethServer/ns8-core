@@ -4,16 +4,40 @@
 -->
 <template>
   <div class="apps">
-    <iframe id="app-frame" class="iframe-embedded" :src="iframePath"></iframe>
+    <div v-if="migratingApps.includes(appId)" class="migrating-app">
+      <h2>{{ appId }}</h2>
+      <NsInlineNotification
+        kind="info"
+        :title="$t('software_center.migrating_app_title')"
+        :description="
+          $t('software_center.migrating_app_description', {
+            name: appId,
+          })
+        "
+        :showCloseButton="false"
+      />
+    </div>
+    <iframe
+      v-else
+      id="app-frame"
+      class="iframe-embedded"
+      :src="iframePath"
+    ></iframe>
   </div>
 </template>
 
 <script>
+import { mapState } from "vuex";
+
 export default {
   name: "Applications",
   computed: {
+    ...mapState(["migratingApps"]),
+    appId() {
+      return this.$route.params.appId;
+    },
     iframePath() {
-      return `apps/${this.$route.params.appId}/index.html`;
+      return `apps/${this.appId}/index.html`;
     },
   },
 };
@@ -38,5 +62,9 @@ export default {
   position: absolute;
   border: none;
   z-index: 1;
+}
+
+.migrating-app {
+  padding: 2rem;
 }
 </style>

@@ -34,6 +34,7 @@ export default new Vuex.Store({
       title: "",
       description: "",
     },
+    migratingApps: [],
   },
   getters: {
     unreadNotifications: (state, getters) => {
@@ -195,6 +196,9 @@ export default new Vuex.Store({
         (n) => n.id !== notificationId
       );
     },
+    setMigratingApps(state, migratingApps) {
+      state.migratingApps = migratingApps;
+    },
   },
   actions: {
     setPollingTimerForTaskInStore(context, obj) {
@@ -289,6 +293,9 @@ export default new Vuex.Store({
     },
     deleteNotificationInStore(context, notificationId) {
       context.commit("deleteNotification", notificationId);
+    },
+    setMigratingAppsInStore(context, migratingApps) {
+      context.commit("setMigratingApps", migratingApps);
     },
   },
 });

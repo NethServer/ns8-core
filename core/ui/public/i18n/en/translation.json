@@ -1025,7 +1025,9 @@
             "no_app_version": "No stable release of {app_name} is available in the '{app_repository}' repository",
             "core_version_too_low": "Update core to version {core_min} or higher to install an instance of this app",
             "rootfull_certification_level_too_low": "Apps with administrative privileges must have a minimum certification level of {certification_min}/5 to be installed"
-        }
+        },
+        "migrating_app_title": "This app instance is undergoing migration",
+        "migrating_app_description": "You'll be able to use {name} again once the migration from NethServer 7 is complete."
     },
     "system_logs": {
         "title": "System logs",
