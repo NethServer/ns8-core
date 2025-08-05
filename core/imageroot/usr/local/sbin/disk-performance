@@ -12,7 +12,7 @@
 #
 #      dnf install -y fio bc
 #
-# - Free disk space: ncpus * 1 GB, e.g. if the node has 2 CPUs, then 2 GB
+# - Free disk space: ncpus * 2 GB, e.g. if the node has 2 CPUs, then 4 GB
 #   of free disk space are required for the benchmark run.
 #
 # EXECUTION
