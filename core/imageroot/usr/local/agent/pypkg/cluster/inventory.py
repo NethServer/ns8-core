@@ -3,8 +3,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 
-import os
 import agent
+import urllib.parse
 
 def fact_subscription(rdb):
     # Get subscription status
@@ -32,7 +32,12 @@ def fact_repositories(rdb):
     for m in rdb.scan_iter('cluster/repository/*'):
         repo = rdb.hgetall(m)
         if repo.get("status") == "1":
-            ret.append(os.path.basename(m))
+            try:
+                parsed_url = urllib.parse.urlparse(repo['url'])
+                canonicalized_url = (parsed_url.hostname + parsed_url.path.rstrip('/')).lower()
+            except:
+                canonicalized_url = None
+            ret.append(canonicalized_url or m.removeprefix('cluster/repository/'))
     return ret
 
 def fact_smarthost(rdb):
