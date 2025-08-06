@@ -40,6 +40,7 @@ podman_args.extend(agent.get_state_volume_args()) # get volumes from state-inclu
 restic_args = ["restore", "--json", snapshot,
     "--target", ".", # workdir should be /srv
     "--exclude", "state/environment", # special core file exception
+    "--exclude-xattr", "security.*", # ignore privileged xattr namespace
 ]
 
 # Prepare progress callback function that captures non-progress messages too:
