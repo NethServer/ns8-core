@@ -25,3 +25,4 @@ jobs:
       images: ${{ needs.module.outputs.images }}
       severity: "HIGH,CRITICAL"
       ui_path: "./core/ui"
+      imageroot_path: "./core/imageroot"
