@@ -45,7 +45,9 @@
               :noSearchResultsDescription="
                 $t('common.no_search_results_description')
               "
-              :isLoading="!domain || loading.listDomainUsers"
+              :isLoading="
+                !domain || loading.listDomainUsers || loading.ListPasswordPolicy
+              "
               :skeletonRows="5"
               :isErrorShown="!!error.listDomainUsers"
               :errorTitle="$t('action.list-domain-users')"
@@ -99,13 +101,19 @@
                       class="disabled-tag"
                     ></cv-tag>
                     <cv-tag
-                      v-if="row.expired"
+                      v-if="row.password_last_set < 0"
+                      kind="high-contrast"
+                      :label="$t('domains.must_change_password_on_next_login')"
+                      size="sm"
+                    ></cv-tag>
+                    <cv-tag
+                      v-if="row.expired && row.password_expiration > 0"
                       kind="high-contrast"
                       :label="$t('domains.password_expired')"
                       size="sm"
                     ></cv-tag>
                     <cv-tag
-                      v-if="row.password_expiration < 0"
+                      v-if="row.password_expiration === -1"
                       kind="gray"
                       :label="$t('domains.password_does_not_expire')"
                       size="sm"
@@ -132,6 +140,26 @@
                         <NsMenuItem
                           :icon="Password20"
                           :label="$t('domain_users.change_password')"
+                        />
+                      </cv-overflow-menu-item>
+                      <cv-overflow-menu-item
+                        v-if="policy.expiration.enforced"
+                        :disabled="
+                          loading.alterUser ||
+                          row.user.toLowerCase() === 'administrator' ||
+                          row.password_last_set < 0
+                        "
+                        @click="enableOrDisablePasswordPolicy(row)"
+                      >
+                        <NsMenuItem
+                          :icon="
+                            row.password_expiration === -1 ? Play20 : Stop20
+                          "
+                          :label="
+                            row.password_expiration === -1
+                              ? $t('domain_users.password_expiration_enabled')
+                              : $t('domain_users.password_expiration_disabled')
+                          "
                         />
                       </cv-overflow-menu-item>
                       <cv-overflow-menu-item
@@ -182,6 +210,7 @@
       :domain="domain"
       :user="currentUser"
       @hide="hideChangeUserPasswordModal"
+      @reloadUsers="onReloadUsers"
     />
     <!-- delete user modal -->
     <NsDangerDeleteModal
@@ -218,7 +247,8 @@ import { UtilService, IconService, TaskService } from "@nethserver/ns8-ui-lib";
 import CreateOrEditUserModal from "@/components/domains/CreateOrEditUserModal";
 import ChangeUserPasswordModal from "@/components/domains/ChangeUserPasswordModal";
 import to from "await-to-js";
-
+import Play20 from "@carbon/icons-vue/es/play/20";
+import Stop20 from "@carbon/icons-vue/es/stop/20";
 export default {
   name: "DomainUsers",
   components: { CreateOrEditUserModal, ChangeUserPasswordModal },
@@ -229,6 +259,8 @@ export default {
   },
   data() {
     return {
+      Play20,
+      Stop20,
       isShownCreateOrEditUserModal: false,
       isShownChangeUserPasswordModal: false,
       isShownDeleteUserModal: false,
@@ -241,13 +273,16 @@ export default {
         listDomainUsers: false,
         removeUser: false,
         alterUser: false,
+        ListPasswordPolicy: false,
       },
       error: {
         listDomainUsers: "",
         removeUser: "",
         alterUser: "",
+        ListPasswordPolicy: "",
       },
       users: [],
+      policy: { expiration: { enforced: false } },
     };
   },
   computed: {
@@ -282,6 +317,39 @@ export default {
     }
   },
   methods: {
+    async listPasswordPolicy() {
+      this.loading.ListPasswordPolicy = true;
+      this.error.ListPasswordPolicy = "";
+      const taskAction = "get-password-policy";
+      const eventId = this.getUuid();
+      // register to task completion
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.ListPasswordPolicyCompleted
+      );
+      const res = await to(
+        this.createModuleTaskForApp(this.mainProvider, {
+          action: taskAction,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+            eventId,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.ListPasswordPolicy = this.getErrorMessage(err);
+        return;
+      }
+    },
+    ListPasswordPolicyCompleted(taskContext, taskResult) {
+      const Config = taskResult.output;
+      this.policy.expiration.enforced = Config.expiration.enforced;
+      this.loading.ListPasswordPolicy = false;
+    },
     showCreateUserModal() {
       this.isEditingUser = false;
       this.isShownCreateOrEditUserModal = true;
@@ -308,6 +376,57 @@ export default {
     },
     hideDeleteUserModal() {
       this.isShownDeleteUserModal = false;
+    },
+    async enableOrDisablePasswordPolicy(user) {
+      this.loading.alterUser = true;
+      this.error.alterUser = "";
+      const taskAction = "alter-user";
+      const eventId = this.getUuid();
+
+      // register to task error
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.alterUserAborted
+      );
+
+      // register to task completion
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.alterUserCompleted
+      );
+
+      const notificationTitle =
+        user.password_expiration < 0
+          ? this.$t("domain_users.enable_password_expiration_user", {
+              user: user.user,
+            })
+          : this.$t("domain_users.disable_password_expiration_user", {
+              user: user.user,
+            });
+
+      const res = await to(
+        this.createModuleTaskForApp(this.mainProvider, {
+          action: taskAction,
+          data: {
+            user: user.user,
+            locked: user.locked,
+            no_password_expiration: user.password_expiration < 0 ? false : true,
+          },
+          extra: {
+            title: notificationTitle,
+            description: this.$t("common.processing"),
+            eventId,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.alterUser = this.getErrorMessage(err);
+        this.loading.alterUser = false;
+        return;
+      }
     },
     async enableOrDisableUser(user) {
       this.loading.alterUser = true;
@@ -467,6 +586,7 @@ export default {
       this.users = taskResult.output.users;
       this.$emit("usersLoaded", this.users);
       this.loading.listDomainUsers = false;
+      this.listPasswordPolicy();
     },
     onReloadUsers() {
       this.listDomainUsers();
