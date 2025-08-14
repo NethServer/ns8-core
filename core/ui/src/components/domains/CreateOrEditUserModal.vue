@@ -94,6 +94,23 @@
           "
           autocomplete="new-password"
         />
+        <NsToggle
+          v-if="!isEditing"
+          :label="$t('domain_users.change_password_at_next_login')"
+          value="must_change_password"
+          :form-item="true"
+          v-model="must_change_password"
+          :disabled="loading.addUser || loading.alterUser"
+          tooltipAlignment="start"
+          tooltipDirection="bottom"
+          ref="must_change_password"
+        >
+          <template slot="tooltip">{{
+            $t("domain_users.must_change_password_tooltip")
+          }}</template>
+          <template slot="text-left">{{ $t("common.disabled") }}</template>
+          <template slot="text-right">{{ $t("common.enabled") }}</template>
+        </NsToggle>
         <NsTextInput
           v-model.trim="mail"
           :label="$t('domain_users.mail_field')"
@@ -160,6 +177,7 @@ export default {
       focusPasswordField: { element: "" },
       clearConfirmPasswordCommand: 0,
       mail: "",
+      must_change_password: false,
       policy: {
         strength: {
           complexity_check: false,
@@ -184,6 +202,7 @@ export default {
         groups: "",
         listPasswordPolicy: "",
         mail: "",
+        must_change_password: "",
       },
     };
   },
@@ -412,6 +431,7 @@ export default {
             locked: false,
             groups: this.selectedGroups,
             mail: this.mail ? this.mail : "",
+            must_change_password: this.must_change_password,
           },
           extra: {
             title: this.$t("domain_users.create_user_user", {
