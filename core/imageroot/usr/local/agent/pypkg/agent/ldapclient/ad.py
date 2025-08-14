@@ -175,7 +175,7 @@ class LdapclientAd(LdapclientBase):
                     user['expired'] = False
                 # mail can be a string or an empty array, just treat ans empty arrays as an empty string
                 user["mail"] = entry['attributes'].get('mail') if entry['attributes'].get('mail') else ""
-
+                user['password_last_set'] = int(pwd_changed_time.timestamp())
             users.append(user)
 
         return users
