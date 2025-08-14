@@ -34,12 +34,43 @@
           :focus="focusPasswordField"
           :clearConfirmPasswordCommand="clearConfirmPasswordCommand"
           :minLength="
-            policy.strength.enforced ? policy.strength.password_min_length : 0
+            policy.strength.enforced
+              ? parseInt(policy.strength.password_min_length, 10)
+              : 0
           "
           :checkComplexity="
             policy.strength.enforced ? policy.strength.complexity_check : false
           "
         />
+        <NsToggle
+          v-if="user && user.user.toLowerCase() !== 'administrator'"
+          :label="$t('domain_users.change_password_at_next_login')"
+          value="must_change_password"
+          :form-item="true"
+          v-model="must_change_password"
+          :disabled="
+            loading.addUser || loading.alterUser || passwordMustBeChanged
+          "
+          tooltipAlignment="start"
+          tooltipDirection="bottom"
+          ref="must_change_password"
+        >
+          <template slot="tooltip">{{
+            $t("domain_users.must_change_password_tooltip")
+          }}</template>
+          <template slot="text-left">{{ $t("common.disabled") }}</template>
+          <template slot="text-right">{{ $t("common.enabled") }}</template>
+        </NsToggle>
+        <div v-if="passwordMustBeChanged">
+          <NsInlineNotification
+            kind="info"
+            :title="$t('domain_users.must_change_password_information_title')"
+            :description="
+              $t('domain_users.must_change_password_information_description')
+            "
+            :showCloseButton="false"
+          />
+        </div>
         <div v-if="error.alterUser">
           <NsInlineNotification
             kind="error"
@@ -82,6 +113,7 @@ export default {
       passwordValidation: null,
       focusPasswordField: { element: "" },
       clearConfirmPasswordCommand: 0,
+      must_change_password: false,
       policy: {
         strength: {
           complexity_check: false,
@@ -98,12 +130,16 @@ export default {
         newPassword: "",
         confirmPassword: "",
         listPasswordPolicy: "",
+        must_change_password: "",
       },
     };
   },
   computed: {
     mainProvider() {
       return this.domain.providers[0].id;
+    },
+    passwordMustBeChanged() {
+      return this.user && this.user.password_last_set < 0;
     },
   },
   watch: {
@@ -116,6 +152,8 @@ export default {
         setTimeout(() => {
           this.focusPasswordField = { element: "newPassword" };
         }, 400);
+        this.must_change_password =
+          this.user && this.user.password_last_set < 0 ? true : false;
       }
     },
   },
@@ -258,6 +296,7 @@ export default {
           data: {
             user: this.user.user,
             password: this.newPassword,
+            must_change_password: this.must_change_password,
           },
           extra: {
             title: this.$t("domain_users.change_password_for_user", {
@@ -308,6 +347,9 @@ export default {
     },
     alterUserCompleted() {
       this.loading.alterUser = false;
+
+      // reload users
+      this.$emit("reloadUsers");
     },
     onModalHidden() {
       this.clearErrors();
