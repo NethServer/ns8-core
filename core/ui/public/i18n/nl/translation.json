@@ -776,7 +776,7 @@
         "display_name_string_lte": "Moet kleiner of gelijk zijn aan 256 tekens",
         "group": "Groep",
         "groups": "Groepen",
-        "user_pattern": "Begin met een letter, gevolgd door alleen letters, cijfers en de symbolen -._",
+        "user_pattern": "Begin met een letter, gevolgd door letters, cijfers en de symbolen -._",
         "create_user": "Gebruiker aanmaken",
         "domain_name_users_and_groups": "{domein} gebruikers en groepen",
         "group_pattern": "Start with a letter, followed by letters, digits, and the symbols -._"
@@ -1246,8 +1246,8 @@
         "network_error": "Netwerkfout",
         "warning_mail_template_content_required": "Mail template inhoud is vereist",
         "validation_error": "Validatiefout",
-        "invalid_url": "Invalid value or format",
-        "invalid_fqdn": "Invalid fully qualified domain name"
+        "invalid_url": "Foutieve waarde of formaat",
+        "invalid_fqdn": "Ongeldige volledig gekwalificeerde domeinnaam"
     },
     "websocket": {
         "websocket_disconnected_description": "Websocket verbinding is instabiel. Wacht tot verbinding of herlaad de pagina",
