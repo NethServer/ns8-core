@@ -266,6 +266,17 @@
                     />
                   </cv-overflow-menu-item>
                   <cv-overflow-menu-item
+                    :disabled="
+                      instance.flags && instance.flags.includes('rootfull')
+                    "
+                    @click="showRestartModuleModal(instance)"
+                  >
+                    <NsMenuItem
+                      :icon="Restart20"
+                      :label="$t('software_center.restart_instance')"
+                    />
+                  </cv-overflow-menu-item>
+                  <cv-overflow-menu-item
                     @click="showCloneAppModal(instance)"
                     :data-test-id="index == 0 ? 'first-clone' : ''"
                   >
@@ -382,6 +393,39 @@
       @hide="isShownUpdateModal = false"
       @updateCompleted="onUpdateCompleted"
     />
+    <!-- Restart instance modal -->
+    <NsModal
+      size="default"
+      :visible="isShowRestartModuleModal"
+      @modal-hidden="hideRestartModuleModal"
+      @primary-click="restartModule"
+    >
+      <template slot="title">{{
+        $t("software_center.app_restart", {
+          app: instanceToRestart ? instanceToRestart.id : "",
+        })
+      }}</template>
+      <template slot="content">
+        <NsInlineNotification
+          kind="warning"
+          :title="$t('common.please_read_carefully')"
+          :description="$t('software_center.restart_module_warning')"
+          :showCloseButton="false"
+        />
+        <div>
+          {{
+            $t("software_center.restart_app", {
+              name: instanceToRestart ? instanceToRestart.id : "",
+            })
+          }}
+        </div>
+      </template>
+      <template slot="secondary-button">{{ $t("common.cancel") }}</template>
+      <template slot="primary-button">{{
+        $t("software_center.restart_instance")
+      }}</template>
+    </NsModal>
+
     <!-- uninstall instance modal -->
     <NsDangerDeleteModal
       :isShown="isShownUninstallModal"
@@ -506,8 +550,10 @@ export default {
       isShownInstallModal: false,
       isShownEditInstanceLabel: false,
       isShownUninstallModal: false,
+      isShowRestartModuleModal: false,
       appToUninstall: null,
       instanceToUninstall: null,
+      instanceToRestart: null,
       currentInstance: null,
       newInstanceLabel: "",
       elementToHighlight: "",
@@ -785,6 +831,64 @@ export default {
     },
     removeModuleCompleted() {
       this.listModules();
+    },
+    showRestartModuleModal(instance) {
+      this.instanceToRestart = instance;
+      this.error.restartModule = "";
+      this.isShowRestartModuleModal = true;
+    },
+    hideRestartModuleModal() {
+      this.isShowRestartModuleModal = false;
+    },
+    async restartModule() {
+      this.error.restartModule = "";
+      const taskAction = "restart-module";
+      const eventId = this.getUuid();
+
+      // register to task error
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.restartModuleAborted
+      );
+
+      // register to task completion
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.restartModuleCompleted
+      );
+
+      const res = await to(
+        this.createNodeTask(this.instanceToRestart.node, {
+          action: taskAction,
+          data: {
+            module_id: this.instanceToRestart.id,
+          },
+          extra: {
+            title: this.$t("action.restart-module", {
+              instance: this.instanceToRestart.ui_name
+                ? this.instanceToRestart.ui_name
+                : this.instanceToRestart.id,
+            }),
+            description: this.$t("software_center.restarting"),
+            eventId,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.restartModule = this.getErrorMessage(err);
+        return;
+      }
+      this.isShowRestartModuleModal = false;
+    },
+    restartModuleAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.restartModule = this.$t("error.generic_error");
+    },
+    restartModuleCompleted() {
+      this.isShowRestartModuleModal = false;
     },
     installInstance() {
       this.isShownInstallModal = true;
