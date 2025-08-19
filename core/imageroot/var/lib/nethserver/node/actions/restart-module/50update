@@ -1,0 +1,19 @@
+#!/bin/bash
+
+#
+# Copyright (C) 2025 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+# This script is used to restart a module's services based on the request received.
+
+
+exec 1>&2
+set -e
+
+readarray -t input < <(jq -r '.module_id')
+mid=${input[0]:?missing module_id argument}
+
+echo "Restarting manually the module ${mid} by the administator from the software center"
+# Restart the agent service for the module
+runagent systemctl restart "user@$(id -u "${mid}").service"
