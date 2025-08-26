@@ -8,7 +8,12 @@
             "users": [
                 {
                     "user": "Administrator",
-                    "display_name": "Administrator"
+                    "display_name": "Administrator",
+                    "locked": false,
+                    "expired": false,
+                    "mail": "",
+                    "must_change": false,
+                    "password_expiration": 1693040546
                 }
             ]
         }
@@ -33,7 +38,11 @@
             "required": [
                 "user",
                 "display_name",
-                "locked"
+                "locked",
+                "expired",
+                "mail",
+                "must_change",
+                "password_expiration"
             ],
             "properties": {
                 "user": {
@@ -49,6 +58,26 @@
                     "type": "boolean",
                     "title": "Locked",
                     "description": "True, if the user account has been locked, preventing the user from logging in"
+                },
+                "expired": {
+                    "type": "boolean",
+                    "title": "Expired",
+                    "description": "True, if the user account has expired, preventing the user from logging in"
+                },
+                "mail": {
+                    "type": "string",
+                    "title": "Email address",
+                    "description": "Email address of the user"
+                },
+                "must_change": {
+                    "type": "boolean",
+                    "title": "Must change password",
+                    "description": "True, if the user must change the password at next logon"
+                },
+                "password_expiration": {
+                    "type": "integer",
+                    "title": "Password expiration time",
+                    "description": "UNIX timestamp when the password will expire, or -1 if it never expires"
                 }
             }
         }
