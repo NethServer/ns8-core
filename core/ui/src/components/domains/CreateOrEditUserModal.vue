@@ -41,6 +41,15 @@
           autocomplete="off"
           ref="display_name"
         />
+        <NsTextInput
+          v-model.trim="mail"
+          :label="$t('domain_users.mail_field')"
+          :invalid-message="error.mail"
+          :disabled="loading.addUser || loading.alterUser"
+          autocomplete="off"
+          ref="mail"
+          type="email"
+        />
         <NsMultiSelect
           v-model="selectedGroups"
           :options="allGroupsForSelect"
@@ -94,15 +103,39 @@
           "
           autocomplete="new-password"
         />
-        <NsTextInput
-          v-model.trim="mail"
-          :label="$t('domain_users.mail_field')"
-          :invalid-message="error.mail"
+        <NsToggle
+          v-if="!isEditing"
+          :label="$t('domain_users.change_password_at_next_login')"
+          value="mustChangePassword"
+          :form-item="true"
+          v-model="mustChangePassword"
           :disabled="loading.addUser || loading.alterUser"
-          autocomplete="off"
-          ref="mail"
-          type="email"
-        />
+          tooltipAlignment="start"
+          tooltipDirection="bottom"
+          ref="mustChangePassword"
+        >
+          <template slot="tooltip">{{
+            $t("domain_users.must_change_password_tooltip")
+          }}</template>
+          <template slot="text-left">{{ $t("common.disabled") }}</template>
+          <template slot="text-right">{{ $t("common.enabled") }}</template>
+        </NsToggle>
+        <NsToggle
+          :label="$t('domain_users.no_password_expiration_policy')"
+          value="noPasswordExpirationPolicy"
+          :form-item="true"
+          v-model="noPasswordExpirationPolicy"
+          :disabled="loading.addUser || loading.alterUser"
+          tooltipAlignment="start"
+          tooltipDirection="bottom"
+          ref="noPasswordExpirationPolicy"
+        >
+          <template slot="tooltip">{{
+            $t("domain_users.no_password_expiration_policy_tooltip")
+          }}</template>
+          <template slot="text-left">{{ $t("common.disabled") }}</template>
+          <template slot="text-right">{{ $t("common.enabled") }}</template>
+        </NsToggle>
         <NsInlineNotification
           v-if="error.addUser"
           kind="error"
@@ -160,6 +193,8 @@ export default {
       focusPasswordField: { element: "" },
       clearConfirmPasswordCommand: 0,
       mail: "",
+      mustChangePassword: false,
+      noPasswordExpirationPolicy: false,
       policy: {
         strength: {
           complexity_check: false,
@@ -184,6 +219,8 @@ export default {
         groups: "",
         listPasswordPolicy: "",
         mail: "",
+        mustChangePassword: "",
+        noPasswordExpirationPolicy: "",
       },
     };
   },
@@ -218,6 +255,13 @@ export default {
         return this.$t("domain_users.no_group");
       }
     },
+    passwordExpirationPolicyEnabled() {
+      return (
+        this.user &&
+        this.user.password_expiration &&
+        this.user.password_expiration.toString() === "-1"
+      );
+    },
   },
   watch: {
     isShown: function () {
@@ -231,6 +275,8 @@ export default {
           this.newPassword = "";
           this.clearConfirmPasswordCommand++;
           this.mail = "";
+          this.mustChangePassword = false;
+          this.noPasswordExpirationPolicy = false;
         } else {
           // edit user
           this.username = this.user.user;
@@ -238,6 +284,8 @@ export default {
           this.selectedGroups = [];
           this.getDomainUser();
           this.mail = this.user.mail || "";
+          this.noPasswordExpirationPolicy =
+            this.passwordExpirationPolicyEnabled;
         }
       } else {
         // hiding modal
@@ -412,6 +460,8 @@ export default {
             locked: false,
             groups: this.selectedGroups,
             mail: this.mail ? this.mail : "",
+            must_change_password: this.mustChangePassword,
+            no_password_expiration: this.noPasswordExpirationPolicy,
           },
           extra: {
             title: this.$t("domain_users.create_user_user", {
@@ -503,6 +553,7 @@ export default {
             display_name: this.displayName,
             groups: this.selectedGroups,
             mail: this.mail ? this.mail : "",
+            no_password_expiration: this.noPasswordExpirationPolicy,
           },
           extra: {
             title: this.$t("domain_users.edit_user_user", {
