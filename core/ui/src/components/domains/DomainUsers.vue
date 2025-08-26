@@ -45,7 +45,9 @@
               :noSearchResultsDescription="
                 $t('common.no_search_results_description')
               "
-              :isLoading="!domain || loading.listDomainUsers"
+              :isLoading="
+                !domain || loading.listDomainUsers || loading.listPasswordPolicy
+              "
               :skeletonRows="5"
               :isErrorShown="!!error.listDomainUsers"
               :errorTitle="$t('action.list-domain-users')"
@@ -99,13 +101,19 @@
                       class="disabled-tag"
                     ></cv-tag>
                     <cv-tag
-                      v-if="row.expired"
+                      v-if="row.must_change"
+                      kind="high-contrast"
+                      :label="$t('domains.must_change_password_on_next_login')"
+                      size="sm"
+                    ></cv-tag>
+                    <cv-tag
+                      v-if="row.expired && row.password_expiration > 0"
                       kind="high-contrast"
                       :label="$t('domains.password_expired')"
                       size="sm"
                     ></cv-tag>
                     <cv-tag
-                      v-if="row.password_expiration < 0"
+                      v-if="row.password_expiration === -1"
                       kind="gray"
                       :label="$t('domains.password_does_not_expire')"
                       size="sm"
@@ -182,6 +190,7 @@
       :domain="domain"
       :user="currentUser"
       @hide="hideChangeUserPasswordModal"
+      @reloadUsers="onReloadUsers"
     />
     <!-- delete user modal -->
     <NsDangerDeleteModal
@@ -241,13 +250,16 @@ export default {
         listDomainUsers: false,
         removeUser: false,
         alterUser: false,
+        listPasswordPolicy: false,
       },
       error: {
         listDomainUsers: "",
         removeUser: "",
         alterUser: "",
+        listPasswordPolicy: "",
       },
       users: [],
+      policy: { expiration: { enforced: false } },
     };
   },
   computed: {
@@ -282,6 +294,39 @@ export default {
     }
   },
   methods: {
+    async listPasswordPolicy() {
+      this.loading.listPasswordPolicy = true;
+      this.error.listPasswordPolicy = "";
+      const taskAction = "get-password-policy";
+      const eventId = this.getUuid();
+      // register to task completion
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.listPasswordPolicyCompleted
+      );
+      const res = await to(
+        this.createModuleTaskForApp(this.mainProvider, {
+          action: taskAction,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+            eventId,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.listPasswordPolicy = this.getErrorMessage(err);
+        return;
+      }
+    },
+    listPasswordPolicyCompleted(taskContext, taskResult) {
+      const config = taskResult.output;
+      this.policy.expiration.enforced = config.expiration.enforced;
+      this.loading.listPasswordPolicy = false;
+    },
     showCreateUserModal() {
       this.isEditingUser = false;
       this.isShownCreateOrEditUserModal = true;
@@ -467,6 +512,7 @@ export default {
       this.users = taskResult.output.users;
       this.$emit("usersLoaded", this.users);
       this.loading.listDomainUsers = false;
+      this.listPasswordPolicy();
     },
     onReloadUsers() {
       this.listDomainUsers();
