@@ -14,6 +14,5 @@ set -e
 readarray -t input < <(jq -r '.module_id')
 mid=${input[0]:?missing module_id argument}
 
-echo "Restarting manually the module ${mid} by the administator from the software center"
 # Restart the agent service for the module
-runagent systemctl restart "user@$(id -u "${mid}").service"
+systemctl restart "user@$(id -u "${mid}").service"
