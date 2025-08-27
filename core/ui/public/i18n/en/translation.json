@@ -418,7 +418,8 @@
         "get-metrics-configuration": "Get metrics configuration",
         "set-metrics-configuration": "Set metrics configuration",
         "set-metrics-notifications": "Set metrics notifications",
-        "get-metrics-id": "Get metrics ID"
+        "get-metrics-id": "Get metrics ID",
+        "restart-module": "Restart module {instance}"
     },
     "network": {
         "title": "Network"
@@ -984,6 +985,11 @@
         "version_version_available": "Version {version} available",
         "updates_disabled_ns7_migration_title": "Updates are suspended",
         "updates_disabled_ns7_migration_description": "There is an ongoing NS7 migration. Updates will resume once the migration is complete.",
+        "app_restart": "Restart the instance {app}",
+        "restart_app": "Restarting the instance {name} will interrupt its operation and may cause downtime.",
+        "restart_instance": "Restart instance",
+        "restart_module_warning": "Proceed only if maintenance is needed and users are aware.",
+        "restarting":" Restarting",
         "app_categories": {
             "core": "Core",
             "development": "Development",
