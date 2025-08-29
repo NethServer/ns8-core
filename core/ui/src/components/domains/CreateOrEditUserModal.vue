@@ -104,7 +104,7 @@
           autocomplete="new-password"
         />
         <NsToggle
-          v-if="!isEditing"
+          v-if="!isEditing && isActiveDirectory"
           :label="$t('domain_users.change_password_at_next_login')"
           value="mustChangePassword"
           :form-item="true"
@@ -245,6 +245,9 @@ export default {
     },
     mainProvider() {
       return this.domain.providers[0].id;
+    },
+    isActiveDirectory() {
+      return this.domain && this.domain.schema === "ad";
     },
     selectGroupsLabel() {
       if (this.loading.getDomainUser) {

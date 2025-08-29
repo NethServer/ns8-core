@@ -101,7 +101,7 @@
                       class="disabled-tag"
                     ></cv-tag>
                     <cv-tag
-                      v-if="row.must_change"
+                      v-if="row.must_change && isActiveDirectory"
                       kind="high-contrast"
                       :label="$t('domains.must_change_password_on_next_login')"
                       size="sm"
@@ -279,6 +279,9 @@ export default {
     },
     mainProvider() {
       return this.domain.providers[0].id;
+    },
+    isActiveDirectory() {
+      return this.domain && this.domain.schema === "ad";
     },
   },
   watch: {

@@ -43,7 +43,11 @@
           "
         />
         <NsToggle
-          v-if="user && user.user.toLowerCase() !== 'administrator'"
+          v-if="
+            user &&
+            user.user.toLowerCase() !== 'administrator' &&
+            isActiveDirectory
+          "
           :label="$t('domain_users.change_password_at_next_login')"
           value="mustChangePassword"
           :form-item="true"
@@ -137,6 +141,9 @@ export default {
   computed: {
     mainProvider() {
       return this.domain.providers[0].id;
+    },
+    isActiveDirectory() {
+      return this.domain && this.domain.schema === "ad";
     },
     passwordMustBeChanged() {
       return this.user && this.user.must_change ? true : false;
