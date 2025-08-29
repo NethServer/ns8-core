@@ -41,7 +41,6 @@
                 "locked",
                 "expired",
                 "mail",
-                "must_change",
                 "password_expiration"
             ],
             "properties": {
