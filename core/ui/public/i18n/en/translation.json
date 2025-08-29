@@ -1222,7 +1222,7 @@
         "expiration_min_age": "Minimum password age",
         "expiration_max_age": "Maximum password age",
         "days": "days",
-        "enable_the_policy_strength": "Enable password strength",
+        "enable_the_policy_strength": "Password strength",
         "enable_the_policy_strength_tips": "If enabled, users must comply with some minimal password requirements",
         "strength_history_length": "Password history length",
         "times": "times",
