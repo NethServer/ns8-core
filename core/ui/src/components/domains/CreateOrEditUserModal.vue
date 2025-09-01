@@ -121,6 +121,7 @@
           <template slot="text-right">{{ $t("common.enabled") }}</template>
         </NsToggle>
         <NsToggle
+          v-if="isActiveDirectory"
           :label="$t('domain_users.no_password_expiration_policy')"
           value="noPasswordExpirationPolicy"
           :form-item="true"
