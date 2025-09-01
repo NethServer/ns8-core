@@ -318,9 +318,14 @@ func listenActionsAsync(actionsCtx context.Context, complete chan int) {
 		MaxRetryBackoff:   5000 * time.Millisecond,
 	})
 
+	var bucketer = NewTokenBucketAlgorithm(1, 10)
+	if bucketer != nil {
+		go bucketer.TokenFiller()
+	}
+
 	var tcMu sync.Mutex
 	taskCh := make(chan models.Task)
-	go readTasks(rdb, brpopCtx, taskCh)
+	go readTasks(rdb, brpopCtx, taskCh, bucketer)
 	MAINLOOP:
 		for {
 			select {
@@ -365,7 +370,7 @@ func listenActionsAsync(actionsCtx context.Context, complete chan int) {
 		}
 }
 
-func readTasks(rdb *redis.Client, brpopCtx context.Context, taskCh chan models.Task) {
+func readTasks(rdb *redis.Client, brpopCtx context.Context, taskCh chan models.Task, bucketer *TokenBucket) {
 	// Ignore the credential error on agent startup
 	//
 	// Initialize to a well-known error condition, to avoid log pollution
@@ -375,6 +380,10 @@ func readTasks(rdb *redis.Client, brpopCtx context.Context, taskCh chan models.T
 
 	for { // Action listen loop
 		var task models.Task
+
+		if ok := bucketer.TryTakeToken(); !ok {
+			continue
+		} 
 
 		// Pop the task from the agent tasks queue
 		popResult, popErr := rdb.BRPop(brpopCtx, pollingDuration, agentPrefix+"/tasks").Result()

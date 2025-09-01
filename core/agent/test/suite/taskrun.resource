@@ -39,9 +39,9 @@ Stop command monitoring
 
 Stop command monitoring and flush the database
     Flush the Redis database
-    The command is received    FLUSHALL
-    Close All Connections
-
+    The command is received    FLUSHALL 
+    Close All Connections 
+    
 Wait until the agent log contains
     [Arguments]    ${pattern}
     Wait Until Keyword Succeeds    2s    125ms    Grep in the agent log  ${pattern}
