@@ -27,16 +27,15 @@ import (
 
 const (
 	MAX_TOKENS uint32 = 1000 
-	MIN_TOKEN uint32 = 0
+	MIN_TOKENS uint32 = 0
 )
 
 type TokenBucket struct { 
 	tokens uint32 
 	tickerDelay time.Duration
-	lock sync.Mutex
+	tokenMutex sync.Mutex
 	ticker *time.Ticker
 }
-
 
 func NewTokenBucketAlgorithm(fillingInterval time.Duration, baseTokens uint32) *TokenBucket {
 	if fillingInterval <= 0 || baseTokens < 0 {
@@ -50,9 +49,6 @@ func NewTokenBucketAlgorithm(fillingInterval time.Duration, baseTokens uint32) *
 }
 
 func (t *TokenBucket) TryTakeToken() bool {
-	t.lock.Lock()
-	defer t.lock.Unlock()
-
 	if safe := t.checkTokensSafety(); !safe {
 		return safe
 	}
@@ -62,8 +58,8 @@ func (t *TokenBucket) TryTakeToken() bool {
 }
 
 func (t *TokenBucket) addToken() {
-	t.lock.Lock()
-	defer t.lock.Unlock()
+	t.tokenMutex.Lock()
+	defer t.tokenMutex.Unlock()
 
 	if safe := t.checkTokensSafety(); !safe {
 		return
@@ -73,8 +69,8 @@ func (t *TokenBucket) addToken() {
 }
 
 func (t *TokenBucket) takeToken() {
-	t.lock.Lock()
-	defer t.lock.Unlock()
+	t.tokenMutex.Lock()
+	defer t.tokenMutex.Unlock()
 
 	t.tokens -= 1
 }
@@ -92,11 +88,11 @@ func (t *TokenBucket) TokenFiller() {
 }
 
 func (t *TokenBucket) checkTokensSafety() bool {
-	t.lock.Lock()
-	defer t.lock.Unlock()
+	t.tokenMutex.Lock()
+	defer t.tokenMutex.Unlock()
 
 	switch {
-	case t.tokens >= MAX_TOKENS, t.tokens <= MIN_TOKEN:
+	case t.tokens >= MAX_TOKENS, t.tokens <= MIN_TOKENS:
 		return false
 	}
 
