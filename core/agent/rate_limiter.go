@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Nethesis S.r.l.
+ * Copyright (C) 2025 Nethesis S.r.l.
  * http://www.nethesis.it - nethserver@nethesis.it
  *
  * This script is part of NethServer.
@@ -26,19 +26,19 @@ import (
 )
 
 const (
-	MAX_TOKENS uint32 = 1000 
-	MIN_TOKENS uint32 = 0
+	MAX_TOKENS int = 1000 
+	MIN_TOKENS int = 0
 )
 
 type TokenBucket struct { 
-	tokens uint32 
+	tokens int
 	tickerDelay time.Duration
 	tokenMutex sync.Mutex
 	ticker *time.Ticker
 }
 
-func NewTokenBucketAlgorithm(fillingInterval time.Duration, baseTokens uint32) *TokenBucket {
-	if fillingInterval <= 0 || baseTokens < 0 {
+func NewTokenBucketAlgorithm(fillingInterval time.Duration, baseTokens int) *TokenBucket {
+	if fillingInterval <= 0 || baseTokens == 0 {
 		return nil 
 	}
 
@@ -61,18 +61,18 @@ func (t *TokenBucket) addToken() {
 	t.tokenMutex.Lock()
 	defer t.tokenMutex.Unlock()
 
-	if safe := t.checkTokensSafety(); !safe {
-		return
+	if t.tokens < MAX_TOKENS {
+		t.tokens += 1
 	}
-
-	t.tokens += 1
 }
 
 func (t *TokenBucket) takeToken() {
 	t.tokenMutex.Lock()
 	defer t.tokenMutex.Unlock()
 
-	t.tokens -= 1
+	if t.tokens != MIN_TOKENS {
+		t.tokens -= 1
+	}
 }
 
 func (t *TokenBucket) TokenFiller() {
@@ -92,8 +92,8 @@ func (t *TokenBucket) checkTokensSafety() bool {
 	defer t.tokenMutex.Unlock()
 
 	switch {
-	case t.tokens >= MAX_TOKENS, t.tokens <= MIN_TOKENS:
-		return false
+		case t.tokens >= MAX_TOKENS, t.tokens == MIN_TOKENS: 
+			return false
 	}
 
 	return true

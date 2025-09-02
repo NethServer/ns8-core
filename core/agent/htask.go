@@ -381,9 +381,14 @@ func readTasks(rdb *redis.Client, brpopCtx context.Context, taskCh chan models.T
 	for { // Action listen loop
 		var task models.Task
 
-		if ok := bucketer.TryTakeToken(); !ok {
-			continue
-		} 
+		if bucketer != nil {
+			// condition-like waiting
+			for !bucketer.TryTakeToken() {
+				time.Sleep(10 * time.Millisecond)
+			}
+		} else {
+			log.Printf("Failed To Start the Rate Limiter \n")
+		}
 
 		// Pop the task from the agent tasks queue
 		popResult, popErr := rdb.BRPop(brpopCtx, pollingDuration, agentPrefix+"/tasks").Result()
