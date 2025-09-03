@@ -17,11 +17,15 @@
  * You should have received a copy of the GNU General Public License
  * along with NethServer.  If not, see COPYING.
  */
-
 package main
 
 import (
 	"time"
+)
+
+const (
+	MAX_TOKENS int = 30
+	INITIAL_TOKENS int = 10
 )
 
 type TokenBucket struct { 
@@ -30,11 +34,11 @@ type TokenBucket struct {
 	tokens chan struct{}
 }
 
-func NewTokenBucketAlgorithm(fillingInterval time.Duration, capacity int) *TokenBucket {
+func NewTokenBucketAlgorithm(fillingInterval time.Duration) *TokenBucket {
 	t := &TokenBucket{
 		fillerSleepTime: fillingInterval,
-		initialTokens: 10,
-		tokens: make(chan struct{}, capacity),
+		initialTokens: INITIAL_TOKENS,
+		tokens: make(chan struct{}, MAX_TOKENS),
 	}
 
 	go t.tokenFiller()
@@ -49,7 +53,6 @@ func (t *TokenBucket) tokenFiller() {
 		t.tokens <- struct{}{}
 	}
 }
-
 
 func (t *TokenBucket) takeToken() {
 	<- t.tokens
