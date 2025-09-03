@@ -28,31 +28,27 @@ const MAX_BUCKETS int = 30
 
 type TokenBucket struct { 
 	initialTokens int
-
-	tickerDelay time.Duration
-	ticker *time.Ticker
-
+	fillerSleepTime time.Duration
 	tokens chan struct{}
 }
 
 func NewTokenBucketAlgorithm(fillingInterval time.Duration, baseTokens int) *TokenBucket {
-	return &TokenBucket{
+	t := &TokenBucket{
+		fillerSleepTime: fillingInterval,
 		initialTokens: baseTokens,
-		tickerDelay: fillingInterval * time.Millisecond,
 		tokens: make(chan struct{}, MAX_BUCKETS),
 	}
+
+	go t.tokenFiller()
+	return t
 }
 
 func (t *TokenBucket) tokenFiller() {
-	t.ticker = time.NewTicker(t.tickerDelay)
-	defer t.ticker.Stop()
-
 	t.initialFiller()
 	for {
-		select {
-		case <- t.ticker.C:
-			t.tokens <- struct{}{}
-		}
+		time.Sleep(t.fillerSleepTime)
+
+		t.tokens <- struct{}{}
 	}
 }
 
