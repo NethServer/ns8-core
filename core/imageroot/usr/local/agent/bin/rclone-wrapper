@@ -87,6 +87,9 @@ elif uscheme == "s3":
     elif orepo['provider'] == 'generic-s3' and 'idrivee2' in s3_endpoint:
         rclone_env['RCLONE_S3_PROVIDER'] = 'IDrive'
         rclone_env['RCLONE_S3_NO_CHECK_BUCKET'] = "1"
+    elif orepo['provider'] == 'generic-s3' and 'cubbit.eu' in s3_endpoint:
+        rclone_env['RCLONE_S3_PROVIDER'] = 'Other'
+        rclone_env['RCLONE_S3_REGION'] = 'eu-west-1'
     else:
         rclone_env['RCLONE_S3_PROVIDER'] = 'Other'
 
