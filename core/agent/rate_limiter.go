@@ -23,22 +23,17 @@ import (
 	"time"
 )
 
-const (
-	MAX_TOKENS int = 30
-	INITIAL_TOKENS int = 10
-)
-
 type TokenBucket struct { 
 	initialTokens int
 	fillerSleepTime time.Duration
 	tokens chan struct{}
 }
 
-func NewTokenBucketAlgorithm(fillingInterval time.Duration) *TokenBucket {
+func NewTokenBucketAlgorithm(fillingInterval time.Duration, capacity int) *TokenBucket {
 	t := &TokenBucket{
 		fillerSleepTime: fillingInterval,
-		initialTokens: INITIAL_TOKENS,
-		tokens: make(chan struct{}, MAX_TOKENS),
+		initialTokens: capacity,
+		tokens: make(chan struct{}, capacity),
 	}
 
 	go t.tokenFiller()

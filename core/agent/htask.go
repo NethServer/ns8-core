@@ -318,13 +318,9 @@ func listenActionsAsync(actionsCtx context.Context, complete chan int) {
 		MaxRetryBackoff:   5000 * time.Millisecond,
 	})
 
-	// every 300 mills the tokenFiller will
-	// add a token.
-	var bucketer = NewTokenBucketAlgorithm(300 * time.Millisecond)
-
 	var tcMu sync.Mutex
 	taskCh := make(chan models.Task)
-	go readTasks(rdb, brpopCtx, taskCh, bucketer)
+	go readTasks(rdb, brpopCtx, taskCh)
 	MAINLOOP:
 		for {
 			select {
@@ -369,13 +365,18 @@ func listenActionsAsync(actionsCtx context.Context, complete chan int) {
 		}
 }
 
-func readTasks(rdb *redis.Client, brpopCtx context.Context, taskCh chan models.Task, bucketer *TokenBucket) {
+func readTasks(rdb *redis.Client, brpopCtx context.Context, taskCh chan models.Task) {
 	// Ignore the credential error on agent startup
 	//
 	// Initialize to a well-known error condition, to avoid log pollution
 	// and false alarms. When an agent is created its credentials might be
 	// still not stored in the leader node Redis instance:
 	var lastPopErr error = errors.New("WRONGPASS invalid username-password pair or user is disabled.")
+
+
+	// every 300 mills the tokenFiller will
+	// add a token.
+	var bucketer = NewTokenBucketAlgorithm(300 * time.Millisecond, 30)
 
 	for { // Action listen loop
 		var task models.Task
