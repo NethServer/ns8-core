@@ -320,7 +320,7 @@ func listenActionsAsync(actionsCtx context.Context, complete chan int) {
 
 	// every 300 mills the tokenFiller will
 	// add a token.
-	var bucketer = NewTokenBucketAlgorithm(300 * time.Millisecond, 10)
+	var bucketer = NewTokenBucketAlgorithm(300 * time.Millisecond, 30)
 
 	var tcMu sync.Mutex
 	taskCh := make(chan models.Task)
