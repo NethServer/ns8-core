@@ -70,6 +70,16 @@
           />
         </cv-column>
       </cv-row>
+      <cv-row v-if="error.restartModule">
+        <cv-column>
+          <NsInlineNotification
+            kind="error"
+            :title="$t('action.restart-module')"
+            :description="error.restartModule"
+            :showCloseButton="false"
+          />
+        </cv-column>
+      </cv-row>
       <cv-row v-if="updateInstancesTimeout">
         <cv-column>
           <NsInlineNotification
