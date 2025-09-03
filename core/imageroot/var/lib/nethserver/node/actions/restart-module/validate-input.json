@@ -6,7 +6,6 @@
     "examples": [
         {
             "module_id": "mymodule2",
-            "is_rootfull": false
         }
     ],
     "type": "object",
