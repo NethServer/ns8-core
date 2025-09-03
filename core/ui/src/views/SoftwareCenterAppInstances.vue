@@ -276,9 +276,6 @@
                     />
                   </cv-overflow-menu-item>
                   <cv-overflow-menu-item
-                    :disabled="
-                      instance.flags && instance.flags.includes('rootfull')
-                    "
                     @click="showRestartModuleModal(instance)"
                   >
                     <NsMenuItem
