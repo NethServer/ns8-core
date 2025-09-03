@@ -419,7 +419,7 @@
         "set-metrics-configuration": "Set metrics configuration",
         "set-metrics-notifications": "Set metrics notifications",
         "get-metrics-id": "Get metrics ID",
-        "restart-module": "Restart module {instance}"
+        "restart-module": "Restart instance"
     },
     "network": {
         "title": "Network"
@@ -989,7 +989,8 @@
         "restart_app": "Restarting the instance {name} will interrupt its operation and may cause downtime.",
         "restart_instance": "Restart instance",
         "restart_module_warning": "Proceed only if maintenance is needed and users are aware.",
-        "restarting":" Restarting",
+        "restarting":" Restarting...",
+        "restart_instance_name": "Restart instance {instance}"
         "app_categories": {
             "core": "Core",
             "development": "Development",
