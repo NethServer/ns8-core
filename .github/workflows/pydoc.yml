@@ -1,0 +1,36 @@
+name: pydoc
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/pydoc.yml'
+      - 'core/imageroot/usr/local/agent/pypkg/**'
+
+jobs:
+  build_and_publish:
+    name: 'Build and publish Python API docs'
+    runs-on: ubuntu-22.04
+    steps:
+      - id: checkout
+        uses: actions/checkout@v4
+      - id: setup_python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+      - id: install_dependencies
+        name: "Install dependencies"
+        run: |
+          pip install sphinx sphinx-rtd-theme
+      - id: build_docs
+        name: "Build Sphinx documentation"
+        run: |
+          sphinx-apidoc -o pydoc/source core/imageroot/usr/local/agent/pypkg
+          sphinx-build -b html pydoc/source pydoc/build/html
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./pydoc/build/html
+          publish_branch: gh-pages
+          force_orphan: true
