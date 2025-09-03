@@ -22,79 +22,49 @@ package main
 
 import (
 	"time"
-	"sync"
 )
 
-const (
-	MAX_TOKENS int = 1000 
-	MIN_TOKENS int = 0
-)
+const MAX_BUCKETS int = 30
 
 type TokenBucket struct { 
-	tokens int
+	initialTokens int
+
 	tickerDelay time.Duration
-	tokenMutex sync.Mutex
 	ticker *time.Ticker
+
+	tokens chan struct{}
 }
 
 func NewTokenBucketAlgorithm(fillingInterval time.Duration, baseTokens int) *TokenBucket {
-	if fillingInterval <= 0 || baseTokens == 0 {
-		return nil 
-	}
-
 	return &TokenBucket{
-		tokens: baseTokens,
-		tickerDelay: fillingInterval * time.Second,
+		initialTokens: baseTokens,
+		tickerDelay: fillingInterval * time.Millisecond,
+		tokens: make(chan struct{}, MAX_BUCKETS),
 	}
 }
 
-func (t *TokenBucket) TryTakeToken() bool {
-	if safe := t.checkTokensSafety(); !safe {
-		return safe
-	}
-
-	t.takeToken()
-	return true
-}
-
-func (t *TokenBucket) addToken() {
-	t.tokenMutex.Lock()
-	defer t.tokenMutex.Unlock()
-
-	if t.tokens < MAX_TOKENS {
-		t.tokens += 1
-	}
-}
-
-func (t *TokenBucket) takeToken() {
-	t.tokenMutex.Lock()
-	defer t.tokenMutex.Unlock()
-
-	if t.tokens != MIN_TOKENS {
-		t.tokens -= 1
-	}
-}
-
-func (t *TokenBucket) TokenFiller() {
+func (t *TokenBucket) tokenFiller() {
 	t.ticker = time.NewTicker(t.tickerDelay)
 	defer t.ticker.Stop()
 
+	t.initialFiller()
 	for {
 		select {
 		case <- t.ticker.C:
-			t.addToken()
+			t.tokens <- struct{}{}
 		}
 	}
 }
 
-func (t *TokenBucket) checkTokensSafety() bool {
-	t.tokenMutex.Lock()
-	defer t.tokenMutex.Unlock()
 
-	switch {
-		case t.tokens >= MAX_TOKENS, t.tokens == MIN_TOKENS: 
-			return false
+func (t *TokenBucket) takeToken() {
+	<- t.tokens
+}
+
+func (t *TokenBucket) initialFiller() {
+	for i := 0; i < t.initialTokens; i++ {
+		func(c chan <-struct{}) {
+			c <- struct{}{}
+		}(t.tokens)
 	}
-
-	return true
 }

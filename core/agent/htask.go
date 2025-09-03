@@ -318,10 +318,10 @@ func listenActionsAsync(actionsCtx context.Context, complete chan int) {
 		MaxRetryBackoff:   5000 * time.Millisecond,
 	})
 
-	var bucketer = NewTokenBucketAlgorithm(1, 10)
-	if bucketer != nil {
-		go bucketer.TokenFiller()
-	}
+	// every 300 mills the tokenFiller will
+	// add a token.
+	var bucketer = NewTokenBucketAlgorithm(300, 10)
+	go bucketer.tokenFiller()
 
 	var tcMu sync.Mutex
 	taskCh := make(chan models.Task)
@@ -380,15 +380,8 @@ func readTasks(rdb *redis.Client, brpopCtx context.Context, taskCh chan models.T
 
 	for { // Action listen loop
 		var task models.Task
-
-		if bucketer != nil {
-			// condition-like waiting
-			for !bucketer.TryTakeToken() {
-				time.Sleep(10 * time.Millisecond)
-			}
-		} else {
-			log.Printf("Failed To Start the Rate Limiter \n")
-		}
+		
+		bucketer.takeToken()
 
 		// Pop the task from the agent tasks queue
 		popResult, popErr := rdb.BRPop(brpopCtx, pollingDuration, agentPrefix+"/tasks").Result()
