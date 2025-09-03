@@ -864,7 +864,7 @@ export default {
             module_id: this.instanceToRestart.id,
           },
           extra: {
-            title: this.$t("action.restart-module", {
+            title: this.$t("software_center.restart_instance_name", {
               instance: this.instanceToRestart.ui_name
                 ? this.instanceToRestart.ui_name
                 : this.instanceToRestart.id,
