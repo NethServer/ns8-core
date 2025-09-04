@@ -5,7 +5,7 @@
     "description": "This schema validates the input for restarting a module's services.",
     "examples": [
         {
-            "module_id": "mymodule2",
+            "module_id": "mymodule2"
         }
     ],
     "type": "object",
