@@ -94,7 +94,7 @@
               <cv-row class="toolbar">
                 <cv-column>
                   <NsButton
-                    kind="primary"
+                    kind="secondary"
                     :icon="Add20"
                     @click="uploadTlsCertificateState.setVisible(true)"
                     >{{
@@ -103,7 +103,7 @@
                   </NsButton>
                   <NsButton
                     class="mg-left-sm"
-                    kind="secondary"
+                    kind="primary"
                     :icon="Add20"
                     @click="showRequestCertificateModal"
                     >{{ $t("settings_tls_certificates.request_certificate") }}
@@ -170,40 +170,40 @@
                       >
                         <cv-data-table-cell>
                           <span>
-                            {{ row.fqdn }}
+                            {{ row.ui_name }}
                           </span>
                         </cv-data-table-cell>
                         <cv-data-table-cell>
-                          <div class="icon-and-text">
-                            <NsSvg
-                              v-if="row.status == 'not_obtained'"
-                              :svg="Warning16"
-                              class="icon ns-warning"
-                            />
-                            <NsSvg
-                              v-else-if="
-                                row.status == 'obtained' ||
-                                row.status === 'custom'
-                              "
-                              :svg="CheckmarkFilled16"
-                              class="icon ns-success"
-                            />
-                            <NsSvg
-                              v-else-if="row.status == 'pending'"
-                              :svg="InformationFilled16"
-                              class="icon ns-info"
-                            />
-                            <span>{{
-                              $t("settings_tls_certificates." + row.status)
-                            }}</span>
-                          </div>
+                          <span>
+                            {{ $t("settings_tls_certificates." + row.ui_type) }}
+                          </span>
+                        </cv-data-table-cell>
+                        <cv-data-table-cell>
+                          <span>
+                            {{ row.issuer }}
+                          </span>
+                        </cv-data-table-cell>
+                        <cv-data-table-cell>
+                          <span>
+                            {{ row.validity_period }}
+                          </span>
+                        </cv-data-table-cell>
+                        <cv-data-table-cell>
+                          <span>
+                            {{ $t("settings_tls_certificates." + row.status) }}
+                          </span>
+                        </cv-data-table-cell>
+                        <cv-data-table-cell>
+                          <span>
+                            {{ row.names.join(", ") }}
+                          </span>
                         </cv-data-table-cell>
                         <cv-data-table-cell>
                           <span>{{ row.node }}</span>
                         </cv-data-table-cell>
                         <cv-data-table-cell>
                           <div class="justify-flex-end">
-                            <NsButton
+                            <!-- <NsButton //// 
                               kind="secondary"
                               :icon="TrashCan20"
                               size="small"
@@ -211,7 +211,7 @@
                               :data-test-id="row.fqdn + '-delete'"
                             >
                               {{ $t("common.delete") }}
-                            </NsButton>
+                            </NsButton> -->
                           </div>
                         </cv-data-table-cell>
                       </cv-data-table-row>
@@ -273,6 +273,7 @@ import {
   TaskService,
   IconService,
   PageTitleService,
+  DateTimeService,
 } from "@nethserver/ns8-ui-lib";
 import { mapState } from "vuex";
 import _cloneDeep from "lodash/cloneDeep";
@@ -289,6 +290,7 @@ export default {
     IconService,
     QueryParamService,
     PageTitleService,
+    DateTimeService,
   ],
   pageTitle() {
     return this.$t("settings_tls_certificates.title");
@@ -299,7 +301,15 @@ export default {
         selectedNodeId: "",
       },
       tablePage: [],
-      tableColumns: ["fqdn", "status", "node"],
+      tableColumns: [
+        "ui_name",
+        "ui_type",
+        "issuer",
+        "valid_from",
+        "status",
+        "names",
+        "node",
+      ],
       certificatesByTraefikId: {},
       internalNodes: [],
       isShownRequestCertificateModal: false,
@@ -319,6 +329,87 @@ export default {
         deleteCertificate: "",
       },
       uploadTlsCertificateState: new UploadTlsCertificateState(),
+      mockCertificates: {
+        traefik1: [
+          {
+            names: ["mail.dp.nethserver.net"],
+            subject: "mail.dp.nethserver.net",
+            issuer: "Custom Intermediate CA",
+            serial: "603545327999770137768033575467090432240151056165",
+            valid_to: "2026-02-07T14:19:38+00:00",
+            valid_from: "2025-02-07T14:19:38+00:00",
+            path: "custom_certificates/mail.dp.nethserver.net.crt",
+            validity: "valid",
+            type: "custom",
+          },
+          {
+            names: ["dokuwiki1.dp.nethserver.net"],
+            subject: "dokuwiki1.dp.nethserver.net",
+            issuer: "(STAGING) Tenuous Tomato R13",
+            serial: "3918504633558580209040851109284865639469365",
+            valid_to: "2025-12-02T09:56:55+00:00",
+            valid_from: "2025-09-03T09:56:56+00:00",
+            validity: "valid",
+            type: "internal",
+            automatic: true,
+          },
+          {
+            names: ["manual.dp.nethserver.net"],
+            subject: "manual.dp.nethserver.net",
+            issuer: "(STAGING) Riddling Rhubarb R12",
+            serial: "3853031702502281198931684732356056127155675",
+            valid_to: "2025-12-02T10:06:40+00:00",
+            valid_from: "2025-09-03T10:06:41+00:00",
+            validity: "valid",
+            type: "internal",
+          },
+          {
+            names: ["rl1.dp.nethserver.net", "mail.dp.nethserver.net"],
+            subject: "rl1.dp.nethserver.net",
+            issuer: "(STAGING) Riddling Rhubarb R12",
+            serial: "3865367987766600338566272990214152225581583",
+            valid_to: "2025-12-02T13:38:13+00:00",
+            valid_from: "2025-09-03T13:38:14+00:00",
+            validity: "valid",
+            type: "internal",
+            default: true,
+          },
+        ],
+        traefik2: [
+          {
+            names: ["test1.dp.nethserver.net"],
+            subject: "test1.dp.nethserver.net",
+            issuer: "(STAGING) Tenuous Tomato R13",
+            serial: "3918504633558580209040851109284865639469365",
+            valid_to: "2025-12-02T09:56:55+00:00",
+            valid_from: "2025-09-03T09:56:56+00:00",
+            validity: "valid",
+            type: "internal",
+            automatic: true,
+          },
+          {
+            names: ["test2.dp.nethserver.net"],
+            subject: "test2.dp.nethserver.net",
+            issuer: "(STAGING) Riddling Rhubarb R12",
+            serial: "3853031702502281198931684732356056127155675",
+            valid_to: "2025-12-02T10:06:40+00:00",
+            valid_from: "2025-09-03T10:06:41+00:00",
+            validity: "valid",
+            type: "internal",
+          },
+          {
+            names: ["test3.dp.nethserver.net", "mail.dp.nethserver.net"],
+            subject: "test3.dp.nethserver.net",
+            issuer: "(STAGING) Riddling Rhubarb R12",
+            serial: "3865367987766600338566272990214152225581583",
+            valid_to: "2025-12-02T13:38:13+00:00",
+            valid_from: "2025-09-03T13:38:14+00:00",
+            validity: "valid",
+            type: "internal",
+            default: true,
+          },
+        ],
+      }, //// MOCK DATA
     };
   },
   computed: {
@@ -509,7 +600,7 @@ export default {
     },
     async listCertificates() {
       for (const traefikInstance of this.traefikInstances) {
-        const taskAction = "list-certificates";
+        const taskAction = "list-certificates-v2";
         const eventId = this.getUuid();
         this.loading.listCertificatesNum++;
 
@@ -566,26 +657,65 @@ export default {
       const nodeLabel = this.getShortNodeLabel(node) + ` (${traefikId})`;
       const certs = [];
 
-      for (let certificate of taskResult.output) {
-        if (
-          this.pendingTlsCertificates.includes(certificate.fqdn) &&
-          !certificate.obtained
-        ) {
-          // set-certificate in progress, show pending status
-          certificate.status = "pending";
+      console.log("@@" + traefikId + "certificates-v2", taskResult.output); ////
+
+      for (let certificate of taskResult.output.certificates) {
+        // if ( ////
+        //   this.pendingTlsCertificates.includes(certificate.fqdn) &&
+        //   !certificate.obtained
+        // ) {
+        //   // set-certificate in progress, show pending status
+        //   certificate.status = "pending";
+        // } else {
+        //   if (certificate.obtained) {
+        //     certificate.status =
+        //       certificate.type === "custom" ? "custom" : "obtained";
+        //   } else {
+        //     certificate.status = "not_obtained";
+        //   }
+        // }
+
+        console.log("@@ nodeLabel", nodeLabel); ////
+
+        // "Certificate" column
+        if (certificate.default && certificate.type === "internal") {
+          certificate.ui_name = this.$t(
+            "settings_tls_certificates.node_name_certificate",
+            { node: this.getShortNodeLabel(node) }
+          );
         } else {
-          if (certificate.obtained) {
-            certificate.status =
-              certificate.type === "custom" ? "custom" : "obtained";
-          } else {
-            certificate.status = "not_obtained";
-          }
+          certificate.ui_name = certificate.subject;
         }
+
+        // "Type" column
+        let ui_type = "";
+        if (certificate.type === "custom") {
+          ui_type = "uploaded";
+        } else if (certificate.automatic) {
+          ui_type = "automatic";
+        } else if (certificate.default && certificate.type === "internal") {
+          ui_type = "requested";
+        }
+        certificate.ui_type = ui_type;
+
+        // "Status" column
+        certificate.status =
+          certificate.type === "pending" ? "pending" : certificate.validity;
+
         certificate.node = nodeLabel;
         certificate.nodeId = nodeId;
         certificate.longNodeLabel = this.getNodeLabel(node);
         certificate.traefikInstance = traefikId;
         certs.push(certificate);
+
+        // "Validity period" column
+        const validFrom = new Date(certificate.valid_from);
+        const formattedValidFrom = this.formatDate(validFrom, "Pp");
+
+        const validTo = new Date(certificate.valid_to);
+        const formattedValidTo = this.formatDate(validTo, "Pp");
+
+        certificate.validity_period = `${formattedValidFrom} - ${formattedValidTo}`;
       }
       certs.sort(this.sortByProperty("fqdn"));
 
