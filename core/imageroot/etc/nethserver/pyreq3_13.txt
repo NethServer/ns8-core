@@ -23,6 +23,7 @@ ldap3==2.9.1
 lockfile==0.12.2
 MarkupSafe==3.0.2
 multidict==6.6.4
+numpy==2.3.2
 packaging==25.0
 pexpect==4.9.0
 psutil==7.0.0
