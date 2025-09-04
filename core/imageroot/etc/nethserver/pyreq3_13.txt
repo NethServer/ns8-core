@@ -22,9 +22,11 @@ jsonschema==4.25.1
 ldap3==2.9.1
 lockfile==0.12.2
 MarkupSafe==3.0.2
+matplotlib==3.10.6
 multidict==6.6.4
 numpy==2.3.2
 packaging==25.0
+pandas-stubs==2.3.2.250827
 pexpect==4.9.0
 psutil==7.0.0
 ptyprocess==0.7.0
