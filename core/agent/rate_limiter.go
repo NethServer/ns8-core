@@ -22,6 +22,12 @@ package main
 import (
 	"time"
 	"strconv"
+	"strings"
+)
+
+const (
+	DEFAULT_CAPACITY int = 10
+	DEFAULT_TIME_RATE int = 300
 )
 
 type TokenBucket struct { 
@@ -61,57 +67,27 @@ func (t *TokenBucket) initialFiller() {
 }
 
 type RateLimitConf struct {
-	fillingInterval int
-	timeUnit string
+	timeRate int
 	capacity int
 	effectiveTime time.Duration
 }
 
-func (c *RateLimitConf) loadAndValidate(fillingInt string, timeUnit string, capacity string) {
-	conv, err := strconv.Atoi(fillingInt)
-	if fillingInt == "" || err != nil {
-		c.fillingInterval = 300
-	} else {
-		c.fillingInterval = conv
-	}
+func (c *RateLimitConf) loadAndValidate(fillingInterval string, capacity string) {
+	before, _, found := strings.Cut(fillingInterval, "ms")
+	convBefore, err := strconv.Atoi(before)
 
-	ok := c.checkTimeUnitValidity(timeUnit)
-	if timeUnit == "" || !ok {
-		c.timeUnit = "millis"
+	if fillingInterval == "" || !found || err != nil {
+		c.timeRate = DEFAULT_TIME_RATE
 	} else {
-		c.timeUnit = timeUnit
+		c.timeRate = convBefore
 	}
 
 	convCap, err := strconv.Atoi(capacity)
 	if capacity == "" || err != nil {
-		c.capacity = 30
+		c.capacity = DEFAULT_CAPACITY
 	} else {
 		c.capacity = convCap
 	}
 
-	c.buildEffectiveTime()
-}
-
-func (c *RateLimitConf) checkTimeUnitValidity(timeUnit string) bool {
-	switch timeUnit {
-	case "millis":
-		return true
-	case "second":
-		return true
-	case "minute":
-		return true
-	}
-
-	return false
-}
-
-func (c *RateLimitConf) buildEffectiveTime() {
-	switch c.timeUnit {
-	case "millis":
-		c.effectiveTime = time.Duration(c.fillingInterval) * time.Millisecond
-	case "second":
-		c.effectiveTime = time.Duration(c.fillingInterval) * time.Second
-	case "minute":
-		c.effectiveTime = time.Duration(c.fillingInterval) * time.Minute
-	}
+	c.effectiveTime = time.Duration(c.timeRate) * time.Millisecond
 }

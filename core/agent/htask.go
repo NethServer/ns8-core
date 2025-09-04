@@ -374,13 +374,12 @@ func readTasks(rdb *redis.Client, brpopCtx context.Context, taskCh chan models.T
 	var lastPopErr error = errors.New("WRONGPASS invalid username-password pair or user is disabled.")
 
 	var (
-		fillingInterval string = os.Getenv("RATE")
-		fillingTimeUnit string = os.Getenv("TIME")
-		capacity        string = os.Getenv("CAP")
-		conf                   = &RateLimitConf{}
+		bucketInterval string = os.Getenv("BUCKET_INTERVAL")
+		capacity       string = os.Getenv("BUCKET_CAPACITY")
+		conf                  = &RateLimitConf{}
 	)
 
-	conf.loadAndValidate(fillingInterval, fillingTimeUnit, capacity)
+	conf.loadAndValidate(bucketInterval, capacity)
 
 	var bucketer = NewTokenBucketAlgorithm(conf.effectiveTime, conf.capacity)
 
