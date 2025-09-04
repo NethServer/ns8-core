@@ -990,7 +990,7 @@
         "restart_instance": "Restart instance",
         "restart_module_warning": "Proceed only if maintenance is needed and users are aware.",
         "restarting":" Restarting...",
-        "restart_instance_name": "Restart instance {instance}"
+        "restart_instance_name": "Restart instance {instance}",
         "app_categories": {
             "core": "Core",
             "development": "Development",
