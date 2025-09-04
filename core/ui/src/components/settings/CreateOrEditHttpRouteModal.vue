@@ -528,6 +528,8 @@ export default {
         instance: this.instance,
         url: this.url,
         lets_encrypt: this.lets_encrypt,
+        lets_encrypt_check: true,
+        lets_encrypt_cleanup: true,
         http2https: this.http2https,
         user_created: this.user_created,
         skip_cert_verify: this.skip_cert_verify,

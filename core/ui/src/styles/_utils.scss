@@ -16,6 +16,10 @@
   flex-direction: column;
 }
 
+.flex-wrap {
+  flex-wrap: wrap;
+}
+
 .items-start {
   align-items: flex-start;
 }
@@ -54,4 +58,64 @@
 
 .break-all {
   word-break: break-all;
+}
+
+.gap-2 {
+  gap: 0.5rem;
+}
+
+.gap-4 {
+  gap: 1rem;
+}
+
+.gap-6 {
+  gap: 1.5rem;
+}
+
+.shrink-0 {
+  flex-shrink: 0;
+}
+
+.self-end {
+  align-self: flex-end;
+}
+
+// margin
+
+.mb-1 {
+  margin-bottom: 0.25rem;
+}
+
+.mb-2 {
+  margin-bottom: 0.5rem;
+}
+
+.mb-3 {
+  margin-bottom: 0.75rem;
+}
+
+.mb-4 {
+  margin-bottom: 1rem;
+}
+
+.mb-6 {
+  margin-bottom: 1.5rem;
+}
+
+// width
+
+.w-full {
+  width: 100%;
+}
+
+.w-2xs {
+  width: 18rem;
+}
+
+.w-xs {
+  width: 20rem;
+}
+
+.w-sm {
+  width: 24rem;
 }
