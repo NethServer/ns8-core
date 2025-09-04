@@ -16,7 +16,7 @@ mid=${input[0]:?missing module_id argument}
 
 if [[ -d /var/lib/nethserver/$mid ]]; then
     # we are rootfull
-    systemctl restart "$mid*.service" agent@$mid.service
+    systemctl restart "$mid*.service" agent@"$mid".service
 else
     # we are rootless
     systemctl restart "user@$(id -u "${mid}").service"
