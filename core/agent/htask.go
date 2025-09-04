@@ -373,10 +373,16 @@ func readTasks(rdb *redis.Client, brpopCtx context.Context, taskCh chan models.T
 	// still not stored in the leader node Redis instance:
 	var lastPopErr error = errors.New("WRONGPASS invalid username-password pair or user is disabled.")
 
+	var (
+		fillingInterval string = os.Getenv("RATE")
+		fillingTimeUnit string = os.Getenv("TIME")
+		capacity        string = os.Getenv("CAP")
+		conf                   = &RateLimitConf{}
+	)
 
-	// every 300 mills the tokenFiller will
-	// add a token.
-	var bucketer = NewTokenBucketAlgorithm(300 * time.Millisecond, 30)
+	conf.loadAndValidate(fillingInterval, fillingTimeUnit, capacity)
+
+	var bucketer = NewTokenBucketAlgorithm(conf.effectiveTime, conf.capacity)
 
 	for { // Action listen loop
 		var task models.Task
