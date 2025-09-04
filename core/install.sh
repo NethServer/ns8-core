@@ -31,18 +31,6 @@ enabled=1
 countme=1
 metadata_expire=6h
 gpgkey=http://mirrorlist.nethserver.org/rpm-gpg-key-ns8
-
-[epel]
-name=Extra Packages for Enterprise Linux 9 - $basearch
-# It is much more secure to use the metalink, but if you wish to use a local mirror
-# place its address here.
-#baseurl=https://download.example/pub/epel/9/Everything/$basearch/
-metalink=https://mirrors.fedoraproject.org/metalink?repo=epel-9&arch=$basearch&infra=$infra&content=$contentdir
-enabled=1
-gpgcheck=1
-countme=1
-gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-9
-includepkgs=python3.13*
 EOF
 }
 
@@ -90,9 +78,9 @@ if [[ "${PLATFORM_ID}" == "platform:el9" ]]; then
         rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-Rocky-9
     fi
     dnf update -y # Fix SELinux issues with basic packages
-    dnf install -y wireguard-tools podman curl jq openssl firewalld pciutils python3.13
+    dnf install -y wireguard-tools podman curl jq openssl firewalld pciutils python3.11
     systemctl enable --now firewalld
-elif [[ "${ID}" == "debian" && "${VERSION_ID}" == "12" ]]; then
+elif [[ "${ID}" == "debian" && "${VERSION_ID}" == "13" ]]; then
     apt-get update
     apt-get -y install gnupg2
     apt-get update
