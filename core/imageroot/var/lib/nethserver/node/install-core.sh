@@ -45,7 +45,7 @@ fi
 
 echo "Setup Python virtual environment for agents:"
 core_dir=/usr/local/agent/pyenv
-python3.11 -mvenv ${core_dir} --upgrade-deps --system-site-packages
+python3.13 -mvenv ${core_dir} --upgrade-deps --system-site-packages
 ${core_dir}/bin/pip3 install -r /etc/nethserver/pyreq3_11.txt
 echo "/usr/local/agent/pypkg" >$(${core_dir}/bin/python3 -c "import sys; print(sys.path[-1] + '/pypkg.pth')")
 

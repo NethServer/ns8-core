@@ -90,7 +90,7 @@ if [[ "${PLATFORM_ID}" == "platform:el9" ]]; then
         rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-Rocky-9
     fi
     dnf update -y # Fix SELinux issues with basic packages
-    dnf install -y wireguard-tools podman curl jq openssl firewalld pciutils python3.11
+    dnf install -y wireguard-tools podman curl jq openssl firewalld pciutils python3.13
     systemctl enable --now firewalld
 elif [[ "${ID}" == "debian" && "${VERSION_ID}" == "12" ]]; then
     apt-get update
