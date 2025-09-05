@@ -175,7 +175,9 @@ class LdapclientAd(LdapclientBase):
                     user['expired'] = False
                 # mail can be a string or an empty array, just treat ans empty arrays as an empty string
                 user["mail"] = entry['attributes'].get('mail') if entry['attributes'].get('mail') else ""
-
+                # In AD, pwdLastSet = 0 means that the user must change the password at next logon
+                # The timestamp 0 in Windows epoch is -11644473600 in Unix epoch
+                user['must_change'] = (pwd_changed_time.timestamp() == -11644473600)
             users.append(user)
 
         return users
