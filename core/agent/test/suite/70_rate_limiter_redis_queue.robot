@@ -6,7 +6,7 @@ Test Setup          Start command monitoring
 Test Teardown       Stop command monitoring
 
 # IMPORTANT NOTE
-# This test is made with the following assumptions:
+# This test is based on the following assumptions:
 # 1. The filler sleeps around 300 milliseconds.
 # 2. The maximum capacity is fixed at 10 tokens.
 # Because the sleep time is not precise the variable
