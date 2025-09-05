@@ -1,0 +1,23 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "restart-module input",
+    "$id": "http://schema.nethserver.org/node/restart-module-input.json",
+    "description": "This schema validates the input for restarting a module's services.",
+    "examples": [
+        {
+            "module_id": "mymodule2"
+        }
+    ],
+    "type": "object",
+    "required": [
+        "module_id"
+    ],
+    "properties": {
+        "module_id": {
+            "type": "string",
+            "title": "Module identifier",
+            "description": "The unique identifier of the module whose services are to be restarted.",
+            "minLength": 1
+        }
+    }
+}
