@@ -22,19 +22,15 @@ ${TOLERANCE_MS}    100
 *** Test Cases ***
 Tasks executed within rate limit boundaries
     The First Ten BRPOPs run quickly
-    But The Eleventh BRPOP run with delay due to rate limiter
+    But The Second Battery runs Slowly due to rate limiting
 
 *** Keywords ***
-Give me a Timestamp in Ms
-    ${ms} =  Get Timestamp Ms
-    RETURN    ${ms}
-
 The First Ten BRPOPs run quickly
-    ${start} =     Give me a Timestamp in Ms
+    ${start} =     Get Timestamp Ms
     
     Execute a battery of ten BRPOPs
     
-    ${end} =       Give me a Timestamp in Ms
+    ${end} =       Get Timestamp Ms
     ${elapsed} =    Evaluate    ${end} - ${start}
     Should Be True    ${elapsed} < ${FILL_MS}
     
@@ -42,7 +38,7 @@ The First Ten BRPOPs run quickly
     # fails
     # Should Be True    ${elapsed} < ${FILL_MS} + ${TOLERANCE_MS}
 
-But The Eleventh BRPOP run with delay due to rate limiter
+But The Second Battery runs Slowly due to rate limiting
     Execute a battery of eleven BRPOPs
 
 Execute a battery of ten BRPOPs
@@ -56,9 +52,9 @@ Execute a single BRPOP test
 
 Execute a battery of eleven BRPOPs
     FOR    ${i}    IN RANGE    11 
-        ${start} =    Give me a Timestamp in Ms
+        ${start} =    Get Timestamp Ms
         Execute a single BRPOP test
-        ${end} =      Give me a Timestamp in Ms
+        ${end} =      Get Timestamp Ms
         ${elapsed} =    Evaluate    ${end} - ${start}
         IF    ${i} < 11
             Should Be True    ${elapsed} < ${FILL_MS}
