@@ -26,7 +26,7 @@ Tasks executed within rate limit boundaries
 
 *** Keywords ***
 Give me a Timestamp in Ms
-    ${ms} =  Get timestamp Ms
+    ${ms} =  Get Timestamp Ms
     RETURN    ${ms}
 
 The First Ten BRPOPs run quickly
