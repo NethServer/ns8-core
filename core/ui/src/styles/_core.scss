@@ -80,8 +80,20 @@ a {
   margin-bottom: $spacing-07 !important;
 }
 
+.no-mg-top {
+  margin-top: 0 !important;
+}
+
 .no-mg-bottom {
   margin-bottom: 0 !important;
+}
+
+.no-mg-left {
+  margin-left: 0 !important;
+}
+
+.no-mg-right {
+  margin-right: 0 !important;
 }
 
 .mg-left-xs {

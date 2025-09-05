@@ -821,15 +821,16 @@
         "node_name_certificate": "{node} certificate",
         "ui_name": "Certificate",
         "ui_type": "Type",
-        "issuer": "Issuer",
-        "valid_from": "Validity period",
+        "ui_issuer": "Issuer",
+        "valid_to": "Validity period",
         "names": "Names",
         "requested": "Requested",
         "uploaded": "Uploaded",
         "automatic": "Automatic",
         "valid": "Valid",
         "expiring": "Expiring",
-        "expired": "Expired"
+        "expired": "Expired",
+        "checking_certificate_requirements": "Checking certificate requirements, please wait..."
     },
     "settings_acme_servers": {
         "title": "ACME servers",

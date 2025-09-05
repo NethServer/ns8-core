@@ -174,12 +174,33 @@
                           </span>
                         </cv-data-table-cell>
                         <cv-data-table-cell>
-                          <span>
+                          <cv-tag
+                            v-if="row.ui_type === 'automatic'"
+                            kind="gray"
+                            :label="
+                              $t('settings_tls_certificates.' + row.ui_type)
+                            "
+                            class="no-mg-right"
+                          ></cv-tag>
+                          <span v-else>
                             {{ $t("settings_tls_certificates." + row.ui_type) }}
                           </span>
                         </cv-data-table-cell>
                         <cv-data-table-cell>
-                          <span>
+                          <cv-interactive-tooltip
+                            v-if="row.ui_issuer !== row.issuer"
+                            alignment="center"
+                            direction="top"
+                            class="info"
+                          >
+                            <template #trigger>
+                              <cv-link>{{ row.ui_issuer }}</cv-link>
+                            </template>
+                            <template #content>
+                              {{ row.issuer }}
+                            </template>
+                          </cv-interactive-tooltip>
+                          <span v-else>
                             {{ row.issuer }}
                           </span>
                         </cv-data-table-cell>
@@ -189,9 +210,13 @@
                           </span>
                         </cv-data-table-cell>
                         <cv-data-table-cell>
-                          <span>
-                            {{ $t("settings_tls_certificates." + row.status) }}
-                          </span>
+                          <cv-tag
+                            :kind="getTagKind(row.status)"
+                            :label="
+                              $t('settings_tls_certificates.' + row.status)
+                            "
+                          >
+                          </cv-tag>
                         </cv-data-table-cell>
                         <cv-data-table-cell>
                           <span>
@@ -304,8 +329,8 @@ export default {
       tableColumns: [
         "ui_name",
         "ui_type",
-        "issuer",
-        "valid_from",
+        "ui_issuer",
+        "valid_to",
         "status",
         "names",
         "node",
@@ -675,9 +700,8 @@ export default {
         //   }
         // }
 
-        console.log("@@ nodeLabel", nodeLabel); ////
-
         // "Certificate" column
+
         if (certificate.default && certificate.type === "internal") {
           certificate.ui_name = this.$t(
             "settings_tls_certificates.node_name_certificate",
@@ -698,7 +722,18 @@ export default {
         }
         certificate.ui_type = ui_type;
 
+        // "Issuer" column
+
+        const matched = certificate.issuer.match(/,O=(.+?),/);
+
+        if (matched && matched.length > 1) {
+          certificate.ui_issuer = matched[1];
+        } else {
+          certificate.ui_issuer = certificate.issuer;
+        }
+
         // "Status" column
+
         certificate.status =
           certificate.type === "pending" ? "pending" : certificate.validity;
 
@@ -709,6 +744,7 @@ export default {
         certs.push(certificate);
 
         // "Validity period" column
+
         const validFrom = new Date(certificate.valid_from);
         const formattedValidFrom = this.formatDate(validFrom, "Pp");
 
@@ -723,6 +759,19 @@ export default {
       this.$set(this.certificatesByTraefikId, traefikId, certs);
 
       this.loading.listCertificatesNum--;
+    },
+    getTagKind(status) {
+      switch (status) {
+        case "valid":
+          return "green";
+        case "expiring":
+          return "blue";
+        case "expired":
+          return "red";
+        case "pending":
+        default:
+          return "gray";
+      }
     },
     showAllNodes() {
       this.q.selectedNodeId = "all";
