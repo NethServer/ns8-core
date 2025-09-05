@@ -269,7 +269,8 @@
         "warning_smtp_disabled_description": "Enable SMTP in the cluster settings to send password expiration warnings",
         "warning_disabled_description": "Enable the Age policy to configure password expiration warning",
         "password_does_not_expire": "No password expiration",
-        "password_expired": "Password expired"
+        "password_expired": "Password expired",
+        "must_change_password_on_next_login": "Required password change"
     },
     "init": {
         "restoring_cluster": "Restoring cluster",
@@ -516,7 +517,13 @@
         },
         "source_package": "App image",
         "migrating_app_description": "You'll be able to use {name} again once the migration from NethServer 7 is complete.",
-        "migrating_app_title": "This app instance is undergoing migration"
+        "migrating_app_title": "This app instance is undergoing migration",
+        "restart_instance_name": "Restart instance {instance}",
+        "restarting": " Restarting...",
+        "app_restart": "Restart the instance {app}",
+        "restart_app": "Restarting the instance {name} will interrupt its operation and may cause downtime.",
+        "restart_module_warning": "Proceed only if maintenance is needed and users are aware.",
+        "restart_instance": "Restart instance"
     },
     "settings_acme_servers": {
         "no_acme_server_description": "There is no ACME server configured",
@@ -862,7 +869,8 @@
         "get-metrics-configuration": "Get metrics configuration",
         "set-metrics-configuration": "Set metrics configuration",
         "get-metrics-id": "Get metrics ID",
-        "get-metrics-ids": "Get metrics IDs"
+        "get-metrics-ids": "Get metrics IDs",
+        "restart-module": "Restart instance"
     },
     "backup": {
         "cluster": "Local storage",
@@ -1298,7 +1306,13 @@
         "mail": "Mail address",
         "mail_field": "Mail address (optional)",
         "mail_format": "Invalid mail format",
-        "group_pattern": "Start with a letter, followed by letters, digits, and the symbols -._"
+        "group_pattern": "Start with a letter, followed by letters, digits, and the symbols -._",
+        "must_change_password_information_description": "Assign a temporary password; user must change it on first access",
+        "must_change_password_tooltip": "If enabled, the user will be prompted to change its password at next login",
+        "change_password_at_next_login": "User has to change password at next login",
+        "no_password_expiration_policy": "Password never expires",
+        "no_password_expiration_policy_tooltip": "User's password does not expire, regardless of age-related policy settings",
+        "must_change_password_information_title": "Require password change at next login"
     },
     "node_detail": {
         "total": "Total",

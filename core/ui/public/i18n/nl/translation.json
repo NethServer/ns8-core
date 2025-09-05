@@ -182,7 +182,8 @@
         "get-metrics-configuration": "statistieken configureren",
         "set-metrics-configuration": "Statistiek configuratie instellen",
         "get-metrics-id": "Haal statistiek ID's op",
-        "get-metrics-ids": "Haal statistiek ID's op"
+        "get-metrics-ids": "Haal statistiek ID's op",
+        "restart-module": "Restart instance"
     },
     "backup": {
         "aws_url_label": "AWS bucket naam",
@@ -579,7 +580,13 @@
         "move_app": "Verplaats app",
         "source_package": "App image",
         "migrating_app_description": "You'll be able to use {name} again once the migration from NethServer 7 is complete.",
-        "migrating_app_title": "This app instance is undergoing migration"
+        "migrating_app_title": "This app instance is undergoing migration",
+        "restart_instance_name": "Restart instance {instance}",
+        "restarting": " Restarting...",
+        "app_restart": "Restart the instance {app}",
+        "restart_app": "Restarting the instance {name} will interrupt its operation and may cause downtime.",
+        "restart_module_warning": "Proceed only if maintenance is needed and users are aware.",
+        "restart_instance": "Restart instance"
     },
     "domains": {
         "domain_summary": "Samenvatting",
@@ -700,7 +707,8 @@
         "ipaddress_private_check_failed": "Ongeldig IP adres",
         "users_admin_page_description": "Selfserviceportaal voor gebruikersbeheer",
         "warning_disabled_description": "Schakel het leeftijdsbeleid in om een waarschuwing voor het verlopen van wachtwoorden te configureren",
-        "samba": "Samba"
+        "samba": "Samba",
+        "must_change_password_on_next_login": "Required password change"
     },
     "samba": {
         "realm": "Domein",
@@ -776,10 +784,16 @@
         "display_name_string_lte": "Moet kleiner of gelijk zijn aan 256 tekens",
         "group": "Groep",
         "groups": "Groepen",
-        "user_pattern": "Begin met een letter, gevolgd door alleen letters, cijfers en de symbolen -._",
+        "user_pattern": "Begin met een letter, gevolgd door letters, cijfers en de symbolen -._",
         "create_user": "Gebruiker aanmaken",
         "domain_name_users_and_groups": "{domein} gebruikers en groepen",
-        "group_pattern": "Start with a letter, followed by letters, digits, and the symbols -._"
+        "group_pattern": "Start with a letter, followed by letters, digits, and the symbols -._",
+        "must_change_password_information_description": "Assign a temporary password; user must change it on first access",
+        "must_change_password_tooltip": "If enabled, the user will be prompted to change its password at next login",
+        "change_password_at_next_login": "User has to change password at next login",
+        "no_password_expiration_policy": "Password never expires",
+        "no_password_expiration_policy_tooltip": "User's password does not expire, regardless of age-related policy settings",
+        "must_change_password_information_title": "Require password change at next login"
     },
     "nodes": {
         "usage": "belasting",
@@ -1246,8 +1260,8 @@
         "network_error": "Netwerkfout",
         "warning_mail_template_content_required": "Mail template inhoud is vereist",
         "validation_error": "Validatiefout",
-        "invalid_url": "Invalid value or format",
-        "invalid_fqdn": "Invalid fully qualified domain name"
+        "invalid_url": "Foutieve waarde of formaat",
+        "invalid_fqdn": "Ongeldige volledig gekwalificeerde domeinnaam"
     },
     "websocket": {
         "websocket_disconnected_description": "Websocket verbinding is instabiel. Wacht tot verbinding of herlaad de pagina",

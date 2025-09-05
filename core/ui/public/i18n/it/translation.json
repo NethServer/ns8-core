@@ -155,7 +155,13 @@
         },
         "source_package": "Immagine app",
         "migrating_app_title": "Questa app è in fase di migrazione",
-        "migrating_app_description": "Sarà possibile tornare a utilizzare l'app una volta completata la migrazione da NethServer 7."
+        "migrating_app_description": "Sarà possibile tornare a utilizzare l'app una volta completata la migrazione da NethServer 7.",
+        "restart_instance_name": "Restart instance {instance}",
+        "restarting": " Restarting...",
+        "app_restart": "Restart the instance {app}",
+        "restart_app": "Restarting the instance {name} will interrupt its operation and may cause downtime.",
+        "restart_module_warning": "Proceed only if maintenance is needed and users are aware.",
+        "restart_instance": "Restart instance"
     },
     "nodes": {
         "title": "Nodi",
@@ -551,7 +557,8 @@
         "warning_smtp_disabled_description": "Attiva Notifiche email nelle impostazioni del cluster per inviare il preavviso di scadenza password",
         "warning_disabled_description": "Abilitare la durata password prima di configurare il preavviso di scadenza",
         "password_does_not_expire": "Nessuna scadenza password",
-        "password_expired": "Password scaduta"
+        "password_expired": "Password scaduta",
+        "must_change_password_on_next_login": "Required password change"
     },
     "action": {
         "configure-module": "Configura app",
@@ -653,7 +660,8 @@
         "get-metrics-configuration": "Leggi configurazione Metrics",
         "set-metrics-configuration": "Imposta configurazione Metrics",
         "get-metrics-id": "Identifica Metrics",
-        "get-metrics-ids": "Identifica Metrics"
+        "get-metrics-ids": "Identifica Metrics",
+        "restart-module": "Restart instance"
     },
     "backup": {
         "configure": "Configura",
@@ -928,7 +936,7 @@
         "show": "Mostra",
         "hide": "Nascondi",
         "status": "Stato",
-        "remove": "Rimuovi",
+        "remove": "Eliminare",
         "skip": "Salta",
         "search_placeholder": "Cerca",
         "loading": "Caricamento",
@@ -1279,7 +1287,13 @@
         "user_with_same_name": "Un utente con questo nome esiste già",
         "mail": "Indirizzo email",
         "mail_field": "Indirizzo email (opzionale)",
-        "mail_format": "Formato email non valido"
+        "mail_format": "Formato email non valido",
+        "must_change_password_information_description": "Assign a temporary password; user must change it on first access",
+        "must_change_password_tooltip": "If enabled, the user will be prompted to change its password at next login",
+        "change_password_at_next_login": "User has to change password at next login",
+        "no_password_expiration_policy": "Password never expires",
+        "no_password_expiration_policy_tooltip": "User's password does not expire, regardless of age-related policy settings",
+        "must_change_password_information_title": "Require password change at next login"
     },
     "domain_configuration": {
         "add_provider": "Aggiungi provider",
