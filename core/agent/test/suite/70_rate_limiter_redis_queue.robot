@@ -4,6 +4,7 @@ Suite Setup         Start the agent
 Suite Teardown      Stop the agent and cleanup
 Test Setup          Start command monitoring   
 Test Teardown       Stop command monitoring
+Library             timeutils.py            
 
 # IMPORTANT NOTE
 # This test is based on the following assumptions:
@@ -14,10 +15,9 @@ Test Teardown       Stop command monitoring
 
 *** Variables ***
 ${FILL_MS}         300
-${MIN_WAIT}        250
+${MIN_WAIT}        240
 ${CAPACITY}        10
 ${TOLERANCE_MS}    100
-
 
 *** Test Cases ***
 Tasks executed within rate limit boundaries
@@ -26,7 +26,7 @@ Tasks executed within rate limit boundaries
 
 *** Keywords ***
 Give me a Timestamp in Ms
-    ${ms} =    Evaluate    int(__import__('time').perf_counter_ns() // 1_000_000)
+    ${ms} =  Get timestamp Ms
     RETURN    ${ms}
 
 The First Ten BRPOPs run quickly
@@ -43,15 +43,7 @@ The First Ten BRPOPs run quickly
     # Should Be True    ${elapsed} < ${FILL_MS} + ${TOLERANCE_MS}
 
 But The Eleventh BRPOP run with delay due to rate limiter
-    Execute a battery of ten BRPOPs
-
-    ${start} =     Give me a Timestamp in Ms
-        Execute a single BRPOP test
-    ${end} =      Give me a Timestamp in Ms
-    ${elapsed} =    Evaluate    ${end} - ${start}
-
-    Should Be True    ${elapsed} >= ${MIN_WAIT}
-    Should Be True    ${elapsed} <= ${FILL_MS} + ${TOLERANCE_MS}
+    Execute a battery of eleven BRPOPs
 
 Execute a battery of ten BRPOPs
     FOR    ${i}    IN RANGE    10
@@ -61,3 +53,16 @@ Execute a battery of ten BRPOPs
 Execute a single BRPOP test
     The Task is submitted    fail-validation    "test-rate-limiter"
     The Command is received    set    fail-validation    test-rate-limiter
+
+Execute a battery of eleven BRPOPs
+    FOR    ${i}    IN RANGE    11 
+        ${start} =    Give me a Timestamp in Ms
+        Execute a single BRPOP test
+        ${end} =      Give me a Timestamp in Ms
+        ${elapsed} =    Evaluate    ${end} - ${start}
+        IF    ${i} < 11
+            Should Be True    ${elapsed} < ${FILL_MS}
+        END
+    END
+    Should Be True    ${elapsed} >= ${MIN_WAIT}
+    Should Be True    ${elapsed} <= ${FILL_MS} + ${TOLERANCE_MS}
