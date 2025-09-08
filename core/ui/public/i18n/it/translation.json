@@ -156,12 +156,12 @@
         "source_package": "Immagine app",
         "migrating_app_title": "Questa app è in fase di migrazione",
         "migrating_app_description": "Sarà possibile tornare a utilizzare l'app una volta completata la migrazione da NethServer 7.",
-        "restart_instance_name": "Restart instance {instance}",
-        "restarting": " Restarting...",
-        "app_restart": "Restart the instance {app}",
-        "restart_app": "Restarting the instance {name} will interrupt its operation and may cause downtime.",
-        "restart_module_warning": "Proceed only if maintenance is needed and users are aware.",
-        "restart_instance": "Restart instance"
+        "restart_instance_name": "Riavvia l'istanza {instance}",
+        "restarting": " Riavvio...",
+        "app_restart": "Riavviare l'istanza {app}",
+        "restart_app": "Il riavvio dell'istanza {nome} interromperà il suo funzionamento e può produrre downtime.",
+        "restart_module_warning": "Procedere solo se è necessario e dopo aver informato gli utenti.",
+        "restart_instance": "Riavvia istanza"
     },
     "nodes": {
         "title": "Nodi",
@@ -510,7 +510,7 @@
         "domain_pattern": "Pattern di dominio non valido. Inserisci qualcosa come 'my.domain.org'",
         "external": "Esterno",
         "expiration": "Regole di durata",
-        "enable_the_policy_strength": "Abilita complessità password",
+        "enable_the_policy_strength": "Complessità password",
         "days": "giorni",
         "strength": "Regola di complessità",
         "strength_history_length": "Lunghezza storico delle password",
@@ -558,7 +558,7 @@
         "warning_disabled_description": "Abilitare la durata password prima di configurare il preavviso di scadenza",
         "password_does_not_expire": "Nessuna scadenza password",
         "password_expired": "Password scaduta",
-        "must_change_password_on_next_login": "Required password change"
+        "must_change_password_on_next_login": "Richiesto cambio password"
     },
     "action": {
         "configure-module": "Configura app",
@@ -661,7 +661,7 @@
         "set-metrics-configuration": "Imposta configurazione Metrics",
         "get-metrics-id": "Identifica Metrics",
         "get-metrics-ids": "Identifica Metrics",
-        "restart-module": "Restart instance"
+        "restart-module": "Riavvia istanza"
     },
     "backup": {
         "configure": "Configura",
@@ -1256,8 +1256,8 @@
         "disable_user_user": "Disabilita utente {user}",
         "title": "Utenti e gruppi del dominio",
         "domain_name_users_and_groups": "Utenti e gruppi di {domain}",
-        "disable": "Disabilita",
-        "enable": "Abilita",
+        "disable": "Disabilita utente",
+        "enable": "Abilita utente",
         "display_name": "Nome visualizzato",
         "edit_user": "Modifica utente",
         "groups": "Gruppi",
@@ -1288,12 +1288,12 @@
         "mail": "Indirizzo email",
         "mail_field": "Indirizzo email (opzionale)",
         "mail_format": "Formato email non valido",
-        "must_change_password_information_description": "Assign a temporary password; user must change it on first access",
-        "must_change_password_tooltip": "If enabled, the user will be prompted to change its password at next login",
-        "change_password_at_next_login": "User has to change password at next login",
-        "no_password_expiration_policy": "Password never expires",
-        "no_password_expiration_policy_tooltip": "User's password does not expire, regardless of age-related policy settings",
-        "must_change_password_information_title": "Require password change at next login"
+        "must_change_password_information_description": "Assegna una password temporanea; l'utente deve cambiarla al prossimo accesso",
+        "must_change_password_tooltip": "Se abilitato, sarà richiesto all'utente di cambiare password al prossimo accesso",
+        "change_password_at_next_login": "L'utente deve cambiare password al prossimo accesso",
+        "no_password_expiration_policy": "Password senza scadenza",
+        "no_password_expiration_policy_tooltip": "La password dell'utente non scade, indipendentemente dalla policy di scadenza impostata",
+        "must_change_password_information_title": "Richiesta cambio password al prossimo accesso"
     },
     "domain_configuration": {
         "add_provider": "Aggiungi provider",
