@@ -113,7 +113,7 @@
                       size="sm"
                     ></cv-tag>
                     <cv-tag
-                      v-if="row.password_expiration === -1"
+                      v-if="row.password_expiration === -1 && policy.expiration.enforced"
                       kind="gray"
                       :label="$t('domains.password_does_not_expire')"
                       size="sm"
