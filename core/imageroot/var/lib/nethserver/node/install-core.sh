@@ -45,8 +45,20 @@ fi
 
 echo "Setup Python virtual environment for agents:"
 core_dir=/usr/local/agent/pyenv
-python3.11 -mvenv ${core_dir} --upgrade-deps --system-site-packages
-${core_dir}/bin/pip3 install -r /etc/nethserver/pyreq3_11.txt
+
+# detect what version of python3 is available
+if [[ -x /usr/bin/python3.13 ]]; then
+    python3.13 -mvenv ${core_dir} --upgrade-deps --system-site-packages
+    ${core_dir}/bin/pip3 install -r /etc/nethserver/pyreq3_13.txt
+elif [[ -x /usr/bin/python3.11 ]]; then
+    python3.11 -mvenv ${core_dir} --upgrade-deps --system-site-packages
+    ${core_dir}/bin/pip3 install -r /etc/nethserver/pyreq3_11.txt
+else
+    echo "No supported python3 version found (3.11 or 3.13 required)."
+    exit 1
+fi
+
+# ensure the agent python packages are in the default python path
 echo "/usr/local/agent/pypkg" >$(${core_dir}/bin/python3 -c "import sys; print(sys.path[-1] + '/pypkg.pth')")
 
 echo "Setup registry:"
