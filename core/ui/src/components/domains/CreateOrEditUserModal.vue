@@ -104,7 +104,7 @@
           autocomplete="new-password"
         />
         <NsToggle
-          v-if="!isEditing && isActiveDirectory"
+          v-if="isActiveDirectory"
           :label="$t('domain_users.change_password_at_next_login')"
           value="mustChangePassword"
           :form-item="true"
