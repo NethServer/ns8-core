@@ -49,7 +49,7 @@
           :form-item="true"
           v-model="mustChangePassword"
           :disabled="
-            loading.addUser || loading.alterUser || passwordMustBeChanged
+            loading.addUser || loading.alterUser || passwordMustBeChanged || newPassword === ''
           "
           tooltipAlignment="start"
           tooltipDirection="bottom"
