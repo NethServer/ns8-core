@@ -121,7 +121,7 @@
           <template slot="text-right">{{ $t("common.enabled") }}</template>
         </NsToggle>
         <NsToggle
-          v-if="isActiveDirectory"
+          v-if="isActiveDirectory && policy.expiration.enforced"
           :label="$t('domain_users.no_password_expiration_policy')"
           value="noPasswordExpirationPolicy"
           :form-item="true"
@@ -201,6 +201,9 @@ export default {
           complexity_check: false,
           enforced: false,
           password_min_length: 8,
+        },
+        expiration: {
+          enforced: false,
         },
       },
       loading: {
@@ -331,6 +334,7 @@ export default {
     },
     listPasswordPolicyCompleted(taskContext, taskResult) {
       const config = taskResult.output;
+      this.policy.expiration.enforced = config.expiration.enforced;
       this.policy.strength.enforced = config.strength.enforced;
       this.policy.strength.complexity_check = config.strength.complexity_check;
       this.policy.strength.password_min_length =

@@ -1269,7 +1269,7 @@
         "go_to_smtp_settings": "Go to Email notifications",
         "password_expired": "Password expired",
         "must_change_password_on_next_login": "Required password change",
-        "password_does_not_expire": "No password expiration"
+        "password_does_not_expire": "Password never expires"
     },
     "samba": {
         "adminuser": "Samba admin username",
