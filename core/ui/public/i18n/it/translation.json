@@ -556,7 +556,7 @@
         "warning_template_subject": "Oggetto del messaggio",
         "warning_smtp_disabled_description": "Attiva Notifiche email nelle impostazioni del cluster per inviare il preavviso di scadenza password",
         "warning_disabled_description": "Abilitare la durata password prima di configurare il preavviso di scadenza",
-        "password_does_not_expire": "Nessuna scadenza password",
+        "password_does_not_expire": "Password senza scadenza",
         "password_expired": "Password scaduta",
         "must_change_password_on_next_login": "Richiesto cambio password"
     },
