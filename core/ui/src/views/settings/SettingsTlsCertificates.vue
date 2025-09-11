@@ -50,68 +50,101 @@
       </cv-row>
       <cv-row>
         <cv-column>
-          <NsInlineNotification
-            v-if="
-              q.selectedNodeId &&
-              q.selectedNodeId !== 'all' &&
-              selectedNodeLabel
-            "
-            kind="info"
-            :title="$t('settings_tls_certificates.certificates_filtered')"
-            :description="
-              $t(
-                'settings_tls_certificates.certificates_filtered_description',
-                {
-                  node: selectedNodeLabel,
-                }
-              )
-            "
-            :actionLabel="$t('settings_tls_certificates.show_all')"
-            @action="showAllNodes"
-            :showCloseButton="false"
-          />
-        </cv-column>
-      </cv-row>
-      <cv-row>
-        <cv-column>
           <cv-tile light>
             <cv-grid class="no-padding">
-              <cv-row>
-                <cv-column :md="4">
-                  <cv-combo-box
-                    v-model="q.selectedNodeId"
-                    :label="$t('common.choose')"
-                    :title="$t('common.show')"
-                    :auto-filter="true"
-                    :auto-highlight="true"
-                    :options="nodesForFilter"
-                    :disabled="loading.listInstalledModules"
-                    class="mg-bottom-xlg"
-                  >
-                  </cv-combo-box>
-                </cv-column>
-              </cv-row>
-              <cv-row class="toolbar">
+              <cv-row class="toolbar" v-if="certificates.length">
                 <cv-column>
                   <NsButton
-                    kind="primary"
-                    :icon="Add20"
+                    kind="secondary"
+                    :icon="Upload20"
                     @click="uploadTlsCertificateState.setVisible(true)"
                     >{{
                       $t("settings_tls_certificates.add_custom_certificate")
                     }}
                   </NsButton>
                   <NsButton
+                    v-if="nodesWithoutCertificate.length"
                     class="mg-left-sm"
-                    kind="secondary"
+                    kind="primary"
                     :icon="Add20"
+                    :disabled="loadingCertificates"
                     @click="showRequestCertificateModal"
                     >{{ $t("settings_tls_certificates.request_certificate") }}
                   </NsButton>
+                  <cv-tooltip
+                    v-else
+                    alignment="center"
+                    direction="right"
+                    :tip="
+                      $t(
+                        'settings_tls_certificates.request_certificate_disabled_message'
+                      )
+                    "
+                  >
+                    <NsButton
+                      class="mg-left-sm"
+                      kind="primary"
+                      :icon="Add20"
+                      disabled
+                      @click="showRequestCertificateModal"
+                      >{{ $t("settings_tls_certificates.request_certificate") }}
+                    </NsButton>
+                  </cv-tooltip>
                 </cv-column>
               </cv-row>
               <cv-row>
                 <cv-column>
+                  <div class="data-table-filters">
+                    <cv-search
+                      :label="$t('common.search')"
+                      :placeholder="
+                        $t('settings_tls_certificates.filter_certificates')
+                      "
+                      :clear-aria-label="$t('common.clear_search')"
+                      v-model="filter.text"
+                      :disabled="loadingCertificates"
+                      size="large"
+                      ref="tableSearch"
+                      class="self-end"
+                      @input="onSearchInput"
+                    >
+                    </cv-search>
+                    <NsComboBox
+                      v-model="filter.certificateType"
+                      :label="$t('common.choose')"
+                      :title="$t('settings_tls_certificates.ui_type')"
+                      :auto-filter="true"
+                      :auto-highlight="true"
+                      :options="typeOptions"
+                      :disabled="loadingCertificates"
+                    >
+                    </NsComboBox>
+                    <NsComboBox
+                      v-model="filter.certificateStatus"
+                      :label="$t('common.choose')"
+                      :title="$t('settings_tls_certificates.status')"
+                      :auto-filter="true"
+                      :auto-highlight="true"
+                      :options="statusOptions"
+                      :disabled="loadingCertificates"
+                    >
+                    </NsComboBox>
+                    <NsComboBox
+                      v-model="q.selectedNodeId"
+                      :label="$t('common.choose')"
+                      :title="$t('common.node')"
+                      :auto-filter="true"
+                      :auto-highlight="true"
+                      :options="nodesForFilter"
+                      :disabled="loadingCertificates"
+                    >
+                    </NsComboBox>
+                    <cv-link
+                      @click="clearFilters()"
+                      class="self-end mb-3 shrink-0"
+                      >{{ $t("common.clear_filters") }}
+                    </cv-link>
+                  </div>
                   <NsDataTable
                     :allRows="filteredCertificates"
                     :columns="i18nTableColumns"
@@ -119,11 +152,7 @@
                     :sortable="true"
                     :pageSizes="[10, 25, 50, 100]"
                     :overflow-menu="true"
-                    isSearchable
-                    :searchPlaceholder="
-                      $t('settings_tls_certificates.search_certificate')
-                    "
-                    :searchClearLabel="$t('common.clear_search')"
+                    :isSearchable="false"
                     :noSearchResultsLabel="$t('common.no_search_results')"
                     :noSearchResultsDescription="
                       $t('common.no_search_results_description')
@@ -143,24 +172,83 @@
                     :backwardText="$t('pagination.previous_page')"
                     :forwardText="$t('pagination.next_page')"
                     :pageNumberLabel="$t('pagination.page_number')"
+                    ref="certificatesTable"
                     @updatePage="tablePage = $event"
                   >
                     <template slot="empty-state">
-                      <NsEmptyState
-                        :title="
-                          $t('settings_tls_certificates.no_tls_certificate')
-                        "
-                      >
-                        <template #description>
-                          <div>
-                            {{
-                              $t(
-                                "settings_tls_certificates.no_tls_certificate_description"
-                              )
-                            }}
-                          </div>
-                        </template>
-                      </NsEmptyState>
+                      <template v-if="hasActiveFilters && certificates.length">
+                        <!-- no search results -->
+                        <NsEmptyState
+                          :title="$t('common.no_search_results')"
+                          key="no-results-empty-state"
+                        >
+                          <template #description>
+                            <div
+                              class="flex flex-col items-center text-center gap-2"
+                            >
+                              <p>
+                                {{ $t("common.no_search_results_description") }}
+                              </p>
+                              <NsButton
+                                kind="ghost"
+                                size="field"
+                                @click="clearFilters()"
+                                >{{ $t("common.clear_filters") }}
+                              </NsButton>
+                            </div>
+                          </template>
+                        </NsEmptyState>
+                      </template>
+                      <template v-else>
+                        <!-- no tls certificates -->
+                        <NsEmptyState
+                          :title="
+                            $t('settings_tls_certificates.no_tls_certificate')
+                          "
+                          key="no-certificates-empty-state"
+                        >
+                          <template #pictogram>
+                            <DocumentSecurityPictogram />
+                          </template>
+                          <template #description>
+                            <div class="flex flex-col items-center gap-4">
+                              <p>
+                                {{
+                                  $t(
+                                    "settings_tls_certificates.no_tls_certificate_description"
+                                  )
+                                }}
+                              </p>
+                              <div class="flex flex-col items-center gap-2">
+                                <NsButton
+                                  v-if="nodesWithoutCertificate.length"
+                                  kind="primary"
+                                  :icon="Add20"
+                                  :disabled="loadingCertificates"
+                                  @click="showRequestCertificateModal"
+                                  >{{
+                                    $t(
+                                      "settings_tls_certificates.request_certificate"
+                                    )
+                                  }}
+                                </NsButton>
+                                <NsButton
+                                  kind="ghost"
+                                  :icon="Upload20"
+                                  @click="
+                                    uploadTlsCertificateState.setVisible(true)
+                                  "
+                                  >{{
+                                    $t(
+                                      "settings_tls_certificates.add_custom_certificate"
+                                    )
+                                  }}
+                                </NsButton>
+                              </div>
+                            </div>
+                          </template>
+                        </NsEmptyState>
+                      </template>
                     </template>
                     <template slot="data">
                       <cv-data-table-row
@@ -170,49 +258,91 @@
                       >
                         <cv-data-table-cell>
                           <span>
-                            {{ row.fqdn }}
+                            {{ row.ui_name }}
                           </span>
                         </cv-data-table-cell>
                         <cv-data-table-cell>
-                          <div class="icon-and-text">
-                            <NsSvg
-                              v-if="row.status == 'not_obtained'"
-                              :svg="Warning16"
-                              class="icon ns-warning"
-                            />
-                            <NsSvg
-                              v-else-if="
-                                row.status == 'obtained' ||
-                                row.status === 'custom'
-                              "
-                              :svg="CheckmarkFilled16"
-                              class="icon ns-success"
-                            />
-                            <NsSvg
-                              v-else-if="row.status == 'pending'"
-                              :svg="InformationFilled16"
-                              class="icon ns-info"
-                            />
-                            <span>{{
-                              $t("settings_tls_certificates." + row.status)
-                            }}</span>
-                          </div>
+                          <cv-tag
+                            v-if="row.ui_type === 'automatic'"
+                            kind="gray"
+                            :label="
+                              $t('settings_tls_certificates.' + row.ui_type)
+                            "
+                            class="no-mg-right"
+                          ></cv-tag>
+                          <span v-else>
+                            {{ $t("settings_tls_certificates." + row.ui_type) }}
+                          </span>
+                        </cv-data-table-cell>
+                        <cv-data-table-cell>
+                          <cv-interactive-tooltip
+                            v-if="row.ui_issuer !== row.issuer"
+                            alignment="center"
+                            direction="top"
+                            class="info"
+                          >
+                            <template #trigger>
+                              <cv-link>{{ row.ui_issuer }}</cv-link>
+                            </template>
+                            <template #content>
+                              {{ row.issuer }}
+                            </template>
+                          </cv-interactive-tooltip>
+                          <span v-else>
+                            {{ row.issuer }}
+                          </span>
+                        </cv-data-table-cell>
+                        <cv-data-table-cell>
+                          <span>
+                            {{ row.validity_period }}
+                          </span>
+                        </cv-data-table-cell>
+                        <cv-data-table-cell>
+                          <cv-tag
+                            :kind="getTagKind(row.status)"
+                            :label="
+                              $t('settings_tls_certificates.' + row.status)
+                            "
+                          >
+                          </cv-tag>
+                        </cv-data-table-cell>
+                        <cv-data-table-cell>
+                          <span>
+                            {{ row.names.join(", ") }}
+                          </span>
                         </cv-data-table-cell>
                         <cv-data-table-cell>
                           <span>{{ row.node }}</span>
                         </cv-data-table-cell>
-                        <cv-data-table-cell>
-                          <div class="justify-flex-end">
-                            <NsButton
-                              kind="secondary"
-                              :icon="TrashCan20"
-                              size="small"
-                              @click="showDeleteCertificateModal(row)"
-                              :data-test-id="row.fqdn + '-delete'"
+                        <cv-data-table-cell class="table-overflow-menu-cell">
+                          <cv-overflow-menu
+                            flip-menu
+                            class="table-overflow-menu"
+                            :data-test-id="row.name + '-menu'"
+                          >
+                            <!-- manage names -->
+                            <cv-overflow-menu-item
+                              v-if="row.default && row.type === 'internal'"
+                              @click="showManageNamesModal(row)"
                             >
-                              {{ $t("common.delete") }}
-                            </NsButton>
-                          </div>
+                              <NsMenuItem
+                                :icon="Edit20"
+                                :label="
+                                  $t('settings_tls_certificates.manage_names')
+                                "
+                              />
+                            </cv-overflow-menu-item>
+                            <!-- delete -->
+                            <cv-overflow-menu-item
+                              danger
+                              @click="showDeleteCertificateModal(row)"
+                            >
+                              <NsMenuItem
+                                :icon="TrashCan20"
+                                :label="$t('common.delete')"
+                              />
+                            </cv-overflow-menu-item>
+                          </cv-overflow-menu>
                         </cv-data-table-cell>
                       </cv-data-table-row>
                     </template>
@@ -238,30 +368,43 @@
     <!-- delete certificate modal -->
     <NsDangerDeleteModal
       :isShown="isShownDeleteCertificateModal"
-      :name="certificateToDelete ? certificateToDelete.fqdn : ''"
-      :title="
-        $t('settings_tls_certificates.delete_certificate_for_fqdn', {
-          fqdn: certificateToDelete ? certificateToDelete.fqdn : '',
-        })
-      "
-      :warning="$t('common.please_read_carefully')"
+      :name="certificateToDelete ? certificateToDelete.ui_name : ''"
+      :title="$t('settings_tls_certificates.delete_certificate')"
       :description="
         $t('settings_tls_certificates.delete_certificate_description', {
-          fqdn: certificateToDelete ? certificateToDelete.fqdn : '',
+          name: certificateToDelete ? certificateToDelete.ui_name : '',
         })
       "
       :typeToConfirm="
         $t('common.type_to_confirm', {
-          name: certificateToDelete ? certificateToDelete.fqdn : '',
+          name: certificateToDelete ? certificateToDelete.ui_name : '',
         })
       "
       :isErrorShown="!!error.deleteCertificate"
       :errorTitle="$t('action.delete-certificate')"
       :errorDescription="error.deleteCertificate"
+      :isWarningShown="false"
       @hide="hideDeleteCertificateModal"
       @confirmDelete="deleteCertificate"
-      data-test-id="delete-certificate-modal"
-    />
+    >
+      <template slot="explanation">
+        <p
+          v-if="certificateToDelete && certificateToDelete.automatic"
+          class="mg-top-sm"
+        >
+          {{ $t("settings_tls_certificates.automatic_cert_warning") }}
+        </p>
+        <NsInlineNotification
+          v-if="certificateToDelete && certificateToDelete.type === 'internal'"
+          kind="warning"
+          :title="$t('settings_tls_certificates.traefik_will_be_restarted')"
+          :description="
+            $t('settings_tls_certificates.traefik_will_be_restarted_message')
+          "
+          :showCloseButton="false"
+        />
+      </template>
+    </NsDangerDeleteModal>
   </div>
 </template>
 
@@ -273,12 +416,14 @@ import {
   TaskService,
   IconService,
   PageTitleService,
+  DateTimeService,
 } from "@nethserver/ns8-ui-lib";
 import { mapState } from "vuex";
 import _cloneDeep from "lodash/cloneDeep";
 import RequestTlsCertificateModal from "@/components/settings/RequestTlsCertificateModal.vue";
 import UploadTlsCertificateModal from "@/components/settings/UploadTlsCertificateModal.vue";
 import { StateManager as UploadTlsCertificateState } from "@/components/settings/UploadTlsCertificateModal.vue";
+import Upload20 from "@carbon/icons-vue/es/upload/20";
 
 export default {
   name: "SettingsTlsCertificates",
@@ -289,6 +434,7 @@ export default {
     IconService,
     QueryParamService,
     PageTitleService,
+    DateTimeService,
   ],
   pageTitle() {
     return this.$t("settings_tls_certificates.title");
@@ -299,7 +445,15 @@ export default {
         selectedNodeId: "",
       },
       tablePage: [],
-      tableColumns: ["fqdn", "status", "node"],
+      tableColumns: [
+        "ui_name",
+        "ui_type",
+        "ui_issuer",
+        "valid_to",
+        "status",
+        "names",
+        "node",
+      ],
       certificatesByTraefikId: {},
       internalNodes: [],
       isShownRequestCertificateModal: false,
@@ -308,6 +462,61 @@ export default {
       currentErrorDescription: "",
       traefikInstances: [],
       certificateToDelete: null,
+      filter: {
+        text: "",
+        certificateType: "",
+        certificateStatus: "",
+      },
+      typeOptions: [
+        {
+          name: "any",
+          label: this.$t("settings_tls_certificates.any_type"),
+          value: "any",
+        },
+        {
+          name: "requested",
+          label: this.$t("settings_tls_certificates.requested"),
+          value: "requested",
+        },
+        {
+          name: "uploaded",
+          label: this.$t("settings_tls_certificates.uploaded"),
+          value: "uploaded",
+        },
+        {
+          name: "automatic",
+          label: this.$t("settings_tls_certificates.automatic"),
+          value: "automatic",
+        },
+      ],
+      statusOptions: [
+        {
+          name: "any",
+          label: this.$t("settings_tls_certificates.any_status"),
+          value: "any",
+        },
+        {
+          name: "valid",
+          label: this.$t("settings_tls_certificates.valid"),
+          value: "valid",
+        },
+        {
+          name: "expiring",
+          label: this.$t("settings_tls_certificates.expiring"),
+          value: "expiring",
+        },
+        {
+          name: "expired",
+          label: this.$t("settings_tls_certificates.expired"),
+          value: "expired",
+        },
+        {
+          name: "pending",
+          label: this.$t("settings_tls_certificates.pending"),
+          value: "pending",
+        },
+      ],
+      Upload20,
       loading: {
         listInstalledModules: false,
         listCertificatesNum: 0,
@@ -319,6 +528,88 @@ export default {
         deleteCertificate: "",
       },
       uploadTlsCertificateState: new UploadTlsCertificateState(),
+      //// remove mock
+      mockCertificates: {
+        traefik1: [
+          {
+            names: ["mail.dp.nethserver.net"],
+            subject: "mail.dp.nethserver.net",
+            issuer: "Custom Intermediate CA",
+            serial: "603545327999770137768033575467090432240151056165",
+            valid_to: "2026-02-07T14:19:38+00:00",
+            valid_from: "2025-02-07T14:19:38+00:00",
+            path: "custom_certificates/mail.dp.nethserver.net.crt",
+            validity: "valid",
+            type: "custom",
+          },
+          {
+            names: ["dokuwiki1.dp.nethserver.net"],
+            subject: "dokuwiki1.dp.nethserver.net",
+            issuer: "(STAGING) Tenuous Tomato R13",
+            serial: "3918504633558580209040851109284865639469365",
+            valid_to: "2025-12-02T09:56:55+00:00",
+            valid_from: "2025-09-03T09:56:56+00:00",
+            validity: "valid",
+            type: "internal",
+            automatic: true,
+          },
+          {
+            names: ["manual.dp.nethserver.net"],
+            subject: "manual.dp.nethserver.net",
+            issuer: "(STAGING) Riddling Rhubarb R12",
+            serial: "3853031702502281198931684732356056127155675",
+            valid_to: "2025-12-02T10:06:40+00:00",
+            valid_from: "2025-09-03T10:06:41+00:00",
+            validity: "valid",
+            type: "internal",
+          },
+          {
+            names: ["rl1.dp.nethserver.net", "mail.dp.nethserver.net"],
+            subject: "rl1.dp.nethserver.net",
+            issuer: "(STAGING) Riddling Rhubarb R12",
+            serial: "3865367987766600338566272990214152225581583",
+            valid_to: "2025-12-02T13:38:13+00:00",
+            valid_from: "2025-09-03T13:38:14+00:00",
+            validity: "valid",
+            type: "internal",
+            default: true,
+          },
+        ],
+        traefik2: [
+          {
+            names: ["test1.dp.nethserver.net"],
+            subject: "test1.dp.nethserver.net",
+            issuer: "(STAGING) Tenuous Tomato R13",
+            serial: "3918504633558580209040851109284865639469365",
+            valid_to: "2025-12-02T09:56:55+00:00",
+            valid_from: "2025-09-03T09:56:56+00:00",
+            validity: "valid",
+            type: "internal",
+            automatic: true,
+          },
+          {
+            names: ["test2.dp.nethserver.net"],
+            subject: "test2.dp.nethserver.net",
+            issuer: "(STAGING) Riddling Rhubarb R12",
+            serial: "3853031702502281198931684732356056127155675",
+            valid_to: "2025-12-02T10:06:40+00:00",
+            valid_from: "2025-09-03T10:06:41+00:00",
+            validity: "valid",
+            type: "internal",
+          },
+          {
+            names: ["test3.dp.nethserver.net", "mail.dp.nethserver.net"],
+            subject: "test3.dp.nethserver.net",
+            issuer: "(STAGING) Riddling Rhubarb R12",
+            serial: "3865367987766600338566272990214152225581583",
+            valid_to: "2025-12-02T13:38:13+00:00",
+            valid_from: "2025-09-03T13:38:14+00:00",
+            validity: "valid",
+            type: "internal",
+            default: true,
+          },
+        ],
+      },
     };
   },
   computed: {
@@ -335,16 +626,56 @@ export default {
       );
     },
     filteredCertificates() {
-      if (this.q.selectedNodeId === "all" || !this.q.selectedNodeId) {
-        return this.certificates;
+      let certificates = this.certificates;
+
+      // filter by node
+      if (this.q.selectedNodeId && this.q.selectedNodeId !== "any") {
+        certificates = certificates.filter((certificate) => {
+          return certificate.nodeId === this.q.selectedNodeId;
+        });
       }
 
-      return this.certificates.filter((certificate) => {
-        return certificate.nodeId === this.q.selectedNodeId;
-      });
+      // filter by text
+      if (this.filter.text.trim()) {
+        const searchText = this.filter.text.toLowerCase().trim();
+        certificates = certificates.filter((cert) => {
+          return (
+            cert.ui_name.toLowerCase().includes(searchText) ||
+            cert.ui_type.toLowerCase().includes(searchText) ||
+            cert.ui_issuer.toLowerCase().includes(searchText) ||
+            cert.validity_period.toLowerCase().includes(searchText) ||
+            cert.status.toLowerCase().includes(searchText) ||
+            cert.names.some((name) =>
+              name.toLowerCase().includes(searchText)
+            ) ||
+            cert.node.toLowerCase().includes(searchText)
+          );
+        });
+      }
+
+      // filter by type
+      if (
+        this.filter.certificateType &&
+        this.filter.certificateType !== "any"
+      ) {
+        certificates = certificates.filter((certificate) => {
+          return certificate.ui_type === this.filter.certificateType;
+        });
+      }
+
+      // filter by status
+      if (
+        this.filter.certificateStatus &&
+        this.filter.certificateStatus !== "any"
+      ) {
+        certificates = certificates.filter((certificate) => {
+          return certificate.status === this.filter.certificateStatus;
+        });
+      }
+      return certificates;
     },
     selectedNodeLabel() {
-      if (this.q.selectedNodeId === "all" || !this.q.selectedNodeId) {
+      if (this.q.selectedNodeId === "any" || !this.q.selectedNodeId) {
         return "";
       }
 
@@ -362,13 +693,13 @@ export default {
         return [];
       }
 
-      // add "All nodes" at the beginning of internalNodes array
+      // add "Any node" at the beginning of internalNodes array
       const nodes = _cloneDeep(this.internalNodes);
 
       nodes.unshift({
-        name: "all",
-        label: this.$t("common.all_nodes"),
-        value: "all",
+        name: "any",
+        label: this.$t("common.any_node"),
+        value: "any",
       });
       return nodes;
     },
@@ -376,6 +707,29 @@ export default {
       return Object.values(this.certificatesByTraefikId)
         .flat()
         .sort(this.sortByProperty("fqdn"));
+    },
+    nodesWithoutCertificate() {
+      const nodesWithDefaultCert = [
+        ...new Set(
+          this.certificates
+            .filter((cert) => cert.default && cert.type === "internal")
+            .map((cert) => cert.nodeId)
+        ),
+      ];
+
+      return this.internalNodes.filter(
+        (node) => !nodesWithDefaultCert.includes(node.value)
+      );
+    },
+    hasActiveFilters() {
+      return (
+        (this.filter.text && this.filter.text.trim() !== "") ||
+        (this.filter.certificateType &&
+          this.filter.certificateType !== "any") ||
+        (this.filter.certificateStatus &&
+          this.filter.certificateStatus !== "any") ||
+        (this.q.selectedNodeId && this.q.selectedNodeId !== "any")
+      );
     },
   },
   beforeRouteEnter(to, from, next) {
@@ -393,6 +747,11 @@ export default {
     this.$root.$on("reloadCertificates", this.onReloadCertificates);
 
     this.listInstalledModules();
+
+    this.$nextTick(() => {
+      this.filter.certificateType = "any";
+      this.filter.certificateStatus = "any";
+    });
   },
   beforeDestroy() {
     // remove event listeners
@@ -492,8 +851,8 @@ export default {
 
       this.$nextTick(() => {
         if (!this.q.selectedNodeId) {
-          // initially show all nodes
-          this.q.selectedNodeId = "all";
+          // initially show any node
+          this.q.selectedNodeId = "any";
         } else {
           const nodeId = this.q.selectedNodeId;
 
@@ -509,7 +868,7 @@ export default {
     },
     async listCertificates() {
       for (const traefikInstance of this.traefikInstances) {
-        const taskAction = "list-certificates";
+        const taskAction = "list-certificates-v2";
         const eventId = this.getUuid();
         this.loading.listCertificatesNum++;
 
@@ -566,25 +925,81 @@ export default {
       const nodeLabel = this.getShortNodeLabel(node) + ` (${traefikId})`;
       const certs = [];
 
-      for (let certificate of taskResult.output) {
-        if (
-          this.pendingTlsCertificates.includes(certificate.fqdn) &&
-          !certificate.obtained
-        ) {
-          // set-certificate in progress, show pending status
-          certificate.status = "pending";
+      console.log("@@" + traefikId + "certificates-v2", taskResult.output); ////
+
+      //// remove mock
+      // taskResult.output.certificates = []; ////
+
+      for (let certificate of taskResult.output.certificates) {
+        // if ( ////
+        //   this.pendingTlsCertificates.includes(certificate.fqdn) &&
+        //   !certificate.obtained
+        // ) {
+        //   // set-certificate in progress, show pending status
+        //   certificate.status = "pending";
+        // } else {
+        //   if (certificate.obtained) {
+        //     certificate.status =
+        //       certificate.type === "custom" ? "custom" : "obtained";
+        //   } else {
+        //     certificate.status = "not_obtained";
+        //   }
+        // }
+
+        // "Certificate" column
+
+        if (certificate.default && certificate.type === "internal") {
+          certificate.ui_name = this.$t(
+            "settings_tls_certificates.node_name_certificate",
+            { node: this.getShortNodeLabel(node) }
+          );
         } else {
-          if (certificate.obtained) {
-            certificate.status =
-              certificate.type === "custom" ? "custom" : "obtained";
-          } else {
-            certificate.status = "not_obtained";
-          }
+          certificate.ui_name = certificate.subject;
         }
+
+        // "Type" column
+
+        let ui_type = "";
+
+        if (certificate.type === "custom") {
+          ui_type = "uploaded";
+        } else if (certificate.automatic) {
+          ui_type = "automatic";
+        } else if (certificate.default && certificate.type === "internal") {
+          ui_type = "requested";
+        }
+        certificate.ui_type = ui_type;
+
+        // "Issuer" column
+
+        const matched = certificate.issuer.match(/,O=(.+?),/);
+
+        if (matched && matched.length > 1) {
+          certificate.ui_issuer = matched[1];
+        } else {
+          certificate.ui_issuer = certificate.issuer;
+        }
+
+        // "Status" column
+
+        certificate.status =
+          certificate.type === "pending" ? "pending" : certificate.validity;
+
         certificate.node = nodeLabel;
         certificate.nodeId = nodeId;
         certificate.longNodeLabel = this.getNodeLabel(node);
         certificate.traefikInstance = traefikId;
+
+        // "Validity period" column
+
+        const validFrom = new Date(certificate.valid_from);
+        const formattedValidFrom = this.formatDate(validFrom, "Pp");
+
+        const validTo = new Date(certificate.valid_to);
+        const formattedValidTo = this.formatDate(validTo, "Pp");
+
+        certificate.validity_period = `${formattedValidFrom} - ${formattedValidTo}`;
+
         certs.push(certificate);
       }
       certs.sort(this.sortByProperty("fqdn"));
@@ -594,8 +1009,24 @@ export default {
 
       this.loading.listCertificatesNum--;
     },
-    showAllNodes() {
-      this.q.selectedNodeId = "all";
+    getTagKind(status) {
+      switch (status) {
+        case "valid":
+          return "green";
+        case "expiring":
+          return "blue";
+        case "expired":
+          return "red";
+        case "pending":
+        default:
+          return "gray";
+      }
+    },
+    clearFilters() {
+      this.q.selectedNodeId = "any";
+      this.filter.text = "";
+      this.filter.certificateType = "any";
+      this.filter.certificateStatus = "any";
     },
     onReloadCertificates() {
       this.listCertificates();
@@ -626,13 +1057,7 @@ export default {
             type: this.certificateToDelete.type,
           },
           extra: {
-            title: this.$t(
-              "settings_tls_certificates.delete_certificate_for_fqdn",
-              {
-                fqdn: this.certificateToDelete.fqdn,
-                type: this.certificateToDelete.type,
-              }
-            ),
+            title: this.$t("settings_tls_certificates.delete_certificate"),
             description: this.$t("common.processing"),
             eventId,
           },
@@ -748,6 +1173,13 @@ export default {
           this.$t("error.generic_error")
         );
         this.uploadTlsCertificateState.setLoading(false);
+      }
+    },
+    onSearchInput() {
+      // workaround to detect click on clear search button
+      if (!this.searchFilter) {
+        this.$refs.certificatesTable.goToFirstPage();
+        this.focusElement("tableSearch");
       }
     },
   },

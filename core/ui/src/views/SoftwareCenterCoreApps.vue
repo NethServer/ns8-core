@@ -101,8 +101,8 @@
                   <cv-data-table-cell v-if="isCoreUpdatable">
                     {{ row.update || "-" }}
                     <cv-link
-                      v-if="row.docs.relnotes_url && row.update"
-                      :href="row.docs.relnotes_url"
+                      v-if="row.docs && row.docs.relnotes_url && row.update"
+                      :href="row.docs && row.docs.relnotes_url"
                       target="_blank"
                     >
                       <NsButton kind="ghost" :icon="Launch20">
