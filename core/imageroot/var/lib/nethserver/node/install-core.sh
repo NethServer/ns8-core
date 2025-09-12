@@ -50,11 +50,14 @@ core_dir=/usr/local/agent/pyenv
 if [[ -x /usr/bin/python3.13 ]]; then
     python3.13 -mvenv ${core_dir} --upgrade-deps --system-site-packages
     ${core_dir}/bin/pip3 install -r /etc/nethserver/pyreq3_13.txt
+elif [[ -x /usr/bin/python3.12 ]]; then
+    python3.12 -mvenv ${core_dir} --upgrade-deps --system-site-packages
+    ${core_dir}/bin/pip3 install -r /etc/nethserver/pyreq3_12.txt
 elif [[ -x /usr/bin/python3.11 ]]; then
     python3.11 -mvenv ${core_dir} --upgrade-deps --system-site-packages
     ${core_dir}/bin/pip3 install -r /etc/nethserver/pyreq3_11.txt
 else
-    echo "No supported python3 version found (3.11 or 3.13 required)."
+    echo "No supported python3 version found (3.11 or 3.12 or 3.13 required)."
     exit 1
 fi
 
