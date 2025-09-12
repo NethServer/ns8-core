@@ -80,6 +80,11 @@ if [[ "${PLATFORM_ID}" == "platform:el9" ]]; then
     dnf update -y # Fix SELinux issues with basic packages
     dnf install -y wireguard-tools podman curl jq openssl firewalld pciutils python3.11
     systemctl enable --now firewalld
+elif [[ "${PLATFORM_ID}" == "platform:el10" ]]; then
+    dnf update -y # Fix SELinux issues with basic packages
+    dnf install -y wireguard-tools podman curl jq openssl firewalld pciutils slirp4netns
+    systemctl enable --now firewalld
+    systemctl restart systemd-logind # Bug in el10, see the runtime directory is not created for the user in /run/user/
 elif [[ "${ID}" == "debian" && ( "${VERSION_ID}" == "12" || "${VERSION_ID}" == "13" ) ]]; then
     apt-get update
     apt-get -y install gnupg2
