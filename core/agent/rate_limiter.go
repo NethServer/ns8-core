@@ -40,15 +40,15 @@ type tokenBucket struct {
 	tokens chan struct{}
 }
 
-var tokenBucketInstace *tokenBucket
+var tokenBucketInstance *tokenBucket
 var mu = &sync.Mutex{}
 
 func NewTokenBucketAlgorithm() *tokenBucket {
 	mu.Lock()
 	defer mu.Unlock()
 
-	if tokenBucketInstace != nil {
-		return tokenBucketInstace
+	if tokenBucketInstance != nil {
+		return tokenBucketInstance
 	}
 
 	interval := os.Getenv(ENV_BUCKET_INTERVAL)
@@ -63,10 +63,10 @@ func NewTokenBucketAlgorithm() *tokenBucket {
 		tokens: make(chan struct{}, confManager.capacity),
 	}
 
-	tokenBucketInstace = t
+	tokenBucketInstance = t
 
-	go tokenBucketInstace.tokenFiller()
-	return tokenBucketInstace
+	go tokenBucketInstance.tokenFiller()
+	return tokenBucketInstance
 }
 
 func (t *tokenBucket) tokenFiller() {
