@@ -15,14 +15,17 @@ Library             timeutils.py
 
 *** Variables ***
 ${FILL_MS}         300
-${MIN_WAIT}        240
+${MIN_WAIT}        250
 ${CAPACITY}        10
 ${TOLERANCE_MS}    100
 
 *** Test Cases ***
 Tasks executed within rate limit boundaries
     The First Ten BRPOPs run quickly
-    But The Second Battery runs Slowly due to rate limiting
+    But The eleventh runs Slowly due to rate limiting
+
+Events executed wihtin rate limit boundaries
+    These Ten Events run very Slowly due to rate limiting
 
 *** Keywords ***
 The First Ten BRPOPs run quickly
@@ -38,8 +41,13 @@ The First Ten BRPOPs run quickly
     # fails
     # Should Be True    ${elapsed} < ${FILL_MS} + ${TOLERANCE_MS}
 
-But The Second Battery runs Slowly due to rate limiting
-    Execute a battery of eleven BRPOPs
+But The eleventh runs Slowly due to rate limiting
+    ${start} =      Get Timestamp Ms
+    Execute a single BRPOP test
+    ${end} =        Get Timestamp Ms
+    ${elapsed} =      Evaluate     ${end} - ${start}
+    Should Be True    ${elapsed} >= ${MIN_WAIT}
+    Should Be True    ${elapsed} <= ${FILL_MS} + ${TOLERANCE_MS}
 
 Execute a battery of ten BRPOPs
     FOR    ${i}    IN RANGE    10
@@ -47,18 +55,20 @@ Execute a battery of ten BRPOPs
     END
 
 Execute a single BRPOP test
-    The Task is submitted    fail-validation    "test-rate-limiter"
-    The Command is received    set    fail-validation    test-rate-limiter
+    Given The task is submitted    run-success
+    When The command is received   set  run-success/context
 
-Execute a battery of eleven BRPOPs
-    FOR    ${i}    IN RANGE    11 
-        ${start} =    Get Timestamp Ms
-        Execute a single BRPOP test
-        ${end} =      Get Timestamp Ms
-        ${elapsed} =    Evaluate    ${end} - ${start}
-        IF    ${i} < 11
-            Should Be True    ${elapsed} < ${FILL_MS}
-        END
+Execute a single PUBSUB test
+    Given The task is submitted    run-success
+    When The command is received    publish  pending
+
+These Ten Events run very Slowly due to rate limiting
+    FOR     ${i}    IN RANGE    10
+        ${start} =          Get Timestamp Ms
+        Execute a single PUBSUB test
+        ${end} =            Get Timestamp Ms
+
+        ${elapsed} =      Evaluate    ${end} - ${start}
+        Should Be True    ${elapsed} >= ${MIN_WAIT}
+        Should Be True    ${elapsed} <= ${FILL_MS} + ${TOLERANCE_MS}
     END
-    Should Be True    ${elapsed} >= ${MIN_WAIT}
-    Should Be True    ${elapsed} <= ${FILL_MS} + ${TOLERANCE_MS}

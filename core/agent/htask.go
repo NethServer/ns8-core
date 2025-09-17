@@ -287,7 +287,7 @@ func runAction(rdb *redis.Client, actionCtx context.Context, task *models.Task) 
 	log.Printf("task/%s/%s: action \"%s\" status is \"%s\" (%d) at step %s", agentPrefix, task.ID, task.Action, actionDescriptor.Status, exitCode, lastStep)
 }
 
-func listenActionsAsync(actionsCtx context.Context, complete chan int) {
+func listenActionsAsync(actionsCtx context.Context, complete chan int, bucketer *TokenBucket) {
 	defer func() { complete <- 1 }()
 	var workersRegistry sync.WaitGroup
 	brpopCtx, cancelBrpop := context.WithCancel(ctx)
@@ -320,7 +320,7 @@ func listenActionsAsync(actionsCtx context.Context, complete chan int) {
 
 	var tcMu sync.Mutex
 	taskCh := make(chan models.Task)
-	go readTasks(rdb, brpopCtx, taskCh)
+	go readTasks(rdb, brpopCtx, taskCh, bucketer)
 	MAINLOOP:
 		for {
 			select {
@@ -365,23 +365,13 @@ func listenActionsAsync(actionsCtx context.Context, complete chan int) {
 		}
 }
 
-func readTasks(rdb *redis.Client, brpopCtx context.Context, taskCh chan models.Task) {
+func readTasks(rdb *redis.Client, brpopCtx context.Context, taskCh chan models.Task, bucketer *TokenBucket) {
 	// Ignore the credential error on agent startup
 	//
 	// Initialize to a well-known error condition, to avoid log pollution
 	// and false alarms. When an agent is created its credentials might be
 	// still not stored in the leader node Redis instance:
 	var lastPopErr error = errors.New("WRONGPASS invalid username-password pair or user is disabled.")
-
-	var (
-		bucketInterval string = os.Getenv("BUCKET_INTERVAL")
-		capacity       string = os.Getenv("BUCKET_CAPACITY")
-		conf                  = &RateLimitConf{}
-	)
-
-	conf.loadAndValidate(bucketInterval, capacity)
-
-	var bucketer = NewTokenBucketAlgorithm(conf.effectiveTime, conf.capacity)
 
 	for { // Action listen loop
 		var task models.Task
