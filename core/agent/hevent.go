@@ -33,7 +33,7 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
-func listenEventsAsync(ctx context.Context, complete chan int, bucketer *TokenBucket) {
+func listenEventsAsync(ctx context.Context, complete chan int) {
 	// Connect with default credentials to listen event channels with no
 	// restrictions.
 	redisAddress := os.Getenv("REDIS_REPLICA_ADDRESS")
@@ -64,7 +64,7 @@ func listenEventsAsync(ctx context.Context, complete chan int, bucketer *TokenBu
 	go func() {
 		for msg := range pubsub.Channel(redis.WithChannelHealthCheckInterval(pollingDuration)) {
 			if before, after, found := strings.Cut(msg.Channel, "/event/"); found {
-				go runEvent(&wg, &models.Event{Source: before, Payload: msg.Payload, Name: after}, bucketer)
+				go runEvent(&wg, &models.Event{Source: before, Payload: msg.Payload, Name: after})
 			}
 		}
 		csyn <- 1
@@ -80,8 +80,9 @@ func listenEventsAsync(ctx context.Context, complete chan int, bucketer *TokenBu
 	complete <- 1
 }
 
-func runEvent(wg *sync.WaitGroup, event *models.Event, bucketer *TokenBucket) {
+func runEvent(wg *sync.WaitGroup, event *models.Event) {
 
+	bucketer := NewTokenBucketAlgorithm()
 	bucketer.takeToken()
 
 	wg.Add(1)

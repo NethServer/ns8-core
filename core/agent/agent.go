@@ -113,19 +113,8 @@ func main() {
 	actionsChannel := make(chan int, 1)
 	eventsChannel := make(chan int, 1)
 
-
-	var (
-		bucketInterval string = os.Getenv("BUCKET_INTERVAL")
-		capacity       string = os.Getenv("BUCKET_CAPACITY")
-		conf                  = &RateLimitConf{}
-	)
-
-	conf.loadAndValidate(bucketInterval, capacity)
-
-	var bucketer = NewTokenBucketAlgorithm(conf.effectiveTime, conf.capacity)
-
-	go listenActionsAsync(actionsCtx, actionsChannel, bucketer)
-	go listenEventsAsync(eventsCtx, eventsChannel, bucketer)
+	go listenActionsAsync(actionsCtx, actionsChannel)
+	go listenEventsAsync(eventsCtx, eventsChannel)
 
 	// wait completion of action goroutines
 	<-actionsChannel

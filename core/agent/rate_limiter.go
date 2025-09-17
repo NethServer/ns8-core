@@ -23,31 +23,53 @@ import (
 	"time"
 	"strconv"
 	"strings"
+	"os"
+	"sync"
 )
 
 const (
 	DEFAULT_CAPACITY int = 10
 	DEFAULT_TIME_RATE int = 300
+	ENV_BUCKET_INTERVAL string = "BUCKET_INTERVAL"
+	ENV_BUCKET_CAPACITY string = "BUCKET_CAPACITY"
 )
 
-type TokenBucket struct { 
+type tokenBucket struct { 
 	initialTokens int
 	fillerSleepTime time.Duration
 	tokens chan struct{}
 }
 
-func NewTokenBucketAlgorithm(fillingInterval time.Duration, capacity int) *TokenBucket {
-	t := &TokenBucket{
-		fillerSleepTime: fillingInterval,
-		initialTokens: capacity,
-		tokens: make(chan struct{}, capacity),
+var tokenBucketInstace *tokenBucket
+var mu = &sync.Mutex{}
+
+func NewTokenBucketAlgorithm() *tokenBucket {
+	mu.Lock()
+	defer mu.Unlock()
+
+	if tokenBucketInstace != nil {
+		return tokenBucketInstace
 	}
 
-	go t.tokenFiller()
-	return t
+	interval := os.Getenv(ENV_BUCKET_INTERVAL)
+	capacity := os.Getenv(ENV_BUCKET_CAPACITY)
+	confManager := &rateLimitConf{}
+
+	confManager.loadAndValidate(interval, capacity)
+	
+	t := &tokenBucket{
+		fillerSleepTime: confManager.effectiveTime,
+		initialTokens: confManager.capacity,
+		tokens: make(chan struct{}, confManager.capacity),
+	}
+
+	tokenBucketInstace = t
+
+	go tokenBucketInstace.tokenFiller()
+	return tokenBucketInstace
 }
 
-func (t *TokenBucket) tokenFiller() {
+func (t *tokenBucket) tokenFiller() {
 	t.initialFiller()
 	for {
 		time.Sleep(t.fillerSleepTime)
@@ -56,23 +78,23 @@ func (t *TokenBucket) tokenFiller() {
 	}
 }
 
-func (t *TokenBucket) takeToken() {
+func (t *tokenBucket) takeToken() {
 	<- t.tokens
 }
 
-func (t *TokenBucket) initialFiller() {
+func (t *tokenBucket) initialFiller() {
 	for i := 0; i < t.initialTokens; i++ {
 		t.tokens <- struct{}{}
 	}
 }
 
-type RateLimitConf struct {
+type rateLimitConf struct {
 	timeRate int
 	capacity int
 	effectiveTime time.Duration
 }
 
-func (c *RateLimitConf) loadAndValidate(fillingInterval string, capacity string) {
+func (c *rateLimitConf) loadAndValidate(fillingInterval string, capacity string) {
 	before, _, found := strings.Cut(fillingInterval, "ms")
 	convBefore, err := strconv.Atoi(before)
 
