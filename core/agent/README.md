@@ -20,7 +20,9 @@ The agent accepts also some environment variables, so a complete invocation from
 
 It is now also possible to define environment variables to configure the rate limiter. The variables are:
 * BUCKET_INTERVAL, specifies the refilling interval, as the rate limiter is based on a token bucket algorithm.
-* BUCKET_CAPACITY, specifies the bucket capacity, i.e., the maximum number of tokens allowed.
+* BUCKET_CAPACITY, specifies the bucket capacity, i.e., the maximum number of tokens allowed. <br>
+
+
 If these variables are not set, the agent will use the default configurations: a refilling interval of 300 milliseconds and a maximum of 10 tokens. <br>
 
 
