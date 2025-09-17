@@ -23,8 +23,9 @@ It is now also possible to define environment variables to configure the rate li
 * BUCKET_CAPACITY, specifies the bucket capacity, i.e., the maximum number of tokens allowed.
 If these variables are not set, the agent will use the default configurations: a refilling interval of 300 milliseconds and a maximum of 10 tokens.
 This is an example of how the configurations can be written:
-
+```
     BUCKET_INTERVAL=600 BUCKET_CAPACITY=40
+```
 
 the refilling time is 600 milliseconds (all time values are in milliseconds) and the maximum number of tokens is 40.
 
