@@ -27,9 +27,8 @@ If these variables are not set, the agent will use the default configurations: a
 
 
 This is an example of how the configurations can be written:
-```
+
     BUCKET_INTERVAL=600 BUCKET_CAPACITY=40
-```
 
 the refilling time is 600 milliseconds (all time values are in milliseconds) and the maximum number of tokens is 40.
 
