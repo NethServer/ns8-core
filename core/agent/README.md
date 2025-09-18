@@ -18,7 +18,7 @@ The agent accepts also some environment variables, so a complete invocation from
 
     REDIS_ADDRESS=127.0.0.1:6379 REDIS_PASSWORD= ./agent module/mail1 . ~/.config/actions
 
-It is now also possible to define environment variables to configure the rate limiter. The variables are:
+It is also possible to define environment variables to configure the rate limiter. The variables are:
 * BUCKET_INTERVAL, specifies the refilling interval, as the rate limiter is based on a token bucket algorithm.
 * BUCKET_CAPACITY, specifies the bucket capacity, i.e., the maximum number of tokens allowed. 
 
