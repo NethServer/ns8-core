@@ -373,8 +373,12 @@ func readTasks(rdb *redis.Client, brpopCtx context.Context, taskCh chan models.T
 	// still not stored in the leader node Redis instance:
 	var lastPopErr error = errors.New("WRONGPASS invalid username-password pair or user is disabled.")
 
+	bucketer := NewTokenBucketAlgorithm()
+
 	for { // Action listen loop
 		var task models.Task
+		
+		bucketer.takeToken()
 
 		// Pop the task from the agent tasks queue
 		popResult, popErr := rdb.BRPop(brpopCtx, pollingDuration, agentPrefix+"/tasks").Result()
