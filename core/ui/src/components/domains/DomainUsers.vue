@@ -113,7 +113,10 @@
                       size="sm"
                     ></cv-tag>
                     <cv-tag
-                      v-if="row.password_expiration === -1 && policy.expiration.enforced"
+                      v-if="
+                        row.password_expiration === -1 &&
+                        policy.expiration.enforced
+                      "
                       kind="gray"
                       :label="$t('domains.password_does_not_expire')"
                       size="sm"
@@ -515,7 +518,9 @@ export default {
       this.users = taskResult.output.users;
       this.$emit("usersLoaded", this.users);
       this.loading.listDomainUsers = false;
-      this.listPasswordPolicy();
+      if (this.domain && this.domain.location === "internal") {
+        this.listPasswordPolicy();
+      }
     },
     onReloadUsers() {
       this.listDomainUsers();
