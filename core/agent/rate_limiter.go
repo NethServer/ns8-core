@@ -24,7 +24,6 @@ import (
 	"strconv"
 	"strings"
 	"os"
-	"sync"
 )
 
 const (
@@ -41,12 +40,8 @@ type tokenBucket struct {
 }
 
 var tokenBucketInstance *tokenBucket
-var mu = &sync.Mutex{}
 
 func NewTokenBucketAlgorithm() *tokenBucket {
-	mu.Lock()
-	defer mu.Unlock()
-
 	if tokenBucketInstance != nil {
 		return tokenBucketInstance
 	}
