@@ -98,16 +98,18 @@ func (c *rateLimitConf) loadAndValidate(fillingInterval, capacity string) {
 	before, _, found := strings.Cut(fillingInterval, "ms")
 	convBefore, err := strconv.Atoi(before)
 
-	if fillingInterval == "" || !found || err != nil {
+	switch {
+	case !found, err != nil:
 		c.timeRate = DEFAULT_TIME_RATE
-	} else {
+	default:
 		c.timeRate = convBefore
 	}
 
 	convCap, err := strconv.Atoi(capacity)
-	if capacity == "" || err != nil {
+	switch {
+	case capacity == "", err != nil:
 		c.capacity = DEFAULT_CAPACITY
-	} else {
+	default:
 		c.capacity = convCap
 	}
 
