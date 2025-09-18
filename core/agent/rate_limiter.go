@@ -28,10 +28,10 @@ import (
 )
 
 const (
-	DEFAULT_CAPACITY int = 10
-	DEFAULT_TIME_RATE int = 300
-	ENV_BUCKET_INTERVAL string = "BUCKET_INTERVAL"
-	ENV_BUCKET_CAPACITY string = "BUCKET_CAPACITY"
+	DEFAULT_CAPACITY     = 10
+	DEFAULT_TIME_RATE    = 300
+	ENV_BUCKET_INTERVAL  = "BUCKET_INTERVAL"
+	ENV_BUCKET_CAPACITY  = "BUCKET_CAPACITY"
 )
 
 type tokenBucket struct { 
@@ -94,7 +94,7 @@ type rateLimitConf struct {
 	effectiveTime time.Duration
 }
 
-func (c *rateLimitConf) loadAndValidate(fillingInterval string, capacity string) {
+func (c *rateLimitConf) loadAndValidate(fillingInterval, capacity string) {
 	before, _, found := strings.Cut(fillingInterval, "ms")
 	convBefore, err := strconv.Atoi(before)
 
