@@ -61,8 +61,10 @@ func listenEventsAsync(ctx context.Context, complete chan int) {
 	var wg sync.WaitGroup
 	csyn := make(chan int, 1)
 
+	bucketer := NewTokenBucketAlgorithm()
 	go func() {
 		for msg := range pubsub.Channel(redis.WithChannelHealthCheckInterval(pollingDuration)) {
+			bucketer.takeToken()
 			if before, after, found := strings.Cut(msg.Channel, "/event/"); found {
 				go runEvent(&wg, &models.Event{Source: before, Payload: msg.Payload, Name: after})
 			}
