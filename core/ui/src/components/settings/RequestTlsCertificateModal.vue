@@ -16,37 +16,49 @@
     }}</template>
     <template slot="content">
       <cv-form @submit.prevent="setCertificate">
-        <NsTextInput
-          v-model.trim="fqdn"
-          :label="$t('settings_tls_certificates.fqdn')"
-          :helper-text="$t('settings_tls_certificates.fqdn_helper')"
-          :invalid-message="error.fqdn"
-          :disabled="loading.setCertificate"
-          data-modal-primary-focus
-          ref="fqdn"
-        />
-        <cv-combo-box
-          v-model="selectedNodeId"
-          :label="$t('common.choose')"
-          :title="$t('common.node')"
-          :auto-filter="true"
-          :auto-highlight="true"
-          :options="nodes"
-          :disabled="loading.setCertificate"
-          :invalid-message="error.node"
-          light
-          class="mg-bottom-12"
-          ref="node"
-        >
-        </cv-combo-box>
         <NsInlineNotification
           v-if="error.setCertificate"
           kind="error"
           :title="$t('settings_tls_certificates.cannot_obtain_certificate')"
           :description="error.setCertificate"
           :showCloseButton="false"
-          class="no-mg-bottom"
         />
+        <div v-show="loading.setCertificate">
+          <NsEmptyState
+            :title="
+              $t('settings_tls_certificates.checking_certificate_requirements')
+            "
+            :animationData="GearsLottie"
+            animationTitle="gears"
+            :loop="true"
+            class="checking-certificate"
+          />
+        </div>
+        <div v-show="!loading.setCertificate">
+          <NsTextInput
+            v-model.trim="fqdn"
+            :label="$t('settings_tls_certificates.fqdn')"
+            :helper-text="$t('settings_tls_certificates.fqdn_helper')"
+            :invalid-message="error.fqdn"
+            :disabled="loading.setCertificate"
+            data-modal-primary-focus
+            ref="fqdn"
+          />
+          <cv-combo-box
+            v-model="selectedNodeId"
+            :label="$t('common.choose')"
+            :title="$t('common.node')"
+            :auto-filter="true"
+            :auto-highlight="true"
+            :options="nodes"
+            :disabled="loading.setCertificate"
+            :invalid-message="error.node"
+            light
+            class="mg-bottom-8"
+            ref="node"
+          >
+          </cv-combo-box>
+        </div>
       </cv-form>
     </template>
     <template slot="secondary-button">{{ $t("common.cancel") }}</template>
@@ -62,12 +74,13 @@ import {
   UtilService,
   TaskService,
   DateTimeService,
+  LottieService,
 } from "@nethserver/ns8-ui-lib";
 import { mapActions } from "vuex";
 
 export default {
   name: "RequestTlsCertificateModal",
-  mixins: [UtilService, TaskService, DateTimeService],
+  mixins: [UtilService, TaskService, DateTimeService, LottieService],
   props: {
     isShown: Boolean,
     nodes: {
@@ -329,7 +342,12 @@ export default {
 <style scoped lang="scss">
 @import "../../styles/carbon-utils";
 
-.mg-bottom-12 {
-  margin-bottom: 12rem;
+.mg-bottom-8 {
+  margin-bottom: 8rem;
+}
+
+.checking-certificate {
+  margin-top: 4rem;
+  margin-bottom: 4rem;
 }
 </style>
