@@ -25,15 +25,12 @@ package methods
 import (
 	"net/http"
 	"strings"
-	"time"
 
-	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/fatih/structs"
 	"github.com/gin-gonic/gin"
 
 	"github.com/NethServer/ns8-core/core/api-server/audit"
 	"github.com/NethServer/ns8-core/core/api-server/configuration"
-	"github.com/NethServer/ns8-core/core/api-server/models"
 	"github.com/NethServer/ns8-core/core/api-server/response"
 )
 
@@ -100,16 +97,6 @@ func GetAudits(c *gin.Context) {
 	// execute query
 	results := audit.QueryArgs(query, user, action, data, from, to)
 
-	// store audit
-	claims := jwt.ExtractClaims(c)
-	auditData := models.Audit{
-		User:      claims["id"].(string),
-		Action:    "list-audits",
-		Data:      "",
-		Timestamp: time.Now().UTC(),
-	}
-	audit.Store(auditData)
-
 	// return results
 	if len(configuration.Config.AuditFile) == 0 {
 		c.JSON(http.StatusBadRequest, structs.Map(response.StatusBadRequest{
@@ -143,16 +130,6 @@ func GetAuditsUsers(c *gin.Context) {
 	// execute query
 	users := audit.Query(query)
 
-	// store audit
-	claims := jwt.ExtractClaims(c)
-	auditData := models.Audit{
-		User:      claims["id"].(string),
-		Action:    "list-audit-users",
-		Data:      "",
-		Timestamp: time.Now().UTC(),
-	}
-	audit.Store(auditData)
-
 	// return users
 	c.JSON(http.StatusOK, structs.Map(response.StatusOK{
 		Code:    200,
@@ -176,16 +153,6 @@ func GetAuditsActions(c *gin.Context) {
 
 	// execute query
 	actions := audit.Query(query)
-
-	// store audit
-	claims := jwt.ExtractClaims(c)
-	auditData := models.Audit{
-		User:      claims["id"].(string),
-		Action:    "list-audit-actions",
-		Data:      "",
-		Timestamp: time.Now().UTC(),
-	}
-	audit.Store(auditData)
 
 	// return actions
 	c.JSON(http.StatusOK, structs.Map(response.StatusOK{

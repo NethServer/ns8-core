@@ -83,19 +83,6 @@ func getList(c *gin.Context, queueName string) {
 	// close redis connection
 	redisConnection.Close()
 
-	// store to audit
-	claims := jwt.ExtractClaims(c)
-	parts := strings.Split(queueName, "/")
-
-	auditData := models.Audit{
-		ID:        0,
-		User:      claims["id"].(string),
-		Action:    "list-" + parts[0],
-		Data:      queueName,
-		Timestamp: time.Now().UTC(),
-	}
-	audit.Store(auditData)
-
 	// return tasks
 	c.JSON(http.StatusOK, structs.Map(response.StatusOK{
 		Code:    200,
@@ -166,17 +153,6 @@ func getTasks(c *gin.Context, queueName string) {
 	// close redis connection
 	redisConnection.Close()
 
-	// store to audit
-	claims := jwt.ExtractClaims(c)
-	auditData := models.Audit{
-		ID:        0,
-		User:      claims["id"].(string),
-		Action:    "list-task",
-		Data:      queueName,
-		Timestamp: time.Now().UTC(),
-	}
-	audit.Store(auditData)
-
 	// return tasks
 	c.JSON(http.StatusOK, structs.Map(response.StatusOK{
 		Code:    200,
@@ -244,17 +220,6 @@ func getTaskFile(c *gin.Context, filePath string) {
 		outputData = outputC
 	}
 
-	// store to audit
-	claims := jwt.ExtractClaims(c)
-	auditData := models.Audit{
-		ID:        0,
-		User:      claims["id"].(string),
-		Action:    "status-task",
-		Data:      filePath,
-		Timestamp: time.Now().UTC(),
-	}
-	audit.Store(auditData)
-
 	// return file response
 	c.JSON(http.StatusOK, structs.Map(response.StatusOK{
 		Code:    200,
@@ -289,17 +254,6 @@ func getTaskContext(c *gin.Context, filePath string) {
 	if errOutputDecode := json.Unmarshal([]byte(contextC), &contextData); errOutputDecode != nil {
 		contextData = contextC
 	}
-
-	// store to audit
-	claims := jwt.ExtractClaims(c)
-	auditData := models.Audit{
-		ID:        0,
-		User:      claims["id"].(string),
-		Action:    "context-task",
-		Data:      filePath,
-		Timestamp: time.Now().UTC(),
-	}
-	audit.Store(auditData)
 
 	// return file response
 	c.JSON(http.StatusOK, structs.Map(response.StatusOK{
