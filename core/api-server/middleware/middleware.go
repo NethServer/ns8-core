@@ -87,17 +87,6 @@ func InitJWT() *jwt.GinJWTMiddleware {
 			err := methods.RedisAuthentication(username, password)
 			if err != nil {
 				utils.LogError(errors.Wrap(err, "[AUTH] redis authentication failed for user "+username))
-
-				// store login action
-				auditData := models.Audit{
-					ID:        0,
-					User:      username,
-					Action:    "login-fail",
-					Data:      "",
-					Timestamp: time.Now().UTC(),
-				}
-				audit.Store(auditData)
-
 				return nil, jwt.ErrFailedAuthentication
 			}
 
@@ -110,15 +99,6 @@ func InitJWT() *jwt.GinJWTMiddleware {
 			if otpNeed {
 				if ! methods.CheckOTP(username, otpValue) {
 					err := errors.New("OTP check failed")
-					// store login action
-					auditData := models.Audit{
-						ID:        0,
-						User:      username,
-						Action:    "login-fail",
-						Data:      "",
-						Timestamp: time.Now().UTC(),
-					}
-					audit.Store(auditData)
 					return nil, err
 				}
 				otpPassClaim = true // claim that 2FA is enabled and used
