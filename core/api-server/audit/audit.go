@@ -38,13 +38,13 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-var db *DBUtils
-
 type DBUtils struct {
 	conn         *sql.DB
 	faultyStatus bool
 	openFail     error
 }
+
+var db *DBUtils
 
 func Init() {
 	db = &DBUtils{}
