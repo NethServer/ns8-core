@@ -38,16 +38,16 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-type DBUtils struct {
+type dbUtils struct {
 	conn         *sql.DB
 	faultyStatus bool
 	openFail     error
 }
 
-var db *DBUtils
+var db *dbUtils
 
 func Init() {
-	db = &DBUtils{}
+	db = &dbUtils{}
 	if len(configuration.Config.AuditFile) == 0 {
 		utils.LogError(errors.New("AUDIT_FILE is not set in the environment."), "[Audit DISABLED]")
 		db.faultyStatus = true
