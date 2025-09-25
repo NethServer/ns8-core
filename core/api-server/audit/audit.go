@@ -97,13 +97,12 @@ func Store(audit models.Audit) {
 	}
 
 	stmt, err := tx.Prepare("INSERT INTO audit(id, user, action, data, timestamp) VALUES(null, ?, ?, ?, ?)")
-	defer stmt.Close()
-
 	if err != nil {
 		utils.LogError(errors.Wrap(err, "[AUDIT][STORE] error occurred while preparing the transaction, rollback enforced"))
 		tx.Rollback()
 		return
 	}
+	defer stmt.Close()
 
 	_, err = stmt.Exec(audit.User, audit.Action, audit.Data, audit.Timestamp.Format(time.RFC3339))
 	if err != nil {
