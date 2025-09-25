@@ -49,7 +49,7 @@ var db *dbUtils
 func Init() {
 	db = &dbUtils{}
 	if len(configuration.Config.AuditFile) == 0 {
-		utils.LogError(errors.New("AUDIT_FILE is not set in the environment."), "[Audit DISABLED]")
+		utils.LogError(errors.Wrap(errors.New("AUDIT_FILE is not set in the environment."), "[Audit DISABLED]"))
 		db.faultyStatus = true
 		return
 	}
@@ -85,7 +85,7 @@ func createDB() {
 
 func Store(audit models.Audit) {
 	if db.faultyStatus {
-		utils.LogError(errors.New("Connection dropped due to faulty database"), "[AUDIT][STORE]")
+		utils.LogError(errors.Wrap(errors.New("Connection dropped due to faulty database"), "[AUDIT][STORE]"))
 		return
 	}
 
@@ -116,7 +116,7 @@ func Store(audit models.Audit) {
 
 func QueryArgs(query string, args ...interface{}) []models.Audit {
 	if db.faultyStatus {
-		utils.LogError(errors.New("Connection dropped due to faulty database"), "[AUDIT][STORE]")
+		utils.LogError(errors.Wrap(errors.New("Connection dropped due to faulty database"), "[AUDIT][STORE]"))
 		return nil
 	}
 
@@ -172,7 +172,7 @@ func QueryArgs(query string, args ...interface{}) []models.Audit {
 
 func Query(query string) []string {
 	if db.faultyStatus {
-		utils.LogError(errors.New("Connection dropped due to faulty database"), "[AUDIT][STORE]")
+		utils.LogError(errors.Wrap(errors.New("Connection dropped due to faulty database"), "[AUDIT][STORE]"))
 		return nil
 	}
 
