@@ -55,7 +55,7 @@ func Init() {
 	}
 
 	if len(configuration.Config.AuditFile) == 0 {
-		utils.LogError(errors.Wrap(errors.New("AUDIT_FILE is not set in the environment."), "[Audit DISABLED]"))
+		utils.LogError(errors.Wrap(errors.New("AUDIT_FILE is not set in the environment."), "[AUDIT][INIT]"))
 		db.faultyStatus = true
 		return
 	}
@@ -66,7 +66,7 @@ func Init() {
 func createDB() {
 	db.conn, db.openFail = sql.Open("sqlite3", configuration.Config.AuditFile)
 	if db.openFail != nil {
-		utils.LogError(errors.Wrap(db.openFail, "error in audit db file creation"))
+		utils.LogError(errors.Wrap(db.openFail, "[AUDIT][CREATE] error in audit db file creation"))
 		db.faultyStatus = true
 		db.conn.Close()
 		return
@@ -88,7 +88,7 @@ func createDB() {
 			return // table already exists, no problem
 		}
 
-		utils.LogError(errors.Wrap(errExecute, "error in audit file schema init"))
+		utils.LogError(errors.Wrap(errExecute, "[AUDIT][CREATE] error in audit file schema init"))
 		db.faultyStatus = true
 	}
 }
@@ -125,7 +125,7 @@ func Store(audit models.Audit) {
 
 func QueryArgs(query string, args ...interface{}) []models.Audit {
 	if db.faultyStatus {
-		utils.LogError(errors.Wrap(errors.New("Connection dropped due to faulty database"), "[AUDIT][STORE]"))
+		utils.LogError(errors.Wrap(errors.New("Connection dropped due to faulty database"), "[AUDIT][QUERY]"))
 		return nil
 	}
 
@@ -181,7 +181,7 @@ func QueryArgs(query string, args ...interface{}) []models.Audit {
 
 func Query(query string) []string {
 	if db.faultyStatus {
-		utils.LogError(errors.Wrap(errors.New("Connection dropped due to faulty database"), "[AUDIT][STORE]"))
+		utils.LogError(errors.Wrap(errors.New("Connection dropped due to faulty database"), "[AUDIT][QUERY]"))
 		return nil
 	}
 
