@@ -42,12 +42,18 @@ type dbUtils struct {
 	conn         *sql.DB
 	faultyStatus bool
 	openFail     error
+	tableExist   func(err error) bool
 }
 
 var db *dbUtils
 
 func Init() {
-	db = &dbUtils{}
+	db = &dbUtils{
+		tableExist: func(err error) bool {
+			return strings.Contains(err.Error(), "already exists")
+		},
+	}
+
 	if len(configuration.Config.AuditFile) == 0 {
 		utils.LogError(errors.Wrap(errors.New("AUDIT_FILE is not set in the environment."), "[Audit DISABLED]"))
 		db.faultyStatus = true
@@ -74,10 +80,15 @@ func createDB() {
 			action TEXT NOT NULL,
 			data TEXT NOT NULL,
 			timestamp TEXT NOT NULL
+			miao
 		);
 	`
 	_, errExecute := db.conn.Exec(query)
 	if errExecute != nil {
+		if db.tableExist(errExecute) {
+			return // table already exists, no problem
+		}
+
 		utils.LogError(errors.Wrap(errExecute, "error in audit file schema init"))
 		db.faultyStatus = true
 	}
