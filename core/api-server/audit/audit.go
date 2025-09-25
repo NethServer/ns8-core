@@ -80,7 +80,6 @@ func createDB() {
 			action TEXT NOT NULL,
 			data TEXT NOT NULL,
 			timestamp TEXT NOT NULL
-			miao
 		);
 	`
 	_, errExecute := db.conn.Exec(query)
