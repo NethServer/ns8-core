@@ -62,9 +62,9 @@ func createDB() {
 	if db.openFail != nil {
 		utils.LogError(errors.Wrap(db.openFail, "error in audit db file creation"))
 		db.faultyStatus = true
+		db.conn.Close()
 		return
 	}
-	defer db.conn.Close()
 
 	// define audit schema
 	query := `
