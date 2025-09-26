@@ -148,7 +148,7 @@ func Store(audit models.Audit) {
 
 func QueryArgs(query string, args ...interface{}) []models.Audit {
 	if ok, out := db.isFaulty(db.faultyStatus); ok {
-		utils.LogError(errors.Wrap(errors.New("Connection dropped due to " + out ), "[AUDIT][QUERY]"))
+		utils.LogError(errors.Wrap(errors.New("Connection dropped due to " + out), "[AUDIT][QUERY]"))
 		return nil
 	}
 
