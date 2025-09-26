@@ -39,7 +39,7 @@ import (
 )
 
 type (
-	failureModel struct {
+	faults struct {
 		faultySchema bool
 		faultyOpen   bool
 		faultyConfig bool
@@ -48,9 +48,9 @@ type (
 	dbUtils struct {
 		conn         *sql.DB
 		openFail     error
-		faultyStatus failureModel
+		faultyStatus faults
 		tableExist   func(err error) bool
-		isFaulty     func(f failureModel) (bool, string)
+		isFaulty     func(f faults) (bool, string)
 	}
 )
 
@@ -58,11 +58,11 @@ var db *dbUtils
 
 func Init() {
 	db = &dbUtils{
-		faultyStatus: failureModel{},
+		faultyStatus: faults{},
 		tableExist: func(err error) bool {
 			return strings.Contains(err.Error(), "already exists")
 		},
-		isFaulty: func(s failureModel) (bool, string) {
+		isFaulty: func(s faults) (bool, string) {
 			if s.faultySchema {
 				return true, "issues in schema creation"
 			}
