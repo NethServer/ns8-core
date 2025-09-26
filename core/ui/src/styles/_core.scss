@@ -80,8 +80,20 @@ a {
   margin-bottom: $spacing-07 !important;
 }
 
+.no-mg-top {
+  margin-top: 0 !important;
+}
+
 .no-mg-bottom {
   margin-bottom: 0 !important;
+}
+
+.no-mg-left {
+  margin-left: 0 !important;
+}
+
+.no-mg-right {
+  margin-right: 0 !important;
 }
 
 .mg-left-xs {
@@ -653,6 +665,15 @@ ul.unordered-list {
 .cv-data-table .bx--pagination__right .bx--pagination__text {
   display: inline-block !important;
 }
+
+// data table filters container
+.data-table-filters {
+  display: flex;
+  align-items: center;
+  gap: 1rem 1.5rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
 // data table end
 
 // loader start
@@ -754,8 +775,8 @@ ul.unordered-list {
 }
 
 .ns-warning {
-  color: #eb991e !important;
-  fill: #eb991e !important;
+  color: #ff832b !important;
+  fill: #ff832b !important;
 }
 
 .ns-info {

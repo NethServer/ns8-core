@@ -375,7 +375,7 @@ export default {
 
       nodes.unshift({
         name: "all",
-        label: this.$t("common.all_nodes"),
+        label: this.$t("common.any_node"),
         value: "all",
       });
       return nodes;
@@ -632,6 +632,7 @@ export default {
           action: taskAction,
           data: {
             instance: this.routeToDelete.name,
+            lets_encrypt_cleanup: true,
           },
           extra: {
             title: this.$t("settings_http_routes.delete_route_route", {

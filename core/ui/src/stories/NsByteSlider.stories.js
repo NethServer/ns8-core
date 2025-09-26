@@ -18,11 +18,11 @@ export default {
         "warm-gray",
         "high-contrast",
       ],
-      control: { type: "select" },
+      control: { type: "inline-radio" },
     },
     byteUnit: {
       options: ["mib", "gib"],
-      control: { type: "radio" },
+      control: { type: "inline-radio" },
     },
     onUnlimited: { action: "unlimitedAction" },
     onByteUnit: { action: "byteUnitAction" },

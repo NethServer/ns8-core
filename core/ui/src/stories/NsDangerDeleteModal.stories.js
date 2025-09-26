@@ -22,6 +22,7 @@ Default.args = {
   name: "importantObject",
   title: "Confirm deletion",
   warning: "Please read carefully",
+  isWarningShown: true,
   description:
     "Do you really want to delete this object? This action is irreversible",
   typeToConfirm: "",
@@ -45,6 +46,7 @@ DescriptionSlot.args = {
   isShown: true,
   name: "importantObject",
   title: "Confirm deletion",
+  isWarningShown: true,
   warning: "Please read carefully",
   description: "",
   typeToConfirm: "",

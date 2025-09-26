@@ -1495,6 +1495,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@babel/runtime@npm:^7.21.0":
+  version: 7.28.3
+  resolution: "@babel/runtime@npm:7.28.3"
+  checksum: dd22662b9e02b6e66cfb061d6f9730eb0aa3b3a390a7bd70fe9a64116d86a3704df6d54ab978cb4acc13b58dbf63a3d7dd4616b0b87030eb14a22835e0aa602d
+  languageName: node
+  linkType: hard
+
 "@babel/template@npm:^7.0.0, @babel/template@npm:^7.12.7, @babel/template@npm:^7.16.0":
   version: 7.16.0
   resolution: "@babel/template@npm:7.16.0"
@@ -2002,9 +2009,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nethserver/ns8-ui-lib@npm:^1.3.2":
-  version: 1.3.2
-  resolution: "@nethserver/ns8-ui-lib@npm:1.3.2"
+"@nethserver/ns8-ui-lib@npm:^1.4.1":
+  version: 1.4.1
+  resolution: "@nethserver/ns8-ui-lib@npm:1.4.1"
   dependencies:
     "@rollup/plugin-json": ^4.1.0
     core-js: ^3.15.2
@@ -2013,7 +2020,7 @@ __metadata:
     vue-date-fns: ^2.0.1
   peerDependencies:
     vue: ^2.6.12
-  checksum: 1191c1622867d2a57352afa25be9e61b3132551da806eda725b830bb87b4a160160f7919521ea333dcd44b9e9003a3a7f86f19b3010cbed1bd38e6d0835463f6
+  checksum: 7e0eabbd84fdb897c9ff8dc6b0c44284e6f6c84b88878e8ccc7c5bc9ddc9bf5d74ec502ee213e72dd668f14893381570a028438e18ae2045bad3954392bc782c
   languageName: node
   linkType: hard
 
@@ -6689,10 +6696,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"core-js@npm:^3.0.4, core-js@npm:^3.15.2, core-js@npm:^3.6.5, core-js@npm:^3.8.2":
+"core-js@npm:^3.0.4, core-js@npm:^3.6.5, core-js@npm:^3.8.2":
   version: 3.19.3
   resolution: "core-js@npm:3.19.3"
   checksum: eaa7afd87411393a7b1637fd0813957f689e91007219b6a951a1fe1aa08edccfddbbfbb1acb281a76dbe90b42fe7768377289258d81ba46e13c9919527aee95a
+  languageName: node
+  linkType: hard
+
+"core-js@npm:^3.15.2":
+  version: 3.45.1
+  resolution: "core-js@npm:3.45.1"
+  checksum: 674c79e9c58ed923280cd4afbc3bc4c921b8b11bce70d269f1bd98db484e27f0ff436d1de34e198f27065a10386761b39f110309c471f329fe7376ab0fb32bf6
   languageName: node
   linkType: hard
 
@@ -7448,18 +7462,27 @@ __metadata:
   linkType: hard
 
 "date-fns-tz@npm:^1.1.6":
-  version: 1.1.6
-  resolution: "date-fns-tz@npm:1.1.6"
+  version: 1.3.8
+  resolution: "date-fns-tz@npm:1.3.8"
   peerDependencies:
-    date-fns: ">=2.0.0-alpha.13"
-  checksum: cfe4c799372fcb586b7f22d9c31e10df33dabc74452fbd92269ae02bbaed4024636c477b9aac06c521ec78a7391826d5526fedbcefbad2e5de25bcc00c61ad8f
+    date-fns: ">=2.0.0"
+  checksum: dbf17cb88de7c7b71a9f86b815ac62ebdbf725c030e78d2421309456b5001a85284a5b6763f4af0ba660183f12e876c165e725a0723f642edb7846407db03133
   languageName: node
   linkType: hard
 
-"date-fns@npm:^2.0.0, date-fns@npm:^2.23.0":
+"date-fns@npm:^2.0.0":
   version: 2.27.0
   resolution: "date-fns@npm:2.27.0"
   checksum: db62036b3816eb0322c9532b353beac7f660a91e1a55dbd21c14893c621ebb8509f21c66ba287844dabd34dee0207edd54a9537bce6bb7cab9383dedc6b8bc90
+  languageName: node
+  linkType: hard
+
+"date-fns@npm:^2.23.0":
+  version: 2.30.0
+  resolution: "date-fns@npm:2.30.0"
+  dependencies:
+    "@babel/runtime": ^7.21.0
+  checksum: f7be01523282e9bb06c0cd2693d34f245247a29098527d4420628966a2d9aad154bd0e90a6b1cf66d37adcb769cd108cf8a7bd49d76db0fb119af5cdd13644f4
   languageName: node
   linkType: hard
 
@@ -13083,7 +13106,7 @@ __metadata:
     "@carbon/icons-vue": ^10.37.0
     "@carbon/themes": ^10.34.0
     "@carbon/vue": ^2.40.0
-    "@nethserver/ns8-ui-lib": ^1.3.2
+    "@nethserver/ns8-ui-lib": ^1.4.1
     "@storybook/addon-actions": ^6.2.9
     "@storybook/addon-essentials": ^6.2.9
     "@storybook/addon-links": ^6.2.9
@@ -13857,10 +13880,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"picomatch@npm:^2.0.4, picomatch@npm:^2.2.1, picomatch@npm:^2.2.2, picomatch@npm:^2.2.3, picomatch@npm:^2.3.0":
+"picomatch@npm:^2.0.4, picomatch@npm:^2.2.1, picomatch@npm:^2.2.3, picomatch@npm:^2.3.0":
   version: 2.3.0
   resolution: "picomatch@npm:2.3.0"
   checksum: 16818720ea7c5872b6af110760dee856c8e4cd79aed1c7a006d076b1cc09eff3ae41ca5019966694c33fbd2e1cc6ea617ab10e4adac6df06556168f13be3fca2
+  languageName: node
+  linkType: hard
+
+"picomatch@npm:^2.2.2":
+  version: 2.3.1
+  resolution: "picomatch@npm:2.3.1"
+  checksum: 050c865ce81119c4822c45d3c84f1ced46f93a0126febae20737bd05ca20589c564d6e9226977df859ed5e03dc73f02584a2b0faad36e896936238238b0446cf
   languageName: node
   linkType: hard
 

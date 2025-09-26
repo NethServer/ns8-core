@@ -16,11 +16,11 @@ export default {
         "danger--ghost",
         "danger--tertiary",
       ],
-      control: { type: "select" },
+      control: { type: "inline-radio" },
     },
     size: {
       options: ["default", "field", "small", "sm", "lg", "xl"],
-      control: { type: "select" },
+      control: { type: "inline-radio" },
     },
     buttonClick: { action: "clickAction" },
   },
