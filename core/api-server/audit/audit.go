@@ -64,13 +64,13 @@ func Init() {
 		},
 		isFaulty: func(s faults) (bool, string) {
 			if s.faultySchema {
-				return true, "issues in schema creation"
+				return true, "issues while creating the database schema"
 			}
 			if s.faultyOpen { 
-				return true, "issues in opening the database file"
+				return true, "an error opening the database file"
 			}
 			if s.faultyConfig {
-				return true, "issues in database configuration"
+				return true, "misconfiguration of the database file path"
 			}
 			
 			return false, ""
