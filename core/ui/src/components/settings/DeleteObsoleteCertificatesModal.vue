@@ -108,7 +108,7 @@ export default {
 
       // node
 
-      if (!this.certificate && !this.selectedNodeId) {
+      if (!this.selectedNodeId) {
         this.error.node = this.$t("common.required");
 
         if (isValidationOk) {
