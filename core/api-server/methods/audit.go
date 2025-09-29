@@ -149,7 +149,12 @@ func GetAuditsUsers(c *gin.Context) {
 // @Tags /audit audit
 func GetAuditsActions(c *gin.Context) {
 	// define query
-	query := "SELECT DISTINCT action FROM audit"
+	query := `
+		SELECT DISTINCT action 
+		FROM audit 
+		WHERE action == 'create-task' OR action == 'login-ok' OR 
+		      action == 'auth-ok' OR action = 'auth-fail'
+	`
 
 	// execute query
 	actions := audit.Query(query)
