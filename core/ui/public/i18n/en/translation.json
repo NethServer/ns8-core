@@ -786,7 +786,9 @@
         "restricted": "Access restricted",
         "attributes": "Attributes",
         "route": "Route",
-        "host_pattern": "Invalid host format"
+        "host_pattern": "Invalid host format",
+        "cannot_obtain_tls_certificate": "Cannot obtain TLS certificate.",
+        "show_logs": "Show logs"
     },
     "settings_tls_certificates": {
         "title": "TLS certificates",

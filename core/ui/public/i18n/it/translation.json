@@ -1441,7 +1441,9 @@
         "save_route": "Salva rotta",
         "host_pattern": "Formato hostname non valido",
         "slash_redirect": "Aggiungi lo slash finale al percorso",
-        "slash_redirect_tooltip": "Se l'URL della richiesta non finisce con lo slash (/) forza un reindirizzamento all'URL corretto con uno slash finale."
+        "slash_redirect_tooltip": "Se l'URL della richiesta non finisce con lo slash (/) forza un reindirizzamento all'URL corretto con uno slash finale.",
+        "cannot_obtain_tls_certificate": "Impossibile ottenere il certificato TLS.",
+        "show_logs": "Mostra log"
     },
     "samba": {
         "choose_samba_admin_username": "Scegli il nome utente dell'amministratore di Samba",
