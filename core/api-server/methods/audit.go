@@ -152,8 +152,7 @@ func GetAuditsActions(c *gin.Context) {
 	query := `
 		SELECT DISTINCT action 
 		FROM audit 
-		WHERE action == 'create-task' OR action == 'login-ok' OR 
-		      action == 'auth-ok' OR action = 'auth-fail'
+		WHERE action IN ('create-task' 'login-ok', 'auth-ok', 'auth-fail');
 	`
 
 	// execute query
