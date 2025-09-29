@@ -91,7 +91,6 @@ func createDB() {
 	if db.openFail != nil {
 		utils.LogError(errors.Wrap(db.openFail, "[AUDIT][CREATE] error in audit db file creation."))
 		db.faultyStatus.faultyOpen = true
-		db.conn.Close()
 		return
 	}
 
@@ -125,14 +124,13 @@ func Store(audit models.Audit) {
 	tx, err := db.conn.Begin()
 	if err != nil {
 		utils.LogError(errors.Wrap(err, "[AUDIT][STORE] error occurred while initiating the transaction, rollback enforced"))
-		tx.Rollback()
 		return
 	}
+	defer tx.Rollback()
 
 	stmt, err := tx.Prepare("INSERT INTO audit(id, user, action, data, timestamp) VALUES(null, ?, ?, ?, ?)")
 	if err != nil {
 		utils.LogError(errors.Wrap(err, "[AUDIT][STORE] error occurred while preparing the transaction, rollback enforced"))
-		tx.Rollback()
 		return
 	}
 	defer stmt.Close()
@@ -140,7 +138,6 @@ func Store(audit models.Audit) {
 	_, err = stmt.Exec(audit.User, audit.Action, audit.Data, audit.Timestamp.Format(time.RFC3339))
 	if err != nil {
 		utils.LogError(errors.Wrap(err, "[AUDIT][STORE] error occurred when executing the transaction, rollback enforced"))
-		tx.Rollback()
 		return
 	}
 	tx.Commit()
