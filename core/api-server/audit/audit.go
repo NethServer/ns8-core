@@ -144,12 +144,12 @@ func Store(audit models.Audit) {
 }
 
 func QueryArgs(query string, args ...interface{}) []models.Audit {
+	var results []models.Audit
+
 	if ok, out := db.isFaulty(db.faultyStatus); ok {
 		utils.LogError(errors.Wrap(errors.New("Connection dropped due to " + out), "[AUDIT][QUERY]"))
-		return nil
+		return results
 	}
-
-	var results []models.Audit
 
 	cleanArgs := make([]interface{}, 0, len(args))
 	for _, item := range args {
@@ -169,7 +169,7 @@ func QueryArgs(query string, args ...interface{}) []models.Audit {
 	rows, err := db.conn.Query(query, cleanArgs...)
 	if err != nil {
 		utils.LogError(errors.Wrap(err, "[AUDIT][QUERY] error in audit query execution"))
-		return nil
+		return results
 	}
 	defer rows.Close()
 
@@ -200,19 +200,20 @@ func QueryArgs(query string, args ...interface{}) []models.Audit {
 }
 
 func Query(query string) []string {
+	var results []string
+
 	if ok, out := db.isFaulty(db.faultyStatus); ok {
 		utils.LogError(errors.Wrap(errors.New("Connection dropped due to " + out), "[AUDIT][QUERY]"))
-		return nil
+		return results
 	}
 
 	rows, err := db.conn.Query(query)
 	if err != nil {
 		utils.LogError(errors.Wrap(err, "[AUDIT][QUERY] error in audit query execution"))
-		return nil
+		return results
 	}
 	defer rows.Close()
 
-	var results []string
 	for rows.Next() {
 		var field string
 		if err := rows.Scan(&field); err != nil {
