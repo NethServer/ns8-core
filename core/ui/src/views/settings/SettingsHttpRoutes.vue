@@ -166,7 +166,7 @@
                                   )
                                 }}
                                 <cv-link
-                                  @click="goToPendingCertficateLogs(row)"
+                                  @click="goToPendingCertificateLogs(row)"
                                 >
                                   {{ $t("settings_http_routes.show_logs") }}
                                 </cv-link>
@@ -773,7 +773,7 @@ export default {
         return 0;
       };
     },
-    goToPendingCertficateLogs(route) {
+    goToPendingCertificateLogs(route) {
       this.$router.push(
         `/system-logs${this.pendingCertificatesLogsPath[route.traefikInstance]}`
       );
