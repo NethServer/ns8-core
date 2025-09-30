@@ -469,7 +469,9 @@
           kind="warning"
           :title="$t('settings_tls_certificates.traefik_will_be_restarted')"
           :description="
-            $t('settings_tls_certificates.traefik_will_be_restarted_message')
+            $t('settings_tls_certificates.delete_certificate_message', {
+              node: currentCertificate.node,
+            })
           "
           :showCloseButton="false"
         />

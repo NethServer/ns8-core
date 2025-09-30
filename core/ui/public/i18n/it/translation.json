@@ -382,7 +382,7 @@
         "instance_selection_label": "Selezionare l'istanza su cui effettuare l'upload.",
         "custom": "Caricato",
         "upload": "Carica",
-        "cannot_obtain_certificate": "Non è possibile ottenere il certificato",
+        "cannot_obtain_certificate": "Impossibile ottenere il certificato Let's Encrypt",
         "refuses_to_issue_certificate_error": "Il server ACME rifiuta di rilasciare un certificato per il FQDN fornito",
         "dns_record_error": "Nessun record DNS trovato per il FQDN fornito",
         "ensure_node_matches_fqdn_error": "Assicurarsi che il nodo corrisponda al FQDN, o controllare per i dettagli l'errore 'Richiesta certificato' nel pannello notifiche",
@@ -409,7 +409,8 @@
         "request_certificate_disabled_message": "Tutti i nodi del cluster hanno già un certificato",
         "automatic_cert_warning": "Tutte le rotte HTTP associate verranno riconfigurate per non richiedere più questo certificato.",
         "traefik_will_be_restarted": "Traefik verrà riavviato",
-        "traefik_will_be_restarted_message": "L'eliminazione di questo certificato riavvierà immediatamente Traefik. Qualsiasi app che utilizza questo certificato potrebbe diventare temporaneamente non disponibile.",
+        "delete_certificate_message": "L'eliminazione di questo certificato comporterà una breve disconnessione dei client HTTP connessi a {node}.",
+        "delete_obsolete_certificates_message": "L'eliminazione dei certificati obsoleti comporterà una breve disconnessione dei client HTTP connessi al nodo selezionato.",
         "names_helper": "Un FQDN per riga. Non includere nomi host già gestiti da rotte HTTP con l'opzione Let's Encrypt abilitata.",
         "names_pattern": "FQDN non valido: {value}",
         "validation_error_message": "Sono stati rilevati problemi con uno o più FQDN:",
@@ -1443,7 +1444,10 @@
         "slash_redirect": "Aggiungi lo slash finale al percorso",
         "slash_redirect_tooltip": "Se l'URL della richiesta non finisce con lo slash (/) forza un reindirizzamento all'URL corretto con uno slash finale.",
         "cannot_obtain_tls_certificate": "Impossibile ottenere il certificato TLS.",
-        "show_logs": "Mostra log"
+        "show_logs": "Mostra log",
+        "traefik_will_be_restarted": "Traefik verrà riavviato",
+        "delete_route_with_certificate_message": "L'eliminazione di questa rotta comporterà una breve disconnessione dei client HTTP connessi a {node}.",
+        "revoke_certificate_message": "La revoca del certificato della rotta comporterà una breve disconnessione dei client HTTP connessi a {node}."
     },
     "samba": {
         "choose_samba_admin_username": "Scegli il nome utente dell'amministratore di Samba",

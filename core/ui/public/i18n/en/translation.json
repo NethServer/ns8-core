@@ -788,7 +788,10 @@
         "route": "Route",
         "host_pattern": "Invalid host format",
         "cannot_obtain_tls_certificate": "Cannot obtain TLS certificate.",
-        "show_logs": "Show logs"
+        "show_logs": "Show logs",
+        "traefik_will_be_restarted": "Traefik will be restarted",
+        "delete_route_with_certificate_message": "Deleting this route will briefly disconnect HTTP clients connected to {node}.",
+        "revoke_certificate_message": "Revoking the route certificate will briefly disconnect HTTP clients connected to {node}."
     },
     "settings_tls_certificates": {
         "title": "TLS certificates",
@@ -817,7 +820,7 @@
         "chain_file": "Chain file",
         "upload_certs": "Upload certificate",
         "instance_selection_label": "Select instance to upload the file to.",
-        "cannot_obtain_certificate": "Cannot obtain certificate",
+        "cannot_obtain_certificate": "Cannot obtain Let's Encrypt certificate",
         "invalid_identifiers_requested_error": "The provided FQDN is invalid",
         "dns_record_error": "No DNS records found for the provided FQDN",
         "refuses_to_issue_certificate_error": "ACME server refuses to issue a certificate for the provided FQDN",
@@ -843,7 +846,8 @@
         "request_certificate_disabled_message": "All cluster nodes already have a certificate",
         "automatic_cert_warning": "All associated HTTP routes will be reconfigured to no longer require this certificate.",
         "traefik_will_be_restarted": "Traefik will be restarted",
-        "traefik_will_be_restarted_message": "Deleting this certificate will immediately restart Traefik. Any app using this certificate may become temporarily unavailable.",
+        "delete_certificate_message": "Deleting this certificate will briefly disconnect HTTP clients connected to {node}.",
+        "delete_obsolete_certificates_message": "Deleting obsolete certificates will briefly disconnect HTTP clients connected to the selected node.",
         "names_helper": "One FQDN per line. Do not include hostnames already managed by HTTP routes with the Let's Encrypt option enabled.",
         "names_pattern": "Invalid FQDN: {value}",
         "validation_error_message": "Issues detected with one or more FQDNs:",
