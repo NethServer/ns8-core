@@ -433,6 +433,7 @@
         "expiring_warning": "Questo certificato sta per scadere",
         "invalid_key": "Chiave privata non valida",
         "invalid_format": "Formato non valido",
+        "names_format": "Formato FQDN non valido",
         "cert_verification_failed_selfsigned": "I certificati autofirmati non sono consentiti",
         "cert_verification_failed_chain": "La chain del certificato è incompleta o non valida",
         "newcert_acme_error": "Impossibile ottenere il certificato. Controlla l'errore 'Richiedi certificato' nel pannello delle notifiche per i dettagli."

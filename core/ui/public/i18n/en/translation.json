@@ -869,6 +869,7 @@
         "name_route_conflict": "One or more names conflict with the HTTP routes of applications",
         "expiring_warning": "This certificate is about to expire",
         "invalid_key": "Invalid private key",
+        "names_format": "Invalid FQDN format",
         "invalid_format": "Invalid format",
         "cert_verification_failed_selfsigned": "Self-signed certificates are not allowed",
         "cert_verification_failed_chain": "Certificate chain is incomplete or invalid",
