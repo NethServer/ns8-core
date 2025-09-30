@@ -303,7 +303,7 @@
             :title="$t('settings_http_routes.traefik_will_be_restarted')"
             :description="
               $t('settings_http_routes.delete_route_with_certificate_message', {
-                node: routeToDelete ? routeToDelete.node : '',
+                node: routeToDelete.node,
               })
             "
             :showCloseButton="false"
