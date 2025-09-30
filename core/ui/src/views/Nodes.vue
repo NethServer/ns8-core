@@ -286,9 +286,7 @@
         </template>
       </template>
       <template slot="secondary-button">{{ $t("common.cancel") }}</template>
-      <template slot="primary-button">{{
-        $t("nodes.edit_node_label")
-      }}</template>
+      <template slot="primary-button">{{ $t("common.save") }}</template>
     </NsModal>
     <!-- remove node modal -->
     <RemoveNodeModal

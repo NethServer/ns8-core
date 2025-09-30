@@ -290,10 +290,27 @@
       :isErrorShown="!!error.deleteRoute"
       :errorTitle="$t('action.delete-route')"
       :errorDescription="error.deleteRoute"
+      :isWarningShown="false"
       @hide="hideDeleteRouteModal"
       @confirmDelete="deleteRoute"
       data-test-id="delete-route-modal"
-    />
+    >
+      <!-- traefik will be restarted if the route requested a certificate -->
+      <template v-if="routeToDelete && routeToDelete.lets_encrypt" #explanation>
+        <div class="mt-4">
+          <NsInlineNotification
+            kind="warning"
+            :title="$t('settings_http_routes.traefik_will_be_restarted')"
+            :description="
+              $t('settings_http_routes.delete_route_with_certificate_message', {
+                node: routeToDelete ? routeToDelete.node : '',
+              })
+            "
+            :showCloseButton="false"
+          />
+        </div>
+      </template>
+    </NsDangerDeleteModal>
   </div>
 </template>
 

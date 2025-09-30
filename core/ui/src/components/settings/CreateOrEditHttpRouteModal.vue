@@ -107,6 +107,17 @@
           <template slot="text-left">{{ $t("common.disabled") }}</template>
           <template slot="text-right">{{ $t("common.enabled") }}</template>
         </NsToggle>
+        <NsInlineNotification
+          v-if="isEditing && route.lets_encrypt && !lets_encrypt"
+          kind="warning"
+          :title="$t('settings_http_routes.traefik_will_be_restarted')"
+          :description="
+            $t('settings_http_routes.revoke_certificate_message', {
+              node: route.node,
+            })
+          "
+          :showCloseButton="false"
+        />
         <NsTextInput
           v-if="user_created"
           v-model.trim="path"
@@ -223,6 +234,23 @@
             :description="error.setRoute"
             :showCloseButton="false"
           />
+          <NsInlineNotification
+            v-if="validationErrorDetails.length"
+            kind="error"
+            :title="$t('settings_tls_certificates.cannot_obtain_certificate')"
+            :showCloseButton="false"
+          >
+            <template #description>
+              <div class="flex flex-col gap-2">
+                <p
+                  v-for="(detail, index) in validationErrorDetails"
+                  :key="index"
+                >
+                  {{ detail }}
+                </p>
+              </div>
+            </template>
+          </NsInlineNotification>
         </div>
       </cv-form>
     </template>
@@ -278,6 +306,7 @@ export default {
       ip_allowlist_str: "",
       user_created: true,
       isAccordionOpen: false,
+      validationErrorDetails: [],
       loading: {
         setRoute: false,
       },
@@ -316,6 +345,7 @@ export default {
     isShown: function () {
       if (this.isShown) {
         this.clearErrors();
+        this.validationErrorDetails = [];
         this.isAccordionOpen = false;
 
         if (this.isEditing) {
@@ -355,6 +385,16 @@ export default {
         });
       }
     },
+    validationErrorDetails: function () {
+      if (this.validationErrorDetails.length) {
+        // scroll to notification error
+
+        this.$nextTick(() => {
+          const el = this.$refs.setRouteError;
+          this.scrollToElement(el);
+        });
+      }
+    },
   },
   created() {
     this.updateSelectedNodeId();
@@ -372,10 +412,12 @@ export default {
     },
     onModalHidden() {
       this.clearErrors();
+      this.validationErrorDetails = [];
       this.$emit("hide");
     },
     validateSetRoute(isEditingRoute) {
       this.clearErrors();
+      this.validationErrorDetails = [];
 
       let isValidationOk = true;
 
@@ -602,15 +644,22 @@ export default {
       for (const validationError of validationErrors) {
         const param = validationError.parameter;
 
-        // set i18n error message
-        this.error[param] = this.getI18nStringWithFallback(
-          "settings_http_routes." + validationError.error,
-          "error." + validationError.error
-        );
+        if (validationError.details) {
+          // show inline error notification with details
+          this.validationErrorDetails = validationError.details
+            .split("\n")
+            .filter((detail) => detail.trim() !== "");
+        } else {
+          // set i18n error message
+          this.error[param] = this.getI18nStringWithFallback(
+            "settings_http_routes." + validationError.error,
+            "error." + validationError.error
+          );
 
-        if (!focusAlreadySet) {
-          this.focusElement(param);
-          focusAlreadySet = true;
+          if (!focusAlreadySet) {
+            this.focusElement(param);
+            focusAlreadySet = true;
+          }
         }
       }
     },
@@ -634,6 +683,10 @@ export default {
       this.skip_cert_verify = false;
       this.ip_allowlist_str = "";
       this.user_created = true;
+
+      if (this.$refs.node) {
+        this.$refs.node.clearValue();
+      }
     },
   },
 };
