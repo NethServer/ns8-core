@@ -121,7 +121,7 @@ func InitJWT() *jwt.GinJWTMiddleware {
 						Timestamp: time.Now().UTC(),
 					}
 					audit.Store(auditData)
-					utils.LogError(errors.New(generateLogMessage(c, username, otpNeed)))
+					utils.LogError(errors.Wrap(err, "[AUTH] login-fail(OTP) " + generateLogMessage(c, username, otpNeed)))
 					return nil, err
 				}
 				otpPassClaim = true // claim that 2FA is enabled and used
@@ -138,7 +138,7 @@ func InitJWT() *jwt.GinJWTMiddleware {
 			}
 			audit.Store(auditData)
 
-			utils.LogError(errors.New(generateLogMessage(c, username, otpNeed)))
+			utils.LogError(errors.New("[AUTH] login-ok " + generateLogMessage(c, username, otpNeed)))
 
 			// return user auth model
 			return &models.UserAuthorizations{
@@ -291,5 +291,5 @@ func InitJWT() *jwt.GinJWTMiddleware {
 func generateLogMessage(c *gin.Context, username string, otpNeed bool) string {
 	remoteAddress := c.Request.RemoteAddr
 	ipSource := strings.Split(remoteAddress, ":")[0]
-	return fmt.Sprintf("[AUTH] login-ok user=%s source=%s 2fa=%t", username, ipSource, otpNeed)
+	return fmt.Sprintf("user=%s source=%s 2fa=%t", username, ipSource, otpNeed)
 }

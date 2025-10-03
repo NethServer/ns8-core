@@ -132,7 +132,7 @@ relabel_rules.append("""
 relabel_rules.append(r"""
     rule {
         source_labels = ["__journal_syslog_identifier", "__journal_message"]
-        regex         = "api-server;.*\\[auth\\].*"
+        regex         = "api-server;.*\\[AUTH\\].*"
         target_label  = "category"
         replacement   = "security"
     }
