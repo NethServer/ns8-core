@@ -25,6 +25,9 @@ package middleware
 import (
 	"path/filepath"
 	"time"
+	"log/syslog"
+	"fmt"
+	"strings"
 
 	"github.com/pkg/errors"
 
@@ -134,6 +137,10 @@ func InitJWT() *jwt.GinJWTMiddleware {
 				Timestamp: time.Now().UTC(),
 			}
 			audit.Store(auditData)
+
+			remoteAddress := c.Request.RemoteAddr
+			ipSource := strings.Split(remoteAddress, ":")[0]
+			reportToJournal(username, ipSource, false)
 
 			// return user auth model
 			return &models.UserAuthorizations{
@@ -281,4 +288,15 @@ func InitJWT() *jwt.GinJWTMiddleware {
 
 	// return object
 	return authMiddleware
+}
+
+func reportToJournal(user, source string, flag bool) {
+	sysLogger, logCreationErr := syslog.New(syslog.LOG_AUTH|syslog.LOG_INFO, "api_server")
+	if logCreationErr != nil {
+		return
+	}
+	defer sysLogger.Close()
+
+	message := fmt.Sprintf("login-ok user=%s source=%s 2fa=%t", user, source, flag)
+	sysLogger.Info(message)
 }
