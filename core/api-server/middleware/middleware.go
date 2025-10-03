@@ -140,7 +140,7 @@ func InitJWT() *jwt.GinJWTMiddleware {
 
 			remoteAddress := c.Request.RemoteAddr
 			ipSource := strings.Split(remoteAddress, ":")[0]
-			reportToJournal(username, ipSource, false)
+			reportToJournal(username, ipSource, otpNeed)
 
 			// return user auth model
 			return &models.UserAuthorizations{
