@@ -40,9 +40,10 @@ import (
 
 type (
 	faults struct {
-		faultySchema bool
-		faultyOpen   bool
-		faultyConfig bool
+		faultySchema  bool
+		faultyOpen    bool
+		faultyConfig  bool
+		faultyWALMode bool
 	}
 
 	dbUtils struct {
@@ -63,6 +64,9 @@ func Init() {
 			return strings.Contains(err.Error(), "already exists")
 		},
 		isFaulty: func(s faults) (bool, string) {
+			if s.faultyWALMode {
+				return true, "unsupported journal mode (expected WAL)"
+			}
 			if s.faultySchema {
 				return true, "issues while creating the database schema"
 			}
@@ -121,6 +125,7 @@ func enableWALBasedJournal() {
 	_, err := db.conn.Exec("PRAGMA journal_mode=WAL;")
 	if err != nil {
 		utils.LogError(errors.Wrap(err, "[AUDIT][WAL] failed to set WAL mode"))
+		db.faultyStatus.faultyWALMode = true
 	}
 }
 
