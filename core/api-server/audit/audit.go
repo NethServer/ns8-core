@@ -94,6 +94,8 @@ func createDB() {
 		return
 	}
 
+	enableWALBasedJournal()
+
 	// define audit schema
 	query := `
 		CREATE TABLE audit (
@@ -112,6 +114,13 @@ func createDB() {
 
 		utils.LogError(errors.Wrap(errExecute, "[AUDIT][CREATE] error in audit file schema init."))
 		db.faultyStatus.faultySchema = true
+	}
+}
+
+func enableWALBasedJournal() {
+	_, err := db.conn.Exec("PRAGMA journal_mode=WAL;")
+	if err != nil {
+		utils.LogError(errors.Wrap(err, "[AUDIT][WAL] failed to set WAL mode"))
 	}
 }
 
