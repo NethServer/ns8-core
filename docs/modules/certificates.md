@@ -27,21 +27,29 @@ possible to instruct Traefik to obtain a TLS certificate for it in a
 single action.
 
 ```python
-agent.tasks.run(
-    agent_id=agent.resolve_agent_id('traefik@node'), # e.g., module/traefik1
-    action='set-route',
-    data={
-        'instance': os.environ['MODULE_ID'],
-        'url': f'http://127.0.0.1:{os.environ["TCP_PORT"]}',
-        'host': host_fqdn,
-        'lets_encrypt': True, # request certificate for host_fqdn
-        'http2https': True, # redirect http:// URL scheme to https://
-    },
-)
+agent.set_route({
+    'instance': os.environ['MODULE_ID'],
+    'url': f'http://127.0.0.1:{os.environ["TCP_PORT"]}',
+    'host': host_fqdn,
+    'lets_encrypt': True, # request certificate for host_fqdn
+    'http2https': True, # redirect http:// URL scheme to https://
+})
 ```
 
-Note that `instance` must be a unique route identifier. If the module
-uses multiple HTTP routes, add a prefix to `MODULE_ID` to distinguish them.
+Note that `instance` must be a unique route identifier. If the module uses
+multiple HTTP routes, use MODULE_ID as prefix or suffix to distinguish
+them (e.g. `mymodule1-ui`, `mymodule1-api`, ...).
+
+The default `set_route` behavior is to abort the caller process on any
+error, echoing the output and error of the Traefik's `set-route` action.
+This implies following input arguments are passed as default:
+
+- `lets_encrypt_check: True`
+- `lets_encrypt_cleanup: True`
+
+If this is not desired, set argument `error_passthrough=False`, and the
+full action result dictionary is returned.
+
 
 TLS for other applications
 --------------------------
@@ -54,7 +62,7 @@ image labels:
      org.nethserver.authorizations = traefik@node:fulladm
 
 A certificate request for Let's Encrypt can be issued using the
-`set-certificate` action.
+`set-default-certificate` action.
 
 The application can then listen for the `certificate-changed` event. This
 event is triggered when a TLS certificate is uploaded via the UI or
@@ -64,38 +72,21 @@ Upon receiving a `certificate-changed` event, invoke the `get-certificate`
 action to obtain the PEM-encoded key and certificate.
 
 For example, to issue a Let's Encrypt certificate request for
-`SERVICE_FQDN` in the background, run:
+`SERVICE_FQDN` run:
 
 ```python
-agent.tasks.run_nowait( # _nowait runs in the background
-    agent_id=agent.resolve_agent_id('traefik@node'), # e.g., module/traefik1
-    action='set-certificate',
-    data={
-        "fqdn": os.environ["SERVICE_FQDN"],
-    },
-    parent='', # Run as a root task
-    extra={
-        'title': 'set-certificate',
-        'isNotificationHidden': False, # Show the task progress in the UI
-    },
-)
+agent.set_default_certificate({
+    "names":[service_fqdn],
+    "check_routes": True, # fail if the service_fqdn is already used by an HTTP route
+    "merge":True, # add service_fqdn to existing certificate
+})
 ```
 
-If you prefer a synchronous call, run:
-
-```python
-response = agent.tasks.run(
-    agent_id=agent.resolve_agent_id('traefik@node'), # e.g., module/traefik1
-    action='set-certificate',
-    data={
-        "fqdn": os.environ["SERVICE_FQDN"],
-        "sync_timeout": 60, # default timeout is 30
-    },
-)
-# Check the action exit code:
-if response['exit_code'] != 0:
-    # decide what to do if the certificate was not obtained
-```
+The default `set_default_certificate` behavior is to abort the caller
+process on any error, echoing the output and error of the Traefik's
+`set-default-certificate` action. If this is not desired, set argument
+`error_passthrough=False`, and the full action result dictionary is
+returned.
 
 To handle the event, create an executable script under
 `$AGENT_INSTALL_DIR/events/certificate-changed`. The event handler:

@@ -737,3 +737,50 @@ def get_certificate(name):
     skey = base64.b64decode(response['output']['certificates'][0]['key']).decode('utf-8')
 
     return (scert, skey)
+
+def _call_traefik_action(action, data, error_passthrough=True, agent_id=None):
+    if not agent_id:
+        agent_id = resolve_agent_id('traefik@node')
+    # Traefik endpoint
+    response = agent.tasks.run(
+        agent_id=agent_id,
+        action=action,
+        data=data,
+        extra={'isNotificationHidden': True},
+    )
+    if error_passthrough and response['exit_code'] != 0:
+        print(response['error'], file=sys.stderr)
+        print(response['output'])
+        sys.exit(response['exit_code'])
+    return response
+
+def set_route(data, error_passthrough=True, agent_id=None):
+    """Call set-route action on the node's Traefik instance.
+    If an error occurs the caller is aborted, echoing the set-route error
+    and output messages."""
+    if error_passthrough:
+        data.setdefault('lets_encrypt_check', True)
+        data.setdefault('lets_encrypt_cleanup', True)
+    return _call_traefik_action('set-route', data, error_passthrough, agent_id)
+
+def set_default_certificate(data, error_passthrough=True, agent_id=None):
+    """Call set-default-certificate action on the node's Traefik instance.
+    If an error occurs the caller is aborted, echoing the
+    set-default-certificate error and output messages."""
+    return _call_traefik_action('set-default-certificate', data, error_passthrough, agent_id)
+
+def get_route(route_id, agent_id=None):
+    """Call get-route action on the node's Traefik instance.
+    The route is returned as a dictionary. If the route is not found, an
+    empty dictionary is returned."""
+    if not agent_id:
+        agent_id = resolve_agent_id('traefik@node')
+    response = agent.tasks.run(
+        agent_id=agent_id,
+        action='get-route',
+        data={"instance": route_id},
+        extra={'isNotificationHidden': True},
+    )
+    if response['exit_code'] != 0:
+        return dict()
+    return response['output'] or dict()
