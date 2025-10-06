@@ -739,6 +739,15 @@ def get_certificate(name):
     return (scert, skey)
 
 def _call_traefik_action(action, data, error_passthrough=True, agent_id=None):
+    """
+    Call an action on the node's Traefik instance via agent.tasks.run.
+
+    :param action: The name of the action to call (str).
+    :param data: The data payload to send with the action (dict).
+    :param error_passthrough: If True, aborts the caller and prints error/output on failure (bool, default True).
+    :param agent_id: The agent ID to use. If None, resolves to 'traefik@node' (str or None).
+    :return: The response dictionary from agent.tasks.run.
+    """
     if not agent_id:
         agent_id = resolve_agent_id('traefik@node')
     # Traefik endpoint
