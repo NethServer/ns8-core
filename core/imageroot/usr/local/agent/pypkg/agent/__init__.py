@@ -795,3 +795,19 @@ def get_route(route_id, agent_id=None):
     if response['exit_code'] != 0:
         return dict()
     return response['output'] or dict()
+
+def get_certificate(fqdn, agent_id=None):
+    """Call get-certificate action on the node's Traefik instance.
+    The result is a dictionary corresponding to the action's output
+    format. If an error occurs an empty dict is returned."""
+    if not agent_id:
+        agent_id = resolve_agent_id('traefik@node')
+    response = agent.tasks.run(
+        agent_id=agent_id,
+        action='get-certificate',
+        data={"fqdn": fqdn},
+        extra={'isNotificationHidden': True},
+    )
+    if response['exit_code'] != 0:
+        return dict()
+    return response['output'] or dict()
