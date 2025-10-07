@@ -758,8 +758,10 @@ def _call_traefik_action(action, data, error_passthrough=True, agent_id=None):
         extra={'isNotificationHidden': True},
     )
     if error_passthrough and response['exit_code'] != 0:
-        print(response['error'], file=sys.stderr)
-        print(response['output'])
+        if response['exit_code'] > 1 and response['exit_code'] < 30:
+            agent.set_status('validation-failed')
+        print(response['error'], end='', file=sys.stderr)
+        json.dump(response['output'], fp=sys.stdout)
         sys.exit(response['exit_code'])
     return response
 
