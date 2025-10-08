@@ -1,0 +1,185 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "list-nodes output",
+    "$id": "http://schema.nethserver.org/cluster/list-nodes.json",
+    "description": "Output schema of the list-nodes action",
+    "examples": [],
+    "type": "object",
+    "properties": {
+        "alerts": {},
+        "nodes": {
+            "type": "array",
+            "items": {
+                "$ref": "#/$defs/node-info"
+            }
+        }
+    },
+    "$defs": {
+        "node-info": {
+            "type": "object",
+            "properties": {
+                "node_id": {
+                    "type": "integer"
+                },
+                "role": {
+                    "enum": [
+                        "ns7migration",
+                        "leader",
+                        "worker"
+                    ]
+                },
+                "ui_name": {
+                    "type": "string"
+                },
+                "vpn_endpoint": {
+                    "type": "string"
+                },
+                "vpn_ip_address": {
+                    "type": "string"
+                },
+                "vpn_listen_port": {
+                    "type": "string"
+                },
+                "app_count": {
+                    "description": "Number of applications installed on the node",
+                    "type": "integer"
+                },
+                "os_release": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "examples": [
+                                "Rocky Linux"
+                            ]
+                        },
+                        "version": {
+                            "type": "string",
+                            "examples": [
+                                "9.6"
+                            ]
+                        }
+                    }
+                },
+                "network_interface_count": {
+                    "type": "integer"
+                },
+                "fqdn": {
+                    "type": "string"
+                },
+                "main_ip": {
+                    "type": "string"
+                },
+                "load": {
+                    "description": "Average load",
+                    "type": "object",
+                    "properties": {
+                        "1min": {
+                            "description": "1 minute",
+                            "type": "number"
+                        },
+                        "5min": {
+                            "description": "5 minutes",
+                            "type": "number"
+                        },
+                        "15min": {
+                            "description": "15 minutes",
+                            "type": "number"
+                        }
+                    }
+                },
+                "cpu": {
+                    "description": "Average load",
+                    "type": "object",
+                    "properties": {
+                        "count": {
+                            "description": "Number of CPUs",
+                            "type": "integer"
+                        },
+                        "usage": {
+                            "description": "Normalized value of CPU time in busy (not in idle) state",
+                            "type": "number"
+                        },
+                        "vendor": {
+                            "type": "string"
+                        },
+                        "model": {
+                            "type": "string"
+                        },
+                        "model_name": {
+                            "type": "string"
+                        },
+                        "family": {
+                            "type": "string"
+                        },
+                        "stepping": {
+                            "type": "string"
+                        },
+                        "package": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "memory": {
+                    "type": "object",
+                    "properties": {
+                        "total": {
+                            "type": "integer"
+                        },
+                        "used": {
+                            "type": "integer"
+                        },
+                        "free": {
+                            "type": "integer"
+                        }
+                    }
+                },
+                "swap": {
+                    "type": "object",
+                    "properties": {
+                        "total": {
+                            "type": "integer"
+                        },
+                        "used": {
+                            "type": "integer"
+                        },
+                        "free": {
+                            "type": "integer"
+                        }
+                    }
+                },
+                "disks": {
+                    "description": "Storage information by partition",
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "total": {
+                                "type": "integer"
+                            },
+                            "used": {
+                                "type": "integer"
+                            },
+                            "free": {
+                                "type": "integer"
+                            },
+                            "device": {
+                                "type": "string"
+                            },
+                            "mountpoint": {
+                                "type": "string"
+                            },
+                            "fstype": {
+                                "examples": [
+                                    "ext4",
+                                    "xfs"
+                                ],
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
