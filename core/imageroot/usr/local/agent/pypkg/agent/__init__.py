@@ -758,8 +758,10 @@ def _call_traefik_action(action, data, error_passthrough=True, agent_id=None):
         extra={'isNotificationHidden': True},
     )
     if error_passthrough and response['exit_code'] != 0:
-        print(response['error'], file=sys.stderr)
-        print(response['output'])
+        if response['exit_code'] > 1 and response['exit_code'] < 30:
+            agent.set_status('validation-failed')
+        print(response['error'], end='', file=sys.stderr)
+        json.dump(response['output'], fp=sys.stdout)
         sys.exit(response['exit_code'])
     return response
 
@@ -788,6 +790,22 @@ def get_route(route_id, agent_id=None):
         agent_id=agent_id,
         action='get-route',
         data={"instance": route_id},
+        extra={'isNotificationHidden': True},
+    )
+    if response['exit_code'] != 0:
+        return dict()
+    return response['output'] or dict()
+
+def get_certificate(fqdn, agent_id=None):
+    """Call get-certificate action on the node's Traefik instance.
+    The result is a dictionary corresponding to the action's output
+    format. If an error occurs an empty dict is returned."""
+    if not agent_id:
+        agent_id = resolve_agent_id('traefik@node')
+    response = agent.tasks.run(
+        agent_id=agent_id,
+        action='get-certificate',
+        data={"fqdn": fqdn},
         extra={'isNotificationHidden': True},
     )
     if response['exit_code'] != 0:
