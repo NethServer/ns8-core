@@ -873,7 +873,11 @@
         "invalid_format": "Invalid format",
         "cert_verification_failed_selfsigned": "Self-signed certificates are not allowed",
         "cert_verification_failed_chain": "Certificate chain is incomplete or invalid",
-        "newcert_acme_error": "Cannot obtain certificate. Check the 'Request certificate' error in the notification drawer for details."
+        "newcert_acme_error": "Cannot obtain certificate. Check the 'Request certificate' error in the notification drawer for details.",
+        "lets_encrypt_tips": "This option enables automatic request of a Let's Encrypt TLS certificate for this application. You can manage the certificate afterward in Settings > TLS certificates.",
+        "go_to_tls_certificates": "Go to TLS certificates",
+        "lets_encrypt_disabled_warning_description": "The application will be temporarily unavailable, and HTTP clients connected to node {node} will experience a brief disconnection.",
+        "lets_encrypt_disabled_warning": "Traefik will be restarted"
     },
     "settings_acme_servers": {
         "title": "ACME servers",
