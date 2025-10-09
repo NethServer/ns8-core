@@ -1,5 +1,6 @@
 [Unit]
 Description=Prometheus node_exporter
+Wants=refresh-node-info.service
 
 [Service]
 Type=forking
@@ -24,6 +25,7 @@ ExecStart=/usr/bin/podman run \
     -d \
     -v /:/host:ro,rslave \
     ${NODE_EXPORTER_IMAGE} \
+    --collector.cpu.info \
     --collector.filesystem.ignored-mount-points=^/(sys|proc|dev|run)($|/) \
     --collector.textfile.directory=/host/run/node_exporter \
     --path.rootfs=/host
