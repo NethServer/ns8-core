@@ -716,8 +716,8 @@ def certificate_event_matches(event, name):
     else:
         return False
 
-def get_certificate(name):
-    """Get the certificate (and private key) for the given name.
+def get_certificate_and_key(name):
+    """Get the certificate and private key for the given name.
     :param name: Get a certificate for the name.
     :return: A tuple (scert, skey) with the file contents of certificate
         and private key, respectively.
