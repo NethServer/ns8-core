@@ -50,7 +50,7 @@ def get_certificate(cert_file: str, key_file: str, fqdn: str) -> None:
         fqdn (str): Fully qualified domain name of the certificate.
     """
     try:
-        certificate_content, key_content = agent.get_certificate(fqdn)
+        certificate_content, key_content = agent.get_certificate_and_key(fqdn)
     except Exception as e:
         print(f"Error retrieving certificate: {e}", file=sys.stderr)
         if not os.path.exists(cert_file) or not os.path.exists(key_file):
