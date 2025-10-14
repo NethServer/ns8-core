@@ -892,7 +892,7 @@
         "go_to_tls_certificates": "Go to TLS certificates",
         "lets_encrypt_disabled_warning_description": "The application will be temporarily unavailable, and HTTP clients connected to node {node} will experience a brief disconnection.",
         "lets_encrypt_disabled_warning": "Traefik will be restarted",
-        "request_https_certificate": "Request HTTPS certificate",
+        "request_https_certificate": "Request a Let's Encrypt certificate",
         "cannot_obtain_certificate": "Cannot obtain Let's Encrypt certificate"
     },
     "settings_account": {
