@@ -1,0 +1,24 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2025 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+import json
+import os
+import sys
+import agent
+import cluster.alerts
+
+def main():
+    request = json.load(sys.stdin) or {}
+    alert_list = []
+    for oalert in cluster.alerts.fetch_alerts():
+        if 'categories' in request and oalert['category'] not in request['categories']:
+            continue
+        alert_list.append(oalert)
+    json.dump({"alerts": alert_list, "filter": request}, fp=sys.stdout)
+
+if __name__ == "__main__":
+    main()
