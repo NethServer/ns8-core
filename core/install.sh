@@ -80,7 +80,7 @@ if [[ "${PLATFORM_ID}" == "platform:el9" ]]; then
     dnf update -y # Fix SELinux issues with basic packages
     dnf install -y wireguard-tools podman curl jq openssl firewalld pciutils python3.11
     systemctl enable --now firewalld
-elif [[ "${ID}" == "debian" && "${VERSION_ID}" == "12" ]]; then
+elif [[ "${ID}" == "debian" && ( "${VERSION_ID}" == "12" || "${VERSION_ID}" == "13" ) ]]; then
     apt-get update
     apt-get -y install gnupg2
     apt-get update
