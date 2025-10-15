@@ -965,7 +965,7 @@
         "collapse": "Collassa",
         "clear_selection": "Cancella selezione",
         "clear_filter": "Rimuovi filtro",
-        "clear_filters": "Reimposta filtri",
+        "clear_filters": "Rimuovi filtri",
         "upload_drop_target_text": "Fai clic o trascina e rilascia il file qui",
         "core_module_c": "App di base | App di base",
         "details": "Dettagli",
@@ -1632,5 +1632,13 @@
         "mail_to_helper_text": "Inserisci gli indirizzi email per ricevere le notifiche. Digitare un indirizzo email per riga.",
         "grafana_link": "Vai alla dashboard di Grafana",
         "mail_from": "Indirizzo email mittente"
+    },
+    "apps_lets_encrypt": {
+        "cannot_obtain_certificate": "Impossibile ottenere il certificato Let's Encrypt",
+        "lets_encrypt_tips": "Richiede automaticamente un certificato TLS Let's Encrypt. Disabilitando questa opzione viene eliminato il certificato esistente (se presente). È anche possibile visualizzarlo o eliminarlo in Impostazioni del cluster > Certificati TLS.",
+        "lets_encrypt_disabled_warning": "Traefik verrà riavviato",
+        "lets_encrypt_disabled_warning_description": "L'applicazione sarà temporaneamente non disponibile e i client HTTP connessi al nodo {node} subiranno una breve disconnessione.",
+        "request_https_certificate": "Richiedi un certificato Let's Encrypt",
+        "go_to_tls_certificates": "Vai a Certificati TLS"
     }
 }
