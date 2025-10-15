@@ -888,7 +888,7 @@
         "edit_acme_server_leader_node_warning": "You are editing the ACME server for the leader node. After you click 'Edit ACME server' you'll need to reload the page"
     },
     "apps_lets_encrypt": {
-        "lets_encrypt_tips": "Requests a Let's Encrypt TLS certificate automatically. Disabling the option removes the certificate. You can also view or delete it in Settings > TLS certificates.",
+        "lets_encrypt_tips": "Requests a Let's Encrypt TLS certificate automatically. Disabling this option deletes the existing certificate (if any). You can also view or delete it in Cluster settings > TLS certificates.",
         "go_to_tls_certificates": "Go to TLS certificates",
         "lets_encrypt_disabled_warning_description": "The application will be temporarily unavailable, and HTTP clients connected to node {node} will experience a brief disconnection.",
         "lets_encrypt_disabled_warning": "Traefik will be restarted",
