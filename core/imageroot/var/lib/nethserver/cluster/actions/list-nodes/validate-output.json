@@ -3,7 +3,88 @@
     "title": "list-nodes output",
     "$id": "http://schema.nethserver.org/cluster/list-nodes.json",
     "description": "Output schema of the list-nodes action",
-    "examples": [],
+    "examples": [
+        {
+            "nodes": [
+                {
+                    "role": "leader",
+                    "vpn_endpoint": "rl1.dp.nethserver.net:55820",
+                    "vpn_ip_address": "10.5.4.1",
+                    "load": {
+                        "1min": 0.03,
+                        "5min": 0.04,
+                        "15min": 0.0
+                    },
+                    "cpu": {
+                        "usage": 0.018833333333335145,
+                        "count": 2,
+                        "vendor": "GenuineIntel",
+                        "model": "85",
+                        "model_name": "DO-Premium-Intel",
+                        "microcode": "0x1",
+                        "family": "6",
+                        "stepping": "7",
+                        "package": "0"
+                    },
+                    "memory": {
+                        "total": 1864290304.0,
+                        "used": 960249856.0,
+                        "free": 904040448.0
+                    },
+                    "swap": {
+                        "total": 4194299904.0,
+                        "used": 8179712.0,
+                        "free": 4186120192.0
+                    },
+                    "disks": [
+                        {
+                            "device": "/dev/sda",
+                            "mountpoint": "/mnt/xvolume_davidep_cluster0_rl1",
+                            "fstype": "xfs",
+                            "total": 2136997888.0,
+                            "used": 2136682496.0,
+                            "free": 315392.0
+                        },
+                        {
+                            "device": "/dev/vda1",
+                            "mountpoint": "/",
+                            "fstype": "xfs",
+                            "total": 63254278144.0,
+                            "used": 8945598464.0,
+                            "free": 54308679680.0
+                        },
+                        {
+                            "device": "/dev/vda15",
+                            "mountpoint": "/boot/efi",
+                            "fstype": "vfat",
+                            "total": 103575552.0,
+                            "used": 7335936.0,
+                            "free": 96239616.0
+                        },
+                        {
+                            "device": "/dev/vda2",
+                            "mountpoint": "/boot",
+                            "fstype": "xfs",
+                            "total": 1042161664.0,
+                            "used": 184291328.0,
+                            "free": 857870336.0
+                        }
+                    ],
+                    "app_count": 0,
+                    "os_release": {
+                        "name": "Rocky Linux",
+                        "version": "9.6"
+                    },
+                    "network_interface_count": 3,
+                    "fqdn": "rl1.dp.nethserver.net",
+                    "main_ip": "127.0.0.1",
+                    "vpn_listen_port": "55820",
+                    "node_id": 1,
+                    "ui_name": "rl1@ams3"
+                }
+            ]
+        }
+    ],
     "type": "object",
     "properties": {
         "alerts": {},
