@@ -1632,5 +1632,13 @@
         "mail_to_helper_text": "Enter the email addresses to receive notifications. Type one email address per line.",
         "grafana_link": "Go to Grafana dashboard",
         "mail_from": "Sender email address"
+    },
+    "apps_lets_encrypt": {
+        "cannot_obtain_certificate": "Cannot obtain Let's Encrypt certificate",
+        "lets_encrypt_tips": "Requests a Let's Encrypt TLS certificate automatically. Disabling this option deletes the existing certificate (if any). You can also view or delete it in Cluster settings > TLS certificates.",
+        "lets_encrypt_disabled_warning": "Traefik will be restarted",
+        "lets_encrypt_disabled_warning_description": "The application will be temporarily unavailable, and HTTP clients connected to node {node} will experience a brief disconnection.",
+        "request_https_certificate": "Request a Let's Encrypt certificate",
+        "go_to_tls_certificates": "Go to TLS certificates"
     }
 }
