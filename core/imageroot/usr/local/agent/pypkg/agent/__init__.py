@@ -774,11 +774,11 @@ def set_route(data, error_passthrough=True, agent_id=None):
         data.setdefault('lets_encrypt_cleanup', True)
     return _call_traefik_action('set-route', data, error_passthrough, agent_id)
 
-def set_default_certificate(data, error_passthrough=True, agent_id=None):
-    """Call set-default-certificate action on the node's Traefik instance.
-    If an error occurs the caller is aborted, echoing the
-    set-default-certificate error and output messages."""
-    return _call_traefik_action('set-default-certificate', data, error_passthrough, agent_id)
+def set_certificate(data, error_passthrough=True, agent_id=None):
+    """Call set-certificate action on the node's Traefik instance.
+    If an error occurs the caller is aborted, echoing the set-certificate
+    error and output messages."""
+    return _call_traefik_action('set-certificate', data, error_passthrough, agent_id)
 
 def get_route(route_id, agent_id=None):
     """Call get-route action on the node's Traefik instance.

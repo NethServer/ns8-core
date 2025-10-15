@@ -38,11 +38,14 @@ agent.set_route({
 
 Note that `instance` must be a unique route identifier. If the module uses
 multiple HTTP routes, use MODULE_ID as prefix or suffix to distinguish
-them (e.g. `mymodule1-ui`, `mymodule1-api`, ...).
+them (e.g. `mymodule1-ui`, `mymodule1-api`, ...). When the module is
+removed HTTP route instances matching `mymodule1` are automatically
+removed.
 
-The default `set_route` behavior is to abort the caller process on any
-error, echoing the output and error of the Traefik's `set-route` action.
-This implies following input arguments are passed as default:
+Let's Encrypt remote validation may fail for many reasons. The default
+`set_route` behavior is to abort the caller process on any error, echoing
+the output and error of the Traefik's `set-route` action. This is obtained
+with the following implicit input arguments:
 
 - `lets_encrypt_check: True`
 - `lets_encrypt_cleanup: True`
@@ -61,32 +64,35 @@ image labels:
 
      org.nethserver.authorizations = traefik@node:fulladm
 
-A certificate request for Let's Encrypt can be issued using the
-`set-default-certificate` action.
+This is the general application workflow to request and obtain the
+certificate and its private key.
 
-The application can then listen for the `certificate-changed` event. This
-event is triggered when a TLS certificate is uploaded via the UI or
-obtained/renewed from Let's Encrypt.
+1. A certificate request for Let's Encrypt is issued using the
+   `set-certificate` action.
 
-Upon receiving a `certificate-changed` event, invoke the `get-certificate`
-action to obtain the PEM-encoded key and certificate.
+2. The application listens for the `certificate-changed` event. This
+   event is triggered when the TLS certificate
+   - is uploaded with cluster-admin UI,
+   - is obtained/renewed from Let's Encrypt.
+
+3. Upon receiving a `certificate-changed` event, invoke the `get-certificate`
+   action to obtain the PEM-encoded key and certificate.
 
 For example, to issue a Let's Encrypt certificate request for
 `SERVICE_FQDN` run:
 
 ```python
-agent.set_default_certificate({
-    "names":[service_fqdn],
-    "check_routes": True, # fail if the service_fqdn is already used by an HTTP route
-    "merge":True, # add service_fqdn to existing certificate
+agent.set_certificate({
+    "fqdn": myname,
+    "lets_encrypt": True, # optional, default True
 })
 ```
 
-The default `set_default_certificate` behavior is to abort the caller
-process on any error, echoing the output and error of the Traefik's
-`set-default-certificate` action. If this is not desired, set argument
-`error_passthrough=False`, and the full action result dictionary is
-returned.
+Let's Encrypt remote validation may fail for many reasons. The default
+`set_certificate` behavior is to abort the caller process if an error
+occurs, echoing the output and error of the Traefik's `set-certificate`
+action. If this is not desired, set argument `error_passthrough=False`,
+and the full action result dictionary is returned to the caller.
 
 To handle the event, create an executable script under
 `$AGENT_INSTALL_DIR/events/certificate-changed`. The event handler:
