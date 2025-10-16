@@ -29,7 +29,6 @@ export default new Vuex.Store({
     clusterLabel: "",
     clusterNodes: [],
     isUpdateInProgress: false,
-    pendingTlsCertificates: [],
     logoutInfo: {
       title: "",
       description: "",
@@ -180,14 +179,6 @@ export default new Vuex.Store({
     setUpdateInProgress(state, value) {
       state.isUpdateInProgress = value;
     },
-    addPendingTlsCertificate(state, fqdn) {
-      state.pendingTlsCertificates.push(fqdn);
-    },
-    removePendingTlsCertificate(state, fqdn) {
-      state.pendingTlsCertificates = state.pendingTlsCertificates.filter(
-        (el) => el != fqdn
-      );
-    },
     setLogoutInfo(state, logoutInfo) {
       state.logoutInfo = logoutInfo;
     },
@@ -281,12 +272,6 @@ export default new Vuex.Store({
     },
     setUpdateInProgressInStore(context, value) {
       context.commit("setUpdateInProgress", value);
-    },
-    addPendingTlsCertificateInStore(context, fqdn) {
-      context.commit("addPendingTlsCertificate", fqdn);
-    },
-    removePendingTlsCertificateInStore(context, fqdn) {
-      context.commit("removePendingTlsCertificate", fqdn);
     },
     setLogoutInfoInStore(context, logoutInfo) {
       context.commit("setLogoutInfo", logoutInfo);

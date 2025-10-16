@@ -143,12 +143,36 @@
                         :value="`${rowIndex}`"
                       >
                         <cv-data-table-cell>
-                          <span v-if="row.host && row.path">
-                            {{ row.host }}{{ row.path }}
-                          </span>
-                          <span v-else>
-                            {{ row.host || row.path }}
-                          </span>
+                          <div class="flex items-center gap-2">
+                            <span v-if="row.host && row.path">
+                              {{ row.host }}{{ row.path }}
+                            </span>
+                            <span v-else>
+                              {{ row.host || row.path }}
+                            </span>
+                            <cv-interactive-tooltip
+                              v-if="row.lets_encrypt_status === 'pending'"
+                              alignment="center"
+                              direction="top"
+                              class="shrink-0"
+                            >
+                              <template #trigger>
+                                <WarningAltFilled16 class="ns-warning" />
+                              </template>
+                              <template #content>
+                                {{
+                                  $t(
+                                    "settings_http_routes.cannot_obtain_tls_certificate"
+                                  )
+                                }}
+                                <cv-link
+                                  @click="goToPendingCertificateLogs(row)"
+                                >
+                                  {{ $t("settings_http_routes.show_logs") }}
+                                </cv-link>
+                              </template>
+                            </cv-interactive-tooltip>
+                          </div>
                         </cv-data-table-cell>
                         <cv-data-table-cell>
                           <cv-link @click="showRouteDetailModal(row)">
@@ -266,10 +290,27 @@
       :isErrorShown="!!error.deleteRoute"
       :errorTitle="$t('action.delete-route')"
       :errorDescription="error.deleteRoute"
+      :isWarningShown="false"
       @hide="hideDeleteRouteModal"
       @confirmDelete="deleteRoute"
       data-test-id="delete-route-modal"
-    />
+    >
+      <!-- traefik will be restarted if the route requested a certificate -->
+      <template v-if="routeToDelete && routeToDelete.lets_encrypt" #explanation>
+        <div class="mt-4">
+          <NsInlineNotification
+            kind="warning"
+            :title="$t('settings_http_routes.traefik_will_be_restarted')"
+            :description="
+              $t('settings_http_routes.delete_route_with_certificate_message', {
+                node: routeToDelete.node,
+              })
+            "
+            :showCloseButton="false"
+          />
+        </div>
+      </template>
+    </NsDangerDeleteModal>
   </div>
 </template>
 
@@ -281,21 +322,28 @@ import {
   TaskService,
   IconService,
   PageTitleService,
+  DateTimeService,
 } from "@nethserver/ns8-ui-lib";
 import { mapState } from "vuex";
 import HttpRouteDetailModal from "@/components/settings/HttpRouteDetailModal.vue";
 import CreateOrEditHttpRouteModal from "@/components/settings/CreateOrEditHttpRouteModal.vue";
 import _cloneDeep from "lodash/cloneDeep";
+import WarningAltFilled16 from "@carbon/icons-vue/es/warning--alt--filled/16";
 
 export default {
   name: "SettingsHttpRoutes",
-  components: { HttpRouteDetailModal, CreateOrEditHttpRouteModal },
+  components: {
+    HttpRouteDetailModal,
+    CreateOrEditHttpRouteModal,
+    WarningAltFilled16,
+  },
   mixins: [
     TaskService,
     UtilService,
     IconService,
     QueryParamService,
     PageTitleService,
+    DateTimeService,
   ],
   pageTitle() {
     return this.$t("settings_http_routes.title");
@@ -318,6 +366,7 @@ export default {
       currentRoute: null,
       routeToDelete: null,
       isEditingRoute: false,
+      pendingCertificatesLogsPath: {},
       loading: {
         listInstalledModules: false,
         listRoutesNum: 0,
@@ -375,7 +424,7 @@ export default {
 
       nodes.unshift({
         name: "all",
-        label: this.$t("common.all_nodes"),
+        label: this.$t("common.any_node"),
         value: "all",
       });
       return nodes;
@@ -569,6 +618,9 @@ export default {
     },
     listRoutesCompleted(taskContext, taskResult) {
       const routes = [];
+      const traefikId = taskContext.extra.traefikInstance.id;
+      const nodeId = taskContext.extra.traefikInstance.node;
+      const nodeUiName = taskContext.extra.traefikInstance.node_ui_name;
 
       for (let route of taskResult.output) {
         route.name = route.instance;
@@ -587,9 +639,6 @@ export default {
           ? route.ip_allowlist.join("\n")
           : "";
 
-        const traefikId = taskContext.extra.traefikInstance.id;
-        const nodeId = taskContext.extra.traefikInstance.node;
-        const nodeUiName = taskContext.extra.traefikInstance.node_ui_name;
         const node = { id: nodeId, ui_name: nodeUiName };
         const nodeLabel = this.getShortNodeLabel(node) + ` (${traefikId})`;
         route.node = nodeLabel;
@@ -602,6 +651,24 @@ export default {
         .concat(routes)
         .sort(this.sortByProperty("name"));
       this.loading.listRoutesNum--;
+
+      // compute logs path for pending certificates
+
+      const now = new Date();
+      const threeDaysAgo = new Date(now.getTime() - 72 * 60 * 60 * 1000);
+      const startDate = this.formatDate(threeDaysAgo, "yyyy-MM-dd");
+      const startHours = this.formatDate(threeDaysAgo, "HH");
+      const startMins = this.formatDate(threeDaysAgo, "mm");
+      const startTime = `${startHours}%3A${startMins}`;
+      const endDate = this.formatDate(now, "yyyy-MM-dd");
+      const endHours = this.formatDate(now, "HH");
+      const endMins = this.formatDate(now, "mm");
+      const endTime = `${endHours}%3A${endMins}`;
+      const maxLines = 10;
+
+      this.pendingCertificatesLogsPath[
+        traefikId
+      ] = `?searchQuery=acmeCA%3D&context=module&selectedAppId=${traefikId}&followLogs=false&startDate=${startDate}&startTime=${startTime}&endDate=${endDate}&endTime=${endTime}&maxLines=${maxLines}&autoStartSearch=true`;
     },
     showAllNodes() {
       this.q.selectedNodeId = "all";
@@ -632,6 +699,7 @@ export default {
           action: taskAction,
           data: {
             instance: this.routeToDelete.name,
+            lets_encrypt_cleanup: true,
           },
           extra: {
             title: this.$t("settings_http_routes.delete_route_route", {
@@ -721,6 +789,11 @@ export default {
         }
         return 0;
       };
+    },
+    goToPendingCertificateLogs(route) {
+      this.$router.push(
+        `/system-logs${this.pendingCertificatesLogsPath[route.traefikInstance]}`
+      );
     },
   },
 };

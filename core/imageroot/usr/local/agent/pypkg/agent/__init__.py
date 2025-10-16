@@ -716,8 +716,8 @@ def certificate_event_matches(event, name):
     else:
         return False
 
-def get_certificate(name):
-    """Get the certificate (and private key) for the given name.
+def get_certificate_and_key(name):
+    """Get the certificate and private key for the given name.
     :param name: Get a certificate for the name.
     :return: A tuple (scert, skey) with the file contents of certificate
         and private key, respectively.
@@ -737,3 +737,77 @@ def get_certificate(name):
     skey = base64.b64decode(response['output']['certificates'][0]['key']).decode('utf-8')
 
     return (scert, skey)
+
+def _call_traefik_action(action, data, error_passthrough=True, agent_id=None):
+    """
+    Call an action on the node's Traefik instance via agent.tasks.run.
+
+    :param action: The name of the action to call (str).
+    :param data: The data payload to send with the action (dict).
+    :param error_passthrough: If True, aborts the caller and prints error/output on failure (bool, default True).
+    :param agent_id: The agent ID to use. If None, resolves to 'traefik@node' (str or None).
+    :return: The response dictionary from agent.tasks.run.
+    """
+    if not agent_id:
+        agent_id = resolve_agent_id('traefik@node')
+    # Traefik endpoint
+    response = agent.tasks.run(
+        agent_id=agent_id,
+        action=action,
+        data=data,
+        extra={'isNotificationHidden': True},
+    )
+    if error_passthrough and response['exit_code'] != 0:
+        if response['exit_code'] > 1 and response['exit_code'] < 30:
+            agent.set_status('validation-failed')
+        print(response['error'], end='', file=sys.stderr)
+        json.dump(response['output'], fp=sys.stdout)
+        sys.exit(response['exit_code'])
+    return response
+
+def set_route(data, error_passthrough=True, agent_id=None):
+    """Call set-route action on the node's Traefik instance.
+    If an error occurs the caller is aborted, echoing the set-route error
+    and output messages."""
+    if error_passthrough:
+        data.setdefault('lets_encrypt_check', True)
+        data.setdefault('lets_encrypt_cleanup', True)
+    return _call_traefik_action('set-route', data, error_passthrough, agent_id)
+
+def set_default_certificate(data, error_passthrough=True, agent_id=None):
+    """Call set-default-certificate action on the node's Traefik instance.
+    If an error occurs the caller is aborted, echoing the
+    set-default-certificate error and output messages."""
+    return _call_traefik_action('set-default-certificate', data, error_passthrough, agent_id)
+
+def get_route(route_id, agent_id=None):
+    """Call get-route action on the node's Traefik instance.
+    The route is returned as a dictionary. If the route is not found, an
+    empty dictionary is returned."""
+    if not agent_id:
+        agent_id = resolve_agent_id('traefik@node')
+    response = agent.tasks.run(
+        agent_id=agent_id,
+        action='get-route',
+        data={"instance": route_id},
+        extra={'isNotificationHidden': True},
+    )
+    if response['exit_code'] != 0:
+        return dict()
+    return response['output'] or dict()
+
+def get_certificate(fqdn, agent_id=None):
+    """Call get-certificate action on the node's Traefik instance.
+    The result is a dictionary corresponding to the action's output
+    format. If an error occurs an empty dict is returned."""
+    if not agent_id:
+        agent_id = resolve_agent_id('traefik@node')
+    response = agent.tasks.run(
+        agent_id=agent_id,
+        action='get-certificate',
+        data={"fqdn": fqdn},
+        extra={'isNotificationHidden': True},
+    )
+    if response['exit_code'] != 0:
+        return dict()
+    return response['output'] or dict()

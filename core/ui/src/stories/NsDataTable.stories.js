@@ -8,7 +8,7 @@ export default {
   argTypes: {
     rowSize: {
       options: ["compact", "short", "standard", "tall", ""],
-      control: { type: "radio" },
+      control: { type: "inline-radio" },
     },
     editUser: { action: "editUserAction" },
     deleteUser: { action: "deleteUserAction" },
@@ -25,42 +25,41 @@ const Template = (args, { argTypes }) => ({
       TrashCan20,
     };
   },
-  template:
-    '<cv-tile light>\
-      <NsDataTable v-bind="$props" @updatePage="tablePage = $event">\
-        <template slot="empty-state">\
-          <NsEmptyState title="No data">\
-          </NsEmptyState>\
-        </template>\
-        <template slot="data">\
-          <cv-data-table-row\
-            v-for="(row, rowIndex) in tablePage"\
-            :key="`${rowIndex}`"\
-            :value="`${rowIndex}`"\
-          >\
-            <cv-data-table-cell>{{ row.fullName }}</cv-data-table-cell>\
-            <cv-data-table-cell>{{ row.email }}</cv-data-table-cell>\
-            <cv-data-table-cell>{{ row.phone }}</cv-data-table-cell>\
-            <cv-data-table-cell>{{ row.country }}</cv-data-table-cell>\
-            <cv-data-table-cell\
-              class="table-overflow-menu-cell"\
-            >\
-              <cv-overflow-menu flip-menu class="table-overflow-menu">\
-                <cv-overflow-menu-item @click="editUser(row)">\
-                  <NsMenuItem :icon="Edit20" label="Edit" />\
-                </cv-overflow-menu-item>\
-                <cv-overflow-menu-item danger @click="deleteUser(row)">\
-                  <NsMenuItem :icon="TrashCan20" label="Delete" />\
-                </cv-overflow-menu-item>\
-              </cv-overflow-menu>\
-            </cv-data-table-cell>\
-          </cv-data-table-row>\
-        </template>\
-      </NsDataTable>\
-      <div style="margin-top: 2rem">\
-        See <a href="https://vue.carbondesignsystem.com/?path=/story/components-cvdatatable--default" target="_blank">https://vue.carbondesignsystem.com/?path=/story/components-cvdatatable--default</a> for other examples\
-      </div>\
-    </cv-tile>',
+  template: `<cv-tile light>
+      <NsDataTable v-bind="$props" @updatePage="tablePage = $event">
+        <template slot="empty-state">
+          <NsEmptyState title="No data">
+          </NsEmptyState>
+        </template>
+        <template slot="data">
+          <cv-data-table-row
+            v-for="(row, rowIndex) in tablePage"
+            :key="rowIndex.toString()"
+            :value="rowIndex.toString()"
+          >
+            <cv-data-table-cell>{{ row.fullName }}</cv-data-table-cell>
+            <cv-data-table-cell>{{ row.email }}</cv-data-table-cell>
+            <cv-data-table-cell>{{ row.phone }}</cv-data-table-cell>
+            <cv-data-table-cell>{{ row.country }}</cv-data-table-cell>
+            <cv-data-table-cell
+              class="table-overflow-menu-cell"
+            >
+              <cv-overflow-menu flip-menu class="table-overflow-menu">
+                <cv-overflow-menu-item @click="editUser(row)">
+                  <NsMenuItem :icon="Edit20" label="Edit" />
+                </cv-overflow-menu-item>
+                <cv-overflow-menu-item danger @click="deleteUser(row)">
+                  <NsMenuItem :icon="TrashCan20" label="Delete" />
+                </cv-overflow-menu-item>
+              </cv-overflow-menu>
+            </cv-data-table-cell>
+          </cv-data-table-row>
+        </template>
+      </NsDataTable>
+      <div style="margin-top: 2rem">
+        See <a href="https://vue.carbondesignsystem.com/vue2/?path=/story/components-cvdatatable--default" target="_blank">https://vue.carbondesignsystem.com/vue2/?path=/story/components-cvdatatable--default</a> for other examples
+      </div>
+    </cv-tile>`,
 });
 
 const users = [

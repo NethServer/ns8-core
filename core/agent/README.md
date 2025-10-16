@@ -18,6 +18,21 @@ The agent accepts also some environment variables, so a complete invocation from
 
     REDIS_ADDRESS=127.0.0.1:6379 REDIS_PASSWORD= ./agent module/mail1 . ~/.config/actions
 
+It is also possible to define environment variables to configure the rate limiter. The variables are:
+* BUCKET_INTERVAL, specifies the refilling interval, as the rate limiter is based on a token bucket algorithm.
+* BUCKET_CAPACITY, specifies the bucket capacity, i.e., the maximum number of tokens allowed. 
+
+
+If these variables are not set, the agent will use the default configurations: a refilling interval of 300 milliseconds and a maximum of 10 tokens. 
+
+
+This is an example of how the configurations can be written:
+
+    BUCKET_INTERVAL=600ms BUCKET_CAPACITY=40
+
+the refilling time is 600 milliseconds (all time values are in milliseconds) and the maximum number of tokens is 40.
+
+
 ## Agent behavior test suite
 
 During development it is useful to test code changes quickly. The
