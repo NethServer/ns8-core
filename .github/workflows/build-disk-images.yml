@@ -67,7 +67,7 @@ jobs:
         name: Convert to VMDK
         run: |
           VMDK_PATH=$(echo ${{ steps.qcow2.outputs.path }} | sed -e 's/\.qcow2$/\.vmdk/')
-          qemu-img convert -f qcow2 -O vmdk ${{ steps.qcow2.outputs.path }} $VMDK_PATH
+          qemu-img convert -f qcow2 -O vmdk -o subformat=streamOptimized ${{ steps.qcow2.outputs.path }} $VMDK_PATH
           echo "path=${VMDK_PATH}" >> "$GITHUB_OUTPUT"
       - id: checksum
         name: Create checksum
