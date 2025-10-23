@@ -197,16 +197,6 @@ func InitJWT() *jwt.GinJWTMiddleware {
 					}
 				}
 
-				// store auth action
-				auditData := models.Audit{
-					ID:        0,
-					User:      data.(*models.UserAuthorizations).Username,
-					Action:    "auth-ok",
-					Data:      "",
-					Timestamp: time.Now().UTC(),
-				}
-				audit.Store(auditData)
-
 				return actionAllowed
 			}
 
