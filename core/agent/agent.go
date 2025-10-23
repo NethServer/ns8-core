@@ -27,6 +27,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"strconv"
 	"time"
 
 	"github.com/go-redis/redis/v8"
@@ -51,6 +52,9 @@ var eventPaths flagStringSlice
 
 var pollingDuration = 5000 * time.Millisecond
 var taskExpireDuration = 8 * time.Hour
+
+var maxConcurrency = 32 // default limit of spawned concurrent processes
+var overloadSleep = 500 * time.Millisecond // wait time before rejecting new processes
 
 // Command arguments --actionsdir and --eventsdir can be repeated multiple
 // times. Each item is inserted into a []string.
@@ -95,6 +99,20 @@ func main() {
 		oValue, convError := time.ParseDuration(ePollingDuration)
 		if convError == nil {
 			pollingDuration = oValue
+		}
+	}
+
+	// Override max number of concurrent tasks and event handlers
+	if v := os.Getenv("MAX_CONCURRENCY"); v != "" {
+		if n, err := strconv.Atoi(v); err == nil && n > 0 {
+			maxConcurrency = n
+		}
+	}
+	// Overrid the wait time before rejecting tasks and events
+	if v := os.Getenv("OVERLOAD_SLEEP"); v != "" {
+		n, convError := time.ParseDuration(v)
+		if convError == nil {
+			overloadSleep = n
 		}
 	}
 

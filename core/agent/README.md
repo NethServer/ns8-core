@@ -155,7 +155,10 @@ Exit codes and their meaning:
 - `9` - OS `exec()` error, like "file is not executable" and similar
 - `10` - default exit code once `validation-failed` status is set. It
   can be overridden by terminating the step with a non-zero exit code.
-- `11-31` - reserved to the agent implementation
+- `11` - error "Agent is busy" is returned if the number of running
+  actions or events has reached `MAX_CONCURRENCY` (32) and after waiting
+  `OVERLOAD_SLEEP` (500ms) that number did not decrease.
+- `12-31` - reserved to the agent implementation
 - `32-255` - **available to use** for action-specific error numbers
 
 ## File descriptors
