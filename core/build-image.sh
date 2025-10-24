@@ -94,7 +94,7 @@ echo "Building the Redis image..."
 container=$(buildah from docker.io/library/redis:8.2.2-alpine)
 reponame="redis"
 # Reset upstream volume configuration: it is necessary to modify /data contents with our .conf file.
-buildah config --volume=/data- "${container}"
+buildah config --env=SKIP_FIX_PERMS=1 --volume=/data- "${container}"
 buildah run "${container}" sh <<'EOF'
 mkdir etc
 
@@ -115,6 +115,7 @@ masteruser default
 masterauth nopass
 EOR
 
+chown -c -R redis:redis /data
 EOF
 buildah config --volume=/data '--cmd=[ "redis-server", "/data/etc/redis.conf" ]' "${container}"
 buildah commit "${container}" "${repobase}/${reponame}"
