@@ -55,7 +55,7 @@
         >
       </cv-column>
     </cv-row>
-    <cv-row v-if="loading.nodes">
+    <cv-row v-if="loading.nodes && loading.alerts && loading.nodesBis">
       <cv-column>
         <!-- skeleton card grid -->
         <div
@@ -77,13 +77,13 @@
         <div
           class="card-grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 3xl:grid-cols-4"
         >
-          <template v-for="node in nodes">
+          <template v-for="node in nodesBis">
             <NodeCard
-              v-if="!nodesStatus[node.id]"
+              v-if="!node.online"
               :key="node.id"
               :nodeId="node.id"
               :nodeLabel="node.ui_name"
-              :isLeader="node.id == leaderNode.id"
+              :isLeader="leaderNode && node.id === leaderNode.id"
               light
               loading
               :online="node.online"
@@ -108,7 +108,7 @@
                 </cv-overflow-menu>
               </template>
             </NodeCard>
-            <NodeCard
+            <!-- <NodeCard
               v-else
               :key="node.id + '_'"
               :nodeId="node.id"
@@ -136,9 +136,34 @@
               :diskWarningTh="90"
               :online="node.online"
               light
+            > -->
+            <NodeCard
+              v-else
+              :key="node.id + '_'"
+              :nodeId="node.id"
+              :nodeLabel="node.ui_name"
+              :isLeader="leaderNode && node.id === leaderNode.id"
+              :role="node.role"
+              :leaderLabel="$t('nodes.leader')"
+              :workerLabel="$t('nodes.worker')"
+              :ns7MigrationLabel="$t('nodes.ns7_migration')"
+              :diskUsageLabel="$t('nodes.usage')"
+              :online="node.online"
+              :fqdn="node.hostname"
+              :fqdnLabel="$t('nodes.fqdn')"
+              :node_id="node.id"
+              :ip_address="node.ip_addresse"
+              :ip_addressLabel="$t('nodes.ip_address')"
+              :applications="node.applications"
+              :applicationsLabel="$t('nodes.applications')"
+              :alertsCount="node.alertsCount"
+              :alertsLabel="$t('nodes.alerts')"
+              :class="{ 'node-card--ns7': node.role === 'ns7migration' }"
+              light
             >
               <template #menu>
                 <cv-overflow-menu
+                  v-if="node.role !== 'ns7migration'"
                   :flip-menu="true"
                   tip-position="top"
                   tip-alignment="end"
@@ -172,7 +197,7 @@
                     />
                   </cv-overflow-menu-item>
                   <cv-overflow-menu-item
-                    v-if="node.id !== leaderNode.id"
+                    v-if="leaderNode && node.id !== leaderNode.id"
                     @click="showPromoteNodeModal(node)"
                   >
                     <NsMenuItem
@@ -182,7 +207,24 @@
                     </NsMenuItem>
                   </cv-overflow-menu-item>
                   <cv-overflow-menu-item
-                    v-if="node.id !== leaderNode.id"
+                    v-if="leaderNode && node.id !== leaderNode.id"
+                    danger
+                    @click="showRemoveNodeModal(node)"
+                  >
+                    <NsMenuItem
+                      :icon="TrashCan20"
+                      :label="$t('nodes.remove_from_cluster')"
+                    />
+                  </cv-overflow-menu-item>
+                </cv-overflow-menu>
+                <cv-overflow-menu
+                  v-else
+                  :flip-menu="true"
+                  tip-position="top"
+                  tip-alignment="end"
+                  class="top-right-overflow-menu"
+                >
+                  <cv-overflow-menu-item
                     danger
                     @click="showRemoveNodeModal(node)"
                   >
@@ -193,7 +235,7 @@
                   </cv-overflow-menu-item>
                 </cv-overflow-menu>
               </template>
-              <template #content>
+              <template v-if="node.role !== 'ns7migration'" #content>
                 <NsButton
                   kind="ghost"
                   :icon="ArrowRight20"
@@ -359,6 +401,7 @@ export default {
       q: {
         isShownAddNodeModal: false,
       },
+      nodesBis: [],
       Recommend20,
       joinCode: "",
       nodes: [],
@@ -378,6 +421,8 @@ export default {
         nodes: true,
         setNodeLabel: false,
         getFqdn: false,
+        alerts: true,
+        nodesBis: false,
       },
       error: {
         getClusterStatus: "",
@@ -427,11 +472,11 @@ export default {
     next();
   },
   created() {
-    this.getClusterStatus();
+    this.retrieveData();
 
     // periodically retrieve cluster and nodes status
     this.refreshDataInterval = setInterval(
-      this.getClusterStatus,
+      this.retrieveData,
       this.REFRESH_DATA_TIME_INTERVAL
     );
   },
@@ -440,6 +485,10 @@ export default {
   },
   methods: {
     ...mapActions(["setClusterNodesInStore"]),
+    retrieveData() {
+      this.getClusterStatus();
+      this.listNodes();
+    },
     async getLeaderFqdn() {
       this.error.getFqdn = "";
       this.loading.getFqdn = true;
@@ -522,10 +571,11 @@ export default {
 
       // update nodes in vuex store
       this.nodes = clusterStatus.nodes.sort(this.sortByProperty("id"));
+      // console.debug("Cluster Nodes:", this.nodes);
       this.setClusterNodesInStore(this.nodes);
 
       this.loading.nodes = false;
-      this.retrieveNodesStatus();
+      // this.retrieveNodesStatus();
     },
     async retrieveNodesStatus() {
       this.error.getNodeStatus = "";
@@ -568,7 +618,8 @@ export default {
     getNodeStatusCompleted(taskContext, taskResult) {
       const nodeId = taskContext.extra.node;
       const nodeStatus = taskResult.output;
-
+      // console.debug(`node ${nodeId}:`, nodeId);
+      // console.debug(`Node ${nodeId} status:`, nodeStatus);
       nodeStatus.cpu.usage = Math.round(nodeStatus.cpu.usage);
       nodeStatus.load["1min"] = Math.round(nodeStatus.load["1min"]);
       nodeStatus.load["5min"] = Math.round(nodeStatus.load["5min"]);
@@ -593,9 +644,139 @@ export default {
         diskIndex++;
       }
       nodeStatus.disksUsage = disksUsage;
-
+      // console.debug(
+      //   `Node ${nodeId} disks usage:`,
+      //   JSON.stringify(disksUsage)
+      // );
+      // console.debug(
+      //   `Node ${nodeId} status:`,
+      //   JSON.stringify(nodeStatus)
+      // );
       // $set() is needed for reactivity (see https://v2.vuejs.org/v2/guide/reactivity.html#For-Objects)
       this.$set(this.nodesStatus, nodeId, nodeStatus);
+    },
+    async listNodes() {
+      this.loading.nodesBis = true;
+      this.error.getClusterStatus = "";
+      const taskAction = "list-nodes";
+
+      // register to task completion
+      this.$root.$once(taskAction + "-completed", this.listNodesCompleted);
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.listNodes = this.getErrorMessage(err);
+        return;
+      }
+    },
+    listNodesCompleted(taskContext, taskResult) {
+      const nodesData = taskResult.output.nodes;
+
+      console.debug("Raw Nodes Data:", nodesData);
+
+      // Transform nodes to extract only needed information
+      const transformedNodes = nodesData.map((node) => ({
+        hostname: node.fqdn || "",
+        id: node.node_id,
+        local: false, // will be set by setClusterNodesInStore
+        online: "fqdn" in node || node.role === "ns7migration", // node is online if it has fqdn
+        ui_name: node.ui_name || "",
+        role: node.role || "worker",
+        ip_addresse: node.main_ip || "",
+        applications: node.app_count || 0,
+      }));
+
+      // update nodes in vuex store
+      this.nodesBis = transformedNodes.sort(this.sortByProperty("id"));
+      // this.setClusterNodesInStore(this.nodes);
+
+      this.loading.nodesBis = false;
+      // this.retrieveNodesStatus();
+
+      console.log("listNodesCompleted", this.nodesBis);
+      this.listAlerts();
+    },
+    async listAlerts() {
+      this.loading.alerts = true;
+      this.error.listAlerts = "";
+      const taskAction = "list-alerts";
+
+      // register to task completion
+      this.$root.$once(taskAction + "-completed", this.listAlertsCompleted);
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.getClusterStatus = this.getErrorMessage(err);
+        return;
+      }
+    },
+    listAlertsCompleted(taskContext, taskResult) {
+      // const alerts = taskResult.output;
+
+      // // update alerts in vuex store
+      // this.alerts = alerts.sort(this.sortByProperty("id"));
+      // // this.setAlertsInStore(this.alerts);
+
+      // // this.loading.nodes = false;
+      // // this.retrieveNodesStatus();
+      // console.log("listAlertsCompleted", taskResult);
+
+      // const alertsData = taskResult.output;
+
+      // // Extract alerts array from the response
+      // const alerts = alertsData.alerts || [];
+
+      // // Transform alerts to extract relevant information
+      // const transformedAlerts = alerts.map((alert) => ({
+      //   id: alert.fingerprint,
+      //   name: alert.name,
+      //   category: alert.category,
+      //   node_id: alert.node_id,
+      //   severity: alert.labels.severity,
+      //   summary: alert.annotations.summary,
+      //   description: alert.annotations.description,
+      //   state: alert.status.state,
+      //   startsAt: alert.startsAt,
+      //   endsAt: alert.endsAt,
+      // }));
+
+      // update alerts in vuex store
+      this.alerts = taskResult.output.alerts;
+
+      // propagate alert counters into nodesBis
+      const alertsByNode = this.alerts.reduce((acc, alert) => {
+        acc[alert.node_id] = (acc[alert.node_id] || 0) + 1;
+        return acc;
+      }, {});
+      this.nodesBis = this.nodesBis.map((node) => ({
+        ...node,
+        alertsCount: alertsByNode[node.id] || 0,
+      }));
+      this.loading.alerts = false;
+      console.log("listAlertsCompleted", this.alerts);
+      console.log("Nodes with alerts count:", this.nodesBis);
     },
     goToNodeDetail(nodeId) {
       this.$router.push({

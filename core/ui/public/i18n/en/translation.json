@@ -1513,7 +1513,14 @@
         "node_name_hostname": "{node} hostname",
         "node_name_domain": "{node} domain",
         "connectivity_check_failed": "Connectivity check failed",
-        "connectivity_check_failed_description": "The FQDN {fqdn} is not reachable from {node}. Please change hostname and/or domain or, if you want to skip this check and fix the DNS record later, unselect '@:nodes.check_node_connectivity' and try again."
+        "connectivity_check_failed_description": "The FQDN {fqdn} is not reachable from {node}. Please change hostname and/or domain or, if you want to skip this check and fix the DNS record later, unselect '@:nodes.check_node_connectivity' and try again.",
+        "ns7_migration": "Migration",
+        "fqdn": "FQDN",
+        "ip_address": "IP address",
+        "applications": "Applications",
+        "alerts": "Alerts",
+        "no_alerts": "No alerts",
+        "ns7_migration_in_progress": "NS7 migration in progress"
     },
     "node_detail": {
         "title": "Node detail",
