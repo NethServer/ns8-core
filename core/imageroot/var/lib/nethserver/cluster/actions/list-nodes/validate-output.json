@@ -205,13 +205,13 @@
                     "type": "object",
                     "properties": {
                         "total": {
-                            "type": "integer"
+                            "type": "number"
                         },
                         "used": {
-                            "type": "integer"
+                            "type": "number"
                         },
                         "free": {
-                            "type": "integer"
+                            "type": "number"
                         }
                     }
                 },
@@ -219,13 +219,13 @@
                     "type": "object",
                     "properties": {
                         "total": {
-                            "type": "integer"
+                            "type": "number"
                         },
                         "used": {
-                            "type": "integer"
+                            "type": "number"
                         },
                         "free": {
-                            "type": "integer"
+                            "type": "number"
                         }
                     }
                 },
@@ -236,13 +236,13 @@
                         "type": "object",
                         "properties": {
                             "total": {
-                                "type": "integer"
+                                "type": "number"
                             },
                             "used": {
-                                "type": "integer"
+                                "type": "number"
                             },
                             "free": {
-                                "type": "integer"
+                                "type": "number"
                             },
                             "device": {
                                 "type": "string"

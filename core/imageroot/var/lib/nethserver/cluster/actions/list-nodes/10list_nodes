@@ -69,17 +69,23 @@ def get_app_count(rdb, module_node):
 def get_network_interface_count(node_id):
     return int(get_scalar(f'count(node_network_info{{node="{node_id}", device!~"lo|docker.*|veth.*|br.*|tap.*"}})') or 0)
 
-def q(expr):
-    """Query Prometheus and return float values indexed by label set."""
+def q(expr: str) -> list:
+    """Query Prometheus and return a list of results"""
     PROM_URL = "http://127.0.0.1:9091/api/v1/query"
-    r = requests.get(PROM_URL, params={"query": expr})
-    r.raise_for_status()
-    result = r.json()["data"]["result"]
-    return result
+    try:
+        r = requests.get(PROM_URL, params={"query": expr})
+        r.raise_for_status()
+        return r.json()["data"]["result"]
+    except Exception as ex:
+        print("function q() cannot parse Metrics/Prometheus response. Reason: ", ex, file=sys.stderr)
+        return []
 
 def get_scalar(expr):
     res = q(expr)
-    return float(res[0]["value"][1]) if res else None
+    try:
+        return float(res[0]["value"][1])
+    except:
+        return 0
 
 def get_load(node_id):
     return {
@@ -112,13 +118,13 @@ def get_cpu(node_id):
 def get_memory(node_id):
     total = get_scalar(f'node_memory_MemTotal_bytes{{node="{node_id}"}}')
     avail = get_scalar(f'node_memory_MemAvailable_bytes{{node="{node_id}"}}')
-    used = total - avail if total and avail else None
+    used = total - avail if total and avail else 0
     return {"total": total, "used": used, "free": avail}
 
 def get_swap(node_id):
     total = get_scalar(f'node_memory_SwapTotal_bytes{{node="{node_id}"}}')
     free = get_scalar(f'node_memory_SwapFree_bytes{{node="{node_id}"}}')
-    used = total - free if total and free else None
+    used = total - free if total and free else 0
     return {"total": total, "used": used, "free": free}
 
 def get_disks(node_id):
@@ -144,8 +150,8 @@ def get_disks(node_id):
 def get_os_release(node_id):
     info = next(iter(q(f'node_os_info{{node="{node_id}"}}')), {"metric":{}})
     os_release = {
-        "name": info["metric"].get("name"),
-        "version": info["metric"].get("version_id"),
+        "name": info["metric"].get("name", ""),
+        "version": info["metric"].get("version_id", ""),
     }
     return os_release
 
