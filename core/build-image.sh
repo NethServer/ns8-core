@@ -116,6 +116,8 @@ masterauth nopass
 EOR
 
 chown -c -R redis:redis /data
+echo Remove additional Redis 8 modules:
+rm -vf /usr/local/lib/redis/modules/*.so
 EOF
 buildah config --volume=/data '--cmd=[ "redis-server", "/data/etc/redis.conf" ]' "${container}"
 buildah commit "${container}" "${repobase}/${reponame}"
