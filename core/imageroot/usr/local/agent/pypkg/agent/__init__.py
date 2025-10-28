@@ -485,6 +485,46 @@ def remove_custom_zone(name):
     )
     return response['exit_code'] == 0
 
+def add_port_forward(external_port, internal_port, protocols, destination_ip=None):
+    """
+    Redirect external_port/protocols to internal_port using firewall-cmd
+    Port can be also a range like 1000-2000
+    """
+    node_id = os.environ['NODE_ID']
+    data={
+            'external_port': external_port,
+            'protocols': protocols,
+            'internal_port': internal_port,
+        }
+    if destination_ip is not None:
+        data['destination_ip'] = destination_ip
+    response = agent.tasks.run(
+        agent_id=f'node/{node_id}',
+        action='add-port-forward',
+        data=data
+    )
+    return response['exit_code'] == 0
+
+def remove_port_forward(external_port, internal_port, protocols,destination_ip=None):
+    """
+    Remove port forwarding for external_port/protocols using firewall-cmd
+    Port can be also a range like 1000-2000
+    """
+    node_id = os.environ['NODE_ID']
+    data={
+            'external_port': external_port,
+            'protocols': protocols,
+            'internal_port': internal_port,
+        }
+    if destination_ip is not None:
+        data['destination_ip'] = destination_ip
+    response = agent.tasks.run(
+        agent_id=f'node/{node_id}',
+        action='remove-port-forward',
+        data=data
+    )
+    return response['exit_code'] == 0
+
 
 def list_service_providers(rdb, service, transport='*', filters={}):
     """Look up the endpoint information about a given service. Filter
