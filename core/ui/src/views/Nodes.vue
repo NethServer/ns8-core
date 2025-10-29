@@ -35,12 +35,22 @@
         />
       </cv-column>
     </cv-row>
-    <cv-row v-if="error.getNodeStatus">
+    <cv-row v-if="error.listNodes">
       <cv-column>
         <NsInlineNotification
           kind="error"
-          :title="$t('action.get-node-status')"
-          :description="error.getNodeStatus"
+          :title="$t('action.list-nodes')"
+          :description="error.listNodes"
+          :showCloseButton="false"
+        />
+      </cv-column>
+    </cv-row>
+    <cv-row v-if="error.listAlerts">
+      <cv-column>
+        <NsInlineNotification
+          kind="error"
+          :title="$t('action.list-alerts')"
+          :description="error.listAlerts"
           :showCloseButton="false"
         />
       </cv-column>
@@ -55,7 +65,7 @@
         >
       </cv-column>
     </cv-row>
-    <cv-row v-if="loading.nodes">
+    <cv-row v-if="stillLoading">
       <cv-column>
         <!-- skeleton card grid -->
         <div
@@ -77,13 +87,13 @@
         <div
           class="card-grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 3xl:grid-cols-4"
         >
-          <template v-for="node in nodes">
+          <template v-for="node in listNodes">
             <NodeCard
-              v-if="!nodesStatus[node.id]"
+              v-if="!node.online"
               :key="node.id"
               :nodeId="node.id"
               :nodeLabel="node.ui_name"
-              :isLeader="node.id == leaderNode.id"
+              :isLeader="leaderNode && node.id === leaderNode.id"
               light
               loading
               :online="node.online"
@@ -113,32 +123,28 @@
               :key="node.id + '_'"
               :nodeId="node.id"
               :nodeLabel="node.ui_name"
-              :isLeader="node.id == leaderNode.id"
+              :isLeader="leaderNode && node.id === leaderNode.id"
+              :role="node.role"
               :leaderLabel="$t('nodes.leader')"
               :workerLabel="$t('nodes.worker')"
-              :cpuUsageLabel="$t('nodes.cpu_usage')"
-              :cpuLoadLabel="$t('nodes.cpu_load')"
-              :cpuLoadTooltip="$t('nodes.cpu_load_tooltip')"
-              :memoryUsageLabel="$t('nodes.memory_usage')"
-              :swapUsageLabel="$t('nodes.swap_usage')"
+              :ns7MigrationLabel="$t('nodes.ns7_migration')"
               :diskUsageLabel="$t('nodes.usage')"
-              :cpuUsage="nodesStatus[node.id].cpu.usage"
-              :cpuUsageWarningTh="90"
-              :load1Min="nodesStatus[node.id].load['1min']"
-              :load5Min="nodesStatus[node.id].load['5min']"
-              :load15Min="nodesStatus[node.id].load['15min']"
-              :cpuLoadWarningTh="90"
-              :memoryUsage="nodesStatus[node.id].memoryUsage"
-              :memoryWarningTh="90"
-              :swapUsage="nodesStatus[node.id].swapUsage"
-              :swapWarningTh="90"
-              :disksUsage="nodesStatus[node.id].disksUsage"
-              :diskWarningTh="90"
               :online="node.online"
+              :fqdn="node.hostname"
+              :fqdnLabel="$t('nodes.fqdn')"
+              :node_id="node.id"
+              :ip_address="node.ip_address"
+              :ip_addressLabel="$t('nodes.ip_address')"
+              :applications="node.applications"
+              :applicationsLabel="$t('nodes.applications')"
+              :alertsCount="alertsCountByNode[node.id] || 0"
+              :alertsLabel="$t('nodes.alerts')"
+              :class="{ 'node-card--ns7': node.role === 'ns7migration' }"
               light
             >
               <template #menu>
                 <cv-overflow-menu
+                  v-if="node.role !== 'ns7migration'"
                   :flip-menu="true"
                   tip-position="top"
                   tip-alignment="end"
@@ -151,28 +157,36 @@
                     />
                   </cv-overflow-menu-item>
                   <cv-overflow-menu-item @click="showSetNodeFqdnModal(node)">
-                    <NsMenuItem :icon="Wikis20" :label="$t('nodes.set_fqdn')" />
+                    <NsMenuItem :icon="Edit20" :label="$t('nodes.set_fqdn')" />
+                  </cv-overflow-menu-item>
+                  <cv-overflow-menu-item @click="goToApplications(node)">
+                    <NsMenuItem
+                      :icon="ArrowRight20"
+                      :label="$t('nodes.go_to_applications')"
+                    />
                   </cv-overflow-menu-item>
                   <cv-overflow-menu-item @click="goToHttpRoutes(node)">
                     <NsMenuItem
-                      :icon="Router20"
-                      :label="$t('settings_http_routes.title')"
+                      :icon="ArrowRight20"
+                      :label="$t('nodes.go_to_http_routes')"
                     />
                   </cv-overflow-menu-item>
                   <cv-overflow-menu-item @click="goToTlsCertificates(node)">
                     <NsMenuItem
-                      :icon="Certificate20"
-                      :label="$t('settings_tls_certificates.title')"
+                      :icon="ArrowRight20"
+                      :label="
+                        $t('nodes.go_to_tls_certificates')
+                      "
                     />
                   </cv-overflow-menu-item>
                   <cv-overflow-menu-item @click="goToFirewall(node)">
                     <NsMenuItem
-                      :icon="Firewall20"
-                      :label="$t('firewall.title')"
+                      :icon="ArrowRight20"
+                      :label="$t('nodes.go_to_firewall')"
                     />
                   </cv-overflow-menu-item>
                   <cv-overflow-menu-item
-                    v-if="node.id !== leaderNode.id"
+                    v-if="leaderNode && node.id !== leaderNode.id"
                     @click="showPromoteNodeModal(node)"
                   >
                     <NsMenuItem
@@ -182,7 +196,7 @@
                     </NsMenuItem>
                   </cv-overflow-menu-item>
                   <cv-overflow-menu-item
-                    v-if="node.id !== leaderNode.id"
+                    v-if="leaderNode && node.id !== leaderNode.id"
                     danger
                     @click="showRemoveNodeModal(node)"
                   >
@@ -193,7 +207,7 @@
                   </cv-overflow-menu-item>
                 </cv-overflow-menu>
               </template>
-              <template #content>
+              <template v-if="node.role !== 'ns7migration'" #content>
                 <NsButton
                   kind="ghost"
                   :icon="ArrowRight20"
@@ -355,10 +369,11 @@ export default {
   },
   data() {
     return {
-      REFRESH_DATA_TIME_INTERVAL: 30000,
+      REFRESH_DATA_TIME_INTERVAL: 5000,
       q: {
         isShownAddNodeModal: false,
       },
+      listNodes: [],
       Recommend20,
       joinCode: "",
       nodes: [],
@@ -374,16 +389,20 @@ export default {
       isShownNewLeaderModal: false,
       newLeaderEndpointAddress: "",
       isShownSetFqdnModal: false,
+      alertsCountByNode: {},
       loading: {
         nodes: true,
         setNodeLabel: false,
         getFqdn: false,
+        alerts: true,
+        listNodes: true,
       },
       error: {
         getClusterStatus: "",
-        getNodeStatus: "",
         setNodeLabel: "",
         getFqdn: "",
+        listNodes: "",
+        listAlerts: "",
       },
     };
   },
@@ -398,6 +417,11 @@ export default {
     },
     nodesOffline() {
       return this.nodes.filter((n) => n.online == false);
+    },
+    stillLoading() {
+      return (
+        this.loading.nodes || this.loading.alerts || this.loading.listNodes
+      );
     },
   },
   watch: {
@@ -427,11 +451,11 @@ export default {
     next();
   },
   created() {
-    this.getClusterStatus();
+    this.retrieveData();
 
     // periodically retrieve cluster and nodes status
     this.refreshDataInterval = setInterval(
-      this.getClusterStatus,
+      this.retrieveData,
       this.REFRESH_DATA_TIME_INTERVAL
     );
   },
@@ -440,6 +464,11 @@ export default {
   },
   methods: {
     ...mapActions(["setClusterNodesInStore"]),
+    retrieveData() {
+      this.listAlerts();
+      // cluster status must be retrieved before list-nodes to have authoritative online/local flags
+      this.getClusterStatus();
+    },
     async getLeaderFqdn() {
       this.error.getFqdn = "";
       this.loading.getFqdn = true;
@@ -520,82 +549,105 @@ export default {
     getClusterStatusCompleted(taskContext, taskResult) {
       const clusterStatus = taskResult.output;
 
-      // update nodes in vuex store
       this.nodes = clusterStatus.nodes.sort(this.sortByProperty("id"));
       this.setClusterNodesInStore(this.nodes);
 
       this.loading.nodes = false;
-      this.retrieveNodesStatus();
+      // now that authoritative online/local flags are present, fetch list-nodes
+      this.listNodesStatus();
     },
-    async retrieveNodesStatus() {
-      this.error.getNodeStatus = "";
+    async listNodesStatus() {
+      this.error.listNodes = "";
+      const taskAction = "list-nodes";
 
-      for (const node of this.nodes) {
-        if (!node.online) {
-          // node is offline
-          continue;
-        }
+      // register to task completion
+      this.$root.$once(taskAction + "-completed", this.listNodesCompleted);
 
-        const nodeId = node.id;
-        const taskAction = "get-node-status";
-        const eventId = this.getUuid();
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+          },
+        })
+      );
+      const err = res[0];
 
-        // register to task events
-        this.$root.$once(
-          `${taskAction}-completed-${eventId}`,
-          this.getNodeStatusCompleted
-        );
-
-        const res = await to(
-          this.createNodeTask(nodeId, {
-            action: taskAction,
-            extra: {
-              title: this.$t("action." + taskAction),
-              isNotificationHidden: true,
-              node: nodeId,
-              eventId,
-            },
-          })
-        );
-        const err = res[0];
-
-        if (err) {
-          console.error(`error creating task ${taskAction}`, err);
-          this.error.getNodeStatus = this.getErrorMessage(err);
-        }
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.listNodes = this.getErrorMessage(err);
+        return;
       }
     },
-    getNodeStatusCompleted(taskContext, taskResult) {
-      const nodeId = taskContext.extra.node;
-      const nodeStatus = taskResult.output;
+    listNodesCompleted(taskContext, taskResult) {
+      const nodesData = taskResult.output.nodes;
 
-      nodeStatus.cpu.usage = Math.round(nodeStatus.cpu.usage);
-      nodeStatus.load["1min"] = Math.round(nodeStatus.load["1min"]);
-      nodeStatus.load["5min"] = Math.round(nodeStatus.load["5min"]);
-      nodeStatus.load["15min"] = Math.round(nodeStatus.load["15min"]);
-
-      // memory and swap usage
-      nodeStatus.memoryUsage = Math.round(
-        (nodeStatus.memory.used / nodeStatus.memory.total) * 100
-      );
-      nodeStatus.swapUsage = Math.round(
-        (nodeStatus.swap.used / nodeStatus.swap.total) * 100
+      // Lookups from cluster status (may be empty if somehow race still happens)
+      // Guard against missing nodes
+      const clusterOnlineById = Object.fromEntries(
+        (this.nodes || []).map((node) => [node.id, !!node.online])
       );
 
-      // disks usage
-      const disksUsage = [];
-      let diskIndex = 1;
+      const transformedNodes = nodesData.map((node) => {
+        const baseOnline =
+          node.node_id in clusterOnlineById
+            ? clusterOnlineById[node.node_id]
+            : !!(node.fqdn && node.fqdn !== ""); // fallback if cluster status not available, fqdn presence means online
 
-      for (const disk of nodeStatus.disks) {
-        const diskUsage = Math.round((disk.used / disk.total) * 100);
-        const diskId = this.$t("nodes.disk") + ` ${diskIndex}`;
-        disksUsage.push({ diskId: diskId, usage: diskUsage });
-        diskIndex++;
+        // ns7migration nodes must be shown as online even without fqdn
+        const online = node.role === "ns7migration" ? true : baseOnline;
+
+        return {
+          id: node.node_id,
+          hostname: node.fqdn || "",
+          ui_name: node.ui_name || "",
+          role: node.role || "worker",
+          online: online,
+          ip_address: node.main_ip || "",
+          applications: node.app_count || 0,
+        };
+      });
+
+      this.listNodes = transformedNodes.sort(this.sortByProperty("id"));
+      this.loading.listNodes = false;
+    },
+    async listAlerts() {
+      this.error.listAlerts = "";
+      const taskAction = "list-alerts";
+
+      // register to task completion
+      this.$root.$once(taskAction + "-completed", this.listAlertsCompleted);
+
+      const res = await to(
+        this.createClusterTask({
+          action: taskAction,
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.listAlerts = this.getErrorMessage(err);
+        return;
       }
-      nodeStatus.disksUsage = disksUsage;
-
-      // $set() is needed for reactivity (see https://v2.vuejs.org/v2/guide/reactivity.html#For-Objects)
-      this.$set(this.nodesStatus, nodeId, nodeStatus);
+    },
+    listAlertsCompleted(taskContext, taskResult) {
+      const alerts = taskResult.output.alerts;
+      const alertsCountByNode = {};
+      alerts.forEach((alert) => {
+        if (alert.node_id in alertsCountByNode) {
+          alertsCountByNode[alert.node_id] += 1;
+        } else {
+          alertsCountByNode[alert.node_id] = 1;
+        }
+      });
+      this.alertsCountByNode = alertsCountByNode;
+      this.loading.alerts = false;
     },
     goToNodeDetail(nodeId) {
       this.$router.push({
@@ -667,6 +719,12 @@ export default {
     goToTlsCertificates(node) {
       this.$router.push({
         path: "/settings/tls-certificates",
+        query: { selectedNodeId: node.id },
+      });
+    },
+    goToApplications(node) {
+      this.$router.push({
+        path: "/applications",
         query: { selectedNodeId: node.id },
       });
     },
