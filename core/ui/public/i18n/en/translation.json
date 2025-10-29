@@ -424,7 +424,9 @@
         "set-metrics-configuration": "Set metrics configuration",
         "set-metrics-notifications": "Set metrics notifications",
         "get-metrics-id": "Get metrics ID",
-        "restart-module": "Restart instance"
+        "restart-module": "Restart instance",
+        "listAlerts": "List alerts",
+        "listNodes": "List nodes"
     },
     "network": {
         "title": "Network"
@@ -1513,7 +1515,20 @@
         "node_name_hostname": "{node} hostname",
         "node_name_domain": "{node} domain",
         "connectivity_check_failed": "Connectivity check failed",
-        "connectivity_check_failed_description": "The FQDN {fqdn} is not reachable from {node}. Please change hostname and/or domain or, if you want to skip this check and fix the DNS record later, unselect '@:nodes.check_node_connectivity' and try again."
+        "connectivity_check_failed_description": "The FQDN {fqdn} is not reachable from {node}. Please change hostname and/or domain or, if you want to skip this check and fix the DNS record later, unselect '@:nodes.check_node_connectivity' and try again.",
+        "ns7_migration": "Migration",
+        "fqdn": "FQDN",
+        "node_id": "Node ID",
+        "ip_address": "IP address",
+        "applications": "Applications",
+        "alerts": "Alerts",
+        "no_alerts": "No alerts",
+        "ns7_migration_in_progress": "Migration in progress",
+        "ns7_migration_tooltip": "This node and its VPN connection are managed on NethServer 7 through the 'NS8 Migration' application.",
+        "go_to_tls_certificates": "Go to TLS certificates",
+        "go_to_firewall": "Go to Firewall",
+        "go_to_http_routes": "Go to HTTP routes",
+        "go_to_applications": "Go to Applications"
     },
     "node_detail": {
         "title": "Node detail",
@@ -1539,7 +1554,27 @@
         "listen_port": "Listen port",
         "data_received": "Data received",
         "data_sent": "Data sent",
-        "system": "System"
+        "system": "System",
+        "node_details": "Node details",
+        "fqdn": "FQDN",
+        "node_id": "Node ID",
+        "applications_count": "Applications",
+        "network_interface_count": "Network interfaces",
+        "go_to_logs": "Go to logs",
+        "col_startsAt": "Starts at",
+        "col_summary": "Summary",
+        "alarms": "Alarms",
+        "node_information": "Node information",
+        "no_alarms": "No alarms",
+        "no_alarms_description": "There are no alarms for this node",
+        "col_disks": "Disks",
+        "col_devices": "Devices",
+        "col_mountpoints": "Mount points",
+        "col_file_system": "File systems",
+        "col_total_space": "Total space",
+        "col_used_space": "Used space",
+        "col_free_space": "Free space"
+
     },
     "firewall": {
         "title": "Firewall",
