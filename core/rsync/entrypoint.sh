@@ -43,6 +43,7 @@ use chroot = no
 
 [data]
 path = /srv
+filter = -x security.*
 read only = no
 numeric ids = yes
 munge symlinks = no
