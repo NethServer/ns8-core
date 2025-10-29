@@ -1,0 +1,15 @@
+# Untitled array in list-shortcuts output Schema
+
+```txt
+http://schema.nethserver.org/cluster/list-shortcuts-output.json#/items/parameters/tags
+```
+
+
+
+| Abstract            | Extensible | Status         | Identifiable            | Custom Properties | Additional Properties | Access Restrictions | Defined In                                                                                |
+| :------------------ | :--------- | :------------- | :---------------------- | :---------------- | :-------------------- | :------------------ | :---------------------------------------------------------------------------------------- |
+| Can be instantiated | No         | Unknown status | Unknown identifiability | Forbidden         | Allowed               | none                | [list-shortcuts-output.json\*](cluster/list-shortcuts-output.json "open original schema") |
+
+## tags Type
+
+`string[]`
