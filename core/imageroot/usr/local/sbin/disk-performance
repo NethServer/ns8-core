@@ -4,16 +4,15 @@
 #
 # !!! Ensure you have enough free disk space before running the benchmark !!!
 #
-# Version 20250724
+# Version 20251029
 #
 # PRE-REQUISITES
 #
 # - Additional software:
 #
-#      dnf install -y fio bc
+#      dnf install -y fio
 #
-# - Free disk space: ncpus * 2 GB, e.g. if the node has 2 CPUs, then 4 GB
-#   of free disk space are required for the benchmark run.
+# - Free disk space: 2 GB
 #
 # EXECUTION
 #
@@ -27,17 +26,42 @@
 [global]
 ioengine=libaio
 direct=1
-
-[randrw]
-name=Random Mixed-Read/Write
-description=Disk performance measurement * Version 20250724
-group_reporting
-time_based
-numjobs=$ncpus
-runtime=60s
-ramp_time=10s
-iodepth=16
-unlink=1
-readwrite=randrw
 size=2G
-buffer_compress_percentage=75
+runtime=60
+time_based=1
+group_reporting=1
+unlink=1
+filename=disk-performance.dat
+
+# ------------------------------------------------------------
+# 1. Random read/write, small blocks, high concurrency
+# ------------------------------------------------------------
+[randrw]
+rw=randrw
+bs=4k
+numjobs=16
+iodepth=32
+description=v20250724 Random 4k read/write with 16 concurrent jobs
+
+# ------------------------------------------------------------
+# 2. Sequential write, medium concurrency
+# ------------------------------------------------------------
+[seqwrite]
+new_group
+rw=write
+bs=1M
+numjobs=4
+iodepth=16
+description=v20250724 Sequential 1M write with 4 jobs
+
+# ------------------------------------------------------------
+# 3. Mixed workload (70% read, 30% write)
+# ------------------------------------------------------------
+[mixed]
+new_group
+rw=randrw
+rwmixread=70
+bs=8k
+numjobs=8
+iodepth=16
+description=v20250724 70/30 random read/write, medium concurrency
