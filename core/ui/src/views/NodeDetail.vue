@@ -855,7 +855,7 @@ export default {
       if (!dt) return "-";
       const d = new Date(dt);
       if (isNaN(d)) return dt; // fallback if parse fails
-      return new Intl.DateTimeFormat(this.$i18n?.locale || "en", {
+      return new Intl.DateTimeFormat(navigator.language, {
         dateStyle: "medium",
         timeStyle: "short",
       }).format(d);
