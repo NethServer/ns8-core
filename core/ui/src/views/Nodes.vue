@@ -369,7 +369,7 @@ export default {
   },
   data() {
     return {
-      REFRESH_DATA_TIME_INTERVAL: 5000,
+      REFRESH_DATA_TIME_INTERVAL: 30000,
       q: {
         isShownAddNodeModal: false,
       },
