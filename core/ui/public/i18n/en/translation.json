@@ -7,6 +7,7 @@
         "show_more": "Show more",
         "show_less": "Show less",
         "more_info": "More info",
+        "more": "more",
         "close": "Close",
         "selected": "Selected",
         "optional": "optional",
@@ -1580,14 +1581,18 @@
         "title": "Firewall",
         "node_firewall": "{node} firewall",
         "public_zone_services": "Public zone services",
-        "network_interfaces": "Network interfaces",
         "name": "Service",
         "tcp_ports": "TCP ports",
         "udp_ports": "UDP ports",
         "search_service_or_port": "Search service or port",
         "no_service": "No service",
         "no_service_description": "There is no service configured",
-        "no_interface": "No interface"
+        "no_interface": "No interface",
+        "interface": "Interface",
+        "ip_addresses": "IP addresses",
+        "active_network_interfaces": "Active network interfaces",
+        "no_network_interfaces": "No network interfaces",
+        "no_network_interfaces_description": "Something went wrong while retrieving network interfaces"
     },
     "about": {
         "title": "About",
