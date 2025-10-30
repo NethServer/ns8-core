@@ -183,7 +183,7 @@
                   <template v-if="!alerts.length">
                     <NsEmptyState :title="$t('node_detail.no_alarms')">
                       <template #pictogram>
-                        <ExclamationMarkPictogram />
+                        <CircleCheckPictogram />
                       </template>
                     </NsEmptyState>
                   </template>
