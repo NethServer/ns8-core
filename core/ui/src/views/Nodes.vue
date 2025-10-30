@@ -174,9 +174,7 @@
                   <cv-overflow-menu-item @click="goToTlsCertificates(node)">
                     <NsMenuItem
                       :icon="ArrowRight20"
-                      :label="
-                        $t('nodes.go_to_tls_certificates')
-                      "
+                      :label="$t('nodes.go_to_tls_certificates')"
                     />
                   </cv-overflow-menu-item>
                   <cv-overflow-menu-item @click="goToFirewall(node)">
