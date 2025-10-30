@@ -155,13 +155,12 @@
               <h4 class="mg-bottom-lg">{{ $t("node_detail.alarms") }}</h4>
               <NsDataTable
                 :allRows="alerts"
-                :columns="i18nTableColumns"
-                :rawColumns="tableColumns"
+                :columns="i18nTableColumnsAlarms"
+                :rawColumns="tableColumnsAlarms"
                 :sortable="true"
                 :pageSizes="[5]"
                 :overflow-menu="true"
                 :isSearchable="false"
-                :searchPlaceholder="$t('alerts.search_alerts')"
                 :searchClearLabel="$t('common.clear_search')"
                 :noSearchResultsLabel="$t('common.no_search_results')"
                 :noSearchResultsDescription="
@@ -170,7 +169,7 @@
                 :isLoading="loading.alerts"
                 :skeletonRows="5"
                 :isErrorShown="!!error.listAlerts"
-                :errorTitle="$t('action.Alerts_list_error')"
+                :errorTitle="$t('action.list-alerts')"
                 :errorDescription="error.listAlerts"
                 :itemsPerPageLabel="$t('pagination.items_per_page')"
                 :rangeOfTotalItemsLabel="$t('pagination.range_of_total_items')"
@@ -436,7 +435,6 @@
                   :pageSizes="[5, 10, 15, 20]"
                   :overflow-menu="true"
                   :isSearchable="false"
-                  :searchPlaceholder="$t('alerts.search_alerts')"
                   :searchClearLabel="$t('common.clear_search')"
                   :noSearchResultsLabel="$t('common.no_search_results')"
                   :noSearchResultsDescription="
@@ -445,7 +443,7 @@
                   :isLoading="loading.nodeStatus"
                   :skeletonRows="5"
                   :isErrorShown="!!error.listNodes"
-                  :errorTitle="$t('action.Alerts_list_error')"
+                  :errorTitle="$t('action.list-nodes')"
                   :errorDescription="error.listNodes"
                   :itemsPerPageLabel="$t('pagination.items_per_page')"
                   :rangeOfTotalItemsLabel="
@@ -568,7 +566,7 @@ export default {
       },
       tablePage: [],
       tablePageDisks: [],
-      tableColumns: ["summary", "startsAt"],
+      tableColumnsAlarms: ["summary", "startsAt"],
       tableColumnsDisks: [
         "disks",
         "devices",
@@ -581,8 +579,8 @@ export default {
     };
   },
   computed: {
-    i18nTableColumns() {
-      return this.tableColumns.map((column) => {
+    i18nTableColumnsAlarms() {
+      return this.tableColumnsAlarms.map((column) => {
         return this.$t("node_detail.col_" + column);
       });
     },

@@ -425,8 +425,8 @@
         "set-metrics-notifications": "Set metrics notifications",
         "get-metrics-id": "Get metrics ID",
         "restart-module": "Restart instance",
-        "listAlerts": "List alerts",
-        "listNodes": "List nodes"
+        "list-alerts": "List alerts",
+        "list-nodes": "List nodes"
     },
     "network": {
         "title": "Network"
