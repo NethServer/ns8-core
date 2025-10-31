@@ -4,9 +4,9 @@
 -->
 <template>
   <div>
-    <div class="bx--grid bx--grid--full-width">
-      <div class="bx--row">
-        <div class="bx--col-lg-16">
+    <cv-grid fullWidth>
+      <cv-row>
+        <cv-column>
           <cv-breadcrumb
             aria-label="breadcrumb"
             :no-trailing-slash="true"
@@ -23,10 +23,10 @@
               }}</span>
             </cv-breadcrumb-item>
           </cv-breadcrumb>
-        </div>
-      </div>
-      <div class="bx--row">
-        <div class="bx--col-lg-16 subpage-title title-and-role">
+        </cv-column>
+      </cv-row>
+      <cv-row>
+        <cv-column class="subpage-title title-and-role">
           <h3 class="title">
             {{
               nodeLabel
@@ -40,54 +40,54 @@
             :label="$t('nodes.leader')"
           ></cv-tag>
           <cv-tag v-else kind="blue" :label="$t('nodes.worker')"></cv-tag>
-        </div>
-      </div>
-      <div v-if="!isOnline" class="bx--row">
-        <div class="bx--col">
+        </cv-column>
+      </cv-row>
+      <cv-row v-if="!isOnline">
+        <cv-column>
           <NsInlineNotification
             kind="error"
             :title="$t('nodes.node_is_offline')"
             :description="$t('nodes.node_is_offline_description')"
             :showCloseButton="false"
           />
-        </div>
-      </div>
-      <div v-if="error.getClusterStatus" class="bx--row">
-        <div class="bx--col">
+        </cv-column>
+      </cv-row>
+      <cv-row v-if="error.getClusterStatus">
+        <cv-column>
           <NsInlineNotification
             kind="error"
             :title="$t('action.get-cluster-status')"
             :description="error.getClusterStatus"
             :showCloseButton="false"
           />
-        </div>
-      </div>
-      <div v-if="error.getNodeStatus" class="bx--row">
-        <div class="bx--col">
+        </cv-column>
+      </cv-row>
+      <cv-row v-if="error.getNodeStatus">
+        <cv-column>
           <NsInlineNotification
             kind="error"
             :title="$t('action.get-node-status')"
             :description="error.getNodeStatus"
             :showCloseButton="false"
           />
-        </div>
-      </div>
-      <div v-if="error.listAlerts" class="bx--row">
-        <div class="bx--col">
+        </cv-column>
+      </cv-row>
+      <cv-row v-if="error.listAlerts">
+        <cv-column>
           <NsInlineNotification
             kind="error"
             :title="$t('action.list-alerts')"
             :description="error.listAlerts"
             :showCloseButton="false"
           />
-        </div>
-      </div>
-      <div class="bx--row">
-        <div class="bx--col-lg-16">
+        </cv-column>
+      </cv-row>
+      <cv-row>
+        <cv-column>
           <h4 class="mg-bottom-md">{{ $t("node_detail.node_information") }}</h4>
-        </div>
-      </div>
-      <div class="bx--row">
+        </cv-column>
+      </cv-row>
+      <cv-row>
         <cv-column>
           <!-- card grid -->
           <div
@@ -153,93 +153,99 @@
             </cv-tile>
             <cv-tile class="alerts-tile" :light="true">
               <h4 class="mg-bottom-lg">{{ $t("node_detail.alarms") }}</h4>
-              <NsDataTable
-                :allRows="alerts"
-                :columns="i18nTableColumnsAlarms"
-                :rawColumns="tableColumnsAlarms"
-                :sortable="true"
-                :pageSizes="[5]"
-                :overflow-menu="true"
-                :isSearchable="false"
-                :searchClearLabel="$t('common.clear_search')"
-                :noSearchResultsLabel="$t('common.no_search_results')"
-                :noSearchResultsDescription="
-                  $t('common.no_search_results_description')
-                "
-                :isLoading="loading.alerts"
-                :skeletonRows="5"
-                :isErrorShown="!!error.listAlerts"
-                :errorTitle="$t('action.list-alerts')"
-                :errorDescription="error.listAlerts"
-                :itemsPerPageLabel="$t('pagination.items_per_page')"
-                :rangeOfTotalItemsLabel="$t('pagination.range_of_total_items')"
-                :ofTotalPagesLabel="$t('pagination.of_total_pages')"
-                :backwardText="$t('pagination.previous_page')"
-                :forwardText="$t('pagination.next_page')"
-                :pageNumberLabel="$t('pagination.page_number')"
-                @updatePage="tablePage = $event"
-              >
-                <template slot="empty-state">
-                  <template v-if="!alerts.length">
-                    <NsEmptyState :title="$t('node_detail.no_alarms')">
-                      <template #pictogram>
-                        <CircleCheckPictogram />
-                      </template>
-                    </NsEmptyState>
-                  </template>
-                </template>
-                <template slot="data">
-                  <cv-data-table-row
-                    v-for="(row, rowIndex) in tablePage"
-                    :key="`${rowIndex}`"
-                    :value="`${rowIndex}`"
+              <cv-row>
+                <cv-column>
+                  <NsDataTable
+                    :allRows="alerts"
+                    :columns="i18nTableColumnsAlarms"
+                    :rawColumns="tableColumnsAlarms"
+                    :sortable="true"
+                    :pageSizes="[5]"
+                    :overflow-menu="true"
+                    :isSearchable="false"
+                    :searchClearLabel="$t('common.clear_search')"
+                    :noSearchResultsLabel="$t('common.no_search_results')"
+                    :noSearchResultsDescription="
+                      $t('common.no_search_results_description')
+                    "
+                    :isLoading="loading.alerts"
+                    :skeletonRows="5"
+                    :isErrorShown="!!error.listAlerts"
+                    :errorTitle="$t('action.list-alerts')"
+                    :errorDescription="error.listAlerts"
+                    :itemsPerPageLabel="$t('pagination.items_per_page')"
+                    :rangeOfTotalItemsLabel="
+                      $t('pagination.range_of_total_items')
+                    "
+                    :ofTotalPagesLabel="$t('pagination.of_total_pages')"
+                    :backwardText="$t('pagination.previous_page')"
+                    :forwardText="$t('pagination.next_page')"
+                    :pageNumberLabel="$t('pagination.page_number')"
+                    @updatePage="tablePage = $event"
                   >
-                    <cv-data-table-cell class="severity-cell">
-                      <span class="severity-content">
-                        <NsSvg
-                          v-if="row.labels.severity === 'warning'"
-                          :svg="Warning16"
-                          class="icon ns-warning"
-                        />
-                        <NsSvg
-                          v-else-if="row.labels.severity === 'critical'"
-                          :svg="ErrorFilled16"
-                          class="icon ns-error"
-                        >
-                        </NsSvg>
-                        <NsSvg
-                          v-else
-                          :svg="InformationFilled16"
-                          class="icon ns-info"
-                        />
-                        <span class="summary-text">{{ row.summary }}</span>
-                      </span>
-                    </cv-data-table-cell>
-                    <cv-data-table-cell class="log-cell">
-                      <span class="log-cell-content">
-                        {{ formatAlertDate(row.startsAt) }}
-                        <cv-button
-                          kind="ghost"
-                          size="sm"
-                          @click.prevent="goToLog"
-                        >
-                          {{ $t("node_detail.go_to_logs") }}
-                        </cv-button>
-                      </span>
-                    </cv-data-table-cell>
-                  </cv-data-table-row>
-                </template>
-              </NsDataTable>
+                    <template slot="empty-state">
+                      <template v-if="!alerts.length">
+                        <NsEmptyState :title="$t('node_detail.no_alarms')">
+                          <template #pictogram>
+                            <CircleCheckPictogram />
+                          </template>
+                        </NsEmptyState>
+                      </template>
+                    </template>
+                    <template slot="data">
+                      <cv-data-table-row
+                        v-for="(row, rowIndex) in tablePage"
+                        :key="`${rowIndex}`"
+                        :value="`${rowIndex}`"
+                      >
+                        <cv-data-table-cell class="severity-cell">
+                          <span class="severity-content">
+                            <NsSvg
+                              v-if="row.labels.severity === 'warning'"
+                              :svg="Warning16"
+                              class="icon ns-warning"
+                            />
+                            <NsSvg
+                              v-else-if="row.labels.severity === 'critical'"
+                              :svg="ErrorFilled16"
+                              class="icon ns-error"
+                            >
+                            </NsSvg>
+                            <NsSvg
+                              v-else
+                              :svg="InformationFilled16"
+                              class="icon ns-info"
+                            />
+                            <span class="summary-text">{{ row.summary }}</span>
+                          </span>
+                        </cv-data-table-cell>
+                        <cv-data-table-cell class="log-cell">
+                          <span class="log-cell-content">
+                            {{ formatAlertDate(row.startsAt) }}
+                            <cv-button
+                              kind="ghost"
+                              size="sm"
+                              @click.prevent="goToLog"
+                            >
+                              {{ $t("node_detail.go_to_logs") }}
+                            </cv-button>
+                          </span>
+                        </cv-data-table-cell>
+                      </cv-data-table-row>
+                    </template>
+                  </NsDataTable>
+                </cv-column>
+              </cv-row>
             </cv-tile>
           </div>
         </cv-column>
-      </div>
-      <div class="bx--row">
-        <div class="bx--col-lg-16">
+      </cv-row>
+      <cv-row>
+        <cv-column>
           <h4 class="mg-bottom-md">{{ $t("node_detail.system") }}</h4>
-        </div>
-      </div>
-      <div class="bx--row">
+        </cv-column>
+      </cv-row>
+      <cv-row>
         <cv-column>
           <!-- card grid -->
           <div
@@ -406,107 +412,92 @@
             </cv-tile>
           </div>
         </cv-column>
-      </div>
-      <div class="bx--row">
-        <div class="bx--col-lg-16">
+      </cv-row>
+      <cv-row>
+        <cv-column>
           <h4 class="mg-bottom-lg">{{ $t("node_detail.disks") }}</h4>
-        </div>
-      </div>
-      <div class="bx--row">
-        <div v-if="loading.nodeStatus" class="bx--col-md-4 bx--col-max-4">
-          <cv-tile light>
-            <cv-skeleton-text
-              :paragraph="true"
-              :line-count="7"
-              heading
-            ></cv-skeleton-text>
-          </cv-tile>
-        </div>
-        <template v-else>
+        </cv-column>
+      </cv-row>
+      <cv-tile :light="true">
+        <cv-row>
           <cv-column>
             <!-- card grid -->
-            <div>
-              <cv-tile :light="true">
-                <NsDataTable
-                  :allRows="nodeStatus.disks"
-                  :columns="i18nTableColumnsDisks"
-                  :rawColumns="tableColumnsDisks"
-                  :sortable="true"
-                  :pageSizes="[5, 10, 15, 20]"
-                  :overflow-menu="true"
-                  :isSearchable="false"
-                  :searchClearLabel="$t('common.clear_search')"
-                  :noSearchResultsLabel="$t('common.no_search_results')"
-                  :noSearchResultsDescription="
-                    $t('common.no_search_results_description')
-                  "
-                  :isLoading="loading.nodeStatus"
-                  :skeletonRows="5"
-                  :isErrorShown="!!error.listNodes"
-                  :errorTitle="$t('action.list-nodes')"
-                  :errorDescription="error.listNodes"
-                  :itemsPerPageLabel="$t('pagination.items_per_page')"
-                  :rangeOfTotalItemsLabel="
-                    $t('pagination.range_of_total_items')
-                  "
-                  :ofTotalPagesLabel="$t('pagination.of_total_pages')"
-                  :backwardText="$t('pagination.previous_page')"
-                  :forwardText="$t('pagination.next_page')"
-                  :pageNumberLabel="$t('pagination.page_number')"
-                  @updatePage="tablePageDisks = $event"
-                >
-                  <template slot="empty-state">
-                    <template v-if="!nodeStatus.disks.length">
-                      <NsEmptyState :title="$t('node_detail.no_disks_info')">
-                        <template #pictogram>
-                          <ExclamationMarkPictogram />
-                        </template>
-                      </NsEmptyState>
+            <NsDataTable
+              :allRows="nodeStatus.disks"
+              :columns="i18nTableColumnsDisks"
+              :rawColumns="tableColumnsDisks"
+              :sortable="true"
+              :pageSizes="[5, 10, 15, 20]"
+              :overflow-menu="true"
+              :isSearchable="false"
+              :searchClearLabel="$t('common.clear_search')"
+              :noSearchResultsLabel="$t('common.no_search_results')"
+              :noSearchResultsDescription="
+                $t('common.no_search_results_description')
+              "
+              :isLoading="loading.nodeStatus"
+              :skeletonRows="5"
+              :isErrorShown="!!error.listNodes"
+              :errorTitle="$t('action.list-nodes')"
+              :errorDescription="error.listNodes"
+              :itemsPerPageLabel="$t('pagination.items_per_page')"
+              :rangeOfTotalItemsLabel="$t('pagination.range_of_total_items')"
+              :ofTotalPagesLabel="$t('pagination.of_total_pages')"
+              :backwardText="$t('pagination.previous_page')"
+              :forwardText="$t('pagination.next_page')"
+              :pageNumberLabel="$t('pagination.page_number')"
+              @updatePage="tablePageDisks = $event"
+            >
+              <template slot="empty-state">
+                <template v-if="!nodeStatus.disks.length">
+                  <NsEmptyState :title="$t('node_detail.no_disks_info')">
+                    <template #pictogram>
+                      <ExclamationMarkPictogram />
                     </template>
-                  </template>
-                  <template slot="data">
-                    <cv-data-table-row
-                      v-for="(row, rowIndex) in tablePageDisks"
-                      :key="`${rowIndex}`"
-                      :value="`${rowIndex}`"
-                    >
-                      <cv-data-table-cell>
-                        {{ $t("node_detail.disk") }} {{ rowIndex + 1 }}
-                      </cv-data-table-cell>
-                      <cv-data-table-cell>
-                        {{ row.device }}
-                      </cv-data-table-cell>
-                      <cv-data-table-cell>
-                        {{ row.mountpoint }}
-                      </cv-data-table-cell>
-                      <cv-data-table-cell>
-                        {{ row.fstype }}
-                      </cv-data-table-cell>
-                      <cv-data-table-cell>
-                        {{ row.total | byteFormat }}
-                      </cv-data-table-cell>
-                      <cv-data-table-cell>
-                        {{ row.used | byteFormat }} ({{ row.usage }}%)
-                        <NsProgressBar
-                          :value="row.usage"
-                          :warningThreshold="70"
-                          :dangerThreshold="90"
-                          :loading="loading.nodeStatus"
-                          :useHealthyColor="false"
-                        />
-                      </cv-data-table-cell>
-                      <cv-data-table-cell>
-                        {{ row.free | byteFormat }}
-                      </cv-data-table-cell>
-                    </cv-data-table-row>
-                  </template>
-                </NsDataTable>
-              </cv-tile>
-            </div>
+                  </NsEmptyState>
+                </template>
+              </template>
+              <template slot="data">
+                <cv-data-table-row
+                  v-for="(row, rowIndex) in tablePageDisks"
+                  :key="`${rowIndex}`"
+                  :value="`${rowIndex}`"
+                >
+                  <cv-data-table-cell>
+                    {{ $t("node_detail.disk") }} {{ rowIndex + 1 }}
+                  </cv-data-table-cell>
+                  <cv-data-table-cell>
+                    {{ row.device }}
+                  </cv-data-table-cell>
+                  <cv-data-table-cell>
+                    {{ row.mountpoint }}
+                  </cv-data-table-cell>
+                  <cv-data-table-cell>
+                    {{ row.fstype }}
+                  </cv-data-table-cell>
+                  <cv-data-table-cell>
+                    {{ row.total | byteFormat }}
+                  </cv-data-table-cell>
+                  <cv-data-table-cell>
+                    {{ row.used | byteFormat }} ({{ row.usage }}%)
+                    <NsProgressBar
+                      :value="row.usage"
+                      :warningThreshold="70"
+                      :dangerThreshold="90"
+                      :loading="loading.nodeStatus"
+                      :useHealthyColor="false"
+                    />
+                  </cv-data-table-cell>
+                  <cv-data-table-cell>
+                    {{ row.free | byteFormat }}
+                  </cv-data-table-cell>
+                </cv-data-table-row>
+              </template>
+            </NsDataTable>
           </cv-column>
-        </template>
-      </div>
-    </div>
+        </cv-row>
+      </cv-tile>
+    </cv-grid>
   </div>
 </template>
 
