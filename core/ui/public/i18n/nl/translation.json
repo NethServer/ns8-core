@@ -1518,7 +1518,8 @@
         "authentication_token_placeholder": "Plak het token hier",
         "subscription_status": "Abonnement status",
         "session_id": "Sessie-ID",
-        "start_session_support": "Start sessie"
+        "start_session_support": "Start sessie",
+        "subscription_pattern": "Invalid token format"
     },
     "settings_cluster": {
         "title": "Cluster"
