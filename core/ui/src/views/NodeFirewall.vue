@@ -86,67 +86,67 @@
       <cv-row>
         <cv-column>
           <cv-tile light>
-              <cv-row>
-                <cv-column>
-                  <NsDataTable
-                    :allRows="servicesAndPorts"
-                    :columns="i18nTableColumns"
-                    :rawColumns="tableColumns"
-                    :sortable="true"
-                    :pageSizes="[10, 25, 50, 100]"
-                    isSearchable
-                    :searchPlaceholder="$t('firewall.search_service_or_port')"
-                    :searchClearLabel="$t('common.clear_search')"
-                    :noSearchResultsLabel="$t('common.no_search_results')"
-                    :noSearchResultsDescription="
-                      $t('common.no_search_results_description')
-                    "
-                    :isLoading="loading.getFirewallStatus"
-                    :skeletonRows="5"
-                    :isErrorShown="!!error.getFirewallStatus"
-                    :errorTitle="$t('action.get-firewall-status')"
-                    :errorDescription="error.getFirewallStatus"
-                    :itemsPerPageLabel="$t('pagination.items_per_page')"
-                    :rangeOfTotalItemsLabel="
-                      $t('pagination.range_of_total_items')
-                    "
-                    :ofTotalPagesLabel="$t('pagination.of_total_pages')"
-                    :backwardText="$t('pagination.previous_page')"
-                    :forwardText="$t('pagination.next_page')"
-                    :pageNumberLabel="$t('pagination.page_number')"
-                    @updatePage="tablePage = $event"
-                  >
-                    <template slot="empty-state">
-                      <NsEmptyState :title="$t('firewall.no_service')">
-                        <template #description>
-                          <div>
-                            {{ $t("firewall.no_service_description") }}
-                          </div>
-                        </template>
-                      </NsEmptyState>
-                    </template>
-                    <template slot="data">
-                      <cv-data-table-row
-                        v-for="(row, rowIndex) in tablePage"
-                        :key="`${rowIndex}`"
-                        :value="`${rowIndex}`"
-                      >
-                        <cv-data-table-cell>
-                          <span>
-                            {{ row.name }}
-                          </span>
-                        </cv-data-table-cell>
-                        <cv-data-table-cell>
-                          <span>{{ row.tcp_ports }}</span>
-                        </cv-data-table-cell>
-                        <cv-data-table-cell>
-                          <span>{{ row.udp_ports }}</span>
-                        </cv-data-table-cell>
-                      </cv-data-table-row>
-                    </template>
-                  </NsDataTable>
-                </cv-column>
-              </cv-row>
+            <cv-row>
+              <cv-column>
+                <NsDataTable
+                  :allRows="servicesAndPorts"
+                  :columns="i18nTableColumns"
+                  :rawColumns="tableColumns"
+                  :sortable="true"
+                  :pageSizes="[10, 25, 50, 100]"
+                  isSearchable
+                  :searchPlaceholder="$t('firewall.search_service_or_port')"
+                  :searchClearLabel="$t('common.clear_search')"
+                  :noSearchResultsLabel="$t('common.no_search_results')"
+                  :noSearchResultsDescription="
+                    $t('common.no_search_results_description')
+                  "
+                  :isLoading="loading.getFirewallStatus"
+                  :skeletonRows="5"
+                  :isErrorShown="!!error.getFirewallStatus"
+                  :errorTitle="$t('action.get-firewall-status')"
+                  :errorDescription="error.getFirewallStatus"
+                  :itemsPerPageLabel="$t('pagination.items_per_page')"
+                  :rangeOfTotalItemsLabel="
+                    $t('pagination.range_of_total_items')
+                  "
+                  :ofTotalPagesLabel="$t('pagination.of_total_pages')"
+                  :backwardText="$t('pagination.previous_page')"
+                  :forwardText="$t('pagination.next_page')"
+                  :pageNumberLabel="$t('pagination.page_number')"
+                  @updatePage="tablePage = $event"
+                >
+                  <template slot="empty-state">
+                    <NsEmptyState :title="$t('firewall.no_service')">
+                      <template #description>
+                        <div>
+                          {{ $t("firewall.no_service_description") }}
+                        </div>
+                      </template>
+                    </NsEmptyState>
+                  </template>
+                  <template slot="data">
+                    <cv-data-table-row
+                      v-for="(row, rowIndex) in tablePage"
+                      :key="`${rowIndex}`"
+                      :value="`${rowIndex}`"
+                    >
+                      <cv-data-table-cell>
+                        <span>
+                          {{ row.name }}
+                        </span>
+                      </cv-data-table-cell>
+                      <cv-data-table-cell>
+                        <span>{{ row.tcp_ports }}</span>
+                      </cv-data-table-cell>
+                      <cv-data-table-cell>
+                        <span>{{ row.udp_ports }}</span>
+                      </cv-data-table-cell>
+                    </cv-data-table-row>
+                  </template>
+                </NsDataTable>
+              </cv-column>
+            </cv-row>
           </cv-tile>
         </cv-column>
       </cv-row>
@@ -185,15 +185,6 @@
               :pageNumberLabel="$t('pagination.page_number')"
               @updatePage="tablePageNetworkInterfaces = $event"
             >
-              <template slot="empty-state">
-                <NsEmptyState :title="$t('firewall.no_network_interfaces')">
-                  <template #description>
-                    <div>
-                      {{ $t("firewall.no_network_interfaces_description") }}
-                    </div>
-                  </template>
-                </NsEmptyState>
-              </template>
               <template slot="data">
                 <cv-data-table-row
                   v-for="(row, rowIndex) in tablePageNetworkInterfaces"
