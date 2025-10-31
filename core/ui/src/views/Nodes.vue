@@ -520,10 +520,16 @@ export default {
     async getClusterStatus() {
       this.error.getClusterStatus = "";
       const taskAction = "get-cluster-status";
+      const eventId = this.getUuid();
 
+      // register to task error
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.getClusterStatusAborted
+      );
       // register to task completion
       this.$root.$once(
-        taskAction + "-completed",
+        `${taskAction}-completed-${eventId}`,
         this.getClusterStatusCompleted
       );
 
@@ -533,6 +539,7 @@ export default {
           extra: {
             title: this.$t("action." + taskAction),
             isNotificationHidden: true,
+            eventId,
           },
         })
       );
@@ -543,6 +550,11 @@ export default {
         this.error.getClusterStatus = this.getErrorMessage(err);
         return;
       }
+    },
+    getClusterStatusAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.getClusterStatus = this.$t("error.generic_error");
+      this.loading.clusterStatus = false;
     },
     getClusterStatusCompleted(taskContext, taskResult) {
       const clusterStatus = taskResult.output;
@@ -557,9 +569,17 @@ export default {
     async listNodesStatus() {
       this.error.listNodes = "";
       const taskAction = "list-nodes";
-
+      const eventId = this.getUuid();
+      // register to task error
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.listNodesAborted
+      );
       // register to task completion
-      this.$root.$once(taskAction + "-completed", this.listNodesCompleted);
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.listNodesCompleted
+      );
 
       const res = await to(
         this.createClusterTask({
@@ -567,6 +587,7 @@ export default {
           extra: {
             title: this.$t("action." + taskAction),
             isNotificationHidden: true,
+            eventId,
           },
         })
       );
@@ -577,6 +598,11 @@ export default {
         this.error.listNodes = this.getErrorMessage(err);
         return;
       }
+    },
+    listNodesAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.listNodes = this.$t("error.generic_error");
+      this.loading.listNodes = false;
     },
     listNodesCompleted(taskContext, taskResult) {
       const nodesData = taskResult.output.nodes;
@@ -613,9 +639,18 @@ export default {
     async listAlerts() {
       this.error.listAlerts = "";
       const taskAction = "list-alerts";
+      const eventId = this.getUuid();
 
+      // register to task error
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.listAlertsAborted
+      );
       // register to task completion
-      this.$root.$once(taskAction + "-completed", this.listAlertsCompleted);
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.listAlertsCompleted
+      );
 
       const res = await to(
         this.createClusterTask({
@@ -623,6 +658,7 @@ export default {
           extra: {
             title: this.$t("action." + taskAction),
             isNotificationHidden: true,
+            eventId,
           },
         })
       );
@@ -633,6 +669,11 @@ export default {
         this.error.listAlerts = this.getErrorMessage(err);
         return;
       }
+    },
+    listAlertsAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.listAlerts = this.$t("error.generic_error");
+      this.loading.alerts = false;
     },
     listAlertsCompleted(taskContext, taskResult) {
       const alerts = taskResult.output.alerts;
