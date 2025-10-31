@@ -222,6 +222,10 @@
                         <cv-data-table-cell class="log-cell">
                           <span class="log-cell-content">
                             {{ formatAlertDate(row.startsAt) }}
+                          </span>
+                        </cv-data-table-cell>
+                        <cv-data-table-cell class="log-cell">
+                          <span class="log-cell-content">
                             <cv-button
                               kind="ghost"
                               size="sm"
