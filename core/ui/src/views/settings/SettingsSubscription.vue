@@ -94,7 +94,7 @@
                 <NsTextInput
                   :disabled="subscription.error === 'os_not_supported'"
                   :label="$t('settings_subscription.authentication_token')"
-                  v-model="subscription.auth_token"
+                  v-model.trim="subscription.auth_token"
                   :invalid-message="error.auth_token"
                   :placeholder="
                     $t('settings_subscription.authentication_token_placeholder')
