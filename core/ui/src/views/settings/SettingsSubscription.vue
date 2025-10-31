@@ -94,7 +94,7 @@
                 <NsTextInput
                   :disabled="subscription.error === 'os_not_supported'"
                   :label="$t('settings_subscription.authentication_token')"
-                  v-model="subscription.auth_token"
+                  v-model.trim="subscription.auth_token"
                   :invalid-message="error.auth_token"
                   :placeholder="
                     $t('settings_subscription.authentication_token_placeholder')
@@ -521,20 +521,24 @@ export default {
       this.error.auth_token = "";
       this.loading.setSubscription = true;
       const taskAction = "set-subscription";
+      const eventId = this.getUuid();
 
       // register to task completion
       this.$root.$once(
-        `${taskAction}-completed`,
+        `${taskAction}-completed-${eventId}`,
         this.setSubscriptionCompleted
       );
 
       // register to task aborted
-      this.$root.$once(`${taskAction}-aborted`, this.setSubscriptionAborted);
-
-      // register to task error
       this.$root.$once(
-        `${taskAction}-validation-failed`,
-        this.setSubscriptionFailed
+        `${taskAction}-aborted-${eventId}`,
+        this.setSubscriptionAborted
+      );
+
+      // register to task validation
+      this.$root.$once(
+        `${taskAction}-validation-failed-${eventId}`,
+        this.setSubscriptionValidationFailed
       );
 
       const res = await to(
@@ -545,7 +549,8 @@ export default {
           },
           extra: {
             title: this.$t("action." + taskAction),
-            isNotificationHidden: false,
+            description: this.$t("common.processing"),
+            eventId,
           },
         })
       );
@@ -563,22 +568,20 @@ export default {
       this.error.setSubscription = this.$t("error.generic_error");
       this.loading.setSubscription = false;
     },
-    setSubscriptionFailed(validationErrors) {
+    setSubscriptionValidationFailed(validationErrors) {
       this.loading.setSubscription = false;
       this.subscription.status = "inactive";
 
       let focusAlreadySet = false;
 
       for (const validationError of validationErrors) {
-        const param = validationError.parameter;
-
         // set i18n error message
-        this.error[param] = this.getI18nStringWithFallback(
+        this.error.auth_token = this.getI18nStringWithFallback(
           "settings_subscription." + validationError.error
         );
 
         if (!focusAlreadySet) {
-          this.focusElement(param);
+          this.focusElement("auth_token");
           focusAlreadySet = true;
         }
       }

@@ -29,6 +29,7 @@
             "properties": {
                 "auth_token": {
                     "type": "string",
+                    "pattern":"^\\S+$",
                     "minLength": 32,
                     "maxLength": 128
                 }
