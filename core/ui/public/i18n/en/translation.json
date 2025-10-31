@@ -1574,8 +1574,8 @@
         "col_file_system": "File systems",
         "col_total_space": "Total space",
         "col_used_space": "Used space",
-        "col_free_space": "Free space"
-
+        "col_free_space": "Free space",
+        "no_disks_info": "No disks info"
     },
     "firewall": {
         "title": "Firewall",
