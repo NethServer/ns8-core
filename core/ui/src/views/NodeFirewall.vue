@@ -163,84 +163,98 @@
         <cv-column>
           <cv-tile light>
             <cv-grid fullWidth class="no-padding">
-              <NsDataTable
-                :allRows="ipaddr"
-                :columns="i18nTableColumnsNetworkInterfaces"
-                :rawColumns="tableColumnsNetworkInterfaces"
-                :sortable="true"
-                :pageSizes="[5, 10, 15, 20]"
-                :searchPlaceholder="$t('firewall.search_service_or_port')"
-                :searchClearLabel="$t('common.clear_search')"
-                :noSearchResultsLabel="$t('common.no_search_results')"
-                :noSearchResultsDescription="
-                  $t('common.no_search_results_description')
-                "
-                :isLoading="loading.getFirewallStatus"
-                :skeletonRows="5"
-                :isErrorShown="!!error.getFirewallStatus"
-                :errorTitle="$t('action.get-firewall-status')"
-                :errorDescription="error.getFirewallStatus"
-                :itemsPerPageLabel="$t('pagination.items_per_page')"
-                :rangeOfTotalItemsLabel="$t('pagination.range_of_total_items')"
-                :ofTotalPagesLabel="$t('pagination.of_total_pages')"
-                :backwardText="$t('pagination.previous_page')"
-                :forwardText="$t('pagination.next_page')"
-                :pageNumberLabel="$t('pagination.page_number')"
-                @updatePage="tablePageNetworkInterfaces = $event"
-              >
-                <template slot="data">
-                  <cv-data-table-row
-                    v-for="(row, rowIndex) in tablePageNetworkInterfaces"
-                    :key="`${rowIndex}`"
-                    :value="`${rowIndex}`"
+              <cv-row>
+                <cv-column>
+                  <NsDataTable
+                    :allRows="ipaddr"
+                    :columns="i18nTableColumnsNetworkInterfaces"
+                    :rawColumns="tableColumnsNetworkInterfaces"
+                    :sortable="true"
+                    :pageSizes="[5, 10, 15, 20]"
+                    :searchPlaceholder="$t('firewall.search_service_or_port')"
+                    :searchClearLabel="$t('common.clear_search')"
+                    :noSearchResultsLabel="$t('common.no_search_results')"
+                    :noSearchResultsDescription="
+                      $t('common.no_search_results_description')
+                    "
+                    :isLoading="loading.getFirewallStatus"
+                    :skeletonRows="5"
+                    :isErrorShown="!!error.getFirewallStatus"
+                    :errorTitle="$t('action.get-firewall-status')"
+                    :errorDescription="error.getFirewallStatus"
+                    :itemsPerPageLabel="$t('pagination.items_per_page')"
+                    :rangeOfTotalItemsLabel="
+                      $t('pagination.range_of_total_items')
+                    "
+                    :ofTotalPagesLabel="$t('pagination.of_total_pages')"
+                    :backwardText="$t('pagination.previous_page')"
+                    :forwardText="$t('pagination.next_page')"
+                    :pageNumberLabel="$t('pagination.page_number')"
+                    @updatePage="tablePageNetworkInterfaces = $event"
                   >
-                    <cv-data-table-cell>
-                      <span>
-                        {{ row.ifname }}
-                      </span>
-                    </cv-data-table-cell>
-                    <cv-data-table-cell>
-                      <span v-if="row.addresses.length <= 3">
-                        <span v-for="(addr, idx) in row.addresses" :key="idx">
-                          {{ addr }}<br v-if="idx < row.addresses.length - 1" />
-                        </span>
-                      </span>
-                      <span v-else>
-                        <span
-                          v-for="(addr, idx) in row.addresses.slice(0, 3)"
-                          :key="idx"
-                        >
-                          {{ addr }}<br />
-                        </span>
-                        <cv-interactive-tooltip
-                          alignment="center"
-                          direction="top"
-                        >
-                          <template slot="trigger">
-                            <a>
-                              +{{ row.addresses.length - 3 }}
-                              {{ $t("common.more") }}
-                            </a>
-                          </template>
-                          <template slot="content">
-                            <div>
-                              <span
-                                v-for="(addr, idx) in row.addresses.slice(3)"
-                                :key="idx"
-                              >
-                                {{ addr
-                                }}<br
-                                  v-if="idx < row.addresses.slice(3).length - 1"
-                                />
-                              </span>
-                            </div>
-                          </template>
-                        </cv-interactive-tooltip>
-                      </span>
-                    </cv-data-table-cell>
-                  </cv-data-table-row>
-                </template>
-              </NsDataTable>
+                    <template slot="data">
+                      <cv-data-table-row
+                        v-for="(row, rowIndex) in tablePageNetworkInterfaces"
+                        :key="`${rowIndex}`"
+                        :value="`${rowIndex}`"
+                      >
+                        <cv-data-table-cell>
+                          <span>
+                            {{ row.ifname }}
+                          </span>
+                        </cv-data-table-cell>
+                        <cv-data-table-cell>
+                          <span v-if="row.addresses.length <= 3">
+                            <span
+                              v-for="(addr, idx) in row.addresses"
+                              :key="idx"
+                            >
+                              {{ addr
+                              }}<br v-if="idx < row.addresses.length - 1" />
+                            </span>
+                          </span>
+                          <span v-else>
+                            <span
+                              v-for="(addr, idx) in row.addresses.slice(0, 3)"
+                              :key="idx"
+                            >
+                              {{ addr }}<br />
+                            </span>
+                            <cv-interactive-tooltip
+                              alignment="center"
+                              direction="top"
+                            >
+                              <template slot="trigger">
+                                <a>
+                                  +{{ row.addresses.length - 3 }}
+                                  {{ $t("common.more") }}
+                                </a>
+                              </template>
+                              <template slot="content">
+                                <div>
+                                  <span
+                                    v-for="(addr, idx) in row.addresses.slice(
+                                      3
+                                    )"
+                                    :key="idx"
+                                  >
+                                    {{ addr
+                                    }}<br
+                                      v-if="
+                                        idx < row.addresses.slice(3).length - 1
+                                      "
+                                    />
+                                  </span>
+                                </div>
+                              </template>
+                            </cv-interactive-tooltip>
+                          </span>
+                        </cv-data-table-cell>
+                      </cv-data-table-row>
+                    </template>
+                  </NsDataTable>
+                </cv-column>
+              </cv-row>
             </cv-grid>
           </cv-tile>
         </cv-column>
