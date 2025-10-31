@@ -535,7 +535,13 @@ export default {
       CLUSTER_STATUS_TIME_INTERVAL: 30000,
       LAST_SEEN_WARNING_TH: 5 * 60 * 1000, // milliseconds: 5 minutes
       nodeId: "",
-      nodeStatus: {},
+      nodeStatus: {
+        cpu: {},
+        load: {},
+        memory: {},
+        swap: {},
+        disks: [],
+      },
       alerts: [],
       listNodesStatusInterval: null,
       listAlertsInterval: null,
