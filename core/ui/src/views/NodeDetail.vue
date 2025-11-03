@@ -152,7 +152,7 @@
               </template>
             </cv-tile>
             <cv-tile class="alerts-tile" :light="true">
-              <h4 class="mg-bottom-lg">{{ $t("node_detail.alarms") }}</h4>
+              <h4 class="mg-bottom-lg">{{ $t("node_detail.alerts") }}</h4>
               <cv-row>
                 <cv-column>
                   <NsDataTable
@@ -185,7 +185,7 @@
                   >
                     <template slot="empty-state">
                       <template v-if="!alerts.length">
-                        <NsEmptyState :title="$t('node_detail.no_alarms')">
+                        <NsEmptyState :title="$t('node_detail.no_alerts')">
                           <template #pictogram>
                             <CircleCheckPictogram />
                           </template>
