@@ -1561,7 +1561,6 @@
         "node_id": "Node ID",
         "applications_count": "Applications",
         "network_interface_count": "Network interfaces",
-        "go_to_logs": "Go to logs",
         "col_startsAt": "Starts at",
         "col_summary": "Summary",
         "alerts": "Alerts",

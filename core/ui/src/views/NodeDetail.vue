@@ -224,17 +224,6 @@
                             {{ formatAlertDate(row.startsAt) }}
                           </span>
                         </cv-data-table-cell>
-                        <cv-data-table-cell class="log-cell">
-                          <span class="log-cell-content">
-                            <cv-button
-                              kind="ghost"
-                              size="sm"
-                              @click.prevent="goToLog"
-                            >
-                              {{ $t("node_detail.go_to_logs") }}
-                            </cv-button>
-                          </span>
-                        </cv-data-table-cell>
                       </cv-data-table-row>
                     </template>
                   </NsDataTable>
@@ -638,9 +627,6 @@ export default {
         name: "applications",
         params: { nodeId: this.nodeId },
       });
-    },
-    goToLog() {
-      this.$router.replace("/system-logs");
     },
     async listNodesStatus() {
       if (!this.isOnline) {
