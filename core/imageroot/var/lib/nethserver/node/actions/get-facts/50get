@@ -31,15 +31,21 @@ def _get_core_version():
                 return line[line.find(':') + 1:].strip()
     raise Exception('Can\'t find core version.')
 
+def _get_facts():
+    r = ansible_runner.run(
+        module='setup',
+        host_pattern='localhost',
+        quiet=True,
+        envvars={'LANG': 'C'}
+    )
+    facts = {}
+    for e in r.events:
+        if e['event'] == 'runner_on_ok' and e['event_data']['host'] == 'localhost':
+            facts = e['event_data']['res'].get('ansible_facts', {})
+            break
+    return facts
 
-facts = ansible_runner.run(
-    module='setup',
-    host_pattern='localhost',
-    quiet=True,
-    envvars={
-        'LANG': 'C'
-    }
-).get_fact_cache('localhost')
+facts = _get_facts()
 
 # map kernel driver to device id
 drivers = {}

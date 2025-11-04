@@ -25,6 +25,7 @@ import (
 	"encoding/json"
 	"log"
 	"sync"
+	"fmt"
 
 	"github.com/NethServer/ns8-core/core/agent/models"
 	"github.com/go-redis/redis/v8"
@@ -136,4 +137,27 @@ func runCancelTask(rdb *redis.Client, task *models.Task, cancelFuncMap map[strin
 		log.Print(SD_ERR+"Redis command failed: ", err)
 	}
 	log.Printf("task/%s/%s: action \"%s\" status is \"%s\" (%d) at step %s", agentPrefix, task.ID, task.Action, actionDescriptor.Status, exitCode, lastStep)
+}
+
+func rejectAction(rdb *redis.Client, actionCtx context.Context, task *models.Task) {
+	progressChannel := "progress/" + agentPrefix + "/task/" + task.ID
+	outputKey := "task/" + agentPrefix + "/" + task.ID + "/output"
+	errorKey := "task/" + agentPrefix + "/" + task.ID + "/error"
+	exitCodeKey := "task/" + agentPrefix + "/" + task.ID + "/exit_code"
+	actionDescriptor := models.Processor{Status: "pending"}
+	publishStatus(rdb, progressChannel, actionDescriptor) // pending status
+	actionOutput := ""
+	actionError := fmt.Sprintf("Agent is busy. Action %s rejected!\n", task.Action)
+	exitCode := 11
+	actionDescriptor.Status = "aborted"
+	log.Printf(SD_ERR+"Agent is busy. Action %s rejected!", task.Action)
+	rdb.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
+		// Publish the action response
+		pipe.Set(ctx, outputKey, actionOutput, taskExpireDuration)
+		pipe.Set(ctx, errorKey, actionError, taskExpireDuration)
+		pipe.Set(ctx, exitCodeKey, exitCode, taskExpireDuration)
+		pipe.Expire(ctx, "task/" + agentPrefix + "/" + task.ID + "/context", taskExpireDuration)
+		publishStatus(pipe, progressChannel, actionDescriptor) // aborted status
+		return nil
+	})
 }
