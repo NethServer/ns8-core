@@ -89,17 +89,6 @@ func InitJWT() *jwt.GinJWTMiddleware {
 			err := methods.RedisAuthentication(username, password)
 			if err != nil {
 				utils.LogError(errors.Wrap(err, "[AUTH] redis authentication failed for user "+username))
-
-				// store login action
-				auditData := models.Audit{
-					ID:        0,
-					User:      username,
-					Action:    "login-fail",
-					Data:      "",
-					Timestamp: time.Now().UTC(),
-				}
-				audit.Store(auditData)
-
 				return nil, jwt.ErrFailedAuthentication
 			}
 
@@ -112,15 +101,6 @@ func InitJWT() *jwt.GinJWTMiddleware {
 			if otpNeed {
 				if ! methods.CheckOTP(username, otpValue) {
 					err := errors.New("OTP check failed")
-					// store login action
-					auditData := models.Audit{
-						ID:        0,
-						User:      username,
-						Action:    "login-fail",
-						Data:      "",
-						Timestamp: time.Now().UTC(),
-					}
-					audit.Store(auditData)
 					utils.LogError(errors.Wrap(err, "[AUTH] login-fail(OTP) " + generateLogMessage(c, username, otpNeed)))
 					return nil, err
 				}
@@ -216,16 +196,6 @@ func InitJWT() *jwt.GinJWTMiddleware {
 						break
 					}
 				}
-
-				// store auth action
-				auditData := models.Audit{
-					ID:        0,
-					User:      data.(*models.UserAuthorizations).Username,
-					Action:    "auth-ok",
-					Data:      "",
-					Timestamp: time.Now().UTC(),
-				}
-				audit.Store(auditData)
 
 				return actionAllowed
 			}
