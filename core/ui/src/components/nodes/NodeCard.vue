@@ -81,8 +81,28 @@
         </div>
         <div class="tr">
           <div class="td label">{{ $t("nodes.ip_address") }}</div>
-          <div class="td">
-            {{ ip_address }}
+          <div class="td ip-cell">
+            <cv-interactive-tooltip
+              v-if="isLongIpAddress"
+              alignment="center"
+              direction="top"
+              class="ip-tooltip"
+            >
+              <template slot="content">
+                {{ ip_address }}
+              </template>
+              <template slot="trigger">
+                <span
+                  class="ip-ellipsis ip-span"
+                  :style="{ fontSize: ipAddressFontSize }"
+                >{{ ip_address }}</span>
+              </template>
+            </cv-interactive-tooltip>
+            <span
+              v-else
+              class="ip-ellipsis ip-span"
+              :style="{ fontSize: ipAddressFontSize }"
+            >{{ ip_address }}</span>
           </div>
         </div>
         <div class="tr">
@@ -231,6 +251,12 @@ export default {
       // Use a smaller font for long FQDNs
       return this.isLongFqdn ? "0.95em" : "1.1em";
     },
+    isLongIpAddress() {
+      return this.ip_address && this.ip_address.length > 20;
+    },
+    ipAddressFontSize() {
+      return this.isLongIpAddress ? "0.95em" : "1em";
+    },
   },
   methods: {
     goToApplications() {
@@ -303,6 +329,25 @@ export default {
 
 .fqdn-ellipsis,
 .fqdn-span {
+  display: inline-block;
+  max-width: 10rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: bottom;
+}
+
+.ip-cell {
+  word-break: break-all;
+  white-space: normal; // allow wrapping
+  overflow-wrap: anywhere; // break at any point if needed
+  max-width: 100%; // prevent overflow
+  text-align: left; // align text to the left for readability
+  line-height: 1.3;
+}
+
+.ip-ellipsis,
+.ip-span {
   display: inline-block;
   max-width: 10rem;
   white-space: nowrap;
