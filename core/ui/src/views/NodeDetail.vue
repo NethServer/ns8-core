@@ -968,44 +968,44 @@ export default {
 }
 
 .alerts-tile {
-  min-width: 0; // avoid overflow
+  min-width: 0; /* avoid overflow */
   overflow-x: auto;
 }
 
 .nodeinfo-grid {
-  grid-template-columns: 0.7fr 0.7fr 1.6fr; // 3 columns on desktop
+  grid-template-columns: 0.7fr 0.7fr 1.6fr; /* 3 columns on desktop */
   gap: 2rem;
 }
 
-// On small screens: 2 columns, alerts move below
+/* On small screens: 2 columns, alerts move below */
 @media (max-width: 1024px) {
   .nodeinfo-grid {
-    grid-template-columns: 1fr 1fr; // 2 columns
+    grid-template-columns: 1fr 1fr; /* 2 columns */
     gap: 1.5rem;
   }
 
   .alerts-tile {
-    grid-column: 1 / -1; // span full width at bottom
-    order: 3; // ensure it's last
+    grid-column: 1 / -1; /* span full width at bottom */
+    order: 3; /* ensure it's last */
   }
 }
 
-// On very small screens: stack vertically
+/* On very small screens: stack vertically */
 @media (max-width: 640px) {
   .nodeinfo-grid {
-    grid-template-columns: 1fr; // 1 column
+    grid-template-columns: 1fr; /* 1 column */  
   }
 
   .alerts-tile {
-    grid-column: 1 / -1; // span full width at bottom
-    order: 3; // ensure it's last
+    grid-column: 1 / -1; /* span full width at bottom */
+    order: 3; /* ensure it's last */
   }
 }
 
 .long-text-row {
   display: flex;
   align-items: baseline;
-  flex-wrap: wrap; // allows wrapping only if really needed
+  flex-wrap: wrap; /* allows wrapping only if really needed */
   gap: 0.5rem;
 }
 

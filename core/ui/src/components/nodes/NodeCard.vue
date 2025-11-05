@@ -266,7 +266,7 @@ export default {
   flex-direction: column;
   justify-content: center;
   min-height: 7rem;
-  // needed for absolute positioning of overflow menu
+  /* needed for absolute positioning of overflow menu */
   position: relative;
 }
 
@@ -311,10 +311,10 @@ export default {
 
 .long-text-cell {
   word-break: break-all;
-  white-space: normal; // allow wrapping
-  overflow-wrap: anywhere; // break at any point if needed
-  max-width: 100%; // prevent overflow
-  text-align: left; // align text to the left for readability
+  white-space: normal; /* allow wrapping */
+  overflow-wrap: anywhere; /* break at any point if needed */
+  max-width: 100%; /* prevent overflow */
+  text-align: left; /* align text to the left for readability */
   line-height: 1.3;
 }
 
@@ -331,7 +331,7 @@ export default {
 .icon-and-text-compact {
   display: flex;
   align-items: center;
-  gap: 0.25rem; // space between icon and text
+  gap: 0.25rem; /* space between icon and text */
   margin-top: 0.5rem;
   margin-bottom: 0.5rem;
 }
