@@ -62,12 +62,12 @@
           />
         </cv-column>
       </cv-row>
-      <cv-row v-if="error.getNodeStatus">
+      <cv-row v-if="error.listNodes">
         <cv-column>
           <NsInlineNotification
             kind="error"
-            :title="$t('action.get-node-status')"
-            :description="error.getNodeStatus"
+            :title="$t('action.list-nodes')"
+            :description="error.listNodes"
             :showCloseButton="false"
           />
         </cv-column>
@@ -95,14 +95,14 @@
           <div class="card-grid nodeinfo-grid">
             <cv-tile :light="true">
               <h4 class="mg-bottom-lg">{{ $t("node_detail.overviews") }}</h4>
-              <template v-if="loading.nodeStatus">
+              <template v-if="loading.listNodes">
                 <cv-skeleton-text
                   :paragraph="true"
                   :line-count="10"
                 ></cv-skeleton-text>
               </template>
               <template v-else>
-                <template v-if="!loading.nodeStatus && nodeStatus.fqdn">
+                <template v-if="!loading.listNodes && nodeStatus.fqdn">
                   <div class="mg-bottom-lg long-text-row">
                     <span class="label">{{ $t("node_detail.fqdn") }}</span>
                     <span class="long-text">{{ nodeStatus.fqdn }}</span>
@@ -111,10 +111,10 @@
                 <div class="mg-bottom-lg">
                   <span class="label">{{ $t("node_detail.node_id") }}</span>
                   <span>{{
-                    loading.nodeStatus ? "-" : nodeStatus.node_id
+                    loading.listNodes ? "-" : nodeStatus.node_id
                   }}</span>
                 </div>
-                <template v-if="!loading.nodeStatus && nodeStatus.app_count">
+                <template v-if="!loading.listNodes && nodeStatus.app_count">
                   <div class="mg-bottom-lg">
                     <span class="label">{{
                       $t("node_detail.applications_count")
@@ -126,7 +126,7 @@
                 </template>
                 <template
                   v-if="
-                    !loading.nodeStatus && nodeStatus.network_interface_count
+                    !loading.listNodes && nodeStatus.network_interface_count
                   "
                 >
                   <div class="mg-bottom-lg">
@@ -142,7 +142,7 @@
             </cv-tile>
             <cv-tile :light="true">
               <h4 class="mg-bottom-lg">{{ $t("node_detail.vpn") }}</h4>
-              <template v-if="loading.nodeStatus">
+              <template v-if="loading.listNodes">
                 <cv-skeleton-text
                   :paragraph="true"
                   :line-count="10"
@@ -162,7 +162,7 @@
                   }}</span>
                 </div>
                 <template
-                  v-if="!loading.nodeStatus && nodeStatus.vpn_listen_port"
+                  v-if="!loading.listNodes && nodeStatus.vpn_listen_port"
                 >
                   <div class="mg-bottom-lg">
                     <span class="label">{{
@@ -272,11 +272,11 @@
               <h4 class="mg-bottom-lg">{{ $t("node_detail.cpu") }}</h4>
               <div class="mg-bottom-lg">
                 {{ $t("node_detail.usage") }}
-                {{ loading.nodeStatus ? 0 : nodeStatus.cpu.usage }}%
+                {{ loading.listNodes ? 0 : nodeStatus.cpu.usage }}%
               </div>
               <NsProgressBar
-                :value="loading.nodeStatus ? 0 : nodeStatus.cpu.usage"
-                :loading="loading.nodeStatus"
+                :value="loading.listNodes ? 0 : nodeStatus.cpu.usage"
+                :loading="loading.listNodes"
                 :warningThreshold="70"
                 :dangerThreshold="90"
                 :height="'10px'"
@@ -299,7 +299,7 @@
                     </template>
                   </cv-interactive-tooltip>
                 </span>
-                <span v-if="loading.nodeStatus">- / - / -</span>
+                <span v-if="loading.listNodes">- / - / -</span>
                 <template v-else>
                   <span
                     :class="{
@@ -332,7 +332,7 @@
                   </span>
                 </template>
               </div>
-              <template v-if="!loading.nodeStatus">
+              <template v-if="!loading.listNodes">
                 <template v-if="nodeStatus.cpu.info.length">
                   <!-- single core -->
                   <span
@@ -357,11 +357,11 @@
               <h4 class="mg-bottom-lg">{{ $t("node_detail.memory") }}</h4>
               <div class="mg-bottom-lg">
                 {{ $t("node_detail.usage") }}
-                {{ loading.nodeStatus ? 0 : nodeStatus.memory.usage }}%
+                {{ loading.listNodes ? 0 : nodeStatus.memory.usage }}%
               </div>
               <NsProgressBar
-                :value="loading.nodeStatus ? 0 : nodeStatus.memory.usage"
-                :loading="loading.nodeStatus"
+                :value="loading.listNodes ? 0 : nodeStatus.memory.usage"
+                :loading="loading.listNodes"
                 :warningThreshold="70"
                 :dangerThreshold="90"
                 :height="'10px'"
@@ -371,21 +371,19 @@
               <div class="mg-bottom-lg">
                 <span class="label">{{ $t("node_detail.total") }}</span>
                 <span>{{
-                  loading.nodeStatus
-                    ? "-"
-                    : nodeStatus.memory.total | byteFormat
+                  loading.listNodes ? "-" : nodeStatus.memory.total | byteFormat
                 }}</span>
               </div>
               <div class="mg-bottom-lg">
                 <span class="label">{{ $t("node_detail.used") }}</span>
                 <span>{{
-                  loading.nodeStatus ? "-" : nodeStatus.memory.used | byteFormat
+                  loading.listNodes ? "-" : nodeStatus.memory.used | byteFormat
                 }}</span>
               </div>
               <div class="mg-bottom-lg">
                 <span class="label">{{ $t("node_detail.free") }}</span>
                 <span>{{
-                  loading.nodeStatus ? "-" : nodeStatus.memory.free | byteFormat
+                  loading.listNodes ? "-" : nodeStatus.memory.free | byteFormat
                 }}</span>
               </div>
             </cv-tile>
@@ -393,15 +391,15 @@
               <h4 class="mg-bottom-lg">{{ $t("node_detail.swap") }}</h4>
               <div class="mg-bottom-lg">
                 {{ $t("node_detail.usage") }}
-                {{ loading.nodeStatus ? 0 : nodeStatus.swap.usage }}%
+                {{ loading.listNodes ? 0 : nodeStatus.swap.usage }}%
               </div>
               <NsProgressBar
                 :value="
-                  loading.nodeStatus || Number.isNaN(nodeStatus.swap.usage)
+                  loading.listNodes || Number.isNaN(nodeStatus.swap.usage)
                     ? '-'
                     : nodeStatus.swap.usage
                 "
-                :loading="loading.nodeStatus"
+                :loading="loading.listNodes"
                 :warningThreshold="70"
                 :dangerThreshold="90"
                 :height="'10px'"
@@ -411,19 +409,19 @@
               <div class="mg-bottom-lg">
                 <span class="label">{{ $t("node_detail.total") }}</span>
                 <span>{{
-                  loading.nodeStatus ? "-" : nodeStatus.swap.total | byteFormat
+                  loading.listNodes ? "-" : nodeStatus.swap.total | byteFormat
                 }}</span>
               </div>
               <div class="mg-bottom-lg">
                 <span class="label">{{ $t("node_detail.used") }}</span>
                 <span>{{
-                  loading.nodeStatus ? "-" : nodeStatus.swap.used | byteFormat
+                  loading.listNodes ? "-" : nodeStatus.swap.used | byteFormat
                 }}</span>
               </div>
               <div class="mg-bottom-lg">
                 <span class="label">{{ $t("node_detail.free") }}</span>
                 <span>{{
-                  loading.nodeStatus ? "-" : nodeStatus.swap.free | byteFormat
+                  loading.listNodes ? "-" : nodeStatus.swap.free | byteFormat
                 }}</span>
               </div>
             </cv-tile>
@@ -452,7 +450,7 @@
               :noSearchResultsDescription="
                 $t('common.no_search_results_description')
               "
-              :isLoading="loading.nodeStatus"
+              :isLoading="loading.listNodes"
               :skeletonRows="5"
               :isErrorShown="!!error.listNodes"
               :errorTitle="$t('action.list-nodes')"
@@ -498,7 +496,7 @@
                       :value="row.usage"
                       :warningThreshold="70"
                       :dangerThreshold="90"
-                      :loading="loading.nodeStatus"
+                      :loading="loading.listNodes"
                       :useHealthyColor="false"
                     />
                   </cv-data-table-cell>
@@ -557,7 +555,7 @@ export default {
         disks: [],
       },
       alerts: [],
-      listNodesStatusInterval: null,
+      listNodesInterval: null,
       listAlertsInterval: null,
       clusterStatusInterval: null,
       isLeader: false,
@@ -565,12 +563,11 @@ export default {
       nodeLabel: "-",
       isOnline: true,
       loading: {
-        nodeStatus: true,
+        listNodes: true,
         clusterStatus: true,
         alerts: true,
       },
       error: {
-        getNodeStatus: "",
         getClusterStatus: "",
         listNodes: "",
         listAlerts: "",
@@ -613,12 +610,12 @@ export default {
   created() {
     this.nodeId = this.$route.params.nodeId;
     this.getClusterStatus();
-    this.listNodesStatus();
+    this.listNodes();
     this.listAlerts();
 
     // periodically retrieve nodes status
-    this.listNodesStatusInterval = setInterval(
-      this.listNodesStatus,
+    this.listNodesInterval = setInterval(
+      this.listNodes,
       this.NODE_STATUS_TIME_INTERVAL
     );
     // periodically retrieve alerts
@@ -633,7 +630,7 @@ export default {
     );
   },
   beforeDestroy() {
-    clearInterval(this.listNodesStatusInterval);
+    clearInterval(this.listNodesInterval);
     clearInterval(this.listAlertsInterval);
     clearInterval(this.clusterStatusInterval);
   },
@@ -651,11 +648,11 @@ export default {
         params: { nodeId: this.nodeId },
       });
     },
-    async listNodesStatus() {
+    async listNodes() {
       if (!this.isOnline) {
         return;
       }
-      this.error.getNodeStatus = "";
+      this.error.listNodes = "";
       const taskAction = "list-nodes";
       const eventId = this.getUuid();
 
@@ -685,14 +682,14 @@ export default {
 
       if (err) {
         console.error(`error creating task ${taskAction}`, err);
-        this.error.getNodeStatus = this.getErrorMessage(err);
+        this.error.listNodes = this.getErrorMessage(err);
         return;
       }
     },
     listNodesAborted(taskResult, taskContext) {
       console.error(`${taskContext.action} aborted`, taskResult);
-      this.error.getNodeStatus = this.$t("error.generic_error");
-      this.loading.nodeStatus = false;
+      this.error.listNodes = this.$t("error.generic_error");
+      this.loading.listNodes = false;
     },
     listNodesCompleted(taskContext, taskResult) {
       // Filter by this.nodeId
@@ -774,7 +771,7 @@ export default {
       }
 
       this.nodeStatus = nodeStatus;
-      this.loading.nodeStatus = false;
+      this.loading.listNodes = false;
     },
     async listAlerts() {
       this.error.listAlerts = "";
@@ -993,7 +990,7 @@ export default {
 /* On very small screens: stack vertically */
 @media (max-width: 640px) {
   .nodeinfo-grid {
-    grid-template-columns: 1fr; /* 1 column */  
+    grid-template-columns: 1fr; /* 1 column */
   }
 
   .alerts-tile {

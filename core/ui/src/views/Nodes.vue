@@ -87,7 +87,7 @@
         <div
           class="card-grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 3xl:grid-cols-4"
         >
-          <template v-for="node in listNodes">
+          <template v-for="node in nodes">
             <NodeCard
               v-if="!node.online"
               :key="node.id"
@@ -373,11 +373,9 @@ export default {
       q: {
         isShownAddNodeModal: false,
       },
-      listNodes: [],
       Recommend20,
       joinCode: "",
       nodes: [],
-      nodesStatus: {},
       refreshDataInterval: null,
       currentNode: null,
       newNodeLabel: "",
@@ -566,9 +564,9 @@ export default {
 
       this.loading.nodes = false;
       // now that authoritative online/local flags are present, fetch list-nodes
-      this.listNodesStatus();
+      this.listNodes();
     },
-    async listNodesStatus() {
+    async listNodes() {
       this.error.listNodes = "";
       const taskAction = "list-nodes";
       const eventId = this.getUuid();
@@ -635,7 +633,7 @@ export default {
         };
       });
 
-      this.listNodes = transformedNodes.sort(this.sortByProperty("id"));
+      this.nodes = transformedNodes.sort(this.sortByProperty("id"));
       this.loading.listNodes = false;
     },
     async listAlerts() {
