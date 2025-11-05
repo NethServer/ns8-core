@@ -1588,9 +1588,7 @@
         "no_interface": "No interface",
         "interface": "Interface",
         "ip_addresses": "IP addresses",
-        "active_network_interfaces": "Active network interfaces",
-        "no_network_interfaces": "No network interfaces",
-        "no_network_interfaces_description": "Something went wrong while retrieving network interfaces"
+        "active_network_interfaces": "Active network interfaces"
     },
     "about": {
         "title": "About",
