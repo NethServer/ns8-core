@@ -45,30 +45,30 @@
       class="table-wrapper"
     >
       <div class="table">
-        <div class="tr fqdn-row">
+        <div class="tr long-text-row">
           <div class="td label">{{ fqdnLabel }}</div>
-          <div class="td fqdn-cell">
+          <div class="td long-text-cell">
             <cv-interactive-tooltip
               v-if="isLongFqdn"
               alignment="center"
               direction="top"
-              class="fqdn-tooltip"
+              class="long-text-tooltip"
             >
               <template slot="content">
                 {{ fqdn }}
               </template>
               <template slot="trigger">
                 <span
-                  class="fqdn-ellipsis fqdn-span"
-                  :style="{ fontSize: fqdnFontSize }"
+                  class="long-text-ellipsis long-text-span"
+                  :style="{ fontSize: longTextFontSize }"
                   >{{ fqdn }}</span
                 >
               </template>
             </cv-interactive-tooltip>
             <span
               v-else
-              class="fqdn-ellipsis fqdn-span"
-              :style="{ fontSize: fqdnFontSize }"
+              class="long-text-ellipsis long-text-span"
+              :style="{ fontSize: longTextFontSize }"
               >{{ fqdn }}</span
             >
           </div>
@@ -79,30 +79,30 @@
             {{ nodeId }}
           </div>
         </div>
-        <div class="tr">
+        <div class="tr long-text-row">
           <div class="td label">{{ $t("nodes.ip_address") }}</div>
-          <div class="td ip-cell">
+          <div class="td long-text-cell">
             <cv-interactive-tooltip
               v-if="isLongIpAddress"
               alignment="center"
               direction="top"
-              class="ip-tooltip"
+              class="long-text-tooltip"
             >
               <template slot="content">
                 {{ ip_address }}
               </template>
               <template slot="trigger">
                 <span
-                  class="ip-ellipsis ip-span"
-                  :style="{ fontSize: ipAddressFontSize }"
+                  class="long-text-ellipsis long-text-span"
+                  :style="{ fontSize: longTextFontSize }"
                   >{{ ip_address }}</span
                 >
               </template>
             </cv-interactive-tooltip>
             <span
               v-else
-              class="ip-ellipsis ip-span"
-              :style="{ fontSize: ipAddressFontSize }"
+              class="long-text-ellipsis long-text-span"
+              :style="{ fontSize: longTextFontSize }"
               >{{ ip_address }}</span
             >
           </div>
@@ -235,11 +235,7 @@ export default {
     },
     loading: Boolean,
     light: Boolean,
-    fqdnLongThreshold: {
-      type: Number,
-      default: 32,
-    },
-    ipAddressLongThreshold: {
+    longTextThreshold: {
       type: Number,
       default: 32,
     },
@@ -251,19 +247,14 @@ export default {
   },
   computed: {
     isLongFqdn() {
-      return this.fqdn && this.fqdn.length > this.fqdnLongThreshold;
+      return this.fqdn && this.fqdn.length > this.longTextThreshold;
     },
-    fqdnFontSize() {
+    longTextFontSize() {
       // Use a smaller font for long FQDNs
       return this.isLongFqdn ? "0.95em" : "1.1em";
     },
     isLongIpAddress() {
-      return (
-        this.ip_address && this.ip_address.length > this.ipAddressLongThreshold
-      );
-    },
-    ipAddressFontSize() {
-      return this.isLongIpAddress ? "0.95em" : "1em";
+      return this.ip_address && this.ip_address.length > this.longTextThreshold;
     },
   },
   methods: {
@@ -322,11 +313,11 @@ export default {
   text-align: center;
 }
 
-.fqdn-row {
+.long-text-row {
   align-items: flex-start;
 }
 
-.fqdn-cell {
+.long-text-cell {
   word-break: break-all;
   white-space: normal; // allow wrapping
   overflow-wrap: anywhere; // break at any point if needed
@@ -335,27 +326,8 @@ export default {
   line-height: 1.3;
 }
 
-.fqdn-ellipsis,
-.fqdn-span {
-  display: inline-block;
-  max-width: 10rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  vertical-align: bottom;
-}
-
-.ip-cell {
-  word-break: break-all;
-  white-space: normal; // allow wrapping
-  overflow-wrap: anywhere; // break at any point if needed
-  max-width: 100%; // prevent overflow
-  text-align: left; // align text to the left for readability
-  line-height: 1.3;
-}
-
-.ip-ellipsis,
-.ip-span {
+.long-text-ellipsis,
+.long-text-span {
   display: inline-block;
   max-width: 10rem;
   white-space: nowrap;
