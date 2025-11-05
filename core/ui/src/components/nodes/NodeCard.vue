@@ -60,7 +60,6 @@
               <template slot="trigger">
                 <span
                   class="long-text-ellipsis long-text-span"
-                  :style="{ fontSize: longTextFontSize }"
                   >{{ fqdn }}</span
                 >
               </template>
@@ -68,7 +67,6 @@
             <span
               v-else
               class="long-text-ellipsis long-text-span"
-              :style="{ fontSize: longTextFontSize }"
               >{{ fqdn }}</span
             >
           </div>
@@ -94,7 +92,6 @@
               <template slot="trigger">
                 <span
                   class="long-text-ellipsis long-text-span"
-                  :style="{ fontSize: longTextFontSize }"
                   >{{ ip_address }}</span
                 >
               </template>
@@ -102,7 +99,6 @@
             <span
               v-else
               class="long-text-ellipsis long-text-span"
-              :style="{ fontSize: longTextFontSize }"
               >{{ ip_address }}</span
             >
           </div>
@@ -248,10 +244,6 @@ export default {
   computed: {
     isLongFqdn() {
       return this.fqdn && this.fqdn.length > this.longTextThreshold;
-    },
-    longTextFontSize() {
-      // Use a smaller font for long FQDNs
-      return this.isLongFqdn ? "0.95em" : "1.1em";
     },
     isLongIpAddress() {
       return this.ip_address && this.ip_address.length > this.longTextThreshold;
