@@ -90,65 +90,85 @@
       <cv-row>
         <cv-column>
           <!-- card grid -->
-          <div
-            class="card-grid nodeinfo-grid"
-          >
+          <div class="card-grid nodeinfo-grid">
             <cv-tile :light="true">
               <h4 class="mg-bottom-lg">{{ $t("node_detail.node_details") }}</h4>
-              <template v-if="!loading.nodeStatus && nodeStatus.fqdn">
-                <div class="mg-bottom-lg long-text-row">
-                  <span class="label">{{ $t("node_detail.fqdn") }}</span>
-                  <span class="long-text">{{ nodeStatus.fqdn }}</span>
-                </div>
+              <template v-if="loading.nodeStatus">
+                <cv-skeleton-text
+                  :paragraph="true"
+                  :line-count="10"
+                ></cv-skeleton-text>
               </template>
-              <div class="mg-bottom-lg">
-                <span class="label">{{ $t("node_detail.node_id") }}</span>
-                <span>{{ loading.nodeStatus ? "-" : nodeStatus.node_id }}</span>
-              </div>
-              <template v-if="!loading.nodeStatus && nodeStatus.app_count">
+              <template v-else>
+                <template v-if="!loading.nodeStatus && nodeStatus.fqdn">
+                  <div class="mg-bottom-lg long-text-row">
+                    <span class="label">{{ $t("node_detail.fqdn") }}</span>
+                    <span class="long-text">{{ nodeStatus.fqdn }}</span>
+                  </div>
+                </template>
                 <div class="mg-bottom-lg">
-                  <span class="label">{{
-                    $t("node_detail.applications_count")
+                  <span class="label">{{ $t("node_detail.node_id") }}</span>
+                  <span>{{
+                    loading.nodeStatus ? "-" : nodeStatus.node_id
                   }}</span>
-                  <cv-link @click.prevent="goToApplications">
-                    {{ nodeStatus.app_count }}
-                  </cv-link>
                 </div>
-              </template>
-              <template
-                v-if="!loading.nodeStatus && nodeStatus.network_interface_count"
-              >
-                <div class="mg-bottom-lg">
-                  <span class="label">{{
-                    $t("node_detail.network_interface_count")
-                  }}</span>
-                  <cv-link @click.prevent="goToFirewall">
-                    {{ nodeStatus.network_interface_count }}
-                  </cv-link>
-                </div>
+                <template v-if="!loading.nodeStatus && nodeStatus.app_count">
+                  <div class="mg-bottom-lg">
+                    <span class="label">{{
+                      $t("node_detail.applications_count")
+                    }}</span>
+                    <cv-link @click.prevent="goToApplications">
+                      {{ nodeStatus.app_count }}
+                    </cv-link>
+                  </div>
+                </template>
+                <template
+                  v-if="
+                    !loading.nodeStatus && nodeStatus.network_interface_count
+                  "
+                >
+                  <div class="mg-bottom-lg">
+                    <span class="label">{{
+                      $t("node_detail.network_interface_count")
+                    }}</span>
+                    <cv-link @click.prevent="goToFirewall">
+                      {{ nodeStatus.network_interface_count }}
+                    </cv-link>
+                  </div>
+                </template>
               </template>
             </cv-tile>
             <cv-tile :light="true">
               <h4 class="mg-bottom-lg">{{ $t("node_detail.vpn") }}</h4>
-              <template v-if="!loading.clusterStatus && vpnInfo.endpoint">
-                <div class="mg-bottom-lg long-text-row">
-                  <span class="label">{{ $t("node_detail.endpoint") }}</span>
-                  <span class="long-text">{{ vpnInfo.endpoint }}</span>
-                </div>
+              <template v-if="loading.nodeStatus">
+                <cv-skeleton-text
+                  :paragraph="true"
+                  :line-count="10"
+                ></cv-skeleton-text>
               </template>
-              <div class="mg-bottom-lg">
-                <span class="label">{{ $t("node_detail.ip_address") }}</span>
-                <span>{{
-                  loading.clusterStatus ? "-" : vpnInfo.ip_address
-                }}</span>
-              </div>
-              <template
-                v-if="!loading.nodeStatus && nodeStatus.vpn_listen_port"
-              >
+              <template v-else>
+                <template v-if="!loading.clusterStatus && vpnInfo.endpoint">
+                  <div class="mg-bottom-lg long-text-row">
+                    <span class="label">{{ $t("node_detail.endpoint") }}</span>
+                    <span class="long-text">{{ vpnInfo.endpoint }}</span>
+                  </div>
+                </template>
                 <div class="mg-bottom-lg">
-                  <span class="label">{{ $t("node_detail.listen_port") }}</span>
-                  <span>{{ nodeStatus.vpn_listen_port }}</span>
+                  <span class="label">{{ $t("node_detail.ip_address") }}</span>
+                  <span>{{
+                    loading.clusterStatus ? "-" : vpnInfo.ip_address
+                  }}</span>
                 </div>
+                <template
+                  v-if="!loading.nodeStatus && nodeStatus.vpn_listen_port"
+                >
+                  <div class="mg-bottom-lg">
+                    <span class="label">{{
+                      $t("node_detail.listen_port")
+                    }}</span>
+                    <span>{{ nodeStatus.vpn_listen_port }}</span>
+                  </div>
+                </template>
               </template>
             </cv-tile>
             <cv-tile class="alerts-tile" :light="true">
