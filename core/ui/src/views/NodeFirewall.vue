@@ -220,8 +220,11 @@
                           >
                             <template slot="trigger">
                               <a>
-                                +{{ row.addresses.length - 3 }}
-                                {{ $t("common.more") }}
+                                {{
+                                  $tc("common.plus_others",row.addresses.length - 3, {
+                                    num: row.addresses.length - 3,
+                                  })
+                                }}
                               </a>
                             </template>
                             <template slot="content">
