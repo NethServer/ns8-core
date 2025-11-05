@@ -289,7 +289,6 @@ func runAction(rdb *redis.Client, actionCtx context.Context, task *models.Task) 
 
 func listenActionsAsync(actionsCtx context.Context, complete chan int) {
 	defer func() { complete <- 1 }()
-	var workersRegistry sync.WaitGroup
 	brpopCtx, cancelBrpop := context.WithCancel(ctx)
 	taskCancelFunctions := make(map[string]context.CancelFunc)
 
@@ -318,6 +317,7 @@ func listenActionsAsync(actionsCtx context.Context, complete chan int) {
 		MaxRetryBackoff:   5000 * time.Millisecond,
 	})
 
+	workersRegistry := NewWorkersLimiter(maxConcurrency, overloadSleep)
 	var tcMu sync.Mutex
 	taskCh := make(chan models.Task)
 	go readTasks(rdb, brpopCtx, taskCh)
@@ -338,6 +338,12 @@ func listenActionsAsync(actionsCtx context.Context, complete chan int) {
 					workersRegistry.Wait()
 					break MAINLOOP
 				}
+
+				if workersRegistry.ObserveOverload() {
+					rejectAction(rdb, ctx, &task)
+					continue
+				}
+
 				// Create a cancelable context for the task and
 				// store its cancel function in a safe map
 				taskCtx, taskCancelFunction := context.WithCancel(ctx)

@@ -704,7 +704,8 @@
         "must_be_32_chars_but_less_than_128": "Must be between 32 and 128 characters",
         "os_not_supported": "Operating system is not supported",
         "subscription_cannot_be_enabled": "Subscription is not available",
-        "agree_terms_before_register": "I have read and agree to subscription {terms}."
+        "agree_terms_before_register": "I have read and agree to subscription {terms}.",
+        "subscription_pattern": "Invalid token format"
     },
     "settings_sw_repositories": {
         "title": "Software repositories",

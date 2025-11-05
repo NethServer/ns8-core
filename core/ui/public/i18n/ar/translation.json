@@ -1476,7 +1476,8 @@
         "subscription_status": "Subscription status",
         "session_id": "Session ID",
         "start_session_support": "Start session",
-        "agree_terms_before_register": "I have read and agree to subscription {terms}."
+        "agree_terms_before_register": "I have read and agree to subscription {terms}.",
+        "subscription_pattern": "Invalid token format"
     },
     "settings_cluster": {
         "title": "Cluster"

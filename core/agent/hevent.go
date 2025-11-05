@@ -26,7 +26,6 @@ import (
 	"os"
 	"os/exec"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/NethServer/ns8-core/core/agent/models"
@@ -58,13 +57,17 @@ func listenEventsAsync(ctx context.Context, complete chan int) {
 
 	pubsub := rdb.PSubscribe(ctx, "*/event/*")
 
-	var wg sync.WaitGroup
+	wg := NewWorkersLimiter(maxConcurrency, overloadSleep)
 	csyn := make(chan int, 1)
 
 	go func() {
 		for msg := range pubsub.Channel(redis.WithChannelHealthCheckInterval(pollingDuration)) {
 			if before, after, found := strings.Cut(msg.Channel, "/event/"); found {
-				go runEvent(&wg, &models.Event{Source: before, Payload: msg.Payload, Name: after})
+				if wg.ObserveOverload() {
+					log.Printf(SD_ERR + "Agent is busy. Event %s rejected!", msg.Channel)
+				} else {
+					go runEvent(wg, &models.Event{Source: before, Payload: msg.Payload, Name: after})
+				}
 			}
 		}
 		csyn <- 1
@@ -80,7 +83,7 @@ func listenEventsAsync(ctx context.Context, complete chan int) {
 	complete <- 1
 }
 
-func runEvent(wg *sync.WaitGroup, event *models.Event) {
+func runEvent(wg *workersLimiter, event *models.Event) {
 	wg.Add(1)
 	defer wg.Done()
 

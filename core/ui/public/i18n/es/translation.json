@@ -1561,7 +1561,8 @@
         "authentication_token_placeholder": "Pegue aquí el token",
         "session_id": "ID de sesión",
         "start_session_support": "Iniciar sesión",
-        "agree_terms_before_register": "He leído y acepto la suscripción {terms}."
+        "agree_terms_before_register": "He leído y acepto la suscripción {terms}.",
+        "subscription_pattern": "Invalid token format"
     },
     "syslog_forwarder": {
         "start_time": "Start time (24-hour)",

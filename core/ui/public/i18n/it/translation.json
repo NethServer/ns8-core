@@ -1561,7 +1561,8 @@
         "subscription_status": "Stato subscription",
         "session_id": "ID sessione",
         "start_session_support": "Avvia sessione",
-        "agree_terms_before_register": "Ho letto e accetto l'abbonamento {terms}."
+        "agree_terms_before_register": "Ho letto e accetto l'abbonamento {terms}.",
+        "subscription_pattern": "Formato di token non valido"
     },
     "cloud_log_manager_forwarder": {
         "tenant_tooltip": "Questa chiave, nota anche come \"tenant\", identifica e associa i log del cluster all'interno di un'azienda in Cloud Log Manager. È possibile trovarla nel portale Cloud Log Manager, sotto Utenti e Aziende > Aziende.",
