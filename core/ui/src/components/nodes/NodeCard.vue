@@ -161,15 +161,15 @@ export default {
     isLeader: Boolean,
     role: {
       type: String,
-      default: "worker",
+      default: "Worker",
     },
     leaderLabel: {
       type: String,
-      default: "leader",
+      default: "Leader",
     },
     workerLabel: {
       type: String,
-      default: "worker",
+      default: "Worker",
     },
     ns7MigrationLabel: {
       type: String,
