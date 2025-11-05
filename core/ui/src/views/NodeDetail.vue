@@ -84,7 +84,7 @@
       </cv-row>
       <cv-row>
         <cv-column>
-          <h4 class="mg-bottom-md">{{ $t("node_detail.node_information") }}</h4>
+          <h4 class="mg-bottom-md">{{ $t("node_detail.general_information") }}</h4>
         </cv-column>
       </cv-row>
       <cv-row>
@@ -92,7 +92,7 @@
           <!-- card grid -->
           <div class="card-grid nodeinfo-grid">
             <cv-tile :light="true">
-              <h4 class="mg-bottom-lg">{{ $t("node_detail.node_details") }}</h4>
+              <h4 class="mg-bottom-lg">{{ $t("node_detail.overviews") }}</h4>
               <template v-if="loading.nodeStatus">
                 <cv-skeleton-text
                   :paragraph="true"
