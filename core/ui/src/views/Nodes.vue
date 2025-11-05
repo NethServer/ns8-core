@@ -138,7 +138,9 @@
               :applications="node.applications"
               :applicationsLabel="$t('nodes.applications')"
               :alertsCount="alertsCountByNode[node.id] || 0"
-              :alertsLabel="$t('nodes.alerts')"
+              :alertsLabel="
+                $tc('nodes.alerts', alertsCountByNode[node.id] || 0)
+              "
               :class="{ 'node-card--ns7': node.role === 'ns7migration' }"
               light
             >
