@@ -190,7 +190,7 @@
                     :noSearchResultsDescription="
                       $t('common.no_search_results_description')
                     "
-                    :isLoading="loading.alerts"
+                    :isLoading="loading.listAlerts"
                     :skeletonRows="5"
                     :isErrorShown="!!error.listAlerts"
                     :errorTitle="$t('action.list-alerts')"
@@ -565,7 +565,7 @@ export default {
       loading: {
         listNodes: true,
         clusterStatus: true,
-        alerts: true,
+        listAlerts: true,
       },
       error: {
         getClusterStatus: "",
@@ -811,7 +811,7 @@ export default {
     listAlertsAborted(taskResult, taskContext) {
       console.error(`${taskContext.action} aborted`, taskResult);
       this.error.listAlerts = this.$t("error.generic_error");
-      this.loading.alerts = false;
+      this.loading.listAlerts = false;
     },
     listAlertsCompleted(taskContext, taskResult) {
       // Filter by this.nodeId
@@ -845,7 +845,7 @@ export default {
       });
 
       this.alerts = simplified;
-      this.loading.alerts = false;
+      this.loading.listAlerts = false;
     },
 
     async getClusterStatus() {

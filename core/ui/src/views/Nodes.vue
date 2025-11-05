@@ -392,7 +392,7 @@ export default {
         nodes: true,
         setNodeLabel: false,
         getFqdn: false,
-        alerts: true,
+        listAlerts: true,
         listNodes: true,
       },
       error: {
@@ -418,7 +418,7 @@ export default {
     },
     stillLoading() {
       return (
-        this.loading.nodes || this.loading.alerts || this.loading.listNodes
+        this.loading.nodes || this.loading.listAlerts || this.loading.listNodes
       );
     },
   },
@@ -673,7 +673,7 @@ export default {
     listAlertsAborted(taskResult, taskContext) {
       console.error(`${taskContext.action} aborted`, taskResult);
       this.error.listAlerts = this.$t("error.generic_error");
-      this.loading.alerts = false;
+      this.loading.listAlerts = false;
     },
     listAlertsCompleted(taskContext, taskResult) {
       const alerts = taskResult.output.alerts;
@@ -686,7 +686,7 @@ export default {
         }
       });
       this.alertsCountByNode = alertsCountByNode;
-      this.loading.alerts = false;
+      this.loading.listAlerts = false;
     },
     goToNodeDetail(nodeId) {
       this.$router.push({
