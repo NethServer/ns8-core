@@ -457,9 +457,6 @@
                   :value="`${rowIndex}`"
                 >
                   <cv-data-table-cell>
-                    {{ $t("node_detail.disk") }} {{ rowIndex + 1 }}
-                  </cv-data-table-cell>
-                  <cv-data-table-cell>
                     {{ row.device }}
                   </cv-data-table-cell>
                   <cv-data-table-cell>
@@ -558,13 +555,12 @@ export default {
       tablePageDisks: [],
       tableColumnsAlarms: ["summary", "startsAt"],
       tableColumnsDisks: [
-        "disks",
-        "devices",
-        "mountpoints",
-        "file_system",
-        "total_space",
-        "used_space",
-        "free_space",
+        "device",
+        "mountpoint",
+        "fstype",
+        "total",
+        "used",
+        "free",
       ],
     };
   },
