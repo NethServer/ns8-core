@@ -123,7 +123,7 @@
         </div>
       </div>
       <div class="row mg-top-sm simple-field">
-        <div class="mg-top-sm icon-and-text mg-bottom-lg">
+        <div class="mg-top-sm icon-and-text-compact mg-bottom-lg">
           <cv-interactive-tooltip
             alignment="center"
             direction="top"
@@ -358,5 +358,19 @@ export default {
   overflow: hidden;
   text-overflow: ellipsis;
   vertical-align: bottom;
+}
+
+.icon-and-text-compact {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem; // space between icon and text
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.icon-and-text-compact .icon {
+  flex-shrink: 0;
+  width: 1rem;
+  height: 1rem;
 }
 </style>
