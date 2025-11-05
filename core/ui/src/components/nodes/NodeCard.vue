@@ -95,14 +95,16 @@
                 <span
                   class="ip-ellipsis ip-span"
                   :style="{ fontSize: ipAddressFontSize }"
-                >{{ ip_address }}</span>
+                  >{{ ip_address }}</span
+                >
               </template>
             </cv-interactive-tooltip>
             <span
               v-else
               class="ip-ellipsis ip-span"
               :style="{ fontSize: ipAddressFontSize }"
-            >{{ ip_address }}</span>
+              >{{ ip_address }}</span
+            >
           </div>
         </div>
         <div class="tr">
@@ -256,7 +258,9 @@ export default {
       return this.isLongFqdn ? "0.95em" : "1.1em";
     },
     isLongIpAddress() {
-      return this.ip_address && this.ip_address.length > this.ipAddressLongThreshold;
+      return (
+        this.ip_address && this.ip_address.length > this.ipAddressLongThreshold
+      );
     },
     ipAddressFontSize() {
       return this.isLongIpAddress ? "0.95em" : "1em";
