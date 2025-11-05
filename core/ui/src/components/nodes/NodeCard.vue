@@ -237,6 +237,10 @@ export default {
       type: Number,
       default: 32,
     },
+    ipAddressLongThreshold: {
+      type: Number,
+      default: 32,
+    },
   },
   data() {
     return {
@@ -252,7 +256,7 @@ export default {
       return this.isLongFqdn ? "0.95em" : "1.1em";
     },
     isLongIpAddress() {
-      return this.ip_address && this.ip_address.length > 20;
+      return this.ip_address && this.ip_address.length > this.ipAddressLongThreshold;
     },
     ipAddressFontSize() {
       return this.isLongIpAddress ? "0.95em" : "1em";
