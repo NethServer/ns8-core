@@ -96,9 +96,9 @@
             <cv-tile :light="true">
               <h4 class="mg-bottom-lg">{{ $t("node_detail.node_details") }}</h4>
               <template v-if="!loading.nodeStatus && nodeStatus.fqdn">
-                <div class="mg-bottom-lg fqdn-row">
+                <div class="mg-bottom-lg long-text-row">
                   <span class="label">{{ $t("node_detail.fqdn") }}</span>
-                  <span class="fqdn-text">{{ nodeStatus.fqdn }}</span>
+                  <span class="long-text">{{ nodeStatus.fqdn }}</span>
                 </div>
               </template>
               <div class="mg-bottom-lg">
@@ -131,9 +131,9 @@
             <cv-tile :light="true">
               <h4 class="mg-bottom-lg">{{ $t("node_detail.vpn") }}</h4>
               <template v-if="!loading.clusterStatus && vpnInfo.endpoint">
-                <div class="mg-bottom-lg">
+                <div class="mg-bottom-lg long-text-row">
                   <span class="label">{{ $t("node_detail.endpoint") }}</span>
-                  <span>{{ vpnInfo.endpoint }}</span>
+                  <span class="long-text">{{ vpnInfo.endpoint }}</span>
                 </div>
               </template>
               <div class="mg-bottom-lg">
@@ -970,14 +970,14 @@ export default {
   line-height: 1.2;
 }
 
-.fqdn-row {
+.long-text-row {
   display: flex;
   align-items: baseline;
   flex-wrap: wrap; // allows wrapping only if really needed
   gap: 0.5rem;
 }
 
-.fqdn-text {
+.long-text {
   white-space: normal;
   word-break: break-all;
   overflow-wrap: anywhere;
