@@ -951,9 +951,33 @@ export default {
 }
 
 .nodeinfo-grid {
-  display: grid;
-  grid-template-columns: 0.7fr 0.7fr 1.6fr; // 3 columns
-  gap: 2rem; // space between tiles
+  grid-template-columns: 0.7fr 0.7fr 1.6fr; // 3 columns on desktop
+  gap: 2rem;
+}
+
+// On small screens: 2 columns, alerts move below
+@media (max-width: 1024px) {
+  .nodeinfo-grid {
+    grid-template-columns: 1fr 1fr; // 2 columns
+    gap: 1.5rem;
+  }
+
+  .alerts-tile {
+    grid-column: 1 / -1; // span full width at bottom
+    order: 3; // ensure it's last
+  }
+}
+
+// On very small screens: stack vertically
+@media (max-width: 640px) {
+  .nodeinfo-grid {
+    grid-template-columns: 1fr; // 1 column
+  }
+
+  .alerts-tile {
+    grid-column: 1 / -1; // span full width at bottom
+    order: 3; // ensure it's last
+  }
 }
 
 .log-cell-content {
