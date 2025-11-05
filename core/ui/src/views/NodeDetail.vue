@@ -84,7 +84,9 @@
       </cv-row>
       <cv-row>
         <cv-column>
-          <h4 class="mg-bottom-md">{{ $t("node_detail.general_information") }}</h4>
+          <h4 class="mg-bottom-md">
+            {{ $t("node_detail.general_information") }}
+          </h4>
         </cv-column>
       </cv-row>
       <cv-row>
@@ -638,10 +640,13 @@ export default {
   methods: {
     ...mapActions(["setClusterNodesInStore"]),
     goToFirewall() {
-      this.$router.replace("/settings/firewall/" + this.nodeId);
+      this.$router.push({
+        name: "NodeFirewall",
+        params: { nodeId: this.nodeId },
+      });
     },
     goToApplications() {
-      this.$router.replace({
+      this.$router.push({
         name: "applications",
         params: { nodeId: this.nodeId },
       });

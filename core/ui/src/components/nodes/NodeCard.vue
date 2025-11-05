@@ -260,8 +260,8 @@ export default {
   methods: {
     goToApplications() {
       this.$router.push({
-        path: "/applications",
-        query: { selectedNodeId: this.nodeId },
+        name: "applications",
+        params: { nodeId: this.nodeId },
       });
     },
   },
