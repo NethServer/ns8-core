@@ -198,8 +198,8 @@
                         :key="`${rowIndex}`"
                         :value="`${rowIndex}`"
                       >
-                        <cv-data-table-cell class="severity-cell">
-                          <span class="severity-content">
+                        <cv-data-table-cell class="alerts-cell">
+                          <span class="alerts-content">
                             <NsSvg
                               v-if="row.labels.severity === 'warning'"
                               :svg="Warning16"
@@ -216,12 +216,14 @@
                               :svg="InformationFilled16"
                               class="icon ns-info"
                             />
-                            <span class="summary-text">{{ row.summary }}</span>
+                            <span class="alerts-text">{{ row.summary }}</span>
                           </span>
                         </cv-data-table-cell>
-                        <cv-data-table-cell class="log-cell">
-                          <span class="log-cell-content">
-                            {{ formatAlertDate(row.startsAt) }}
+                        <cv-data-table-cell class="alerts-cell">
+                          <span class="alerts-content">
+                            <span class="alerts-text">
+                              {{ formatAlertDate(row.startsAt) }}
+                            </span>
                           </span>
                         </cv-data-table-cell>
                       </cv-data-table-row>
@@ -916,23 +918,22 @@ export default {
   }
 }
 
-.severity-cell .icon {
+.alerts-cell .icon {
   display: inline-block;
-  width: 3rem; // increased (≈22px)
-  height: 1.4rem;
+  width: 1.2rem;
+  height: 1.2rem;
+  margin-right: 0.5rem;
   vertical-align: middle;
 }
 
-.severity-cell .severity-content {
+.alerts-cell .alerts-content {
   display: inline-flex;
-  align-items: flex-start; // or center
-  gap: 0.4rem;
+  align-items: center;
   line-height: 1.2;
 }
 
-.severity-cell .summary-text {
+.alerts-cell .alerts-text {
   line-height: 1.3;
-  padding-top: 2px; // slight vertical adjustment
 }
 
 @media (max-width: $breakpoint-medium) {
@@ -974,20 +975,6 @@ export default {
     grid-column: 1 / -1; // span full width at bottom
     order: 3; // ensure it's last
   }
-}
-
-.log-cell-content {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.75rem; // espace entre la date et le bouton
-}
-
-.log-cell .cv-button {
-  margin: 0;
-  padding: 0 0.5rem;
-  font-size: 1em;
-  height: 2rem;
-  line-height: 1.2;
 }
 
 .long-text-row {
