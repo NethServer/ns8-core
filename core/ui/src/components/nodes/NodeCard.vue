@@ -73,7 +73,7 @@
             >
           </div>
         </div>
-        <div class="tr">
+        <div v-if="nodeLabel" class="tr">
           <div class="td label">{{ $t("nodes.node_id") }}</div>
           <div class="td">
             {{ nodeId }}
