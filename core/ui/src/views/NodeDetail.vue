@@ -974,8 +974,8 @@ export default {
   gap: 2rem;
 }
 
-/* On small screens: 2 columns, alerts move below */
-@media (max-width: 1024px) {
+/* On tablet: 2 columns, alerts move to new line */
+@media (max-width: 1200px) {
   .nodeinfo-grid {
     grid-template-columns: 1fr 1fr; /* 2 columns */
     gap: 1.5rem;
