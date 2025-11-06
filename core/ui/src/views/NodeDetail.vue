@@ -92,7 +92,7 @@
       <cv-row>
         <cv-column>
           <!-- card grid -->
-          <div class="card-grid nodeinfo-grid">
+          <div class="card-grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 3xl:grid-cols-4">
             <cv-tile :light="true">
               <h4 class="mg-bottom-lg">{{ $t("node_detail.overview") }}</h4>
               <template v-if="loading.listNodes">
@@ -173,7 +173,7 @@
                 </template>
               </template>
             </cv-tile>
-            <cv-tile class="alerts-tile" :light="true">
+            <cv-tile class="col-span-2" :light="true">
               <h4 class="mg-bottom-lg">{{ $t("node_detail.alerts") }}</h4>
               <cv-row>
                 <cv-column>
@@ -961,41 +961,6 @@ export default {
 @media (max-width: $breakpoint-medium) {
   .title-and-role .title {
     max-width: 15rem;
-  }
-}
-
-.alerts-tile {
-  min-width: 0; /* avoid overflow */
-  overflow-x: auto;
-}
-
-.nodeinfo-grid {
-  grid-template-columns: 0.7fr 0.7fr 1.6fr; /* 3 columns on desktop */
-  gap: 2rem;
-}
-
-/* On tablet: 2 columns, alerts move to new line */
-@media (max-width: 1200px) {
-  .nodeinfo-grid {
-    grid-template-columns: 1fr 1fr; /* 2 columns */
-    gap: 1.5rem;
-  }
-
-  .alerts-tile {
-    grid-column: 1 / -1; /* span full width at bottom */
-    order: 3; /* ensure it's last */
-  }
-}
-
-/* On very small screens: stack vertically */
-@media (max-width: 640px) {
-  .nodeinfo-grid {
-    grid-template-columns: 1fr; /* 1 column */
-  }
-
-  .alerts-tile {
-    grid-column: 1 / -1; /* span full width at bottom */
-    order: 3; /* ensure it's last */
   }
 }
 
