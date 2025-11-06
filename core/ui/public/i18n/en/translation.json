@@ -1521,7 +1521,7 @@
         "node_id": "Node ID",
         "ip_address": "IP address",
         "applications": "Applications",
-        "alerts": "Alert| Alerts",
+        "alerts": "Alert | Alerts",
         "no_alerts": "No alerts",
         "ns7_migration_in_progress": "Migration in progress",
         "ns7_migration_tooltip": "This node and its VPN connection are managed on NethServer 7 through the 'NS8 Migration' application.",

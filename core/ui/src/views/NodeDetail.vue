@@ -98,7 +98,7 @@
               <template v-if="loading.listNodes">
                 <cv-skeleton-text
                   :paragraph="true"
-                  :line-count="10"
+                  :line-count="7"
                 ></cv-skeleton-text>
               </template>
               <template v-else>
@@ -145,7 +145,7 @@
               <template v-if="loading.listNodes">
                 <cv-skeleton-text
                   :paragraph="true"
-                  :line-count="10"
+                  :line-count="7"
                 ></cv-skeleton-text>
               </template>
               <template v-else>
@@ -191,7 +191,7 @@
                       $t('common.no_search_results_description')
                     "
                     :isLoading="loading.listAlerts"
-                    :skeletonRows="5"
+                    :skeletonRows="3"
                     :isErrorShown="!!error.listAlerts"
                     :errorTitle="$t('action.list-alerts')"
                     :errorDescription="error.listAlerts"
@@ -433,9 +433,9 @@
           <h4 class="mg-bottom-lg">{{ $t("node_detail.disks") }}</h4>
         </cv-column>
       </cv-row>
-      <cv-tile :light="true">
-        <cv-row>
-          <cv-column>
+      <cv-row class="mb-6">
+        <cv-column>
+          <cv-tile :light="true">
             <!-- card grid -->
             <NsDataTable
               :allRows="nodeStatus.disks"
@@ -506,9 +506,9 @@
                 </cv-data-table-row>
               </template>
             </NsDataTable>
-          </cv-column>
-        </cv-row>
-      </cv-tile>
+          </cv-tile>
+        </cv-column>
+      </cv-row>
     </cv-grid>
   </div>
 </template>

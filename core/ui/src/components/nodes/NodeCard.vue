@@ -325,7 +325,7 @@ export default {
 .icon-and-text-compact {
   display: flex;
   align-items: center;
-  gap: 0.25rem; /* space between icon and text */
+  gap: 0.5rem; /* space between icon and text */
   margin-top: 0.5rem;
   margin-bottom: 0.5rem;
 }
