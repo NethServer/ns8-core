@@ -94,7 +94,7 @@
           <!-- card grid -->
           <div class="card-grid nodeinfo-grid">
             <cv-tile :light="true">
-              <h4 class="mg-bottom-lg">{{ $t("node_detail.overviews") }}</h4>
+              <h4 class="mg-bottom-lg">{{ $t("node_detail.overview") }}</h4>
               <template v-if="loading.listNodes">
                 <cv-skeleton-text
                   :paragraph="true"

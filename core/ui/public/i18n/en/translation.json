@@ -1555,7 +1555,7 @@
         "data_received": "Data received",
         "data_sent": "Data sent",
         "system": "System",
-        "overviews": "Overviews",
+        "overview": "Overview",
         "fqdn": "FQDN",
         "node_id": "Node ID",
         "applications_count": "Applications",
