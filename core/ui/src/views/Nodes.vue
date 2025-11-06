@@ -87,7 +87,7 @@
         <div
           class="card-grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 3xl:grid-cols-4"
         >
-          <template v-for="node in nodes">
+          <template v-for="node in clusterNodes">
             <NodeCard
               v-if="!node.online"
               :key="node.id"
@@ -376,6 +376,7 @@ export default {
       Recommend20,
       joinCode: "",
       nodes: [],
+      clusterNodes: [],
       refreshDataInterval: null,
       currentNode: null,
       newNodeLabel: "",
@@ -389,7 +390,7 @@ export default {
       isShownSetFqdnModal: false,
       alertsCountByNode: {},
       loading: {
-        nodes: true,
+        getClusterStatus: true,
         setNodeLabel: false,
         getFqdn: false,
         listAlerts: true,
@@ -418,7 +419,7 @@ export default {
     },
     stillLoading() {
       return (
-        this.loading.nodes || this.loading.listAlerts || this.loading.listNodes
+        this.loading.getClusterStatus || this.loading.listAlerts || this.loading.listNodes
       );
     },
   },
@@ -554,7 +555,7 @@ export default {
     getClusterStatusAborted(taskResult, taskContext) {
       console.error(`${taskContext.action} aborted`, taskResult);
       this.error.getClusterStatus = this.$t("error.generic_error");
-      this.loading.clusterStatus = false;
+      this.loading.getClusterStatus = false;
     },
     getClusterStatusCompleted(taskContext, taskResult) {
       const clusterStatus = taskResult.output;
@@ -562,7 +563,7 @@ export default {
       this.nodes = clusterStatus.nodes.sort(this.sortByProperty("id"));
       this.setClusterNodesInStore(this.nodes);
 
-      this.loading.nodes = false;
+      this.loading.getClusterStatus = false;
       // now that authoritative online/local flags are present, fetch list-nodes
       this.listNodes();
     },
@@ -633,7 +634,7 @@ export default {
         };
       });
 
-      this.nodes = transformedNodes.sort(this.sortByProperty("id"));
+      this.clusterNodes = transformedNodes.sort(this.sortByProperty("id"));
       this.loading.listNodes = false;
     },
     async listAlerts() {
