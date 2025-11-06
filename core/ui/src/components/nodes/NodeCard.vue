@@ -58,17 +58,14 @@
                 {{ fqdn }}
               </template>
               <template slot="trigger">
-                <span
-                  class="long-text-ellipsis long-text-span"
-                  >{{ fqdn }}</span
-                >
+                <span class="long-text-ellipsis long-text-span">{{
+                  fqdn
+                }}</span>
               </template>
             </cv-interactive-tooltip>
-            <span
-              v-else
-              class="long-text-ellipsis long-text-span"
-              >{{ fqdn }}</span
-            >
+            <span v-else class="long-text-ellipsis long-text-span">{{
+              fqdn
+            }}</span>
           </div>
         </div>
         <div v-if="nodeLabel" class="tr">
@@ -90,17 +87,14 @@
                 {{ ip_address }}
               </template>
               <template slot="trigger">
-                <span
-                  class="long-text-ellipsis long-text-span"
-                  >{{ ip_address }}</span
-                >
+                <span class="long-text-ellipsis long-text-span">{{
+                  ip_address
+                }}</span>
               </template>
             </cv-interactive-tooltip>
-            <span
-              v-else
-              class="long-text-ellipsis long-text-span"
-              >{{ ip_address }}</span
-            >
+            <span v-else class="long-text-ellipsis long-text-span">{{
+              ip_address
+            }}</span>
           </div>
         </div>
         <div class="tr">
