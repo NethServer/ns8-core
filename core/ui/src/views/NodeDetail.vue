@@ -92,7 +92,9 @@
       <cv-row>
         <cv-column>
           <!-- card grid -->
-          <div class="card-grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-4 3xl:grid-cols-4">
+          <div
+            class="card-grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-4 3xl:grid-cols-4"
+          >
             <cv-tile :light="true">
               <h4 class="mg-bottom-lg">{{ $t("node_detail.overview") }}</h4>
               <template v-if="loading.listNodes">
@@ -173,7 +175,10 @@
                 </template>
               </template>
             </cv-tile>
-            <cv-tile class="md:col-span-2 lg:col-span-2 xl:col-span-2 3xl:col-span-2" :light="true">
+            <cv-tile
+              class="md:col-span-2 lg:col-span-2 xl:col-span-2 3xl:col-span-2"
+              :light="true"
+            >
               <h4 class="mg-bottom-lg">{{ $t("node_detail.alerts") }}</h4>
               <cv-row>
                 <cv-column>

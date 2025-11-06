@@ -419,7 +419,9 @@ export default {
     },
     stillLoading() {
       return (
-        this.loading.getClusterStatus || this.loading.listAlerts || this.loading.listNodes
+        this.loading.getClusterStatus ||
+        this.loading.listAlerts ||
+        this.loading.listNodes
       );
     },
   },
