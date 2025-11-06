@@ -45,6 +45,12 @@
       class="table-wrapper"
     >
       <div class="table">
+        <div v-if="nodeLabel" class="tr">
+          <div class="td label">{{ $t("nodes.node_id") }}</div>
+          <div class="td">
+            {{ nodeId }}
+          </div>
+        </div>
         <div class="tr long-text-row">
           <div class="td label">{{ fqdnLabel }}</div>
           <div class="td long-text-cell">
@@ -66,12 +72,6 @@
             <span v-else class="long-text-ellipsis long-text-span">{{
               fqdn
             }}</span>
-          </div>
-        </div>
-        <div v-if="nodeLabel" class="tr">
-          <div class="td label">{{ $t("nodes.node_id") }}</div>
-          <div class="td">
-            {{ nodeId }}
           </div>
         </div>
         <div class="tr long-text-row">
