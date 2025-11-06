@@ -140,7 +140,7 @@
     </template>
     <!-- alerts -->
     <template v-if="!loading && online && role !== 'ns7migration'">
-      <div class="card-row icon-and-text mg-top-sm">
+      <div class="card-row icon-and-text mg-top-lg">
         <NsSvg
           :svg="alertsCount > 0 ? Warning16 : CheckmarkFilled16"
           :class="alertsCount > 0 ? 'icon ns-warning' : 'icon ns-success'"
