@@ -102,18 +102,18 @@
                 ></cv-skeleton-text>
               </template>
               <template v-else>
-                <template v-if="!loading.listNodes && nodeStatus.fqdn">
-                  <div class="mg-bottom-lg long-text-row">
-                    <span class="label">{{ $t("node_detail.fqdn") }}</span>
-                    <span class="long-text">{{ nodeStatus.fqdn }}</span>
-                  </div>
-                </template>
                 <div class="mg-bottom-lg">
                   <span class="label">{{ $t("node_detail.node_id") }}</span>
                   <span>{{
                     loading.listNodes ? "-" : nodeStatus.node_id
                   }}</span>
                 </div>
+                <template v-if="!loading.listNodes && nodeStatus.fqdn">
+                  <div class="mg-bottom-lg long-text-row">
+                    <span class="label">{{ $t("node_detail.fqdn") }}</span>
+                    <span class="long-text">{{ nodeStatus.fqdn }}</span>
+                  </div>
+                </template>
                 <template v-if="!loading.listNodes && nodeStatus.app_count">
                   <div class="mg-bottom-lg">
                     <span class="label">{{
@@ -270,8 +270,22 @@
           >
             <cv-tile :light="true">
               <h4 class="mg-bottom-lg">{{ $t("node_detail.cpu") }}</h4>
-              <div class="mg-bottom-lg">
-                {{ $t("node_detail.usage") }}
+              <div class="mg-bottom-sm">
+                <span class="label"
+                  >{{ $t("node_detail.average_cpu_usage") }}
+                  <cv-interactive-tooltip
+                    alignment="start"
+                    direction="bottom"
+                    class="info"
+                  >
+                    <template slot="trigger">
+                      <Information16 />
+                    </template>
+                    <template slot="content">
+                      {{ $t("node_detail.average_cpu_usage_tooltip") }}
+                    </template>
+                  </cv-interactive-tooltip>
+                </span>
                 {{ loading.listNodes ? 0 : nodeStatus.cpu.usage }}%
               </div>
               <NsProgressBar
@@ -355,8 +369,8 @@
             </cv-tile>
             <cv-tile :light="true">
               <h4 class="mg-bottom-lg">{{ $t("node_detail.memory") }}</h4>
-              <div class="mg-bottom-lg">
-                {{ $t("node_detail.usage") }}
+              <div class="mg-bottom-sm">
+                <span class="label">{{ $t("node_detail.usage") }}</span>
                 {{ loading.listNodes ? 0 : nodeStatus.memory.usage }}%
               </div>
               <NsProgressBar
@@ -389,8 +403,8 @@
             </cv-tile>
             <cv-tile :light="true">
               <h4 class="mg-bottom-lg">{{ $t("node_detail.swap") }}</h4>
-              <div class="mg-bottom-lg">
-                {{ $t("node_detail.usage") }}
+              <div class="mg-bottom-sm">
+                <span class="label">{{ $t("node_detail.usage") }}</span>
                 {{ loading.listNodes ? 0 : nodeStatus.swap.usage }}%
               </div>
               <NsProgressBar
@@ -968,7 +982,6 @@ export default {
   display: flex;
   align-items: baseline;
   flex-wrap: wrap; /* allows wrapping only if really needed */
-  gap: 0.5rem;
 }
 
 .long-text {

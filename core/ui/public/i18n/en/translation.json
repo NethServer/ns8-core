@@ -1539,6 +1539,8 @@
         "free": "Free",
         "used": "Used",
         "usage": "Usage",
+        "average_cpu_usage": "Average CPU usage",
+        "average_cpu_usage_tooltip": "Average percentage of CPU time used by active (non-idle) processes over the past 2 minutes.",
         "load": "Load",
         "core": "Core",
         "num_core": "{num}-core",

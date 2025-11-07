@@ -175,7 +175,7 @@
                     $t('common.no_search_results_description')
                   "
                   :isLoading="loading.getFirewallStatus"
-                  :skeletonRows="5"
+                  :skeletonRows="3"
                   :isErrorShown="!!error.getFirewallStatus"
                   :errorTitle="$t('action.get-firewall-status')"
                   :errorDescription="error.getFirewallStatus"

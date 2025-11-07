@@ -100,9 +100,10 @@
         <div class="tr">
           <div class="td label">{{ $t("nodes.applications") }}</div>
           <div class="td">
-            <cv-link @click.prevent="goToApplications">
+            <cv-link v-if="applications" @click.prevent="goToApplications">
               {{ applications }}
             </cv-link>
+            <span v-else>-</span>
           </div>
         </div>
       </div>
@@ -134,7 +135,7 @@
     </template>
     <!-- alerts -->
     <template v-if="!loading && online && role !== 'ns7migration'">
-      <div class="card-row icon-and-text mg-top-lg">
+      <div class="card-row icon-and-text mg-top-md">
         <NsSvg
           :svg="alertsCount > 0 ? Warning16 : CheckmarkFilled16"
           :class="alertsCount > 0 ? 'icon ns-warning' : 'icon ns-success'"
