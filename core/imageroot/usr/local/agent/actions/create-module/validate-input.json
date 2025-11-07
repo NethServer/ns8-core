@@ -12,6 +12,18 @@
     ],
     "type": "object",
     "properties": {
+        "volumes": {
+            "type": "object",
+            "description": "Optional mapping of application volume names to filesystem mount points.",
+            "patternProperties": {
+                "[^/]+": {
+                    "description": "Absolute filesystem directory path under /",
+                    "example": "/srv/pool0",
+                    "type": "string",
+                    "pattern": "^/.+$"
+                }
+            }
+        },
         "images": {
             "type": "array",
             "items": {
