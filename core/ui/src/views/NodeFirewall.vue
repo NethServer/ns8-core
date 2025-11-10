@@ -202,18 +202,17 @@
                       </cv-data-table-cell>
                       <cv-data-table-cell>
                         <span v-if="row.addresses.length <= 3">
-                          <span v-for="(addr, idx) in row.addresses" :key="idx">
-                            {{ addr
-                            }}<br v-if="idx < row.addresses.length - 1" />
-                          </span>
+                          <div v-for="(addr, idx) in row.addresses" :key="idx">
+                            {{ addr }}
+                          </div>
                         </span>
                         <span v-else>
-                          <span
+                          <div
                             v-for="(addr, idx) in row.addresses.slice(0, 3)"
                             :key="idx"
                           >
                             {{ addr }}<br />
-                          </span>
+                          </div>
                           <cv-interactive-tooltip
                             alignment="center"
                             direction="top"
@@ -232,18 +231,11 @@
                               </a>
                             </template>
                             <template slot="content">
-                              <div>
-                                <span
-                                  v-for="(addr, idx) in row.addresses.slice(3)"
-                                  :key="idx"
-                                >
-                                  {{ addr
-                                  }}<br
-                                    v-if="
-                                      idx < row.addresses.slice(3).length - 1
-                                    "
-                                  />
-                                </span>
+                              <div
+                                v-for="(addr, idx) in row.addresses.slice(3)"
+                                :key="idx"
+                              >
+                                {{ addr }}<br />
                               </div>
                             </template>
                           </cv-interactive-tooltip>
@@ -451,7 +443,6 @@ export default {
               : [],
           }))
         : [];
-
       // interfaces
       this.interfaces = firewallStatus.interfaces;
       const tcpPortRegex = /^(.+)\/tcp$/;
