@@ -616,9 +616,10 @@ export default {
       );
       const transformedNodes = nodesData.map((node) => {
         // Only use online:true from cluster status
-        const online = node.role === "ns7migration"
-          ? true
-          : onlineById[node.node_id] === true;
+        const online =
+          node.role === "ns7migration"
+            ? true
+            : onlineById[node.node_id] === true;
         return {
           id: node.node_id,
           hostname: node.fqdn || "",

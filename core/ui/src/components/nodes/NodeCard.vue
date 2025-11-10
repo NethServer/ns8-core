@@ -99,7 +99,7 @@
           <div class="td label">{{ $t("nodes.applications") }}</div>
           <div class="td">
             <!-- <cv-link v-if="applications" @click.prevent="goToApplications"> -->
-              {{ applications }}
+            {{ applications }}
             <!-- </cv-link> -->
             <!-- <span v-else>-</span> -->
           </div>
