@@ -1522,7 +1522,7 @@
         "ip_address": "IP address",
         "applications": "Applications",
         "alerts": "Alert | Alerts",
-        "no_alerts": "No alerts",
+        "no_alerts": "No alert",
         "ns7_migration_in_progress": "Migration in progress",
         "ns7_migration_tooltip": "This node and its VPN connection are managed on NethServer 7 through the 'NS8 Migration' application.",
         "go_to_tls_certificates": "Go to TLS certificates",
@@ -1566,14 +1566,14 @@
         "col_summary": "Message",
         "alerts": "Alerts",
         "general_information": "General information",
-        "no_alerts": "No alerts",
+        "no_alerts": "No alert",
         "col_device": "Device",
         "col_mountpoint": "Mount point",
         "col_fstype": "File system",
         "col_total": "Total space",
         "col_used": "Used space",
         "col_free": "Free space",
-        "no_disks_info": "No disks info"
+        "no_disks_info": "No disk"
     },
     "firewall": {
         "title": "Firewall",
