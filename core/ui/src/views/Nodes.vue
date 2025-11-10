@@ -161,12 +161,12 @@
                   <cv-overflow-menu-item @click="showSetNodeFqdnModal(node)">
                     <NsMenuItem :icon="Edit20" :label="$t('nodes.set_fqdn')" />
                   </cv-overflow-menu-item>
-                  <cv-overflow-menu-item @click="goToApplications(node)">
+                  <!-- <cv-overflow-menu-item @click="goToApplications(node)">
                     <NsMenuItem
                       :icon="ArrowRight20"
                       :label="$t('nodes.go_to_applications')"
                     />
-                  </cv-overflow-menu-item>
+                  </cv-overflow-menu-item> -->
                   <cv-overflow-menu-item @click="goToHttpRoutes(node)">
                     <NsMenuItem
                       :icon="ArrowRight20"

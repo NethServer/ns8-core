@@ -119,9 +119,9 @@
                     <span class="label">{{
                       $t("node_detail.applications_count")
                     }}</span>
-                    <cv-link @click.prevent="goToApplications">
+                    <!-- <cv-link @click.prevent="goToApplications">  -->
                       {{ nodeStatus.app_count }}
-                    </cv-link>
+                    <!-- </cv-link> -->
                   </div>
                 </template>
                 <template

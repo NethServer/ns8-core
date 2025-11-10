@@ -100,10 +100,10 @@
         <div class="tr">
           <div class="td label">{{ $t("nodes.applications") }}</div>
           <div class="td">
-            <cv-link v-if="applications" @click.prevent="goToApplications">
+            <!-- <cv-link v-if="applications" @click.prevent="goToApplications"> -->
               {{ applications }}
-            </cv-link>
-            <span v-else>-</span>
+            <!-- </cv-link> -->
+            <!-- <span v-else>-</span> -->
           </div>
         </div>
       </div>
