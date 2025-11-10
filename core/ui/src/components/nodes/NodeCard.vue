@@ -58,7 +58,6 @@
               v-if="isLongFqdn"
               alignment="center"
               direction="top"
-              class="long-text-tooltip"
             >
               <template slot="content">
                 {{ fqdn }}
@@ -81,7 +80,6 @@
               v-if="isLongIpAddress"
               alignment="center"
               direction="top"
-              class="long-text-tooltip"
             >
               <template slot="content">
                 {{ ip_address }}
