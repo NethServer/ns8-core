@@ -610,27 +610,21 @@ export default {
     listNodesCompleted(taskContext, taskResult) {
       const nodesData = taskResult.output.nodes;
 
-      // Lookups from cluster status (may be empty if somehow race still happens)
-      // Guard against missing nodes
-      const clusterOnlineById = Object.fromEntries(
-        (this.nodes || []).map((node) => [node.id, !!node.online])
+      // Use authoritative online status from getClusterStatusCompleted (this.nodes)
+      const onlineById = Object.fromEntries(
+        (this.nodes || []).map((node) => [node.id, node.online === true])
       );
-
       const transformedNodes = nodesData.map((node) => {
-        const baseOnline =
-          node.node_id in clusterOnlineById
-            ? clusterOnlineById[node.node_id]
-            : !!(node.fqdn && node.fqdn !== ""); // fallback if cluster status not available, fqdn presence means online
-
-        // ns7migration nodes must be shown as online even without fqdn
-        const online = node.role === "ns7migration" ? true : baseOnline;
-
+        // Only use online:true from cluster status
+        const online = node.role === "ns7migration"
+          ? true
+          : onlineById[node.node_id] === true;
         return {
           id: node.node_id,
           hostname: node.fqdn || "",
           ui_name: node.ui_name || "",
           role: node.role || "worker",
-          online: online,
+          online,
           ip_address: node.main_ip || "",
           applications: node.app_count || 0,
         };
