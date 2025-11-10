@@ -441,17 +441,16 @@ export default {
       const firewallStatus = taskResult.output;
 
       // network interfaces - ipaddr parsing
-      function parseIpaddr(ipaddr) {
-        return ipaddr.map((iface) => ({
-          ifname: iface.ifname,
-          addresses: Array.isArray(iface.addresses)
-            ? iface.addresses
-                .map((addr) => `${addr.address}/${addr.prefixlen}`)
-                .sort()
-            : [],
-        }));
-      }
-      this.ipaddr = parseIpaddr(firewallStatus.ipaddr);
+      this.ipaddr = Array.isArray(firewallStatus.ipaddr)
+        ? firewallStatus.ipaddr.map((iface) => ({
+            ifname: iface.ifname,
+            addresses: Array.isArray(iface.addresses)
+              ? iface.addresses
+                  .map((addr) => `${addr.address}/${addr.prefixlen}`)
+                  .sort()
+              : [],
+          }))
+        : [];
 
       // interfaces
       this.interfaces = firewallStatus.interfaces;
