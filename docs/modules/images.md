@@ -66,6 +66,9 @@ Module images can use a list of well-known labels to configure the system:
   greater than or equal to the label value. E.g. if the image label
   `org.nethserver.min-core` has value `2.7.0` it cannot be installed if
   the leader node running core has version `2.6.2`.
+- `org.nethserver.volumes`: space-separated list of named volumes. When
+  the node provides additional disks, the Sysadmin is prompted to assign
+  these volumes one of them. See [Volumes](../volumes).
 
 Labels are set by `build-images.sh`, when the images are built.
 
