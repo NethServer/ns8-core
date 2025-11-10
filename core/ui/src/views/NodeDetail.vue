@@ -120,7 +120,7 @@
                       $t("node_detail.applications_count")
                     }}</span>
                     <!-- <cv-link @click.prevent="goToApplications">  -->
-                      {{ nodeStatus.app_count }}
+                    {{ nodeStatus.app_count }}
                     <!-- </cv-link> -->
                   </div>
                 </template>
@@ -852,11 +852,7 @@ export default {
       }));
 
       // Sort newest first
-      simplified.sort((a, b) => {
-        const ta = Date.parse(b.startsAt || 0);
-        const tb = Date.parse(a.startsAt || 0);
-        return ta - tb;
-      });
+      simplified.sort(this.sortByProperty("startsAt"));
 
       this.alerts = simplified;
       this.loading.listAlerts = false;
