@@ -4,32 +4,21 @@
     "$id": "http://schema.nethserver.org/cluster/revoke-actions-input.json",
     "description": "Revoke permissions with matches. See also the grant-actions input schema.",
     "examples": [
-        {
-            "on": "cluster",
-            "to": "reader",
-            "action": "list-something"
-        },
-        {
-            "action": "list-*",
-            "to": "reader",
-            "on": "cluster"
-        }
+        [
+            {
+                "on": "cluster",
+                "to": "reader",
+                "action": "list-something"
+            },
+            {
+                "action": "list-*",
+                "to": "reader",
+                "on": "cluster"
+            }
+        ]
     ],
-    "type": "object",
-    "required": [
-        "action",
-        "to",
-        "on"
-    ],
-    "properties": {
-        "action": {
-            "$ref": "http://schema.nethserver.org/cluster/grant-actions-input.json#/properties/action"
-        },
-        "to": {
-            "$ref": "http://schema.nethserver.org/cluster/grant-actions-input.json#/properties/to"
-        },
-        "on": {
-            "$ref": "http://schema.nethserver.org/cluster/grant-actions-input.json#/properties/on"
-        }
+    "type": "array",
+    "items": {
+        "$ref": "http://schema.nethserver.org/cluster.json#/definitions/grant-assertion"
     }
 }
