@@ -32,7 +32,7 @@ import signal
 import fnmatch
 
 # Handled exceptions:
-from aiohttp import ClientError
+from aiohttp import ClientError, ClientResponseError
 # we want to be compatible python 3.9 and 3.11
 try:
     from aioredis import RedisError # fails with Python 3.11
@@ -113,7 +113,6 @@ def run_command(args):
     if args.endpoint:
         kwargs['endpoint'] = args.endpoint
     elif not 'auth_token' in kwargs and (os.getenv('AGENT_ID') == 'cluster' or os.getenv('REDIS_USER') == 'cluster'):
-        print('Warning: using user "cluster" credentials from the environment', file=sys.stderr)
         # The "cluster" user has no roles. It can
         # run actions with redis:// endpoint though.
         kwargs['endpoint'] = 'redis://cluster-leader'
@@ -140,13 +139,24 @@ def run_command(args):
         'isNotificationHidden': False,
     })
 
+    try:
+        return _run_task(pagent, paction, data, kwargs)
+    except ClientResponseError as ex:
+        if ex.status == 403:
+            print(f"You are not authorized to execute this task: action {pagent}/{paction} is forbidden.", file=sys.stderr)
+            return 1
+        else:
+            raise
+
+def _run_task(pagent, paction, data, kwargs):
     if args.nowait:
         response = agent.tasks.run_nowait(pagent, paction, data, **kwargs)
         print(response)
         return 0
     else:
         response = agent.tasks.run(pagent, paction, data, **kwargs)
-        print(response['error'], file=sys.stderr, end='')
+        if response['exit_code'] != 0 or args.verbose:
+            print(response['error'], file=sys.stderr, end='')
 
         if args.raw:
             print(response['output'])
@@ -228,6 +238,7 @@ submit_parser.add_argument('-d', '--data', help='string in JSON format, set as t
 submit_parser.add_argument('--check-idle-time', help='check the agent client idle time does not exceed the given number of seconds (0=disabled)', type=int)
 submit_parser.add_argument('--nowait', help='do not wait for task completion. Return immediately the task ID', action='store_true')
 submit_parser.add_argument('--raw', help='convert output with print() instead dumping it in JSON format', action='store_true')
+submit_parser.add_argument('--verbose', help='show action stderr on success', action='store_true')
 
 list_actions_parser = subparsers.add_parser('list-actions', help='list actions granted to role "owner"')
 list_actions_parser.add_argument('prefix', default='', nargs='?', help='expand and filter with the given prefix')
@@ -244,7 +255,6 @@ signal.signal(signal.SIGINT, sigint_handler)
 
 try:
     exit_code = command(args)
-
 except (ClientError, RedisError, TaskError, RequestException) as ex:
     print(f'{ex.__class__.__name__}: {ex}', file=sys.stderr)
     exit_code = 1

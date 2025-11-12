@@ -30,6 +30,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('module')
 parser.add_argument('--no-preserve', dest='preserve_data', default=True, action='store_false', help="erase also the module home directory")
 parser.add_argument('--force', default=False, action='store_true', help="unconditionally erase the module from Redis (dangerous)")
+parser.add_argument('--verbose', help='show remove-module action stderr on success', action='store_true')
 args = parser.parse_args()
 
 result = agent.tasks.run(
@@ -48,6 +49,7 @@ result = agent.tasks.run(
     endpoint="redis://cluster-leader",
 )
 
-print(result['error'], file=sys.stderr, end='')
-print(result['output'])
+if result['exit_code'] != 0 or args.verbose:
+    print(result['error'], file=sys.stderr, end='')
+    print(result['output'])
 sys.exit(result['exit_code'])
