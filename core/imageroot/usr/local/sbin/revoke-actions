@@ -28,7 +28,7 @@ parser = argparse.ArgumentParser(description="Revoke role action execution permi
 parser.add_argument('--action', required=True, help="An action name. Wildcard char \"*\" is allowed")
 parser.add_argument('--on', required=True, help="A module name. Wildcard char \"*\" is allowed")
 parser.add_argument('--to', required=True, help="A role name. Wildcard char \"*\" is allowed")
-parser.add_argument('--verbose', help='Show revoke-grants action stderr on success', action='store_true')
+parser.add_argument('--verbose', help='Show revoke-actions action stderr on success', action='store_true')
 args = parser.parse_args()
 
 result = agent.tasks.run(
