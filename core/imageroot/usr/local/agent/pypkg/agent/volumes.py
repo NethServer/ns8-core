@@ -21,6 +21,15 @@ def _parse_config() -> ConfigParser:
         pass
     return config
 
+def get_application_types() -> list:
+    oconfig = _parse_config()
+    apptypes = set()
+    for section in oconfig:
+        app_type = section.rstrip('0123456789')
+        apptypes.add(app_type)
+    apptypes.discard('DEFAULT')
+    return sorted(apptypes)
+
 def get_configuration(module_id:str) -> dict:
     """Return the volume configuration for the given module_id by reading
     the config file /etc/nethserver/volumes.conf."""
