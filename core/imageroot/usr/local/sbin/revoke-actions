@@ -24,11 +24,11 @@ import sys
 import agent.tasks
 import argparse
 
-parser = argparse.ArgumentParser()
-parser.add_argument('--to')
-parser.add_argument('--on')
-parser.add_argument('--action')
-parser.add_argument('--verbose', help='show revoke-user action stderr on success', action='store_true')
+parser = argparse.ArgumentParser(description="Revoke role action execution permission on some module")
+parser.add_argument('--action', required=True, help="An action name. Wildcard char \"*\" is allowed")
+parser.add_argument('--on', required=True, help="A module name. Wildcard char \"*\" is allowed")
+parser.add_argument('--to', required=True, help="A role name. Wildcard char \"*\" is allowed")
+parser.add_argument('--verbose', help='Show revoke-actions action stderr on success', action='store_true')
 args = parser.parse_args()
 
 result = agent.tasks.run(

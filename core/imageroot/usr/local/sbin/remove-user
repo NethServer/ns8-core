@@ -26,7 +26,7 @@ import argparse
 
 parser = argparse.ArgumentParser()
 parser.add_argument('user')
-parser.add_argument('--verbose', help='show remove-module action stderr on success', action='store_true')
+parser.add_argument('--verbose', help='show remove-user action stderr on success', action='store_true')
 
 args = parser.parse_args()
 
