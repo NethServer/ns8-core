@@ -164,7 +164,9 @@
                       :alt="row.name + ' logo'"
                       class="module-logo"
                     />
-                    <span>{{ row.module }}</span>
+                    <span>{{
+                      row.module.charAt(0).toUpperCase() + row.module.slice(1)
+                    }}</span>
                   </cv-data-table-cell>
                   <cv-data-table-cell>
                     <span>{{
