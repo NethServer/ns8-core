@@ -518,7 +518,7 @@ export default {
   },
   created() {
     this.listModules();
-    // this.listRepositories();
+
     this.$nextTick(() => {
       this.filter.moduleType = "any";
       this.filter.selectedNodeId = "any";
