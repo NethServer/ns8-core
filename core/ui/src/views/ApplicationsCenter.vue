@@ -891,62 +891,6 @@ export default {
 
       this.loading.listModules = false;
     },
-    async updateModules() {
-      this.error.updateModules = "";
-      this.setUpdateInProgressInStore(true);
-      const taskAction = "update-modules";
-      const eventId = this.getUuid();
-
-      // register to task error
-      this.$root.$once(
-        `${taskAction}-aborted-${eventId}`,
-        this.updateModulesAborted
-      );
-
-      this.$root.$once(
-        `${taskAction}-completed-${eventId}`,
-        this.updateModulesCompleted
-      );
-
-      const res = await to(
-        this.createClusterTask({
-          action: taskAction,
-          data: {},
-          extra: {
-            title: this.$t("applications.update_all_apps"),
-            description: this.$tc(
-              "applications.updating_n_instances_c",
-              this.numInstancesToUpdate,
-              {
-                num: this.numInstancesToUpdate,
-              }
-            ),
-            eventId,
-            numInstances: this.numInstancesToUpdate,
-            completion: {
-              i18nString: "applications.num_instances_updated",
-              extraTextParams: ["numInstances"],
-            },
-          },
-        })
-      );
-      const err = res[0];
-
-      if (err) {
-        console.error(`error creating task ${taskAction}`, err);
-        this.error.updateModules = this.getErrorMessage(err);
-        this.setUpdateInProgressInStore(false);
-        return;
-      }
-    },
-    updateModulesAborted(taskResult, taskContext) {
-      console.error(`${taskContext.action} aborted`, taskResult);
-      this.setUpdateInProgressInStore(false);
-    },
-    updateModulesCompleted() {
-      this.setUpdateInProgressInStore(false);
-      this.listModules();
-    },
     showSoftwareCenterCoreApps() {
       this.$router.push("/software-center/core-apps");
     },
