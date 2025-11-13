@@ -472,7 +472,8 @@ export default {
               module.ui_name.toLowerCase().includes(searchText)) ||
             module.id.toLowerCase().includes(searchText) ||
             module.module.toLowerCase().includes(searchText) ||
-            module.node_ui_name.toLowerCase().includes(searchText) ||
+            (module.node_ui_name &&
+              module.node_ui_name.toLowerCase().includes(searchText)) ||
             module.node.toLowerCase().includes(searchText) ||
             module.version.toLowerCase().includes(searchText)
           );
