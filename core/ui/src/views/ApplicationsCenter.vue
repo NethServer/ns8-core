@@ -735,14 +735,6 @@ export default {
     openInstance(instance) {
       this.$router.push(`/apps/${instance.id}`);
     },
-    isStableUpdateAvailable(instance) {
-      return (
-        instance.updates &&
-        instance.updates.find((update) => {
-          return update.id === instance.id && update.update;
-        })
-      );
-    },
     goToSoftwareCenter() {
       this.$router.push("/software-center");
     },
