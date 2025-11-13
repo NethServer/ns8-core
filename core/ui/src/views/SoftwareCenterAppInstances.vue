@@ -401,37 +401,12 @@
       @updateCompleted="onUpdateCompleted"
     />
     <!-- Restart instance modal -->
-    <NsModal
-      size="default"
+    <RestartModuleModal
       :visible="isShowRestartModuleModal"
-      @modal-hidden="hideRestartModuleModal"
+      :instanceToRestart="instanceToRestart"
+      @hide="hideRestartModuleModal"
       @primary-click="restartModule"
-    >
-      <template slot="title">{{
-        $t("software_center.app_restart", {
-          app: instanceToRestart ? instanceToRestart.id : "",
-        })
-      }}</template>
-      <template slot="content">
-        <NsInlineNotification
-          kind="warning"
-          :title="$t('common.please_read_carefully')"
-          :description="$t('software_center.restart_module_warning')"
-          :showCloseButton="false"
-        />
-        <div>
-          {{
-            $t("software_center.restart_app", {
-              name: instanceToRestart ? instanceToRestart.id : "",
-            })
-          }}
-        </div>
-      </template>
-      <template slot="secondary-button">{{ $t("common.cancel") }}</template>
-      <template slot="primary-button">{{
-        $t("software_center.restart_instance")
-      }}</template>
-    </NsModal>
+    />
 
     <!-- uninstall instance modal -->
     <NsDangerDeleteModal
@@ -460,48 +435,15 @@
       @confirmDelete="uninstallInstance"
     />
     <!-- set instance label modal -->
-    <NsModal
-      size="default"
+    <SetInstanceLabelModal
       :visible="isShownEditInstanceLabel"
-      @modal-hidden="hideSetInstanceLabelModal"
+      :currentInstance="currentInstance"
+      :newInstanceLabel="newInstanceLabel"
+      :error="error.setInstanceLabel"
+      @hide="hideSetInstanceLabelModal"
       @primary-click="setInstanceLabel"
-    >
-      <template slot="title">{{
-        $t("software_center.edit_instance_label")
-      }}</template>
-      <template slot="content">
-        <template v-if="currentInstance">
-          <cv-form @submit.prevent="setInstanceLabel">
-            <cv-text-input
-              :label="
-                $t('software_center.instance_label') +
-                ' (' +
-                $t('common.optional') +
-                ')'
-              "
-              v-model.trim="newInstanceLabel"
-              :placeholder="$t('common.no_label')"
-              :helper-text="$t('software_center.instance_label_tooltip')"
-              maxlength="24"
-              ref="newInstanceLabel"
-              data-modal-primary-focus
-            >
-            </cv-text-input>
-            <NsInlineNotification
-              v-if="error.setInstanceLabel"
-              kind="error"
-              :title="$t('action.set-name')"
-              :description="error.setInstanceLabel"
-              :showCloseButton="false"
-            />
-          </cv-form>
-        </template>
-      </template>
-      <template slot="secondary-button">{{ $t("common.cancel") }}</template>
-      <template slot="primary-button">{{
-        $t("software_center.edit_instance_label")
-      }}</template>
-    </NsModal>
+      @update:newInstanceLabel="newInstanceLabel = $event"
+    />
     <CloneOrMoveAppModal
       :isShown="cloneOrMove.isModalShown"
       :isClone="cloneOrMove.isClone"
@@ -528,6 +470,8 @@ import {
 import { mapState, mapActions } from "vuex";
 import CloneOrMoveAppModal from "@/components/software-center/CloneOrMoveAppModal";
 import UpdateAppModal from "../components/software-center/UpdateAppModal";
+import SetInstanceLabelModal from "@/components/software-center/SetInstanceLabelModal.vue";
+import RestartModuleModal from "@/components/software-center/RestartModuleModal.vue";
 import Information16 from "@carbon/icons-vue/es/information/16";
 
 export default {
@@ -537,6 +481,8 @@ export default {
     CloneOrMoveAppModal,
     UpdateAppModal,
     Information16,
+    SetInstanceLabelModal,
+    RestartModuleModal,
   },
   mixins: [
     TaskService,
@@ -709,9 +655,10 @@ export default {
     openInstance(instance) {
       this.$router.push(`/apps/${instance.id}`);
     },
-    updateInstance(instance, isUpdatingToTestingVersion) {
+    updateInstance(instance) {
       this.instanceToUpdate = instance;
-      this.isUpdatingToTestingVersion = isUpdatingToTestingVersion;
+      this.app = instance;
+      console.log("Updating instance", instance);
       this.isShownUpdateModal = true;
     },
     addAppToFavorites(instance) {
