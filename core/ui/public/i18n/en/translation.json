@@ -1665,7 +1665,7 @@
         "move": "Move",
         "uninstall": "Uninstall",
         "instance_uninstallation": "Uninstall {instance}",
-        "uninstalling_instance": "Uninstalling, please wait...",
+        "uninstalling": "Uninstalling",
         "restart_instance_name": "Restart instance {instance}",
         "update": "Update",
         "edit_instance_label": "Edit instance label",
@@ -1677,6 +1677,6 @@
         "restart_module_warning": "Proceed only if maintenance is needed and users are aware.",
         "restart_app": "Restarting the instance {name} will interrupt its operation and may cause downtime.",
         "restart_instance": "Restart instance",
-        "restarting": "Restarting..."
+        "restarting": "Restarting"
     }
 }
