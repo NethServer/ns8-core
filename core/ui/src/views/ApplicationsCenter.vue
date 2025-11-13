@@ -427,11 +427,6 @@ export default {
         ? `${this.instanceToUninstall.ui_name} (${this.instanceToUninstall.id})`
         : this.instanceToUninstall.id;
     },
-    installedModules() {
-      return this.modules.filter((app) => {
-        return app.installed.length;
-      });
-    },
     i18nTableColumns() {
       return this.tableColumns.map((column) => {
         return this.$t("applications." + column);
