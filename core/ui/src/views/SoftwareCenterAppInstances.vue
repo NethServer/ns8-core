@@ -658,7 +658,6 @@ export default {
     updateInstance(instance) {
       this.instanceToUpdate = instance;
       this.app = instance;
-      console.log("Updating instance", instance);
       this.isShownUpdateModal = true;
     },
     addAppToFavorites(instance) {
