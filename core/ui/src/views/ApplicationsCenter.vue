@@ -429,9 +429,14 @@ export default {
         : this.instanceToUninstall.id;
     },
     i18nTableColumns() {
-      return this.tableColumns.map((column) => {
-        return this.$t("applications." + column);
-      });
+      // Last column is for overflow menu, so header should be empty
+      return [
+        this.$t("applications.name"),
+        this.$t("applications.type"),
+        this.$t("applications.node"),
+        this.$t("applications.version"),
+        "",
+      ];
     },
     hasActiveFilters() {
       return (
