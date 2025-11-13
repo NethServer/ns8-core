@@ -92,7 +92,9 @@
         "not_available": "Not available",
         "release_notes": "Release notes",
         "plus_others": "+{num} other | +{num} others",
-        "choose_a_node": "Choose a node"
+        "choose_a_node": "Choose a node",
+        "type": "Type",
+        "any": "Any"
     },
     "error": {
         "error": "Error",
@@ -1198,6 +1200,7 @@
         "title": "Cluster status",
         "go_to_nodes": "Go to Nodes",
         "go_to_software_center": "Go to Software center",
+        "go_to_applications": "Go to Applications",
         "go_to_backup": "Go to Backup",
         "backups_failed_c": "{num} app backup failed | {num} app backups failed",
         "backup_disabled_c": "{num} backup disabled | {num} backups disabled",
@@ -1641,5 +1644,39 @@
         "available_with_subscription_title": "Activate subscription to enable this feature",
         "available_with_subscription": "Send a stream of security logs from applications and nodes of this cluster to Cloud Log Manager, where you can store, archive, and search them in a central place.",
         "cluster_id_notification": "Security logs from this cluster are available in the Cloud Log Manager UI under the host '{clusterId}'."
+    },
+    "applications": {
+        "title": "Applications",
+        "description": "Manage and install applications on your cluster",
+        "go_to_software_center": "Go to Software center",
+        "no_application": "No application installed",
+        "no_application_description": "Start by installing applications on this cluster",
+        "go_to_core_applications": "Core apps",
+        "name": "Name",
+        "version": "Version",
+        "type": "Type",
+        "node": "Node",
+        "status": "Status",
+        "update_available": "Update available",
+        "edit_label": "Edit label",
+        "restart": "Restart",
+        "open": "Open",
+        "clone": "Clone",
+        "move": "Move",
+        "uninstall": "Uninstall",
+        "instance_uninstallation": "Uninstall {instance}",
+        "uninstalling_instance": "Uninstalling, please wait...",
+        "restart_instance_name": "Restart instance {instance}",
+        "update": "Update",
+        "edit_instance_label": "Edit instance label",
+        "instance_label": "Instance label",
+        "instance_label_tooltip": "You can assign the app instance an easy to remember name",
+        "app_uninstallation": "Uninstall {app}",
+        "uninstall_app": "Uninstall {name}? App data will be deleted too. This action is NOT reversible",
+        "app_restart": "Restart the instance {app}",
+        "restart_module_warning": "Proceed only if maintenance is needed and users are aware.",
+        "restart_app": "Restarting the instance {name} will interrupt its operation and may cause downtime.",
+        "restart_instance": "Restart instance",
+        "restarting": "Restarting..."
     }
 }
