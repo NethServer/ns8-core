@@ -24,7 +24,7 @@ service in the Systemd `dovecot.service` unit:
 ...
 ExecStart=/usr/bin/podman run \
     ...
-    --volume=dovecot-data:/var/lib/vmail:z \
+    --volume=dovecot-data:/var/lib/vmail \
     --volume=./tls-certs:/etc/ssl/dovecot:z \
     --volume=dovecot-dict:/var/lib/dovecot/dict:z \
     --volume=dovecot-lmtp:/var/lib/umail:z \
@@ -46,10 +46,14 @@ The above `podman run` arguments define:
   case—to the container. A third option, single-file volumes, is described
   in the Podman documentation.
 
-Note the `:z` flag, present in every volume definition: it configures the
-SELinux volume label in "shared" mode, which is the recommended choice for
-rootless containers. Refer to `podman run` man page for differences
-between volume flags.
+Note the `:z` flag, present in some volume definitions: it configures the
+SELinux volume label in "shared" mode (type `container_file_t`), which is
+the recommended choice for rootless containers. Since the label is
+recursively checked when the container is started, the volume
+`dovecot-data` that may contain many files is exempted to avoid long
+startup times. If you copy files from external sources into a volume,
+ensure the label type is `container_file_t` to avoid file access errors.
+Refer to `podman run` man page for differences between volume flags.
 
 Inspect Podman named volumes with:
 
