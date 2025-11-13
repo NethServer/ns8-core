@@ -17,6 +17,18 @@
         "node"
     ],
     "properties": {
+        "volumes": {
+            "type": "object",
+            "description": "Optional mapping of application volume names to filesystem mount points.",
+            "patternProperties": {
+                "[^/]+": {
+                    "description": "Absolute filesystem directory path under /",
+                    "example": "/srv/pool0",
+                    "type": "string",
+                    "pattern": "^/.+$"
+                }
+            }
+        },
         "module": {
             "title": "Module ID",
             "description": "The identifier of the module to be cloned",

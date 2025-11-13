@@ -1,0 +1,63 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "list-mountpoints output",
+    "$id": "http://schema.nethserver.org/node/list-mountpoints.json",
+    "description": "Output schema of the list-mountpoints action",
+    "examples": [
+        {
+            "mountpoints": [
+                {
+                    "ui_name": "disk00",
+                    "path": "/mnt/disk00",
+                    "label": "",
+                    "size": 2136997888,
+                    "used": 49049600
+                },
+                {
+                    "ui_name": "VOL01",
+                    "path": "/mnt/xvolume_davidep_cluster0_rl1",
+                    "label": "VOL01",
+                    "size": 2136997888,
+                    "used": 49049600
+                }
+            ]
+        }
+    ],
+    "type": "object",
+    "properties": {
+        "mountpoints": {
+            "type": "array",
+            "items": {
+                "$ref": "#/$defs/mountpoint"
+            }
+        }
+    },
+    "$defs": {
+        "mountpoint": {
+            "type": "object",
+            "properties": {
+                "ui_name": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "label": {
+                    "type": "string"
+                },
+                "size": {
+                    "type": "number",
+                    "description": "bytes"
+                },
+                "available": {
+                    "type": "number",
+                    "description": "bytes"
+                },
+                "used": {
+                    "type": "number",
+                    "description": "bytes"
+                }
+            }
+        }
+    }
+}

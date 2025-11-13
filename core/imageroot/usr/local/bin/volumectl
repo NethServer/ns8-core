@@ -1,0 +1,139 @@
+#!/usr/local/agent/pyenv/bin/python3
+#
+# volumectl — manage /etc/nethserver/volumes.conf
+#
+# Copyright (C) 2025 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+import sys
+import os
+import argparse
+import agent
+from configparser import ConfigParser
+from pathlib import Path
+from agent import volumes
+
+VOLUMES_CONF = Path("/etc/nethserver/volumes.conf")
+
+
+def save_config(config: ConfigParser):
+    with VOLUMES_CONF.open("w") as f:
+        config.write(f)
+
+
+def _human_readable(num_bytes: int) -> str:
+    """Convert bytes to human-readable string."""
+    units = ["B", "K", "M", "G", "T", "P"]
+    size = float(num_bytes)
+    for unit in units:
+        if size < 1024:
+            return f"{size:.1f}{unit}"
+        size /= 1024
+    return f"{size:.1f}E"
+
+
+def cmd_list_base_paths(args):
+    base_paths = volumes.get_base_paths()
+    for entry in base_paths:
+        label = f" ({entry['label'] or os.path.basename(entry['path'])})"
+        if "size" in entry:
+            try:
+                size = _human_readable(int(entry["size"]))
+                used = _human_readable(int(entry["used"]))
+                available = _human_readable(int(entry["available"]))
+                size_info = f" size={size} available={available} used={used}"
+            except (ValueError, TypeError):
+                size_info = ""
+        else:
+            size_info = ""
+        print(f"{entry['path']}{label}{size_info}")
+
+
+def cmd_add_volume(args):
+    config = volumes._parse_config()
+    section = args.for_app
+    target = args.target.rstrip("/")
+    base_paths = [bp["path"] for bp in volumes.get_base_paths()]
+    if target not in base_paths:
+        print(f"add-volume error: invalid base path {target}. Must be one of", "{", ", ".join(base_paths), "}", file=sys.stderr)
+        sys.exit(2)
+
+    if args.next_only:
+        section = section.rstrip("0123456789")
+        rdb = agent.redis_connect(use_replica=True)
+        # find next available section name
+        next_id = int(rdb.get(f"cluster/module_sequence/{section}") or "0") + 1
+        section = f"{section}{next_id}"
+
+    if section not in config:
+        config.add_section(section)
+
+    config[section][args.volume_name] = target
+    save_config(config)
+
+    print(f"Added volume target for [{section}]: {args.volume_name} → {args.target}")
+
+def cmd_list_volumes(args):
+    config = volumes._parse_config()
+    try:
+        if args.for_app:
+            vols = [volname for volname in config[args.for_app]]
+        else:
+            vols = [volname for section in config for volname in config[section]]
+    except KeyError:
+        vols = []
+    for volname in vols:
+        print(volname)
+
+
+def cmd_remove_volume(args):
+    config = volumes._parse_config()
+    section = args.for_app
+    try:
+        del config[section][args.volume_name]
+        if not config[section]:
+            del config[section]
+        save_config(config)
+    except KeyError as ex:
+        print(f"Volume not found for {ex}", file=sys.stderr)
+        sys.exit(2)
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        prog="volumectl",
+        description="Manage /etc/nethserver/volumes.conf mappings"
+    )
+    sub = parser.add_subparsers(dest="command", required=True)
+
+    # list-base-paths
+    p_listbp = sub.add_parser("list-base-paths", help="List valid base paths where application volumes are bind-mounted.")
+    p_listbp.set_defaults(func=cmd_list_base_paths)
+
+    # list-volumes
+    p_listvol = sub.add_parser("list-volumes", help="List configured volume names for automatic completion")
+    p_listvol.add_argument("--for", dest="for_app", help="Application type (e.g. samba)")
+    p_listvol.set_defaults(func=cmd_list_volumes)
+
+    # add-volume
+    p_add = sub.add_parser("add-volume", help="Add a new volume mapping")
+    p_add.add_argument("volume_name", help="Name of the volume (e.g. shares)")
+    p_add.add_argument("--target", required=True, help="Filesystem mountpoint path")
+    p_add.add_argument("--for", dest="for_app", required=True, help="Application type (e.g. samba)")
+    p_add.add_argument("--next-only", dest="next_only", action="store_true",
+                       help="Only for the next application (e.g. samba3)")
+    p_add.set_defaults(func=cmd_add_volume)
+
+    # remove-volume
+    p_remove = sub.add_parser("remove-volume", help="Remove a volume mapping")
+    p_remove.add_argument("--for", dest="for_app", required=True, help="Application type (e.g. samba)")
+    p_remove.add_argument("volume_name", help="Name of the volume (e.g. shares)")
+    p_remove.set_defaults(func=cmd_remove_volume)
+
+    args = parser.parse_args()
+    args.func(args)
+
+
+if __name__ == "__main__":
+    main()

@@ -34,6 +34,7 @@ replace = request.get('replace', False)
 
 # destination
 node_id = int(request['node'])
+mvolumes = request.get('volumes', {})
 
 rdb = agent.redis_connect(privileged=True)
 
@@ -56,6 +57,7 @@ add_module_result = agent.tasks.run("cluster", "add-module",
     data={
         "image": source_image_url,
         "node": node_id,
+        **({"volumes": mvolumes} if mvolumes else {}),
     }, 
     endpoint="redis://cluster-leader",
     progress_callback=agent.get_progress_callback(13, 25),

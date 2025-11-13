@@ -1,0 +1,35 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2025 Nethesis S.r.l.
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+import agent
+import agent.volumes
+import json
+import sys
+import os
+from pathlib import Path
+
+def main():
+    request = json.load(sys.stdin)
+    module_id = os.environ["MODULE_ID"]
+    # Init defaults from /etc/nethserver/volumes.conf
+    volpaths = agent.volumes.get_configuration(module_id)
+    # Set values from request:
+    volpaths.update(request.get('volumes', {}))
+    for volname, basepath in volpaths.items():
+        # volpath example: /srv/pool0/samba1/shares/_data
+        volpath = Path(basepath) / module_id / volname.strip("/") / "_data"
+        os.makedirs(volpath)
+        try:
+            # Adjust SELinux context, for apps that do not mark volumes with :z flag
+            agent.run_helper("chcon", "-t", "container_file_t", str(volpath))
+        except FileNotFoundError:
+            pass # ignore for non-SELinux systems
+        agent.run_helper("podman", "volume", "create", "--ignore", "--opt=device=" + str(volpath), "--opt=type=bind", volname)
+
+if __name__ == "__main__":
+    agent.set_weight('05pullimages', '5')
+    main()

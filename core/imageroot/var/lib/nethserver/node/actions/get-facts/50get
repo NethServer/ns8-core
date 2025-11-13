@@ -14,6 +14,7 @@ import json
 import os
 import sys
 import subprocess
+import agent.volumes
 
 import ansible_runner
 
@@ -88,6 +89,8 @@ if facts['ansible_virtualization_role'] == 'guest':
 json.dump(
     {
         os.environ['AGENT_ID'].removeprefix('node/'): {
+            'volumesconf_mountpoint_count': len(agent.volumes.get_base_paths()),
+            'volumesconf_application_types': agent.volumes.get_application_types(),
             'version': _get_core_version(),
             'distro': {
                 'name': facts['ansible_distribution'],
