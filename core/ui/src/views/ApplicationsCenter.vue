@@ -391,7 +391,6 @@ export default {
       },
       instanceToUpdate: null,
       isShownUpdateModal: false,
-      appToUpdate: null,
       appUpdates: [],
       app: null,
       modules: [],
