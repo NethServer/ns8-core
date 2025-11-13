@@ -797,7 +797,7 @@ export default {
         const updates = Array.isArray(obj.updates) ? obj.updates : [];
         if (Array.isArray(obj.installed)) {
           for (const item of obj.installed) {
-            // chercher update correspondant par id
+            // look for updates for this item
             const updateEntry = updates.find((u) => u.id === item.id);
             // if found, merge data from updateEntry into item
             const source = updateEntry || item;
