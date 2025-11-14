@@ -5,20 +5,20 @@
     @modal-hidden="$emit('hide')"
     @primary-click="onPrimaryClick"
   >
-    <template slot="title">{{ $t("applications.edit_instance_label") }}</template>
+    <template slot="title">{{ $t("software_center.edit_instance_label") }}</template>
     <template slot="content">
       <template v-if="currentInstance">
         <cv-form @submit.prevent="onPrimaryClick">
           <cv-text-input
             :label="
-              $t('applications.instance_label') +
+              $t('software_center.instance_label') +
               ' (' +
               $t('common.optional') +
               ')'
             "
             v-model.trim="labelValue"
             :placeholder="$t('common.no_label')"
-            :helper-text="$t('applications.instance_label_tooltip')"
+            :helper-text="$t('software_center.instance_label_tooltip')"
             maxlength="24"
             ref="newInstanceLabel"
             data-modal-primary-focus
@@ -36,7 +36,7 @@
       </template>
     </template>
     <template slot="secondary-button">{{ $t("common.cancel") }}</template>
-    <template slot="primary-button">{{ $t("applications.edit_instance_label") }}</template>
+    <template slot="primary-button">{{ $t("software_center.edit_instance_label") }}</template>
   </NsModal>
 </template>
 

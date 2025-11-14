@@ -7,7 +7,7 @@
   >
     <template slot="title">
       {{
-        $t("applications.app_restart", {
+        $t("software_center.app_restart", {
           app: instanceToRestart ? instanceToRestart.id : "",
         })
       }}
@@ -16,19 +16,19 @@
       <NsInlineNotification
         kind="warning"
         :title="$t('common.please_read_carefully')"
-        :description="$t('applications.restart_module_warning')"
+        :description="$t('software_center.restart_module_warning')"
         :showCloseButton="false"
       />
       <div>
         {{
-          $t("applications.restart_app", {
+          $t("software_center.restart_app", {
             name: instanceToRestart ? instanceToRestart.id : "",
           })
         }}
       </div>
     </template>
     <template slot="secondary-button">{{ $t("common.cancel") }}</template>
-    <template slot="primary-button">{{ $t("applications.restart_instance") }}</template>
+    <template slot="primary-button">{{ $t("software_center.restart_instance") }}</template>
   </NsModal>
 </template>
 
