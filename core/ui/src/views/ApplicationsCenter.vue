@@ -348,6 +348,7 @@
       :instanceId="cloneOrMove.instanceId"
       :instanceUiName="cloneOrMove.instanceUiName"
       :installationNode="cloneOrMove.installationNode"
+      :app="cloneOrMoveAppData"
       @hide="cloneOrMove.isModalShown = false"
       @cloneOrMoveCompleted="listModules"
     />
@@ -429,6 +430,9 @@ export default {
         instanceId: "",
         instanceUiName: null,
         installationNode: 1,
+      },
+      cloneOrMoveAppData: {
+        install_destinations: [],
       },
       instanceToUpdate: null,
       isShownUpdateModal: false,
@@ -593,6 +597,7 @@ export default {
       this.cloneOrMove.instanceId = instance.id;
       this.cloneOrMove.instanceUiName = instance.ui_name;
       this.cloneOrMove.installationNode = parseInt(instance.node);
+      this.cloneOrMoveAppData = instance.cloneOrMoveAppData;
       this.cloneOrMove.isModalShown = true;
     },
     showMoveAppModal(instance) {
@@ -860,6 +865,7 @@ export default {
             ui_note: source.ui_note || "",
             version: source.version || "",
             update: source.update || "",
+            cloneOrMoveAppData: obj, // needed for clone/move
           });
         }
       }
