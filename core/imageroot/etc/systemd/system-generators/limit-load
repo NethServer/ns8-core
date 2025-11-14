@@ -96,8 +96,10 @@ for chain_id in $(seq 0 $((CHAINS - 1))); do
                 echo "After=user@${prev_user}.service"
             fi
             echo "[Service]"
-            echo "# Wait until Systemd user session for $username is fully started:"
-            echo "ExecStartPost=-systemctl --user is-system-running --wait"
+            echo "# Wait up to 3 minutes until Systemd user"
+            echo "# session for $username is fully started:"
+            echo "TimeoutStartSec=185s"
+            echo "ExecStartPost=-timeout 180s systemctl --user is-system-running --wait"
         } > "$dropdir/90-limit-load.conf"
 
         prev_user="$uid"
