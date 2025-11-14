@@ -76,7 +76,7 @@
           class="left-margin"
           v-model="policy.strength.history_length"
           min="0"
-          max="64"
+          max="24"
           step="1"
           stepMultiplier="10"
           minLabel=""
