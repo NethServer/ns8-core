@@ -153,6 +153,18 @@
                         row.ui_name ? row.ui_name + " (" + row.id + ")" : row.id
                       }}
                     </span>
+                    <cv-interactive-tooltip
+                      v-if="row.ui_note"
+                      alignment="start"
+                      direction="right"
+                      class="info margin-left-sm"
+                    >
+                      <template slot="content">
+                        <span class="underline-tooltip">
+                          {{ row.ui_note }}
+                        </span>
+                      </template>
+                    </cv-interactive-tooltip>
                   </cv-data-table-cell>
                   <cv-data-table-cell>
                     <img
@@ -214,6 +226,14 @@
                           :label="$t('applications.edit_label')"
                         />
                       </cv-overflow-menu-item>
+                      <cv-overflow-menu-item @click="showAddNoteModal(row)">
+                        <NsMenuItem
+                          :label="$t('applications.add_note')"
+                          :data-test-id="row.id + '-add-note'"
+                        >
+                          <RequestQuote20 slot="icon" />
+                        </NsMenuItem>
+                      </cv-overflow-menu-item>
                       <!-- update to stable version -->
                       <cv-overflow-menu-item
                         v-if="row.update"
@@ -253,6 +273,7 @@
                           :data-test-id="row.id + '-restart'"
                         />
                       </cv-overflow-menu-item>
+
                       <NsMenuDivider />
                       <cv-overflow-menu-item
                         danger
@@ -335,6 +356,15 @@
       @hide="isShownUpdateModal = false"
       @updateCompleted="listModules"
     />
+    <!-- Add note modal -->
+    <AddNoteModal
+      :visible="isShowNote"
+      :currentNote="noteText"
+      :loading="loading.addNote"
+      :error="error.addNote"
+      @hide="hideAddNoteModal"
+      @save="saveNote"
+    />
   </div>
 </template>
 
@@ -344,6 +374,8 @@ import CloneOrMoveAppModal from "@/components/software-center/CloneOrMoveAppModa
 import UpdateAppModal from "../components/software-center/UpdateAppModal";
 import SetInstanceLabelModal from "@/components/software-center/SetInstanceLabelModal.vue";
 import RestartModuleModal from "@/components/software-center/RestartModuleModal.vue";
+import AddNoteModal from "@/components/applications-center/AddNoteModal.vue";
+import RequestQuote20 from "@carbon/icons-vue/es/request-quote/20";
 
 import {
   QueryParamService,
@@ -362,6 +394,8 @@ export default {
     UpdateAppModal,
     SetInstanceLabelModal,
     RestartModuleModal,
+    AddNoteModal,
+    RequestQuote20,
   },
   mixins: [
     IconService,
@@ -408,13 +442,18 @@ export default {
       loading: {
         listModules: true,
         setInstanceLabel: false,
+        addNote: false,
       },
       error: {
         listModules: "",
         setInstanceLabel: "",
         removeModule: "",
         restartModule: "",
+        addNote: "",
       },
+      isShowNote: false,
+      noteInstance: null,
+      noteText: "",
     };
   },
   computed: {
@@ -799,25 +838,24 @@ export default {
       // extract installed modules
       const extractedModules = [];
       for (const obj of modules) {
-        const updates = Array.isArray(obj.updates) ? obj.updates : [];
-        if (Array.isArray(obj.installed)) {
-          for (const item of obj.installed) {
-            // look for updates for this item
-            const updateEntry = updates.find((u) => u.id === item.id);
-            // if found, merge data from updateEntry into item
-            const source = updateEntry || item;
-            extractedModules.push({
-              id: source.id || "",
-              // Use module logo URL if available, else fallback to instance logo later in the template
-              logo: obj.logo && obj.logo.startsWith("http") ? obj.logo : "",
-              module: source.module || "",
-              node: source.node || "",
-              node_ui_name: source.node_ui_name || "",
-              ui_name: source.ui_name || "",
-              version: source.version || "",
-              update: source.update || "",
-            });
-          }
+        const updates = obj.updates;
+        for (const item of obj.installed) {
+          // look for updates for this item
+          const updateEntry = updates.find((u) => u.id === item.id);
+          // if found, merge data from updateEntry into item
+          const source = updateEntry || item;
+          extractedModules.push({
+            id: source.id || "",
+            // Use module logo URL if available, else fallback to instance logo later in the template
+            logo: obj.logo && obj.logo.startsWith("http") ? obj.logo : "",
+            module: source.module || "",
+            node: source.node || "",
+            node_ui_name: source.node_ui_name || "",
+            ui_name: source.ui_name || "",
+            ui_note: source.ui_note || "",
+            version: source.version || "",
+            update: source.update || "",
+          });
         }
       }
       // sort by id
@@ -899,6 +937,71 @@ export default {
     },
     showSoftwareCenterCoreApps() {
       this.$router.push("/software-center/core-apps");
+    },
+    async saveNote(note) {
+      this.error.addNote = "";
+      this.loading.addNote = true;
+      const taskAction = "set-note";
+      const eventId = this.getUuid();
+
+      // register to task completion
+      this.$root.$once(
+        `${taskAction}-completed-${eventId}`,
+        this.saveNoteCompleted
+      );
+      // register to task error
+      this.$root.$once(
+        `${taskAction}-aborted-${eventId}`,
+        this.saveNoteAborted
+      );
+
+      const res = await to(
+        this.createModuleTaskForApp(this.noteInstance.id, {
+          action: taskAction,
+          data: {
+            note: note,
+          },
+          extra: {
+            title: this.$t("action." + taskAction),
+            isNotificationHidden: true,
+            eventId,
+          },
+        })
+      );
+      const err = res[0];
+
+      if (err) {
+        console.error(`error creating task ${taskAction}`, err);
+        this.error.addNote = this.getErrorMessage(err);
+        this.loading.addNote = false;
+        return;
+      }
+    },
+    saveNoteAborted(taskResult, taskContext) {
+      console.error(`${taskContext.action} aborted`, taskResult);
+      this.error.addNote = this.$t("error.generic_error");
+      this.loading.addNote = false;
+    },
+    saveNoteCompleted() {
+      this.loading.addNote = false;
+      this.hideAddNoteModal();
+      this.listModules();
+    },
+    hideAddNoteModal() {
+      this.isShowNote = false;
+      this.noteInstance = null;
+      this.noteText = "";
+      this.error.addNote = "";
+    },
+    showAddNoteModal(instance) {
+      // Always reset modal state before opening
+      this.isShowNote = false;
+      this.$nextTick(() => {
+        this.noteInstance = instance;
+        this.noteText = instance.ui_note || "";
+        this.error.addNote = "";
+        this.isShowNote = true;
+      });
     },
   },
 };
