@@ -211,7 +211,7 @@
                             v-for="(addr, idx) in row.addresses.slice(0, 3)"
                             :key="idx"
                           >
-                            {{ addr }}<br />
+                            {{ addr }}
                           </div>
                           <cv-interactive-tooltip
                             alignment="center"
@@ -235,7 +235,7 @@
                                 v-for="(addr, idx) in row.addresses.slice(3)"
                                 :key="idx"
                               >
-                                {{ addr }}<br />
+                                {{ addr }}
                               </div>
                             </template>
                           </cv-interactive-tooltip>
