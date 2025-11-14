@@ -228,7 +228,11 @@
                       </cv-overflow-menu-item>
                       <cv-overflow-menu-item @click="showAddNoteModal(row)">
                         <NsMenuItem
-                          :label="$t('applications.add_note')"
+                          :label="
+                            row.ui_note
+                              ? $t('applications.edit_note')
+                              : $t('applications.add_note')
+                          "
                           :data-test-id="row.id + '-add-note'"
                         >
                           <RequestQuote20 slot="icon" />
@@ -359,6 +363,7 @@
     <!-- Add note modal -->
     <AddNoteModal
       :visible="isShowNote"
+      :isEdit="noteText.length > 0"
       :currentNote="noteText"
       :loading="loading.addNote"
       :error="error.addNote"

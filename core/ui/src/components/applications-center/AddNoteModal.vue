@@ -7,7 +7,9 @@
     @hide="handleHide"
     size="default"
   >
-    <template slot="title">{{ $t("applications.add_note") }}</template>
+    <template slot="title">{{
+      isEdit ? $t("applications.edit_note") : $t("applications.add_note")
+    }}</template>
     <template slot="content">
       <div class="mg-bottom-md">{{ $t("applications.note_description") }}</div>
       <div class="add-note-modal-content">
@@ -21,9 +23,8 @@
           :maxLength="100"
           :rows="4"
           :disabled="loading"
-          :invalid-message="
-            note.length >= 100 ? $t('applications.note_too_long') : ''
-          "
+          :invalid-message="invalidMessage"
+          :helper-text="$t('applications.note_helper_text')"
         />
         <cv-inline-notification
           v-if="error"
@@ -35,7 +36,9 @@
       </div>
     </template>
     <template slot="secondary-button">{{ $t("common.cancel") }}</template>
-    <template slot="primary-button">{{ $t("applications.add_note") }}</template>
+    <template slot="primary-button">{{
+      isEdit ? $t("applications.edit_note") : $t("applications.add_note")
+    }}</template>
   </NsModal>
 </template>
 
@@ -46,6 +49,10 @@ export default {
     visible: {
       type: Boolean,
       required: true,
+    },
+    isEdit: {
+      type: Boolean,
+      default: false,
     },
     currentNote: {
       type: String,
@@ -75,10 +82,21 @@ export default {
       }
     },
   },
+  computed: {
+    invalidMessage() {
+      if (this.note.length >= 100) {
+        return this.$t("applications.note_too_long");
+      }
+      const alphanumRegex = /^[a-zA-Z0-9 ]*$/;
+      if (!alphanumRegex.test(this.note)) {
+        return this.$t("applications.note_alphanum_only");
+      }
+      return "";
+    },
+  },
   methods: {
     handleSave() {
-      if (this.note.length > 100) {
-        this.$emit("error", this.$t("applications.note_too_long"));
+      if (this.invalidMessage) {
         return;
       }
       this.$emit("save", this.note);
