@@ -655,9 +655,9 @@ export default {
     openInstance(instance) {
       this.$router.push(`/apps/${instance.id}`);
     },
-    updateInstance(instance) {
+    updateInstance(instance, isUpdatingToTestingVersion) {
       this.instanceToUpdate = instance;
-      this.app = instance;
+      this.isUpdatingToTestingVersion = isUpdatingToTestingVersion;
       this.isShownUpdateModal = true;
     },
     addAppToFavorites(instance) {
