@@ -54,7 +54,7 @@ else # Rootless module
         # Avoid /etc/passwd locking by erasing home directory and volumes
         # separately: it is a long operation!
         homedir=$(getent passwd "${mid}" | awk -F : '{ print $6 }')
-        mapfile -t voldirs < <(python3 -magent.volumes | jq --arg module_id "${mid}" -r '.[].path + "/" + $module_id')
+        mapfile -t voldirs < <(python3 -magent.volumes | jq --arg module_id "${mid}" -r '.[].path + "/" + $module_id' || :)
         rmpaths=("$homedir" "${voldirs[@]}")
         for rmpath in "${rmpaths[@]}" ; do
             if [[ -n $mid && $rmpath == /*/${mid} ]] ; then
