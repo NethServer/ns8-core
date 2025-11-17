@@ -57,7 +57,10 @@ else # Rootless module
         mapfile -t voldirs < <(python3 -magent.volumes | jq --arg module_id "${mid}" -r '.[].path + "/" + $module_id' || :)
         rmpaths=("$homedir" "${voldirs[@]}")
         for rmpath in "${rmpaths[@]}" ; do
-            if [[ -n $mid && $rmpath == /*/${mid} ]] ; then
+            if [[ ! -d $rmpath ]] ; then
+                : # ignore non-dirs
+            elif [[ -n $mid && $rmpath == /*/${mid} ]] ; then
+                echo "Removing ${rmpath}"
                 nice rm -rf "${rmpath}" &
             else
                 echo "Skipped removal of ${rmpath}. Its name differs from expectations."
