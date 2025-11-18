@@ -561,7 +561,6 @@
         "list-shortcuts": "Listar accesos directos",
         "add-backup": "Añadir backup",
         "clone-module": "Clonar módulo",
-        "get-node-status": "Obtener estado del nodo",
         "join-cluster": "Unirse al clúster",
         "alter-group": "Editar grupo",
         "list-repositories": "Listar repositorios",
@@ -626,7 +625,9 @@
         "get-metrics-id": "Get metrics ID",
         "get-metrics-ids": "Get metrics IDs",
         "restart-module": "Restart instance",
-        "set-default-certificate": "Request certificate"
+        "set-default-certificate": "Request certificate",
+        "list-alerts": "List alerts",
+        "list-nodes": "List nodes"
     },
     "settings_cluster_admins": {
         "user_already_exists": "El administrador ya existe",
@@ -1123,7 +1124,20 @@
         "connectivity_check_failed_description": "The FQDN {fqdn} is not reachable from {node}. Please change hostname and/or domain or, if you want to skip this check and fix the DNS record later, unselect '@:nodes.check_node_connectivity' and try again.",
         "vpn_endpoint_warning_description": "Leader FQDN is used by worker nodes to establish the VPN connection with the leader. Ensure that all workers can resolve the new leader FQDN.",
         "node_name_hostname": "{node} hostname",
-        "vpn_endpoint_warning_title": "You are editing leader FQDN"
+        "vpn_endpoint_warning_title": "You are editing leader FQDN",
+        "ns7_migration": "Migration",
+        "applications": "Applications",
+        "node_id": "Node ID",
+        "go_to_applications": "Go to Applications",
+        "go_to_tls_certificates": "Go to TLS certificates",
+        "go_to_firewall": "Go to Firewall",
+        "ip_address": "IP address",
+        "no_alerts": "No alert",
+        "alerts": "Alert | Alerts",
+        "go_to_http_routes": "Go to HTTP routes",
+        "ns7_migration_tooltip": "This node and its VPN connection are managed on NethServer 7 through the 'NS8 Migration' application.",
+        "ns7_migration_in_progress": "Migration in progress",
+        "fqdn": "FQDN"
     },
     "cluster_status": {
         "apps_installed_c": "Aplicación instalada | Aplicaciones instaladas",
@@ -1306,7 +1320,26 @@
         "mount_point": "Punto de montaje",
         "total": "Total",
         "swap": "Swap",
-        "system": "Sistema"
+        "system": "Sistema",
+        "col_device": "Device",
+        "col_startsAt": "Start time",
+        "col_used": "Used space",
+        "alerts": "Alerts",
+        "average_cpu_usage": "Average CPU usage",
+        "applications_count": "Applications",
+        "network_interface_count": "Network interfaces",
+        "average_cpu_usage_tooltip": "Average percentage of CPU time used by active (non-idle) processes over the past 2 minutes.",
+        "col_summary": "Message",
+        "col_fstype": "File system",
+        "no_alerts": "No alert",
+        "col_mountpoint": "Mount point",
+        "node_id": "Node ID",
+        "general_information": "General information",
+        "col_free": "Free space",
+        "overview": "Overview",
+        "col_total": "Total space",
+        "no_disks_info": "No disk",
+        "fqdn": "FQDN"
     },
     "domain_configuration": {
         "cannot_delete_provider": "No puedo eliminar el proveedor",
@@ -1504,11 +1537,13 @@
         "node_firewall": "Cortafuegos de {node}",
         "no_interface": "No hay interfaces",
         "no_service": "No hay servicios",
-        "network_interfaces": "Interfaces de red",
         "udp_ports": "Puertos UDP",
         "no_service_description": "No hay ningún servicio configurado",
         "tcp_ports": "Puertos TCP",
-        "search_service_or_port": "Buscar servicio o puerto"
+        "search_service_or_port": "Buscar servicio o puerto",
+        "active_network_interfaces": "Active network interfaces",
+        "ip_addresses": "IP addresses",
+        "interface": "Interface"
     },
     "openldap": {
         "domain": "Dominio",

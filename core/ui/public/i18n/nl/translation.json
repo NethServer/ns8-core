@@ -137,7 +137,6 @@
         "add-backup": "Back-up toevoegen",
         "set-acme-server": "ACME server instellen",
         "clone-module": "Kloon module",
-        "get-node-status": "Node status ophalen",
         "join-cluster": "Aansluiten bij cluster",
         "start-support-session": "Ondersteuningssessie starten",
         "read-backup-snapshots": "Lees backup snapshots",
@@ -184,7 +183,9 @@
         "get-metrics-id": "Haal statistiek ID's op",
         "get-metrics-ids": "Haal statistiek ID's op",
         "restart-module": "Herstart module",
-        "set-default-certificate": "Request certificate"
+        "set-default-certificate": "Request certificate",
+        "list-alerts": "List alerts",
+        "list-nodes": "List nodes"
     },
     "backup": {
         "aws_url_label": "AWS bucket naam",
@@ -857,7 +858,20 @@
         "node_is_offline_description": "Controleer de node en connectiviteit",
         "remove_node_from_cluster": "Node uit cluster verwijderen",
         "vpn_endpoint_warning_title": "U bewerkt leider FQDN",
-        "validation_endpoint_address_format": "Ongeldig formaat"
+        "validation_endpoint_address_format": "Ongeldig formaat",
+        "ns7_migration": "Migration",
+        "applications": "Applications",
+        "node_id": "Node ID",
+        "go_to_applications": "Go to Applications",
+        "go_to_tls_certificates": "Go to TLS certificates",
+        "go_to_firewall": "Go to Firewall",
+        "ip_address": "IP address",
+        "no_alerts": "No alert",
+        "alerts": "Alert | Alerts",
+        "go_to_http_routes": "Go to HTTP routes",
+        "ns7_migration_tooltip": "This node and its VPN connection are managed on NethServer 7 through the 'NS8 Migration' application.",
+        "ns7_migration_in_progress": "Migration in progress",
+        "fqdn": "FQDN"
     },
     "syslog_forwarder": {
         "start_time": "Starttijd (24 uur)",
@@ -1435,7 +1449,26 @@
         "file_system": "Bestandssysteem",
         "cpu": "CPU",
         "disks": "Schijven",
-        "core": "Kern"
+        "core": "Kern",
+        "col_device": "Device",
+        "col_startsAt": "Start time",
+        "col_used": "Used space",
+        "alerts": "Alerts",
+        "average_cpu_usage": "Average CPU usage",
+        "applications_count": "Applications",
+        "network_interface_count": "Network interfaces",
+        "average_cpu_usage_tooltip": "Average percentage of CPU time used by active (non-idle) processes over the past 2 minutes.",
+        "col_summary": "Message",
+        "col_fstype": "File system",
+        "no_alerts": "No alert",
+        "col_mountpoint": "Mount point",
+        "node_id": "Node ID",
+        "general_information": "General information",
+        "col_free": "Free space",
+        "overview": "Overview",
+        "col_total": "Total space",
+        "no_disks_info": "No disk",
+        "fqdn": "FQDN"
     },
     "audit_trail": {
         "title": "Audit spoor",
@@ -1535,7 +1568,9 @@
         "tcp_ports": "TCP poorten",
         "no_service": "Geen dienst",
         "search_service_or_port": "Zoekdienst of poort",
-        "network_interfaces": "Netwerkinterfaces"
+        "active_network_interfaces": "Active network interfaces",
+        "ip_addresses": "IP addresses",
+        "interface": "Interface"
     },
     "pagination": {
         "items_per_page": "Items per pagina:",
