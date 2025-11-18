@@ -426,7 +426,7 @@
         "set-metrics-configuration": "Set metrics configuration",
         "set-metrics-notifications": "Set metrics notifications",
         "get-metrics-id": "Get metrics ID",
-        "restart-module": "Restart instance",
+        "restart-module": "Restart application",
         "set-note": "Set note"
     },
     "network": {
@@ -1667,7 +1667,7 @@
         "uninstall": "Uninstall",
         "instance_uninstallation": "Uninstall {instance}",
         "uninstalling": "Uninstalling",
-        "restart_instance_name": "Restart instance {instance}",
+        "restart_instance_name": "Restart {instance}",
         "update": "Update",
         "app_uninstallation": "Uninstall {app}",
         "uninstall_app": "Uninstall {name}? App data will be deleted too. This action is NOT reversible",
