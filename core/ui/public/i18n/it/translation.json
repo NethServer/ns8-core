@@ -165,7 +165,7 @@
     },
     "nodes": {
         "title": "Nodi",
-        "leader": "leader",
+        "leader": "Leader",
         "add_node_to_cluster": "Aggiungi nodo al cluster",
         "add_node_to_cluster_step_2": "Copia il codice di join nel box sottostante",
         "add_node_to_cluster_step_4": "Seleziona 'Join a cluster'",
@@ -202,7 +202,7 @@
         "validation_endpoint_address_format": "Formato non valido",
         "node_is_offline": "Il nodo è offline",
         "nodes_offline_c": "{num} nodo è offline | {num} nodi sono offline",
-        "worker": "worker",
+        "worker": "Worker",
         "swap_usage": "Utilizzo dello swap",
         "usage": "utilizzo",
         "understood_promote_node": "Sono consapevole, promuovi il nodo",
@@ -224,7 +224,20 @@
         "connectivity_check_failed_description": "L'FQDN {fqdn} non è raggiungibile da {nodo}. Si prega di cambiare nome host e/o dominio o, se si desidera saltare questo controllo e correggere il record DNS in seguito, deselezionare '@:nodes.check_node_connectivity' e riprovare.",
         "vpn_endpoint_warning_description": "L'FQDN del leader viene utilizzato dai nodi worker per stabilire la connessione VPN. Assicurarsi che tutti i worker possono risolvere il nuovo FQDN del leader.",
         "node_name_hostname": "Nome host {node}",
-        "vpn_endpoint_warning_title": "Stai modificando l'FQDN del leader"
+        "vpn_endpoint_warning_title": "Stai modificando l'FQDN del leader",
+        "ns7_migration": "Migrazione",
+        "applications": "Applicazioni",
+        "node_id": "ID nodo",
+        "go_to_applications": "Vai ad Applicazioni",
+        "go_to_tls_certificates": "Vai a Certificati TLS",
+        "go_to_firewall": "Vai a Firewall",
+        "ip_address": "Indirizzo IP",
+        "no_alerts": "Nessun allarme",
+        "alerts": "Allarme | Allarmi",
+        "go_to_http_routes": "Vai a Rotte HTTP",
+        "ns7_migration_tooltip": "Questo nodo e la sua connessione VPN sono gestiti su NethServer 7 attraverso l'applicazione 'NS8 Migration'.",
+        "ns7_migration_in_progress": "Migrazione in corso",
+        "fqdn": "FQDN"
     },
     "system_logs": {
         "context_node": "Nodo",
@@ -321,7 +334,26 @@
         "total": "Totale",
         "system": "Sistema",
         "file_system": "File system",
-        "num_core": "{num}-core"
+        "num_core": "{num}-core",
+        "col_device": "Dispositivo",
+        "col_startsAt": "Ora di inizio",
+        "col_used": "Spazio usato",
+        "alerts": "Allarmi",
+        "average_cpu_usage": "Utilizzo medio della CPU",
+        "applications_count": "Applicazioni",
+        "network_interface_count": "Interfacce di rete",
+        "average_cpu_usage_tooltip": "Percentuale media del tempo della CPU utilizzato dai processi attivi (non-idle) negli ultimi 2 minuti.",
+        "col_summary": "Messaggio",
+        "col_fstype": "File system",
+        "no_alerts": "Nessun allarme",
+        "col_mountpoint": "Punto di mount",
+        "node_id": "ID nodo",
+        "general_information": "Informazioni generali",
+        "col_free": "Spazio libero",
+        "overview": "Panoramica",
+        "col_total": "Spazio totale",
+        "no_disks_info": "Nessun disco",
+        "fqdn": "FQDN"
     },
     "notification": {
         "abort": "Interrompi",
@@ -652,7 +684,6 @@
         "remove-favorite": "Rimuovi preferito",
         "list-favorites": "Elenco preferiti",
         "list-shortcuts": "Elenco delle scorciatoie",
-        "get-node-status": "Visualizza status nodo",
         "remove-module": "Rimuovi app",
         "set-name": "Imposta nome",
         "list-user-domains": "Elenca domini utente",
@@ -707,7 +738,9 @@
         "set-metrics-configuration": "Imposta configurazione Metrics",
         "get-metrics-id": "Identifica Metrics",
         "get-metrics-ids": "Identifica Metrics",
-        "restart-module": "Riavvia istanza"
+        "restart-module": "Riavvia istanza",
+        "list-alerts": "Elenca allarmi",
+        "list-nodes": "Elenca nodi"
     },
     "backup": {
         "configure": "Configura",
@@ -1505,7 +1538,6 @@
     "firewall": {
         "node_firewall": "firewall {node}",
         "public_zone_services": "Servizi nella zona pubblica",
-        "network_interfaces": "Interfacce di rete",
         "tcp_ports": "Porte TCP",
         "udp_ports": "Porte UDP",
         "search_service_or_port": "Cerca servizio o porta",
@@ -1513,7 +1545,10 @@
         "no_service_description": "Non è stato configurato alcun servizio",
         "no_interface": "Nessuna interfaccia",
         "name": "Servizio",
-        "title": "Firewall"
+        "title": "Firewall",
+        "active_network_interfaces": "Interfacce di rete attive",
+        "ip_addresses": "Indirizzi IP",
+        "interface": "Interfaccia"
     },
     "pagination": {
         "page_number": "Numero di pagina",
