@@ -12,8 +12,9 @@ import re
 
 rdb = agent.redis_connect(privileged=True)
 is_metrics_installed = rdb.exists(f"node/{os.getenv('NODE_ID')}/default_instance/metrics")
+has_cluster_network = bool(rdb.get('cluster/network'))
 
-if not is_metrics_installed:
+if has_cluster_network and not is_metrics_installed:
     # Remove node_exporter modules: they will conflict with the new metrics module
     for module in rdb.hgetall("cluster/module_node").items():
         # if module name matches node_exporter<number>, remove it
