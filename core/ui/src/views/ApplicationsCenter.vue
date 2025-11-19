@@ -17,7 +17,7 @@
               :icon="Application20"
               @click="showSoftwareCenterCoreApps()"
               class="page-toolbar-item"
-              >{{ $t("applications.go_to_core_applications") }}</NsButton
+              >{{ $t("software_center.core_apps") }}</NsButton
             >
           </div>
         </cv-column>
