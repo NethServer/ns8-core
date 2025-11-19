@@ -1,8 +1,6 @@
 <template>
   <NsModal
     :visible="visible"
-    :primaryButtonLabel="$t('common.save')"
-    :secondaryButtonLabel="$t('common.cancel')"
     @primary-click="handleSave"
     @hide="handleHide"
     size="default"
