@@ -52,7 +52,7 @@
               <NsComboBox
                 v-model="filter.moduleType"
                 :label="$t('common.choose')"
-                :title="$t('common.type')"
+                :title="$t('applications.type')"
                 :auto-filter="true"
                 :auto-highlight="true"
                 :options="moduleTypeOptions"
