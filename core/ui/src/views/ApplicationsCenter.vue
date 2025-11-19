@@ -12,7 +12,7 @@
         <cv-column :md="4" :xlg="6">
           <div class="page-toolbar">
             <NsButton
-              kind="ghost"
+              kind="tertiary"
               size="field"
               :icon="Application20"
               @click="showSoftwareCenterCoreApps()"
@@ -52,7 +52,7 @@
               <NsComboBox
                 v-model="filter.moduleType"
                 :label="$t('common.choose')"
-                :title="$t('common.type')"
+                :title="$t('applications.type')"
                 :auto-filter="true"
                 :auto-highlight="true"
                 :options="moduleTypeOptions"
