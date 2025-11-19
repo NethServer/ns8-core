@@ -1049,9 +1049,5 @@ export default {
   height: 32px;
   vertical-align: middle;
   margin-right: 8px;
-  object-fit: contain;
-  border-radius: 4px;
-  background: #f4f4f4;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 </style>
