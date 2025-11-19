@@ -24,10 +24,11 @@ import sys
 import agent.tasks
 import argparse
 
-parser = argparse.ArgumentParser()
+parser = argparse.ArgumentParser(description="Grants execution permission for one or more actions on a specified module to a given role. Supports wildcard matching for action, module, and role names.")
 parser.add_argument('--action', required=True, help="An action name. Wildcard char \"*\" is allowed")
 parser.add_argument('--on', required=True, help="A module name. Wildcard char \"*\" is allowed")
 parser.add_argument('--to', required=True, help="A role name. Wildcard char \"*\" is allowed")
+parser.add_argument('--verbose', help='Show grant-actions action stderr on success', action='store_true')
 args = parser.parse_args()
 
 result = agent.tasks.run(
@@ -42,6 +43,6 @@ result = agent.tasks.run(
     endpoint="redis://cluster-leader",
 )
 
-print(result['error'], file=sys.stderr, end='')
-print(result['output'])
+if result['exit_code'] != 0 or args.verbose:
+    print(result['error'], file=sys.stderr, end='')
 sys.exit(result['exit_code'])

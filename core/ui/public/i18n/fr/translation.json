@@ -865,7 +865,6 @@
         "add-backup": "Add backup",
         "set-acme-server": "Set ACME server",
         "clone-module": "Clone module",
-        "get-node-status": "Get node status",
         "join-cluster": "Join cluster",
         "start-support-session": "Start support session",
         "read-backup-snapshots": "Read backup snapshots",
@@ -912,7 +911,9 @@
         "get-metrics-id": "Get metrics ID",
         "get-metrics-ids": "Get metrics IDs",
         "restart-module": "Restart instance",
-        "set-default-certificate": "Request certificate"
+        "set-default-certificate": "Request certificate",
+        "list-alerts": "List alerts",
+        "list-nodes": "List nodes"
     },
     "domain_users": {
         "edit_group": "Edit group",
@@ -1230,7 +1231,20 @@
         "node_is_offline_description": "Check node status and connectivity",
         "remove_node_from_cluster": "Remove node from cluster",
         "vpn_endpoint_warning_title": "You are editing leader FQDN",
-        "validation_endpoint_address_format": "Invalid format"
+        "validation_endpoint_address_format": "Invalid format",
+        "ns7_migration": "Migration",
+        "applications": "Applications",
+        "node_id": "Node ID",
+        "go_to_applications": "Go to Applications",
+        "go_to_tls_certificates": "Go to TLS certificates",
+        "go_to_firewall": "Go to Firewall",
+        "ip_address": "IP address",
+        "no_alerts": "No alert",
+        "alerts": "Alert | Alerts",
+        "go_to_http_routes": "Go to HTTP routes",
+        "ns7_migration_tooltip": "This node and its VPN connection are managed on NethServer 7 through the 'NS8 Migration' application.",
+        "ns7_migration_in_progress": "Migration in progress",
+        "fqdn": "FQDN"
     },
     "cluster_status": {
         "apps_installed_c": "Installed application| Installed applications",
@@ -1435,7 +1449,26 @@
         "file_system": "File system",
         "cpu": "CPU",
         "disks": "Disks",
-        "core": "Core"
+        "core": "Core",
+        "col_device": "Device",
+        "col_startsAt": "Start time",
+        "col_used": "Used space",
+        "alerts": "Alerts",
+        "average_cpu_usage": "Average CPU usage",
+        "applications_count": "Applications",
+        "network_interface_count": "Network interfaces",
+        "average_cpu_usage_tooltip": "Average percentage of CPU time used by active (non-idle) processes over the past 2 minutes.",
+        "col_summary": "Message",
+        "col_fstype": "File system",
+        "no_alerts": "No alert",
+        "col_mountpoint": "Mount point",
+        "node_id": "Node ID",
+        "general_information": "General information",
+        "col_free": "Free space",
+        "overview": "Overview",
+        "col_total": "Total space",
+        "no_disks_info": "No disk",
+        "fqdn": "FQDN"
     },
     "audit_trail": {
         "title": "Audit trail",
@@ -1534,8 +1567,10 @@
         "no_service_description": "There is no service configured",
         "tcp_ports": "TCP ports",
         "no_service": "No service",
-        "network_interfaces": "Network interfaces",
-        "search_service_or_port": "Search service or port"
+        "search_service_or_port": "Search service or port",
+        "active_network_interfaces": "Active network interfaces",
+        "ip_addresses": "IP addresses",
+        "interface": "Interface"
     },
     "pagination": {
         "items_per_page": "Items per page:",

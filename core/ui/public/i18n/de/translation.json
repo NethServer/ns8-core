@@ -225,7 +225,6 @@
         "get-domain-group": "Domäne -Gruppe abrufen",
         "get-password-policy": "Kennwortrichtlinie abrufen",
         "get-firewall-status": "Firewall-Status abrufen",
-        "get-node-status": "Knoten-Status abrufen",
         "alter-group": "Gruppe ändern",
         "alter-user": "Benutzer ändern",
         "get-info": "Knoten-Informationen abrufen",
@@ -251,7 +250,9 @@
         "get-metrics-id": "Metrik-ID abrufen",
         "get-metrics-ids": "Metrik-IDs abrufen",
         "restart-module": "Instanz neustarten",
-        "set-default-certificate": "Zertifikat anfragen"
+        "set-default-certificate": "Zertifikat anfragen",
+        "list-alerts": "List alerts",
+        "list-nodes": "List nodes"
     },
     "common": {
         "hide": "verstecken",
@@ -452,7 +453,20 @@
         "connectivity_check_failed_description": "Der FQDN {fqdn} ist von Knoten {node} nicht erreichbar. Hostname oder Domäne anpassen, alternativ zum überspringen dieser Prüfung '@:nodes.check_node_connectivity' deaktivieren und erneut versuchen.",
         "vpn_endpoint_warning_description": "Der FQDN des Hauptknoten wird von anderen Knoten genutzt, um die VPN-Verbindung zum Hauptknoten herzustellen. Sicherstellen, dass alle Knoten den neuen FQDN auflösen können.",
         "node_name_hostname": "{node} Hostname",
-        "vpn_endpoint_warning_title": "Bearbeitung des FQDN des Haupt-Knoten"
+        "vpn_endpoint_warning_title": "Bearbeitung des FQDN des Haupt-Knoten",
+        "ns7_migration": "Migration",
+        "applications": "Applications",
+        "node_id": "Node ID",
+        "go_to_applications": "Go to Applications",
+        "go_to_tls_certificates": "Go to TLS certificates",
+        "go_to_firewall": "Go to Firewall",
+        "ip_address": "IP address",
+        "no_alerts": "No alert",
+        "alerts": "Alert | Alerts",
+        "go_to_http_routes": "Go to HTTP routes",
+        "ns7_migration_tooltip": "This node and its VPN connection are managed on NethServer 7 through the 'NS8 Migration' application.",
+        "ns7_migration_in_progress": "Migration in progress",
+        "fqdn": "FQDN"
     },
     "software_center": {
         "clone_app_description": "Instanz {instanceLabel} und Daten auf einen Knoten klonen. Die aktuelle Instanz bleibt unberührt.",
@@ -1451,7 +1465,26 @@
         "load": "Last",
         "endpoint": "Endpunkt",
         "free": "Frei",
-        "file_system": "Dateisystem"
+        "file_system": "Dateisystem",
+        "col_device": "Device",
+        "col_startsAt": "Start time",
+        "col_used": "Used space",
+        "alerts": "Alerts",
+        "average_cpu_usage": "Average CPU usage",
+        "applications_count": "Applications",
+        "network_interface_count": "Network interfaces",
+        "average_cpu_usage_tooltip": "Average percentage of CPU time used by active (non-idle) processes over the past 2 minutes.",
+        "col_summary": "Message",
+        "col_fstype": "File system",
+        "no_alerts": "No alert",
+        "col_mountpoint": "Mount point",
+        "node_id": "Node ID",
+        "general_information": "General information",
+        "col_free": "Free space",
+        "overview": "Overview",
+        "col_total": "Total space",
+        "no_disks_info": "No disk",
+        "fqdn": "FQDN"
     },
     "cluster_status": {
         "title": "Cluster-Status",
@@ -1526,9 +1559,11 @@
         "no_service_description": "Kein Dienst konfiguriert",
         "tcp_ports": "TCP-Ports",
         "no_service": "Kein Dienst",
-        "network_interfaces": "Netzwerkadapter",
         "search_service_or_port": "Dienst oder Port suchen",
-        "title": "Firewall"
+        "title": "Firewall",
+        "active_network_interfaces": "Active network interfaces",
+        "ip_addresses": "IP addresses",
+        "interface": "Interface"
     },
     "network": {
         "title": "Netzwerk"

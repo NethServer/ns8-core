@@ -51,10 +51,23 @@ else # Rootless module
     if [[ ${preserve} == "yes" ]]; then
         userdel -f "${mid}"
     else
-        # Avoid /etc/passwd locking by erasing home directory separately:
-        # it is a long operation!
-        rm -rf "$(getent passwd "${mid}" | awk -F : '{ print $6 }')"
-        userdel -f -r "${mid}"
+        # Avoid /etc/passwd locking by erasing home directory and volumes
+        # separately: it is a long operation!
+        homedir=$(getent passwd "${mid}" | awk -F : '{ print $6 }')
+        mapfile -t voldirs < <(python3 -magent.volumes | jq --arg module_id "${mid}" -r '.[].path + "/" + $module_id' || :)
+        rmpaths=("$homedir" "${voldirs[@]}")
+        for rmpath in "${rmpaths[@]}" ; do
+            if [[ ! -d $rmpath ]] ; then
+                : # ignore non-dirs
+            elif [[ -n $mid && $rmpath == /*/${mid} ]] ; then
+                echo "Removing ${rmpath}"
+                nice rm -rf "${rmpath}" &
+            else
+                echo "Skipped removal of ${rmpath}. Its name differs from expectations."
+            fi
+        done
+        wait || :
+        userdel -f "${mid}"
     fi
 fi
 

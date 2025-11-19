@@ -11,7 +11,7 @@ if ! buildah containers --format "{{.ContainerName}}" | grep -q gobuilder-core; 
     echo "Pulling Golang runtime..."
     golang_cache_path="${PWD}/.golang-cache"
     mkdir -vp "${golang_cache_path}/{mcache,bcache}"
-    buildah from --name gobuilder-tmp docker.io/library/golang:1.25.3-bookworm
+    buildah from --name gobuilder-tmp docker.io/library/golang:1.25.4-bookworm
     buildah config --env GOCACHE=/var/lib/misc/bcache --env GOMODCACHE=/var/lib/misc/mcache gobuilder-tmp
     buildah commit --rm gobuilder-tmp gobuilder-image
     buildah from --name gobuilder-core \
@@ -54,7 +54,7 @@ logcli_tmp_dir=$(mktemp -d)
 cleanup_list+=("${logcli_tmp_dir}")
 (
     cd "${logcli_tmp_dir}"
-    curl -L -O https://github.com/grafana/loki/releases/download/v3.5.7/logcli-linux-amd64.zip
+    curl -L -O https://github.com/grafana/loki/releases/download/v3.6.0/logcli-linux-amd64.zip
     python -mzipfile -e logcli-linux-amd64.zip .
     chmod -c 755 logcli-linux-amd64
 )
@@ -77,8 +77,8 @@ printf "REDIS_IMAGE=${repobase}/redis:%s\n" "${IMAGETAG:-latest}" >> "${core_env
 printf "RSYNC_IMAGE=${repobase}/rsync:%s\n" "${IMAGETAG:-latest}" >> "${core_env_file}"
 printf "RESTIC_IMAGE=${repobase}/restic:%s\n" "${IMAGETAG:-latest}" >> "${core_env_file}"
 printf "SUPPORT_IMAGE=${repobase}/support:%s\n" "${IMAGETAG:-latest}" >> "${core_env_file}"
-printf "PROMTAIL_IMAGE=docker.io/grafana/alloy:v1.11.2\n" >> "${core_env_file}"
-printf "NODE_EXPORTER_IMAGE=quay.io/prometheus/node-exporter:v1.9.0\n" >> "${core_env_file}"
+printf "PROMTAIL_IMAGE=docker.io/grafana/alloy:v1.11.3\n" >> "${core_env_file}"
+printf "NODE_EXPORTER_IMAGE=quay.io/prometheus/node-exporter:v1.10.2\n" >> "${core_env_file}"
 chmod -c 644 "${core_env_file}"
 source "${core_env_file}"
 buildah add "${container}" ${core_env_file} /etc/nethserver/core.env
@@ -91,7 +91,7 @@ buildah rm "${container}"
 images+=("${repobase}/${reponame}")
 
 echo "Building the Redis image..."
-container=$(buildah from docker.io/library/redis:8.2.2-alpine)
+container=$(buildah from docker.io/library/redis:8.4.0-alpine)
 reponame="redis"
 # Reset upstream volume configuration: it is necessary to modify /data contents with our .conf file.
 buildah config --env=SKIP_FIX_PERMS=1 --volume=/data- "${container}"

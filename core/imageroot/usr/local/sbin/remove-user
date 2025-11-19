@@ -26,6 +26,7 @@ import argparse
 
 parser = argparse.ArgumentParser()
 parser.add_argument('user')
+parser.add_argument('--verbose', help='show remove-user action stderr on success', action='store_true')
 
 args = parser.parse_args()
 
@@ -44,6 +45,7 @@ result = agent.tasks.run(
     endpoint="redis://cluster-leader",
 )
 
-print(result['error'], file=sys.stderr, end='')
-print(result['output'])
+if result['exit_code'] != 0 or args.verbose:
+    print(result['error'], file=sys.stderr, end='')
+    print(result['output'])
 sys.exit(result['exit_code'])
