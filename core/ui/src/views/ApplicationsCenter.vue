@@ -615,6 +615,7 @@ export default {
       this.cloneOrMove.instanceId = instance.id;
       this.cloneOrMove.instanceUiName = instance.ui_name;
       this.cloneOrMove.installationNode = parseInt(instance.node);
+      this.cloneOrMoveAppData = instance.cloneOrMoveAppData;
       this.cloneOrMove.isModalShown = true;
     },
     showRestartModuleModal(instance) {
