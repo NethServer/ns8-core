@@ -35,7 +35,7 @@
     </template>
     <template slot="secondary-button">{{ $t("common.cancel") }}</template>
     <template slot="primary-button">{{
-      isEdit ? $t("applications.edit_note") : $t("applications.add_note")
+      isEdit ? $t("common.save") : $t("applications.add_note")
     }}</template>
   </NsModal>
 </template>
