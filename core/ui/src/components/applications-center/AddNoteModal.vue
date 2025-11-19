@@ -1,6 +1,7 @@
 <template>
   <NsModal
     :visible="visible"
+    :isLoading="loading"
     @primary-click="handleSave"
     @hide="handleHide"
     size="default"

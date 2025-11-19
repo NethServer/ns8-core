@@ -403,6 +403,7 @@
     <!-- Restart instance modal -->
     <RestartModuleModal
       :visible="isShowRestartModuleModal"
+      :loading="loading.restartModule"
       :instanceToRestart="instanceToRestart"
       @hide="hideRestartModuleModal"
       @primary-click="restartModule"
@@ -437,6 +438,7 @@
     <!-- set instance label modal -->
     <SetInstanceLabelModal
       :visible="isShownEditInstanceLabel"
+      :loading="loading.setInstanceLabel"
       :currentInstance="currentInstance"
       :newInstanceLabel="newInstanceLabel"
       :error="error.setInstanceLabel"
@@ -526,6 +528,7 @@ export default {
         modules: true,
         setInstanceLabel: false,
         updateModule: false,
+        restartModule: false,
       },
       error: {
         listModules: "",
@@ -795,6 +798,7 @@ export default {
     },
     async restartModule() {
       this.error.restartModule = "";
+      this.loading.restartModule = true;
       const taskAction = "restart-module";
       const eventId = this.getUuid();
 
@@ -832,15 +836,17 @@ export default {
       if (err) {
         console.error(`error creating task ${taskAction}`, err);
         this.error.restartModule = this.getErrorMessage(err);
+        this.loading.restartModule = false;
         return;
       }
-      this.isShowRestartModuleModal = false;
     },
     restartModuleAborted(taskResult, taskContext) {
       console.error(`${taskContext.action} aborted`, taskResult);
       this.error.restartModule = this.$t("error.generic_error");
+      this.loading.restartModule = false;
     },
     restartModuleCompleted() {
+      this.loading.restartModule = false;
       this.isShowRestartModuleModal = false;
     },
     installInstance() {

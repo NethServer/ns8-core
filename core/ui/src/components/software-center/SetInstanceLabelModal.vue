@@ -2,10 +2,13 @@
   <NsModal
     size="default"
     :visible="visible"
+    :isLoading="loading"
     @modal-hidden="$emit('hide')"
     @primary-click="onPrimaryClick"
   >
-    <template slot="title">{{ $t("software_center.edit_instance_label") }}</template>
+    <template slot="title">{{
+      $t("software_center.edit_instance_label")
+    }}</template>
     <template slot="content">
       <template v-if="currentInstance">
         <cv-form @submit.prevent="onPrimaryClick">
@@ -36,7 +39,9 @@
       </template>
     </template>
     <template slot="secondary-button">{{ $t("common.cancel") }}</template>
-    <template slot="primary-button">{{ $t("software_center.edit_instance_label") }}</template>
+    <template slot="primary-button">{{
+      $t("software_center.edit_instance_label")
+    }}</template>
   </NsModal>
 </template>
 
@@ -46,24 +51,28 @@ export default {
   props: {
     visible: {
       type: Boolean,
-      required: true
+      required: true,
     },
     currentInstance: {
       type: Object,
-      default: null
+      default: null,
     },
     newInstanceLabel: {
       type: String,
-      default: ""
+      default: "",
     },
     error: {
       type: String,
-      default: ""
-    }
+      default: "",
+    },
+    loading: {
+      type: Boolean,
+      default: false,
+    },
   },
   data() {
     return {
-      labelValue: this.newInstanceLabel
+      labelValue: this.newInstanceLabel,
     };
   },
   watch: {
@@ -74,16 +83,16 @@ export default {
       if (newVal) {
         this.labelValue = this.newInstanceLabel;
       }
-    }
+    },
   },
   methods: {
     onInput(val) {
       this.labelValue = val;
-      this.$emit('update:newInstanceLabel', val);
+      this.$emit("update:newInstanceLabel", val);
     },
     onPrimaryClick() {
-      this.$emit('primary-click', this.labelValue);
-    }
-  }
+      this.$emit("primary-click", this.labelValue);
+    },
+  },
 };
 </script>

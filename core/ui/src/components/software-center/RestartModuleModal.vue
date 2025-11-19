@@ -2,6 +2,7 @@
   <NsModal
     size="default"
     :visible="visible"
+    :isLoading="loading"
     @modal-hidden="$emit('hide')"
     @primary-click="$emit('primary-click')"
   >
@@ -28,7 +29,9 @@
       </div>
     </template>
     <template slot="secondary-button">{{ $t("common.cancel") }}</template>
-    <template slot="primary-button">{{ $t("software_center.restart_instance") }}</template>
+    <template slot="primary-button">{{
+      $t("software_center.restart_instance")
+    }}</template>
   </NsModal>
 </template>
 
@@ -38,12 +41,16 @@ export default {
   props: {
     visible: {
       type: Boolean,
-      required: true
+      required: true,
     },
     instanceToRestart: {
       type: Object,
-      default: null
-    }
-  }
+      default: null,
+    },
+    loading: {
+      type: Boolean,
+      default: false,
+    },
+  },
 };
 </script>
