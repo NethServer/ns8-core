@@ -15,9 +15,14 @@
               class="info"
             >
               <template slot="content">
-                <span>
+                <div class="margin-bottom-sm">
                   {{ $t("software_center.title_tooltip") }}
-                </span>
+                </div>
+                <div class="mg-top-md mg-bottom-xs">
+                  <cv-link @click="goToApplicationsCenter">
+                    {{ $t("software_center.go_to_applications_center") }}
+                  </cv-link>
+                </div>
               </template>
             </cv-interactive-tooltip>
           </h2>
@@ -491,6 +496,9 @@ export default {
   },
   methods: {
     ...mapActions(["setUpdateInProgressInStore"]),
+    goToApplicationsCenter() {
+      this.$router.push("/applications-center");
+    },
     async listModules() {
       this.loading.listModules = true;
       this.error.listModules = "";
