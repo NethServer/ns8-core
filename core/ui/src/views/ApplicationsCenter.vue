@@ -7,7 +7,20 @@
     <cv-grid fullWidth>
       <cv-row>
         <cv-column :md="4" :xlg="10" class="page-title">
-          <h2>{{ $t("applications.title") }}</h2>
+          <h2>
+            {{ $t("applications.title") }}
+            <cv-interactive-tooltip
+              alignment="start"
+              direction="right"
+              class="info"
+            >
+              <template slot="content">
+                <span>
+                  {{ $t("applications.title_tooltip") }}
+                </span>
+              </template>
+            </cv-interactive-tooltip>
+          </h2>
         </cv-column>
         <cv-column :md="4" :xlg="6">
           <div class="page-toolbar">
