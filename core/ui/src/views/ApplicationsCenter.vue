@@ -180,18 +180,20 @@
                     </cv-interactive-tooltip>
                   </cv-data-table-cell>
                   <cv-data-table-cell>
-                    <img
-                      :src="
-                        row.logo
-                          ? row.logo
-                          : require('@/assets/module_default_logo.png')
-                      "
-                      :alt="row.name + ' logo'"
-                      class="module-logo"
-                    />
-                    <span>{{
-                      row.module.charAt(0).toUpperCase() + row.module.slice(1)
-                    }}</span>
+                    <a @click="showAppInfo(row.cloneOrMoveAppData)">
+                      <img
+                        :src="
+                          row.logo
+                            ? row.logo
+                            : require('@/assets/module_default_logo.png')
+                        "
+                        :alt="row.name + ' logo'"
+                        class="module-logo"
+                      />
+                      <span class="app-name">{{
+                        row.module.charAt(0).toUpperCase() + row.module.slice(1)
+                      }}</span>
+                    </a>
                   </cv-data-table-cell>
                   <cv-data-table-cell>
                     <span>{{
@@ -386,6 +388,11 @@
       @hide="hideAddNoteModal"
       @save="saveNote"
     />
+    <AppInfoModal
+      :app="appInfo.app"
+      :isShown="appInfo.isShown"
+      @close="onClose"
+    />
   </div>
 </template>
 
@@ -397,6 +404,7 @@ import SetInstanceLabelModal from "@/components/software-center/SetInstanceLabel
 import RestartModuleModal from "@/components/software-center/RestartModuleModal.vue";
 import AddNoteModal from "@/components/applications-center/AddNoteModal.vue";
 import RequestQuote20 from "@carbon/icons-vue/es/request-quote/20";
+import AppInfoModal from "@/components/software-center/AppInfoModal.vue";
 
 import {
   QueryParamService,
@@ -417,6 +425,7 @@ export default {
     RestartModuleModal,
     AddNoteModal,
     RequestQuote20,
+    AppInfoModal,
   },
   mixins: [
     IconService,
@@ -479,6 +488,10 @@ export default {
       isShowNote: false,
       noteInstance: null,
       noteText: "",
+      appInfo: {
+        isShown: false,
+        app: null,
+      },
     };
   },
   computed: {
@@ -603,6 +616,18 @@ export default {
   },
   methods: {
     ...mapActions(["setUpdateInProgressInStore"]),
+    showAppInfo(app) {
+      this.appInfo.isShown = true;
+      this.appInfo.app = app;
+    },
+    onClose() {
+      const context = this;
+
+      // needed to reset modal scroll to top
+      setTimeout(() => {
+        context.appInfo.isShown = false;
+      }, 250);
+    },
     clearFilters() {
       this.filter.selectedNodeId = "any";
       this.filter.text = "";
@@ -1070,5 +1095,8 @@ export default {
   height: 32px;
   vertical-align: middle;
   margin-right: 8px;
+}
+.app-name {
+  font-weight: bold;
 }
 </style>
