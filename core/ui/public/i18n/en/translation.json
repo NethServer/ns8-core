@@ -1712,6 +1712,7 @@
         "note_too_long": "Note must be 100 characters or less",
         "note_description": "A short note to help identify or describe this application.",
         "note_alphanum_only": "Note can only contain alphanumeric characters and spaces",
-        "note_helper_text": "Only alphanumeric characters and spaces are allowed"
+        "note_helper_text": "Only alphanumeric characters and spaces are allowed",
+        "filter_applications": "Filter applications"
     }
 }

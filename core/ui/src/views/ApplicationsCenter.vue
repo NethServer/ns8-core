@@ -40,7 +40,7 @@
             <div class="data-table-filters">
               <cv-search
                 :label="$t('common.search')"
-                :placeholder="$t('common.search')"
+                :placeholder="$t('applications.filter_applications')"
                 :clear-aria-label="$t('common.clear_search')"
                 v-model="filter.text"
                 :disabled="loading.listModules"
