@@ -36,8 +36,16 @@
         @click="goTo('/software-center')"
         :active="isLinkActive('/software-center')"
       >
-        <template v-slot:nav-icon><Application20 /></template>
+        <template v-slot:nav-icon><ShoppingCatalog20 /></template>
         <span>{{ $t("software_center.title") }}</span>
+      </cv-side-nav-link>
+      <!-- Applications -->
+      <cv-side-nav-link
+        @click="goTo('/applications-center')"
+        :active="isLinkActive('/applications-center')"
+      >
+        <template v-slot:nav-icon><Application20 /></template>
+        <span>{{ $t("applications.title") }}</span>
       </cv-side-nav-link>
       <!-- backup -->
       <cv-side-nav-link
@@ -93,6 +101,7 @@ import Activity20 from "@carbon/icons-vue/es/activity/20";
 import Chip20 from "@carbon/icons-vue/es/chip/20";
 import Information20 from "@carbon/icons-vue/es/information/20";
 import Police20 from "@carbon/icons-vue/es/police/20";
+import ShoppingCatalog20 from "@carbon/icons-vue/es/shopping--catalog/20";
 import { mapActions } from "vuex";
 import CvSideNavDivider from "@carbon/vue/src/components/cv-ui-shell/cv-side-nav-divider.vue";
 
@@ -109,6 +118,7 @@ export default {
     Information20,
     CvSideNavDivider,
     Police20,
+    ShoppingCatalog20,
   },
   data() {
     return {};

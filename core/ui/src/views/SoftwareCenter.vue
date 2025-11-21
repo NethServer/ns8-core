@@ -7,7 +7,25 @@
     <cv-grid fullWidth>
       <cv-row>
         <cv-column :md="4" :xlg="10" class="page-title">
-          <h2>{{ $t("software_center.title") }}</h2>
+          <h2>
+            {{ $t("software_center.title") }}
+            <cv-interactive-tooltip
+              alignment="start"
+              direction="right"
+              class="info"
+            >
+              <template slot="content">
+                <div class="margin-bottom-sm">
+                  {{ $t("software_center.title_tooltip") }}
+                </div>
+                <div class="mg-top-md mg-bottom-xs">
+                  <cv-link @click="goToApplicationsCenter">
+                    {{ $t("software_center.go_to_applications_center") }}
+                  </cv-link>
+                </div>
+              </template>
+            </cv-interactive-tooltip>
+          </h2>
         </cv-column>
         <cv-column :md="4" :xlg="6">
           <div class="page-toolbar">
@@ -478,6 +496,9 @@ export default {
   },
   methods: {
     ...mapActions(["setUpdateInProgressInStore"]),
+    goToApplicationsCenter() {
+      this.$router.push("/applications-center");
+    },
     async listModules() {
       this.loading.listModules = true;
       this.error.listModules = "";
