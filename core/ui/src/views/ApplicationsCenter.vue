@@ -348,10 +348,8 @@
     <!-- Restart instance modal -->
     <RestartModuleModal
       :visible="isShowRestartModuleModal"
-      :loading="loading.restartModule"
       :instanceToRestart="instanceToRestart"
       @hide="hideRestartModuleModal"
-      @primary-click="restartModule"
     />
     <!-- Clone or Move instance modal -->
     <CloneOrMoveAppModal
@@ -469,12 +467,10 @@ export default {
       loading: {
         listModules: true,
         addNote: false,
-        restartModule: false,
       },
       error: {
         listModules: "",
         removeModule: "",
-        restartModule: "",
         addNote: "",
       },
       isShowNote: false,
@@ -637,63 +633,9 @@ export default {
     },
     showRestartModuleModal(instance) {
       this.instanceToRestart = instance;
-      this.error.restartModule = "";
       this.isShowRestartModuleModal = true;
     },
     hideRestartModuleModal() {
-      this.isShowRestartModuleModal = false;
-    },
-    async restartModule() {
-      this.error.restartModule = "";
-      this.loading.restartModule = true;
-      const taskAction = "restart-module";
-      const eventId = this.getUuid();
-
-      // register to task error
-      this.$root.$once(
-        `${taskAction}-aborted-${eventId}`,
-        this.restartModuleAborted
-      );
-
-      // register to task completion
-      this.$root.$once(
-        `${taskAction}-completed-${eventId}`,
-        this.restartModuleCompleted
-      );
-
-      const res = await to(
-        this.createNodeTask(this.instanceToRestart.node, {
-          action: taskAction,
-          data: {
-            module_id: this.instanceToRestart.id,
-          },
-          extra: {
-            title: this.$t("applications.restart_instance_name", {
-              instance: this.instanceToRestart.ui_name
-                ? this.instanceToRestart.ui_name
-                : this.instanceToRestart.id,
-            }),
-            description: this.$t("applications.restarting"),
-            eventId,
-          },
-        })
-      );
-      const err = res[0];
-
-      if (err) {
-        console.error(`error creating task ${taskAction}`, err);
-        this.error.restartModule = this.getErrorMessage(err);
-        this.loading.restartModule = false;
-        return;
-      }
-    },
-    restartModuleAborted(taskResult, taskContext) {
-      console.error(`${taskContext.action} aborted`, taskResult);
-      this.error.restartModule = this.$t("error.generic_error");
-      this.loading.restartModule = false;
-    },
-    restartModuleCompleted() {
-      this.loading.restartModule = false;
       this.isShowRestartModuleModal = false;
     },
     showUninstallModal(instance) {

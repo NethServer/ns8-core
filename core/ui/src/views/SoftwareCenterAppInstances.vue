@@ -70,16 +70,6 @@
           />
         </cv-column>
       </cv-row>
-      <cv-row v-if="error.restartModule">
-        <cv-column>
-          <NsInlineNotification
-            kind="error"
-            :title="$t('action.restart-module')"
-            :description="error.restartModule"
-            :showCloseButton="false"
-          />
-        </cv-column>
-      </cv-row>
       <cv-row v-if="updateInstancesTimeout">
         <cv-column>
           <NsInlineNotification
@@ -403,10 +393,8 @@
     <!-- Restart instance modal -->
     <RestartModuleModal
       :visible="isShowRestartModuleModal"
-      :loading="loading.restartModule"
       :instanceToRestart="instanceToRestart"
       @hide="hideRestartModuleModal"
-      @primary-click="restartModule"
     />
 
     <!-- uninstall instance modal -->
@@ -524,7 +512,6 @@ export default {
       loading: {
         modules: true,
         updateModule: false,
-        restartModule: false,
       },
       error: {
         listModules: "",
@@ -533,7 +520,6 @@ export default {
         removeFavorite: "",
         setNodeLabel: "",
         updateModule: "",
-        restartModule: "",
       },
     };
   },
@@ -786,63 +772,9 @@ export default {
     },
     showRestartModuleModal(instance) {
       this.instanceToRestart = instance;
-      this.error.restartModule = "";
       this.isShowRestartModuleModal = true;
     },
     hideRestartModuleModal() {
-      this.isShowRestartModuleModal = false;
-    },
-    async restartModule() {
-      this.error.restartModule = "";
-      this.loading.restartModule = true;
-      const taskAction = "restart-module";
-      const eventId = this.getUuid();
-
-      // register to task error
-      this.$root.$once(
-        `${taskAction}-aborted-${eventId}`,
-        this.restartModuleAborted
-      );
-
-      // register to task completion
-      this.$root.$once(
-        `${taskAction}-completed-${eventId}`,
-        this.restartModuleCompleted
-      );
-
-      const res = await to(
-        this.createNodeTask(this.instanceToRestart.node, {
-          action: taskAction,
-          data: {
-            module_id: this.instanceToRestart.id,
-          },
-          extra: {
-            title: this.$t("software_center.restart_instance_name", {
-              instance: this.instanceToRestart.ui_name
-                ? this.instanceToRestart.ui_name
-                : this.instanceToRestart.id,
-            }),
-            description: this.$t("software_center.restarting"),
-            eventId,
-          },
-        })
-      );
-      const err = res[0];
-
-      if (err) {
-        console.error(`error creating task ${taskAction}`, err);
-        this.error.restartModule = this.getErrorMessage(err);
-        this.loading.restartModule = false;
-        return;
-      }
-    },
-    restartModuleAborted(taskResult, taskContext) {
-      console.error(`${taskContext.action} aborted`, taskResult);
-      this.error.restartModule = this.$t("error.generic_error");
-      this.loading.restartModule = false;
-    },
-    restartModuleCompleted() {
-      this.loading.restartModule = false;
       this.isShowRestartModuleModal = false;
     },
     installInstance() {
