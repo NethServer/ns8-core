@@ -14,7 +14,6 @@
       }}
     </template>
     <template slot="content">
-      <cv-form @submit.prevent="setInstanceLabel">
         <NsInlineNotification
           kind="warning"
           :title="$t('common.please_read_carefully')"
@@ -36,7 +35,6 @@
             :showCloseButton="false"
           />
         </div>
-      </cv-form>
     </template>
     <template slot="secondary-button">{{ $t("common.cancel") }}</template>
     <template slot="primary-button">{{

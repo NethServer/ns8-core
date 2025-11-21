@@ -11,7 +11,6 @@
     </template>
     <template slot="content">
       <template v-if="currentInstance">
-        <cv-form @submit.prevent="setInstanceLabel">
           <cv-text-input
             :label="
               $t('software_center.instance_label') +
@@ -32,7 +31,6 @@
               :showCloseButton="false"
             />
           </div>
-        </cv-form>
       </template>
     </template>
     <template slot="secondary-button">{{ $t("common.cancel") }}</template>
