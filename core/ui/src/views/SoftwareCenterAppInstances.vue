@@ -537,6 +537,7 @@ export default {
         setNodeLabel: "",
         setInstanceLabel: "",
         updateModule: "",
+        restartModule: "",
       },
     };
   },
